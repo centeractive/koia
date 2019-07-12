@@ -1,0 +1,163 @@
+button {
+  z-index: 999;
+}
+
+.context {
+  background-color: rgb(238, 250, 237);
+}
+
+table {
+  font-size: 12px;
+}
+
+th {
+  vertical-align: top;
+  text-align: right;
+  padding-right: 10px;
+  white-space: nowrap;
+}
+
+td {
+  white-space: pre-wrap;
+}
+
+#div_main {
+  background-color: rgb(238, 250, 237);
+}
+
+#div_toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.span_buttons {
+  display: flex;
+}
+
+#div_filter {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-left: 20px;
+}
+
+.span_column_filter {
+  display: flex;
+  margin-left: 20px;
+  align-items: center;
+}
+
+.span_menu_trigger {
+  padding: 3px;
+  margin-right: 4px;
+  margin-bottom: 5px;
+  border: 1px;
+  border-style: solid;
+  border-radius: 5px;  
+  border-color: lightgray;
+  cursor: pointer;
+}
+
+.full_text_filter {
+  width: 460px;
+}
+
+.operator {
+  width: 80px;
+  padding-left: 5px;
+}
+
+.column_filter_value {
+  width: 150px;
+}
+
+.icon_remove_column_filter {
+  cursor: pointer;
+  padding-bottom: 6px;
+  opacity: 0.2;  
+}
+
+.icon_remove_column_filter:hover {
+  opacity: 1;
+}
+
+.div_time_range_slider {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.ng5-slider {
+    margin-top: 0px;
+}
+
+.ng5-slider-pointer {
+  background-color: rgb(3, 204, 3) !important;
+  width: 16px !important;
+  height: 16px !important;
+  top: -6px !important;
+  -webkit-border-radius: 8px !important;
+     -moz-border-radius: 8px !important;
+          border-radius: 8px !important;
+}
+
+.ng5-slider .ng5-slider-pointer:after {
+  position: absolute !important;
+  top: 6px !important;
+  left: 6px !important;
+  width: 4px !important;
+  height: 4px !important;
+  background: rgb(3, 204, 3) !important;
+  -webkit-border-radius: 2px !important;
+     -moz-border-radius: 2px !important;
+          border-radius: 2px !important;
+  content: '' !important;
+}
+
+.ng5-slider .ng5-slider-pointer:hover:after {
+  background-color: #ffffff !important;
+}
+
+.ng5-slider .ng5-slider-pointer.ng5-slider-active:after {
+  background-color: #ffffff !important;
+}
+
+.ng5-slider-bubble {
+  background-color: #fff !important;
+  border: 1px solid rgb(212, 209, 209); 
+  border-radius: 4px;
+  font-size: 12px !important;
+}
+
+.div_time_range_slider .ng5-slider-bubble.ng5-slider-selection {
+  background-color: rgb(3, 204, 3) !important;
+}
+
+.div_time_range_slider .ng5-slider-bubble.ng5-slider-limit {
+  background-color: rgb(238, 250, 237) !important;
+  border-style: dashed !important;
+}
+
+.div_time_range_slider .ng5-slider-selection {
+  background: rgb(3, 204, 3) !important;
+}
+
+.but_reset_timefilter {
+  vertical-align: bottom;
+}
+
+.but_remove_timefilter {
+  vertical-align: bottom;
+}
+
+.but_add_timefilter {
+  vertical-align: bottom;
+}
+
+.div_time_column_name {  
+  position: relative;
+  top: -10px;
+  left: 62px;  
+}

@@ -1,0 +1,11 @@
+<mat-progress-bar *ngIf="computing" mode="indeterminate"></mat-progress-bar>
+<div style="display: block;">
+  <canvas baseChart *ngIf="chartData"
+    [datasets]="chartData"
+    [labels]="chartLabels"
+    [options]="chartOptions"
+    [plugins]="chartPlugins"
+    [legend]="context.showLegend"
+    [chartType]="chartType">
+  </canvas>
+</div>

@@ -1,0 +1,51 @@
+<mat-drawer-container fullscreen>
+
+  <div #header class="sticky_header">
+    <retro-main-toolbar [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
+      (onFilterChange)="onFilterChanged($event)">
+    </retro-main-toolbar>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    <div id="view_toolbar">
+      <button mat-button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
+        (click)="printView()">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button mat-button [color]="wrapWords ? 'primary' : ''" mat-icon-button
+        [matTooltip]="wrapWords ? 'Unwrap Words' : 'Wrap Words'" (click)="wrapWords = !wrapWords">
+        <mat-icon>wrap_text</mat-icon>
+      </button>
+      <button mat-button [color]="highlight ? 'primary' : ''" mat-icon-button
+        [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
+        <mat-icon>highlight</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div #content id="div_table" class="mat-elevation-z8 printable">
+
+    <table [class]="wrapWords ? '' : 'table_layout_fixed'" mat-table [dataSource]="entries" matSort
+      (matSortChange)="sortEntries($event)">
+
+      <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
+        <span *ngIf="column.indexed">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="column.width + 'px'">
+            {{ headerNameOf(column) }}</th>
+        </span>
+        <span *ngIf="!column.indexed">
+          <th mat-header-cell *matHeaderCellDef [style.width]="column.width + 'px'">{{ headerNameOf(column) }}</th>
+        </span>
+        <td [class]="'td_' + column.dataType" *matCellDef="let entry">{{ formattedValueOf(column, entry) }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>
+      <tr mat-row *matRowDef="let entry; columns: columnNames;" [style.background]="highlight ? entry['bgcolor'] : null"
+        [style.color]="highlight ? entry['fgcolor'] : null"></tr>
+
+    </table>
+
+    <mat-paginator #paginator class="mat-paginator-sticky" [pageSizeOptions]="pageSizeOptions"
+      showFirstLastButtons="true" [length]="totalRowCount" (page)="onPageChanged()">
+    </mat-paginator>
+
+  </div>
+</mat-drawer-container>

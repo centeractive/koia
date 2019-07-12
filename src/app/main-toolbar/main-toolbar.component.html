@@ -1,0 +1,147 @@
+<mat-card id="context" *ngIf="showContext">
+  <h3>Retrospective Analysis</h3>
+  <table *ngIf="scene">
+    <tr *ngFor="let contextInfo of scene.context">
+      <th>{{contextInfo.name}}</th>
+      <td>{{contextInfo.value}}</td>
+    </tr>
+  </table>
+</mat-card>
+
+<div id="div_main">
+
+  <div id="div_toolbar">
+    <span class="span_buttons">
+      <button id="butShowContext" mat-button [color]="showContext ? 'primary' : ''" mat-icon-button
+        [matTooltip]="showContext ? 'Hide Context' : 'Show Context'" (click)="showContext = !showContext">
+        <mat-icon>help_outline</mat-icon>
+      </button>
+      &nbsp;&nbsp;&nbsp;
+      <button id="butAdmin" mat-button [color]="currURL == urlScenes ? 'primary' : ''" mat-icon-button
+        matTooltip="Administration" [routerLink]="[urlScenes]">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <button id="butRawData" mat-button [color]="currURL == urlRawdata ? 'primary' : ''" mat-icon-button
+        matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
+        <mat-icon svgIcon="raw_data_view"></mat-icon>
+      </button>
+      <button id="butGridView" mat-button [color]="currURL == urlGrid ? 'primary' : ''" mat-icon-button
+        matTooltip="Grid View" [routerLink]="[urlGrid]">
+        <mat-icon svgIcon="grid_view"></mat-icon>
+      </button>
+      <button id="butFlexView" mat-button [color]="currURL == urlFlex ? 'primary' : ''" mat-icon-button
+        matTooltip="Flex View" [routerLink]="[urlFlex]">
+        <mat-icon svgIcon="flex_view"></mat-icon>
+      </button>
+      <button id="butPivotView" mat-button [color]="currURL == urlPivot ? 'primary' : ''" mat-icon-button
+        matTooltip="Pivot Table" [routerLink]="[urlPivot]">
+        <mat-icon svgIcon="pivot_table"></mat-icon>
+      </button>
+    </span>
+
+    <div id="div_filter">
+      <!-- full txt filter together with sort doesn't work with PouchDB, hence we get rid of it for now
+      <mat-form-field class="full_text_filter">
+        <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"
+          [(ngModel)]="fullTextFilter" (keyup)="onFilterFieldKeyUp($event)">
+        <button mat-button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
+          mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+      -->
+
+      <span class="span_column_filter" *ngFor="let columnFilter of columnFilters">
+
+        <span class="span_menu_trigger" [matMenuTriggerFor]="nonTimeColumnsMenu">{{ columnFilter.propertyName }}</span>
+        <mat-menu #nonTimeColumnsMenu="matMenu">
+          <button mat-menu-item *ngFor="let column of nonTimeColumns"
+            [disabled]="column.name === columnFilter.propertyName"
+            (click)="onColumnFilterChanged(columnFilter, column)">
+            <span>{{ column.name }}</span>
+          </button>
+        </mat-menu>
+
+        <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu">{{ columnFilter.operator }}</span>
+        <mat-menu #operatorMenu="matMenu">
+          <button mat-menu-item *ngFor="let operator of availableOperatorsOf(columnFilter.propertyName)"
+            [disabled]="operator === columnFilter.operator"
+            (click)="columnFilter.operator = operator; refreshEntries()">
+            <span>{{ operator }}</span>
+          </button>
+        </mat-menu>
+
+        <mat-form-field class="column_filter_value" *ngIf="!columnFilter.operator.endsWith('empty')">
+          <input matInput type="text" placeholder="Filter Value" [(ngModel)]="columnFilter.filterValue"
+            (keyup)="onFilterFieldKeyUp($event)">
+          <button mat-button color="primary" *ngIf="columnFilter.filterValue" matSuffix mat-icon-button
+            aria-label="Clear" (click)="resetColumnFilter(columnFilter)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+        <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter"
+          (click)="removeColumnFilter(columnFilter)">remove_circle_outline</mat-icon>
+      </span>
+    </div>
+
+    <span class="span_buttons" *ngIf="scene">
+
+      <button id="butAddColFilter" mat-button mat-icon-button matTooltip="Add column filter"
+        [matMenuTriggerFor]="columnFilterMenu">
+        <mat-icon>add_circle_outline</mat-icon>
+      </button>
+      <mat-menu #columnFilterMenu="matMenu">
+        <span *ngFor="let column of scene.columns">
+          <button class="but_new_col_filter" [disabled]="hasTimeRangeFilter(column)"
+            mat-menu-item (click)="addColumnFilter(column)">
+            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+            <span>{{ column.name }}</span>
+          </button>
+        </span>
+      </mat-menu>
+
+      <button mat-button *ngIf="timeRangeFilters.length > 0" mat-icon-button
+        [matTooltip]="showTimeFilter ? 'Hide time filters' : 'Show time filters'"
+        (click)="showTimeFilter = !showTimeFilter">
+        <mat-icon [matBadge]="timeRangeFilters.length" matBadgeSize="small"
+          [matBadgeColor]="showTimeFilter ? 'primary' : 'accent'">access_time</mat-icon>
+      </button>
+
+      <button mat-button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </span>
+  </div>
+
+  <div *ngIf="showTimeFilter">
+    <div *ngFor="let timeRangeFilter of timeRangeFilters">
+      <div class="div_time_range_slider">
+        <button class="slider_button" mat-button color="primary" mat-icon-button matTooltip="Define slider step size"
+          [matMenuTriggerFor]="timestepmenu">
+          <mat-icon [matBadge]="timeRangeFilter.selectedTimeStepAbbrev" matBadgePosition="below"
+            matBadgeColor="primary">
+            swap_horiz
+          </mat-icon>
+        </button>
+        <mat-menu #timestepmenu="matMenu">
+          <button mat-menu-item *ngFor="let timeStep of timeRangeFilter.availableTimeSteps"
+            (click)="timeRangeFilter.onTimeStepChanged(timeStep)">
+            <span>Step by {{ timeStep }}</span>
+          </button>
+        </mat-menu>
+        &nbsp;&nbsp;
+        <ng5-slider [(value)]="timeRangeFilter.selTimeStart" [(highValue)]="timeRangeFilter.selTimeEnd"
+          [options]="timeRangeFilter.timeRangeOptions" (userChangeEnd)="refreshEntries()"></ng5-slider>
+        <button class="but_reset_timefilter" mat-button color="primary" mat-icon-button matTooltip="Reset time filter"
+          [disabled]="!timeRangeFilter.isFiltered()" (click)="resetTimeRangeFilter(timeRangeFilter)">
+          <mat-icon>undo</mat-icon>
+        </button>
+        <button class="but_remove_timefilter" mat-button mat-icon-button matTooltip="Remove time filter"
+          (click)="removeTimeRangeFilter(timeRangeFilter)">
+          <mat-icon>remove_circle_outline</mat-icon>
+        </button>
+      </div>
+      <div class="div_time_column_name">{{ timeRangeFilter.column.name }}</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,97 @@
+#div_charts {
+  padding-left: 20px;
+  padding-right: 40px;
+  padding-bottom: 5px;
+}
+
+button {
+  margin: 2px;
+}
+
+.close {
+  margin-top: 5px;
+  float: right;
+}
+
+.field_small_integer {
+  width: 80px;
+  margin-right: 20px;
+}
+
+.span_row {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-flow: row;
+  align-items: center;
+}
+
+.div_label_rotation {
+  display: flex;
+  flex-flow: column;
+}
+
+.menu_item_legend_position {
+  padding: 0 3 0 3;
+  margin: 0px;
+}
+
+mat-radio-button {
+  margin: 5px;
+}
+
+.div_column_swap_list {
+  width: 100%;
+  margin: 0 25px 25px 0;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.div_column_list {
+  border: solid 1px #ccc;
+  min-height: 40px;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  display: block;
+}
+
+.div_column_item {
+  padding: 10px 10px;
+  border-bottom: solid 1px #ccc;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  cursor: move;  
+}
+
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+              0 8px 10px 1px rgba(0, 0, 0, 0.14),
+              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.div_column_item:last-child {
+  border: none;
+}
+
+.div_column_list.cdk-drop-list-dragging .div_column_item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.select_time_unit {
+  width: 100px;
+  margin-left: auto;
+}

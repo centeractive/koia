@@ -1,0 +1,31 @@
+<mat-progress-bar *ngIf="computing" mode="indeterminate"></mat-progress-bar>
+<div #content [id]="gridView ? 'div_table_gridview' : 'div_table'">
+  <table mat-table *ngIf="frameData && rowSpans" [dataSource]="frameData" matSort (matSortChange)="sort($event)"
+    [matSortActive]="currentSort.active" [matSortDirection]="currentSort.direction">
+
+    <ng-container [matColumnDef]="column" *ngFor="let column of frameColumns.slice(0, - overalls.length); let iCol = index">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ column }}</th>
+      <td *matCellDef="let entry; let iRow = index" [attr.rowspan]="rowSpans[iCol][iRow].span"
+        [style.display]="rowSpans[iCol][iRow].span === 0 ? 'none'  : ''">{{ formattedValueOf(iCol, entry[column]) }}</td>
+      <td mat-footer-cell *matFooterCellDef>{{iCol === frameColumns.length - overalls.length - 1 ? 'Overall' : '' }}</td>
+    </ng-container>
+
+    <ng-container [matColumnDef]="aggregation" *ngFor="let aggregation of context.aggregations; let iCol = index">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ aggregation }}</th>
+      <td class="td_aggregation" *matCellDef="let entry">
+        <span *ngIf="aggregation !== 'Count' || context.isAnyColumnWithValueGroupingInUse()">
+          {{ entry[aggregation] | number }}
+        </span>
+        <a *ngIf="aggregation === 'Count' && !context.isAnyColumnWithValueGroupingInUse()"
+          (click)="onAggregationCellClick(entry)" matTooltip="Show Data...">
+          {{ entry[aggregation] | number }}
+        </a>
+      </td>
+      <td mat-footer-cell *matFooterCellDef>{{ overalls[iCol] | number }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="frameColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let entry; columns: frameColumns"></tr>
+    <tr mat-footer-row *matFooterRowDef="frameColumns; sticky: true"></tr>
+  </table>
+</div>

@@ -1,0 +1,167 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
+html { 
+  background-color: #292626; 
+}
+
+body {
+  padding: 30px 40px;
+  font: 13px "Helvetica Neue", "Lucida Grande", "Arial";
+  background: #ECE9E9 -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fff), to(#ECE9E9));
+  background: #ECE9E9 -moz-linear-gradient(top, #fff, #ECE9E9);
+  background-repeat: no-repeat;
+  color: white;
+  -webkit-font-smoothing: antialiased;  
+}
+
+.sticky_header {  
+  position: -webkit-sticky; /* Safari */
+  position: fixed;  
+  top: 0;
+  right: 15; /* otherwise vertical scrollbar remains inactive in header */ 
+  width: calc(100% - 15px); 
+  z-index: 999;
+  border-bottom: 1px solid rgb(145, 144, 144);  
+}
+
+#view_toolbar {
+  background-color: rgb(202, 201, 201);  
+  width: 100%;
+  border-top: 1px solid rgb(145, 144, 144);    
+}
+
+.sidenav {
+  width: 300px; /* keep in sync with ViewController#SIDENAV_WIDTH */
+}
+
+.div_accordion_options {
+  width: 100%;
+}
+
+.toggle_multi_expand {
+  padding: 10px 10px 12px 15px; 
+}
+
+.span_exp_collapse_all {
+  position: absolute;
+  right: 0px;
+  margin-right: 20px;
+}
+
+mat-panel-description {
+  justify-content: flex-end;
+}
+
+.span_add_group {
+  padding-left: 15px;
+}
+
+.span_left_to_right {
+  display: flex;
+  align-items: flex-end; 
+  justify-content: space-between;
+}
+
+.div_group_values {
+  border: solid 1px #ccc;
+  min-height: 40px;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  display: block;
+}
+
+.div_group_value {
+  padding: 10px 10px;
+  border-bottom: solid 1px #ccc;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  cursor: move;  
+}
+
+.mat-tooltip {
+  font-size: 12px;
+}
+
+.but_config {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+}
+
+.accent {
+  color: white;
+  background-color: #ff4081;
+}
+
+.primary {
+  color: white;
+  background-color: #3F51B5;
+}
+
+.white {
+  background-color: white;
+}
+
+/* the following CSS class names must match enum StatusType */
+.success {
+  background-color: greenyellow;
+  white-space: pre-line;  
+}
+
+.warning {
+  background-color: orange;
+  white-space: pre-line;  
+  display: inline;
+}
+
+.error {
+  background-color: rgb(245, 102, 102);
+  white-space: pre-line;
+}
+
+@media print {
+  
+  body * {
+    visibility: hidden;
+  }
+    
+  img {
+    display: none; 
+  }
+
+  .but_config, .but_close {
+    display: none !important; 
+  }
+
+  * { 
+    overflow: visible !important; 
+  }
+  
+  .printable, .printable * {
+    visibility: visible;
+  }
+
+  #div_content {
+    display: block !important; 
+  }
+
+  .div_element {
+    page-break-inside: avoid !important; 
+  }
+
+  .div_chart {    
+    display: block;
+    height: 100%;
+  }
+
+  /*
+  svg {
+    transform:scale(0.3);
+    -webkit-transform:scale(0.3);
+  }
+  */
+}

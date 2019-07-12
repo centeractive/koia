@@ -1,0 +1,59 @@
+#grid_list {
+  margin: 10px;
+}
+
+.div_element {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.div_element_header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.div_chart {
+  flex: 1 1 auto;
+  height: 95%;
+}
+
+.but_config {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  opacity: 0.2;  
+}
+
+.but_config_active {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  opacity: 1;  
+}
+
+.div_title {
+  padding-top: 10px;
+  flex-grow: 99;
+}
+
+.textarea_title {
+  width: 99%;
+  text-align: center;
+  font-weight: bold;
+  resize: none;
+}
+
+.textarea_title:focus {
+  border: 1px solid lightgray;
+}
+
+.mat_icon_warning {
+  color: #ff7300;  
+}
+
+.but_close {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  opacity: 0.2;  
+}
+
+button:hover {
+  opacity: 1;
+}

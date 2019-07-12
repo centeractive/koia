@@ -1,0 +1,15 @@
+mwlResizable {
+  box-sizing: border-box; 
+}
+
+#div_margins {
+  position: absolute;
+  border: 1px dashed green;
+}
+
+.nvd3 .nv-pie .hover,
+.nvd3 .nv-discretebar .hover,
+.nvd3 .nv-multibar .hover,
+.nvd3 .nv-multibarHorizontal .hover {
+  cursor: pointer;
+}

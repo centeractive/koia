@@ -1,0 +1,87 @@
+#div_content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;  
+  align-items: flex-start;
+  position: relative;
+  margin: 10px;
+}
+
+.div_element {
+  flex-shrink: 0;
+  z-index: 1; /* otherwise, summary table header doesn't stay behind sticky header when scrolling */ 
+  position: relative;
+  margin: 5px;
+  float: left;
+  min-width: 200px;
+  overflow: hidden;    
+}
+
+.div_element_header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.but_config {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  opacity: 0.2;  
+}
+
+.but_config_active {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  opacity: 1;  
+}
+
+.div_title {
+  padding-top: 10px;
+  flex-grow: 99;
+}
+
+.textarea_title {
+  width: 99%;
+  text-align: center;
+  font-weight: bold;
+  resize: none;
+}
+
+.textarea_title:focus {
+  border: 1px solid lightgray;
+}
+
+.mat_icon_warning {
+  color: #ff7300;  
+}
+
+.but_close {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  opacity: 0.2;  
+}
+
+button:hover {
+  opacity: 1;
+}
+
+mwlResizable {
+  box-sizing: border-box;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
+  padding: 2px;
+  cursor: se-resize;
+}
+
+.fadein, .fadeout {
+  opacity: 0;
+  -moz-transition: opacity 0.4s ease-in-out;
+  -o-transition: opacity 0.4s ease-in-out;
+  -webkit-transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.fadein {
+  opacity: 1;
+}

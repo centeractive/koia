@@ -1,0 +1,54 @@
+#div_table {
+  margin: 0px 10px 10px 10px;
+  overflow-y: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.table_layout_fixed {   
+   table-layout: fixed;
+}
+
+th {
+   text-align: left;
+   padding: 5px;   
+   background-color: white;
+}
+
+td {
+   word-wrap: break-word;
+   vertical-align: top;
+   padding: 5px;
+}
+
+.td_Text {
+  text-align: left;
+}
+
+.td_Number {
+  text-align: right;
+}
+
+.mat-header-row {
+  height: auto;
+}
+
+.mat-row {
+  height: auto;
+}
+
+.mat-row:nth-child(even){
+  background-color:#fff;
+}
+
+.mat-row:nth-child(odd){
+  background-color:#efefef;
+}
+
+.mat-paginator-sticky {
+  position: sticky;
+  bottom: 0px;
+  z-index: 10;
+}

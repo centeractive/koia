@@ -1,0 +1,24 @@
+ .div_tooltip {	
+   position: absolute;			
+   text-align: left;		
+   padding: 5px;	
+   border: 1px solid rgb(50, 50, 50);
+   background-color: rgba(255, 255, 255, 0.8);
+   border-radius: 6px;	
+ }
+ 
+ .tooltip_colored_box {
+   width: 12px; 
+   height: 12px; 
+   border-radius: 7px;
+   border: 1px solid gray;   
+   vertical-align: bottom; 
+ }
+ 
+ .nvd3 .nv-pie .hover,
+ .nvd3 .nv-discretebar .hover,
+ .nvd3 .nv-multibar .hover,
+ .nvd3 .nv-multibarHorizontal .hover {
+   cursor: pointer;
+ }
+ 
