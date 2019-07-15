@@ -74,10 +74,11 @@
             </div>
             <div class="div_title">
                <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()" retroTextareaMaxRows="2"
-                  (keyup)="context.title = $event.target.value"></textarea>
-               <mat-icon *ngIf="context.warning" class="mat_icon_warning" [matTooltip]="context.warning">error
-               </mat-icon>
+                  (keyup)="context.title = $event.target.value"></textarea>               
             </div>
+            <button mat-icon-button [matTooltip]="context.warning" color="warn">
+               <mat-icon>error</mat-icon>
+            </button>
             <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
                <mat-icon>delete_forever</mat-icon>
             </button>

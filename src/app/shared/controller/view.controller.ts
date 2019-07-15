@@ -35,7 +35,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    entries$: Observable<Object[]>;
    loading: boolean;
 
-   protected nonTimeColumns: Column[];
+   protected textColumns: Column[];
+   protected numberColumns: Column[];
    protected timeColumns: Column[];
    protected configToModelConverter: ConfigToModelConverter;
    protected modelToConfigConverter = new ModelToConfigConverter();
@@ -76,8 +77,10 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          .filter(c => c.indexed)
          .filter(c => c.name !== CouchDBConstants._ID);
       this.configToModelConverter = new ConfigToModelConverter(this.columns);
-      this.nonTimeColumns = this.columns
-         .filter(c => c.dataType !== DataType.TIME);
+      this.textColumns = this.columns
+         .filter(c => c.dataType === DataType.TEXT);
+      this.numberColumns = this.columns
+         .filter(c => c.dataType === DataType.NUMBER);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
       this.entriesSubscription = this.entries$.subscribe(entries => DateTimeUtils.defineTimeUnits(this.timeColumns, entries));
@@ -92,9 +95,9 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    addChart(): ChartContext {
-      const type = 'discreteBarChart';
-      const chartMargin = this.chartMarginService.marginOf(ChartType.fromType(type));
-      const context = new ChartContext(this.clonedColumns(), type, chartMargin);
+      const chartType = ChartType.BAR;
+      const chartMargin = this.chartMarginService.marginOf(chartType);
+      const context = new ChartContext(this.clonedColumns(), chartType.type, chartMargin);
       context.groupByColumns = [this.identifyXAxisColumn(context)];
       context.query = this.query;
       this.elementContexts = this.elementContexts.concat([context]);
@@ -106,8 +109,12 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       let xAxisColumn: Column;
       if (this.timeColumns.length > 0) {
          xAxisColumn = this.timeColumns[0];
+      } else if (this.numberColumns.length > 0) {
+         xAxisColumn = this.numberColumns[0];
+      } else if (this.textColumns.length > 0) {
+         xAxisColumn = this.textColumns[0];
       } else {
-         xAxisColumn = this.nonTimeColumns[0];
+         return context.columns[0];
       }
       return context.columns.find(c => c.name === xAxisColumn.name);
    }

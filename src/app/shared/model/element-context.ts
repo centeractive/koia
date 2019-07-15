@@ -6,7 +6,6 @@ import { ValueGrouping } from './value-grouping.type';
 import { ArrayUtils } from '../utils/array-utils';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
-import { ChartType } from './chart-type';
 
 export abstract class ElementContext {
 
@@ -101,9 +100,7 @@ export abstract class ElementContext {
 
    set dataColumns(dataColumns: Column[]) {
       this._dataColumns = dataColumns || [];
-      if (this._groupByColumns) {
-         this._groupByColumns = this._groupByColumns.filter(c => !this._dataColumns.includes(c));
-      }
+      this._groupByColumns = this._groupByColumns.filter(c => !this._dataColumns.includes(c));
       this.fireStructureChanged();
    }
 
@@ -120,9 +117,7 @@ export abstract class ElementContext {
 
    addDataColumn(dataColumn: Column) {
       this._dataColumns.push(dataColumn);
-      if (this._groupByColumns) {
-         this._groupByColumns = this._groupByColumns.filter(c => c !== dataColumn);
-      }
+      this._groupByColumns = this._groupByColumns.filter(c => c !== dataColumn);
       this.fireStructureChanged();
    }
 

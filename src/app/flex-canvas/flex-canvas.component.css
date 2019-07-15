@@ -49,10 +49,6 @@
   border: 1px solid lightgray;
 }
 
-.mat_icon_warning {
-  color: #ff7300;  
-}
-
 .but_close {
   z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
   opacity: 0.2;  

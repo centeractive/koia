@@ -22,16 +22,18 @@ export class RawDataRevealer {
    }
 
    private createLinkFromDataPoint(event: any, context: ChartContext): string {
+
+      console.log(JSON.stringify(event));
+
       if (event.point && event.point.id) {
          return RawDataLinkFactory.createIDLink(event.point.id);
       } else {
-         const dataColumnName = context.dataColumns[0].name;
+         const dataColumnName = context.isAggregationCountSelected() ? context.dataColumns[0].name : event.series.key;
          const dataColumnValue = context.isAggregationCountSelected() ? event.series.key : event.point.y;
          const xAxisColumn = context.groupByColumns[0];
          if (xAxisColumn.dataType === DataType.TIME) {
             const timeStart: number = event.point.x;
-            const columnName = context.isAggregationCountSelected() ? dataColumnName : event.series.key;
-            return RawDataLinkFactory.createTimeUnitLink(context, [xAxisColumn], [timeStart], [columnName], [dataColumnValue]);
+            return RawDataLinkFactory.createTimeUnitLink(context, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
          } else {
             return RawDataLinkFactory.createLink(context.query, [dataColumnName, xAxisColumn.name], [dataColumnValue, event.point.x]);
          }
@@ -41,9 +43,6 @@ export class RawDataRevealer {
    private createLinkFromFlatData(event: any, context: ChartContext): string {
       const query = context.query;
       const column = context.isAggregationCountSelected() ? context.dataColumns[0] : context.groupByColumns[0];
-
-      console.log('RawDataLinkFactory.createLink ' + column.name + event.data.x);
-
       return RawDataLinkFactory.createLink(query, [column.name], [event.data.x]);
    }
 

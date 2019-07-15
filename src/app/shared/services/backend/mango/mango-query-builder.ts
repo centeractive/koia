@@ -115,10 +115,10 @@ export class MangoQueryBuilder {
       return selectors.length === 0 ? null : selectors;
    }
 
-   /** 
+   /**
     * @returns a [[RegExp]] that combines multiple 'contains' filter on the same field or a simple [[RegExp]] if
     * a single 'contains' filter exists
-    * 
+    *
     * This method is used for PouchDB that can't cope with multiple regex on the same field
     */
    private toCombinedContainsRegExp(propertyName: string): RegExp {

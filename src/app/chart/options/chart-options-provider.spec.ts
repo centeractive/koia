@@ -603,6 +603,25 @@ describe('ChartOptionsProvider', () => {
       expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?Level=WARN&Path=/var/log/messages');
    });
 
+   it('#createOptions individual value trend chart element click handler should open raw data page', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [createColumn('Amount', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('Room-Number', DataType.NUMBER)];
+      context.aggregations = [];
+      spyOn(router, 'navigateByUrl');
+
+      // when
+      const options = optionsProvider.createOptions(context, true);
+
+      // then
+      const onElementClick: Function = options['chart'].lines.dispatch.elementClick;
+      const event = { point: { x: 2, y: 2155 }, series: { key: 'Amount' } };
+      onElementClick(event, context);
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?Amount=2155&Room-Number=2');
+   });
+
    it('#createOptions aggregated value timeline chart element click handler should open raw data page', () => {
 
       // given
