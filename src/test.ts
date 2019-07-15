@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /chartjs.component\.spec\.ts$/);
 
@@ -55,7 +55,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /main-toolbar.component\.spec\.ts$/);
 // const context = require.context('./', true, /time-range-filter\.spec\.ts$/);
 // const context = require.context('./', true, /flex-canvas.component\.spec\.ts$/);
-const context = require.context('./', true, /grid.component\.spec\.ts$/);
+// const context = require.context('./', true, /grid.component\.spec\.ts$/);
 // const context = require.context('./', true, /aggregation.service\.spec\.ts$/);
 
 // const context = require.context('./', true, /chart.component\.spec\.ts$/);

@@ -16,7 +16,7 @@ export class TextareaMaxRowsDirective {
 
   keyPress(event: KeyboardEvent): void {
     const lineCount = this.textarea.value.split('\n').length;
-    if (event.which === 13 && lineCount >= this.maxRows) {
+    if (event.key === 'Enter' && lineCount >= this.maxRows) {
       event.preventDefault();
       this.textarea.blur();
     }
