@@ -4,7 +4,7 @@ import { Query } from 'app/shared/model';
 
 @Component({
    selector: 'retro-raw-data-dialog',
-   template: '<retro-raw-data [query]="query"></retro-raw-data>',
+   template: '<retro-raw-data [dialogStyle]="true" [query]="query"></retro-raw-data>'
 })
 export class RawDataDialogComponent {
 

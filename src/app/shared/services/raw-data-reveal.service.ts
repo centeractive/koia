@@ -103,7 +103,7 @@ export class RawDataRevealService {
 
   private show(query: Query): void {
     if (this.useDialog) {
-      this.dialogService.open(RawDataDialogComponent, { width: '98%', data: query });
+      this.dialogService.open(RawDataDialogComponent, { data: query, panelClass: 'dialog-container' });
     } else {
       const link = CommonUtils.encodeURL('/' + Route.RAWDATA + new JSQueryFactory().create(query));
       this.router.navigateByUrl(link);

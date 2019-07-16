@@ -11,7 +11,7 @@
 <div id="div_main">
 
   <div id="div_toolbar">
-    <span class="span_buttons">
+    <span class="span_buttons" *ngIf="!dialogStyle">
       <button id="butShowContext" mat-button [color]="showContext ? 'primary' : ''" mat-icon-button
         [matTooltip]="showContext ? 'Hide Context' : 'Show Context'" (click)="showContext = !showContext">
         <mat-icon>help_outline</mat-icon>

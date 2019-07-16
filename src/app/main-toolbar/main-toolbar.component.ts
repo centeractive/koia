@@ -16,6 +16,7 @@ import { Title } from '@angular/platform-browser';
 })
 export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
+  @Input() dialogStyle: boolean;
   @Input() route: Route;
   @Input() query: Query;
   @Output() onAfterViewChecked: EventEmitter<void> = new EventEmitter();

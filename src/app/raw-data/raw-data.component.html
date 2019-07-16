@@ -1,12 +1,10 @@
-<mat-drawer-container fullscreen>
-
-  <div #header class="sticky_header">
-    <retro-main-toolbar [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
+  <div #header [class]="dialogStyle ? '' : 'sticky_header'">
+    <retro-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
       (onFilterChange)="onFilterChanged($event)">
     </retro-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <div id="view_toolbar">
-      <button mat-button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
+      <button mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint matTooltip="Print current view"
         (click)="printView()">
         <mat-icon>print</mat-icon>
       </button>
@@ -48,4 +46,3 @@
     </mat-paginator>
 
   </div>
-</mat-drawer-container>

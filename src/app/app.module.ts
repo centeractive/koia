@@ -26,7 +26,10 @@ import 'd3';
 import 'nvd3';
 import { Ng5SliderModule } from 'ng5-slider';
 
-import { NotificationService, AggregationService, ValueRangeGroupingService, TimeGroupingService, ConfigService } from './shared/services';
+import {
+  NotificationService, AggregationService, ValueRangeGroupingService, TimeGroupingService, ConfigService,
+  RawDataRevealService
+} from './shared/services';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { ScenesComponent } from './scenes/scenes.component';
 import { SceneComponent } from './scene/scene.component';
@@ -50,6 +53,7 @@ import { DBService } from './shared/services/backend';
 import { MatIconModuleMock } from './shared/test';
 import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.directive';
 import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
+import { RawDataViewComponent } from './raw-data/raw-data-view.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +64,7 @@ import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
     GridComponent,
     FlexCanvasComponent,
     RawDataComponent,
+    RawDataViewComponent,
     RawDataDialogComponent,
     ChartComponent,
     ChartSideBarComponent,
@@ -119,6 +124,7 @@ import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
     DBService,
     MatDialog,
     RawDataService,
+    RawDataRevealService,
     ConfigService,
     TimeGroupingService,
     ValueRangeGroupingService,

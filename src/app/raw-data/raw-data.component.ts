@@ -1,11 +1,9 @@
 import { Component, ViewChild, OnInit, ElementRef, Input } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Sort, MatPaginator, MatBottomSheet } from '@angular/material';
 import { Column, Query, Route, Page } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { ValueFormatter } from '../shared/utils';
-import { QueryUtils } from 'app/shared/utils/query-utils';
-import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { NotificationService } from 'app/shared/services';
 import { AbstractComponent } from 'app/shared/controller';
 
@@ -18,6 +16,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
 
   static readonly MARGIN_TOP = 10;
 
+  @Input() dialogStyle: boolean;
   @Input() query: Query;
 
   @ViewChild('header', undefined) divHeaderRef: ElementRef<HTMLDivElement>;
@@ -37,8 +36,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   private page: Page;
   private valueFormatter = new ValueFormatter();
 
-  constructor(bottomSheet: MatBottomSheet, private router: Router, private activatedRoute: ActivatedRoute,
-    private dbService: DBService, notificationService: NotificationService) {
+  constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.wrapWords = true;
@@ -98,10 +96,14 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   }
 
   adjustLayout() {
-    const marginTop = this.divHeaderRef.nativeElement.offsetHeight + RawDataComponent.MARGIN_TOP;
     const style = this.divContentRef.nativeElement.style;
-    style.marginTop = marginTop + 'px';
-    style.maxHeight = (window.innerHeight - marginTop - RawDataComponent.MARGIN_TOP) + 'px';
+    if (this.dialogStyle) {
+      style.marginTop = RawDataComponent.MARGIN_TOP + 'px';
+    } else {
+      const marginTop = this.divHeaderRef.nativeElement.offsetHeight + RawDataComponent.MARGIN_TOP;
+      style.marginTop = marginTop + 'px';
+      style.maxHeight = (window.innerHeight - marginTop - RawDataComponent.MARGIN_TOP) + 'px';
+    }
   }
 
   printView(): void {

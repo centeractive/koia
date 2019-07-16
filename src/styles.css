@@ -106,6 +106,12 @@ mat-panel-description {
   background-color: white;
 }
 
+.dialog-container .mat-dialog-container {
+  padding: 0px 0px 0px 0px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+}
+
 /* the following CSS class names must match enum StatusType */
 .success {
   background-color: greenyellow;
