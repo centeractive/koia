@@ -95,6 +95,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /data-type-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
 // const context = require.context('./', true, /test-utils\.spec\.ts$/);
+// const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
 
 // And load the modules.
 context.keys().map(context);

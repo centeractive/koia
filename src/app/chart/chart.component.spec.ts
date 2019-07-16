@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatProgressBarModule } from '@angular/material';
+import { MatProgressBarModule, MatDialogModule } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { ChartComponent } from './chart.component';
 import { ChartContext, ChartType, DataType, Column, Scene } from 'app/shared/model';
 import { NvD3Module, NvD3Component } from 'ng2-nvd3';
 import { SimpleChange } from '@angular/core';
-import { ChartDataService, ChartMarginService } from 'app/shared/services';
+import { ChartDataService, ChartMarginService, RawDataRevealService } from 'app/shared/services';
 import { ResizableDirective } from 'angular-resizable-element';
 import { Margin } from 'nvd3';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -34,11 +34,12 @@ describe('ChartComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ChartComponent, ResizableDirective],
-      imports: [MatProgressBarModule, NvD3Module, RouterTestingModule],
+      imports: [MatProgressBarModule, NvD3Module, RouterTestingModule, MatDialogModule],
       providers: [
         { provide: DBService, useValue: dbService },
         { provide: ChartDataService, useClass: ChartDataService },
-        { provide: ChartMarginService, useClass: ChartMarginService }
+        { provide: ChartMarginService, useClass: ChartMarginService },
+        { provide: RawDataRevealService, useClass: RawDataRevealService }
       ]
     })
     fixture = TestBed.createComponent(ChartComponent);

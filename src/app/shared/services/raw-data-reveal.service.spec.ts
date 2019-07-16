@@ -1,10 +1,12 @@
-import { RawDataLinkFactory } from './rawdata-link-factory';
+import { RawDataRevealService } from './raw-data-reveal.service';
 import {
-  Query, PropertyFilter, Operator, Route, ElementContext, SummaryContext, GraphNode, GraphContext,
-  DataType, Column, TimeUnit
+  Query, ElementContext, Route, SummaryContext, GraphNode, GraphContext, PropertyFilter, DataType,
+  TimeUnit, Operator, Column
 } from '../model';
+import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material';
 
-describe('RawDataLinkFactory', () => {
+describe('RawDataRevealService', () => {
 
   const now = new Date().getTime();
   const min = 60_000;
@@ -13,20 +15,28 @@ describe('RawDataLinkFactory', () => {
 
   let query: Query;
   let context: ElementContext;
+  let router: Router;
+  let dialogService: MatDialog; 
+  let service: RawDataRevealService;
 
   beforeEach(() => {
     query = new Query();
     context = new SummaryContext([]);
     context.query = query;
+    router = <Router> { navigateByUrl: (url: string) => null };
+    dialogService = <MatDialog> {};
+    service = new RawDataRevealService(router, dialogService);
+    service.setUseDialog(false);
+    spyOn(router, 'navigateByUrl');
   });
 
   it('#createIDLink should create link with ID', () => {
 
     // when
-    const link = RawDataLinkFactory.createIDLink(100);
+    service.ofID(100);
 
     // then
-    expect(link).toEqual(linkbase + '?_id=100');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id=100');
   });
 
   it('#createGraphNodeLink should return link for root node', () => {
@@ -37,10 +47,10 @@ describe('RawDataLinkFactory', () => {
     graphContext.query = new Query();
 
     // when
-    const link = RawDataLinkFactory.createGraphNodeLink(rootNode, graphContext);
+    service.ofGraphNode(rootNode, graphContext);
 
     // then
-    expect(link).toEqual(linkbase);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase);
   });
 
   it('#createGraphNodeLink should show alert when node column value <empty>', () => {
@@ -52,7 +62,7 @@ describe('RawDataLinkFactory', () => {
     spyOn(window, 'alert').and.stub();
 
     // when
-    const link = RawDataLinkFactory.createGraphNodeLink(node, graphContext);
+    service.ofGraphNode(node, graphContext);
 
     // then
     expect(window.alert).toHaveBeenCalledWith('<empty> search criteria is not implemented.\n' +
@@ -69,10 +79,10 @@ describe('RawDataLinkFactory', () => {
     graphContext.query = new Query();
 
     // when
-    const link = RawDataLinkFactory.createGraphNodeLink(node, graphContext);
+    service.ofGraphNode(node, graphContext);
 
     // then
-    expect(link).toEqual(linkbase + '?Level=ERROR');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Level=ERROR');
   });
 
   it('#createGraphNodeLink should return link when time node', () => {
@@ -85,10 +95,10 @@ describe('RawDataLinkFactory', () => {
     graphContext.query = new Query();
 
     // when
-    const link = RawDataLinkFactory.createGraphNodeLink(node, graphContext);
+    service.ofGraphNode(node, graphContext);
 
     // then
-    expect(link).toEqual(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
 
   it('#createTimeUnitLink should create link with time period of entire timeunit', () => {
@@ -97,10 +107,11 @@ describe('RawDataLinkFactory', () => {
     const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
 
     // when
-    const link = RawDataLinkFactory.createTimeUnitLink(context, [timeColumn], [oneHourAgo], ['Level'], ['ERROR']);
+    service.ofTimeUnit(context, [timeColumn], [oneHourAgo], ['Level'], ['ERROR']);
 
     // then
-    expect(link).toEqual(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + (oneHourAgo + 60_000) + '&Level=ERROR');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
+      linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + (oneHourAgo + 60_000) + '&Level=ERROR');
   });
 
   it('#createTimeUnitLink should create link with time period of trimmed timeunit', () => {
@@ -111,19 +122,20 @@ describe('RawDataLinkFactory', () => {
     query.setTimeEnd('Time', now - min);
 
     // when
-    const link = RawDataLinkFactory.createTimeUnitLink(context, [timeColumn], [oneHourAgo], ['Host'], ['server1']);
+    service.ofTimeUnit(context, [timeColumn], [oneHourAgo], ['Host'], ['server1']);
 
     // then
-    expect(link).toEqual(linkbase + '?Time_gte=' + (oneHourAgo + min) + '&Time_lte=' + (now - min) + '&Host=server1');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
+      linkbase + '?Time_gte=' + (oneHourAgo + min) + '&Time_lte=' + (now - min) + '&Host=server1');
   });
 
   it('#createLink should create bare link', () => {
 
     // when
-    const link = RawDataLinkFactory.createLink(query, [], []);
+    service.ofQuery(query, [], []);
 
     // then
-    expect(link).toEqual(linkbase);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase);
   });
 
   it('#createLink should create link with escaped # from base query full text filter', () => {
@@ -132,10 +144,10 @@ describe('RawDataLinkFactory', () => {
     query.setFullTextFilter('x#y');
 
     // when
-    const link = RawDataLinkFactory.createLink(query, [], []);
+    service.ofQuery(query, [], []);
 
     // then
-    expect(link).toEqual(linkbase + '?q=x%23y');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?q=x%23y');
   });
 
   it('#createLink should create link from base query full text filter and property filters', () => {
@@ -146,19 +158,19 @@ describe('RawDataLinkFactory', () => {
     query.addPropertyFilter(new PropertyFilter('Path', Operator.CONTAINS, '.log'));
 
     // when
-    const link = RawDataLinkFactory.createLink(query, [], []);
+    service.ofQuery(query, [], []);
 
     // then
-    expect(link).toEqual(linkbase + '?q=asdf&Host=server1&Path_like=.log');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?q=asdf&Host=server1&Path_like=.log');
   });
 
   it('#createLink should create link with single property filter', () => {
 
     // when
-    const link = RawDataLinkFactory.createLink(query, ['Level'], ['ERROR']);
+    service.ofQuery(query, ['Level'], ['ERROR']);
 
     // then
-    expect(link).toEqual(linkbase + '?Level=ERROR');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Level=ERROR');
   });
 
   it('#createLink should create link with multiple property filters', () => {
@@ -168,10 +180,10 @@ describe('RawDataLinkFactory', () => {
     const columnValues = ['Server', '/opt/tomcat/log/catalina.log', 'ERROR'];
 
     // when
-    const link = RawDataLinkFactory.createLink(query, columnNames, columnValues);
+    service.ofQuery(query, columnNames, columnValues);
 
     // then
-    expect(link).toEqual(linkbase + '?Host=Server&Path=/opt/tomcat/log/catalina.log&Level=ERROR');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Host=Server&Path=/opt/tomcat/log/catalina.log&Level=ERROR');
   });
 
   it('#createLink should create link for time period', () => {
@@ -181,10 +193,10 @@ describe('RawDataLinkFactory', () => {
     query.setTimeEnd('Time', now);
 
     // when
-    const link = RawDataLinkFactory.createLink(query, [], []);
+    service.ofQuery(query, [], []);
 
     // then
-    expect(link).toEqual(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
 
   it('#createLink should create link from base query and additional attributes', () => {
@@ -199,11 +211,11 @@ describe('RawDataLinkFactory', () => {
     const columnValues = ['WARN', '1000'];
 
     // when
-    const link = RawDataLinkFactory.createLink(query, columnNames, columnValues);
+    service.ofQuery(query, columnNames, columnValues);
 
     // then
-    expect(link).toEqual(linkbase + '?q=xyz&Host_gte=&Path_like=.txt&Time_gte=' + oneHourAgo + '&Time_lte=' + now +
-      '&Level=WARN&Amount=1000');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
+      linkbase + '?q=xyz&Host_gte=&Path_like=.txt&Time_gte=' + oneHourAgo + '&Time_lte=' + now + '&Level=WARN&Amount=1000');
   });
 
   function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {

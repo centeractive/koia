@@ -3,7 +3,6 @@ export * from './common-utils';
 export * from './number-utils';
 export * from './data-type-utils';
 export * from './date-time-utils';
-export * from './rawdata-link-factory';
 export * from './value-grouping-generator';
 export * from './query-filter';
 export * from './query-utils';

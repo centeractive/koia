@@ -1,7 +1,7 @@
 import { DateTimeUtils, CommonUtils, ArrayUtils, ValueFormatter } from '../../shared/utils';
 import { ChartContext, ChartType, DataType, Column } from '../../shared/model';
-import { Router } from '@angular/router';
 import { RawDataRevealer } from './raw-data-revealer';
+import { RawDataRevealService } from 'app/shared/services';
 
 declare var d3: any;
 
@@ -13,8 +13,8 @@ export class ChartOptionsProvider {
    private integerFormat = d3.format(',');
    private valueFormatter = new ValueFormatter();
 
-   constructor(router: Router) {
-      this.rawDataReporter = new RawDataRevealer(router);
+   constructor(rawDataRevealService: RawDataRevealService) {
+      this.rawDataReporter = new RawDataRevealer(rawDataRevealService);
    }
 
    createOptions(context: ChartContext, gridEnabled: boolean): Object {

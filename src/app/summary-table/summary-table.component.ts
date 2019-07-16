@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { Sort } from '@angular/material';
 import { Observable } from 'rxjs';
-import { AggregationService, ExportService, ValueRangeGroupingService } from '../shared/services';
+import { AggregationService, ValueRangeGroupingService, RawDataRevealService } from '../shared/services';
 import { ChangeEvent, Aggregation, SummaryContext, Column, Route, DataType } from '../shared/model';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { DateTimeUtils, RawDataLinkFactory, CommonUtils, ValueFormatter } from 'app/shared/utils';
+import { DateTimeUtils, CommonUtils, ValueFormatter } from 'app/shared/utils';
 import { RowSpanComputer, Span } from './row-span-computer';
 import { DatePipe } from '@angular/common';
 import { DataFrameSorter } from './data-frame-sorter';
@@ -40,7 +40,7 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
   private valueFormatter = new ValueFormatter();
 
   constructor(private router: Router, private dbService: DBService, private aggregationService: AggregationService,
-    private valueRangeGroupingService: ValueRangeGroupingService) { }
+    private valueRangeGroupingService: ValueRangeGroupingService, private rawDataRevealService: RawDataRevealService) { }
 
   ngOnInit() {
     if (!this.dbService.getActiveScene()) {
@@ -78,15 +78,13 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
       .filter(c => c.dataType !== DataType.TIME) //
       .concat(this.context.dataColumns[0])
     const columnValues = columns.map(c => entry[c.name]);
-    let link: string;
     if (this.context.groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
       const timeColumns = this.context.groupByColumns.filter(c => c.dataType === DataType.TIME);
       const startTimes = timeColumns.map(c => entry[CommonUtils.labelOf(c, c.groupingTimeUnit)]);
-      link = RawDataLinkFactory.createTimeUnitLink(this.context, timeColumns, startTimes, columns.map(c => c.name), columnValues);
+      this.rawDataRevealService.ofTimeUnit(this.context, timeColumns, startTimes, columns.map(c => c.name), columnValues);
     } else {
-      link = RawDataLinkFactory.createLink(this.context.query, columns.map(c => c.name), columnValues);
+      this.rawDataRevealService.ofQuery(this.context.query, columns.map(c => c.name), columnValues);
     }
-    this.router.navigateByUrl(link);
   }
 
   private initSort(): void {

@@ -3,6 +3,8 @@ import { ChartOptionsProvider } from './chart-options-provider';
 import { DatePipe } from '@angular/common';
 import { DateTimeUtils } from 'app/shared/utils';
 import { Router } from '@angular/router';
+import { RawDataRevealService } from 'app/shared/services';
+import { MatDialog } from '@angular/material';
 
 describe('ChartOptionsProvider', () => {
 
@@ -12,8 +14,10 @@ describe('ChartOptionsProvider', () => {
 
    let now: number;
    let entries: Object[];
-   let context: ChartContext;
+
    let router: Router;
+   let dialogService: MatDialog;
+   let context: ChartContext;
    let optionsProvider: ChartOptionsProvider;
 
    beforeAll(() => {
@@ -37,7 +41,10 @@ describe('ChartOptionsProvider', () => {
       context.legendItems = 1;
       context.query = new Query();
       router = <Router>{ navigateByUrl: (url: string) => null };
-      optionsProvider = new ChartOptionsProvider(router);
+      dialogService = <MatDialog> {};
+      const rawDataRevealService = new RawDataRevealService(router, dialogService);
+      rawDataRevealService.setUseDialog(false);
+      optionsProvider = new ChartOptionsProvider(rawDataRevealService);
    });
 
    it('#createOptions should not define chart size when parent constraint size', () => {

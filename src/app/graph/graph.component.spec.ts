@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatProgressBarModule } from '@angular/material';
+import { MatProgressBarModule, MatDialogModule } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { GraphComponent } from './graph.component';
-import { GraphContext, Column, StatusType, GraphNode, DataType, Scene } from 'app/shared/model';
+import { GraphContext, Column, GraphNode, DataType, Scene } from 'app/shared/model';
 import { NvD3Module } from 'ng2-nvd3';
 import { SimpleChange } from '@angular/core';
-import { GraphDataService } from 'app/shared/services';
+import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import 'nvd3';
 import { DBService } from 'app/shared/services/backend';
@@ -38,11 +38,12 @@ describe('GraphComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [MatProgressBarModule, NvD3Module, RouterTestingModule],
+      imports: [MatProgressBarModule, NvD3Module, RouterTestingModule, MatDialogModule],
       declarations: [GraphComponent],
       providers: [
         { provide: DBService, useValue: dbService },
-        { provide: GraphDataService, useValue: graphDataService }
+        { provide: GraphDataService, useValue: graphDataService },
+        { provide: RawDataRevealService, useClass: RawDataRevealService }
       ]
     })
     fixture = TestBed.createComponent(GraphComponent);

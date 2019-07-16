@@ -1,4 +1,5 @@
 export * from './config.service';
+export * from './raw-data-reveal.service';
 export * from './graph-data.service';
 export * from './value-range-grouping.service';
 export * from './time-grouping.service';

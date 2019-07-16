@@ -1,6 +1,8 @@
 import { GraphOptionsProvider } from './graph-options-provider';
 import { GraphContext, GraphNode, DataType, Column, TimeUnit } from 'app/shared/model';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material';
+import { RawDataRevealService } from 'app/shared/services';
 
 describe('GraphOptionsProvider', () => {
 
@@ -11,6 +13,7 @@ describe('GraphOptionsProvider', () => {
    let entries: Object[];
    let context: GraphContext;
    let router: Router;
+   let dialogService: MatDialog;
    let optionsProvider: GraphOptionsProvider;
 
    beforeAll(() => {
@@ -31,7 +34,10 @@ describe('GraphOptionsProvider', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.MINUTE), createColumn('c1', DataType.TEXT)];
       context.entries = entries;
       router = <Router> { navigateByUrl: (url: string) => null };
-      optionsProvider = new GraphOptionsProvider(router);
+      dialogService = <MatDialog> {};
+      const rawDataRevealService = new RawDataRevealService(router, dialogService);
+      rawDataRevealService.setUseDialog(false);
+      optionsProvider = new GraphOptionsProvider(rawDataRevealService);
    });
 
    it('#createOptions should adopt chart size from context when parent div is undefined', () => {

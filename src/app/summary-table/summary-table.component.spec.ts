@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatTableModule, MatSortModule, MatProgressBarModule } from '@angular/material';
+import { MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule, MatDialog } from '@angular/material';
 import { of } from 'rxjs';
 import { SummaryTableComponent } from './summary-table.component';
 import { SummaryContext, Query, Route, Column, DataType, Scene, TimeUnit } from 'app/shared/model';
-import { AggregationService, ExportService, ValueRangeGroupingService } from 'app/shared/services';
+import { AggregationService, ValueRangeGroupingService, RawDataRevealService } from 'app/shared/services';
 import { DatePipe } from '@angular/common';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router } from '@angular/router';
@@ -48,17 +48,20 @@ describe('SummaryTableComponent', () => {
   });
 
   beforeEach(() => {
+    router = <Router> { navigateByUrl: (url: string) => null };
+    const rawDataRevealService = new RawDataRevealService(router, <MatDialog> {});
+    rawDataRevealService.setUseDialog(false);
     TestBed.configureTestingModule({
-      imports: [MatTableModule, MatSortModule, MatProgressBarModule, RouterTestingModule],
+      imports: [MatTableModule, MatSortModule, MatProgressBarModule, RouterTestingModule, MatDialogModule],
       declarations: [SummaryTableComponent],
       providers: [
         { provide: DBService, useValue: dbService },
         { provide: AggregationService, useClass: AggregationService },
-        { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService }
+        { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
+        { provide: RawDataRevealService, useValue: rawDataRevealService }
       ]
     })
     fixture = TestBed.createComponent(SummaryTableComponent);
-    router = TestBed.get(Router);
     component = fixture.componentInstance;
     context = new SummaryContext(columns);
     context.dataColumns = [findColumn('t2')];

@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, ElementRef } from '@angular/core';
+import { Component, ViewChild, OnInit, ElementRef, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Sort, MatPaginator, MatBottomSheet } from '@angular/material';
 import { Column, Query, Route, Page } from '../shared/model';
@@ -18,6 +18,8 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
 
   static readonly MARGIN_TOP = 10;
 
+  @Input() query: Query;
+
   @ViewChild('header', undefined) divHeaderRef: ElementRef<HTMLDivElement>;
   @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild(MatPaginator, undefined) paginator: MatPaginator;
@@ -31,7 +33,6 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   loading: boolean;
   wrapWords: boolean;
   highlight: boolean;
-  query: Query;
 
   private page: Page;
   private valueFormatter = new ValueFormatter();
@@ -42,8 +43,6 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.wrapWords = true;
     this.highlight = true;
-    this.query = new Query();
-    this.query.setPageDefinition(0, this.pageSizeOptions[0]);
   }
 
   ngOnInit() {
@@ -51,18 +50,14 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
     if (!scene) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
-      this.activatedRoute.queryParams.subscribe(params => {
-        this.query = QueryUtils.queryFromParams(params);
-        this.query.setPageDefinition(0, this.pageSizeOptions[0]);
-      });
+      if (!this.query) {
+        this.query = new Query();
+      }
+      this.query.setPageDefinition(0, this.pageSizeOptions[0]);
       this.columns = scene.columns;
       this.columnNames = this.columns.map(c => c.name);
       this.fetchEntriesPage();
     }
-  }
-
-  headerNameOf(column: Column): string {
-    return column.name === CouchDBConstants._ID ? 'ID' : column.name;
   }
 
   onFilterChanged(query: Query): void {

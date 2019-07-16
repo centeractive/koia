@@ -29,10 +29,10 @@
       <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
         <span *ngIf="column.indexed">
           <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="column.width + 'px'">
-            {{ headerNameOf(column) }}</th>
+            {{ column.name }}</th>
         </span>
         <span *ngIf="!column.indexed">
-          <th mat-header-cell *matHeaderCellDef [style.width]="column.width + 'px'">{{ headerNameOf(column) }}</th>
+          <th mat-header-cell *matHeaderCellDef [style.width]="column.width + 'px'">{{ column.name }}</th>
         </span>
         <td [class]="'td_' + column.dataType" *matCellDef="let entry">{{ formattedValueOf(column, entry) }}</td>
       </ng-container>

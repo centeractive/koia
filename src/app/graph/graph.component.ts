@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 import { ChangeEvent, GraphContext, Route } from '../shared/model';
 import { GraphOptionsProvider } from './graph-options-provider';
 import { CommonUtils } from 'app/shared/utils';
-import { GraphDataService } from 'app/shared/services';
+import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
@@ -39,8 +39,8 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   private optionsProvider: GraphOptionsProvider;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
-    private graphDataService: GraphDataService) {
-    this.optionsProvider = new GraphOptionsProvider(router);
+    private graphDataService: GraphDataService, rawDataRevealService: RawDataRevealService) {
+    this.optionsProvider = new GraphOptionsProvider(rawDataRevealService);
   }
 
   ngOnInit(): void {
@@ -96,7 +96,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
     const graphData = this.graphDataService.createData(this.context);
     if (graphData['nodes'].length > GraphComponent.MAX_NODES) {
       const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES + ' nodes exceeded.' +
-      '\n\nPlease choose chart instead or apply/refine data filtering.'
+        '\n\nPlease choose chart instead or apply/refine data filtering.'
       this.onWarning.emit(msg);
     } else {
       this.graphData = graphData;

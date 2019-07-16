@@ -1,8 +1,7 @@
-import { RawDataLinkFactory } from '../shared/utils';
-import { GraphContext, PropertyFilter } from '../shared/model';
+import { GraphContext } from '../shared/model';
 import { GraphNode } from '../shared/model/graph-node.type';
 import { GraphUtils } from './graph-utils';
-import { Router } from '@angular/router';
+import { RawDataRevealService } from 'app/shared/services';
 
 declare var d3: any;
 
@@ -13,7 +12,7 @@ declare var d3: any;
  */
 export class GraphOptionsProvider {
 
-   constructor(private router: Router) {}
+   constructor(private rawDataRevealService: RawDataRevealService) {}
 
    createOptions(context: GraphContext, parentDiv: HTMLDivElement): Object {
       const color = d3.scale.category20();
@@ -43,24 +42,17 @@ export class GraphOptionsProvider {
    private shapeNodes(nodes, context: GraphContext) {
       return nodes
          .attr('cursor', 'pointer')
-         .on('dblclick', d => this.showRawDataOf(d, context))
+         .on('dblclick', d => this.rawDataRevealService.ofGraphNode(d, context))
          &&
          nodes
             .append('a')
-            .on('dblclick', d => this.showRawDataOf(d, context))
+            .on('dblclick', d => this.rawDataRevealService.ofGraphNode(d, context))
             .append('text')
             .attr('dx', 12)
             .attr('dy', '.35em')
             .text(d => GraphUtils.createDisplayText(d, context))
             .style('font-size', '12px')
             .attr('cursor', 'pointer');
-   }
-
-   private showRawDataOf(graphNode: GraphNode, context: GraphContext): void {
-      const link = RawDataLinkFactory.createGraphNodeLink(graphNode, context);
-      if (link) {
-         this.router.navigateByUrl(link);
-      }
    }
 
    private generateTooltip(graphNode: GraphNode, context: GraphContext): string {

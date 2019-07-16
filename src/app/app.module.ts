@@ -13,7 +13,7 @@ import {
   MatButtonModule, MatCheckboxModule, MatRadioModule, MatExpansionModule, MatCardModule,
   MatSelectModule, MatMenuModule, MatIconModule, MatProgressBarModule, MatInputModule,
   MatSidenavModule, MatBadgeModule, MatTableModule, MatSortModule, MatPaginatorModule,
-  MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule
+  MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule, MatDialog, MatDialogModule
 } from '@angular/material';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -49,6 +49,7 @@ import { CouchDBService } from './shared/services/backend/couchdb/couchdb.servic
 import { DBService } from './shared/services/backend';
 import { MatIconModuleMock } from './shared/test';
 import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.directive';
+import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.
     GridComponent,
     FlexCanvasComponent,
     RawDataComponent,
+    RawDataDialogComponent,
     ChartComponent,
     ChartSideBarComponent,
     GraphComponent,
@@ -73,7 +75,8 @@ import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.
     TextareaMaxRowsDirective
   ],
   entryComponents: [
-    StatusComponent
+    StatusComponent,
+    RawDataDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -106,13 +109,15 @@ import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.
     ChartsModule,
     NvD3Module,
     Ng5SliderModule,
-    AppRoutingModule
+    AppRoutingModule,
+    MatDialogModule
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
     ReaderService,
     CouchDBService,
     DBService,
+    MatDialog,
     RawDataService,
     ConfigService,
     TimeGroupingService,

@@ -163,30 +163,6 @@ describe('RawDataComponent', () => {
     expect(formatted).toBe('server1');
   });
 
-  it('#headerNameOf should return "ID" when CouchDB _id column', () => {
-
-    // given
-    const column: Column = { name: CouchDBConstants._ID, dataType: DataType.TEXT, width: 100 };
-
-    // when
-    const headerName = component.headerNameOf(column);
-
-    // then
-    expect(headerName).toBe('ID');
-  });
-
-  it('#headerNameOf should return column name when custom column', () => {
-
-    // given
-    const column: Column = { name: 'Host', dataType: DataType.TEXT, width: 100 };
-
-    // when
-    const headerName = component.headerNameOf(column);
-
-    // then
-    expect(headerName).toBe('Host');
-  });
-
   it('#onFilterChanged should fetch first page using new query', () => {
 
     // given
