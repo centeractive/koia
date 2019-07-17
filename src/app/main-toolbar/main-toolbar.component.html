@@ -92,19 +92,31 @@
       </button>
       <mat-menu #columnFilterMenu="matMenu">
         <span *ngFor="let column of scene.columns">
-          <button class="but_new_col_filter" [disabled]="hasTimeRangeFilter(column)"
+
+          <button class="but_new_col_filter" *ngIf="!isNumberColumn(column)" [disabled]="hasRangeFilter(column)"
             mat-menu-item (click)="addColumnFilter(column)">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
+
+          <button *ngIf="isNumberColumn(column)" mat-menu-item [disabled]="hasRangeFilter(column)"
+            [matMenuTriggerFor]="numberColumnFilterMenu">
+            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+            <span>{{ column.name }}</span>
+          </button>
+          <mat-menu #numberColumnFilterMenu="matMenu">
+            <button mat-menu-item (click)="addColumnFilter(column)">Value</button>
+            <button mat-menu-item (click)="addRangeFilter(column, null)">Value Range</button>
+          </mat-menu>
+
         </span>
       </mat-menu>
 
-      <button mat-button *ngIf="timeRangeFilters.length > 0" mat-icon-button
-        [matTooltip]="showTimeFilter ? 'Hide time filters' : 'Show time filters'"
-        (click)="showTimeFilter = !showTimeFilter">
-        <mat-icon [matBadge]="timeRangeFilters.length" matBadgeSize="small"
-          [matBadgeColor]="showTimeFilter ? 'primary' : 'accent'">access_time</mat-icon>
+      <button mat-button *ngIf="rangeFilters.length > 0" mat-icon-button
+        [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
+        (click)="showRangeFilters = !showRangeFilters">
+        <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
+          [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">access_time</mat-icon>
       </button>
 
       <button mat-button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
@@ -113,35 +125,35 @@
     </span>
   </div>
 
-  <div *ngIf="showTimeFilter">
-    <div *ngFor="let timeRangeFilter of timeRangeFilters">
-      <div class="div_time_range_slider">
-        <button class="slider_button" mat-button color="primary" mat-icon-button matTooltip="Define slider step size"
-          [matMenuTriggerFor]="timestepmenu">
-          <mat-icon [matBadge]="timeRangeFilter.selectedTimeStepAbbrev" matBadgePosition="below"
-            matBadgeColor="primary">
+  <div *ngIf="showRangeFilters">
+    <div *ngFor="let rangeFilter of rangeFilters">
+      <div class="div_range_slider">
+        <button class="slider_button" *ngIf="rangeFilter.selectedStepAbbrev" mat-button color="primary" mat-icon-button
+          matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
+          <mat-icon [matBadge]="rangeFilter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="primary">
             swap_horiz
           </mat-icon>
         </button>
-        <mat-menu #timestepmenu="matMenu">
-          <button mat-menu-item *ngFor="let timeStep of timeRangeFilter.availableTimeSteps"
-            (click)="timeRangeFilter.onTimeStepChanged(timeStep)">
-            <span>Step by {{ timeStep }}</span>
+        <mat-menu #stepmenu="matMenu">
+          <button mat-menu-item *ngFor="let step of rangeFilter.availableSteps"
+            (click)="rangeFilter.onStepChanged(step)">
+            <span>Step by {{ step }}</span>
           </button>
         </mat-menu>
         &nbsp;&nbsp;
-        <ng5-slider [(value)]="timeRangeFilter.selTimeStart" [(highValue)]="timeRangeFilter.selTimeEnd"
-          [options]="timeRangeFilter.timeRangeOptions" (userChangeEnd)="refreshEntries()"></ng5-slider>
-        <button class="but_reset_timefilter" mat-button color="primary" mat-icon-button matTooltip="Reset time filter"
-          [disabled]="!timeRangeFilter.isFiltered()" (click)="resetTimeRangeFilter(timeRangeFilter)">
+        <ng5-slider [(value)]="rangeFilter.selStart" [(highValue)]="rangeFilter.selEnd"
+          [options]="rangeFilter.rangeOptions" (userChangeEnd)="refreshEntries()"></ng5-slider>
+        <button class="but_reset_range_filter" mat-button color="primary" mat-icon-button
+          matTooltip="Reset value range filter" [disabled]="!rangeFilter.isFiltered()"
+          (click)="resetRangeFilter(rangeFilter)">
           <mat-icon>undo</mat-icon>
         </button>
-        <button class="but_remove_timefilter" mat-button mat-icon-button matTooltip="Remove time filter"
-          (click)="removeTimeRangeFilter(timeRangeFilter)">
+        <button class="but_remove_range_filter" mat-button mat-icon-button matTooltip="Remove value range filter"
+          (click)="removeRangeFilter(rangeFilter)">
           <mat-icon>remove_circle_outline</mat-icon>
         </button>
       </div>
-      <div class="div_time_column_name">{{ timeRangeFilter.column.name }}</div>
+      <div class="div_range_column_name">{{ rangeFilter.column.name }}</div>
     </div>
   </div>
 </div>

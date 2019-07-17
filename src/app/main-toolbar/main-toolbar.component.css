@@ -83,7 +83,7 @@ td {
   opacity: 1;
 }
 
-.div_time_range_slider {
+.div_range_slider {
   display: flex;
   flex-wrap: nowrap;
   width: 100%;
@@ -131,32 +131,32 @@ td {
   font-size: 12px !important;
 }
 
-.div_time_range_slider .ng5-slider-bubble.ng5-slider-selection {
+.div_range_slider .ng5-slider-bubble.ng5-slider-selection {
   background-color: rgb(3, 204, 3) !important;
 }
 
-.div_time_range_slider .ng5-slider-bubble.ng5-slider-limit {
+.div_range_slider .ng5-slider-bubble.ng5-slider-limit {
   background-color: rgb(238, 250, 237) !important;
   border-style: dashed !important;
 }
 
-.div_time_range_slider .ng5-slider-selection {
+.div_range_slider .ng5-slider-selection {
   background: rgb(3, 204, 3) !important;
 }
 
-.but_reset_timefilter {
+.but_reset_range_filter {
   vertical-align: bottom;
 }
 
-.but_remove_timefilter {
+.but_remove_range_filter {
   vertical-align: bottom;
 }
 
-.but_add_timefilter {
+.but_add_range_filter {
   vertical-align: bottom;
 }
 
-.div_time_column_name {  
+.div_range_column_name {  
   position: relative;
   top: -10px;
   left: 62px;  

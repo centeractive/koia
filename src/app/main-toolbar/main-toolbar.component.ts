@@ -6,7 +6,7 @@ import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene, ValueR
 import { CommonUtils, ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
-import { Title } from '@angular/platform-browser';
+import { NumberRangeFilter } from './number-range-filter';
 
 @Component({
   selector: 'retro-main-toolbar',
@@ -33,11 +33,11 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   nonTimeColumns: Column[];
   timeColumns: Column[];
   showContext: boolean;
-  showTimeFilter: boolean;
+  showRangeFilters: boolean;
   fullTextFilter = '';
   readonly operators: Operator[];
   columnFilters: PropertyFilter[] = [];
-  timeRangeFilters: TimeRangeFilter[] = [];
+  rangeFilters: NumberRangeFilter[] = [];
 
   private justNavigatedToParentView: boolean
 
@@ -92,7 +92,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   ngAfterViewChecked() {
     if (this.justNavigatedToParentView) {
       this.justNavigatedToParentView = false;
-      this.timeRangeFilters.forEach(f => f.defineTimeRangeOptions());
+      this.rangeFilters.forEach(f => f.defineRangeOptions());
     }
     this.onAfterViewChecked.emit();
   }
@@ -105,7 +105,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
         .filter(f => nonTimeColumnNames.includes(f.propertyName));
       this.query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.propertyName);
-        this.addTimeRangeFilter(column, f.valueRange);
+        this.addRangeFilter(column, f.valueRange);
       })
     }
   }
@@ -117,26 +117,33 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   addColumnFilter(column: Column): void {
     if (column.dataType === DataType.TIME) {
-      this.addTimeRangeFilter(column, null);
+      this.addRangeFilter(column, null);
     } else {
       this.columnFilters.push(new PropertyFilter(column.name, Operator.EQUAL, ''));
     }
   }
 
-  hasTimeRangeFilter(column: Column): boolean {
-    return this.timeRangeFilters.find(f => f.column === column) !== undefined;
+  isNumberColumn(column: Column): boolean {
+    return column && column.dataType === DataType.NUMBER;
+  }
+
+  hasRangeFilter(column: Column): boolean {
+    return this.rangeFilters.find(f => f.column === column) !== undefined;
   }
 
   iconOf(dataType: DataType): string {
     return DataTypeUtils.iconOf(dataType);
   }
 
-  private addTimeRangeFilter(column: Column, selValueRange: ValueRange): void {
+  private addRangeFilter(column: Column, selValueRange: ValueRange): void {
     this.dbService.timeRangeOf(column)
       .then(vr => {
-        const timeRangeFilter = new TimeRangeFilter(column, vr.min, vr.max, selValueRange);
-        this.timeRangeFilters.push(timeRangeFilter);
-        this.showTimeFilter = true;
+        if (column.dataType === DataType.TIME) {
+          this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange));
+        } else {
+          this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange));
+        }
+        this.showRangeFilters = true;
       });
   }
 
@@ -171,14 +178,14 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.refreshEntries();
   }
 
-  resetTimeRangeFilter(timeRangeFilter: TimeRangeFilter): void {
-    timeRangeFilter.reset();
+  resetRangeFilter(rangeFilter: NumberRangeFilter): void {
+    rangeFilter.reset();
     setTimeout(() => this.refreshEntries(), 500); // let slider properly reset itself
   }
 
-  removeTimeRangeFilter(timeRangeFilter: TimeRangeFilter): void {
-    ArrayUtils.removeElement(this.timeRangeFilters, timeRangeFilter);
-    if (timeRangeFilter.isFiltered()) {
+  removeRangeFilter(rangeFilter: NumberRangeFilter): void {
+    ArrayUtils.removeElement(this.rangeFilters, rangeFilter);
+    if (rangeFilter.isFiltered()) {
       this.refreshEntries();
     }
   }
@@ -191,9 +198,9 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.columnFilters
       .filter(f => f.operator === Operator.NOT_EMPTY || (f.filterValue !== undefined && f.filterValue !== ''))
       .forEach(f => query.addPropertyFilter(f.clone()));
-    this.timeRangeFilters
+    this.rangeFilters
       .filter(f => f.isStartFiltered() || f.isEndFiltered())
-      .forEach(f => query.addValueRangeFilter(f.column.name, f.selTimeStart, f.selTimeEnd));
+      .forEach(f => query.addValueRangeFilter(f.column.name, f.selStart, f.selEnd));
     this.onFilterChange.emit(query);
   }
 

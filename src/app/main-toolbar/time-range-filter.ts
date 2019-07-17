@@ -1,59 +1,36 @@
 import { Options } from 'ng5-slider';
-import { Column, Query, TimeUnit, ValueRange } from 'app/shared/model';
+import { Column, TimeUnit, ValueRange } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
+import { NumberRangeFilter } from './number-range-filter';
 
 /**
  * Filtering with time units greater than milliseconds works fine only when individual times are down-rounded
  *
  * @see EntryMapper#roundDownToTargetFormat
  */
-export class TimeRangeFilter {
+export class TimeRangeFilter extends NumberRangeFilter {
 
    static readonly MIN_REQUIRED_TIME_UNITS_PER_SLIDER_STEP_TYPE = 5;
 
-   column: Column;
-   timeStart: number;
-   timeEnd: number;
-   selTimeStart: number;
-   selTimeEnd: number;
-   availableTimeSteps: TimeUnit[];
-   selectedTimeStep: TimeUnit;
-   selectedTimeStepAbbrev: string;
-   timeRangeOptions: Options;
-
-   constructor(timeColumn: Column, timeStart: number, timeEnd: number, selValueRange: ValueRange) {
-      this.column = timeColumn;
-      this.timeStart = timeStart;
-      this.timeEnd = timeEnd;
-      this.selTimeStart = timeStart;
-      this.selTimeEnd = timeEnd;
-      if (selValueRange) {
-         if (selValueRange.min !== null && selValueRange.min !== undefined) {
-            this.selTimeStart = selValueRange.min;
-         }
-         if (selValueRange.max !== null && selValueRange.max !== undefined) {
-            this.selTimeEnd = selValueRange.max;
-         }
-      }
-      this.initTimeRangeSliderSteps();
-      this.defineTimeRangeOptions();
+   constructor(column: Column, start: number, end: number, selValueRange: ValueRange) {
+      super(column, start, end, selValueRange);
    }
 
-   private initTimeRangeSliderSteps(): void {
-      this.selectedTimeStep = DateTimeUtils.timeUnitFromNgFormat(this.column.format);
-      if (this.selectedTimeStep === TimeUnit.MONTH || this.selectedTimeStep === TimeUnit.YEAR) {
-         this.selectedTimeStep = TimeUnit.DAY;
+   protected initSliderSteps(): void {
+      this.selectedStep = DateTimeUtils.timeUnitFromNgFormat(this.column.format);
+      if (this.selectedStep === TimeUnit.MONTH || this.selectedStep === TimeUnit.YEAR) {
+         this.selectedStep = TimeUnit.DAY;
       }
-      this.availableTimeSteps = this.identifyAvailableTimeSteps(this.timeEnd - this.timeStart);
-      this.defineSelectedTimeStepAbbreviation();
+      this.availableSteps = this.identifyAvailableTimeSteps(this.end - this.start);
+      this.defineSelectedStepAbbreviation();
    }
 
    /**
    * @returns available (selectable) slider steps depending on the overall time range and the column's time format,
    * never a time unit above [[TimeUnit.DAY]] because they are of variable duration
    */
-   private identifyAvailableTimeSteps(duration: number): TimeUnit[] {
-      const timeUnits: TimeUnit[] = [this.selectedTimeStep];
+  protected identifyAvailableTimeSteps(duration: number): TimeUnit[] {
+      const timeUnits: TimeUnit[] = [this.selectedStep];
       for (const timeUnit of this.potentialTimeUnitsAbove(timeUnits[0])) {
          if (DateTimeUtils.countTimeUnits(duration, timeUnit) < TimeRangeFilter.MIN_REQUIRED_TIME_UNITS_PER_SLIDER_STEP_TYPE) {
             break;
@@ -72,42 +49,25 @@ export class TimeRangeFilter {
       return potentialTimeUnits;
    }
 
-   defineSelectedTimeStepAbbreviation(): void {
-      this.selectedTimeStepAbbrev = DateTimeUtils.abbreviationOf(this.selectedTimeStep);
+   onStepChanged(timeStep: any): void {
+      this.selectedStep = timeStep;
+      this.defineSelectedStepAbbreviation();
+      this.defineRangeOptions();
    }
 
-   defineTimeRangeOptions(): void {
-      this.timeRangeOptions = {
-         floor: this.timeStart,
-         ceil: this.timeEnd,
-         step: DateTimeUtils.toMilliseconds(1, this.selectedTimeStep),
+   defineSelectedStepAbbreviation(): void {
+      this.selectedStepAbbrev = DateTimeUtils.abbreviationOf(this.selectedStep);
+   }
+
+   defineRangeOptions(): void {
+      this.rangeOptions = {
+         floor: this.start,
+         ceil: this.end,
+         step: DateTimeUtils.toMilliseconds(1, this.selectedStep),
          enforceStep: false,
          draggableRange: true,
-         translate: t => DateTimeUtils.formatTime(t, this.availableTimeSteps[0]),
+         translate: t => DateTimeUtils.formatTime(t, this.availableSteps[0]),
          combineLabels: (l1: string, l2: string) => l1 === l2 ? l1 : l1 + ' - ' + l2
       }
-   }
-
-   onTimeStepChanged(timeStep: TimeUnit): void {
-      this.selectedTimeStep = timeStep;
-      this.defineSelectedTimeStepAbbreviation();
-      this.defineTimeRangeOptions();
-   }
-
-   isFiltered(): boolean {
-      return this.isStartFiltered() || this.isEndFiltered();
-   }
-
-   isStartFiltered(): boolean {
-      return this.selTimeStart !== this.timeStart;
-   }
-
-   isEndFiltered(): boolean {
-      return this.selTimeEnd !== this.timeEnd;
-   }
-
-   reset(): void {
-      this.selTimeStart = this.timeStart;
-      this.selTimeEnd = this.timeEnd;
    }
 }

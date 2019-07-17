@@ -15,10 +15,10 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      expect(filter.timeStart).toBe(timeStart);
-      expect(filter.timeEnd).toBe(timeEnd);
-      expect(filter.selTimeStart).toBe(timeStart);
-      expect(filter.selTimeEnd).toBe(timeEnd);
+      expect(filter.start).toBe(timeStart);
+      expect(filter.end).toBe(timeEnd);
+      expect(filter.selStart).toBe(timeStart);
+      expect(filter.selEnd).toBe(timeEnd);
       expect(filter.isFiltered()).toBeFalsy();
    });
 
@@ -33,10 +33,10 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, { min: undefined, max: undefined });
 
       // then
-      expect(filter.timeStart).toBe(timeStart);
-      expect(filter.timeEnd).toBe(timeEnd);
-      expect(filter.selTimeStart).toBe(timeStart);
-      expect(filter.selTimeEnd).toBe(timeEnd);
+      expect(filter.start).toBe(timeStart);
+      expect(filter.end).toBe(timeEnd);
+      expect(filter.selStart).toBe(timeStart);
+      expect(filter.selEnd).toBe(timeEnd);
       expect(filter.isFiltered()).toBeFalsy();
    });
 
@@ -49,10 +49,10 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: null });
 
       // then
-      expect(filter.timeStart).toBe(toTime(2000));
-      expect(filter.timeEnd).toBe(toTime(2010));
-      expect(filter.selTimeStart).toBe(toTime(2001));
-      expect(filter.selTimeEnd).toBe(toTime(2010));
+      expect(filter.start).toBe(toTime(2000));
+      expect(filter.end).toBe(toTime(2010));
+      expect(filter.selStart).toBe(toTime(2001));
+      expect(filter.selEnd).toBe(toTime(2010));
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -65,10 +65,10 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: null, max: toTime(2009) });
 
       // then
-      expect(filter.timeStart).toBe(toTime(2000));
-      expect(filter.timeEnd).toBe(toTime(2010));
-      expect(filter.selTimeStart).toBe(toTime(2000));
-      expect(filter.selTimeEnd).toBe(toTime(2009));
+      expect(filter.start).toBe(toTime(2000));
+      expect(filter.end).toBe(toTime(2010));
+      expect(filter.selStart).toBe(toTime(2000));
+      expect(filter.selEnd).toBe(toTime(2009));
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -83,10 +83,10 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), query.findValueRangeFilter('X').valueRange);
 
       // then
-      expect(filter.timeStart).toBe(toTime(2000));
-      expect(filter.timeEnd).toBe(toTime(2010));
-      expect(filter.selTimeStart).toBe(toTime(2001));
-      expect(filter.selTimeEnd).toBe(toTime(2009));
+      expect(filter.start).toBe(toTime(2000));
+      expect(filter.end).toBe(toTime(2010));
+      expect(filter.selStart).toBe(toTime(2001));
+      expect(filter.selEnd).toBe(toTime(2009));
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -99,9 +99,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('day');
-      expect(filter.selectedTimeStepAbbrev).toBe('d');
-      expect(filter.availableTimeSteps).toEqual(['day']);
+      expect(filter.selectedStep).toBe('day');
+      expect(filter.selectedStepAbbrev).toBe('d');
+      expect(filter.availableSteps).toEqual(['day']);
    });
 
    it('#constructor should predefine day step only when column has MONTH format', () => {
@@ -113,9 +113,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('day');
-      expect(filter.selectedTimeStepAbbrev).toBe('d');
-      expect(filter.availableTimeSteps).toEqual(['day']);
+      expect(filter.selectedStep).toBe('day');
+      expect(filter.selectedStepAbbrev).toBe('d');
+      expect(filter.availableSteps).toEqual(['day']);
    });
 
    it('#constructor should predefine day step only when column has DAY format', () => {
@@ -127,9 +127,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('day');
-      expect(filter.selectedTimeStepAbbrev).toBe('d');
-      expect(filter.availableTimeSteps).toEqual(['day']);
+      expect(filter.selectedStep).toBe('day');
+      expect(filter.selectedStepAbbrev).toBe('d');
+      expect(filter.availableSteps).toEqual(['day']);
    });
 
    it('#constructor should predefine hour step with hour/day choice when column has HOUR format', () => {
@@ -141,9 +141,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('hour');
-      expect(filter.selectedTimeStepAbbrev).toBe('h');
-      expect(filter.availableTimeSteps).toEqual(['hour', 'day']);
+      expect(filter.selectedStep).toBe('hour');
+      expect(filter.selectedStepAbbrev).toBe('h');
+      expect(filter.availableSteps).toEqual(['hour', 'day']);
    });
 
    it('#constructor should predefine minute step with minute-day choice when column has MINUTE format', () => {
@@ -155,9 +155,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('minute');
-      expect(filter.selectedTimeStepAbbrev).toBe('m');
-      expect(filter.availableTimeSteps).toEqual(['minute', 'hour', 'day']);
+      expect(filter.selectedStep).toBe('minute');
+      expect(filter.selectedStepAbbrev).toBe('m');
+      expect(filter.availableSteps).toEqual(['minute', 'hour', 'day']);
    });
 
    it('#constructor should predefine second step with second-day choice when column has SECOND format', () => {
@@ -169,9 +169,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('second');
-      expect(filter.selectedTimeStepAbbrev).toBe('s');
-      expect(filter.availableTimeSteps).toEqual(['second', 'minute', 'hour', 'day']);
+      expect(filter.selectedStep).toBe('second');
+      expect(filter.selectedStepAbbrev).toBe('s');
+      expect(filter.availableSteps).toEqual(['second', 'minute', 'hour', 'day']);
    });
 
    it('#constructor should predefine millisecond step with millisecond-day choice when column has MILLISECOND format', () => {
@@ -183,9 +183,9 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // then
-      expect(filter.selectedTimeStep).toBe('millisecond');
-      expect(filter.selectedTimeStepAbbrev).toBe('ms');
-      expect(filter.availableTimeSteps).toEqual(['millisecond', 'second', 'minute', 'hour', 'day']);
+      expect(filter.selectedStep).toBe('millisecond');
+      expect(filter.selectedStepAbbrev).toBe('ms');
+      expect(filter.availableSteps).toEqual(['millisecond', 'second', 'minute', 'hour', 'day']);
    });
 
    it('#constructor should create slider options when column has YEAR format', () => {
@@ -199,7 +199,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
@@ -220,7 +220,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
@@ -241,7 +241,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
@@ -262,7 +262,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(3_600_000);
@@ -283,7 +283,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(60_000);
@@ -304,7 +304,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(1_000);
@@ -325,7 +325,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(1);
@@ -343,12 +343,12 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
 
       // when
-      filter.onTimeStepChanged(TimeUnit.HOUR);
+      filter.onStepChanged(TimeUnit.HOUR);
 
       // then
-      expect(filter.selectedTimeStep).toBe('hour');
-      expect(filter.selectedTimeStepAbbrev).toBe('h');
-      expect(filter.availableTimeSteps).toEqual(['millisecond', 'second', 'minute', 'hour', 'day']);
+      expect(filter.selectedStep).toBe('hour');
+      expect(filter.selectedStepAbbrev).toBe('h');
+      expect(filter.availableSteps).toEqual(['millisecond', 'second', 'minute', 'hour', 'day']);
    });
 
    it('#onTimeStepChanged should re-create slider options', () => {
@@ -360,10 +360,10 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // when
-      filter.onTimeStepChanged(TimeUnit.HOUR);
+      filter.onStepChanged(TimeUnit.HOUR);
 
       // then
-      const options = filter.timeRangeOptions;
+      const options = filter.rangeOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(3_600_000);
@@ -385,10 +385,10 @@ describe('TimeRangeFilter', () => {
       filter.reset();
 
       // then
-      expect(filter.timeStart).toBe(timeStart);
-      expect(filter.timeEnd).toBe(timeEnd);
-      expect(filter.selTimeStart).toBe(timeStart);
-      expect(filter.selTimeEnd).toBe(timeEnd);
+      expect(filter.start).toBe(timeStart);
+      expect(filter.end).toBe(timeEnd);
+      expect(filter.selStart).toBe(timeStart);
+      expect(filter.selEnd).toBe(timeEnd);
       expect(filter.isFiltered()).toBeFalsy();
    });
 

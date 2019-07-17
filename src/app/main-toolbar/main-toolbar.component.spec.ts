@@ -105,7 +105,7 @@ describe('MainToolbarComponent', () => {
     component.query = new Query();
     component.query.addValueRangeFilter('Time', now - 1_000, now);
     component.columnFilters = [];
-    component.timeRangeFilters = [];
+    component.rangeFilters = [];
     fixture.detectChanges();
 
     // when
@@ -114,10 +114,10 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.columnFilters.length).toBe(0);
-    expect(component.timeRangeFilters.length).toBe(1);
-    const timeRangeFilter = component.timeRangeFilters[0];
-    expect(timeRangeFilter.selTimeStart).toEqual(now - 1_000);
-    expect(timeRangeFilter.selTimeEnd).toEqual(now);
+    expect(component.rangeFilters.length).toBe(1);
+    const timeRangeFilter = component.rangeFilters[0];
+    expect(timeRangeFilter.selStart).toEqual(now - 1_000);
+    expect(timeRangeFilter.selEnd).toEqual(now);
   }));
 
   it('#ngOnInit should initialize filters when query was injected', fakeAsync(() => {
@@ -131,7 +131,7 @@ describe('MainToolbarComponent', () => {
     query.addPropertyFilter(amountFilter);
     component.query = query;
     component.columnFilters = [];
-    component.timeRangeFilters = [];
+    component.rangeFilters = [];
 
     // when
     component.ngOnInit();
@@ -151,11 +151,11 @@ describe('MainToolbarComponent', () => {
     const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
     component.router = <Router> { events: of(event) };
     const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
-    const prevTimeRangeOptions = timeRangeFilter.timeRangeOptions;
-    component.timeRangeFilters = [ timeRangeFilter ];
+    const prevTimeRangeOptions = timeRangeFilter.rangeOptions;
+    component.rangeFilters = [ timeRangeFilter ];
     expect(prevTimeRangeOptions).toBeTruthy();
     component.ngOnInit();
-    spyOn(component.timeRangeFilters[0], 'defineTimeRangeOptions');
+    spyOn(component.rangeFilters[0], 'defineRangeOptions');
 
     // when
     component.ngAfterViewChecked();
@@ -164,7 +164,7 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // then
-    expect(component.timeRangeFilters[0].defineTimeRangeOptions).toHaveBeenCalledTimes(1);
+    expect(component.rangeFilters[0].defineRangeOptions).toHaveBeenCalledTimes(1);
   }));
 
   it('#refreshEntries should emit filter change with no time', () => {
@@ -188,9 +188,9 @@ describe('MainToolbarComponent', () => {
     // given
     component.query = new Query();
     const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
-    timeRangeFilter.selTimeStart = timeValueRange.min + 1000;
-    timeRangeFilter.selTimeEnd = timeValueRange.max - 1000;
-    component.timeRangeFilters = [ timeRangeFilter ];
+    timeRangeFilter.selStart = timeValueRange.min + 1000;
+    timeRangeFilter.selEnd = timeValueRange.max - 1000;
+    component.rangeFilters = [ timeRangeFilter ];
     const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
 
     // when
@@ -344,7 +344,7 @@ describe('MainToolbarComponent', () => {
     clickAddColumnFilterMenuItem('Time');
 
     // then
-    expect(component.timeRangeFilters.length).toBe(1);
+    expect(component.rangeFilters.length).toBe(1);
     expect(dbService.timeRangeOf).toHaveBeenCalledWith(column('Time'));
   }));
 
@@ -437,13 +437,13 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // when
-    component.timeRangeFilters[0].onTimeStepChanged(TimeUnit.MILLISECOND);
+    component.rangeFilters[0].onStepChanged(TimeUnit.MILLISECOND);
     fixture.detectChanges();
 
     // then
-    expect(component.timeRangeFilters[0].selectedTimeStep).toBe(TimeUnit.MILLISECOND);
-    expect(component.timeRangeFilters[0].selectedTimeStepAbbrev).toBe('ms');
-    expect(component.timeRangeFilters[0].timeRangeOptions.step).toBe(1);
+    expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.MILLISECOND);
+    expect(component.rangeFilters[0].selectedStepAbbrev).toBe('ms');
+    expect(component.rangeFilters[0].rangeOptions.step).toBe(1);
   }));
 
   it('#onTimeStepChanged should change time step when second is selected',  fakeAsync(() => {
@@ -453,12 +453,12 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // when
-    component.timeRangeFilters[0].onTimeStepChanged(TimeUnit.SECOND);
+    component.rangeFilters[0].onStepChanged(TimeUnit.SECOND);
 
     // then
-    expect(component.timeRangeFilters[0].selectedTimeStep).toBe(TimeUnit.SECOND);
-    expect(component.timeRangeFilters[0].selectedTimeStepAbbrev).toBe('s');
-    expect(component.timeRangeFilters[0].timeRangeOptions.step).toBe(1_000);
+    expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.SECOND);
+    expect(component.rangeFilters[0].selectedStepAbbrev).toBe('s');
+    expect(component.rangeFilters[0].rangeOptions.step).toBe(1_000);
   }));
 
   it('#onTimeStepChanged should change time step when minute is selected',  fakeAsync(() => {
@@ -468,12 +468,12 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // when
-    component.timeRangeFilters[0].onTimeStepChanged(TimeUnit.MINUTE);
+    component.rangeFilters[0].onStepChanged(TimeUnit.MINUTE);
 
     // then
-    expect(component.timeRangeFilters[0].selectedTimeStep).toBe(TimeUnit.MINUTE);
-    expect(component.timeRangeFilters[0].selectedTimeStepAbbrev).toBe('m');
-    expect(component.timeRangeFilters[0].timeRangeOptions.step).toBe(60_000);
+    expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.MINUTE);
+    expect(component.rangeFilters[0].selectedStepAbbrev).toBe('m');
+    expect(component.rangeFilters[0].rangeOptions.step).toBe(60_000);
   }));
 
   it('#onTimeStepChanged should change time step when hour is selected', fakeAsync(() => {
@@ -483,12 +483,12 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // when
-    component.timeRangeFilters[0].onTimeStepChanged(TimeUnit.HOUR);
+    component.rangeFilters[0].onStepChanged(TimeUnit.HOUR);
 
     // then
-    expect(component.timeRangeFilters[0].selectedTimeStep).toBe(TimeUnit.HOUR);
-    expect(component.timeRangeFilters[0].selectedTimeStepAbbrev).toBe('h');
-    expect(component.timeRangeFilters[0].timeRangeOptions.step).toBe(3_600_000);
+    expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.HOUR);
+    expect(component.rangeFilters[0].selectedStepAbbrev).toBe('h');
+    expect(component.rangeFilters[0].rangeOptions.step).toBe(3_600_000);
   }));
 
   it('pressing "reset timerange" button should reset selected time range and emit onFilterChange', fakeAsync(() => {
@@ -498,11 +498,11 @@ describe('MainToolbarComponent', () => {
     flush();
     const timeStart = entries[0]['Time'];
     const timeEnd = entries[entries.length - 1]['Time'];
-    component.timeRangeFilters[0].selTimeStart = timeStart + 1000;
-    component.timeRangeFilters[0].selTimeEnd = timeEnd - 1000;
-    component.showTimeFilter = true;
+    component.rangeFilters[0].selStart = timeStart + 1000;
+    component.rangeFilters[0].selEnd = timeEnd - 1000;
+    component.showRangeFilters = true;
     fixture.detectChanges();
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_reset_timefilter')).nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_reset_range_filter')).nativeElement;
     spyOn(component.onFilterChange, 'emit');
 
     // when
@@ -510,8 +510,8 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // then
-    expect(component.timeRangeFilters[0].selTimeStart).toBe(timeStart);
-    expect(component.timeRangeFilters[0].selTimeEnd).toBe(timeEnd);
+    expect(component.rangeFilters[0].selStart).toBe(timeStart);
+    expect(component.rangeFilters[0].selEnd).toBe(timeEnd);
     expect(component.onFilterChange.emit).toHaveBeenCalled();
   }));
 
