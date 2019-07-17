@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route } from '../model';
+import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route, ValueRange } from '../model';
 import { DateTimeUtils, CommonUtils } from '../utils';
 import { GraphUtils } from 'app/graph/graph-utils';
 import { CouchDBConstants } from './backend/couchdb';
@@ -30,9 +30,7 @@ export class RawDataRevealService {
    * @returns an encoded URL to be used for showing raw data matching the specified criteria
    */
   ofID(id: number): void {
-    const query = new Query();
-    query.setPropertyFilter(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, id.toString()));
-    this.show(query);
+    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, id.toString())));
   }
 
   /**
@@ -71,11 +69,16 @@ export class RawDataRevealService {
     columnValues: any[]): void {
     const query = context.query.clone();
     for (let i = 0; i < timeColumns.length; i++) {
-      const timeStart = Math.max(startTimes[i], context.query.getTimeStart(timeColumns[i].name) || 0);
-      let timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, timeColumns[i].groupingTimeUnit);
-      timeEnd = Math.min(timeEnd, context.query.getTimeEnd(timeColumns[i].name) || Number.MAX_VALUE);
-      query.setTimeStart(timeColumns[i].name, timeStart);
-      query.setTimeEnd(timeColumns[i].name, timeEnd);
+      const timeStart = startTimes[i];
+      const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, timeColumns[i].groupingTimeUnit);
+      const valueRangeFilter = context.query.findValueRangeFilter(timeColumns[i].name);
+      if (valueRangeFilter) {
+        const valueRange = valueRangeFilter.valueRange;
+        valueRange.min = Math.max(timeStart, valueRange.min || Number.MIN_VALUE);
+        valueRange.max = Math.min(timeEnd, valueRange.max || Number.MAX_VALUE);
+      } else {
+        query.addValueRangeFilter(timeColumns[i].name, timeStart, timeEnd);
+      }
     };
     this.ofQuery(query, columnNames, columnValues);
   }
@@ -90,11 +93,7 @@ export class RawDataRevealService {
    * @returns an encoded URL to be used for showing raw data matching the specified criteria
    */
   ofQuery(baseQuery: Query, columnNames: string[], columnValues: any[]): void {
-    const query = new Query();
-    query.setFullTextFilter(baseQuery.getFullTextFilter());
-    for (const propertyFilter of baseQuery.getPropertyFilters()) {
-      query.addPropertyFilter(propertyFilter.clone());
-    }
+    const query = baseQuery.clone();
     for (let i = 0; i < columnNames.length; i++) {
       query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i]));
     }

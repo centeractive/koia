@@ -104,7 +104,7 @@ describe('RawDataService', () => {
     const entries = [
       { ID: 2, Time: 1420053117000, Level: 'WARN', Data: 'WARN line one', Host: 'local drive', Path: 'C:/temp/log/logLevels/warn.log' }
     ];
-    query.setPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'WARN'));
+    query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN'));
 
     // when/then
     rawDataService.getEntries(query).subscribe(data => expect(data).toBe(entries));
@@ -118,7 +118,7 @@ describe('RawDataService', () => {
   it('#getEntries should return cached observable of entries when query is unchanged', () => {
 
     // given
-    query.setPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'WARN'));
+    query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN'));
     const firstEntries$ = rawDataService.getEntries(query);
 
     // when

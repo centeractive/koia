@@ -32,7 +32,7 @@ export class QueryConverter {
    }
 
    private defineFields(columns: Column[], query: Query): string[] {
-      let fields = columns.map(c => c.name);
+      let fields = [CouchDBConstants._ID].concat(columns.map(c => c.name));
       if (query.getPageIndex() >= 0 && query.getRowsPerPage() > 0) {
          fields = fields.concat(QueryConverter.TABLE_STYLE_FIELDS);
       }
@@ -44,6 +44,9 @@ export class QueryConverter {
          builder.whereAnyText(query.getFullTextFilter());
       }
       query.getPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue));
+      query.getValueRangeFilters().forEach(f =>
+         f.toPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue))
+      );
       if (!builder.containsFilter()) {
          builder.where(CouchDBConstants._ID, Operator.GREATER_THAN, null);
       }

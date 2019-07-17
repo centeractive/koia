@@ -103,8 +103,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.query = new Query();
-    component.query.setTimeStart('Time', now - 1_000);
-    component.query.setTimeEnd('Time', now);
+    component.query.addValueRangeFilter('Time', now - 1_000, now);
     component.columnFilters = [];
     component.timeRangeFilters = [];
     fixture.detectChanges();
@@ -145,13 +144,13 @@ describe('MainToolbarComponent', () => {
     expect(component.columnFilters[1]).toBe(amountFilter);
   }));
 
-  it('#ngAfterViewChecked should re-create time slider options once when view became active', fakeAsync(() => {
+  it('#ngAfterViewChecked should re-create time slider options once the view became active', fakeAsync(() => {
 
     // given
     component.route = Route.GRID;
     const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
     component.router = <Router> { events: of(event) };
-    const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, component.query);
+    const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
     const prevTimeRangeOptions = timeRangeFilter.timeRangeOptions;
     component.timeRangeFilters = [ timeRangeFilter ];
     expect(prevTimeRangeOptions).toBeTruthy();
@@ -172,8 +171,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.query = new Query();
-    component.query.setTimeStart('Time', now - 1000);
-    component.query.setTimeEnd('Time', now);
+    component.query.addValueRangeFilter('Time', now - 1_000, now);
     const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
 
     // when
@@ -181,16 +179,15 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.getTimeStart('Time')).toBeNull();
-    expect(query.getTimeEnd('Time')).toBeNull();
+    const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    expect(query.findValueRangeFilter('Time')).toBeUndefined();
   });
 
   it('#refreshEntries should emit filter change with time', () => {
 
     // given
     component.query = new Query();
-    const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, component.query);
+    const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
     timeRangeFilter.selTimeStart = timeValueRange.min + 1000;
     timeRangeFilter.selTimeEnd = timeValueRange.max - 1000;
     component.timeRangeFilters = [ timeRangeFilter ];
@@ -201,9 +198,11 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.getTimeStart('Time')).toBe(timeValueRange.min + 1000);
-    expect(query.getTimeEnd('Time')).toBe(timeValueRange.max - 1000);
+    const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const valueRangeFilter = query.findValueRangeFilter('Time');
+    expect(valueRangeFilter).toBeDefined();
+    expect(valueRangeFilter.valueRange.min).toBe(timeValueRange.min + 1000);
+    expect(valueRangeFilter.valueRange.max).toBe(timeValueRange.max - 1000);
   });
 
   it('pressing context button should toggle context visibility', () => {
@@ -376,8 +375,7 @@ describe('MainToolbarComponent', () => {
     expect(propFilter.propertyName).toBe('Level');
     expect(propFilter.operator).toBe(Operator.EQUAL);
     expect(propFilter.filterValue).toBe('ERR');
-    expect(query.hasTimeStart('Time')).toBeFalsy();
-    expect(query.hasTimeEnd('Time')).toBeFalsy();
+    expect(query.findValueRangeFilter('Time')).toBeUndefined();
   }));
 
   it('pressing <clear> button in column filter field should emit onFilterChange', fakeAsync(() => {

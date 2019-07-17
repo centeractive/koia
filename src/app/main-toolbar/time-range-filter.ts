@@ -1,5 +1,5 @@
 import { Options } from 'ng5-slider';
-import { Column, Query, TimeUnit } from 'app/shared/model';
+import { Column, Query, TimeUnit, ValueRange } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 
 /**
@@ -21,15 +21,19 @@ export class TimeRangeFilter {
    selectedTimeStepAbbrev: string;
    timeRangeOptions: Options;
 
-   constructor(timeColumn: Column, timeStart: number, timeEnd: number, query: Query) {
+   constructor(timeColumn: Column, timeStart: number, timeEnd: number, selValueRange: ValueRange) {
       this.column = timeColumn;
       this.timeStart = timeStart;
       this.timeEnd = timeEnd;
       this.selTimeStart = timeStart;
       this.selTimeEnd = timeEnd;
-      if (query) {
-         this.selTimeStart = query.hasTimeStart(timeColumn.name) ? query.getTimeStart(timeColumn.name) : timeStart;
-         this.selTimeEnd = query.hasTimeEnd(timeColumn.name) ? query.getTimeEnd(timeColumn.name) : timeEnd;
+      if (selValueRange) {
+         if (selValueRange.min !== null && selValueRange.min !== undefined) {
+            this.selTimeStart = selValueRange.min;
+         }
+         if (selValueRange.max !== null && selValueRange.max !== undefined) {
+            this.selTimeEnd = selValueRange.max;
+         }
       }
       this.initTimeRangeSliderSteps();
       this.defineTimeRangeOptions();

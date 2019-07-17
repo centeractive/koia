@@ -18,6 +18,7 @@ export * from './graph-context';
 export * from './summary-context';
 export * from './operator.enum';
 export * from './property-filter';
+export * from './value-range-filter';
 export * from './query';
 export * from './page.type';
 export * from './status-type.enum';

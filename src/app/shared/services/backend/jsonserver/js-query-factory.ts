@@ -19,7 +19,8 @@ export class JSQueryFactory {
       if (query.hasFullTextFilter()) {
          jsQuery = this.append(jsQuery, 'q', query.getFullTextFilter());
       }
-      const propertyFilters = query.getPropertyFilters();
+      let propertyFilters = query.getPropertyFilters();
+      query.getValueRangeFilters().forEach(f => propertyFilters = propertyFilters.concat(f.toPropertyFilters()));
       for (const propertyFilter of propertyFilters) {
          if (propertyFilter.isApplicable() && !this.isCoveredByOther(propertyFilter, propertyFilters)) {
             jsQuery = this.appendPropertyFilter(jsQuery, propertyFilter);

@@ -2,7 +2,7 @@ import {
   Component, ViewEncapsulation, OnInit, Input, Output, EventEmitter, AfterViewChecked
 } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene } from '../shared/model';
+import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene, ValueRange } from '../shared/model';
 import { CommonUtils, ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
@@ -103,12 +103,10 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       const nonTimeColumnNames = this.nonTimeColumns.map(c => c.name);
       this.columnFilters = this.query.getPropertyFilters()
         .filter(f => nonTimeColumnNames.includes(f.propertyName));
-      const timeColumnNames = this.timeColumns.map(c => c.name);
-      ArrayUtils.distinctValues(this.query.getPropertyFilters()
-        .map(pf => pf.propertyName)
-        .filter(n => timeColumnNames.includes(n)))
-        .map(n => this.timeColumns.find(c => c.name === n))
-        .forEach(c => this.addTimeRangeFilter(c));
+      this.query.getValueRangeFilters().forEach(f => {
+        const column = this.scene.columns.find(c => c.name === f.propertyName);
+        this.addTimeRangeFilter(column, f.valueRange);
+      })
     }
   }
 
@@ -119,7 +117,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   addColumnFilter(column: Column): void {
     if (column.dataType === DataType.TIME) {
-      this.addTimeRangeFilter(column);
+      this.addTimeRangeFilter(column, null);
     } else {
       this.columnFilters.push(new PropertyFilter(column.name, Operator.EQUAL, ''));
     }
@@ -133,10 +131,10 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     return DataTypeUtils.iconOf(dataType);
   }
 
-  addTimeRangeFilter(timeColumn: Column): void {
-    this.dbService.timeRangeOf(timeColumn)
+  private addTimeRangeFilter(column: Column, selValueRange: ValueRange): void {
+    this.dbService.timeRangeOf(column)
       .then(vr => {
-        const timeRangeFilter = new TimeRangeFilter(timeColumn, vr.min, vr.max, this.query);
+        const timeRangeFilter = new TimeRangeFilter(column, vr.min, vr.max, selValueRange);
         this.timeRangeFilters.push(timeRangeFilter);
         this.showTimeFilter = true;
       });
@@ -194,11 +192,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       .filter(f => f.operator === Operator.NOT_EMPTY || (f.filterValue !== undefined && f.filterValue !== ''))
       .forEach(f => query.addPropertyFilter(f.clone()));
     this.timeRangeFilters
-      .filter(f => f.isStartFiltered())
-      .forEach(f => query.setTimeStart(f.column.name, f.selTimeStart));
-    this.timeRangeFilters
-      .filter(f => f.isEndFiltered())
-      .forEach(f => query.setTimeEnd(f.column.name, f.selTimeEnd));
+      .filter(f => f.isStartFiltered() || f.isEndFiltered())
+      .forEach(f => query.addValueRangeFilter(f.column.name, f.selTimeStart, f.selTimeEnd));
     this.onFilterChange.emit(query);
   }
 

@@ -1,14 +1,22 @@
 import { Sort } from '@angular/material';
 import { PropertyFilter } from './property-filter';
 import { Operator } from './operator.enum';
+import { ValueRangeFilter } from './value-range-filter';
 
 export class Query {
 
    private fullTextFilter: string;
    private propertyFilters: PropertyFilter[] = [];
+   private valueRangeFilters: ValueRangeFilter[] = [];
    private sort: Sort;
    private pageIndex: number;
    private rowsPerPage: number;
+
+   constructor(propertyFilter?: PropertyFilter) {
+      if (propertyFilter) {
+         this.propertyFilters.push(propertyFilter);
+      }
+   }
 
    setFullTextFilter(fullTextFilter: string) {
       this.fullTextFilter = fullTextFilter;
@@ -22,76 +30,35 @@ export class Query {
       return this.fullTextFilter && this.fullTextFilter.length > 0;
    }
 
-   /**
-    * Sets a unique property filter
-    */
-   setPropertyFilter(propertyfilter: PropertyFilter): void {
-      this.propertyFilters = [propertyfilter];
-   }
-
-   /**
-    * Replaces all property filter with new ones
-    */
-   setPropertyFilters(propertyfilters: PropertyFilter[]): void {
-      this.propertyFilters = propertyfilters;
-   }
-
    addPropertyFilter(propertyfilter: PropertyFilter): void {
       this.propertyFilters.push(propertyfilter);
-   }
-
-   removePropertyFilter(propertyName: string, operator: Operator) {
-      const index = this.propertyFilters.findIndex(pf => pf.propertyName === propertyName && pf.operator === operator);
-      if (index >= 0) {
-         this.propertyFilters.splice(index, 1);
-      }
    }
 
    findPropertyFilter(propertyName: string, operator: Operator): PropertyFilter | undefined {
       return this.propertyFilters.find(pf => pf.propertyName === propertyName && pf.operator === operator);
    }
 
-   /**
-    * @returns a copy of the property filters
-    */
    getPropertyFilters(): PropertyFilter[] {
       return this.propertyFilters.slice(0);
    }
 
-   getTimeStart(columnName: string): number {
-      const filter = this.findPropertyFilter(columnName, Operator.GREATER_THAN_OR_EQUAL);
-      return filter ? <number>filter.filterValue : null;
+   addValueRangeFilter(propertyName: string, minValue: number, maxValue: number): void {
+      this.valueRangeFilters.push(new ValueRangeFilter(propertyName, { min: minValue, max: maxValue }));
    }
 
-   hasTimeStart(columnName: string): boolean {
-      return this.findPropertyFilter(columnName, Operator.GREATER_THAN_OR_EQUAL) !== undefined;
+   findValueRangeFilter(propertyName: string): ValueRangeFilter | undefined {
+      return this.valueRangeFilters
+         .find(pf => pf.propertyName === propertyName);
    }
 
-   setTimeStart(columnName: string, timeStart: number): void {
-      this.removePropertyFilter(columnName, Operator.GREATER_THAN_OR_EQUAL);
-      if (timeStart !== null) {
-         this.addPropertyFilter(new PropertyFilter(columnName, Operator.GREATER_THAN_OR_EQUAL, timeStart));
-      }
-   }
-
-   getTimeEnd(columnName: string): number {
-      const filter = this.findPropertyFilter(columnName, Operator.LESS_THAN_OR_EQUAL);
-      return filter ? <number>filter.filterValue : null;
-   }
-
-   hasTimeEnd(columnName: string): boolean {
-      return this.findPropertyFilter(columnName, Operator.LESS_THAN_OR_EQUAL) !== undefined;
-   }
-
-   setTimeEnd(columnName: string, timeEnd: number): void {
-      this.removePropertyFilter(columnName, Operator.LESS_THAN_OR_EQUAL);
-      if (timeEnd !== null) {
-         this.addPropertyFilter(new PropertyFilter(columnName, Operator.LESS_THAN_OR_EQUAL, timeEnd));
-      }
+   getValueRangeFilters(): ValueRangeFilter[] {
+      return this.valueRangeFilters.slice(0);
    }
 
    hasFilter(): boolean {
-      return this.hasFullTextFilter() || this.propertyFilters.length > 0;
+      return this.hasFullTextFilter() ||
+         this.propertyFilters.filter(f => f.isApplicable).length > 0 ||
+         this.valueRangeFilters.filter(f => f.isApplicable).length > 0;
    }
 
    getSort(): Sort {
@@ -136,7 +103,8 @@ export class Query {
       if (this.fullTextFilter) {
          clone.fullTextFilter = this.fullTextFilter;
       }
-      clone.propertyFilters = this.propertyFilters.map(pf => pf.clone());
+      clone.propertyFilters = this.propertyFilters.map(f => f.clone());
+      clone.valueRangeFilters = this.valueRangeFilters.map(f => f.clone());
       if (this.sort) {
          clone.sort = { active: this.sort.active, direction: this.sort.direction };
       }

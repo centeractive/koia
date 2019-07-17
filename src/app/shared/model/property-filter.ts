@@ -37,6 +37,10 @@ export class PropertyFilter {
       return this._filterValue;
    }
 
+   set filterValue(filterValue: string | number) {
+      this._filterValue = filterValue;
+   }
+
    isApplicable(): boolean {
       if (this._operator === Operator.NOT_EMPTY) {
          return true;
@@ -48,11 +52,7 @@ export class PropertyFilter {
       this._filterValue = '';
    }
 
-   set filterValue(filterValue: string | number) {
-      this._filterValue = filterValue;
-   }
-
    clone(): PropertyFilter {
-      return new PropertyFilter(this.propertyName, this.operator, this.filterValue);
+      return new PropertyFilter(this._propertyName, this._operator, this._filterValue);
    }
 }

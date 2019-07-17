@@ -4,16 +4,13 @@ import { Operator } from './operator.enum';
 
 describe('Query', () => {
 
-  it('#setPropertyFilter should replace previous property filters', () => {
+  it('#constructor should add initial property filter', () => {
 
     // given
-    const query = new Query();
-    query.addPropertyFilter(new PropertyFilter('Path', Operator.EQUAL, '/opt/tomcat/log/catatalina.out'));
-    query.addPropertyFilter(new PropertyFilter('Commission', Operator.GREATER_THAN_OR_EQUAL, '2000'));
+    const propertyFilter = new PropertyFilter('Employee', Operator.NOT_EMPTY, '');
 
     // when
-    const propertyFilter = new PropertyFilter('Employee', Operator.NOT_EMPTY, '');
-    query.setPropertyFilter(new PropertyFilter('Employee', Operator.NOT_EMPTY, ''));
+    const query = new Query(propertyFilter);
 
     // then
     const propertyFilters = query.getPropertyFilters();

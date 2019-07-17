@@ -588,7 +588,7 @@ describe('ChartOptionsProvider', () => {
       const event = { data: { x: now, key: 'ERROR' } };
       onElementClick(event, context);
       expect(router.navigateByUrl).toHaveBeenCalledWith(
-         '/' + Route.RAWDATA + '?Time_gte=' + now + '&Time_lte=' + (now + 60_000) + '&Level=ERROR');
+         '/' + Route.RAWDATA + '?Level=ERROR&Time_gte=' + now + '&Time_lte=' + (now + 60_000));
    });
 
    it('#createOptions grouped horizontal multi bar chart element click handler should open raw data page', () => {
@@ -646,7 +646,7 @@ describe('ChartOptionsProvider', () => {
       const event = { point: { x: now }, series: { key: 'WARN' } };
       onElementClick(event, context);
       expect(router.navigateByUrl).toHaveBeenCalledWith(
-         '/' + Route.RAWDATA + '?Time_gte=' + now + '&Time_lte=' + (now + 1_000) + '&Level=WARN');
+         '/' + Route.RAWDATA + '?Level=WARN&Time_gte=' + now + '&Time_lte=' + (now + 1_000));
    });
 
    it('#createOptions individual value timeline chart element click handler should open raw data page', () => {

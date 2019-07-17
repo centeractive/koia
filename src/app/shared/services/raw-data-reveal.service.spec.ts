@@ -16,15 +16,15 @@ describe('RawDataRevealService', () => {
   let query: Query;
   let context: ElementContext;
   let router: Router;
-  let dialogService: MatDialog; 
+  let dialogService: MatDialog;
   let service: RawDataRevealService;
 
   beforeEach(() => {
     query = new Query();
     context = new SummaryContext([]);
     context.query = query;
-    router = <Router> { navigateByUrl: (url: string) => null };
-    dialogService = <MatDialog> {};
+    router = <Router>{ navigateByUrl: (url: string) => null };
+    dialogService = <MatDialog>{};
     service = new RawDataRevealService(router, dialogService);
     service.setUseDialog(false);
     spyOn(router, 'navigateByUrl');
@@ -111,22 +111,21 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
-      linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + (oneHourAgo + 60_000) + '&Level=ERROR');
+      linkbase + '?Level=ERROR&Time_gte=' + oneHourAgo + '&Time_lte=' + (oneHourAgo + 60_000));
   });
 
   it('#createTimeUnitLink should create link with time period of trimmed timeunit', () => {
 
     // given
     const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.HOUR);
-    query.setTimeStart('Time', oneHourAgo + min);
-    query.setTimeEnd('Time', now - min);
+    query.addValueRangeFilter('Time', oneHourAgo + min, now - min);
 
     // when
     service.ofTimeUnit(context, [timeColumn], [oneHourAgo], ['Host'], ['server1']);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
-      linkbase + '?Time_gte=' + (oneHourAgo + min) + '&Time_lte=' + (now - min) + '&Host=server1');
+      linkbase + '?Host=server1&Time_gte=' + (oneHourAgo + min) + '&Time_lte=' + (now - min));
   });
 
   it('#createLink should create bare link', () => {
@@ -189,8 +188,7 @@ describe('RawDataRevealService', () => {
   it('#createLink should create link for time period', () => {
 
     // given
-    query.setTimeStart('Time', oneHourAgo);
-    query.setTimeEnd('Time', now);
+    query.addValueRangeFilter('Time', oneHourAgo, now);
 
     // when
     service.ofQuery(query, [], []);
@@ -205,8 +203,7 @@ describe('RawDataRevealService', () => {
     query.setFullTextFilter('xyz');
     query.addPropertyFilter(new PropertyFilter('Host', Operator.NOT_EMPTY, ''));
     query.addPropertyFilter(new PropertyFilter('Path', Operator.CONTAINS, '.txt'));
-    query.setTimeStart('Time', oneHourAgo);
-    query.setTimeEnd('Time', now);
+    query.addValueRangeFilter('Time', oneHourAgo, now);
     const columnNames = ['Level', 'Amount'];
     const columnValues = ['WARN', '1000'];
 
@@ -215,7 +212,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
-      linkbase + '?q=xyz&Host_gte=&Path_like=.txt&Time_gte=' + oneHourAgo + '&Time_lte=' + now + '&Level=WARN&Amount=1000');
+      linkbase + '?q=xyz&Host_gte=&Path_like=.txt&Level=WARN&Amount=1000&Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
 
   function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {

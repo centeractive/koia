@@ -80,7 +80,7 @@ describe('QueryUtils', () => {
     expect(propertyFilters[5]).toEqual(new PropertyFilter('Commission', Operator.GREATER_THAN_OR_EQUAL, '2000'));
   });
 
-  it('#queryFromParams should return time period query', () => {
+  it('#queryFromParams should return value range query', () => {
 
     // given
     const params = {
@@ -92,7 +92,7 @@ describe('QueryUtils', () => {
     const query = QueryUtils.queryFromParams(params);
 
     // then
-    expect(query.getTimeStart('Time')).toEqual(now);
-    expect(query.getTimeEnd('Time')).toEqual(nowPlusMin);
+    expect(query.findPropertyFilter('Time', Operator.GREATER_THAN_OR_EQUAL).filterValue).toEqual(now);
+    expect(query.findPropertyFilter('Time', Operator.LESS_THAN_OR_EQUAL).filterValue).toEqual(nowPlusMin);
   });
 });

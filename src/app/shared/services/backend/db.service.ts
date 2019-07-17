@@ -144,7 +144,7 @@ export class DBService {
   }
 
   async requestEntriesPage(query: Query, prevPage?: Page): Promise<Page> {
-    if (prevPage && QueryUtils.isFilterIdentical(query, prevPage.query)) {
+    if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query)) {
       return this.findEntries(query, false).toPromise()
         .then(entries => this.toPage(query, entries, prevPage.totalRowCount));
     } else {

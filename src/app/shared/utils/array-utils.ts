@@ -17,10 +17,30 @@ export class ArrayUtils {
   }
 
   /**
-   * @returns <true> if the specified arrays are equals, <false> otherwise
+   * @returns <true> if the specified arrays are equal, <false> otherwise
    */
   static compare(arr1: any[], arr2: any[]): boolean {
+    if (!arr1 && !arr2) {
+      return true;
+    } else if ((!arr1 && arr2) || (arr1 && !arr2) || arr1.length !== arr2.length) {
+      return false;
+    }
     return JSON.stringify(arr1) === JSON.stringify(arr2);
+  }
+
+  /**
+   * @returns <true> if the specified arrays contain equal elements regardless their position, <false> otherwise
+   */
+  static compareLoose(arr1: any[], arr2: any[]): boolean {
+    if (!arr1 && !arr2) {
+      return true;
+    } else if ((!arr1 && arr2) || (arr1 && !arr2) || arr1.length !== arr2.length) {
+      return false;
+    }
+    const strElements1 = arr1.map(o => JSON.stringify(o));
+    return arr2.map(o => JSON.stringify(o))
+      .filter(s => strElements1.includes(s))
+      .length === arr1.length;
   }
 
   /**

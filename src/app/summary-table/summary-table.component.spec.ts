@@ -253,7 +253,7 @@ describe('SummaryTableComponent', () => {
     component.onAggregationCellClick({ 'Time (per minute)': oneMinuteAgo, t1: 'a', 'Count': 522 });
 
     // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?Time_gte=' + oneMinuteAgo + '&Time_lte=' + now + '&t1=a');
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?t1=a&Time_gte=' + oneMinuteAgo + '&Time_lte=' + now);
   });
 
   it('#sort should sort ascending', fakeAsync(() => {

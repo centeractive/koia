@@ -281,8 +281,7 @@ describe('DBService', () => {
     await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
 
     // when
-    const query = new Query();
-    query.setPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'xyz'));
+    const query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'xyz'));
     query.setPageDefinition(0, 2);
     await dbService.requestEntriesPage(query)
       .then(page => {

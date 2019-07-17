@@ -4,7 +4,7 @@ import { LabelType } from 'ng5-slider';
 
 describe('TimeRangeFilter', () => {
 
-   it('#constructor should create inactive time filter when query is missing', () => {
+   it('#constructor should create inactive time filter when selected value range is undefined', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
@@ -22,7 +22,7 @@ describe('TimeRangeFilter', () => {
       expect(filter.isFiltered()).toBeFalsy();
    });
 
-   it('#constructor should create inactive time filter when query without filtered time is defined', () => {
+   it('#constructor should create inactive time filter when selected values are undefined', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
@@ -30,7 +30,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, new Query());
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, { min: undefined, max: undefined });
 
       // then
       expect(filter.timeStart).toBe(timeStart);
@@ -40,15 +40,13 @@ describe('TimeRangeFilter', () => {
       expect(filter.isFiltered()).toBeFalsy();
    });
 
-   it('#constructor should create active time filter when query start time is defined', () => {
+   it('#constructor should create active time filter when selected start time is defined', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
-      const query = new Query();
-      query.setTimeStart('X', toTime(2001));
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), query);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: null });
 
       // then
       expect(filter.timeStart).toBe(toTime(2000));
@@ -58,15 +56,13 @@ describe('TimeRangeFilter', () => {
       expect(filter.isFiltered()).toBeTruthy();
    });
 
-   it('#constructor should create active time filter when query end time is defined', () => {
+   it('#constructor should create active time filter when selected end time is defined', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
-      const query = new Query();
-      query.setTimeEnd('X', toTime(2009));
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), query);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: null, max: toTime(2009) });
 
       // then
       expect(filter.timeStart).toBe(toTime(2000));
@@ -81,11 +77,10 @@ describe('TimeRangeFilter', () => {
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
       const query = new Query();
-      query.setTimeStart('X', toTime(2001));
-      query.setTimeEnd('X', toTime(2009));
+      query.addValueRangeFilter('X', toTime(2001), toTime(2009));
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), query);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), query.findValueRangeFilter('X').valueRange);
 
       // then
       expect(filter.timeStart).toBe(toTime(2000));
@@ -384,10 +379,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
       const timeStart = toTime(2000);
       const timeEnd = toTime(2010);
-      const query = new Query();
-      query.setTimeStart('X', toTime(2001));
-      query.setTimeEnd('X', toTime(2009));
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, query);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd,  { min: toTime(2001), max: toTime(2009) });
 
       // when
       filter.reset();

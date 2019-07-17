@@ -3,15 +3,14 @@ import { Query } from '../model/query';
 import { ParamOp } from '../model/param-op.enum';
 import { PropertyFilter } from '../model/property-filter';
 import { Operator } from '../model/operator.enum';
+import { ArrayUtils } from './array-utils';
 
 export class QueryUtils {
 
-   /**
-    * TODO: property filters must be checked differently since thay may appear in different order
-    */
-   static isFilterIdentical(query: Query, otherQuery: Query): boolean {
+   static areFiltersEqual(query: Query, otherQuery: Query): boolean {
       return query.getFullTextFilter() === otherQuery.getFullTextFilter() && //
-         JSON.stringify(query.getPropertyFilters()) === JSON.stringify(otherQuery.getPropertyFilters());
+         ArrayUtils.compareLoose(query.getPropertyFilters(), otherQuery.getPropertyFilters()) && //
+         ArrayUtils.compareLoose(query.getValueRangeFilters(), otherQuery.getValueRangeFilters());
    }
 
    static queryFromParams(params: Params): Query {
