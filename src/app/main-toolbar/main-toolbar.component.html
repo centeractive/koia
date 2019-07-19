@@ -142,7 +142,7 @@
         <mat-menu #stepmenu="matMenu">
           <button mat-menu-item *ngFor="let step of rangeFilter.availableSteps"
             [disabled]="step === rangeFilter.selectedStep" (click)="rangeFilter.onStepChanged(step)">
-            <span>Step by {{ step.toLocaleString() }}</span>
+            <span>Step by {{ rangeFilter.formatStep(step) }}</span>
           </button>
         </mat-menu>
         &nbsp;&nbsp;
