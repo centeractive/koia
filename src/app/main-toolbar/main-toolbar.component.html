@@ -99,14 +99,19 @@
             <span>{{ column.name }}</span>
           </button>
 
-          <button *ngIf="isNumberColumn(column)" mat-menu-item [disabled]="hasRangeFilter(column)"
-            [matMenuTriggerFor]="numberColumnFilterMenu">
+          <button *ngIf="isNumberColumn(column)" mat-menu-item [matMenuTriggerFor]="numberColumnFilterMenu">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
           <mat-menu #numberColumnFilterMenu="matMenu">
-            <button mat-menu-item (click)="addColumnFilter(column)">Value</button>
-            <button mat-menu-item (click)="addRangeFilter(column, null)">Value Range</button>
+            <button mat-menu-item (click)="addColumnFilter(column)">
+              <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+              <span>Value</span>
+            </button>
+            <button mat-menu-item (click)="addRangeFilter(column, null)" [disabled]="hasRangeFilter(column)">
+              <mat-icon>swap_horiz</mat-icon>
+              <span>Value Range</span>
+            </button>
           </mat-menu>
 
         </span>
@@ -116,7 +121,7 @@
         [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
         (click)="showRangeFilters = !showRangeFilters">
         <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
-          [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">access_time</mat-icon>
+          [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
       </button>
 
       <button mat-button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
@@ -128,16 +133,16 @@
   <div *ngIf="showRangeFilters">
     <div *ngFor="let rangeFilter of rangeFilters">
       <div class="div_range_slider">
-        <button class="slider_button" *ngIf="rangeFilter.selectedStepAbbrev" mat-button color="primary" mat-icon-button
-          matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
+        <button mat-button color="primary" mat-icon-button matTooltip="Define slider step size"
+          [matMenuTriggerFor]="stepmenu">
           <mat-icon [matBadge]="rangeFilter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="primary">
-            swap_horiz
+            linear_scale
           </mat-icon>
         </button>
         <mat-menu #stepmenu="matMenu">
           <button mat-menu-item *ngFor="let step of rangeFilter.availableSteps"
-            (click)="rangeFilter.onStepChanged(step)">
-            <span>Step by {{ step }}</span>
+            [disabled]="step === rangeFilter.selectedStep" (click)="rangeFilter.onStepChanged(step)">
+            <span>Step by {{ step.toLocaleString() }}</span>
           </button>
         </mat-menu>
         &nbsp;&nbsp;

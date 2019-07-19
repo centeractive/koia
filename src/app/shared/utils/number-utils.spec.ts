@@ -486,6 +486,7 @@ describe('NumberUtils', () => {
     expect(NumberUtils.basePowerOfTen(1_920)).toBe(1_000);
     expect(NumberUtils.basePowerOfTen(8_820)).toBe(1_000);
     expect(NumberUtils.basePowerOfTen(17_535)).toBe(10_000);
+    expect(NumberUtils.basePowerOfTen(5_000_000)).toBe(1_000_000);
   });
 
   it('#roundUpBroad should return unchanged when number undefined or zero', () => {

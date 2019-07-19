@@ -1,10 +1,10 @@
-import { DataType, TimeUnit, Query } from 'app/shared/model';
+import { DataType, TimeUnit } from 'app/shared/model';
 import { TimeRangeFilter } from './time-range-filter';
 import { LabelType } from 'ng5-slider';
 
 describe('TimeRangeFilter', () => {
 
-   it('#constructor should create inactive time filter when selected value range is undefined', () => {
+   it('#constructor should create inactive time filter when selected value range is null', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
@@ -72,15 +72,13 @@ describe('TimeRangeFilter', () => {
       expect(filter.isFiltered()).toBeTruthy();
    });
 
-   it('#constructor should create active time filter when query start and end time are defined', () => {
+   it('#constructor should create active time filter when start and end time are defined', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
-      const query = new Query();
-      query.addValueRangeFilter('X', toTime(2001), toTime(2009));
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), query.findValueRangeFilter('X').valueRange);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: toTime(2009)});
 
       // then
       expect(filter.start).toBe(toTime(2000));
@@ -336,7 +334,7 @@ describe('TimeRangeFilter', () => {
          .toBe('1 Jan 2008 05:00:00 000 - 1 Jan 2008 05:00:00 001');
    });
 
-   it('#onTimeStepChanged should change slider step definition', () => {
+   it('#onStepChanged should change slider step definition', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };
@@ -351,7 +349,7 @@ describe('TimeRangeFilter', () => {
       expect(filter.availableSteps).toEqual(['millisecond', 'second', 'minute', 'hour', 'day']);
    });
 
-   it('#onTimeStepChanged should re-create slider options', () => {
+   it('#onStepChanged should re-create slider options', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };

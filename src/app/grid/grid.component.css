@@ -49,6 +49,10 @@
   color: #ff7300;  
 }
 
+.but_warning {
+  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+}
+
 .but_close {
   z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
   opacity: 0.2;  

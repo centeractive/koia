@@ -1,7 +1,10 @@
 import { Options } from 'ng5-slider';
 import { Column, ValueRange } from 'app/shared/model';
+import { NumberUtils } from 'app/shared/utils';
 
 export class NumberRangeFilter {
+
+   static readonly MIN_REQUIRED_UNITS_PER_SLIDER_STEP_TYPE = 5;
 
    column: Column;
    start: number;
@@ -36,11 +39,21 @@ export class NumberRangeFilter {
    }
 
    protected initSliderSteps(): void {
-      this.selectedStep = 1;
+      const diff = this.end - this.start;
+      let step = NumberUtils.basePowerOfTen(diff);
+      if (diff / step < NumberRangeFilter.MIN_REQUIRED_UNITS_PER_SLIDER_STEP_TYPE) {
+         step = step / 10;
+      }
+      this.availableSteps = [step];
+      for (let i = 0; i < 5 || this.availableSteps[0] > 1; i++) {
+         this.availableSteps.unshift(this.availableSteps[0] / 10);
+      }
+      this.selectedStep = this.availableSteps[this.availableSteps.length - 2];
+      this.selectedStepAbbrev = 'n';
    }
 
-   onStepChanged(timeStep: any): void {
-      this.selectedStep = timeStep;
+   onStepChanged(step: any): void {
+      this.selectedStep = step;
       this.defineRangeOptions();
    }
 

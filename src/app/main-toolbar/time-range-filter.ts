@@ -1,4 +1,3 @@
-import { Options } from 'ng5-slider';
 import { Column, TimeUnit, ValueRange } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { NumberRangeFilter } from './number-range-filter';
@@ -9,8 +8,6 @@ import { NumberRangeFilter } from './number-range-filter';
  * @see EntryMapper#roundDownToTargetFormat
  */
 export class TimeRangeFilter extends NumberRangeFilter {
-
-   static readonly MIN_REQUIRED_TIME_UNITS_PER_SLIDER_STEP_TYPE = 5;
 
    constructor(column: Column, start: number, end: number, selValueRange: ValueRange) {
       super(column, start, end, selValueRange);
@@ -32,7 +29,7 @@ export class TimeRangeFilter extends NumberRangeFilter {
   protected identifyAvailableTimeSteps(duration: number): TimeUnit[] {
       const timeUnits: TimeUnit[] = [this.selectedStep];
       for (const timeUnit of this.potentialTimeUnitsAbove(timeUnits[0])) {
-         if (DateTimeUtils.countTimeUnits(duration, timeUnit) < TimeRangeFilter.MIN_REQUIRED_TIME_UNITS_PER_SLIDER_STEP_TYPE) {
+         if (DateTimeUtils.countTimeUnits(duration, timeUnit) < NumberRangeFilter.MIN_REQUIRED_UNITS_PER_SLIDER_STEP_TYPE) {
             break;
          }
          timeUnits.push(timeUnit);

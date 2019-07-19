@@ -430,7 +430,23 @@ describe('MainToolbarComponent', () => {
     expect(component.onFilterChange.emit).not.toHaveBeenCalled();
   });
 
-  it('#onTimeStepChanged should change time step when millisecond is selected', fakeAsync(() => {
+  it('#click on "Remove value range filter" button should remove time range filter', fakeAsync(() => {
+
+    // given
+    component.columnFilters = [];
+    clickAddColumnFilterMenuItem('Time');
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_remove_range_filter')).nativeElement;
+
+    // when
+    htmlButton.click();
+    fixture.detectChanges();
+
+    // then
+    flush();
+    expect(component.rangeFilters.length).toBe(0);
+  }));
+
+  it('#onStepChanged should change time step when millisecond is selected', fakeAsync(() => {
 
     // given
     component.addColumnFilter(column('Time'));
@@ -441,12 +457,13 @@ describe('MainToolbarComponent', () => {
     fixture.detectChanges();
 
     // then
+    flush();
     expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.MILLISECOND);
     expect(component.rangeFilters[0].selectedStepAbbrev).toBe('ms');
     expect(component.rangeFilters[0].rangeOptions.step).toBe(1);
   }));
 
-  it('#onTimeStepChanged should change time step when second is selected',  fakeAsync(() => {
+  it('#onStepChanged should change time step when second is selected',  fakeAsync(() => {
 
     // given
     component.addColumnFilter(column('Time'));
@@ -461,7 +478,7 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].rangeOptions.step).toBe(1_000);
   }));
 
-  it('#onTimeStepChanged should change time step when minute is selected',  fakeAsync(() => {
+  it('#onStepChanged should change time step when minute is selected',  fakeAsync(() => {
 
     // given
     component.addColumnFilter(column('Time'));
@@ -476,7 +493,7 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].rangeOptions.step).toBe(60_000);
   }));
 
-  it('#onTimeStepChanged should change time step when hour is selected', fakeAsync(() => {
+  it('#onStepChanged should change time step when hour is selected', fakeAsync(() => {
 
     // given
     component.addColumnFilter(column('Time'));
@@ -542,6 +559,7 @@ describe('MainToolbarComponent', () => {
     butColumn.click();
     flush();
     fixture.detectChanges();
+    flush();
   }
 
   function column(name: string): Column {

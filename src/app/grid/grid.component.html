@@ -106,7 +106,7 @@
                      <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
                         retroTextareaMaxRows="2" (keyup)="context.title = $event.target.value"></textarea>
                   </div>
-                  <button mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning" color="warn">
+                  <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning" color="warn">
                      <mat-icon>error</mat-icon>
                   </button>
                   <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
