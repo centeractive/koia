@@ -21,27 +21,30 @@
         matTooltip="Administration" [routerLink]="[urlScenes]">
         <mat-icon>account_circle</mat-icon>
       </button>
-      <button id="butRawData" mat-button [color]="currURL == urlRawdata ? 'primary' : ''" mat-icon-button
+      <button id="butRawData" mat-stroked-button [color]="currURL == urlRawdata ? 'primary' : ''"
         matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
         <mat-icon svgIcon="raw_data_view"></mat-icon>
+        <span>Raw Data</span>
       </button>
-      <button id="butGridView" mat-button [color]="currURL == urlGrid ? 'primary' : ''" mat-icon-button
-        matTooltip="Grid View" [routerLink]="[urlGrid]">
+      <button id="butGridView" mat-stroked-button [color]="currURL == urlGrid ? 'primary' : ''" matTooltip="Grid View"
+        [routerLink]="[urlGrid]">
         <mat-icon svgIcon="grid_view"></mat-icon>
+        <span>Grid View</span>
       </button>
-      <button id="butFlexView" mat-button [color]="currURL == urlFlex ? 'primary' : ''" mat-icon-button
-        matTooltip="Flex View" [routerLink]="[urlFlex]">
+      <button id="butFlexView" mat-stroked-button [color]="currURL == urlFlex ? 'primary' : ''" matTooltip="Flex View"
+        [routerLink]="[urlFlex]">
         <mat-icon svgIcon="flex_view"></mat-icon>
+        <span>Flex View</span>
       </button>
-      <button id="butPivotView" mat-button [color]="currURL == urlPivot ? 'primary' : ''" mat-icon-button
+      <button id="butPivotView" mat-stroked-button [color]="currURL == urlPivot ? 'primary' : ''"
         matTooltip="Pivot Table" [routerLink]="[urlPivot]">
         <mat-icon svgIcon="pivot_table"></mat-icon>
+        <span>Pivot Table</span>
       </button>
     </span>
 
     <div id="div_filter">
-      <!-- full txt filter together with sort doesn't work with PouchDB, hence we get rid of it for now
-      <mat-form-field class="full_text_filter">
+      <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
         <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"
           [(ngModel)]="fullTextFilter" (keyup)="onFilterFieldKeyUp($event)">
         <button mat-button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
@@ -49,7 +52,6 @@
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
-      -->
 
       <span class="span_column_filter" *ngFor="let columnFilter of columnFilters">
 
@@ -86,9 +88,10 @@
 
     <span class="span_buttons" *ngIf="scene">
 
-      <button id="butAddColFilter" mat-button mat-icon-button matTooltip="Add column filter"
+      <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter"
         [matMenuTriggerFor]="columnFilterMenu">
         <mat-icon>add_circle_outline</mat-icon>
+        <span>Add Filter</span>
       </button>
       <mat-menu #columnFilterMenu="matMenu">
         <span *ngFor="let column of scene.columns">

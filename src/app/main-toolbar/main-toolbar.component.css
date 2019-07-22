@@ -27,6 +27,7 @@ td {
 
 #div_toolbar {
   display: flex;
+  align-items: flex-start;
   flex-wrap: nowrap;
   width: 100%;
 }

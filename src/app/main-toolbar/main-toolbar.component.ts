@@ -33,6 +33,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   nonTimeColumns: Column[];
   timeColumns: Column[];
   showContext: boolean;
+  showFullTextFilter: boolean;
   showRangeFilters: boolean;
   fullTextFilter = '';
   readonly operators: Operator[];
