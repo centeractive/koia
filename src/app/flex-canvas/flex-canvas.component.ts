@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 
 @Component({
-  selector: 'retro-flex-canvas',
+  selector: 'koia-flex-canvas',
   templateUrl: './flex-canvas.component.html',
   styleUrls: ['./flex-canvas.component.css']
 })

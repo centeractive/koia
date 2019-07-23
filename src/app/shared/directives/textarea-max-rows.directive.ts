@@ -1,11 +1,11 @@
 import { Directive, Input, ElementRef } from '@angular/core';
 
 @Directive({
-  selector: '[retroTextareaMaxRows]'
+  selector: '[koiaTextareaMaxRows]'
 })
 export class TextareaMaxRowsDirective {
 
-  @Input('retroTextareaMaxRows') maxRows: number;
+  @Input('koiaTextareaMaxRows') maxRows: number;
 
   private textarea: HTMLTextAreaElement;
 

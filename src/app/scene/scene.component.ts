@@ -13,7 +13,7 @@ import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper }
 import { AbstractComponent } from 'app/shared/controller';
 
 @Component({
-  selector: 'retro-front',
+  selector: 'koia-front',
   templateUrl: './scene.component.html',
   styleUrls: ['./scene.component.css']
 })

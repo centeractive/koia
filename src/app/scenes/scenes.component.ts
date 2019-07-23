@@ -9,7 +9,7 @@ import { ArrayUtils } from 'app/shared/utils';
 import { AbstractComponent } from 'app/shared/controller';
 
 @Component({
-  selector: 'retro-scenes',
+  selector: 'koia-scenes',
   templateUrl: './scenes.component.html',
   styleUrls: ['./scenes.component.css']
 })

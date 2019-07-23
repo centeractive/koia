@@ -9,7 +9,7 @@ import { TimeRangeFilter } from './time-range-filter';
 import { NumberRangeFilter } from './number-range-filter';
 
 @Component({
-  selector: 'retro-main-toolbar',
+  selector: 'koia-main-toolbar',
   templateUrl: './main-toolbar.component.html',
   styleUrls: ['./main-toolbar.component.css'],
   encapsulation: ViewEncapsulation.None

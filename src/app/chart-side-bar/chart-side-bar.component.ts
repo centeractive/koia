@@ -5,7 +5,7 @@ import { ChartMarginService } from 'app/shared/services/chart-margin.service';
 import { DataTypeUtils } from 'app/shared/utils';
 
 @Component({
-  selector: 'retro-chart-side-bar',
+  selector: 'koia-chart-side-bar',
   templateUrl: './chart-side-bar.component.html',
   styleUrls: ['./chart-side-bar.component.css']
 })

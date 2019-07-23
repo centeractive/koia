@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "retrospective": {
+    "koia": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -11,7 +11,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/retrospective",
+            "outputPath": "dist/koia",
             "index": "src/index.html",
             "main": "src/main.ts",
             "tsConfig": "src/tsconfig.app.json",
@@ -58,18 +58,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "retrospective:build"
+            "browserTarget": "koia:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "retrospective:build:production"
+              "browserTarget": "koia:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "retrospective:build"
+            "browserTarget": "koia:build"
           }
         },
         "test": {
@@ -101,7 +101,7 @@
         }
       }
     },
-    "retrospective-e2e": {
+    "koia-e2e": {
       "root": "e2e",
       "sourceRoot": "e2e",
       "projectType": "application",
@@ -110,7 +110,7 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "./protractor.conf.js",
-            "devServerTarget": "retrospective:serve"
+            "devServerTarget": "koia:serve"
           }
         },
         "lint": {
@@ -125,14 +125,14 @@
       }
     }   
   },
-  "defaultProject": "retrospective",
+  "defaultProject": "koia",
   "schematics": {
     "@schematics/angular:component": {
-      "prefix": "retro",
+      "prefix": "koia",
       "styleext": "css"
     },
     "@schematics/angular:directive": {
-      "prefix": "retro"
+      "prefix": "koia"
     }
   }
 }

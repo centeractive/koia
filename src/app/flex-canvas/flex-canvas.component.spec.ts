@@ -17,25 +17,25 @@ import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock } from 'app/shared/test';
 
-@Component({ selector: 'retro-main-toolbar', template: '' })
+@Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
 
-@Component({ selector: 'retro-chart-side-bar', template: '' })
+@Component({ selector: 'koia-chart-side-bar', template: '' })
 class ChartSideBarComponent { }
 
-@Component({ selector: 'retro-graph-side-bar', template: '' })
+@Component({ selector: 'koia-graph-side-bar', template: '' })
 class GraphSideBarComponent { }
 
-@Component({ selector: 'retro-summary-table-side-bar', template: '' })
+@Component({ selector: 'koia-summary-table-side-bar', template: '' })
 class SummaryTableSideBarComponent { }
 
-@Component({ selector: 'retro-summary-table', template: '' })
+@Component({ selector: 'koia-summary-table', template: '' })
 class SummaryTableComponent { }
 
-@Component({ selector: 'retro-chart', template: '' })
+@Component({ selector: 'koia-chart', template: '' })
 class ChartComponent { }
 
-@Component({ selector: 'retro-graph', template: '' })
+@Component({ selector: 'koia-graph', template: '' })
 
 class GraphComponent { }
 

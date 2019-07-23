@@ -12,7 +12,7 @@ import { NgModule } from '@angular/compiler/src/core';
  * @see https://stackoverflow.com/a/55528306/2358409
  */
 @Component({
-   selector: 'retro-mat-icon-module-mock',
+   selector: 'koia-mat-icon-module-mock',
    template: '<span></span>'
 })
 // tslint:disable-next-line:component-class-suffix

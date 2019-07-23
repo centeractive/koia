@@ -3,7 +3,7 @@ import { GraphContext } from '../shared/model';
 import { SideBarController } from 'app/shared/controller/side-bar.controller';
 
 @Component({
-  selector: 'retro-graph-side-bar',
+  selector: 'koia-graph-side-bar',
   templateUrl: './graph-side-bar.component.html',
   styleUrls: ['./graph-side-bar.component.css']
 })

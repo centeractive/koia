@@ -3,8 +3,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Query } from 'app/shared/model';
 
 @Component({
-   selector: 'retro-raw-data-dialog',
-   template: '<retro-raw-data [dialogStyle]="true" [query]="query"></retro-raw-data>'
+   selector: 'koia-raw-data-dialog',
+   template: '<koia-raw-data [dialogStyle]="true" [query]="query"></koia-raw-data>'
 })
 export class RawDataDialogComponent {
 

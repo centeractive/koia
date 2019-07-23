@@ -3,7 +3,7 @@ import { MAT_BOTTOM_SHEET_DATA } from '@angular/material';
 import { Status } from '../shared/model';
 
 @Component({
-  selector: 'retro-status',
+  selector: 'koia-status',
   template: '<div *ngIf="status" >{{ status.msg }}</div>',
   styles: ['div { text-align: center; }']
 })

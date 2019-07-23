@@ -6,7 +6,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MatAccordion } from '@angular/material';
 
 @Component({
-  selector: 'retro-pivot-table-side-bar',
+  selector: 'koia-pivot-table-side-bar',
   templateUrl: './pivot-table-side-bar.component.html',
   styleUrls: ['./pivot-table-side-bar.component.css']
 })

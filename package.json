@@ -1,7 +1,7 @@
 {
-  "name": "retrospective",
+  "name": "koia",
   "version": "0.0.1",
-  "description": "Retrospective Analysis",
+  "description": "Koia Data Analysis",
   "author": {
     "name": "Minder Urs",
     "email": "urs.minder@centeractive.com"
@@ -11,7 +11,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:prod:tomcat": "ng build --prod --base-href /retrospective/",
+    "build:prod:tomcat": "ng build --prod --base-href /koia/",
     "build:prod:apache": "ng build --prod",
     "test": "ng test --code-coverage=true",
     "test-debug": "ng test --browsers=ChromeDebug",

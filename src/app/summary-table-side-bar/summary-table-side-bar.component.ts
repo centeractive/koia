@@ -4,7 +4,7 @@ import { SummaryContext, Aggregation, DataType, Column } from '../shared/model';
 import { SideBarController } from 'app/shared/controller';
 
 @Component({
-  selector: 'retro-summary-table-side-bar',
+  selector: 'koia-summary-table-side-bar',
   templateUrl: './summary-table-side-bar.component.html',
   styleUrls: ['./summary-table-side-bar.component.css']
 })

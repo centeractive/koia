@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
 declare var jQuery: any;
 
 @Component({
-  selector: 'retro-pivot-table',
+  selector: 'koia-pivot-table',
   templateUrl: './pivot-table.component.html',
   styleUrls: ['./pivot-table.component.css'],
   encapsulation: ViewEncapsulation.None
