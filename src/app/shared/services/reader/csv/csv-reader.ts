@@ -96,7 +96,7 @@ export class CSVReader implements DataReader {
    }
 
    /**
-    * TODO: must consider chunkSize
+    * TODO: should consider chunkSize
     */
    readData(url: string, chunkSize: number, dataHandler: DataHandler): void {
       let headerToBeRemoved = this.hasHeaderColumn();

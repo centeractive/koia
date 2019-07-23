@@ -14,7 +14,7 @@
 
   <mat-accordion multi="true">
     <mat-expansion-panel expanded="true">
-      <mat-expansion-panel-header>
+      <mat-expansion-panel-header color="accent">
         <mat-panel-title>
           <mat-icon color="primary">looks_one</mat-icon>&nbsp;Data Source
         </mat-panel-title>
@@ -78,7 +78,7 @@
         </div>
       </div>
       <div>
-        <button mat-raised-button color="primary" matTooltip="Detect columns by considering defined attributes"
+        <button id="but_detect_columns" mat-raised-button color="primary" matTooltip="Detect columns by considering defined attributes"
           (click)="readSample()">Detect Columns</button>
       </div>
     </mat-expansion-panel>
@@ -90,7 +90,7 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div *ngFor="let columnPair of columnMappings">
-        <button mat-button mat-icon-button matTooltip="Delete irrelevant column"
+        <button class="but_column_mapping" mat-button mat-icon-button matTooltip="Delete irrelevant column"
           (click)="deleteColumnMapping(columnPair)">
           <mat-icon>delete_forever</mat-icon>
         </button>
@@ -132,7 +132,7 @@
           <mat-icon color="primary">looks_4</mat-icon>&nbsp;Preview
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <div #content id="div_table">
+      <div #content id="div_preview_table">
         <table mat-table [dataSource]="previewData">
           <ng-container *ngFor="let columnPair of columnMappings; let iCol = index"
             [matColumnDef]="columnPair.target.name">
@@ -158,8 +158,8 @@
         matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
         matTooltipClass="tooltip_preview_warning" />
       &nbsp;
-      <button mat-raised-button color="primary" matTooltip="Loads all data to the database"
-        [disabled]="!(maxItemsToLoad > 0)" (click)="loadScene()">
+      <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
+        [disabled]="maxItemsToLoad !> 0" (click)="loadScene()">
         Load Data
       </button>
       &nbsp;

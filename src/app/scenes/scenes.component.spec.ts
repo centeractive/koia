@@ -82,7 +82,7 @@ describe('ScenesComponent', () => {
     expect(component.sceneInfos.length).toBe(3);
   });
 
-  it('new scene button should point to scene component', () => {
+  it('import button should point to scene component', () => {
 
     // given
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_new_scene')).nativeElement;
@@ -109,6 +109,23 @@ describe('ScenesComponent', () => {
     expect(dbService.deleteScene).toHaveBeenCalledWith(scene);
     expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
   }));
+
+  it('#click on delete button should notify error when error occurs', fakeAsync(() => {
+
+    // given
+    const scene = scenes[0];
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.reject('cannot delete scene'));
+    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_delete_scene'))[0].nativeElement;
+
+    // when
+    htmlButton.click();
+    flush();
+
+    // then
+    expect(dbService.deleteScene).toHaveBeenCalledWith(scene);
+    expect(notificationService.onError).toHaveBeenCalledTimes(1);
+  }));
+
 
   it('#click on activate scene button should activate scene and switch to raw data component', fakeAsync(() => {
 
