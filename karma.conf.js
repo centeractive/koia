@@ -17,7 +17,12 @@ module.exports = function (config) {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
     files: [
+      { pattern: 'src/assets/*.gif', included: false, watched: false, served: true },
+      { pattern: 'src/assets/*.ico', included: false, watched: false, served: true },
+      { pattern: 'src/assets/*.png', included: false, watched: false, served: true },
+      { pattern: 'src/assets/svg-icons/*.svg', included: false, watched: false, served: true },
       { pattern: 'src/app/shared/services/reader/excel/test.xlsx', included: false, watched: false, served: true },
+      
       // following links are required for PivotTableComponent
       'node_modules/jquery/dist/jquery.min.js',
       'node_modules/jquery-ui-dist/jquery-ui.min.js',

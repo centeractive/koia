@@ -30,11 +30,9 @@ export class NotificationService {
     if (typeof value === 'string') {
       return <string> value;
     } else if (value instanceof Error) {
-      console.error(value);
       const error = <Error> value;
       return error.name + ': ' + error.message;
     }
-    console.error(value);
     return JSON.stringify(value);
   }
 }

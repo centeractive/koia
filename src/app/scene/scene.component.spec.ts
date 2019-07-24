@@ -6,7 +6,7 @@ import {
   MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
-import { Status, Route, Scene } from 'app/shared/model';
+import { Status, Route, Scene, DataType } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,7 @@ import { DatePipe } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { HttpClient } from '@angular/common/http';
 
 class FakeNotificationService extends NotificationService {
 
@@ -31,8 +32,8 @@ describe('SceneComponent', () => {
 
   const datePipe = new DatePipe('en-US');
   const readerService = new ReaderService();
-  const dbService = new DBService(new CouchDBService(null));
   const notificationService = new FakeNotificationService();
+  let dbService: DBService;
   let tableData: string[][];
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
@@ -52,6 +53,9 @@ describe('SceneComponent', () => {
   });
 
   beforeEach(async(() => {
+    spyOn(console, 'log').and.callFake(s => null);
+    dbService = new DBService(new CouchDBService(new HttpClient(null)));
+    dbService.initBackend();
     TestBed.configureTestingModule({
       declarations: [SceneComponent],
       imports: [RouterTestingModule, MatBottomSheetModule, MatExpansionModule, MatCardModule, FormsModule, MatFormFieldModule,
@@ -72,11 +76,9 @@ describe('SceneComponent', () => {
     spyOn(notificationService, 'onSuccess');
     spyOn(notificationService, 'onWarning');
     spyOn(notificationService, 'onError');
-    spyOn(dbService, 'initBackend').and.returnValue(of().toPromise());
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
     spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
     spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
-    spyOn(console, 'log').and.callFake(s => null);
     fixture.detectChanges();
     flush();
     fixture.detectChanges();
@@ -125,6 +127,59 @@ describe('SceneComponent', () => {
     expect(fixture.debugElement.query(By.css('#but_load_data'))).toBeDefined();
   }));
 
+  it('#onSourceTypeChange should init context', fakeAsync(() => {
+
+    // given
+    spyOn(component, 'initContext');
+
+    // when
+    component.onSourceTypeChange();
+
+    // then
+    expect(component.initContext).toHaveBeenCalled();
+  }));
+
+  it('#onDataTypeChanged should show data format fields when TIME data type', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    const targetColumn = component.columnMappings[1].target;
+    targetColumn.dataType = DataType.TIME;
+
+    // when
+    component.onDataTypeChanged(targetColumn);
+
+    // then
+    fixture.detectChanges();
+    const formatDebugElements = fixture.debugElement.queryAll(By.css('.column_format'));
+    const sourceFormatDebutElement = fixture.debugElement.query(By.css('.input_source_format'));
+    const displayFormatDebugElement = fixture.debugElement.query(By.css('.select_display_format'));
+    expect(formatDebugElements.length).toBe(2);
+    expect(sourceFormatDebutElement).toBeDefined();
+    expect(sourceFormatDebutElement.nativeElement.value).toBe('');
+    expect(displayFormatDebugElement).toBeDefined();
+    const matSelect: MatSelect = displayFormatDebugElement.componentInstance;
+    expect(matSelect.value).toBe(component.dateFormats[0]);
+  }));
+
+  it('#click on date format icon should show DatePipe format page', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    const targetColumn = component.columnMappings[1].target;
+    targetColumn.dataType = DataType.TIME;
+    component.onDataTypeChanged(targetColumn);
+    fixture.detectChanges();
+    spyOn(window, 'open');
+    const matIconDebugElement = fixture.debugElement.query(By.css('.icon_link'));
+
+    // when
+    matIconDebugElement.nativeElement.click();
+
+    // then
+    expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options');
+  }));
+
   it('#click on "Delete column mapping" should remove column mapping', fakeAsync(() => {
 
     // given
@@ -141,7 +196,7 @@ describe('SceneComponent', () => {
     expect(component.columnMappings[0].source.name).toBe('Column 1');
   }));
 
-  it('#click on "Load Data" should create scene and import data', fakeAsync(() => {
+  it('#click on "Load Data" should persist scene and import data', fakeAsync(() => {
 
     // given
     initUpToDetectColumns();
@@ -191,7 +246,7 @@ describe('SceneComponent', () => {
     component.onFileSelChange(fileList);
     flush();
     fixture.detectChanges();
-    spyOn(component.selectedReader, 'readSample').and.returnValue(Promise.resolve({ tableData: tableData.slice(0, 4) }));    
+    spyOn(component.selectedReader, 'readSample').and.returnValue(Promise.resolve({ tableData: tableData.slice(0, 4) }));
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();

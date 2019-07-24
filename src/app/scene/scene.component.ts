@@ -67,7 +67,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
 
   constructor(public router: Router, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
-      super(bottomSheet, notificationService);
+    super(bottomSheet, notificationService);
   }
 
   ngOnInit() {
@@ -213,7 +213,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
     return this.previewData && this.previewData.find(mr => mr.errors.length > 0) !== undefined;
   }
 
-  loadScene() {
+  persistScene() {
     this.scene.creationTime = new Date().getTime();
     this.scene.columns = this.columnMappings.map(cp => cp.target);
     this.accordion.closeAll();
