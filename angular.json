@@ -18,14 +18,20 @@
             "polyfills": "src/polyfills.ts",
             "assets": [
               "src/assets",
-              "src/assets/favicon.ico",                          
+              "src/assets/favicon.ico",
               "src/WEB-INF"
             ],
             "styles": [
+              "src/themes/koia-theme.scss",
               "src/styles.css",
               "node_modules/c3/c3.min.css",
               "node_modules/pivottable/dist/pivot.css"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/themes/scss"
+              ]
+            },
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/jquery-ui-dist/jquery-ui.min.js",
@@ -123,7 +129,7 @@
           }
         }
       }
-    }   
+    }
   },
   "defaultProject": "koia",
   "schematics": {

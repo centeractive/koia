@@ -1,0 +1,11 @@
+@import '~@angular/material/theming';
+
+@include mat-core();
+
+$koia-primary: mat-palette($mat-red);
+$koia-accent:  mat-palette($mat-orange);
+$koia-warn:    mat-palette($mat-orange);
+
+$koia-theme: mat-light-theme($koia-primary, $koia-accent, $koia-warn);
+
+@include angular-material-theme($koia-theme);

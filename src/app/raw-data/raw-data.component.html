@@ -8,11 +8,11 @@
         (click)="printView()">
         <mat-icon>print</mat-icon>
       </button>
-      <button mat-button [color]="wrapWords ? 'primary' : ''" mat-icon-button
+      <button mat-button [color]="wrapWords ? 'accent' : ''" mat-icon-button
         [matTooltip]="wrapWords ? 'Unwrap Words' : 'Wrap Words'" (click)="wrapWords = !wrapWords">
         <mat-icon>wrap_text</mat-icon>
       </button>
-      <button mat-button [color]="highlight ? 'primary' : ''" mat-icon-button
+      <button mat-button [color]="highlight ? 'accent' : ''" mat-icon-button
         [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
         <mat-icon>highlight</mat-icon>
       </button>

@@ -8,41 +8,41 @@
   </table>
 </mat-card>
 
-<div id="div_main">
+<div id="div_main" color="accent">
 
   <div id="div_toolbar">
     <span class="span_buttons" *ngIf="!dialogStyle">
-      <button id="butShowContext" mat-button [color]="showContext ? 'primary' : ''" mat-icon-button
+      <button id="butShowContext" mat-button [color]="showContext ? 'accent' : ''" mat-icon-button
         [matTooltip]="showContext ? 'Hide Context' : 'Show Context'" (click)="showContext = !showContext">
         <mat-icon>help_outline</mat-icon>
       </button>
       &nbsp;&nbsp;&nbsp;
-      <button id="butAdmin" mat-button [color]="currURL == urlScenes ? 'primary' : ''" mat-icon-button
+      <button id="butAdmin" mat-button [color]="currURL == urlScenes ? 'accent' : ''" mat-icon-button
         matTooltip="Administration" [routerLink]="[urlScenes]">
         <mat-icon>account_circle</mat-icon>
       </button>
-      <button id="butRawData" mat-stroked-button [color]="currURL == urlRawdata ? 'primary' : ''"
+      <button id="butRawData" mat-stroked-button [color]="currURL == urlRawdata ? 'accent' : ''"
         matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
         <mat-icon svgIcon="raw_data_view"></mat-icon>
         <span>Raw Data</span>
       </button>
-      <button id="butGridView" mat-stroked-button [color]="currURL == urlGrid ? 'primary' : ''" matTooltip="Grid View"
+      <button id="butGridView" mat-stroked-button [color]="currURL == urlGrid ? 'accent' : ''" matTooltip="Grid View"
         [routerLink]="[urlGrid]">
         <mat-icon svgIcon="grid_view"></mat-icon>
         <span>Grid View</span>
       </button>
-      <button id="butFlexView" mat-stroked-button [color]="currURL == urlFlex ? 'primary' : ''" matTooltip="Flex View"
+      <button id="butFlexView" mat-stroked-button [color]="currURL == urlFlex ? 'accent' : ''" matTooltip="Flex View"
         [routerLink]="[urlFlex]">
         <mat-icon svgIcon="flex_view"></mat-icon>
         <span>Flex View</span>
-      </button>
-      <button id="butPivotView" mat-stroked-button [color]="currURL == urlPivot ? 'primary' : ''"
+      </button>      
+      <button id="butPivotView" mat-stroked-button [color]="currURL == urlPivot ? 'accent' : ''"              
         matTooltip="Pivot Table" [routerLink]="[urlPivot]">
         <mat-icon svgIcon="pivot_table"></mat-icon>
         <span>Pivot Table</span>
       </button>
     </span>
-
+    
     <div id="div_filter">
       <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
         <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"
@@ -124,7 +124,7 @@
         [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
         (click)="showRangeFilters = !showRangeFilters">
         <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
-          [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
+          [matBadgeColor]="showRangeFilters ? 'accent' : 'accent'">swap_horiz</mat-icon>
       </button>
 
       <button mat-button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
@@ -136,9 +136,9 @@
   <div *ngIf="showRangeFilters">
     <div *ngFor="let rangeFilter of rangeFilters">
       <div class="div_range_slider">
-        <button mat-button color="primary" mat-icon-button matTooltip="Define slider step size"
+        <button mat-button color="accent" mat-icon-button matTooltip="Define slider step size"
           [matMenuTriggerFor]="stepmenu">
-          <mat-icon [matBadge]="rangeFilter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="primary">
+          <mat-icon [matBadge]="rangeFilter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="accent">
             linear_scale
           </mat-icon>
         </button>
@@ -151,7 +151,7 @@
         &nbsp;&nbsp;
         <ng5-slider [(value)]="rangeFilter.selStart" [(highValue)]="rangeFilter.selEnd"
           [options]="rangeFilter.rangeOptions" (userChangeEnd)="refreshEntries()"></ng5-slider>
-        <button class="but_reset_range_filter" mat-button color="primary" mat-icon-button
+        <button class="but_reset_range_filter" mat-button color="accent" mat-icon-button
           matTooltip="Reset value range filter" [disabled]="!rangeFilter.isFiltered()"
           (click)="resetRangeFilter(rangeFilter)">
           <mat-icon>undo</mat-icon>
