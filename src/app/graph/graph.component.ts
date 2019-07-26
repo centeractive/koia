@@ -13,7 +13,7 @@ import { ExportDataProvider } from 'app/shared/controller';
 import { NvD3Component } from 'ng2-nvd3';
 
 @Component({
-  selector: 'retro-graph',
+  selector: 'koia-graph',
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.css',
     '../../../node_modules/nvd3/build/nv.d3.css'],

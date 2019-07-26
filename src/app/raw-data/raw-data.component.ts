@@ -8,7 +8,7 @@ import { NotificationService } from 'app/shared/services';
 import { AbstractComponent } from 'app/shared/controller';
 
 @Component({
-  selector: 'retro-raw-data',
+  selector: 'koia-raw-data',
   templateUrl: './raw-data.component.html',
   styleUrls: ['./raw-data.component.css']
 })

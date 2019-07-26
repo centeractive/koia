@@ -10,7 +10,7 @@ import { IDataFrame, DataFrame } from 'data-forge';
 import { ChartJsUtils } from './chartjs-utils';
 
 @Component({
-  selector: 'retro-chartjs',
+  selector: 'koia-chartjs',
   templateUrl: './chartjs.component.html',
   styleUrls: ['./chartjs.component.css']
 })

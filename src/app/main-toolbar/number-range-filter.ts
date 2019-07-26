@@ -52,6 +52,11 @@ export class NumberRangeFilter {
       this.selectedStepAbbrev = 'n';
    }
 
+   formatStep(step: any): any {
+      const num = NumberUtils.asNumber(step);
+      return num === undefined || num < 1_000 ? step : num.toLocaleString();
+   }
+
    onStepChanged(step: any): void {
       this.selectedStep = step;
       this.defineRangeOptions();

@@ -16,7 +16,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 
 @Component({
-  selector: 'retro-chart',
+  selector: 'koia-chart',
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.css',
     '../../../node_modules/nvd3/build/nv.d3.css'],

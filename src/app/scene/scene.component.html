@@ -1,6 +1,7 @@
 <mat-card>
 
-  <div class="div_limitation" *ngIf="usesBrowserStorage">CouchDB cannot be accessed, browser storage is used instead</div>
+  <div class="div_limitation" *ngIf="usesBrowserStorage">CouchDB cannot be accessed, browser storage is used instead
+  </div>
   <h1>Admin / New Scene</h1>
 
   <div *ngIf="scene">
@@ -14,13 +15,13 @@
 
   <mat-accordion multi="true">
     <mat-expansion-panel expanded="true">
-      <mat-expansion-panel-header>
+      <mat-expansion-panel-header color="accent">
         <mat-panel-title>
           <mat-icon color="primary">looks_one</mat-icon>&nbsp;Data Source
         </mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field>
-        <mat-select placeholder="Source Type" [(value)]="selectedReader" (valueChange)="onSourceTypeChange()">
+        <mat-select placeholder="Source Type" [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
           <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
         </mat-select>
       </mat-form-field>
@@ -51,8 +52,8 @@
         </mat-select>
       </mat-form-field>
       <div *ngFor="let attr of readerAttributes">
-        <mat-slide-toggle class="reader_attribute" *ngIf="attr.isBoolean()" color="primary" (change)="columnMappings = null"
-          [(ngModel)]="attr.value" [matTooltip]="attr.description">
+        <mat-slide-toggle class="reader_attribute" *ngIf="attr.isBoolean()" color="primary"
+          (change)="columnMappings = null" [(ngModel)]="attr.value" [matTooltip]="attr.description">
           {{ attr.name }}
         </mat-slide-toggle>
 
@@ -78,8 +79,8 @@
         </div>
       </div>
       <div>
-        <button mat-raised-button color="primary" matTooltip="Detect columns by considering defined attributes"
-          (click)="readSample()">Detect Columns</button>
+        <button id="but_detect_columns" mat-raised-button color="primary"
+          matTooltip="Detect columns by considering defined attributes" (click)="readSample()">Detect Columns</button>
       </div>
     </mat-expansion-panel>
 
@@ -90,7 +91,7 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div *ngFor="let columnPair of columnMappings">
-        <button mat-button mat-icon-button matTooltip="Delete irrelevant column"
+        <button class="but_column_mapping" mat-button mat-icon-button matTooltip="Delete irrelevant column"
           (click)="deleteColumnMapping(columnPair)">
           <mat-icon>delete_forever</mat-icon>
         </button>
@@ -99,9 +100,10 @@
             (change)="onColumnChanged()">
         </mat-form-field>
         <mat-form-field class="column_data_type">
-          <mat-select placeholder="Data Type" [(value)]="columnPair.target.dataType">
-            <mat-option *ngFor="let dataType of columnDefAssistant.selectableDataTypeOf(columnPair)" [value]="dataType"
-              (click)="onDataTypeChanged(columnPair)">
+          <mat-select class="select_data_type" placeholder="Data Type" [(value)]="columnPair.target.dataType"
+            (selectionChange)="onDataTypeChanged(columnPair.target)">
+            <mat-option class="option_data_type"
+              *ngFor="let dataType of columnDefAssistant.selectableDataTypeOf(columnPair)" [value]="dataType">
               {{ dataType }}
             </mat-option>
           </mat-select>
@@ -112,13 +114,15 @@
         </mat-form-field>
         <span class="span_source_format" *ngIf="columnDefAssistant.canHaveSourceFormat(columnPair)">
           <mat-form-field class="column_format" class="column_format">
-            <input matInput type="text" placeholder="Source Format" [(ngModel)]="columnPair.source.format"
+            <input class="input_source_format" matInput type="text" placeholder="Source Format" [(ngModel)]="columnPair.source.format"
               (change)="onColumnChanged()">
-          </mat-form-field>          
-          <mat-icon class="icon_link" matTooltip="Show custom format opitons" (click)="openDatePipeFormatPage()">help</mat-icon>
+          </mat-form-field>
+          <mat-icon class="icon_link" matTooltip="Show custom format opitons" (click)="openDatePipeFormatPage()">help
+          </mat-icon>
         </span>
-        <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(columnPair)" class="column_format">
-          <mat-select placeholder="Display Format" [(value)]="columnPair.target.format">
+        <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(columnPair)"
+          class="column_format">
+          <mat-select class="select_display_format"  placeholder="Display Format" [(value)]="columnPair.target.format">
             <mat-option *ngFor="let format of dateFormats" [value]="format">{{ formattedNow(format) }}
             </mat-option>
           </mat-select>
@@ -132,7 +136,7 @@
           <mat-icon color="primary">looks_4</mat-icon>&nbsp;Preview
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <div #content id="div_table">
+      <div #content id="div_preview_table">
         <table mat-table [dataSource]="previewData">
           <ng-container *ngFor="let columnPair of columnMappings; let iCol = index"
             [matColumnDef]="columnPair.target.name">
@@ -158,8 +162,8 @@
         matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
         matTooltipClass="tooltip_preview_warning" />
       &nbsp;
-      <button mat-raised-button color="primary" matTooltip="Loads all data to the database"
-        [disabled]="!(maxItemsToLoad > 0)" (click)="loadScene()">
+      <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
+        [disabled]="!(maxItemsToLoad > 0)" (click)="persistScene()">
         Load Data
       </button>
       &nbsp;

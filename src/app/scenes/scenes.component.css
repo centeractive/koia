@@ -11,12 +11,22 @@
   top: -5px;
 }
 
+.div_scene {
+  width: 100%;
+  display: flex;
+}
+
 .scene_name {
-   width: 250px;
-   padding-right: 10px;
- }
+  min-width: 200px;
+  flex-grow: 1;
+  padding-right: 10px;
+}
  
 .scene_short_desc {
-  width: 500px;
+  flex-grow: 3;
   padding-right: 10px;
+}
+
+.scene_creation_time {
+  width: 160px;
 }

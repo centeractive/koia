@@ -3,7 +3,7 @@ import { MatIconRegistry } from '@angular/material';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
-  selector: 'retro-root',
+  selector: 'koia-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

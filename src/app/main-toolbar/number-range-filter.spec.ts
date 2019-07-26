@@ -203,6 +203,47 @@ describe('NumberRangeFilter', () => {
       expect(options.combineLabels('10', '200')).toBe('10 - 200');
    });
 
+   it('#formatStep should not format time unit', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+      const filter = new NumberRangeFilter(column, 0, new Date().getTime(),  null);
+
+      // when
+      const formatted = filter.formatStep(TimeUnit.MINUTE);
+
+      // then
+      expect(formatted).toBe(TimeUnit.MINUTE);
+   });
+
+   it('#formatStep should not format small number', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+      const filter = new NumberRangeFilter(column, 0, 1,  null);
+      const num = 0.000001;
+
+      // when
+      const formatted = filter.formatStep(num);
+
+      // then
+      expect(formatted).toBe(num);
+   });
+
+   it('#formatStep should format large number', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+      const filter = new NumberRangeFilter(column, 0, 5_000_000,  null);
+      const num = 3_000_000;
+
+      // when
+      const formatted = filter.formatStep(num);
+
+      // then
+      expect(formatted).toBe(num.toLocaleString());
+   });
+
    it('#reset should reset selected start and end value', () => {
 
       // given

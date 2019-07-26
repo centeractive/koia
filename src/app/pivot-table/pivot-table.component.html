@@ -1,13 +1,13 @@
 <mat-sidenav-container fullscreen>
 
   <mat-sidenav mode="push" class="sidenav">
-    <retro-pivot-table-side-bar [columns]="columns" [context]="context" [data]="baseDataFrame">
-    </retro-pivot-table-side-bar>
+    <koia-pivot-table-side-bar [columns]="columns" [context]="context" [data]="baseDataFrame">
+    </koia-pivot-table-side-bar>
   </mat-sidenav>
 
   <div #header class="sticky_header">
-    <retro-main-toolbar [route]="route" (onAfterViewChecked)="adjustLayout()" (onFilterChange)="fetchData($event)">
-    </retro-main-toolbar>
+    <koia-main-toolbar [route]="route" (onAfterViewChecked)="adjustLayout()" (onFilterChange)="fetchData($event)">
+    </koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <div id="view_toolbar">
 

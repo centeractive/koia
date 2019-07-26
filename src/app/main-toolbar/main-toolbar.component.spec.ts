@@ -274,12 +274,10 @@ describe('MainToolbarComponent', () => {
     expect(link).toEqual('/' + Route.PIVOT);
   });
 
-  /**
-   * full text filter is currently disabled
-   *
   it('pressing <enter> in full text filter field should emit onFilterChange', () => {
 
     // given
+    component.showFullTextFilter = true;
     fixture.detectChanges();
     const htmlInput: HTMLInputElement = fixture.debugElement.query(By.css('#fullTextFilter')).nativeElement;
     htmlInput.value = 'abc';
@@ -295,16 +293,16 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.getFullTextFilter()).toBe('abc');
     expect(query.getPropertyFilters().length).toBe(0);
-    expect(query.hasTimeStart('Time')).toBeFalsy();
-    expect(query.hasTimeEnd('Time')).toBeFalsy();
+    expect(query.getValueRangeFilters().length).toBe(0);
   });
 
   it('pressing <clear> button in full text filter field should emit onFilterChange', () => {
 
     // given
+    component.showFullTextFilter = true;
     fixture.detectChanges();
     const htmlInput: HTMLInputElement = fixture.debugElement.query(By.css('#fullTextFilter')).nativeElement;
     htmlInput.value = 'abc';
@@ -321,7 +319,6 @@ describe('MainToolbarComponent', () => {
     const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
   });
-  */
 
   it('selecting "add column filter" menu item should add non-time column filter', fakeAsync(() => {
 

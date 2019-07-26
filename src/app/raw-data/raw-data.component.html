@@ -1,7 +1,7 @@
   <div #header [class]="dialogStyle ? '' : 'sticky_header'">
-    <retro-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
+    <koia-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
       (onFilterChange)="onFilterChanged($event)">
-    </retro-main-toolbar>
+    </koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <div id="view_toolbar">
       <button mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint matTooltip="Print current view"

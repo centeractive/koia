@@ -13,7 +13,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 
 @Component({
-  selector: 'retro-summary-table',
+  selector: 'koia-summary-table',
   templateUrl: './summary-table.component.html',
   styleUrls: ['./summary-table.component.css']
 })

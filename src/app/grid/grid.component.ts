@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 
 @Component({
-  selector: 'retro-grid',
+  selector: 'koia-grid',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.css']
 })

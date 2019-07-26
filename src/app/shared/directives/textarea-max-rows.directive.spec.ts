@@ -1,6 +1,5 @@
 import { TextareaMaxRowsDirective } from './textarea-max-rows.directive';
 import { ElementRef } from '@angular/core';
-import { text } from 'd3';
 
 describe('TextareaMaxRowsDirective', () => {
 
