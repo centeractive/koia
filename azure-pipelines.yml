@@ -17,6 +17,19 @@ steps:
 
 - script: |
     npm install -g @angular/cli
-    npm install
+  displayName: 'npm install angular-cli globally'
+
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    command: install
+    workingDir: .  
+
+- script: |
     ng build --prod
-  displayName: 'npm install and build'
+  displayName: 'build koia with ng build --prod'
+
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'koiadist'
+    targetPath: '/dist/koia'
