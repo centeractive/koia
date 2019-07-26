@@ -32,4 +32,4 @@ steps:
 - task: PublishPipelineArtifact@0
   inputs:
     artifactName: 'koiadist'
-    targetPath: '/dist/koia'
+    targetPath: 'dist/koia'
