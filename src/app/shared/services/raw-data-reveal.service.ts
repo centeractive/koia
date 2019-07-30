@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route, ValueRange } from '../model';
+import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route } from '../model';
 import { DateTimeUtils, CommonUtils } from '../utils';
 import { GraphUtils } from 'app/graph/graph-utils';
 import { CouchDBConstants } from './backend/couchdb';

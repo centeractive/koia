@@ -3,13 +3,16 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/cor
 import { ScenesComponent } from './scenes.component';
 import {
   MatIconModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatBottomSheetModule,
-  MatBottomSheet
+  MatBottomSheet,
+  MatMenuModule,
+  MatDialogModule,
+  MatDialog
 } from '@angular/material';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { DBService } from 'app/shared/services/backend';
 import { Scene, Status, Route } from 'app/shared/model';
-import { NotificationService } from 'app/shared/services';
+import { NotificationService, DialogService } from 'app/shared/services';
 import { RouterModule, RouteReuseStrategy } from '@angular/router';
 import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
@@ -39,16 +42,18 @@ describe('ScenesComponent', () => {
   let fixture: ComponentFixture<ScenesComponent>;
 
   beforeAll(() => {
-    scenes = [ createScene('1'), createScene('2'), createScene('3') ];
+    scenes = [createScene('1'), createScene('2'), createScene('3')];
   });
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ScenesComponent, RawDataComponent],
-      imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatCardModule, FormsModule, MatFormFieldModule,
-        MatInputModule, MatButtonModule, MatIconModule, RouterModule.forRoot([{ path: '**', component: RawDataComponent }])],
+      imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
+        MatMenuModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
+        RouterModule.forRoot([{ path: '**', component: RawDataComponent }])],
       providers: [MatBottomSheet,
         { provide: DBService, useValue: dbService },
+        DialogService,
         { provide: NotificationService, useValue: notificationService },
         { provide: RouteReuseStrategy, useValue: appRouteReuseStrategy },
       ]
@@ -56,9 +61,11 @@ describe('ScenesComponent', () => {
     spyOn(appRouteReuseStrategy, 'clear');
     spyOn(notificationService, 'onSuccess');
     spyOn(notificationService, 'onError');
+    spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
     spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
     spyOn(dbService, 'getActiveScene').and.returnValue(scenes[0]);
     spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
+    spyOn(dbService, 'findScene').and.returnValue(Promise.resolve(scenes[0]));
   }));
 
   beforeEach(fakeAsync(() => {
@@ -94,15 +101,36 @@ describe('ScenesComponent', () => {
     expect(link).toEqual('/' + Route.SCENE);
   });
 
-  it('#click on delete button should delete scene', fakeAsync(() => {
+  it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
+
+    // given
+    const dialogService = TestBed.get(DialogService);
+    spyOn(dialogService, 'showSceneDetailsDialog');
+    const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
+
+    // when
+    moreButton.click();
+    fixture.detectChanges();
+    const detailsButton: HTMLButtonElement = fixture.debugElement.query(By.css('.menu_item_details')).nativeElement;
+    detailsButton.click();
+    flush();
+
+    // then
+    expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scenes[0]);
+  }));
+
+  it('#selecting delete menu item should delete scene', fakeAsync(() => {
 
     // given
     const scene = scenes[0];
     spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_delete_scene'))[0].nativeElement;
+    const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
 
     // when
-    htmlButton.click();
+    moreButton.click();
+    fixture.detectChanges();
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('.menu_item_delete')).nativeElement;
+    deleteButton.click();
     flush();
 
     // then
@@ -110,15 +138,18 @@ describe('ScenesComponent', () => {
     expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
   }));
 
-  it('#click on delete button should notify error when error occurs', fakeAsync(() => {
+  it('#selecting delete menu item should notify error when error occurs', fakeAsync(() => {
 
     // given
     const scene = scenes[0];
     spyOn(dbService, 'deleteScene').and.returnValue(Promise.reject('cannot delete scene'));
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_delete_scene'))[0].nativeElement;
+    const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
 
     // when
-    htmlButton.click();
+    moreButton.click();
+    fixture.detectChanges();
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('.menu_item_delete')).nativeElement;
+    deleteButton.click();
     flush();
 
     // then

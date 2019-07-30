@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { Scene, Query, Operator, SceneInfo, Page, Column, ValueRange, Document } from 'app/shared/model';
 import { QueryUtils } from 'app/shared/utils';
@@ -28,8 +28,17 @@ export class DBService {
     this.dbPrefix = prefix;
   }
 
-  async initBackend(): Promise<void> {
-    if (!this.db) {
+  isBackendInitialized(): boolean {
+    return this.db !== null && this.db !== undefined;
+  }
+
+  /**
+   * @param force [[true]] to initialize the backend regardless if it was already initialized before,
+   * [[false]] to initialize the backend only in case it was not already initialized before
+   */
+  async initBackend(force: boolean): Promise<void> {
+    if (!this.db || force) {
+      this.db = null;
       return this.couchDBService.listDatabases()
         .then(dbs => {
           this.db = this.couchDBService;
@@ -40,11 +49,15 @@ export class DBService {
         })
         .catch(err => {
           console.log('CouchDB cannot be accessed, browser storage is used instead', err);
-          this.db = new PouchDBAccess();
-          this.queryConverter = new QueryConverter(true);
-          return this.createScenesDB();
+          return this.useBrowserStorage();
         });
     }
+  }
+
+  useBrowserStorage(): Promise<any> {
+    this.db = new PouchDBAccess();
+    this.queryConverter = new QueryConverter(true);
+    return this.createScenesDB();
   }
 
   private async createScenesDB(): Promise<any> {

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { SceneInfo, Route } from 'app/shared/model';
 import { Router } from '@angular/router';
-import { NotificationService } from 'app/shared/services';
+import { NotificationService, DialogService } from 'app/shared/services';
 import { MatBottomSheet } from '@angular/material';
 import { DBService } from 'app/shared/services/backend';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
@@ -16,34 +16,38 @@ import { AbstractComponent } from 'app/shared/controller';
 export class ScenesComponent extends AbstractComponent implements OnInit {
 
   readonly urlScene = '/' + Route.SCENE;
-  usesBrowserStorage: boolean;
   activeSceneId: string;
   sceneInfos: SceneInfo[];
 
-  constructor(public router: Router, bottomSheet: MatBottomSheet, private dbService: DBService, notificationService: NotificationService) {
+  constructor(public router: Router, bottomSheet: MatBottomSheet, private dbService: DBService, private dialogService: DialogService,
+    notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
   ngOnInit() {
-    this.dbService.initBackend()
-      .then(() => {
-        this.usesBrowserStorage = this.dbService.usesBrowserStorage();
-        this.activeSceneId = this.findActiveSceneId();
-        this.dbService.findSceneInfos()
-          .then(sceneInfos => {
-            if (sceneInfos && sceneInfos.length > 0) {
-              this.sceneInfos = sceneInfos;
-            } else {
-              this.router.navigateByUrl(Route.SCENE);
-            }
-          });
-      })
-      .catch(err => this.notifyError(err));
+    if (!this.dbService.isBackendInitialized()) {
+      this.router.navigateByUrl(Route.FRONT);
+    } else {
+      this.activeSceneId = this.findActiveSceneId();
+      this.dbService.findSceneInfos()
+        .then(sceneInfos => {
+          if (sceneInfos && sceneInfos.length > 0) {
+            this.sceneInfos = sceneInfos;
+          } else {
+            this.router.navigateByUrl(Route.SCENE);
+          }
+        });
+    }
   }
 
   private findActiveSceneId() {
     const activeScene = this.dbService.getActiveScene();
     return activeScene ? activeScene._id : undefined;
+  }
+
+  showSceneDetails(sceneID: string): void {
+    this.dbService.findScene(sceneID)
+      .then(s => this.dialogService.showSceneDetailsDialog(s));
   }
 
   activate(sceneInfo: SceneInfo) {

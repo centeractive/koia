@@ -27,7 +27,8 @@ getTestBed().initTestEnvironment(
 
 const context = require.context('./', true, /\.spec\.ts$/);
 
-// const context = require.context('./', true, /number-range-filter\.spec\.ts$/);
+// const context = require.context('./', true, /front.component\.spec\.ts$/);
+// const context = require.context('./', true, /connection-dialog.component\.spec\.ts$/);
 
 // const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb\.service\.spec\.ts$/);

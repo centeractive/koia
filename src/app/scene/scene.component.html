@@ -1,8 +1,7 @@
 <mat-card>
-
-  <div class="div_limitation" *ngIf="usesBrowserStorage">CouchDB cannot be accessed, browser storage is used instead
-  </div>
-  <h1>Admin / New Scene</h1>
+  <mat-card-header>
+    <mat-card-title>Create New Scene</mat-card-title>
+  </mat-card-header>
 
   <div *ngIf="scene">
     <mat-form-field class="scene_name">
@@ -114,15 +113,15 @@
         </mat-form-field>
         <span class="span_source_format" *ngIf="columnDefAssistant.canHaveSourceFormat(columnPair)">
           <mat-form-field class="column_format" class="column_format">
-            <input class="input_source_format" matInput type="text" placeholder="Source Format" [(ngModel)]="columnPair.source.format"
-              (change)="onColumnChanged()">
+            <input class="input_source_format" matInput type="text" placeholder="Source Format"
+              [(ngModel)]="columnPair.source.format" (change)="onColumnChanged()">
           </mat-form-field>
           <mat-icon class="icon_link" matTooltip="Show custom format opitons" (click)="openDatePipeFormatPage()">help
           </mat-icon>
         </span>
         <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(columnPair)"
           class="column_format">
-          <mat-select class="select_display_format"  placeholder="Display Format" [(value)]="columnPair.target.format">
+          <mat-select class="select_display_format" placeholder="Display Format" [(value)]="columnPair.target.format">
             <mat-option *ngFor="let format of dateFormats" [value]="format">{{ formattedNow(format) }}
             </mat-option>
           </mat-select>
@@ -157,6 +156,7 @@
   <br>
   <div *ngIf="scene">
     <button id="but_cancel" *ngIf="!canceled" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
+    &nbsp;
     <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappings">
       <img *ngIf="isPreviewDirty()" src="../../assets/warning.png"
         matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"

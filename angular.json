@@ -22,10 +22,12 @@
               "src/WEB-INF"
             ],
             "styles": [
-              "src/themes/koia-theme.scss",
               "src/styles.css",
               "node_modules/c3/c3.min.css",
-              "node_modules/pivottable/dist/pivot.css"
+              "node_modules/pivottable/dist/pivot.css",
+              "node_modules/slick-carousel/slick/slick.scss",
+              "node_modules/slick-carousel/slick/slick-theme.scss",
+              "src/themes/koia-theme.scss"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -38,7 +40,8 @@
               "node_modules/d3/d3.min.js",
               "node_modules/c3/c3.min.js",
               "node_modules/pivottable/dist/pivot.min.js",
-              "node_modules/pivottable/dist/c3_renderers.js"
+              "node_modules/pivottable/dist/c3_renderers.js",
+              "node_modules/slick-carousel/slick/slick.min.js"
             ]
           },
           "configurations": {

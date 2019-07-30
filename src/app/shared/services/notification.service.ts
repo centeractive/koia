@@ -29,9 +29,8 @@ export class NotificationService {
   private toMessage(value: string | Object): string {
     if (typeof value === 'string') {
       return <string> value;
-    } else if (value instanceof Error) {
-      const error = <Error> value;
-      return error.name + ': ' + error.message;
+    } else if (value['name'] && value['message']) {
+      return value['name'] + ': ' + value['message'];
     }
     return JSON.stringify(value);
   }

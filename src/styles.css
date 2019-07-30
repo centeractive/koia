@@ -21,17 +21,13 @@ body {
   right: 15; /* otherwise vertical scrollbar remains inactive in header */ 
   width: calc(100% - 15px); 
   z-index: 999;
-  border-bottom: 1px solid 	
-  	
-rgb(244,54,45);  
+  border-bottom: 1px solid 	rgb(145, 144, 144);    
 }
 
 #view_toolbar {
-  background-color: 	
-  rgb(255,111,88);  
+  background-color: white;
   width: 100%;
-  border-top: 1px solid 	
-  rgb(255,111,88);    
+  border-top: 1px solid rgb(145, 144, 144);    
 }
 
 .sidenav {
@@ -166,11 +162,4 @@ mat-panel-description {
     display: block;
     height: 100%;
   }
-
-  /*
-  svg {
-    transform:scale(0.3);
-    -webkit-transform:scale(0.3);
-  }
-  */
 }

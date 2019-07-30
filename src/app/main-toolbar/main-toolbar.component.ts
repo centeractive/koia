@@ -22,7 +22,9 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   @Output() onAfterViewChecked: EventEmitter<void> = new EventEmitter();
   @Output() onFilterChange: EventEmitter<Query> = new EventEmitter(true);
 
+  readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
+  readonly urlScene = '/' + Route.SCENE;
   readonly urlRawdata = '/' + Route.RAWDATA;
   readonly urlGrid = '/' + Route.GRID;
   readonly urlFlex = '/' + Route.FLEX;
@@ -32,7 +34,6 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   scene: Scene;
   nonTimeColumns: Column[];
   timeColumns: Column[];
-  showContext: boolean;
   showFullTextFilter: boolean;
   showRangeFilters: boolean;
   fullTextFilter = '';

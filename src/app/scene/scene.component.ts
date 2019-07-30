@@ -51,7 +51,6 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   feedback: string;
   percentPersisted: number;
   entryPersister: EntryPersister;
-  usesBrowserStorage: boolean;
   maxItemsPerScene: number;
   maxItemsToLoad: number;
   abortDataloadOnError = true;
@@ -71,14 +70,16 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.dateFormats = DateTimeUtils.allTimeUnits('desc').map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
-    this.readers = this.readerService.getReaders();
-    this.selectedReader = this.readers[0];
-    this.defineLocales();
-    this.dbService.initBackend()
-      .then(r => this.initScene())
-      .catch(err => this.notifyError(err));
-    this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
+    if (!this.dbService.isBackendInitialized()) {
+      this.router.navigateByUrl(Route.FRONT);
+    } else {
+      this.dateFormats = DateTimeUtils.allTimeUnits('desc').map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
+      this.readers = this.readerService.getReaders();
+      this.selectedReader = this.readers[0];
+      this.defineLocales();
+      this.initScene();
+      this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
+    }
   }
 
   private defineLocales(): void {
@@ -90,7 +91,6 @@ export class SceneComponent extends AbstractComponent implements OnInit {
     this.dbService.findFreeDatabaseName()
       .then(db => {
         this.scene = SceneUtils.createScene(db);
-        this.usesBrowserStorage = this.dbService.usesBrowserStorage();
         this.maxItemsPerScene = this.dbService.getMaxDataItemsPerScene();
         this.maxItemsToLoad = this.maxItemsPerScene;
         this.entryPersister = this.createEntryPersister();

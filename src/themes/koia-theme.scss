@@ -2,8 +2,8 @@
 
 @include mat-core();
 
-$koia-primary: mat-palette($mat-red);
-$koia-accent:  mat-palette($mat-orange);
+$koia-primary: mat-palette($mat-indigo);
+$koia-accent:  mat-palette($mat-green);
 $koia-warn:    mat-palette($mat-orange);
 
 $koia-theme: mat-light-theme($koia-primary, $koia-accent, $koia-warn);

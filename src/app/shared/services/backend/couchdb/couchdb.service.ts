@@ -5,6 +5,8 @@ import { DocChangeResponse } from '../doc-change-response.type';
 import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { DB } from '../db.type';
+import { ConnectionInfo } from './connection-info.type';
+import { CommonUtils } from 'app/shared/utils';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
@@ -20,20 +22,36 @@ import { DB } from '../db.type';
 @Injectable()
 export class CouchDBService implements DB {
 
-  private static readonly BASE_URL = 'http://localhost:5984/';
   private static MAX_DATA_ITEMS_PER_SCENE = 100_000;
 
+  private connectionInfo: ConnectionInfo;
+  private baseURL: string;
   private httpOptions: {};
 
   constructor(private http: HttpClient) {
+    this.initConnection({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
     this.httpOptions = this.createHttpOptions();
+  }
+
+  initConnection(connectionInfo: ConnectionInfo): Promise<string> {
+    this.connectionInfo = connectionInfo;
+    this.baseURL = 'http://' + connectionInfo.host + ':' + connectionInfo.port + '/';
+    return new Promise<string>((resolve, reject) => {
+      this.listDatabases()
+        .then(r => resolve('Connection to CouchDB at ' + this.baseURL + ' has beed established'))
+        .catch(err => reject(err));
+    });
+  }
+
+  getConnectionInfo(): ConnectionInfo {
+    return <ConnectionInfo> CommonUtils.clone(this.connectionInfo);
   }
 
   private createHttpOptions(): any {
     let httpHeaders = new HttpHeaders();
     httpHeaders = httpHeaders.set('Accept', 'application/json');
     httpHeaders = httpHeaders.set('Content-type', 'application/json');
-    httpHeaders = httpHeaders.set('Authorization', 'Basic ' + btoa('admin:admin'));
+    httpHeaders = httpHeaders.set('Authorization', 'Basic ' + btoa(this.connectionInfo.user + ':' + this.connectionInfo.password));
     return { headers: httpHeaders, withCredentials: true };
   }
 
@@ -41,7 +59,7 @@ export class CouchDBService implements DB {
     * @return the names of all non-system databases
     */
   listDatabases(): Promise<string[]> {
-    const url = CouchDBService.BASE_URL + '_all_dbs';
+    const url = this.baseURL + '_all_dbs';
     console.log(HTTPMethod.GET + ' ' + url);
     return this.http.get<string[]>(url, this.httpOptions).pipe(
       map(dbs => dbs.filter(db => !db.startsWith('_')))
@@ -77,7 +95,7 @@ export class CouchDBService implements DB {
   }
 
   find(database: string, mangoQuery: any): Observable<Document[]> {
-    const url = CouchDBService.BASE_URL + database + '/_find';
+    const url = this.baseURL + database + '/_find';
     console.log(HTTPMethod.POST + ' ' + url + ' ' + JSON.stringify(mangoQuery));
     return this.http.post<any>(url, mangoQuery, this.httpOptions).pipe(
       map(res => res.docs)
@@ -132,7 +150,7 @@ export class CouchDBService implements DB {
   }
 
   private url(method: HTTPMethod, database: string, properties?: string): string {
-    const url = CouchDBService.BASE_URL + database + (properties ? '/' + properties : '');
+    const url = this.baseURL + database + (properties ? '/' + properties : '');
     console.log(method + ' ' + url);
     return url;
   }

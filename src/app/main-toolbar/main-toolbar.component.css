@@ -2,28 +2,8 @@ button {
   z-index: 999;
 }
 
-.context {
-  background-color: rgb(238, 250, 237);
-}
-
-table {
-  font-size: 12px;
-}
-
-th {
-  vertical-align: top;
-  text-align: right;
-  padding-right: 10px;
-  white-space: nowrap;
-}
-
-td {
-  white-space: pre-wrap;
-}
-
 #div_main {
-  background-color:	
-  rgb(244,54,45);
+  background-color: white;
 }
 
 #div_toolbar {
@@ -127,7 +107,7 @@ td {
 }
 
 .ng5-slider-bubble {
-  background-color: #fff !important;
+  background-color: rgb(238, 250, 237) !important;
   border: 1px solid rgb(212, 209, 209); 
   border-radius: 4px;
   font-size: 12px !important;
@@ -138,7 +118,7 @@ td {
 }
 
 .div_range_slider .ng5-slider-bubble.ng5-slider-limit {
-  background-color: rgb(238, 250, 237) !important;
+  background-color: white !important;
   border-style: dashed !important;
 }
 

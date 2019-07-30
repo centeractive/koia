@@ -1,0 +1,92 @@
+#img_logo {
+   position: absolute;
+   top: 20px;
+   left: 25px;
+   z-index: 10;
+}
+
+p {
+   text-align: justify;
+}
+ 
+.carousel {
+   display: block;
+   margin-left: auto;
+   margin-right: auto;
+   max-width: 600px;
+}
+
+#div_intro_cards {
+   display: flex;
+   flex-direction: row;
+   flex-wrap: nowrap;  
+   justify-content: space-between;
+   margin: 0px 20px 0px 20px;
+}
+
+#div_action_cards {
+   display: flex;
+   flex-direction: row;
+   flex-wrap: wrap;  
+   align-items: flex-start;
+   justify-content: space-between;
+   margin: 0px 20px 0px 20px;
+}
+
+.action-card {
+   min-width: 250px;
+   max-width: 350px;
+   margin: 0px 4px 0px 4px;
+}
+
+.div_actions {
+   text-align: right;
+}
+
+#army-knive-image {
+   background-image: url('../../assets/army_knife.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+}
+
+#shield-image {
+   background-image: url('../../assets/shield.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+}
+
+#data-image {
+   background-image: url('../../assets/text_binary.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+} 
+
+#scene-image {
+   background-image: url('../../assets/scene.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+} 
+
+#view-image {
+   background-image: url('../../assets/view.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+} 
+
+#browser-image {
+   background-image: url('../../assets/earth.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+} 
+
+#couchdb-image {
+   background-image: url('../../assets/couchdb.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+.koia-logo {
+   background-image: url('../../assets/koialogo_50x50.png');
+   background-repeat: no-repeat;
+   background-size: 36px 36px;
+}

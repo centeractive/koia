@@ -205,27 +205,6 @@ describe('MainToolbarComponent', () => {
     expect(valueRangeFilter.valueRange.max).toBe(timeValueRange.max - 1000);
   });
 
-  it('pressing context button should toggle context visibility', () => {
-
-    // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butShowContext')).nativeElement;
-
-    // when
-    htmlButton.click();
-    fixture.detectChanges();
-
-    // then
-    const matCardContext: HTMLButtonElement = fixture.debugElement.query(By.css('#context')).nativeElement;
-    expect(matCardContext).toBeTruthy();
-
-    // when
-    htmlButton.click();
-    fixture.detectChanges();
-
-    // then
-    expect(fixture.debugElement.query(By.css('#context'))).toBeNull();
-  });
-
   it('raw data button should point to raw data view', () => {
 
     // given

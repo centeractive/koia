@@ -1,14 +1,7 @@
-.div_limitation {
-  padding: 5px;
-  background: #ffffcc;
-  border-radius: 4px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
 #but_new_scene {
-  position: relative;
-  top: -5px;
+  position: absolute;
+  top: 10px;
+  right: 15px;
 }
 
 .div_scene {

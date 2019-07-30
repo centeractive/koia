@@ -47,7 +47,7 @@ describe('DBService', () => {
     await couchDBService.clear(testDBPrefix).then(dbs => null).catch(e => fail(e));
     dbService = new DBService(couchDBService);
     dbService.setDbPrefix(testDBPrefix);
-    await dbService.initBackend().then(r => null).catch(e => fail(e));
+    await dbService.initBackend(false).then(r => null).catch(e => fail(e));
     initialScene = createScene('0');
     await dbService.persistScene(initialScene, true).then(r => null).catch(e => fail(e));
   });

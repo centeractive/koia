@@ -13,7 +13,7 @@ import {
   MatButtonModule, MatCheckboxModule, MatRadioModule, MatExpansionModule, MatCardModule,
   MatSelectModule, MatMenuModule, MatIconModule, MatProgressBarModule, MatInputModule,
   MatSidenavModule, MatBadgeModule, MatTableModule, MatSortModule, MatPaginatorModule,
-  MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule, MatDialog, MatDialogModule
+  MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule, MatDialog, MatDialogModule, MatStepperModule
 } from '@angular/material';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -54,12 +54,17 @@ import { MatIconModuleMock } from './shared/test';
 import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.directive';
 import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
 import { RawDataViewComponent } from './raw-data/raw-data-view.component';
+import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog.component';
+import { DialogService } from './shared/services/dialog.service';
+import { FrontComponent } from './front/front.component';
+import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainToolbarComponent,
     ScenesComponent,
+    SceneDetailsDialogComponent,
     SceneComponent,
     GridComponent,
     FlexCanvasComponent,
@@ -77,11 +82,15 @@ import { RawDataViewComponent } from './raw-data/raw-data-view.component';
     StatusComponent,
     ChartjsComponent,
     MatIconModuleMock,
-    TextareaMaxRowsDirective
+    TextareaMaxRowsDirective,
+    ConnectionDialogComponent,
+    FrontComponent
   ],
   entryComponents: [
+    ConnectionDialogComponent,
     StatusComponent,
-    RawDataDialogComponent
+    RawDataDialogComponent,
+    SceneDetailsDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -115,7 +124,8 @@ import { RawDataViewComponent } from './raw-data/raw-data-view.component';
     NvD3Module,
     Ng5SliderModule,
     AppRoutingModule,
-    MatDialogModule
+    MatDialogModule,
+    MatStepperModule
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
@@ -129,7 +139,8 @@ import { RawDataViewComponent } from './raw-data/raw-data-view.component';
     TimeGroupingService,
     ValueRangeGroupingService,
     AggregationService,
-    NotificationService
+    NotificationService,
+    DialogService
   ],
   bootstrap: [AppComponent]
 })

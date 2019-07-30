@@ -1,25 +1,15 @@
-<mat-card id="context" *ngIf="showContext">
-  <h3>Koia Data Analysis</h3>
-  <table *ngIf="scene">
-    <tr *ngFor="let contextInfo of scene.context">
-      <th>{{contextInfo.name}}</th>
-      <td>{{contextInfo.value}}</td>
-    </tr>
-  </table>
-</mat-card>
-
-<div id="div_main" color="accent">
+<div id="div_main">
 
   <div id="div_toolbar">
     <span class="span_buttons" *ngIf="!dialogStyle">
-      <button id="butShowContext" mat-button [color]="showContext ? 'accent' : ''" mat-icon-button
-        [matTooltip]="showContext ? 'Hide Context' : 'Show Context'" (click)="showContext = !showContext">
-        <mat-icon>help_outline</mat-icon>
+      <button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+        <mat-icon>home</mat-icon>
       </button>
-      &nbsp;&nbsp;&nbsp;
-      <button id="butAdmin" mat-button [color]="currURL == urlScenes ? 'accent' : ''" mat-icon-button
-        matTooltip="Administration" [routerLink]="[urlScenes]">
-        <mat-icon>account_circle</mat-icon>
+      <button id="butScenes" mat-button mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
+        <mat-icon>collections</mat-icon>
+      </button>
+      <button id="butScene" mat-button mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+        <mat-icon>add_photo_alternate</mat-icon>
       </button>
       <button id="butRawData" mat-stroked-button [color]="currURL == urlRawdata ? 'accent' : ''"
         matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
@@ -35,14 +25,14 @@
         [routerLink]="[urlFlex]">
         <mat-icon svgIcon="flex_view"></mat-icon>
         <span>Flex View</span>
-      </button>      
-      <button id="butPivotView" mat-stroked-button [color]="currURL == urlPivot ? 'accent' : ''"              
+      </button>
+      <button id="butPivotView" mat-stroked-button [color]="currURL == urlPivot ? 'accent' : ''"
         matTooltip="Pivot Table" [routerLink]="[urlPivot]">
         <mat-icon svgIcon="pivot_table"></mat-icon>
         <span>Pivot Table</span>
       </button>
     </span>
-    
+
     <div id="div_filter">
       <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
         <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"

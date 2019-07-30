@@ -1,27 +1,30 @@
 <mat-card>
 
-  <div class="div_limitation" *ngIf="usesBrowserStorage">CouchDB cannot be accessed, browser storage is used instead
-  </div>
+  <mat-card-header>
+    <mat-card-title>Scenes
+      <button id="but_new_scene" mat-stroked-button matTooltip="Import data and create new scene" [routerLink]="[urlScene]">
+        <mat-icon>add_photo_alternate</mat-icon>
+        <span>Add Scene</span>
+      </button>
+    </mat-card-title>
+  </mat-card-header>
 
-  <h1>Admin / Scenes
-    <button id="but_new_scene" mat-stroked-button matTooltip="Import data (create new scene)" [routerLink]="[urlScene]">
-      <mat-icon>open_in_browser</mat-icon>
-      <span>Import</span>
-    </button>
-  </h1>
   <div class="div_scene" *ngFor="let sceneInfo of sceneInfos">
-    <button class="but_delete_scene" mat-button mat-icon-button matTooltip="Delete scene" (click)="delete(sceneInfo)">
-      <mat-icon>delete_forever</mat-icon>
+
+    <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
+      <mat-icon>more_vert</mat-icon>
     </button>
-    <mat-form-field class="scene_name">
-      <input matInput type="text" placeholder="Scene Name" readonly [(ngModel)]="sceneInfo.name">
-    </mat-form-field>
-    <mat-form-field class="scene_short_desc">
-      <input matInput type="text" placeholder="Short Description" readonly [(ngModel)]="sceneInfo.shortDescription">
-    </mat-form-field>
-    <mat-form-field class="scene_creation_time">
-      <input matInput type="text" placeholder="Creation Time" readonly [value]="sceneInfo.creationTime | date:'medium'">
-    </mat-form-field>
+    <mat-menu #moreMenu="matMenu">
+      <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(sceneInfo._id)">
+        <mat-icon>pageview</mat-icon>
+        <span>Show details</span>
+      </button>
+      <button class="menu_item_delete" mat-menu-item (click)="delete(sceneInfo)">
+        <mat-icon>delete_forever</mat-icon>
+        <span>Delete</span>
+      </button>
+    </mat-menu>
+
     <button id="but_continue" mat-button *ngIf="activeSceneId === sceneInfo._id" mat-icon-button
       [color]="activeSceneId === sceneInfo._id ? 'primary' : ''" matTooltip="Continue with this scene"
       (click)="leave()">
@@ -31,5 +34,15 @@
       matTooltip="Activate scene" (click)="activate(sceneInfo)">
       <mat-icon>play_circle_outline</mat-icon>
     </button>
+
+    <mat-form-field class="scene_name">
+      <input matInput type="text" placeholder="Scene Name" readonly [(ngModel)]="sceneInfo.name">
+    </mat-form-field>
+    <mat-form-field class="scene_short_desc">
+      <input matInput type="text" placeholder="Short Description" readonly [(ngModel)]="sceneInfo.shortDescription">
+    </mat-form-field>
+    <mat-form-field class="scene_creation_time">
+      <input matInput type="text" placeholder="Creation Time" readonly [value]="sceneInfo.creationTime | date:'medium'">
+    </mat-form-field>
   </div>
 </mat-card>

@@ -290,6 +290,9 @@ export class ChartOptionsProvider {
    }
 
    private xAxisLabel(context: ChartContext): string {
+      if (!context.isAggregationCountSelected()) {
+         return context.groupByColumns[0].name;
+      }
       return CommonUtils.labelOf(context.groupByColumns[0], context.groupByColumns[0].groupingTimeUnit);
    }
 

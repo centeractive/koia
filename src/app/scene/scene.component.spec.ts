@@ -15,8 +15,6 @@ import { of } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
-import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { HttpClient } from '@angular/common/http';
 
 class FakeNotificationService extends NotificationService {
 
@@ -54,8 +52,7 @@ describe('SceneComponent', () => {
 
   beforeEach(async(() => {
     spyOn(console, 'log').and.callFake(s => null);
-    dbService = new DBService(new CouchDBService(new HttpClient(null)));
-    dbService.initBackend();
+    dbService = new DBService(null);
     TestBed.configureTestingModule({
       declarations: [SceneComponent],
       imports: [RouterTestingModule, MatBottomSheetModule, MatExpansionModule, MatCardModule, FormsModule, MatFormFieldModule,
@@ -76,8 +73,9 @@ describe('SceneComponent', () => {
     spyOn(notificationService, 'onSuccess');
     spyOn(notificationService, 'onWarning');
     spyOn(notificationService, 'onError');
+    spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
-    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
+    spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
     fixture.detectChanges();
     flush();
@@ -204,6 +202,7 @@ describe('SceneComponent', () => {
       dataHandler.onValues(tableData.slice(1));
       dataHandler.onComplete();
     });
+    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
     spyOn(component.router, 'navigateByUrl');
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
