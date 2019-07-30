@@ -19,15 +19,16 @@
             "assets": [
               "src/assets",
               "src/assets/favicon.ico",
+              "src/assets/*.png",
               "src/WEB-INF"
             ],
             "styles": [
-              "src/styles.css",
               "node_modules/c3/c3.min.css",
               "node_modules/pivottable/dist/pivot.css",
               "node_modules/slick-carousel/slick/slick.scss",
               "node_modules/slick-carousel/slick/slick-theme.scss",
-              "src/themes/koia-theme.scss"
+              "src/themes/koia-theme.scss",
+              "src/styles.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
@@ -94,7 +95,9 @@
             ],
             "assets": [
               "src/assets",
-              "src/favicon.ico"
+              "src/assets/favicon.ico",
+              "src/assets/*.png",
+              "src/WEB-INF"
             ]
           }
         },

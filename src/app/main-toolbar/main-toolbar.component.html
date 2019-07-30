@@ -14,22 +14,22 @@
       <button id="butRawData" mat-stroked-button [color]="currURL == urlRawdata ? 'accent' : ''"
         matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
         <mat-icon svgIcon="raw_data_view"></mat-icon>
-        <span>Raw Data</span>
+        <span>&nbsp;Raw Data</span>
       </button>
       <button id="butGridView" mat-stroked-button [color]="currURL == urlGrid ? 'accent' : ''" matTooltip="Grid View"
         [routerLink]="[urlGrid]">
         <mat-icon svgIcon="grid_view"></mat-icon>
-        <span>Grid View</span>
+        <span>&nbsp;Grid View</span>
       </button>
       <button id="butFlexView" mat-stroked-button [color]="currURL == urlFlex ? 'accent' : ''" matTooltip="Flex View"
         [routerLink]="[urlFlex]">
         <mat-icon svgIcon="flex_view"></mat-icon>
-        <span>Flex View</span>
+        <span>&nbsp;Flex View</span>
       </button>
       <button id="butPivotView" mat-stroked-button [color]="currURL == urlPivot ? 'accent' : ''"
         matTooltip="Pivot Table" [routerLink]="[urlPivot]">
         <mat-icon svgIcon="pivot_table"></mat-icon>
-        <span>Pivot Table</span>
+        <span>&nbsp;Pivot Table</span>
       </button>
     </span>
 
@@ -50,7 +50,7 @@
           <button mat-menu-item *ngFor="let column of nonTimeColumns"
             [disabled]="column.name === columnFilter.propertyName"
             (click)="onColumnFilterChanged(columnFilter, column)">
-            <span>{{ column.name }}</span>
+            <span>&nbsp;{{ column.name }}</span>
           </button>
         </mat-menu>
 

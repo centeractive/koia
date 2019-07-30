@@ -11,7 +11,7 @@ export class ExcelReader implements DataReader {
 
    getDescription(): string {
       return 'Microsoft Excel is composed of one or several spreadsheets that contain data in tabular form.\n' +
-         'We expect column names to appear in the first row of the selected spreadsheet.';
+         'It is expected that column names appear in the first row of the selected spreadsheet.';
    }
 
    getSourceName(): string {

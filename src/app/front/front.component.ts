@@ -1,10 +1,10 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { Route } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { ReaderService, DataReader } from 'app/shared/services/reader';
 import { CouchDBService, ConnectionInfo } from 'app/shared/services/backend/couchdb';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet, MatHorizontalStepper } from '@angular/material';
 import { AbstractComponent } from 'app/shared/controller';
 import * as $ from 'jquery';
 import 'slick-carousel';
@@ -15,6 +15,8 @@ import 'slick-carousel';
   styleUrls: ['./front.component.css']
 })
 export class FrontComponent extends AbstractComponent implements OnInit, AfterViewInit {
+
+  @ViewChild(MatHorizontalStepper, undefined) stepper: MatHorizontalStepper;
 
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
@@ -47,6 +49,8 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   ngAfterViewInit(): void {
+    this.stepper.selectedIndex = 6;
+    this.stepper._steps.first.reset();
     if (this.showScreenshots) {
       $('.carousel').slick({
         slidesToShow: 1,

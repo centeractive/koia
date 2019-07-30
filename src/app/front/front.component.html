@@ -1,14 +1,39 @@
 <mat-card>
   <mat-card-content>
 
-    <img id="img_logo" src="../../assets/koialogo_textblack.png">
-
-    <div class="carousel" *ngIf="showScreenshots">
-      <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
+    <div id="div_logo">
+      <img id="img_logo" src="../../assets/koialogo_textblack.png">
     </div>
 
     <mat-horizontal-stepper #stepper>
-      <mat-step label="About">
+
+      <ng-template matStepperIcon="edit">
+        <mat-icon>check</mat-icon>
+      </ng-template>      
+
+      <ng-template matStepperIcon="about">
+          <mat-icon>contact_support</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="trustworthy">
+          <mat-icon>security</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="data">
+          <mat-icon>insert_drive_file</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="scenes">
+          <mat-icon>collections</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="views">
+          <mat-icon>pageview</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="screenshots">
+          <mat-icon>laptop_mac</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="hide">
+          <mat-icon>visibility_off</mat-icon>
+      </ng-template>
+
+      <mat-step label="About" state="about">
         <mat-card class="info-card">
           <mat-card-header>
             <div mat-card-avatar id="army-knive-image"></div>
@@ -17,15 +42,15 @@
           </mat-card-header>
           <mat-card-content>
             <p>
-              Koia is an <a href="https://angular.io/" target="_blank">Angular</a> based program for everyone to
-              create simple but stunning charts, summaries and pivot tables out of custom data within a few minutes.
+              Koia is an <a href="https://angular.io/" target="_blank">Angular</a> based program that anyone can use
+              to create simple but stunning charts, summaries and pivot tables out of custom data in just a few minutes.
             </p>
             <p>
               It differs from similar programs mainly in that the context to the original data is never lost. A mouse
               click on a chart element or a summary value, for example, opens a dialog that shows the raw data on which
-              the displayed element or value is based. Discover yourself the many other features such as...
+              the displayed element or value is based. Discover some of the many other features yourself:
               <ul>
-                <li>Column filters with supporting many operators (contains, less than, less or equal, equal greater han or equal, greater than, not empty)</li>
+                <li>Column filters supporting operators: contains, &lt;, &lt;=, =, &gt;=, &gt;, not empty</li>
                 <li>Draggable column value range filters</li>
                 <li>Automatic and manual value range grouping</li>
                 <li>Customizable grids</li>
@@ -38,7 +63,7 @@
           </mat-card-content>
         </mat-card>
       </mat-step>
-      <mat-step label="Trustworthy">
+      <mat-step label="Trustworthy" state="trustworthy">
         <mat-card class="info-card">
           <mat-card-header>
             <div mat-card-avatar id="shield-image"></div>
@@ -53,8 +78,8 @@
               Koia runs on public web servers but it can also easily be installed in your trusted environment.
             </p>
             <p>
-              The koia web application loads static content once from a web site but your data
-              never never flows back to that web site. It only 'travels' between your browser
+              The Koia web application loads static content from a web site but your data
+              never flows back to that web site. It only 'travels' between your browser
               and the data storage, without it ever being accessible to any unauthorized third party. You decide whether
               the data is kept locally on your computer or in a private external data storage.
             </p>
@@ -62,7 +87,7 @@
         </mat-card>
       </mat-step>
 
-      <mat-step label="Data">
+      <mat-step label="Data" state="data">
         <mat-card class="info-card">
           <mat-card-header>
             <div mat-card-avatar id="data-image"></div>
@@ -84,16 +109,18 @@
               </li>
             </ul>
             <p>
-              When importing a file, you're granted full control over which portions of the data should be imported. you
-              can also determine which part of the data types the values should be stored with in the data storage and
-              how
-              they should be displayed.
+              When importing a file, you're granted full control over which portions of the data should be imported.
+              You're also in control over...
             </p>
+            <ul>
+              <li>The data types to be used for storing the values in the data storage</li>
+              <li>The format to be applied for displaying certain values</li>
+            </ul>
           </mat-card-content>
         </mat-card>
       </mat-step>
 
-      <mat-step label="Scenes">
+      <mat-step label="Scenes" state="scenes">
         <mat-card class="info-card">
           <mat-card-header>
             <div mat-card-avatar id="scene-image"></div>
@@ -102,11 +129,11 @@
           </mat-card-header>
           <mat-card-content>
             <p>
-              Once loaded to the data storage, individual datasets are represented by a <b>Scene</b> each.
+              Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>.
               You can switch between different scenes as you please.
             </p>
             <p>
-              Scenes can be given a user-defined name and description. They further contain the following items.
+              Scenes can be given a user-defined name and description. They also contain the following items.
             </p>
             <ul>
               <li>Information about the origin of the loaded data (i.e. file name and modification date).</li>
@@ -118,7 +145,7 @@
         </mat-card>
       </mat-step>¨
 
-      <mat-step label="Views">
+      <mat-step label="Views" state="views">
         <mat-card class="info-card">
           <mat-card-header>
             <div mat-card-avatar id="view-image"></div>
@@ -127,29 +154,42 @@
           </mat-card-header>
           <mat-card-content>
             <ul>
-              <li>The <b>Raw Data</b> table prestems the data in unprocessed form in pages of adjustable size.
+              <li>The <b>Raw Data</b> table prestents the data in an unprocessed form in pages of adjustable size.
                 The table offers sorting and filtering of individual columns.</li>
               <li>The <b>Grid View</b> contains a variable number of elements that are held in a fixed grid of
-                customizable
-                dimension. Grid elements (summary tables, charts and graphs) may fit into a single cell or they may
-                spread
-                over several columns and rows, it's all up to you. When the window size changes, the element size also
-                changes
-                in order to always fit the allocated grid space.
+                customizable dimension. Grid elements (summary tables, charts and graphs) may fit into a single cell or
+                they may spread over several columns and rows, it's all up to you. When the window size changes, the
+                element size also changes in order to always fit the allocated grid space.
               </li>
               <li>The <b>Flex View</b> contains a variable number of elements (summary tables, charts and graphs) of
-                specific
-                size each. When the window size changes, the size of single elements is not changed. The elements are
-                however
-                automatically layed out according to the available window space.</li>
-              <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, those revealing
-                patterns, and trends. It's based on amazing <a href="https://www.npmjs.com/package/pivottable"
-                  target="_blank">PivotTable.js</a> that offers many different
-                views (i.e. heatmaps and table barcharts) and lets you shape the pivot table through drag and drop of
-                individual columns.</li>
+                specific size each. When the window size changes, the size of single elements are not changed. The
+                elements are however automatically laid out according to the available window space.</li>
+              <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing
+                patterns and trends. It's based on amazing <a href="https://www.npmjs.com/package/pivottable"
+                  target="_blank">PivotTable.js</a> that offers many different views (e.g. heatmaps and table barcharts)
+                and lets you shape the pivot table through drag and drop of individual columns.</li>
             </ul>
           </mat-card-content>
         </mat-card>
+      </mat-step>
+
+      <mat-step label="Screenshots" state="screenshots">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <div mat-card-avatar id="screenshots-image"></div>
+            <mat-card-title>Screenshots</mat-card-title>
+            <mat-card-subtitle>This is what koia in action may look like</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="carousel" *ngIf="showScreenshots">
+              <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
+            </div>
+            <br>
+          </mat-card-content>
+        </mat-card>
+      </mat-step>
+
+      <mat-step label="Hide" state="hide">
       </mat-step>
     </mat-horizontal-stepper>
 
@@ -163,7 +203,7 @@
         <img mat-card-image src="../../assets/data_table.png">
         <mat-card-content>
           <p>
-            Koia Data Analyzer writes and reads data from the browser's internal
+            Koia writes and reads data from the browser's internal
             <a href="https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API" target="_blank">IndexedDB</a>
             or from an external <a href="http://couchdb.apache.org/" target="_blank">CouchDB</a> instance.
             The latter has the following advantages.
@@ -203,7 +243,7 @@
             create a new one at any time later by pressing the <mat-icon style="vertical-align: middle">collections
             </mat-icon> button in the main toolbar.
           </p>
-          <p *ngIf="sceneCount">
+          <p>
             {{ selectedDataStorage }} currently contains <b>{{ sceneCount }} scenes.</b>
           </p>
         </mat-card-content>
@@ -228,7 +268,7 @@
         <img mat-card-image src="../../assets/add_scene.png">
         <mat-card-content>
           <p>
-            This lets you create a new scene from data of a local file.
+            This lets you create a new scene from data from a local file.
           </p>
           <p>New scenes may be created or existing ones selected at any time later by pressing the
             <mat-icon style="vertical-align: middle">add_photo_alternate</mat-icon> button in the main toolbar.
