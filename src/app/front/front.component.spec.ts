@@ -51,6 +51,7 @@ const readerService = new ReaderService();
 const dialogService = new DialogService(null);
 const notificationService = new FakeNotificationService();
 let dbService: DBService;
+let usesBrowserStroageSpy: jasmine.Spy;
 let initBackendSpy: jasmine.Spy;
 
 describe('FrontComponent', () => {
@@ -85,7 +86,8 @@ describe('FrontComponent', () => {
     component.showScreenshots = false;
     initBackendSpy = spyOn(dbService, 'initBackend');
     initBackendSpy.and.returnValue(Promise.resolve());
-    spyOn(dbService, 'usesBrowserStorage').and.returnValue(true);
+    usesBrowserStroageSpy = spyOn(dbService, 'usesBrowserStorage');
+    usesBrowserStroageSpy.and.returnValue(true);
     const sceneInfos = createSceneInfos(5);
     spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
     fixture.detectChanges();
@@ -100,10 +102,11 @@ describe('FrontComponent', () => {
     expect(component.selectedDataStorage).toBe(component.browser);
   });
 
-  it('#onDataStorageChanged should not init CouchDB connection when user leaves connection info unchanged', fakeAsync(() => {
+  it('#onDataStorageChanged should not init CouchDB connection when user leaves active connection unchanged', fakeAsync(() => {
 
     // given
     const dialogRef = createConnectionDialogRef();
+    usesBrowserStroageSpy.and.returnValue(false);
     spyOn(dialogService, 'showConnectionDialog').and.returnValue(dialogRef);
     spyOn(couchDBService, 'initConnection');
     spyOn(notificationService, 'onSuccess');

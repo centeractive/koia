@@ -25,9 +25,9 @@ getTestBed().initTestEnvironment(
 
 // Then we find all the tests.
 
-const context = require.context('./', true, /\.spec\.ts$/);
+// const context = require.context('./', true, /\.spec\.ts$/);
 
-// const context = require.context('./', true, /front.component\.spec\.ts$/);
+const context = require.context('./', true, /front.component\.spec\.ts$/);
 
 // const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb\.service\.spec\.ts$/);

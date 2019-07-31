@@ -1,15 +1,14 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { Route } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { ReaderService, DataReader } from 'app/shared/services/reader';
 import { CouchDBService, ConnectionInfo } from 'app/shared/services/backend/couchdb';
-import { MatBottomSheet, MatHorizontalStepper } from '@angular/material';
+import { MatBottomSheet } from '@angular/material';
 import { AbstractComponent } from 'app/shared/controller';
 import * as $ from 'jquery';
 import 'slick-carousel';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { CommonUtils } from 'app/shared/utils';
 
 @Component({
   selector: 'koia-front',
@@ -73,9 +72,9 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
     });
   }
 
-  onDataStorageChanged() {
+  onDataStorageChanged(): void {
     if (this.selectedDataStorage === this.couchDB) {
-      this.showDataStoreDefinition();
+      this.shownCouchDBConnectionDialog();
     } else {
       this.dbService.useBrowserStorage()
         .then(r => {
@@ -85,17 +84,20 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  showDataStoreDefinition(): void {
+  shownCouchDBConnectionDialog(): void {
     const connectionInfo = this.couchDBService.getConnectionInfo();
     const dialogRef = this.dialogService.showConnectionDialog(connectionInfo);
-    dialogRef.afterClosed().toPromise().then(r => {
-      if (JSON.stringify(connectionInfo) !== JSON.stringify(this.couchDBService.getConnectionInfo())) {
-        this.onCouchDBConnectionChanged(connectionInfo);
-      }
-    });
+    dialogRef.afterClosed().toPromise().then(r => this.onCouchDBConnectionDialogClosed(connectionInfo));
   }
 
-  private onCouchDBConnectionChanged(connectionInfo: ConnectionInfo): void {
+  private onCouchDBConnectionDialogClosed(connectionInfo: ConnectionInfo): void {
+    if (this.dbService.usesBrowserStorage() ||
+      JSON.stringify(connectionInfo) !== JSON.stringify(this.couchDBService.getConnectionInfo())) {
+      this.initCouchDBConnection(connectionInfo);
+    }
+  }
+
+  private initCouchDBConnection(connectionInfo: ConnectionInfo): void {
     this.couchDBService.initConnection(connectionInfo)
       .then(msg => {
         this.dbService.initBackend(true)

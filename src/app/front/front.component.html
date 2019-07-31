@@ -47,8 +47,9 @@
               minutes.
             </p>
             <p>
-              Koia was originally built to improve the analysis and visualization of data collected and structured with
-              <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective Log Analyzer</a>.
+              Koia was originally built to improve analysis and visualization capabilities for data collected and
+              structured with stunning <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
+                Log Analyzer</a>.
             </p>
           </mat-card-content>
         </mat-card>
@@ -241,15 +242,15 @@
 
         <mat-card-actions>
           <mat-form-field>
-            <mat-select id="select_data_storage" placeholder="Current Data Storage" [(ngModel)]="selectedDataStorage">
-              <mat-option *ngFor="let dataStorage of dataStorages" [value]="dataStorage"
-                (click)="onDataStorageChanged()">
+            <mat-select id="select_data_storage" placeholder="Current Data Storage" [(ngModel)]="selectedDataStorage"
+              (selectionChange)="onDataStorageChanged()">
+              <mat-option *ngFor="let dataStorage of dataStorages" [value]="dataStorage">
                 {{ dataStorage }}
               </mat-option>
             </mat-select>
           </mat-form-field>
           <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
-            matTooltip="Configure access to CouchDB" color="primary" (click)="showDataStoreDefinition()">
+            matTooltip="Configure access to CouchDB" color="primary" (click)="shownCouchDBConnectionDialog()">
             <mat-icon>settings</mat-icon>
           </button>
         </mat-card-actions>
