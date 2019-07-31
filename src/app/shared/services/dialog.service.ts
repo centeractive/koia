@@ -12,7 +12,7 @@ export class DialogService {
 
   constructor(private dialogService: MatDialog) { }
 
-  showCouchDBConfigDialog(connectionInfo: ConnectionInfo): MatDialogRef<ConnectionDialogComponent> {
+  showConnectionDialog(connectionInfo: ConnectionInfo): MatDialogRef<ConnectionDialogComponent> {
     return this.dialogService.open(ConnectionDialogComponent, { data: connectionInfo, panelClass: 'dialog-container' });
   }
 

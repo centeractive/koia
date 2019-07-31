@@ -8,6 +8,8 @@ import { MatBottomSheet, MatHorizontalStepper } from '@angular/material';
 import { AbstractComponent } from 'app/shared/controller';
 import * as $ from 'jquery';
 import 'slick-carousel';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { CommonUtils } from 'app/shared/utils';
 
 @Component({
   selector: 'koia-front',
@@ -16,17 +18,17 @@ import 'slick-carousel';
 })
 export class FrontComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
-  @ViewChild(MatHorizontalStepper, undefined) stepper: MatHorizontalStepper;
-
+  readonly browser = 'Browser';
+  readonly couchDB = 'CouchDB';
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
   readonly screenshots = ['scene', 'scenes', 'raw-data', 'raw-data-filtered', 'chart-sidebar', 'chart-sidebar2',
     'grid-view', 'flex-view', 'raw-data-details', 'pivot-table', 'grouping'];
 
+  stepsVisible = true;
+  stepVisibleControl: FormGroup;
   showScreenshots = true;
   imagePaths: string[];
-  browser = 'Browser';
-  couchDB = 'CouchDB';
   dataStorages = [this.browser, this.couchDB];
   selectedDataStorage: string;
   sceneCount: number;
@@ -34,11 +36,14 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   constructor(bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private readerService: ReaderService, private dialogService: DialogService,
-    notificationService: NotificationService) {
+    notificationService: NotificationService, private formBuilder: FormBuilder) {
     super(bottomSheet, notificationService);
   }
 
   ngOnInit() {
+    this.stepVisibleControl = this.formBuilder.group({
+      firstCtrl: ['', Validators.required]
+    });
     this.imagePaths = this.screenshots.map(s => '../../assets/screenshots/' + s + '.png');
     this.dbService.initBackend(false)
       .then(() => {
@@ -49,21 +54,23 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   ngAfterViewInit(): void {
-    this.stepper.selectedIndex = 6;
-    this.stepper._steps.first.reset();
     if (this.showScreenshots) {
-      $('.carousel').slick({
-        slidesToShow: 1,
-        arrows: false,
-        dots: true,
-        infinite: true,
-        autoplay: true,
-        autoplaySpeed: 4000,
-        pauseOnFocus: true,
-        fade: true,
-        speed: 2000
-      });
+      this.createScreenshotsCarousel();
     }
+  }
+
+  private createScreenshotsCarousel() {
+    $('.carousel').slick({
+      slidesToShow: 1,
+      arrows: false,
+      dots: true,
+      infinite: true,
+      autoplay: true,
+      autoplaySpeed: 4000,
+      pauseOnFocus: true,
+      fade: true,
+      speed: 2000
+    });
   }
 
   onDataStorageChanged() {
@@ -80,9 +87,9 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   showDataStoreDefinition(): void {
     const connectionInfo = this.couchDBService.getConnectionInfo();
-    const dialogRef = this.dialogService.showCouchDBConfigDialog(connectionInfo);
+    const dialogRef = this.dialogService.showConnectionDialog(connectionInfo);
     dialogRef.afterClosed().toPromise().then(r => {
-      if (connectionInfo !== this.couchDBService.getConnectionInfo()) {
+      if (JSON.stringify(connectionInfo) !== JSON.stringify(this.couchDBService.getConnectionInfo())) {
         this.onCouchDBConnectionChanged(connectionInfo);
       }
     });
@@ -103,8 +110,8 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
     this.init();
   }
 
-  private couchDBConnectionFailed(err: string): void {
-    this.notifyError(err);
+  private couchDBConnectionFailed(error: string | Object): void {
+    this.notifyError(error);
     this.init();
   }
 

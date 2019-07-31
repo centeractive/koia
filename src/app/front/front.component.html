@@ -5,66 +5,57 @@
       <img id="img_logo" src="../../assets/koialogo_textblack.png">
     </div>
 
-    <mat-horizontal-stepper #stepper>
+    <mat-horizontal-stepper [linear]="!stepsVisible" #stepper>
 
       <ng-template matStepperIcon="edit">
         <mat-icon>check</mat-icon>
-      </ng-template>      
+      </ng-template>
 
       <ng-template matStepperIcon="about">
-          <mat-icon>contact_support</mat-icon>
+        <mat-icon>contact_support</mat-icon>
       </ng-template>
       <ng-template matStepperIcon="trustworthy">
-          <mat-icon>security</mat-icon>
+        <mat-icon>security</mat-icon>
+      </ng-template>
+      <ng-template matStepperIcon="features">
+        <mat-icon>build</mat-icon>
       </ng-template>
       <ng-template matStepperIcon="data">
-          <mat-icon>insert_drive_file</mat-icon>
+        <mat-icon>insert_drive_file</mat-icon>
       </ng-template>
       <ng-template matStepperIcon="scenes">
-          <mat-icon>collections</mat-icon>
+        <mat-icon>collections</mat-icon>
       </ng-template>
       <ng-template matStepperIcon="views">
-          <mat-icon>pageview</mat-icon>
+        <mat-icon>pageview</mat-icon>
       </ng-template>
       <ng-template matStepperIcon="screenshots">
-          <mat-icon>laptop_mac</mat-icon>
-      </ng-template>
-      <ng-template matStepperIcon="hide">
-          <mat-icon>visibility_off</mat-icon>
+        <mat-icon>laptop_mac</mat-icon>
       </ng-template>
 
-      <mat-step label="About" state="about">
-        <mat-card class="info-card">
+      <mat-step label="About" state="about" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
-            <div mat-card-avatar id="army-knive-image"></div>
+            <div mat-card-avatar id="about-image"></div>
             <mat-card-title>About</mat-card-title>
-            <mat-card-subtitle>What is Koia and what can it do for me?</mat-card-subtitle>
+            <mat-card-subtitle>What is Koia and where does it come from?</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <p>
               Koia is an <a href="https://angular.io/" target="_blank">Angular</a> based program that anyone can use
-              to create simple but stunning charts, summaries and pivot tables out of custom data in just a few minutes.
+              for free to create simple but stunning charts, summaries and pivot tables out of custom data in just a few
+              minutes.
             </p>
             <p>
-              It differs from similar programs mainly in that the context to the original data is never lost. A mouse
-              click on a chart element or a summary value, for example, opens a dialog that shows the raw data on which
-              the displayed element or value is based. Discover some of the many other features yourself:
-              <ul>
-                <li>Column filters supporting operators: contains, &lt;, &lt;=, =, &gt;=, &gt;, not empty</li>
-                <li>Draggable column value range filters</li>
-                <li>Automatic and manual value range grouping</li>
-                <li>Customizable grids</li>
-                <li>Value sampling</li>
-                <li>Exporting charts to PNG images</li>
-                <li>Exporting summary tables to Excel</li>
-                <li>Pivot tables with drag and drop column support</li>
-                <li>etc.</li>
-              </ul>
+              Koia was originally built to improve the analysis and visualization of data collected and structured with
+              <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective Log Analyzer</a>.
+            </p>
           </mat-card-content>
         </mat-card>
       </mat-step>
-      <mat-step label="Trustworthy" state="trustworthy">
-        <mat-card class="info-card">
+
+      <mat-step label="Trustworthy" state="trustworthy" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="shield-image"></div>
             <mat-card-title>Open-source / Closed-data</mat-card-title>
@@ -87,8 +78,37 @@
         </mat-card>
       </mat-step>
 
-      <mat-step label="Data" state="data">
-        <mat-card class="info-card">
+      <mat-step label="Features" state="features" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
+          <mat-card-header>
+            <div mat-card-avatar id="features-image"></div>
+            <mat-card-title>Features</mat-card-title>
+            <mat-card-subtitle>What can Koia do for me?</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              Koia differs from similar programs mainly in that the context to the original data is never lost. A mouse
+              click on a chart element or a summary value, for example, opens a dialog that shows the raw data on which
+              the displayed element or value is based.
+            </p>
+            <p>Discover some of the many other features yourself:</p>
+            <ul>
+              <li>Column filters supporting operators: contains, &lt;, &lt;=, =, &gt;=, &gt;, not empty</li>
+              <li>Draggable column value range filters</li>
+              <li>Automatic and manual value range grouping</li>
+              <li>Customizable grids</li>
+              <li>Value sampling</li>
+              <li>Exporting charts to PNG images</li>
+              <li>Exporting summary tables to Excel</li>
+              <li>Pivot tables with drag and drop column support</li>
+              <li>etc.</li>
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      </mat-step>
+
+      <mat-step label="Data" state="data" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="data-image"></div>
             <mat-card-title>Data</mat-card-title>
@@ -120,8 +140,8 @@
         </mat-card>
       </mat-step>
 
-      <mat-step label="Scenes" state="scenes">
-        <mat-card class="info-card">
+      <mat-step label="Scenes" state="scenes" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="scene-image"></div>
             <mat-card-title>Scenes</mat-card-title>
@@ -145,8 +165,8 @@
         </mat-card>
       </mat-step>¨
 
-      <mat-step label="Views" state="views">
-        <mat-card class="info-card">
+      <mat-step label="Views" state="views" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="view-image"></div>
             <mat-card-title>Views</mat-card-title>
@@ -173,12 +193,12 @@
         </mat-card>
       </mat-step>
 
-      <mat-step label="Screenshots" state="screenshots">
-        <mat-card class="info-card">
+      <mat-step label="Screenshots" state="screenshots" [stepControl]="stepVisibleControl">
+        <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="screenshots-image"></div>
             <mat-card-title>Screenshots</mat-card-title>
-            <mat-card-subtitle>This is what koia in action may look like</mat-card-subtitle>
+            <mat-card-subtitle>This is what Koia in action looks like</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <div class="carousel" *ngIf="showScreenshots">
@@ -188,12 +208,17 @@
           </mat-card-content>
         </mat-card>
       </mat-step>
-
-      <mat-step label="Hide" state="hide">
-      </mat-step>
     </mat-horizontal-stepper>
 
+
+    <button id="but_hide_show_steps" mat-icon-button
+      [matTooltip]="stepsVisible ? 'Hide Information' : 'Show Information'" color="primary"
+      (click)="stepsVisible = !stepsVisible">
+      <mat-icon>{{ stepsVisible ? 'remove_red_eye' : 'visibility_off' }}</mat-icon>
+    </button>
+
     <div id="div_action_cards">
+
       <mat-card class="action-card">
         <mat-card-header>
           <div mat-card-avatar [id]="selectedDataStorage === couchDB ? 'couchdb-image' : 'browser-image'"></div>
@@ -205,7 +230,7 @@
           <p>
             Koia writes and reads data from the browser's internal
             <a href="https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API" target="_blank">IndexedDB</a>
-            or from an external <a href="http://couchdb.apache.org/" target="_blank">CouchDB</a> instance.
+            or from an external <a href="http://couchdb.apache.org/" target="_blank">CouchDB</a>.
             The latter has the following advantages.
           </p>
           <ul>
@@ -216,15 +241,15 @@
 
         <mat-card-actions>
           <mat-form-field>
-            <mat-select placeholder="Current Data Storage" [(ngModel)]="selectedDataStorage">
+            <mat-select id="select_data_storage" placeholder="Current Data Storage" [(ngModel)]="selectedDataStorage">
               <mat-option *ngFor="let dataStorage of dataStorages" [value]="dataStorage"
                 (click)="onDataStorageChanged()">
                 {{ dataStorage }}
               </mat-option>
             </mat-select>
           </mat-form-field>
-          <button mat-icon-button *ngIf="selectedDataStorage === couchDB" matTooltip="Configure access to CouchDB"
-            color="primary" (click)="showDataStoreDefinition()">
+          <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
+            matTooltip="Configure access to CouchDB" color="primary" (click)="showDataStoreDefinition()">
             <mat-icon>settings</mat-icon>
           </button>
         </mat-card-actions>
@@ -239,9 +264,9 @@
         <img mat-card-image src="../../assets/select_scene.png">
         <mat-card-content>
           <p>
-            Select a scene representing data that has previously been imported. You can switch to a different scene or
-            create a new one at any time later by pressing the <mat-icon style="vertical-align: middle">collections
-            </mat-icon> button in the main toolbar.
+            Select a scene containing data that has previously been imported. You can switch to a different scene at
+            any time later by pressing the <mat-icon style="vertical-align: middle">collections
+            </mat-icon> button.
           </p>
           <p>
             {{ selectedDataStorage }} currently contains <b>{{ sceneCount }} scenes.</b>
@@ -268,10 +293,8 @@
         <img mat-card-image src="../../assets/add_scene.png">
         <mat-card-content>
           <p>
-            This lets you create a new scene from data from a local file.
-          </p>
-          <p>New scenes may be created or existing ones selected at any time later by pressing the
-            <mat-icon style="vertical-align: middle">add_photo_alternate</mat-icon> button in the main toolbar.
+            Create a new scene from data of a local file. New scenes may also be created at any time later by pressing
+            the <mat-icon style="vertical-align: middle"> add_photo_alternate</mat-icon> button.
           </p>
         </mat-card-content>
         <mat-card-actions>

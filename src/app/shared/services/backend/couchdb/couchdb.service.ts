@@ -22,14 +22,15 @@ import { CommonUtils } from 'app/shared/utils';
 @Injectable()
 export class CouchDBService implements DB {
 
-  private static MAX_DATA_ITEMS_PER_SCENE = 100_000;
+  static readonly DEFAULT_CONNECTION_INFO: ConnectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
+  static readonly MAX_DATA_ITEMS_PER_SCENE = 100_000;
 
   private connectionInfo: ConnectionInfo;
   private baseURL: string;
   private httpOptions: {};
 
   constructor(private http: HttpClient) {
-    this.initConnection({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    this.initConnection(CouchDBService.DEFAULT_CONNECTION_INFO);
     this.httpOptions = this.createHttpOptions();
   }
 

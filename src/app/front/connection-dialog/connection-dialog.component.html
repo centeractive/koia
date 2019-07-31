@@ -2,26 +2,26 @@
   <h3>CouchDB Access</h3>
   <div>
     <mat-form-field>
-      <input matInput type="text" placeholder="Host" [(ngModel)]="editingConnInfo.host">
+      <input id="host" matInput type="text" placeholder="Host" [(ngModel)]="editingConnInfo.host">
     </mat-form-field>
     &nbsp;
     <mat-form-field>
-      <input matInput type="number" placeholder="Port" [(ngModel)]="editingConnInfo.port">
+      <input id="port" matInput type="number" placeholder="Port" [(ngModel)]="editingConnInfo.port">
     </mat-form-field>
   </div>
   <div>
     <mat-form-field>
-      <input matInput type="text" placeholder="User" [(ngModel)]="editingConnInfo.user">
+      <input id="user" matInput type="text" placeholder="User" [(ngModel)]="editingConnInfo.user">
     </mat-form-field>
     &nbsp;
     <mat-form-field>
-      <input matInput type="password" placeholder="Password" [(ngModel)]="editingConnInfo.password">
+      <input id="password" matInput type="password" placeholder="Password" [(ngModel)]="editingConnInfo.password">
     </mat-form-field>
   </div>
   <br>
   <div>
     <button id="but_cancel" mat-raised-button color="primary" (click)="dialogRef.close()">Cancel</button>
     &nbsp;
-    <button id="but_cancel" mat-raised-button color="primary" (click)="onOK()">OK</button>
+    <button id="but_ok" mat-raised-button color="primary" (click)="onOK()">OK</button>
   </div>
 </mat-card>

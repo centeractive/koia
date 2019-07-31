@@ -23,12 +23,12 @@
               "src/WEB-INF"
             ],
             "styles": [
-              "node_modules/c3/c3.min.css",
-              "node_modules/pivottable/dist/pivot.css",
               "node_modules/slick-carousel/slick/slick.scss",
               "node_modules/slick-carousel/slick/slick-theme.scss",
+              "node_modules/c3/c3.min.css",
+              "node_modules/pivottable/dist/pivot.css",              
               "src/themes/koia-theme.scss",
-              "src/styles.css"
+              "src/styles.css"              
             ],
             "stylePreprocessorOptions": {
               "includePaths": [

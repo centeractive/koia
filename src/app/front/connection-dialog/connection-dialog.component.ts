@@ -12,7 +12,7 @@ export class ConnectionDialogComponent {
   editingConnInfo: ConnectionInfo;
 
   constructor(public dialogRef: MatDialogRef<ConnectionDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) private connectionInfo: ConnectionInfo) {
+    @Inject(MAT_DIALOG_DATA) public connectionInfo: ConnectionInfo) {
     this.editingConnInfo = <ConnectionInfo>CommonUtils.clone(connectionInfo);
     this.dialogRef.disableClose = true;
   }
