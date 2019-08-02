@@ -20,7 +20,7 @@
       <ng-template matStepperIcon="about">
         <mat-icon>contact_support</mat-icon>
       </ng-template>
-      <ng-template matStepperIcon="trustworthy">
+      <ng-template matStepperIcon="trust">
         <mat-icon>security</mat-icon>
       </ng-template>
       <ng-template matStepperIcon="features">
@@ -39,29 +39,31 @@
         <mat-icon>laptop_mac</mat-icon>
       </ng-template>
 
-      <mat-step label="About" state="about" [stepControl]="stepVisibleControl">
+      <mat-step label="About Koia" state="about" [stepControl]="stepVisibleControl">
         <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="about-image"></div>
-            <mat-card-title>About</mat-card-title>
+            <mat-card-title>About Koia</mat-card-title>
             <mat-card-subtitle>What is Koia and where does it come from?</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <p>
               Koia is an <a href="https://angular.io/" target="_blank">Angular</a> based program that anyone can use
-              for free to create simple but stunning charts, summaries and pivot tables out of custom data in just a few
+              for free to create charts, relationship graphs, summaries and pivot tables out of custom data in just a
+              few
               minutes.
             </p>
             <p>
               Koia was originally built to improve analysis and visualization capabilities for data collected and
               structured with stunning <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
-                Log Analyzer</a>.
+                Log Analyzer</a>&nbsp;
+              <a href="https://retrospective.centeractive.com/" target="_blank"><img id="img_retro" src="../../assets/retrospective.png"></a>
             </p>
           </mat-card-content>
         </mat-card>
       </mat-step>
 
-      <mat-step label="Trustworthy" state="trustworthy" [stepControl]="stepVisibleControl">
+      <mat-step label="Trust" state="trust" [stepControl]="stepVisibleControl">
         <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="shield-image"></div>
@@ -177,11 +179,11 @@
           <mat-card-header>
             <div mat-card-avatar id="view-image"></div>
             <mat-card-title>Views</mat-card-title>
-            <mat-card-subtitle>Koia offers convenient views on your data</mat-card-subtitle>
+            <mat-card-subtitle>Koia offers convenient views of your data</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
             <ul>
-              <li>The <b>Raw Data</b> table prestents the data in an unprocessed form in pages of adjustable size.
+              <li>The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size.
                 The table offers sorting and filtering of individual columns.</li>
               <li>The <b>Grid View</b> contains a variable number of elements that are held in a fixed grid of
                 customizable dimension. Grid elements (summary tables, charts and graphs) may fit into a single cell or
@@ -296,7 +298,7 @@
         <img mat-card-image src="../../assets/add_scene.png">
         <mat-card-content>
           <p>
-            Create a new scene from data of a local file. New scenes may also be created at any time later by pressing
+            Create a new scene of data from a file. New scenes may also be created at any time later by pressing
             the <mat-icon style="vertical-align: middle"> add_photo_alternate</mat-icon> button.
           </p>
         </mat-card-content>

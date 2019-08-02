@@ -8,6 +8,10 @@ p {
    text-align: justify;
 }
 
+#img_retro {
+   vertical-align: middle;
+}
+
 #but_hide_show_steps {
    position: absolute;
    right: 50%;   
@@ -50,7 +54,7 @@ p {
 }
 
 #about-image {
-   background-image: url('../../assets/info.png');
+   background-image: url('../../assets/about.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
