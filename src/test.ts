@@ -27,7 +27,9 @@ getTestBed().initTestEnvironment(
 
 // const context = require.context('./', true, /\.spec\.ts$/);
 
-const context = require.context('./', true, /front.component\.spec\.ts$/);
+// const context = require.context('./', true, /front.component\.spec\.ts$/);
+// const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
+
 
 // const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb\.service\.spec\.ts$/);
@@ -55,7 +57,7 @@ const context = require.context('./', true, /front.component\.spec\.ts$/);
 // const context = require.context('./', true, /admin.component\.spec\.ts$/);
 // const context = require.context('./', true, /main-toolbar.component\.spec\.ts$/);
 // const context = require.context('./', true, /time-range-filter\.spec\.ts$/);
-// const context = require.context('./', true, /flex-canvas.component\.spec\.ts$/);
+const context = require.context('./', true, /flex-canvas.component\.spec\.ts$/);
 // const context = require.context('./', true, /grid.component\.spec\.ts$/);
 // const context = require.context('./', true, /aggregation.service\.spec\.ts$/);
 

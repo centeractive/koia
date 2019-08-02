@@ -9,27 +9,18 @@ import {
   MatBottomSheet
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Status, StatusType, PivotContext, Column, DataType, Scene, TimeUnit } from 'app/shared/model';
-import { HAMMER_LOADER } from '@angular/platform-browser';
+import { StatusType, PivotContext, Column, DataType, Scene, TimeUnit } from 'app/shared/model';
+import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { DBService } from 'app/shared/services/backend';
 import { ConfigService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 @Injectable()
 export class MockElementRef {
   nativeElement: {}
-}
-
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
 }
 
 describe('PivotTableComponent', () => {
@@ -43,7 +34,7 @@ describe('PivotTableComponent', () => {
   let fixture: ComponentFixture<PivotTableComponent>;
   const dbService = new DBService(null);
   const configService = new ConfigService(dbService);
-  const notificationService = new FakeNotificationService();
+  const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   let locatePivotTable: Function;
 
@@ -333,6 +324,19 @@ describe('PivotTableComponent', () => {
     // then
     expect(divContent.style.marginTop).toEqual((55 + PivotTableComponent.MARGIN_TOP) + 'px');
   });
+
+  it('#click on print button should print window', fakeAsync(() => {
+
+    // given;
+    const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
+    spyOn(window, 'print');
+
+    // when
+    okButton.click();
+
+    // then
+    expect(window.print).toHaveBeenCalled();
+  }));
 
   function createScene(id: string): Scene {
     return {

@@ -4,7 +4,7 @@
     </koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
     <div id="view_toolbar">
-      <button mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint matTooltip="Print current view"
+      <button id="but_print" mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint matTooltip="Print current view"
         (click)="printView()">
         <mat-icon>print</mat-icon>
       </button>

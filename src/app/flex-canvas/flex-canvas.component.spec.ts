@@ -8,7 +8,7 @@ import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ChartMarginService, ConfigService } from 'app/shared/services';
 import {
-  Column, Status, StatusType, SummaryContext, ChartContext, GraphContext, Route, ChartType,
+  Column, StatusType, SummaryContext, ChartContext, GraphContext, Route, ChartType,
   DataType, Scene
 } from 'app/shared/model';
 import { ModelToConfigConverter } from 'app/shared/config';
@@ -16,6 +16,8 @@ import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock } from 'app/shared/test';
+import { By } from '@angular/platform-browser';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -39,16 +41,6 @@ class ChartComponent { }
 
 class GraphComponent { }
 
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
-}
-
 describe('FlexCanvasComponent', () => {
 
   let now: number;
@@ -58,7 +50,7 @@ describe('FlexCanvasComponent', () => {
   let component: FlexCanvasComponent;
   const dbService = new DBService(null);
   const configService = new ConfigService(dbService);
-  const notificationService = new FakeNotificationService();
+  const notificationService = new NotificationServiceMock();
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -448,6 +440,21 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(divContent.style.marginTop).toEqual((55 + ViewController.MARGIN_TOP) + 'px');
   });
+
+  it('#click on print button should print window', fakeAsync(() => {
+
+    // given;
+    component.addGraph();
+    fixture.detectChanges();
+    const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
+    spyOn(window, 'print');
+
+    // when
+    okButton.click();
+
+    // then
+    expect(window.print).toHaveBeenCalled();
+  }));
 
   function findColumn(name: string): Column {
     return JSON.parse(JSON.stringify(scene.columns.find(c => c.name === name)));

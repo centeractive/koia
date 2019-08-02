@@ -11,33 +11,24 @@ import {
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { DBService } from 'app/shared/services/backend';
-import { Scene, Status, Route } from 'app/shared/model';
+import { Scene, Route } from 'app/shared/model';
 import { NotificationService, DialogService } from 'app/shared/services';
 import { RouterModule, RouteReuseStrategy } from '@angular/router';
 import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 @Component({ template: '' })
 class RawDataComponent { }
-
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
-}
 
 describe('ScenesComponent', () => {
 
   const appRouteReuseStrategy = new AppRouteReuseStrategy();
   let scenes: Scene[];
   const dbService = new DBService(null);
-  const notificationService = new FakeNotificationService();
+  const notificationService = new NotificationServiceMock();
   let component: ScenesComponent;
   let fixture: ComponentFixture<ScenesComponent>;
 

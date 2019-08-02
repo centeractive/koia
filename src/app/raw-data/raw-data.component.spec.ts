@@ -6,26 +6,18 @@ import {
   MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet
 } from '@angular/material';
 import { RawDataComponent } from './raw-data.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Column, Query, DataType, Scene, Status } from 'app/shared/model';
-import { HAMMER_LOADER } from '@angular/platform-browser';
+import { Column, Query, DataType, Scene, Route } from 'app/shared/model';
+import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { JSQueryFactory } from 'app/shared/services/backend/jsonserver';
 import { RouterTestingModule } from '@angular/router/testing';
-import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { NotificationService } from 'app/shared/services';
-
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
-}
+import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { QueryParams, CouchDBServiceMock } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 describe('RawDataComponent', () => {
 
@@ -35,7 +27,9 @@ describe('RawDataComponent', () => {
   let component: RawDataComponent;
   let fixture: ComponentFixture<RawDataComponent>;
   const dbService: DBService = new DBService(null);
-  const notificationService = new FakeNotificationService();
+  let getActiveSceneSpy: jasmine.Spy;
+  let couchDBService: CouchDBService;
+  const notificationService = new NotificationServiceMock();
   let requestEntriesPageSpy: jasmine.Spy;
 
   beforeAll(() => {
@@ -63,6 +57,7 @@ describe('RawDataComponent', () => {
   });
 
   beforeEach(async(() => {
+    couchDBService = new CouchDBServiceMock();
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent],
@@ -72,8 +67,9 @@ describe('RawDataComponent', () => {
       ],
       providers: [
         { provide: MatBottomSheet, useClass: MatBottomSheet },
-        { provide: ActivatedRoute, useValue: { queryParams: of() } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
         { provide: DBService, useValue: dbService },
+        { provide: CouchDBService, useValue: couchDBService },
         { provide: NotificationService, useValue: notificationService },
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
@@ -83,7 +79,8 @@ describe('RawDataComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(RawDataComponent);
     component = fixture.componentInstance;
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene');
+    getActiveSceneSpy.and.returnValue(scene);
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
     requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(of(page).toPromise());
     fixture.detectChanges();
@@ -106,6 +103,21 @@ describe('RawDataComponent', () => {
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
     expect(component.entries).toBe(entries);
   });
+
+  it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(null);
+    const router = TestBed.get(Router);
+    spyOn(router, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
 
   it('#formattedValueOf should return empty string when value is null', () => {
 
@@ -189,7 +201,7 @@ describe('RawDataComponent', () => {
     // then
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
     const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
-    expect(query.getSort()).toEqual(<Sort> { active: 'Path', direction: 'desc' });
+    expect(query.getSort()).toEqual(<Sort>{ active: 'Path', direction: 'desc' });
     expect(query.getPageIndex()).toBe(0);
     expect(query.getRowsPerPage()).toBe(10);
   });
@@ -208,6 +220,19 @@ describe('RawDataComponent', () => {
     // then
     expect(divContent.style.marginTop).toEqual((55 + RawDataComponent.MARGIN_TOP) + 'px');
   });
+
+  it('#click on print button should print window', fakeAsync(() => {
+
+    // given;
+    const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
+    spyOn(window, 'print');
+
+    // when
+    okButton.click();
+
+    // then
+    expect(window.print).toHaveBeenCalled();
+  }));
 
   function createScene(id: string, columns: Column[]): Scene {
     return {

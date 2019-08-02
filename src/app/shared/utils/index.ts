@@ -7,3 +7,4 @@ export * from './value-grouping-generator';
 export * from './query-filter';
 export * from './query-utils';
 export * from './value-formatter';
+export * from './query-param-extractor';

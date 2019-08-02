@@ -9,7 +9,7 @@ import {
   MatDialogRef
 } from '@angular/material';
 import { NotificationService, DialogService } from 'app/shared/services';
-import { Status, SceneInfo } from 'app/shared/model';
+import { SceneInfo } from 'app/shared/model';
 import { ReaderService } from 'app/shared/services/reader';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService, ConnectionInfo } from 'app/shared/services/backend/couchdb';
@@ -21,35 +21,17 @@ import { Component } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
 import { Observable, of } from 'rxjs';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { CouchDBServiceMock } from 'app/shared/test';
 
 @Component({ template: '' })
+
 class DummyComponent { }
 
-class FakeCouchDBService extends CouchDBService {
-
-  constructor() {
-    super(null);
-  }
-
-  listDatabases(): Promise<string[]> {
-    return Promise.resolve(['data_1'])
-  }
-}
-
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
-}
-
-const couchDBService = new FakeCouchDBService();
+const couchDBService = new CouchDBServiceMock();
 const readerService = new ReaderService();
 const dialogService = new DialogService(null);
-const notificationService = new FakeNotificationService();
+const notificationService = new NotificationServiceMock();
 let dbService: DBService;
 let usesBrowserStroageSpy: jasmine.Spy;
 let initBackendSpy: jasmine.Spy;

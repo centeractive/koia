@@ -59,6 +59,7 @@ import { DialogService } from './shared/services/dialog.service';
 import { FrontComponent } from './front/front.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { STEPPER_GLOBAL_OPTIONS, MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { LocationStrategy, HashLocationStrategy } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -131,7 +132,7 @@ import { STEPPER_GLOBAL_OPTIONS, MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
-    { provide: MAT_STEPPER_GLOBAL_OPTIONS, useValue: {displayDefaultIndicatorType: false}},
+    { provide: MAT_STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
     ReaderService,
     CouchDBService,
     DBService,

@@ -9,6 +9,8 @@ import { MatBottomSheet } from '@angular/material';
 import { AbstractComponent } from 'app/shared/controller';
 import * as $ from 'jquery';
 import 'slick-carousel';
+import { Router, ActivatedRoute, Params, ParamMap } from '@angular/router';
+import { NumberUtils } from 'app/shared/utils';
 
 @Component({
   selector: 'koia-front',
@@ -21,7 +23,12 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   readonly couchDB = 'CouchDB';
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
-  readonly screenshots = ['scene', 'scenes', 'raw-data', 'raw-data-filtered', 'chart-sidebar', 'chart-sidebar2',
+
+  private readonly carouselOptions = {
+    slidesToShow: 1, arrows: false, dots: true, infinite: true,
+    autoplay: true, autoplaySpeed: 4000, pauseOnFocus: true, fade: true, speed: 2000
+  };
+  private readonly screenshots = ['scene', 'scenes', 'raw-data', 'raw-data-filtered', 'chart-sidebar', 'chart-sidebar2',
     'grid-view', 'flex-view', 'raw-data-details', 'pivot-table', 'grouping'];
 
   stepsVisible = true;
@@ -33,43 +40,25 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   sceneCount: number;
   readers: DataReader[];
 
-  constructor(bottomSheet: MatBottomSheet, private dbService: DBService,
+  constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private readerService: ReaderService, private dialogService: DialogService,
     notificationService: NotificationService, private formBuilder: FormBuilder) {
     super(bottomSheet, notificationService);
   }
 
   ngOnInit() {
-    this.stepVisibleControl = this.formBuilder.group({
-      firstCtrl: ['', Validators.required]
-    });
+    this.stepVisibleControl = this.formBuilder.group({ firstCtrl: ['', Validators.required] });
     this.imagePaths = this.screenshots.map(s => '../../assets/screenshots/' + s + '.png');
+    this.readers = this.readerService.getReaders();
     this.dbService.initBackend(false)
-      .then(() => {
-        this.init();
-        this.readers = this.readerService.getReaders();
-      })
+      .then(() => this.init())
       .catch(err => this.notifyError(err));
   }
 
   ngAfterViewInit(): void {
     if (this.showScreenshots) {
-      this.createScreenshotsCarousel();
+      $('.carousel').slick(this.carouselOptions);
     }
-  }
-
-  private createScreenshotsCarousel() {
-    $('.carousel').slick({
-      slidesToShow: 1,
-      arrows: false,
-      dots: true,
-      infinite: true,
-      autoplay: true,
-      autoplaySpeed: 4000,
-      pauseOnFocus: true,
-      fade: true,
-      speed: 2000
-    });
   }
 
   onDataStorageChanged(): void {

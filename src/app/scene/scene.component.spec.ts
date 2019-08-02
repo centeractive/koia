@@ -6,7 +6,7 @@ import {
   MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
-import { Status, Route, Scene, DataType } from 'app/shared/model';
+import { Route, Scene, DataType } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule } from '@angular/forms';
@@ -15,22 +15,13 @@ import { of } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
-
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
-}
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 describe('SceneComponent', () => {
 
   const datePipe = new DatePipe('en-US');
   const readerService = new ReaderService();
-  const notificationService = new FakeNotificationService();
+  const notificationService = new NotificationServiceMock();
   let dbService: DBService;
   let tableData: string[][];
   let component: SceneComponent;

@@ -5,6 +5,12 @@
       <img id="img_logo" src="../../assets/koialogo_textblack.png">
     </div>
 
+    <button id="but_hide_show_steps" mat-icon-button
+      [matTooltip]="stepsVisible ? 'Hide Information' : 'Show Information'" color="primary"
+      (click)="stepsVisible = !stepsVisible">
+      <mat-icon>{{ stepsVisible ? 'remove_red_eye' : 'visibility_off' }}</mat-icon>
+    </button>
+
     <mat-horizontal-stepper [linear]="!stepsVisible" #stepper>
 
       <ng-template matStepperIcon="edit">
@@ -195,28 +201,24 @@
       </mat-step>
 
       <mat-step label="Screenshots" state="screenshots" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
-          <mat-card-header>
-            <div mat-card-avatar id="screenshots-image"></div>
-            <mat-card-title>Screenshots</mat-card-title>
-            <mat-card-subtitle>This is what Koia in action looks like</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="carousel" *ngIf="showScreenshots">
-              <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
-            </div>
-            <br>
-          </mat-card-content>
-        </mat-card>
+        <!-- if we remove mat-card (*ngIf) instead of hiding enclosing div, we would loose carousel -->
+        <div [hidden]="!stepsVisible">
+          <mat-card class="info-card">
+            <mat-card-header>
+              <div mat-card-avatar id="screenshots-image"></div>
+              <mat-card-title>Screenshots</mat-card-title>
+              <mat-card-subtitle>This is what Koia in action looks like</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="carousel" *ngIf="showScreenshots">
+                <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
+              </div>
+              <br>
+            </mat-card-content>
+          </mat-card>
+        </div>
       </mat-step>
     </mat-horizontal-stepper>
-
-
-    <button id="but_hide_show_steps" mat-icon-button
-      [matTooltip]="stepsVisible ? 'Hide Information' : 'Show Information'" color="primary"
-      (click)="stepsVisible = !stepsVisible">
-      <mat-icon>{{ stepsVisible ? 'remove_red_eye' : 'visibility_off' }}</mat-icon>
-    </button>
 
     <div id="div_action_cards">
 

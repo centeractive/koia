@@ -10,16 +10,14 @@ import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ChartMarginService, ConfigService } from 'app/shared/services';
 import {
-  Column, ChartContext, GraphContext, StatusType, Status, Query, Route, SummaryContext, ChartType,
-  DataType,
-  Scene
-} from 'app/shared/model';
+  Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene } from 'app/shared/model';
 import { StatusComponent } from 'app/status/status.component';
 import { ModelToConfigConverter } from 'app/shared/config';
 import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -36,16 +34,6 @@ class ChartComponent { }
 @Component({ selector: 'koia-graph', template: '' })
 class GraphComponent { }
 
-class FakeNotificationService extends NotificationService {
-
-  constructor() {
-    super();
-  }
-
-  showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-  }
-}
-
 describe('GridComponent', () => {
 
   let now: number;
@@ -55,7 +43,7 @@ describe('GridComponent', () => {
   let component: GridComponent;
   const dbService = new DBService(null);
   const configService = new ConfigService(dbService);
-  const notificationService = new FakeNotificationService();
+  const notificationService = new NotificationServiceMock();
 
   beforeAll(() => {
     now = new Date().getTime();

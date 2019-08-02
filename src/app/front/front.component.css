@@ -11,7 +11,8 @@ p {
 #but_hide_show_steps {
    position: absolute;
    right: 50%;   
-   top: 120px;
+   top: 130px;
+   z-index: 10;
 }
  
 .carousel {

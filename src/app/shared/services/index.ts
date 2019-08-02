@@ -1,3 +1,4 @@
+export * from './icon-registrar.service';
 export * from './dialog.service';
 export * from './config.service';
 export * from './raw-data-reveal.service';
