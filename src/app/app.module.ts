@@ -58,8 +58,7 @@ import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog.compo
 import { DialogService } from './shared/services/dialog.service';
 import { FrontComponent } from './front/front.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
-import { STEPPER_GLOBAL_OPTIONS, MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { LocationStrategy, HashLocationStrategy } from '@angular/common';
+import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 
 @NgModule({
   declarations: [

@@ -9,8 +9,9 @@ import { MatBottomSheet } from '@angular/material';
 import { AbstractComponent } from 'app/shared/controller';
 import * as $ from 'jquery';
 import 'slick-carousel';
-import { Router, ActivatedRoute, Params, ParamMap } from '@angular/router';
-import { NumberUtils } from 'app/shared/utils';
+import { Router, ActivatedRoute } from '@angular/router';
+import { QueryParamExtractor, CommonUtils } from 'app/shared/utils';
+import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 
 @Component({
   selector: 'koia-front',
@@ -37,7 +38,8 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   imagePaths: string[];
   dataStorages = [this.browser, this.couchDB];
   selectedDataStorage: string;
-  sceneCount: number;
+  ready = false;
+  scenesCount: number;
   readers: DataReader[];
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
@@ -50,9 +52,28 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
     this.stepVisibleControl = this.formBuilder.group({ firstCtrl: ['', Validators.required] });
     this.imagePaths = this.screenshots.map(s => '../../assets/screenshots/' + s + '.png');
     this.readers = this.readerService.getReaders();
-    this.dbService.initBackend(false)
-      .then(() => this.init())
-      .catch(err => this.notifyError(err));
+
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      const queryParamExtractor = new QueryParamExtractor(params);
+      if (queryParamExtractor.getCouchDBConnectionInfo() && queryParamExtractor.getSceneID()) {
+        this.handleExternalInvocation(queryParamExtractor);
+      } else {
+        this.dbService.initBackend(false)
+          .then(() => this.init())
+          .catch(err => this.notifyError(err));
+      }
+    });
+  }
+
+  /**
+   * web-app was invoked externally with a query string that carries CouchDB connection information and a [[Scene]] _id
+   */
+  private handleExternalInvocation(queryParamExtractor: QueryParamExtractor) {
+    this.couchDBService.initConnection(queryParamExtractor.getCouchDBConnectionInfo())
+      .then(msg => this.dbService.initBackend(true)
+        .then(r => this.dbService.activateScene(queryParamExtractor.getSceneID())
+          .then(scene => this.router.navigateByUrl(Route.RAWDATA)))
+        .catch(err => this.notifyError('cannot show raw data of scene with _id ' + queryParamExtractor.getSceneID() + ':\n\n' + err)));
   }
 
   ngAfterViewInit(): void {
@@ -63,26 +84,31 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   onDataStorageChanged(): void {
     if (this.selectedDataStorage === this.couchDB) {
-      this.shownCouchDBConnectionDialog();
+      this.showCouchDBConnectionDialog();
     } else {
       this.dbService.useBrowserStorage()
         .then(r => {
           this.init();
           this.notifySuccess('Successfully switched to ' + this.browser + ' datastore');
+          this.ready = true;
         });
     }
   }
 
-  shownCouchDBConnectionDialog(): void {
-    const connectionInfo = this.couchDBService.getConnectionInfo();
-    const dialogRef = this.dialogService.showConnectionDialog(connectionInfo);
-    dialogRef.afterClosed().toPromise().then(r => this.onCouchDBConnectionDialogClosed(connectionInfo));
+  showCouchDBConnectionDialog(): void {
+    const data = new ConnectionDialogData(this.couchDBService.getConnectionInfo());
+    const dialogRef = this.dialogService.showConnectionDialog(data);
+    dialogRef.afterClosed().toPromise().then(r => this.onCouchDBConnectionDialogClosed(data));
   }
 
-  private onCouchDBConnectionDialogClosed(connectionInfo: ConnectionInfo): void {
-    if (this.dbService.usesBrowserStorage() ||
-      JSON.stringify(connectionInfo) !== JSON.stringify(this.couchDBService.getConnectionInfo())) {
-      this.initCouchDBConnection(connectionInfo);
+  private onCouchDBConnectionDialogClosed(data: ConnectionDialogData): void {
+    if (data.closedWithOK) {
+      this.ready = false;
+      if (this.dbService.usesBrowserStorage() || !CommonUtils.compare(data.connectionInfo, this.couchDBService.getConnectionInfo())) {
+        this.initCouchDBConnection(data.connectionInfo);
+      }
+    } else if (this.dbService.usesBrowserStorage()) {
+      this.init();
     }
   }
 
@@ -103,12 +129,15 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   private couchDBConnectionFailed(error: string | Object): void {
     this.notifyError(error);
-    this.init();
   }
 
   private init(): void {
     this.selectedDataStorage = this.dbService.usesBrowserStorage() ? this.browser : this.couchDB;
     this.dbService.findSceneInfos()
-      .then(sceneInfos => this.sceneCount = sceneInfos.length);
+      .then(sceneInfos => {
+        this.scenesCount = sceneInfos.length;
+        this.ready = true;
+      })
+      .catch(err => this.notifyError(err));
   }
 }

@@ -16,7 +16,7 @@ import { JSQueryFactory } from 'app/shared/services/backend/jsonserver';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NotificationService } from 'app/shared/services';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { QueryParams, CouchDBServiceMock } from 'app/shared/test';
+import { QueryParams, CouchDBServiceMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 describe('RawDataComponent', () => {
@@ -28,7 +28,6 @@ describe('RawDataComponent', () => {
   let fixture: ComponentFixture<RawDataComponent>;
   const dbService: DBService = new DBService(null);
   let getActiveSceneSpy: jasmine.Spy;
-  let couchDBService: CouchDBService;
   const notificationService = new NotificationServiceMock();
   let requestEntriesPageSpy: jasmine.Spy;
 
@@ -42,7 +41,7 @@ describe('RawDataComponent', () => {
       { name: 'Path', dataType: DataType.TEXT, width: 200 },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70 }
     ];
-    scene = createScene('1', columns);
+    scene = SceneFactory.createScene('1', columns);
     entries = [
       { ID: 1, Time: now - 1000, Level: 'INFO', Data: 'INFO line one', Host: 'server1', Path: '/opt/log/info.log', Amount: 10 },
       { ID: 2, Time: now - 2000, Level: 'INFO', Data: 'INFO line two', Host: 'server1', Path: '/opt/log/info.log', Amount: 20 },
@@ -57,7 +56,6 @@ describe('RawDataComponent', () => {
   });
 
   beforeEach(async(() => {
-    couchDBService = new CouchDBServiceMock();
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent],
@@ -67,9 +65,7 @@ describe('RawDataComponent', () => {
       ],
       providers: [
         { provide: MatBottomSheet, useClass: MatBottomSheet },
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
         { provide: DBService, useValue: dbService },
-        { provide: CouchDBService, useValue: couchDBService },
         { provide: NotificationService, useValue: notificationService },
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
@@ -79,8 +75,7 @@ describe('RawDataComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(RawDataComponent);
     component = fixture.componentInstance;
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene');
-    getActiveSceneSpy.and.returnValue(scene);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
     requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(of(page).toPromise());
     fixture.detectChanges();
@@ -233,19 +228,4 @@ describe('RawDataComponent', () => {
     // then
     expect(window.print).toHaveBeenCalled();
   }));
-
-  function createScene(id: string, columns: Column[]): Scene {
-    return {
-      _id: id,
-      creationTime: new Date().getTime(),
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: columns,
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
-  }
 });

@@ -3,26 +3,24 @@ import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/cor
 import { FrontComponent } from './front.component';
 import {
   MatCardModule, MatButtonModule, MatSelectModule, MatFormFieldModule, MatBottomSheet, MatIconModule,
-  MatDialogModule,
-  MatStepperModule,
-  MatTooltipModule,
-  MatDialogRef
+  MatDialogModule, MatStepperModule, MatTooltipModule, MatDialogRef
 } from '@angular/material';
 import { NotificationService, DialogService } from 'app/shared/services';
-import { SceneInfo } from 'app/shared/model';
+import { SceneInfo, Route } from 'app/shared/model';
 import { ReaderService } from 'app/shared/services/reader';
 import { DBService } from 'app/shared/services/backend';
-import { CouchDBService, ConnectionInfo } from 'app/shared/services/backend/couchdb';
+import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { HAMMER_LOADER } from '@angular/platform-browser';
 import { FormsModule, FormBuilder } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
+import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { Observable, of } from 'rxjs';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { CouchDBServiceMock } from 'app/shared/test';
+import { CouchDBServiceMock, QueryParams } from 'app/shared/test';
+import { QueryParamExtractor } from 'app/shared/utils';
 
 @Component({ template: '' })
 
@@ -37,6 +35,7 @@ let usesBrowserStroageSpy: jasmine.Spy;
 let initBackendSpy: jasmine.Spy;
 
 describe('FrontComponent', () => {
+
   let component: FrontComponent;
   let fixture: ComponentFixture<FrontComponent>;
 
@@ -46,13 +45,15 @@ describe('FrontComponent', () => {
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
-        MatDialogModule, MatStepperModule, MatTooltipModule,
-        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }])
+        MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }])
       ],
-      providers: [MatBottomSheet,
-        { provide: ReaderService, useValue: readerService },
+      providers: [
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
+        MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: CouchDBService, useValue: couchDBService },
+        { provide: ReaderService, useValue: readerService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
         FormBuilder,
@@ -66,10 +67,8 @@ describe('FrontComponent', () => {
     fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
     component.showScreenshots = false;
-    initBackendSpy = spyOn(dbService, 'initBackend');
-    initBackendSpy.and.returnValue(Promise.resolve());
-    usesBrowserStroageSpy = spyOn(dbService, 'usesBrowserStorage');
-    usesBrowserStroageSpy.and.returnValue(true);
+    initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
+    usesBrowserStroageSpy = spyOn(dbService, 'usesBrowserStorage').and.returnValue(true);
     const sceneInfos = createSceneInfos(5);
     spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
     fixture.detectChanges();
@@ -83,26 +82,6 @@ describe('FrontComponent', () => {
   it('should pre-select browser storage', () => {
     expect(component.selectedDataStorage).toBe(component.browser);
   });
-
-  it('#onDataStorageChanged should not init CouchDB connection when user leaves active connection unchanged', fakeAsync(() => {
-
-    // given
-    const dialogRef = createConnectionDialogRef();
-    usesBrowserStroageSpy.and.returnValue(false);
-    spyOn(dialogService, 'showConnectionDialog').and.returnValue(dialogRef);
-    spyOn(couchDBService, 'initConnection');
-    spyOn(notificationService, 'onSuccess');
-    component.selectedDataStorage = component.couchDB;
-
-    // when
-    component.onDataStorageChanged();
-    flush();
-
-    // then
-    expect(dialogService.showConnectionDialog).toHaveBeenCalled();
-    expect(couchDBService.initConnection).not.toHaveBeenCalled();
-    expect(notificationService.onSuccess).not.toHaveBeenCalled();
-  }));
 
   it('#onDataStorageChanged should switch to browser data store', fakeAsync(() => {
 
@@ -119,17 +98,64 @@ describe('FrontComponent', () => {
     expect(notificationService.onSuccess).toHaveBeenCalled();
   }));
 
-  it('#onDataStorageChanged should init CouchDB connection when user modifies connection info', fakeAsync(() => {
+  it('#onDataStorageChanged should not init CouchDB connection when user canceled connection dialog', fakeAsync(() => {
 
     // given
-    let connectionInfo: ConnectionInfo;
-    spyOn(couchDBService, 'getConnectionInfo').and.callFake(() => {
-      connectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
-      return connectionInfo;
-    });
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake(() => {
-      connectionInfo.port = 999;
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.closedWithOK = false;
+      return dialogRef;
+    });
+    spyOn(couchDBService, 'initConnection');
+    spyOn(notificationService, 'onSuccess');
+    component.selectedDataStorage = component.couchDB;
+
+    // when
+    component.onDataStorageChanged();
+    flush();
+
+    // then
+    expect(dialogService.showConnectionDialog).toHaveBeenCalled();
+    expect(couchDBService.initConnection).not.toHaveBeenCalled();
+    expect(notificationService.onSuccess).not.toHaveBeenCalled();
+    expect(component.selectedDataStorage).toBe(component.browser);
+  }));
+
+
+  it('#onDataStorageChanged should init CouchDB connection when user confirmed new connection with OK', fakeAsync(() => {
+
+    // given
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    const dialogRef = createConnectionDialogRef();
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.closedWithOK = true;
+      return dialogRef;
+    });
+    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
+    initBackendSpy.calls.reset();
+    spyOn(notificationService, 'onSuccess');
+    component.selectedDataStorage = component.couchDB;
+
+    // when
+    component.onDataStorageChanged();
+    flush();
+
+    // then
+    expect(dialogService.showConnectionDialog).toHaveBeenCalled();
+    expect(couchDBService.initConnection).toHaveBeenCalled();
+    expect(dbService.initBackend).toHaveBeenCalled();
+    expect(notificationService.onSuccess).toHaveBeenCalled();
+  }));
+
+  it('#onDataStorageChanged should init CouchDB connection when user confirmed modified connection with OK', fakeAsync(() => {
+
+    // given
+    usesBrowserStroageSpy.and.returnValue(false);
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    const dialogRef = createConnectionDialogRef();
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.connectionInfo.port = 999;
+      data.closedWithOK = true;
       return dialogRef;
     });
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
@@ -151,14 +177,11 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should show error when connection to CouchDB fails', fakeAsync(() => {
 
     // given
-    let connectionInfo: ConnectionInfo;
-    spyOn(couchDBService, 'getConnectionInfo').and.callFake(() => {
-      connectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
-      return connectionInfo;
-    });
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake(() => {
-      connectionInfo.port = 999;
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.connectionInfo.port = 999;
+      data.closedWithOK = true;
       return dialogRef;
     });
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.reject('connection failed'));
@@ -180,14 +203,11 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should show error when backend cannot be initialized', fakeAsync(() => {
 
     // given
-    let connectionInfo: ConnectionInfo;
-    spyOn(couchDBService, 'getConnectionInfo').and.callFake(() => {
-      connectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
-      return connectionInfo;
-    });
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake(() => {
-      connectionInfo.port = 999;
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.connectionInfo.port = 999;
+      data.closedWithOK = true;
       return dialogRef;
     });
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
@@ -221,5 +241,70 @@ describe('FrontComponent', () => {
         return of(true);
       }
     };
+  }
+});
+
+describe('FrontComponent (external invocation)', () => {
+
+  const sceneID = '123';
+  let component: FrontComponent;
+  let router: Router;
+
+  beforeEach(async(() => {
+    spyOn(console, 'log').and.callFake(s => null);
+    dbService = new DBService(couchDBService);
+    TestBed.configureTestingModule({
+      declarations: [FrontComponent, DummyComponent],
+      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
+        MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }])
+      ],
+      providers: [
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(createQueryParams()) } },
+        MatBottomSheet,
+        { provide: DBService, useValue: dbService },
+        { provide: CouchDBService, useValue: couchDBService },
+        { provide: ReaderService, useValue: readerService },
+        { provide: DialogService, useValue: dialogService },
+        { provide: NotificationService, useValue: notificationService },
+        FormBuilder,
+        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+      ]
+    })
+      .compileComponents();
+  }));
+
+  beforeEach(fakeAsync(() => {
+    const fixture = TestBed.createComponent(FrontComponent);
+    component = fixture.componentInstance;
+    component.showScreenshots = false;
+    router = TestBed.get(Router);
+    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection established'));
+    spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
+    spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve({}));
+    spyOn(router, 'navigateByUrl');
+    fixture.detectChanges();
+    flush();
+  }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should activate scene and navigate to raw data view', () => {
+    expect(couchDBService.initConnection).toHaveBeenCalledWith({ host: 'localhost', port: 5984, user: 'test', password: 'secret' });
+    expect(dbService.initBackend).toHaveBeenCalled();
+    expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+  });
+
+  function createQueryParams(): QueryParams {
+    const queryParams = new QueryParams();
+    queryParams.set(QueryParamExtractor.HOST, 'localhost');
+    queryParams.set(QueryParamExtractor.PORT, '5984');
+    queryParams.set(QueryParamExtractor.USER, 'test');
+    queryParams.set(QueryParamExtractor.PASSWORD, btoa('secret'));
+    queryParams.set(QueryParamExtractor.SCENE_ID, sceneID);
+    return queryParams;
   }
 });

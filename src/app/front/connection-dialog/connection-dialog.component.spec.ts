@@ -1,15 +1,15 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 
-import { ConnectionDialogComponent } from './connection-dialog.component';
+import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
 import { MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ConnectionInfo, CouchDBService } from 'app/shared/services/backend/couchdb';
+import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { By } from '@angular/platform-browser';
 
 describe('ConnectionDialogComponent', () => {
 
-  let connectionInfo: ConnectionInfo;
+  let dialogData: ConnectionDialogData;
   let component: ConnectionDialogComponent;
   let fixture: ComponentFixture<ConnectionDialogComponent>;
 
@@ -17,13 +17,13 @@ describe('ConnectionDialogComponent', () => {
     const dialogRef = <MatDialogRef<ConnectionDialogComponent>>{
       close(): void { }
     };
-    connectionInfo = <ConnectionInfo>JSON.parse(JSON.stringify(CouchDBService.DEFAULT_CONNECTION_INFO));
+    dialogData = new ConnectionDialogData(CouchDBService.DEFAULT_CONNECTION_INFO);
     TestBed.configureTestingModule({
       declarations: [ConnectionDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: connectionInfo },
+        { provide: MAT_DIALOG_DATA, useValue: dialogData },
       ]
     })
       .compileComponents();
@@ -40,13 +40,14 @@ describe('ConnectionDialogComponent', () => {
   });
 
   it('should create view from model', () => {
-    expect(getInputValue('host')).toBe(connectionInfo.host);
-    expect(getInputValue('port')).toBe(connectionInfo.port.toString());
-    expect(getInputValue('user')).toBe(connectionInfo.user);
-    expect(getInputValue('password')).toBe(connectionInfo.password);
+    const connInfo = CouchDBService.DEFAULT_CONNECTION_INFO;
+    expect(getInputValue('host')).toBe(connInfo.host);
+    expect(getInputValue('port')).toBe(connInfo.port.toString());
+    expect(getInputValue('user')).toBe(connInfo.user);
+    expect(getInputValue('password')).toBe(connInfo.password);
   });
 
-  it('#click on cancel button should leave connection unchanged and close dialog', fakeAsync(() => {
+  it('#click on cancel button should close dialog', fakeAsync(() => {
 
     // given
     changeInputValue('host', 'server-x');
@@ -60,7 +61,8 @@ describe('ConnectionDialogComponent', () => {
     cancelButton.click();
 
     // then
-    expect(component.connectionInfo).toEqual(CouchDBService.DEFAULT_CONNECTION_INFO);
+    expect(component.data.closedWithOK).toBeFalsy();
+    expect(component.data.connectionInfo).toEqual(CouchDBService.DEFAULT_CONNECTION_INFO);
     expect(component.dialogRef.close).toHaveBeenCalled();
   }));
 
@@ -78,10 +80,11 @@ describe('ConnectionDialogComponent', () => {
     okButton.click();
 
     // then
-    expect(component.connectionInfo.host).toBe('server-x');
-    expect(component.connectionInfo.port).toBe(999);
-    expect(component.connectionInfo.user).toBe('abc123');
-    expect(component.connectionInfo.password).toBe('%ad3Zds_');
+    expect(component.data.closedWithOK).toBeTruthy();
+    expect(component.data.connectionInfo.host).toBe('server-x');
+    expect(component.data.connectionInfo.port).toBe(999);
+    expect(component.data.connectionInfo.user).toBe('abc123');
+    expect(component.data.connectionInfo.password).toBe('%ad3Zds_');
     expect(component.dialogRef.close).toHaveBeenCalled();
   }));
 

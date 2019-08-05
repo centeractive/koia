@@ -80,6 +80,38 @@ describe('CommonUtils', () => {
     expect(CommonUtils.capitalize('Test')).toEqual('Test');
   });
 
+  it('#compare should return false when one object is null or undefined', () => {
+    expect(CommonUtils.compare(null, {})).toBeFalsy();
+    expect(CommonUtils.compare(undefined, {})).toBeFalsy();
+    expect(CommonUtils.compare({}, null)).toBeFalsy();
+    expect(CommonUtils.compare({}, undefined)).toBeFalsy();
+    expect(CommonUtils.compare(null, { a: 1 })).toBeFalsy();
+    expect(CommonUtils.compare(undefined, { a: 1 })).toBeFalsy();
+    expect(CommonUtils.compare({ a: 1 }, null)).toBeFalsy();
+    expect(CommonUtils.compare({ a: 1 }, undefined)).toBeFalsy();
+  });
+
+  it('#compare should return true when both objects are null or undefined', () => {
+    expect(CommonUtils.compare(null, null)).toBeTruthy();
+    expect(CommonUtils.compare(undefined, undefined)).toBeTruthy();
+    expect(CommonUtils.compare(undefined, null)).toBeTruthy();
+    expect(CommonUtils.compare(null, undefined)).toBeTruthy();
+  });
+
+  it('#compare should return true when both objects are same', () => {
+    const obj = { x: { y: 1, z: 'a' } };
+    expect(CommonUtils.compare(obj, obj)).toBeTruthy();
+  });
+
+  it('#compare should return true when both objects are empty', () => {
+    expect(CommonUtils.compare({}, {})).toBeTruthy();
+  });
+
+  it('#compare should return true when both objects are equal', () => {
+    expect(CommonUtils.compare({ a: 1 }, { a: 1 })).toBeTruthy();
+    expect(CommonUtils.compare({ x: { y: 1, z: 'a' } }, { x: { y: 1, z: 'a' } })).toBeTruthy();
+  });
+
   it('#clone should return null when value is null', () => {
     expect(CommonUtils.clone(null)).toBeNull();
   });

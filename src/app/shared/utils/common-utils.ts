@@ -49,6 +49,18 @@ export class CommonUtils {
   }
 
   /**
+   * @returns <true> if the specified objects are equal, <false> otherwise
+   */
+  static compare(o1: Object, o2: Object): boolean {
+    if (o1 === o2 || (!o1 && !o2)) {
+      return true;
+    } else if (!o1 || !o2) {
+      return false;
+    }
+    return JSON.stringify(o1) === JSON.stringify(o2);
+  }
+
+  /**
    * @returns a clone (copy) of the specified object or array, the value itself if it's a primitive
    */
   static clone(value: {} | []): {} | [] {

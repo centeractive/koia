@@ -141,7 +141,6 @@ describe('ExcelReader', () => {
          done();
       };
 
-
       // when
       reader.readData(url, 100, dataHandler);
    });

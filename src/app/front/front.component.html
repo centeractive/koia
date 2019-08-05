@@ -254,7 +254,7 @@
             </mat-select>
           </mat-form-field>
           <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
-            matTooltip="Configure access to CouchDB" color="primary" (click)="shownCouchDBConnectionDialog()">
+            matTooltip="Configure access to CouchDB" color="primary" (click)="showCouchDBConnectionDialog()">
             <mat-icon>settings</mat-icon>
           </button>
         </mat-card-actions>
@@ -273,15 +273,13 @@
             any time later by pressing the <mat-icon style="vertical-align: middle">collections
             </mat-icon> button.
           </p>
-          <p>
-            {{ selectedDataStorage }} currently contains <b>{{ sceneCount }} scenes.</b>
+          <p *ngIf="ready && scenesCount >= 0">
+            {{ selectedDataStorage }} currently contains <b>{{ scenesCount }} scenes.</b>
           </p>
         </mat-card-content>
         <mat-card-actions>
           <div class="div_actions">
-            <button mat-stroked-button color="primary"
-              [disabled]="sceneCount === null || sceneCount === undefined || sceneCount === 0"
-              [routerLink]="[urlScenes]">
+            <button mat-stroked-button color="primary" [disabled]="!ready || !(scenesCount > 0)" [routerLink]="[urlScenes]">
               <mat-icon>play_circle_filled</mat-icon>
               <span>&nbsp;Start</span>
             </button>
@@ -304,7 +302,7 @@
         </mat-card-content>
         <mat-card-actions>
           <div class="div_actions">
-            <button mat-stroked-button color="primary" [routerLink]="[urlScene]">
+            <button mat-stroked-button color="primary" [disabled]="!ready" [routerLink]="[urlScene]">
               <mat-icon>play_circle_filled</mat-icon>
               <span>&nbsp;Start</span>
             </button>
