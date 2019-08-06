@@ -1,14 +1,15 @@
 <mat-card>
 
   <mat-card-header>
+    <div mat-card-avatar class="koia-logo"></div>
     <mat-card-title>Scenes
       <button id="but_new_scene" mat-stroked-button matTooltip="Import data and create new scene" [routerLink]="[urlScene]">
         <mat-icon>add_photo_alternate</mat-icon>
         <span>&nbsp;Add Scene</span>
       </button>
     </mat-card-title>
+    <mat-card-subtitle>Manage your existing scenes</mat-card-subtitle>
   </mat-card-header>
-
   <div class="div_scene" *ngFor="let sceneInfo of sceneInfos">
 
     <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -26,7 +27,7 @@
     </mat-menu>
 
     <button id="but_continue" mat-button *ngIf="activeSceneId === sceneInfo._id" mat-icon-button
-      [color]="activeSceneId === sceneInfo._id ? 'primary' : ''" matTooltip="Continue with this scene"
+      [color]="activeSceneId === sceneInfo._id ? 'accent' : ''" matTooltip="Continue with this scene"
       (click)="leave()">
       <mat-icon>check_circle</mat-icon>
     </button>

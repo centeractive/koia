@@ -106,9 +106,3 @@ p {
    background-repeat: no-repeat;
    background-size: cover;
 } 
-
-.koia-logo {
-   background-image: url('../../assets/koialogo_50x50.png');
-   background-repeat: no-repeat;
-   background-size: 36px 36px;
-}
