@@ -18,12 +18,11 @@ export class ConfigService {
    }
 
    /**
-  * adds or replaces the specified config data in the cached configuration and saves the configuration object directly
-  * in the JSON database and thus in the JSON file that also contains the data.
-  *
-  * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
-  * invoking part to catch errors
-  */
+    * adds or replaces the specified data for the [[Scene]] and updates it.
+    *
+    * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
+    * invoking part to catch errors
+    */
    saveData(scene: Scene, name: string, data: any): Promise<Status> {
       const prevRecord = scene.config.records.find(r => r.name === name);
       const newRecord = { name: name, data: data };
@@ -40,8 +39,7 @@ export class ConfigService {
    }
 
    /**
-    * adds or replaces the specified view in the cached configuration and saves the configuration object directly
-    * in the JSON database and thus in the JSON file that also contains the data.
+    * adds or replaces the specified [[View]] for the [[Scene]] and updates it.
     *
     * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
     * invoking part to catch errors

@@ -4,6 +4,7 @@ import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from 'app/shared/model';
 import { DBService } from './db.service';
 import { CouchDBService } from './couchdb';
+import { CouchDBConfig } from './couchdb/couchdb-config';
 
 describe('DBService', () => {
 
@@ -16,6 +17,7 @@ describe('DBService', () => {
   let initialScene: Scene;
 
   beforeAll(() => {
+    new CouchDBConfig().reset();
     columns = [
       { name: 'ID', dataType: DataType.NUMBER, width: 10, indexed: true },
       { name: 'Time', dataType: DataType.TIME, width: 50, indexed: true },
@@ -50,6 +52,21 @@ describe('DBService', () => {
     await dbService.initBackend(false).then(r => null).catch(e => fail(e));
     initialScene = createScene('0');
     await dbService.persistScene(initialScene, true).then(r => null).catch(e => fail(e));
+  });
+
+  it('#isBackendInitialized should return true', () => {
+    expect(dbService.isBackendInitialized).toBeTruthy();
+  });
+
+  it('#useBrowserStorage should switch to browser storage', async() => {
+
+    // when
+    await dbService.useBrowserStorage().then(db => {
+
+      // then
+      expect(dbService.usesBrowserStorage).toBeTruthy();
+    })
+    .catch(e => fail(e));
   });
 
   it('#findFreeDatabaseName should return free name', async () => {

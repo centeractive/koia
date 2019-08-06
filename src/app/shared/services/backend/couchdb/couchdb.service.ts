@@ -5,8 +5,9 @@ import { DocChangeResponse } from '../doc-change-response.type';
 import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { DB } from '../db.type';
-import { ConnectionInfo } from './connection-info.type';
+import { ConnectionInfo } from '../../../model/connection-info.type';
 import { CommonUtils } from 'app/shared/utils';
+import { CouchDBConfig } from './couchdb-config';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
@@ -22,24 +23,27 @@ import { CommonUtils } from 'app/shared/utils';
 @Injectable()
 export class CouchDBService implements DB {
 
-  static readonly DEFAULT_CONNECTION_INFO: ConnectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
   static readonly MAX_DATA_ITEMS_PER_SCENE = 100_000;
 
+  private couchDBConfig = new CouchDBConfig();
   private connectionInfo: ConnectionInfo;
   private baseURL: string;
   private httpOptions: {};
 
   constructor(private http: HttpClient) {
-    this.initConnection(CouchDBService.DEFAULT_CONNECTION_INFO);
+    this.initConnection(this.couchDBConfig.readConnectionInfo());
     this.httpOptions = this.createHttpOptions();
   }
 
   initConnection(connectionInfo: ConnectionInfo): Promise<string> {
+    this.couchDBConfig.saveConnectionInfo(connectionInfo);
     this.connectionInfo = connectionInfo;
     this.baseURL = 'http://' + connectionInfo.host + ':' + connectionInfo.port + '/';
     return new Promise<string>((resolve, reject) => {
       this.listDatabases()
-        .then(r => resolve('Connection to CouchDB at ' + this.baseURL + ' has beed established'))
+        .then(r => {
+          resolve('Connection to CouchDB at ' + this.baseURL + ' has beed established');
+        })
         .catch(err => reject(err));
     });
   }

@@ -1,14 +1,17 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { CouchDBService } from './couchdb.service';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
-import { Document } from 'app/shared/model';
+import { Document, ConnectionInfo } from 'app/shared/model';
+import { CouchDBConfig } from './couchdb-config';
 
 describe('CouchDBService', () => {
 
    const testDBPrefix = 'test_';
+   const couchDBConfig = new CouchDBConfig();
    let dbService: CouchDBService;
 
    beforeAll(() => {
+      couchDBConfig.reset();
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
@@ -22,6 +25,25 @@ describe('CouchDBService', () => {
          .then(r => null)
          .catch(e => fail(e));
    });
+
+   afterEach(async() => {
+      couchDBConfig.reset();
+      await dbService.initConnection(couchDBConfig.readConnectionInfo()).then(r => null);
+   });
+
+   it('#initConnection should store config', fakeAsync(() => {
+
+      // given
+      const connInfo: ConnectionInfo = { host: 'server1', port: 9999, user: 'test', password: 'secret' };
+      spyOn(dbService, 'listDatabases').and.returnValue(Promise.resolve());
+
+      // when
+      dbService.initConnection(connInfo).then(dbs => null);
+      flush();
+
+      // then
+      expect(couchDBConfig.readConnectionInfo()).toEqual(connInfo);
+   }));
 
    it('#listDatabases should return empty array when no database exists', async () => {
 

@@ -4,10 +4,12 @@ import { ConnectionDialogComponent, ConnectionDialogData } from './connection-di
 import { MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { ConnectionInfo } from 'app/shared/services/backend/couchdb';
 import { By } from '@angular/platform-browser';
 
 describe('ConnectionDialogComponent', () => {
+
+  const connectionInfo: ConnectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
 
   let dialogData: ConnectionDialogData;
   let component: ConnectionDialogComponent;
@@ -17,7 +19,7 @@ describe('ConnectionDialogComponent', () => {
     const dialogRef = <MatDialogRef<ConnectionDialogComponent>>{
       close(): void { }
     };
-    dialogData = new ConnectionDialogData(CouchDBService.DEFAULT_CONNECTION_INFO);
+    dialogData = new ConnectionDialogData(connectionInfo);
     TestBed.configureTestingModule({
       declarations: [ConnectionDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
@@ -40,11 +42,10 @@ describe('ConnectionDialogComponent', () => {
   });
 
   it('should create view from model', () => {
-    const connInfo = CouchDBService.DEFAULT_CONNECTION_INFO;
-    expect(getInputValue('host')).toBe(connInfo.host);
-    expect(getInputValue('port')).toBe(connInfo.port.toString());
-    expect(getInputValue('user')).toBe(connInfo.user);
-    expect(getInputValue('password')).toBe(connInfo.password);
+    expect(getInputValue('host')).toBe(connectionInfo.host);
+    expect(getInputValue('port')).toBe(connectionInfo.port.toString());
+    expect(getInputValue('user')).toBe(connectionInfo.user);
+    expect(getInputValue('password')).toBe(connectionInfo.password);
   });
 
   it('#click on cancel button should close dialog', fakeAsync(() => {
@@ -62,7 +63,7 @@ describe('ConnectionDialogComponent', () => {
 
     // then
     expect(component.data.closedWithOK).toBeFalsy();
-    expect(component.data.connectionInfo).toEqual(CouchDBService.DEFAULT_CONNECTION_INFO);
+    expect(component.data.connectionInfo).toEqual(connectionInfo);
     expect(component.dialogRef.close).toHaveBeenCalled();
   }));
 
