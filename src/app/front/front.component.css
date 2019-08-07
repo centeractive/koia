@@ -77,12 +77,6 @@ p {
    background-size: cover;
 } 
 
-#scene-image {
-   background-image: url('../../assets/scene.png');
-   background-repeat:no-repeat;
-   background-size: cover;
-} 
-
 #view-image {
    background-image: url('../../assets/view.png');
    background-repeat:no-repeat;

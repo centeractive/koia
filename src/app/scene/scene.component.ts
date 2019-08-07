@@ -23,11 +23,8 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   private static readonly SAMPLE_SIZE = 100;
   private static readonly BATCH_SIZE = 1_000;
 
-  readonly urlRawdata = '/' + Route.RAWDATA;
-  readonly urlGrid = '/' + Route.GRID;
-  readonly urlFlex = '/' + Route.FLEX;
-  readonly urlPivot = '/' + Route.PIVOT;
-
+  readonly urlFront = '/' + Route.FRONT;
+  readonly urlScenes = '/' + Route.SCENES;
   readonly columnDefinitions = 'Column Definitions';
   readonly columnDefAssistant = new ColumnDefinitionAssistant();
   readonly now = new Date();

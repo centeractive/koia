@@ -77,6 +77,30 @@ describe('SceneComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('home button should point to front component', () => {
+
+    // given
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
+
+    // when
+    const link = htmlButton.getAttribute('ng-reflect-router-link');
+
+    // then
+    expect(link).toEqual('/' + Route.FRONT);
+  });
+
+  it('scenes button should point to scenes component', () => {
+
+    // given
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butScenes')).nativeElement;
+
+    // when
+    const link = htmlButton.getAttribute('ng-reflect-router-link');
+
+    // then
+    expect(link).toEqual('/' + Route.SCENES);
+  });
+
   it('#onFileSelChange should generate scene name and short description', fakeAsync(() => {
 
     // given

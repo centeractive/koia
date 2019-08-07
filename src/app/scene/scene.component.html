@@ -1,6 +1,12 @@
+<button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+  <mat-icon>home</mat-icon>
+</button>
+<button id="butScenes" mat-button mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
+  <mat-icon>collections</mat-icon>
+</button>
 <mat-card>
   <mat-card-header>
-    <div mat-card-avatar class="koia-logo"></div>
+    <div mat-card-avatar class="scene-image"></div>
     <mat-card-title>New Scene</mat-card-title>
     <mat-card-subtitle>Create a new scene of data from a file</mat-card-subtitle>
   </mat-card-header>
@@ -43,7 +49,7 @@
     <mat-expansion-panel *ngIf="fileHeader" expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          <mat-icon color="primary">looks_two</mat-icon>&nbsp;{{ selectedReader.getSourceName() }} Source Attributes
+          <mat-icon color="primary">looks_two</mat-icon>&nbsp;{{ selectedReader.getSourceName() }} Source Attributes          
         </mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field>

@@ -1,16 +1,66 @@
-<mat-card>
+<button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+  <mat-icon>home</mat-icon>
+</button>
+<button id="butScene" mat-button mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+  <mat-icon>add_photo_alternate</mat-icon>
+</button>
+<mat-card id="mat_card_active_scene" *ngIf="activeScene">
+
+  <mat-card-header>
+    <div mat-card-avatar class="scene-image"></div>
+    <mat-card-title>Active Scene</mat-card-title>
+    <mat-card-subtitle>This is the scene you're currently working with</mat-card-subtitle>
+  </mat-card-header>
+  <div class="div_scene">
+
+    <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #moreMenu="matMenu">
+      <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(activeScene._id)">
+        <mat-icon>pageview</mat-icon>
+        <span>Show details</span>
+      </button>
+      <button class="menu_item_delete" mat-menu-item (click)="delete(activeScene)">
+        <mat-icon>delete_forever</mat-icon>
+        <span>Delete</span>
+      </button>
+    </mat-menu>
+
+    <button id="but_continue" mat-button mat-icon-button color="accent" matTooltip="Continue with active scene"
+      (click)="leave()">
+      <mat-icon>play_circle_outline</mat-icon>
+    </button>
+
+    <mat-form-field class="scene_name">
+      <input matInput type="text" placeholder="Scene Name" readonly [(ngModel)]="activeScene.name">
+    </mat-form-field>
+    <mat-form-field class="scene_short_desc">
+      <input matInput type="text" placeholder="Short Description" readonly [(ngModel)]="activeScene.shortDescription">
+    </mat-form-field>
+    <mat-form-field class="scene_creation_time">
+      <input matInput type="text" placeholder="Creation Time" readonly
+        [value]="activeScene.creationTime | date:'medium'">
+    </mat-form-field>
+  </div>
+</mat-card>
+<mat-card id="mat_card_all_scenes">
 
   <mat-card-header>
     <div mat-card-avatar class="koia-logo"></div>
-    <mat-card-title>Scenes
-      <button id="but_new_scene" mat-stroked-button matTooltip="Import data and create new scene" [routerLink]="[urlScene]">
-        <mat-icon>add_photo_alternate</mat-icon>
-        <span>&nbsp;Add Scene</span>
-      </button>
+    <mat-card-title>All Scenes
     </mat-card-title>
-    <mat-card-subtitle>Manage your existing scenes</mat-card-subtitle>
+    <mat-card-subtitle>Manage your existing scenes
+      <mat-form-field id="filter_field">
+        <input matInput type="text" placeholder="Filter" [(ngModel)]="filter">
+        <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button
+          aria-label="Clear" (click)="filter = undefined">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </mat-card-subtitle>
   </mat-card-header>
-  <div class="div_scene" *ngFor="let sceneInfo of sceneInfos">
+  <div class="div_scene" *ngFor="let sceneInfo of filteredSceneInfos()">
 
     <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
       <mat-icon>more_vert</mat-icon>
@@ -26,13 +76,8 @@
       </button>
     </mat-menu>
 
-    <button id="but_continue" mat-button *ngIf="activeSceneId === sceneInfo._id" mat-icon-button
-      [color]="activeSceneId === sceneInfo._id ? 'accent' : ''" matTooltip="Continue with this scene"
-      (click)="leave()">
-      <mat-icon>check_circle</mat-icon>
-    </button>
-    <button class="but_activate_scene" mat-button *ngIf="activeSceneId !== sceneInfo._id" mat-icon-button
-      matTooltip="Activate scene" (click)="activate(sceneInfo)">
+    <button class="but_activate_scene" [disabled]="activeScene && sceneInfo._id === activeScene._id" mat-button
+      mat-icon-button matTooltip="Activate scene" (click)="activate(sceneInfo)">
       <mat-icon>play_circle_outline</mat-icon>
     </button>
 

@@ -1,12 +1,18 @@
-#but_new_scene {
-  position: absolute;
-  top: 10px;
-  right: 15px;
+#mat_card_active_scene {
+  margin-bottom: 10px;
+  border: solid 2px rgba(10, 218, 20, 0.856);
 }
 
 .div_scene {
   width: 100%;
   display: flex;
+}
+
+#filter_field {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  width: 300px;
 }
 
 .scene_name {

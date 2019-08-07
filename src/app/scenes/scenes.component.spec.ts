@@ -3,10 +3,7 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/cor
 import { ScenesComponent } from './scenes.component';
 import {
   MatIconModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatBottomSheetModule,
-  MatBottomSheet,
-  MatMenuModule,
-  MatDialogModule,
-  MatDialog
+  MatBottomSheet, MatMenuModule, MatDialogModule
 } from '@angular/material';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
@@ -71,8 +68,8 @@ describe('ScenesComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should find ID of active scene', () => {
-    expect(component.activeSceneId).toBe(scenes[0]._id);
+  it('should find active scene', () => {
+    expect(component.activeScene).toBe(scenes[0]);
   });
 
   it('should read scene infos', () => {
@@ -80,16 +77,61 @@ describe('ScenesComponent', () => {
     expect(component.sceneInfos.length).toBe(3);
   });
 
-  it('import button should point to scene component', () => {
+  it('home button should point to front component', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_new_scene')).nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
+
+    // when
+    const link = htmlButton.getAttribute('ng-reflect-router-link');
+
+    // then
+    expect(link).toEqual('/' + Route.FRONT);
+  });
+
+  it('"Add Scene" button should point to scene component', () => {
+
+    // given
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butScene')).nativeElement;
 
     // when
     const link = htmlButton.getAttribute('ng-reflect-router-link');
 
     // then
     expect(link).toEqual('/' + Route.SCENE);
+  });
+
+  it('#filteredSceneInfos should all scene infos when filter is missing', () => {
+
+    // when
+    const sceneInfos = component.filteredSceneInfos();
+
+    // then
+    expect(sceneInfos.length).toBe(scenes.length);
+  });
+
+  it('#filteredSceneInfos should return filtered scene infos when filter matches name', () => {
+
+    // given
+    component.filter = '1';
+
+    // when
+    const sceneInfos = component.filteredSceneInfos();
+
+    // then
+    expect(sceneInfos.length).toBe(1);
+  });
+
+  it('#filteredSceneInfos should return filtered scene infos when filter matches short description', () => {
+
+    // given
+    component.filter = 'desc';
+
+    // when
+    const sceneInfos = component.filteredSceneInfos();
+
+    // then
+    expect(sceneInfos.length).toBe(scenes.length);
   });
 
   it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
@@ -154,7 +196,7 @@ describe('ScenesComponent', () => {
     // given
     spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve(scenes[1]));
     spyOn(component.router, 'navigateByUrl');
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_activate_scene'))[0].nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_activate_scene'))[1].nativeElement;
 
     // when
     htmlButton.click();
@@ -170,7 +212,7 @@ describe('ScenesComponent', () => {
 
     // given
     spyOn(dbService, 'activateScene').and.returnValue(Promise.reject('cannot activate scene'));
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_activate_scene'))[0].nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_activate_scene'))[1].nativeElement;
 
     // when
     htmlButton.click();
