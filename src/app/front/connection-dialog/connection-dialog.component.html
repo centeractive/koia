@@ -1,5 +1,12 @@
 <mat-card>
   <h3>CouchDB Access</h3>
+  <mat-form-field>
+    <mat-select id="protocol" placeholder="Protocol" [(ngModel)]="data.connectionInfo.protocol">
+      <mat-option *ngFor="let protocol of protocols" [value]="protocol">
+        {{ protocol }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
   <div>
     <mat-form-field>
       <input id="host" matInput type="text" placeholder="Host" [(ngModel)]="data.connectionInfo.host">

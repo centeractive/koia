@@ -30,3 +30,4 @@ export * from './value-range.type';
 export * from './value-grouping.type';
 export * from './export-format.enum';
 export * from './connection-info.type';
+export * from './protocol.enum';

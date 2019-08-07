@@ -6,10 +6,10 @@ import {
   MatDialogModule, MatStepperModule, MatTooltipModule, MatDialogRef
 } from '@angular/material';
 import { NotificationService, DialogService } from 'app/shared/services';
-import { SceneInfo, Route } from 'app/shared/model';
+import { SceneInfo, Route, Protocol } from 'app/shared/model';
 import { ReaderService } from 'app/shared/services/reader';
 import { DBService } from 'app/shared/services/backend';
-import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { CouchDBService, ConnectionInfo } from 'app/shared/services/backend/couchdb';
 import { HAMMER_LOADER } from '@angular/platform-browser';
 import { FormsModule, FormBuilder } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -29,6 +29,7 @@ class DummyComponent { }
 const couchDBService = new CouchDBServiceMock();
 const readerService = new ReaderService();
 const dialogService = new DialogService(null);
+const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'test', password: 'secret' };
 const notificationService = new NotificationServiceMock();
 let dbService: DBService;
 let usesBrowserStroageSpy: jasmine.Spy;
@@ -125,7 +126,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should init CouchDB connection when user confirmed new connection with OK', fakeAsync(() => {
 
     // given
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
       data.closedWithOK = true;
@@ -151,7 +152,7 @@ describe('FrontComponent', () => {
 
     // given
     usesBrowserStroageSpy.and.returnValue(false);
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
@@ -177,7 +178,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should show error when connection to CouchDB fails', fakeAsync(() => {
 
     // given
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
@@ -203,7 +204,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should show error when backend cannot be initialized', fakeAsync(() => {
 
     // given
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue({ host: 'localhost', port: 5984, user: 'admin', password: 'admin' });
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
@@ -292,7 +293,8 @@ describe('FrontComponent (external invocation)', () => {
   });
 
   it('should activate scene and navigate to raw data view', () => {
-    expect(couchDBService.initConnection).toHaveBeenCalledWith({ host: 'localhost', port: 5984, user: 'test', password: 'secret' });
+    expect(couchDBService.initConnection).toHaveBeenCalledWith(
+      { protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
     expect(dbService.initBackend).toHaveBeenCalled();
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
@@ -300,6 +302,7 @@ describe('FrontComponent (external invocation)', () => {
 
   function createQueryParams(): QueryParams {
     const queryParams = new QueryParams();
+    queryParams.set(QueryParamExtractor.PROTOCOL, 'HTTP');
     queryParams.set(QueryParamExtractor.HOST, 'localhost');
     queryParams.set(QueryParamExtractor.PORT, '5984');
     queryParams.set(QueryParamExtractor.USER, 'test');

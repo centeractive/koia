@@ -2,12 +2,15 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ConnectionInfo } from 'app/shared/services/backend/couchdb';
 import { CommonUtils } from 'app/shared/utils';
+import { Protocol } from 'app/shared/model';
 
 @Component({
   selector: 'koia-connection-dialog',
   templateUrl: './connection-dialog.component.html'
 })
 export class ConnectionDialogComponent {
+
+  readonly protocols: Protocol[] = [Protocol.HTTP, Protocol.HTTPS];
 
   private originalConnInfo: ConnectionInfo;
 

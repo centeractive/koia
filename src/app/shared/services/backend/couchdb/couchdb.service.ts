@@ -15,6 +15,9 @@ import { CouchDBConfig } from './couchdb-config';
  * [httpd]
  * enable_cors = true
  *
+ * [chttpd]
+ * require_valid_user = true (required only if CouchDB is not installed on the local computer)
+ *
  * [cors]
  * origins = *
  * methods = GET,POST,PUT,DELETE
@@ -32,13 +35,13 @@ export class CouchDBService implements DB {
 
   constructor(private http: HttpClient) {
     this.initConnection(this.couchDBConfig.readConnectionInfo());
-    this.httpOptions = this.createHttpOptions();
   }
 
   initConnection(connectionInfo: ConnectionInfo): Promise<string> {
-    this.couchDBConfig.saveConnectionInfo(connectionInfo);
     this.connectionInfo = connectionInfo;
-    this.baseURL = 'http://' + connectionInfo.host + ':' + connectionInfo.port + '/';
+    this.couchDBConfig.saveConnectionInfo(connectionInfo);
+    this.httpOptions = this.createHttpOptions();
+    this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
     return new Promise<string>((resolve, reject) => {
       this.listDatabases()
         .then(r => {

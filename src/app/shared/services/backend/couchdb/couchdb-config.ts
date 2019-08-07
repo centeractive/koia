@@ -1,9 +1,10 @@
-import { ConnectionInfo } from 'app/shared/model';
+import { ConnectionInfo, Protocol } from 'app/shared/model';
 import { CommonUtils } from 'app/shared/utils';
 
 export class CouchDBConfig {
 
-   private static readonly DEFAULT_CONN_INFO: ConnectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
+   private static readonly DEFAULT_CONN_INFO: ConnectionInfo =
+      { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
    private static readonly CONN_INFO_NAME = 'CouchDBConnectionInfo';
 
    readConnectionInfo(): ConnectionInfo {

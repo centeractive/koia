@@ -1,9 +1,9 @@
 import { CouchDBConfig } from './couchdb-config';
-import { ConnectionInfo } from 'app/shared/model';
+import { ConnectionInfo, Protocol } from 'app/shared/model';
 
 describe('CouchDBConfig', () => {
 
-   const defaultConnInfo: ConnectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
+   const defaultConnInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
    const couchDBConfig = new CouchDBConfig();
 
    beforeEach(() => {
@@ -26,7 +26,7 @@ describe('CouchDBConfig', () => {
    it('#readConnectionInfo should return last saved connection', () => {
 
       // given
-      const connInfo: ConnectionInfo = { host: 'server1', port: 9999, user: 'test', password: 'secret' };
+      const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
       couchDBConfig.saveConnectionInfo(connInfo);
 
       // when
@@ -39,7 +39,7 @@ describe('CouchDBConfig', () => {
    it('#readConnectionInfo should return default when config was reset connection', () => {
 
       // given
-      couchDBConfig.saveConnectionInfo({ host: 'server1', port: 9999, user: 'test', password: 'secret' });
+      couchDBConfig.saveConnectionInfo({ protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' });
       couchDBConfig.reset();
 
       // when

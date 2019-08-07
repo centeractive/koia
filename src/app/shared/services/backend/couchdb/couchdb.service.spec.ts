@@ -1,7 +1,7 @@
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { CouchDBService } from './couchdb.service';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
-import { Document, ConnectionInfo } from 'app/shared/model';
+import { Document, ConnectionInfo, Protocol } from 'app/shared/model';
 import { CouchDBConfig } from './couchdb-config';
 
 describe('CouchDBService', () => {
@@ -34,7 +34,7 @@ describe('CouchDBService', () => {
    it('#initConnection should store config', fakeAsync(() => {
 
       // given
-      const connInfo: ConnectionInfo = { host: 'server1', port: 9999, user: 'test', password: 'secret' };
+      const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
       spyOn(dbService, 'listDatabases').and.returnValue(Promise.resolve());
 
       // when

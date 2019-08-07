@@ -1,15 +1,19 @@
 import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
-import { MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA, 
+  MatSelectModule, 
+  MatSelect,
+  MatOption} from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConnectionInfo } from 'app/shared/services/backend/couchdb';
 import { By } from '@angular/platform-browser';
+import { Protocol } from 'app/shared/model';
 
 describe('ConnectionDialogComponent', () => {
 
-  const connectionInfo: ConnectionInfo = { host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
+  const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
 
   let dialogData: ConnectionDialogData;
   let component: ConnectionDialogComponent;
@@ -22,7 +26,7 @@ describe('ConnectionDialogComponent', () => {
     dialogData = new ConnectionDialogData(connectionInfo);
     TestBed.configureTestingModule({
       declarations: [ConnectionDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
+      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
@@ -42,6 +46,7 @@ describe('ConnectionDialogComponent', () => {
   });
 
   it('should create view from model', () => {
+    expect(getSelectedProtocol()).toBe(connectionInfo.protocol);
     expect(getInputValue('host')).toBe(connectionInfo.host);
     expect(getInputValue('port')).toBe(connectionInfo.port.toString());
     expect(getInputValue('user')).toBe(connectionInfo.user);
@@ -88,6 +93,12 @@ describe('ConnectionDialogComponent', () => {
     expect(component.data.connectionInfo.password).toBe('%ad3Zds_');
     expect(component.dialogRef.close).toHaveBeenCalled();
   }));
+
+  function getSelectedProtocol(): Protocol {
+    const matSelect: MatSelect = fixture.debugElement.query(By.css('#protocol')).componentInstance;
+    const selectedOption = <MatOption> matSelect.selected;
+    return selectedOption.value;
+  }
 
   function getInputValue(id: string): string | number {
     return fixture.debugElement.query(By.css('#' + id)).nativeElement.value;

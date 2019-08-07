@@ -1,5 +1,5 @@
 import { ColumnDefinitionAssistant } from './column-definition-assistant';
-import { ColumnPair, Column, DataType } from 'app/shared/model';
+import { ColumnPair, DataType } from 'app/shared/model';
 
 describe('ColumnDefinitionAssistant', () => {
 

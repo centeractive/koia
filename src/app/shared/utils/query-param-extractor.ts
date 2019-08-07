@@ -1,6 +1,7 @@
 import { ParamMap } from '@angular/router';
 import { NumberUtils } from './number-utils';
 import { ConnectionInfo } from '../services/backend/couchdb';
+import { Protocol } from '../model';
 
 /**
  * extracts the CouchDB [[ConnectionInfo]] from the specified [[ParamMap]] in case the web-app was invoked by a third-party
@@ -8,6 +9,7 @@ import { ConnectionInfo } from '../services/backend/couchdb';
  */
 export class QueryParamExtractor {
 
+   static readonly PROTOCOL = 'protocol';
    static readonly HOST = 'host';
    static readonly PORT = 'port';
    static readonly USER = 'user';
@@ -34,6 +36,7 @@ export class QueryParamExtractor {
       const password = params.get(QueryParamExtractor.PASSWORD);
       if (host && port && user && password) {
          return {
+            protocol: this.determineProtocol(params),
             host: host,
             port: NumberUtils.asNumber(port),
             user: user,
@@ -41,6 +44,11 @@ export class QueryParamExtractor {
          };
       }
       return undefined;
+   }
+
+   private determineProtocol(params: ParamMap): Protocol {
+      const protocol = params.get(QueryParamExtractor.PROTOCOL);
+      return protocol === Protocol.HTTPS.toString() ? Protocol.HTTPS : Protocol.HTTP;
    }
 
    getCouchDBConnectionInfo(): ConnectionInfo | undefined {

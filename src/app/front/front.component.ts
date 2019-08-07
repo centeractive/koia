@@ -103,8 +103,8 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   private onCouchDBConnectionDialogClosed(data: ConnectionDialogData): void {
     if (data.closedWithOK) {
-      this.ready = false;
       if (this.dbService.usesBrowserStorage() || !CommonUtils.compare(data.connectionInfo, this.couchDBService.getConnectionInfo())) {
+        this.ready = false;
         this.initCouchDBConnection(data.connectionInfo);
       }
     } else if (this.dbService.usesBrowserStorage()) {
