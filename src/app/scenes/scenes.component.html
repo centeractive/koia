@@ -28,7 +28,7 @@
     </mat-menu>
 
     <button id="but_continue" mat-button mat-icon-button color="accent" matTooltip="Continue with active scene"
-      (click)="leave()">
+      (click)="showRawData()">
       <mat-icon>play_circle_outline</mat-icon>
     </button>
 
@@ -98,4 +98,6 @@
       <input matInput type="text" placeholder="Creation Time" readonly [value]="sceneInfo.creationTime | date:'medium'">
     </mat-form-field>
   </div>
+  <br>
+  <button id="but_cancel" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
 </mat-card>

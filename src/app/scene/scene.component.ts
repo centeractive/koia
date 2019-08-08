@@ -8,7 +8,7 @@ import { DataReader, DataHandler, ReaderService } from '../shared/services/reade
 import { SceneUtils, ColumnDefinitionAssistant } from './utils';
 import { ProgressMonitor, EntryPersister } from './persister';
 import { ValueFormatter, DateTimeUtils, ArrayUtils } from 'app/shared/utils';
-import { DatePipe } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './mapper';
 import { AbstractComponent } from 'app/shared/controller';
 
@@ -61,7 +61,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   private valueFormatter = new ValueFormatter();
   private canceled = false;
 
-  constructor(public router: Router, bottomSheet: MatBottomSheet, private readerService: ReaderService,
+  constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
@@ -285,7 +285,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       this.canceled = true;
       this.entryPersister.postingComplete(false);
     } else {
-      this.router.navigateByUrl(Route.SCENES);
+      this.location.back();
     }
   }
 }

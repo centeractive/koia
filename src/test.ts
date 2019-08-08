@@ -25,7 +25,7 @@ getTestBed().initTestEnvironment(
 
 // Then we find all the tests.
 
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /front.component\.spec\.ts$/);
 // const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
@@ -39,7 +39,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /mango-query-builder\.spec\.ts$/);
 
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
-const context = require.context('./', true, /scene.component\.spec\.ts$/);
+// const context = require.context('./', true, /scene.component\.spec\.ts$/);
 // const context = require.context('./', true, /scenes.component\.spec\.ts$/);
 // const context = require.context('./', true, /scene-utils.*\.spec\.ts$/);
 // const context = require.context('./', true, /scene.*\.spec\.ts$/);

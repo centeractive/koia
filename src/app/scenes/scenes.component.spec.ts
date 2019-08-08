@@ -16,6 +16,7 @@ import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { Location } from '@angular/common';
 
 @Component({ template: '' })
 class RawDataComponent { }
@@ -42,7 +43,7 @@ describe('ScenesComponent', () => {
       imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
         MatMenuModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }])],
-      providers: [MatBottomSheet,
+      providers: [Location, MatBottomSheet,
         { provide: DBService, useValue: dbService },
         DialogService,
         { provide: NotificationService, useValue: notificationService },
@@ -330,6 +331,20 @@ describe('ScenesComponent', () => {
     // then
     expect(appRouteReuseStrategy.clear).toHaveBeenCalledTimes(0);
     expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+  });
+
+  it('#click on cancel button should navigate to previous page', () => {
+
+    // given
+    const location = TestBed.get(Location);
+    spyOn(location, 'back');
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
+
+    // when
+    htmlButton.click();
+
+    // then
+    expect(location.back).toHaveBeenCalled();
   });
 
   function createScene(id: string): Scene {

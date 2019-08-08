@@ -6,6 +6,7 @@ import { MatBottomSheet } from '@angular/material';
 import { DBService } from 'app/shared/services/backend';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { AbstractComponent } from 'app/shared/controller';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'koia-scenes',
@@ -22,8 +23,8 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
 
   private sceneInfos: SceneInfo[] = [];
 
-  constructor(public router: Router, bottomSheet: MatBottomSheet, private dbService: DBService, private dialogService: DialogService,
-    notificationService: NotificationService) {
+  constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private dbService: DBService,
+    private dialogService: DialogService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
@@ -104,7 +105,11 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     return this.sceneInfos;
   }
 
-  leave() {
+  showRawData() {
     this.router.navigateByUrl(Route.RAWDATA);
+  }
+
+  cancel() {
+    this.location.back();
   }
 }

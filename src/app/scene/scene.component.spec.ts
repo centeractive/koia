@@ -12,7 +12,7 @@ import { DBService } from 'app/shared/services/backend';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-import { DatePipe } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
@@ -22,6 +22,7 @@ describe('SceneComponent', () => {
   const datePipe = new DatePipe('en-US');
   const readerService = new ReaderService();
   const notificationService = new NotificationServiceMock();
+  let isBackendInitializedSpy: jasmine.Spy;
   let dbService: DBService;
   let tableData: string[][];
   let component: SceneComponent;
@@ -49,7 +50,7 @@ describe('SceneComponent', () => {
       imports: [RouterTestingModule, MatBottomSheetModule, MatExpansionModule, MatCardModule, FormsModule, MatFormFieldModule,
         MatInputModule, MatSelectModule, MatProgressBarModule, MatSlideToggleModule, MatTableModule, MatButtonModule, MatIconModule,
         MatMenuModule, MatTooltipModule, BrowserAnimationsModule],
-      providers: [MatBottomSheet,
+      providers: [Location, MatBottomSheet,
         { provide: ReaderService, useValue: readerService },
         { provide: DBService, useValue: dbService },
         { provide: NotificationService, useValue: notificationService },
@@ -64,7 +65,7 @@ describe('SceneComponent', () => {
     spyOn(notificationService, 'onSuccess');
     spyOn(notificationService, 'onWarning');
     spyOn(notificationService, 'onError');
-    spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
+    isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
@@ -75,6 +76,19 @@ describe('SceneComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('#ngOnInit should navigate to front page when backend is not initialized', () => {
+
+    // given
+    isBackendInitializedSpy.and.returnValue(false);
+    spyOn(component.router, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.FRONT);
   });
 
   it('home button should point to front component', () => {
@@ -232,17 +246,18 @@ describe('SceneComponent', () => {
     expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
   }));
 
-  it('#click on cancel button should switch to scenes component', () => {
+  it('#click on cancel button should navigate to previous page', () => {
 
     // given
-    spyOn(component.router, 'navigateByUrl');
+    const location = TestBed.get(Location);
+    spyOn(location, 'back');
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
 
     // when
     htmlButton.click();
 
     // then
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+    expect(location.back).toHaveBeenCalled();
   });
 
   function createFileList(data: string) {
