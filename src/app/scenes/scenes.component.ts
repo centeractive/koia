@@ -73,8 +73,8 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     const promises = this.filteredSceneInfos.map(si => this.dbService.deleteScene(si));
     Promise.all(promises)
       .then(r => {
-        this.loadData();
         this.notifySuccess(scenesCount + ' scenes have been deleted');
+        this.loadData();
       })
       .catch(err => {
         this.loadData();

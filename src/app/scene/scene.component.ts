@@ -44,6 +44,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   targetColumnNames: string[];
   dateFormats: string[];
   previewData: MappingResult[];
+  scenesExist: boolean;
   scene: Scene;
   feedback: string;
   percentPersisted: number;
@@ -75,8 +76,14 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       this.selectedReader = this.readers[0];
       this.defineLocales();
       this.initScene();
+      this.detectIfScenesExist();
       this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
     }
+  }
+
+  private detectIfScenesExist(): void {
+    this.dbService.findSceneInfos()
+      .then(sceneInfos => this.scenesExist = sceneInfos && sceneInfos.length > 0);
   }
 
   private defineLocales(): void {
@@ -284,8 +291,10 @@ export class SceneComponent extends AbstractComponent implements OnInit {
     if (this.scene.creationTime && !this.entryPersister.isPostingComplete()) {
       this.canceled = true;
       this.entryPersister.postingComplete(false);
-    } else {
+    } else if (this.scenesExist) {
       this.location.back();
+    } else {
+      this.notifyWarning('Currently there exists no scene, at least one must be created!');
     }
   }
 }

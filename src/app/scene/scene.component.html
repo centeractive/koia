@@ -1,7 +1,7 @@
 <button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
   <mat-icon>home</mat-icon>
 </button>
-<button id="butScenes" mat-button mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
+<button id="butScenes" *ngIf="scenesExist" mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
   <mat-icon>collections</mat-icon>
 </button>
 <mat-card>
@@ -35,11 +35,11 @@
       <button mat-button mat-icon-button color="primary" matTooltip="Select file" (click)="fileInput.click()">
         <mat-icon>folder</mat-icon>
       </button>
-      <input #fileInput id="fileInput" hidden type="file" [accept]="selectedReader.getFileExtension()">
+      <input #fileInput id="fileInput" hidden type="file" [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
       <mat-form-field class="file_name" *ngIf="file">
         <input matInput type="text" placeholder="File Name" readonly [value]="file.name">
       </mat-form-field>
-      <p>{{ selectedReader.getDescription() }}</p>
+      <p *ngIf="selectedReader">{{ selectedReader.getDescription() }}</p>
       <div *ngIf="fileHeader">
         Data Sample
         <textarea id="textarea_data_sample" readonly>{{ fileHeader }}</textarea>

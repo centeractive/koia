@@ -16,6 +16,7 @@ import { DatePipe, Location } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { SceneFactory } from 'app/shared/test';
 
 describe('SceneComponent', () => {
 
@@ -24,11 +25,13 @@ describe('SceneComponent', () => {
   const notificationService = new NotificationServiceMock();
   let isBackendInitializedSpy: jasmine.Spy;
   let dbService: DBService;
+  let scenes: Scene[];
   let tableData: string[][];
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
 
   beforeAll(() => {
+    scenes = [SceneFactory.createScene('1', []), SceneFactory.createScene('2', []), SceneFactory.createScene('3', [])];
     tableData = [
       ['A', '1'],
       ['B', '2'],
@@ -68,6 +71,7 @@ describe('SceneComponent', () => {
     isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
+    spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
     spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
     fixture.detectChanges();
     flush();
@@ -246,7 +250,22 @@ describe('SceneComponent', () => {
     expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
   }));
 
-  it('#click on cancel button should navigate to previous page', () => {
+  it('#click on cancel button should show warning when no scenes exist', () => {
+
+    // given
+    component.scenesExist = false;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
+
+    // when
+    htmlButton.click();
+
+    // then
+    const bottomSheet = TestBed.get(MatBottomSheet);
+    expect(notificationService.onWarning).toHaveBeenCalledWith(bottomSheet,
+      'Currently there exists no scene, at least one must be created!');
+  });
+
+  it('#click on cancel button should navigate to previous page when scenes exist', () => {
 
     // given
     const location = TestBed.get(Location);
