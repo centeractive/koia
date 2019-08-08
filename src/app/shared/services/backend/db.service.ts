@@ -132,9 +132,12 @@ export class DBService {
       .then(d => scene);
   }
 
-  async deleteScene(scene: SceneInfo): Promise<any> {
-    return this.db.delete(this.scenesDbName(), scene)
-      .then(r => this.db.deleteDatabase(scene.database));
+  async deleteScene(sceneInfo: SceneInfo): Promise<any> {
+    if (this.activeScene && this.activeScene._id === sceneInfo._id) {
+      this.activeScene = undefined;
+    }
+    return this.db.delete(this.scenesDbName(), sceneInfo)
+      .then(r => this.db.deleteDatabase(sceneInfo.database));
   }
 
   async activateScene(id: string): Promise<Scene> {

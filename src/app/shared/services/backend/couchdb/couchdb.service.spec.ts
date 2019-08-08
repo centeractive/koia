@@ -8,7 +8,7 @@ describe('CouchDBService', () => {
 
    const testDBPrefix = 'test_';
    const couchDBConfig = new CouchDBConfig();
-   let dbService: CouchDBService;
+   let couchDBService: CouchDBService;
 
    beforeAll(() => {
       couchDBConfig.reset();
@@ -16,39 +16,55 @@ describe('CouchDBService', () => {
          imports: [HttpClientModule],
          providers: [CouchDBService]
       });
-      dbService = TestBed.get(CouchDBService);
+      couchDBService = TestBed.get(CouchDBService);
       spyOn(console, 'log').and.callFake(m => null);
    });
 
    beforeEach(async () => {
-      await dbService.clear(testDBPrefix)
+      await couchDBService.clear(testDBPrefix)
          .then(r => null)
          .catch(e => fail(e));
    });
 
-   afterEach(async() => {
+   afterEach(async () => {
       couchDBConfig.reset();
-      await dbService.initConnection(couchDBConfig.readConnectionInfo()).then(r => null);
+      await couchDBService.initConnection(couchDBConfig.readConnectionInfo()).then(r => null);
    });
 
    it('#initConnection should store config', fakeAsync(() => {
 
       // given
       const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
-      spyOn(dbService, 'listDatabases').and.returnValue(Promise.resolve());
+      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve());
 
       // when
-      dbService.initConnection(connInfo).then(dbs => null);
+      couchDBService.initConnection(connInfo).then(dbs => null);
       flush();
 
       // then
-      expect(couchDBConfig.readConnectionInfo()).toEqual(connInfo);
+      expect(couchDBService.getConnectionInfo()).toEqual(connInfo);
    }));
+
+   it('#initConnection should be rejected when connection fails', async () => {
+
+      // given
+      const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
+
+      // when
+      await couchDBService.initConnection(connInfo)
+         .then(dbs => fail('should have been rejected'))
+         .catch(err => {
+
+            // then
+            expect(couchDBService.getConnectionInfo()).toEqual(connInfo);
+            expect(err).toBeDefined();
+         });
+   });
 
    it('#listDatabases should return empty array when no database exists', async () => {
 
       // when
-      await dbService.listDatabases()
+      await couchDBService.listDatabases()
          .then(dbs => {
 
             // then
@@ -61,11 +77,11 @@ describe('CouchDBService', () => {
    it('#listDatabases should return databases', async () => {
 
       // given
-      await dbService.createDatabase(testDBPrefix + 'db1');
-      await dbService.createDatabase(testDBPrefix + 'db2');
+      await couchDBService.createDatabase(testDBPrefix + 'db1');
+      await couchDBService.createDatabase(testDBPrefix + 'db2');
 
       // when
-      await dbService.listDatabases()
+      await couchDBService.listDatabases()
          .then(dbs => {
 
             // then
@@ -77,10 +93,26 @@ describe('CouchDBService', () => {
          .catch(e => fail(e));
    });
 
+   it('#createDatabase should create database', async () => {
+
+      // when
+      const dbName = testDBPrefix + 'db99';
+      await couchDBService.createDatabase(testDBPrefix + 'db99');
+
+      // then
+      await couchDBService.listDatabases()
+         .then(dbs => expect(dbs.includes(dbName)).toBeTruthy())
+         .catch(e => fail(e));
+   });
+
+   it('#getMaxDataItemsPerScene should return max items', async () => {
+      expect(couchDBService.getMaxDataItemsPerScene()).toBe(100_000);
+   });
+
    it('#deleteDatabase should be rejected when database is system database', async () => {
 
       // when
-      await dbService.deleteDatabase('_users')
+      await couchDBService.deleteDatabase('_users')
          .then(() => fail('should have been rejected'))
          .catch(e => {
 
@@ -92,14 +124,14 @@ describe('CouchDBService', () => {
    it('#deleteDatabase should delete database', async () => {
 
       // given
-      await dbService.createDatabase(testDBPrefix + 'db1');
-      await dbService.createDatabase(testDBPrefix + 'db2');
+      await couchDBService.createDatabase(testDBPrefix + 'db1');
+      await couchDBService.createDatabase(testDBPrefix + 'db2');
 
       // when
-      await dbService.deleteDatabase(testDBPrefix + 'db1').then(() => null)
+      await couchDBService.deleteDatabase(testDBPrefix + 'db1').then(() => null)
 
       // then
-      await dbService.listDatabases()
+      await couchDBService.listDatabases()
          .then(dbs => {
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(1);
@@ -112,13 +144,13 @@ describe('CouchDBService', () => {
 
       // given
       const database = testDBPrefix + 'db';
-      await dbService.createDatabase(database);
+      await couchDBService.createDatabase(database);
 
       // when
-      await dbService.createIndex(database, 'name').then(() => null)
+      await couchDBService.createIndex(database, 'name').then(() => null)
 
       // when
-      await dbService.countDocuments(database)
+      await couchDBService.countDocuments(database)
          .then(n => {
 
             // then
@@ -136,16 +168,16 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ];
-      await dbService.createDatabase(database);
-      await dbService.insertBulk(database, documents).then(() => null);
+      await couchDBService.createDatabase(database);
+      await couchDBService.insertBulk(database, documents).then(() => null);
       const newDocument: any = { _id: '4', name: 'd' };
 
 
       // when
-      await dbService.insert(database, newDocument).then(() => null);
+      await couchDBService.insert(database, newDocument).then(() => null);
 
       // then
-      await dbService.findById(database, '4')
+      await couchDBService.findById(database, '4')
          .then(d => checkDocument(d, '4', 'd'))
          .catch(e => fail(e));
    });
@@ -159,11 +191,11 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ];
-      await dbService.createDatabase(database);
-      await dbService.insertBulk(database, documents).then(() => null);
+      await couchDBService.createDatabase(database);
+      await couchDBService.insertBulk(database, documents).then(() => null);
 
       // when
-      await dbService.insert(database, documents[0])
+      await couchDBService.insert(database, documents[0])
          .then(() => fail('should have thrown error'))
          .catch(err => {
 
@@ -184,14 +216,14 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ]
-      await dbService.createDatabase(database);
+      await couchDBService.createDatabase(database);
 
       // when
-      await dbService.insertBulk(database, documents).then(() => null);
+      await couchDBService.insertBulk(database, documents).then(() => null);
 
       // then
       const query = { selector: { _id: { $gt: null } }, fields: ['_id', '_rev', 'name'] };
-      await dbService.find(database, query).toPromise()
+      await couchDBService.find(database, query).toPromise()
          .then(docs => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(3);
@@ -211,11 +243,11 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ]
-      await dbService.createDatabase(database);
-      await dbService.insertBulk(database, documents.slice(1)).then(() => null);
+      await couchDBService.createDatabase(database);
+      await couchDBService.insertBulk(database, documents.slice(1)).then(() => null);
 
       // when
-      await dbService.insertBulk(database, documents)
+      await couchDBService.insertBulk(database, documents)
          .then(() => fail('should have thrown error'))
          .catch(err => {
 
@@ -235,19 +267,19 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ]
-      await dbService.createDatabase(database);
-      await dbService.insertBulk(database, documents).then(() => null);
+      await couchDBService.createDatabase(database);
+      await couchDBService.insertBulk(database, documents).then(() => null);
       let docToUpdate: Document;
-      await dbService.findById(database, '1').then(doc => docToUpdate = doc);
+      await couchDBService.findById(database, '1').then(doc => docToUpdate = doc);
       const initialDocRev = docToUpdate._rev;
       docToUpdate['name'] = 'x';
 
       // when
-      await dbService.update(database, docToUpdate).then(() => null);
+      await couchDBService.update(database, docToUpdate).then(() => null);
 
       // then
       const query = { selector: { _id: '1' }, fields: ['_id', '_rev', 'name'] };
-      await dbService.find(database, query).toPromise()
+      await couchDBService.find(database, query).toPromise()
          .then(docs => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(1);
@@ -266,16 +298,16 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ]
-      await dbService.createDatabase(database);
-      await dbService.insertBulk(database, documents).then(() => null);
+      await couchDBService.createDatabase(database);
+      await couchDBService.insertBulk(database, documents).then(() => null);
       let docToDelete: Document;
-      await dbService.findById(database, '2').then(doc => docToDelete = doc);
+      await couchDBService.findById(database, '2').then(doc => docToDelete = doc);
 
       // when
-      await dbService.delete(database, docToDelete);
+      await couchDBService.delete(database, docToDelete);
 
       // then
-      await dbService.countDocuments(database)
+      await couchDBService.countDocuments(database)
          .then(n => expect(n).toBe(2))
          .catch(e => fail(e));
    });
@@ -289,11 +321,11 @@ describe('CouchDBService', () => {
          { _id: '2', name: 'b' },
          { _id: '3', name: 'c' }
       ]
-      await dbService.createDatabase(database);
-      await dbService.insertBulk(database, documents).then(() => null);
+      await couchDBService.createDatabase(database);
+      await couchDBService.insertBulk(database, documents).then(() => null);
 
       // when
-      await dbService.countDocuments(database)
+      await couchDBService.countDocuments(database)
          .then(n => {
 
             // then

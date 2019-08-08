@@ -26,6 +26,9 @@ describe('ScenesComponent', () => {
   let scenes: Scene[];
   const dbService = new DBService(null);
   const notificationService = new NotificationServiceMock();
+  let isBackendInitializedSpy: jasmine.Spy;
+  let getActiveSceneSpy: jasmine.Spy;
+  let findSceneInfosSpy: jasmine.Spy;
   let component: ScenesComponent;
   let fixture: ComponentFixture<ScenesComponent>;
 
@@ -49,10 +52,10 @@ describe('ScenesComponent', () => {
     spyOn(appRouteReuseStrategy, 'clear');
     spyOn(notificationService, 'onSuccess');
     spyOn(notificationService, 'onError');
-    spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
+    isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
     spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
-    spyOn(dbService, 'getActiveScene').and.returnValue(scenes[0]);
-    spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scenes[0]);
+    findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
     spyOn(dbService, 'findScene').and.returnValue(Promise.resolve(scenes[0]));
   }));
 
@@ -73,8 +76,21 @@ describe('ScenesComponent', () => {
   });
 
   it('should read scene infos', () => {
-    expect(component.sceneInfos).toBeDefined();
-    expect(component.sceneInfos.length).toBe(3);
+    expect(component.filteredSceneInfos).toBeDefined();
+    expect(component.filteredSceneInfos.length).toBe(3);
+  });
+
+  it('#ngOnInit should navigate to front page when backend is not initialized', () => {
+
+    // given
+    isBackendInitializedSpy.and.returnValue(false);
+    spyOn(component.router, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.FRONT);
   });
 
   it('home button should point to front component', () => {
@@ -101,38 +117,116 @@ describe('ScenesComponent', () => {
     expect(link).toEqual('/' + Route.SCENE);
   });
 
-  it('#filteredSceneInfos should all scene infos when filter is missing', () => {
+  it('#onFilterChange should not filter scene infos when filter is null', () => {
 
     // when
-    const sceneInfos = component.filteredSceneInfos();
+    component.onFilterChange(null);
 
     // then
-    expect(sceneInfos.length).toBe(scenes.length);
+    expect(component.filteredSceneInfos.length).toBe(scenes.length);
   });
 
-  it('#filteredSceneInfos should return filtered scene infos when filter matches name', () => {
+  it('#onFilterChange should filter scene infos when filter matches name', () => {
+
+    // when
+    component.onFilterChange('e 1');
+
+    // then
+    expect(component.filteredSceneInfos.length).toBe(1);
+  });
+
+  it('#onFilterChange should filter scene infos when filter matches short description', () => {
+
+    // when
+    component.onFilterChange('2 s');
+
+    // then
+    expect(component.filteredSceneInfos.length).toBe(1);
+  });
+
+  it('#click on "Delete all" button should delete all scenes', fakeAsync(() => {
 
     // given
-    component.filter = '1';
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    getActiveSceneSpy.and.returnValue(null);
+    findSceneInfosSpy.and.returnValue(Promise.resolve([]));
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
 
     // when
-    const sceneInfos = component.filteredSceneInfos();
+    deleteButton.click();
+    flush();
 
     // then
-    expect(sceneInfos.length).toBe(1);
-  });
+    expect(dbService.deleteScene).toHaveBeenCalledTimes(scenes.length);
+    scenes.forEach(s => expect(dbService.deleteScene).toHaveBeenCalledWith(s));
+    expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
+  }));
 
-  it('#filteredSceneInfos should return filtered scene infos when filter matches short description', () => {
+  it('#click on "Delete all" button should and navigate to scene component', fakeAsync(() => {
 
     // given
-    component.filter = 'desc';
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    getActiveSceneSpy.and.returnValue(null);
+    findSceneInfosSpy.and.returnValue(Promise.resolve(null));
+    spyOn(component.router, 'navigateByUrl');
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
 
     // when
-    const sceneInfos = component.filteredSceneInfos();
+    deleteButton.click();
+    flush();
 
     // then
-    expect(sceneInfos.length).toBe(scenes.length);
-  });
+    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENE);
+  }));
+
+  it('#click on "Delete all" button should notify error when error occurs', fakeAsync(() => {
+
+    // given
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.reject('error'));
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+
+    // when
+    deleteButton.click();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#click on "Delete filtered" button should delete filtered scenes', fakeAsync(() => {
+
+    // given
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    component.onFilterChange('1');
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+
+    // when
+    deleteButton.click();
+    flush();
+
+    // then
+    expect(dbService.deleteScene).toHaveBeenCalledTimes(1);
+    expect(dbService.deleteScene).toHaveBeenCalledWith(scenes[0]);
+    expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#click on "Delete filtered" button should reload data', fakeAsync(() => {
+
+    // given
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    getActiveSceneSpy.calls.reset();
+    findSceneInfosSpy.calls.reset();
+    component.onFilterChange('1');
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+
+    // when
+    deleteButton.click();
+    flush();
+
+    // then
+    expect(dbService.getActiveScene).toHaveBeenCalledTimes(1);
+    expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
+  }));
 
   it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
 

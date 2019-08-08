@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from 'app/shared/model';
@@ -55,10 +55,55 @@ describe('DBService', () => {
   });
 
   it('#isBackendInitialized should return true', () => {
-    expect(dbService.isBackendInitialized).toBeTruthy();
+    expect(dbService.isBackendInitialized()).toBeTruthy();
   });
 
-  it('#useBrowserStorage should switch to browser storage', async() => {
+  it('#initBackend should be ignored when backend is initialized', async () => {
+
+    // given
+    spyOn(couchDBService, 'listDatabases');
+
+    // when
+    await dbService.initBackend(false).then(r => null);
+
+    // then
+    expect(couchDBService.listDatabases).not.toHaveBeenCalled();
+  });
+
+  it('#initBackend should not create scenes DB when it already exists', async () => {
+
+    // given
+    spyOn(couchDBService, 'createDatabase');
+
+    // when
+    await dbService.initBackend(true).then(r => {
+
+      // then
+      expect(couchDBService.createDatabase).not.toHaveBeenCalled();
+    });
+  });
+
+
+  it('#initBackend should switch to browser storage when CouchDB access fails', fakeAsync(() => {
+
+    // given
+    spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.reject('error'));
+
+    // when
+    dbService.initBackend(true).then(r => null);
+    flush();
+
+    // then
+    expect(console.log).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
+    expect(dbService.usesBrowserStorage()).toBeTruthy();
+    expect(dbService.isBackendInitialized()).toBeTruthy();
+  }));
+
+  it('#getActiveScene should return active scene', () => {
+    expect(dbService.getActiveScene()).toBe(initialScene);
+  });
+
+  it('#useBrowserStorage should switch to browser storage', async () => {
 
     // when
     await dbService.useBrowserStorage().then(db => {
@@ -66,10 +111,10 @@ describe('DBService', () => {
       // then
       expect(dbService.usesBrowserStorage).toBeTruthy();
     })
-    .catch(e => fail(e));
+      .catch(e => fail(e));
   });
 
-  it('#findFreeDatabaseName should return free name', async () => {
+  it('#findFreeDatabaseName should return free name from CouchDB', async () => {
 
     // when
     await dbService.findFreeDatabaseName()
@@ -81,7 +126,7 @@ describe('DBService', () => {
       .catch(e => fail(e));
   });
 
-  it('#findFreeDatabaseName should throw error when max number of databases is reached', async () => {
+  it('#findFreeDatabaseName should throw error when max number of CouchDB databases is reached', async () => {
 
     // given
     const databases: string[] = [];
@@ -98,6 +143,42 @@ describe('DBService', () => {
         // then
         expect(e).toEqual(new Error('No free database table available (maximum of ' + DBService.MAX_DB_COUNT + ' reached)'));
       });
+  });
+
+  it('#findFreeDatabaseName should return free name from browser storage', async () => {
+
+    // given
+    await dbService.useBrowserStorage();
+
+    // when
+    await dbService.findFreeDatabaseName()
+      .then(db => {
+
+        // then
+        expect(db).toBe(testDBPrefix + DBService.DATA + '_1');
+      })
+      .catch(e => fail(e));
+  });
+
+  it('#getMaxDataItemsPerScene should return value when CouchDB is used', async () => {
+
+    // when
+    const maxDataItems = dbService.getMaxDataItemsPerScene();
+
+    // then
+    expect(maxDataItems).toBe(100_000);
+  });
+
+  it('#getMaxDataItemsPerScene should return value when browser storage is used', async () => {
+
+    // given
+    await dbService.useBrowserStorage().then(db => null);
+
+    // when
+    const maxDataItems = dbService.getMaxDataItemsPerScene();
+
+    // then
+    expect(maxDataItems).toBe(10_000);
   });
 
   it('#persistScene should persist scene', async () => {
@@ -236,13 +317,34 @@ describe('DBService', () => {
       .catch(e => fail(e));
   });
 
-  it('#deleteScene should delete scene', async () => {
+  it('#deleteScene should delete active scene', async () => {
 
     // when
     await dbService.deleteScene(initialScene).then(s => null).catch(e => fail(e));
 
     // then
+    expect(dbService.getActiveScene()).toBeUndefined();
     await dbService.findScene(initialScene._id)
+      .then(s => fail('scene should not exist anymore: ' + JSON.stringify(s)))
+      .catch((e: HttpErrorResponse) => {
+        expect(e.ok).toBeFalsy();
+        expect(e.status).toBe(404);
+        expect(e.statusText).toBe('Object Not Found');
+      });
+  });
+
+  it('#deleteScene should delete non-active scene', async () => {
+
+    // given
+    const scene2 = createScene('2');
+    await dbService.persistScene(scene2, false).then(s => null);
+
+    // when
+    await dbService.deleteScene(scene2).then(s => null).catch(e => fail(e));
+
+    // then
+    expect(dbService.getActiveScene()).toBe(initialScene);
+    await dbService.findScene(scene2._id)
       .then(s => fail('scene should not exist anymore: ' + JSON.stringify(s)))
       .catch((e: HttpErrorResponse) => {
         expect(e.ok).toBeFalsy();

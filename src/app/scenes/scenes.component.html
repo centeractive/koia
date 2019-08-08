@@ -51,16 +51,23 @@
     <mat-card-title>All Scenes
     </mat-card-title>
     <mat-card-subtitle>Manage your existing scenes
-      <mat-form-field id="filter_field">
-        <input matInput type="text" placeholder="Filter" [(ngModel)]="filter">
-        <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button
-          aria-label="Clear" (click)="filter = undefined">
-          <mat-icon>close</mat-icon>
+      <span id="span_filter">
+        <mat-form-field id="filter_field">
+          <input matInput type="text" placeholder="Text Filter" [value]="filter" (change)="onFilterChange($event.target.value)">
+          <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button
+            aria-label="Clear" (click)="filter = undefined">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+        <button id="but_delete_filtered" mat-stroked-button
+          [disabled]="filteredSceneInfos.length === 0" (click)="deleteFilteredScenes()">
+          <mat-icon>delete_forever</mat-icon>
+          <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
         </button>
-      </mat-form-field>
+      </span>
     </mat-card-subtitle>
   </mat-card-header>
-  <div class="div_scene" *ngFor="let sceneInfo of filteredSceneInfos()">
+  <div class="div_scene" *ngFor="let sceneInfo of filteredSceneInfos">
 
     <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
       <mat-icon>more_vert</mat-icon>

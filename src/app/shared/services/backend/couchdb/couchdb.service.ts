@@ -37,22 +37,17 @@ export class CouchDBService implements DB {
     this.initConnection(this.couchDBConfig.readConnectionInfo());
   }
 
-  initConnection(connectionInfo: ConnectionInfo): Promise<string> {
+  async initConnection(connectionInfo: ConnectionInfo): Promise<string> {
     this.connectionInfo = connectionInfo;
     this.couchDBConfig.saveConnectionInfo(connectionInfo);
     this.httpOptions = this.createHttpOptions();
     this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
-    return new Promise<string>((resolve, reject) => {
-      this.listDatabases()
-        .then(r => {
-          resolve('Connection to CouchDB at ' + this.baseURL + ' has beed established');
-        })
-        .catch(err => reject(err));
-    });
+    const r = await this.listDatabases();
+    return 'Connection to CouchDB at ' + this.baseURL + ' has beed established';
   }
 
   getConnectionInfo(): ConnectionInfo {
-    return <ConnectionInfo> CommonUtils.clone(this.connectionInfo);
+    return <ConnectionInfo>CommonUtils.clone(this.connectionInfo);
   }
 
   private createHttpOptions(): any {
