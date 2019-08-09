@@ -80,16 +80,16 @@ describe('FrontComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should pre-select browser storage', () => {
-    expect(component.selectedDataStorage).toBe(component.browser);
+  it('should pre-select IndexedDB', () => {
+    expect(component.selectedDataStorage).toBe(component.indexedDB);
   });
 
-  it('#onDataStorageChanged should switch to browser data store', fakeAsync(() => {
+  it('#onDataStorageChanged should switch to IndexedDB', fakeAsync(() => {
 
     // given
     spyOn(dbService, 'useBrowserStorage').and.returnValue(Promise.resolve());
     spyOn(notificationService, 'onSuccess');
-    component.selectedDataStorage = component.browser;
+    component.selectedDataStorage = component.indexedDB;
 
     // when
     component.onDataStorageChanged();
@@ -119,7 +119,7 @@ describe('FrontComponent', () => {
     expect(dialogService.showConnectionDialog).toHaveBeenCalled();
     expect(couchDBService.initConnection).not.toHaveBeenCalled();
     expect(notificationService.onSuccess).not.toHaveBeenCalled();
-    expect(component.selectedDataStorage).toBe(component.browser);
+    expect(component.selectedDataStorage).toBe(component.indexedDB);
   }));
 
 

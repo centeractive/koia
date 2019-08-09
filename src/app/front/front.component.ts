@@ -20,7 +20,7 @@ import { ConnectionDialogData } from './connection-dialog/connection-dialog.comp
 })
 export class FrontComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
-  readonly browser = 'Browser';
+  readonly indexedDB = 'IndexedDB';
   readonly couchDB = 'CouchDB';
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
@@ -36,7 +36,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   stepVisibleControl: FormGroup;
   showScreenshots = true;
   imagePaths: string[];
-  dataStorages = [this.browser, this.couchDB];
+  dataStorages = [this.indexedDB, this.couchDB];
   selectedDataStorage: string;
   ready = false;
   scenesCount: number;
@@ -89,7 +89,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
       this.dbService.useBrowserStorage()
         .then(r => {
           this.init();
-          this.notifySuccess('Successfully switched to ' + this.browser + ' datastore');
+          this.notifySuccess('Successfully switched to ' + this.indexedDB);
           this.ready = true;
         });
     }
@@ -132,7 +132,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private init(): void {
-    this.selectedDataStorage = this.dbService.usesBrowserStorage() ? this.browser : this.couchDB;
+    this.selectedDataStorage = this.dbService.usesBrowserStorage() ? this.indexedDB : this.couchDB;
     this.dbService.findSceneInfos()
       .then(sceneInfos => {
         this.scenesCount = sceneInfos.length;

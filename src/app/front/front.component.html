@@ -152,7 +152,7 @@
       <mat-step label="Scenes" state="scenes" [stepControl]="stepVisibleControl">
         <mat-card class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
-            <div mat-card-avatar id="scene-image"></div>
+            <div mat-card-avatar class="scenes-image"></div>
             <mat-card-title>Scenes</mat-card-title>
             <mat-card-subtitle>Scenes represent individual datasets</mat-card-subtitle>
           </mat-card-header>
@@ -236,7 +236,7 @@
             Koia writes and reads data from the browser's internal
             <a href="https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API" target="_blank">IndexedDB</a>
             or from an external <a href="http://couchdb.apache.org/" target="_blank">CouchDB</a>.
-            The latter has the following advantages.
+            The latter has the following advantages:
           </p>
           <ul>
             <li>All data remains available even when the browser cache is cleared.</li>

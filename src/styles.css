@@ -26,6 +26,12 @@ body {
   background-size: 36px 36px;
 }
 
+.scenes-image {
+  background-image: url('./assets/scenes.png');
+  background-repeat: no-repeat;
+  background-size: 36px 36px;
+}
+
 .sticky_header {  
   position: -webkit-sticky; /* Safari */
   position: fixed;  
