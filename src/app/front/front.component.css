@@ -2,6 +2,7 @@
    width: 100%;
    display: block;
    text-align: center;
+   padding-bottom: 20px;
 }
 
 p {
@@ -54,49 +55,67 @@ p {
 }
 
 #about-image {
-   background-image: url('../../assets/about.png');
+   background-image: url('../../assets/about_koia.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #features-image {
-   background-image: url('../../assets/army_knife.png');
+   background-image: url('../../assets/features.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #shield-image {
-   background-image: url('../../assets/shield.png');
+   background-image: url('../../assets/trust.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #data-image {
-   background-image: url('../../assets/text_binary.png');
+   background-image: url('../../assets/data_formats.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
+#datascene-image {
+   background-image: url('../../assets/import_select.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+}
+
 #view-image {
-   background-image: url('../../assets/view.png');
+   background-image: url('../../assets/view_data.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #screenshots-image {
-   background-image: url('../../assets/monitor.png');
+   background-image: url('../../assets/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #browser-image {
-   background-image: url('../../assets/earth.png');
+   background-image: url('../../assets/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #couchdb-image {
    background-image: url('../../assets/couchdb.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#importselect-image {
+   background-image: url('../../assets/import_select.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#create-image {
+   background-image: url('../../assets/create.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
