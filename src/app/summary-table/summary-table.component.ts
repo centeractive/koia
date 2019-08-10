@@ -11,6 +11,7 @@ import { DataFrameSorter } from './data-frame-sorter';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
+import { ExportDataGenerator } from './export-data-generator';
 
 @Component({
   selector: 'koia-summary-table',
@@ -38,6 +39,7 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
   private dataFrameSorter = new DataFrameSorter();
   private datePipe = new DatePipe('en-US');
   private valueFormatter = new ValueFormatter();
+  private exportDataGenerator = new ExportDataGenerator();
 
   constructor(private router: Router, private dbService: DBService, private aggregationService: AggregationService,
     private valueRangeGroupingService: ValueRangeGroupingService, private rawDataRevealService: RawDataRevealService) { }
@@ -170,17 +172,7 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
     }
   }
 
-  /**
-    * TODO: transformSeries may not work when undefined values are present (see solution at ValueRangeGroupingService#groupByValueRanges)
-    */
-   createExportData(): Object[] {
-    let df = this.dataFrame;
-    this.context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c => {
-      df = df.transformSeries({
-        [CommonUtils.labelOf(c, c.groupingTimeUnit)]: t => isNaN(t) ? '' :
-          this.datePipe.transform(t, DateTimeUtils.ngFormatOf(c.groupingTimeUnit))
-      })
-    });
-    return df.toArray();
+  createExportData(): Object[] {
+    return this.exportDataGenerator.generate(this.context, this.dataFrame, this.overalls);
   }
 }

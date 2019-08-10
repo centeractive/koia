@@ -55,7 +55,7 @@
         <mat-form-field id="filter_field">
           <input matInput type="text" placeholder="Text Filter" [value]="filter" (change)="onFilterChange($event.target.value)">
           <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button
-            aria-label="Clear" (click)="filter = undefined">
+            aria-label="Clear" (click)="onFilterChange('')">
             <mat-icon>close</mat-icon>
           </button>
         </mat-form-field>

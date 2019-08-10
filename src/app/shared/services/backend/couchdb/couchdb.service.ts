@@ -15,9 +15,6 @@ import { CouchDBConfig } from './couchdb-config';
  * [httpd]
  * enable_cors = true
  *
- * [chttpd]
- * require_valid_user = true (required only if CouchDB is not installed on the local computer)
- *
  * [cors]
  * origins = *
  * methods = GET,POST,PUT,DELETE

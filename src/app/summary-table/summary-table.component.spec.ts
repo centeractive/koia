@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testi
 import { MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule, MatDialog } from '@angular/material';
 import { of } from 'rxjs';
 import { SummaryTableComponent } from './summary-table.component';
-import { SummaryContext, Query, Route, Column, DataType, Scene, TimeUnit } from 'app/shared/model';
+import { SummaryContext, Query, Route, Column, DataType, Scene, TimeUnit, Aggregation } from 'app/shared/model';
 import { AggregationService, ValueRangeGroupingService, RawDataRevealService } from 'app/shared/services';
 import { DatePipe } from '@angular/common';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -356,7 +356,7 @@ describe('SummaryTableComponent', () => {
     expect(formattedValue).toBe(datePipe.transform(now, 'd MMM yyyy HH:mm'));
   }));
 
-  it('#createExportData should return data', fakeAsync(() => {
+  it('#createExportData should return data when aggregated by COUNT', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('t1')];
@@ -372,7 +372,29 @@ describe('SummaryTableComponent', () => {
     const expectedData = [
       { 'Time (per minute)': datePipe.transform(now, timeFormat), t1: 'a', Count: 1 },
       { 'Time (per minute)': datePipe.transform(now, timeFormat), t1: 'b', Count: 1 },
-      { 'Time (per minute)': datePipe.transform(now + 60 * sec, timeFormat), t1: 'b', Count: 2 }
+      { 'Time (per minute)': datePipe.transform(now + 60 * sec, timeFormat), t1: 'b', Count: 2 },
+      { 'Time (per minute)': '', t1: 'Overall', Count: 4 }
+    ];
+    expect(data).toEqual(expectedData);
+  }));
+
+  it('#createExportData should return data when aggregated by COUNT', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('n1')];
+    context.groupByColumns = [findColumn('t1')];
+    context.aggregations = [Aggregation.MIN, Aggregation.MAX, Aggregation.SUM];
+    fixture.detectChanges();
+    flush();
+
+    // when
+    const data = component.createExportData();
+
+    // then
+    const expectedData = [
+      { t1: 'a', Min: 1, Max: 1, Sum: 1 },
+      { t1: 'b', Min: 2, Max: 3, Sum: 7 },
+      { t1: 'Overall', Min: 1, Max: 3, Sum: 8 },
     ];
     expect(data).toEqual(expectedData);
   }));
