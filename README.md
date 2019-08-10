@@ -4,35 +4,37 @@
 
 <img align="left" src="./doc/koialogo.png">
 
-Koia is an [Angular based](https://angular.io/), open-source web-tool for everyone to create simple graphics in minutes.
-It offers a modern and minimalistic approach for creating tables, charts, graphs and pivot tables of your data.
+Koia is an [angular-based](https://angular.io/), open-source webtool for everyone to create simple graphics in minutes.
+It offers a modern and minimalistic approach to creating tables, charts, graphs and pivot tables of your data.
 
-Koia has originally been created for analyzing and visualizing **log data** fetched with stunning [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
+Koia has originally been developed for analyzing and visualizing **log data** fetched with the [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
 ![alt text](./doc/retrospective.png "Retrospective Log Analyzer") from files (local and remote), [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/).
 
 Use it straight away at [**https://www.koia.io**](https://www.koia.io) or continue reading.
 
 ## Why Koia?
 
- Koia differs from similar programs mainly in that the context to the original data is never lost. A mouse click on a chart element or a summary value, for example, opens a dialog that shows the raw data on which the displayed element or value is based.
+Koia differs from similar programs mainly in that the **context to the original data** is never lost. You are always only a mouseclick apart from seeing the raw data on which the displayed element or value is based.
+
+Next to this, Koia enables the **uploading of multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
 ## How it works 
  
- Data is loaded from files (CSV, Excel or JSON) to the browser's IndexedDB or a local CouchDB through Koia itself or it may be written to it by a third party program. Uploaded data from an individual file are represented by a **scene**. You can switch between different scenes as you please.
+Data is loaded from files (CSV, Excel or JSON) to the browser's IndexedDB or a local CouchDB through Koia itself or it may be written to it by a third party program. Uploaded data from an individual file are represented by a **scene**. You can switch between different scenes as you please to create diagrams based on different data.
 
-The data can be viewed, filtered and sorted in the **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables**. A few mouseclicks give you insights into data sets. Koia offers a variety of chart types such as: Pie charts, donut charts, bar charts, line charts, area charts, scatter charts and sunburst charts.
+The data can be viewed, filtered and sorted in a **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables** with a few mouseclicks. To gain insights into your data, Koia offers a variety of chart types such as: Pie charts, donut charts, bar charts, line charts, area charts, scatter charts and sunburst charts.
 
- Besides simply visualizing data, Koia also features **time and value filters** to present a closer look at diagrams and the numbers behind them.
+Besides simply visualizing data, Koia also features **time and value filters** to present a closer look at diagrams and the numbers behind them.
 
- When satisfied with the outcome, users can **save** the current view or **export** data to be used elsewhere.
+ When satisfied with the outcome, users can **save** the current view or **export** data to use it elsewhere.
 
  <img align="center" src="./doc/lemon_marketprice.png">
 
- **Picture 1:** Line chart of market prices over the course of several years and the according summmaries with the average prices for each year and in total.
+ **Picture 1:** Relationship graph showing the time/log level relation of log entries and a pie/scatter chart showing the occurance of the log levels.
 
  <img align="center" src="./doc/log_levels.png">
 
- **Picture 2:** Relationship graph showing the time/log level relation of log entries and a pie/scatter chart showing the occurance of the log levels.
+ **Picture 2:** Line chart of market prices over the course of several years and the according summmaries with the average prices for each year and in total.
 
 ## Getting Started
 
@@ -55,7 +57,7 @@ origins = *
 methods = GET,POST,PUT,DELETE
 credentials = true
 ```
-4. Start Koia by opening http://koia.io.
+4. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
 
 ## Development
 
