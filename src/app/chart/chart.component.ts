@@ -90,7 +90,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
         if (changeEvent === ChangeEvent.SIZE && this.parentConstraintSize && this.context.chart) {
           this.context.chart.update();
         } else {
-          this.applyScatterChartWorkaround();
+          this.clearChartWorkaround();
           this.marginDivStyle = this.marginToStyle(this.context.margin);
           if (changeEvent === ChangeEvent.STRUCTURE) {
             const chartDataResult = this.chartDataService.createData(this.context);
@@ -101,9 +101,6 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
           }
           this.context.legendItems = this.chartData ? this.chartData.length : 0;
           this.chartOptions = this.optionsProvider.createOptions(this.context, this.parentConstraintSize);
-
-          // TODO: direct switch from AREA to LINE chart doesn't work
-          console.log('area: ' + this.chartOptions['chart'].isArea);
         }
       } finally {
         this.loading = false;
@@ -112,10 +109,13 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   /**
-   * when changing source data or resizing scatter charts, the data points were not properly laid out
+   * this workaround needs to be applied for the following reasons: 
+   * - when adding data column to grouped bar chart, [[undefined]] forceY was not considered
+   * - direct switch from AREA to LINE chart didn't work (AREA chart staid visible)
+   * - when changing source data or resizing SCATTER charts, the data points were not properly laid out
    */
-  private applyScatterChartWorkaround(): void {
-    if (this.nvD3Component && this.context.chartType === ChartType.SCATTER.type) {
+  private clearChartWorkaround(): void {
+    if (this.nvD3Component) {
       this.nvD3Component.clearElement();
     }
   }

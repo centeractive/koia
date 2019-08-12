@@ -2,6 +2,7 @@ import { DateTimeUtils, CommonUtils, ArrayUtils, ValueFormatter } from '../../sh
 import { ChartContext, ChartType, DataType, Column } from '../../shared/model';
 import { RawDataRevealer } from './raw-data-revealer';
 import { RawDataRevealService } from 'app/shared/services';
+import { ForceYComputer } from './force-y-computer';
 
 declare var d3: any;
 
@@ -12,6 +13,7 @@ export class ChartOptionsProvider {
    private rawDataReporter: RawDataRevealer;
    private integerFormat = d3.format(',');
    private valueFormatter = new ValueFormatter();
+   private forceYComputer = new ForceYComputer();
 
    constructor(rawDataRevealService: RawDataRevealService) {
       this.rawDataReporter = new RawDataRevealer(rawDataRevealService);
@@ -66,7 +68,7 @@ export class ChartOptionsProvider {
             axisLabelDistance: context.margin.left - 70,
             tickPadding: 8
          },
-         forceY: this.forceY(context),
+         forceY: this.forceYComputer.compute(context.valueRange),
          xAxis: {
             axisLabel: context.isAggregationCountSelected() ? undefined : context.groupByColumns[0].name,
             axisLabelDistance: context.margin.bottom - 50,
@@ -109,7 +111,7 @@ export class ChartOptionsProvider {
             axisLabelDistance: context.margin.bottom - 50,
             tickFormat: v => this.formatXAxisTick(v, context)
          },
-         forceY: this.forceY(context),
+         forceY: this.forceYComputer.compute(context.valueRange),
          multibar: {
             dispatch: {
                elementClick: e => this.rawDataReporter.reveal(e, context)
@@ -136,31 +138,13 @@ export class ChartOptionsProvider {
             axisLabelDistance: context.margin.left - 70,
             tickFormat: v => this.formatXAxisTick(v, context)
          },
-         forceY: this.forceY(context),
+         forceY: this.forceYComputer.compute(context.valueRange),
          multibar: {
             dispatch: {
                elementClick: e => this.rawDataReporter.reveal(e, context)
             }
          }
       };
-   }
-
-   /**
-    * forces the Y-Axis to be adjusted in case all values are large but of littel difference each
-    */
-   private forceY(context: ChartContext): number[] {
-      if (context.valueRange && context.valueRange.min !== context.valueRange.max &&
-         Math.sign(context.valueRange.min) === Math.sign(context.valueRange.max)) {
-         const diff = context.valueRange.max - context.valueRange.min;
-         if (Math.sign(context.valueRange.min) === 1) {
-            const min = context.valueRange.min - diff;
-            return min < 0 && context.valueRange.min > 0 ? undefined : [min, undefined];
-         } else {
-            const max = context.valueRange.max + diff;
-            return max > 0 && context.valueRange.max < 0 ? undefined : [undefined, max];
-         }
-      }
-      return undefined;
    }
 
    private createSunburstOptions(): Object {

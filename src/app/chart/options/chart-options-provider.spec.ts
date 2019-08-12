@@ -265,7 +265,7 @@ describe('ChartOptionsProvider', () => {
       expect(options['chart'].showLegend).toBeFalsy();
    });
 
-   it('#createOptions bar chart Y-axis should be adjusted when chart contains big negative values of little difference only', () => {
+   it('#createOptions bar chart Y-axis should be adjusted when chart contains big negative values of little difference each', () => {
 
       // given
       context.chartType = ChartType.MULTI_BAR.type;
@@ -280,11 +280,11 @@ describe('ChartOptionsProvider', () => {
       expect(options['chart']['forceY']).toEqual([undefined, -960]);
    });
 
-   it('#createOptions multi bar chart Y-axis should be adjusted when chart contains big values of little difference only', () => {
+   it('#createOptions multi bar chart Y-axis should be adjusted when chart contains big integer values of little difference each', () => {
 
       // given
       context.chartType = ChartType.MULTI_BAR.type;
-      context.dataColumns = [createColumn('Path', DataType.TEXT)];
+      context.dataColumns = [createColumn('Amount', DataType.TEXT)];
       context.valueRange = { min: 980, max: 1000 };
       context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.HOUR)];
 
