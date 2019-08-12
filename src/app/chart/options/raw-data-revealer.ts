@@ -43,15 +43,16 @@ export class RawDataRevealer {
    private createLinkFromGroupedData(event: any, context: ChartContext): void {
       if (event.data.id) {
          this.rawDataRevealService.ofID(event.data.id);
-      }
-      const dataColumnName = context.dataColumns[0].name;
-      const dataColumnValue = context.isAggregationCountSelected() ? event.data.key : event.data.y;
-      const xAxisColumn = context.groupByColumns[0];
-      if (xAxisColumn.dataType === DataType.TIME) {
-         const timeStart: number = event.data.x;
-         this.rawDataRevealService.ofTimeUnit(context, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
       } else {
-         this.rawDataRevealService.ofQuery(context.query, [dataColumnName, xAxisColumn.name], [dataColumnValue, event.data.x]);
+         const dataColumnName = context.dataColumns[0].name;
+         const dataColumnValue = context.isAggregationCountSelected() ? event.data.key : event.data.y;
+         const xAxisColumn = context.groupByColumns[0];
+         if (xAxisColumn.dataType === DataType.TIME) {
+            const timeStart: number = event.data.x;
+            this.rawDataRevealService.ofTimeUnit(context, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
+         } else {
+            this.rawDataRevealService.ofQuery(context.query, [dataColumnName, xAxisColumn.name], [dataColumnValue, event.data.x]);
+         }
       }
    }
 }

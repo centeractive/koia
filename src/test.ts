@@ -25,7 +25,7 @@ getTestBed().initTestEnvironment(
 
 // Then we find all the tests.
 
-const context = require.context('./', true, /\.spec\.ts$/);
+// const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /front.component\.spec\.ts$/);
 // const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
@@ -62,7 +62,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /grid.component\.spec\.ts$/);
 // const context = require.context('./', true, /aggregation.service\.spec\.ts$/);
 
-// const context = require.context('./', true, /chart.component\.spec\.ts$/);
+const context = require.context('./', true, /chart.component\.spec\.ts$/);
 // const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-margin.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-side-bar.component\.spec\.ts$/);

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testi
 import { MatProgressBarModule, MatDialogModule } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { ChartComponent } from './chart.component';
-import { ChartContext, ChartType, DataType, Column, Scene } from 'app/shared/model';
+import { ChartContext, ChartType, DataType, Column, Scene, Route } from 'app/shared/model';
 import { NvD3Module, NvD3Component } from 'ng2-nvd3';
 import { SimpleChange } from '@angular/core';
 import { ChartDataService, ChartMarginService, RawDataRevealService } from 'app/shared/services';
@@ -12,6 +12,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import 'nvd3';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
+import { Router } from '@angular/router';
 
 describe('ChartComponent', () => {
 
@@ -21,6 +22,7 @@ describe('ChartComponent', () => {
   const dbService = new DBService(null);
   let component: ChartComponent;
   let fixture: ComponentFixture<ChartComponent>;
+  let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
     scene = SceneFactory.createScene('1', []);
@@ -48,12 +50,27 @@ describe('ChartComponent', () => {
     context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
     component.context = context;
     component.entries$ = entries$;
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(null);
+    const router = TestBed.get(Router);
+    spyOn(router, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
 
   it('should compute chart data when context changes', fakeAsync(() => {
 
@@ -209,6 +226,10 @@ describe('ChartComponent', () => {
     const cmpElement = component.cmpElementRef.nativeElement;
     const top = cmpElement.getBoundingClientRect().top - cmpElement.parentElement.parentElement.getBoundingClientRect().top;
     expect(component.marginDivStyle).toEqual({ top: top + 'px', right: '1px', bottom: '2px', left: '0px' });
+  });
+
+  it('#createExportData should throw error', () => {
+    expect(() => component.createExportData()).toThrowError('Method not implemented.');
   });
 
   function createColumn(name: string, dataType: DataType): Column {
