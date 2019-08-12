@@ -17,6 +17,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Location } from '@angular/common';
+import { SceneFactory } from 'app/shared/test';
 
 @Component({ template: '' })
 class RawDataComponent { }
@@ -34,7 +35,10 @@ describe('ScenesComponent', () => {
   let fixture: ComponentFixture<ScenesComponent>;
 
   beforeAll(() => {
-    scenes = [createScene('1'), createScene('2'), createScene('3')];
+    const scene1 = SceneFactory.createScene('1', []);
+    const scene2 = SceneFactory.createScene('2', []);
+    const scene3 = SceneFactory.createScene('3', []);
+    scenes = [scene1, scene2, scene3];
   });
 
   beforeEach(async(() => {
@@ -346,19 +350,4 @@ describe('ScenesComponent', () => {
     // then
     expect(location.back).toHaveBeenCalled();
   });
-
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: new Date().getTime(),
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: [],
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
-  }
 });

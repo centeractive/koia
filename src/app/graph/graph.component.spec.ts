@@ -9,6 +9,7 @@ import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import 'nvd3';
 import { DBService } from 'app/shared/services/backend';
+import { SceneFactory } from 'app/shared/test';
 
 describe('GraphComponent', () => {
 
@@ -27,7 +28,7 @@ describe('GraphComponent', () => {
       { name: 'n1', dataType: DataType.NUMBER, width: 50 },
       { name: 't2', dataType: DataType.TEXT, width: 300 }
     ]
-    scene = createScene('1');
+    scene = SceneFactory.createScene('1', []);
     entries$ = of([
       { t1: 'a', n1: 1, t2: null },
       { t1: 'b', n1: 2, t2: 'x' },
@@ -129,20 +130,5 @@ describe('GraphComponent', () => {
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);
-  }
-
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: new Date().getTime(),
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: columns,
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
   }
 });

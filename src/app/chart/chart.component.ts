@@ -83,7 +83,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   private async prepareChart(changeEvent: ChangeEvent): Promise<void> {
-    if (this.context.dataColumns && this.context.dataColumns.length > 0 && this.context.entries) {
+    if (this.context.dataColumns.length > 0 && this.context.entries) {
       this.loading = true;
       await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
       try {

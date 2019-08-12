@@ -206,6 +206,6 @@ describe('SummaryTableSideBarComponent', () => {
   });
 
   function findColumn(name: string): Column {
-    return JSON.parse(JSON.stringify(columns.find(c => c.name === name)));
+    return columns.find(c => c.name === name);
   }
 });

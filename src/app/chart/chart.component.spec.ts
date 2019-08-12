@@ -11,6 +11,7 @@ import { Margin } from 'nvd3';
 import { RouterTestingModule } from '@angular/router/testing';
 import 'nvd3';
 import { DBService } from 'app/shared/services/backend';
+import { SceneFactory } from 'app/shared/test';
 
 describe('ChartComponent', () => {
 
@@ -22,7 +23,7 @@ describe('ChartComponent', () => {
   let fixture: ComponentFixture<ChartComponent>;
 
   beforeAll(() => {
-    scene = createScene('1');
+    scene = SceneFactory.createScene('1', []);
     entries$ = of([
       { t1: 'a', n1: 1, t2: null },
       { t1: 'b', n1: 2, t2: 'x' },
@@ -209,21 +210,6 @@ describe('ChartComponent', () => {
     const top = cmpElement.getBoundingClientRect().top - cmpElement.parentElement.parentElement.getBoundingClientRect().top;
     expect(component.marginDivStyle).toEqual({ top: top + 'px', right: '1px', bottom: '2px', left: '0px' });
   });
-
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: new Date().getTime(),
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: [],
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
-  }
 
   function createColumn(name: string, dataType: DataType): Column {
     return {

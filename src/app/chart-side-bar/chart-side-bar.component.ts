@@ -68,13 +68,11 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
       if (this.context.dataColumns.length > 1) {
         this.context.removeDataColumn(column);
       }
+    } else if (this.context.isNonGrouping() || this.context.isAggregationCountSelected() ||
+      DataTypeUtils.containsNonNumericColumns(this.context.dataColumns.concat(column))) {
+      this.context.dataColumns = [column];
     } else {
-      if (this.context.isNonGrouping() || this.context.isAggregationCountSelected() ||
-        DataTypeUtils.containsNonNumericColumns(this.context.dataColumns.concat(column))) {
-        this.context.dataColumns = [column];
-      } else {
-        this.context.addDataColumn(column);
-      }
+      this.context.addDataColumn(column);
     }
     this.adjustAggregation();
     this.defineSelectableItems();

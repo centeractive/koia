@@ -8,10 +8,9 @@ import { ConfigService } from './config.service';
 import { DBService } from './backend';
 import { DocChangeResponse } from './backend/doc-change-response.type';
 import { ElementType } from '../config/element-type.enum';
+import { SceneFactory } from '../test';
 
 describe('ConfigService', () => {
-
-  const ERROR = 'Expected Testing Error';
 
   let fakeConfigRecord: ConfigRecord;
   let flexView: View;
@@ -43,7 +42,7 @@ describe('ConfigService', () => {
   });
 
   beforeEach(() => {
-    scene = createScene();
+    scene = SceneFactory.createScene('1', []);
     updateSceneOK = { ok: true, id: scene._id, rev: scene._rev };
     dbService = new DBService(null);
     configService = new ConfigService(dbService);
@@ -200,21 +199,5 @@ describe('ConfigService', () => {
       dataType: dataType,
       width: 10
     };
-  }
-
-  function createScene(): Scene {
-    return {
-      _id: '1',
-      _rev: 'r1',
-      creationTime: new Date().getTime(),
-      name: 'Test Scene',
-      shortDescription: 'Test Scene Short Description',
-      columns: [],
-      database: 'db',
-      config: {
-        records: [],
-        views: []
-      }
-    }
   }
 });

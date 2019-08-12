@@ -9,6 +9,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Router } from '@angular/router';
 import { SimpleChange } from '@angular/core';
 import { DBService } from 'app/shared/services/backend';
+import { SceneFactory } from 'app/shared/test';
 
 describe('SummaryTableComponent', () => {
 
@@ -44,7 +45,7 @@ describe('SummaryTableComponent', () => {
       { Time: now + 70 * sec, t1: 'b', n1: 3, t2: 'y', n2: 9 },
       { Time: now + 80 * sec, t1: 'b', n1: 2, t2: 'x', n2: 9 }
     ];
-    spyOn(dbService, 'getActiveScene').and.returnValue(createScene('1'));
+    spyOn(dbService, 'getActiveScene').and.returnValue(SceneFactory.createScene('1', columns));
   });
 
   beforeEach(() => {
@@ -378,7 +379,7 @@ describe('SummaryTableComponent', () => {
     expect(data).toEqual(expectedData);
   }));
 
-  it('#createExportData should return data when aggregated by COUNT', fakeAsync(() => {
+  it('#createExportData should return data when aggregated by MIN, MAX and SUM', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('n1')];
@@ -399,22 +400,7 @@ describe('SummaryTableComponent', () => {
     expect(data).toEqual(expectedData);
   }));
 
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: now,
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: columns,
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
-  }
-
   function findColumn(name: string): Column {
-    return JSON.parse(JSON.stringify(columns.find(c => c.name === name)));
+    return columns.find(c => c.name === name);
   }
 });

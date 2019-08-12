@@ -15,7 +15,7 @@ import { ModelToConfigConverter } from 'app/shared/config';
 import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MatIconModuleMock } from 'app/shared/test';
+import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
@@ -62,7 +62,7 @@ describe('FlexCanvasComponent', () => {
       { name: 'Path', dataType: DataType.TEXT, width: 200, indexed: true },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true }
     ];
-    scene = createScene('1', columns);
+    scene = SceneFactory.createScene('1', columns);
     entries = [
       { ID: 1, Time: now - 1000, Level: 'INFO', Data: 'INFO line one', Host: 'server1', Path: '/opt/log/info.log', Amount: 10 },
       { ID: 2, Time: now - 2000, Level: 'INFO', Data: 'INFO line two', Host: 'server1', Path: '/opt/log/info.log', Amount: 20 },
@@ -457,21 +457,6 @@ describe('FlexCanvasComponent', () => {
   }));
 
   function findColumn(name: string): Column {
-    return JSON.parse(JSON.stringify(scene.columns.find(c => c.name === name)));
-  }
-
-  function createScene(id: string, columns: Column[]): Scene {
-    return {
-      _id: id,
-      creationTime: now,
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: columns,
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
+    return scene.columns.find(c => c.name === name);
   }
 });

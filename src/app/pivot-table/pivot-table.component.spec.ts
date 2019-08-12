@@ -17,6 +17,7 @@ import { ConfigService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { SceneFactory } from 'app/shared/test';
 
 @Injectable()
 export class MockElementRef {
@@ -47,7 +48,7 @@ describe('PivotTableComponent', () => {
       { name: 'Data', dataType: DataType.TEXT, width: 400, indexed: false },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true }
     ];
-    scene = createScene('1');
+    scene = SceneFactory.createScene('1', columns);
     entries = [
       { ID: 1, Time: now - 1000, Level: 'INFO', Data: 'one', Amount: 10 },
       { ID: 2, Time: now - 2000, Level: 'INFO', Data: 'two', Amount: 20 },
@@ -337,19 +338,4 @@ describe('PivotTableComponent', () => {
     // then
     expect(window.print).toHaveBeenCalled();
   }));
-
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: now,
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: columns.map(c => <Column>JSON.parse(JSON.stringify(c))),
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
-  }
 });

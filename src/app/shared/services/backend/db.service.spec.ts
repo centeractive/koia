@@ -5,6 +5,7 @@ import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from '
 import { DBService } from './db.service';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
+import { SceneFactory } from 'app/shared/test';
 
 describe('DBService', () => {
 
@@ -50,7 +51,7 @@ describe('DBService', () => {
     dbService = new DBService(couchDBService);
     dbService.setDbPrefix(testDBPrefix);
     await dbService.initBackend(false).then(r => null).catch(e => fail(e));
-    initialScene = createScene('0');
+    initialScene = SceneFactory.createScene('0', columns);
     await dbService.persistScene(initialScene, true).then(r => null).catch(e => fail(e));
   });
 
@@ -187,7 +188,7 @@ describe('DBService', () => {
     const sceneID = '99';
 
     // when
-    await dbService.persistScene(createScene(sceneID), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false).then(s => null);
 
     // then
     await dbService.findScene(sceneID)
@@ -202,7 +203,7 @@ describe('DBService', () => {
     spyOn(couchDBService, 'createDatabase').and.throwError('cannot create database');
 
     // when
-    await dbService.persistScene(createScene(sceneID), false)
+    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false)
       .then(s => fail('should be rejected'))
       .catch(e => {
 
@@ -218,7 +219,7 @@ describe('DBService', () => {
     spyOn(couchDBService, 'createIndex').and.throwError('cannot create index');
 
     // when
-    await dbService.persistScene(createScene(sceneID), false)
+    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false)
       .then(s => fail('should be rejected'))
       .catch(e => {
 
@@ -230,10 +231,10 @@ describe('DBService', () => {
   it('#activateScene should activate scene', async () => {
 
     // given
-    const scene2 = createScene('2');
-    await dbService.persistScene(createScene('1'), false).then(s => null);
+    const scene2 = SceneFactory.createScene('2', columns);
+    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(s => null);
     await dbService.persistScene(scene2, false).then(s => null);
-    await dbService.persistScene(createScene('3'), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(s => null);
 
     // when
     await dbService.activateScene(scene2._id)
@@ -244,7 +245,7 @@ describe('DBService', () => {
     const activeScene = dbService.getActiveScene();
     expect('2').toEqual(activeScene._id);
     expect('Scene 2').toEqual(activeScene.name);
-    expect('Scene 2 short description').toEqual(activeScene.shortDescription);
+    expect('Scene 2 Short Description').toEqual(activeScene.shortDescription);
     expect(testDBPrefix + 'data_2').toEqual(activeScene.database);
   });
 
@@ -263,9 +264,9 @@ describe('DBService', () => {
   it('#findSceneInfos should return info about all scenes', async () => {
 
     // given
-    await dbService.persistScene(createScene('1'), false).then(s => null).catch(e => fail(e));
-    await dbService.persistScene(createScene('2'), false).then(s => null).catch(e => fail(e));
-    await dbService.persistScene(createScene('3'), false).then(s => null).catch(e => fail(e));
+    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(s => null).catch(e => fail(e));
+    await dbService.persistScene(SceneFactory.createScene('2', columns), false).then(s => null).catch(e => fail(e));
+    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(s => null).catch(e => fail(e));
 
     // when
     await dbService.findSceneInfos()
@@ -286,7 +287,7 @@ describe('DBService', () => {
   it('#createScene should enrich scene with _id and _rev', async () => {
 
     // given
-    const scene: Scene = createScene('1');
+    const scene: Scene = SceneFactory.createScene('1', columns);
     scene._id = undefined;
 
     // when
@@ -336,7 +337,7 @@ describe('DBService', () => {
   it('#deleteScene should delete non-active scene', async () => {
 
     // given
-    const scene2 = createScene('2');
+    const scene2 = SceneFactory.createScene('2', columns);
     await dbService.persistScene(scene2, false).then(s => null);
 
     // when
@@ -552,22 +553,7 @@ describe('DBService', () => {
       .catch(e => fail(e));
   });
 
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: now,
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' short description',
-      columns: columns,
-      database: testDBPrefix + 'data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
-  }
-
   function findColumn(name: string): Column {
-    return JSON.parse(JSON.stringify(columns.find(c => c.name === name)));
+    return columns.find(c => c.name === name);
   }
 });

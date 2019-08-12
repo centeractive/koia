@@ -11,6 +11,7 @@ import { Column, GraphContext, DataType, Scene, TimeUnit } from 'app/shared/mode
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
+import { SceneFactory } from 'app/shared/test';
 
 describe('GraphSideBarComponent', () => {
 
@@ -29,7 +30,7 @@ describe('GraphSideBarComponent', () => {
       { name: 'Path', dataType: DataType.TEXT, width: 200, indexed: true },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true }
     ];
-    scene = createScene('1');
+    scene = SceneFactory.createScene('1', []);
   });
 
   beforeEach(async(() => {
@@ -91,21 +92,6 @@ describe('GraphSideBarComponent', () => {
   });
 
   function findColumn(name: string): Column {
-    return JSON.parse(JSON.stringify(columns.find(c => c.name === name)));
-  }
-
-  function createScene(id: string): Scene {
-    return {
-      _id: id,
-      creationTime: new Date().getTime(),
-      name: 'Scene ' + id,
-      shortDescription: 'Scene ' + id + ' Short Description',
-      columns: columns,
-      database: 'test_data_' + id,
-      config: {
-        records: [],
-        views: []
-      }
-    };
+    return columns.find(c => c.name === name);
   }
 });

@@ -42,8 +42,8 @@ describe('ChartSideBarComponent', () => {
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })
-    .overrideModule(MatIconModule, MatIconModuleMock.override())
-    .compileComponents();
+      .overrideModule(MatIconModule, MatIconModuleMock.override())
+      .compileComponents();
   }));
 
   beforeEach(() => {
@@ -196,10 +196,25 @@ describe('ChartSideBarComponent', () => {
       // then
       expect(context.dataColumns.length).toBe(1);
     });
-
   });
 
-  it('#click on data column should keep column selected it was the only selected one', () => {
+  it('#click on data column should remove data column when multiple data columns are selected', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    context.dataColumns = [findColumn('Level'), findColumn('Amount')];
+    const butDataColumn = findDataColumnButton('Level');
+
+    // when
+    butDataColumn.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+    expect(component.countDistinctValuesEnabled).toBeTruthy();
+    expect(component.individualValuesEnabled).toBeTruthy();
+  });
+
+  it('#click on data column should keep column selected if it was the only selected one', () => {
 
     // given
     const butDataColumn = findDataColumnButton('Level');
@@ -295,7 +310,67 @@ describe('ChartSideBarComponent', () => {
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
   });
 
-  it('#groupingPanelName should return "Grouping" when multiple grouping available', () => {
+  it('#dataPanelName should return "Values" when non-grouping', () => {
+
+    // given
+    context.chartType = ChartType.DONUT.type;
+
+    // when
+    const panelName = component.dataPanelName();
+
+    // then
+    expect(panelName).toEqual('Values');
+  });
+
+  it('#dataPanelName should return "Values (Y-Axis)" when single-grouping', () => {
+
+    // given
+    context.chartType = ChartType.AREA.type;
+
+    // when
+    const panelName = component.dataPanelName();
+
+    // then
+    expect(panelName).toEqual('Values (Y-Axis)');
+  });
+
+  it('#dataPanelName should return "Values (X-Axis)" when horizontal grouped bar chart', () => {
+
+    // given
+    context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
+
+    // when
+    const panelName = component.dataPanelName();
+
+    // then
+    expect(panelName).toEqual('Values (X-Axis)');
+  });
+
+  it('#dataPanelName should return "Values" when multiple-grouping', () => {
+
+    // given
+    context.chartType = ChartType.SUNBURST.type;
+
+    // when
+    const panelName = component.dataPanelName();
+
+    // then
+    expect(panelName).toEqual('Values');
+  });
+
+  it('#groupingPanelName should return "Name" when non-grouping', () => {
+
+    // given
+    context.chartType = ChartType.DONUT.type;
+
+    // when
+    const panelName = component.groupingPanelName();
+
+    // then
+    expect(panelName).toEqual('Name');
+  });
+
+  it('#groupingPanelName should return "Hierarchy" when multiple grouping available', () => {
 
     // given
     context.chartType = ChartType.SUNBURST.type;
@@ -331,8 +406,94 @@ describe('ChartSideBarComponent', () => {
     expect(panelName).toEqual('Y-Axis');
   });
 
+  it('#isPieOrDonutChart should return false when not PIE or DONUT chart', () => {
+
+    // given
+    context.chartType = ChartType.LINE_WITH_FOCUS.type;
+
+    // when
+    const actual = component.isPieOrDonutChart();
+
+    // then
+    expect(actual).toBeFalsy();
+  });
+
+  it('#isPieOrDonutChart should return true when PIE chart', () => {
+
+    // given
+    context.chartType = ChartType.PIE.type;
+
+    // when
+    const actual = component.isPieOrDonutChart();
+
+    // then
+    expect(actual).toBeTruthy();
+  });
+
+  it('#isPieOrDonutChart should return true when DONUT chart', () => {
+
+    // given
+    context.chartType = ChartType.DONUT.type;
+
+    // when
+    const actual = component.isPieOrDonutChart();
+
+    // then
+    expect(actual).toBeTruthy();
+  });
+
+  it('#getSingleGroupByColumn should return undefined when no group-by columns exist', () => {
+
+    // given
+    context.groupByColumns = [];
+    // when
+    const column = component.getSingleGroupByColumn();
+
+    // then
+    expect(column).toBeUndefined();
+  });
+
+  it('#getSingleGroupByColumn should return column when group-by column exists', () => {
+
+    // given
+    const timeColumn = findColumn('Time');
+    context.groupByColumns = [timeColumn];
+
+    // when
+    const column = component.getSingleGroupByColumn();
+
+    // then
+    expect(column).toBe(timeColumn);
+  });
+
+  it('#onGroupByColumnChanged when no-time column is provided', () => {
+
+    // given
+    const column = findColumn('Level');
+
+    // when
+    component.onGroupByColumnChanged(column);
+
+    // then
+    expect(context.groupByColumns).toEqual([column]);
+    expect(component.groupByTimeColumn).toBeUndefined();
+  });
+
+  it('#onGroupByColumnChanged when time column is provided', () => {
+
+    // given
+    const column = findColumn('Time');
+
+    // when
+    component.onGroupByColumnChanged(column);
+
+    // then
+    expect(context.groupByColumns).toEqual([column]);
+    expect(component.groupByTimeColumn).toBe(column);
+  });
+
   function findColumn(name: string): Column {
-    return JSON.parse(JSON.stringify(columns.find(c => c.name === name)));
+    return columns.find(c => c.name === name);
   }
 
   function findChartButton(chartType: ChartType): HTMLButtonElement {
