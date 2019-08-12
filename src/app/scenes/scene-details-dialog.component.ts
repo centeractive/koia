@@ -38,8 +38,4 @@ import { Scene } from 'app/shared/model';
 export class SceneDetailsDialogComponent {
 
    constructor(public dialogRef: MatDialogRef<SceneDetailsDialogComponent>, @Inject(MAT_DIALOG_DATA) public scene: Scene) { }
-
-   onNoClick(): void {
-      this.dialogRef.close();
-   }
 }

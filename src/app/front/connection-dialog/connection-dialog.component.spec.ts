@@ -1,10 +1,10 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
 
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
-import { MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA, 
-  MatSelectModule, 
-  MatSelect,
-  MatOption} from '@angular/material';
+import {
+  MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA,
+  MatSelectModule, MatSelect, MatOption
+} from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConnectionInfo } from 'app/shared/services/backend/couchdb';
@@ -96,7 +96,7 @@ describe('ConnectionDialogComponent', () => {
 
   function getSelectedProtocol(): Protocol {
     const matSelect: MatSelect = fixture.debugElement.query(By.css('#protocol')).componentInstance;
-    const selectedOption = <MatOption> matSelect.selected;
+    const selectedOption = <MatOption>matSelect.selected;
     return selectedOption.value;
   }
 

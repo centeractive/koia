@@ -2,12 +2,12 @@ import { GroupingType } from './grouping-type.enum';
 
 export class ChartType {
 
-   static readonly PIE = new ChartType('Pie', 'pieChart', GroupingType.NONE, 'pie_chart', false, 200);
-   static readonly DONUT = new ChartType('Donut', 'donutChart', GroupingType.NONE, 'donut_small', false, 200);
-   static readonly BAR = new ChartType('Bar', 'discreteBarChart', GroupingType.NONE, 'bar_chart', false, 150);
-   static readonly MULTI_BAR = new ChartType('Grouped Bar', 'multiBarChart', GroupingType.SINGLE, 'grouped_bar_chart', true, 200);
+   static readonly PIE = new ChartType('Pie', 'pieChart', GroupingType.NONE, 'pie_chart', false, 500);
+   static readonly DONUT = new ChartType('Donut', 'donutChart', GroupingType.NONE, 'donut_small', false, 500);
+   static readonly BAR = new ChartType('Bar', 'discreteBarChart', GroupingType.NONE, 'bar_chart', false, 500);
+   static readonly MULTI_BAR = new ChartType('Grouped Bar', 'multiBarChart', GroupingType.SINGLE, 'grouped_bar_chart', true, 500);
    static readonly MULTI_HORIZONTAL_BAR = new ChartType('Grouped Horizontal Bar', 'multiBarHorizontalChart',
-      GroupingType.SINGLE, 'grouped_horizontal_bar_chart', true, 200);
+      GroupingType.SINGLE, 'grouped_horizontal_bar_chart', true, 500);
    static readonly LINE = new ChartType('Line', 'lineChart', GroupingType.SINGLE, 'timeline', false, undefined);
    static readonly LINE_WITH_FOCUS = new ChartType('Zoomable Line', 'lineWithFocusChart', GroupingType.SINGLE, 'zoomable_line_chart',
       true, undefined);

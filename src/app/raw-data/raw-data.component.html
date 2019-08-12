@@ -1,5 +1,5 @@
   <div #header [class]="dialogStyle ? '' : 'sticky_header'">
-    <koia-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
+    <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
       (onFilterChange)="onFilterChanged($event)">
     </koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>

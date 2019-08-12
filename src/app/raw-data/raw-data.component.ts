@@ -18,6 +18,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
 
   @Input() dialogStyle: boolean;
   @Input() query: Query;
+  @Input() hideToolbar: boolean;
 
   @ViewChild('header', undefined) divHeaderRef: ElementRef<HTMLDivElement>;
   @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
