@@ -1,7 +1,7 @@
-import { ElementContext, ChartContext, GraphContext, SummaryContext } from '../model';
+import { ElementContext, ChartContext, GraphContext, SummaryContext } from '../../model';
 import { ElementType } from './element-type.enum';
-import { ViewElement } from './view-element.type';
-import { View } from './view.type';
+import { ViewElement } from '../../model/view-element.type';
+import { View } from '../../model/view.type';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';

@@ -1,10 +1,9 @@
 import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material';
 import { ResizeEvent, Edges } from 'angular-resizable-element';
-import { ElementContext, Route } from '../shared/model';
-import { NotificationService, ChartMarginService, ConfigService, ExportService } from '../shared/services';
+import { ElementContext, Route, View } from '../shared/model';
+import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService } from '../shared/services';
 import { ViewController } from 'app/shared/controller';
-import { View } from 'app/shared/config';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 
@@ -22,7 +21,7 @@ export class FlexCanvasComponent extends ViewController {
   readonly route = Route.FLEX;
   private resizeStartWidth: number;
 
-  constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, configService: ConfigService,
+  constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, configService: ViewPersistenceService,
     chartMarginService: ChartMarginService, notificationService: NotificationService, exportService: ExportService) {
     super(Route.FLEX, router, bottomSheet, dbService, configService, chartMarginService, notificationService, exportService);
   }

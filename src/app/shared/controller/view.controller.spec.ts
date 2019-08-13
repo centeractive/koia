@@ -1,5 +1,5 @@
 import { ViewController } from './view.controller';
-import { View } from '../config';
+import { View } from '../services/view-persistence';
 import { GraphContext, ChartType, ChartContext } from '../model';
 import { MatSidenav } from '@angular/material';
 

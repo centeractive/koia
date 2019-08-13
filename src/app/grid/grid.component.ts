@@ -1,8 +1,7 @@
 import { Component, ElementRef, Inject, AfterViewChecked } from '@angular/core';
 import { MatBottomSheet } from '@angular/material';
-import { Route } from '../shared/model';
-import { View } from '../shared/config';
-import { NotificationService, ChartMarginService, ConfigService, ExportService } from '../shared/services';
+import { Route, View } from '../shared/model';
+import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService } from '../shared/services';
 import { ViewController } from 'app/shared/controller';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
@@ -20,7 +19,7 @@ export class GridComponent extends ViewController implements AfterViewChecked {
   private windowResizedWhileHidden: boolean;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, router: Router, bottomSheet: MatBottomSheet, dbService: DBService,
-    configService: ConfigService, chartMarginService: ChartMarginService, notificationService: NotificationService,
+    configService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
     exportService: ExportService) {
     super(Route.GRID, router, bottomSheet, dbService, configService, chartMarginService, notificationService, exportService);
     window.addEventListener('resize', e => this.windowResizedWhileHidden = !this.cmpElementRef.nativeElement.parentElement);

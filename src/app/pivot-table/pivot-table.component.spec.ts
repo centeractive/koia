@@ -13,7 +13,7 @@ import { StatusType, PivotContext, Column, DataType, Scene, TimeUnit } from 'app
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { DBService } from 'app/shared/services/backend';
-import { ConfigService } from 'app/shared/services';
+import { ViewPersistenceService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
@@ -34,7 +34,7 @@ describe('PivotTableComponent', () => {
   let component: PivotTableComponent;
   let fixture: ComponentFixture<PivotTableComponent>;
   const dbService = new DBService(null);
-  const configService = new ConfigService(dbService);
+  const configService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   let locatePivotTable: Function;
@@ -69,7 +69,7 @@ describe('PivotTableComponent', () => {
         { provide: ElementRef, useClass: MockElementRef },
         { provide: MatBottomSheet, useClass: MatBottomSheet },
         { provide: DBService, useValue: dbService },
-        { provide: ConfigService, useValue: configService },
+        { provide: ViewPersistenceService, useValue: configService },
         { provide: TimeGroupingService, useClass: TimeGroupingService },
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
         { provide: NotificationService, useValue: notificationService },

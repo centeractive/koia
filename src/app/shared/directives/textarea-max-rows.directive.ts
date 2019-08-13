@@ -11,10 +11,10 @@ export class TextareaMaxRowsDirective {
 
   constructor(textareaRef: ElementRef<HTMLTextAreaElement>) {
     this.textarea = textareaRef.nativeElement;
-    this.textarea.addEventListener('keypress', e => this.keyPress(e), false);
+    this.textarea.addEventListener('keypress', e => this.onKeyPressed(e), false);
   }
 
-  keyPress(event: KeyboardEvent): void {
+  private onKeyPressed(event: KeyboardEvent): void {
     const lineCount = this.textarea.value.split('\n').length;
     if (event.key === 'Enter' && lineCount >= this.maxRows) {
       event.preventDefault();

@@ -109,7 +109,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   /**
-   * this workaround needs to be applied for the following reasons: 
+   * this workaround needs to be applied for the following reasons:
    * - when adding data column to grouped bar chart, [[undefined]] forceY was not considered
    * - direct switch from AREA to LINE chart didn't work (AREA chart staid visible)
    * - when changing source data or resizing SCATTER charts, the data points were not properly laid out

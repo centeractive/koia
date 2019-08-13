@@ -3,70 +3,72 @@ import { ElementRef } from '@angular/core';
 
 describe('TextareaMaxRowsDirective', () => {
 
-  it('should create an instance', () => {
+  let textArea: HTMLTextAreaElement;
+  let directive: TextareaMaxRowsDirective;
 
-    // given
-    const textArea = <HTMLTextAreaElement> document.createElement('TEXTAREA');
-    const textAreaRef: ElementRef<HTMLTextAreaElement> = new ElementRef(textArea);
-
-    // when
-    const directive = new TextareaMaxRowsDirective(textAreaRef);
-
-    // then
-    expect(directive).toBeTruthy();
+  beforeEach(() => {
+    textArea = <HTMLTextAreaElement> document.createElement('TEXTAREA');
+    directive = new TextareaMaxRowsDirective(new ElementRef(textArea));
+    spyOn(textArea, 'blur');
   });
 
-  it('#keyPress should accept char key', () => {
+
+  it('#press character key should be accepted on first line', () => {
 
     // given
-    const textArea = <HTMLTextAreaElement> document.createElement('TEXTAREA');
-    textArea.value = 'a';
-    spyOn(textArea, 'blur');
-    const directive = new TextareaMaxRowsDirective(new ElementRef(textArea));
-    directive.maxRows = 2;
     const event = new KeyboardEvent('keypress', { key: 'c' });
     spyOn(event, 'preventDefault');
 
     // when
-    directive.keyPress(event);
+    textArea.dispatchEvent(event);
 
     // then
     expect(event.preventDefault).not.toHaveBeenCalled();
     expect(textArea.blur).not.toHaveBeenCalled();
   });
 
-  it('#keyPress should accept "Enter" key when max rows is not exceeded', () => {
+  it('#press character key should be accepted on last line', () => {
 
     // given
-    const textArea = <HTMLTextAreaElement> document.createElement('TEXTAREA');
+    textArea.value = 'a\nb\nc';
+    directive.maxRows = 3;
+    const event = new KeyboardEvent('keypress', { key: 'd' });
+    spyOn(event, 'preventDefault');
+
+    // when
+    textArea.dispatchEvent(event);
+
+    // then
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(textArea.blur).not.toHaveBeenCalled();
+  });
+
+  it('#press "Enter" key should be accepted when max rows is not exceeded', () => {
+
+    // given
     textArea.value = 'a';
-    spyOn(textArea, 'blur');
-    const directive = new TextareaMaxRowsDirective(new ElementRef(textArea));
     directive.maxRows = 2;
     const event = new KeyboardEvent('keypress', { key: 'Enter' });
     spyOn(event, 'preventDefault');
 
     // when
-    directive.keyPress(event);
+    textArea.dispatchEvent(event);
 
     // then
     expect(event.preventDefault).not.toHaveBeenCalled();
     expect(textArea.blur).not.toHaveBeenCalled();
   });
 
-  it('#keyPress should ignore "Enter" key and leave textare when max rows is exceeded', () => {
+  it('#press "Enter" key should be ignored and textare be left when max rows is exceeded', () => {
 
     // given
-    const textArea = <HTMLTextAreaElement> document.createElement('TEXTAREA');
     textArea.value = 'a\nb';
-    spyOn(textArea, 'blur');
-    const directive = new TextareaMaxRowsDirective(new ElementRef(textArea));
     directive.maxRows = 2;
     const event = new KeyboardEvent('keypress', { key: 'Enter' });
     spyOn(event, 'preventDefault');
 
     // when
-    directive.keyPress(event);
+    textArea.dispatchEvent(event);
 
     // then
     expect(event.preventDefault).toHaveBeenCalled();

@@ -8,16 +8,17 @@ import {
 } from '@angular/material';
 import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ChartMarginService, ConfigService } from 'app/shared/services';
+import { NotificationService, ChartMarginService, ViewPersistenceService } from 'app/shared/services';
 import {
   Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene } from 'app/shared/model';
 import { StatusComponent } from 'app/status/status.component';
-import { ModelToConfigConverter } from 'app/shared/config';
+import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { Router } from '@angular/router';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -42,8 +43,9 @@ describe('GridComponent', () => {
   let fixture: ComponentFixture<GridComponent>;
   let component: GridComponent;
   const dbService = new DBService(null);
-  const configService = new ConfigService(dbService);
+  const configService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
+  let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -81,9 +83,9 @@ describe('GridComponent', () => {
       ],
       providers: [
         { provide: MatBottomSheet, useClass: MatBottomSheet },
-        { provide: ConfigService, useValue: configService },
+        { provide: ViewPersistenceService, useValue: configService },
         { provide: DBService, useValue: dbService },
-        { provide: ConfigService, useValue: configService },
+        { provide: ViewPersistenceService, useValue: configService },
         { provide: ChartMarginService, useClass: ChartMarginService },
         { provide: NotificationService, useValue: notificationService }
       ]
@@ -96,7 +98,7 @@ describe('GridComponent', () => {
     fixture = TestBed.createComponent(GridComponent);
     component = fixture.componentInstance;
     spyOn(notificationService, 'showStatus').and.stub();
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));
     fixture.detectChanges();
     flush();
@@ -105,6 +107,21 @@ describe('GridComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(null);
+    const router = TestBed.get(Router);
+    spyOn(router, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
 
   it('should load initial entries', () => {
     expect(dbService.findEntries).toHaveBeenCalled();

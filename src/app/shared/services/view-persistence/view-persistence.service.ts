@@ -1,14 +1,13 @@
-import { Scene, Status, StatusType } from '../model';
-import { ArrayUtils } from '../utils';
-import { View } from '../config/view.type';
+import { Scene, Status, StatusType } from '../../model';
+import { ArrayUtils } from '../../utils';
 import { Injectable } from '@angular/core';
-import { DBService } from './backend';
-
+import { DBService } from '../backend';
+import { View } from '../../model/view.type';
 
 @Injectable({
    providedIn: 'root'
 })
-export class ConfigService {
+export class ViewPersistenceService {
 
    constructor(private dbService: DBService) { }
 

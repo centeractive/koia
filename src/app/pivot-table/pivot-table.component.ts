@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit } from '../shared/model';
-import { NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ConfigService } from '../shared/services';
+import { NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService } from '../shared/services';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { CommonUtils, ValueGroupingGenerator, DateTimeUtils } from 'app/shared/utils';
 import { MatBottomSheet, MatSidenav } from '@angular/material';
@@ -44,7 +44,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   private stringifiedValueGroupings: string;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, private router: Router,
-    private dbService: DBService, private configService: ConfigService, private timeGroupingService: TimeGroupingService,
+    private dbService: DBService, private configService: ViewPersistenceService, private timeGroupingService: TimeGroupingService,
     private valueGropingService: ValueRangeGroupingService, notificationService: NotificationService,
     private exportService: ExportService) {
     super(bottomSheet, notificationService)

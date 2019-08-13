@@ -1,16 +1,14 @@
-import { Route, Aggregation, StatusType, Scene, DataType, Column } from '../model';
-import { View } from '../config/view.type';
-import { ConfigRecord } from '../config/config.record.type';
-import { Config } from '../config/config.type';
-import { Summary } from '../config/summary.type';
-import { Chart } from '../config/chart.type';
-import { ConfigService } from './config.service';
-import { DBService } from './backend';
-import { DocChangeResponse } from './backend/doc-change-response.type';
-import { ElementType } from '../config/element-type.enum';
-import { SceneFactory } from '../test';
+import { Route, Aggregation, StatusType, Scene, DataType, Column } from '../../model';
+import { Chart } from '../view-persistence/chart.type';
+import { ViewPersistenceService } from './view-persistence.service';
+import { DBService } from '../backend';
+import { DocChangeResponse } from '../backend/doc-change-response.type';
+import { ElementType } from '../view-persistence/element-type.enum';
+import { SceneFactory } from '../../test';
+import { Summary } from './summary.type';
+import { ConfigRecord } from './config.record.type';
 
-describe('ConfigService', () => {
+describe('ViewPersistenceService', () => {
 
   let fakeConfigRecord: ConfigRecord;
   let flexView: View;
@@ -19,7 +17,7 @@ describe('ConfigService', () => {
   let scene: Scene;
   let dbService: DBService;
   let updateSceneOK: DocChangeResponse;
-  let configService: ConfigService;
+  let service: ViewPersistenceService;
 
   beforeAll(() => {
     fakeConfigRecord = { name: 'fake', data: { a: 1, b: 2, c: 3 } };
@@ -45,13 +43,13 @@ describe('ConfigService', () => {
     scene = SceneFactory.createScene('1', []);
     updateSceneOK = { ok: true, id: scene._id, rev: scene._rev };
     dbService = new DBService(null);
-    configService = new ConfigService(dbService);
+    service = new ViewPersistenceService(dbService);
   });
 
   it('#getData should return undefined when data is missing', () => {
 
     // when
-    const data = configService.getData(scene, Route.PIVOT);
+    const data = service.getData(scene, Route.PIVOT);
 
     // then
     expect(data).toBeUndefined();
@@ -63,7 +61,7 @@ describe('ConfigService', () => {
     scene.config = config;
 
     // when
-    const data = configService.getData(scene, fakeConfigRecord.name);
+    const data = service.getData(scene, fakeConfigRecord.name);
 
     // then
     expect(data).toBe(fakeConfigRecord.data);
@@ -76,11 +74,11 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = configService.saveData(scene, Route.GRID, data);
+    const status$ = service.saveData(scene, Route.GRID, data);
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'Data has been saved' }));
-    expect(configService.getData(scene, Route.GRID)).toEqual(data);
+    expect(service.getData(scene, Route.GRID)).toEqual(data);
   });
 
   it('#saveData should update config with added data', () => {
@@ -91,12 +89,12 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = configService.saveData(scene, Route.PIVOT, data);
+    const status$ = service.saveData(scene, Route.PIVOT, data);
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'Data has been saved' }));
-    expect(configService.getData(scene, fakeConfigRecord.name)).toEqual(fakeConfigRecord.data);
-    expect(configService.getData(scene, Route.PIVOT)).toEqual(data);
+    expect(service.getData(scene, fakeConfigRecord.name)).toEqual(fakeConfigRecord.data);
+    expect(service.getData(scene, Route.PIVOT)).toEqual(data);
   });
 
   it('#saveData should update config with changed view', () => {
@@ -107,11 +105,11 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = configService.saveData(scene, fakeConfigRecord.name, data);
+    const status$ = service.saveData(scene, fakeConfigRecord.name, data);
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'Data has been saved' }));
-    expect(configService.getData(scene, fakeConfigRecord.name)).toEqual(data);
+    expect(service.getData(scene, fakeConfigRecord.name)).toEqual(data);
   });
 
   it('#saveData should return error status when server returns error', () => {
@@ -121,7 +119,7 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
 
     // when
-    const status$ = configService.saveData(scene, Route.PIVOT, {});
+    const status$ = service.saveData(scene, Route.PIVOT, {});
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: 'Data cannot be saved: Scene cannot be updated' }));
@@ -133,7 +131,7 @@ describe('ConfigService', () => {
     scene.config = config;
 
     // when
-    const view = configService.getView(scene, Route.FLEX);
+    const view = service.getView(scene, Route.FLEX);
 
     // then
     expect(view).toBeUndefined();
@@ -145,7 +143,7 @@ describe('ConfigService', () => {
     scene.config = config;
 
     // when
-    const view = configService.getView(scene, Route.GRID);
+    const view = service.getView(scene, Route.GRID);
 
     // then
     expect(view).toEqual(gridView);
@@ -158,12 +156,12 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = configService.saveView(scene, flexView);
+    const status$ = service.saveView(scene, flexView);
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View has been saved' }));
-    expect(configService.getView(scene, Route.FLEX)).toEqual(flexView);
-    expect(configService.getView(scene, Route.GRID)).toEqual(gridView);
+    expect(service.getView(scene, Route.FLEX)).toEqual(flexView);
+    expect(service.getView(scene, Route.GRID)).toEqual(gridView);
   });
 
   it('#saveView should update config with changed view', () => {
@@ -173,11 +171,11 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = configService.saveView(scene, gridView);
+    const status$ = service.saveView(scene, gridView);
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View has been saved' }));
-    expect(configService.getView(scene, Route.GRID)).toEqual(gridView);
+    expect(service.getView(scene, Route.GRID)).toEqual(gridView);
   });
 
   it('#saveView should return error status when server returns error', () => {
@@ -187,7 +185,7 @@ describe('ConfigService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
 
     // when
-    const status$ = configService.saveView(scene, gridView);
+    const status$ = service.saveView(scene, gridView);
 
     // then
     status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: 'View cannot be saved: Scene cannot be updated' }));

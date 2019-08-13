@@ -1,4 +1,4 @@
-import { ViewElement } from './view-element.type';
+import { ViewElement } from '../../model/view-element.type';
 import { Margin } from 'nvd3';
 
 export interface Chart extends ViewElement {

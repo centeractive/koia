@@ -27,7 +27,7 @@ import 'nvd3';
 import { Ng5SliderModule } from 'ng5-slider';
 
 import {
-  NotificationService, AggregationService, ValueRangeGroupingService, TimeGroupingService, ConfigService,
+  NotificationService, AggregationService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService,
   RawDataRevealService
 } from './shared/services';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
@@ -138,7 +138,7 @@ import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
     MatDialog,
     RawDataService,
     RawDataRevealService,
-    ConfigService,
+    ViewPersistenceService,
     TimeGroupingService,
     ValueRangeGroupingService,
     AggregationService,

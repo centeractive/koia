@@ -1,19 +1,19 @@
 import {
    ElementContext, Column, Query, SummaryContext, ChartContext, GraphContext, ChartType, Route, Scene,
-   DataType, ExportFormat
+   DataType, ExportFormat, View
 } from '../model';
 import { Observable, Subscription } from 'rxjs';
-import { ConfigToModelConverter, ModelToConfigConverter, View } from '../config';
 import { DateTimeUtils, ArrayUtils, CommonUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
 import { MatSidenav, MatBottomSheet } from '@angular/material';
-import { NotificationService, ChartMarginService, ConfigService, ExportService } from '../services';
+import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService } from '../services';
 import { Router } from '@angular/router';
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { SummaryTableComponent } from 'app/summary-table/summary-table.component';
 import { AbstractComponent } from './abstract.component';
 import { ChartComponent } from 'app/chart/chart.component';
+import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
 
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit {
 
@@ -35,19 +35,19 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    entries$: Observable<Object[]>;
    loading: boolean;
 
-   protected textColumns: Column[];
-   protected numberColumns: Column[];
-   protected timeColumns: Column[];
-   protected configToModelConverter: ConfigToModelConverter;
-   protected modelToConfigConverter = new ModelToConfigConverter();
-   protected query: Query;
+   private textColumns: Column[];
+   private numberColumns: Column[];
+   private timeColumns: Column[];
+   private configToModelConverter: ConfigToModelConverter;
+   private modelToConfigConverter = new ModelToConfigConverter();
+   private query: Query;
    private scene: Scene;
    private columns: Column[];
    private entriesSubscription: Subscription;
 
    constructor(private viewName: string, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
-      private configService: ConfigService, private chartMarginService: ChartMarginService, notificationService: NotificationService,
-      private exportService: ExportService) {
+      private configService: ViewPersistenceService, private chartMarginService: ChartMarginService, 
+      notificationService: NotificationService, private exportService: ExportService) {
       super(bottomSheet, notificationService);
    };
 
@@ -171,22 +171,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       return context instanceof GraphContext;
    }
 
-   asGraphContext(context: ElementContext): GraphContext {
-      return <GraphContext>context;
-   }
-
    configure(event: MouseEvent, context: ElementContext): void {
       this.selectedContext = context;
       this.selectedContextPosition = this.elementContexts.indexOf(context) + 1;
       this.sidenav.mode = !event || event.clientX < ViewController.SIDENAV_WIDTH ? 'push' : 'over';
       this.sidenav.open();
-   }
-
-   onTitleKeyPressed(event: KeyboardEvent): void {
-      const textArea = <HTMLTextAreaElement>event.target;
-      if (textArea.value.split('\n').length > 2) {
-         event.preventDefault();
-      }
    }
 
    /**

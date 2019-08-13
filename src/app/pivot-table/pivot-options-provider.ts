@@ -97,6 +97,6 @@ export class PivotOptionsProvider {
    private onCellClicked(filters, pivotData) {
       const entryIDs: number[] = [];
       pivotData.forEachMatchingRecord(filters, (entry) => entryIDs.push(entry[CouchDBConstants._ID]));
-      alert('Entry IDs:\n' + entryIDs.join(', '));
+      window.alert('Entry IDs:\n' + entryIDs.join(', '));
    }
 }

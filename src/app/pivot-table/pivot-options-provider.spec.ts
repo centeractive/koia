@@ -37,6 +37,22 @@ describe('PivotOptionsProvider', () => {
       expect(pivotOptions['onRefresh']).toBeTruthy();
    });
 
+   it('#enrichPivotOptions should return new options with renderer options table click callback when options are null', () => {
+
+      // given
+      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
+      spyOn(window, 'alert').and.callFake(m => null);
+
+      // when
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
+
+      // then
+      const rendererOptions = pivotOptions['rendererOptions'];
+      const clickCallback: Function = rendererOptions['table']['clickCallback'];
+      clickCallback(undefined, undefined, undefined, new PivotData());
+      expect(window.alert).toHaveBeenCalledWith('Entry IDs:\n1, 4, 8');
+   });
+
    it('#enrichPivotOptions should return new options with sorters when options are null', () => {
 
       // given
@@ -398,5 +414,18 @@ function createOptions(): Object {
       'inclusionsInfo': {},
       'aggregatorName': 'Count',
       'rendererName': 'Table'
+   }
+}
+
+class PivotData {
+
+   private entries = [
+      { _id: '1' },
+      { _id: '4' },
+      { _id: '8' },
+   ];
+
+   forEachMatchingRecord(filters: any, callback: (record: any) => any): void {
+      this.entries.forEach(e => callback(e));
    }
 }

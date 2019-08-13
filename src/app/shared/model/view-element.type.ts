@@ -1,5 +1,5 @@
-import { ElementType } from './element-type.enum';
-import { Aggregation, ValueGrouping, Column } from '../model';
+import { ElementType } from '../services/view-persistence/element-type.enum';
+import { Aggregation, ValueGrouping, Column } from '.';
 
 export interface ViewElement {
    elementType: ElementType;

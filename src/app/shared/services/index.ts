@@ -1,6 +1,6 @@
 export * from './icon-registrar.service';
 export * from './dialog.service';
-export * from './config.service';
+export * from './view-persistence/view-persistence.service';
 export * from './raw-data-reveal.service';
 export * from './graph-data.service';
 export * from './value-range-grouping.service';
