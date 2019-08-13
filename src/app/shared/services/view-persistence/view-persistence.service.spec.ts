@@ -1,194 +1,208 @@
-import { Route, Aggregation, StatusType, Scene, DataType, Column } from '../../model';
+import { Route, Aggregation, StatusType, Scene, DataType, Column, Config } from '../../model';
 import { Chart } from '../view-persistence/chart.type';
 import { ViewPersistenceService } from './view-persistence.service';
 import { DBService } from '../backend';
 import { DocChangeResponse } from '../backend/doc-change-response.type';
-import { ElementType } from '../view-persistence/element-type.enum';
 import { SceneFactory } from '../../test';
 import { Summary } from './summary.type';
-import { ConfigRecord } from './config.record.type';
+import { ConfigRecord } from '../../model/view-config/config-record.type';
+import { View, ElementType, ViewElement } from 'app/shared/model/view-config';
 
 describe('ViewPersistenceService', () => {
 
-  let fakeConfigRecord: ConfigRecord;
-  let flexView: View;
+  const NOW = new Date().getTime();
+  const A_MINUTE_AGO = NOW - 60_000;
+
+  let levelColumn: Column;
+  let timeColumn: Column;
+  let pivotTableRecord: ConfigRecord;
+  let summary: Summary;
+  let chart: Chart;
   let gridView: View;
-  let config: Config;
   let scene: Scene;
   let dbService: DBService;
   let updateSceneOK: DocChangeResponse;
   let service: ViewPersistenceService;
 
   beforeAll(() => {
-    fakeConfigRecord = { name: 'fake', data: { a: 1, b: 2, c: 3 } };
-    const levelColumn = createColumn('Level', DataType.TEXT);
-    const timeColumn = createColumn('Time', DataType.TIME);
-    const summary: Summary = {
+    levelColumn = createColumn('Level', DataType.TEXT);
+    timeColumn = createColumn('Time', DataType.TIME);
+    summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], valueGroupings: [], empty: ''
     };
-    flexView = { name: Route.FLEX, gridColumns: null, gridCellRatio: null, elements: [summary] };
-
-    const chart: Chart = {
+    chart = {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], valueGroupings: [],
       chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
       legendPosition: 'top', xLabelRotation: -12
     };
-    gridView = { name: Route.GRID, gridColumns: 3, gridCellRatio: '1:1', elements: [chart] };
-    config = { records: [fakeConfigRecord], views: [gridView] };
   });
 
   beforeEach(() => {
     scene = SceneFactory.createScene('1', []);
+    pivotTableRecord = { route: Route.PIVOT, name: 'pivot', modifiedTime: NOW, data: { a: 1, b: 2, c: 3 } };
+    gridView = createGridView('grid', A_MINUTE_AGO, chart);
+    scene.config = { records: [pivotTableRecord], views: [gridView] };
     updateSceneOK = { ok: true, id: scene._id, rev: scene._rev };
     dbService = new DBService(null);
     service = new ViewPersistenceService(dbService);
   });
 
-  it('#getData should return undefined when data is missing', () => {
+  it('#findRecords should return empty array when no matching records exists', () => {
 
     // when
-    const data = service.getData(scene, Route.PIVOT);
+    const records = service.findRecords(scene, Route.RAWDATA);
 
     // then
-    expect(data).toBeUndefined();
+    expect(records).toEqual([]);
   });
 
-  it('#getData should return data when data exists', () => {
-
-    // given
-    scene.config = config;
+  it('#findRecords should return record when matching record exists', () => {
 
     // when
-    const data = service.getData(scene, fakeConfigRecord.name);
+    const records = service.findRecords(scene, Route.PIVOT);
 
     // then
-    expect(data).toBe(fakeConfigRecord.data);
+    expect(records).toEqual([pivotTableRecord]);
   });
 
-  it('#saveData should insert config', () => {
+  it('#saveRecord should insert record when no one with same name exists', () => {
 
     // given
     const data = { x: 'one', y: 'two' };
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = service.saveData(scene, Route.GRID, data);
+    const status$ = service.saveRecord(scene, Route.PIVOT, 'new', data);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'Data has been saved' }));
-    expect(service.getData(scene, Route.GRID)).toEqual(data);
+    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
+    const recordNames = service.findRecords(scene, Route.PIVOT).map(r => r.name);
+    expect(recordNames).toEqual(['new', pivotTableRecord.name]);
   });
 
-  it('#saveData should update config with added data', () => {
+  it('#saveRecord should update record when record with same name exists', () => {
 
     // given
     const data = { x: 'one', y: 'two' };
-    scene.config = config;
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = service.saveData(scene, Route.PIVOT, data);
+    const status$ = service.saveRecord(scene, Route.PIVOT, pivotTableRecord.name, data);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'Data has been saved' }));
-    expect(service.getData(scene, fakeConfigRecord.name)).toEqual(fakeConfigRecord.data);
-    expect(service.getData(scene, Route.PIVOT)).toEqual(data);
+    const expectedMsg = 'View "' + pivotTableRecord.name + '" has been saved';
+    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
+    const records = service.findRecords(scene, Route.PIVOT);
+    expect(records.length).toBe(1);
+    expect(records[0].route).toBe(Route.PIVOT);
+    expect(records[0].name).toBe(pivotTableRecord.name);
+    expect(records[0].data).toBe(data);
+    expect(records[0].modifiedTime).toBeGreaterThan(NOW);
   });
 
-  it('#saveData should update config with changed view', () => {
+  it('#saveRecord should return error status when server returns error message', () => {
 
     // given
-    const data = { x: 'one', y: 'two' };
-    scene.config = config;
-    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
-
-    // when
-    const status$ = service.saveData(scene, fakeConfigRecord.name, data);
-
-    // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'Data has been saved' }));
-    expect(service.getData(scene, fakeConfigRecord.name)).toEqual(data);
-  });
-
-  it('#saveData should return error status when server returns error', () => {
-
-    // given
-    scene.config = config;
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
 
     // when
-    const status$ = service.saveData(scene, Route.PIVOT, {});
+    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', {});
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: 'Data cannot be saved: Scene cannot be updated' }));
+    const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
+    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
-  it('#getView should return undefined when view is missing', () => {
+  it('#saveRecord should return error status when server returns error object', () => {
 
     // given
-    scene.config = config;
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.reject({ message: 'Scene cannot be updated' }));
 
     // when
-    const view = service.getView(scene, Route.FLEX);
+    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', {});
 
     // then
-    expect(view).toBeUndefined();
+    const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
+    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
-  it('#getView should return view when view exists', () => {
-
-    // given
-    scene.config = config;
+  it('#findViews should return empty array when no matching view exists', () => {
 
     // when
-    const view = service.getView(scene, Route.GRID);
+    const views = service.findViews(scene, Route.RAWDATA);
 
     // then
-    expect(view).toEqual(gridView);
+    expect(views).toEqual([]);
   });
 
-  it('#saveView should update config with added view', () => {
+  it('#findViews should return view when matching view exists', () => {
+
+    // when
+    const views = service.findViews(scene, Route.GRID);
+
+    // then
+    expect(views).toEqual([gridView]);
+  });
+
+  it('#saveView should add view when no one with same route exists', () => {
 
     // given
-    scene.config = config;
+    const flexView = createFlexView('flex', NOW, summary);
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
     const status$ = service.saveView(scene, flexView);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View has been saved' }));
-    expect(service.getView(scene, Route.FLEX)).toEqual(flexView);
-    expect(service.getView(scene, Route.GRID)).toEqual(gridView);
+    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "flex" has been saved' }));
+    expect(service.findViews(scene, Route.FLEX)).toEqual([flexView]);
+    expect(service.findViews(scene, Route.GRID)).toEqual([gridView]);
   });
 
-  it('#saveView should update config with changed view', () => {
+  it('#saveView should add view when no one with same name exists', () => {
 
     // given
-    scene.config = config;
+    const newGridView = createGridView('new', NOW, summary);
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
 
     // when
-    const status$ = service.saveView(scene, gridView);
+    const status$ = service.saveView(scene, newGridView);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View has been saved' }));
-    expect(service.getView(scene, Route.GRID)).toEqual(gridView);
+    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
+    expect(service.findViews(scene, Route.GRID)).toEqual([newGridView, gridView]);
+    expect(service.findViews(scene, Route.FLEX)).toEqual([]);
+  });
+
+  it('#saveView should update view when view with same name exists', () => {
+
+    // given
+    const newGridView = createGridView(gridView.name, NOW, summary);
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
+
+    // when
+    const status$ = service.saveView(scene, newGridView);
+
+    // then
+    const expectedMsg = 'View "' + gridView.name + '" has been saved';
+    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
+    expect(service.findViews(scene, Route.GRID)).toEqual([newGridView]);
+    expect(service.findViews(scene, Route.FLEX)).toEqual([]);
   });
 
   it('#saveView should return error status when server returns error', () => {
 
     // given
-    scene.config = config;
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
 
     // when
     const status$ = service.saveView(scene, gridView);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: 'View cannot be saved: Scene cannot be updated' }));
+    const expectedMsg = 'View "' + gridView.name + '" cannot be saved: Scene cannot be updated';
+    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
   function createColumn(name: string, dataType: DataType): Column {
@@ -198,4 +212,14 @@ describe('ViewPersistenceService', () => {
       width: 10
     };
   }
+
+  function createFlexView(name: string, modifiedTime: number, element: ViewElement): View {
+    return { route: Route.FLEX, name: name, modifiedTime: modifiedTime, gridColumns: null, gridCellRatio: null, elements: [element] };
+  }
+
+  function createGridView(name: string, modifiedTime: number, element: ViewElement): View {
+    return { route: Route.GRID, name: name, modifiedTime: modifiedTime, gridColumns: 3, gridCellRatio: '1:1', elements: [element] };
+  }
 });
+
+

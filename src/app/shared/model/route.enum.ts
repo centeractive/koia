@@ -3,7 +3,7 @@ export enum Route {
    SCENES = 'scenes',
    SCENE = 'scene',
    RAWDATA = 'rawdata',
+   PIVOT = 'pivot',
    GRID = 'grid',
-   FLEX = 'flex',
-   PIVOT = 'pivot'
+   FLEX = 'flex'
 }

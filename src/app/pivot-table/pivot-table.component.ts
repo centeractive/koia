@@ -1,6 +1,9 @@
 import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit } from '../shared/model';
-import { NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService } from '../shared/services';
+import {
+  NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService,
+  DialogService
+} from '../shared/services';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { CommonUtils, ValueGroupingGenerator, DateTimeUtils } from 'app/shared/utils';
 import { MatBottomSheet, MatSidenav } from '@angular/material';
@@ -9,6 +12,8 @@ import { DBService } from 'app/shared/services/backend';
 import { Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/controller';
 import { Subscription } from 'rxjs';
+import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { ConfigRecord } from 'app/shared/model/view-config';
 
 declare var jQuery: any;
 
@@ -44,9 +49,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   private stringifiedValueGroupings: string;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, private router: Router,
-    private dbService: DBService, private configService: ViewPersistenceService, private timeGroupingService: TimeGroupingService,
-    private valueGropingService: ValueRangeGroupingService, notificationService: NotificationService,
-    private exportService: ExportService) {
+    private dbService: DBService, private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
+    private timeGroupingService: TimeGroupingService, private valueGropingService: ValueRangeGroupingService,
+    notificationService: NotificationService, private exportService: ExportService) {
     super(bottomSheet, notificationService)
   }
 
@@ -127,24 +132,29 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     window.print();
   }
 
-  loadConfig(): void {
-    const context: PivotContext = this.configService.getData(this.scene, Route.PIVOT);
-    if (context) {
-      this.context = context;
-      const pivotOptions = this.pivotOptionsProvider.enrichPivotOptions(context.pivotOptions, this.context,
-        () => this.onPivotTableRefreshEnd());
-      this.refreshDataFrame(pivotOptions);
-    } else {
-      this.notifyWarning('There\'s no stored configuration available');
-    }
+  findConfigRecords(): ConfigRecord[] {
+    return this.viewPersistenceService.findRecords(this.scene, this.route);
+  }
+
+  loadConfig(configRecord: ConfigRecord): void {
+    this.context = configRecord.data;
+    const pivotOptions = this.pivotOptionsProvider
+      .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
+    this.refreshDataFrame(pivotOptions);
   }
 
   saveConfig(): void {
-    this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
-    const context = <PivotContext>CommonUtils.clone(this.context);
-    context.valueGroupings.forEach(d => d.minMaxValues = null);
-    this.configService.saveData(this.scene, Route.PIVOT, context)
-      .then(s => this.showStatus(s));
+    const data = new InputDialogData('Save View', 'View Name', '');
+    const dialogRef = this.dialogService.showInputDialog(data);
+    dialogRef.afterClosed().toPromise().then(r => {
+      if (data.closedWithOK) {
+        this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
+        const context = <PivotContext>CommonUtils.clone(this.context);
+        context.valueGroupings.forEach(d => d.minMaxValues = null);
+        this.viewPersistenceService.saveRecord(this.scene, Route.PIVOT, data.input, context)
+          .then(s => this.showStatus(s));
+      }
+    });
   }
 
   onNegativeColorChanged(color: string): void {

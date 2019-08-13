@@ -59,7 +59,7 @@ describe('MainToolbarComponent', () => {
     ];
     const timeMin = entries[0]['Time'];
     const timeMax = entries[entries.length - 1]['Time'];
-    timeValueRange = { min: timeMin, max: timeMax};
+    timeValueRange = { min: timeMin, max: timeMax };
   });
 
   beforeEach(async(() => {
@@ -76,8 +76,8 @@ describe('MainToolbarComponent', () => {
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })
-    .overrideModule(MatIconModule, MatIconModuleMock.override())
-    .compileComponents();
+      .overrideModule(MatIconModule, MatIconModuleMock.override())
+      .compileComponents();
   }));
 
   beforeEach(fakeAsync(() => {
@@ -149,10 +149,10 @@ describe('MainToolbarComponent', () => {
     // given
     component.route = Route.GRID;
     const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
-    component.router = <Router> { events: of(event) };
+    component.router = <Router>{ events: of(event) };
     const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
     const prevTimeRangeOptions = timeRangeFilter.rangeOptions;
-    component.rangeFilters = [ timeRangeFilter ];
+    component.rangeFilters = [timeRangeFilter];
     expect(prevTimeRangeOptions).toBeTruthy();
     component.ngOnInit();
     spyOn(component.rangeFilters[0], 'defineRangeOptions');
@@ -190,7 +190,7 @@ describe('MainToolbarComponent', () => {
     const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
     timeRangeFilter.selStart = timeValueRange.min + 1000;
     timeRangeFilter.selEnd = timeValueRange.max - 1000;
-    component.rangeFilters = [ timeRangeFilter ];
+    component.rangeFilters = [timeRangeFilter];
     const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
 
     // when
@@ -217,6 +217,18 @@ describe('MainToolbarComponent', () => {
     expect(link).toEqual('/' + Route.RAWDATA);
   });
 
+  it('pivot view button should point to pivot view', () => {
+
+    // given
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butPivotView')).nativeElement;
+
+    // when
+    const link = htmlButton.getAttribute('ng-reflect-router-link');
+
+    // then
+    expect(link).toEqual('/' + Route.PIVOT);
+  });
+
   it('grid view button should point to grid view', () => {
 
     // given
@@ -239,18 +251,6 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(link).toEqual('/' + Route.FLEX);
-  });
-
-  it('pivot view button should point to pivot view', () => {
-
-    // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butPivotView')).nativeElement;
-
-    // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
-
-    // then
-    expect(link).toEqual('/' + Route.PIVOT);
   });
 
   it('pressing <enter> in full text filter field should emit onFilterChange', () => {
@@ -329,8 +329,8 @@ describe('MainToolbarComponent', () => {
     // given
     component.columnFilters = [];
     clickAddColumnFilterMenuItem('Level');
-    const formField = <HTMLElement> fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement> formField.getElementsByTagName('INPUT')[0];
+    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
+    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
     htmlInput.value = 'ERR';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -344,7 +344,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = <Query> onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFullTextFilter()).toBeFalsy();
     expect(query.getPropertyFilters().length).toBe(1);
     const propFilter = query.getPropertyFilters()[0];
@@ -359,20 +359,20 @@ describe('MainToolbarComponent', () => {
     // given
     component.columnFilters = [];
     clickAddColumnFilterMenuItem('Level');
-    const formField = <HTMLElement> fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement> formField.getElementsByTagName('INPUT')[0];
+    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
+    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
     htmlInput.value = 'ERR';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
-    const clearButton = <HTMLButtonElement> formField.getElementsByTagName('BUTTON')[0];
+    const clearButton = <HTMLButtonElement>formField.getElementsByTagName('BUTTON')[0];
 
     // when
     clearButton.click();
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = <Query> onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
   }));
 
@@ -388,7 +388,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = <Query> onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
   });
 
@@ -439,7 +439,7 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].rangeOptions.step).toBe(1);
   }));
 
-  it('#onStepChanged should change time step when second is selected',  fakeAsync(() => {
+  it('#onStepChanged should change time step when second is selected', fakeAsync(() => {
 
     // given
     component.addColumnFilter(column('Time'));
@@ -454,7 +454,7 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].rangeOptions.step).toBe(1_000);
   }));
 
-  it('#onStepChanged should change time step when minute is selected',  fakeAsync(() => {
+  it('#onStepChanged should change time step when minute is selected', fakeAsync(() => {
 
     // given
     component.addColumnFilter(column('Time'));

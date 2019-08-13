@@ -33,7 +33,6 @@ import { Scene } from 'app/shared/model';
              td {
                white-space: pre-wrap;
              }`]
-
 })
 export class SceneDetailsDialogComponent {
 

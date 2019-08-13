@@ -29,13 +29,14 @@ const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /front.component\.spec\.ts$/);
 // const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
+// const context = require.context('./', true, /connection-dialog.component\.spec\.ts$/);
 
 
 // const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb-config\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb\.service\.spec\.ts$/);
 // const context = require.context('./', true, /pouchdb-access\.spec\.ts$/);
-// const context = require.context('./', true, /config\.service\.spec\.ts$/);
+// const context = require.context('./', true, /view-persistence\.service\.spec\.ts$/);
 // const context = require.context('./', true, /mango-query-builder\.spec\.ts$/);
 
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);

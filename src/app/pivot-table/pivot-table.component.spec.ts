@@ -2,14 +2,15 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angul
 
 import { PivotTableComponent } from './pivot-table.component';
 import { ElementRef, Injectable, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService } from 'app/shared/services';
-import { of } from 'rxjs';
+import { NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, DialogService } from 'app/shared/services';
+import { of, Observable } from 'rxjs';
 import {
   MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule,
-  MatBottomSheet
+  MatBottomSheet,
+  MatDialogRef
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { StatusType, PivotContext, Column, DataType, Scene, TimeUnit } from 'app/shared/model';
+import { StatusType, PivotContext, Column, DataType, Scene, TimeUnit, Route } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { DBService } from 'app/shared/services/backend';
@@ -18,6 +19,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { SceneFactory } from 'app/shared/test';
+import { ConfigRecord } from 'app/shared/model/view-config';
+import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 
 @Injectable()
 export class MockElementRef {
@@ -26,7 +29,9 @@ export class MockElementRef {
 
 describe('PivotTableComponent', () => {
 
+  const NOW = new Date().getTime();
   const datePipe = new DatePipe('en-US');
+
   let now: number;
   let columns: Column[];
   let scene: Scene;
@@ -34,7 +39,8 @@ describe('PivotTableComponent', () => {
   let component: PivotTableComponent;
   let fixture: ComponentFixture<PivotTableComponent>;
   const dbService = new DBService(null);
-  const configService = new ViewPersistenceService(dbService);
+  const viewPersistenceService = new ViewPersistenceService(dbService);
+  const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   let locatePivotTable: Function;
@@ -69,7 +75,8 @@ describe('PivotTableComponent', () => {
         { provide: ElementRef, useClass: MockElementRef },
         { provide: MatBottomSheet, useClass: MatBottomSheet },
         { provide: DBService, useValue: dbService },
-        { provide: ViewPersistenceService, useValue: configService },
+        { provide: DialogService, useValue: dialogService },
+        { provide: ViewPersistenceService, useValue: viewPersistenceService },
         { provide: TimeGroupingService, useClass: TimeGroupingService },
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
         { provide: NotificationService, useValue: notificationService },
@@ -135,19 +142,6 @@ describe('PivotTableComponent', () => {
     expect(component.dataFrame.toArray()).toEqual(expectedData);
   }));
 
-  it('#loadConfig should notify user when no stored config data exists', fakeAsync(() => {
-
-    // given
-    spyOn(configService, 'getData').and.returnValue(null);
-
-    // when
-    component.loadConfig();
-    tick();
-
-    // then
-    expect(notificationService.showStatus).toHaveBeenCalled();
-  }));
-
   it('#loadConfig should restore selected values from config', () => {
 
     // given
@@ -160,10 +154,10 @@ describe('PivotTableComponent', () => {
       valueGroupings: [],
       pivotOptions: { a: 1, b: 2 }
     };
-    spyOn(configService, 'getData').and.returnValue(context);
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };
 
     // when
-    component.loadConfig();
+    component.loadConfig(configRecord);
 
     // then
     expect(component.context.negativeColor).toBe('yellow');
@@ -183,10 +177,10 @@ describe('PivotTableComponent', () => {
       valueGroupings: [],
       pivotOptions: { a: 1, b: 2 }
     };
-    spyOn(configService, 'getData').and.returnValue(context);
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };
 
     // when
-    component.loadConfig();
+    component.loadConfig(configRecord);
 
     // then
     expect(component.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.YEAR);
@@ -195,12 +189,35 @@ describe('PivotTableComponent', () => {
     expect(context.pivotOptions['onRefresh']).not.toBeUndefined();
   });
 
+  it('#saveConfig should not save view when input dialog is cancled', () => {
+
+    // given
+    const dialogRef = createInputDialogRef();
+    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+      data.closedWithOK = false;
+      return dialogRef;
+    });
+    spyOn(viewPersistenceService, 'saveRecord').and.returnValue(undefined);
+
+    // when
+    component.saveConfig();
+
+    // then
+    expect(notificationService.showStatus).not.toHaveBeenCalled();
+  });
+
   it('#saveConfig should notify user about success', fakeAsync(() => {
 
     // given
+    const dialogRef = createInputDialogRef();
+    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+      data.input = 'test';
+      data.closedWithOK = true;
+      return dialogRef;
+    });
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
     const status$ = of(status).toPromise();
-    spyOn(configService, 'saveData').and.returnValue(status$);
+    spyOn(viewPersistenceService, 'saveRecord').and.returnValue(status$);
 
     // when
     component.saveConfig();
@@ -338,4 +355,12 @@ describe('PivotTableComponent', () => {
     // then
     expect(window.print).toHaveBeenCalled();
   }));
+
+  function createInputDialogRef(): MatDialogRef<InputDialogComponent> {
+    return <MatDialogRef<InputDialogComponent>>{
+      afterClosed(): Observable<boolean> {
+        return of(true);
+      }
+    };
+  }
 });

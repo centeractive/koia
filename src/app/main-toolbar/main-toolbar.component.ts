@@ -26,9 +26,9 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   readonly urlScenes = '/' + Route.SCENES;
   readonly urlScene = '/' + Route.SCENE;
   readonly urlRawdata = '/' + Route.RAWDATA;
+  readonly urlPivot = '/' + Route.PIVOT;
   readonly urlGrid = '/' + Route.GRID;
   readonly urlFlex = '/' + Route.FLEX;
-  readonly urlPivot = '/' + Route.PIVOT;
 
   currURL: string;
   scene: Scene;
@@ -53,6 +53,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       this.router.events.subscribe(e => {
         if (e instanceof NavigationEnd) {
           this.currURL = CommonUtils.extractBaseURL((<NavigationEnd>e).urlAfterRedirects);
+
+          console.log('this.currURL: ' + this.currURL + '(urlRawdata: ' + this.urlRawdata + ')');
         }
       });
     }

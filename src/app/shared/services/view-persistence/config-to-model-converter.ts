@@ -1,10 +1,10 @@
 import { ElementContext, ChartContext, GraphContext, SummaryContext, Column } from '../../model';
-import { ElementType } from './element-type.enum';
-import { ViewElement } from '../../model/view-element.type';
+import { ViewElement } from '../../model/view-config/view-element.type';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
 import { CommonUtils } from 'app/shared/utils';
+import { ElementType } from 'app/shared/model/view-config';
 
 export class ConfigToModelConverter {
 

@@ -19,17 +19,27 @@
       </koia-main-toolbar>
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
       <div id="view_toolbar">
-         <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
-            [disabled]="elementContexts.length === 0" (click)="printView()">
+         <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
+            matTooltip="Print current view" [disabled]="elementContexts.length === 0" (click)="printView()">
             <mat-icon>print</mat-icon>
          </button>
          <button mat-button mat-icon-button matTooltip="Save current view" [disabled]="elementContexts.length === 0"
             (click)="saveView()">
             <mat-icon>save_alt</mat-icon>
          </button>
-         <button mat-button mat-icon-button matTooltip="Open saved view" (click)="loadView()">
-            <mat-icon>open_in_browser</mat-icon>
+
+         <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="findViews().length === 0"
+            [matMenuTriggerFor]="restoreViewMenu">
+            <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="findViews().length === 0" matBadgeSize="small"
+               matBadgeColor="accent">open_in_browser</mat-icon>
          </button>
+         <mat-menu #restoreViewMenu="matMenu">
+            <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item (click)="loadView(view)">
+               <mat-icon>open_in_browser</mat-icon>
+               <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
+            </button>
+         </mat-menu>
+
          &nbsp;&nbsp;&nbsp;
          <button mat-button mat-icon-button matTooltip="New Chart" (click)="addChart()">
             <mat-icon svgIcon="new_chart"></mat-icon>
@@ -76,7 +86,8 @@
                <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
                   koiaTextareaMaxRows="2" (keyup)="context.title = $event.target.value"></textarea>
             </div>
-            <button mat-icon-button class="but_warning" *ngIf="context.warning" [matTooltip]="context.warning" color="warn">
+            <button mat-icon-button class="but_warning" *ngIf="context.warning" [matTooltip]="context.warning"
+               color="warn">
                <mat-icon>error</mat-icon>
             </button>
             <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">

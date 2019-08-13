@@ -1,34 +1,36 @@
 <mat-card>
-  <h3>CouchDB Access</h3>
-  <mat-form-field>
-    <mat-select id="protocol" placeholder="Protocol" [(ngModel)]="data.connectionInfo.protocol">
-      <mat-option *ngFor="let protocol of protocols" [value]="protocol">
-        {{ protocol }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-  <div>
+  <mat-card-subtitle>CouchDB Access</mat-card-subtitle>
+  <mat-card-content>
     <mat-form-field>
-      <input id="host" matInput type="text" placeholder="Host" [(ngModel)]="data.connectionInfo.host">
+      <mat-select id="protocol" placeholder="Protocol" [(ngModel)]="data.connectionInfo.protocol">
+        <mat-option *ngFor="let protocol of protocols" [value]="protocol">
+          {{ protocol }}
+        </mat-option>
+      </mat-select>
     </mat-form-field>
-    &nbsp;
-    <mat-form-field>
-      <input id="port" matInput type="number" placeholder="Port" [(ngModel)]="data.connectionInfo.port">
-    </mat-form-field>
-  </div>
-  <div>
-    <mat-form-field>
-      <input id="user" matInput type="text" placeholder="User" [(ngModel)]="data.connectionInfo.user">
-    </mat-form-field>
-    &nbsp;
-    <mat-form-field>
-      <input id="password" matInput type="password" placeholder="Password" [(ngModel)]="data.connectionInfo.password">
-    </mat-form-field>
-  </div>
-  <br>
-  <div>
-    <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
-    &nbsp;
-    <button id="but_ok" mat-raised-button color="primary" (click)="onOK()">OK</button>
-  </div>
+    <div>
+      <mat-form-field>
+        <input id="host" matInput type="text" placeholder="Host" [(ngModel)]="data.connectionInfo.host">
+      </mat-form-field>
+      &nbsp;
+      <mat-form-field>
+        <input id="port" matInput type="number" placeholder="Port" [(ngModel)]="data.connectionInfo.port">
+      </mat-form-field>
+    </div>
+    <div>
+      <mat-form-field>
+        <input id="user" matInput type="text" placeholder="User" [(ngModel)]="data.connectionInfo.user">
+      </mat-form-field>
+      &nbsp;
+      <mat-form-field>
+        <input id="password" matInput type="password" placeholder="Password" [(ngModel)]="data.connectionInfo.password">
+      </mat-form-field>
+    </div>
+    <br>
+    <div>
+      <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
+      &nbsp;
+      <button id="but_ok" mat-raised-button color="primary" (click)="onOK()">OK</button>
+    </div>
+  </mat-card-content>
 </mat-card>

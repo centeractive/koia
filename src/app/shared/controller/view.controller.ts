@@ -1,19 +1,21 @@
 import {
    ElementContext, Column, Query, SummaryContext, ChartContext, GraphContext, ChartType, Route, Scene,
-   DataType, ExportFormat, View
+   DataType, ExportFormat
 } from '../model';
 import { Observable, Subscription } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
 import { MatSidenav, MatBottomSheet } from '@angular/material';
-import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService } from '../services';
+import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService, DialogService } from '../services';
 import { Router } from '@angular/router';
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { SummaryTableComponent } from 'app/summary-table/summary-table.component';
-import { AbstractComponent } from './abstract.component';
+import { AbstractComponent } from '../component/abstract.component';
 import { ChartComponent } from 'app/chart/chart.component';
 import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
+import { View } from '../model/view-config';
+import { InputDialogData } from '../component/input-dialog/input-dialog.component';
 
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit {
 
@@ -45,9 +47,9 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private columns: Column[];
    private entriesSubscription: Subscription;
 
-   constructor(private viewName: string, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
-      private configService: ViewPersistenceService, private chartMarginService: ChartMarginService, 
-      notificationService: NotificationService, private exportService: ExportService) {
+   constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
+      private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
+      private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService) {
       super(bottomSheet, notificationService);
    };
 
@@ -191,36 +193,41 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.elementContexts = this.elementContexts.filter(c => c !== context);
    }
 
-   loadView(): void {
-      const view = this.configService.getView(this.scene, this.viewName);
-      if (view) {
-         this.onPreRestoreView(view);
-         const elementContexts = this.configToModelConverter.convert(view.elements);
-         elementContexts.forEach(c => c.query = this.query);
-         this.elementContexts = elementContexts;
-      } else {
-         this.notifyWarning('There\'s no stored view available');
-      }
+   findViews(): View[] {
+      return this.viewPersistenceService.findViews(this.scene, this.route);
+   }
+
+   loadView(view: View): void {
+      this.onPreRestoreView(view);
+      const elementContexts = this.configToModelConverter.convert(view.elements);
+      elementContexts.forEach(c => c.query = this.query);
+      this.elementContexts = elementContexts;
    }
 
    protected abstract onPreRestoreView(view: View): void;
-
-   printView(): void {
-      window.print();
-   }
 
    saveView(): void {
       if (this.elementContexts.length === 0) {
          this.notifyWarning('View contains no elements');
          return;
       }
-      const view = this.modelToConfigConverter.convert(this.viewName, this.elementContexts);
-      this.onPreSaveView(view);
-      this.configService.saveView(this.scene, view)
-         .then(s => this.showStatus(s));
+      const data = new InputDialogData('Save View', 'View Name', '');
+      const dialogRef = this.dialogService.showInputDialog(data);
+      dialogRef.afterClosed().toPromise().then(r => {
+         if (data.closedWithOK) {
+            const view = this.modelToConfigConverter.convert(this.route, data.input, this.elementContexts);
+            this.onPreSaveView(view);
+            this.viewPersistenceService.saveView(this.scene, view)
+               .then(s => this.showStatus(s));
+         }
+      });
    }
-
+   
    protected abstract onPreSaveView(view: View): void;
+
+   printView(): void {
+      window.print();
+   }
 
    adjustLayout() {
       this.divContentRef.nativeElement.style.marginTop = (this.divHeaderRef.nativeElement.offsetHeight + ViewController.MARGIN_TOP) + 'px';

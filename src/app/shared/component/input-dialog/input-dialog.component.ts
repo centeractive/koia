@@ -1,0 +1,45 @@
+import { Component, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+
+@Component({
+  selector: 'koia-input-dialog',
+  template: `<mat-card>
+                <mat-card-subtitle>{{ data.title }}</mat-card-subtitle>
+                <mat-card-content>
+                  <mat-form-field>
+                    <input id="host" matInput type="text" [placeholder]="data.inputName" required [(ngModel)]="data.input">
+                  </mat-form-field>
+                  <div>
+                    <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
+                    &nbsp;
+                    <button id="but_ok" mat-raised-button color="primary" [disabled]="!data.input" (click)="onOK()">OK</button>
+                    </div>
+                </mat-card-content>
+             </mat-card>`
+})
+export class InputDialogComponent {
+
+  constructor(public dialogRef: MatDialogRef<InputDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: InputDialogData) {
+    this.dialogRef.disableClose = true;
+  }
+
+  onCancel() {
+    this.data.closedWithOK = false;
+    this.dialogRef.close();
+  }
+
+  onOK() {
+    this.data.closedWithOK = true;
+    this.dialogRef.close();
+  }
+}
+
+export class InputDialogData {
+
+  input: string;
+  closedWithOK = false;
+
+  constructor(public readonly title: string, public readonly inputName: string, initialValue: string) {
+    this.input = initialValue;
+  }
+}

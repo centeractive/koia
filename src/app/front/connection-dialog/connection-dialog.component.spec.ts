@@ -53,7 +53,7 @@ describe('ConnectionDialogComponent', () => {
     expect(getInputValue('password')).toBe(connectionInfo.password);
   });
 
-  it('#click on cancel button should close dialog', fakeAsync(() => {
+  it('#click on cancel button should close dialog', () => {
 
     // given
     changeInputValue('host', 'server-x');
@@ -70,9 +70,9 @@ describe('ConnectionDialogComponent', () => {
     expect(component.data.closedWithOK).toBeFalsy();
     expect(component.data.connectionInfo).toEqual(connectionInfo);
     expect(component.dialogRef.close).toHaveBeenCalled();
-  }));
+  });
 
-  it('#click on ok button should change connection and close dialog', fakeAsync(() => {
+  it('#click on ok button should change connection and close dialog', () => {
 
     // given
     changeInputValue('host', 'server-x');
@@ -92,7 +92,7 @@ describe('ConnectionDialogComponent', () => {
     expect(component.data.connectionInfo.user).toBe('abc123');
     expect(component.data.connectionInfo.password).toBe('%ad3Zds_');
     expect(component.dialogRef.close).toHaveBeenCalled();
-  }));
+  });
 
   function getSelectedProtocol(): Protocol {
     const matSelect: MatSelect = fixture.debugElement.query(By.css('#protocol')).componentInstance;

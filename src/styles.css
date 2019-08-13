@@ -146,6 +146,10 @@ mat-panel-description {
   white-space: pre-line;
 }
 
+var {
+  color: gray;
+}
+
 @media print {
   
   body * {

@@ -3,6 +3,7 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog.component';
 import { Scene } from '../model';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
+import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,10 @@ import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/conne
 export class DialogService {
 
   constructor(private dialogService: MatDialog) { }
+
+  showInputDialog(data: InputDialogData): MatDialogRef<InputDialogComponent> {
+    return this.dialogService.open(InputDialogComponent, { data: data, panelClass: 'dialog-container' });
+  }
 
   showConnectionDialog(data: ConnectionDialogData): MatDialogRef<ConnectionDialogComponent> {
     return this.dialogService.open(ConnectionDialogComponent, { data: data, panelClass: 'dialog-container' });

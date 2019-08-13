@@ -1,8 +1,9 @@
-import { Scene, Status, StatusType } from '../../model';
+import { Scene, Status, StatusType, Route } from '../../model';
 import { ArrayUtils } from '../../utils';
 import { Injectable } from '@angular/core';
 import { DBService } from '../backend';
-import { View } from '../../model/view.type';
+import { View } from '../../model/view-config/view.type';
+import { ConfigRecord } from 'app/shared/model/view-config';
 
 @Injectable({
    providedIn: 'root'
@@ -11,55 +12,76 @@ export class ViewPersistenceService {
 
    constructor(private dbService: DBService) { }
 
-   getData(scene: Scene, name: string): any {
-      const record = scene.config.records.find(r => r.name === name);
-      return record ? record.data : undefined;
+   /**
+    * @returns matching [[ConfigRecord]]s descending sorted by their modified time
+    */
+   findRecords(scene: Scene, route: Route): ConfigRecord[] {
+      return scene.config.records
+         .filter(v => v.route === route)
+         .sort((r1, r2) => r2.modifiedTime - r1.modifiedTime);
    }
 
    /**
-    * adds or replaces the specified data for the [[Scene]] and updates it.
+    * adds or replaces the specified view configuration data for the [[Scene]] and updates it in the backing datastore.
     *
     * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
     * invoking part to catch errors
     */
-   saveData(scene: Scene, name: string, data: any): Promise<Status> {
-      const prevRecord = scene.config.records.find(r => r.name === name);
-      const newRecord = { name: name, data: data };
+   saveRecord(scene: Scene, route: Route, viewName: string, data: any): Promise<Status> {
+      const prevRecord = this.findRecord(scene, route, viewName);
+      const newRecord: ConfigRecord = { route: route, name: viewName, modifiedTime: new Date().getTime(), data: data };
       if (prevRecord) {
          ArrayUtils.replaceElement(scene.config.records, prevRecord, newRecord);
       } else {
          scene.config.records.push(newRecord);
       }
-      return this.updateScene(scene, 'Data');
+      return this.updateScene(scene, viewName);
    }
 
-   getView(scene: Scene, name: string): View {
-      return scene.config.views.find(v => v.name === name);
+   private findRecord(scene: Scene, route: Route, name: string): ConfigRecord {
+      return scene.config.records
+         .filter(v => v.route === route)
+         .find(v => v.name === name);
    }
 
    /**
-    * adds or replaces the specified [[View]] for the [[Scene]] and updates it.
+    * @returns matching [[View]]s descending sorted by their modified time
+    */
+   findViews(scene: Scene, route: Route): View[] {
+      return scene.config.views
+         .filter(v => v.route === route)
+         .sort((v1, v2) => v2.modifiedTime - v1.modifiedTime);
+   }
+
+   /**
+    * adds or replaces the specified [[View]] for the [[Scene]] and updates it in the backing datastore.
     *
     * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
     * invoking part to catch errors
     */
    saveView(scene: Scene, view: View): Promise<Status> {
-      const prevView = this.getView(scene, view.name);
+      const prevView = this.findView(scene, view.route, view.name);
       if (prevView) {
          ArrayUtils.replaceElement(scene.config.views, prevView, view);
       } else {
          scene.config.views.push(view);
       }
-      return this.updateScene(scene, 'View');
+      return this.updateScene(scene, view.name);
    }
 
-   private updateScene(scene: Scene, type: string): Promise<Status> {
+   private findView(scene: Scene, route: Route, name: string): View {
+      return scene.config.views
+         .filter(v => v.route === route)
+         .find(v => v.name === name);
+   }
+
+   private updateScene(scene: Scene, viewName: string): Promise<Status> {
       return new Promise<Status>(resolve => {
          this.dbService.updateScene(scene)
-            .then(c => resolve({ type: StatusType.SUCCESS, msg: type + ' has been saved' }))
+            .then(c => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
             .catch(e => {
                const message = typeof e === 'string' ? e : e.message;
-               resolve({ type: StatusType.ERROR, msg: type + ' cannot be saved: ' + message })
+               resolve({ type: StatusType.ERROR, msg: 'View "' + viewName + '" cannot be saved: ' + message })
             });
       });
    }

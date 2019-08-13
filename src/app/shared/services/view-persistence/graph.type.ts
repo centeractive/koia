@@ -1,4 +1,4 @@
-import { ViewElement } from '../../model/view-element.type';
+import { ViewElement } from '../../model/view-config/view-element.type';
 
 export interface Graph extends ViewElement {
    linkStrength: number;

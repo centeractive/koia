@@ -4,11 +4,12 @@ import { GridComponent } from './grid.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
 import {
   MatBottomSheet, MatSidenavModule, MatIconModule, MatButtonModule, MatGridListModule, MatMenuModule,
-  MatBottomSheetModule
+  MatBottomSheetModule,
+  MatDialogRef
 } from '@angular/material';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ChartMarginService, ViewPersistenceService } from 'app/shared/services';
+import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService } from 'app/shared/services';
 import {
   Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene } from 'app/shared/model';
 import { StatusComponent } from 'app/status/status.component';
@@ -19,6 +20,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Router } from '@angular/router';
+import { View } from 'app/shared/model/view-config';
+import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -43,7 +46,8 @@ describe('GridComponent', () => {
   let fixture: ComponentFixture<GridComponent>;
   let component: GridComponent;
   const dbService = new DBService(null);
-  const configService = new ViewPersistenceService(dbService);
+  const dialogService = new DialogService(null);
+  const viewPersistenceService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
   let getActiveSceneSpy: jasmine.Spy;
 
@@ -83,9 +87,9 @@ describe('GridComponent', () => {
       ],
       providers: [
         { provide: MatBottomSheet, useClass: MatBottomSheet },
-        { provide: ViewPersistenceService, useValue: configService },
         { provide: DBService, useValue: dbService },
-        { provide: ViewPersistenceService, useValue: configService },
+        { provide: DialogService, useValue: dialogService },
+        { provide: ViewPersistenceService, useValue: viewPersistenceService },
         { provide: ChartMarginService, useClass: ChartMarginService },
         { provide: NotificationService, useValue: notificationService }
       ]
@@ -342,19 +346,6 @@ describe('GridComponent', () => {
     component.elementContexts.forEach(c => expect(c.fireSizeChanged).toHaveBeenCalled());
   });
 
-  it('#loadView should notify user when no stored view exists', fakeAsync(() => {
-
-    // given
-    spyOn(configService, 'getView').and.returnValue(null);
-
-    // when
-    component.loadView();
-    tick();
-
-    // then
-    expect(notificationService.showStatus).toHaveBeenCalled();
-  }));
-
   it('#loadView should load view', () => {
 
     // given
@@ -364,21 +355,38 @@ describe('GridComponent', () => {
     const graphContext = component.addGraph();
     graphContext.title = 'Test Graph';
     graphContext.groupByColumns = [findColumn('Level')];
-    const view = new ModelToConfigConverter().convert(Route.GRID, component.elementContexts);
+    const view = new ModelToConfigConverter().convert(Route.GRID, 'test', component.elementContexts);
     view.gridColumns = 4;
     view.gridCellRatio = '4:3';
     const elementContexts = component.elementContexts;
     component.gridColumns = 5;
     component.elementContexts = [];
-    spyOn(configService, 'getView').and.returnValue(view);
 
     // when
-    component.loadView();
+    component.loadView(view);
 
     // then
     expect(component.gridColumns).toBe(4);
     expect(component.gridCellRatio).toBe('4:3');
     expect(component.elementContexts).toEqual(elementContexts);
+  });
+
+  it('#saveView should not save view when input dialog is canceld', () => {
+
+    // given
+    component.addSummaryTable();
+    const dialogRef = createInputDialogRef();
+    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+      data.closedWithOK = false;
+      return dialogRef;
+    });
+    spyOn(viewPersistenceService, 'saveView').and.returnValue(undefined);
+
+    // when
+    component.saveView();
+
+    // then
+    expect(notificationService.showStatus).not.toHaveBeenCalled();
   });
 
   it('#saveView should warn user when view contains no elements', () => {
@@ -398,10 +406,16 @@ describe('GridComponent', () => {
   it('#saveView should notify user about success', fakeAsync(() => {
 
     // given
-    component.addGraph();
+    component.addSummaryTable();
+    const dialogRef = createInputDialogRef();
+    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+      data.input = 'test';
+      data.closedWithOK = true;
+      return dialogRef;
+    });
     const status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
     const status$ = of(status).toPromise();
-    spyOn(configService, 'saveView').and.returnValue(status$);
+    spyOn(viewPersistenceService, 'saveView').and.returnValue(status$);
 
     // when
     component.saveView();
@@ -429,5 +443,13 @@ describe('GridComponent', () => {
 
   function findColumn(name: string): Column {
     return scene.columns.find(c => c.name === name);
+  }
+
+  function createInputDialogRef(): MatDialogRef<InputDialogComponent> {
+    return <MatDialogRef<InputDialogComponent>>{
+      afterClosed(): Observable<boolean> {
+        return of(true);
+      }
+    };
   }
 });

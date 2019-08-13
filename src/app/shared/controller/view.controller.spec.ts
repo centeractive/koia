@@ -1,12 +1,12 @@
 import { ViewController } from './view.controller';
-import { View } from '../services/view-persistence';
 import { GraphContext, ChartType, ChartContext } from '../model';
 import { MatSidenav } from '@angular/material';
+import { View } from '../model/view-config';
 
 class ViewControllerTestable extends ViewController {
 
    constructor() {
-      super(null, null, null, null, null, null, null, null);
+      super(null, null, null, null, null, null, null, null, null);
    }
 
    protected onPreRestoreView(view: View): void { }

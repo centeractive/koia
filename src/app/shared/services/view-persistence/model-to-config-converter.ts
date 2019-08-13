@@ -1,18 +1,20 @@
-import { ElementContext, ChartContext, GraphContext, SummaryContext } from '../../model';
-import { ElementType } from './element-type.enum';
-import { ViewElement } from '../../model/view-element.type';
-import { View } from '../../model/view.type';
+import { ElementContext, ChartContext, GraphContext, SummaryContext, Route } from '../../model';
+import { ViewElement } from '../../model/view-config/view-element.type';
+import { View } from '../../model/view-config/view.type';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
+import { ElementType } from 'app/shared/model/view-config';
 
 export class ModelToConfigConverter {
 
-   convert(viewName: string, elementContexts: ElementContext[]): View {
+   convert(route: Route, viewName: string, elementContexts: ElementContext[]): View {
       const configElements: ViewElement[] = [];
       elementContexts.forEach(c => configElements.push(this.toViewElement(c)))
       return {
+         route: route,
          name: viewName,
+         modifiedTime: new Date().getTime(),
          gridColumns: null,
          gridCellRatio: null,
          elements: configElements

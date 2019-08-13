@@ -1,10 +1,11 @@
 import { Component, ElementRef, Inject, AfterViewChecked } from '@angular/core';
 import { MatBottomSheet } from '@angular/material';
-import { Route, View } from '../shared/model';
-import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService } from '../shared/services';
+import { Route } from '../shared/model';
+import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
 import { ViewController } from 'app/shared/controller';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
+import { View } from 'app/shared/model/view-config';
 
 @Component({
   selector: 'koia-grid',
@@ -13,15 +14,15 @@ import { DBService } from 'app/shared/services/backend';
 })
 export class GridComponent extends ViewController implements AfterViewChecked {
 
-  readonly route = Route.GRID;
   gridColumns = 3;
   gridCellRatio = '1:1';
   private windowResizedWhileHidden: boolean;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, router: Router, bottomSheet: MatBottomSheet, dbService: DBService,
-    configService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
-    exportService: ExportService) {
-    super(Route.GRID, router, bottomSheet, dbService, configService, chartMarginService, notificationService, exportService);
+    dialogService: DialogService, viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService,
+    notificationService: NotificationService, exportService: ExportService) {
+    super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
+      exportService);
     window.addEventListener('resize', e => this.windowResizedWhileHidden = !this.cmpElementRef.nativeElement.parentElement);
   }
 

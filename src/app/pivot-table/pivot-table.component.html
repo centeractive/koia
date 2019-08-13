@@ -33,16 +33,26 @@
         </button>
       </mat-menu>
 
-      <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
-        (click)="printView()">
+      <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
+        matTooltip="Print current view" (click)="printView()">
         <mat-icon>print</mat-icon>
       </button>
       <button mat-button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
         <mat-icon>save_alt</mat-icon>
       </button>
-      <button mat-button mat-icon-button matTooltip="Open saved view" (click)="loadConfig()">
-        <mat-icon>open_in_browser</mat-icon>
+
+      <button class="but_more" mat-icon-button matTooltip="Restore saved view"
+        [disabled]="findConfigRecords().length === 0" [matMenuTriggerFor]="restoreViewMenu">
+        <mat-icon [matBadge]="findConfigRecords().length" [matBadgeHidden]="findConfigRecords().length === 0"
+          matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
       </button>
+      <mat-menu #restoreViewMenu="matMenu">
+        <button class="menu_item_details" *ngFor="let configRecord of findConfigRecords()" mat-menu-item
+          (click)="loadConfig(configRecord)">
+          <mat-icon>open_in_browser</mat-icon>
+          <span>{{ configRecord.name }} <var>{{ configRecord.modifiedTime | date:'short' }}</var></span>
+        </button>
+      </mat-menu>
 
       <button class="but_config" *ngIf="allowsForValueGrouping" mat-button mat-icon-button
         matTooltip="Define Value Grouping..." (click)="sidenav.open()">

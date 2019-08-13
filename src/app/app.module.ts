@@ -59,6 +59,7 @@ import { DialogService } from './shared/services/dialog.service';
 import { FrontComponent } from './front/front.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
 
 @NgModule({
   declarations: [
@@ -85,9 +86,11 @@ import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
     MatIconModuleMock,
     TextareaMaxRowsDirective,
     ConnectionDialogComponent,
-    FrontComponent
+    FrontComponent,
+    InputDialogComponent
   ],
   entryComponents: [
+    InputDialogComponent,
     ConnectionDialogComponent,
     StatusComponent,
     RawDataDialogComponent,
