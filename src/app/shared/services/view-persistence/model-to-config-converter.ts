@@ -48,7 +48,8 @@ export class ModelToConfigConverter {
          margin: context.margin,
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
-         xLabelRotation: context.xLabelRotation
+         xLabelRotation: context.xLabelRotation,
+         stacked: context.stacked
       }
    }
 

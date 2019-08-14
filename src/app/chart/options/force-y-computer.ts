@@ -8,14 +8,17 @@ export class ForceYComputer {
     * little difference each
     */
    compute(valueRange: ValueRange): number[] {
-      if (valueRange && valueRange.min !== valueRange.max &&
-         Math.sign(valueRange.min) === Math.sign(valueRange.max)) {
-         return Math.sign(valueRange.min) === 1 ? this.computeMin(valueRange) : this.computeMax(valueRange);
+      if (valueRange) {
+         const signMin = Math.sign(valueRange.min);
+         if (valueRange && valueRange.min !== valueRange.max &&
+            signMin === Math.sign(valueRange.max)) {
+            return signMin === 1 ? this.computePosValues(valueRange) : this.computeNegValues(valueRange);
+         }
       }
       return undefined;
    }
 
-   private computeMin(valueRange: ValueRange): number[] {
+   private computePosValues(valueRange: ValueRange): number[] {
       const diff = valueRange.max - valueRange.min;
       let min = valueRange.min - diff;
       if (valueRange.min > 10) {
@@ -27,7 +30,7 @@ export class ForceYComputer {
       return min < 0 && valueRange.min > 0 ? undefined : [min, undefined];
    }
 
-   private computeMax(valueRange: ValueRange): number[] {
+   private computeNegValues(valueRange: ValueRange): number[] {
       const diff = valueRange.max - valueRange.min;
       let max = valueRange.max + diff;
       if (valueRange.max < -10) {

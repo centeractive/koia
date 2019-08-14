@@ -31,6 +31,7 @@ export class ConfigToModelConverter {
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
       context.xLabelRotation = chart.xLabelRotation;
+      context.stacked = chart.stacked;
       return context;
    }
 

@@ -37,8 +37,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    entries$: Observable<Object[]>;
    loading: boolean;
 
-   private textColumns: Column[];
-   private numberColumns: Column[];
    private timeColumns: Column[];
    private configToModelConverter: ConfigToModelConverter;
    private modelToConfigConverter = new ModelToConfigConverter();
@@ -79,10 +77,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          .filter(c => c.indexed)
          .filter(c => c.name !== CouchDBConstants._ID);
       this.configToModelConverter = new ConfigToModelConverter(this.columns);
-      this.textColumns = this.columns
-         .filter(c => c.dataType === DataType.TEXT);
-      this.numberColumns = this.columns
-         .filter(c => c.dataType === DataType.NUMBER);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
       this.entriesSubscription = this.entries$.subscribe(entries => DateTimeUtils.defineTimeUnits(this.timeColumns, entries));
@@ -100,7 +94,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       const chartType = ChartType.BAR;
       const chartMargin = this.chartMarginService.marginOf(chartType);
       const context = new ChartContext(this.clonedColumns(), chartType.type, chartMargin);
-      context.groupByColumns = ChartUtils.guessGroupByColumns(context);
+      context.groupByColumns = ChartUtils.identifyGroupByColumns(context);
       context.query = this.query;
       this.elementContexts = this.elementContexts.concat([context]);
       this.configure(null, context);
@@ -208,7 +202,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          }
       });
    }
-   
+
    protected abstract onPreSaveView(view: View): void;
 
    printView(): void {

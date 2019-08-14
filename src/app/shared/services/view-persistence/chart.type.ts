@@ -7,4 +7,5 @@ export interface Chart extends ViewElement {
    showLegend: boolean;
    legendPosition: string;
    xLabelRotation: number;
+   stacked: boolean;
 }

@@ -410,7 +410,7 @@ describe('ChartOptionsProvider', () => {
       expect(label).toBe('abc (5)');
    });
 
-   it('#createOptions should create mouse event dispatchers when sunburst chart', () => {
+   it('#createOptions should create element click dispatcher when sunburst chart', () => {
 
       // given
       context.chartType = ChartType.SUNBURST.type;
@@ -422,16 +422,8 @@ describe('ChartOptionsProvider', () => {
       // then
       const dispatch = options['chart'].sunburst.dispatch;
       const event = <MouseEvent>{};
-      dispatch.chartClick(event);
       dispatch.elementClick(event);
-      dispatch.elementDblClick(event);
-      dispatch.elementMouseover(event);
-      dispatch.elementMouseout(event);
-      expect(console.warn).toHaveBeenCalledWith('chartClick', event);
       expect(console.warn).toHaveBeenCalledWith('elementClick', event);
-      expect(console.warn).toHaveBeenCalledWith('elementDblClick', event);
-      expect(console.warn).toHaveBeenCalledWith('elementMouseover', event);
-      expect(console.warn).toHaveBeenCalledWith('elementMouseout', event);
    });
 
    it('#createOptions should create render end dispatcher', () => {

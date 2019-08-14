@@ -378,6 +378,26 @@ describe('NumberUtils', () => {
     expect(NumberUtils.parseFloat('1,0,000.5')).toBeUndefined();
   });
 
+  it('#countDecimals should return zero when number is missing', () => {
+    expect(NumberUtils.countDecimals(null)).toBe(0);
+    expect(NumberUtils.countDecimals(undefined)).toBe(0);
+  });
+
+  it('#countDecimals should return zero when number has no decimals', () => {
+    expect(NumberUtils.countDecimals(-1)).toBe(0);
+    expect(NumberUtils.countDecimals(0)).toBe(0);
+    expect(NumberUtils.countDecimals(1)).toBe(0);
+  });
+
+  it('#countDecimals should return number of decimals when number has decimals', () => {
+    expect(NumberUtils.countDecimals(-1000.1234)).toBe(4);
+    expect(NumberUtils.countDecimals(-1.123)).toBe(3);
+    expect(NumberUtils.countDecimals(-0.12)).toBe(2);
+    expect(NumberUtils.countDecimals(0.12)).toBe(2);
+    expect(NumberUtils.countDecimals(1.123)).toBe(3);
+    expect(NumberUtils.countDecimals(1000.1234)).toBe(4);
+  });
+
   it('#countDigits should return zero when string is missing or empty', () => {
     expect(NumberUtils.countDigits(null)).toBe(0);
     expect(NumberUtils.countDigits(undefined)).toBe(0);

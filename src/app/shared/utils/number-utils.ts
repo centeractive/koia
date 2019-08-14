@@ -118,6 +118,16 @@ export class NumberUtils {
    }
 
    /**
+    * @returns the number of digits found after the decimal point
+    */
+   static countDecimals(num: number): number {
+      if (!num || Math.floor(num) === num) {
+         return 0;
+      }
+      return num.toString().split(NumberUtils.DECIMAL_SEPARATOR)[1].length || 0;
+   }
+
+   /**
     * @returns the number of digits found in the specified string
     */
    static countDigits(s: string): number {

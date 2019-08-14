@@ -4,6 +4,15 @@ describe('ForceYComputer', () => {
 
    const forceYComputer = new ForceYComputer();
 
+   it('#compute should return non-adjusted Y-axis when values is missing', () => {
+
+      // when
+      const forceY = forceYComputer.compute(undefined);
+
+      // then
+      expect(forceY).toBeUndefined();
+   });
+
    it('#compute should return non-adjusted Y-axis when all values are same', () => {
 
       // when

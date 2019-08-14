@@ -15,6 +15,7 @@ export class ChartContext extends ElementContext {
    private _legendPosition: string;
    private _valueAsPercent: boolean; // for PIE and DONUT chart only
    private _xLabelRoatation = -12;
+   private _stacked: boolean;
 
    // transient
    private _chart: any;
@@ -30,6 +31,7 @@ export class ChartContext extends ElementContext {
       this._showLegend = true;
       this._valueAsPercent = true;
       this._legendPosition = 'top';
+      this._stacked = false;
    }
 
    switchChartType(type: string, margin: Margin) {
@@ -133,6 +135,24 @@ export class ChartContext extends ElementContext {
          this._xLabelRoatation = rotation;
          this.fireLookChanged();
       }
+   }
+
+   /**
+    * indicates if the chart values are stacked
+    *
+    * the returned value may be affected by one of the follwoing ways:
+    * - by radio buttons on multibar charts that let you change between "Grouped" and "Stacked"
+    * - by [[ConfigToModelConverter#toChartContext]] when restoring a saved view
+    */
+   get stacked(): boolean {
+      if (this._chart && this._chart.multibar) {
+         return this._chart.multibar.stacked();
+      }
+      return this._stacked;
+   }
+
+   set stacked(stacked: boolean) {
+      this._stacked = stacked;
    }
 
    getContainer(): SVGElement {

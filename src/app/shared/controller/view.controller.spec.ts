@@ -1,7 +1,8 @@
 import { ViewController } from './view.controller';
-import { GraphContext, ChartType, ChartContext } from '../model';
+import { GraphContext, ChartType, ChartContext, ExportFormat, SummaryContext } from '../model';
 import { MatSidenav } from '@angular/material';
 import { View } from '../model/view-config';
+import { ExportService } from '../services';
 
 class ViewControllerTestable extends ViewController {
 
@@ -16,6 +17,7 @@ class ViewControllerTestable extends ViewController {
 
 describe('ViewController', () => {
 
+   const exportService = new ExportService();
    let viewController: ViewControllerTestable;
 
    beforeAll(() => {

@@ -9,9 +9,10 @@ import {
 } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService } from 'app/shared/services';
+import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
 import {
-  Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene } from 'app/shared/model';
+  Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat
+} from 'app/shared/model';
 import { StatusComponent } from 'app/shared/component/status/status.component';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { ViewController } from 'app/shared/controller';
@@ -48,6 +49,7 @@ describe('GridComponent', () => {
   const dialogService = new DialogService(null);
   const viewPersistenceService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
+  const exportService = new ExportService();
   let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
@@ -90,7 +92,8 @@ describe('GridComponent', () => {
         { provide: DialogService, useValue: dialogService },
         { provide: ViewPersistenceService, useValue: viewPersistenceService },
         { provide: ChartMarginService, useClass: ChartMarginService },
-        { provide: NotificationService, useValue: notificationService }
+        { provide: NotificationService, useValue: notificationService },
+        { provide: ExportService, useValue: exportService }
       ]
     })
       .overrideModule(MatIconModule, MatIconModuleMock.override())
@@ -439,6 +442,40 @@ describe('GridComponent', () => {
     // then
     expect(divContent.style.marginTop).toEqual((55 + ViewController.MARGIN_TOP) + 'px');
   });
+
+  it('#saveAs should export image when chart context is provided', () => {
+
+    // given
+    const chartContext = component.addChart();
+    spyOn(exportService, 'exportImage');
+
+    // when
+    component.saveAs(chartContext, ExportFormat.PNG);
+    fixture.detectChanges();
+
+    // then
+    expect(exportService.exportImage).toHaveBeenCalled();
+  });
+
+  /**
+   * TODO: fix me
+   *
+  it('#saveAs should export data when summary context is provided', fakeAsync(() => {
+
+    // given
+    const summaryContext = component.addSummaryTable();
+    spyOn(component.sidenav, 'open').and.returnValue(Promise.resolve());
+    spyOn(exportService, 'exportData');
+
+    // when
+    component.saveAs(summaryContext, ExportFormat.EXCEL);
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(exportService.exportData).toHaveBeenCalled();
+  }));
+  */
 
   function findColumn(name: string): Column {
     return scene.columns.find(c => c.name === name);

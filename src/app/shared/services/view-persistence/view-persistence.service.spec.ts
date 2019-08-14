@@ -35,7 +35,7 @@ describe('ViewPersistenceService', () => {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], valueGroupings: [],
       chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
-      legendPosition: 'top', xLabelRotation: -12
+      legendPosition: 'top', xLabelRotation: -12, stacked: false
     };
   });
 

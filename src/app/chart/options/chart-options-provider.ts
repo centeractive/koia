@@ -11,7 +11,7 @@ export class ChartOptionsProvider {
    static readonly MAX_LEGEND_ITEMS = 60;
 
    private rawDataReporter: RawDataRevealer;
-   private integerFormat = d3.format(',');
+   private numberFormat = d3.format('');
    private valueFormatter = new ValueFormatter();
    private forceYComputer = new ForceYComputer();
 
@@ -44,7 +44,7 @@ export class ChartOptionsProvider {
          donut: ChartType.fromType(context.chartType) === ChartType.DONUT,
          donutRatio: 0.35,
          labelType: context.valueAsPercent ? 'percent' : 'value',
-         valueFormat: this.integerFormat,
+         valueFormat: this.numberFormat,
          labelSunbeamLayout: true,
          tooltip: {
             valueFormatter: v => this.valueFormatter.formatValue(context.dataColumns[0], v),
@@ -62,14 +62,16 @@ export class ChartOptionsProvider {
       return {
          preserveAspectRatio: 'xMinYMin meet',
          showValues: false, // show value on top of each bar
-         valueFormat: this.integerFormat,
+         valueFormat: this.numberFormat,
          yAxis: {
+            showMaxMin: false,
             axisLabel: context.isAggregationCountSelected() ? 'Count' : context.dataColumns[0].name,
             axisLabelDistance: context.margin.left - 70,
             tickPadding: 8
          },
          forceY: this.forceYComputer.compute(context.valueRange),
          xAxis: {
+            showMaxMin: false,
             axisLabel: context.isAggregationCountSelected() ? undefined : context.groupByColumns[0].name,
             axisLabelDistance: context.margin.bottom - 50,
             tickFormat: v => this.barKeyFormat(context, v),
@@ -94,18 +96,21 @@ export class ChartOptionsProvider {
 
    private multiBarChartOptions(context: ChartContext): Object {
       return {
+         stacked: context.stacked,
          preserveAspectRatio: 'xMinYMin meet',
          staggerLabels: true, // Too many bars and not enough room? Try staggering labels
          showYAxis: true,
          yAxis: {
+            showMaxMin: false,
             axisLabel: context.isAggregationCountSelected() ? 'Count' : context.dataColumns[0].name,
             axisLabelDistance: context.margin.left - 70,
             tickPadding: 8,
-            tickFormat: this.integerFormat
+            tickFormat: this.numberFormat
          },
          focus: true,
          showXAxis: true,
          xAxis: {
+            showMaxMin: false,
             orient: 'bottom',
             axisLabel: this.xAxisLabel(context),
             axisLabelDistance: context.margin.bottom - 50,
@@ -122,12 +127,14 @@ export class ChartOptionsProvider {
 
    private multiBarHorizontalChartOptions(context: ChartContext): Object {
       return {
+         stacked: context.stacked,
          staggerLabels: true, // Too many bars and not enough room? Try staggering labels
          showYAxis: true,
          yAxis: { // X-Axis from user point of view
+            showMaxMin: false,
             axisLabel: context.isAggregationCountSelected() ? 'Count' : context.dataColumns[0].name,
             orient: 'bottom',
-            tickFormat: this.integerFormat,
+            tickFormat: this.numberFormat,
             rotateLabels: context.xLabelRotation
          },
          showXAxis: true,
@@ -151,18 +158,14 @@ export class ChartOptionsProvider {
       return {
          groupColorByParent: true,
          mode: 'value',
-         labelFormat: n => n['name'] + ' (' + this.integerFormat(n['value']) + ')',
+         labelFormat: n => n['name'] + ' (' + this.numberFormat(n['value']) + ')',
          color: d3.scale.category20c(),
          tooltip: {
-            valueFormatter: this.integerFormat
+            valueFormatter: this.numberFormat
          },
          sunburst: {
             dispatch: {
-               chartClick: e => console.warn('chartClick', e),
-               elementClick: e => console.warn('elementClick', e),
-               elementDblClick: e => console.warn('elementDblClick', e),
-               elementMouseover: e => console.warn('elementMouseover', e),
-               elementMouseout: e => console.warn('elementMouseout', e)
+               elementClick: e => console.warn('elementClick', e)
             }
          }
       };
@@ -174,14 +177,16 @@ export class ChartOptionsProvider {
          isArea: context.chartType === ChartType.AREA.type,
          showXAxis: true,
          yAxis: {
+            showMaxMin: false,
             axisLabel: context.isAggregationCountSelected() ? 'Count' :
                (context.dataColumns.length === 1 ? context.dataColumns[0].name : 'Value'),
             axisLabelDistance: context.margin.left - 70,
             tickPadding: 8,
-            tickFormat: this.integerFormat
+            tickFormat: this.numberFormat
          },
          showYAxis: true,
          xAxis: {
+            showMaxMin: false,
             orient: 'bottom',
             axisLabel: this.xAxisLabel(context),
             rotateLabels: context.xLabelRotation,
@@ -193,7 +198,7 @@ export class ChartOptionsProvider {
             tickFormat: v => ''
          },
          tooltip: {
-            valueFormatter: this.integerFormat
+            valueFormatter: this.numberFormat
          },
          lines: {
             dispatch: this.trendChartDispatchOptions(context)

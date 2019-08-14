@@ -80,7 +80,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   private defineGroupByColumns(): void {
     if (this.context.groupByColumns.length === 0) {
-      this.context.groupByColumns = ChartUtils.guessGroupByColumns(this.context);
+      this.context.groupByColumns = ChartUtils.identifyGroupByColumns(this.context);
     }
   }
 

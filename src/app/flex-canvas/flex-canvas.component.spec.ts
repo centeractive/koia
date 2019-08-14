@@ -9,10 +9,10 @@ import {
 import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-resizable-element';
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService } from 'app/shared/services';
+import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
 import {
   Column, StatusType, SummaryContext, ChartContext, GraphContext, Route, ChartType,
-  DataType, Scene
+  DataType, Scene, ExportFormat
 } from 'app/shared/model';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { ViewController } from 'app/shared/controller';
@@ -57,6 +57,7 @@ describe('FlexCanvasComponent', () => {
   const dialogService = new DialogService(null);
   const viewPersistenceService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
+  const exportService = new ExportService();
   let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
@@ -100,7 +101,8 @@ describe('FlexCanvasComponent', () => {
         { provide: DialogService, useValue: dialogService },
         { provide: ViewPersistenceService, useValue: viewPersistenceService },
         { provide: ChartMarginService, useClass: ChartMarginService },
-        { provide: NotificationService, useValue: notificationService }
+        { provide: NotificationService, useValue: notificationService },
+        { provide: ExportService, useValue: exportService }
       ]
     })
       .overrideModule(MatIconModule, MatIconModuleMock.override())
@@ -487,6 +489,40 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(window.print).toHaveBeenCalled();
   }));
+
+  it('#saveAs should export image when chart context is provided', () => {
+
+    // given
+    const chartContext = component.addChart();
+    spyOn(exportService, 'exportImage');
+
+    // when
+    component.saveAs(chartContext, ExportFormat.PNG);
+    fixture.detectChanges();
+
+    // then
+    expect(exportService.exportImage).toHaveBeenCalled();
+  });
+
+  /**
+   * TODO: fix me
+   *
+  it('#saveAs should export data when summary context is provided', fakeAsync(() => {
+
+    // given
+    const summaryContext = component.addSummaryTable();
+    spyOn(component.sidenav, 'open').and.returnValue(Promise.resolve());
+    spyOn(exportService, 'exportData');
+
+    // when
+    component.saveAs(summaryContext, ExportFormat.EXCEL);
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(exportService.exportData).toHaveBeenCalled();
+  }));
+  */
 
   function findColumn(name: string): Column {
     return scene.columns.find(c => c.name === name);
