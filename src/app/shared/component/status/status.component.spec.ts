@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_BOTTOM_SHEET_DATA } from '@angular/material';
 import { StatusComponent } from './status.component';
-import { StatusType, Status } from '../shared/model';
+import { StatusType, Status } from '../../model';
 
 describe('StatusComponent', () => {
 

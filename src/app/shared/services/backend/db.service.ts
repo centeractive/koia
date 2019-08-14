@@ -213,14 +213,14 @@ export class DBService {
   }
 
   /**
-   * @returns min and max value of the specified time column
+   * @returns min and max value of the specified number or time column
    */
-  async timeRangeOf(timeColumn: Column): Promise<ValueRange> {
+  async numberRangeOf(timeColumn: Column): Promise<ValueRange> {
     const valueRange: ValueRange = { min: undefined, max: undefined };
-    return this.firstTimeOf(timeColumn, 'asc')
+    return this.firstNumberOf(timeColumn, 'asc')
       .then(min => {
         valueRange.min = min;
-        return this.firstTimeOf(timeColumn, 'desc');
+        return this.firstNumberOf(timeColumn, 'desc');
       })
       .then(max => {
         valueRange.max = max;
@@ -228,7 +228,7 @@ export class DBService {
       });
   }
 
-  private async firstTimeOf(timeColumn: Column, sortDirection: SortDirection): Promise<number> {
+  private async firstNumberOf(timeColumn: Column, sortDirection: SortDirection): Promise<number> {
     const mangoQuery = new MangoQueryBuilder(false, [timeColumn])
       .where(timeColumn.name, Operator.GREATER_THAN, null)
       .sortBy({ active: timeColumn.name, direction: sortDirection })

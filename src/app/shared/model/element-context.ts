@@ -6,6 +6,7 @@ import { ValueGrouping } from './value-grouping.type';
 import { ArrayUtils } from '../utils/array-utils';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
+import { DataType } from './data-type.enum';
 
 export abstract class ElementContext {
 
@@ -201,6 +202,10 @@ export abstract class ElementContext {
 
    get columns(): Column[] {
       return this._columns;
+   }
+
+   getNumericColumns(): Column[] {
+      return this._columns.filter(c => c.dataType === DataType.NUMBER || c.dataType === DataType.TIME);
    }
 
    get entries(): Object[] {

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
-import { Column, PivotContext, ValueGrouping, ValueRange, DataType } from '../shared/model';
+import { Column, PivotContext, ValueGrouping, ValueRange, DataType } from '../../shared/model';
 import { IDataFrame, ISeries } from 'data-forge';
 import { NumberUtils, ArrayUtils, ValueGroupingGenerator } from 'app/shared/utils';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';

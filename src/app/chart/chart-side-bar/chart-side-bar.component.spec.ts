@@ -198,7 +198,7 @@ describe('ChartSideBarComponent', () => {
     });
   });
 
-  it('#click on data column should remove data column when multiple data columns are selected', () => {
+  it('#click on data column should remove data column when it was selected with another data columns', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
@@ -276,6 +276,21 @@ describe('ChartSideBarComponent', () => {
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
     expect(component.countDistinctValuesEnabled).toBeFalsy();
     expect(component.individualValuesEnabled).toBeTruthy();
+  });
+
+  it('#click on data column should replace group by column when data column was used as group by column', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    context.dataColumns = [findColumn('Amount')];
+    context.groupByColumns = [findColumn('Percent')];
+    const butDataColumn = findDataColumnButton('Percent');
+
+    // when
+    butDataColumn.click();
+
+    // then
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
   });
 
   it('#onColumnNameChanged should set aggregation type COUNT if column has text type', () => {

@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ChartContext, ChartType, Aggregation, DataType, Column, GroupingType } from '../shared/model';
+import { ChartContext, ChartType, Aggregation, DataType, Column, GroupingType } from '../../shared/model';
 import { SideBarController } from 'app/shared/controller';
 import { ChartMarginService } from 'app/shared/services/chart-margin.service';
-import { DataTypeUtils } from 'app/shared/utils';
+import { DataTypeUtils, ChartUtils } from 'app/shared/utils';
 
 @Component({
   selector: 'koia-chart-side-bar',
@@ -32,14 +32,12 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   }
 
   protected defineSelectableItems() {
-    if (this.context) {
-      this.selectableDataColumns = this.context.columns
-        .filter(c => c.indexed)
-        .filter(c => c.dataType !== DataType.TIME);
-      this.selectedGroupByColumns = this.context.groupByColumns;
-      if (this.selectedGroupByColumns.length > 0 && this.selectedGroupByColumns[0].dataType === DataType.TIME) {
-        this.groupByTimeColumn = this.selectedGroupByColumns[0];
-      }
+    this.selectableDataColumns = this.context.columns
+      .filter(c => c.indexed)
+      .filter(c => c.dataType !== DataType.TIME);
+    this.selectedGroupByColumns = this.context.groupByColumns;
+    if (this.selectedGroupByColumns.length > 0 && this.selectedGroupByColumns[0].dataType === DataType.TIME) {
+      this.groupByTimeColumn = this.selectedGroupByColumns[0];
     }
     super.defineSelectableItems();
   }
@@ -52,6 +50,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     if (chartType.groupingType === GroupingType.NONE) {
       if (this.context.dataColumns.length > 1) {
         this.context.dataColumns = this.context.dataColumns.slice(0, 1);
+        this.defineGroupByColumns();
       }
     } else if (this.context.isNonGrouping() && !DataTypeUtils.containsNonNumericColumns(this.context.dataColumns)) {
       this.context.aggregations = [];
@@ -74,8 +73,15 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     } else {
       this.context.addDataColumn(column);
     }
+    this.defineGroupByColumns();
     this.adjustAggregation();
     this.defineSelectableItems();
+  }
+
+  private defineGroupByColumns(): void {
+    if (this.context.groupByColumns.length === 0) {
+      this.context.groupByColumns = ChartUtils.guessGroupByColumns(this.context);
+    }
   }
 
   private adjustAggregation(): void {

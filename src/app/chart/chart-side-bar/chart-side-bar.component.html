@@ -69,14 +69,14 @@
    <mat-expansion-panel *ngIf="!context.isNonGrouping()">
       <mat-expansion-panel-header>{{ groupingPanelName() }}</mat-expansion-panel-header>
 
-      <mat-form-field *ngIf="!context.isMultipleGrouping() && getNumericColumns().length > 0">
+      <mat-form-field *ngIf="!context.isMultipleGrouping() && elementContext.getNumericColumns().length > 0">
          <mat-select placeholder="Group by" [value]="getSingleGroupByColumn()">
             <mat-select-trigger>
                <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
                   {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
                {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
             </mat-select-trigger>
-            <mat-option *ngFor="let column of getNumericColumns()" [value]="column"
+            <mat-option *ngFor="let column of elementContext.getNumericColumns()" [value]="column"
                (click)="onGroupByColumnChanged(column)">
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                {{ column.name }}

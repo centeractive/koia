@@ -524,10 +524,10 @@ describe('DBService', () => {
       .catch(err => fail(err));
   });
 
-  it('#timeRangeOf should return undefined time range when no entries exist', async () => {
+  it('#numberRangeOf should return undefined time range when no entries exist', async () => {
 
     // when
-    await dbService.timeRangeOf(findColumn('Time'))
+    await dbService.numberRangeOf(findColumn('Time'))
       .then(vr => {
 
         // then
@@ -537,13 +537,13 @@ describe('DBService', () => {
       .catch(e => fail(e));
   });
 
-  it('#timeRangeOf should return time range when entries exist', async () => {
+  it('#numberRangeOf should return time range when entries exist', async () => {
 
     // given
     await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
 
     // when
-    await dbService.timeRangeOf(findColumn('Time'))
+    await dbService.numberRangeOf(findColumn('Time'))
       .then(vr => {
 
         // then

@@ -133,7 +133,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   findConfigRecords(): ConfigRecord[] {
-    return this.viewPersistenceService.findRecords(this.scene, this.route);
+    return this.scene ? this.viewPersistenceService.findRecords(this.scene, this.route) : [];
   }
 
   loadConfig(configRecord: ConfigRecord): void {
@@ -144,7 +144,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   saveConfig(): void {
-    const data = new InputDialogData('Save View', 'View Name', '');
+    const data = new InputDialogData('Save View', 'View Name', '', 20);
     const dialogRef = this.dialogService.showInputDialog(data);
     dialogRef.afterClosed().toPromise().then(r => {
       if (data.closedWithOK) {

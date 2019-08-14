@@ -17,6 +17,7 @@ import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
 import { MatIconModuleMock } from 'app/shared/test';
+import { NumberRangeFilter } from './number-range-filter';
 
 @Component({ template: '' })
 class DummyComponent { }
@@ -26,7 +27,7 @@ describe('MainToolbarComponent', () => {
   let now: number;
   let scene: Scene;
   let entries: Object[];
-  let timeValueRange: ValueRange;
+  let valueRange: ValueRange;
   let component: MainToolbarComponent;
   let fixture: ComponentFixture<MainToolbarComponent>;
   const dbService = new DBService(null);
@@ -59,7 +60,7 @@ describe('MainToolbarComponent', () => {
     ];
     const timeMin = entries[0]['Time'];
     const timeMax = entries[entries.length - 1]['Time'];
-    timeValueRange = { min: timeMin, max: timeMax };
+    valueRange = { min: timeMin, max: timeMax };
   });
 
   beforeEach(async(() => {
@@ -84,7 +85,7 @@ describe('MainToolbarComponent', () => {
     fixture = TestBed.createComponent(MainToolbarComponent);
     component = fixture.componentInstance;
     spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    spyOn(dbService, 'timeRangeOf').and.returnValue(Promise.resolve(timeValueRange));
+    spyOn(dbService, 'numberRangeOf').and.returnValue(Promise.resolve(valueRange));
     spyOn(dbService, 'findEntries').and.returnValue(of(entries));
     fixture.detectChanges();
     flush();
@@ -150,7 +151,7 @@ describe('MainToolbarComponent', () => {
     component.route = Route.GRID;
     const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
     component.router = <Router>{ events: of(event) };
-    const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
+    const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null);
     const prevTimeRangeOptions = timeRangeFilter.rangeOptions;
     component.rangeFilters = [timeRangeFilter];
     expect(prevTimeRangeOptions).toBeTruthy();
@@ -166,6 +167,30 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters[0].defineRangeOptions).toHaveBeenCalledTimes(1);
   }));
+
+  it('#availableOperatorsOf should return all operators when column has TEXT data type', () => {
+
+    // given
+    const operators = Object.keys(Operator)
+      .map(key => Operator[key]);
+
+    // when / then
+    expect(component.availableOperatorsOf('Level')).toEqual(operators);
+    expect(component.availableOperatorsOf('Host')).toEqual(operators);
+    expect(component.availableOperatorsOf('Path')).toEqual(operators);
+  });
+
+  it('#availableOperatorsOf should return all operators but CONTAINS when column has not TEXT data type', () => {
+
+    // given
+    const operators = Object.keys(Operator)
+      .map(key => Operator[key])
+      .filter(o => o !== Operator.CONTAINS);
+
+    // when / then
+    expect(component.availableOperatorsOf('Time')).toEqual(operators);
+    expect(component.availableOperatorsOf('Amount')).toEqual(operators);
+  });
 
   it('#refreshEntries should emit filter change with no time', () => {
 
@@ -187,9 +212,9 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.query = new Query();
-    const timeRangeFilter = new TimeRangeFilter(column('Time'), timeValueRange.min, timeValueRange.max, null);
-    timeRangeFilter.selStart = timeValueRange.min + 1000;
-    timeRangeFilter.selEnd = timeValueRange.max - 1000;
+    const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null);
+    timeRangeFilter.selStart = valueRange.min + 1000;
+    timeRangeFilter.selEnd = valueRange.max - 1000;
     component.rangeFilters = [timeRangeFilter];
     const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
 
@@ -201,8 +226,8 @@ describe('MainToolbarComponent', () => {
     const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
     const valueRangeFilter = query.findValueRangeFilter('Time');
     expect(valueRangeFilter).toBeDefined();
-    expect(valueRangeFilter.valueRange.min).toBe(timeValueRange.min + 1000);
-    expect(valueRangeFilter.valueRange.max).toBe(timeValueRange.max - 1000);
+    expect(valueRangeFilter.valueRange.min).toBe(valueRange.min + 1000);
+    expect(valueRangeFilter.valueRange.max).toBe(valueRange.max - 1000);
   });
 
   it('raw data button should point to raw data view', () => {
@@ -321,7 +346,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters.length).toBe(1);
-    expect(dbService.timeRangeOf).toHaveBeenCalledWith(column('Time'));
+    expect(dbService.numberRangeOf).toHaveBeenCalledWith(column('Time'));
   }));
 
   it('pressing <enter> in column filter field should emit onFilterChange', fakeAsync(() => {
@@ -375,6 +400,76 @@ describe('MainToolbarComponent', () => {
     const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
   }));
+
+  it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
+
+    // when
+    component.addRangeFilter(column('Time'), null);
+    flush();
+
+    // then
+    expect(component.rangeFilters.length).toBe(1);
+    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTruthy();
+    const timeRangeFilter = <TimeRangeFilter> component.rangeFilters[0];
+    expect(timeRangeFilter.start).toBe(valueRange.min);
+    expect(timeRangeFilter.end).toBe(valueRange.max);
+  }));
+
+  it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
+
+    // when
+    component.addRangeFilter(column('Amount'), null);
+    flush();
+
+    // then
+    expect(component.rangeFilters.length).toBe(1);
+    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTruthy();
+    const numberRangeFilter = <NumberRangeFilter> component.rangeFilters[0];
+    expect(numberRangeFilter.start).toBe(valueRange.min);
+    expect(numberRangeFilter.end).toBe(valueRange.max);
+  }));
+
+  it('#onColumnFilterNameChanged should refresh entries when filter is applicable', () => {
+
+    // given
+    const columnFilter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR');
+    component.columnFilters = [columnFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.onColumnFilterNameChanged(columnFilter, column('Host'));
+
+    // then
+    expect(component.refreshEntries).toHaveBeenCalled();
+  });
+
+  it('#onColumnFilterNameChanged should not refresh entries when filter is not applicable', () => {
+
+    // given
+    const columnFilter = new PropertyFilter('Level', Operator.EQUAL, '');
+    component.columnFilters = [columnFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.onColumnFilterNameChanged(columnFilter, column('Host'));
+
+    // then
+    expect(component.refreshEntries).not.toHaveBeenCalled();
+  });
+
+  it('#onColumnFilterNameChanged should change operator when CONTAINS with non TEXT column', () => {
+
+    // given
+    const columnFilter = new PropertyFilter('Level', Operator.CONTAINS, 'ERR');
+    component.columnFilters = [columnFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.onColumnFilterNameChanged(columnFilter, column('Amount'));
+
+    // then
+    expect(columnFilter.operator).toBe(Operator.EQUAL);
+  });
 
   it('#removeColumnFilter should emit onFilterChange when removed filter was effective', () => {
 
@@ -507,6 +602,34 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].selEnd).toBe(timeEnd);
     expect(component.onFilterChange.emit).toHaveBeenCalled();
   }));
+
+  it('#removeRangeFilter should refresh entries when range filter was filtered', () => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 });
+    component.rangeFilters = [rangeFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.removeRangeFilter(rangeFilter);
+
+    // then
+    expect(component.refreshEntries).toHaveBeenCalled();
+  });
+
+  it('#removeRangeFilter should not refresh entries when range filter was not filtered', () => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 1, max: 10 });
+    component.rangeFilters = [rangeFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.removeRangeFilter(rangeFilter);
+
+    // then
+    expect(component.refreshEntries).not.toHaveBeenCalled();
+  });
 
   function createScene(id: string, context: ContextInfo[], columns: Column[]): Scene {
     return {

@@ -98,6 +98,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /side-bar.controller\.spec\.ts$/);
 
 // const context = require.context('./', true, /array-utils\.spec\.ts$/);
+// const context = require.context('./', true, /chart-utils\.spec\.ts$/);
 // const context = require.context('./', true, /common-utils\.spec\.ts$/);
 // const context = require.context('./', true, /date-time-utils\.spec\.ts$/);
 // const context = require.context('./', true, /number-utils\.spec\.ts$/);

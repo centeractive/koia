@@ -12,7 +12,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService } from 'app/shared/services';
 import {
   Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene } from 'app/shared/model';
-import { StatusComponent } from 'app/status/status.component';
+import { StatusComponent } from 'app/shared/component/status/status.component';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
@@ -20,7 +20,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Router } from '@angular/router';
-import { View } from 'app/shared/model/view-config';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })

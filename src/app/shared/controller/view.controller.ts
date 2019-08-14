@@ -3,7 +3,7 @@ import {
    DataType, ExportFormat
 } from '../model';
 import { Observable, Subscription } from 'rxjs';
-import { DateTimeUtils, ArrayUtils, CommonUtils } from '../utils';
+import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
 import { MatSidenav, MatBottomSheet } from '@angular/material';
 import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService, DialogService } from '../services';
@@ -100,25 +100,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       const chartType = ChartType.BAR;
       const chartMargin = this.chartMarginService.marginOf(chartType);
       const context = new ChartContext(this.clonedColumns(), chartType.type, chartMargin);
-      context.groupByColumns = [this.identifyXAxisColumn(context)];
+      context.groupByColumns = ChartUtils.guessGroupByColumns(context);
       context.query = this.query;
       this.elementContexts = this.elementContexts.concat([context]);
       this.configure(null, context);
       return context;
-   }
-
-   private identifyXAxisColumn(context: ChartContext): Column {
-      let xAxisColumn: Column;
-      if (this.timeColumns.length > 0) {
-         xAxisColumn = this.timeColumns[0];
-      } else if (this.numberColumns.length > 0) {
-         xAxisColumn = this.numberColumns[0];
-      } else if (this.textColumns.length > 0) {
-         xAxisColumn = this.textColumns[0];
-      } else {
-         return context.columns[0];
-      }
-      return context.columns.find(c => c.name === xAxisColumn.name);
    }
 
    addGraph(): GraphContext {
@@ -194,7 +180,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    findViews(): View[] {
-      return this.viewPersistenceService.findViews(this.scene, this.route);
+      return this.scene ? this.viewPersistenceService.findViews(this.scene, this.route) : [];
    }
 
    loadView(view: View): void {
@@ -211,7 +197,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.notifyWarning('View contains no elements');
          return;
       }
-      const data = new InputDialogData('Save View', 'View Name', '');
+      const data = new InputDialogData('Save View', 'View Name', '', 20);
       const dialogRef = this.dialogService.showInputDialog(data);
       dialogRef.afterClosed().toPromise().then(r => {
          if (data.closedWithOK) {

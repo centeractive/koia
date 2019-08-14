@@ -16,7 +16,7 @@ describe('InputDialogComponent', () => {
     const dialogRef = <MatDialogRef<InputDialogComponent>>{
       close(): void { }
     };
-    dialogData = new InputDialogData('Save View', 'View Name', 'abc');
+    dialogData = new InputDialogData('Save View', 'View Name', 'abc', 10);
     TestBed.configureTestingModule({
       declarations: [InputDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],

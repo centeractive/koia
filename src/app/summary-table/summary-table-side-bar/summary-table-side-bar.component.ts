@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { SummaryContext, Aggregation, DataType, Column } from '../shared/model';
+import { SummaryContext, Aggregation, DataType, Column } from '../../shared/model';
 import { SideBarController } from 'app/shared/controller';
 
 @Component({

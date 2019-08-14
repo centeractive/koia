@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA } from '@angular/material';
-import { Status } from '../shared/model';
+import { Status } from '../../model';
 
 @Component({
   selector: 'koia-status',

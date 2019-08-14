@@ -24,7 +24,7 @@ export abstract class SideBarController implements OnChanges {
    gridColumnSpans: number[];
    readonly gridRowSpans: number[] = [1, 2, 3, 4];
    elementPositions: number[];
-   private elementContext: ElementContext;
+   elementContext: ElementContext;
    private valueGroupingGenerator = new ValueGroupingGenerator();
 
    ngOnChanges(changes: SimpleChanges): void {
@@ -125,11 +125,6 @@ export abstract class SideBarController implements OnChanges {
 
    isNumberKey(event: KeyboardEvent): boolean {
       return NumberUtils.isNumberKey(event);
-   }
-
-
-   getNumericColumns(): Column[] {
-      return this.elementContext.columns.filter(c => this.isNumericColumn(c));
    }
 
    isNumericColumn(column: Column): boolean {

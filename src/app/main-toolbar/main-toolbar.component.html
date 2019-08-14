@@ -49,7 +49,7 @@
         <mat-menu #nonTimeColumnsMenu="matMenu">
           <button mat-menu-item *ngFor="let column of nonTimeColumns"
             [disabled]="column.name === columnFilter.propertyName"
-            (click)="onColumnFilterChanged(columnFilter, column)">
+            (click)="onColumnFilterNameChanged(columnFilter, column)">
             <span>&nbsp;{{ column.name }}</span>
           </button>
         </mat-menu>

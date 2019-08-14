@@ -1,4 +1,4 @@
-<mat-progress-bar *ngIf="computing" mode="indeterminate"></mat-progress-bar>
+<mat-progress-bar *ngIf="computing" mode="indeterminate" color="accent"></mat-progress-bar>
 <div #content [id]="gridView ? 'div_table_gridview' : 'div_table'">
   <table mat-table *ngIf="frameData && rowSpans" [dataSource]="frameData" matSort (matSortChange)="sort($event)"
     [matSortActive]="currentSort.active" [matSortDirection]="currentSort.direction">

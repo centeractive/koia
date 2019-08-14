@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatBottomSheet } from '@angular/material';
 import { Status, StatusType } from '../model';
-import { StatusComponent } from 'app/status/status.component';
+import { StatusComponent } from 'app/shared/component/status/status.component';
 
 @Injectable()
 export class NotificationService {

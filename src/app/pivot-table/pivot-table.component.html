@@ -54,6 +54,7 @@
         </button>
       </mat-menu>
 
+      &nbsp;&nbsp;&nbsp;
       <button class="but_config" *ngIf="allowsForValueGrouping" mat-button mat-icon-button
         matTooltip="Define Value Grouping..." (click)="sidenav.open()">
         <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
@@ -102,7 +103,7 @@
   </div>
 
   <div #content class="div_table mat-elevation-z8">
-    <mat-progress-bar *ngIf="computing" mode="indeterminate"></mat-progress-bar>
+    <mat-progress-bar *ngIf="computing" mode="indeterminate" color="accent"></mat-progress-bar>
     <div class="printable" #pivot id="pivot"></div>
   </div>
 

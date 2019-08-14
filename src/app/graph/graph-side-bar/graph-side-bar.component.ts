@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { GraphContext } from '../shared/model';
+import { GraphContext } from '../../shared/model';
 import { SideBarController } from 'app/shared/controller/side-bar.controller';
 
 @Component({

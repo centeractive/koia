@@ -7,7 +7,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
                 <mat-card-subtitle>{{ data.title }}</mat-card-subtitle>
                 <mat-card-content>
                   <mat-form-field>
-                    <input id="host" matInput type="text" [placeholder]="data.inputName" required [(ngModel)]="data.input">
+                    <input id="host" matInput type="text" [placeholder]="data.inputName" required
+                           maxlength="{{ data.maxLength }}" [(ngModel)]="data.input">
                   </mat-form-field>
                   <div>
                     <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
@@ -39,7 +40,7 @@ export class InputDialogData {
   input: string;
   closedWithOK = false;
 
-  constructor(public readonly title: string, public readonly inputName: string, initialValue: string) {
+  constructor(public readonly title: string, public readonly inputName: string, initialValue: string, public maxLength: number) {
     this.input = initialValue;
   }
 }

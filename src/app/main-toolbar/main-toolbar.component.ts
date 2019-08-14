@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene, ValueRange } from '../shared/model';
-import { CommonUtils, ArrayUtils, DataTypeUtils } from 'app/shared/utils';
+import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
 import { NumberRangeFilter } from './number-range-filter';
@@ -45,26 +45,12 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   constructor(public router: Router, private dbService: DBService) {
     this.operators = Object.keys(Operator).map(key => Operator[key]);
-    this.identifyCurrentUrl();
-  }
-
-  private identifyCurrentUrl(): void {
-    if (this.router.events) {
-      this.router.events.subscribe(e => {
-        if (e instanceof NavigationEnd) {
-          this.currURL = CommonUtils.extractBaseURL((<NavigationEnd>e).urlAfterRedirects);
-
-          console.log('this.currURL: ' + this.currURL + '(urlRawdata: ' + this.urlRawdata + ')');
-        }
-      });
-    }
   }
 
   ngOnInit() {
+    this.currURL = '/' + this.route;
     this.scene = this.dbService.getActiveScene();
-    if (!this.scene) {
-      this.router.navigateByUrl(Route.SCENES);
-    } else {
+    if (this.scene) {
       this.listenOnNavigationEvents();
       this.nonTimeColumns = this.scene.columns.filter(c => c.dataType !== DataType.TIME);
       this.timeColumns = this.scene.columns.filter(c => c.dataType === DataType.TIME);
@@ -73,12 +59,12 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   }
 
   /**
-   * This method is a workaround. It prevents us from seeing the time slider in a wrong state after the window was resized
-   * while another view was active. In such cases, both hendles of the slider were shown at the time range start point.
+   * This method is a workaround. It prevents us from seeing time sliders in a wrong state after the window was resized
+   * while another view was active. In such cases, both handles of the sliders were shown at the time range start point.
    *
    * 1. we listen on navigation events in order to detect when the parent view gets activated.
-   * 2. when #ngAfterViewChecked is invoked after such an event, we re-create the time slide options, thus forcing an update
-   * of the ng5-slider.
+   * 2. when #ngAfterViewChecked is invoked after such an event, we re-create the time slide options, thus forcing updates
+   * of the ng5-sliders.
    *
    * @see #ngAfterViewChecked
    */
@@ -139,8 +125,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     return DataTypeUtils.iconOf(dataType);
   }
 
-  private addRangeFilter(column: Column, selValueRange: ValueRange): void {
-    this.dbService.timeRangeOf(column)
+  addRangeFilter(column: Column, selValueRange: ValueRange): void {
+    this.dbService.numberRangeOf(column)
       .then(vr => {
         if (column.dataType === DataType.TIME) {
           this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange));
@@ -151,12 +137,14 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       });
   }
 
-  onColumnFilterChanged(filter: PropertyFilter, column: Column): void {
+  onColumnFilterNameChanged(filter: PropertyFilter, column: Column): void {
     filter.propertyName = column.name;
     if (column.dataType !== DataType.TEXT && filter.operator === Operator.CONTAINS) {
       filter.operator = Operator.EQUAL;
     }
-    this.refreshEntries();
+    if (filter.isApplicable()) {
+      this.refreshEntries();
+    }
   }
 
   removeColumnFilter(columnFilter: PropertyFilter): void {

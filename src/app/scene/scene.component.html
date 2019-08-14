@@ -35,7 +35,8 @@
       <button mat-button mat-icon-button color="primary" matTooltip="Select file" (click)="fileInput.click()">
         <mat-icon>folder</mat-icon>
       </button>
-      <input #fileInput id="fileInput" hidden type="file" [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
+      <input #fileInput id="fileInput" hidden type="file"
+        [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
       <mat-form-field class="file_name" *ngIf="file">
         <input matInput type="text" placeholder="File Name" readonly [value]="file.name">
       </mat-form-field>
@@ -49,7 +50,7 @@
     <mat-expansion-panel *ngIf="fileHeader" expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          <mat-icon color="primary">looks_two</mat-icon>&nbsp;{{ selectedReader.getSourceName() }} Source Attributes          
+          <mat-icon color="primary">looks_two</mat-icon>&nbsp;{{ selectedReader.getSourceName() }} Source Attributes
         </mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field>
@@ -187,6 +188,7 @@
   </div>
   <div id="div_progress" *ngIf="progressBarMode">
     {{ feedback }}
-    <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"></mat-progress-bar>
+    <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
+      [color]="progressBarMode === 'determinate' ? 'accent' : ''"></mat-progress-bar>
   </div>
 </mat-card>

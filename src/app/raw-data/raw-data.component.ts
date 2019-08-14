@@ -24,7 +24,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild(MatPaginator, undefined) paginator: MatPaginator;
 
-  readonly route = Route.PIVOT;
+  readonly route = Route.RAWDATA;
   columns: Column[];
   columnNames: string[];
   entries: Object[];
