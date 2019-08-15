@@ -109,7 +109,7 @@ describe('PivotTableComponent', () => {
       [{ name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.MILLISECOND, indexed: true }]);
   });
 
-  it('should fetch entries and build data frame', fakeAsync(() => {
+  it('should fetch entries and build data frame', () => {
     const format = 'd MMM yyyy HH:mm:ss SSS';
     const expectedData = [
       { ID: 1, Level: 'INFO', Data: 'one', Amount: 10, Time: datePipe.transform(now - 1000, format) },
@@ -119,7 +119,7 @@ describe('PivotTableComponent', () => {
     ]
     expect(dbService.findEntries).toHaveBeenCalled();
     expect(component.dataFrame.toArray()).toEqual(expectedData);
-  }));
+  });
 
   it('#onTimeUnitChanged should change selected time unit and refresh data', fakeAsync(() => {
 
@@ -152,6 +152,7 @@ describe('PivotTableComponent', () => {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
+      autoGenerateValueGroupings: true,
       pivotOptions: { a: 1, b: 2 }
     };
     const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };
@@ -175,6 +176,7 @@ describe('PivotTableComponent', () => {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
+      autoGenerateValueGroupings: true,
       pivotOptions: { a: 1, b: 2 }
     };
     const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };

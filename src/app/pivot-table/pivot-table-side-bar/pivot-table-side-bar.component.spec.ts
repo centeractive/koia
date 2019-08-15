@@ -1,6 +1,6 @@
 import { async, TestBed, ComponentFixture } from '@angular/core/testing';
 
-import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import {
   MatSlideToggleModule, MatButtonModule, MatIconModule, MatExpansionModule,
   MatFormFieldModule, MatSelectModule, MatSlideToggle
@@ -65,6 +65,7 @@ describe('PivotTableSideBarComponent', () => {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
+      autoGenerateValueGroupings: true,
       pivotOptions: null
     };
     component.context = context;

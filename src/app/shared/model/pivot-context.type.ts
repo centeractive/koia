@@ -8,5 +8,6 @@ export interface PivotContext {
   showRowTotals: boolean;
   showColumnTotals: boolean;
   valueGroupings: ValueGrouping[];
+  autoGenerateValueGroupings: boolean;
   pivotOptions: Object;
 }

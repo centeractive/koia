@@ -63,12 +63,10 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
   }
 
   protected defineSelectableItems() {
-    if (this.context) {
-      this.dataColumns = this.context.columns
-        .filter(c => c.dataType !== DataType.TIME);
-      this.selectedGroupByColumns = this.context.groupByColumns;
-      this.initSelectedAndAvailableAggregations();
-    }
+    this.dataColumns = this.context.columns
+      .filter(c => c.dataType !== DataType.TIME);
+    this.selectedGroupByColumns = this.context.groupByColumns;
+    this.initSelectedAndAvailableAggregations();
     super.defineSelectableItems();
   }
 

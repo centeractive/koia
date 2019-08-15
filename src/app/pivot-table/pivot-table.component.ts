@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit } from '../shared/model';
+import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
 import {
   NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService,
   DialogService
@@ -82,6 +82,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
+      autoGenerateValueGroupings: true,
       pivotOptions: null
     };
   }
@@ -97,14 +98,18 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
       this.entriesSubscription.unsubscribe();
     }
     this.entriesSubscription = this.dbService.findEntries(query, true)
-      .subscribe(entries => {
-        this.loading = false;
-        this.computing = true;
-        DateTimeUtils.defineTimeUnits(this.context.timeColumns, entries);
-        this.baseDataFrame = new DataFrame(entries);
-        this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, this.columns);
-        this.refreshDataFrameAsync();
-      });
+      .subscribe(entries => this.onData(entries));
+  }
+
+  private onData(entries: Document[]) {
+    this.loading = false;
+    this.computing = true;
+    DateTimeUtils.defineTimeUnits(this.context.timeColumns, entries);
+    this.baseDataFrame = new DataFrame(entries);
+    if (this.allowsForValueGrouping && this.context.autoGenerateValueGroupings) {
+      this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, this.columns);
+    }
+    this.refreshDataFrameAsync();
   }
 
   onTimeUnitChanged(column: Column, timeUnit: TimeUnit): void {

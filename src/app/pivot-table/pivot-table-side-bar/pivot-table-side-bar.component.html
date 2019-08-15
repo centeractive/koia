@@ -10,7 +10,7 @@
       <button mat-button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
          <mat-icon>expand_less</mat-icon>
       </button>
-   </span>
+   </span>   
    <span class="span_add_group" *ngIf="nonGroupedColumns && nonGroupedColumns.length > 0">
       <mat-form-field>
          <mat-select #nonGroupedCols placeholder="Non Grouped Columns" [value]="nonGroupedColumns[0]">
@@ -24,6 +24,10 @@
          <mat-icon>add_circle_outline</mat-icon>
       </button>
    </span>
+   <mat-slide-toggle id="slide_auto_generate" [(ngModel)]="context.autoGenerateValueGroupings"
+      matTooltip="Shall value groupings be automatically generated when pivot table base data changes?">
+      Generate groupings on data change
+   </mat-slide-toggle>
 </div>
 <hr>
 <mat-accordion [multi]="multiExpandable" *ngIf="context">

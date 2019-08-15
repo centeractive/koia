@@ -16,6 +16,7 @@ describe('PivotOptionsProvider', () => {
          showRowTotals: true,
          showColumnTotals: true,
          valueGroupings: [],
+         autoGenerateValueGroupings: true,
          pivotOptions: null
       };
       optionsProvider = new PivotOptionsProvider();

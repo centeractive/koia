@@ -156,7 +156,7 @@ export abstract class ElementContext {
    }
 
    get aggregations(): Aggregation[] {
-      return this._aggregations ? this._aggregations.slice(0) : [];
+      return this._aggregations.slice(0);
    }
 
    set aggregations(aggregations: Aggregation[]) {
@@ -241,7 +241,7 @@ export abstract class ElementContext {
      *
      * @param eventHandler custom handler for emitted events of type <ChangeEvent>
     */
-   subscribeToChanges(eventHandler): void {
+   subscribeToChanges(eventHandler: any): void {
       this.changeEventEmitter.subscribe(eventHandler);
    }
 

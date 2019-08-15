@@ -27,6 +27,7 @@ getTestBed().initTestEnvironment(
 
 const context = require.context('./', true, /\.spec\.ts$/);
 
+// const context = require.context('./', true, /shared\/model.*\.spec\.ts$/);
 // const context = require.context('./', true, /front.component\.spec\.ts$/);
 // const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
 // const context = require.context('./', true, /connection-dialog.component\.spec\.ts$/);

@@ -11,7 +11,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Column, SummaryContext, Aggregation, DataType, TimeUnit, ChangeEvent } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { of } from 'rxjs';
-import { SideBarController } from 'app/shared/controller';
 
 describe('SummaryTableSideBarComponent', () => {
 
@@ -150,7 +149,7 @@ describe('SummaryTableSideBarComponent', () => {
     expect(context.aggregations).toEqual([Aggregation.SUM, Aggregation.MEDIAN]);
   });
 
-  it('#addValueGrouping should keep aggregation count when already selected', fakeAsync(() => {
+  it('#addValueGroupingFor should keep aggregation count when already selected', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('Amount')];
@@ -159,15 +158,17 @@ describe('SummaryTableSideBarComponent', () => {
     context.subscribeToChanges((e: ChangeEvent) => ++contextChangeEvents);
 
     // when
-    component.addValueGrouping('Amount');
+    component.addValueGroupingFor(findColumn('Amount'));
     flush();
 
     // then
     expect(context.aggregations).toEqual([Aggregation.COUNT]);
+    expect(context.valueGroupings.length).toBe(1);
+    expect(context.valueGroupings[0].columnName).toBe('Amount');
     expect(contextChangeEvents).toBe(1);
   }));
 
-  it('#addValueGrouping should switch to aggregation COUNT when not selected', fakeAsync(() => {
+  it('#addValueGroupingFor should switch to aggregation COUNT when not selected', fakeAsync(() => {
 
     // given
     const amountColumn = findColumn('Amount');
@@ -182,8 +183,47 @@ describe('SummaryTableSideBarComponent', () => {
 
     // then
     expect(context.aggregations).toEqual([Aggregation.COUNT]);
+    expect(context.valueGroupings.length).toBe(1);
+    expect(context.valueGroupings[0].columnName).toBe('Amount');
     expect(contextChangeEvents).toBe(1);
   }));
+
+  it('#isCountDistinctValuesEnabled should return true if context has no data column', () => {
+
+    // given
+    context.dataColumns = [];
+
+    // when
+    const countDistinctValuesEnabled = component.isCountDistinctValuesEnabled();
+
+    // then
+    expect(countDistinctValuesEnabled).toBeTruthy();
+  });
+
+  it('#isCountDistinctValuesEnabled should return true if context has non-value-grouped numeric data column', () => {
+
+    // given
+    context.dataColumns = [findColumn('Percent')];
+
+    // when
+    const countDistinctValuesEnabled = component.isCountDistinctValuesEnabled();
+
+    // then
+    expect(countDistinctValuesEnabled).toBeTruthy();
+  });
+
+  it('#isCountDistinctValuesEnabled should return false if context has value-grouped numeric data column', () => {
+
+    // given
+    context.dataColumns = [findColumn('Percent')];
+    context.valueGroupings = [{ columnName: 'Percent', ranges: [{ min: 1, max: 10 }, { min: 10, max: 20 }] }];
+
+    // when
+    const countDistinctValuesEnabled = component.isCountDistinctValuesEnabled();
+
+    // then
+    expect(countDistinctValuesEnabled).toBeFalsy();
+  });
 
   it('#click on data column button should invoke #onColumnNameChanged', () => {
 
