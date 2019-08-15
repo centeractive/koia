@@ -5,6 +5,7 @@ import { ExportFormat } from './export-format.enum';
 import { ValueGrouping } from './value-grouping.type';
 import { ValueRange } from './value-range.type';
 import { fakeAsync, flush } from '@angular/core/testing';
+import { ChangeEvent } from './change-event.enum';
 
 class TestContext extends ElementContext {
 
@@ -58,7 +59,7 @@ describe('ElementContext', () => {
       expect(context.isAnyColumnWithValueGroupingInUse()).toBeTruthy();
    });
 
-   it('#addValueGrouping should not fire structure change when column is not in use', fakeAsync(() => {
+   it('#addValueGrouping should not fire structure change event when column is not in use', fakeAsync(() => {
 
       // when
       context.addValueGrouping(valueGrouping('Amount'));
@@ -69,7 +70,7 @@ describe('ElementContext', () => {
       expect(context.hasValueGrouping('Amount')).toBeTruthy();
    }));
 
-   it('#addValueGrouping should fire structure change when column is in use', fakeAsync(() => {
+   it('#addValueGrouping should fire structure change event when column is in use', fakeAsync(() => {
 
       // given
       context.dataColumns = [column('Amount')];
@@ -82,6 +83,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
       expect(context.hasValueGrouping('Amount')).toBeTruthy();
    }));
 

@@ -30,7 +30,7 @@
         [routerLink]="[urlFlex]">
         <mat-icon svgIcon="flex_view"></mat-icon>
         <span>&nbsp;Flex View</span>
-      </button>      
+      </button>
     </span>
 
     <div id="div_filter">
@@ -64,7 +64,8 @@
         </mat-menu>
 
         <mat-form-field class="column_filter_value" *ngIf="!columnFilter.operator.endsWith('empty')">
-          <input matInput type="text" placeholder="Filter Value" [(ngModel)]="columnFilter.filterValue"
+          <input matInput type="text" placeholder="Filter Value"
+            [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)" [(ngModel)]="columnFilter.filterValue"
             (keyup)="onFilterFieldKeyUp($event)">
           <button mat-button color="primary" *ngIf="columnFilter.filterValue" matSuffix mat-icon-button
             aria-label="Clear" (click)="resetColumnFilter(columnFilter)">

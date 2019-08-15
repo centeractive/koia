@@ -7,6 +7,7 @@ import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
 import { NumberRangeFilter } from './number-range-filter';
+import { PropertyFilterCustomizer } from './property-filter-customizer';
 
 @Component({
   selector: 'koia-main-toolbar',
@@ -40,6 +41,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   readonly operators: Operator[];
   columnFilters: PropertyFilter[] = [];
   rangeFilters: NumberRangeFilter[] = [];
+  propertyFilterCustomizer = new PropertyFilterCustomizer();
 
   private justNavigatedToParentView: boolean
 

@@ -59,7 +59,7 @@
             <mat-icon>close</mat-icon>
           </button>
         </mat-form-field>
-        <button id="but_delete_filtered" mat-stroked-button
+        <button id="but_delete_filtered" mat-stroked-button color="warn"
           [disabled]="filteredSceneInfos.length === 0" (click)="deleteFilteredScenes()">
           <mat-icon>delete_forever</mat-icon>
           <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
