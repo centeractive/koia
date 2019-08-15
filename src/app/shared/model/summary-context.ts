@@ -24,9 +24,10 @@ export class SummaryContext extends ElementContext {
          return this.title;
       }
       if (this.dataColumns.length > 0) {
-         return (this.isAggregationCountSelected() ? 'Distinct values of ' : '') + '"' + this.dataColumns[0].name + '"';
+         const prefix = this.isAggregationCountSelected() ? 'Distinct values of ' : '';
+         return prefix + '"' + this.dataColumns[0].name + '"';
       }
-      return 'to be defined';
+      return 'Data: to be defined';
    }
 
    getSupportedExportFormats(): ExportFormat[] {

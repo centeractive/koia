@@ -1,4 +1,4 @@
-import { PropertyFilter, Operator } from 'app/shared/model';
+import { PropertyFilter, Operator, DataType } from 'app/shared/model';
 
 export class PropertyFilterCustomizer {
 
@@ -22,7 +22,8 @@ export class PropertyFilterCustomizer {
          case Operator.NOT_EMPTY:
                return prefix + 'is not empty';
          case Operator.ANY_OF:
-            return prefix + 'is equal to one of the filter values, separated by a comma each';
+            const postfix = filter.dataType === DataType.TEXT ? ' (cases-sensitive)' : '';
+            return prefix + 'is equal to one of the filter values, separated by a comma each' + postfix;
          default:
             return undefined;
       }

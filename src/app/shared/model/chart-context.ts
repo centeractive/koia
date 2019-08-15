@@ -140,7 +140,7 @@ export class ChartContext extends ElementContext {
    /**
     * indicates if the chart values are stacked
     *
-    * the returned value may be affected by one of the follwoing ways:
+    * the returned value may be affected by one of the following ways:
     * - by radio buttons on multibar charts that let you change between "Grouped" and "Stacked"
     * - by [[ConfigToModelConverter#toChartContext]] when restoring a saved view
     */
@@ -210,10 +210,7 @@ export class ChartContext extends ElementContext {
       if (this.groupByColumns.length > 0 && (!this.isNonGrouping() || !this.isAggregationCountSelected())) {
          title += ' by ' + this.groupByColumns.map(c => c.name).join(', ');
       }
-      if (this.dataSampledDown) {
-         title += ' (Sample)';
-      }
-      return title;
+      return this.dataSampledDown ? title + ' (Sample)' : title;
    }
 
    getSupportedExportFormats(): ExportFormat[] {
