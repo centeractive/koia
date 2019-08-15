@@ -69,6 +69,8 @@ export class JSQueryFactory {
          propertyName += ParamOp._GTE;
       } else if (operator === Operator.GREATER_THAN) {
          propertyName += ParamOp._GT;
+      } else if (operator === Operator.ANY_OF) {
+         propertyName += ParamOp._IN;
       }
       return this.append(query, propertyName, propertyFilter.filterValue);
    }

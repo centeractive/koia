@@ -1,8 +1,9 @@
 import { ValueRange } from './value-range.type';
 import { PropertyFilter } from './property-filter';
 import { Operator } from './operator.enum';
+import { DataType } from './data-type.enum';
 
-export class ValueRangeFilter  {
+export class ValueRangeFilter {
 
    protected _propertyName: string;
    private _valueRange: ValueRange

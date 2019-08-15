@@ -53,6 +53,9 @@ export class QueryUtils {
       } else if (paramName.endsWith(ParamOp._GT)) {
          paramName = paramName.replace(ParamOp._GT, empty);
          operator = Operator.GREATER_THAN;
+      } else if (paramName.endsWith(ParamOp._IN)) {
+         paramName = paramName.replace(ParamOp._IN, empty);
+         operator = Operator.ANY_OF;
       }
       return new PropertyFilter(paramName, operator, paramValue);
    }

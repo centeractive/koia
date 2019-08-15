@@ -1,6 +1,6 @@
 import { PropertyFilter, Operator, Column, DataType } from 'app/shared/model';
 import { Sort } from '@angular/material';
-import { ArrayUtils } from 'app/shared/utils';
+import { ArrayUtils, CommonUtils } from 'app/shared/utils';
 
 export class MangoQueryBuilder {
 
@@ -27,8 +27,8 @@ export class MangoQueryBuilder {
       return this;
    }
 
-   where(propertyName: string, operator: Operator, filterValue: any): MangoQueryBuilder {
-      this.propertyFilters.push(new PropertyFilter(propertyName, operator, filterValue));
+   where(propertyName: string, operator: Operator, filterValue: any, dataType?: DataType): MangoQueryBuilder {
+      this.propertyFilters.push(new PropertyFilter(propertyName, operator, filterValue, dataType));
       return this;
    }
 
@@ -139,6 +139,8 @@ export class MangoQueryBuilder {
          return this.toContainsSelectorValue(<string>propertyFilter.filterValue, false);
       } else if (propertyFilter.operator === Operator.NOT_EMPTY) {
          return null;
+      } else if (propertyFilter.operator === Operator.ANY_OF) {
+         return this.toInSelectorValue(propertyFilter);
       } else if (this.columns) {
          const column = this.columns.find(c => c.name === propertyFilter.propertyName);
          if (column && propertyFilter.filterValue !== null && propertyFilter.filterValue !== undefined
@@ -147,6 +149,18 @@ export class MangoQueryBuilder {
          }
       }
       return propertyFilter.filterValue;
+   }
+
+   private toInSelectorValue(propertyFilter: PropertyFilter): any[] {
+      switch (propertyFilter.dataType) {
+         case DataType.NUMBER:
+         case DataType.TIME:
+            return ArrayUtils.toNumberArray(<string>propertyFilter.filterValue);
+         case DataType.BOOLEAN:
+            return ArrayUtils.toBooleanArray(<string>propertyFilter.filterValue);
+         default:
+            return ArrayUtils.toStringArray(<string>propertyFilter.filterValue);
+      };
    }
 
    private fullTextFilterSelectors(): Object {
@@ -199,6 +213,8 @@ export class MangoQueryBuilder {
             return '$gt';
          case Operator.NOT_EMPTY:
             return '$gt';
+         case Operator.ANY_OF:
+            return '$in';
          default:
             throw new Error('operator ' + operator + ' is not yet supported');
       }

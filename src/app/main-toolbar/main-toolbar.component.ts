@@ -109,7 +109,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     if (column.dataType === DataType.TIME) {
       this.addRangeFilter(column, null);
     } else {
-      this.columnFilters.push(new PropertyFilter(column.name, Operator.EQUAL, ''));
+      this.columnFilters.push(new PropertyFilter(column.name, Operator.EQUAL, '', column.dataType));
     }
   }
 
@@ -139,6 +139,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   onColumnFilterNameChanged(filter: PropertyFilter, column: Column): void {
     filter.propertyName = column.name;
+    filter.dataType = column.dataType;
     if (column.dataType !== DataType.TEXT && filter.operator === Operator.CONTAINS) {
       filter.operator = Operator.EQUAL;
     }

@@ -1,7 +1,7 @@
 import { DataType, Column, TimeUnit } from '../model';
 
 export class CommonUtils {
-
+  
   /**
    * @return abbreviated string using ellipses or specified string if it doesn't exceed [[maxWidth]]
    */

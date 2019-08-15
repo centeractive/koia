@@ -43,7 +43,7 @@ export class QueryConverter {
       if (query.hasFullTextFilter()) {
          builder.whereAnyText(query.getFullTextFilter());
       }
-      query.getPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue));
+      query.getPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue, pf.dataType));
       query.getValueRangeFilters().forEach(f =>
          f.toPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue))
       );

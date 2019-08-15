@@ -1,4 +1,5 @@
 import { Operator } from './operator.enum';
+import { DataType } from './data-type.enum';
 
 export class PropertyFilter {
 
@@ -7,11 +8,13 @@ export class PropertyFilter {
    private _propertyName: string;
    private _operator: Operator;
    private _filterValue: string | number;
+   private _dataType?: DataType;
 
-   constructor(propertyName: string, operator: Operator, filterValue: string | number) {
+   constructor(propertyName: string, operator: Operator, filterValue: string | number, dataType?: DataType) {
       this._propertyName = propertyName;
       this._operator = operator;
       this._filterValue = filterValue;
+      this._dataType = dataType;
    }
 
    get propertyName(): string {
@@ -41,6 +44,14 @@ export class PropertyFilter {
       this._filterValue = filterValue;
    }
 
+   get dataType(): DataType {
+      return this._dataType;
+   }
+
+   set dataType(dataType: DataType) {
+      this._dataType = dataType;
+   }
+
    isApplicable(): boolean {
       if (this._operator === Operator.NOT_EMPTY) {
          return true;
@@ -53,6 +64,6 @@ export class PropertyFilter {
    }
 
    clone(): PropertyFilter {
-      return new PropertyFilter(this._propertyName, this._operator, this._filterValue);
+      return new PropertyFilter(this._propertyName, this._operator, this._filterValue, this._dataType);
    }
 }

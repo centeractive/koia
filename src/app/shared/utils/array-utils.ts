@@ -4,7 +4,71 @@ import { NumberUtils } from './number-utils';
 
 export class ArrayUtils {
 
+  static readonly DEFAULT_SEPARATOR = ',';
+
   private static readonly UNDEFINED_VALUE_RANGE = { min: undefined, max: undefined };
+
+  /**
+   * @param str string to be converted into an array
+   * @param separator optional value separator (if missing, [[ArrayUtils.DEFAULT_SEPARATOR]] will be applied)
+   * @returns string array or empty array
+   */
+  static toStringArray(str: string, separator?: string): string[] {
+    if (str) {
+      return str.split(separator || ArrayUtils.DEFAULT_SEPARATOR).map(s => s.trim());
+    }
+    return [];
+  }
+
+  /**
+   * @param str string to be converted into an array
+   * @param separator optional value separator (if missing, [[ArrayUtils.DEFAULT_SEPARATOR]] will be applied)
+   * @returns number array or empty array
+   * @throws error when any value cannot be parsed to a number
+   */
+  static toNumberArray(str: string, separator?: string): number[] {
+    const numbers = [];
+    if (str) {
+      for (const s of str.split(separator || ArrayUtils.DEFAULT_SEPARATOR)) {
+        const trimmed = s.trim();
+        const num = NumberUtils.parseNumber(trimmed);
+        if (num === undefined) {
+          throw new Error('\'' + trimmed + '\' is not a number');
+        }
+        numbers.push(num);
+      }
+    }
+    return numbers;
+  }
+
+  /**
+   * @param str string to be converted into an array
+   * @param separator optional value separator (if missing, [[ArrayUtils.DEFAULT_SEPARATOR]] will be applied)
+   * @returns boolean array or empty array
+   */
+  static toBooleanArray(str: string, separator?: string): boolean[] {
+    if (str) {
+      return str.split(separator || ArrayUtils.DEFAULT_SEPARATOR)
+        .map(s => s.trim())
+        .map(s => this.toBoolean(s));
+    }
+    return [];
+  }
+
+  static toBoolean(str: string): boolean {
+    switch (str.toLowerCase().trim()) {
+      case 'true':
+      case 'yes':
+      case '1':
+        return true;
+      case 'false':
+      case 'no':
+      case '0':
+      case null:
+        return false;
+      default: return Boolean(str);
+    }
+  }
 
   /**
    * @returns a new array that contains only distinct values

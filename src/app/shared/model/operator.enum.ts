@@ -6,5 +6,6 @@ export enum Operator {
    NOT_EQUAL = '≠',
    GREATER_THAN_OR_EQUAL = '>=',
    GREATER_THAN = '>',
-   NOT_EMPTY = 'not empty'
+   NOT_EMPTY = 'not empty',
+   ANY_OF = 'any of'
 }

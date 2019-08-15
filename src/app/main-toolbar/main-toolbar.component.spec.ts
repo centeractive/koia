@@ -429,6 +429,21 @@ describe('MainToolbarComponent', () => {
     expect(numberRangeFilter.end).toBe(valueRange.max);
   }));
 
+  it('#onColumnFilterNameChanged should change property filter name and data type', () => {
+
+    // given
+    const columnFilter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT);
+    component.columnFilters = [columnFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.onColumnFilterNameChanged(columnFilter, column('Amount'));
+
+    // then
+    expect(columnFilter.propertyName).toBe('Amount');
+    expect(columnFilter.dataType).toBe(DataType.NUMBER);
+  });
+
   it('#onColumnFilterNameChanged should refresh entries when filter is applicable', () => {
 
     // given

@@ -4,5 +4,6 @@ export enum ParamOp {
    _LTE = '_lte',
    _GTE = '_gte',
    _GT = '_gt',
-   _LIKE = '_like'
+   _LIKE = '_like',
+   _IN = '_in'
 }

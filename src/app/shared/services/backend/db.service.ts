@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
-import { Scene, Query, Operator, SceneInfo, Page, Column, ValueRange, Document } from 'app/shared/model';
+import { Scene, Query, Operator, SceneInfo, Page, Column, ValueRange, Document, DataType } from 'app/shared/model';
 import { QueryUtils } from 'app/shared/utils';
 import { QueryConverter } from './mango/query-converter';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
@@ -99,7 +99,7 @@ export class DBService {
 
   async findSceneInfos(): Promise<SceneInfo[]> {
     const query = new MangoQueryBuilder(false, undefined)
-      .where('creationTime', Operator.NOT_EMPTY, null) // PouchDB expects sorted field to part of the selector
+      .where('creationTime', Operator.NOT_EMPTY, null, DataType.TIME) // PouchDB expects sorted field to part of the selector
       .sortBy({ active: 'creationTime', direction: 'desc' })
       .includeFields([CouchDBConstants._ID, CouchDBConstants._REV, 'creationTime', 'name', 'shortDescription', 'database'])
       .toQuery();

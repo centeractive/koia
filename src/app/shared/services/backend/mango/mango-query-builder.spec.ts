@@ -80,6 +80,86 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
+   it('simple $in selector of text values', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('a', Operator.ANY_OF, 'a, b, c', DataType.TEXT)
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { a: { $in: ['a', 'b', 'c'] } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('simple $in selector of number values', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('a', Operator.ANY_OF, '1, 2, 3', DataType.NUMBER)
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { a: { $in: [1, 2, 3] } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('simple $in selector of time values', () => {
+
+      // given
+      const now = new Date().getTime();
+      const a_minute_ago = now - 60_000;
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('a', Operator.ANY_OF, a_minute_ago + ', ' + now, DataType.TIME)
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { a: { $in: [a_minute_ago, now] } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('simple $in selector of boolean values', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('a', Operator.ANY_OF, 'yes, no, yes', DataType.BOOLEAN)
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { a: { $in: [true, false, true] } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
    it('selector with several filters on same field (distinct operators)', () => {
 
       // when

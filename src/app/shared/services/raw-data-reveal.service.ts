@@ -30,7 +30,7 @@ export class RawDataRevealService {
    * @returns an encoded URL to be used for showing raw data matching the specified criteria
    */
   ofID(id: number): void {
-    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, id.toString())));
+    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, id.toString(), DataType.TEXT)));
   }
 
   /**

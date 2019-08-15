@@ -3,6 +3,91 @@ import { ValueRange } from '../model';
 
 describe('ArrayUtils', () => {
 
+  it('#toStringArray should return empty array when string is missing', () => {
+    expect(ArrayUtils.toStringArray(null)).toEqual([]);
+    expect(ArrayUtils.toStringArray(undefined)).toEqual([]);
+    expect(ArrayUtils.toStringArray('')).toEqual([]);
+    expect(ArrayUtils.toStringArray(null, '|')).toEqual([]);
+    expect(ArrayUtils.toStringArray(undefined, '|')).toEqual([]);
+    expect(ArrayUtils.toStringArray('', '|')).toEqual([]);
+  });
+
+  it('#toStringArray should return array when string contain single value', () => {
+    expect(ArrayUtils.toStringArray('abc')).toEqual(['abc']);
+    expect(ArrayUtils.toStringArray('1')).toEqual(['1']);
+    expect(ArrayUtils.toStringArray('abc', '|')).toEqual(['abc']);
+    expect(ArrayUtils.toStringArray('1', '|')).toEqual(['1']);
+  });
+
+  it('#toStringArray should return array when string contain multiple values', () => {
+    expect(ArrayUtils.toStringArray(' a,b  ,c')).toEqual(['a', 'b', 'c']);
+    expect(ArrayUtils.toStringArray('1 , 2 , 3')).toEqual(['1', '2', '3']);
+    expect(ArrayUtils.toStringArray('a|b  |c', '|')).toEqual(['a', 'b', 'c']);
+    expect(ArrayUtils.toStringArray('1 | 2 | 3', '|')).toEqual(['1', '2', '3']);
+  });
+
+  it('#toNumberArray should return empty array when string is missing', () => {
+    expect(ArrayUtils.toNumberArray(null)).toEqual([]);
+    expect(ArrayUtils.toNumberArray(undefined)).toEqual([]);
+    expect(ArrayUtils.toNumberArray('')).toEqual([]);
+    expect(ArrayUtils.toNumberArray(null, '|')).toEqual([]);
+    expect(ArrayUtils.toNumberArray(undefined, '|')).toEqual([]);
+    expect(ArrayUtils.toNumberArray('', '|')).toEqual([]);
+  });
+
+  it('#toNumberArray should return array when string contain single value', () => {
+    expect(ArrayUtils.toNumberArray('-1')).toEqual([-1]);
+    expect(ArrayUtils.toNumberArray('-0.1')).toEqual([-0.1]);
+    expect(ArrayUtils.toNumberArray('0')).toEqual([0]);
+    expect(ArrayUtils.toNumberArray('0.1')).toEqual([0.1]);
+    expect(ArrayUtils.toNumberArray('1')).toEqual([1]);
+    expect(ArrayUtils.toNumberArray('-1', '|')).toEqual([-1]);
+    expect(ArrayUtils.toNumberArray('-0.1', '|')).toEqual([-0.1]);
+    expect(ArrayUtils.toNumberArray('0', '|')).toEqual([0]);
+    expect(ArrayUtils.toNumberArray('0.1', '|')).toEqual([0.1]);
+    expect(ArrayUtils.toNumberArray('1', '|')).toEqual([1]);
+  });
+
+  it('#toNumberArray should return array when string contain multiple values', () => {
+    expect(ArrayUtils.toNumberArray('-1,  0, 1')).toEqual([-1, 0, 1]);
+    expect(ArrayUtils.toNumberArray(' -1|  0| 1', '|')).toEqual([-1, 0, 1]);
+  });
+
+  it('#toNumberArray should return array when string contain multiple values', () => {
+    expect(() => ArrayUtils.toNumberArray('1,x')).toThrowError('\'x\' is not a number');
+  });
+
+  it('#toBooleanArray should return empty array when string is missing', () => {
+    expect(ArrayUtils.toBooleanArray(null)).toEqual([]);
+    expect(ArrayUtils.toBooleanArray(undefined)).toEqual([]);
+    expect(ArrayUtils.toBooleanArray('')).toEqual([]);
+    expect(ArrayUtils.toBooleanArray(null, '|')).toEqual([]);
+    expect(ArrayUtils.toBooleanArray(undefined, '|')).toEqual([]);
+    expect(ArrayUtils.toBooleanArray('', '|')).toEqual([]);
+  });
+
+  it('#toBooleanArray should return array when string contain single value', () => {
+    expect(ArrayUtils.toBooleanArray('true')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('false')).toEqual([false]);
+    expect(ArrayUtils.toBooleanArray('yes')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('no')).toEqual([false]);
+    expect(ArrayUtils.toBooleanArray('1')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('0')).toEqual([false]);
+    expect(ArrayUtils.toBooleanArray('ok')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('true', '|')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('false', '|')).toEqual([false]);
+    expect(ArrayUtils.toBooleanArray('yes', '|')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('no', '|')).toEqual([false]);
+    expect(ArrayUtils.toBooleanArray('1', '|')).toEqual([true]);
+    expect(ArrayUtils.toBooleanArray('0', '|')).toEqual([false]);
+    expect(ArrayUtils.toBooleanArray('ok', '|')).toEqual([true]);
+  });
+
+  it('#toBooleanArray should return array when string contain multiple values', () => {
+    expect(ArrayUtils.toBooleanArray('yes,  NO, 1, TRUE ')).toEqual([true, false, true, true]);
+    expect(ArrayUtils.toBooleanArray('  YES|  0 |1| true', '|')).toEqual([true, false, true, true]);
+  });
+
   it('#distinctValues should return same when array is missing', () => {
     expect(ArrayUtils.distinctValues(null)).toBeNull();
     expect(ArrayUtils.distinctValues(undefined)).toBeUndefined();
