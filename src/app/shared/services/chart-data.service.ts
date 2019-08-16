@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { DateTimeUtils, ArrayUtils } from '../utils';
-import { ChartContext, PropertyFilter, ChartType, DataType, Column, ValueRange } from '../model';
+import { ChartContext, PropertyFilter, ChartType, DataType, Column } from '../model';
 import { largestTriangleThreeBucket } from 'd3fc-sample';
 import { CouchDBConstants } from './backend/couchdb/couchdb-constants';
+import { ValueRange } from '../value-range/model/value-range.type';
 
 declare var d3: any;
 

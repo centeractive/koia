@@ -2,15 +2,11 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angul
 
 import { PivotTableComponent } from './pivot-table.component';
 import { ElementRef, Injectable, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import {
-  NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, DialogService,
-  RawDataRevealService
-} from 'app/shared/services';
+import { NotificationService, ExportService, TimeGroupingService, DialogService, RawDataRevealService } from 'app/shared/services';
 import { of, Observable } from 'rxjs';
 import {
   MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule,
-  MatBottomSheet,
-  MatDialogRef
+  MatBottomSheet, MatDialogRef
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { StatusType, PivotContext, Column, DataType, Scene, TimeUnit, Route } from 'app/shared/model';
@@ -25,6 +21,7 @@ import { SceneFactory } from 'app/shared/test';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Router } from '@angular/router';
+import { ValueRangeGroupingService } from 'app/shared/value-range';
 
 @Injectable()
 export class MockElementRef {

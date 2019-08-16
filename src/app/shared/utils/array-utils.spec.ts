@@ -1,5 +1,5 @@
 import { ArrayUtils } from './array-utils';
-import { ValueRange } from '../model';
+import { ValueRange } from '../value-range/model/value-range.type';
 
 describe('ArrayUtils', () => {
 

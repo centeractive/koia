@@ -2,14 +2,15 @@ import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testi
 import { MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule, MatDialog } from '@angular/material';
 import { of } from 'rxjs';
 import { SummaryTableComponent } from './summary-table.component';
-import { SummaryContext, Query, Route, Column, DataType, Scene, TimeUnit, Aggregation } from 'app/shared/model';
-import { AggregationService, ValueRangeGroupingService, RawDataRevealService } from 'app/shared/services';
+import { SummaryContext, Query, Route, Column, DataType, TimeUnit, Aggregation } from 'app/shared/model';
+import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DatePipe } from '@angular/common';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Router } from '@angular/router';
 import { SimpleChange } from '@angular/core';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
+import { ValueRangeGroupingService } from 'app/shared/value-range';
 
 describe('SummaryTableComponent', () => {
 

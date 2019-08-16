@@ -1,6 +1,8 @@
-import { ValueGrouping, ValueRange, Column, DataType } from 'app/shared/model';
+import { Column, DataType } from 'app/shared/model';
 import { IDataFrame } from 'data-forge';
 import { NumberUtils } from 'app/shared/utils/number-utils';
+import { ValueGrouping } from './model/value-grouping.type';
+import { ValueRange } from './model/value-range.type';
 
 /**
  * Generates default value groupings for number columns

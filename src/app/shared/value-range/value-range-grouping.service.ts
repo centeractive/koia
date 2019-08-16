@@ -1,6 +1,7 @@
 import { IDataFrame, DataFrame, Series } from 'data-forge';
-import { ValueGrouping, ValueRange } from 'app/shared/model';
 import { Injectable } from '@angular/core';
+import { ValueGrouping } from './model/value-grouping.type';
+import { ValueRange } from './model/value-range.type';
 
 /**
  * groups the values of individual number columns into value ranges

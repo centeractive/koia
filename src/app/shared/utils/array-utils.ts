@@ -1,6 +1,6 @@
 import { Sort } from '@angular/material';
-import { ValueRange } from '../model';
 import { NumberUtils } from './number-utils';
+import { ValueRange } from '../value-range/model/value-range.type';
 
 export class ArrayUtils {
 

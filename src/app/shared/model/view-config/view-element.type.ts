@@ -1,5 +1,6 @@
-import { Aggregation, ValueGrouping, Column } from '..';
+import { Aggregation, Column } from '..';
 import { ElementType } from './element-type.enum';
+import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 
 export interface ViewElement {
    elementType: ElementType;

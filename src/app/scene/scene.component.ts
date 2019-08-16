@@ -10,7 +10,7 @@ import { ProgressMonitor, EntryPersister } from './persister';
 import { ValueFormatter, DateTimeUtils, ArrayUtils } from 'app/shared/utils';
 import { DatePipe, Location } from '@angular/common';
 import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './mapper';
-import { AbstractComponent } from 'app/shared/controller';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
 
 @Component({
   selector: 'koia-front',

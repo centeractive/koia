@@ -1,8 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import { ConnectionInfo } from 'app/shared/services/backend/couchdb';
 import { CommonUtils } from 'app/shared/utils';
-import { Protocol } from 'app/shared/model';
+import { Protocol, ConnectionInfo } from 'app/shared/model';
 
 @Component({
   selector: 'koia-connection-dialog',

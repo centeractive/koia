@@ -1,6 +1,7 @@
 import { ValueRangeGroupingService } from './value-range-grouping.service';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { ValueGrouping, ValueRange } from 'app/shared/model';
+import { ValueRange } from './model/value-range.type';
+import { ValueGrouping } from './model/value-grouping.type';
 
 describe('ValueRangeGroupingService', () => {
 

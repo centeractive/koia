@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { Sort } from '@angular/material';
 import { Observable } from 'rxjs';
-import { AggregationService, ValueRangeGroupingService, RawDataRevealService } from '../shared/services';
+import { AggregationService, RawDataRevealService } from '../shared/services';
 import { ChangeEvent, Aggregation, SummaryContext, Column, Route, DataType } from '../shared/model';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { DateTimeUtils, CommonUtils, ValueFormatter } from 'app/shared/utils';
@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 import { ExportDataGenerator } from './export-data-generator';
+import { ValueRangeGroupingService } from 'app/shared/value-range';
 
 @Component({
   selector: 'koia-summary-table',

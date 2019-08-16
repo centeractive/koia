@@ -1,7 +1,6 @@
 import { ParamMap } from '@angular/router';
 import { NumberUtils } from './number-utils';
-import { ConnectionInfo } from '../services/backend/couchdb';
-import { Protocol } from '../model';
+import { Protocol, ConnectionInfo } from '../model';
 
 /**
  * extracts the CouchDB [[ConnectionInfo]] from the specified [[ParamMap]] in case the web-app was invoked by a third-party

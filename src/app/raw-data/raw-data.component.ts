@@ -5,7 +5,7 @@ import { Column, Query, Route, Page } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { ValueFormatter } from '../shared/utils';
 import { NotificationService } from 'app/shared/services';
-import { AbstractComponent } from 'app/shared/controller';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
 
 @Component({
   selector: 'koia-raw-data',

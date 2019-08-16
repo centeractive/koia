@@ -1,10 +1,12 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
-import { Column, PivotContext, ValueGrouping, ValueRange, DataType } from '../../shared/model';
+import { Column, PivotContext, DataType } from '../../shared/model';
 import { IDataFrame, ISeries } from 'data-forge';
 import { NumberUtils, ArrayUtils } from 'app/shared/utils';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MatAccordion } from '@angular/material';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
+import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 @Component({
   selector: 'koia-pivot-table-side-bar',

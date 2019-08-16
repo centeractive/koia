@@ -8,7 +8,8 @@ import { SortDirection } from '@angular/material';
 import { CouchDBService } from './couchdb';
 import { DB } from './db.type';
 import { PouchDBAccess } from './pouchdb';
-import { Scene, SceneInfo, DataType, Operator, Query, Page, Column, ValueRange, Document } from 'app/shared/model';
+import { Scene, SceneInfo, DataType, Operator, Query, Page, Column, Document } from 'app/shared/model';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 @Injectable()
 export class DBService {

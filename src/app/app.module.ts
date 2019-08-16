@@ -27,7 +27,7 @@ import 'nvd3';
 import { Ng5SliderModule } from 'ng5-slider';
 
 import {
-  NotificationService, AggregationService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService,
+  NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService,
   RawDataRevealService
 } from './shared/services';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
@@ -60,6 +60,7 @@ import { FrontComponent } from './front/front.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
+import { ValueRangeGroupingService } from './shared/value-range';
 
 @NgModule({
   declarations: [

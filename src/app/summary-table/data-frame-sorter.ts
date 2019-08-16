@@ -2,7 +2,7 @@ import { IDataFrame } from 'data-forge';
 import { ElementContext } from 'app/shared/model';
 import { Sort } from '@angular/material';
 import { NumberUtils } from 'app/shared/utils';
-import { ValueRangeGroupingService } from 'app/shared/services';
+import { ValueRangeGroupingService } from 'app/shared/value-range';
 
 export class DataFrameSorter {
 

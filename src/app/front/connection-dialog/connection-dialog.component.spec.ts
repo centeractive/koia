@@ -7,9 +7,8 @@ import {
 } from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ConnectionInfo } from 'app/shared/services/backend/couchdb';
 import { By } from '@angular/platform-browser';
-import { Protocol } from 'app/shared/model';
+import { Protocol, ConnectionInfo } from 'app/shared/model';
 
 describe('ConnectionDialogComponent', () => {
 

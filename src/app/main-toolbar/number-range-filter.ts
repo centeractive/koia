@@ -1,6 +1,7 @@
 import { Options } from 'ng5-slider';
-import { Column, ValueRange } from 'app/shared/model';
+import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 export class NumberRangeFilter {
 

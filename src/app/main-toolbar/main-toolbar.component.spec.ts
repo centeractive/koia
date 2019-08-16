@@ -11,13 +11,14 @@ import { Ng5SliderModule } from 'ng5-slider';
 import { RouterModule, Router, NavigationEnd, Event } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ContextInfo, Column, Route, PropertyFilter, Operator, Query, DataType, Scene, TimeUnit, ValueRange } from 'app/shared/model';
+import { ContextInfo, Column, Route, PropertyFilter, Operator, Query, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { of } from 'rxjs';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
 import { MatIconModuleMock } from 'app/shared/test';
 import { NumberRangeFilter } from './number-range-filter';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 @Component({ template: '' })
 class DummyComponent { }

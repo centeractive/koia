@@ -1,11 +1,12 @@
 import { fakeAsync, flush } from '@angular/core/testing';
 
-import { Column, ElementContext, Aggregation, ValueRange, DataType, TimeUnit, ExportFormat } from '../model';
+import { Column, ElementContext, Aggregation, DataType, TimeUnit, ExportFormat } from '../model';
 import { SimpleChange } from '@angular/core';
 import { SideBarController } from './side-bar.controller';
 import { of } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NumberUtils } from '../utils';
+import { ValueRange } from '../value-range/model/value-range.type';
 
 class SideBarControllerTestable extends SideBarController { }
 

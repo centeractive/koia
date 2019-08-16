@@ -1,6 +1,7 @@
-import { Column, TimeUnit, ValueRange } from 'app/shared/model';
+import { Column, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { NumberRangeFilter } from './number-range-filter';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 /**
  * Filtering with time units greater than milliseconds works fine only when individual times are down-rounded

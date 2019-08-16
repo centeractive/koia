@@ -1,6 +1,6 @@
 import { GroupedValuesComparator } from './grouped-values-comparator';
 import { shuffle } from 'd3';
-import { ValueRangeGroupingService } from '../services';
+import { ValueRangeGroupingService } from './value-range-grouping.service';
 
 describe('GroupedValuesComparator', () => {
 

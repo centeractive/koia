@@ -1,5 +1,5 @@
-import { ValueRange } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 export class ForceYComputer {
 

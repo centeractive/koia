@@ -1,7 +1,9 @@
-import { PivotContext, ValueRange, ValueGrouping, Column, DataType, TimeUnit } from 'app/shared/model';
+import { PivotContext, Column, DataType, TimeUnit } from 'app/shared/model';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { RawDataRevealService } from 'app/shared/services';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 
 describe('PivotOptionsProvider', () => {
 

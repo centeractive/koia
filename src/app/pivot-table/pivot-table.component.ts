@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
 import {
-  NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService,
+  NotificationService, ExportService, TimeGroupingService, ViewPersistenceService,
   DialogService,
   RawDataRevealService
 } from '../shared/services';
@@ -11,11 +11,11 @@ import { MatBottomSheet, MatSidenav } from '@angular/material';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { DBService } from 'app/shared/services/backend';
 import { Router } from '@angular/router';
-import { AbstractComponent } from 'app/shared/controller';
 import { Subscription } from 'rxjs';
 import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { ConfigRecord } from 'app/shared/model/view-config';
-import { ValueGroupingGenerator } from 'app/shared/value-range';
+import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
 
 declare var jQuery: any;
 

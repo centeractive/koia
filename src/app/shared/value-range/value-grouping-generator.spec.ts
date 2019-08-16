@@ -1,7 +1,8 @@
 import { DataFrame } from 'data-forge';
 import { ValueGroupingGenerator } from './value-grouping-generator';
-import { ValueGrouping, Column, DataType } from 'app/shared/model';
 import { TestUtils } from '../test';
+import { DataType, Column } from '../model';
+import { ValueGrouping } from './model/value-grouping.type';
 
 describe('ValueGroupingGenerator', () => {
 

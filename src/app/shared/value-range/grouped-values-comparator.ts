@@ -1,5 +1,5 @@
-import { ValueRangeGroupingService } from '../services';
 import { NumberUtils } from '../utils/number-utils';
+import { ValueRangeGroupingService } from './value-range-grouping.service';
 
 export class GroupedValuesComparator {
 

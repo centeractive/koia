@@ -2,12 +2,13 @@ import {
   Component, ViewEncapsulation, OnInit, Input, Output, EventEmitter, AfterViewChecked
 } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene, ValueRange } from '../shared/model';
+import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene } from '../shared/model';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './time-range-filter';
 import { NumberRangeFilter } from './number-range-filter';
 import { PropertyFilterCustomizer } from './property-filter-customizer';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 @Component({
   selector: 'koia-main-toolbar',

@@ -5,8 +5,8 @@ import { NotificationService, DialogService } from 'app/shared/services';
 import { MatBottomSheet } from '@angular/material';
 import { DBService } from 'app/shared/services/backend';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
-import { AbstractComponent } from 'app/shared/controller';
 import { Location } from '@angular/common';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
 
 @Component({
   selector: 'koia-scenes',

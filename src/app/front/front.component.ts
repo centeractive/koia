@@ -1,17 +1,17 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { DialogService, NotificationService } from 'app/shared/services';
-import { Route } from 'app/shared/model';
+import { Route, ConnectionInfo } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { ReaderService, DataReader } from 'app/shared/services/reader';
-import { CouchDBService, ConnectionInfo } from 'app/shared/services/backend/couchdb';
+import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { MatBottomSheet } from '@angular/material';
-import { AbstractComponent } from 'app/shared/controller';
 import * as $ from 'jquery';
 import 'slick-carousel';
 import { Router, ActivatedRoute } from '@angular/router';
 import { QueryParamExtractor, CommonUtils } from 'app/shared/utils';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
 
 @Component({
   selector: 'koia-front',
