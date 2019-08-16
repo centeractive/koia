@@ -1,16 +1,6 @@
 import { DataType, Column, TimeUnit } from '../model';
 
 export class CommonUtils {
-  
-  /**
-   * @return abbreviated string using ellipses or specified string if it doesn't exceed [[maxWidth]]
-   */
-  static abbreviate(str: string, maxWidth: number): string {
-    if (!str || str.length <= maxWidth) {
-      return str;
-    }
-    return str.substr(0, maxWidth - 3) + '...';
-  }
 
   /**
    * @returns the encoded URL where each instance of certain characters are replaced escape sequences representing
@@ -36,16 +26,6 @@ export class CommonUtils {
 
   static sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  /**
-   * capitalizes a string changing the first letter to uppercase; no other letters are changed
-   */
-  static capitalize(s: string): string {
-    if (s && s.length > 0) {
-      return s[0].toUpperCase() + s.slice(1);
-    }
-    return s;
   }
 
   /**

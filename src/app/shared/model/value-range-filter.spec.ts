@@ -3,6 +3,13 @@ import { Operator } from './operator.enum';
 
 describe('ValueRangeFilter', () => {
 
+   it('#propertyName getter setter', () => {
+      const filter = new ValueRangeFilter('x', { min: null, max: null });
+      expect(filter.propertyName).toBe('x');
+      filter.propertyName = 'y';
+      expect(filter.propertyName).toBe('y');
+   });
+
    it('#isApplicable should return false when initial value range min and max are missing', () => {
       expect(new ValueRangeFilter('x', { min: null, max: null }).isApplicable()).toBeFalsy();
       expect(new ValueRangeFilter('x', { min: undefined, max: undefined }).isApplicable()).toBeFalsy();

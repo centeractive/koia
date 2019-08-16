@@ -1,4 +1,5 @@
 export * from './array-utils';
+export * from './string-utils';
 export * from './chart-utils';
 export * from './common-utils';
 export * from './number-utils';

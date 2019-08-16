@@ -3,24 +3,6 @@ import { DataType, Column, TimeUnit } from '../model';
 
 describe('CommonUtils', () => {
 
-  it('#abbreviate should return same when null or undefined', () => {
-    expect(CommonUtils.abbreviate(null, 10)).toBeNull();
-    expect(CommonUtils.abbreviate(undefined, 10)).toBeUndefined();
-  });
-
-  it('#abbreviate should return same string when max width is not exceeded', () => {
-    expect(CommonUtils.abbreviate('', 10)).toBe('');
-    expect(CommonUtils.abbreviate('a', 10)).toBe('a');
-    expect(CommonUtils.abbreviate('0123456789', 10)).toBe('0123456789');
-  });
-
-  it('#abbreviate should return abbreviated string when max width is exceeded', () => {
-    expect(CommonUtils.abbreviate('0123456789X', 10)).toBe('0123456...');
-    expect(CommonUtils.abbreviate('0123456789XY', 10)).toBe('0123456...');
-    expect(CommonUtils.abbreviate('0123456789XYZ', 10)).toBe('0123456...');
-    expect(CommonUtils.abbreviate('whenever a text exceeds max length', 26)).toBe('whenever a text exceeds...');
-  });
-
   it('#encodeURL should return unchanged string when null or undefined', () => {
     expect(CommonUtils.encodeURL(null)).toBeNull();
     expect(CommonUtils.encodeURL(undefined)).toBeUndefined();
@@ -60,24 +42,6 @@ describe('CommonUtils', () => {
 
     // then
     expect(url).toEqual('/rawdata?q=%23');
-  });
-
-  it('#capitalize should return string when EMPTY', () => {
-    expect(CommonUtils.capitalize('')).toEqual('');
-  });
-
-  it('#capitalize should return null when null', () => {
-    expect(CommonUtils.capitalize(null)).toBeNull();
-  });
-
-  it('#capitalize should return capitalized string', () => {
-    expect(CommonUtils.capitalize('x')).toEqual('X');
-    expect(CommonUtils.capitalize('test')).toEqual('Test');
-  });
-
-  it('#capitalize should return unchanged string when starting with uppercase', () => {
-    expect(CommonUtils.capitalize('X')).toEqual('X');
-    expect(CommonUtils.capitalize('Test')).toEqual('Test');
   });
 
   it('#compare should return false when one object is null or undefined', () => {

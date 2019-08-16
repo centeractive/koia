@@ -1,5 +1,5 @@
 import { DataType, ColumnPair } from 'app/shared/model';
-import { DataTypeUtils, DateTimeUtils, CommonUtils } from 'app/shared/utils';
+import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 
 /**
  * Maps data of different format to target entries and adds an "_id" attribute to each target entry.
@@ -121,7 +121,7 @@ export class EntryMapper {
       if (typeof value !== 'string') {
          value = value.toString();
       }
-      return CommonUtils.abbreviate(value, 40);
+      return StringUtils.abbreviate(value, 40);
    }
 }
 

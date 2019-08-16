@@ -10,15 +10,15 @@ export class RawDataRevealer {
 
    reveal(event: any, context: ChartContext): void {
       if (event.point) {
-         this.createLinkFromDataPoint(event, context);
+         this.fromDataPoint(event, context);
       } else if (context.isNonGrouping()) {
-         this.createLinkFromFlatData(event, context);
+         this.fromFlatData(event, context);
       } else {
-         this.createLinkFromGroupedData(event, context);
+         this.fromGroupedData(event, context);
       }
    }
 
-   private createLinkFromDataPoint(event: any, context: ChartContext): void {
+   private fromDataPoint(event: any, context: ChartContext): void {
       if (event.point && event.point.id) {
          this.rawDataRevealService.ofID(event.point.id);
       } else {
@@ -34,13 +34,13 @@ export class RawDataRevealer {
       }
    }
 
-   private createLinkFromFlatData(event: any, context: ChartContext): void {
+   private fromFlatData(event: any, context: ChartContext): void {
       const query = context.query;
       const column = context.isAggregationCountSelected() ? context.dataColumns[0] : context.groupByColumns[0];
       this.rawDataRevealService.ofQuery(query, [column.name], [event.data.x]);
    }
 
-   private createLinkFromGroupedData(event: any, context: ChartContext): void {
+   private fromGroupedData(event: any, context: ChartContext): void {
       if (event.data.id) {
          this.rawDataRevealService.ofID(event.data.id);
       } else {

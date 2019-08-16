@@ -6,6 +6,7 @@ import { ChartType } from './chart-type';
 import { ExportFormat } from './export-format.enum';
 import { Aggregation } from './aggregation.enum';
 import { SummaryContext } from './summary-context';
+import { StringUtils } from '../utils/string-utils';
 
 describe('SummaryContext', () => {
 
@@ -71,7 +72,7 @@ describe('SummaryContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('"Location"');
+      expect(title).toBe(StringUtils.quote('Location'));
    });
 
    it('#getTitle when aggregation count', () => {
@@ -84,7 +85,7 @@ describe('SummaryContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Distinct values of "Location"');
+      expect(title).toBe('Distinct values of ' + StringUtils.quote('Location'));
    });
 
    it('#getTitle when aggregation other than count', () => {
@@ -97,7 +98,7 @@ describe('SummaryContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('"Location"');
+      expect(title).toBe(StringUtils.quote('Location'));
    });
 
    it('#getTitle when user-defined', () => {

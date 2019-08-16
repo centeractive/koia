@@ -1,6 +1,7 @@
 import { ElementContext } from './element-context';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
+import { StringUtils } from '../utils/string-utils';
 
 export class SummaryContext extends ElementContext {
 
@@ -25,7 +26,7 @@ export class SummaryContext extends ElementContext {
       }
       if (this.dataColumns.length > 0) {
          const prefix = this.isAggregationCountSelected() ? 'Distinct values of ' : '';
-         return prefix + '"' + this.dataColumns[0].name + '"';
+         return prefix + StringUtils.quote(this.dataColumns[0].name);
       }
       return 'Data: to be defined';
    }

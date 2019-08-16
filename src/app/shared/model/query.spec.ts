@@ -31,4 +31,19 @@ describe('Query', () => {
     expect(query.getPageIndex()).toBe(8);
     expect(query.getRowsPerPage()).toBe(10);
   });
+
+  it('#clearPageDefinition should clear page definition', () => {
+
+    // given
+    const query = new Query();
+    query.setPageDefinition(0, 5);
+
+    // when
+    query.clearPageDefinition();
+
+    // then
+    expect(query.hasPageDefinition()).toBeFalsy();
+    expect(query.getPageIndex()).toBeUndefined();
+    expect(query.getRowsPerPage()).toBeUndefined();
+  });
 });
