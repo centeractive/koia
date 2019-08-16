@@ -36,3 +36,15 @@
 .scene_creation_time {
   width: 160px;
 }
+
+#importselect-image {
+  background-image: url('../../assets/import_select.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+} 
+
+#activescene-image {
+  background-image: url('../../assets/single_scene.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+} 
