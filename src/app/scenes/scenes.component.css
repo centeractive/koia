@@ -38,13 +38,13 @@
 }
 
 #importselect-image {
-  background-image: url('../../assets/import_select.png');
+  background-image: url('../../assets/mat-icons/import_select.png');
   background-repeat: no-repeat;
   background-size: cover;
 } 
 
 #activescene-image {
-  background-image: url('../../assets/single_scene.png');
+  background-image: url('../../assets/mat-icons/single_scene.png');
   background-repeat: no-repeat;
   background-size: cover;
 } 

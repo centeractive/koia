@@ -133,7 +133,7 @@ td {
 }
 
 #newscene-image {
-  background-image: url('../../assets/new_scene.png');
+  background-image: url('../../assets/mat-icons/new_scene.png');
   background-repeat: no-repeat;
   background-size: cover;
 } 

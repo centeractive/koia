@@ -21,13 +21,13 @@ body {
 }
 
 .scene-image {
-  background-image: url('./assets/scene.png');
+  background-image: url('./assets/mat-icons/single_scene.png');
   background-repeat: no-repeat;
   background-size: 36px 36px;
 }
 
 .scenes-image {
-  background-image: url('./assets/scenes.png');
+  background-image: url('./assets/mat-icons/import_select.png');
   background-repeat: no-repeat;
   background-size: 36px 36px;
 }

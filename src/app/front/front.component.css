@@ -66,49 +66,49 @@ p {
 }
 
 #about-image {
-   background-image: url('../../assets/about_koia.png');
+   background-image: url('../../assets/mat-icons/about_koia.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #features-image {
-   background-image: url('../../assets/features.png');
+   background-image: url('../../assets/mat-icons/features.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #shield-image {
-   background-image: url('../../assets/trust.png');
+   background-image: url('../../assets/mat-icons/trust.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #data-image {
-   background-image: url('../../assets/data_formats.png');
+   background-image: url('../../assets/mat-icons/data_formats.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #datascene-image {
-   background-image: url('../../assets/import_select.png');
+   background-image: url('../../assets/mat-icons/import_select.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #view-image {
-   background-image: url('../../assets/view_data.png');
+   background-image: url('../../assets/mat-icons/view_data.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #screenshots-image {
-   background-image: url('../../assets/computer.png');
+   background-image: url('../../assets/mat-icons/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #browser-image {
-   background-image: url('../../assets/computer.png');
+   background-image: url('../../assets/mat-icons/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
@@ -120,13 +120,13 @@ p {
 } 
 
 #importselect-image {
-   background-image: url('../../assets/import_select.png');
+   background-image: url('../../assets/mat-icons/import_select.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
 
 #create-image {
-   background-image: url('../../assets/create.png');
+   background-image: url('../../assets/mat-icons/create.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
