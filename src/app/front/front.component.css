@@ -1,8 +1,16 @@
-#div_logo {
-   width: 100%;
-   display: block;
-   text-align: center;
+#header {
+   display: flex;
+   flex-wrap: wrap;  
+   justify-content: space-between;
    padding-bottom: 20px;
+}
+
+#div_logo {
+   display: block;
+}
+
+#div_retrologo {
+   display: block;
 }
 
 p {
@@ -42,16 +50,19 @@ p {
    align-items: flex-start;
    justify-content: space-between;
    margin: 0px 20px 0px 20px;
+   padding-bottom: 20px;
 }
 
 .action-card {
    min-width: 250px;
    max-width: 350px;
+   height: 430px;
    margin: 0px 4px 0px 4px;
 }
 
 .div_actions {
    text-align: right;
+   padding-top: 40px;
 }
 
 #about-image {
