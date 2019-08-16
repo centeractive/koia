@@ -1,5 +1,5 @@
-import { ConnectionInfo, Protocol } from 'app/shared/model';
 import { CommonUtils } from 'app/shared/utils';
+import { ConnectionInfo, Protocol } from 'app/shared/model';
 
 export class CouchDBConfig {
 

@@ -1,13 +1,16 @@
 import { PivotContext, Column, TimeUnit } from 'app/shared/model';
-import { CommonUtils, ArrayUtils, NumberUtils } from 'app/shared/utils';
-import { ValueRangeGroupingService } from 'app/shared/services';
+import { CommonUtils, ArrayUtils } from 'app/shared/utils';
+import { RawDataRevealService } from 'app/shared/services';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
+import { GroupedValuesComparator } from 'app/shared/value-range';
 
 declare var $: any;
 
 export class PivotOptionsProvider {
 
    private static readonly DEFAULT_RENDERER = 'Heatmap';
+
+   constructor(private rawDataRevealService: RawDataRevealService) {}
 
    /**
     * enriches the specified pivot options with relevant elements or cretes new options if the specified [[pivotOptions]] is undefined
@@ -59,17 +62,9 @@ export class PivotOptionsProvider {
    private createSorters(context: PivotContext): Object {
       const sorters = {};
       for (const valueGrouping of context.valueGroupings) {
-         sorters[valueGrouping.columnName] = (v1, v2) => this.toSortableGroupingValue(v1) - this.toSortableGroupingValue(v2);
+         sorters[valueGrouping.columnName] = (v1: string, v2: string) => new GroupedValuesComparator().compare(v1, v2);
       }
       return sorters;
-   }
-
-   private toSortableGroupingValue(value: string): number {
-      if (value === null || value === undefined) {
-         return - Number.MAX_VALUE;
-      }
-      value = value.substring(0, value.indexOf(' '));
-      return value === ValueRangeGroupingService.MIN ? - Number.MAX_VALUE : NumberUtils.parseFloat(value);
    }
 
    private createRendererOptions(context: PivotContext): Object {
@@ -95,8 +90,10 @@ export class PivotOptionsProvider {
    }
 
    private onCellClicked(filters, pivotData) {
-      const entryIDs: number[] = [];
-      pivotData.forEachMatchingRecord(filters, (entry) => entryIDs.push(entry[CouchDBConstants._ID]));
-      window.alert('Entry IDs:\n' + entryIDs.join(', '));
+      const itemIDs: string[] = [];
+      pivotData.forEachMatchingRecord(filters, (item) => itemIDs.push(item[CouchDBConstants._ID]));
+      if (itemIDs.length > 0) {
+         this.rawDataRevealService.ofIDs(itemIDs);
+      }
    }
 }

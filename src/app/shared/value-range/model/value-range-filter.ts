@@ -1,7 +1,7 @@
 import { ValueRange } from './value-range.type';
-import { PropertyFilter } from './property-filter';
-import { Operator } from './operator.enum';
-import { DataType } from './data-type.enum';
+import { PropertyFilter } from '../../model/property-filter';
+import { Operator } from '../../model/operator.enum';
+import { DataType } from '../../model/data-type.enum';
 
 export class ValueRangeFilter {
 

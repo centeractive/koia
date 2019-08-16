@@ -1,6 +1,6 @@
-import { PropertyFilter, Operator, Column, DataType } from 'app/shared/model';
 import { Sort } from '@angular/material';
-import { ArrayUtils, CommonUtils } from 'app/shared/utils';
+import { ArrayUtils } from 'app/shared/utils';
+import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 
 export class MangoQueryBuilder {
 

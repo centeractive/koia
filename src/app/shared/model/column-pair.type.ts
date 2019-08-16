@@ -1,4 +1,4 @@
-import { Column } from 'app/shared/model';
+import { Column } from './column.type';
 
 export interface ColumnPair {
    source: Column,

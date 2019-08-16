@@ -1,7 +1,7 @@
 import { Sort } from '@angular/material';
 import { PropertyFilter } from './property-filter';
 import { Operator } from './operator.enum';
-import { ValueRangeFilter } from './value-range-filter';
+import { ValueRangeFilter } from '../value-range/model/value-range-filter';
 
 export class Query {
 

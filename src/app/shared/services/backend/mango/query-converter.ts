@@ -1,6 +1,6 @@
-import { Query, Column, Operator } from 'app/shared/model';
 import { MangoQueryBuilder } from './mango-query-builder';
 import { CouchDBConstants } from '../couchdb/couchdb-constants';
+import { Column, Query, Operator } from 'app/shared/model';
 
 export class QueryConverter {
 

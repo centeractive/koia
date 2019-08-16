@@ -1,5 +1,5 @@
-import { Document } from 'app/shared/model';
 import { Observable } from 'rxjs';
+import { Document } from 'app/shared/model';
 
 export interface DB {
 

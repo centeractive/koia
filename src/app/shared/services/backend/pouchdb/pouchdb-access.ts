@@ -1,9 +1,9 @@
-import { Observable, from, of } from 'rxjs';
-import { Document } from 'app/shared/model';
+import { Observable, from } from 'rxjs';
 import { DB } from '../db.type';
 import PouchFind from 'pouchdb-find';
 import PouchDB from 'pouchdb';
 import { ArrayUtils } from 'app/shared/utils';
+import { Document } from 'app/shared/model';
 
 PouchDB.plugin(PouchFind);
 

@@ -2,8 +2,8 @@ import { Column } from './column.type';
 import { DataType } from './data-type.enum';
 import { ElementContext } from './element-context';
 import { ExportFormat } from './export-format.enum';
-import { ValueGrouping } from './value-grouping.type';
-import { ValueRange } from './value-range.type';
+import { ValueGrouping } from '../value-range/model/value-grouping.type';
+import { ValueRange } from '../value-range/model/value-range.type';
 import { fakeAsync, flush } from '@angular/core/testing';
 import { ChangeEvent } from './change-event.enum';
 

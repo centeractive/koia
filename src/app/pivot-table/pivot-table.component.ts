@@ -2,10 +2,11 @@ import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } f
 import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
 import {
   NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, ViewPersistenceService,
-  DialogService
+  DialogService,
+  RawDataRevealService
 } from '../shared/services';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { CommonUtils, ValueGroupingGenerator, DateTimeUtils } from 'app/shared/utils';
+import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { MatBottomSheet, MatSidenav } from '@angular/material';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { DBService } from 'app/shared/services/backend';
@@ -14,6 +15,7 @@ import { AbstractComponent } from 'app/shared/controller';
 import { Subscription } from 'rxjs';
 import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { ConfigRecord } from 'app/shared/model/view-config';
+import { ValueGroupingGenerator } from 'app/shared/value-range';
 
 declare var jQuery: any;
 
@@ -45,14 +47,15 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   private scene: Scene;
   private entriesSubscription: Subscription;
   private valueGroupingGenerator = new ValueGroupingGenerator();
-  private pivotOptionsProvider = new PivotOptionsProvider();
+  private pivotOptionsProvider: PivotOptionsProvider;
   private stringifiedValueGroupings: string;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, private router: Router,
     private dbService: DBService, private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
     private timeGroupingService: TimeGroupingService, private valueGropingService: ValueRangeGroupingService,
-    notificationService: NotificationService, private exportService: ExportService) {
-    super(bottomSheet, notificationService)
+    notificationService: NotificationService, private exportService: ExportService, rawDataRevealService: RawDataRevealService) {
+    super(bottomSheet, notificationService);
+    this.pivotOptionsProvider = new PivotOptionsProvider(rawDataRevealService);
   }
 
   ngOnInit(): void {

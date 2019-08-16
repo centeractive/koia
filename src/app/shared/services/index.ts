@@ -3,7 +3,7 @@ export * from './dialog.service';
 export * from './view-persistence/view-persistence.service';
 export * from './raw-data-reveal.service';
 export * from './graph-data.service';
-export * from './value-range-grouping.service';
+export * from '../value-range/value-range-grouping.service';
 export * from './time-grouping.service';
 export * from './aggregation.service';
 export * from './chart-data.service';

@@ -5,6 +5,12 @@ import {
 } from '../model';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
+import { CouchDBConstants } from './backend/couchdb';
+import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
+
+class MatDialogMock {
+  open() { }
+}
 
 describe('RawDataRevealService', () => {
 
@@ -24,24 +30,61 @@ describe('RawDataRevealService', () => {
     context = new SummaryContext([]);
     context.query = query;
     router = <Router>{ navigateByUrl: (url: string) => null };
-    dialogService = <MatDialog>{};
+    const matDialog: unknown = { open: () => null };
+    dialogService = <MatDialog>matDialog;
     service = new RawDataRevealService(router, dialogService);
-    service.setUseDialog(false);
+    spyOn(dialogService, 'open');
     spyOn(router, 'navigateByUrl');
   });
 
-  it('#createIDLink should create link with ID', () => {
+  it('#ofID should show raw data dialog for ID', () => {
 
     // when
-    service.ofID(100);
+    service.ofID('100');
+
+    // then
+    const expectedQuery = new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, '100', DataType.TEXT));
+    expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, { data: expectedQuery, panelClass: 'dialog-container' });
+  });
+
+  it('#ofIDs should show raw data dialog for IDs', () => {
+
+    // when
+    service.ofIDs(['2', '8', '11']);
+
+    // then
+    const expectedQuery = new Query(new PropertyFilter(CouchDBConstants._ID, Operator.ANY_OF, '2,8,11', DataType.TEXT));
+    expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, { data: expectedQuery, panelClass: 'dialog-container' });
+  });
+
+  it('#ofID should navigate to raw data view with ID', () => {
+
+    // given
+    service.setUseDialog(false);
+
+    // when
+    service.ofID('100');
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id=100');
   });
 
-  it('#createGraphNodeLink should return link for root node', () => {
+  it('#ofIDs should navigate to raw data view with IDs', () => {
 
     // given
+    service.setUseDialog(false);
+
+    // when
+    service.ofIDs(['2', '8', '11']);
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id_in=2,8,11');
+  });
+
+  it('#ofGraphNode should navigate to raw data view for root node', () => {
+
+    // given
+    service.setUseDialog(false);
     const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '25' };
     const graphContext = new GraphContext([]);
     graphContext.query = new Query();
@@ -53,9 +96,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase);
   });
 
-  it('#createGraphNodeLink should show alert when node column value <empty>', () => {
+  it('#ofGraphNode should show alert when node column value <empty>', () => {
 
     // given
+    service.setUseDialog(false);
     const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
     const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: PropertyFilter.EMPTY, info: '25' };
     const graphContext = new GraphContext([]);
@@ -69,9 +113,10 @@ describe('RawDataRevealService', () => {
       'Therefore, contextual data cannot be requested from server.');
   });
 
-  it('#createGraphNodeLink should return link when leaf node', () => {
+  it('#ofGraphNode should navigate to raw data view for leaf node', () => {
 
     // given
+    service.setUseDialog(false);
     const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
     const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '25' };
     const graphContext = new GraphContext([]);
@@ -85,9 +130,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Level=ERROR');
   });
 
-  it('#createGraphNodeLink should return link when time node', () => {
+  it('#ofGraphNode should navigate to raw data view for time node', () => {
 
     // given
+    service.setUseDialog(false);
     const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
     const node: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '25' };
     const graphContext = new GraphContext([]);
@@ -101,9 +147,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
 
-  it('#createTimeUnitLink should create link with time period of entire timeunit', () => {
+  it('#ofTimeUnit should navigate to raw data view for time period of entire timeunit', () => {
 
     // given
+    service.setUseDialog(false);
     const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
 
     // when
@@ -114,9 +161,10 @@ describe('RawDataRevealService', () => {
       linkbase + '?Level=ERROR&Time_gte=' + oneHourAgo + '&Time_lte=' + (oneHourAgo + 60_000));
   });
 
-  it('#createTimeUnitLink should create link with time period of trimmed timeunit', () => {
+  it('#ofTimeUnit should navigate to raw data view for time period of trimmed timeunit', () => {
 
     // given
+    service.setUseDialog(false);
     const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.HOUR);
     query.addValueRangeFilter('Time', oneHourAgo + min, now - min);
 
@@ -128,7 +176,10 @@ describe('RawDataRevealService', () => {
       linkbase + '?Host=server1&Time_gte=' + (oneHourAgo + min) + '&Time_lte=' + (now - min));
   });
 
-  it('#createLink should create bare link', () => {
+  it('#ofQuery should navigate to raw data view for query', () => {
+
+    // given
+    service.setUseDialog(false);
 
     // when
     service.ofQuery(query, [], []);
@@ -137,9 +188,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase);
   });
 
-  it('#createLink should create link with escaped # from base query full text filter', () => {
+  it('#ofQuery should should navigate to raw data view (escaped # from base query full text filter)', () => {
 
     // given
+    service.setUseDialog(false);
     query.setFullTextFilter('x#y');
 
     // when
@@ -149,9 +201,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?q=x%23y');
   });
 
-  it('#createLink should create link from base query full text filter and property filters', () => {
+  it('#ofQuery should navigate to raw data view for base query full text filter and property filters', () => {
 
     // given
+    service.setUseDialog(false);
     query.setFullTextFilter('asdf');
     query.addPropertyFilter(new PropertyFilter('Host', Operator.EQUAL, 'server1'));
     query.addPropertyFilter(new PropertyFilter('Path', Operator.CONTAINS, '.log'));
@@ -163,7 +216,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?q=asdf&Host=server1&Path_like=.log');
   });
 
-  it('#createLink should create link with single property filter', () => {
+  it('#ofQuery should navigate to raw data view for single property filter', () => {
+
+    // given
+    service.setUseDialog(false);
 
     // when
     service.ofQuery(query, ['Level'], ['ERROR']);
@@ -172,9 +228,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Level=ERROR');
   });
 
-  it('#createLink should create link with multiple property filters', () => {
+  it('#ofQuery should navigate to raw data view for multiple property filters', () => {
 
     // given
+    service.setUseDialog(false);
     const columnNames = ['Host', 'Path', 'Level'];
     const columnValues = ['Server', '/opt/tomcat/log/catalina.log', 'ERROR'];
 
@@ -185,9 +242,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Host=Server&Path=/opt/tomcat/log/catalina.log&Level=ERROR');
   });
 
-  it('#createLink should create link for time period', () => {
+  it('#ofQuery should navigate to raw data view for time period', () => {
 
     // given
+    service.setUseDialog(false);
     query.addValueRangeFilter('Time', oneHourAgo, now);
 
     // when
@@ -197,9 +255,10 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
 
-  it('#createLink should create link from base query and additional attributes', () => {
+  it('#ofQuery should navigate to raw data view for base query and additional attributes', () => {
 
     // given
+    service.setUseDialog(false);
     query.setFullTextFilter('xyz');
     query.addPropertyFilter(new PropertyFilter('Host', Operator.NOT_EMPTY, ''));
     query.addPropertyFilter(new PropertyFilter('Path', Operator.CONTAINS, '.txt'));
@@ -214,6 +273,7 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(
       linkbase + '?q=xyz&Host_gte=&Path_like=.txt&Level=WARN&Amount=1000&Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
+
 
   function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {
     return {

@@ -1,4 +1,4 @@
-import { ValueGrouping } from './value-grouping.type';
+import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { Column } from './column.type';
 
 export interface PivotContext {

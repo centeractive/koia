@@ -2,7 +2,10 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angul
 
 import { PivotTableComponent } from './pivot-table.component';
 import { ElementRef, Injectable, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, DialogService } from 'app/shared/services';
+import {
+  NotificationService, ExportService, ValueRangeGroupingService, TimeGroupingService, DialogService,
+  RawDataRevealService
+} from 'app/shared/services';
 import { of, Observable } from 'rxjs';
 import {
   MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule,
@@ -21,6 +24,7 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { SceneFactory } from 'app/shared/test';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class MockElementRef {
@@ -43,7 +47,9 @@ describe('PivotTableComponent', () => {
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
+  const rawDataRevealService = new RawDataRevealService(null, null);
   let locatePivotTable: Function;
+  let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -81,6 +87,7 @@ describe('PivotTableComponent', () => {
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
         { provide: NotificationService, useValue: notificationService },
         { provide: ExportService, useValue: exportService },
+        { provide: RawDataRevealService, useValue: rawDataRevealService },
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     }).compileComponents();
@@ -91,7 +98,7 @@ describe('PivotTableComponent', () => {
     component = fixture.componentInstance;
     locatePivotTable = () => component.divPivot.nativeElement.getElementsByClassName('pvtTable')[0];
     spyOn(notificationService, 'showStatus').and.stub();
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     spyOn(dbService, 'findEntries').and.returnValue(of(entries));
     fixture.detectChanges();
     flush();
@@ -101,6 +108,21 @@ describe('PivotTableComponent', () => {
     expect(component).toBeTruthy();
     expect(component.context).toBeTruthy();
   });
+
+  it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(null);
+    const router = TestBed.get(Router);
+    spyOn(router, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
 
   it('should retain indexed columns from active scene', () => {
     expect(dbService.getActiveScene).toHaveBeenCalled();

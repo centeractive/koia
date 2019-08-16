@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
-import { Scene, Query, Operator, SceneInfo, Page, Column, ValueRange, Document, DataType } from 'app/shared/model';
 import { QueryUtils } from 'app/shared/utils';
 import { QueryConverter } from './mango/query-converter';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
@@ -9,6 +8,7 @@ import { SortDirection } from '@angular/material';
 import { CouchDBService } from './couchdb';
 import { DB } from './db.type';
 import { PouchDBAccess } from './pouchdb';
+import { Scene, SceneInfo, DataType, Operator, Query, Page, Column, ValueRange, Document } from 'app/shared/model';
 
 @Injectable()
 export class DBService {

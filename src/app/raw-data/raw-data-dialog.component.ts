@@ -12,6 +12,8 @@ export class RawDataDialogComponent {
    hideToolbar: boolean;
 
    constructor(public dialogRef: MatDialogRef<RawDataDialogComponent>, @Inject(MAT_DIALOG_DATA) public query: Query) {
-      this.hideToolbar = this.query.findPropertyFilter(CouchDBConstants._ID, Operator.EQUAL) !== undefined;
+      this.hideToolbar =
+         this.query.findPropertyFilter(CouchDBConstants._ID, Operator.EQUAL) !== undefined ||
+         this.query.findPropertyFilter(CouchDBConstants._ID, Operator.ANY_OF) !== undefined;
    }
 }

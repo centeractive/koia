@@ -1,11 +1,13 @@
 import { PivotContext, ValueRange, ValueGrouping, Column, DataType, TimeUnit } from 'app/shared/model';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
+import { RawDataRevealService } from 'app/shared/services';
 
 describe('PivotOptionsProvider', () => {
 
    const timeColumn: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
    let context: PivotContext;
+   let rawDataRevealService: RawDataRevealService;
    let optionsProvider: PivotOptionsProvider;
 
    beforeEach(() => {
@@ -19,107 +21,25 @@ describe('PivotOptionsProvider', () => {
          autoGenerateValueGroupings: true,
          pivotOptions: null
       };
-      optionsProvider = new PivotOptionsProvider();
+      rawDataRevealService = new RawDataRevealService(null, null);
+      optionsProvider = new PivotOptionsProvider(rawDataRevealService);
    });
 
-   it('#enrichPivotOptions should return new options when options are null', () => {
+   it('#enrichPivotOptions should return new options when options are missing', () => {
 
       // given
-      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-
-      // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
-
-      // then
-      expect(pivotOptions).toBeTruthy();
-      expect(pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
-      expect(pivotOptions['sorters']).toEqual({});
-      expect(pivotOptions['rendererOptions']).toBeTruthy();
-      expect(pivotOptions['onRefresh']).toBeTruthy();
-   });
-
-   it('#enrichPivotOptions should return new options with renderer options table click callback when options are null', () => {
-
-      // given
-      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-      spyOn(window, 'alert').and.callFake(m => null);
-
-      // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
-
-      // then
-      const rendererOptions = pivotOptions['rendererOptions'];
-      const clickCallback: Function = rendererOptions['table']['clickCallback'];
-      clickCallback(undefined, undefined, undefined, new PivotData());
-      expect(window.alert).toHaveBeenCalledWith('Entry IDs:\n1, 4, 8');
-   });
-
-   it('#enrichPivotOptions should return new options with sorters when options are null', () => {
-
-      // given
-      const ranges: ValueRange[] = [{ max: 20, active: true }, { max: 50, active: true }]
-      const amountGrouping: ValueGrouping = { columnName: 'Amount', ranges: ranges };
-      const percentGrouping: ValueGrouping = { columnName: 'Percent', ranges: ranges };
-      context.valueGroupings = [amountGrouping, percentGrouping];
-      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-
-      // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
-
-      // then
-      expect(pivotOptions).toBeTruthy();
-      const sorters = pivotOptions['sorters'];
-      expect(sorters).toBeTruthy();
-      expect(sorters.Amount).toBeTruthy();
-      expect(sorters.Percent).toBeTruthy();
-      const amountSorter: (v1, v2) => any = sorters.Amount;
-      expect(amountSorter('min - 0', '0 - 1')).toBeLessThan(0);
-      expect(amountSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
-      const percentSorter: (v1, v2) => any = sorters.Percent;
-      expect(percentSorter('min - 0', '0 - 1')).toBeLessThan(0);
-      expect(percentSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
-   });
-
-   it('#enrichPivotOptions should return new options when options are undefined', () => {
-
-      // given
-      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
+      const onPivotTableRefreshEnd = () => null;
 
       // when
       const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
+      expect(pivotOptions['renderers']).toBeDefined();
       expect(pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
       expect(pivotOptions['sorters']).toEqual({});
-      expect(pivotOptions['rendererOptions']).toBeTruthy();
-      expect(pivotOptions['onRefresh']).toBeTruthy();
-   });
-
-   it('#enrichPivotOptions should return new options with sorters when options are undefined', () => {
-
-      // given
-      const ranges: ValueRange[] = [{ max: 20, active: true }, { max: 50, active: true }]
-      const amountGrouping: ValueGrouping = { columnName: 'Amount', ranges: ranges };
-      const percentGrouping: ValueGrouping = { columnName: 'Percent', ranges: ranges };
-      context.valueGroupings = [amountGrouping, percentGrouping];
-      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-
-      // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onPivotTableRefreshEnd);
-
-      // then
-      expect(pivotOptions).toBeTruthy();
-      const sorters = pivotOptions['sorters'];
-      expect(sorters).toBeTruthy();
-      expect(sorters.Amount).toBeTruthy();
-      expect(sorters.Percent).toBeTruthy();
-      const amountSorter: (v1, v2) => any = sorters.Amount;
-      expect(amountSorter('min - 0', '0 - 1')).toBeLessThan(0);
-      expect(amountSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
-      const percentSorter: (v1, v2) => any = sorters.Percent;
-      expect(percentSorter('min - 0', '0 - 1')).toBeLessThan(0);
-      expect(percentSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
+      expect(pivotOptions['rendererOptions']).toBeDefined();
+      expect(pivotOptions['onRefresh']).toBeDefined();
    });
 
    it('#enrichPivotOptions should enrich options when options exist', () => {
@@ -136,24 +56,24 @@ describe('PivotOptionsProvider', () => {
 
       // then
       expect(pivotOptions).toBeTruthy();
+      expect(pivotOptions['renderers']).toBeDefined();
       expect(pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
       expect(pivotOptions['sorters']).toEqual({});
-      expect(pivotOptions['rendererOptions']).toBeTruthy();
-      expect(pivotOptions['onRefresh']).toBeTruthy();
+      expect(pivotOptions['rendererOptions']).toBeDefined();
+      expect(pivotOptions['onRefresh']).toBeDefined();
    });
 
-   it('#enrichPivotOptions should enrich options with sorters when options exist', () => {
+   it('#enrichPivotOptions should return options with sorters', () => {
 
       // given
       const ranges: ValueRange[] = [{ max: 20, active: true }, { max: 50, active: true }]
       const amountGrouping: ValueGrouping = { columnName: 'Amount', ranges: ranges };
       const percentGrouping: ValueGrouping = { columnName: 'Percent', ranges: ranges };
       context.valueGroupings = [amountGrouping, percentGrouping];
-      const options = createOptions();
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -167,6 +87,24 @@ describe('PivotOptionsProvider', () => {
       const percentSorter: (v1, v2) => any = sorters.Percent;
       expect(percentSorter('min - 0', '0 - 1')).toBeLessThan(0);
       expect(percentSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
+   });
+
+   it('#enrichPivotOptions should return options with renderer options table click callback', () => {
+
+      // given
+      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
+      const serviceOfIDsSpy = spyOn(rawDataRevealService, 'ofIDs').and.callFake(m => null);
+
+      // when
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
+
+      // then
+      const rendererOptions = pivotOptions['rendererOptions'];
+      const clickCallback: Function = rendererOptions['table']['clickCallback'];
+      clickCallback(undefined, undefined, undefined, new PivotData(false));
+      expect(serviceOfIDsSpy).not.toHaveBeenCalled();
+      clickCallback(undefined, undefined, undefined, new PivotData(true));
+      expect(serviceOfIDsSpy).toHaveBeenCalledWith(['1', '4', '8']);
    });
 
    it('#enrichPivotOptions should take over "show totals" attributes from context (I)', () => {
@@ -221,6 +159,20 @@ describe('PivotOptionsProvider', () => {
       const scale = colorScaleGenerator.call(context, [-2, -1, 0, 1, 2]);
       expect(scale.range()).toEqual(['red', 'white', 'green']);
       expect(scale.domain()).toEqual([-2, 0, 2]);
+   });
+
+   it('#enrichPivotOptions should return options that are linked with on refresh end callback', () => {
+
+      // given
+      const onRefreshEndSpy = jasmine.createSpy('onPivotTableRefreshEnd').and.callFake(e => null);
+
+      // when
+      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onRefreshEndSpy);
+
+      // then
+      const onRefreshCallback: Function = pivotOptions['onRefresh'];
+      onRefreshCallback();
+      expect(onRefreshEndSpy).toHaveBeenCalled();
    });
 
    it('#clonedPurgedPivotOptions should clone options', () => {
@@ -426,7 +378,11 @@ class PivotData {
       { _id: '8' },
    ];
 
-   forEachMatchingRecord(filters: any, callback: (record: any) => any): void {
-      this.entries.forEach(e => callback(e));
+   constructor(private hasData: boolean) {}
+
+   forEachMatchingRecord(filters: any, callback: (entry: any) => any): void {
+      if (this.hasData) {
+         this.entries.forEach(entry => callback(entry));
+      }
    }
 }

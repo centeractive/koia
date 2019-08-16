@@ -2,7 +2,7 @@ import { EventEmitter } from '@angular/core';
 import { Aggregation } from './aggregation.enum';
 import { Query } from './query';
 import { ChangeEvent } from './change-event.enum';
-import { ValueGrouping } from './value-grouping.type';
+import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { ArrayUtils } from '../utils/array-utils';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';

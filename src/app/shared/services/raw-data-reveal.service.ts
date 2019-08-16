@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route } from '../model';
-import { DateTimeUtils, CommonUtils } from '../utils';
+import { DateTimeUtils, CommonUtils, ArrayUtils } from '../utils';
 import { GraphUtils } from 'app/graph/graph-utils';
 import { CouchDBConstants } from './backend/couchdb';
 import { Router } from '@angular/router';
@@ -25,18 +25,21 @@ export class RawDataRevealService {
   }
 
   /**
-   * shows raw data of a single entry identified by its ID
-   *
-   * @returns an encoded URL to be used for showing raw data matching the specified criteria
+   * displays raw data of a single entry identified by its ID
    */
-  ofID(id: number): void {
-    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, id.toString(), DataType.TEXT)));
+  ofID(id: string): void {
+    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, id, DataType.TEXT)));
   }
 
   /**
-   * shows raw data of the specified graph node
-   *
-   * @returns an encoded URL to be used for showing raw data matching the graph node
+   * displays raw data of a one or many entries, each identified by its ID
+   */
+  ofIDs(ids: string[]): void {
+    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.ANY_OF, ids.join(ArrayUtils.DEFAULT_SEPARATOR), DataType.TEXT)));
+  }
+
+  /**
+   * displays raw data of the specified graph node
    */
   ofGraphNode(graphNode: GraphNode, context: GraphContext): void {
     const columnNames = GraphUtils.collectNonTimeColumnNames(graphNode, context);
@@ -55,7 +58,7 @@ export class RawDataRevealService {
   }
 
   /**
-   * shows raw data that is potentially grouped by one or multiple time columns
+   * displays raw data that is potentially grouped by one or multiple time columns
    *
    * @param context element context
    * @param timeColumn time columns
@@ -63,7 +66,6 @@ export class RawDataRevealService {
    * @param columnNames columns names (must not include 'Time' column)
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
-   * @returns an encoded URL to be used for showing raw data matching the specified criteria
    */
   ofTimeUnit(context: ElementContext, timeColumns: Column[], startTimes: number[], columnNames: string[],
     columnValues: any[]): void {
@@ -84,13 +86,12 @@ export class RawDataRevealService {
   }
 
   /**
-   * shows raw data out of the base query and additional attributes
+   * displays raw data out of the base query and additional attributes
    *
    * @param baseQuery base query that may serve additional full text filter and propertiy filters
    * @param columnNames columns names (must not include time columns)
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
-   * @returns an encoded URL to be used for showing raw data matching the specified criteria
    */
   ofQuery(baseQuery: Query, columnNames: string[], columnValues: any[]): void {
     const query = baseQuery.clone();

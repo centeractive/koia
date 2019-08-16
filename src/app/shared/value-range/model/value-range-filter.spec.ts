@@ -1,5 +1,5 @@
 import { ValueRangeFilter } from './value-range-filter';
-import { Operator } from './operator.enum';
+import { Operator } from '../../model/operator.enum';
 
 describe('ValueRangeFilter', () => {
 

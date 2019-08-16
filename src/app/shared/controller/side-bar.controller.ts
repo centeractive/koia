@@ -1,10 +1,11 @@
 import { Output, EventEmitter, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { MatAccordion } from '@angular/material';
 import { Column, ElementContext, ValueRange, ValueGrouping, DataType, TimeUnit } from '../model';
-import { NumberUtils, ArrayUtils, ValueGroupingGenerator, DataTypeUtils } from '../utils';
+import { NumberUtils, ArrayUtils, DataTypeUtils } from '../utils';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { DataFrame } from 'data-forge';
 import { Observable } from 'rxjs';
+import { ValueGroupingGenerator } from '../value-range';
 
 export abstract class SideBarController implements OnChanges {
 

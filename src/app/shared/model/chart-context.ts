@@ -2,7 +2,7 @@ import { ElementContext } from './element-context';
 import { Margin } from 'nvd3';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
-import { ValueRange } from './value-range.type';
+import { ValueRange } from '../value-range/model/value-range.type';
 import { ChartType } from './chart-type';
 import { GroupingType } from './grouping-type.enum';
 

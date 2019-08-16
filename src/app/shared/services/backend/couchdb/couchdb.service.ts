@@ -1,6 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Scene, Document } from 'app/shared/model';
 import { DocChangeResponse } from '../doc-change-response.type';
 import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
@@ -8,6 +7,7 @@ import { DB } from '../db.type';
 import { ConnectionInfo } from '../../../model/connection-info.type';
 import { CommonUtils } from 'app/shared/utils';
 import { CouchDBConfig } from './couchdb-config';
+import { Scene, Document } from 'app/shared/model';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)

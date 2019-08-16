@@ -33,6 +33,12 @@ table.pvtTable thead tr th, table.pvtTable tbody tr th {
   border: 1px solid white !important;
 }
 
+table.pvtTable td {
+  color: darkblue !important;
+  text-decoration: underline !important;
+  cursor: pointer;
+}
+
 .pvtAxisContainer, .pvtVals {
   background: #e6e6ff  !important;
   -webkit-border-radius: 4px;
