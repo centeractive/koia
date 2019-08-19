@@ -1,15 +1,15 @@
 import { PivotContext, Column, DataType, TimeUnit } from 'app/shared/model';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
-import { RawDataRevealService } from 'app/shared/services';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
+import { CellClickHandler } from './cell-click-handler';
 
 describe('PivotOptionsProvider', () => {
 
    const timeColumn: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
    let context: PivotContext;
-   let rawDataRevealService: RawDataRevealService;
+   let cellClickHandler: CellClickHandler;
    let optionsProvider: PivotOptionsProvider;
 
    beforeEach(() => {
@@ -23,8 +23,8 @@ describe('PivotOptionsProvider', () => {
          autoGenerateValueGroupings: true,
          pivotOptions: null
       };
-      rawDataRevealService = new RawDataRevealService(null, null);
-      optionsProvider = new PivotOptionsProvider(rawDataRevealService);
+      cellClickHandler = new CellClickHandler(null);
+      optionsProvider = new PivotOptionsProvider(cellClickHandler);
    });
 
    it('#enrichPivotOptions should return new options when options are missing', () => {
@@ -33,7 +33,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => null;
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, [], onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -54,7 +54,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -75,7 +75,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, [], onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -95,18 +95,19 @@ describe('PivotOptionsProvider', () => {
 
       // given
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-      const serviceOfIDsSpy = spyOn(rawDataRevealService, 'ofIDs').and.callFake(m => null);
+      spyOn(cellClickHandler, 'onCellClicked').and.callFake(m => null);
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, [], onPivotTableRefreshEnd);
 
       // then
       const rendererOptions = pivotOptions['rendererOptions'];
       const clickCallback: Function = rendererOptions['table']['clickCallback'];
-      clickCallback(undefined, undefined, undefined, new PivotData(false));
-      expect(serviceOfIDsSpy).not.toHaveBeenCalled();
-      clickCallback(undefined, undefined, undefined, new PivotData(true));
-      expect(serviceOfIDsSpy).toHaveBeenCalledWith(['1', '4', '8']);
+      const mouseEvent = {};
+      const filters = { x: '100', y: '57'};
+      const pivotData = {};
+      clickCallback(mouseEvent, '100', filters, pivotData);
+      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith([], context.valueGroupings, mouseEvent, filters, pivotData);
    });
 
    it('#enrichPivotOptions should take over "show totals" attributes from context (I)', () => {
@@ -118,7 +119,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -137,7 +138,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -154,7 +155,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
 
       // then
       const colorScaleGenerator: (values: number[]) => any = pivotOptions['rendererOptions'].heatmap.colorScaleGenerator;
@@ -169,7 +170,7 @@ describe('PivotOptionsProvider', () => {
       const onRefreshEndSpy = jasmine.createSpy('onPivotTableRefreshEnd').and.callFake(e => null);
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onRefreshEndSpy);
+      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, [], onRefreshEndSpy);
 
       // then
       const onRefreshCallback: Function = pivotOptions['onRefresh'];
@@ -369,22 +370,5 @@ function createOptions(): Object {
       'inclusionsInfo': {},
       'aggregatorName': 'Count',
       'rendererName': 'Table'
-   }
-}
-
-class PivotData {
-
-   private entries = [
-      { _id: '1' },
-      { _id: '4' },
-      { _id: '8' },
-   ];
-
-   constructor(private hasData: boolean) {}
-
-   forEachMatchingRecord(filters: any, callback: (entry: any) => any): void {
-      if (this.hasData) {
-         this.entries.forEach(entry => callback(entry));
-      }
    }
 }

@@ -137,6 +137,8 @@ export class MangoQueryBuilder {
    private toSelectorValue(propertyFilter: PropertyFilter): any {
       if (propertyFilter.operator === Operator.CONTAINS) {
          return this.toContainsSelectorValue(<string>propertyFilter.filterValue, false);
+      } else if (propertyFilter.operator === Operator.EMPTY) {
+         return false;
       } else if (propertyFilter.operator === Operator.NOT_EMPTY) {
          return null;
       } else if (propertyFilter.operator === Operator.ANY_OF) {
@@ -211,6 +213,8 @@ export class MangoQueryBuilder {
             return '$gte';
          case Operator.GREATER_THAN:
             return '$gt';
+         case Operator.EMPTY:
+            return '$exists';
          case Operator.NOT_EMPTY:
             return '$gt';
          case Operator.ANY_OF:

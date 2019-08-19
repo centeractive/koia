@@ -2,13 +2,12 @@ import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } f
 import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
 import {
   NotificationService, ExportService, TimeGroupingService, ViewPersistenceService,
-  DialogService,
-  RawDataRevealService
+  DialogService, RawDataRevealService
 } from '../shared/services';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { MatBottomSheet, MatSidenav } from '@angular/material';
-import { PivotOptionsProvider } from './pivot-options-provider';
+import { PivotOptionsProvider } from './options/pivot-options-provider';
 import { DBService } from 'app/shared/services/backend';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -16,6 +15,7 @@ import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { CellClickHandler } from './options/cell-click-handler';
 
 declare var jQuery: any;
 
@@ -35,7 +35,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   @ViewChild('pivot', undefined) divPivot: ElementRef<HTMLDivElement>;
 
   readonly route = Route.PIVOT;
-  readonly timeUnits = [TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];
+  readonly timeUnits = Object.keys(TimeUnit).map(key => TimeUnit[key]);
   readonly colors = ['#FF3333', '#FF6633', '#FFFF33', '#0080FF', '#00FF00'];
   columns: Column[];
   context: PivotContext;
@@ -52,10 +52,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, private router: Router,
     private dbService: DBService, private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
-    private timeGroupingService: TimeGroupingService, private valueGropingService: ValueRangeGroupingService,
-    notificationService: NotificationService, private exportService: ExportService, rawDataRevealService: RawDataRevealService) {
+    private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
+    notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService) {
     super(bottomSheet, notificationService);
-    this.pivotOptionsProvider = new PivotOptionsProvider(rawDataRevealService);
   }
 
   ngOnInit(): void {
@@ -64,6 +63,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     if (!this.scene) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
+      this.pivotOptionsProvider = new PivotOptionsProvider(new CellClickHandler(this.rawDataRevealService));
       this.fetchData(new Query());
       this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
       this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
@@ -132,7 +132,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     this.context.timeColumns
       .forEach(
         c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
-    this.dataFrame = this.valueGropingService.compute(this.dataFrame, this.context.valueGroupings);
+    this.dataFrame = this.valueGroupingService.compute(this.dataFrame, this.context.valueGroupings);
     this.renderPivotTable(config);
   }
 
@@ -147,7 +147,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   loadConfig(configRecord: ConfigRecord): void {
     this.context = configRecord.data;
     const pivotOptions = this.pivotOptionsProvider
-      .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
+      .enrichPivotOptions(this.context.pivotOptions, this.context, this.columns, () => this.onPivotTableRefreshEnd());
     this.refreshDataFrame(pivotOptions);
   }
 
@@ -195,7 +195,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   private refreshOptions(): void {
-    this.pivotOptionsProvider.enrichPivotOptions(this.getPivotOptions(), this.context, () => this.onPivotTableRefreshEnd());
+    this.pivotOptionsProvider.enrichPivotOptions(this.getPivotOptions(), this.context, this.columns, () => this.onPivotTableRefreshEnd());
   }
 
   getPivotOptions(): Object {
@@ -217,7 +217,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
       targetElement.pivotUI(this.dataFrame.toArray(), pivotOptions, true);
     } else {
       targetElement.pivotUI(this.dataFrame.toArray(),
-        this.pivotOptionsProvider.enrichPivotOptions(undefined, this.context, () => this.onPivotTableRefreshEnd()));
+        this.pivotOptionsProvider.enrichPivotOptions(undefined, this.context, this.columns, () => this.onPivotTableRefreshEnd()));
     }
   }
 

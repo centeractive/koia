@@ -1,5 +1,6 @@
 import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { Column } from './column.type';
+import { Query } from '@angular/core';
 
 export interface PivotContext {
   timeColumns: Column[];

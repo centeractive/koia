@@ -1,14 +1,22 @@
-import { NumberUtils } from '../utils/number-utils';
-import { ValueRangeGroupingService } from './value-range-grouping.service';
+import { ValueRangeConverter } from './value-range-converter';
 
 export class GroupedValuesComparator {
 
-   compare(v1: string, v2: string): number {
-      return this.toSortableValue(v1) - this.toSortableValue(v2);
+   compare(gv1: string, gv2: string): number {
+      if (gv1 === ValueRangeConverter.EMPTY) {
+         return gv2 === ValueRangeConverter.EMPTY ? 0 : -1;
+      } else if (gv2 === ValueRangeConverter.EMPTY) {
+         return 1;
+      }
+      return this.compareNumbers(ValueRangeConverter.toMinValue(gv1), ValueRangeConverter.toMinValue(gv2));
    }
 
-   private toSortableValue(value: string): number {
-      value = value.substring(0, value.indexOf(' '));
-      return value === ValueRangeGroupingService.MIN ? - Number.MAX_VALUE : NumberUtils.parseFloat(value);
+   private compareNumbers(n1: number, n2: number): number {
+      if (n1 === undefined) {
+         return n2 === undefined ? 0 : -1;
+      } else if (n2 === undefined) {
+         return 1;
+      }
+      return n1 - n2;
    }
 }

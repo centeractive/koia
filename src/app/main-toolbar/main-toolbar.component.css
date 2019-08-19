@@ -27,6 +27,7 @@ button {
 
 .span_column_filter {
   display: flex;
+  min-height: 50px;
   margin-left: 20px;
   align-items: center;
 }

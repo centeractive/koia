@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { IDataFrame } from 'data-forge';
 import { SummaryContext, DataType } from 'app/shared/model';
-import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { CommonUtils, DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
 
 export class ExportDataGenerator {
 
@@ -19,7 +19,7 @@ export class ExportDataGenerator {
    private formatTimeColumns(context: SummaryContext, dataFrame: IDataFrame<number, any>) {
       context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c => {
          dataFrame = dataFrame.transformSeries({
-            [CommonUtils.labelOf(c, c.groupingTimeUnit)]: t => isNaN(t) ? '' :
+            [ColumnNameConverter.toLabel(c, c.groupingTimeUnit)]: t => isNaN(t) ? '' :
                this.datePipe.transform(t, DateTimeUtils.ngFormatOf(c.groupingTimeUnit))
          });
       });

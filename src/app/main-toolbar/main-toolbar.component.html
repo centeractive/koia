@@ -54,7 +54,8 @@
           </button>
         </mat-menu>
 
-        <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu">{{ columnFilter.operator }}</span>
+        <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
+          [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)">{{ columnFilter.operator }}</span>
         <mat-menu #operatorMenu="matMenu">
           <button mat-menu-item *ngFor="let operator of availableOperatorsOf(columnFilter.propertyName)"
             [disabled]="operator === columnFilter.operator"

@@ -1,4 +1,4 @@
-import { DateTimeUtils, CommonUtils, ArrayUtils, ValueFormatter } from '../../shared/utils';
+import { DateTimeUtils, CommonUtils, ArrayUtils, ValueFormatter, ColumnNameConverter } from '../../shared/utils';
 import { ChartContext, ChartType, DataType, Column } from '../../shared/model';
 import { RawDataRevealer } from './raw-data-revealer';
 import { RawDataRevealService } from 'app/shared/services';
@@ -282,7 +282,7 @@ export class ChartOptionsProvider {
       if (!context.isAggregationCountSelected()) {
          return context.groupByColumns[0].name;
       }
-      return CommonUtils.labelOf(context.groupByColumns[0], context.groupByColumns[0].groupingTimeUnit);
+      return ColumnNameConverter.toLabel(context.groupByColumns[0], context.groupByColumns[0].groupingTimeUnit);
    }
 
    private formatXAxisTick(value: any, context: ChartContext): any {

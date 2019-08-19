@@ -1,28 +1,27 @@
 import { PivotContext, Column, TimeUnit } from 'app/shared/model';
-import { CommonUtils, ArrayUtils } from 'app/shared/utils';
-import { RawDataRevealService } from 'app/shared/services';
+import { CommonUtils, ArrayUtils, ColumnNameConverter } from 'app/shared/utils';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { GroupedValuesComparator } from 'app/shared/value-range';
-
+import { CellClickHandler } from './cell-click-handler';
 declare var $: any;
 
 export class PivotOptionsProvider {
 
    private static readonly DEFAULT_RENDERER = 'Heatmap';
 
-   constructor(private rawDataRevealService: RawDataRevealService) {}
+   constructor(private cellClickHandler: CellClickHandler) { }
 
    /**
     * enriches the specified pivot options with relevant elements or cretes new options if the specified [[pivotOptions]] is undefined
     */
-   enrichPivotOptions(pivotOptions: Object, context: PivotContext, onPivotTableRefreshEnd: () => any): Object {
+   enrichPivotOptions(pivotOptions: Object, context: PivotContext, columns: Column[], onPivotTableRefreshEnd: () => any): Object {
       if (!pivotOptions) {
          pivotOptions = { rendererName: PivotOptionsProvider.DEFAULT_RENDERER };
       }
       pivotOptions['renderers'] = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers);
       pivotOptions['hiddenAttributes'] = [CouchDBConstants._ID];
       pivotOptions['sorters'] = this.createSorters(context);
-      pivotOptions['rendererOptions'] = this.createRendererOptions(context);
+      pivotOptions['rendererOptions'] = this.createRendererOptions(context, columns);
       pivotOptions['onRefresh'] = config => onPivotTableRefreshEnd();
       return pivotOptions;
    }
@@ -53,8 +52,8 @@ export class PivotOptionsProvider {
     * replaces the time columns in case they're currently in use
     */
    replaceTimeColumnsInUse(pivotOptions: Object, timeColumn: Column, oldTimeUnit: TimeUnit, newTimeUnit: TimeUnit): void {
-      const oldLabel = CommonUtils.labelOf(timeColumn, oldTimeUnit);
-      const newLabel = CommonUtils.labelOf(timeColumn, newTimeUnit);
+      const oldLabel = ColumnNameConverter.toLabel(timeColumn, oldTimeUnit);
+      const newLabel = ColumnNameConverter.toLabel(timeColumn, newTimeUnit);
       ArrayUtils.replaceElement(pivotOptions['cols'], oldLabel, newLabel);
       ArrayUtils.replaceElement(pivotOptions['rows'], oldLabel, newLabel);
    }
@@ -67,17 +66,18 @@ export class PivotOptionsProvider {
       return sorters;
    }
 
-   private createRendererOptions(context: PivotContext): Object {
+   private createRendererOptions(context: PivotContext, columns: Column[], ): Object {
       return {
          heatmap: {
             colorScaleGenerator: values => this.generateColorScale(context, values)
          },
          table: {
-            clickCallback: (e, value, filters, pivotData) => this.onCellClicked(filters, pivotData),
+            clickCallback: (e, value, filters, pivotData) =>
+               this.cellClickHandler.onCellClicked(columns, context.valueGroupings, e, filters, pivotData),
             rowTotals: context.showRowTotals,
             colTotals: context.showColumnTotals
          },
-         c3: { }
+         c3: {}
       };
    }
 
@@ -87,13 +87,5 @@ export class PivotOptionsProvider {
       return d3.scale.linear<string>()
          .domain([min, 0, max])
          .range([context.negativeColor, 'white', context.positiveColor]);
-   }
-
-   private onCellClicked(filters, pivotData) {
-      const itemIDs: string[] = [];
-      pivotData.forEachMatchingRecord(filters, (item) => itemIDs.push(item[CouchDBConstants._ID]));
-      if (itemIDs.length > 0) {
-         this.rawDataRevealService.ofIDs(itemIDs);
-      }
    }
 }

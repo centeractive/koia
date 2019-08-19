@@ -1,6 +1,6 @@
 import { DataFrame, IDataFrame } from 'data-forge';
 import { GraphContext, Column, PropertyFilter, GraphNode, DataType } from '../model';
-import { DateTimeUtils, CommonUtils } from 'app/shared/utils';
+import { DateTimeUtils, CommonUtils, ColumnNameConverter } from 'app/shared/utils';
 import { Injectable } from '@angular/core';
 
 declare var d3: any;
@@ -78,7 +78,7 @@ export class GraphDataService {
 
    private nodeNameFrom(column: Column): string {
       if (column) {
-         return column.dataType === DataType.TIME ? CommonUtils.labelOf(column, column.groupingTimeUnit) : column.name;
+         return column.dataType === DataType.TIME ? ColumnNameConverter.toLabel(column, column.groupingTimeUnit) : column.name;
       }
       return ''; // root node
    }

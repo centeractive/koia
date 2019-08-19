@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route } from '../model';
-import { DateTimeUtils, CommonUtils, ArrayUtils } from '../utils';
+import { DateTimeUtils, CommonUtils, ArrayUtils, ColumnNameConverter } from '../utils';
 import { GraphUtils } from 'app/graph/graph-utils';
 import { CouchDBConstants } from './backend/couchdb';
 import { Router } from '@angular/router';
@@ -32,7 +32,7 @@ export class RawDataRevealService {
   }
 
   /**
-   * displays raw data of a one or many entries, each identified by its ID
+   * displays raw data of one or many entries, each identified by its ID
    */
   ofIDs(ids: string[]): void {
     this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.ANY_OF, ids.join(ArrayUtils.DEFAULT_SEPARATOR), DataType.TEXT)));
@@ -50,7 +50,7 @@ export class RawDataRevealService {
     }
     if (context.groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
       const timeColumns = context.groupByColumns.filter(c => c.dataType === DataType.TIME);
-      const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, CommonUtils.labelOf(c, c.groupingTimeUnit)));
+      const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
       this.ofTimeUnit(context, timeColumns, startTimes, columnNames, columnValues);
     } else {
       this.ofQuery(context.query, columnNames, columnValues);
@@ -101,7 +101,7 @@ export class RawDataRevealService {
     this.show(query);
   }
 
-  private show(query: Query): void {
+  show(query: Query): void {
     if (this.useDialog) {
       this.dialogService.open(RawDataDialogComponent, { data: query, panelClass: 'dialog-container' });
     } else {

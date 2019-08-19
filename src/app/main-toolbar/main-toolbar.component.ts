@@ -192,7 +192,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       this.defineFullTextFilter(query);
     }
     this.columnFilters
-      .filter(f => f.operator === Operator.NOT_EMPTY || (f.filterValue !== undefined && f.filterValue !== ''))
+      .filter(f => f.operator === Operator.EMPTY || f.operator === Operator.NOT_EMPTY
+        || (f.filterValue !== undefined && f.filterValue !== ''))
       .forEach(f => query.addPropertyFilter(f.clone()));
     this.rangeFilters
       .filter(f => f.isStartFiltered() || f.isEndFiltered())

@@ -2,6 +2,7 @@ import { ValueRangeGroupingService } from './value-range-grouping.service';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { ValueRange } from './model/value-range.type';
 import { ValueGrouping } from './model/value-grouping.type';
+import { ValueRangeConverter } from './value-range-converter';
 
 describe('ValueRangeGroupingService', () => {
 
@@ -30,7 +31,7 @@ describe('ValueRangeGroupingService', () => {
 
       // then
       const expectedData = [
-         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeGroupingService.EMPTY },
+         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeConverter.EMPTY },
          { ID: 1, Level: 'INFO', Data: 'one', Amount: 'min - 10' },
          { ID: 2, Level: 'INFO', Data: 'two', Amount: '10 - 20' },
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - 30' },
@@ -51,7 +52,7 @@ describe('ValueRangeGroupingService', () => {
 
       // then
       const expectedData = [
-         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeGroupingService.EMPTY },
+         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeConverter.EMPTY },
          { ID: 1, Level: 'INFO', Data: 'one', Amount: 'min - 10' },
          { ID: 2, Level: 'INFO', Data: 'two', Amount: '10 - 20' },
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - 30' },
@@ -72,7 +73,7 @@ describe('ValueRangeGroupingService', () => {
 
       // then
       const expectedData = [
-         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeGroupingService.EMPTY },
+         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeConverter.EMPTY },
          { ID: 1, Level: 'INFO', Data: 'one', Amount: 'min - 20' },
          { ID: 2, Level: 'INFO', Data: 'two', Amount: 'min - 20' },
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - 30' },
@@ -93,7 +94,7 @@ describe('ValueRangeGroupingService', () => {
 
       // then
       const expectedData = [
-         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeGroupingService.EMPTY },
+         { ID: 0, Level: 'ERROR', Data: '-', Amount: ValueRangeConverter.EMPTY },
          { ID: 1, Level: 'INFO', Data: 'one', Amount: 'min - 10' },
          { ID: 2, Level: 'INFO', Data: 'two', Amount: '10 - 20' },
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - max' },

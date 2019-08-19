@@ -1,12 +1,11 @@
 import { ValueRange } from './value-range.type';
 import { PropertyFilter } from '../../model/property-filter';
 import { Operator } from '../../model/operator.enum';
-import { DataType } from '../../model/data-type.enum';
 
 export class ValueRangeFilter {
 
    protected _propertyName: string;
-   private _valueRange: ValueRange
+   private _valueRange: ValueRange;
 
    constructor(propertyName: string, valueRange: ValueRange) {
       this._propertyName = propertyName;

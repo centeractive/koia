@@ -1,8 +1,7 @@
 import { IDataFrame } from 'data-forge';
 import { ElementContext } from 'app/shared/model';
 import { Sort } from '@angular/material';
-import { NumberUtils } from 'app/shared/utils';
-import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { ValueRangeConverter } from 'app/shared/value-range';
 
 export class DataFrameSorter {
 
@@ -24,9 +23,8 @@ export class DataFrameSorter {
   private toSortableValue(columnName: string, entry: Object, context: ElementContext): any {
     let value = entry[columnName];
     if (context.hasValueGrouping(columnName)) {
-      let stringValue = <string>value;
-      stringValue = stringValue.substring(0, stringValue.indexOf(' '));
-      value = stringValue === ValueRangeGroupingService.MIN ? - Number.MAX_VALUE : NumberUtils.parseFloat(stringValue);
+      const minValue = ValueRangeConverter.toMinValue(<string>value);
+      value = minValue === undefined ? - Number.MAX_VALUE : minValue;
     }
     return value;
   }

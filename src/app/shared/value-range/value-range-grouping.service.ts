@@ -2,6 +2,7 @@ import { IDataFrame, DataFrame, Series } from 'data-forge';
 import { Injectable } from '@angular/core';
 import { ValueGrouping } from './model/value-grouping.type';
 import { ValueRange } from './model/value-range.type';
+import { ValueRangeConverter } from './value-range-converter';
 
 /**
  * groups the values of individual number columns into value ranges
@@ -10,10 +11,6 @@ import { ValueRange } from './model/value-range.type';
   providedIn: 'root'
 })
 export class ValueRangeGroupingService {
-
-  static readonly EMPTY = 'empty';
-  static readonly MIN = 'min';
-  static readonly MAX = 'max';
 
   compute(baseData: IDataFrame<number, any>, groupings: ValueGrouping[]): IDataFrame<number, any> {
     let dataFrame: IDataFrame<number, any> = new DataFrame(baseData);
@@ -40,17 +37,17 @@ export class ValueRangeGroupingService {
 
   private toGroupValue(value: number, sortedRangesMax: number[]): string {
     if (value === null || value === undefined) {
-      return ValueRangeGroupingService.EMPTY;
+      return ValueRangeConverter.EMPTY;
     }
     let prevRangeMax = - Number.MAX_VALUE;
     for (const rangeMax of sortedRangesMax) {
       if (value >= rangeMax) {
         prevRangeMax = rangeMax;
       } else {
-        const from = prevRangeMax === - Number.MAX_VALUE ? ValueRangeGroupingService.MIN : prevRangeMax.toLocaleString();
-        return from + ' - ' + rangeMax.toLocaleString();
+        const from = prevRangeMax === - Number.MAX_VALUE ? undefined : prevRangeMax;
+        return ValueRangeConverter.toLabel(from, rangeMax);
       }
     }
-    return prevRangeMax.toLocaleString() + ' - ' + ValueRangeGroupingService.MAX;
+    return ValueRangeConverter.toLabel(prevRangeMax, undefined);
   }
 }

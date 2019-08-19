@@ -1,12 +1,13 @@
 import { GroupedValuesComparator } from './grouped-values-comparator';
 import { shuffle } from 'd3';
-import { ValueRangeGroupingService } from './value-range-grouping.service';
+import { ValueRangeConverter } from './value-range-converter';
 
 describe('GroupedValuesComparator', () => {
 
    const comparator = new GroupedValuesComparator();
 
    it('should return zero when both values are identical"', () => {
+      expect(comparator.compare('empty', 'empty')).toBe(0);
       expect(comparator.compare('min - 0', 'min - 0')).toBe(0);
       expect(comparator.compare('-2 - -1', '-2 - -1')).toBe(0);
       expect(comparator.compare('-1 - 0', '-1 - 0')).toBe(0);
@@ -14,8 +15,18 @@ describe('GroupedValuesComparator', () => {
       expect(comparator.compare('1 - 2', '1 - 2')).toBe(0);
    });
 
+   it('should return less than zero when first value is "empty"', () => {
+      expect(comparator.compare('empty', 'min - 10')).toBeLessThan(0);
+      expect(comparator.compare('empty', '10 - 20')).toBeLessThan(0);
+   });
+
    it('should return less than zero when first value is "min"', () => {
       expect(comparator.compare('min - 0', '0 - 1')).toBeLessThan(0);
+   });
+
+   it('should return greater than zero when second value is "empty"', () => {
+      expect(comparator.compare('min - 10', 'empty')).toBeGreaterThan(0);
+      expect(comparator.compare('10 - 20', 'empty')).toBeGreaterThan(0);
    });
 
    it('should return greater than zero when second value is "min"', () => {
@@ -26,21 +37,22 @@ describe('GroupedValuesComparator', () => {
       expect(comparator.compare('-2000000 - -1', '-1000000 - 0')).toBeLessThan(0);
       expect(comparator.compare('-1 - 0', '0 - 1')).toBeLessThan(0);
       expect(comparator.compare('0 - 1', '1 - 2')).toBeLessThan(0);
-      expect(comparator.compare('1000000 - 2', '2000000 - 3')).toBeLessThan(0);
+      expect(comparator.compare('1000000 - 2000000', '2000000 - 3000000')).toBeLessThan(0);
    });
 
    it('should return greater than zero when first value is greater', () => {
       expect(comparator.compare('-1000000 - 0', '-2000000 - -1')).toBeGreaterThan(0);
       expect(comparator.compare('0 - 1', '-1 - 0')).toBeGreaterThan(0);
       expect(comparator.compare('1 - 2', '0 - 1')).toBeGreaterThan(0);
-      expect(comparator.compare('2000000 - 3', '1000000 - 2')).toBeGreaterThan(0);
+      expect(comparator.compare('2000000 - 3000000', '1000000 - 2000000')).toBeGreaterThan(0);
    });
 
    it('should ascending sort array', () => {
 
       // given
       const sortedValues = [
-         ValueRangeGroupingService.MIN + ' - -20',
+         ValueRangeConverter.EMPTY,
+         ValueRangeConverter.MIN + ' - -20',
          '-20 - -10',
          '-10 - 0',
          '0 - 10',

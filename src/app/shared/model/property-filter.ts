@@ -31,7 +31,7 @@ export class PropertyFilter {
 
    set operator(operator: Operator) {
       this._operator = operator;
-      if (operator === Operator.NOT_EMPTY) {
+      if (operator === Operator.EMPTY || operator === Operator.NOT_EMPTY) {
          this._filterValue = '';
       }
    }
@@ -53,7 +53,7 @@ export class PropertyFilter {
    }
 
    isApplicable(): boolean {
-      if (this._operator === Operator.NOT_EMPTY) {
+      if (this._operator === Operator.EMPTY || this._operator === Operator.NOT_EMPTY) {
          return true;
       }
       return this._filterValue !== null && this._filterValue !== undefined && this._filterValue.toString().length > 0;

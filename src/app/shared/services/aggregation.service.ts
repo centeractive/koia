@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Aggregation, ElementContext, DataType } from '../model';
 import { IDataFrame, DataFrame, ISeries } from 'data-forge';
 import { TimeGroupingService } from './time-grouping.service';
-import { CommonUtils } from '../utils';
+import { CommonUtils, ColumnNameConverter } from '../utils';
 
 /**
  * computes aggregated data
@@ -20,7 +20,7 @@ export class AggregationService {
     columns.push(context.dataColumns[0]);
     context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c =>
       dataFrame = this.timeGroupingService.groupByTimeUnit(dataFrame, c));
-    const columnNames = columns.map(c => c.dataType === DataType.TIME ? CommonUtils.labelOf(c, c.groupingTimeUnit) : c.name);
+    const columnNames = columns.map(c => c.dataType === DataType.TIME ? ColumnNameConverter.toLabel(c, c.groupingTimeUnit) : c.name);
     if (context.aggregations[0] === Aggregation.COUNT) {
       return this.countDistinctValues(dataFrame, columnNames, context.aggregations[0]);
     } else if (columns.length === 1) {

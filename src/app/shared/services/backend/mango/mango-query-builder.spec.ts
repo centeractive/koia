@@ -61,7 +61,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple $eq selector', () => {
+   it('simple EQUAL selector', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -80,7 +80,26 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple $in selector of text values', () => {
+   it('simple EMPTY selector', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('a', Operator.EMPTY, '')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { a: { $exists: false } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('simple ANY_OF selector of text values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -99,7 +118,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple $in selector of number values', () => {
+   it('simple ANY_OF selector of number values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -118,7 +137,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple $in selector of time values', () => {
+   it('simple ANY_OF selector of time values', () => {
 
       // given
       const now = new Date().getTime();
@@ -141,7 +160,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple $in selector of boolean values', () => {
+   it('simple ANY_OF selector of boolean values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)

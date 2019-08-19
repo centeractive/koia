@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AggregationService, RawDataRevealService } from '../shared/services';
 import { ChangeEvent, Aggregation, SummaryContext, Column, Route, DataType } from '../shared/model';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { DateTimeUtils, CommonUtils, ValueFormatter } from 'app/shared/utils';
+import { DateTimeUtils, CommonUtils, ValueFormatter, ColumnNameConverter } from 'app/shared/utils';
 import { RowSpanComputer, Span } from './row-span-computer';
 import { DatePipe } from '@angular/common';
 import { DataFrameSorter } from './data-frame-sorter';
@@ -83,7 +83,7 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
     const columnValues = columns.map(c => entry[c.name]);
     if (this.context.groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
       const timeColumns = this.context.groupByColumns.filter(c => c.dataType === DataType.TIME);
-      const startTimes = timeColumns.map(c => entry[CommonUtils.labelOf(c, c.groupingTimeUnit)]);
+      const startTimes = timeColumns.map(c => entry[ColumnNameConverter.toLabel(c, c.groupingTimeUnit)]);
       this.rawDataRevealService.ofTimeUnit(this.context, timeColumns, startTimes, columns.map(c => c.name), columnValues);
     } else {
       this.rawDataRevealService.ofQuery(this.context.query, columns.map(c => c.name), columnValues);

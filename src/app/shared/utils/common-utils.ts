@@ -1,9 +1,7 @@
-import { DataType, Column, TimeUnit } from '../model';
-
 export class CommonUtils {
 
   /**
-   * @returns the encoded URL where each instance of certain characters are replaced escape sequences representing
+   * @returns the encoded URL where each instance of certain characters are replaced by an escape sequences representing
    * the UTF-8 encoding of the character (additionally #encodeURI, this method also replaces each instance of '#')
    */
   static encodeURL(url: string): string {
@@ -48,15 +46,5 @@ export class CommonUtils {
       return JSON.parse(JSON.stringify(value));
     }
     return value;
-  }
-
-  /**
-   * @returns a label of pattern "<column name> (per <time unit>)" for time columns that have time unit defined, the column name otherwise
-   */
-  static labelOf(column: Column, timeUnit: TimeUnit): string {
-    if (column.dataType === DataType.TIME && timeUnit && timeUnit !== TimeUnit.MILLISECOND) {
-      return column.name + ' (per ' + timeUnit + ')';
-    }
-    return column.name;
   }
 }

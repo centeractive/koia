@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IDataFrame } from 'data-forge';
-import { DateTimeUtils, CommonUtils } from '../utils';
+import { DateTimeUtils, CommonUtils, ColumnNameConverter } from '../utils';
 import { Column, TimeUnit } from '../model';
 
 /**
@@ -41,7 +41,7 @@ export class TimeGroupingService {
          if (timeColumn.groupingTimeUnit === TimeUnit.MILLISECOND) {
             return dataFrame;
          }
-         return dataFrame.renameSeries({ [timeColumn.name]: CommonUtils.labelOf(timeColumn, timeColumn.groupingTimeUnit) });
+         return dataFrame.renameSeries({ [timeColumn.name]: ColumnNameConverter.toLabel(timeColumn, timeColumn.groupingTimeUnit) });
       }
       return dataFrame;
    }
