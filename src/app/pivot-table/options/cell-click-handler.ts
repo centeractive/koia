@@ -12,14 +12,14 @@ export class CellClickHandler {
   constructor(private rawDataRevealService: RawDataRevealService) { }
 
   /**
-   * reveals the raw data that is represented by the pivot table cell, a mouse click occurred on.
+   * reveals the raw data that is represented by the pivot table cell, a mouse click was made on.
    *
    * TODO: find out if pivot table is locally filtered.
-   * - Only when locally filtered, we must request raw data of total cells by IDs to obtain correct data.
-   * - Requesting raw data by IDs is slow and results into raw data tables with no visible data filters.
+   * - When locally filtered, we must request raw data of total cells by IDs to obtain correct data.
+   * - Requesting raw data by IDs is slow and results in raw data tables with no visible data filters.
    */
   onCellClicked(columns: Column[], valueGroupings: ValueGrouping[], mouseEvent: any, filters: Object, pivotData: any) {
-    const pivotTableLocallyFiltered = true;
+    const pivotTableLocallyFiltered = false;
     if (this.isTotalCell(mouseEvent) && pivotTableLocallyFiltered) {
       this.revealRawDataByIDs(pivotData, filters);
     } else {

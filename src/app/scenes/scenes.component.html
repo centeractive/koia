@@ -53,14 +53,15 @@
     <mat-card-subtitle>Manage your existing scenes and activate the chosen one
       <span id="span_filter">
         <mat-form-field id="filter_field">
-          <input matInput type="text" placeholder="Text Filter" [value]="filter" (change)="onFilterChange($event.target.value)">
+          <input matInput type="text" placeholder="Text Filter" [value]="filter"
+            (change)="onFilterChange($event.target.value)">
           <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button
             aria-label="Clear" (click)="onFilterChange('')">
             <mat-icon>close</mat-icon>
           </button>
         </mat-form-field>
-        <button id="but_delete_filtered" mat-stroked-button color="warn"
-          [disabled]="filteredSceneInfos.length === 0" (click)="deleteFilteredScenes()">
+        <button id="but_delete_scenes" mat-stroked-button [disabled]="filteredSceneInfos.length === 0"
+          (click)="onDeleteScenesButtonPressed()">
           <mat-icon>delete_forever</mat-icon>
           <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
         </button>

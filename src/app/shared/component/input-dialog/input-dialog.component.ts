@@ -14,7 +14,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
                     <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
                     &nbsp;
                     <button id="but_ok" mat-raised-button color="primary" [disabled]="!data.input" (click)="onOK()">OK</button>
-                    </div>
+                  </div>
                 </mat-card-content>
              </mat-card>`
 })
@@ -24,12 +24,12 @@ export class InputDialogComponent {
     this.dialogRef.disableClose = true;
   }
 
-  onCancel() {
+  onCancel(): void {
     this.data.closedWithOK = false;
     this.dialogRef.close();
   }
 
-  onOK() {
+  onOK(): void {
     this.data.closedWithOK = true;
     this.dialogRef.close();
   }

@@ -83,10 +83,10 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /graph.component\.spec\.ts$/);
 // const context = require.context('./', true, /graph-side-bar.component\.spec\.ts$/);
 
-const context = require.context('./', true, /pivot-table.component\.spec\.ts$/);
+// const context = require.context('./', true, /pivot-table.component\.spec\.ts$/);
 // const context = require.context('./', true, /pivot-table-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /pivot-options-provider\.spec\.ts$/);
-// const context = require.context('./', true, /cell-click-handler\.spec\.ts$/);
+const context = require.context('./', true, /cell-click-handler\.spec\.ts$/);
 // const context = require.context('./', true, /pivot.*\.spec\.ts$/);
 // const context = require.context('./', true, /rawdata-link-factory\.spec\.ts$/);
 // const context = require.context('./', true, /value-grouping-generator\.spec\.ts$/);

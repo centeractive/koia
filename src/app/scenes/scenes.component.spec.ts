@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/cor
 import { ScenesComponent } from './scenes.component';
 import {
   MatIconModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatBottomSheetModule,
-  MatBottomSheet, MatMenuModule, MatDialogModule
+  MatBottomSheet, MatMenuModule, MatDialogModule, MatDialogRef
 } from '@angular/material';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,8 @@ import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Location } from '@angular/common';
 import { SceneFactory } from 'app/shared/test';
+import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { Observable, of } from 'rxjs';
 
 @Component({ template: '' })
 class RawDataComponent { }
@@ -27,6 +29,7 @@ describe('ScenesComponent', () => {
   const appRouteReuseStrategy = new AppRouteReuseStrategy();
   let scenes: Scene[];
   const dbService = new DBService(null);
+  const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   let isBackendInitializedSpy: jasmine.Spy;
   let getActiveSceneSpy: jasmine.Spy;
@@ -49,7 +52,7 @@ describe('ScenesComponent', () => {
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }])],
       providers: [Location, MatBottomSheet,
         { provide: DBService, useValue: dbService },
-        DialogService,
+        { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
         { provide: RouteReuseStrategy, useValue: appRouteReuseStrategy },
       ]
@@ -149,13 +152,31 @@ describe('ScenesComponent', () => {
     expect(component.filteredSceneInfos.length).toBe(1);
   });
 
+  it('#click on "Delete all" button should not delete scenes when not confiremd by user', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(null);
+    findSceneInfosSpy.and.returnValue(Promise.resolve([]));
+    spyOnConfirmDialogAndPressNo();
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
+
+    // when
+    deleteButton.click();
+    flush();
+
+    // then
+    expect(dbService.deleteScene).not.toHaveBeenCalled();
+  }));
+
   it('#click on "Delete all" button should delete all scenes', fakeAsync(() => {
 
     // given
-    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
     getActiveSceneSpy.and.returnValue(null);
     findSceneInfosSpy.and.returnValue(Promise.resolve([]));
-    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+    spyOnConfirmDialogAndPressYes();
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
     deleteButton.click();
@@ -167,14 +188,15 @@ describe('ScenesComponent', () => {
     expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
   }));
 
-  it('#click on "Delete all" button should and navigate to scene component', fakeAsync(() => {
+  it('#click on "Delete all" button should navigate to scene component', fakeAsync(() => {
 
     // given
-    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
     getActiveSceneSpy.and.returnValue(null);
     findSceneInfosSpy.and.returnValue(Promise.resolve(null));
     spyOn(component.router, 'navigateByUrl');
-    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+    spyOnConfirmDialogAndPressYes();
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
     deleteButton.click();
@@ -187,8 +209,9 @@ describe('ScenesComponent', () => {
   it('#click on "Delete all" button should notify error when error occurs', fakeAsync(() => {
 
     // given
+    spyOnConfirmDialogAndPressYes();
     spyOn(dbService, 'deleteScene').and.returnValue(Promise.reject('error'));
-    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
     deleteButton.click();
@@ -201,9 +224,10 @@ describe('ScenesComponent', () => {
   it('#click on "Delete filtered" button should delete filtered scenes', fakeAsync(() => {
 
     // given
-    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
     component.onFilterChange('1');
-    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+    spyOnConfirmDialogAndPressYes();
+    spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
     deleteButton.click();
@@ -222,7 +246,8 @@ describe('ScenesComponent', () => {
     getActiveSceneSpy.calls.reset();
     findSceneInfosSpy.calls.reset();
     component.onFilterChange('1');
-    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_filtered')).nativeElement;
+    spyOnConfirmDialogAndPressYes();
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
     deleteButton.click();
@@ -236,7 +261,6 @@ describe('ScenesComponent', () => {
   it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
 
     // given
-    const dialogService = TestBed.get(DialogService);
     spyOn(dialogService, 'showSceneDetailsDialog');
     const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
 
@@ -350,4 +374,29 @@ describe('ScenesComponent', () => {
     // then
     expect(location.back).toHaveBeenCalled();
   });
+
+  function spyOnConfirmDialogAndPressYes(): void {
+    spyOnConfirmDialogAndPress(0);
+  }
+
+  function spyOnConfirmDialogAndPressNo(): void {
+    spyOnConfirmDialogAndPress(1);
+  }
+
+  function spyOnConfirmDialogAndPress(buttonIndex: number): void {
+    const dialogRef = createConfirmDialogRef();
+    spyOn(dialogService, 'showConfirmDialog').and.callFake((data: ConfirmDialogData) => {
+      data.closedWithButtonIndex = buttonIndex;
+      data.closedWithButtonName = ConfirmDialogData.YES_NO[buttonIndex];
+      return dialogRef;
+    });
+  }
+
+  function createConfirmDialogRef(): MatDialogRef<ConfirmDialogComponent> {
+    return <MatDialogRef<ConfirmDialogComponent>>{
+      afterClosed(): Observable<boolean> {
+        return of(true);
+      }
+    };
+  }
 });

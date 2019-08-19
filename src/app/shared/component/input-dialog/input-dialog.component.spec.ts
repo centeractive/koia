@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InputDialogComponent, InputDialogData } from './input-dialog.component';
 import { MatFormFieldModule, MatInputModule, MatButtonModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
@@ -45,7 +45,7 @@ describe('InputDialogComponent', () => {
   it('#click on cancel button should close dialog', () => {
 
     // given
-    const cancelButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
+    const cancelButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
     spyOn(component.dialogRef, 'close');
 
     // when
@@ -60,7 +60,7 @@ describe('InputDialogComponent', () => {
 
     // given
     changeInputValue('test');
-    const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_ok')).nativeElement;
+    const okButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_ok')).nativeElement;
     spyOn(component.dialogRef, 'close');
 
     // when

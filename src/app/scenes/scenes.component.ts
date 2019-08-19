@@ -7,6 +7,7 @@ import { DBService } from 'app/shared/services/backend';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Location } from '@angular/common';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'koia-scenes',
@@ -68,12 +69,24 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
       });
   }
 
-  deleteFilteredScenes() {
-    const scenesCount = this.filteredSceneInfos.length;
-    const promises = this.filteredSceneInfos.map(si => this.dbService.deleteScene(si));
+  onDeleteScenesButtonPressed(): void {
+    const title = this.filter ? 'Delete filtered scenes' : 'Delete all scenes';
+    const text = 'Do you really want to delete ' + this.filteredSceneInfos.length + ' scene(s)?';
+    const data = new ConfirmDialogData(title, [text], ConfirmDialogData.YES_NO);
+    const dialogRef = this.dialogService.showConfirmDialog(data);
+    dialogRef.afterClosed().toPromise().then(r => {
+      if (data.closedWithButtonIndex === 0) {
+        this.deleteScenes(this.filteredSceneInfos);
+      }
+    });
+  }
+
+  private deleteScenes(sceneInfos: SceneInfo[]): void {
+    const promises = sceneInfos.map(si => this.dbService.deleteScene(si));
     Promise.all(promises)
       .then(r => {
-        this.notifySuccess(scenesCount + ' scenes have been deleted');
+        const action = sceneInfos.length === 1 ? ' scene has ' : ' scenes have ';
+        this.notifySuccess(sceneInfos.length + action + 'been deleted');
         this.loadData();
       })
       .catch(err => {

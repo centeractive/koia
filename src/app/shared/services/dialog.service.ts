@@ -4,6 +4,7 @@ import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog.com
 import { Scene } from '../model';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
+import { ConfirmDialogData, ConfirmDialogComponent } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,10 @@ import { InputDialogComponent, InputDialogData } from '../component/input-dialog
 export class DialogService {
 
   constructor(private dialogService: MatDialog) { }
+
+  showConfirmDialog(data: ConfirmDialogData): MatDialogRef<ConfirmDialogComponent> {
+    return this.dialogService.open(ConfirmDialogComponent, { data: data, panelClass: 'dialog-container' });
+  }
 
   showInputDialog(data: InputDialogData): MatDialogRef<InputDialogComponent> {
     return this.dialogService.open(InputDialogComponent, { data: data, panelClass: 'dialog-container' });

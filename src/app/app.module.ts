@@ -61,6 +61,7 @@ import { ConnectionDialogComponent } from './front/connection-dialog/connection-
 import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
 import { ValueRangeGroupingService } from './shared/value-range';
+import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -88,9 +89,11 @@ import { ValueRangeGroupingService } from './shared/value-range';
     TextareaMaxRowsDirective,
     ConnectionDialogComponent,
     FrontComponent,
-    InputDialogComponent
+    InputDialogComponent,
+    ConfirmDialogComponent
   ],
   entryComponents: [
+    ConfirmDialogComponent,
     InputDialogComponent,
     ConnectionDialogComponent,
     StatusComponent,
