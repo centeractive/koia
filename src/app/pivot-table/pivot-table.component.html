@@ -86,14 +86,14 @@
         <button mat-menu-item [matMenuTriggerFor]="colorsPositiveValsMenu">Positive Values</button>
       </mat-menu>
       <mat-menu #colorsNegativeValsMenu="matMenu">
-        <button *ngFor="let color of colors" mat-menu-item [disabled]="color === context.negativeColor"
+        <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.negativeColor"
           (click)="onNegativeColorChanged(color)">
           <span [class]="'span_color' + (color === context.negativeColor ? '_inactive' : '')"
             [ngStyle]="{'background-color':color}"></span>
         </button>
       </mat-menu>
       <mat-menu #colorsPositiveValsMenu="matMenu">
-        <button *ngFor="let color of colors" mat-menu-item [disabled]="color === context.positiveColor"
+        <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.positiveColor"
           (click)="onPositiveColorChanged(color)">
           <span [class]="'span_color' + (color === context.positiveColor ? '_inactive' : '')"
             [ngStyle]="{'background-color':color}"></span>

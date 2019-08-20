@@ -71,8 +71,8 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
 
   onDeleteScenesButtonPressed(): void {
     const title = this.filter ? 'Delete filtered scenes' : 'Delete all scenes';
-    const text = 'Do you really want to delete ' + this.filteredSceneInfos.length + ' scene(s)?';
-    const data = new ConfirmDialogData(title, [text], ConfirmDialogData.YES_NO);
+    const text = '<p>Do you really want to delete ' + this.filteredSceneInfos.length + ' scene(s)?</p>';
+    const data = new ConfirmDialogData(title, text, ConfirmDialogData.YES_NO);
     const dialogRef = this.dialogService.showConfirmDialog(data);
     dialogRef.afterClosed().toPromise().then(r => {
       if (data.closedWithButtonIndex === 0) {

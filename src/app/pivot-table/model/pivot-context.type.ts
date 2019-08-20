@@ -1,6 +1,5 @@
-import { ValueGrouping } from '../value-range/model/value-grouping.type';
-import { Column } from './column.type';
-import { Query } from '@angular/core';
+import { Column } from 'app/shared/model';
+import { ValueGrouping } from 'app/shared/value-range/model';
 
 export interface PivotContext {
   timeColumns: Column[];
@@ -9,6 +8,5 @@ export interface PivotContext {
   showRowTotals: boolean;
   showColumnTotals: boolean;
   valueGroupings: ValueGrouping[];
-  autoGenerateValueGroupings: boolean;
   pivotOptions: Object;
 }

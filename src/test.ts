@@ -24,7 +24,9 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
+
+// const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
 // const context = require.context('./', true, /shared\/model.*\.spec\.ts$/);
 // const context = require.context('./', true, /front.component\.spec\.ts$/);
@@ -41,7 +43,6 @@ getTestBed().initTestEnvironment(
 
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
 // const context = require.context('./', true, /scene.component\.spec\.ts$/);
-const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 // const context = require.context('./', true, /scenes.component\.spec\.ts$/);
 // const context = require.context('./', true, /scene-details-dialog.component\.spec\.ts$/)
 // const context = require.context('./', true, /scene-utils.*\.spec\.ts$/);
@@ -94,7 +95,7 @@ const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$
 // const context = require.context('./', true, /value-range-grouping.service\.spec\.ts$/);
 // const context = require.context('./', true, /value-range-converter\.spec\.ts$/);
 // const context = require.context('./', true, /time-grouping.service\.spec\.ts$/);
-// const context = require.context('./', true, /grouped-values-comparator\.spec\.ts$/);
+// const context = require.context('./', true, /value-range-label-comparator\.spec\.ts$/);
 // const context = require.context('./', true, /summary-table.component\.spec\.ts$/);
 // const context = require.context('./', true, /summary-table-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /summary.*\.spec\.ts$/);

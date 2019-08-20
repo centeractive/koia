@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { Query, Route, PivotContext, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
+import { Query, Route, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
 import {
   NotificationService, ExportService, TimeGroupingService, ViewPersistenceService,
   DialogService, RawDataRevealService
@@ -16,6 +16,8 @@ import { ConfigRecord } from 'app/shared/model/view-config';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { CellClickHandler } from './options/cell-click-handler';
+import { PivotContextFactory, PivotContext } from './model';
+import { QueryProvider } from './options/query-provider';
 
 declare var jQuery: any;
 
@@ -36,8 +38,8 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
 
   readonly route = Route.PIVOT;
   readonly timeUnits = Object.keys(TimeUnit).map(key => TimeUnit[key]);
-  readonly colors = ['#FF3333', '#FF6633', '#FFFF33', '#0080FF', '#00FF00'];
   columns: Column[];
+  contextFactory = new PivotContextFactory();
   context: PivotContext;
   loading: boolean;
   computing: boolean;
@@ -46,6 +48,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   allowsForValueGrouping: boolean;
   private scene: Scene;
   private entriesSubscription: Subscription;
+  private query: Query;
   private valueGroupingGenerator = new ValueGroupingGenerator();
   private pivotOptionsProvider: PivotOptionsProvider;
   private stringifiedValueGroupings: string;
@@ -58,12 +61,17 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.context = this.createContext();
+    this.context = this.contextFactory.create();
     this.scene = this.dbService.getActiveScene();
     if (!this.scene) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
-      this.pivotOptionsProvider = new PivotOptionsProvider(new CellClickHandler(this.dialogService, this.rawDataRevealService));
+      this.columns = this.scene.columns
+        .filter(c => c.indexed)
+        .map(c => <Column>CommonUtils.clone(c));
+      const baseQueryProvider: QueryProvider = { provide: () => this.query };
+      const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.dialogService, this.rawDataRevealService)
+      this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
       this.fetchData(new Query());
       this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
       this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
@@ -77,24 +85,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     }
   }
 
-  private createContext(): PivotContext {
-    return {
-      timeColumns: [],
-      negativeColor: this.colors[0],
-      positiveColor: this.colors[this.colors.length - 1],
-      showRowTotals: true,
-      showColumnTotals: true,
-      valueGroupings: [],
-      autoGenerateValueGroupings: true,
-      pivotOptions: null
-    };
-  }
-
   fetchData(query: Query): void {
     this.loading = true;
-    this.columns = this.scene.columns
-      .filter(c => c.indexed)
-      .map(c => <Column>CommonUtils.clone(c));
+    this.query = query;
     this.allowsForValueGrouping = this.columns.find(c => c.dataType === DataType.NUMBER) !== undefined;
     this.context.timeColumns = this.columns.filter(c => c.dataType === DataType.TIME);
     if (this.entriesSubscription) {
@@ -108,8 +101,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     this.loading = false;
     this.computing = true;
     DateTimeUtils.defineTimeUnits(this.context.timeColumns, entries);
+    const firstTimeInvoked = !this.baseDataFrame;
     this.baseDataFrame = new DataFrame(entries);
-    if (this.allowsForValueGrouping && this.context.autoGenerateValueGroupings) {
+    if (firstTimeInvoked && this.allowsForValueGrouping) {
       this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, this.columns);
     }
     this.refreshDataFrameAsync();
@@ -132,7 +126,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     this.context.timeColumns
       .forEach(
         c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
-    this.dataFrame = this.valueGroupingService.compute(this.dataFrame, this.context.valueGroupings);
+    if (this.context.valueGroupings.length > 0) {
+      this.dataFrame = this.valueGroupingService.compute(this.dataFrame, this.context.valueGroupings);
+    }
     this.renderPivotTable(config);
   }
 
@@ -147,7 +143,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   loadConfig(configRecord: ConfigRecord): void {
     this.context = configRecord.data;
     const pivotOptions = this.pivotOptionsProvider
-      .enrichPivotOptions(this.context.pivotOptions, this.context, this.columns, () => this.onPivotTableRefreshEnd());
+      .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
     this.refreshDataFrame(pivotOptions);
   }
 
@@ -195,7 +191,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   private refreshOptions(): void {
-    this.pivotOptionsProvider.enrichPivotOptions(this.getPivotOptions(), this.context, this.columns, () => this.onPivotTableRefreshEnd());
+    this.pivotOptionsProvider.enrichPivotOptions(this.getPivotOptions(), this.context, () => this.onPivotTableRefreshEnd());
   }
 
   getPivotOptions(): Object {
@@ -208,8 +204,8 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   private async renderPivotTable(pivotOptions?: Object): Promise<void> {
-    const targetElement = this.getTargetElement();
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
+    const targetElement = this.getTargetElement();
     while (targetElement.firstChild) {
       targetElement.removeChild(targetElement.firstChild);
     }
@@ -217,7 +213,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
       targetElement.pivotUI(this.dataFrame.toArray(), pivotOptions, true);
     } else {
       targetElement.pivotUI(this.dataFrame.toArray(),
-        this.pivotOptionsProvider.enrichPivotOptions(undefined, this.context, this.columns, () => this.onPivotTableRefreshEnd()));
+        this.pivotOptionsProvider.enrichPivotOptions(undefined, this.context, () => this.onPivotTableRefreshEnd()));
     }
   }
 

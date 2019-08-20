@@ -1,10 +1,10 @@
-import { GroupedValuesComparator } from './grouped-values-comparator';
+import { ValueRangeLabelComparator } from './value-range-label-comparator';
 import { shuffle } from 'd3';
 import { ValueRangeConverter } from './value-range-converter';
 
-describe('GroupedValuesComparator', () => {
+describe('ValueRangeLabelComparator', () => {
 
-   const comparator = new GroupedValuesComparator();
+   const comparator = new ValueRangeLabelComparator();
 
    it('should return zero when both values are identical"', () => {
       expect(comparator.compare('empty', 'empty')).toBe(0);

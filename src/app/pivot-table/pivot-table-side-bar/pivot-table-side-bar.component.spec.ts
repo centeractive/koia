@@ -10,9 +10,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { PivotTableSideBarComponent } from './pivot-table-side-bar.component';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { Column, PivotContext, DataType, TimeUnit } from '../../shared/model';
+import { Column, DataType, TimeUnit } from '../../shared/model';
 import { ValueRange } from '../../shared/value-range/model/value-range.type';
 import { ValueGrouping } from '../../shared/value-range/model/value-grouping.type';
+import { PivotContext } from '../model';
 
 describe('PivotTableSideBarComponent', () => {
 
@@ -67,7 +68,6 @@ describe('PivotTableSideBarComponent', () => {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
-      autoGenerateValueGroupings: true,
       pivotOptions: null
     };
     component.context = context;

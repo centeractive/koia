@@ -7,6 +7,7 @@ import { ConfirmDialogData, ConfirmDialogComponent } from 'app/shared/component/
 import { MatDialogRef } from '@angular/material';
 import { Observable, of } from 'rxjs';
 import { flush, fakeAsync } from '@angular/core/testing';
+import { QueryProvider } from './query-provider';
 
 describe('CellClickHandler', () => {
 
@@ -14,6 +15,7 @@ describe('CellClickHandler', () => {
    let columns: Column[];
    let dialogService: DialogService;
    let rawDataRevealService: RawDataRevealService;
+   let baseQueryProvider: QueryProvider;
    let cellClickHandler: CellClickHandler;
    let showConfirmDialogSpy: jasmine.Spy;
    let showSpy: jasmine.Spy;
@@ -29,7 +31,8 @@ describe('CellClickHandler', () => {
       ];
       dialogService = new DialogService(null);
       rawDataRevealService = new RawDataRevealService(null, null);
-      cellClickHandler = new CellClickHandler(dialogService, rawDataRevealService);
+      baseQueryProvider = { provide: () => new Query() };
+      cellClickHandler = new CellClickHandler(columns, baseQueryProvider, dialogService, rawDataRevealService);
 
       showConfirmDialogSpy = spyOn(dialogService, 'showConfirmDialog');
       spyOn(rawDataRevealService, 'ofIDs').and.callFake(q => null);
@@ -43,7 +46,7 @@ describe('CellClickHandler', () => {
       const filters = { Percent: 'null' };
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -61,7 +64,7 @@ describe('CellClickHandler', () => {
       const filters = { Level: 'ERROR' };
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -79,7 +82,7 @@ describe('CellClickHandler', () => {
       const filters = { Amount: 12 };
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -98,7 +101,7 @@ describe('CellClickHandler', () => {
       const filters = { Time: now };
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -119,7 +122,7 @@ describe('CellClickHandler', () => {
       const filters = { [label]: nowFormatted };
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -139,7 +142,7 @@ describe('CellClickHandler', () => {
       const filters = { Amount: 'empty' };
 
       // when
-      cellClickHandler.onCellClicked(columns, valueGroupings, mouseEvent, filters, {});
+      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -158,7 +161,7 @@ describe('CellClickHandler', () => {
       const filters = { Amount: '10 - 20' };
 
       // when
-      cellClickHandler.onCellClicked(columns, valueGroupings, mouseEvent, filters, {});
+      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -169,6 +172,30 @@ describe('CellClickHandler', () => {
       expect(query.getPropertyFilters()).toEqual([]);
    });
 
+   it('#onCellClicked should show raw data with filters from base query', () => {
+
+      // given
+      const baseQuery = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
+      baseQuery.addValueRangeFilter('Amount', 11, 22);
+      spyOn(baseQueryProvider, 'provide').and.returnValue(baseQuery);
+      const mouseEvent = createMouseEvent('any');
+      const filters = { Percent: 10 };
+
+      // when
+      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+
+      // then
+      expect(showSpy).toHaveBeenCalled();
+      const query: Query = showSpy.calls.mostRecent().args[0];
+      const propertyFilters = query.getPropertyFilters();
+      expect(propertyFilters.length).toBe(2);
+      expect(propertyFilters[0]).toEqual(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
+      expect(propertyFilters[1]).toEqual(new PropertyFilter('Percent', Operator.EQUAL, 10, DataType.NUMBER));
+      const valueRangeFilters = query.getValueRangeFilters();
+      expect(valueRangeFilters.length).toBe(1);
+      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: 11, max: 22 }));
+   });
+
    it('#onCellClicked should show raw data with multiple filters', () => {
 
       // given
@@ -177,7 +204,7 @@ describe('CellClickHandler', () => {
       const filters = { Level: 'INFO', Host: 'server1', Amount: 'min - 20', Percent: 'null' };
 
       // when
-      cellClickHandler.onCellClicked(columns, valueGroupings, mouseEvent, filters, {});
+      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -201,7 +228,7 @@ describe('CellClickHandler', () => {
       spyOnConfirmDialogAndPressNo();
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, {}, {});
+      cellClickHandler.onCellClicked([], mouseEvent, {}, {});
       flush();
 
       // then
@@ -217,13 +244,13 @@ describe('CellClickHandler', () => {
       // given
       const mouseEvent = createMouseEvent('pvtGrandTotal');
       spyOnConfirmDialogAndPressNo(true);
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, {}, {});
+      cellClickHandler.onCellClicked([], mouseEvent, {}, {});
       flush();
       showConfirmDialogSpy.calls.reset();
       showSpy.calls.reset();
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, {}, {});
+      cellClickHandler.onCellClicked([], mouseEvent, {}, {});
       flush();
 
       // then
@@ -242,7 +269,7 @@ describe('CellClickHandler', () => {
       spyOnConfirmDialogAndPressYes();
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, new PivotData(true));
+      cellClickHandler.onCellClicked([], mouseEvent, filters, new PivotData(true));
       flush();
 
       // then
@@ -258,7 +285,7 @@ describe('CellClickHandler', () => {
       spyOnConfirmDialogAndPressYes();
 
       // when
-      cellClickHandler.onCellClicked(columns, [], mouseEvent, filters, new PivotData(false));
+      cellClickHandler.onCellClicked([], mouseEvent, filters, new PivotData(false));
       flush();
 
       // then

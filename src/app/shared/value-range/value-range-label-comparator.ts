@@ -1,6 +1,6 @@
 import { ValueRangeConverter } from './value-range-converter';
 
-export class GroupedValuesComparator {
+export class ValueRangeLabelComparator {
 
    compare(gv1: string, gv2: string): number {
       if (gv1 === ValueRangeConverter.EMPTY) {

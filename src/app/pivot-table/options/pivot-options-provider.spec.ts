@@ -1,9 +1,10 @@
-import { PivotContext, Column, DataType, TimeUnit } from 'app/shared/model';
+import { Column, DataType, TimeUnit, Query } from 'app/shared/model';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 import { CellClickHandler } from './cell-click-handler';
+import { PivotContext } from '../model';
 
 describe('PivotOptionsProvider', () => {
 
@@ -20,10 +21,9 @@ describe('PivotOptionsProvider', () => {
          showRowTotals: true,
          showColumnTotals: true,
          valueGroupings: [],
-         autoGenerateValueGroupings: true,
          pivotOptions: null
       };
-      cellClickHandler = new CellClickHandler(null, null);
+      cellClickHandler = new CellClickHandler([], null, null, null);
       optionsProvider = new PivotOptionsProvider(cellClickHandler);
    });
 
@@ -33,7 +33,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => null;
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -54,7 +54,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -75,7 +75,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -98,7 +98,7 @@ describe('PivotOptionsProvider', () => {
       spyOn(cellClickHandler, 'onCellClicked').and.callFake(m => null);
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
 
       // then
       const rendererOptions = pivotOptions['rendererOptions'];
@@ -107,7 +107,7 @@ describe('PivotOptionsProvider', () => {
       const filters = { x: '100', y: '57'};
       const pivotData = {};
       clickCallback(mouseEvent, '100', filters, pivotData);
-      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith([], context.valueGroupings, mouseEvent, filters, pivotData);
+      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, mouseEvent, filters, pivotData);
    });
 
    it('#enrichPivotOptions should take over "show totals" attributes from context (I)', () => {
@@ -119,7 +119,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -138,7 +138,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
 
       // then
       expect(pivotOptions).toBeTruthy();
@@ -155,7 +155,7 @@ describe('PivotOptionsProvider', () => {
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, [], onPivotTableRefreshEnd);
+      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
 
       // then
       const colorScaleGenerator: (values: number[]) => any = pivotOptions['rendererOptions'].heatmap.colorScaleGenerator;
@@ -170,7 +170,7 @@ describe('PivotOptionsProvider', () => {
       const onRefreshEndSpy = jasmine.createSpy('onPivotTableRefreshEnd').and.callFake(e => null);
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, [], onRefreshEndSpy);
+      const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onRefreshEndSpy);
 
       // then
       const onRefreshCallback: Function = pivotOptions['onRefresh'];

@@ -9,8 +9,7 @@ import { FormsModule } from '@angular/forms';
 describe('ConfirmDialogComponent', () => {
 
   const title = 'Test';
-  const textBlocks = ['Text Block 1', 'Text Block 2'];
-  const buttonNames = ['Yes', 'No'];
+  const textBlock = '<p>Text Block</p>';
 
   let dialogData: ConfirmDialogData;
   let component: ConfirmDialogComponent;
@@ -20,7 +19,7 @@ describe('ConfirmDialogComponent', () => {
     const dialogRef = <MatDialogRef<ConfirmDialogComponent>>{
       close(): void { }
     };
-    dialogData = new ConfirmDialogData(title, textBlocks, buttonNames);
+    dialogData = new ConfirmDialogData(title, textBlock, ConfirmDialogData.YES_NO);
     TestBed.configureTestingModule({
       declarations: [ConfirmDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
@@ -48,23 +47,13 @@ describe('ConfirmDialogComponent', () => {
     expect(titleElement.textContent).toBe(title);
   });
 
-  it('should create paragraphs from model', () => {
-    const pDebugElements = fixture.debugElement.queryAll(By.css('p'));
-
-    expect(pDebugElements.length).toBe(textBlocks.length);
-    for (let i = 0; i < pDebugElements.length; i++) {
-      const pElement: HTMLParagraphElement = pDebugElements[i].nativeElement;
-      expect(pElement.innerHTML).toBe(textBlocks[i]);
-    }
-  });
-
   it('should create buttons from model', () => {
     const butDebugElements = fixture.debugElement.queryAll(By.css('button'));
 
-    expect(butDebugElements.length).toBe(buttonNames.length);
+    expect(butDebugElements.length).toBe(ConfirmDialogData.YES_NO.length);
     for (let i = 0; i < butDebugElements.length; i++) {
       const buttonElement: HTMLButtonElement = butDebugElements[i].nativeElement;
-      expect(buttonElement.textContent).toBe(buttonNames[i]);
+      expect(buttonElement.textContent).toBe(ConfirmDialogData.YES_NO[i]);
     }
   });
 
@@ -79,7 +68,7 @@ describe('ConfirmDialogComponent', () => {
 
     // then
     expect(component.data.closedWithButtonIndex).toBe(0);
-    expect(component.data.closedWithButtonName).toBe(buttonNames[0]);
+    expect(component.data.closedWithButtonName).toBe(ConfirmDialogData.YES_NO[0]);
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
 
@@ -94,7 +83,7 @@ describe('ConfirmDialogComponent', () => {
 
     // then
     expect(component.data.closedWithButtonIndex).toBe(1);
-    expect(component.data.closedWithButtonName).toBe(buttonNames[1]);
+    expect(component.data.closedWithButtonName).toBe(ConfirmDialogData.YES_NO[1]);
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
 });

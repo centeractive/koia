@@ -9,7 +9,7 @@ import {
   MatBottomSheet, MatDialogRef
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { StatusType, PivotContext, Column, DataType, Scene, TimeUnit, Route } from 'app/shared/model';
+import { StatusType, Column, DataType, Scene, TimeUnit, Route } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { DBService } from 'app/shared/services/backend';
@@ -22,6 +22,7 @@ import { ConfigRecord } from 'app/shared/model/view-config';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Router } from '@angular/router';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { PivotContext } from './model';
 
 @Injectable()
 export class MockElementRef {
@@ -171,7 +172,6 @@ describe('PivotTableComponent', () => {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
-      autoGenerateValueGroupings: true,
       pivotOptions: { a: 1, b: 2 }
     };
     const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };
@@ -195,7 +195,6 @@ describe('PivotTableComponent', () => {
       showRowTotals: true,
       showColumnTotals: true,
       valueGroupings: [],
-      autoGenerateValueGroupings: true,
       pivotOptions: { a: 1, b: 2 }
     };
     const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };

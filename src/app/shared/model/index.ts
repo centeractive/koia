@@ -25,7 +25,6 @@ export * from './status-type.enum';
 export * from './status.type';
 export * from './aggregation.enum';
 export * from './param-op.enum';
-export * from './pivot-context.type';
 export * from './export-format.enum';
 export * from './connection-info.type';
 export * from './protocol.enum';
