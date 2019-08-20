@@ -1,27 +1,28 @@
 import { Column, PropertyFilter, Operator, TimeUnit, DataType, Query } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
 import { ColumnNameConverter, DateTimeUtils } from 'app/shared/utils';
-import { RawDataRevealService } from 'app/shared/services';
+import { RawDataRevealService, DialogService } from 'app/shared/services';
 import { ValueRangeConverter } from 'app/shared/value-range/value-range-converter';
 import { ValueGrouping } from 'app/shared/value-range/model';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 
 export class CellClickHandler {
 
   private static readonly TOTAL_CELL_CLASSES = ['pvtTotal', 'pvtGrandTotal'];
+  private static readonly DIALOG_TEXT = `Koia cannot detect whether individual columns or rows are filtered.<br>
+                                         This information is required for selecting the optimal search strategy.<br><br>
+                                         Are columns or rows filtered?`;
 
-  constructor(private rawDataRevealService: RawDataRevealService) { }
+  private totalCellDialogData = new ConfirmDialogData('Total Cell', [CellClickHandler.DIALOG_TEXT], ConfirmDialogData.YES_NO, true);
+
+  constructor(private dialogService: DialogService, private rawDataRevealService: RawDataRevealService) { }
 
   /**
-   * reveals the raw data that is represented by the pivot table cell, a mouse click was made on.
-   *
-   * TODO: find out if pivot table is locally filtered.
-   * - When locally filtered, we must request raw data of total cells by IDs to obtain correct data.
-   * - Requesting raw data by IDs is slow and results in raw data tables with no visible data filters.
+   * reveals the raw data represented by the pivot table cell, a mouse click was made on
    */
-  onCellClicked(columns: Column[], valueGroupings: ValueGrouping[], mouseEvent: any, filters: Object, pivotData: any) {
-    const pivotTableLocallyFiltered = false;
-    if (this.isTotalCell(mouseEvent) && pivotTableLocallyFiltered) {
-      this.revealRawDataByIDs(pivotData, filters);
+  onCellClicked(columns: Column[], valueGroupings: ValueGrouping[], mouseEvent: any, filters: Object, pivotData: any): void {
+    if (this.isTotalCell(mouseEvent)) {
+      this.onTotalCellClicked(columns, valueGroupings, filters, pivotData);
     } else {
       this.revealRawDataByFilters(filters, columns, valueGroupings);
     }
@@ -34,6 +35,29 @@ export class CellClickHandler {
       }
     }
     return false;
+  }
+
+  /**
+   * TODO: automatically find out if pivot table is locally filtered (instead of asking user)
+   * - When locally filtered, we must request raw data of total cells by IDs to obtain correct data.
+   * - Requesting raw data by IDs is slow and results in raw data tables with no visible data filters.
+   */
+  onTotalCellClicked(columns: Column[], valueGroupings: ValueGrouping[], filters: Object, pivotData: any) {
+    if (this.totalCellDialogData.rememberChoice) {
+      this.revealRawDataAsPerUserChoice(pivotData, filters, columns, valueGroupings);
+    } else {
+      const dialogRef = this.dialogService.showConfirmDialog(this.totalCellDialogData);
+      dialogRef.afterClosed().toPromise()
+        .then(r => this.revealRawDataAsPerUserChoice(pivotData, filters, columns, valueGroupings));
+    }
+  }
+
+  private revealRawDataAsPerUserChoice(pivotData: any, filters: Object, columns: Column[], valueGroupings: ValueGrouping[]) {
+    if (this.totalCellDialogData.closedWithButtonIndex === 0) {
+      this.revealRawDataByIDs(pivotData, filters);
+    } else {
+      this.revealRawDataByFilters(filters, columns, valueGroupings);
+    }
   }
 
   private revealRawDataByIDs(pivotData: any, filters: Object) {

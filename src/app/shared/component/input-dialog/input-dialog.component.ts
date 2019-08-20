@@ -12,11 +12,20 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
                   </mat-form-field>
                   <div>
                     <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
-                    &nbsp;
                     <button id="but_ok" mat-raised-button color="primary" [disabled]="!data.input" (click)="onOK()">OK</button>
                   </div>
                 </mat-card-content>
-             </mat-card>`
+             </mat-card>`,
+  styles: [ `div {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                margin-top: 20px;
+             }
+             button {
+                margin-right: 3px;
+                margin-left: 3px;
+             }`]
 })
 export class InputDialogComponent {
 

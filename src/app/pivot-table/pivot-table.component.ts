@@ -63,7 +63,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
     if (!this.scene) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
-      this.pivotOptionsProvider = new PivotOptionsProvider(new CellClickHandler(this.rawDataRevealService));
+      this.pivotOptionsProvider = new PivotOptionsProvider(new CellClickHandler(this.dialogService, this.rawDataRevealService));
       this.fetchData(new Query());
       this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
       this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());

@@ -41,6 +41,7 @@ getTestBed().initTestEnvironment(
 
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
 // const context = require.context('./', true, /scene.component\.spec\.ts$/);
+const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 // const context = require.context('./', true, /scenes.component\.spec\.ts$/);
 // const context = require.context('./', true, /scene-details-dialog.component\.spec\.ts$/)
 // const context = require.context('./', true, /scene-utils.*\.spec\.ts$/);
@@ -86,7 +87,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /pivot-table.component\.spec\.ts$/);
 // const context = require.context('./', true, /pivot-table-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /pivot-options-provider\.spec\.ts$/);
-const context = require.context('./', true, /cell-click-handler\.spec\.ts$/);
+// const context = require.context('./', true, /cell-click-handler\.spec\.ts$/);
 // const context = require.context('./', true, /pivot.*\.spec\.ts$/);
 // const context = require.context('./', true, /rawdata-link-factory\.spec\.ts$/);
 // const context = require.context('./', true, /value-grouping-generator\.spec\.ts$/);

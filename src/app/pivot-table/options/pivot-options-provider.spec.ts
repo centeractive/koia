@@ -23,7 +23,7 @@ describe('PivotOptionsProvider', () => {
          autoGenerateValueGroupings: true,
          pivotOptions: null
       };
-      cellClickHandler = new CellClickHandler(null);
+      cellClickHandler = new CellClickHandler(null, null);
       optionsProvider = new PivotOptionsProvider(cellClickHandler);
    });
 

@@ -1,10 +1,10 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MatFormFieldModule, MatInputModule, MatButtonModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA, MatCardSubtitle } from '@angular/material';
-import { FormsModule } from '@angular/forms';
+import { MatButtonModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA, MatCheckboxModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { ConfirmDialogData, ConfirmDialogComponent } from './confirm-dialog.component';
+import { FormsModule } from '@angular/forms';
 
 describe('ConfirmDialogComponent', () => {
 
@@ -23,7 +23,7 @@ describe('ConfirmDialogComponent', () => {
     dialogData = new ConfirmDialogData(title, textBlocks, buttonNames);
     TestBed.configureTestingModule({
       declarations: [ConfirmDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule],
+      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
