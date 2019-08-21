@@ -141,7 +141,7 @@ export class MangoQueryBuilder {
          return false;
       } else if (propertyFilter.operator === Operator.NOT_EMPTY) {
          return null;
-      } else if (propertyFilter.operator === Operator.ANY_OF) {
+      } else if (propertyFilter.operator === Operator.ANY_OF || propertyFilter.operator === Operator.NONE_OF) {
          return this.toInSelectorValue(propertyFilter);
       } else if (this.columns) {
          const column = this.columns.find(c => c.name === propertyFilter.propertyName);
@@ -219,6 +219,8 @@ export class MangoQueryBuilder {
             return '$gt';
          case Operator.ANY_OF:
             return '$in';
+         case Operator.NONE_OF:
+            return '$nin';
          default:
             throw new Error('operator ' + operator + ' is not yet supported');
       }

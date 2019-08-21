@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
+// const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
@@ -112,7 +112,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /data-type-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
 // const context = require.context('./', true, /test-utils\.spec\.ts$/);
-// const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
+const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
 // const context = require.context('./', true, /value-formatter\.spec\.ts$/);
 
 

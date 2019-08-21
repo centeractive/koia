@@ -8,5 +8,6 @@ export enum Operator {
    GREATER_THAN = '>',
    EMPTY = 'is empty',
    NOT_EMPTY = 'is not empty',
-   ANY_OF = 'is any of'
+   ANY_OF = 'is any of',
+   NONE_OF = 'is none of'
 }

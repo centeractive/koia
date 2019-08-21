@@ -1,5 +1,4 @@
 import { Operator } from 'app/shared/model/operator.enum';
-import { ParamOp } from 'app/shared/model/param-op.enum';
 import { PropertyFilter } from 'app/shared/model/property-filter';
 import { Query } from 'app/shared/model/query';
 
@@ -58,23 +57,28 @@ export class JSQueryFactory {
       const operator = propertyFilter.operator;
       let propertyName = propertyFilter.propertyName;
       if (operator === Operator.CONTAINS) {
-         propertyName += ParamOp._LIKE;
+         propertyName += '_like';
       } else if (operator === Operator.NOT_EQUAL) {
-         propertyName += ParamOp._NE;
+         propertyName += '_ne';
       } else if (operator === Operator.LESS_THAN) {
-         propertyName += ParamOp._LT;
+         propertyName += '_lt';
       } else if (operator === Operator.LESS_THAN_OR_EQUAL) {
-         propertyName += ParamOp._LTE;
+         propertyName += '_lte';
       } else if (operator === Operator.GREATER_THAN_OR_EQUAL || operator === Operator.NOT_EMPTY) {
-         propertyName += ParamOp._GTE;
+         propertyName += '_gte';
       } else if (operator === Operator.GREATER_THAN) {
-         propertyName += ParamOp._GT;
+         propertyName += '_gt';
       } else if (operator === Operator.ANY_OF) {
-         propertyName += ParamOp._IN;
+         propertyName += '_like';
+      } else if (operator === Operator.NONE_OF) {
+         propertyName += '_like';
       }
       return this.append(query, propertyName, propertyFilter.filterValue);
    }
 
+   /**
+    * TODO: values of [[Operator.ANY_OF]] and [[Operator.NONE_OF]] must be transformed into regex
+    */
    private append(query: string, propertyName: string, value: any): string {
       query += query.length === 0 ? '?' : '&';
       return query += propertyName + '=' + value;

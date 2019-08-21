@@ -24,10 +24,16 @@ export class PropertyFilterCustomizer {
                   case Operator.NOT_EMPTY:
                         return prefix + 'is not empty';
                   case Operator.ANY_OF:
-                        const postfix = filter.dataType === DataType.TEXT ? ' (cases-sensitive)' : '';
-                        return prefix + 'is equal to one of the filter values, separated by a comma each' + postfix;
+                        return prefix + 'is equal to any of the filter values, separated by a comma each' + this.caseSensitiveText(filter);
+                  case Operator.NONE_OF:
+                        return prefix + 'is equal to none of the filter values, separated by a comma each' +
+                              this.caseSensitiveText(filter);
                   default:
                         return undefined;
             }
+      }
+
+      private caseSensitiveText(filter: PropertyFilter) {
+            return filter.dataType === DataType.TEXT ? ' (case-sensitive)' : '';
       }
 }

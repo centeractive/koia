@@ -78,7 +78,7 @@ describe('RawDataRevealService', () => {
     service.ofIDs(['2', '8', '11']);
 
     // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id_in=2,8,11');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id_like=2,8,11');
   });
 
   it('#ofGraphNode should navigate to raw data view for root node', () => {

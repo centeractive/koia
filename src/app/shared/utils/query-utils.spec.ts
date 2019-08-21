@@ -1,98 +1,81 @@
 import { QueryUtils } from './query-utils';
-import { PropertyFilter, Operator } from '../model';
+import { PropertyFilter, Operator, Query } from '../model';
+import { shuffle } from 'd3';
 
 describe('QueryUtils', () => {
 
-  const now = new Date().getTime();
-  const nowPlusMin = now + 60_000;
+  it('#areFiltersEqual should return true when queries are same', () => {
+    const query = createQuery(true, true, true);
 
-  it('#queryFromParams should return empty query when params is null', () => {
-
-    // when
-    const query = QueryUtils.queryFromParams(null);
-
-    // then
-    expect(query.hasFilter()).toBeFalsy();
+    expect(QueryUtils.areFiltersEqual(query, query)).toBeTruthy();
   });
 
-  it('#queryFromParams should return empty query when params is empty', () => {
+  it('#areFiltersEqual should return true when full text filters are are same', () => {
+    const query1 = createQuery(true, false, false);
+    const query2 = createQuery(true, false, false);
 
-    // when
-    const query = QueryUtils.queryFromParams({});
-
-    // then
-    expect(query.hasFilter()).toBeFalsy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
   });
 
-  it('#queryFromParams should return full text filter query', () => {
+  it('#areFiltersEqual should return true when property filters are are same', () => {
+    const query1 = createQuery(false, true, false);
+    const query2 = createQuery(false, true, false);
 
-    // given
-    const params = {
-      q: '/romantic_joliot#41f6f099'
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+  });
+
+  it('#areFiltersEqual should return true when value range filters are are same', () => {
+    const query1 = createQuery(false, false, true);
+    const query2 = createQuery(false, false, true);
+
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+  });
+
+  it('#areFiltersEqual should return true when all filters are are same', () => {
+    const query1 = createQuery(true, true, true);
+    const query2 = createQuery(true, true, true);
+
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+  });
+
+  it('#areFiltersEqual should return false when full text filters differ', () => {
+    const query1 = new Query();
+    query1.setFullTextFilter('a');
+    const query2 = new Query();
+    query1.setFullTextFilter('b');
+
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalsy();
+  });
+
+  it('#areFiltersEqual should return false when property filters differ', () => {
+    const query1 = createQuery(false, true, false);
+    const query2 = createQuery(false, true, false);
+    query2.addPropertyFilter(new PropertyFilter('x', Operator.EMPTY, ''));
+
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalsy();
+  });
+
+  it('#areFiltersEqual should return false when value range filters differ', () => {
+    const query1 = createQuery(false, false, true);
+    const query2 = createQuery(false, false, true);
+    query2.addValueRangeFilter('x', 10, 20);
+
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalsy();
+  });
+
+  function createQuery(fullTextFilter: boolean, propertyFilters: boolean, valueRangeFilters: boolean) {
+    const query = new Query();
+    if (fullTextFilter) {
+      query.setFullTextFilter('abc');
     }
-
-    // when
-    const query = QueryUtils.queryFromParams(params);
-
-    // then
-    expect(query.getFullTextFilter()).toEqual('/romantic_joliot#41f6f099');
-  });
-
-  it('#queryFromParams should return single property EQUAL filter query', () => {
-
-    // given
-    const params = {
-      'Log Level Category': 'WARN'
+    if (propertyFilters) {
+      const names = ['p1', 'p2', 'p3', 'p4', 'p5'];
+      shuffle(names).forEach(n => query.addPropertyFilter(new PropertyFilter(n, Operator.EQUAL, 'a')));
     }
-
-    // when
-    const query = QueryUtils.queryFromParams(params);
-
-    // then
-    const propertyFilters = query.getPropertyFilters();
-    expect(propertyFilters.length).toEqual(1);
-    expect(propertyFilters[0]).toEqual(new PropertyFilter('Log Level Category', Operator.EQUAL, 'WARN'));
-  });
-
-  it('#queryFromParams should return multiple property filter query', () => {
-
-    // given
-    const params = {
-      Host_ne: 'server1',
-      Path: '/opt/tomcat/log/catatalina.out',
-      Level_like: 'ERR',
-      Employee_gte: '',
-      Amount_lte: '10000',
-      Commission_gte: '2000'
+    if (valueRangeFilters) {
+      const names = ['vr1', 'vr2', 'vr3', 'vr4', 'vr5'];
+      shuffle(names).forEach(n => query.addValueRangeFilter(n, 10, 20));
     }
-
-    // when
-    const query = QueryUtils.queryFromParams(params);
-
-    // then
-    const propertyFilters = query.getPropertyFilters();
-    expect(propertyFilters.length).toEqual(6);
-    expect(propertyFilters[0]).toEqual(new PropertyFilter('Host', Operator.NOT_EQUAL, 'server1'));
-    expect(propertyFilters[1]).toEqual(new PropertyFilter('Path', Operator.EQUAL, '/opt/tomcat/log/catatalina.out'));
-    expect(propertyFilters[2]).toEqual(new PropertyFilter('Level', Operator.CONTAINS, 'ERR'));
-    expect(propertyFilters[3]).toEqual(new PropertyFilter('Employee', Operator.NOT_EMPTY, ''));
-    expect(propertyFilters[4]).toEqual(new PropertyFilter('Amount', Operator.LESS_THAN_OR_EQUAL, '10000'));
-    expect(propertyFilters[5]).toEqual(new PropertyFilter('Commission', Operator.GREATER_THAN_OR_EQUAL, '2000'));
-  });
-
-  it('#queryFromParams should return value range query', () => {
-
-    // given
-    const params = {
-      Time_gte: now,
-      Time_lte: nowPlusMin
-    }
-
-    // when
-    const query = QueryUtils.queryFromParams(params);
-
-    // then
-    expect(query.findPropertyFilter('Time', Operator.GREATER_THAN_OR_EQUAL).filterValue).toEqual(now);
-    expect(query.findPropertyFilter('Time', Operator.LESS_THAN_OR_EQUAL).filterValue).toEqual(nowPlusMin);
-  });
+    return query;
+  }
 });
