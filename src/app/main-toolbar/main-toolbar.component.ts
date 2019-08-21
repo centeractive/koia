@@ -5,9 +5,9 @@ import { Router, NavigationEnd } from '@angular/router';
 import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene } from '../shared/model';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
-import { TimeRangeFilter } from './time-range-filter';
-import { NumberRangeFilter } from './number-range-filter';
-import { PropertyFilterCustomizer } from './property-filter-customizer';
+import { TimeRangeFilter } from './filter/time-range-filter';
+import { NumberRangeFilter } from './filter/number-range-filter';
+import { PropertyFilterCustomizer } from './filter/property-filter-customizer';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 @Component({
@@ -207,7 +207,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
     // jsonserver
     //
-    // [[Query.setFullTextFilter]] would be the propper method to be used but this results in a json-server full text search within
+    // [[Query.setFullTextFilter]] would be the proper method to be used but this results in a json-server full text search within
     // all columns. Since the time column is stored as a number, this may produces wrong results when the search term is also a
     // number. As a workaround, we search within the 'Data' column for now.
     //

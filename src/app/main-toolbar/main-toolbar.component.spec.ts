@@ -15,9 +15,9 @@ import { ContextInfo, Column, Route, PropertyFilter, Operator, Query, DataType, 
 import { of } from 'rxjs';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
-import { TimeRangeFilter } from './time-range-filter';
+import { TimeRangeFilter } from './filter/time-range-filter';
 import { MatIconModuleMock } from 'app/shared/test';
-import { NumberRangeFilter } from './number-range-filter';
+import { NumberRangeFilter } from './filter/number-range-filter';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 
 @Component({ template: '' })

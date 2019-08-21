@@ -68,6 +68,7 @@ export class NumberRangeFilter {
          floor: this.start,
          ceil: this.end,
          step: this.selectedStep,
+         animate: false, // when enabling animate, model and slider are not always in sync
          enforceStep: false,
          draggableRange: true,
          translate: n => n.toLocaleString(),
