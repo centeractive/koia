@@ -113,6 +113,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
 // const context = require.context('./', true, /test-utils\.spec\.ts$/);
 // const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
+// const context = require.context('./', true, /value-formatter\.spec\.ts$/);
 
 
 // And load the modules.

@@ -25,9 +25,11 @@ describe('ValueFormatter', () => {
 
       const ts = Number(1000).toLocaleString().charAt(1); // Thousands separator
       expect(formatter.formatValue(column, -1_000_000.5)).toBe('-1' + ts + '000' + ts + '000.5');
+      expect(formatter.formatValue(column, -95.5132)).toBe('-95.5132');
       expect(formatter.formatValue(column, -0.1)).toBe('-0.1');
       expect(formatter.formatValue(column, 0)).toBe('0');
       expect(formatter.formatValue(column, 0.1)).toBe('0.1');
+      expect(formatter.formatValue(column, 95.5132)).toBe('95.5132');
       expect(formatter.formatValue(column, 1_000_000.5)).toBe('1' + ts + '000' + ts + '000.5');
    });
 

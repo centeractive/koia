@@ -15,7 +15,11 @@ export class ValueFormatter {
       } else if (column.dataType === DataType.TIME && NumberUtils.isNumber(value)) {
          return this.datePipe.transform(value, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
       } else if (column.dataType === DataType.NUMBER) {
-         return (<Number>value).toLocaleString();
+         const decimals = NumberUtils.countDecimals(<number>value);
+         if (decimals > 3) {
+            return (<number>value).toLocaleString(undefined, { minimumFractionDigits: decimals });
+         }
+         return (<number>value).toLocaleString();
       } else if (column.dataType === DataType.BOOLEAN && typeof value === 'boolean') {
          return value ? 'true' : 'false';
       }

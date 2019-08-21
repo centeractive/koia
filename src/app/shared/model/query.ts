@@ -43,9 +43,6 @@ export class Query {
    }
 
    addValueRangeFilter(propertyName: string, minValue: number, maxValue: number): void {
-
-      console.log('addValueRangeFilter: ' + propertyName + ', min: ' + minValue + ', max: ' + maxValue);
-
       this.valueRangeFilters.push(new ValueRangeFilter(propertyName, { min: minValue, max: maxValue }));
    }
 

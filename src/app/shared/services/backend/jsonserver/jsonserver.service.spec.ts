@@ -2,22 +2,22 @@ import { TestBed, getTestBed } from '@angular/core/testing';
 
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
-import { RawDataService } from './raw-data.service';
+import { JSONServerService } from './jsonserver.service';
 import { ContextInfo, Column, Query, PropertyFilter, Operator, DataType } from '../../../model';
 
-describe('RawDataService', () => {
+describe('JSONServerService', () => {
 
-  let rawDataService: RawDataService;
+  let rawDataService: JSONServerService;
   let httpMock: HttpTestingController;
   let query: Query;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [RawDataService],
+      providers: [JSONServerService],
       imports: [HttpClientTestingModule]
     });
     const injector = getTestBed();
-    rawDataService = injector.get(RawDataService);
+    rawDataService = injector.get(JSONServerService);
     httpMock = injector.get(HttpTestingController);
     query = new Query();
   });
@@ -36,7 +36,7 @@ describe('RawDataService', () => {
 
     // when/then
     rawDataService.getContext().subscribe(data => expect(data).toBe(context));
-    const request = httpMock.expectOne(RawDataService.CONTEXT_URL);
+    const request = httpMock.expectOne(JSONServerService.CONTEXT_URL);
     expect(request.request.method).toBe('GET');
 
     // answer HTTP request
@@ -55,7 +55,7 @@ describe('RawDataService', () => {
 
     // when/then
     rawDataService.getPagingColumns().subscribe(data => expect(data).toBe(columns));
-    const request = httpMock.expectOne(RawDataService.PAGING_COLUMNS_URL);
+    const request = httpMock.expectOne(JSONServerService.PAGING_COLUMNS_URL);
     expect(request.request.method).toBe('GET');
 
     // answer HTTP request
@@ -73,7 +73,7 @@ describe('RawDataService', () => {
 
     // when/then
     rawDataService.getColumns().subscribe(data => expect(data).toBe(columns));
-    const request = httpMock.expectOne(RawDataService.COLUMNS_URL);
+    const request = httpMock.expectOne(JSONServerService.COLUMNS_URL);
     expect(request.request.method).toBe('GET');
 
     // answer HTTP request
@@ -91,7 +91,7 @@ describe('RawDataService', () => {
 
     // when/then
     rawDataService.getEntries(query).subscribe(data => expect(data).toBe(entries));
-    const request = httpMock.expectOne(RawDataService.ENTRIES_URL);
+    const request = httpMock.expectOne(JSONServerService.ENTRIES_URL);
     expect(request.request.method).toBe('GET');
 
     // answer HTTP request
@@ -108,7 +108,7 @@ describe('RawDataService', () => {
 
     // when/then
     rawDataService.getEntries(query).subscribe(data => expect(data).toBe(entries));
-    const request = httpMock.expectOne(RawDataService.ENTRIES_URL + '?Level=WARN');
+    const request = httpMock.expectOne(JSONServerService.ENTRIES_URL + '?Level=WARN');
     expect(request.request.method).toBe('GET');
 
     // answer HTTP request

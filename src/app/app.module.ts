@@ -46,7 +46,7 @@ import { PivotTableComponent } from './pivot-table/pivot-table.component';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
 import { StatusComponent } from './shared/component/status/status.component';
 import { ChartjsComponent } from './chartjs/chartjs.component';
-import { RawDataService } from './shared/services/backend/jsonserver';
+import { JSONServerService } from './shared/services/backend/jsonserver';
 import { ReaderService } from './shared/services/reader';
 import { CouchDBService } from './shared/services/backend/couchdb/couchdb.service';
 import { DBService } from './shared/services/backend';
@@ -143,7 +143,7 @@ import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confir
     CouchDBService,
     DBService,
     MatDialog,
-    RawDataService,
+    JSONServerService,
     RawDataRevealService,
     ViewPersistenceService,
     TimeGroupingService,
