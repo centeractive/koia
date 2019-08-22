@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AggregationService, RawDataRevealService } from '../shared/services';
 import { ChangeEvent, Aggregation, SummaryContext, Column, Route, DataType } from '../shared/model';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { DateTimeUtils, CommonUtils, ValueFormatter, ColumnNameConverter } from 'app/shared/utils';
+import { DateTimeUtils, CommonUtils, ColumnNameConverter } from 'app/shared/utils';
 import { RowSpanComputer, Span } from './row-span-computer';
 import { DatePipe } from '@angular/common';
 import { DataFrameSorter } from './data-frame-sorter';
@@ -13,6 +13,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 import { ExportDataGenerator } from './export-data-generator';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { ValueFormatter } from 'app/shared/format';
 
 @Component({
   selector: 'koia-summary-table',

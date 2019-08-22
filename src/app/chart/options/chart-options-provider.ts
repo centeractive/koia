@@ -1,8 +1,9 @@
-import { DateTimeUtils, CommonUtils, ArrayUtils, ValueFormatter, ColumnNameConverter } from '../../shared/utils';
+import { DateTimeUtils, ArrayUtils, ColumnNameConverter } from '../../shared/utils';
 import { ChartContext, ChartType, DataType, Column } from '../../shared/model';
 import { RawDataRevealer } from './raw-data-revealer';
 import { RawDataRevealService } from 'app/shared/services';
 import { ForceYComputer } from './force-y-computer';
+import { ValueFormatter } from 'app/shared/format';
 
 declare var d3: any;
 

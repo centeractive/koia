@@ -7,5 +7,5 @@ export * from './number-utils';
 export * from './data-type-utils';
 export * from './date-time-utils';
 export * from './query-utils';
-export * from './value-formatter';
+export * from './query-sanitizer';
 export * from './query-param-extractor';

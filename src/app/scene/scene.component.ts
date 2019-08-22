@@ -7,10 +7,11 @@ import { DBService } from 'app/shared/services/backend';
 import { DataReader, DataHandler, ReaderService } from '../shared/services/reader';
 import { SceneUtils, ColumnDefinitionAssistant } from './utils';
 import { ProgressMonitor, EntryPersister } from './persister';
-import { ValueFormatter, DateTimeUtils, ArrayUtils } from 'app/shared/utils';
+import { DateTimeUtils, ArrayUtils } from 'app/shared/utils';
 import { DatePipe, Location } from '@angular/common';
 import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './mapper';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { ValueFormatter } from 'app/shared/format';
 
 @Component({
   selector: 'koia-front',

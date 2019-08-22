@@ -141,8 +141,8 @@
           </button>
         </mat-menu>
         &nbsp;&nbsp;
-        <ng5-slider [(value)]="rangeFilter.selStart" [(highValue)]="rangeFilter.selEnd"
-          [options]="rangeFilter.rangeOptions" (valueChange)="refreshEntries()"></ng5-slider>
+        <ng5-slider [value]="rangeFilter.selStart" [highValue]="rangeFilter.selEnd"
+          [options]="rangeFilter.rangeOptions" (userChangeEnd)="onRangeFilterChanged(rangeFilter, $event)"></ng5-slider>
         <button class="but_reset_range_filter" mat-button color="accent" mat-icon-button
           matTooltip="Reset value range filter" [disabled]="!rangeFilter.isFiltered()"
           (click)="resetRangeFilter(rangeFilter)">

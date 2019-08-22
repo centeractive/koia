@@ -1,6 +1,6 @@
 import { Column, PropertyFilter, Operator, TimeUnit, DataType, Query } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
-import { ColumnNameConverter, DateTimeUtils } from 'app/shared/utils';
+import { ColumnNameConverter, DateTimeUtils, QuerySanitizer } from 'app/shared/utils';
 import { RawDataRevealService, DialogService } from 'app/shared/services';
 import { ValueRangeConverter } from 'app/shared/value-range/value-range-converter';
 import { ValueGrouping } from 'app/shared/value-range/model';
@@ -79,7 +79,7 @@ export class CellClickHandler {
       const column = this.columns.find(c => c.name === columnName);
       this.addFilters(query, column, valueGroupings, filters[filter]);
     }
-    this.rawDataRevealService.show(query);
+    this.rawDataRevealService.show(new QuerySanitizer(query).sanitize());
   }
 
   private addFilters(query: Query, column: Column, valueGroupings: ValueGrouping[], filterValue: any): void {

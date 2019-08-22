@@ -380,6 +380,25 @@ describe('MainToolbarComponent', () => {
     expect(query.findValueRangeFilter('Time')).toBeUndefined();
   }));
 
+  it('pressing character key in column filter field should not emit onFilterChange', fakeAsync(() => {
+
+    // given
+    component.columnFilters = [];
+    clickAddColumnFilterMenuItem('Level');
+    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
+    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
+    spyOn(component.onFilterChange, 'emit');
+
+    // when
+    const event: any = document.createEvent('Event');
+    event.key = 'x';
+    event.initEvent('keyup');
+    htmlInput.dispatchEvent(event);
+
+    // then
+    expect(component.onFilterChange.emit).not.toHaveBeenCalled();
+  }));
+
   it('pressing <clear> button in column filter field should emit onFilterChange', fakeAsync(() => {
 
     // given
@@ -400,34 +419,6 @@ describe('MainToolbarComponent', () => {
     expect(component.onFilterChange.emit).toHaveBeenCalled();
     const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
-  }));
-
-  it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
-
-    // when
-    component.addRangeFilter(column('Time'), null);
-    flush();
-
-    // then
-    expect(component.rangeFilters.length).toBe(1);
-    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTruthy();
-    const timeRangeFilter = <TimeRangeFilter> component.rangeFilters[0];
-    expect(timeRangeFilter.start).toBe(valueRange.min);
-    expect(timeRangeFilter.end).toBe(valueRange.max);
-  }));
-
-  it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
-
-    // when
-    component.addRangeFilter(column('Amount'), null);
-    flush();
-
-    // then
-    expect(component.rangeFilters.length).toBe(1);
-    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTruthy();
-    const numberRangeFilter = <NumberRangeFilter> component.rangeFilters[0];
-    expect(numberRangeFilter.start).toBe(valueRange.min);
-    expect(numberRangeFilter.end).toBe(valueRange.max);
   }));
 
   it('#onColumnFilterNameChanged should change property filter name and data type', () => {
@@ -516,6 +507,50 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.onFilterChange.emit).not.toHaveBeenCalled();
   });
+
+  it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
+
+    // when
+    component.addRangeFilter(column('Time'), null);
+    flush();
+
+    // then
+    expect(component.rangeFilters.length).toBe(1);
+    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTruthy();
+    const timeRangeFilter = <TimeRangeFilter> component.rangeFilters[0];
+    expect(timeRangeFilter.start).toBe(valueRange.min);
+    expect(timeRangeFilter.end).toBe(valueRange.max);
+  }));
+
+  it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
+
+    // when
+    component.addRangeFilter(column('Amount'), null);
+    flush();
+
+    // then
+    expect(component.rangeFilters.length).toBe(1);
+    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTruthy();
+    const numberRangeFilter = <NumberRangeFilter> component.rangeFilters[0];
+    expect(numberRangeFilter.start).toBe(valueRange.min);
+    expect(numberRangeFilter.end).toBe(valueRange.max);
+  }));
+
+  it('#onRangeFilterChange should refresh entries', fakeAsync(() => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 });
+    component.rangeFilters = [rangeFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.onRangeFilterChanged(rangeFilter, { value: 3, highValue: 7, pointerType: undefined });
+
+    // then
+    expect(rangeFilter.selStart).toBe(3);
+    expect(rangeFilter.selEnd).toBe(7);
+    expect(component.refreshEntries).toHaveBeenCalled();
+  }));
 
   it('#click on "Remove value range filter" button should remove time range filter', fakeAsync(() => {
 

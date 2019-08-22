@@ -9,6 +9,7 @@ import { TimeRangeFilter } from './filter/time-range-filter';
 import { NumberRangeFilter } from './filter/number-range-filter';
 import { PropertyFilterCustomizer } from './filter/property-filter-customizer';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { ChangeContext } from 'ng5-slider';
 
 @Component({
   selector: 'koia-main-toolbar',
@@ -44,13 +45,13 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   rangeFilters: NumberRangeFilter[] = [];
   propertyFilterCustomizer = new PropertyFilterCustomizer();
 
-  private justNavigatedToParentView: boolean
+  private justNavigatedToParentView: boolean;
 
   constructor(public router: Router, private dbService: DBService) {
     this.operators = Object.keys(Operator).map(key => Operator[key]);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.currURL = '/' + this.route;
     this.scene = this.dbService.getActiveScene();
     if (this.scene) {
@@ -71,7 +72,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
    *
    * @see #ngAfterViewChecked
    */
-  private listenOnNavigationEvents() {
+  private listenOnNavigationEvents(): void {
     this.router.events.subscribe(e => {
       if (e instanceof NavigationEnd && (<NavigationEnd>e).url === '/' + this.route) {
         this.justNavigatedToParentView = true;
@@ -82,7 +83,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   /**
    * @see #listenOnNavigationEvents
    */
-  ngAfterViewChecked() {
+  ngAfterViewChecked(): void {
     if (this.justNavigatedToParentView) {
       this.justNavigatedToParentView = false;
       this.rangeFilters.forEach(f => f.defineRangeOptions());
@@ -90,7 +91,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.onAfterViewChecked.emit();
   }
 
-  private retainInitialFilters() {
+  private retainInitialFilters(): void {
     if (this.query) {
       this.fullTextFilter = this.query.getFullTextFilter();
       const nonTimeColumnNames = this.nonTimeColumns.map(c => c.name);
@@ -171,6 +172,12 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   resetColumnFilter(columnFilter: PropertyFilter): void {
     columnFilter.clearFilterValue();
+    this.refreshEntries();
+  }
+
+  onRangeFilterChanged(filter: NumberRangeFilter, changeContext: ChangeContext): void {
+    filter.selStart = changeContext.value;
+    filter.selEnd = changeContext.highValue;
     this.refreshEntries();
   }
 

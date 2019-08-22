@@ -2,6 +2,7 @@ import { Options } from 'ng5-slider';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { NumberFormatter } from 'app/shared/format';
 
 export class NumberRangeFilter {
 
@@ -16,6 +17,8 @@ export class NumberRangeFilter {
    selectedStep: any;
    selectedStepAbbrev: string;
    rangeOptions: Options;
+
+   private numberFormatter = new NumberFormatter();
 
    constructor(column: Column, start: number, end: number, selValueRange: ValueRange) {
       this.column = column;
@@ -68,10 +71,10 @@ export class NumberRangeFilter {
          floor: this.start,
          ceil: this.end,
          step: this.selectedStep,
-         animate: false, // when enabling animate, model and slider are not always in sync
+         animate: true,
          enforceStep: false,
          draggableRange: true,
-         translate: n => n.toLocaleString(),
+         translate: n => this.numberFormatter.format(n),
          combineLabels: (l1: string, l2: string) => l1 === l2 ? l1 : l1 + ' - ' + l2
       }
    }
