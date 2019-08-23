@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { IDataFrame } from 'data-forge';
 import { SummaryContext, DataType } from 'app/shared/model';
-import { CommonUtils, DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
+import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
 
 export class ExportDataGenerator {
 

@@ -27,6 +27,7 @@ describe('SummaryTableComponent', () => {
   let router: Router;
   const dbService = new DBService(null);
   const datePipe = new DatePipe('en-US');
+  let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
     const date = new Date();
@@ -38,7 +39,8 @@ describe('SummaryTableComponent', () => {
       { name: 't1', dataType: DataType.TEXT, width: 60, indexed: true },
       { name: 'n1', dataType: DataType.NUMBER, width: 80, indexed: true },
       { name: 't2', dataType: DataType.TEXT, width: 200, indexed: true },
-      { name: 'n2', dataType: DataType.NUMBER, width: 70, indexed: true }
+      { name: 'n2', dataType: DataType.NUMBER, width: 70, indexed: true },
+      { name: 'b', dataType: DataType.BOOLEAN, width: 10, indexed: true }
     ];
     entries = [
       { Time: now, /*      */ t1: 'a', n1: 1, t2: null, n2: null },
@@ -46,13 +48,13 @@ describe('SummaryTableComponent', () => {
       { Time: now + 70 * sec, t1: 'b', n1: 3, t2: 'y', n2: 9 },
       { Time: now + 80 * sec, t1: 'b', n1: 2, t2: 'x', n2: 9 }
     ];
-    spyOn(dbService, 'getActiveScene').and.returnValue(SceneFactory.createScene('1', columns));
   });
 
   beforeEach(() => {
     router = <Router> { navigateByUrl: (url: string) => null };
     const rawDataRevealService = new RawDataRevealService(router, <MatDialog> {});
     rawDataRevealService.setUseDialog(false);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(SceneFactory.createScene('1', columns));
     TestBed.configureTestingModule({
       imports: [MatTableModule, MatSortModule, MatProgressBarModule, RouterTestingModule, MatDialogModule],
       declarations: [SummaryTableComponent],
@@ -74,6 +76,21 @@ describe('SummaryTableComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(null);
+    const r = TestBed.get(Router);
+    spyOn(r, 'navigateByUrl');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(r.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
 
   it('should refresh component each time context changes', fakeAsync(() => {
 
@@ -298,12 +315,11 @@ describe('SummaryTableComponent', () => {
     expect(component.frameData).toEqual(expected);
   }));
 
-  it('#formattedValueOf should return blank when data is being computed', fakeAsync(() => {
+  it('#formattedValueOf should return blank when data is being computed', () => {
 
     // given
     context.dataColumns = [findColumn('n1')];
     fixture.detectChanges();
-    flush();
     component.computing = true;
 
     // when
@@ -311,52 +327,94 @@ describe('SummaryTableComponent', () => {
 
     // then
     expect(formattedValue).toBe('');
-  }));
+  });
 
-  it('#formattedValueOf should return formatted number when non-grouped value is number', fakeAsync(() => {
+  it('#formattedValueOf should return null when value is null', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+
+    // when
+    const formattedValue = component.formattedValueOf(0, null);
+
+    // then
+    expect(formattedValue).toBeNull();
+  });
+
+  it('#formattedValueOf should return undefined when value is undefined', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+
+    // when
+    const formattedValue = component.formattedValueOf(0, undefined);
+
+    // then
+    expect(formattedValue).toBeUndefined();
+  });
+
+  it('#formattedValueOf should return string when value is text', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+
+    // when
+    const formattedValue = component.formattedValueOf(0, 'abc');
+
+    // then
+    expect(formattedValue).toBe('abc');
+  });
+
+  it('#formattedValueOf should return boolean when data column value is boolean', () => {
+
+    // given
+    context.dataColumns = [findColumn('b')];
+
+    // when
+    const formattedValue = component.formattedValueOf(0, true);
+
+    // then
+    expect(formattedValue).toBe(true);
+  });
+
+  it('#formattedValueOf should return formatted number when data column value is number', () => {
 
     // given
     context.dataColumns = [findColumn('n1')];
-    fixture.detectChanges();
-    flush();
 
     // when
     const formattedValue = component.formattedValueOf(0, -1_000_000.5);
 
     // then
     expect(formattedValue).toBe('-1' + ts + '000' + ts + '000.5');
-  }));
+  });
 
-  it('#formattedValueOf should return formatted number grouped value is number', fakeAsync(() => {
+  it('#formattedValueOf should return formatted hierarchy column value is number', () => {
 
     // given
     context.dataColumns = [findColumn('t1')];
     context.groupByColumns = [findColumn('n1')];
-    fixture.detectChanges();
-    flush();
 
     // when
     const formattedValue = component.formattedValueOf(0, -1_000_000.5);
 
     // then
     expect(formattedValue).toBe('-1' + ts + '000' + ts + '000.5');
-  }));
+  });
 
 
-  it('#formattedValueOf should return formatted time when group value is time', fakeAsync(() => {
+  it('#formattedValueOf should return formatted time when hierarchy column value is time', () => {
 
     // given
     context.dataColumns = [findColumn('t1')];
     context.groupByColumns = [findColumn('Time')];
-    fixture.detectChanges();
-    flush();
 
     // when
     const formattedValue = component.formattedValueOf(0, now);
 
     // then
     expect(formattedValue).toBe(datePipe.transform(now, 'd MMM yyyy HH:mm'));
-  }));
+  });
 
   it('#createExportData should return data when aggregated by COUNT', fakeAsync(() => {
 

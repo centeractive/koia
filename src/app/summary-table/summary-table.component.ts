@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AggregationService, RawDataRevealService } from '../shared/services';
 import { ChangeEvent, Aggregation, SummaryContext, Column, Route, DataType } from '../shared/model';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { DateTimeUtils, CommonUtils, ColumnNameConverter } from 'app/shared/utils';
+import { DateTimeUtils, CommonUtils, ColumnNameConverter, NumberUtils } from 'app/shared/utils';
 import { RowSpanComputer, Span } from './row-span-computer';
 import { DatePipe } from '@angular/common';
 import { DataFrameSorter } from './data-frame-sorter';
@@ -13,7 +13,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 import { ExportDataGenerator } from './export-data-generator';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
-import { ValueFormatter } from 'app/shared/format';
+import { NumberFormatter } from 'app/shared/format';
 
 @Component({
   selector: 'koia-summary-table',
@@ -39,8 +39,8 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
   private baseDataFrame: IDataFrame<number, any>;
   private dataFrame: IDataFrame<number, any>;
   private dataFrameSorter = new DataFrameSorter();
+  private numberFormatter = new NumberFormatter();
   private datePipe = new DatePipe('en-US');
-  private valueFormatter = new ValueFormatter();
   private exportDataGenerator = new ExportDataGenerator();
 
   constructor(private router: Router, private dbService: DBService, private aggregationService: AggregationService,
@@ -51,9 +51,6 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
       this.router.navigateByUrl(Route.SCENES);
     } else {
       this.rowSpanComputer = new RowSpanComputer();
-      if (this.context.hasDataColumn()) {
-        this.computing = true;
-      }
       this.initSort();
       this.context.subscribeToChanges((e: ChangeEvent) => this.refreshDataFrameAsync(e));
       this.entries$.subscribe(entries => this.createBaseDataFrame(entries));
@@ -63,9 +60,6 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['entries$']) {
-      if (this.context.hasDataColumn()) {
-        this.computing = true;
-      }
       this.entries$.subscribe(entries => this.createBaseDataFrame(entries));
     }
   }
@@ -151,17 +145,17 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
   formattedValueOf(columnIndex: number, value: any): any {
     if (this.computing) {
       return '';
+    } else if (value === null || value === undefined || typeof value === 'string' || typeof value === 'boolean') {
+      return value;
     }
-    let column = this.context.dataColumns[0];
-    const hierarchyColumns = this.context.groupByColumns;
-    if (hierarchyColumns.length > 0 && columnIndex < hierarchyColumns.length) {
-      column = hierarchyColumns[columnIndex];
+    let column: Column;
+    if (this.context.groupByColumns.length > 0 && columnIndex < this.context.groupByColumns.length) {
+      column = this.context.groupByColumns[columnIndex];
       if (column.dataType === DataType.TIME && column.groupingTimeUnit) {
-        column = <Column>CommonUtils.clone(column);
-        column.format = DateTimeUtils.ngFormatOf(column.groupingTimeUnit);
+        return this.datePipe.transform(value, DateTimeUtils.ngFormatOf(column.groupingTimeUnit));
       }
     }
-    return column ? this.valueFormatter.formatValue(column, value) : value;
+    return this.numberFormatter.format(value);
   }
 
   private adjustSize() {
