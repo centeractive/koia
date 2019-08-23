@@ -1,7 +1,16 @@
+#header {
+   display: flex;
+   flex-wrap: wrap;  
+   justify-content: space-between;
+   padding-bottom: 20px;
+}
+
 #div_logo {
-   width: 100%;
    display: block;
-   text-align: center;
+}
+
+#div_retrologo {
+   display: block;
 }
 
 p {
@@ -41,62 +50,83 @@ p {
    align-items: flex-start;
    justify-content: space-between;
    margin: 0px 20px 0px 20px;
+   padding-bottom: 20px;
 }
 
 .action-card {
    min-width: 250px;
    max-width: 350px;
+   height: 430px;
    margin: 0px 4px 0px 4px;
 }
 
 .div_actions {
    text-align: right;
+   padding-top: 40px;
 }
 
 #about-image {
-   background-image: url('../../assets/about.png');
+   background-image: url('../../assets/mat-icons/about_koia.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #features-image {
-   background-image: url('../../assets/army_knife.png');
+   background-image: url('../../assets/mat-icons/features.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #shield-image {
-   background-image: url('../../assets/shield.png');
+   background-image: url('../../assets/mat-icons/trust.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #data-image {
-   background-image: url('../../assets/text_binary.png');
+   background-image: url('../../assets/mat-icons/data_formats.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
+#datascene-image {
+   background-image: url('../../assets/mat-icons/import_select.png');
+   background-repeat:no-repeat;
+   background-size: cover;
+}
+
 #view-image {
-   background-image: url('../../assets/view.png');
+   background-image: url('../../assets/mat-icons/view_data.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #screenshots-image {
-   background-image: url('../../assets/monitor.png');
+   background-image: url('../../assets/mat-icons/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #browser-image {
-   background-image: url('../../assets/earth.png');
+   background-image: url('../../assets/mat-icons/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #couchdb-image {
    background-image: url('../../assets/couchdb.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#importselect-image {
+   background-image: url('../../assets/mat-icons/import_select.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#create-image {
+   background-image: url('../../assets/mat-icons/create.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 

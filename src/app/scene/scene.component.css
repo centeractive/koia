@@ -131,3 +131,9 @@ td {
 #div_progress {
   text-align: center;
 }
+
+#newscene-image {
+  background-image: url('../../assets/mat-icons/new_scene.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+} 
