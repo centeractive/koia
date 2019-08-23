@@ -5,20 +5,8 @@
    padding-bottom: 20px;
 }
 
-#div_logo {
-   display: block;
-}
-
-#div_retrologo {
-   display: block;
-}
-
 p {
    text-align: justify;
-}
-
-#img_retro {
-   vertical-align: middle;
 }
 
 #but_hide_show_steps {
