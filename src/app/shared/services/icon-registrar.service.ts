@@ -14,7 +14,7 @@ export class IconRegistrarService {
     'horizontal_bar_chart',
     'grouped_bar_chart',
     'grouped_horizontal_bar_chart',
-    'add_chart',
+    'add_chart_new',
     'add_relationship_graph',
     'add_summary',
     'pivot_table',

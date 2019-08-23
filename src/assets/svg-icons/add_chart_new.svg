@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg id="master-artboard" viewBox="0 0 192 198" version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" style="enable-background:new 0 0 1400 980;" width="192px" height="198px"><rect id="ee-background" x="0" y="0" width="192" height="198" style="fill: white; fill-opacity: 0; pointer-events: none;"/><defs><style id="ee-google-fonts">@import url(https://fonts.googleapis.com/css?family=Fjalla+One:400|Roboto:100,100italic,300,300italic,400,400italic,500,500italic,700,700italic,900,900italic);</style></defs>
+<svg id="master-artboard" viewBox="0 0 341 299.1160583496094" version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" style="enable-background:new 0 0 1400 980;" width="341px" height="299.1160583496094px"><rect id="ee-background" x="0" y="0" width="341" height="299.1160583496094" style="fill: rgb(255, 255, 255); fill-opacity: 1; pointer-events: none;"/><defs><style id="ee-google-fonts">@import url(https://fonts.googleapis.com/css?family=Fjalla+One:400|Roboto:100,100italic,300,300italic,400,400italic,500,500italic,700,700italic,900,900italic);</style></defs>
 
 
 
@@ -97,12 +97,4 @@
 
 
 
-<g transform="matrix(0.5744674801826477, 0, 0, 0.5744674801826477, 58.83013916015625, 92.29818725585938)"><g id="g-9" transform="matrix(1, 0, 0, 1, 0, 0)">
-	<g id="g-10">
-		<path class="st0" d="M58,49h100v100H58V49z" style="fill: rgb(0, 0, 0);"/>
-	</g>
-</g></g><g transform="matrix(8.807554244995117, 0, 0, 9.345014572143555, -12.310179710388184, -6.02484130859375)"><path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/><path d="M0 0h24v24H0z" fill="none"/></g><g transform="matrix(0.7531918287277222, 0, 0, 0.7531918287277222, -15.365722656249998, 68.22152709960936)"><g id="g-7" transform="matrix(1, 0, 0, 1, 1.694916670207249, 5.0847469190150605)">
-	<g id="g-8">
-		<path class="st0" d="M58,49h100v100H58V49z" style="fill: rgb(0, 0, 0);"/>
-	</g>
-</g></g><g transform="matrix(6.577996253967285, 0, 0, 6.577996253967285, 148.5321044921875, 112.3619384765625)"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" style="fill: rgb(255, 255, 255);" transform="matrix(1, 0, 0, 1, -21.735919110139264, -10.091676729707515)"/><path fill="none" d="M0 0h24v24H0z"/><path d="M 36.2588996887207 -28.463701248168945" style="fill: rgb(255, 255, 255); fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-opacity: 1; stroke-width: 0; paint-order: fill;" transform="matrix(1, 0, 0, 1, -21.735919110139264, -10.091676729707515)"/></g></svg>
+<g transform="matrix(8.54403018951416, 0, 0, 8.54403018951416, 185.26971435546875, -41.055641174316406)"><path d="M0 0h24v24H0z" fill="none"/></g><g transform="matrix(19.41666603088379, 0, 0, 19.41666603088379, -95.2442855834961, -71.06412506103516)"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/><path fill="none" d="M0 0h24v24H0z"/></g><g transform="matrix(0.9219843002932544, 0.8992530488134669, -0.8992530488134669, 0.9219843002932544, 404.3131454034206, -1026.1920957054986)"><path d="M 562.5999755859375 646.9000244140625 L 545.5999755859375 629.9000244140625 L 518.7000122070312 656.7000122070312 L 491.8999938964844 629.9000244140625 L 474.8999938964844 646.9000244140625 L 501.70001220703125 673.7999877929688 L 474.8999938964844 700.5999755859375 L 491.8999938964844 717.5999755859375 L 518.7000122070312 690.7999877929688 L 545.5999755859375 717.5999755859375 L 562.5999755859375 700.5999755859375 L 535.7999877929688 673.7999877929688 Z" class="st0" style="fill: rgb(51, 51, 51);" transform="matrix(1, 0, 0, 1, 0, 0)"/></g></svg>
