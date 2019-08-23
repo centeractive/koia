@@ -2,7 +2,7 @@
     <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query" (onAfterViewChecked)="adjustLayout()"
       (onFilterChange)="onFilterChanged($event)">
     </koia-main-toolbar>
-    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
     <div id="view_toolbar">
       <button id="but_print" mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint matTooltip="Print current view"
         (click)="printView()">

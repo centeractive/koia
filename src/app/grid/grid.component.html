@@ -19,7 +19,7 @@
       <koia-main-toolbar [route]="route" (onAfterViewChecked)="adjustLayout()"
          (onFilterChange)="onFilterChanged($event)">
       </koia-main-toolbar>
-      <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+      <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
       <div id="view_toolbar">
          <button mat-icon-button [matMenuTriggerFor]="moreMenu">
             <mat-icon>more_vert</mat-icon>
