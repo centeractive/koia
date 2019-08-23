@@ -72,7 +72,7 @@
       <mat-card class="action-card">
         <mat-card-header>
           <div mat-card-avatar id="create-image"></div>
-          <mat-card-title>Step 3: Analyze your data</mat-card-title>
+          <mat-card-title>Step 3: Visualyze and analyze data</mat-card-title>
           <mat-card-subtitle>Shape, visualyze and analyze your data</mat-card-subtitle>
         </mat-card-header>
         <img mat-card-image src="../../assets/graph_close.png">
@@ -83,16 +83,14 @@
            <p>
             When satisfied with the outcome, it is possible to save the view or to export the graphics as PNG images.
           </p>
-        </mat-card-content>
-        <mat-card-actions>
-          <div class="div_actions">
-            <button mat-stroked-button color="primary" [disabled]="!ready" [routerLink]="[urlScenes]">
-              <mat-icon>play_circle_filled</mat-icon>
-              <span>&nbsp;Start</span>
-            </button>
-          </div>
-        </mat-card-actions>
+        </mat-card-content>      
       </mat-card>
+    </div>
+
+    <div id="div_start">
+      <button mat-button mat-icon-button matTooltip="Start" [routerLink]="[urlScenes]">
+        <mat-icon id="start_button" color="accent">play_circle_filled</mat-icon>
+      </button>
     </div>
 
     <mat-horizontal-stepper [linear]="!stepsVisible" #stepper>
@@ -133,12 +131,11 @@
           <mat-card-content>
             <p>
               Koia is an <a href="https://angular.io/" target="_blank">angular-based</a>, open-source web tool that anyone can use
-              for free to create charts, relationship graphs, summaries and pivot tables out of custom data in just a
-              few minutes.
+              for free to create pivot tables, summaries and charts out of custom data in just a few minutes.
             </p>
             <p>
               Koia was originally built to improve analysis and visualization capabilities for data collected and
-              structured with the <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
+              structured with the amazing <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
                 Log Analyzer</a>&nbsp;
               <a href="https://retrospective.centeractive.com/" target="_blank"><img id="img_retro" src="../../assets/retrospective.png"></a>
             </p>

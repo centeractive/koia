@@ -2,40 +2,17 @@
    display: flex;
    flex-wrap: wrap;  
    justify-content: space-between;
-   padding-bottom: 20px;
+   margin: 0px 20px 10px 20px;
 }
 
 p {
    text-align: justify;
 }
-
-#but_hide_show_steps {
-   position: absolute;
-   right: 50%;   
-   top: 130px;
-   z-index: 10;
-}
  
-.carousel {
-   display: block;
-   margin-left: auto;
-   margin-right: auto;
-   max-width: 800px;
-}
-
-#div_intro_cards {
-   display: flex;
-   flex-direction: row;
-   flex-wrap: nowrap;  
-   justify-content: space-between;
-   margin: 0px 20px 0px 20px;
-}
-
 #div_action_cards {
    display: flex;
-   flex-direction: row;
    flex-wrap: wrap;  
-   align-items: flex-start;
+   align-items: stretch;
    justify-content: space-between;
    margin: 0px 20px 0px 20px;
    padding-bottom: 20px;
@@ -43,14 +20,30 @@ p {
 
 .action-card {
    min-width: 250px;
-   max-width: 350px;
-   height: 430px;
+   max-width: 400px;
    margin: 0px 4px 0px 4px;
 }
 
 .div_actions {
    text-align: right;
    padding-top: 40px;
+}
+
+#div_start {
+   width: 100%;
+   display: flex;
+   justify-content: center;
+   margin: 30px 0px 30px 0px;
+}
+
+#start_button {
+   font-size: 75px;
+}
+
+.carousel {
+   display: block;
+   margin-left: auto;
+   margin-right: auto;
 }
 
 #about-image {

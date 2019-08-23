@@ -41,7 +41,7 @@
          <mat-radio-group [value]="context.isAggregationCountSelected()">
             <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">Count Distinct Values
             </mat-radio-button>
-            <mat-radio-button [value]="false" [disabled]="!isCountDistinctValuesEnabled()"
+            <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()"
                (change)="onAggregationTypeChanged(false)">Aggregate Values
             </mat-radio-button>
          </mat-radio-group>

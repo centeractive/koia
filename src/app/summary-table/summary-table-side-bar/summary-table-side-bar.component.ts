@@ -46,7 +46,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
     }
   }
 
-  isCountDistinctValuesEnabled(): boolean {
+  isAggregateValuesEnabled(): boolean {
     if (this.context.hasDataColumn()) {
       return this.isNumericColumn(this.context.dataColumns[0]) && !this.context.hasValueGrouping(this.context.dataColumns[0].name)
     }

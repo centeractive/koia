@@ -194,7 +194,7 @@ describe('SummaryTableSideBarComponent', () => {
     context.dataColumns = [];
 
     // when
-    const countDistinctValuesEnabled = component.isCountDistinctValuesEnabled();
+    const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
     expect(countDistinctValuesEnabled).toBeTruthy();
@@ -206,7 +206,7 @@ describe('SummaryTableSideBarComponent', () => {
     context.dataColumns = [findColumn('Percent')];
 
     // when
-    const countDistinctValuesEnabled = component.isCountDistinctValuesEnabled();
+    const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
     expect(countDistinctValuesEnabled).toBeTruthy();
@@ -219,7 +219,7 @@ describe('SummaryTableSideBarComponent', () => {
     context.valueGroupings = [{ columnName: 'Percent', ranges: [{ min: 1, max: 10 }, { min: 10, max: 20 }] }];
 
     // when
-    const countDistinctValuesEnabled = component.isCountDistinctValuesEnabled();
+    const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
     expect(countDistinctValuesEnabled).toBeFalsy();
