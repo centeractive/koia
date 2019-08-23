@@ -50,22 +50,22 @@ export class TimeRangeFilter extends NumberRangeFilter {
    onStepChanged(timeStep: any): void {
       this.selectedStep = timeStep;
       this.defineSelectedStepAbbreviation();
-      this.defineRangeOptions();
+      this.defineSliderOptions();
    }
 
    defineSelectedStepAbbreviation(): void {
       this.selectedStepAbbrev = DateTimeUtils.abbreviationOf(this.selectedStep);
    }
 
-   defineRangeOptions(): void {
-      this.rangeOptions = {
+   defineSliderOptions(): void {
+      this.sliderOptions = {
          floor: this.start,
          ceil: this.end,
          step: DateTimeUtils.toMilliseconds(1, this.selectedStep),
          enforceStep: false,
          draggableRange: true,
          translate: t => DateTimeUtils.formatTime(t, this.availableSteps[0]),
-         combineLabels: (l1: string, l2: string) => l1 === l2 ? l1 : l1 + ' - ' + l2
+         combineLabels: (l1: string, l2: string) => this.sliderCustomizer.combineLabels(l1, l2)
       }
    }
 }

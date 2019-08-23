@@ -44,12 +44,14 @@ export class ValueRangeFilter {
          propertyFilters.push(new PropertyFilter(this._propertyName, Operator.GREATER_THAN_OR_EQUAL, this._valueRange.min));
       }
       if (this._valueRange.max !== null && this._valueRange.max !== undefined) {
-         propertyFilters.push(new PropertyFilter(this._propertyName, Operator.LESS_THAN_OR_EQUAL, this._valueRange.max));
+         const operator = this._valueRange.maxExcluding ? Operator.LESS_THAN : Operator.LESS_THAN_OR_EQUAL;
+         propertyFilters.push(new PropertyFilter(this._propertyName, operator, this._valueRange.max));
       }
       return propertyFilters;
    }
 
    clone(): ValueRangeFilter {
-      return new ValueRangeFilter(this._propertyName, { min: this._valueRange.min, max: this._valueRange.max });
+      return new ValueRangeFilter(this._propertyName,
+         { min: this._valueRange.min, max: this._valueRange.max, maxExcluding: this._valueRange.maxExcluding });
    }
 }

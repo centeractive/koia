@@ -61,6 +61,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /raw-data-dialog.component\.spec\.ts$/);
 // const context = require.context('./', true, /query\.spec\.ts$/);
 // const context = require.context('./', true, /admin.component\.spec\.ts$/);
+// const context = require.context('./', true, /main-toolbar.*\.spec\.ts$/);
 // const context = require.context('./', true, /main-toolbar.component\.spec\.ts$/);
 // const context = require.context('./', true, /property-filter-customizer\.spec\.ts$/);
 

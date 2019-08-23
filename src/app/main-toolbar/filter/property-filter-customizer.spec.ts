@@ -1,4 +1,4 @@
-import { Operator, PropertyFilter } from 'app/shared/model';
+import { Operator, PropertyFilter, DataType } from 'app/shared/model';
 import { PropertyFilterCustomizer } from './property-filter-customizer';
 
 describe('PropertyFilterCustomizer', () => {
@@ -14,8 +14,58 @@ describe('PropertyFilterCustomizer', () => {
       const tooltip = customizer.tooltipOf(filter);
 
       // then
-      expect(customizer.tooltipOf(filter)).toBeUndefined();
-    });
+      expect(tooltip).toBeUndefined();
+   });
+
+   it('#tooltipOf should return ANY_OF tooltip with case-sensitive hint', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.ANY_OF, '', DataType.TEXT);
+
+      // when
+      const tooltip = customizer.tooltipOf(filter);
+
+      // then
+      expect(tooltip).toBe('Filters all items where \'x\' is equal to any of the filter values, ' +
+         'separated by a comma each (case-sensitive)');
+   });
+
+   it('#tooltipOf should return ANY_OF tooltip without case-sensitive hint', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.ANY_OF, 0, DataType.NUMBER);
+
+      // when
+      const tooltip = customizer.tooltipOf(filter);
+
+      // then
+      expect(tooltip).toBe('Filters all items where \'x\' is equal to any of the filter values, separated by a comma each');
+   });
+
+   it('#tooltipOf should return NONE_OF tooltip with case-sensitive hint', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.NONE_OF, '', DataType.TEXT);
+
+      // when
+      const tooltip = customizer.tooltipOf(filter);
+
+      // then
+      expect(tooltip).toBe('Filters all items where \'x\' is equal to none of the filter values, ' +
+         'separated by a comma each (case-sensitive)');
+   });
+
+   it('#tooltipOf should return NONE_OF tooltip without case-sensitive hint', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.NONE_OF, 0, DataType.NUMBER);
+
+      // when
+      const tooltip = customizer.tooltipOf(filter);
+
+      // then
+      expect(tooltip).toBe('Filters all items where \'x\' is equal to none of the filter values, separated by a comma each');
+   });
 
    it('#tooltipOf should return a distinct tooltip for each operator', () => {
 
@@ -36,5 +86,5 @@ describe('PropertyFilterCustomizer', () => {
          expect(customizer.tooltipOf(filter)).toBeDefined();
          tooltips.push(tooltip);
       }
-    });
+   });
 });

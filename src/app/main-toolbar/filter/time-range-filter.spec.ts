@@ -17,8 +17,8 @@ describe('TimeRangeFilter', () => {
       // then
       expect(filter.start).toBe(timeStart);
       expect(filter.end).toBe(timeEnd);
-      expect(filter.selStart).toBe(timeStart);
-      expect(filter.selEnd).toBe(timeEnd);
+      expect(filter.selValueRange.min).toBe(timeStart);
+      expect(filter.selValueRange.max).toBe(timeEnd);
       expect(filter.isFiltered()).toBeFalsy();
    });
 
@@ -35,8 +35,8 @@ describe('TimeRangeFilter', () => {
       // then
       expect(filter.start).toBe(timeStart);
       expect(filter.end).toBe(timeEnd);
-      expect(filter.selStart).toBe(timeStart);
-      expect(filter.selEnd).toBe(timeEnd);
+      expect(filter.selValueRange.min).toBe(timeStart);
+      expect(filter.selValueRange.max).toBe(timeEnd);
       expect(filter.isFiltered()).toBeFalsy();
    });
 
@@ -51,8 +51,8 @@ describe('TimeRangeFilter', () => {
       // then
       expect(filter.start).toBe(toTime(2000));
       expect(filter.end).toBe(toTime(2010));
-      expect(filter.selStart).toBe(toTime(2001));
-      expect(filter.selEnd).toBe(toTime(2010));
+      expect(filter.selValueRange.min).toBe(toTime(2001));
+      expect(filter.selValueRange.max).toBe(toTime(2010));
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -67,8 +67,8 @@ describe('TimeRangeFilter', () => {
       // then
       expect(filter.start).toBe(toTime(2000));
       expect(filter.end).toBe(toTime(2010));
-      expect(filter.selStart).toBe(toTime(2000));
-      expect(filter.selEnd).toBe(toTime(2009));
+      expect(filter.selValueRange.min).toBe(toTime(2000));
+      expect(filter.selValueRange.max).toBe(toTime(2009));
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -83,8 +83,8 @@ describe('TimeRangeFilter', () => {
       // then
       expect(filter.start).toBe(toTime(2000));
       expect(filter.end).toBe(toTime(2010));
-      expect(filter.selStart).toBe(toTime(2001));
-      expect(filter.selEnd).toBe(toTime(2009));
+      expect(filter.selValueRange.min).toBe(toTime(2001));
+      expect(filter.selValueRange.max).toBe(toTime(2009));
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -197,7 +197,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
@@ -218,7 +218,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
@@ -239,7 +239,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
@@ -260,7 +260,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(3_600_000);
@@ -281,7 +281,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(60_000);
@@ -302,7 +302,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(1_000);
@@ -323,7 +323,7 @@ describe('TimeRangeFilter', () => {
       const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(1);
@@ -361,7 +361,7 @@ describe('TimeRangeFilter', () => {
       filter.onStepChanged(TimeUnit.HOUR);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(3_600_000);
@@ -385,8 +385,8 @@ describe('TimeRangeFilter', () => {
       // then
       expect(filter.start).toBe(timeStart);
       expect(filter.end).toBe(timeEnd);
-      expect(filter.selStart).toBe(timeStart);
-      expect(filter.selEnd).toBe(timeEnd);
+      expect(filter.selValueRange.min).toBe(timeStart);
+      expect(filter.selValueRange.max).toBe(timeEnd);
       expect(filter.isFiltered()).toBeFalsy();
    });
 

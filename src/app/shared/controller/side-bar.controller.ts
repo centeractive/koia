@@ -98,7 +98,7 @@ export abstract class SideBarController implements OnChanges {
       this.identifyNonGroupedColumns();
    }
 
-   addGroupingRange(valueGrouping: ValueGrouping): ValueRange {
+   addGroupingValueRange(valueGrouping: ValueGrouping): ValueRange {
       const max = NumberUtils.roundUpBroad(valueGrouping.minMaxValues.min);
       const range: ValueRange = { max: max, active: true };
       valueGrouping.ranges.push(range);

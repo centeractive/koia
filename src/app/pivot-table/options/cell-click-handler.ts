@@ -99,7 +99,9 @@ export class CellClickHandler {
     if (filterValue === ValueRangeConverter.EMPTY) {
       query.addPropertyFilter(new PropertyFilter(column.name, Operator.EMPTY, '', column.dataType));
     } else {
-      query.addValueRangeFilter(column.name, ValueRangeConverter.toMinValue(filterValue), ValueRangeConverter.toMaxValue(filterValue));
+      const minValue = ValueRangeConverter.toMinValue(filterValue);
+      const maxValue = ValueRangeConverter.toMaxValue(filterValue);
+      query.addValueRangeFilter(column.name, minValue, maxValue, true);
     }
   }
 

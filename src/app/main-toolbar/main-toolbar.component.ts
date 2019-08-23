@@ -86,7 +86,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   ngAfterViewChecked(): void {
     if (this.justNavigatedToParentView) {
       this.justNavigatedToParentView = false;
-      this.rangeFilters.forEach(f => f.defineRangeOptions());
+      this.rangeFilters.forEach(f => f.defineSliderOptions());
     }
     this.onAfterViewChecked.emit();
   }
@@ -176,8 +176,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   }
 
   onRangeFilterChanged(filter: NumberRangeFilter, changeContext: ChangeContext): void {
-    filter.selStart = changeContext.value;
-    filter.selEnd = changeContext.highValue;
+    filter.selValueRange.min = changeContext.value;
+    filter.selValueRange.max = changeContext.highValue;
     this.refreshEntries();
   }
 
@@ -204,7 +204,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       .forEach(f => query.addPropertyFilter(f.clone()));
     this.rangeFilters
       .filter(f => f.isStartFiltered() || f.isEndFiltered())
-      .forEach(f => query.addValueRangeFilter(f.column.name, f.selStart, f.selEnd));
+      .forEach(f => query.addValueRangeFilter(f.column.name, f.selValueRange.min, f.selValueRange.max, f.selValueRange.maxExcluding));
     this.onFilterChange.emit(query);
   }
 

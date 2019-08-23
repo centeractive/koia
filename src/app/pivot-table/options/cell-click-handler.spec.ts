@@ -130,7 +130,7 @@ describe('CellClickHandler', () => {
       const valueRangeFilters = query.getValueRangeFilters();
       expect(valueRangeFilters.length).toBe(1);
       const min = DateTimeUtils.toDate(now, timeColumn.groupingTimeUnit).getTime();
-      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Time', { min: min, max: min + 60_000 }));
+      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Time', { min: min, max: min + 60_000, maxExcluding: undefined }));
       expect(query.getPropertyFilters()).toEqual([]);
    });
 
@@ -168,7 +168,7 @@ describe('CellClickHandler', () => {
       const query: Query = showSpy.calls.mostRecent().args[0];
       const valueRangeFilters = query.getValueRangeFilters();
       expect(valueRangeFilters.length).toBe(1);
-      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: 10, max: 20 }));
+      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: 10, max: 20, maxExcluding: true }));
       expect(query.getPropertyFilters()).toEqual([]);
    });
 
@@ -193,7 +193,7 @@ describe('CellClickHandler', () => {
       expect(propertyFilters[1]).toEqual(new PropertyFilter('Percent', Operator.EQUAL, 10, DataType.NUMBER));
       const valueRangeFilters = query.getValueRangeFilters();
       expect(valueRangeFilters.length).toBe(1);
-      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: 11, max: 22 }));
+      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: 11, max: 22, maxExcluding: undefined }));
    });
 
    it('#onCellClicked should show raw data with multiple filters', () => {
@@ -218,7 +218,7 @@ describe('CellClickHandler', () => {
 
       const valueRangeFilters = query.getValueRangeFilters();
       expect(valueRangeFilters.length).toBe(1);
-      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: undefined, max: 20 }));
+      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: undefined, max: 20, maxExcluding: true }));
    });
 
    it('#onCellClicked should show raw data when grand-total cell and not locally filtered', fakeAsync(() => {

@@ -17,8 +17,8 @@ describe('NumberRangeFilter', () => {
       // then
       expect(filter.start).toBe(start);
       expect(filter.end).toBe(end);
-      expect(filter.selStart).toBe(start);
-      expect(filter.selEnd).toBe(end);
+      expect(filter.selValueRange.min).toBe(start);
+      expect(filter.selValueRange.max).toBe(end);
       expect(filter.isFiltered()).toBeFalsy();
    });
 
@@ -35,8 +35,8 @@ describe('NumberRangeFilter', () => {
       // then
       expect(filter.start).toBe(start);
       expect(filter.end).toBe(end);
-      expect(filter.selStart).toBe(start);
-      expect(filter.selEnd).toBe(end);
+      expect(filter.selValueRange.min).toBe(start);
+      expect(filter.selValueRange.max).toBe(end);
       expect(filter.isFiltered()).toBeFalsy();
    });
 
@@ -51,8 +51,8 @@ describe('NumberRangeFilter', () => {
       // then
       expect(filter.start).toBe(0);
       expect(filter.end).toBe(10);
-      expect(filter.selStart).toBe(1);
-      expect(filter.selEnd).toBe(10);
+      expect(filter.selValueRange.min).toBe(1);
+      expect(filter.selValueRange.max).toBe(10);
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -67,8 +67,8 @@ describe('NumberRangeFilter', () => {
       // then
       expect(filter.start).toBe(0);
       expect(filter.end).toBe(10);
-      expect(filter.selStart).toBe(0);
-      expect(filter.selEnd).toBe(9);
+      expect(filter.selValueRange.min).toBe(0);
+      expect(filter.selValueRange.max).toBe(9);
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -85,8 +85,8 @@ describe('NumberRangeFilter', () => {
       // then
       expect(filter.start).toBe(0);
       expect(filter.end).toBe(10);
-      expect(filter.selStart).toBe(1);
-      expect(filter.selEnd).toBe(9);
+      expect(filter.selValueRange.min).toBe(1);
+      expect(filter.selValueRange.max).toBe(9);
       expect(filter.isFiltered()).toBeTruthy();
    });
 
@@ -171,7 +171,7 @@ describe('NumberRangeFilter', () => {
       const filter = new NumberRangeFilter(column, start, end, null);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(start);
       expect(options.ceil).toBe(end);
       expect(options.step).toBe(0.1);
@@ -193,7 +193,7 @@ describe('NumberRangeFilter', () => {
       filter.onStepChanged(1_000);
 
       // then
-      const options = filter.rangeOptions;
+      const options = filter.sliderOptions;
       expect(options.floor).toBe(start);
       expect(options.ceil).toBe(end);
       expect(options.step).toBe(1_000);
@@ -258,8 +258,8 @@ describe('NumberRangeFilter', () => {
       // then
       expect(filter.start).toBe(start);
       expect(filter.end).toBe(end);
-      expect(filter.selStart).toBe(start);
-      expect(filter.selEnd).toBe(end);
+      expect(filter.selValueRange.min).toBe(start);
+      expect(filter.selValueRange.max).toBe(end);
       expect(filter.isFiltered()).toBeFalsy();
    });
 });

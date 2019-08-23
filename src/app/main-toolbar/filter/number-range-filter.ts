@@ -1,8 +1,8 @@
-import { Options } from 'ng5-slider';
+import { Options, LabelType } from 'ng5-slider';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { NumberFormatter } from 'app/shared/format';
+import { RangeSliderCustomizer } from './range-slider-customizer';
 
 export class NumberRangeFilter {
 
@@ -11,33 +11,36 @@ export class NumberRangeFilter {
    column: Column;
    start: number;
    end: number;
-   selStart: number;
-   selEnd: number;
+   selValueRange: ValueRange;
    availableSteps: any[];
    selectedStep: any;
    selectedStepAbbrev: string;
-   rangeOptions: Options;
+   sliderOptions: Options;
 
-   private numberFormatter = new NumberFormatter();
+   protected sliderCustomizer = new RangeSliderCustomizer();
 
+   /**
+    * @param selValueRange if [[ValueRange#maxExcluding]] is true, it is automatically set to false
+    * as soon as the slider high value is changed by the user
+    */
    constructor(column: Column, start: number, end: number, selValueRange: ValueRange) {
       this.column = column;
       this.start = start;
       this.end = end;
       this.initSelectedRange(selValueRange);
       this.initSliderSteps();
-      this.defineRangeOptions();
+      this.defineSliderOptions();
    }
 
-   private initSelectedRange(selValueRange: ValueRange) {
-      this.selStart = this.start;
-      this.selEnd = this.end;
+   private initSelectedRange(selValueRange: ValueRange): void {
+      this.selValueRange = selValueRange || { min: this.start, max: this.end }
       if (selValueRange) {
-         if (selValueRange.min !== null && selValueRange.min !== undefined) {
-            this.selStart = selValueRange.min;
+         if (selValueRange.min === null || selValueRange.min === undefined) {
+            this.selValueRange.min = this.start;
          }
-         if (selValueRange.max !== null && selValueRange.max !== undefined) {
-            this.selEnd = selValueRange.max;
+         if (selValueRange.max === null || selValueRange.max === undefined) {
+            this.selValueRange.max = this.end;
+            this.selValueRange.maxExcluding = false;
          }
       }
    }
@@ -63,19 +66,19 @@ export class NumberRangeFilter {
 
    onStepChanged(step: any): void {
       this.selectedStep = step;
-      this.defineRangeOptions();
+      this.defineSliderOptions();
    }
 
-   defineRangeOptions(): void {
-      this.rangeOptions = {
+   defineSliderOptions(): void {
+      this.sliderOptions = {
          floor: this.start,
          ceil: this.end,
          step: this.selectedStep,
          animate: true,
          enforceStep: false,
          draggableRange: true,
-         translate: n => this.numberFormatter.format(n),
-         combineLabels: (l1: string, l2: string) => l1 === l2 ? l1 : l1 + ' - ' + l2
+         translate: (v: number, t: LabelType) => this.sliderCustomizer.labelOf(v, t, this.selValueRange),
+         combineLabels: (l1: string, l2: string) => this.sliderCustomizer.combineLabels(l1, l2)
       }
    }
 
@@ -84,15 +87,16 @@ export class NumberRangeFilter {
    }
 
    isStartFiltered(): boolean {
-      return this.selStart !== this.start;
+      return this.selValueRange.min !== this.start;
    }
 
    isEndFiltered(): boolean {
-      return this.selEnd !== this.end;
+      return this.selValueRange.max !== this.end;
    }
 
    reset(): void {
-      this.selStart = this.start;
-      this.selEnd = this.end;
+      this.selValueRange.min = this.start;
+      this.selValueRange.max = this.end;
+      this.selValueRange.maxExcluding = false;
    }
 }

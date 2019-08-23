@@ -91,7 +91,7 @@ describe('SummaryTableSideBarComponent', () => {
       expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
    });
 
-   it('#addGroupingRange should add range', () => {
+   it('#addGroupingValueRange should add range', () => {
 
       // given
       const entries = generateEntries('Amount', 1000, 0, 1000);
@@ -101,7 +101,7 @@ describe('SummaryTableSideBarComponent', () => {
       const rangesCount = amountValueGrouping.ranges.length;
 
       // when
-      const range = controller.addGroupingRange(amountValueGrouping);
+      const range = controller.addGroupingValueRange(amountValueGrouping);
 
       // then
       expect(context.valueGroupings[0]).toBe(amountValueGrouping);
