@@ -21,12 +21,19 @@ export class SceneUtils {
    }
 
    static generateSceneName(reader: DataReader, file: File) {
-      return file.name.replace(reader.getFileExtension(), '') + ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate');
+      let name = file.name.replace(reader.getFileExtension(), '');
+      if (file.lastModified) {
+        name += ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate');
+      }
+      return name;
    }
 
    static generateSceneDescription(reader: DataReader, file: File) {
-      return reader.getSourceName() + ' ' + file.name +
-         ' (modified on ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'medium') + ')';
+      let name = reader.getSourceName() + ' ' + file.name;
+      if (file.lastModified) {
+         name += ' (modified on ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'medium') + ')';
+      }
+      return name;
    }
 
    static entriesFromTableData(sample: Sample): Object[] {
