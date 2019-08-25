@@ -1,8 +1,6 @@
 #header {
    display: flex;
-   flex-wrap: wrap;  
-   justify-content: space-between;
-   margin: 0px 20px 10px 20px;
+   justify-content: space-around;
 }
 
 p {
@@ -14,15 +12,31 @@ p {
    flex-wrap: wrap;  
    align-items: stretch;
    justify-content: space-around;
-   margin: 0px 20px 0px 20px;
    padding-bottom: 20px;
 }
 
-.action-card {
-   min-width: 250px;
-   max-width: 400px;
-   margin: 0px 4px 0px 4px;
-   background-color: rgb(208, 245, 199);
+.intro-card {
+   min-width: 300px;
+   max-width: 440px;
+   margin: 6px 4px 0px 4px;
+}
+
+.koia-color-left {
+   background-color: #AD1F1F;
+   color: white;
+}
+
+.koia-color-center {
+   background-color: #EA8315;
+}
+
+.koia-color-right {
+   background-color: #CA1010;
+   color: white;
+}
+
+.intro-card-image {
+   opacity: 0.8;
 }
 
 .div_actions {
@@ -41,10 +55,35 @@ p {
    font-size: 75px;
 }
 
+#monitor-image {
+   background-image: url('../../assets/monitor.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#couchdb-image {
+   background-image: url('../../assets/couchdb.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#folder-document-image {
+   background-image: url('../../assets/folder_document.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
+#line-chart-image {
+   background-image: url('../../assets/line_chart.png');
+   background-repeat: no-repeat;
+   background-size: cover;
+} 
+
 .carousel {
    display: block;
    margin-left: auto;
    margin-right: auto;
+   max-width: 800px;
 }
 
 #about-image {
@@ -86,29 +125,5 @@ p {
 #screenshots-image {
    background-image: url('../../assets/mat-icons/computer.png');
    background-repeat:no-repeat;
-   background-size: cover;
-} 
-
-#browser-image {
-   background-image: url('../../assets/mat-icons/computer.png');
-   background-repeat:no-repeat;
-   background-size: cover;
-} 
-
-#couchdb-image {
-   background-image: url('../../assets/couchdb.png');
-   background-repeat: no-repeat;
-   background-size: cover;
-} 
-
-#importselect-image {
-   background-image: url('../../assets/mat-icons/import_select.png');
-   background-repeat: no-repeat;
-   background-size: cover;
-} 
-
-#create-image {
-   background-image: url('../../assets/mat-icons/create.png');
-   background-repeat: no-repeat;
    background-size: cover;
 } 

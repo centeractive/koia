@@ -78,6 +78,7 @@ describe('FrontComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+    jasmine.createSpy('');
   });
 
   it('should pre-select IndexedDB', () => {
