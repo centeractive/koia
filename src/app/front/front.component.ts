@@ -82,16 +82,19 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  onDataStorageChanged(): void {
-    if (this.selectedDataStorage === this.couchDB) {
-      this.showCouchDBConnectionDialog();
-    } else {
-      this.dbService.useBrowserStorage()
-        .then(r => {
-          this.init();
-          this.notifySuccess('Successfully switched to ' + this.indexedDB);
-          this.ready = true;
-        });
+  onDataStorageChanged(dataStorage: string): void {
+    if (this.selectedDataStorage !== dataStorage) {
+      this.selectedDataStorage = dataStorage;
+      if (this.selectedDataStorage === this.couchDB) {
+        this.showCouchDBConnectionDialog();
+      } else {
+        this.dbService.useBrowserStorage()
+          .then(r => {
+            this.init();
+            this.notifySuccess('Successfully switched to ' + this.indexedDB);
+            this.ready = true;
+          });
+      }
     }
   }
 

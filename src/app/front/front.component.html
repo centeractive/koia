@@ -2,17 +2,11 @@
   <mat-card-content>
 
     <div id="header">
-      <div>
-
-      </div>
-      <div>
-        <img src="../../assets/koialogo_textblack.png">
-      </div>
-      <div>
-        <a href="https://retrospective.centeractive.com/" target="_blank"><img
-            src="../../assets/retrospective_compatible.png"></a>
-      </div>
+      <img id="img_koia" src="../../assets/koialogo_textblack.png">
     </div>
+    <a href="https://retrospective.centeractive.com/" target="_blank">
+      <img id="img_retro_compatible" src="../../assets/retrospective_compatible.png">
+    </a>
 
     <div id="div_action_cards">
 
@@ -25,30 +19,35 @@
         <img mat-card-image class="intro-card-image" src="../../assets/data-source.png">
         <mat-card-content>
           <p>
-            Koia writes and reads data from the browser's internal
-            <a href="https://developer.mozilla.org/en/docs/Web/API/IndexedDB_API" target="_blank">IndexedDB</a>
-            or from an external <a href="http://couchdb.apache.org/" target="_blank">CouchDB</a>.
-            The latter has the following advantages:
+            Koia writes and reads data from the browser's internal IndexedDB or from an external database
+            <a href="http://couchdb.apache.org/" target="_blank">
+              <mat-icon style="color: white; vertical-align: middle" matTooltip="Tell me more...">info_outlined
+              </mat-icon>
+            </a>.
+            The latter is in most cases faster and has further advantages:
           </p>
           <ul>
-            <li>All data remains available even when the browser cache is cleared.</li>
+            <li>All data remains available even after clearing browser cache.</li>
             <li>The data can be shared with other persons.</li>
           </ul>
         </mat-card-content>
 
         <mat-card-actions>
-          <mat-form-field>
-            <mat-select id="select_data_storage" placeholder="Current Data Storage" [(ngModel)]="selectedDataStorage"
-              (selectionChange)="onDataStorageChanged()">
-              <mat-option *ngFor="let dataStorage of dataStorages" [value]="dataStorage">
-                {{ dataStorage }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
-            matTooltip="Configure access to CouchDB" color="primary" (click)="showCouchDBConnectionDialog()">
-            <mat-icon>settings</mat-icon>
-          </button>
+          <div style="width: 100%; display: flex; justify-content: center;">
+            <button mat-stroked-button [color]="selectedDataStorage === indexedDB ? 'active' : 'inactive'"
+              (click)="onDataStorageChanged(indexedDB)">
+              {{ indexedDB }}
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <button mat-stroked-button [color]="selectedDataStorage === couchDB ? 'active' : 'inactive'"
+              (click)="onDataStorageChanged(couchDB)">
+              {{ couchDB }}
+            </button>
+            <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
+              matTooltip="Configure access to CouchDB" color="accent" (click)="showCouchDBConnectionDialog()">
+              <mat-icon style="color: white">settings</mat-icon>
+            </button>
+          </div>
         </mat-card-actions>
       </mat-card>
 
@@ -88,8 +87,7 @@
             variety of different charts.
           </p>
           <p>
-            When satisfied with the outcome, it is possible to save the view or to export the graphics as PNG images.
-          </p>
+            Charts may be exported as images. Views can be saved and then restored as required.
         </mat-card-content>
       </mat-card>
     </div>
@@ -137,14 +135,12 @@
           </mat-card-header>
           <mat-card-content>
             <p>
-              Koia is an <a href="https://angular.io/" target="_blank">angular-based</a>, open-source web tool that
-              anyone can use
-              for free to create pivot tables, summaries and charts out of custom data in just a few minutes.
+              Koia is an open-source web tool that anyone can use for free to create pivot tables,
+              summaries and charts out of custom data in just a few minutes.
             </p>
             <p>
               Koia was originally built to improve analysis and visualization capabilities for data collected and
-              structured with the amazing <a href="https://retrospective.centeractive.com/"
-                target="_blank">Retrospective
+              structured with <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
                 Log Analyzer</a>&nbsp;
               <a href="https://retrospective.centeractive.com/" target="_blank"><img id="img_retro"
                   src="../../assets/retrospective.png"></a>
