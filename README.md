@@ -4,13 +4,12 @@
 
 <img align="left" src="./doc/koialogo.png">
 
-Koia is an [angular-based](https://angular.io/), open-source webtool for everyone to create simple graphics in minutes.
-It offers a modern and minimalistic approach to creating tables, charts, graphs and pivot tables of your data.
+Koia is an [angular-based](https://angular.io/), open-source web application for visualizing and anylyzing table-like data structures. It offers a modern and minimalistic approach for creating flat tables, pivot-tables, summaries, relationship graphs and charts of your data.
 
-Koia has originally been developed for analyzing and visualizing **log data** fetched with the [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
+Koia has originally been developed for analyzing and visualizing **log data** collected and structured with the [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
 ![alt text](./doc/retrospective.png "Retrospective Log Analyzer") from files (local and remote), [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/).
 
-Use it straight away at [**https://www.koia.io**](https://www.koia.io) or continue reading.
+Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or continue reading.
 
 ## Why Koia?
 
@@ -42,8 +41,8 @@ It is recommended to use [CouchDB](http://couchdb.apache.org/) as described down
 
 ### Installing
 
-1. Download and install CouchDB from http://couchdb.apache.org/#download. Follow the installation wizard steps. Be sure to install CouchDB to a path with no spaces, such as `C:\CouchDB`.
-2. Open http://127.0.0.1:5984/_utils#setup and perform CouchDB single node setup according to http://docs.couchdb.org/en/stable/setup/single-node.html. You will get asked for an admin username and password, choose admin / admin.
+1. Download and install CouchDB from http://couchdb.apache.org/#download. Follow the installation wizard steps.
+2. Open http://127.0.0.1:5984/_utils#setup and perform CouchDB single node setup according to http://docs.couchdb.org/en/stable/setup/single-node.html. You will get asked for an admin username and password, choose the default admin/admin or whatever suits you.
 3. Configure CORS by changing [http], [chttpd] and [cors] entries within `$COUCHDB_HOME/etc/local.ini` as follows:
 ```
 [httpd]
@@ -90,7 +89,7 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ## Built With
 
-* [Angular CLI](https://cli.angular.io/) version 1.0.0
+* [Angular CLI](https://cli.angular.io/)
 * [Node.js](https://nodejs.org/en/)
 
 ## License

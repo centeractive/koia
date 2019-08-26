@@ -26,8 +26,15 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   readonly urlScenes = '/' + Route.SCENES;
 
   private readonly carouselOptions = {
-    slidesToShow: 1, arrows: true, dots: true, infinite: true,
-    autoplay: true, autoplaySpeed: 3000, pauseOnFocus: true, fade: true, speed: 2000
+    slidesToShow: 1,
+    arrows: true,
+    dots: true,
+    infinite: true,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    pauseOnFocus: true,
+    fade: true,
+    speed: 2000
   };
   private readonly screenshots = ['scene', 'scenes', 'raw-data', 'raw-data-filtered', 'chart-sidebar', 'chart-sidebar2',
     'grid-view', 'flex-view', 'raw-data-details', 'pivot-table', 'grouping'];

@@ -85,15 +85,29 @@ describe('FrontComponent', () => {
     expect(component.selectedDataStorage).toBe(component.indexedDB);
   });
 
+  it('#onDataStorageChanged should be ignored when storage did not change', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.indexedDB;
+    spyOn(dbService, 'useBrowserStorage').and.returnValue(Promise.resolve());
+
+    // when
+    component.onDataStorageChanged(component.indexedDB);
+    flush();
+
+    // then
+    expect(dbService.useBrowserStorage).not.toHaveBeenCalled();
+  }));
+
   it('#onDataStorageChanged should switch to IndexedDB', fakeAsync(() => {
 
     // given
+    component.selectedDataStorage = component.couchDB;
     spyOn(dbService, 'useBrowserStorage').and.returnValue(Promise.resolve());
     spyOn(notificationService, 'onSuccess');
-    component.selectedDataStorage = component.indexedDB;
 
     // when
-    component.onDataStorageChanged();
+    component.onDataStorageChanged(component.indexedDB);
     flush();
 
     // then
@@ -103,6 +117,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should not init CouchDB connection when user canceled connection dialog', fakeAsync(() => {
 
     // given
+    component.selectedDataStorage = component.indexedDB;
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
       data.closedWithOK = false;
@@ -110,10 +125,9 @@ describe('FrontComponent', () => {
     });
     spyOn(couchDBService, 'initConnection');
     spyOn(notificationService, 'onSuccess');
-    component.selectedDataStorage = component.couchDB;
 
     // when
-    component.onDataStorageChanged();
+    component.onDataStorageChanged(component.couchDB);
     flush();
 
     // then
@@ -124,9 +138,10 @@ describe('FrontComponent', () => {
   }));
 
 
-  it('#onDataStorageChanged should init CouchDB connection when user confirmed new connection with OK', fakeAsync(() => {
+  it('#onDataStorageChanged should init CouchDB connection when user confirms new connection with OK', fakeAsync(() => {
 
     // given
+    component.selectedDataStorage = component.indexedDB;
     spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
@@ -136,10 +151,9 @@ describe('FrontComponent', () => {
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
     initBackendSpy.calls.reset();
     spyOn(notificationService, 'onSuccess');
-    component.selectedDataStorage = component.couchDB;
 
     // when
-    component.onDataStorageChanged();
+    component.onDataStorageChanged(component.couchDB);
     flush();
 
     // then
@@ -152,6 +166,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should init CouchDB connection when user confirmed modified connection with OK', fakeAsync(() => {
 
     // given
+    component.selectedDataStorage = component.indexedDB;
     usesBrowserStroageSpy.and.returnValue(false);
     spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
@@ -163,10 +178,9 @@ describe('FrontComponent', () => {
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
     initBackendSpy.calls.reset();
     spyOn(notificationService, 'onSuccess');
-    component.selectedDataStorage = component.couchDB;
 
     // when
-    component.onDataStorageChanged();
+    component.onDataStorageChanged(component.couchDB);
     flush();
 
     // then
@@ -179,6 +193,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should show error when connection to CouchDB fails', fakeAsync(() => {
 
     // given
+    component.selectedDataStorage = component.indexedDB;
     spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
@@ -189,10 +204,9 @@ describe('FrontComponent', () => {
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.reject('connection failed'));
     initBackendSpy.calls.reset();
     spyOn(notificationService, 'onError');
-    component.selectedDataStorage = component.couchDB;
 
     // when
-    component.onDataStorageChanged();
+    component.onDataStorageChanged(component.couchDB);
     flush();
 
     // then
@@ -205,6 +219,7 @@ describe('FrontComponent', () => {
   it('#onDataStorageChanged should show error when backend cannot be initialized', fakeAsync(() => {
 
     // given
+    component.selectedDataStorage = component.indexedDB;
     spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
@@ -215,10 +230,9 @@ describe('FrontComponent', () => {
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
     initBackendSpy.and.returnValue(Promise.reject('cannot initialize backend'));
     spyOn(notificationService, 'onError');
-    component.selectedDataStorage = component.couchDB;
 
     // when
-    component.onDataStorageChanged();
+    component.onDataStorageChanged(component.couchDB);
     flush();
 
     // then

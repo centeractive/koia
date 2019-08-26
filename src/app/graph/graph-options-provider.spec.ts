@@ -96,7 +96,23 @@ describe('GraphOptionsProvider', () => {
       expect(generateTooltip(rootNode, context)).toEqual(expectedTooltip);
    });
 
-   it('#createOptions tooltip generator should generate tooltip for leaf node', () => {
+   it('#createOptions tooltip generator should generate tooltip for leaf node representing single item', () => {
+
+      // when
+      const options = optionsProvider.createOptions(context, undefined);
+
+      // then
+      const generateTooltip: Function = options['chart'].tooltip.contentGenerator;
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: null };
+      const leafNode: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '1' };
+      leafNode['series'] = [{ color: 'red' }];
+      const expectedTooltip = '<div class="div_tooltip">'
+         + '<span class="tooltip_colored_box" style="background:red;margin-right:10px;"></span>'
+         + 'Level: <b>ERROR</b> (1 Entry)<br><br>Double-click to show data...</div>';
+      expect(generateTooltip(leafNode, context)).toEqual(expectedTooltip);
+   });
+
+   it('#createOptions tooltip generator should generate tooltip for leaf node representing multiple items', () => {
 
       // when
       const options = optionsProvider.createOptions(context, undefined);

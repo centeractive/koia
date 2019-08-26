@@ -194,6 +194,10 @@ describe('NumberUtils', () => {
     expect(NumberUtils.asNumber(null)).toBeUndefined();
   });
 
+  it('#asNumber should return undefined when value is an object', () => {
+    expect(NumberUtils.asNumber(<number>{})).toBeUndefined();
+  });
+
   it('#asNumber should return undefined when value is not a number', () => {
     expect(NumberUtils.asNumber('X')).toBeUndefined();
     expect(NumberUtils.asNumber('1-')).toBeUndefined();

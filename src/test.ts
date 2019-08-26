@@ -82,7 +82,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /graph-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /graph-utils\.spec\.ts$/);
 // const context = require.context('./', true, /graph-data.service\.spec\.ts$/);
-// const context = require.context('./', true, /graph-options-provider\.spec\.ts$/);
+const context = require.context('./', true, /graph-options-provider\.spec\.ts$/);
 // const context = require.context('./', true, /graph.component\.spec\.ts$/);
 // const context = require.context('./', true, /graph-side-bar.component\.spec\.ts$/);
 
@@ -113,7 +113,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /data-type-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-sanitizer\.spec\.ts$/);
-const context = require.context('./', true, /test-utils\.spec\.ts$/);
+// const context = require.context('./', true, /test-utils\.spec\.ts$/);
 // const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
 // const context = require.context('./', true, /value-formatter\.spec\.ts$/);
 

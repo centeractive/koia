@@ -100,10 +100,19 @@ p {
 } 
 
 .carousel {
-   display: block;
    margin-left: auto;
    margin-right: auto;
    max-width: 800px;
+}
+
+.slick-prev {   
+   color: black !important;
+   z-index: 99;
+}
+
+.slick-next {
+   color:black !important;
+   z-index: 99;
 }
 
 #about-image {

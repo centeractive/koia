@@ -171,6 +171,10 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.asBoolean('-')).toBe(false);
    });
 
+   it('#iconOf should return undefined when data types is unknown', () => {
+      expect(DataTypeUtils.iconOf(<DataType>{})).toBeUndefined();
+   });
+
    it('#iconOf should return icon name for all data types', () => {
       const dataTypes: DataType[] = Object.keys(DataType).map(key => DataType[key]);
 
