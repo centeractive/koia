@@ -3,7 +3,7 @@ import { DataType } from './data-type.enum';
 
 export class PropertyFilter {
 
-   static readonly EMPTY = '<empty>';
+   static readonly EMPTY_VALUE = '<empty>';
 
    private _propertyName: string;
    private _operator: Operator;

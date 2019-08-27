@@ -1,6 +1,5 @@
 import { GraphNode, GraphContext, Column, DataType } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils/date-time-utils';
-import { CommonUtils } from 'app/shared/utils/common-utils';
 import { ColumnNameConverter } from 'app/shared/utils';
 
 export class GraphUtils {

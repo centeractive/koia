@@ -43,7 +43,7 @@ export class GraphDataService {
       let nest = d3.nest();
       if (providerContext.groupByColumns) {
          // !!! d3 nest always converts keys to string
-         providerContext.groupByColumns.forEach(c => nest.key(entry => entry[c.name] || PropertyFilter.EMPTY));
+         providerContext.groupByColumns.forEach(c => nest.key(entry => entry[c.name] || PropertyFilter.EMPTY_VALUE));
       }
       nest = nest.rollup(v => v.length); // count elements
       return { key: '', values: nest.entries(data) }
@@ -68,7 +68,7 @@ export class GraphDataService {
    private createNode(parent: GraphNode, column: Column, value: string, info: string, providerContext: ProviderContext): GraphNode {
       const group = !parent || !parent.parent ? providerContext.group++ : parent.group;
       let columnValue: any = value;
-      if (columnValue && columnValue !== PropertyFilter.EMPTY &&
+      if (columnValue && columnValue !== PropertyFilter.EMPTY_VALUE &&
          (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME)) {
          columnValue = Number(value); // conversion needed because d3 nest always converts keys to string
       }

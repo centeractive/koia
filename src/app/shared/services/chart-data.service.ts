@@ -99,7 +99,7 @@ export class ChartDataService {
       }
       let nest = d3.nest();
       context.groupByColumns.concat(context.dataColumns[0]) //
-         .forEach(c => nest.key(entry => entry[c.name] || PropertyFilter.EMPTY));
+         .forEach(c => nest.key(entry => entry[c.name] || PropertyFilter.EMPTY_VALUE));
       nest = nest.rollup(v => v.length); // count elements
       const rootChildren = nest.entries(entries);
       rootChildren.forEach(n => this.transformTreeNode(n));

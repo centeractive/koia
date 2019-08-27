@@ -136,7 +136,7 @@ describe('GraphDataService', () => {
       expect(nodes.length).toEqual(4);
       expect(nodes[1].value).toEqual(2);
       expect(nodes[2].value).toEqual(3);
-      expect(nodes[3].value).toEqual(PropertyFilter.EMPTY);
+      expect(nodes[3].value).toEqual(PropertyFilter.EMPTY_VALUE);
    });
 
    function findColumn(name: string): Column {

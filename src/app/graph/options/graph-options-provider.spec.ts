@@ -3,6 +3,7 @@ import { GraphContext, GraphNode, DataType, Column, TimeUnit } from 'app/shared/
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { RawDataRevealService } from 'app/shared/services';
+import { NodeDoubleClickHandler } from './node-double-click-handler';
 
 describe('GraphOptionsProvider', () => {
 
@@ -12,8 +13,6 @@ describe('GraphOptionsProvider', () => {
    let now: number;
    let entries: Object[];
    let context: GraphContext;
-   let router: Router;
-   let dialogService: MatDialog;
    let optionsProvider: GraphOptionsProvider;
 
    beforeAll(() => {
@@ -33,11 +32,8 @@ describe('GraphOptionsProvider', () => {
       context = new GraphContext([]);
       context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.MINUTE), createColumn('c1', DataType.TEXT)];
       context.entries = entries;
-      router = <Router> { navigateByUrl: (url: string) => null };
-      dialogService = <MatDialog> {};
-      const rawDataRevealService = new RawDataRevealService(router, dialogService);
-      rawDataRevealService.setUseDialog(false);
-      optionsProvider = new GraphOptionsProvider(rawDataRevealService);
+      const nodeDoubleClickHandler = new NodeDoubleClickHandler(null);
+      optionsProvider = new GraphOptionsProvider(nodeDoubleClickHandler);
    });
 
    it('#createOptions should adopt chart size from context when parent div is undefined', () => {

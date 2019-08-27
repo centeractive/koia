@@ -1,7 +1,9 @@
-import { GraphContext } from '../shared/model';
-import { GraphNode } from '../shared/model/graph-node.type';
+import { GraphContext, PropertyFilter, DataType } from '../../shared/model';
+import { GraphNode } from '../../shared/model/graph-node.type';
 import { GraphUtils } from './graph-utils';
 import { RawDataRevealService } from 'app/shared/services';
+import { ColumnNameConverter } from 'app/shared/utils';
+import { NodeDoubleClickHandler } from './node-double-click-handler';
 
 declare var d3: any;
 
@@ -12,7 +14,7 @@ declare var d3: any;
  */
 export class GraphOptionsProvider {
 
-   constructor(private rawDataRevealService: RawDataRevealService) {}
+   constructor(private nodeDoubleClickHandler: NodeDoubleClickHandler) {}
 
    createOptions(context: GraphContext, parentDiv: HTMLDivElement): Object {
       const color = d3.scale.category20();
@@ -42,11 +44,11 @@ export class GraphOptionsProvider {
    private shapeNodes(nodes, context: GraphContext) {
       return nodes
          .attr('cursor', 'pointer')
-         .on('dblclick', d => this.rawDataRevealService.ofGraphNode(d, context))
+         .on('dblclick', d => this.nodeDoubleClickHandler.onNodeDoubleClicked(d, context))
          &&
          nodes
             .append('a')
-            .on('dblclick', d => this.rawDataRevealService.ofGraphNode(d, context))
+            .on('dblclick', d => this.nodeDoubleClickHandler.onNodeDoubleClicked(d, context))
             .append('text')
             .attr('dx', 12)
             .attr('dy', '.35em')

@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Query, Operator, PropertyFilter, ElementContext, Column, GraphContext, GraphNode, DataType, Route } from '../model';
-import { DateTimeUtils, CommonUtils, ArrayUtils, ColumnNameConverter } from '../utils';
-import { GraphUtils } from 'app/graph/graph-utils';
+import { Query, Operator, PropertyFilter, Column, DataType, Route } from '../model';
+import { DateTimeUtils, CommonUtils, ArrayUtils } from '../utils';
 import { CouchDBConstants } from './backend/couchdb';
 import { Router } from '@angular/router';
 import { JSQueryFactory } from './backend/jsonserver';
@@ -39,41 +38,22 @@ export class RawDataRevealService {
   }
 
   /**
-   * displays raw data of the specified graph node
-   */
-  ofGraphNode(graphNode: GraphNode, context: GraphContext): void {
-    const columnNames = GraphUtils.collectNonTimeColumnNames(graphNode, context);
-    const columnValues = columnNames.map(c => GraphUtils.findColumnValue(graphNode, c));
-    if (columnValues.find(v => v === PropertyFilter.EMPTY)) {
-      alert(PropertyFilter.EMPTY + ' search criteria is not implemented.\nTherefore, contextual data cannot be requested from server.');
-      return;
-    }
-    if (context.groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
-      const timeColumns = context.groupByColumns.filter(c => c.dataType === DataType.TIME);
-      const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
-      this.ofTimeUnit(context, timeColumns, startTimes, columnNames, columnValues);
-    } else {
-      this.ofQuery(context.query, columnNames, columnValues);
-    }
-  }
-
-  /**
    * displays raw data that is potentially grouped by one or multiple time columns
    *
-   * @param context element context
+   * @param baseQuery base query
    * @param timeColumn time columns
    * @param startTimes start time (timeunit lower boundary) belonging to individual time columns
    * @param columnNames columns names (must not include 'Time' column)
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
    */
-  ofTimeUnit(context: ElementContext, timeColumns: Column[], startTimes: number[], columnNames: string[],
+  ofTimeUnit(baseQuery: Query, timeColumns: Column[], startTimes: number[], columnNames: string[],
     columnValues: any[]): void {
-    const query = context.query.clone();
+    const query = baseQuery.clone();
     for (let i = 0; i < timeColumns.length; i++) {
       const timeStart = startTimes[i];
       const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, timeColumns[i].groupingTimeUnit);
-      const valueRangeFilter = context.query.findValueRangeFilter(timeColumns[i].name);
+      const valueRangeFilter = baseQuery.findValueRangeFilter(timeColumns[i].name);
       if (valueRangeFilter) {
         const valueRange = valueRangeFilter.valueRange;
         valueRange.min = Math.max(timeStart, valueRange.min || Number.MIN_VALUE);

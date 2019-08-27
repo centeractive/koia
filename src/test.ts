@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
@@ -82,7 +82,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /graph-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /graph-utils\.spec\.ts$/);
 // const context = require.context('./', true, /graph-data.service\.spec\.ts$/);
-const context = require.context('./', true, /graph-options-provider\.spec\.ts$/);
+// const context = require.context('./', true, /graph-options-provider\.spec\.ts$/);
 // const context = require.context('./', true, /graph.component\.spec\.ts$/);
 // const context = require.context('./', true, /graph-side-bar.component\.spec\.ts$/);
 

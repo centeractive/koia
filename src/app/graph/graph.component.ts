@@ -4,13 +4,14 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ChangeEvent, GraphContext, Route } from '../shared/model';
-import { GraphOptionsProvider } from './graph-options-provider';
+import { GraphOptionsProvider } from './options/graph-options-provider';
 import { CommonUtils } from 'app/shared/utils';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 import { NvD3Component } from 'ng2-nvd3';
+import { NodeDoubleClickHandler } from './options/node-double-click-handler';
 
 @Component({
   selector: 'koia-graph',
@@ -40,7 +41,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     private graphDataService: GraphDataService, rawDataRevealService: RawDataRevealService) {
-    this.optionsProvider = new GraphOptionsProvider(rawDataRevealService);
+    this.optionsProvider = new GraphOptionsProvider(new NodeDoubleClickHandler(rawDataRevealService));
   }
 
   ngOnInit(): void {

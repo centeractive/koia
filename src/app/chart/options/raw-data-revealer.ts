@@ -27,7 +27,7 @@ export class RawDataRevealer {
          const xAxisColumn = context.groupByColumns[0];
          if (xAxisColumn.dataType === DataType.TIME) {
             const timeStart: number = event.point.x;
-            this.rawDataRevealService.ofTimeUnit(context, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
+            this.rawDataRevealService.ofTimeUnit(context.query, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
          } else {
             this.rawDataRevealService.ofQuery(context.query, [dataColumnName, xAxisColumn.name], [dataColumnValue, event.point.x]);
          }
@@ -49,7 +49,7 @@ export class RawDataRevealer {
          const xAxisColumn = context.groupByColumns[0];
          if (xAxisColumn.dataType === DataType.TIME) {
             const timeStart: number = event.data.x;
-            this.rawDataRevealService.ofTimeUnit(context, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
+            this.rawDataRevealService.ofTimeUnit(context.query, [xAxisColumn], [timeStart], [dataColumnName], [dataColumnValue]);
          } else {
             this.rawDataRevealService.ofQuery(context.query, [dataColumnName, xAxisColumn.name], [dataColumnValue, event.data.x]);
          }

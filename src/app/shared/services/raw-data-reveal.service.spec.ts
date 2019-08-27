@@ -81,72 +81,6 @@ describe('RawDataRevealService', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id_like=2,8,11');
   });
 
-  it('#ofGraphNode should navigate to raw data view for root node', () => {
-
-    // given
-    service.setUseDialog(false);
-    const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '25' };
-    const graphContext = new GraphContext([]);
-    graphContext.query = new Query();
-
-    // when
-    service.ofGraphNode(rootNode, graphContext);
-
-    // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase);
-  });
-
-  it('#ofGraphNode should show alert when node column value <empty>', () => {
-
-    // given
-    service.setUseDialog(false);
-    const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
-    const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: PropertyFilter.EMPTY, info: '25' };
-    const graphContext = new GraphContext([]);
-    spyOn(window, 'alert').and.stub();
-
-    // when
-    service.ofGraphNode(node, graphContext);
-
-    // then
-    expect(window.alert).toHaveBeenCalledWith('<empty> search criteria is not implemented.\n' +
-      'Therefore, contextual data cannot be requested from server.');
-  });
-
-  it('#ofGraphNode should navigate to raw data view for leaf node', () => {
-
-    // given
-    service.setUseDialog(false);
-    const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
-    const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '25' };
-    const graphContext = new GraphContext([]);
-    graphContext.groupByColumns = [createColumn('Level', DataType.TEXT)];
-    graphContext.query = new Query();
-
-    // when
-    service.ofGraphNode(node, graphContext);
-
-    // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Level=ERROR');
-  });
-
-  it('#ofGraphNode should navigate to raw data view for time node', () => {
-
-    // given
-    service.setUseDialog(false);
-    const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
-    const node: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '25' };
-    const graphContext = new GraphContext([]);
-    graphContext.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.HOUR)];
-    graphContext.query = new Query();
-
-    // when
-    service.ofGraphNode(node, graphContext);
-
-    // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
-  });
-
   it('#ofTimeUnit should navigate to raw data view for time period of entire timeunit', () => {
 
     // given
@@ -154,7 +88,7 @@ describe('RawDataRevealService', () => {
     const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
 
     // when
-    service.ofTimeUnit(context, [timeColumn], [oneHourAgo], ['Level'], ['ERROR']);
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR']);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
@@ -169,7 +103,7 @@ describe('RawDataRevealService', () => {
     query.addValueRangeFilter('Time', oneHourAgo + min, now - min);
 
     // when
-    service.ofTimeUnit(context, [timeColumn], [oneHourAgo], ['Host'], ['server1']);
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Host'], ['server1']);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
