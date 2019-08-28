@@ -17,9 +17,7 @@ export class GraphSideBarComponent extends SideBarController implements OnChange
   }
 
   protected defineSelectableItems() {
-    if (this.context) {
-      this.selectedGroupByColumns = this.context.groupByColumns;
-    }
+    this.selectedGroupByColumns = this.context.groupByColumns;
     super.defineSelectableItems();
   }
 }

@@ -5,6 +5,12 @@ describe('ColumnMappingGenerator', () => {
 
    const generator = new ColumnMappingGenerator();
 
+   it('#generate should return empty array when entries are missing', () => {
+      expect(generator.generate(undefined, 'en')).toEqual([]);
+      expect(generator.generate(null, 'en')).toEqual([]);
+      expect(generator.generate([], 'en')).toEqual([]);
+   });
+
    it('#generate should return indexed text to text mapping', () => {
 
       // when

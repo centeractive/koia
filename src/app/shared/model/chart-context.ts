@@ -9,7 +9,6 @@ import { GroupingType } from './grouping-type.enum';
 export class ChartContext extends ElementContext {
 
    private _chartType: string;
-   private _nameColumn: Column;
    private _margin: Margin;
    private _showLegend: boolean;
    private _legendPosition: string;
@@ -50,20 +49,8 @@ export class ChartContext extends ElementContext {
       }
    }
 
-   get nameColumn(): Column {
-      return this._nameColumn;
-   }
-
-   set nameColumn(nameColumn: Column) {
-      this._nameColumn = nameColumn;
-   }
-
    isNonGrouping() {
       return ChartType.fromType(this._chartType).groupingType === GroupingType.NONE;
-   }
-
-   isSingleGrouping() {
-      return ChartType.fromType(this._chartType).groupingType === GroupingType.SINGLE;
    }
 
    isMultipleGrouping() {

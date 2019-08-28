@@ -39,17 +39,13 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
 
   private optionsProvider: GraphOptionsProvider;
 
-  constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
-    private graphDataService: GraphDataService, rawDataRevealService: RawDataRevealService) {
+  constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, private graphDataService: GraphDataService,
+    rawDataRevealService: RawDataRevealService) {
     this.optionsProvider = new GraphOptionsProvider(new NodeDoubleClickHandler(rawDataRevealService));
   }
 
   ngOnInit(): void {
-    if (!this.dbService.getActiveScene()) {
-      this.router.navigateByUrl(Route.SCENES);
-    } else {
-      this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
-    }
+    this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
   }
 
   ngOnChanges(changes: SimpleChanges): void {

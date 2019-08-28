@@ -1,6 +1,7 @@
 import { ExcelReader } from './excel-reader';
 import { DataHandler } from '../data-handler.type';
 import * as moment from 'moment';
+import { DataType } from 'app/shared/model';
 
 describe('ExcelReader', () => {
 
@@ -44,6 +45,11 @@ describe('ExcelReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(1);
+      expect(attributes[0].name).toBe('Sheet Name');
+      expect(attributes[0].description).toBe('Name of Excel sheet that contains the data');
+      expect(attributes[0].dataType).toBe(DataType.TEXT);
+      expect(attributes[0].value).toBe('');
+      expect(attributes[0].hasValueChoice()).toBeFalsy();
    });
 
    it('#readSample should return sample data', (done) => {

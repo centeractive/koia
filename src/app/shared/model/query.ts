@@ -57,8 +57,8 @@ export class Query {
 
    hasFilter(): boolean {
       return this.hasFullTextFilter() ||
-         this.propertyFilters.filter(f => f.isApplicable).length > 0 ||
-         this.valueRangeFilters.filter(f => f.isApplicable).length > 0;
+         this.propertyFilters.filter(f => f.isApplicable()).length > 0 ||
+         this.valueRangeFilters.filter(f => f.isApplicable()).length > 0;
    }
 
    getSort(): Sort {

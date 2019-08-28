@@ -1,5 +1,6 @@
 import { CSVReader } from './csv-reader';
 import { DataHandler } from '../data-handler.type';
+import { DataType } from 'app/shared/model';
 
 describe('CSVReader', () => {
 
@@ -47,8 +48,18 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
+
+      expect(attributes[0].name).toBe('First row contains column names');
+      expect(attributes[0].description).toBeUndefined();
+      expect(attributes[0].dataType).toBe(DataType.BOOLEAN);
       expect(attributes[0].value).toBeFalsy();
+      expect(attributes[0].hasValueChoice()).toBeFalsy();
+
+      expect(attributes[1].name).toBe('Separator');
+      expect(attributes[1].description).toBeUndefined();
+      expect(attributes[1].dataType).toBe(DataType.TEXT);
       expect(attributes[1].value).toBeUndefined();
+      expect(attributes[0].hasValueChoice()).toBeFalsy();
    });
 
    it('#furnishAttributes should return has-no-header attribute when file header is single line', () => {

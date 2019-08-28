@@ -17,7 +17,6 @@ describe('GraphComponent', () => {
   let scene: Scene;
   let context: GraphContext;
   let entries$: Observable<Object[]>;
-  const dbService = new DBService(null);
   let component: GraphComponent;
   let fixture: ComponentFixture<GraphComponent>;
   const graphDataService = new GraphDataService();
@@ -42,7 +41,6 @@ describe('GraphComponent', () => {
       imports: [MatProgressBarModule, NvD3Module, RouterTestingModule, MatDialogModule],
       declarations: [GraphComponent],
       providers: [
-        { provide: DBService, useValue: dbService },
         { provide: GraphDataService, useValue: graphDataService },
         { provide: RawDataRevealService, useClass: RawDataRevealService }
       ]
@@ -53,7 +51,6 @@ describe('GraphComponent', () => {
     component.context = context;
     component.entries$ = entries$;
     spyOn(component.onWarning, 'emit');
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
   });
 
   it('should create', () => {
@@ -127,6 +124,10 @@ describe('GraphComponent', () => {
       '\n\nPlease choose chart instead or apply/refine data filtering.';
     expect(component.onWarning.emit).toHaveBeenCalledWith(msg);
   }));
+
+  it('#createExportData should throw error', () => {
+    expect(() => component.createExportData()).toThrowError('Method not implemented.');
+  });
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);

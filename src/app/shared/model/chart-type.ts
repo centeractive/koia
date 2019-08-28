@@ -34,7 +34,7 @@ export class ChartType {
             return chartType;
          }
       }
-      return null;
+      return undefined;
    }
 
    constructor(readonly name: string, readonly type: string, readonly groupingType: GroupingType,

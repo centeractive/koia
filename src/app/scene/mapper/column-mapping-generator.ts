@@ -1,5 +1,6 @@
 import { DataType, TimeUnit, ColumnPair } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
+import { TimeUnitDetector } from './time-unit-detector';
 
 export class ColumnMappingGenerator {
 
@@ -19,6 +20,8 @@ export class ColumnMappingGenerator {
       { format: 'yyyy-MM-dd HH:mm:ss,SSS', timeUnit: TimeUnit.MILLISECOND },
       { format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND }
    ];
+
+   private timeUnitDetector = new TimeUnitDetector();
 
    generate(entries: Object[], locale: string): ColumnPair[] {
       if (!entries || entries.length === 0) {
@@ -86,41 +89,19 @@ export class ColumnMappingGenerator {
                columnPair.source.format = formatToTimeUnit.format;
                columnPair.target.dataType = DataType.TIME;
                const timeUnit = formatToTimeUnit.timeUnit ? formatToTimeUnit.timeUnit :
-                  this.detectTimeUnitFromColumnName(columnPair, 1, TimeUnit.MILLISECOND);
+                  this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND);
                columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
                return;
             }
          }
       } else if (columnPair.source.dataType === DataType.NUMBER) {
-         const timeUnit = this.detectTimeUnitFromColumnName(columnPair, <number>value, undefined);
+         const timeUnit = this.timeUnitDetector.fromColumnName(columnPair, <number>value, undefined);
          if (timeUnit) {
             columnPair.source.dataType = DataType.TIME;
             columnPair.target.dataType = DataType.TIME;
             columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
          }
       }
-   }
-
-   private detectTimeUnitFromColumnName(columnPair: ColumnPair, value: number, defaultTimeUnit: TimeUnit): TimeUnit {
-      if (Number.isInteger(value)) {
-         const lowerCaseColName = columnPair.source.name.toLowerCase();
-         if (lowerCaseColName.includes('time')) {
-            return TimeUnit.MILLISECOND;
-         } else if (lowerCaseColName.includes('second')) {
-            return TimeUnit.SECOND;
-         } else if (lowerCaseColName.includes('minute')) {
-            return TimeUnit.MINUTE;
-         } else if (lowerCaseColName.includes('hour')) {
-            return TimeUnit.HOUR;
-         } else if (lowerCaseColName.includes('month')) {
-            return TimeUnit.MONTH;
-         } else if (lowerCaseColName.includes('day') || lowerCaseColName.includes('date')) {
-            return TimeUnit.DAY;
-         } else if (lowerCaseColName.includes('year')) {
-            return TimeUnit.YEAR;
-         }
-      }
-      return defaultTimeUnit;
    }
 
    private guessDataTypeOf(value: string | number | boolean): DataType {

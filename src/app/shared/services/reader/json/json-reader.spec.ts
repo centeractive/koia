@@ -1,5 +1,6 @@
 import { JSONReader } from './json-reader';
 import { DataHandler } from '../data-handler.type';
+import { DataType } from 'app/shared/model';
 
 describe('JSONReader', () => {
 
@@ -79,7 +80,11 @@ describe('JSONReader', () => {
       setTimeout(() => {
          expect(attributes).toBeDefined();
          expect(attributes.length).toBe(1);
+         expect(attributes[0].name).toBe('Array JSONPath');
+         expect(attributes[0].description).toBe('JSONPath to the object array that contains the data');
+         expect(attributes[0].dataType).toBe(DataType.TEXT);
          expect(attributes[0].value).toBe('$.objArr1');
+         expect(attributes[0].hasValueChoice()).toBeTruthy();
          expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);
          expect(attributes[0].isValueChoiceBinding).toBeFalsy();
          done();

@@ -6,6 +6,7 @@ import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { ValueRange } from '../value-range/model/value-range.type';
 import { fakeAsync, flush } from '@angular/core/testing';
 import { ChangeEvent } from './change-event.enum';
+import { Aggregation } from './aggregation.enum';
 
 class TestContext extends ElementContext {
 
@@ -40,6 +41,73 @@ describe('ElementContext', () => {
       context = new TestContext(columns);
       eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
       context.subscribeToChanges(eventHandlerSpy);
+   });
+
+   it('#gridColumnSpan should not fire size change event when row span is not changed', fakeAsync(() => {
+
+      // when
+      context.gridColumnSpan = context.gridColumnSpan;
+      flush();
+
+      // then
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#gridColumnSpan should fire size change event when row span is changed', fakeAsync(() => {
+
+      // when
+      context.gridColumnSpan = 9;
+      flush();
+
+      // then
+      expect(context.gridColumnSpan).toBe(9);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.SIZE);
+   }));
+
+   it('#gridRowSpan should not fire size change event when row span is not changed', fakeAsync(() => {
+
+      // when
+      context.gridRowSpan = context.gridRowSpan;
+      flush();
+
+      // then
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#gridRowSpan should fire size change event when row span is changed', fakeAsync(() => {
+
+      // when
+      context.gridRowSpan = 9;
+      flush();
+
+      // then
+      expect(context.gridRowSpan).toBe(9);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.SIZE);
+   }));
+
+   it('#groupByColumns should return empty array when no group by columns are defined', () => {
+      context.groupByColumns = null;
+
+      expect(context.groupByColumns).toEqual([]);
+   });
+
+   it('#aggregations should return empty array when no aggregation is defined', () => {
+      context.aggregations = null;
+
+      expect(context.aggregations).toEqual([]);
+   });
+
+   it('#aggregations should throw error when COUNT with other aggregation is provided', () => {
+      expect(() => context.aggregations = [Aggregation.COUNT, Aggregation.MAX])
+         .toThrowError('Count must not be combined with other aggregations');
+   });
+
+   it('#valueGroupings should return empty array when no value groupings are defined', () => {
+      context.valueGroupings = null;
+
+      expect(context.valueGroupings).toEqual([]);
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return false when no value grouping exists', () => {
