@@ -128,8 +128,7 @@
           <mat-icon class="icon_link" matTooltip="Show custom format opitons" (click)="openDatePipeFormatPage()">help
           </mat-icon>
         </span>
-        <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(columnPair)"
-          class="column_format">
+        <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(columnPair)">
           <mat-select class="select_display_format" placeholder="Display Format" [(value)]="columnPair.target.format">
             <mat-option *ngFor="let format of dateFormats" [value]="format">{{ formattedNow(format) }}
             </mat-option>

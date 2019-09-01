@@ -8,7 +8,6 @@ import { SimpleChange } from '@angular/core';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import 'nvd3';
-import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 
 describe('GraphComponent', () => {
@@ -55,6 +54,30 @@ describe('GraphComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('ngOnChanges should fetch entries when entries$ change', () => {
+
+    // given
+    spyOn(component.entries$, 'toPromise').and.returnValue(Promise.resolve(null));
+
+    // when
+    component.ngOnChanges({ entries$: new SimpleChange(undefined, entries$, true) });
+
+    // then
+    expect(component.entries$.toPromise).toHaveBeenCalled();
+  });
+
+  it('ngOnChanges should not fetch entries when entries$ does not change', () => {
+
+    // given
+    spyOn(component.entries$, 'toPromise').and.returnValue(Promise.resolve(null));
+
+    // when
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+
+    // then
+    expect(component.entries$.toPromise).not.toHaveBeenCalled();
   });
 
   it('should compute graph data when structure changes', fakeAsync(() => {

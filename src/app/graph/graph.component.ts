@@ -3,12 +3,10 @@ import {
   ViewEncapsulation, Output, EventEmitter, ViewChild
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChangeEvent, GraphContext, Route } from '../shared/model';
+import { ChangeEvent, GraphContext } from '../shared/model';
 import { GraphOptionsProvider } from './options/graph-options-provider';
 import { CommonUtils } from 'app/shared/utils';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
-import { Router } from '@angular/router';
-import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
 import { NvD3Component } from 'ng2-nvd3';
 import { NodeDoubleClickHandler } from './options/node-double-click-handler';
@@ -81,8 +79,8 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   private async prepareGraph(changeEvent: ChangeEvent): Promise<void> {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
-    this.graphOptions = this.optionsProvider.createOptions(this.context,
-      this.parentConstraintSize ? this.cmpElementRef.nativeElement.parentElement : null);
+    const parentDiv: HTMLDivElement = this.parentConstraintSize ? this.cmpElementRef.nativeElement.parentElement : null;
+    this.graphOptions = this.optionsProvider.createOptions(this.context, parentDiv);
     if (changeEvent === ChangeEvent.STRUCTURE) {
       this.buildGraphData();
     }
