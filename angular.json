@@ -19,7 +19,8 @@
             "assets": [
               "src/.htaccess",
               "src/assets",
-              "src/WEB-INF"
+              "src/WEB-INF",
+              "src/web.config"
             ],
             "styles": [
               "node_modules/slick-carousel/slick/slick.scss",

@@ -41,20 +41,23 @@ It is recommended to use [CouchDB](http://couchdb.apache.org/) as described down
 
 ### Installing
 
-1. Download and install CouchDB from http://couchdb.apache.org/#download. Follow the installation wizard steps.
-2. Open http://127.0.0.1:5984/_utils#setup and perform CouchDB single node setup according to http://docs.couchdb.org/en/stable/setup/single-node.html. You will get asked for an admin username and password, choose the default admin/admin or whatever suits you.
-3. Configure CORS by changing [http] and [cors] entries within `$COUCHDB_HOME/etc/local.ini` as follows:
-```
-[httpd]
-enable_cors = true
+1. Download and install CouchDB from [http://couchdb.apache.org/#download](http://couchdb.apache.org/#download). Follow the installation wizard steps.
+2. Open [http://127.0.0.1:5984/_utils#setup](http://127.0.0.1:5984/_utils#setup) and perform CouchDB single node setup according to [http://docs.couchdb.org/en/stable/setup/single-node.html](http://docs.couchdb.org/en/stable/setup/single-node.html). You will get asked for an admin username and password, choose the default admin/admin or whatever suits you.
+3. Configure CORS by changing [http] and [cors] entries within the configuration file `$COUCHDB_HOME/etc/local.ini` as follows:
 
-[cors]
-origins = *
-methods = GET,POST,PUT,DELETE
-credentials = true
-```
-4. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
+   ```text
+   [httpd]
+   enable_cors = true
 
-# License
+   [cors]
+   origins = *
+   methods = GET,POST,PUT,DELETE
+   credentials = true
+   ```
+
+4. After editing the configuration file, CouchDB should be restarted to apply any changes.
+5. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
+
+## License
 
 Koia is [MIT licensed](LICENSE). Copyright (c) 2019 centeractive ag.
