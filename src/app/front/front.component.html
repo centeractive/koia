@@ -2,10 +2,10 @@
   <mat-card-content>
 
     <div id="header">
-      <img id="img_koia" src="../../assets/koialogo_textblack.png">
+      <img id="img_koia" src="/assets/koialogo_textblack.png">
     </div>
     <a href="https://retrospective.centeractive.com/" target="_blank">
-      <img id="img_retro_compatible" src="../../assets/retrospective_compatible.png">
+      <img id="img_retro_compatible" src="/assets/retrospective_compatible.png">
     </a>
 
     <div id="div_action_cards">
@@ -16,7 +16,7 @@
           <mat-card-title>Step 1: Choose data storage</mat-card-title>
           <mat-card-subtitle class="koia-color-left">Define where to store the data</mat-card-subtitle>
         </mat-card-header>
-        <img mat-card-image class="intro-card-image" src="../../assets/data-source.png">
+        <img mat-card-image class="intro-card-image" src="/assets/data-source.png">
         <mat-card-content>
           <p>
             Koia writes and reads data from the browser's internal IndexedDB or from an external CouchDB database
@@ -57,7 +57,7 @@
           <mat-card-title>Step 2: Import data to scene</mat-card-title>
           <mat-card-subtitle>Create new scene or select an existing one</mat-card-subtitle>
         </mat-card-header>
-        <img mat-card-image class="intro-card-image" src="../../assets/data.png">
+        <img mat-card-image class="intro-card-image" src="/assets/data.png">
         <mat-card-content>
           <p>
             Import data to create a new scene or select an existing scene containing data that has been previously
@@ -80,16 +80,16 @@
           <mat-card-title>Step 3: Visualyze and analyze</mat-card-title>
           <mat-card-subtitle class="koia-color-right">Shape, visualyze and analyze your data</mat-card-subtitle>
         </mat-card-header>
-        <img mat-card-image class="intro-card-image" src="../../assets/graph_close.png">
+        <img mat-card-image class="intro-card-image" src="/assets/graph_close.png">
         <mat-card-content>
           <p>
             Refine your data applying value and range filters. Create pivot tables, summaries, relationship graphs and a
             variety of different charts.
           </p>
           <p>
-            Pivot tables and summaries can be exported to Excel files, charts may be saved as images. 
+            Pivot tables and summaries can be exported to Excel files, charts may be saved as images.
             Entire views can be saved and then restored as required.
-          </p>  
+          </p>
         </mat-card-content>
       </mat-card>
     </div>
@@ -145,7 +145,7 @@
               structured with <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
                 Log Analyzer</a>&nbsp;
               <a href="https://retrospective.centeractive.com/" target="_blank"><img id="img_retro"
-                  src="../../assets/retrospective.png"></a>
+                  src="/assets/retrospective.png"></a>
             </p>
           </mat-card-content>
         </mat-card>
@@ -277,8 +277,9 @@
               <li>The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size.
                 The table offers sorting and filtering of individual columns.</li>
               <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing
-                patterns and trends. It's based on amazing <a href="https://www.npmjs.com/package/pivottable"
-                  target="_blank">PivotTable.js</a> that offers many different views (e.g. heatmaps and table barcharts)
+                patterns and trends. It's based on amazing <a
+                  href="https://www.npmjs.com/package/pivottable#what-does-it-do" target="_blank">PivotTable.js</a> that
+                offers many different views (e.g. heatmaps and table barcharts)
                 and lets you shape the pivot table through drag and drop of individual columns.</li>
               <li>The <b>Grid View</b> contains a variable number of elements that are held in a fixed grid of
                 customizable dimension. Grid elements (summary tables, charts and graphs) may fit into a single cell or
@@ -300,11 +301,15 @@
             <mat-card-header>
               <div mat-card-avatar id="screenshots-image"></div>
               <mat-card-title>Screenshots</mat-card-title>
-              <mat-card-subtitle>This is what Koia in action looks like</mat-card-subtitle>
+              <mat-card-subtitle>This is what Koia in action may look like</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-              <div class="carousel" *ngIf="showScreenshots">
-                <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
+              <div id="div_screenshots">                
+                <div class="carousel" *ngIf="showScreenshots">
+                  <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
+                </div>
+                <mat-icon class="but_arrow" (click)="prevScreenshot()">keyboard_arrow_left</mat-icon>
+                <mat-icon id="but_next" class="but_arrow" (click)="nextScreenshot()">keyboard_arrow_right</mat-icon>
               </div>
               <br>
             </mat-card-content>

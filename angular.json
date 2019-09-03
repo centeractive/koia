@@ -19,8 +19,6 @@
             "assets": [
               "src/.htaccess",
               "src/assets",
-              "src/assets/favicon.ico",
-              "src/assets/*.png",
               "src/WEB-INF"
             ],
             "styles": [
@@ -33,7 +31,7 @@
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
-                "src/themes/scss"
+                "src/assets/themes/scss"
               ]
             },
             "scripts": [
@@ -96,8 +94,6 @@
             ],
             "assets": [
               "src/assets",
-              "src/assets/favicon.ico",
-              "src/assets/*.png",
               "src/WEB-INF"
             ]
           }

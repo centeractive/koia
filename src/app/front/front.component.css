@@ -56,7 +56,7 @@ p {
 }
 
 .mat-active {
-   background-color: green;
+   background-color: #388E3C;
    color: #fff;
 }
 
@@ -68,7 +68,7 @@ p {
 #div_start {
    display: flex;
    justify-content: center;
-   margin: 30px 0px 30px 0px;
+   margin: 30px 40px 30px 0px;
 }
 
 #start_button {
@@ -76,83 +76,89 @@ p {
 }
 
 #monitor-image {
-   background-image: url('../../assets/monitor.png');
+   background-image: url('/assets/monitor.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
 
 #couchdb-image {
-   background-image: url('../../assets/couchdb.png');
+   background-image: url('/assets/couchdb.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
 
 #folder-document-image {
-   background-image: url('../../assets/folder_document.png');
+   background-image: url('/assets/folder_document.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
 
 #line-chart-image {
-   background-image: url('../../assets/line_chart.png');
+   background-image: url('/assets/line_chart.png');
    background-repeat: no-repeat;
    background-size: cover;
 } 
 
-.carousel {
+#div_screenshots {
+   position: relative;
    margin-left: auto;
    margin-right: auto;
    max-width: 800px;
 }
 
-.slick-prev {   
-   color: black !important;
-   z-index: 99;
+.but_arrow {
+   position: absolute;
+   bottom: -26px;
+   cursor: pointer;
+   opacity: 0.6;
 }
 
-.slick-next {
-   color:black !important;
-   z-index: 99;
+.but_arrow:hover {
+   opacity: 1;
+}
+
+#but_next {
+   right: 0px;
 }
 
 #about-image {
-   background-image: url('../../assets/mat-icons/about.png');
+   background-image: url('/assets/mat-icons/about.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #features-image {
-   background-image: url('../../assets/mat-icons/features.png');
+   background-image: url('/assets/mat-icons/features.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #shield-image {
-   background-image: url('../../assets/mat-icons/trust.png');
+   background-image: url('/assets/mat-icons/trust.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #data-image {
-   background-image: url('../../assets/mat-icons/data_formats.png');
+   background-image: url('/assets/mat-icons/data_formats.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #datascene-image {
-   background-image: url('../../assets/mat-icons/import_select.png');
+   background-image: url('/assets/mat-icons/import_select.png');
    background-repeat:no-repeat;
    background-size: cover;
 }
 
 #view-image {
-   background-image: url('../../assets/mat-icons/view_data.png');
+   background-image: url('/assets/mat-icons/view_data.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 
 
 #screenshots-image {
-   background-image: url('../../assets/mat-icons/computer.png');
+   background-image: url('/assets/mat-icons/computer.png');
    background-repeat:no-repeat;
    background-size: cover;
 } 

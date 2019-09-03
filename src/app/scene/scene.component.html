@@ -150,7 +150,7 @@
             <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'px'">
               {{ columnPair.target.name }}</th>
             <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
-              <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="../../assets/warning.png"
+              <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="/assets/warning.png"
                 [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
               {{ formatValue(columnPair.target, mappingResult.entry) }}</td>
           </ng-container>
@@ -166,7 +166,7 @@
     <button id="but_cancel" *ngIf="!canceled" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
     &nbsp;
     <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappings">
-      <img *ngIf="isPreviewDirty()" src="../../assets/warning.png"
+      <img *ngIf="isPreviewDirty()" src="/assets/warning.png"
         matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
         matTooltipClass="tooltip_preview_warning" />
       &nbsp;

@@ -27,14 +27,14 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   private readonly carouselOptions = {
     slidesToShow: 1,
-    arrows: true,
+    arrows: false,
     dots: true,
     infinite: true,
     autoplay: true,
     autoplaySpeed: 3000,
     pauseOnFocus: true,
     fade: true,
-    speed: 2000
+    speed: 1000
   };
   private readonly screenshots = ['scene', 'scenes', 'raw-data', 'raw-data-filtered', 'chart-sidebar', 'chart-sidebar2',
     'grid-view', 'flex-view', 'raw-data-details', 'pivot-table', 'grouping'];
@@ -57,7 +57,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   ngOnInit() {
     this.stepVisibleControl = this.formBuilder.group({ firstCtrl: ['', Validators.required] });
-    this.imagePaths = this.screenshots.map(s => '../../assets/screenshots/' + s + '.png');
+    this.imagePaths = this.screenshots.map(s => '/assets/screenshots/' + s + '.png');
     this.readers = this.readerService.getReaders();
 
     this.activatedRoute.queryParamMap.subscribe(params => {
@@ -149,5 +149,13 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
         this.ready = true;
       })
       .catch(err => this.notifyError(err));
+  }
+
+  prevScreenshot() {
+    $('.carousel').slick('slickPrev');
+  }
+
+  nextScreenshot() {
+    $('.carousel').slick('slickNext');
   }
 }

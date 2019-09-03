@@ -26,6 +26,6 @@ export class IconRegistrarService {
 
   registerSvgIcons(): void {
     this.svgIcons.forEach(icon =>
-      this.iconRegistry.addSvgIcon(icon, this.domSanitizer.bypassSecurityTrustResourceUrl('../../assets/svg-icons/' + icon + '.svg')));
+      this.iconRegistry.addSvgIcon(icon, this.domSanitizer.bypassSecurityTrustResourceUrl('/assets/svg-icons/' + icon + '.svg')));
   }
 }

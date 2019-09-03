@@ -17,8 +17,8 @@ Koia differs from similar programs mainly in that the **context to the original 
 
 Next to this, Koia enables the **uploading of multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
-## How it works 
- 
+## How it works
+
 Data is loaded from files (CSV, Excel or JSON) to the browser's IndexedDB or a local CouchDB through Koia itself or it may be written to it by a third party program. Uploaded data from an individual file are represented by a **scene**. You can switch between different scenes as you please to create diagrams based on different data.
 
 The data can be viewed, filtered and sorted in a **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables** with a few mouseclicks. To gain insights into your data, Koia offers a variety of chart types such as: Pie charts, donut charts, bar charts, line charts, area charts, scatter charts and sunburst charts.
@@ -43,13 +43,10 @@ It is recommended to use [CouchDB](http://couchdb.apache.org/) as described down
 
 1. Download and install CouchDB from http://couchdb.apache.org/#download. Follow the installation wizard steps.
 2. Open http://127.0.0.1:5984/_utils#setup and perform CouchDB single node setup according to http://docs.couchdb.org/en/stable/setup/single-node.html. You will get asked for an admin username and password, choose the default admin/admin or whatever suits you.
-3. Configure CORS by changing [http], [chttpd] and [cors] entries within `$COUCHDB_HOME/etc/local.ini` as follows:
+3. Configure CORS by changing [http] and [cors] entries within `$COUCHDB_HOME/etc/local.ini` as follows:
 ```
 [httpd]
 enable_cors = true
-
-[chttpd]
-require_valid_user = true (required only if CouchDB is not installed on the local computer)
 
 [cors]
 origins = *
@@ -58,40 +55,6 @@ credentials = true
 ```
 4. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
 
-## Development
-
-### Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-### Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive/pipe/service/class/module`.
-
-### Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
-
-## Testing
-
-### Unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-### End-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-Before running the tests make sure you are serving the app via `ng serve`.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
-
-## Built With
-
-* [Angular CLI](https://cli.angular.io/)
-* [Node.js](https://nodejs.org/en/)
-
-## License
+# License
 
 Koia is [MIT licensed](LICENSE). Copyright (c) 2019 centeractive ag.
