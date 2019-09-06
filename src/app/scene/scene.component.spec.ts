@@ -170,7 +170,7 @@ describe('SceneComponent', () => {
     expect(component.initContext).toHaveBeenCalled();
   }));
 
-  it('#onDataTypeChanged should show data format fields when TIME data type', fakeAsync(() => {
+  it('#onDataTypeChanged should show data format fields when TIME', fakeAsync(() => {
 
     // given
     initUpToDetectColumns();

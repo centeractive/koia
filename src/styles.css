@@ -15,22 +15,22 @@ body {
 }
 
 .koia-logo {
-  background-image: url('./assets/koialogo_50x50.png');
+  background-image: url('/assets/koialogo_50x50.png');
   background-repeat: no-repeat;
   background-size: 36px 36px;
 }
 
-.scene-image {
-  background-image: url('./assets/mat-icons/single_scene.png');
+#image-scenes {
+  background-image: url('/assets/mat-icons/scenes.png');
   background-repeat: no-repeat;
-  background-size: 36px 36px;
-}
+  background-size: cover;
+} 
 
-.scenes-image {
-  background-image: url('./assets/mat-icons/import_select.png');
+#image-scene {
+  background-image: url('/assets/mat-icons/scene.png');
   background-repeat: no-repeat;
-  background-size: 36px 36px;
-}
+  background-size: cover;
+} 
 
 .sticky_header {  
   position: -webkit-sticky; /* Safari */
@@ -43,7 +43,7 @@ body {
 }
 
 #view_toolbar {
-  background-color: #f5e2e2;
+  background-color: #CFD8DC;
   width: 100%;
   border-top: 1px solid rgb(145, 144, 144);    
 }

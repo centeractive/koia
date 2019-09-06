@@ -1,15 +1,61 @@
 <!doctype html>
 <html>
+<style>
+  #container {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #292626;
+  }
+
+  #loader {
+    border: 16px solid #ea8315;
+    border-radius: 50%;
+    border-top: 16px solid #ad1f1f;
+    width: 40px;
+    height: 40px;
+    -webkit-animation: spin 2s linear infinite;
+    /* Safari */
+    animation: spin 2s linear infinite;
+    margin-bottom: 10px;
+  }
+
+  /* Safari */
+  @-webkit-keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+</style>
 
 <head>
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-28383891-7"></script>
   <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'UA-28383891-7');
+    gtag('config', 'UA-28383891-7');
   </script>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -26,9 +72,14 @@
 
 </head>
 
-<body>  
-  <koia-root>      
-      Loading...
+<body>
+  <koia-root>
+    <div id="container">
+      <div>
+        <div id="loader"></div>
+        Loading Koia...
+      </div>
+    </div>
   </koia-root>
 </body>
 

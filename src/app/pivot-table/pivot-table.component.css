@@ -29,7 +29,7 @@
 }
 
 table.pvtTable thead tr th, table.pvtTable tbody tr th {
-  background-color: #ccccff !important;
+  background-color: #CFD8DC !important;
   border: 1px solid white !important;
 }
 
@@ -40,7 +40,7 @@ table.pvtTable td {
 }
 
 .pvtAxisContainer, .pvtVals {
-  background: #e6e6ff  !important;
+  background: #ECEFF1  !important;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   border-radius: 4px;
@@ -48,7 +48,7 @@ table.pvtTable td {
 
 .pvtAxisContainer li span.pvtAttr {
   background: white !important;
-  border: 1px solid #b3b3ff !important;
+  border: 1px solid #90A4AE !important;
 }
 
 .pvtFilterBox { 

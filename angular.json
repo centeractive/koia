@@ -19,9 +19,8 @@
             "assets": [
               "src/.htaccess",
               "src/assets",
-              "src/assets/favicon.ico",
-              "src/assets/*.png",
-              "src/WEB-INF"
+              "src/WEB-INF",
+              "src/web.config"
             ],
             "styles": [
               "node_modules/slick-carousel/slick/slick.scss",
@@ -33,7 +32,7 @@
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
-                "src/themes/scss"
+                "src/assets/themes/scss"
               ]
             },
             "scripts": [
@@ -96,8 +95,6 @@
             ],
             "assets": [
               "src/assets",
-              "src/assets/favicon.ico",
-              "src/assets/*.png",
               "src/WEB-INF"
             ]
           }

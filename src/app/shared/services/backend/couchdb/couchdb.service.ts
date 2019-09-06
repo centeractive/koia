@@ -40,7 +40,7 @@ export class CouchDBService implements DB {
     this.httpOptions = this.createHttpOptions();
     this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
     const r = await this.listDatabases();
-    return 'Connection to CouchDB at ' + this.baseURL + ' has beed established';
+    return 'Connection to CouchDB at ' + this.baseURL + ' established';
   }
 
   getConnectionInfo(): ConnectionInfo {
