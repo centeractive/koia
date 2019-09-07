@@ -145,12 +145,6 @@ p {
    background-size: cover;
 } 
 
-#datascene-image {
-   background-image: url('/assets/mat-icons/import_select.png');
-   background-repeat:no-repeat;
-   background-size: cover;
-}
-
 #view-image {
    background-image: url('/assets/mat-icons/view_data.png');
    background-repeat:no-repeat;

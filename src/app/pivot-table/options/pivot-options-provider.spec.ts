@@ -23,7 +23,7 @@ describe('PivotOptionsProvider', () => {
          valueGroupings: [],
          pivotOptions: null
       };
-      cellClickHandler = new CellClickHandler([], null, null, null);
+      cellClickHandler = new CellClickHandler([], null, null);
       optionsProvider = new PivotOptionsProvider(cellClickHandler);
    });
 
@@ -107,7 +107,7 @@ describe('PivotOptionsProvider', () => {
       const filters = { x: '100', y: '57'};
       const pivotData = {};
       clickCallback(mouseEvent, '100', filters, pivotData);
-      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, mouseEvent, filters, pivotData);
+      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, mouseEvent, filters, [], [], pivotData);
    });
 
    it('#enrichPivotOptions should take over "show totals" attributes from context (I)', () => {

@@ -1,10 +1,14 @@
 import { Query } from '../model/query';
 import { ValueRangeFilter } from '../value-range/model';
 import { PropertyFilter } from '../model';
+import { CommonUtils } from './common-utils';
+import { ValueRangeFilterMerger } from '../value-range';
 
 export class QuerySanitizer {
 
-   constructor(private query: Query) {}
+   private valueRangeFilterMerger = new ValueRangeFilterMerger();
+
+   constructor(private query: Query) { }
 
    /**
     * TODO: improve to cover more cases
@@ -14,57 +18,39 @@ export class QuerySanitizer {
    sanitize(): Query {
       const newQuery = new Query();
       newQuery.setFullTextFilter(this.query.getFullTextFilter());
-      this.cleandUpPropertyFilters(this.query).forEach(f => newQuery.addPropertyFilter(f));
-      this.cleandUpValueRangeFilters(this.query)
-         .forEach(f => newQuery.addValueRangeFilter(f.propertyName, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding));
+      this.cleanUpPropertyFilters(this.query).forEach(f => newQuery.addPropertyFilter(f));
+      this.cleanUpValueRangeFilters(this.query).forEach(f =>
+         newQuery.addValueRangeFilter(f.propertyName, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding, f.inverted));
       return newQuery;
    }
 
-   private cleandUpPropertyFilters(query: Query): PropertyFilter[] {
+   private cleanUpPropertyFilters(query: Query): PropertyFilter[] {
       const retainedFilters: PropertyFilter[] = [];
       query.getPropertyFilters().forEach(f => {
-         if (retainedFilters
-            .filter(rf => rf.propertyName === f.propertyName)
-            .filter(rf => rf.operator === f.operator)
-            .filter(rf => rf.filterValue === f.filterValue)
-            .length === 0) {
-               retainedFilters.push(f);
-            }
-      });
-      return retainedFilters;
-   }
-
-   private cleandUpValueRangeFilters(query: Query): ValueRangeFilter[] {
-      const retainedFilters: ValueRangeFilter[] = [];
-      query.getValueRangeFilters().forEach(f => {
-         const retainedFilter = retainedFilters.find(rf => rf.propertyName === f.propertyName);
-         if (retainedFilter) {
-            const valueRange = retainedFilter.valueRange;
-            valueRange.min = this.max(valueRange.min, f.valueRange.min);
-            valueRange.max = this.min(valueRange.max, f.valueRange.max);
-            valueRange.maxExcluding = valueRange.maxExcluding || f.valueRange.maxExcluding;
-         } else {
-            retainedFilters.push(f.clone());
+         if (retainedFilters.find(rf => CommonUtils.compare(f, rf)) === undefined) {
+            retainedFilters.push(f);
          }
       });
       return retainedFilters;
    }
 
-   private min(n1: number, n2: number): number | undefined {
-      if (n1 === undefined || n1 === null) {
-         return n2;
-      } else if (n2 === undefined || n2 === null) {
-         return n1;
+   private cleanUpValueRangeFilters(query: Query): ValueRangeFilter[] {
+      const retainedFilters: ValueRangeFilter[] = [];
+      for (const filter of query.getValueRangeFilters()) {
+         const matchingFilters = retainedFilters.filter(rf => rf.propertyName === filter.propertyName);
+         if (matchingFilters.length === 0 || !this.tryMerging(filter, matchingFilters)) {
+            retainedFilters.push(filter);
+         }
       }
-      return Math.min(n1, n2);
+      return retainedFilters;
    }
 
-   private max(n1: number, n2: number): number | undefined {
-      if (n1 === undefined || n1 === null) {
-         return n2;
-      } else if (n2 === undefined || n2 === null) {
-         return n1;
-      }
-      return Math.max(n1, n2);
+   private tryMerging(filter: ValueRangeFilter, matchingFilters: ValueRangeFilter[]): boolean {
+      for (const matchingFilter of matchingFilters) {
+         if (this.valueRangeFilterMerger.merge(matchingFilter, filter)) {
+            return true;
+         }
+      };
+      return false;
    }
 }

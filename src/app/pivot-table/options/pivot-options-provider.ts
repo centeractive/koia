@@ -10,12 +10,14 @@ export class PivotOptionsProvider {
 
    private static readonly DEFAULT_RENDERER = 'Heatmap';
 
+   private currConfig: Object = { exclusions: [], inclusions: [] };
+
    constructor(private cellClickHandler: CellClickHandler) { }
 
    /**
     * enriches the specified pivot options with relevant elements or cretes new options if the specified [[pivotOptions]] is undefined
     */
-   enrichPivotOptions(pivotOptions: Object, context: PivotContext, onPivotTableRefreshEnd: () => any): Object {
+   enrichPivotOptions(pivotOptions: Object, context: PivotContext, onPivotTableRefreshEnd: (config: Object) => any): Object {
       if (!pivotOptions) {
          pivotOptions = { rendererName: PivotOptionsProvider.DEFAULT_RENDERER };
       }
@@ -23,7 +25,10 @@ export class PivotOptionsProvider {
       pivotOptions['hiddenAttributes'] = [CouchDBConstants._ID];
       pivotOptions['sorters'] = this.createSorters(context);
       pivotOptions['rendererOptions'] = this.createRendererOptions(context);
-      pivotOptions['onRefresh'] = config => onPivotTableRefreshEnd();
+      pivotOptions['onRefresh'] = (config: Object) => {
+         this.currConfig = config;
+         onPivotTableRefreshEnd(config);
+      };
       return pivotOptions;
    }
 
@@ -73,13 +78,18 @@ export class PivotOptionsProvider {
             colorScaleGenerator: values => this.generateColorScale(context, values)
          },
          table: {
-            clickCallback: (e, value, filters, pivotData) =>
-               this.cellClickHandler.onCellClicked(context.valueGroupings, e, filters, pivotData),
+            clickCallback: (e, value, filters, pivotData) => this.onCellClicked(context, e, filters, pivotData),
             rowTotals: context.showRowTotals,
             colTotals: context.showColumnTotals
          },
          c3: {}
       };
+   }
+
+   private onCellClicked(context: PivotContext, mouseEvent: any, filters: Object, pivotData: Object): void {
+      const exclusions = this.currConfig['exclusions'];
+      const inclusions = this.currConfig['inclusions'];
+      this.cellClickHandler.onCellClicked(context.valueGroupings, mouseEvent, filters, exclusions, inclusions, pivotData);
    }
 
    private generateColorScale(context: PivotContext, values: number[]): d3.scale.Linear<string, string> {

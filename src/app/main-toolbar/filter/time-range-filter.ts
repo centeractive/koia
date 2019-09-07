@@ -10,8 +10,8 @@ import { ValueRange } from 'app/shared/value-range/model/value-range.type';
  */
 export class TimeRangeFilter extends NumberRangeFilter {
 
-   constructor(column: Column, start: number, end: number, selValueRange: ValueRange) {
-      super(column, start, end, selValueRange);
+   constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
+      super(column, start, end, selValueRange, inverted);
    }
 
    protected initSliderSteps(): void {

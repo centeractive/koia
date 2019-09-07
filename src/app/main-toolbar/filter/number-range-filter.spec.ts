@@ -12,7 +12,7 @@ describe('NumberRangeFilter', () => {
       const end = 10;
 
       // when
-      const filter = new NumberRangeFilter(column, start, end, null);
+      const filter = new NumberRangeFilter(column, start, end, null, false);
 
       // then
       expect(filter.start).toBe(start);
@@ -30,7 +30,7 @@ describe('NumberRangeFilter', () => {
       const end = 10;
 
       // when
-      const filter = new NumberRangeFilter(column, start, end, { min: undefined, max: undefined });
+      const filter = new NumberRangeFilter(column, start, end, { min: undefined, max: undefined }, false);
 
       // then
       expect(filter.start).toBe(start);
@@ -46,7 +46,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, 0, 10, { min: 1, max: null });
+      const filter = new NumberRangeFilter(column, 0, 10, { min: 1, max: null }, false);
 
       // then
       expect(filter.start).toBe(0);
@@ -62,7 +62,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, 0, 10, { min: null, max: 9 });
+      const filter = new NumberRangeFilter(column, 0, 10, { min: null, max: 9 }, false);
 
       // then
       expect(filter.start).toBe(0);
@@ -80,7 +80,7 @@ describe('NumberRangeFilter', () => {
       query.addValueRangeFilter('X', 1, 9);
 
       // when
-      const filter = new NumberRangeFilter(column, 0, 10, query.findValueRangeFilter('X').valueRange);
+      const filter = new NumberRangeFilter(column, 0, 10, query.findValueRangeFilter('X').valueRange, false);
 
       // then
       expect(filter.start).toBe(0);
@@ -96,7 +96,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, 0, 5_000_000, null);
+      const filter = new NumberRangeFilter(column, 0, 5_000_000, null, false);
 
       // then
       expect(filter.selectedStep).toBe(100_000);
@@ -110,7 +110,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, 8_000, 28_000, null);
+      const filter = new NumberRangeFilter(column, 8_000, 28_000, null, false);
 
       // then
       expect(filter.selectedStep).toBe(100);
@@ -124,7 +124,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, -5_000_000, 0, null);
+      const filter = new NumberRangeFilter(column, -5_000_000, 0, null, false);
 
       // then
       expect(filter.selectedStep).toBe(100_000);
@@ -138,7 +138,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, -28_000, -8_000, null);
+      const filter = new NumberRangeFilter(column, -28_000, -8_000, null, false);
 
       // then
       expect(filter.selectedStep).toBe(100);
@@ -152,7 +152,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
 
       // when
-      const filter = new NumberRangeFilter(column, -755, 266, null);
+      const filter = new NumberRangeFilter(column, -755, 266, null, false);
 
       // then
       expect(filter.selectedStep).toBe(10);
@@ -168,7 +168,7 @@ describe('NumberRangeFilter', () => {
       const end = 10;
 
       // when
-      const filter = new NumberRangeFilter(column, start, end, null);
+      const filter = new NumberRangeFilter(column, start, end, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -187,7 +187,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
       const start = 7;
       const end = 7_584_511;
-      const filter = new NumberRangeFilter(column, start, end, null);
+      const filter = new NumberRangeFilter(column, start, end, null, false);
 
       // when
       filter.onStepChanged(1_000);
@@ -207,7 +207,7 @@ describe('NumberRangeFilter', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
-      const filter = new NumberRangeFilter(column, 0, new Date().getTime(),  null);
+      const filter = new NumberRangeFilter(column, 0, new Date().getTime(),  null, false);
 
       // when
       const formatted = filter.formatStep(TimeUnit.MINUTE);
@@ -220,7 +220,7 @@ describe('NumberRangeFilter', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
-      const filter = new NumberRangeFilter(column, 0, 1,  null);
+      const filter = new NumberRangeFilter(column, 0, 1,  null, false);
       const num = 0.000001;
 
       // when
@@ -234,7 +234,7 @@ describe('NumberRangeFilter', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
-      const filter = new NumberRangeFilter(column, 0, 5_000_000,  null);
+      const filter = new NumberRangeFilter(column, 0, 5_000_000,  null, false);
       const num = 3_000_000;
 
       // when
@@ -250,7 +250,7 @@ describe('NumberRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
       const start = -5;
       const end = 151;
-      const filter = new NumberRangeFilter(column, start, end,  { min: -2, max: 84 });
+      const filter = new NumberRangeFilter(column, start, end,  { min: -2, max: 84 }, false);
 
       // when
       filter.reset();

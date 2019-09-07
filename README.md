@@ -55,7 +55,7 @@ It is recommended to use [CouchDB](http://couchdb.apache.org/) as described down
    credentials = true
    ```
 
-4. After editing the configuration file, CouchDB should be restarted to apply any changes.
+4. After editing the configuration file, CouchDB should be restarted to have the changes applied.
 5. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
 
 ## License

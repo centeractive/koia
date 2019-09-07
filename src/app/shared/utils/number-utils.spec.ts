@@ -426,6 +426,78 @@ describe('NumberUtils', () => {
     expect(NumberUtils.countDigits('A 1 B 16 ; 5')).toBe(4);
   });
 
+  it('#min should return undefined when bot numbers are missing', () => {
+    expect(NumberUtils.min(undefined, undefined)).toBeUndefined();
+    expect(NumberUtils.min(null, null)).toBeNull();
+  });
+
+  it('#min should return number when single number is defined', () => {
+    expect(NumberUtils.min(-1, undefined)).toBe(-1);
+    expect(NumberUtils.min(1, null)).toBe(1);
+    expect(NumberUtils.min(0, undefined)).toBe(0);
+    expect(NumberUtils.min(0, null)).toBe(0);
+    expect(NumberUtils.min(undefined, -1)).toBe(-1);
+    expect(NumberUtils.min(null, 1)).toBe(1);
+    expect(NumberUtils.min(undefined, 0)).toBe(0);
+    expect(NumberUtils.min(null, 0)).toBe(0);
+  });
+
+  it('#min should return number when both numbers are same', () => {
+    expect(NumberUtils.min(-1, -1)).toBe(-1);
+    expect(NumberUtils.min(0, 0)).toBe(0);
+    expect(NumberUtils.min(1, 1)).toBe(1);
+  });
+
+  it('#min should return first number when first number is smaller', () => {
+    expect(NumberUtils.min(-2, -1)).toBe(-2);
+    expect(NumberUtils.min(-1, 0)).toBe(-1);
+    expect(NumberUtils.min(0, 1)).toBe(0);
+    expect(NumberUtils.min(1, 2)).toBe(1);
+  });
+
+  it('#min should return second number when second number is smaller', () => {
+    expect(NumberUtils.min(-1, -2)).toBe(-2);
+    expect(NumberUtils.min(0, -1)).toBe(-1);
+    expect(NumberUtils.min(1, 0)).toBe(0);
+    expect(NumberUtils.min(2, 1)).toBe(1);
+  });
+
+  it('#max should return undefined when bot numbers are missing', () => {
+    expect(NumberUtils.max(undefined, undefined)).toBeUndefined();
+    expect(NumberUtils.max(null, null)).toBeNull();
+  });
+
+  it('#max should return number when single number is defined', () => {
+    expect(NumberUtils.max(-1, undefined)).toBe(-1);
+    expect(NumberUtils.max(1, null)).toBe(1);
+    expect(NumberUtils.max(0, undefined)).toBe(0);
+    expect(NumberUtils.max(0, null)).toBe(0);
+    expect(NumberUtils.max(undefined, -1)).toBe(-1);
+    expect(NumberUtils.max(null, 1)).toBe(1);
+    expect(NumberUtils.max(undefined, 0)).toBe(0);
+    expect(NumberUtils.max(null, 0)).toBe(0);
+  });
+
+  it('#max should return number when both numbers are same', () => {
+    expect(NumberUtils.max(-1, -1)).toBe(-1);
+    expect(NumberUtils.max(0, 0)).toBe(0);
+    expect(NumberUtils.max(1, 1)).toBe(1);
+  });
+
+  it('#max should return first number when first number is bigger', () => {
+    expect(NumberUtils.max(2, 1)).toBe(2);
+    expect(NumberUtils.max(1, 0)).toBe(1);
+    expect(NumberUtils.max(0, -1)).toBe(0);
+    expect(NumberUtils.max(-1, -2)).toBe(-1);
+  });
+
+  it('#max should return second number when second number is bigger', () => {
+    expect(NumberUtils.max(1, 2)).toBe(2);
+    expect(NumberUtils.max(0, 1)).toBe(1);
+    expect(NumberUtils.max(-1, 0)).toBe(0);
+    expect(NumberUtils.max(-2, -1)).toBe(-1);
+  });
+
   it('#diff should return difference when numbers are zero or positive', () => {
     expect(NumberUtils.diff(0, 1)).toBe(1);
     expect(NumberUtils.diff(1, 0)).toBe(1);

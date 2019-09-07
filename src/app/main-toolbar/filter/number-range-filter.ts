@@ -11,6 +11,7 @@ export class NumberRangeFilter {
    column: Column;
    start: number;
    end: number;
+   inverted: boolean;
    selValueRange: ValueRange;
    availableSteps: any[];
    selectedStep: any;
@@ -23,10 +24,11 @@ export class NumberRangeFilter {
     * @param selValueRange if [[ValueRange#maxExcluding]] is true, it is automatically set to false
     * as soon as the slider high value is changed by the user
     */
-   constructor(column: Column, start: number, end: number, selValueRange: ValueRange) {
+   constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
       this.column = column;
       this.start = start;
       this.end = end;
+      this.inverted = inverted === undefined ? false : inverted;
       this.initSelectedRange(selValueRange);
       this.initSliderSteps();
       this.defineSliderOptions();

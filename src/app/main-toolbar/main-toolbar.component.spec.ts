@@ -152,7 +152,7 @@ describe('MainToolbarComponent', () => {
     component.route = Route.GRID;
     const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
     component.router = <Router>{ events: of(event) };
-    const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null);
+    const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null, false);
     const prevSliderOptions = timeRangeFilter.sliderOptions;
     component.rangeFilters = [timeRangeFilter];
     expect(prevSliderOptions).toBeTruthy();
@@ -213,7 +213,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.query = new Query();
-    const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null);
+    const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null, false);
     timeRangeFilter.selValueRange.min = valueRange.min + 1000;
     timeRangeFilter.selValueRange.max = valueRange.max - 1000;
     component.rangeFilters = [timeRangeFilter];
@@ -511,7 +511,7 @@ describe('MainToolbarComponent', () => {
   it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
 
     // when
-    component.addRangeFilter(column('Time'), null);
+    component.addRangeFilter(column('Time'), null, false);
     flush();
 
     // then
@@ -525,7 +525,7 @@ describe('MainToolbarComponent', () => {
   it('#addRangeFilter should add time range filter when TIME column', fakeAsync(() => {
 
     // when
-    component.addRangeFilter(column('Amount'), null);
+    component.addRangeFilter(column('Amount'), null, false);
     flush();
 
     // then
@@ -539,7 +539,7 @@ describe('MainToolbarComponent', () => {
   it('#onRangeFilterChange should refresh entries', fakeAsync(() => {
 
     // given
-    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 });
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
     component.rangeFilters = [rangeFilter];
     spyOn(component, 'refreshEntries');
 
@@ -658,7 +658,7 @@ describe('MainToolbarComponent', () => {
   it('#removeRangeFilter should refresh entries when range filter was filtered', () => {
 
     // given
-    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 });
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
     component.rangeFilters = [rangeFilter];
     spyOn(component, 'refreshEntries');
 
@@ -672,7 +672,7 @@ describe('MainToolbarComponent', () => {
   it('#removeRangeFilter should not refresh entries when range filter was not filtered', () => {
 
     // given
-    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 1, max: 10 });
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 1, max: 10 }, false);
     component.rangeFilters = [rangeFilter];
     spyOn(component, 'refreshEntries');
 

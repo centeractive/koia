@@ -42,8 +42,9 @@ export class Query {
       return this.propertyFilters.slice(0);
    }
 
-   addValueRangeFilter(propertyName: string, minValue: number, maxValue: number, maxExcluding?: boolean): void {
-      this.valueRangeFilters.push(new ValueRangeFilter(propertyName, { min: minValue, max: maxValue, maxExcluding: maxExcluding }));
+   addValueRangeFilter(propertyName: string, minValue: number, maxValue: number, maxExcluding?: boolean, inverted?: boolean): void {
+      this.valueRangeFilters.push(
+         new ValueRangeFilter(propertyName, { min: minValue, max: maxValue, maxExcluding: maxExcluding }, inverted));
    }
 
    findValueRangeFilter(propertyName: string): ValueRangeFilter | undefined {

@@ -70,7 +70,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
         .filter(c => c.indexed)
         .map(c => <Column>CommonUtils.clone(c));
       const baseQueryProvider: QueryProvider = { provide: () => this.query };
-      const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.dialogService, this.rawDataRevealService)
+      const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService)
       this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
       this.fetchData(new Query());
       this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));

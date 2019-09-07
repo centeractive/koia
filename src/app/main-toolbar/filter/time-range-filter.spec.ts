@@ -12,7 +12,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       expect(filter.start).toBe(timeStart);
@@ -30,7 +30,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, { min: undefined, max: undefined });
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, { min: undefined, max: undefined }, false);
 
       // then
       expect(filter.start).toBe(timeStart);
@@ -46,7 +46,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: null });
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: null }, false);
 
       // then
       expect(filter.start).toBe(toTime(2000));
@@ -62,7 +62,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: null, max: toTime(2009) });
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: null, max: toTime(2009) }, false);
 
       // then
       expect(filter.start).toBe(toTime(2000));
@@ -78,7 +78,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: toTime(2009)});
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: toTime(2009)}, false);
 
       // then
       expect(filter.start).toBe(toTime(2000));
@@ -94,7 +94,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('day');
@@ -108,7 +108,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'MMM yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('day');
@@ -122,7 +122,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('day');
@@ -136,7 +136,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('hour');
@@ -150,7 +150,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('minute');
@@ -164,7 +164,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('second');
@@ -178,7 +178,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // then
       expect(filter.selectedStep).toBe('millisecond');
@@ -194,7 +194,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -215,7 +215,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -236,7 +236,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -257,7 +257,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -278,7 +278,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -299,7 +299,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -320,7 +320,7 @@ describe('TimeRangeFilter', () => {
       const timeEnd = toTime(2010);
 
       // when
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // then
       const options = filter.sliderOptions;
@@ -338,7 +338,7 @@ describe('TimeRangeFilter', () => {
 
       // given
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
 
       // when
       filter.onStepChanged(TimeUnit.HOUR);
@@ -355,7 +355,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };
       const timeStart = toTime(2000);
       const timeEnd = toTime(2010);
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
 
       // when
       filter.onStepChanged(TimeUnit.HOUR);
@@ -377,7 +377,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
       const timeStart = toTime(2000);
       const timeEnd = toTime(2010);
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd,  { min: toTime(2001), max: toTime(2009) });
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd,  { min: toTime(2001), max: toTime(2009) }, false);
 
       // when
       filter.reset();

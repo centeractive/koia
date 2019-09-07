@@ -3,6 +3,7 @@ button {
 }
 
 #div_main {
+  margin-top: 2px;
   background-color: #ECEFF1;
 }
 
@@ -141,6 +142,19 @@ button {
 
 .div_range_column_name {  
   position: relative;
-  top: -10px;
-  left: 62px;  
+  top: -4px;
+  left: 66px;  
+  margin-bottom: 3px;
+}
+
+.span_outside_range_menu_trigger {
+  padding: 3px;
+  margin-right: 4px;
+  margin-bottom: 5px;
+  border: 1px;
+  border-style: solid;
+  border-radius: 5px;  
+  border-color: lightgray;
+  cursor: pointer;
+  background-color: rgb(250, 218, 162);  
 }

@@ -99,7 +99,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
         .filter(f => nonTimeColumnNames.includes(f.propertyName));
       this.query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.propertyName);
-        this.addRangeFilter(column, f.valueRange);
+        this.addRangeFilter(column, f.valueRange, f.inverted);
       })
     }
   }
@@ -111,7 +111,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   addColumnFilter(column: Column): void {
     if (column.dataType === DataType.TIME) {
-      this.addRangeFilter(column, null);
+      this.addRangeFilter(column, null, false);
     } else {
       this.columnFilters.push(new PropertyFilter(column.name, Operator.EQUAL, '', column.dataType));
     }
@@ -129,13 +129,13 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     return DataTypeUtils.iconOf(dataType);
   }
 
-  addRangeFilter(column: Column, selValueRange: ValueRange): void {
+  addRangeFilter(column: Column, selValueRange: ValueRange, inverted: boolean): void {
     this.dbService.numberRangeOf(column)
       .then(vr => {
         if (column.dataType === DataType.TIME) {
-          this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange));
+          this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange, inverted));
         } else {
-          this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange));
+          this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange, inverted));
         }
         this.showRangeFilters = true;
       });
@@ -181,6 +181,11 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.refreshEntries();
   }
 
+  onRangeFilterInvertedChanged(filter: NumberRangeFilter, inverted: boolean): void {
+    filter.inverted = inverted;
+    this.refreshEntries();
+  }
+
   resetRangeFilter(rangeFilter: NumberRangeFilter): void {
     rangeFilter.reset();
     setTimeout(() => this.refreshEntries(), 500); // let slider properly reset itself
@@ -204,7 +209,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       .forEach(f => query.addPropertyFilter(f.clone()));
     this.rangeFilters
       .filter(f => f.isStartFiltered() || f.isEndFiltered())
-      .forEach(f => query.addValueRangeFilter(f.column.name, f.selValueRange.min, f.selValueRange.max, f.selValueRange.maxExcluding));
+      .forEach(f =>
+        query.addValueRangeFilter(f.column.name, f.selValueRange.min, f.selValueRange.max, f.selValueRange.maxExcluding, f.inverted));
     this.onFilterChange.emit(query);
   }
 

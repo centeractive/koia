@@ -6,10 +6,12 @@ export class ValueRangeFilter {
 
    protected _propertyName: string;
    private _valueRange: ValueRange;
+   private _inverted: boolean;
 
-   constructor(propertyName: string, valueRange: ValueRange) {
+   constructor(propertyName: string, valueRange: ValueRange, inverted?: boolean) {
       this._propertyName = propertyName;
       this._valueRange = valueRange;
+      this._inverted = inverted === undefined ? false : inverted;
    }
 
    get propertyName(): string {
@@ -28,9 +30,12 @@ export class ValueRangeFilter {
       this._valueRange = valueRange;
    }
 
+   get inverted(): boolean {
+      return this._inverted;
+   }
+
    isApplicable(): boolean {
-      return (this._valueRange.min !== null && this._valueRange.min !== undefined) ||
-         (this._valueRange.max !== null && this._valueRange.max !== undefined);
+      return this._inverted || this.isMinDefined() || this.isMaxDefined();
    }
 
    clearFilterValue(): void {
@@ -38,20 +43,41 @@ export class ValueRangeFilter {
       this._valueRange.max = undefined;
    }
 
+   /**
+    * @returns zero, one or two property filters. If two property filters are returned:
+    * - they need to be combined with logical AND if this value range filter is not inverted
+    * - they need to be combined with logical OR if this value range filter is inverted
+    */
    toPropertyFilters(): PropertyFilter[] {
       const propertyFilters: PropertyFilter[] = [];
-      if (this._valueRange.min !== null && this._valueRange.min !== undefined) {
-         propertyFilters.push(new PropertyFilter(this._propertyName, Operator.GREATER_THAN_OR_EQUAL, this._valueRange.min));
+      if (this.isMinDefined()) {
+         const operator = this._inverted ? Operator.LESS_THAN : Operator.GREATER_THAN_OR_EQUAL;
+         propertyFilters.push(new PropertyFilter(this._propertyName, operator, this._valueRange.min));
       }
-      if (this._valueRange.max !== null && this._valueRange.max !== undefined) {
-         const operator = this._valueRange.maxExcluding ? Operator.LESS_THAN : Operator.LESS_THAN_OR_EQUAL;
-         propertyFilters.push(new PropertyFilter(this._propertyName, operator, this._valueRange.max));
+      if (this.isMaxDefined()) {
+         propertyFilters.push(new PropertyFilter(this._propertyName, this.rangeMaxOperator(), this._valueRange.max));
       }
       return propertyFilters;
    }
 
+   private isMinDefined(): boolean {
+      return this._valueRange.min !== null && this._valueRange.min !== undefined;
+   }
+
+   private isMaxDefined(): boolean {
+      return this._valueRange.max !== null && this._valueRange.max !== undefined;
+   }
+
+   private rangeMaxOperator(): Operator {
+      if (this._inverted) {
+         return this._valueRange.maxExcluding ? Operator.GREATER_THAN_OR_EQUAL : Operator.GREATER_THAN;
+      } else {
+         return this._valueRange.maxExcluding ? Operator.LESS_THAN : Operator.LESS_THAN_OR_EQUAL;
+      }
+   }
+
    clone(): ValueRangeFilter {
       return new ValueRangeFilter(this._propertyName,
-         { min: this._valueRange.min, max: this._valueRange.max, maxExcluding: this._valueRange.maxExcluding });
+         { min: this._valueRange.min, max: this._valueRange.max, maxExcluding: this._valueRange.maxExcluding }, this._inverted);
    }
 }

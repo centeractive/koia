@@ -1,11 +1,8 @@
 import { Column, DataType, TimeUnit, Query, PropertyFilter, Operator } from 'app/shared/model';
-import { RawDataRevealService, DialogService } from 'app/shared/services';
+import { RawDataRevealService, TimeGroupingService } from 'app/shared/services';
 import { CellClickHandler } from './cell-click-handler';
 import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
 import { ValueRangeFilter, ValueGrouping, ValueRange } from 'app/shared/value-range/model';
-import { ConfirmDialogData, ConfirmDialogComponent } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
-import { MatDialogRef } from '@angular/material';
-import { Observable, of } from 'rxjs';
 import { flush, fakeAsync } from '@angular/core/testing';
 import { QueryProvider } from './query-provider';
 
@@ -13,11 +10,9 @@ describe('CellClickHandler', () => {
 
    const now = new Date().getTime();
    let columns: Column[];
-   let dialogService: DialogService;
    let rawDataRevealService: RawDataRevealService;
    let baseQueryProvider: QueryProvider;
    let cellClickHandler: CellClickHandler;
-   let showConfirmDialogSpy: jasmine.Spy;
    let showSpy: jasmine.Spy;
 
    beforeEach(() => {
@@ -29,13 +24,9 @@ describe('CellClickHandler', () => {
          { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
          { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true }
       ];
-      dialogService = new DialogService(null);
       rawDataRevealService = new RawDataRevealService(null, null);
       baseQueryProvider = { provide: () => new Query() };
-      cellClickHandler = new CellClickHandler(columns, baseQueryProvider, dialogService, rawDataRevealService);
-
-      showConfirmDialogSpy = spyOn(dialogService, 'showConfirmDialog');
-      spyOn(rawDataRevealService, 'ofIDs').and.callFake(q => null);
+      cellClickHandler = new CellClickHandler(columns, baseQueryProvider, rawDataRevealService);
       showSpy = spyOn(rawDataRevealService, 'show').and.callFake(q => null);
    });
 
@@ -46,7 +37,7 @@ describe('CellClickHandler', () => {
       const filters = { Percent: 'null' };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -64,7 +55,7 @@ describe('CellClickHandler', () => {
       const filters = { Level: 'ERROR' };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -82,7 +73,7 @@ describe('CellClickHandler', () => {
       const filters = { Amount: 12 };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -101,7 +92,7 @@ describe('CellClickHandler', () => {
       const filters = { Time: now };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -122,7 +113,7 @@ describe('CellClickHandler', () => {
       const filters = { [label]: nowFormatted };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -139,10 +130,10 @@ describe('CellClickHandler', () => {
       // given
       const valueGroupings = [createValueGrouping('Amount')];
       const mouseEvent = createMouseEvent('any');
-      const filters = { Amount: 'empty' };
+      const filters = { Amount: TimeGroupingService.EMPTY };
 
       // when
-      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, {});
+      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -161,7 +152,7 @@ describe('CellClickHandler', () => {
       const filters = { Amount: '10 - 20' };
 
       // when
-      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, {});
+      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -182,7 +173,7 @@ describe('CellClickHandler', () => {
       const filters = { Percent: 10 };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, {});
+      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -204,7 +195,7 @@ describe('CellClickHandler', () => {
       const filters = { Level: 'INFO', Host: 'server1', Amount: 'min - 20', Percent: 'null' };
 
       // when
-      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, {});
+      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, undefined, undefined, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -221,76 +212,20 @@ describe('CellClickHandler', () => {
       expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: undefined, max: 20, maxExcluding: true }));
    });
 
-   it('#onCellClicked should show raw data when grand-total cell and not locally filtered', fakeAsync(() => {
+   it('#onCellClicked should show raw data when grand-total cell', fakeAsync(() => {
 
       // given
       const mouseEvent = createMouseEvent('pvtGrandTotal');
-      spyOnConfirmDialogAndPressNo();
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, {}, {});
+      cellClickHandler.onCellClicked([], mouseEvent, {}, undefined, undefined, {});
       flush();
 
       // then
-      expect(showConfirmDialogSpy).toHaveBeenCalled();
       expect(showSpy).toHaveBeenCalled();
       const query: Query = showSpy.calls.mostRecent().args[0];
       expect(query.getPropertyFilters()).toEqual([]);
       expect(query.getValueRangeFilters()).toEqual([]);
-   }));
-
-   it('#onCellClicked should show apply remembered user choice when grand-total cell', fakeAsync(() => {
-
-      // given
-      const mouseEvent = createMouseEvent('pvtGrandTotal');
-      spyOnConfirmDialogAndPressNo(true);
-      cellClickHandler.onCellClicked([], mouseEvent, {}, {});
-      flush();
-      showConfirmDialogSpy.calls.reset();
-      showSpy.calls.reset();
-
-      // when
-      cellClickHandler.onCellClicked([], mouseEvent, {}, {});
-      flush();
-
-      // then
-      expect(showConfirmDialogSpy).not.toHaveBeenCalled();
-      expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
-      expect(query.getPropertyFilters()).toEqual([]);
-      expect(query.getValueRangeFilters()).toEqual([]);
-   }));
-
-   it('#onCellClicked should reveal raw data by IDs when total cell and locally filtered', fakeAsync(() => {
-
-      // given
-      const mouseEvent = createMouseEvent('pvtTotal');
-      const filters = { Level: 'ERROR' };
-      spyOnConfirmDialogAndPressYes();
-
-      // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, new PivotData(true));
-      flush();
-
-      // then
-      expect(showConfirmDialogSpy).toHaveBeenCalled();
-      expect(rawDataRevealService.ofIDs).toHaveBeenCalledWith(['1', '4', '8']);
-   }));
-
-   it('#onCellClicked should not reveal raw data by IDs when total cell and locally filtered but no data', fakeAsync(() => {
-
-      // given
-      const mouseEvent = createMouseEvent('pvtTotal');
-      const filters = { Level: 'ERROR' };
-      spyOnConfirmDialogAndPressYes();
-
-      // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, new PivotData(false));
-      flush();
-
-      // then
-      expect(showConfirmDialogSpy).toHaveBeenCalled();
-      expect(rawDataRevealService.ofIDs).not.toHaveBeenCalled();
    }));
 
    function column(name: string): Column {
@@ -307,48 +242,4 @@ describe('CellClickHandler', () => {
       classList.add(cssClass);
       return { srcElement: { classList: classList } };
    }
-
-   function spyOnConfirmDialogAndPressYes(rememberChoice?: boolean): void {
-      spyOnConfirmDialogAndPress(0, rememberChoice);
-   }
-
-   function spyOnConfirmDialogAndPressNo(rememberChoice?: boolean): void {
-      spyOnConfirmDialogAndPress(1, rememberChoice);
-   }
-
-   function spyOnConfirmDialogAndPress(buttonIndex: number, rememberChoice?: boolean): void {
-      const dialogRef = createConfirmDialogRef();
-      showConfirmDialogSpy.and.callFake((data: ConfirmDialogData) => {
-         data.closedWithButtonIndex = buttonIndex;
-         data.closedWithButtonName = ConfirmDialogData.YES_NO[buttonIndex];
-         data.rememberChoice = rememberChoice;
-         return dialogRef;
-      });
-   }
-
-   function createConfirmDialogRef(): MatDialogRef<ConfirmDialogComponent> {
-      return <MatDialogRef<ConfirmDialogComponent>>{
-         afterClosed(): Observable<boolean> {
-            return of(true);
-         }
-      };
-   }
-
-   class PivotData {
-
-      private entries = [
-         { _id: '1' },
-         { _id: '4' },
-         { _id: '8' },
-      ];
-
-      constructor(private hasData: boolean) { }
-
-      forEachMatchingRecord(filters: any, callback: (entry: any) => any): void {
-         if (this.hasData) {
-            this.entries.forEach(entry => callback(entry));
-         }
-      }
-   }
-
 });

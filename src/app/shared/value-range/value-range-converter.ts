@@ -1,4 +1,4 @@
-import { NumberUtils } from '../utils';
+import { NumberUtils } from '../utils/number-utils';
 
 export class ValueRangeConverter {
 

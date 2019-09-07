@@ -1,6 +1,7 @@
 import { Sort } from '@angular/material';
 import { ArrayUtils } from 'app/shared/utils';
 import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
+import { ValueRangeFilter } from 'app/shared/value-range/model';
 
 export class MangoQueryBuilder {
 
@@ -9,6 +10,7 @@ export class MangoQueryBuilder {
    private whereCombineOperator: CombineOperator = CombineOperator.AND;
    private fullTextFilter: string;
    private propertyFilters: PropertyFilter[] = [];
+   private invertedRangeFilters: ValueRangeFilter[] = [];
    private fields: string[];
    private sort: Sort;
 
@@ -29,6 +31,11 @@ export class MangoQueryBuilder {
 
    where(propertyName: string, operator: Operator, filterValue: any, dataType?: DataType): MangoQueryBuilder {
       this.propertyFilters.push(new PropertyFilter(propertyName, operator, filterValue, dataType));
+      return this;
+   }
+
+   whereRangeInverted(valueRangeFilter: ValueRangeFilter): MangoQueryBuilder {
+      this.invertedRangeFilters.push(valueRangeFilter);
       return this;
    }
 
@@ -69,26 +76,33 @@ export class MangoQueryBuilder {
 
    private appendSelector(query: {}): void {
       const selectors = this.propertyFilterSelectors();
+      this.appendInvertedRangeFilterSelector(selectors);
       const fullTextFilterSelectors = this.fullTextFilterSelectors();
       if (fullTextFilterSelectors) {
-         if (selectors) {
-            selectors.push(fullTextFilterSelectors);
-         } else {
+         if (selectors.length === 0) {
             query['selector'] = fullTextFilterSelectors;
             return;
          }
+         selectors.push(fullTextFilterSelectors);
       }
       const pouchDBSelectors = this.pouchDBSortSelector();
       if (pouchDBSelectors) {
-         if (selectors) {
-            selectors.push(pouchDBSelectors);
-         } else {
+         if (selectors.length === 0) {
             query['selector'] = pouchDBSelectors;
             return;
          }
+         selectors.push(pouchDBSelectors);
       }
-      if (selectors) {
+      if (selectors.length > 0) {
          query['selector'] = { [this.whereCombineOperator]: selectors };
+      }
+   }
+
+   private appendInvertedRangeFilterSelector(selectors: Object[]): void {
+      for (const filter of this.invertedRangeFilters) {
+         const rangeSelectors = filter.toPropertyFilters()
+            .map(pf => ({ [pf.propertyName]: { [this.toMangoOperator(pf.operator)]: this.toSelectorValue(pf) } }));
+         selectors.push(rangeSelectors.length === 1 ? rangeSelectors[0] : { $or: rangeSelectors });
       }
    }
 
@@ -112,7 +126,7 @@ export class MangoQueryBuilder {
             selector[name][operator] = this.toSelectorValue(pf);
          }
       });
-      return selectors.length === 0 ? null : selectors;
+      return selectors;
    }
 
    /**

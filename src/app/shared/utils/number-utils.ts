@@ -134,6 +134,24 @@ export class NumberUtils {
       return s ? s.replace(/[^0-9]/g, '').length : 0;
    }
 
+   static min(n1: number, n2: number): number | undefined {
+      if (n1 === undefined || n1 === null) {
+         return n2;
+      } else if (n2 === undefined || n2 === null) {
+         return n1;
+      }
+      return Math.min(n1, n2);
+   }
+
+   static max(n1: number, n2: number): number | undefined {
+      if (n1 === undefined || n1 === null) {
+         return n2;
+      } else if (n2 === undefined || n2 === null) {
+         return n1;
+      }
+      return Math.max(n1, n2);
+   }
+
    /**
     * @returns the difference between two numbers as an absolute value
     */

@@ -44,9 +44,12 @@ export class QueryConverter {
          builder.whereAnyText(query.getFullTextFilter());
       }
       query.getPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue, pf.dataType));
-      query.getValueRangeFilters().forEach(f =>
-         f.toPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue))
-      );
+      query.getValueRangeFilters()
+         .filter(f => !f.inverted)
+         .forEach(f => f.toPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue)));
+      query.getValueRangeFilters()
+         .filter(f => f.inverted)
+         .forEach(f => builder.whereRangeInverted(f.clone()));
       if (!builder.containsFilter()) {
          builder.where(CouchDBConstants._ID, Operator.GREATER_THAN, null);
       }

@@ -1,5 +1,6 @@
 import { MangoQueryBuilder, CombineOperator } from './mango-query-builder';
 import { Operator, Column, DataType, PropertyFilter } from 'app/shared/model';
+import { ValueRangeFilter } from 'app/shared/value-range/model';
 
 describe('MangoQueryBuilder', () => {
 
@@ -61,7 +62,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple EQUAL selector', () => {
+   it('EQUAL selector', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -80,7 +81,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple EMPTY selector', () => {
+   it('EMPTY selector', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -99,7 +100,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple ANY_OF selector of text values', () => {
+   it('ANY_OF selector of text values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -118,7 +119,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple ANY_OF selector of number values', () => {
+   it('ANY_OF selector of number values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -137,7 +138,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple ANY_OF selector of time values', () => {
+   it('ANY_OF selector of time values', () => {
 
       // given
       const now = new Date().getTime();
@@ -160,7 +161,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple ANY_OF selector of boolean values', () => {
+   it('ANY_OF selector of boolean values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -179,7 +180,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple NONE_OF selector of text values', () => {
+   it('NONE_OF selector of text values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -198,7 +199,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple NONE_OF selector of number values', () => {
+   it('NONE_OF selector of number values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -217,7 +218,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple NONE_OF selector of time values', () => {
+   it('NONE_OF selector of time values', () => {
 
       // given
       const now = new Date().getTime();
@@ -240,7 +241,7 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('simple NONE_OF selector of boolean values', () => {
+   it('NONE_OF selector of boolean values', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
@@ -252,6 +253,34 @@ describe('MangoQueryBuilder', () => {
          selector: {
             $and: [
                { a: { $nin: [true, false, true] } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('inverted ranges selector', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .whereRangeInverted(new ValueRangeFilter('a', { min: undefined, max: 7 }))
+         .whereRangeInverted(new ValueRangeFilter('b', { min: -1, max: 5 }))
+         .whereRangeInverted(new ValueRangeFilter('c', { min: -12, max: undefined }))
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { a: { $lte: 7 } },
+               {
+                  $or: [
+                     { b: { $gte: -1 } },
+                     { b: { $lte: 5 } }
+                  ]
+               },
+               { c: { $gte: -12 }}
             ]
          },
          limit: MangoQueryBuilder.LIMIT

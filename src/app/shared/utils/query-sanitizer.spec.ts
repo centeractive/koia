@@ -19,7 +19,7 @@ describe('QuerySanitizer', () => {
     expect(actualQuery.getPropertyFilters()).toEqual([expPropertyFilter]);
   });
 
-  it('#sanitize should return query with merged value range filter (excluding max)', () => {
+  it('#sanitize should return query with merged value range filter', () => {
 
     // given
     const query = new Query();
@@ -36,7 +36,7 @@ describe('QuerySanitizer', () => {
     expect(actualQuery.getValueRangeFilters()).toEqual([expValueRangeFilter]);
   });
 
-  it('#sanitize should return query with merged value range filter (excluding max)', () => {
+  it('#sanitize should return query with merged value range filter (max value excluded)', () => {
 
     // given
     const query = new Query();
@@ -51,6 +51,41 @@ describe('QuerySanitizer', () => {
 
     // then
     const expValueRangeFilter = new ValueRangeFilter('X', { min: 5, max: 10, maxExcluding: true });
+    expect(actualQuery.getValueRangeFilters()).toEqual([expValueRangeFilter]);
+  });
+
+  it('#sanitize should return query with merged value range filter together with inversed filter', () => {
+
+    // given
+    const query = new Query();
+    query.addValueRangeFilter('X', 0, 100);
+    query.addValueRangeFilter('X', 10, 90);
+    query.addValueRangeFilter('X', 50, 80, false, true);
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    const expValueRangeFilters = [
+      new ValueRangeFilter('X', { min: 10, max: 90, maxExcluding: undefined }),
+      new ValueRangeFilter('X', { min: 50, max: 80, maxExcluding: false }, true)
+    ];
+    expect(actualQuery.getValueRangeFilters()).toEqual(expValueRangeFilters);
+  });
+
+  it('#sanitize should return query with merged inverted value range filter (max value excluded)', () => {
+
+    // given
+    const query = new Query();
+    query.addValueRangeFilter('X', 0, 10, true, true);
+    query.addValueRangeFilter('X', 10, 20, true, true);
+    query.addValueRangeFilter('X', 20, 30, true, true);
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    const expValueRangeFilter = new ValueRangeFilter('X', { min: 0, max: 30, maxExcluding: true }, true);
     expect(actualQuery.getValueRangeFilters()).toEqual([expValueRangeFilter]);
   });
 });

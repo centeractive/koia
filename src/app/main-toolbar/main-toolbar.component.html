@@ -116,7 +116,7 @@
         [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
         (click)="showRangeFilters = !showRangeFilters">
         <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
-          [matBadgeColor]="showRangeFilters ? 'accent' : 'accent'">swap_horiz</mat-icon>
+          [matBadgeColor]="showRangeFilters ? 'pimary' : 'accent'">swap_horiz</mat-icon>
       </button>
 
       <button mat-button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
@@ -154,7 +154,20 @@
           <mat-icon>remove_circle_outline</mat-icon>
         </button>
       </div>
-      <div class="div_range_column_name">{{ rangeFilter.column.name }}</div>
+      <div class="div_range_column_name">{{ rangeFilter.column.name }}
+        <span [class]="rangeFilter.inverted ? 'span_outside_range_menu_trigger' : 'span_menu_trigger'"
+          [matMenuTriggerFor]="rangeTypeMenu">{{ rangeFilter.inverted ? 'is outside range' : 'is inside range' }}</span>
+        <mat-menu #rangeTypeMenu="matMenu">
+          <button mat-menu-item [disabled]="!rangeFilter.inverted"
+            (click)="onRangeFilterInvertedChanged(rangeFilter, false)">
+            <span>is inside range</span>
+          </button>
+          <button mat-menu-item [disabled]="rangeFilter.inverted"
+            (click)="onRangeFilterInvertedChanged(rangeFilter, true)">
+            <span>is outside range</span>
+          </button>
+        </mat-menu>
+      </div>
     </div>
   </div>
 </div>
