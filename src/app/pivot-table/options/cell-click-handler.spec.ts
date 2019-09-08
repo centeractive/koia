@@ -84,47 +84,6 @@ describe('CellClickHandler', () => {
       expect(query.getValueRangeFilters()).toEqual([]);
    });
 
-   it('#onCellClicked should show raw data with single TIME filter', () => {
-
-      // given
-      column('Time').groupingTimeUnit = TimeUnit.MILLISECOND;
-      const mouseEvent = createMouseEvent('any');
-      const filters = { Time: now };
-
-      // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
-
-      // then
-      expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
-      const propertyFilters = query.getPropertyFilters();
-      expect(propertyFilters.length).toBe(1);
-      expect(propertyFilters[0]).toEqual(new PropertyFilter('Time', Operator.EQUAL, now, DataType.TIME));
-      expect(query.getValueRangeFilters()).toEqual([]);
-   });
-
-   it('#onCellClicked should show raw data with single TIME range filter', () => {
-
-      // given
-      const mouseEvent = createMouseEvent('any');
-      const timeColumn = column('Time');
-      const label = ColumnNameConverter.toLabel(timeColumn, timeColumn.groupingTimeUnit);
-      const nowFormatted = DateTimeUtils.formatTime(now, timeColumn.groupingTimeUnit);
-      const filters = { [label]: nowFormatted };
-
-      // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
-
-      // then
-      expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
-      const valueRangeFilters = query.getValueRangeFilters();
-      expect(valueRangeFilters.length).toBe(1);
-      const min = DateTimeUtils.toDate(now, timeColumn.groupingTimeUnit).getTime();
-      expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Time', { min: min, max: min + 60_000, maxExcluding: undefined }));
-      expect(query.getPropertyFilters()).toEqual([]);
-   });
-
    it('#onCellClicked should show raw data with single filter for empty value range', () => {
 
       // given

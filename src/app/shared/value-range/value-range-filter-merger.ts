@@ -1,6 +1,7 @@
 import { CommonUtils } from '../utils/common-utils';
 import { NumberUtils } from '../utils/number-utils';
 import { ValueRangeFilter, ValueRange } from './model';
+import { ValueRangeUtils } from './value-range-utils';
 
 export class ValueRangeFilterMerger {
 
@@ -30,20 +31,13 @@ export class ValueRangeFilterMerger {
    }
 
    private canNonInvertedBeMerged(f1: ValueRangeFilter, f2: ValueRangeFilter): boolean {
-      const valueRanges = [this.toComparable(f1.valueRange), this.toComparable(f2.valueRange)];
+      const valueRanges = [ValueRangeUtils.toComparable(f1.valueRange), ValueRangeUtils.toComparable(f2.valueRange)];
       valueRanges.sort((r1: ValueRange, r2: ValueRange) => r1.max - r2.max);
       return valueRanges[0].max >= valueRanges[1].min;
    }
 
    private canInvertedBeMerged(f1: ValueRangeFilter, f2: ValueRangeFilter): boolean {
       return f1.valueRange.max === f2.valueRange.min && f1.valueRange.maxExcluding;
-   }
-
-   private toComparable(valueRange: ValueRange): ValueRange {
-      const vr = <ValueRange>CommonUtils.clone(valueRange);
-      vr.min = vr.min === undefined || vr.max === null ? Number.MIN_SAFE_INTEGER : vr.min;
-      vr.max = vr.max === undefined || vr.max === null ? Number.MAX_SAFE_INTEGER : vr.max;
-      return vr;
    }
 
    private maxExcluding(vr1: ValueRange, vr2: ValueRange): boolean {

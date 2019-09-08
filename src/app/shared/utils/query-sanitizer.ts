@@ -2,10 +2,11 @@ import { Query } from '../model/query';
 import { ValueRangeFilter } from '../value-range/model';
 import { PropertyFilter } from '../model';
 import { CommonUtils } from './common-utils';
-import { ValueRangeFilterMerger } from '../value-range';
+import { ValueRangeFilterMerger, ValueRangeFilterSorter } from '../value-range';
 
 export class QuerySanitizer {
 
+   private valueRangeFilterSorter = new ValueRangeFilterSorter();
    private valueRangeFilterMerger = new ValueRangeFilterMerger();
 
    constructor(private query: Query) { }
@@ -36,7 +37,7 @@ export class QuerySanitizer {
 
    private cleanUpValueRangeFilters(query: Query): ValueRangeFilter[] {
       const retainedFilters: ValueRangeFilter[] = [];
-      for (const filter of query.getValueRangeFilters()) {
+      for (const filter of this.valueRangeFilterSorter.sort(query.getValueRangeFilters())) {
          const matchingFilters = retainedFilters.filter(rf => rf.propertyName === filter.propertyName);
          if (matchingFilters.length === 0 || !this.tryMerging(filter, matchingFilters)) {
             retainedFilters.push(filter);

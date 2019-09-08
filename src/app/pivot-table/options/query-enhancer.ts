@@ -27,7 +27,7 @@ export class QueryEnhancer {
          this.addValueGroupingFilter(column, filterValue, false);
       } else if (filterValue === 'null') {
          this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.EMPTY, '', column.dataType));
-      } else if (column.dataType === DataType.TIME && column.groupingTimeUnit !== TimeUnit.MILLISECOND) {
+      } else if (column.dataType === DataType.TIME) {
          this.addTimerRangeFilter(column, filterValue, false);
       } else {
          this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.EQUAL, filterValue, column.dataType));
@@ -49,10 +49,10 @@ export class QueryEnhancer {
          for (const label of labelsInUse) {
             if (!this.filterLabels.includes(label) && exclusions[label]) {
                const column = this.columns.find(c => c.name === ColumnNameConverter.toColumnName(label));
-               if (column.dataType === DataType.TIME) { // what about MILLISECONDS
-                  exclusions[label].forEach((v: string) => this.addTimerRangeFilter(column, v, true));
+               if (column.dataType === DataType.TIME) {
+                  exclusions[label].forEach(v => this.addTimerRangeFilter(column, v, true));
                } else if (this.hasValueGrouping(label)) {
-                  exclusions[label].forEach((v: string) => this.addValueGroupingFilter(column, v, true));
+                  exclusions[label].forEach(v => this.addValueGroupingFilter(column, v, true));
                } else {
                   const values = exclusions[label].join(ArrayUtils.DEFAULT_SEPARATOR);
                   this.query.addPropertyFilter(new PropertyFilter(label, Operator.NONE_OF, values, column.dataType));

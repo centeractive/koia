@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
@@ -98,6 +98,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /value-range-grouping.service\.spec\.ts$/);
 // const context = require.context('./', true, /value-range-converter\.spec\.ts$/);
 // const context = require.context('./', true, /value-range-filter-merger\.spec\.ts$/);
+// const context = require.context('./', true, /value-range-filter-sorter\.spec\.ts$/);
 // const context = require.context('./', true, /time-grouping.service\.spec\.ts$/);
 // const context = require.context('./', true, /value-range-label-comparator\.spec\.ts$/);
 // const context = require.context('./', true, /summary-table.component\.spec\.ts$/);
@@ -111,7 +112,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /chart-utils\.spec\.ts$/);
 // const context = require.context('./', true, /common-utils\.spec\.ts$/);
 // const context = require.context('./', true, /column-name-converter\.spec\.ts$/);
-const context = require.context('./', true, /date-time-utils\.spec\.ts$/);
+// const context = require.context('./', true, /date-time-utils\.spec\.ts$/);
 // const context = require.context('./', true, /number-utils\.spec\.ts$/);
 // const context = require.context('./', true, /data-type-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
