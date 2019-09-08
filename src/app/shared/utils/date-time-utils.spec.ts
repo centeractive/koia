@@ -133,6 +133,82 @@ describe('DateTimeUtils', () => {
     expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.DAY)).toEqual(now + 7 * 86_400_000);
   });
 
+  it('#addTimeUnits should add single month to given time', () => {
+
+    // given
+    const d = new Date(2019, 0);
+
+    // when
+    const time = DateTimeUtils.addTimeUnits(d.getTime(), 1, TimeUnit.MONTH);
+
+    // then
+    const date = new Date(time);
+    expect(date.getFullYear()).toEqual(2019);
+    expect(date.getMonth()).toEqual(1);
+    expect(date.getDate()).toEqual(1);
+    expect(date.getHours()).toEqual(0);
+    expect(date.getMinutes()).toEqual(0);
+    expect(date.getSeconds()).toEqual(0);
+    expect(date.getMilliseconds()).toEqual(0);
+  });
+
+  it('#addTimeUnits should add many months to given time', () => {
+
+    // given
+    const d = new Date(2005, 8);
+
+    // when
+    const time = DateTimeUtils.addTimeUnits(d.getTime(), 27, TimeUnit.MONTH);
+
+    // then
+    const date = new Date(time);
+    expect(date.getFullYear()).toEqual(2007);
+    expect(date.getMonth()).toEqual(11);
+    expect(date.getDate()).toEqual(1);
+    expect(date.getHours()).toEqual(0);
+    expect(date.getMinutes()).toEqual(0);
+    expect(date.getSeconds()).toEqual(0);
+    expect(date.getMilliseconds()).toEqual(0);
+  });
+
+  it('#addTimeUnits should add single year to given time', () => {
+
+    // given
+    const d = new Date(2019, 4);
+
+    // when
+    const time = DateTimeUtils.addTimeUnits(d.getTime(), 1, TimeUnit.YEAR);
+
+    // then
+    const date = new Date(time);
+    expect(date.getFullYear()).toEqual(2020);
+    expect(date.getMonth()).toEqual(4);
+    expect(date.getDate()).toEqual(1);
+    expect(date.getHours()).toEqual(0);
+    expect(date.getMinutes()).toEqual(0);
+    expect(date.getSeconds()).toEqual(0);
+    expect(date.getMilliseconds()).toEqual(0);
+  });
+
+  it('#addTimeUnits should add many years to given time', () => {
+
+    // given
+    const d = new Date(1954, 0);
+
+    // when
+    const time = DateTimeUtils.addTimeUnits(d.getTime(), 67, TimeUnit.YEAR);
+
+    // then
+    const date = new Date(time);
+    expect(date.getFullYear()).toEqual(2021);
+    expect(date.getMonth()).toEqual(0);
+    expect(date.getDate()).toEqual(1);
+    expect(date.getHours()).toEqual(0);
+    expect(date.getMinutes()).toEqual(0);
+    expect(date.getSeconds()).toEqual(0);
+    expect(date.getMilliseconds()).toEqual(0);
+  });
+
   it('#abbreviationOf should return abbreviation of timeunit', () => {
     expect(DateTimeUtils.abbreviationOf(TimeUnit.MILLISECOND)).toEqual('ms');
     expect(DateTimeUtils.abbreviationOf(TimeUnit.SECOND)).toEqual('s');

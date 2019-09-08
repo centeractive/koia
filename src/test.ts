@@ -111,8 +111,8 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /chart-utils\.spec\.ts$/);
 // const context = require.context('./', true, /common-utils\.spec\.ts$/);
 // const context = require.context('./', true, /column-name-converter\.spec\.ts$/);
-// const context = require.context('./', true, /date-time-utils\.spec\.ts$/);
-const context = require.context('./', true, /number-utils\.spec\.ts$/);
+const context = require.context('./', true, /date-time-utils\.spec\.ts$/);
+// const context = require.context('./', true, /number-utils\.spec\.ts$/);
 // const context = require.context('./', true, /data-type-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-sanitizer\.spec\.ts$/);

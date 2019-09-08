@@ -19,7 +19,7 @@ export class DateTimeUtils {
    * @returns computed new time
    */
   static addTimeUnits(time: number, numberOfTimeUnit: number, timeUnit: TimeUnit): number {
-    return time + this.toMilliseconds(numberOfTimeUnit, timeUnit);
+    return moment(time).add(numberOfTimeUnit, <moment.unitOfTime.DurationConstructor>timeUnit.toString()).valueOf();
   }
 
   /**
