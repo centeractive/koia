@@ -40,6 +40,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /pouchdb-access\.spec\.ts$/);
 // const context = require.context('./', true, /view-persistence\.service\.spec\.ts$/);
 // const context = require.context('./', true, /mango-query-builder\.spec\.ts$/);
+// const context = require.context('./', true, /query-converter\.spec\.ts$/);
 
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
 // const context = require.context('./', true, /scene.component\.spec\.ts$/);

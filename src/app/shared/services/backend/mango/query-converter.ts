@@ -43,11 +43,15 @@ export class QueryConverter {
       if (query.hasFullTextFilter()) {
          builder.whereAnyText(query.getFullTextFilter());
       }
-      query.getPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue, pf.dataType));
+      query.getPropertyFilters()
+         .filter(f => f.isApplicable())
+         .forEach(f => builder.where(f.propertyName, f.operator, f.filterValue, f.dataType));
       query.getValueRangeFilters()
+         .filter(f => f.isApplicable())
          .filter(f => !f.inverted)
          .forEach(f => f.toPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue)));
       query.getValueRangeFilters()
+         .filter(f => f.isApplicable())
          .filter(f => f.inverted)
          .forEach(f => builder.whereRangeInverted(f.clone()));
       if (!builder.containsFilter()) {

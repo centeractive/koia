@@ -2,11 +2,13 @@ import { Sort } from '@angular/material';
 import { ArrayUtils } from 'app/shared/utils';
 import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
+import { OperatorConverter } from './operator-converter';
 
 export class MangoQueryBuilder {
 
    static readonly LIMIT = 1_000_000;
 
+   private operatorConverter = new OperatorConverter();
    private whereCombineOperator: CombineOperator = CombineOperator.AND;
    private fullTextFilter: string;
    private propertyFilters: PropertyFilter[] = [];
@@ -61,7 +63,7 @@ export class MangoQueryBuilder {
    }
 
    containsFilter() {
-      return this.fullTextFilter || this.propertyFilters.length > 0;
+      return this.fullTextFilter || this.propertyFilters.length > 0 || this.invertedRangeFilters.length > 0;
    }
 
    toQuery(): Object {
@@ -94,14 +96,14 @@ export class MangoQueryBuilder {
          selectors.push(pouchDBSelectors);
       }
       if (selectors.length > 0) {
-         query['selector'] = { [this.whereCombineOperator]: selectors };
+         query['selector'] = selectors.length === 1 ? selectors[0] : { [this.whereCombineOperator]: selectors };
       }
    }
 
    private appendInvertedRangeFilterSelector(selectors: Object[]): void {
       for (const filter of this.invertedRangeFilters) {
          const rangeSelectors = filter.toPropertyFilters()
-            .map(pf => ({ [pf.propertyName]: { [this.toMangoOperator(pf.operator)]: this.toSelectorValue(pf) } }));
+            .map(pf => ({ [pf.propertyName]: { [this.operatorConverter.toMangoOperator(pf.operator)]: this.toSelectorValue(pf) } }));
          selectors.push(rangeSelectors.length === 1 ? rangeSelectors[0] : { $or: rangeSelectors });
       }
    }
@@ -110,7 +112,7 @@ export class MangoQueryBuilder {
       const selectors = [];
       this.propertyFilters.forEach(pf => {
          const name = pf.propertyName;
-         const operator = this.toMangoOperator(pf.operator);
+         const operator = this.operatorConverter.toMangoOperator(pf.operator);
          let selector = ArrayUtils.findObjectByKey(selectors, name);
          if (this.forPouchDB && pf.operator === Operator.CONTAINS) {
             if (!selector) {
@@ -157,10 +159,9 @@ export class MangoQueryBuilder {
          return null;
       } else if (propertyFilter.operator === Operator.ANY_OF || propertyFilter.operator === Operator.NONE_OF) {
          return this.toInSelectorValue(propertyFilter);
-      } else if (this.columns) {
+      } else if (propertyFilter.filterValue !== null && propertyFilter.filterValue !== undefined) {
          const column = this.columns.find(c => c.name === propertyFilter.propertyName);
-         if (column && propertyFilter.filterValue !== null && propertyFilter.filterValue !== undefined
-            && (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME)) {
+         if (column && (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME)) {
             return Number(propertyFilter.filterValue);
          }
       }
@@ -211,35 +212,6 @@ export class MangoQueryBuilder {
       return null;
    }
 
-   private toMangoOperator(operator: Operator): string {
-      switch (operator) {
-         case Operator.CONTAINS:
-            return '$regex';
-         case Operator.LESS_THAN:
-            return '$lt';
-         case Operator.LESS_THAN_OR_EQUAL:
-            return '$lte';
-         case Operator.EQUAL:
-            return '$eq';
-         case Operator.NOT_EQUAL:
-            return '$ne';
-         case Operator.GREATER_THAN_OR_EQUAL:
-            return '$gte';
-         case Operator.GREATER_THAN:
-            return '$gt';
-         case Operator.EMPTY:
-            return '$exists';
-         case Operator.NOT_EMPTY:
-            return '$gt';
-         case Operator.ANY_OF:
-            return '$in';
-         case Operator.NONE_OF:
-            return '$nin';
-         default:
-            throw new Error('operator ' + operator + ' is not yet supported');
-      }
-   }
-
    private appendFields(query: {}): void {
       if (this.fields) {
          query['fields'] = this.fields;
@@ -253,10 +225,8 @@ export class MangoQueryBuilder {
    }
 
    private appendPaging(query: {}): void {
-      if (this.pageIndex >= 0) {
-         if (this.pageIndex > 0) {
-            query['skip'] = this.pageIndex * this.rowCount;
-         }
+      if (this.pageIndex > 0) {
+         query['skip'] = this.pageIndex * this.rowCount;
       }
    }
 

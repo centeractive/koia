@@ -536,7 +536,7 @@ describe('MainToolbarComponent', () => {
     expect(numberRangeFilter.end).toBe(valueRange.max);
   }));
 
-  it('#onRangeFilterChange should refresh entries', fakeAsync(() => {
+  it('#onRangeFilterChanged should refresh entries', fakeAsync(() => {
 
     // given
     const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
@@ -549,6 +549,21 @@ describe('MainToolbarComponent', () => {
     // then
     expect(rangeFilter.selValueRange.min).toBe(3);
     expect(rangeFilter.selValueRange.max).toBe(7);
+    expect(component.refreshEntries).toHaveBeenCalled();
+  }));
+
+  it('#onRangeFilterInvertedChanged should refresh entries', fakeAsync(() => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
+    component.rangeFilters = [rangeFilter];
+    spyOn(component, 'refreshEntries');
+
+    // when
+    component.onRangeFilterInvertedChanged(rangeFilter, true);
+
+    // then
+    expect(rangeFilter.inverted).toBeTruthy();
     expect(component.refreshEntries).toHaveBeenCalled();
   }));
 

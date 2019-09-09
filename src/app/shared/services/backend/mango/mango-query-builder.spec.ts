@@ -1,5 +1,5 @@
 import { MangoQueryBuilder, CombineOperator } from './mango-query-builder';
-import { Operator, Column, DataType, PropertyFilter } from 'app/shared/model';
+import { Operator, Column, DataType } from 'app/shared/model';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
 
 describe('MangoQueryBuilder', () => {
@@ -16,6 +16,57 @@ describe('MangoQueryBuilder', () => {
          { name: 'Path', dataType: DataType.TEXT, width: 200 },
          { name: 'Amount', dataType: DataType.NUMBER, width: 50 }
       ];
+   });
+
+   it('#containsFilter should return false when no filter was added', () => {
+
+      // given
+      const queryBuilder = new MangoQueryBuilder(false, columns);
+
+      // when
+      const result = queryBuilder.containsFilter();
+
+      // then
+      expect(result).toBeFalsy();
+   });
+
+   it('#containsFilter should return true when full text filter was added', () => {
+
+      // given
+      const queryBuilder = new MangoQueryBuilder(false, columns);
+      queryBuilder.whereAnyText('abc');
+
+      // when
+      const result = queryBuilder.containsFilter();
+
+      // then
+      expect(result).toBeTruthy();
+   });
+
+   it('#containsFilter should return true when property filter was added', () => {
+
+      // given
+      const queryBuilder = new MangoQueryBuilder(false, columns);
+      queryBuilder.where('Host', Operator.EQUAL, 'server1');
+
+      // when
+      const result = queryBuilder.containsFilter();
+
+      // then
+      expect(result).toBeTruthy();
+   });
+
+   it('#containsFilter should return true when inverted range filter was added', () => {
+
+      // given
+      const queryBuilder = new MangoQueryBuilder(false, columns);
+      queryBuilder.whereRangeInverted(new ValueRangeFilter('ID', { min: 1, max: 8 }, true));
+
+      // when
+      const result = queryBuilder.containsFilter();
+
+      // then
+      expect(result).toBeTruthy();
    });
 
    it('full text selector for CouchDB', () => {
@@ -62,19 +113,34 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('EQUAL selector', () => {
+   it('EQUAL text selector', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.EQUAL, 'b')
+         .where('Level', Operator.EQUAL, 'Info')
          .toQuery();
 
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $eq: 'b' } }
-            ]
+            Level: { $eq: 'Info' }
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('EQUAL number selector', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('ID', Operator.EQUAL, '22')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            ID: { $eq: 22 }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -85,15 +151,13 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.EMPTY, '')
+         .where('Amount', Operator.EMPTY, '')
          .toQuery();
 
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $exists: false } }
-            ]
+            Amount: { $exists: false }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -104,15 +168,13 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.ANY_OF, 'a, b, c', DataType.TEXT)
+         .where('Level', Operator.ANY_OF, 'DEBUG, INFO, WARN', DataType.TEXT)
          .toQuery();
 
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $in: ['a', 'b', 'c'] } }
-            ]
+            Level: { $in: ['DEBUG', 'INFO', 'WARN'] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -123,15 +185,13 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.ANY_OF, '1, 2, 3', DataType.NUMBER)
+         .where('Amount', Operator.ANY_OF, '1, 2, 3', DataType.NUMBER)
          .toQuery();
 
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $in: [1, 2, 3] } }
-            ]
+            Amount: { $in: [1, 2, 3] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -146,15 +206,13 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.ANY_OF, a_minute_ago + ', ' + now, DataType.TIME)
+         .where('Time', Operator.ANY_OF, a_minute_ago + ', ' + now, DataType.TIME)
          .toQuery();
 
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $in: [a_minute_ago, now] } }
-            ]
+            Time: { $in: [a_minute_ago, now] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -171,9 +229,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $in: [true, false, true] } }
-            ]
+            a: { $in: [true, false, true] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -190,9 +246,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $nin: ['a', 'b', 'c'] } }
-            ]
+            a: { $nin: ['a', 'b', 'c'] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -209,9 +263,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $nin: [1, 2, 3] } }
-            ]
+            a: { $nin: [1, 2, 3] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -232,9 +284,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $nin: [a_minute_ago, now] } }
-            ]
+            a: { $nin: [a_minute_ago, now]}
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -251,9 +301,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $nin: [true, false, true] } }
-            ]
+            a: { $nin: [true, false, true] }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -280,7 +328,7 @@ describe('MangoQueryBuilder', () => {
                      { b: { $lte: 5 } }
                   ]
                },
-               { c: { $gte: -12 }}
+               { c: { $gte: -12 } }
             ]
          },
          limit: MangoQueryBuilder.LIMIT
@@ -299,9 +347,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $gt: 10, $lt: 20 } }
-            ]
+            a: { $gt: 10, $lt: 20 }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -360,9 +406,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $regex: /.*x.*/i } }
-            ]
+            a: { $regex: /.*x.*/i }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -381,9 +425,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $regex: /(?=.*x.*)(?=.*y.*)(?=.*z.*)/i } }
-            ]
+            a: { $regex: /(?=.*x.*)(?=.*y.*)(?=.*z.*)/i }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -424,7 +466,7 @@ describe('MangoQueryBuilder', () => {
          limit: MangoQueryBuilder.LIMIT
       };
       expect(query).toEqual(expected);
-   })
+   });
 
    it('selector & sort ascending for CouchDB', () => {
 
@@ -437,9 +479,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $gte: '7' } }
-            ]
+            a: { $gte: '7' }
          },
          sort: [{ y: 'asc' }],
          limit: MangoQueryBuilder.LIMIT
@@ -458,9 +498,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            $and: [
-               { a: { $ne: 'b' } }
-            ]
+            a: { $ne: 'b' }
          },
          sort: [{ x: 'desc' }],
          limit: MangoQueryBuilder.LIMIT
@@ -497,9 +535,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            '$and': [
-               { 'x': { '$gt': null } }
-            ]
+            'x': { '$gt': null }
          },
          sort: [{ x: 'asc' }],
          limit: MangoQueryBuilder.LIMIT
@@ -556,6 +592,49 @@ describe('MangoQueryBuilder', () => {
             ]
          },
          limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('page definition (first page)', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .page(0, 10)
+         .toQuery();
+
+      // then
+      const expected = {
+         limit: 10
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('page definition (subsequent page)', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .page(5, 10)
+         .toQuery();
+
+      // then
+      const expected = {
+         skip: 50,
+         limit: 10
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('limit number of rows', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .numberOfRows(1)
+         .toQuery();
+
+      // then
+      const expected = {
+         limit: 1
       };
       expect(query).toEqual(expected);
    });
