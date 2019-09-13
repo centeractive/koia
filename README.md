@@ -4,7 +4,7 @@
 
 <img align="left" src="./doc/koialogo.png">
 
-Koia is an [angular-based](https://angular.io/), open-source web application for visualizing and anylyzing table-like data structures. It offers a modern and minimalistic approach for creating flat tables, pivot-tables, summaries, relationship graphs and charts of your data.
+Koia is an [angular-based](https://angular.io/), open-source web application for visualizing and analyzing table-like data structures. It offers a modern and minimalistic approach for creating flat tables, pivot-tables, summaries, relationship graphs and charts of your data.
 
 Koia has originally been developed for analyzing and visualizing **log data** collected and structured with the [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
 ![alt text](./doc/retrospective.png "Retrospective Log Analyzer") from files (local and remote), [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/).
