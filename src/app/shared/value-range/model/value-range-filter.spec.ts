@@ -3,10 +3,10 @@ import { Operator } from '../../model/operator.enum';
 
 describe('ValueRangeFilter', () => {
 
-   it('#propertyName getter setter', () => {
+   it('#name getter setter', () => {
       const filter = new ValueRangeFilter('x', { min: null, max: null });
-      filter.propertyName = 'y';
-      expect(filter.propertyName).toBe('y');
+      filter.name = 'y';
+      expect(filter.name).toBe('y');
    });
 
    it('#isApplicable should return false when initial value range min and max are missing', () => {
@@ -100,9 +100,9 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(1);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.GREATER_THAN_OR_EQUAL);
-      expect(propertyFilters[0].filterValue).toBe(1);
+      expect(propertyFilters[0].value).toBe(1);
    });
 
    it('#toPropertyFilters should return one filter when value range max only is present', () => {
@@ -115,9 +115,9 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(1);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.LESS_THAN_OR_EQUAL);
-      expect(propertyFilters[0].filterValue).toBe(2);
+      expect(propertyFilters[0].value).toBe(2);
    });
 
    it('#toPropertyFilters should return two filters when value range min and max are present', () => {
@@ -130,12 +130,12 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(2);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.GREATER_THAN_OR_EQUAL);
-      expect(propertyFilters[0].filterValue).toBe(1);
-      expect(propertyFilters[1].propertyName).toBe('x');
+      expect(propertyFilters[0].value).toBe(1);
+      expect(propertyFilters[1].name).toBe('x');
       expect(propertyFilters[1].operator).toBe(Operator.LESS_THAN_OR_EQUAL);
-      expect(propertyFilters[1].filterValue).toBe(2);
+      expect(propertyFilters[1].value).toBe(2);
    });
 
    it('#toPropertyFilters should return two filters when value range min and max (excluding) are present', () => {
@@ -148,12 +148,12 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(2);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.GREATER_THAN_OR_EQUAL);
-      expect(propertyFilters[0].filterValue).toBe(1);
-      expect(propertyFilters[1].propertyName).toBe('x');
+      expect(propertyFilters[0].value).toBe(1);
+      expect(propertyFilters[1].name).toBe('x');
       expect(propertyFilters[1].operator).toBe(Operator.LESS_THAN);
-      expect(propertyFilters[1].filterValue).toBe(2);
+      expect(propertyFilters[1].value).toBe(2);
    });
 
    it('#toPropertyFilters should return one filter when inverted and value range min only is present', () => {
@@ -166,9 +166,9 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(1);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.LESS_THAN);
-      expect(propertyFilters[0].filterValue).toBe(1);
+      expect(propertyFilters[0].value).toBe(1);
    });
 
    it('#toPropertyFilters should return one filter when inverted and value range max only is present', () => {
@@ -181,9 +181,9 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(1);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.GREATER_THAN);
-      expect(propertyFilters[0].filterValue).toBe(2);
+      expect(propertyFilters[0].value).toBe(2);
    });
 
    it('#toPropertyFilters should return two filters when inverted and value range min and max are present', () => {
@@ -196,12 +196,12 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(2);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.LESS_THAN);
-      expect(propertyFilters[0].filterValue).toBe(1);
-      expect(propertyFilters[1].propertyName).toBe('x');
+      expect(propertyFilters[0].value).toBe(1);
+      expect(propertyFilters[1].name).toBe('x');
       expect(propertyFilters[1].operator).toBe(Operator.GREATER_THAN);
-      expect(propertyFilters[1].filterValue).toBe(2);
+      expect(propertyFilters[1].value).toBe(2);
    });
 
    it('#toPropertyFilters should return two filters when inverted and value range min and max (excluding) are present', () => {
@@ -214,12 +214,12 @@ describe('ValueRangeFilter', () => {
 
       // then
       expect(propertyFilters.length).toBe(2);
-      expect(propertyFilters[0].propertyName).toBe('x');
+      expect(propertyFilters[0].name).toBe('x');
       expect(propertyFilters[0].operator).toBe(Operator.LESS_THAN);
-      expect(propertyFilters[0].filterValue).toBe(1);
-      expect(propertyFilters[1].propertyName).toBe('x');
+      expect(propertyFilters[0].value).toBe(1);
+      expect(propertyFilters[1].name).toBe('x');
       expect(propertyFilters[1].operator).toBe(Operator.GREATER_THAN_OR_EQUAL);
-      expect(propertyFilters[1].filterValue).toBe(2);
+      expect(propertyFilters[1].value).toBe(2);
    });
 
    it('#clone', () => {
@@ -231,7 +231,7 @@ describe('ValueRangeFilter', () => {
       const clone = filter.clone();
 
       // then
-      expect(clone.propertyName).toBe('x');
+      expect(clone.name).toBe('x');
       expect(clone.valueRange).toEqual({ min: 1, max: 2, maxExcluding: true });
       expect(clone.inverted).toBeFalsy();
    });
@@ -245,7 +245,7 @@ describe('ValueRangeFilter', () => {
       const clone = filter.clone();
 
       // then
-      expect(clone.propertyName).toBe('x');
+      expect(clone.name).toBe('x');
       expect(clone.valueRange).toEqual({ min: 1, max: null, maxExcluding: undefined });
       expect(clone.inverted).toBeTruthy();
    });

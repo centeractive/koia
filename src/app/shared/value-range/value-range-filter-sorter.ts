@@ -21,8 +21,8 @@ export class ValueRangeFilterSorter {
 class ValueRangeFilterComparator {
 
    compare(f1: ValueRangeFilter, f2: ValueRangeFilter): number {
-      if (f1.propertyName !== f2.propertyName) {
-         return f1.propertyName < f2.propertyName ? -1 : 1;
+      if (f1.name !== f2.name) {
+         return f1.name < f2.name ? -1 : 1;
       } else if (f1.inverted && !f2.inverted) {
          return 1;
       } else if (f2.inverted && !f1.inverted) {

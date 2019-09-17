@@ -34,22 +34,22 @@ export class Query {
       this.propertyFilters.push(propertyfilter);
    }
 
-   findPropertyFilter(propertyName: string, operator: Operator): PropertyFilter | undefined {
-      return this.propertyFilters.find(pf => pf.propertyName === propertyName && pf.operator === operator);
+   findPropertyFilter(name: string, operator: Operator): PropertyFilter | undefined {
+      return this.propertyFilters.find(pf => pf.name === name && pf.operator === operator);
    }
 
    getPropertyFilters(): PropertyFilter[] {
       return this.propertyFilters.slice(0);
    }
 
-   addValueRangeFilter(propertyName: string, minValue: number, maxValue: number, maxExcluding?: boolean, inverted?: boolean): void {
+   addValueRangeFilter(name: string, minValue: number, maxValue: number, maxExcluding?: boolean, inverted?: boolean): void {
       this.valueRangeFilters.push(
-         new ValueRangeFilter(propertyName, { min: minValue, max: maxValue, maxExcluding: maxExcluding }, inverted));
+         new ValueRangeFilter(name, { min: minValue, max: maxValue, maxExcluding: maxExcluding }, inverted));
    }
 
-   findValueRangeFilter(propertyName: string): ValueRangeFilter | undefined {
+   findValueRangeFilter(name: string): ValueRangeFilter | undefined {
       return this.valueRangeFilters
-         .find(pf => pf.propertyName === propertyName);
+         .find(pf => pf.name === name);
    }
 
    getValueRangeFilters(): ValueRangeFilter[] {

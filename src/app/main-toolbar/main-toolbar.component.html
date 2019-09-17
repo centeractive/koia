@@ -45,10 +45,10 @@
 
       <span class="span_column_filter" *ngFor="let columnFilter of columnFilters">
 
-        <span class="span_menu_trigger" [matMenuTriggerFor]="nonTimeColumnsMenu">{{ columnFilter.propertyName }}</span>
-        <mat-menu #nonTimeColumnsMenu="matMenu">
-          <button mat-menu-item *ngFor="let column of nonTimeColumns"
-            [disabled]="column.name === columnFilter.propertyName"
+        <span class="span_menu_trigger" [matMenuTriggerFor]="nameMenu">{{ columnFilter.name }}</span>
+        <mat-menu #nameMenu="matMenu">
+          <button mat-menu-item *ngFor="let column of scene.columns"
+            [disabled]="column.name === columnFilter.name"
             (click)="onColumnFilterNameChanged(columnFilter, column)">
             <span>&nbsp;{{ column.name }}</span>
           </button>
@@ -57,7 +57,7 @@
         <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
           [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)">{{ columnFilter.operator }}</span>
         <mat-menu #operatorMenu="matMenu">
-          <button mat-menu-item *ngFor="let operator of availableOperatorsOf(columnFilter.propertyName)"
+          <button mat-menu-item *ngFor="let operator of availableOperatorsOf(columnFilter.name)"
             [disabled]="operator === columnFilter.operator"
             (click)="columnFilter.operator = operator; refreshEntries()">
             <span>{{ operator }}</span>
@@ -66,9 +66,9 @@
 
         <mat-form-field class="column_filter_value" *ngIf="!columnFilter.operator.endsWith('empty')">
           <input matInput type="text" placeholder="Filter Value"
-            [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)" [(ngModel)]="columnFilter.filterValue"
+            [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)" [(ngModel)]="columnFilter.value"
             (keyup)="onFilterFieldKeyUp($event)">
-          <button mat-button color="primary" *ngIf="columnFilter.filterValue" matSuffix mat-icon-button
+          <button mat-button color="primary" *ngIf="columnFilter.value" matSuffix mat-icon-button
             aria-label="Clear" (click)="resetColumnFilter(columnFilter)">
             <mat-icon>close</mat-icon>
           </button>
@@ -88,22 +88,22 @@
       <mat-menu #columnFilterMenu="matMenu">
         <span *ngFor="let column of scene.columns">
 
-          <button class="but_new_col_filter" *ngIf="!isNumberColumn(column)" [disabled]="hasRangeFilter(column)"
-            mat-menu-item (click)="addColumnFilter(column)">
+          <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)"
+            mat-menu-item (click)="addValueFilter(column)">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
 
-          <button *ngIf="isNumberColumn(column)" mat-menu-item [matMenuTriggerFor]="numberColumnFilterMenu">
+          <button *ngIf="isNumericColumn(column)" mat-menu-item [matMenuTriggerFor]="numericColumnFilterMenu">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
-          <mat-menu #numberColumnFilterMenu="matMenu">
-            <button mat-menu-item (click)="addColumnFilter(column)">
+          <mat-menu #numericColumnFilterMenu="matMenu">
+            <button mat-menu-item (click)="addValueFilter(column)" [disabled]="!canAddValueFilter(column)">
               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
               <span>Value</span>
             </button>
-            <button mat-menu-item (click)="addRangeFilter(column, null)" [disabled]="hasRangeFilter(column)">
+            <button mat-menu-item (click)="addRangeFilter(column, null)">
               <mat-icon>swap_horiz</mat-icon>
               <span>Value Range</span>
             </button>

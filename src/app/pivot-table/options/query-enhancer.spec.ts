@@ -1,7 +1,7 @@
 import { QueryEnhancer } from './query-enhancer';
 import { DataType, TimeUnit, Query, Column, PropertyFilter, Operator } from 'app/shared/model';
 import { ValueRange, ValueGrouping, ValueRangeFilter } from 'app/shared/value-range/model';
-import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
+import { DateTimeUtils } from 'app/shared/utils';
 import { TimeGroupingService } from 'app/shared/services';
 import { DatePipe } from '@angular/common';
 import { ValueRangeConverter } from 'app/shared/value-range';
@@ -94,11 +94,26 @@ describe('QueryEnhancer', () => {
       expect(query.getPropertyFilters()).toEqual([]);
    });
 
+   it('#addBasicFilters should add empty value filter for empty time', () => {
+
+      // given
+      const filters = { Time: TimeGroupingService.EMPTY };
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
+
+      // when
+      queryEnhancer.addBasicFilters();
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Time', Operator.EMPTY, '', DataType.TIME)]);
+      expect(query.getValueRangeFilters()).toEqual([]);
+   });
+
    it('#addBasicFilters should add empty value filter for empty value grouping', () => {
 
       // given
       const valueGroupings = [createValueGrouping('Amount')];
-      const filters = { Amount: TimeGroupingService.EMPTY };
+      const filters = { Amount: ValueRangeConverter.EMPTY };
       const queryEnhancer = new QueryEnhancer(new Query(), columns, valueGroupings, filters);
 
       // when
@@ -177,6 +192,24 @@ describe('QueryEnhancer', () => {
          true);
       expect(query.getValueRangeFilters()).toEqual([expectedFilter]);
       expect(query.getPropertyFilters()).toEqual([]);
+   });
+
+   it('#addFiltersForValueChoices should add non-empty value filter when empty time is exclued', () => {
+
+      // given
+      const filters = { Amount: 12 };
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': ['empty'] }, {}, {
+         colAttrs: ['Time (per minute)'],
+         rowAttrs: ['Amount']
+      });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Time', Operator.NOT_EMPTY, '', DataType.TIME )]);
+      expect(query.getValueRangeFilters()).toEqual([]);
    });
 
    it('#addFiltersForValueChoices should add NOT EMPTY filter when empty value group is excluded', () => {

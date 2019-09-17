@@ -4,22 +4,22 @@ import { Operator } from '../../model/operator.enum';
 
 export class ValueRangeFilter {
 
-   protected _propertyName: string;
+   protected _name: string;
    private _valueRange: ValueRange;
    private _inverted: boolean;
 
-   constructor(propertyName: string, valueRange: ValueRange, inverted?: boolean) {
-      this._propertyName = propertyName;
+   constructor(name: string, valueRange: ValueRange, inverted?: boolean) {
+      this._name = name;
       this._valueRange = valueRange;
       this._inverted = inverted === undefined ? false : inverted;
    }
 
-   get propertyName(): string {
-      return this._propertyName;
+   get name(): string {
+      return this._name;
    }
 
-   set propertyName(propertyName: string) {
-      this._propertyName = propertyName;
+   set name(name: string) {
+      this._name = name;
    }
 
    get valueRange(): ValueRange {
@@ -52,10 +52,10 @@ export class ValueRangeFilter {
       const propertyFilters: PropertyFilter[] = [];
       if (this.isMinDefined()) {
          const operator = this._inverted ? Operator.LESS_THAN : Operator.GREATER_THAN_OR_EQUAL;
-         propertyFilters.push(new PropertyFilter(this._propertyName, operator, this._valueRange.min));
+         propertyFilters.push(new PropertyFilter(this._name, operator, this._valueRange.min));
       }
       if (this.isMaxDefined()) {
-         propertyFilters.push(new PropertyFilter(this._propertyName, this.rangeMaxOperator(), this._valueRange.max));
+         propertyFilters.push(new PropertyFilter(this._name, this.rangeMaxOperator(), this._valueRange.max));
       }
       return propertyFilters;
    }
@@ -77,7 +77,7 @@ export class ValueRangeFilter {
    }
 
    clone(): ValueRangeFilter {
-      return new ValueRangeFilter(this._propertyName,
+      return new ValueRangeFilter(this._name,
          { min: this._valueRange.min, max: this._valueRange.max, maxExcluding: this._valueRange.maxExcluding }, this._inverted);
    }
 }

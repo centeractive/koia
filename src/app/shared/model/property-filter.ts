@@ -5,24 +5,24 @@ export class PropertyFilter {
 
    static readonly EMPTY_VALUE = '<empty>';
 
-   private _propertyName: string;
+   private _name: string;
    private _operator: Operator;
-   private _filterValue: string | number;
+   private _value: string | number;
    private _dataType?: DataType;
 
-   constructor(propertyName: string, operator: Operator, filterValue: string | number, dataType?: DataType) {
-      this._propertyName = propertyName;
+   constructor(name: string, operator: Operator, filterValue: string | number, dataType?: DataType) {
+      this._name = name;
       this._operator = operator;
-      this._filterValue = filterValue;
+      this._value = filterValue;
       this._dataType = dataType;
    }
 
-   get propertyName(): string {
-      return this._propertyName;
+   get name(): string {
+      return this._name;
    }
 
-   set propertyName(propertyName: string) {
-      this._propertyName = propertyName;
+   set name(name: string) {
+      this._name = name;
    }
 
    get operator(): Operator {
@@ -32,16 +32,16 @@ export class PropertyFilter {
    set operator(operator: Operator) {
       this._operator = operator;
       if (operator === Operator.EMPTY || operator === Operator.NOT_EMPTY) {
-         this._filterValue = '';
+         this._value = '';
       }
    }
 
-   get filterValue(): string | number {
-      return this._filterValue;
+   get value(): string | number {
+      return this._value;
    }
 
-   set filterValue(filterValue: string | number) {
-      this._filterValue = filterValue;
+   set value(filterValue: string | number) {
+      this._value = filterValue;
    }
 
    get dataType(): DataType {
@@ -56,14 +56,14 @@ export class PropertyFilter {
       if (this._operator === Operator.EMPTY || this._operator === Operator.NOT_EMPTY) {
          return true;
       }
-      return this._filterValue !== null && this._filterValue !== undefined && this._filterValue.toString().length > 0;
+      return this._value !== null && this._value !== undefined && this._value.toString().length > 0;
    }
 
    clearFilterValue(): void {
-      this._filterValue = '';
+      this._value = '';
    }
 
    clone(): PropertyFilter {
-      return new PropertyFilter(this._propertyName, this._operator, this._filterValue, this._dataType);
+      return new PropertyFilter(this._name, this._operator, this._value, this._dataType);
    }
 }

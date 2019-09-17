@@ -45,11 +45,11 @@ export class QueryConverter {
       }
       query.getPropertyFilters()
          .filter(f => f.isApplicable())
-         .forEach(f => builder.where(f.propertyName, f.operator, f.filterValue, f.dataType));
+         .forEach(f => builder.where(f.name, f.operator, f.value, f.dataType));
       query.getValueRangeFilters()
          .filter(f => f.isApplicable())
          .filter(f => !f.inverted)
-         .forEach(f => f.toPropertyFilters().forEach(pf => builder.where(pf.propertyName, pf.operator, pf.filterValue)));
+         .forEach(f => f.toPropertyFilters().forEach(pf => builder.where(pf.name, pf.operator, pf.value)));
       query.getValueRangeFilters()
          .filter(f => f.isApplicable())
          .filter(f => f.inverted)

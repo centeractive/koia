@@ -31,8 +31,8 @@ export class MangoQueryBuilder {
       return this;
    }
 
-   where(propertyName: string, operator: Operator, filterValue: any, dataType?: DataType): MangoQueryBuilder {
-      this.propertyFilters.push(new PropertyFilter(propertyName, operator, filterValue, dataType));
+   where(name: string, operator: Operator, filterValue: any, dataType?: DataType): MangoQueryBuilder {
+      this.propertyFilters.push(new PropertyFilter(name, operator, filterValue, dataType));
       return this;
    }
 
@@ -103,7 +103,7 @@ export class MangoQueryBuilder {
    private appendInvertedRangeFilterSelector(selectors: Object[]): void {
       for (const filter of this.invertedRangeFilters) {
          const rangeSelectors = filter.toPropertyFilters()
-            .map(pf => ({ [pf.propertyName]: { [this.operatorConverter.toMangoOperator(pf.operator)]: this.toSelectorValue(pf) } }));
+            .map(pf => ({ [pf.name]: { [this.operatorConverter.toMangoOperator(pf.operator)]: this.toSelectorValue(pf) } }));
          selectors.push(rangeSelectors.length === 1 ? rangeSelectors[0] : { $or: rangeSelectors });
       }
    }
@@ -111,14 +111,14 @@ export class MangoQueryBuilder {
    private propertyFilterSelectors(): Object[] {
       const selectors = [];
       this.propertyFilters.forEach(pf => {
-         const name = pf.propertyName;
+         const name = pf.name;
          const operator = this.operatorConverter.toMangoOperator(pf.operator);
          let selector = ArrayUtils.findObjectByKey(selectors, name);
          if (this.forPouchDB && pf.operator === Operator.CONTAINS) {
             if (!selector) {
                selector = { [name]: {} };
                selectors.push(selector);
-               selector[name][operator] = this.toCombinedContainsRegExp(pf.propertyName);
+               selector[name][operator] = this.toCombinedContainsRegExp(pf.name);
             }
          } else {
             if (!selector || selector[name][operator]) {
@@ -137,46 +137,46 @@ export class MangoQueryBuilder {
     *
     * This method is used for PouchDB that can't cope with multiple regex on the same field
     */
-   private toCombinedContainsRegExp(propertyName: string): RegExp {
+   private toCombinedContainsRegExp(name: string): RegExp {
       const filters = this.propertyFilters
-         .filter(pf => pf.propertyName === propertyName)
+         .filter(pf => pf.name === name)
          .filter(pf => pf.operator === Operator.CONTAINS)
       if (filters.length === 1) {
-         return this.toContainsSelectorValue(<string>filters[0].filterValue, false);
+         return this.toContainsSelectorValue(<string>filters[0].value, false);
       }
       const regex = filters
-         .map(pf => '(?=.*' + pf.filterValue + '.*)')
+         .map(pf => '(?=.*' + pf.value + '.*)')
          .join('');
       return new RegExp(regex, 'i');
    }
 
    private toSelectorValue(propertyFilter: PropertyFilter): any {
       if (propertyFilter.operator === Operator.CONTAINS) {
-         return this.toContainsSelectorValue(<string>propertyFilter.filterValue, false);
+         return this.toContainsSelectorValue(<string>propertyFilter.value, false);
       } else if (propertyFilter.operator === Operator.EMPTY) {
          return false;
       } else if (propertyFilter.operator === Operator.NOT_EMPTY) {
          return null;
       } else if (propertyFilter.operator === Operator.ANY_OF || propertyFilter.operator === Operator.NONE_OF) {
          return this.toInSelectorValue(propertyFilter);
-      } else if (propertyFilter.filterValue !== null && propertyFilter.filterValue !== undefined) {
-         const column = this.columns.find(c => c.name === propertyFilter.propertyName);
+      } else if (propertyFilter.value !== null && propertyFilter.value !== undefined) {
+         const column = this.columns.find(c => c.name === propertyFilter.name);
          if (column && (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME)) {
-            return Number(propertyFilter.filterValue);
+            return Number(propertyFilter.value);
          }
       }
-      return propertyFilter.filterValue;
+      return propertyFilter.value;
    }
 
    private toInSelectorValue(propertyFilter: PropertyFilter): any[] {
       switch (propertyFilter.dataType) {
          case DataType.NUMBER:
          case DataType.TIME:
-            return ArrayUtils.toNumberArray(<string>propertyFilter.filterValue);
+            return ArrayUtils.toNumberArray(<string>propertyFilter.value);
          case DataType.BOOLEAN:
-            return ArrayUtils.toBooleanArray(<string>propertyFilter.filterValue);
+            return ArrayUtils.toBooleanArray(<string>propertyFilter.value);
          default:
-            return ArrayUtils.toStringArray(<string>propertyFilter.filterValue);
+            return ArrayUtils.toStringArray(<string>propertyFilter.value);
       };
    }
 
@@ -204,7 +204,7 @@ export class MangoQueryBuilder {
     * (PouchDB requires the sorted field be part of the selector)
     */
    private pouchDBSortSelector(): Object {
-      if (this.forPouchDB && this.sort && !this.propertyFilters.find(f => f.propertyName === this.sort.active)) {
+      if (this.forPouchDB && this.sort && !this.propertyFilters.find(f => f.name === this.sort.active)) {
          return {
             [this.sort.active]: { $gte: null }
          };

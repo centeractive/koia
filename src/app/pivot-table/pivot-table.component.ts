@@ -137,7 +137,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
   }
 
   findConfigRecords(): ConfigRecord[] {
-    return this.scene ? this.viewPersistenceService.findRecords(this.scene, this.route) : [];
+    return this.viewPersistenceService.findRecords(this.scene, this.route);
   }
 
   loadConfig(configRecord: ConfigRecord): void {
@@ -154,7 +154,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
       if (data.closedWithOK) {
         this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
         const context = <PivotContext>CommonUtils.clone(this.context);
-        context.valueGroupings.forEach(d => d.minMaxValues = null);
+        context.valueGroupings.forEach(vg => vg.minMaxValues = null);
         this.viewPersistenceService.saveRecord(this.scene, Route.PIVOT, data.input, context)
           .then(s => this.showStatus(s));
       }

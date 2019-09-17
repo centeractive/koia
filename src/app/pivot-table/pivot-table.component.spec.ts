@@ -9,7 +9,7 @@ import {
   MatBottomSheet, MatDialogRef
 } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { StatusType, Column, DataType, Scene, TimeUnit, Route } from 'app/shared/model';
+import { StatusType, Column, DataType, Scene, TimeUnit, Route, Query } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { DBService } from 'app/shared/services/backend';
@@ -23,6 +23,7 @@ import { InputDialogComponent, InputDialogData } from 'app/shared/component/inpu
 import { Router } from '@angular/router';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { PivotContext } from './model';
+import { ValueGrouping } from 'app/shared/value-range/model';
 
 @Injectable()
 export class MockElementRef {
@@ -141,6 +142,67 @@ describe('PivotTableComponent', () => {
     expect(component.dataFrame.toArray()).toEqual(expectedData);
   });
 
+  it('#fetchData should not re-generate value groupings when not invoked first time', fakeAsync(() => {
+
+    // given
+    const valueGroupings: ValueGrouping[] = [
+      {columnName: 'Amount',
+      ranges: [
+        { min: 30, max: 50, active: true },
+        { min: 0, max: 30, active: true }
+      ]
+    }];
+    component.context.valueGroupings = valueGroupings;
+
+    // when
+    component.fetchData(new Query());
+    flush();
+
+    // then
+    expect(component.context.valueGroupings).toBe(valueGroupings);
+  }));
+
+  it('sidenav#close should leave data frame unchanged when value groupings did not change', fakeAsync(() => {
+
+    // given
+    const dataFrame = component.dataFrame;
+    component.sidenav.open();
+    fixture.detectChanges();
+    flush();
+
+    // when
+    component.sidenav.close();
+    fixture.detectChanges();
+
+    // then
+    flush();
+    expect(component.dataFrame).toBe(dataFrame);
+  }));
+
+  it('sidenav#close should recreate data frame when value groupings changed', fakeAsync(() => {
+
+    // given
+    const dataFrame = component.dataFrame;
+    component.sidenav.open();
+    fixture.detectChanges();
+    flush();
+    component.context.valueGroupings = [
+      {columnName: 'Amount',
+      ranges: [
+        { min: 30, max: 50, active: true },
+        { min: 0, max: 30, active: true }
+      ]
+    }];
+
+    // when
+    component.sidenav.close();
+    fixture.detectChanges();
+
+    // then
+    flush();
+    expect(component.dataFrame).not.toBe(dataFrame);
+  }));
+
   it('#onTimeUnitChanged should change selected time unit and refresh data', fakeAsync(() => {
 
     // given
@@ -225,6 +287,46 @@ describe('PivotTableComponent', () => {
     // then
     expect(notificationService.showStatus).not.toHaveBeenCalled();
   });
+
+  it('#saveConfig should should save context without value grouping minMaxValues', fakeAsync(() => {
+
+    // given
+    component.context.valueGroupings = [
+      {columnName: 'Amount',
+      ranges: [
+        { min: 30, max: 50, active: true },
+        { min: 0, max: 30, active: true }
+      ],
+      minMaxValues: { min: 10, max: 40 }
+    }];
+    const dialogRef = createInputDialogRef();
+    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+      data.input = 'test';
+      data.closedWithOK = true;
+      return dialogRef;
+    });
+    const saveRecordSpy = spyOn(viewPersistenceService, 'saveRecord');
+    const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
+    const status$ = of(status).toPromise();
+    saveRecordSpy.and.returnValue(status$);
+
+    // when
+    component.saveConfig();
+    tick();
+
+    // then
+    expect(viewPersistenceService.saveRecord).toHaveBeenCalled();
+    const context = saveRecordSpy.calls.mostRecent().args[3];
+    const expectedValueGroupings = [
+      {columnName: 'Amount',
+      ranges: [
+        { min: 30, max: 50, active: true },
+        { min: 0, max: 30, active: true }
+      ],
+      minMaxValues: null
+    }];
+    expect(context.valueGroupings).toEqual(expectedValueGroupings);
+  }));
 
   it('#saveConfig should notify user about success', fakeAsync(() => {
 

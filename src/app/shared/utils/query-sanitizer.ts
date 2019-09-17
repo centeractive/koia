@@ -21,7 +21,7 @@ export class QuerySanitizer {
       newQuery.setFullTextFilter(this.query.getFullTextFilter());
       this.cleanUpPropertyFilters(this.query).forEach(f => newQuery.addPropertyFilter(f));
       this.cleanUpValueRangeFilters(this.query).forEach(f =>
-         newQuery.addValueRangeFilter(f.propertyName, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding, f.inverted));
+         newQuery.addValueRangeFilter(f.name, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding, f.inverted));
       return newQuery;
    }
 
@@ -38,7 +38,7 @@ export class QuerySanitizer {
    private cleanUpValueRangeFilters(query: Query): ValueRangeFilter[] {
       const retainedFilters: ValueRangeFilter[] = [];
       for (const filter of this.valueRangeFilterSorter.sort(query.getValueRangeFilters())) {
-         const matchingFilters = retainedFilters.filter(rf => rf.propertyName === filter.propertyName);
+         const matchingFilters = retainedFilters.filter(rf => rf.name === filter.name);
          if (matchingFilters.length === 0 || !this.tryMerging(filter, matchingFilters)) {
             retainedFilters.push(filter);
          }

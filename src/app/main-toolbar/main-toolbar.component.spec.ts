@@ -181,16 +181,25 @@ describe('MainToolbarComponent', () => {
     expect(component.availableOperatorsOf('Path')).toEqual(operators);
   });
 
-  it('#availableOperatorsOf should return all operators but CONTAINS when column has not TEXT data type', () => {
+  it('#availableOperatorsOf should return operators for TIME data type', () => {
 
-    // given
-    const operators = Object.keys(Operator)
+    // when
+    const operators = component.availableOperatorsOf('Time');
+
+    // then
+    expect(operators).toEqual([Operator.EMPTY, Operator.NOT_EMPTY]);
+  });
+
+  it('#availableOperatorsOf should return operators for NUMBER data type', () => {
+
+    // when
+    const operators = component.availableOperatorsOf('Amount')
+
+    // then
+    const expected = Object.keys(Operator)
       .map(key => Operator[key])
       .filter(o => o !== Operator.CONTAINS);
-
-    // when / then
-    expect(component.availableOperatorsOf('Time')).toEqual(operators);
-    expect(component.availableOperatorsOf('Amount')).toEqual(operators);
+    expect(operators).toEqual(expected);
   });
 
   it('#refreshEntries should emit filter change with no time', () => {
@@ -325,36 +334,47 @@ describe('MainToolbarComponent', () => {
     expect(query.hasFilter()).toBeFalsy();
   });
 
+  it('#addValueFilter should add EQUAL filter for number column', fakeAsync(() => {
+
+    // given
+    component.columnFilters = [];
+
+    // when
+    component.addValueFilter(column('Amount'));
+
+    // then
+    expect(component.columnFilters).toEqual([new PropertyFilter('Amount', Operator.EQUAL, '', DataType.NUMBER)]);
+  }));
+
+  it('#addValueFilter should add NOT_EMPTY filter for time column', fakeAsync(() => {
+
+    // given
+    component.columnFilters = [];
+
+    // when
+    component.addValueFilter(column('Time'));
+
+    // then
+    expect(component.columnFilters).toEqual([new PropertyFilter('Time', Operator.NOT_EMPTY, '', DataType.TIME)]);
+  }));
+
   it('selecting "add column filter" menu item should add non-time column filter', fakeAsync(() => {
 
     // given
     component.columnFilters = [];
 
     // when
-    clickAddColumnFilterMenuItem('Level');
+    addLevelFilterThroughMenu();
 
     // then
     expect(component.columnFilters.length).toBe(1);
-  }));
-
-  it('selecting "add column filter" menu item should add time range filter', fakeAsync(() => {
-
-    // given
-    component.columnFilters = [];
-
-    // when
-    clickAddColumnFilterMenuItem('Time');
-
-    // then
-    expect(component.rangeFilters.length).toBe(1);
-    expect(dbService.numberRangeOf).toHaveBeenCalledWith(column('Time'));
   }));
 
   it('pressing <enter> in column filter field should emit onFilterChange', fakeAsync(() => {
 
     // given
     component.columnFilters = [];
-    clickAddColumnFilterMenuItem('Level');
+    addLevelFilterThroughMenu();
     const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
     const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
     htmlInput.value = 'ERR';
@@ -371,20 +391,18 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
     const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.hasFullTextFilter()).toBeFalsy();
     expect(query.getPropertyFilters().length).toBe(1);
     const propFilter = query.getPropertyFilters()[0];
-    expect(propFilter.propertyName).toBe('Level');
+    expect(propFilter.name).toBe('Level');
     expect(propFilter.operator).toBe(Operator.EQUAL);
-    expect(propFilter.filterValue).toBe('ERR');
-    expect(query.findValueRangeFilter('Time')).toBeUndefined();
+    expect(propFilter.value).toBe('ERR');
   }));
 
   it('pressing character key in column filter field should not emit onFilterChange', fakeAsync(() => {
 
     // given
     component.columnFilters = [];
-    clickAddColumnFilterMenuItem('Level');
+    addLevelFilterThroughMenu();
     const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
     const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
     spyOn(component.onFilterChange, 'emit');
@@ -403,7 +421,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.columnFilters = [];
-    clickAddColumnFilterMenuItem('Level');
+    addLevelFilterThroughMenu();
     const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
     const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
     htmlInput.value = 'ERR';
@@ -432,7 +450,7 @@ describe('MainToolbarComponent', () => {
     component.onColumnFilterNameChanged(columnFilter, column('Amount'));
 
     // then
-    expect(columnFilter.propertyName).toBe('Amount');
+    expect(columnFilter.name).toBe('Amount');
     expect(columnFilter.dataType).toBe(DataType.NUMBER);
   });
 
@@ -517,7 +535,7 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters.length).toBe(1);
     expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTruthy();
-    const timeRangeFilter = <TimeRangeFilter> component.rangeFilters[0];
+    const timeRangeFilter = <TimeRangeFilter>component.rangeFilters[0];
     expect(timeRangeFilter.start).toBe(valueRange.min);
     expect(timeRangeFilter.end).toBe(valueRange.max);
   }));
@@ -531,7 +549,7 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters.length).toBe(1);
     expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTruthy();
-    const numberRangeFilter = <NumberRangeFilter> component.rangeFilters[0];
+    const numberRangeFilter = <NumberRangeFilter>component.rangeFilters[0];
     expect(numberRangeFilter.start).toBe(valueRange.min);
     expect(numberRangeFilter.end).toBe(valueRange.max);
   }));
@@ -571,7 +589,9 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.columnFilters = [];
-    clickAddColumnFilterMenuItem('Time');
+    component.addRangeFilter(column('Time'), null, false);
+    flush();
+    fixture.detectChanges();
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_remove_range_filter')).nativeElement;
 
     // when
@@ -586,7 +606,7 @@ describe('MainToolbarComponent', () => {
   it('#onStepChanged should change time step when millisecond is selected', fakeAsync(() => {
 
     // given
-    component.addColumnFilter(column('Time'));
+    component.addRangeFilter(column('Time'), null, false);
     flush();
 
     // when
@@ -603,7 +623,7 @@ describe('MainToolbarComponent', () => {
   it('#onStepChanged should change time step when second is selected', fakeAsync(() => {
 
     // given
-    component.addColumnFilter(column('Time'));
+    component.addRangeFilter(column('Time'), null, false);
     flush();
 
     // when
@@ -618,7 +638,7 @@ describe('MainToolbarComponent', () => {
   it('#onStepChanged should change time step when minute is selected', fakeAsync(() => {
 
     // given
-    component.addColumnFilter(column('Time'));
+    component.addRangeFilter(column('Time'), null, false);
     flush();
 
     // when
@@ -633,7 +653,7 @@ describe('MainToolbarComponent', () => {
   it('#onStepChanged should change time step when hour is selected', fakeAsync(() => {
 
     // given
-    component.addColumnFilter(column('Time'));
+    component.addRangeFilter(column('Time'), null, false);
     flush();
 
     // when
@@ -645,10 +665,10 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].sliderOptions.step).toBe(3_600_000);
   }));
 
-  it('pressing "reset timerange" button should reset selected time range and emit onFilterChange', fakeAsync(() => {
+  it('pressing "value range" button should reset value range and emit onFilterChange', fakeAsync(() => {
 
     // given
-    component.addColumnFilter(column('Time'));
+    component.addRangeFilter(column('Time'), null, false);
     flush();
     const timeStart = entries[0]['Time'];
     const timeEnd = entries[entries.length - 1]['Time'];
@@ -714,14 +734,15 @@ describe('MainToolbarComponent', () => {
     };
   }
 
-  function clickAddColumnFilterMenuItem(columnName: string): void {
-    const menuTrigger: HTMLSpanElement = fixture.debugElement.query(By.css('#butAddColFilter')).nativeElement;
+  function addLevelFilterThroughMenu(): void {
+    const menuTrigger: HTMLSpanElement = fixture.debugElement.query(
+      By.css('#butAddColFilter')).nativeElement;
     menuTrigger.click()
     flush();
     fixture.detectChanges();
 
-    const iColumn = scene.columns.map(c => c.name).indexOf(columnName);
-    const butColumn: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_new_col_filter'))[iColumn].nativeElement;
+    const butColumn: HTMLButtonElement = fixture.debugElement.queryAll(
+      By.css('.menu_item_add_text_filter'))[0].nativeElement;
     butColumn.click();
     flush();
     fixture.detectChanges();

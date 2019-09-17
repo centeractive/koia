@@ -45,7 +45,7 @@ export class JSQueryFactory {
          const coveringOperators = [Operator.CONTAINS, Operator.EQUAL, Operator.GREATER_THAN_OR_EQUAL, Operator.LESS_THAN_OR_EQUAL];
          return propertyFilters
             .filter(f => f !== propertyFilter)
-            .filter(f => f.propertyName === propertyFilter.propertyName)
+            .filter(f => f.name === propertyFilter.name)
             .filter(f => f.isApplicable())
             .map(f => f.operator)
             .some(o => coveringOperators.includes(o));
@@ -55,32 +55,32 @@ export class JSQueryFactory {
 
    private appendPropertyFilter(query: string, propertyFilter: PropertyFilter): string {
       const operator = propertyFilter.operator;
-      let propertyName = propertyFilter.propertyName;
+      let name = propertyFilter.name;
       if (operator === Operator.CONTAINS) {
-         propertyName += '_like';
+         name += '_like';
       } else if (operator === Operator.NOT_EQUAL) {
-         propertyName += '_ne';
+         name += '_ne';
       } else if (operator === Operator.LESS_THAN) {
-         propertyName += '_lt';
+         name += '_lt';
       } else if (operator === Operator.LESS_THAN_OR_EQUAL) {
-         propertyName += '_lte';
+         name += '_lte';
       } else if (operator === Operator.GREATER_THAN_OR_EQUAL || operator === Operator.NOT_EMPTY) {
-         propertyName += '_gte';
+         name += '_gte';
       } else if (operator === Operator.GREATER_THAN) {
-         propertyName += '_gt';
+         name += '_gt';
       } else if (operator === Operator.ANY_OF) {
-         propertyName += '_like';
+         name += '_like';
       } else if (operator === Operator.NONE_OF) {
-         propertyName += '_like';
+         name += '_like';
       }
-      return this.append(query, propertyName, propertyFilter.filterValue);
+      return this.append(query, name, propertyFilter.value);
    }
 
    /**
     * TODO: values of [[Operator.ANY_OF]] and [[Operator.NONE_OF]] must be transformed into regex
     */
-   private append(query: string, propertyName: string, value: any): string {
+   private append(query: string, name: string, value: any): string {
       query += query.length === 0 ? '?' : '&';
-      return query += propertyName + '=' + value;
+      return query += name + '=' + value;
    }
 }

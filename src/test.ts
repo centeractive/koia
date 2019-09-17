@@ -71,6 +71,8 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /grid.component\.spec\.ts$/);
 // const context = require.context('./', true, /aggregation.service\.spec\.ts$/);
 
+// const context = require.context('./', true, /element-context\.spec\.ts$/);
+// const context = require.context('./', true, /chart-context\.spec\.ts$/);
 // onst context = require.context('./', true, /chart.component\.spec\.ts$/);
 // const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-margin.service\.spec\.ts$/);

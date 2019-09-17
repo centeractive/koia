@@ -3,7 +3,7 @@ import { PropertyFilter, Operator, DataType } from 'app/shared/model';
 export class PropertyFilterCustomizer {
 
       tooltipOf(filter: PropertyFilter): string {
-            const prefix = 'Filters all items where \'' + filter.propertyName + '\' ';
+            const prefix = 'Filters all items where \'' + filter.name + '\' ';
             switch (filter.operator) {
                   case Operator.CONTAINS:
                         return prefix + 'contains the filter value (non-case-sensitive)';

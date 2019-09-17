@@ -43,6 +43,16 @@ describe('ElementContext', () => {
       context.subscribeToChanges(eventHandlerSpy);
    });
 
+   it('#dataColumns should replace missing value with empty array', fakeAsync(() => {
+
+      // when
+      context.dataColumns = undefined;
+      flush();
+
+      // then
+      expect(context.dataColumns).toEqual([]);
+   }));
+
    it('#gridColumnSpan should not fire size change event when row span is not changed', fakeAsync(() => {
 
       // when

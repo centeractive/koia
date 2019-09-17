@@ -35,8 +35,6 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   currURL: string;
   scene: Scene;
-  nonTimeColumns: Column[];
-  timeColumns: Column[];
   showFullTextFilter: boolean;
   showRangeFilters: boolean;
   fullTextFilter = '';
@@ -56,8 +54,6 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.scene = this.dbService.getActiveScene();
     if (this.scene) {
       this.listenOnNavigationEvents();
-      this.nonTimeColumns = this.scene.columns.filter(c => c.dataType !== DataType.TIME);
-      this.timeColumns = this.scene.columns.filter(c => c.dataType === DataType.TIME);
       this.retainInitialFilters();
     }
   }
@@ -94,11 +90,9 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   private retainInitialFilters(): void {
     if (this.query) {
       this.fullTextFilter = this.query.getFullTextFilter();
-      const nonTimeColumnNames = this.nonTimeColumns.map(c => c.name);
-      this.columnFilters = this.query.getPropertyFilters()
-        .filter(f => nonTimeColumnNames.includes(f.propertyName));
+      this.columnFilters = this.query.getPropertyFilters();
       this.query.getValueRangeFilters().forEach(f => {
-        const column = this.scene.columns.find(c => c.name === f.propertyName);
+        const column = this.scene.columns.find(c => c.name === f.name);
         this.addRangeFilter(column, f.valueRange, f.inverted);
       })
     }
@@ -106,27 +100,37 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   availableOperatorsOf(columnName: string): Operator[] {
     const column = this.scene.columns.find(c => c.name === columnName);
-    return column.dataType === DataType.TEXT ? this.operators : this.operators.filter(o => o !== Operator.CONTAINS);
-  }
-
-  addColumnFilter(column: Column): void {
-    if (column.dataType === DataType.TIME) {
-      this.addRangeFilter(column, null, false);
+    if (column.dataType === DataType.TEXT) {
+      return this.operators;
+    } else if (column.dataType === DataType.TIME) {
+      return [Operator.EMPTY, Operator.NOT_EMPTY];
     } else {
-      this.columnFilters.push(new PropertyFilter(column.name, Operator.EQUAL, '', column.dataType));
+      return this.operators.filter(o => o !== Operator.CONTAINS);
     }
   }
 
-  isNumberColumn(column: Column): boolean {
-    return column && column.dataType === DataType.NUMBER;
+  addValueFilter(column: Column): void {
+    const timeColumn = column.dataType === DataType.TIME;
+    const operator = timeColumn ? Operator.NOT_EMPTY : Operator.EQUAL;
+    this.columnFilters.push(new PropertyFilter(column.name, operator, '', column.dataType));
+    if (timeColumn) {
+      this.refreshEntries();
+    }
   }
 
-  hasRangeFilter(column: Column): boolean {
-    return this.rangeFilters.find(f => f.column === column) !== undefined;
+  isNumericColumn(column: Column): boolean {
+    return column && (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME);
   }
 
   iconOf(dataType: DataType): string {
     return DataTypeUtils.iconOf(dataType);
+  }
+
+  canAddValueFilter(column: Column) {
+    if (column.dataType === DataType.TIME) {
+      return this.columnFilters.find(f => f.name === column.name) === undefined;
+    }
+    return true;
   }
 
   addRangeFilter(column: Column, selValueRange: ValueRange, inverted: boolean): void {
@@ -142,7 +146,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   }
 
   onColumnFilterNameChanged(filter: PropertyFilter, column: Column): void {
-    filter.propertyName = column.name;
+    filter.name = column.name;
     filter.dataType = column.dataType;
     if (column.dataType !== DataType.TEXT && filter.operator === Operator.CONTAINS) {
       filter.operator = Operator.EQUAL;
@@ -205,7 +209,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     }
     this.columnFilters
       .filter(f => f.operator === Operator.EMPTY || f.operator === Operator.NOT_EMPTY
-        || (f.filterValue !== undefined && f.filterValue !== ''))
+        || (f.value !== undefined && f.value !== ''))
       .forEach(f => query.addPropertyFilter(f.clone()));
     this.rangeFilters
       .filter(f => f.isStartFiltered() || f.isEndFiltered())

@@ -28,7 +28,7 @@ export class QueryEnhancer {
       } else if (filterValue === 'null') {
          this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.EMPTY, '', column.dataType));
       } else if (column.dataType === DataType.TIME) {
-         this.addTimerRangeFilter(column, filterValue, false);
+         this.addTimeRangeFilter(column, filterValue, false);
       } else {
          this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.EQUAL, filterValue, column.dataType));
       }
@@ -50,7 +50,7 @@ export class QueryEnhancer {
             if (!this.filterLabels.includes(label) && exclusions[label]) {
                const column = this.columns.find(c => c.name === ColumnNameConverter.toColumnName(label));
                if (column.dataType === DataType.TIME) {
-                  exclusions[label].forEach(v => this.addTimerRangeFilter(column, v, true));
+                  exclusions[label].forEach(v => this.addTimeRangeFilter(column, v, true));
                } else if (this.hasValueGrouping(label)) {
                   exclusions[label].forEach(v => this.addValueGroupingFilter(column, v, true));
                } else {
@@ -77,11 +77,16 @@ export class QueryEnhancer {
       }
    }
 
-   private addTimerRangeFilter(column: Column, filterValue: any, inverted: boolean): void {
+   private addTimeRangeFilter(column: Column, filterValue: any, inverted: boolean): void {
       const ngFormat = DateTimeUtils.ngFormatOf(column.groupingTimeUnit);
-      const timeStart = DateTimeUtils.parseDate(filterValue, ngFormat).getTime();
-      const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, column.groupingTimeUnit);
-      this.query.addValueRangeFilter(column.name, timeStart, timeEnd, true, inverted);
+      if (filterValue === ValueRangeConverter.EMPTY) {
+         const operator = inverted ? Operator.NOT_EMPTY : Operator.EMPTY;
+         this.query.addPropertyFilter(new PropertyFilter(column.name, operator, '', column.dataType));
+      } else {
+         const timeStart = DateTimeUtils.parseDate(filterValue, ngFormat).getTime();
+         const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, column.groupingTimeUnit);
+         this.query.addValueRangeFilter(column.name, timeStart, timeEnd, true, inverted);
+      }
    }
 
    getQuery(): Query {
