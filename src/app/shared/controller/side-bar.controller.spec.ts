@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NumberUtils } from '../utils';
 import { ValueRange } from '../value-range/model/value-range.type';
+import { DragDropEventFactory, ContainerModel } from '../test';
 
 class SideBarControllerTestable extends SideBarController { }
 
@@ -27,6 +28,7 @@ class ContextTestable extends ElementContext {
 
 describe('SummaryTableSideBarComponent', () => {
 
+   const dragDropEventFactory = new DragDropEventFactory<Column>();
    let columns: Column[];
    let context: ElementContext;
    let controller: SideBarController;
@@ -55,6 +57,59 @@ describe('SummaryTableSideBarComponent', () => {
    it('#ngOnChanges should identify non grouped columns', () => {
       const expectedNonGroupedColumns = columns.filter(c => c.name === 'Amount' || c.name === 'Percent');
       expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
+   });
+
+   it('#dropGroupByColumn should re-position context group-by columns when moved inside selected columns', () => {
+
+      // given
+      context.groupByColumns = [findColumn('Time'), findColumn('Host'), findColumn('Level')];
+      controller.selectedGroupByColumns = context.groupByColumns.slice(0);
+      const dragDropEvent = dragDropEventFactory.createInContainerEvent('selectedGroupByColumns', controller.selectedGroupByColumns, 1, 0);
+
+      // when
+      controller.dropGroupByColumn(dragDropEvent);
+
+      // then
+      expect(context.groupByColumns.map(c => c.name)).toEqual(['Host', 'Time', 'Level']);
+   });
+
+   it('#dropGroupByColumn should not change context group-by column when moved inside available columns', () => {
+
+      // given
+      context.groupByColumns = [findColumn('Time'), findColumn('Host'), findColumn('Level')];
+      controller.selectedGroupByColumns = context.groupByColumns.slice(0);
+      const data = [findColumn('Path'), findColumn('Percent')];
+      const dragDropEvent = dragDropEventFactory.createInContainerEvent('availableGroupByColumns', data, 1, 0);
+
+      // when
+      controller.dropGroupByColumn(dragDropEvent);
+
+      // then
+      expect(context.groupByColumns.map(c => c.name)).toEqual(['Time', 'Host', 'Level']);
+   });
+
+   it('#dropGroupByColumn should change context group-by column when moved into selected columns', () => {
+
+      // given
+      context.groupByColumns = [findColumn('Time'), findColumn('Host')];
+      controller.selectedGroupByColumns = context.groupByColumns.slice(0);
+      const from: ContainerModel<Column> = {
+         id: 'availableGroupByColumns',
+         data: [findColumn('Path'), findColumn('Level'), findColumn('Percent')],
+         index: 1
+      };
+      const to: ContainerModel<Column> = {
+         id: 'selectedGroupByColumns',
+         data: controller.selectedGroupByColumns,
+         index: 2
+      };
+      const dragDropEvent = dragDropEventFactory.createCrossContainerEvent(from, to);
+
+      // when
+      controller.dropGroupByColumn(dragDropEvent);
+
+      // then
+      expect(context.groupByColumns.map(c => c.name)).toEqual(['Time', 'Host', 'Level']);
    });
 
    it('#addValueGrouping should add value grouping', fakeAsync(() => {

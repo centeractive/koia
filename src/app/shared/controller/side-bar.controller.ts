@@ -33,8 +33,6 @@ export abstract class SideBarController implements OnChanges {
    ngOnChanges(changes: SimpleChanges): void {
       if (changes['context']) {
          this.elementContext = changes['context'].currentValue;
-      }
-      if (this.elementContext) {
          this.identifyNonGroupedColumns();
       }
    }
@@ -72,7 +70,7 @@ export abstract class SideBarController implements OnChanges {
       return DataTypeUtils.iconOf(dataType);
    }
 
-   dropGroupByColumn(event: CdkDragDrop<string[]>): void {
+   dropGroupByColumn(event: CdkDragDrop<Column[]>): void {
       if (event.previousContainer === event.container) {
          moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
          if (event.container.id === 'selectedGroupByColumns') {

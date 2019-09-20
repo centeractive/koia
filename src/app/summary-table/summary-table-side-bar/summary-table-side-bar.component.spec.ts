@@ -11,9 +11,11 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Column, SummaryContext, Aggregation, DataType, TimeUnit, ChangeEvent } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { of } from 'rxjs';
+import { DragDropEventFactory, ContainerModel } from 'app/shared/test';
 
 describe('SummaryTableSideBarComponent', () => {
 
+  const dragDropEventFactory = new DragDropEventFactory<Aggregation>();
   let columns: Column[];
   let entries: Object[];
   let context: SummaryContext;
@@ -244,6 +246,59 @@ describe('SummaryTableSideBarComponent', () => {
     expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '.'.toString() }))).toBeTruthy();
     expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a'.toString() }))).toBeFalsy();
   });
+
+  it('#dropAggregation should re-position context aggregations when moved inside selected aggregations', () => {
+
+    // given
+    context.aggregations = [Aggregation.MIN, Aggregation.AVG, Aggregation.MAX];
+    component.selectedAggregations = context.aggregations.slice(0);
+    const dragDropEvent = dragDropEventFactory.createInContainerEvent('selectedAggregations', component.selectedAggregations, 1, 0);
+
+    // when
+    component.dropAggregation(dragDropEvent);
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.AVG, Aggregation.MIN, Aggregation.MAX]);
+ });
+
+ it('#dropAggregation should not change context aggregations when moved inside available aggregations', () => {
+
+    // given
+    context.aggregations = [Aggregation.MIN, Aggregation.AVG, Aggregation.MAX];
+    component.selectedAggregations = context.aggregations.slice(0);
+    const data = [Aggregation.MEDIAN, Aggregation.SUM];
+    const dragDropEvent = dragDropEventFactory.createInContainerEvent('availableGroupByColumns', data, 1, 0);
+
+    // when
+    component.dropAggregation(dragDropEvent);
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.MIN, Aggregation.AVG, Aggregation.MAX]);
+ });
+
+ it('#dropAggregation should change context aggregations when moved into selected aggregations', () => {
+
+    // given
+    context.aggregations = [Aggregation.MIN, Aggregation.AVG];
+    component.selectedAggregations = context.aggregations.slice(0);
+    const from: ContainerModel<Aggregation> = {
+       id: 'availableAggregations',
+       data: [Aggregation.MEDIAN, Aggregation.MAX, Aggregation.SUM],
+       index: 1
+    };
+    const to: ContainerModel<Aggregation> = {
+       id: 'selectedAggregations',
+       data: component.selectedAggregations,
+       index: 2
+    };
+    const dragDropEvent = dragDropEventFactory.createCrossContainerEvent(from, to);
+
+    // when
+    component.dropAggregation(dragDropEvent);
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.MIN, Aggregation.AVG, Aggregation.MAX]);
+ });
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);

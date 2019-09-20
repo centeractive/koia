@@ -510,8 +510,8 @@ describe('FlexCanvasComponent', () => {
   it('#saveAs should export data when summary context is provided', fakeAsync(() => {
 
     // given
-    const summaryContext = component.addSummaryTable();
     spyOn(component.sidenav, 'open').and.returnValue(Promise.resolve());
+    const summaryContext = component.addSummaryTable();
     spyOn(exportService, 'exportData');
 
     // when

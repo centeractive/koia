@@ -10,12 +10,12 @@ export class QueryParams implements ParamMap {
       this.params.set(name, value);
    }
 
-   has(name: string): boolean {
-      return this.params.has(name);
+   get(name: string): string | null {
+      return this.has(name) ? this.params.get(name) : null;
    }
 
-   get(name: string): string | null {
-      return this.params.get(name);
+   has(name: string): boolean {
+      return this.params.has(name);
    }
 
    getAll(name: string): string[] {

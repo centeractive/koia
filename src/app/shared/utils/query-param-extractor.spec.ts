@@ -79,7 +79,7 @@ describe('QueryParamExtractor', () => {
       expect(connectionInfo.password).toBe('secret');
    });
 
-   it('#getSceneID should return undefined when parameter is missing', () => {
+   it('#getSceneID should return null when parameter is missing', () => {
 
       // given
       const extractor = new QueryParamExtractor(new QueryParams());
@@ -88,7 +88,7 @@ describe('QueryParamExtractor', () => {
       const sceneID = extractor.getSceneID();
 
       // then
-      expect(sceneID).toBeUndefined();
+      expect(sceneID).toBeNull();
    });
 
    it('#getSceneID should return scene ID when parameter is present', () => {

@@ -143,19 +143,22 @@ describe('ChartOptionsProvider', () => {
       expect(chart.labelType).toBe('percent');
    });
 
-   it('#createOptions should return options with tooltip value formatter for pie chart', () => {
+   it('#createOptions should return options with tooltip formatters for pie chart', () => {
 
       // given
       context.chartType = ChartType.PIE.type;
       context.dataColumns = [createColumn('x', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('y', DataType.TEXT)];
       context.valueAsPercent = false;
 
       // when
       const options = optionsProvider.createOptions(context, true);
 
       // then
-      const tooltipValueFormatter: Function = options['chart'].tooltip.valueFormatter
+      const tooltipValueFormatter: Function = options['chart'].tooltip.valueFormatter;
+      const tooltipKeyFormatter: Function = options['chart'].tooltip.keyFormatter;
       expect(tooltipValueFormatter(1_000)).toEqual(Number(1_000).toLocaleString());
+      expect(tooltipKeyFormatter('abc')).toEqual('abc');
    });
 
    it('#createOptions for donut chart', () => {
@@ -206,6 +209,39 @@ describe('ChartOptionsProvider', () => {
 
       // then
       expect(options['chart'].showLegend).toBeFalsy();
+   });
+
+   it('#createOptions should return options with X-axis tick formatters for bar chart (named unique values)', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.dataColumns = [createColumn('x', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('y', DataType.NUMBER)];
+      context.aggregations = [];
+
+      // when
+      const options = optionsProvider.createOptions(context, true);
+
+      // then
+      const chart = options['chart'];
+      const xAxisTickFormatter: Function = chart.xAxis.tickFormat
+      expect(xAxisTickFormatter(1_000)).toEqual(Number(1_000).toLocaleString());
+   });
+
+   it('#createOptions should return options with X-axis tick formatters for bar chart (count distinct values)', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.dataColumns = [createColumn('x', DataType.NUMBER)];
+      context.aggregations = [Aggregation.COUNT];
+
+      // when
+      const options = optionsProvider.createOptions(context, true);
+
+      // then
+      const chart = options['chart'];
+      const xAxisTickFormatter: Function = chart.xAxis.tickFormat
+      expect(xAxisTickFormatter(1_000)).toEqual(Number(1_000).toLocaleString());
    });
 
    it('#createOptions should return options with tooltip formatters for bar chart when count distince values', () => {
@@ -323,6 +359,35 @@ describe('ChartOptionsProvider', () => {
       // then
       const formatXAxisTick: Function = options['chart'].xAxis.tickFormat;
       expect(formatXAxisTick('server001')).toEqual('server001');
+   });
+
+   
+   it('#createOptions horizontal multi bar chart Y-axis label should be "Count" when count distinct values', () => {
+
+      // given
+      context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
+      context.dataColumns = [createColumn('Level', DataType.TEXT)];
+      context.aggregations = [Aggregation.COUNT];
+
+      // when
+      const options = optionsProvider.createOptions(context, true);
+
+      // then
+      expect(options['chart'].yAxis.axisLabel).toEqual('Count');
+   });
+
+   it('#createOptions horizontal multi bar chart Y-axis label should be data column name when not count distinct values', () => {
+
+      // given
+      context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
+      context.dataColumns = [createColumn('Amount', DataType.NUMBER)];
+      context.aggregations = [];
+
+      // when
+      const options = optionsProvider.createOptions(context, true);
+
+      // then
+      expect(options['chart'].yAxis.axisLabel).toEqual('Amount');
    });
 
    it('#createOptions horizontal multi bar chart x-axis tick formatter should return formatted time when grouped by time', () => {
