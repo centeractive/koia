@@ -259,9 +259,9 @@ describe('SummaryTableSideBarComponent', () => {
 
     // then
     expect(context.aggregations).toEqual([Aggregation.AVG, Aggregation.MIN, Aggregation.MAX]);
- });
+  });
 
- it('#dropAggregation should not change context aggregations when moved inside available aggregations', () => {
+  it('#dropAggregation should not change context aggregations when moved inside available aggregations', () => {
 
     // given
     context.aggregations = [Aggregation.MIN, Aggregation.AVG, Aggregation.MAX];
@@ -274,22 +274,22 @@ describe('SummaryTableSideBarComponent', () => {
 
     // then
     expect(context.aggregations).toEqual([Aggregation.MIN, Aggregation.AVG, Aggregation.MAX]);
- });
+  });
 
- it('#dropAggregation should change context aggregations when moved into selected aggregations', () => {
+  it('#dropAggregation should change context aggregations when moved into selected aggregations', () => {
 
     // given
     context.aggregations = [Aggregation.MIN, Aggregation.AVG];
     component.selectedAggregations = context.aggregations.slice(0);
     const from: ContainerModel<Aggregation> = {
-       id: 'availableAggregations',
-       data: [Aggregation.MEDIAN, Aggregation.MAX, Aggregation.SUM],
-       index: 1
+      id: 'availableAggregations',
+      data: [Aggregation.MEDIAN, Aggregation.MAX, Aggregation.SUM],
+      index: 1
     };
     const to: ContainerModel<Aggregation> = {
-       id: 'selectedAggregations',
-       data: component.selectedAggregations,
-       index: 2
+      id: 'selectedAggregations',
+      data: component.selectedAggregations,
+      index: 2
     };
     const dragDropEvent = dragDropEventFactory.createCrossContainerEvent(from, to);
 
@@ -298,7 +298,7 @@ describe('SummaryTableSideBarComponent', () => {
 
     // then
     expect(context.aggregations).toEqual([Aggregation.MIN, Aggregation.AVG, Aggregation.MAX]);
- });
+  });
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);

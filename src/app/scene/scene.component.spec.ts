@@ -6,7 +6,7 @@ import {
   MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
-import { Route, Scene, DataType } from 'app/shared/model';
+import { Route, Scene, DataType, ColumnPair } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule } from '@angular/forms';
@@ -119,6 +119,36 @@ describe('SceneComponent', () => {
     expect(link).toEqual('/' + Route.SCENES);
   });
 
+  it('#onSourceTypeChange should init context', fakeAsync(() => {
+
+    // given
+    spyOn(component, 'initContext');
+
+    // when
+    component.onSourceTypeChange();
+
+    // then
+    expect(component.initContext).toHaveBeenCalled();
+  }));
+
+  it('#change on file input should init context', () => {
+
+    // given
+    component.file = new File([], 'Test.csv');
+    component.fileHeader = 'xyz';
+    component.columnMappings = [createColumnPair()];
+    component.feedback = 'abc';
+
+    // when
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'))
+
+    // then
+    expect(component.file).toBeUndefined();
+    expect(component.fileHeader).toBeUndefined();
+    expect(component.columnMappings).toBeUndefined();
+    expect(component.feedback).toBeUndefined();
+  });
+
   it('#onFileSelChange should generate scene name and short description', fakeAsync(() => {
 
     // given
@@ -156,18 +186,6 @@ describe('SceneComponent', () => {
     expect(component.columnMappings.length).toBe(2);
     expect(fixture.debugElement.query(By.css('#div_preview_table'))).toBeDefined();
     expect(fixture.debugElement.query(By.css('#but_load_data'))).toBeDefined();
-  }));
-
-  it('#onSourceTypeChange should init context', fakeAsync(() => {
-
-    // given
-    spyOn(component, 'initContext');
-
-    // when
-    component.onSourceTypeChange();
-
-    // then
-    expect(component.initContext).toHaveBeenCalled();
   }));
 
   it('#onDataTypeChanged should show data format fields when TIME', fakeAsync(() => {
@@ -250,6 +268,20 @@ describe('SceneComponent', () => {
     expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
   }));
 
+  it('#click on cancel button should cancel ongoing data load and not submit pending items', () => {
+
+    // given
+    component.scene.creationTime = new Date().getTime();
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
+    spyOn(component.entryPersister, 'postingComplete').and.callFake(() => null);
+
+    // when
+    htmlButton.click();
+
+    // then
+    expect(component.entryPersister.postingComplete).toHaveBeenCalledWith(false);
+  });
+
   it('#click on cancel button should show warning when no scenes exist', () => {
 
     // given
@@ -298,5 +330,20 @@ describe('SceneComponent', () => {
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();
+  }
+
+  function createColumnPair(): ColumnPair {
+    return {
+      source: {
+        name: 'x',
+        dataType: DataType.NUMBER,
+        width: 10
+      },
+      target: {
+        name: 'x',
+        dataType: DataType.TIME,
+        width: 10
+      }
+    };
   }
 });

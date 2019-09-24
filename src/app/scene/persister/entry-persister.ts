@@ -64,7 +64,7 @@ export class EntryPersister {
   }
 
   /**
-   * obtionally submits queued entries to be written to the database and lockes this [[EntryPersister]] from further posting new entries
+   * optionally submits queued entries to be written to the database and lockes this [[EntryPersister]] from further posting new entries
    * untile [[reset]] is invoked
    */
   postingComplete(submitQueuedEntries: boolean): void {

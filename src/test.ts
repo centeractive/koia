@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
+// const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
@@ -43,7 +43,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /query-converter\.spec\.ts$/);
 
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
-// const context = require.context('./', true, /scene.component\.spec\.ts$/);
+const context = require.context('./', true, /scene.component\.spec\.ts$/);
 // const context = require.context('./', true, /scenes.component\.spec\.ts$/);
 // const context = require.context('./', true, /scene-details-dialog.component\.spec\.ts$/)
 // const context = require.context('./', true, /scene-utils.*\.spec\.ts$/);

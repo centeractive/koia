@@ -31,9 +31,10 @@
         <mat-select placeholder="Source Type" [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
           <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
         </mat-select>
-      </mat-form-field>
-      <button mat-button mat-icon-button color="primary" matTooltip="Select file" (click)="fileInput.click()">
+      </mat-form-field>&nbsp;
+      <button mat-raised-button color="primary" (click)="fileInput.click()">
         <mat-icon>folder</mat-icon>
+        <span>&nbsp;Select File</span>
       </button>
       <input #fileInput id="fileInput" hidden type="file"
         [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
