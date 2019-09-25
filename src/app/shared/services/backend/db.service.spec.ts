@@ -6,6 +6,7 @@ import { DBService } from './db.service';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
 import { SceneFactory } from 'app/shared/test';
+import { PouchDBAccess } from './pouchdb';
 
 describe('DBService', () => {
 
@@ -96,7 +97,7 @@ describe('DBService', () => {
 
     // then
     expect(console.log).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
-    expect(dbService.usesBrowserStorage()).toBeTruthy();
+    expect(dbService.isIndexedDbInUse()).toBeTruthy();
     expect(dbService.isBackendInitialized()).toBeTruthy();
   }));
 
@@ -104,15 +105,15 @@ describe('DBService', () => {
     expect(dbService.getActiveScene()).toBe(initialScene);
   });
 
-  it('#useBrowserStorage should switch to browser storage', async () => {
+  it('#isIndexedDbInUse should switch to browser storage', async () => {
 
     // when
-    await dbService.useBrowserStorage().then(db => {
+    await dbService.useIndexedDb().then(db => {
 
       // then
-      expect(dbService.usesBrowserStorage).toBeTruthy();
-    })
-      .catch(e => fail(e));
+      expect(dbService.useIndexedDb).toBeTruthy();
+
+    }).catch(e => fail(e));
   });
 
   it('#findFreeDatabaseName should return free name from CouchDB', async () => {
@@ -123,8 +124,8 @@ describe('DBService', () => {
 
         // then
         expect(db).toBe(testDBPrefix + DBService.DATA + '_1');
-      })
-      .catch(e => fail(e));
+
+      }).catch(e => fail(e));
   });
 
   it('#findFreeDatabaseName should throw error when max number of CouchDB databases is reached', async () => {
@@ -146,19 +147,22 @@ describe('DBService', () => {
       });
   });
 
-  it('#findFreeDatabaseName should return free name from browser storage', async () => {
+  it('#findFreeDatabaseName should return free name from IndexedDB', async () => {
 
     // given
-    await dbService.useBrowserStorage();
+    await dbService.useIndexedDb();
+    await new PouchDBAccess().clear();
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, true).then(r => null).catch(e => fail(e));
 
     // when
     await dbService.findFreeDatabaseName()
       .then(db => {
 
         // then
-        expect(db).toBe(testDBPrefix + DBService.DATA + '_1');
-      })
-      .catch(e => fail(e));
+        expect(db).toBe(testDBPrefix + DBService.DATA + '_2');
+
+      }).catch(e => fail(e));
   });
 
   it('#getMaxDataItemsPerScene should return value when CouchDB is used', async () => {
@@ -170,10 +174,19 @@ describe('DBService', () => {
     expect(maxDataItems).toBe(100_000);
   });
 
+  it('#getMaxDataItemsPerScene should return undefined when storage is not defined', async () => {
+
+    // when
+    const maxDataItems = new DBService(couchDBService).getMaxDataItemsPerScene();
+
+    // then
+    expect(maxDataItems).toBeUndefined();
+  });
+
   it('#getMaxDataItemsPerScene should return value when browser storage is used', async () => {
 
     // given
-    await dbService.useBrowserStorage().then(db => null);
+    await dbService.useIndexedDb().then(db => null);
 
     // when
     const maxDataItems = dbService.getMaxDataItemsPerScene();

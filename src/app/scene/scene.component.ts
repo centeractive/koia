@@ -234,7 +234,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
     this.mappingErrors.clear();
     this.entryPersister.reset();
     const entryMapper = new EntryMapper(this.columnMappings, this.selectedLocale);
-    const dataHandler: DataHandler = this.createDataHandler(entryMapper);
+    const dataHandler = this.createDataHandler(entryMapper);
     console.log('start loading file ' + this.file.name + ' of type ' + this.file.type);
     const url = URL.createObjectURL(this.file);
     setTimeout(() => this.selectedReader.readData(url, SceneComponent.BATCH_SIZE, dataHandler), 500); // let UI update itself

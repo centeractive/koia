@@ -16,7 +16,7 @@ import { DatePipe, Location } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { SceneFactory } from 'app/shared/test';
+import { SceneFactory, TestUtils } from 'app/shared/test';
 
 describe('SceneComponent', () => {
 
@@ -29,6 +29,7 @@ describe('SceneComponent', () => {
   let tableData: string[][];
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
+  let writeEntriesSpy: jasmine.Spy;
 
   beforeAll(() => {
     scenes = [SceneFactory.createScene('1', []), SceneFactory.createScene('2', []), SceneFactory.createScene('3', [])];
@@ -72,7 +73,7 @@ describe('SceneComponent', () => {
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
-    spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
+    writeEntriesSpy = spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
     fixture.detectChanges();
     flush();
     fixture.detectChanges();
@@ -243,6 +244,21 @@ describe('SceneComponent', () => {
     flush();
     expect(component.columnMappings.length).toBe(1);
     expect(component.columnMappings[0].source.name).toBe('Column 1');
+  }));
+
+  it('#click on "Load Data" should notify error when scene cannot be persisted', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    spyOn(dbService, 'persistScene').and.returnValue(Promise.reject());
+    const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
+
+    // when
+    loadDataButton.click();
+
+    // then
+    flush();
+    expect(notificationService.onError).toHaveBeenCalled();
   }));
 
   it('#click on "Load Data" should persist scene and import data', fakeAsync(() => {

@@ -30,6 +30,9 @@ module.exports = function (config) {
       'node_modules/jquery-ui-dist/jquery-ui.min.js',
       'node_modules/pivottable/dist/pivot.min.js'
     ],
+    proxies: {
+      '/assets/': '/assets/'
+    },
     preprocessors: {
 
     },

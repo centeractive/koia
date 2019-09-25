@@ -34,13 +34,11 @@
 
         <mat-card-actions>
           <div style="width: 100%; display: flex; justify-content: center;">
-            <button mat-stroked-button [color]="selectedDataStorage === indexedDB ? 'active' : 'inactive'"
-              (click)="onDataStorageChanged(indexedDB)">
+            <button mat-stroked-button [color]="colorOf(indexedDB)" (click)="onDataStorageChanged(indexedDB)">
               {{ indexedDB }}
             </button>
             &nbsp;&nbsp;&nbsp;
-            <button mat-stroked-button [color]="selectedDataStorage === couchDB ? 'active' : 'inactive'"
-              (click)="onDataStorageChanged(couchDB)">
+            <button mat-stroked-button [color]="colorOf(couchDB)" (click)="onDataStorageChanged(couchDB)">
               {{ couchDB }}
             </button>
             <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
@@ -95,8 +93,8 @@
     </div>
 
     <div id="div_start">
-      <button mat-button mat-icon-button matTooltip="Start" [routerLink]="[urlScenes]">
-        <mat-icon id="start_button" color="accent">play_circle_outline</mat-icon>
+      <button mat-button mat-icon-button matTooltip="Start" [disabled]="!ready" [routerLink]="[urlScenes]">
+        <mat-icon id="start_button" [color]="ready ? 'accent' : ''">play_circle_outline</mat-icon>
       </button>
     </div>
 
@@ -304,7 +302,7 @@
               <mat-card-subtitle>This is what Koia in action may look like</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-              <div id="div_screenshots">                
+              <div id="div_screenshots">
                 <div class="carousel" *ngIf="showScreenshots">
                   <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
                 </div>

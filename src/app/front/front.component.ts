@@ -95,7 +95,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
       if (this.selectedDataStorage === this.couchDB) {
         this.showCouchDBConnectionDialog();
       } else {
-        this.dbService.useBrowserStorage()
+        this.dbService.useIndexedDb()
           .then(r => {
             this.init();
             this.notifySuccess('Successfully switched to ' + this.indexedDB);
@@ -113,11 +113,10 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   private onCouchDBConnectionDialogClosed(data: ConnectionDialogData): void {
     if (data.closedWithOK) {
-      if (this.dbService.usesBrowserStorage() || !CommonUtils.compare(data.connectionInfo, this.couchDBService.getConnectionInfo())) {
-        this.ready = false;
+      if (this.dbService.isIndexedDbInUse() || !CommonUtils.compare(data.connectionInfo, this.couchDBService.getConnectionInfo())) {
         this.initCouchDBConnection(data.connectionInfo);
       }
-    } else if (this.dbService.usesBrowserStorage()) {
+    } else if (this.dbService.isIndexedDbInUse()) {
       this.init();
     }
   }
@@ -133,22 +132,34 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private couchDBConnectionSucceeded(msg: string): void {
+    this.ready = true;
     this.notifySuccess(msg);
     this.init();
   }
 
   private couchDBConnectionFailed(error: string | Object): void {
+    this.ready = false;
     this.notifyError(error);
   }
 
   private init(): void {
-    this.selectedDataStorage = this.dbService.usesBrowserStorage() ? this.indexedDB : this.couchDB;
+    this.selectedDataStorage = this.dbService.isIndexedDbInUse() ? this.indexedDB : this.couchDB;
     this.dbService.findSceneInfos()
       .then(sceneInfos => {
         this.scenesCount = sceneInfos.length;
         this.ready = true;
       })
       .catch(err => this.notifyError(err));
+  }
+
+  colorOf(dataStorage: string): string {
+    if (dataStorage === this.couchDB) {
+      if (this.selectedDataStorage === this.couchDB) {
+        return this.ready ? 'active' : 'corrupt';
+      }
+      return 'inactive';
+    }
+    return this.selectedDataStorage === this.indexedDB ? 'active' : 'inactive';
   }
 
   prevScreenshot() {

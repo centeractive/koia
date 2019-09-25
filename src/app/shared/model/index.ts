@@ -27,4 +27,5 @@ export * from './status.type';
 export * from './aggregation.enum';
 export * from './export-format.enum';
 export * from './connection-info.type';
+export * from './http-method.enum';
 export * from './protocol.enum';

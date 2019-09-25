@@ -32,7 +32,7 @@ const dialogService = new DialogService(null);
 const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'test', password: 'secret' };
 const notificationService = new NotificationServiceMock();
 let dbService: DBService;
-let usesBrowserStroageSpy: jasmine.Spy;
+let isIndexedDbInUseSpy: jasmine.Spy;
 let initBackendSpy: jasmine.Spy;
 
 describe('FrontComponent', () => {
@@ -69,7 +69,7 @@ describe('FrontComponent', () => {
     component = fixture.componentInstance;
     component.showScreenshots = false;
     initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
-    usesBrowserStroageSpy = spyOn(dbService, 'usesBrowserStorage').and.returnValue(true);
+    isIndexedDbInUseSpy = spyOn(dbService, 'isIndexedDbInUse').and.returnValue(true);
     const sceneInfos = createSceneInfos(5);
     spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
     fixture.detectChanges();
@@ -78,32 +78,48 @@ describe('FrontComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    jasmine.createSpy('');
   });
 
   it('should pre-select IndexedDB', () => {
     expect(component.selectedDataStorage).toBe(component.indexedDB);
+    expect(component.ready).toBeTruthy();
   });
+
+  it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
+
+    // given
+    initBackendSpy.and.returnValue(Promise.reject());
+    spyOn(notificationService, 'onError');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalled();
+  }));
 
   it('#onDataStorageChanged should be ignored when storage did not change', fakeAsync(() => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    spyOn(dbService, 'useBrowserStorage').and.returnValue(Promise.resolve());
+    spyOn(dbService, 'useIndexedDb').and.returnValue(Promise.resolve());
 
     // when
     component.onDataStorageChanged(component.indexedDB);
     flush();
 
     // then
-    expect(dbService.useBrowserStorage).not.toHaveBeenCalled();
+    expect(dbService.useIndexedDb).not.toHaveBeenCalled();
+    expect(component.selectedDataStorage).toBe(component.indexedDB);
+    expect(component.ready).toBeTruthy();
   }));
 
   it('#onDataStorageChanged should switch to IndexedDB', fakeAsync(() => {
 
     // given
     component.selectedDataStorage = component.couchDB;
-    spyOn(dbService, 'useBrowserStorage').and.returnValue(Promise.resolve());
+    spyOn(dbService, 'useIndexedDb').and.returnValue(Promise.resolve());
     spyOn(notificationService, 'onSuccess');
 
     // when
@@ -111,6 +127,8 @@ describe('FrontComponent', () => {
     flush();
 
     // then
+    expect(dbService.useIndexedDb).toHaveBeenCalled();
+    expect(component.selectedDataStorage).toBe(component.indexedDB);
     expect(notificationService.onSuccess).toHaveBeenCalled();
   }));
 
@@ -167,7 +185,7 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    usesBrowserStroageSpy.and.returnValue(false);
+    isIndexedDbInUseSpy.and.returnValue(false);
     spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
@@ -242,6 +260,66 @@ describe('FrontComponent', () => {
     expect(notificationService.onError).toHaveBeenCalled();
   }));
 
+  it('#showCouchDBConnectionDialog should not init connection when connection was not not changed', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    isIndexedDbInUseSpy.and.returnValue(false);
+    const dialogRef = createConnectionDialogRef();
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.closedWithOK = true;
+      return dialogRef;
+    });
+    spyOn(couchDBService, 'initConnection');
+
+    // when
+    component.showCouchDBConnectionDialog();
+    flush();
+
+    // then
+    expect(couchDBService.initConnection).not.toHaveBeenCalled();
+  }));
+
+  it('#showCouchDBConnectionDialog should not switch to IndexedDB when couchDB was selected and dialog is canceled', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    isIndexedDbInUseSpy.and.returnValue(false);
+    const dialogRef = createConnectionDialogRef();
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.closedWithOK = false;
+      return dialogRef;
+    });
+    spyOn(couchDBService, 'initConnection');
+
+    // when
+    component.showCouchDBConnectionDialog();
+    flush();
+
+    // then
+    expect(component.selectedDataStorage).toBe(component.couchDB);
+  }));
+
+  it('#colorOf couchDB', () => {
+    component.ready = true;
+    component.selectedDataStorage = component.couchDB;
+    expect(component.colorOf(component.couchDB)).toBe('active');
+
+    component.ready = false;
+    expect(component.colorOf(component.couchDB)).toBe('corrupt');
+
+    component.selectedDataStorage = component.indexedDB;
+    expect(component.colorOf(component.couchDB)).toBe('inactive');
+  });
+
+  it('#colorOf indexedDB', () => {
+    component.selectedDataStorage = component.indexedDB;
+    expect(component.colorOf(component.indexedDB)).toBe('active');
+
+    component.selectedDataStorage = component.couchDB;
+    expect(component.colorOf(component.indexedDB)).toBe('inactive');
+  });
+
   function createSceneInfos(count: number): SceneInfo[] {
     const sceneInfos: SceneInfo[] = [];
     const now = new Date().getTime();
@@ -296,7 +374,7 @@ describe('FrontComponent (external invocation)', () => {
     component.showScreenshots = false;
     router = TestBed.get(Router);
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection established'));
-    spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
+    initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
     spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve({}));
     spyOn(router, 'navigateByUrl');
     fixture.detectChanges();
@@ -314,6 +392,20 @@ describe('FrontComponent (external invocation)', () => {
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
   });
+
+  it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
+
+    // given
+    initBackendSpy.and.returnValue(Promise.reject());
+    spyOn(notificationService, 'onError');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalled();
+  }));
 
   function createQueryParams(): QueryParams {
     const queryParams = new QueryParams();

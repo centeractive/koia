@@ -50,12 +50,12 @@ export class DBService {
         })
         .catch(err => {
           console.log('CouchDB cannot be accessed, browser storage is used instead', err);
-          return this.useBrowserStorage();
+          return this.useIndexedDb();
         });
     }
   }
 
-  useBrowserStorage(): Promise<any> {
+  useIndexedDb(): Promise<any> {
     this.db = new PouchDBAccess();
     this.queryConverter = new QueryConverter(true);
     return this.createScenesDB();
@@ -71,7 +71,7 @@ export class DBService {
    * @returns the name of a database that does not exist yet
    */
   async findFreeDatabaseName(): Promise<string> {
-    if (this.usesBrowserStorage()) {
+    if (this.isIndexedDbInUse()) {
       return this.findSceneInfos()
         .then(infos => this.findFreeDBName(infos.map(i => i.database)));
     } else {
@@ -80,7 +80,7 @@ export class DBService {
     }
   }
 
-  usesBrowserStorage(): boolean {
+  isIndexedDbInUse(): boolean {
     return this.db !== this.couchDBService;
   }
 

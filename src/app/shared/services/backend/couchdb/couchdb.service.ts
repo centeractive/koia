@@ -7,7 +7,7 @@ import { DB } from '../db.type';
 import { ConnectionInfo } from '../../../model/connection-info.type';
 import { CommonUtils } from 'app/shared/utils';
 import { CouchDBConfig } from './couchdb-config';
-import { Scene, Document } from 'app/shared/model';
+import { Scene, Document, HTTPMethod } from 'app/shared/model';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
@@ -154,11 +154,4 @@ export class CouchDBService implements DB {
     console.log(method + ' ' + url);
     return url;
   }
-}
-
-enum HTTPMethod {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  DELETE = 'DELETE'
 }

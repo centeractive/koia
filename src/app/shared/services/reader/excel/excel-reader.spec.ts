@@ -133,6 +133,24 @@ describe('ExcelReader', () => {
       request.send(null);
    });
 
+   it('#readData should return error when worksheet does not exist', (done) => {
+
+      // given
+      const request: XMLHttpRequest = createRequest();
+      const url = URL.createObjectURL(new Blob([request.response]));
+      reader.furnishAttributes('')[0].value = 'XYZ Sheet';
+
+      dataHandler.onError = err => {
+
+         // then
+         expect(err).toBe('Worksheet "XYZ Sheet" does not exist');
+         done();
+      };
+
+      // when
+      reader.readData(url, 100, dataHandler);
+   });
+
    it('#readData should return error when data is invalid', (done) => {
 
       // given

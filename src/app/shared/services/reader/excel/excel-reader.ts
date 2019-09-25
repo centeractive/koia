@@ -47,14 +47,18 @@ export class ExcelReader implements DataReader {
          .catch(err => dataHandler.onError(err));
    }
 
-   readEntries(url: string, rowCount: number): Promise<Object[]> {
+   private readEntries(url: string, rowCount: number): Promise<Object[]> {
       return new Promise<Object[]>((resolve, reject) => {
          fetch(url)
             .then(r => r.blob())
             .then(b => this.read(b))
             .then(data => {
                const workbook = XLSX.read(data, { type: 'binary', sheetRows: rowCount, cellDates: true, cellText: false });
-               const sheet = workbook.Sheets[this.identifySheetName(workbook)];
+               const sheetName = this.identifySheetName(workbook);
+               const sheet = workbook.Sheets[sheetName];
+               if (!sheet) {
+                  reject('Worksheet "' + sheetName + '" does not exist');
+               }
                const entries = XLSX.utils.sheet_to_json(sheet);
                resolve(ArrayUtils.convertAllDateToTime(entries));
             });
