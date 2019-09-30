@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+   <url>
+
+      <loc>https://www.koia.io/</loc>
+
+   </url>
+   <url>
+
+      <loc>https://www.koia.io/front</loc>
+
+   </url>
+   <url>
+
+      <loc>https://www.koia.io/scenes</loc>
+
+   </url>
+   <url>
+
+      <loc>https://www.koia.io/rawdata</loc>
+
+   </url>
+   <url>
+
+      <loc>https://www.koia.io/pivot</loc>
+
+   </url>
+   <url>
+
+      <loc>https://www.koia.io/grid</loc>
+
+   </url>
+   <url>
+
+      <loc>https://www.koia.io/flex</loc>
+
+   </url>
+
+</urlset> 
