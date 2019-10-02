@@ -66,7 +66,8 @@
 
         <mat-form-field class="column_filter_value" *ngIf="!columnFilter.operator.endsWith('empty')">
           <input matInput type="text" placeholder="Filter Value"
-            [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)" [(ngModel)]="columnFilter.value"
+            [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)" [value]="columnFilter.value"
+            (input)="onColumnFilterValueChanged(columnFilter, $event.target.value)"
             (keyup)="onFilterFieldKeyUp($event)">
           <button mat-button color="primary" *ngIf="columnFilter.value" matSuffix mat-icon-button
             aria-label="Clear" (click)="resetColumnFilter(columnFilter)">

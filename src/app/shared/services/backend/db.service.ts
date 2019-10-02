@@ -100,7 +100,7 @@ export class DBService {
 
   async findSceneInfos(): Promise<SceneInfo[]> {
     const query = new MangoQueryBuilder(false, undefined)
-      .where('creationTime', Operator.NOT_EMPTY, null, DataType.TIME) // PouchDB expects sorted field to part of the selector
+      .where('creationTime', Operator.NOT_EMPTY, null, DataType.TIME) // PouchDB expects sorted field to be part of the selector
       .sortBy({ active: 'creationTime', direction: 'desc' })
       .includeFields([CouchDBConstants._ID, CouchDBConstants._REV, 'creationTime', 'name', 'shortDescription', 'database'])
       .toQuery();

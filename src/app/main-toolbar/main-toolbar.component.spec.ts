@@ -496,6 +496,32 @@ describe('MainToolbarComponent', () => {
     expect(columnFilter.operator).toBe(Operator.EQUAL);
   });
 
+  it('#onColumnFilterValueChanged should change text value', () => {
+
+    // given
+    const columnFilter = new PropertyFilter('Level', Operator.CONTAINS, 'WARN', DataType.TEXT);
+    component.columnFilters = [columnFilter];
+
+    // when
+    component.onColumnFilterValueChanged(columnFilter, 'ERR');
+
+    // then
+    expect(columnFilter.value).toBe('ERR');
+  });
+
+  it('#onColumnFilterValueChanged should change number value', () => {
+
+    // given
+    const columnFilter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
+    component.columnFilters = [columnFilter];
+
+    // when
+    component.onColumnFilterValueChanged(columnFilter, '1,200,300.55');
+
+    // then
+    expect(columnFilter.value).toBe(1_200_300.55);
+  });
+
   it('#removeColumnFilter should emit onFilterChange when removed filter was effective', () => {
 
     // given

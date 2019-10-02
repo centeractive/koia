@@ -6,12 +6,12 @@ import { DBService } from './db.service';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
 import { SceneFactory } from 'app/shared/test';
-import { PouchDBAccess } from './pouchdb';
+import PouchFind from 'pouchdb-find';
+import PouchDB from 'pouchdb';
 
 describe('DBService', () => {
 
   const testDBPrefix = 'test_';
-  const now = new Date().getTime();
   let columns: Column[];
   let entries: Object[];
   let couchDBService: CouchDBService;
@@ -151,7 +151,7 @@ describe('DBService', () => {
 
     // given
     await dbService.useIndexedDb();
-    await new PouchDBAccess().clear();
+    await dbService.findSceneInfos().then(r => r.forEach(si => dbService.deleteScene(si)));
     const scene = SceneFactory.createScene('1', columns);
     await dbService.persistScene(scene, true).then(r => null).catch(e => fail(e));
 

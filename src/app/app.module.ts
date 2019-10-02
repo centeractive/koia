@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule, FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -13,7 +13,8 @@ import {
   MatButtonModule, MatCheckboxModule, MatRadioModule, MatExpansionModule, MatCardModule,
   MatSelectModule, MatMenuModule, MatIconModule, MatProgressBarModule, MatInputModule,
   MatSidenavModule, MatBadgeModule, MatTableModule, MatSortModule, MatPaginatorModule,
-  MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule, MatDialog, MatDialogModule, MatStepperModule
+  MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule, MatDialog,
+  MatDialogModule, MatStepperModule
 } from '@angular/material';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -25,7 +26,6 @@ import { NvD3Module } from 'ng2-nvd3';
 import 'd3';
 import 'nvd3';
 import { Ng5SliderModule } from 'ng5-slider';
-
 import {
   NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService,
   RawDataRevealService

@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene } from '../shared/model';
-import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
+import { ArrayUtils, DataTypeUtils, NumberUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { TimeRangeFilter } from './filter/time-range-filter';
 import { NumberRangeFilter } from './filter/number-range-filter';
@@ -156,15 +156,24 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  removeColumnFilter(columnFilter: PropertyFilter): void {
-    this.columnFilters = this.columnFilters.filter(cf => cf !== columnFilter);
-    if (columnFilter.isApplicable()) {
-      this.refreshEntries();
+  onColumnFilterValueChanged(filter: PropertyFilter, value: string): void {
+    if (filter.dataType === DataType.NUMBER) {
+      const num = NumberUtils.parseNumber(value);
+      filter.value = num === undefined ? value : num;
+    } else {
+      filter.value = value;
     }
   }
 
   onFilterFieldKeyUp(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
+      this.refreshEntries();
+    }
+  }
+
+  removeColumnFilter(columnFilter: PropertyFilter): void {
+    this.columnFilters = this.columnFilters.filter(cf => cf !== columnFilter);
+    if (columnFilter.isApplicable()) {
       this.refreshEntries();
     }
   }
