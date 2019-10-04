@@ -36,8 +36,8 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
     fade: true,
     speed: 1000
   };
-  private readonly screenshots = ['scene', 'scenes', 'raw-data', 'raw-data-filtered', 'chart-sidebar', 'chart-sidebar2',
-    'grid-view', 'flex-view', 'raw-data-details', 'pivot-table', 'grouping'];
+  private readonly screenshots = ['chart_details', 'chart_options', 'columns', 'grid_view', 'pivot_filters', 'rawdata_withfilters',
+    'scenes_detail'];
 
   stepsVisible = true;
   stepVisibleControl: FormGroup;
