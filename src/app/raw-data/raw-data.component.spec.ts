@@ -6,7 +6,7 @@ import {
   MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet
 } from '@angular/material';
 import { RawDataComponent } from './raw-data.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Column, Query, DataType, Scene, Route } from 'app/shared/model';
@@ -15,8 +15,7 @@ import { DBService } from 'app/shared/services/backend';
 import { JSQueryFactory } from 'app/shared/services/backend/jsonserver';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NotificationService } from 'app/shared/services';
-import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { QueryParams, CouchDBServiceMock, SceneFactory } from 'app/shared/test';
+import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 
 describe('RawDataComponent', () => {

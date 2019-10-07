@@ -4,7 +4,7 @@ import { ValueRange } from '../value-range/model/value-range.type';
 
 export class ArrayUtils {
 
-  static readonly DEFAULT_SEPARATOR = ',';
+  static readonly DEFAULT_SEPARATOR = ';';
 
   private static readonly UNDEFINED_VALUE_RANGE = { min: undefined, max: undefined };
 

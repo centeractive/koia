@@ -1,6 +1,11 @@
 import { PropertyFilter, Operator, DataType } from 'app/shared/model';
+import { NumberFormatter } from 'app/shared/format';
+import { values } from 'd3';
+import { NumberUtils } from 'app/shared/utils';
 
 export class PropertyFilterCustomizer {
+
+      private numberFormatter = new NumberFormatter();
 
       tooltipOf(filter: PropertyFilter): string {
             const prefix = 'Filters all items where \'' + filter.name + '\' ';
@@ -24,12 +29,23 @@ export class PropertyFilterCustomizer {
                   case Operator.NOT_EMPTY:
                         return prefix + 'is not empty';
                   case Operator.ANY_OF:
-                        return prefix + 'is equal to any of the filter values, separated by a comma each' + this.caseSensitiveText(filter);
+                        return prefix + 'is equal to any of the filter values, separated by a semicolon \';\' each' +
+                              this.caseSensitiveText(filter);
                   case Operator.NONE_OF:
-                        return prefix + 'is equal to none of the filter values, separated by a comma each' +
+                        return prefix + 'is equal to none of the filter values, separated by a semicolon \';\' each' +
                               this.caseSensitiveText(filter);
                   default:
                         return undefined;
+            }
+      }
+
+      formattedValueOf(filter: PropertyFilter): string {
+            if (filter.value === null || filter.value === undefined) {
+                  return '';
+            } else if (filter.dataType === DataType.NUMBER && NumberUtils.isNumber(filter.value)) {
+                  return this.numberFormatter.format(<number>filter.value);
+            } else {
+                  return filter.value.toString();
             }
       }
 

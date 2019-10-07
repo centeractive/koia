@@ -168,7 +168,7 @@ describe('QueryEnhancer', () => {
 
       // then
       const query = queryEnhancer.getQuery();
-      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG,INFO', DataType.TEXT)]);
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG;INFO', DataType.TEXT)]);
       expect(query.getValueRangeFilters()).toEqual([]);
    });
 

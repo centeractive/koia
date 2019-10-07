@@ -27,7 +27,7 @@ describe('PropertyFilterCustomizer', () => {
 
       // then
       expect(tooltip).toBe('Filters all items where \'x\' is equal to any of the filter values, ' +
-         'separated by a comma each (case-sensitive)');
+         'separated by a semicolon \';\' each (case-sensitive)');
    });
 
    it('#tooltipOf should return ANY_OF tooltip without case-sensitive hint', () => {
@@ -39,7 +39,7 @@ describe('PropertyFilterCustomizer', () => {
       const tooltip = customizer.tooltipOf(filter);
 
       // then
-      expect(tooltip).toBe('Filters all items where \'x\' is equal to any of the filter values, separated by a comma each');
+      expect(tooltip).toBe('Filters all items where \'x\' is equal to any of the filter values, separated by a semicolon \';\' each');
    });
 
    it('#tooltipOf should return NONE_OF tooltip with case-sensitive hint', () => {
@@ -52,7 +52,7 @@ describe('PropertyFilterCustomizer', () => {
 
       // then
       expect(tooltip).toBe('Filters all items where \'x\' is equal to none of the filter values, ' +
-         'separated by a comma each (case-sensitive)');
+         'separated by a semicolon \';\' each (case-sensitive)');
    });
 
    it('#tooltipOf should return NONE_OF tooltip without case-sensitive hint', () => {
@@ -64,7 +64,7 @@ describe('PropertyFilterCustomizer', () => {
       const tooltip = customizer.tooltipOf(filter);
 
       // then
-      expect(tooltip).toBe('Filters all items where \'x\' is equal to none of the filter values, separated by a comma each');
+      expect(tooltip).toBe('Filters all items where \'x\' is equal to none of the filter values, separated by a semicolon \';\' each');
    });
 
    it('#tooltipOf should return a distinct tooltip for each operator', () => {
@@ -86,5 +86,89 @@ describe('PropertyFilterCustomizer', () => {
          expect(customizer.tooltipOf(filter)).toBeDefined();
          tooltips.push(tooltip);
       }
+   });
+
+   it('#formattedValueOf should return empty string when value is null', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, null, DataType.TEXT);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('');
+   });
+
+   it('#formattedValueOf should return empty string when value is undefined', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, undefined, DataType.TEXT);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('');
+   });
+
+   it('#formattedValueOf should return value as string when value is number', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, 123.55, DataType.NUMBER);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('123.55');
+   });
+
+   it('#formattedValueOf should return unchanged value when data type is number but value is string', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, 'one', DataType.NUMBER);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('one');
+   });
+
+   it('#formattedValueOf should return value as string with thousands separators when value is big number', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, 1234567.89, DataType.NUMBER);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('1,234,567.89');
+   });
+
+   it('#formattedValueOf should return unchanged value if value is text', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, 'abc', DataType.TEXT);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('abc');
+   });
+
+   it('#formattedValueOf should return unchanged value when data type is boolean', () => {
+
+      // given
+      const filter = new PropertyFilter('x', Operator.EQUAL, 'true', DataType.BOOLEAN);
+
+      // when
+      const formattedValue = customizer.formattedValueOf(filter);
+
+      // then
+      expect(formattedValue).toBe('true');
    });
 });

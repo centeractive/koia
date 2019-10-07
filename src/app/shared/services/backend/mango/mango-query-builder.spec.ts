@@ -168,7 +168,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('Level', Operator.ANY_OF, 'DEBUG, INFO, WARN', DataType.TEXT)
+         .where('Level', Operator.ANY_OF, 'DEBUG; INFO; WARN', DataType.TEXT)
          .toQuery();
 
       // then
@@ -185,7 +185,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('Amount', Operator.ANY_OF, '1, 2, 3', DataType.NUMBER)
+         .where('Amount', Operator.ANY_OF, '1; 2; 3', DataType.NUMBER)
          .toQuery();
 
       // then
@@ -206,7 +206,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('Time', Operator.ANY_OF, a_minute_ago + ', ' + now, DataType.TIME)
+         .where('Time', Operator.ANY_OF, a_minute_ago + '; ' + now, DataType.TIME)
          .toQuery();
 
       // then
@@ -223,7 +223,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.ANY_OF, 'yes, no, yes', DataType.BOOLEAN)
+         .where('a', Operator.ANY_OF, 'yes; no; yes', DataType.BOOLEAN)
          .toQuery();
 
       // then
@@ -240,7 +240,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.NONE_OF, 'a, b, c', DataType.TEXT)
+         .where('a', Operator.NONE_OF, 'a; b; c', DataType.TEXT)
          .toQuery();
 
       // then
@@ -257,7 +257,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.NONE_OF, '1, 2, 3', DataType.NUMBER)
+         .where('a', Operator.NONE_OF, '1; 2; 3', DataType.NUMBER)
          .toQuery();
 
       // then
@@ -278,7 +278,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.NONE_OF, a_minute_ago + ', ' + now, DataType.TIME)
+         .where('a', Operator.NONE_OF, a_minute_ago + '; ' + now, DataType.TIME)
          .toQuery();
 
       // then
@@ -295,7 +295,7 @@ describe('MangoQueryBuilder', () => {
 
       // when
       const query = new MangoQueryBuilder(false, columns)
-         .where('a', Operator.NONE_OF, 'yes, no, yes', DataType.BOOLEAN)
+         .where('a', Operator.NONE_OF, 'yes; no; yes', DataType.BOOLEAN)
          .toQuery();
 
       // then

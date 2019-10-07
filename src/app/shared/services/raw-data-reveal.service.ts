@@ -31,13 +31,6 @@ export class RawDataRevealService {
   }
 
   /**
-   * displays raw data of one or many entries, each identified by its ID
-   */
-  ofIDs(ids: string[]): void {
-    this.show(new Query(new PropertyFilter(CouchDBConstants._ID, Operator.ANY_OF, ids.join(ArrayUtils.DEFAULT_SEPARATOR), DataType.TEXT)));
-  }
-
-  /**
    * displays raw data that is potentially grouped by one or multiple time columns
    *
    * @param baseQuery base query

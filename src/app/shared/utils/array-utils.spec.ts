@@ -19,9 +19,12 @@ describe('ArrayUtils', () => {
     expect(ArrayUtils.toStringArray('1', '|')).toEqual(['1']);
   });
 
-  it('#toStringArray should return array when string contain multiple values', () => {
-    expect(ArrayUtils.toStringArray(' a,b  ,c')).toEqual(['a', 'b', 'c']);
-    expect(ArrayUtils.toStringArray('1 , 2 , 3')).toEqual(['1', '2', '3']);
+  it('#toStringArray should return array when string contain multiple values separated by default separator', () => {
+    expect(ArrayUtils.toStringArray(' a;b  ;c')).toEqual(['a', 'b', 'c']);
+    expect(ArrayUtils.toStringArray('1 ; 2 ; 3')).toEqual(['1', '2', '3']);
+  });
+
+  it('#toStringArray should return array when string contain multiple values separated by specific separator', () => {
     expect(ArrayUtils.toStringArray('a|b  |c', '|')).toEqual(['a', 'b', 'c']);
     expect(ArrayUtils.toStringArray('1 | 2 | 3', '|')).toEqual(['1', '2', '3']);
   });
@@ -48,13 +51,20 @@ describe('ArrayUtils', () => {
     expect(ArrayUtils.toNumberArray('1', '|')).toEqual([1]);
   });
 
-  it('#toNumberArray should return array when string contain multiple values', () => {
-    expect(ArrayUtils.toNumberArray('-1,  0, 1')).toEqual([-1, 0, 1]);
+  it('#toNumberArray should return array when string contain multiple values separated by default separator', () => {
+    expect(ArrayUtils.toNumberArray('-1;  0; 1')).toEqual([-1, 0, 1]);
+  });
+
+  it('#toNumberArray should return array when string contain multiple values separated by specific separator', () => {
     expect(ArrayUtils.toNumberArray(' -1|  0| 1', '|')).toEqual([-1, 0, 1]);
   });
 
-  it('#toNumberArray should return array when string contain multiple values', () => {
-    expect(() => ArrayUtils.toNumberArray('1,x')).toThrowError('\'x\' is not a number');
+  it('#toNumberArray should return array when string contain multiple values separated by default separator', () => {
+    expect(() => ArrayUtils.toNumberArray('1;x')).toThrowError('\'x\' is not a number');
+  });
+
+  it('#toNumberArray should return array when string contain multiple values separated by specific separator', () => {
+    expect(() => ArrayUtils.toNumberArray('1*x', '*')).toThrowError('\'x\' is not a number');
   });
 
   it('#toBooleanArray should return empty array when string is missing', () => {
@@ -83,8 +93,11 @@ describe('ArrayUtils', () => {
     expect(ArrayUtils.toBooleanArray('ok', '|')).toEqual([true]);
   });
 
-  it('#toBooleanArray should return array when string contain multiple values', () => {
-    expect(ArrayUtils.toBooleanArray('yes,  NO, 1, TRUE ')).toEqual([true, false, true, true]);
+  it('#toBooleanArray should return array when string contain multiple values separated by default separator', () => {
+    expect(ArrayUtils.toBooleanArray('yes;  NO; 1; TRUE ')).toEqual([true, false, true, true]);
+  });
+
+  it('#toBooleanArray should return array when string contain multiple values separated by specific separator', () => {
     expect(ArrayUtils.toBooleanArray('  YES|  0 |1| true', '|')).toEqual([true, false, true, true]);
   });
 

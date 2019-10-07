@@ -47,16 +47,6 @@ describe('RawDataRevealService', () => {
     expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, { data: expectedQuery, panelClass: 'dialog-container' });
   });
 
-  it('#ofIDs should show raw data dialog for IDs', () => {
-
-    // when
-    service.ofIDs(['2', '8', '11']);
-
-    // then
-    const expectedQuery = new Query(new PropertyFilter(CouchDBConstants._ID, Operator.ANY_OF, '2,8,11', DataType.TEXT));
-    expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, { data: expectedQuery, panelClass: 'dialog-container' });
-  });
-
   it('#ofID should navigate to raw data view with ID', () => {
 
     // given
@@ -67,18 +57,6 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id=100');
-  });
-
-  it('#ofIDs should navigate to raw data view with IDs', () => {
-
-    // given
-    service.setUseDialog(false);
-
-    // when
-    service.ofIDs(['2', '8', '11']);
-
-    // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?_id_like=2,8,11');
   });
 
   it('#ofTimeUnit should navigate to raw data view for time period of entire timeunit', () => {

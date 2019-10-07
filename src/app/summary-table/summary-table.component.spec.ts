@@ -64,7 +64,7 @@ describe('SummaryTableComponent', () => {
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
         { provide: RawDataRevealService, useValue: rawDataRevealService }
       ]
-    })
+    });
     fixture = TestBed.createComponent(SummaryTableComponent);
     component = fixture.componentInstance;
     context = new SummaryContext(columns);
