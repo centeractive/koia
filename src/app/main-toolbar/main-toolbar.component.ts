@@ -10,6 +10,7 @@ import { NumberRangeFilter } from './filter/number-range-filter';
 import { PropertyFilterCustomizer } from './filter/property-filter-customizer';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { ChangeContext } from 'ng5-slider';
+import { DialogService } from 'app/shared/services';
 
 @Component({
   selector: 'koia-main-toolbar',
@@ -45,7 +46,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   private justNavigatedToParentView: boolean;
 
-  constructor(public router: Router, private dbService: DBService) {
+  constructor(public router: Router, private dbService: DBService, private dialogService: DialogService) {
     this.operators = Object.keys(Operator).map(key => Operator[key]);
   }
 
@@ -96,6 +97,10 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
         this.addRangeFilter(column, f.valueRange, f.inverted);
       })
     }
+  }
+
+  showSceneDetails(sceneID: string): void {
+    this.dialogService.showSceneDetailsDialog(this.scene);
   }
 
   availableOperatorsOf(columnName: string): Operator[] {

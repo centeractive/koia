@@ -19,6 +19,7 @@ import { TimeRangeFilter } from './filter/time-range-filter';
 import { MatIconModuleMock } from 'app/shared/test';
 import { NumberRangeFilter } from './filter/number-range-filter';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { DialogService } from 'app/shared/services';
 
 @Component({ template: '' })
 class DummyComponent { }
@@ -32,6 +33,7 @@ describe('MainToolbarComponent', () => {
   let component: MainToolbarComponent;
   let fixture: ComponentFixture<MainToolbarComponent>;
   const dbService = new DBService(null);
+  const dialogService = new DialogService(null);
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -75,6 +77,7 @@ describe('MainToolbarComponent', () => {
       ],
       providers: [
         { provide: DBService, useValue: dbService },
+        { provide: DialogService, useValue: dialogService },
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })
@@ -167,6 +170,20 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters[0].defineSliderOptions).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#click on "Show Scene Details" button should show scene details', fakeAsync(() => {
+
+    // given
+    spyOn(dialogService, 'showSceneDetailsDialog');
+    const button: HTMLButtonElement = fixture.debugElement.query(By.css('#butShowSceneDetails')).nativeElement;
+
+    // when
+    button.click();
+    flush();
+
+    // then
+    expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scene);
   }));
 
   it('#availableOperatorsOf should return all operators when column has TEXT data type', () => {

@@ -82,7 +82,11 @@ export class PivotOptionsProvider {
             rowTotals: context.showRowTotals,
             colTotals: context.showColumnTotals
          },
-         c3: {}
+         c3: {
+            data: {
+               onclick: (d, element) => console.log(d, element)
+            }
+         }
       };
    }
 
