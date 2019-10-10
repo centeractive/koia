@@ -1,4 +1,5 @@
-import { ElementContext, ChartContext, GraphContext, SummaryContext, Route } from '../../model';
+import { ElementContext, GraphContext, SummaryContext, Route } from '../../model';
+import { ChartContext } from 'app/shared/model/chart';
 import { ViewElement } from '../../model/view-config/view-element.type';
 import { View } from '../../model/view-config/view.type';
 import { Chart } from './chart.type';
@@ -41,6 +42,7 @@ export class ModelToConfigConverter {
          width: context.width,
          height: context.height,
          dataColumns: context.dataColumns,
+         splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
@@ -62,6 +64,7 @@ export class ModelToConfigConverter {
          width: context.width,
          height: context.height,
          dataColumns: context.dataColumns,
+         splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
@@ -84,6 +87,7 @@ export class ModelToConfigConverter {
          width: context.width,
          height: context.height,
          dataColumns: context.dataColumns,
+         splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,

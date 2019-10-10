@@ -1,5 +1,6 @@
 import { DateTimeUtils, ArrayUtils, ColumnNameConverter } from '../../shared/utils';
-import { ChartContext, ChartType, DataType, Column } from '../../shared/model';
+import { DataType, Column } from '../../shared/model';
+import { ChartContext, ChartType } from '../../shared/model/chart';
 import { RawDataRevealer } from './raw-data-revealer';
 import { RawDataRevealService } from 'app/shared/services';
 import { ForceYComputer } from './force-y-computer';

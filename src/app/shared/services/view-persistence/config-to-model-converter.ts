@@ -1,4 +1,5 @@
-import { ElementContext, ChartContext, GraphContext, SummaryContext, Column } from '../../model';
+import { ElementContext, GraphContext, SummaryContext, Column } from '../../model';
+import { ChartContext } from 'app/shared/model/chart';
 import { ViewElement } from '../../model/view-config/view-element.type';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
@@ -61,6 +62,7 @@ export class ConfigToModelConverter {
    private copy(from: ViewElement, to: ElementContext): void {
       to.title = from.title;
       to.dataColumns = from.dataColumns.map(dc => to.columns.find(c => dc.name === c.name));
+      to.splitColumns = from.splitColumns.map(sc => to.columns.find(c => sc.name === c.name));
       to.groupByColumns =  from.groupByColumns.map(gbc => to.columns.find(c => gbc.name === c.name));
       to.gridColumnSpan = from.gridColumnSpan;
       to.gridRowSpan = from.gridRowSpan;

@@ -6,8 +6,6 @@ import { DBService } from './db.service';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
 import { SceneFactory } from 'app/shared/test';
-import PouchFind from 'pouchdb-find';
-import PouchDB from 'pouchdb';
 
 describe('DBService', () => {
 

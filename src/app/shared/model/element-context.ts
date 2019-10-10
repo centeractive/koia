@@ -21,6 +21,7 @@ export abstract class ElementContext {
 
    private _query: Query;
    private _dataColumns: Column[] = [];
+   private _splitColumns: Column[] = [];
    private _groupByColumns: Column[] = [];
    private _aggregations: Aggregation[] = [];
    private _valueGroupings: ValueGrouping[] = [];
@@ -110,6 +111,16 @@ export abstract class ElementContext {
     */
    hasDataColumn(): boolean {
       return this._dataColumns.length > 0;
+   }
+
+   get splitColumns(): Column[] {
+      return this._splitColumns.slice(0);
+   }
+
+   set splitColumns(splitColumns: Column[]) {
+      this._splitColumns = splitColumns || [];
+      this._groupByColumns = this._groupByColumns.filter(c => !this._splitColumns.includes(c));
+      this.fireStructureChanged();
    }
 
    isInUseAsDataColumn(column: Column): boolean {

@@ -327,27 +327,27 @@ describe('DateTimeUtils', () => {
     expect(date.getMilliseconds()).toBe(444);
   });
 
-  it('#toDate should return undefined when time is undefined', () => {
-    expect(DateTimeUtils.toDate(undefined, TimeUnit.MILLISECOND)).toBeUndefined();
+  it('#toBaseDate should return undefined when time is undefined', () => {
+    expect(DateTimeUtils.toBaseDate(undefined, TimeUnit.MILLISECOND)).toBeUndefined();
   });
 
-  it('#toDate should return undefined when time is not a number', () => {
-    expect(DateTimeUtils.toDate(Number('x'), TimeUnit.MILLISECOND)).toBeUndefined();
+  it('#toBaseDate should return undefined when time is not a number', () => {
+    expect(DateTimeUtils.toBaseDate(Number('x'), TimeUnit.MILLISECOND)).toBeUndefined();
   });
 
-  it('#toDate should return time specific down-rounded date', () => {
+  it('#toBaseDate should return time specific down-rounded date', () => {
     const roundNowDown = f => new Date(Math.floor(now / f) * f);
 
-    expect(DateTimeUtils.toDate(now, TimeUnit.MILLISECOND)).toEqual(new Date(now));
-    expect(DateTimeUtils.toDate(now, TimeUnit.SECOND)).toEqual(roundNowDown(1_000));
-    expect(DateTimeUtils.toDate(now, TimeUnit.MINUTE)).toEqual(roundNowDown(60_000));
-    expect(DateTimeUtils.toDate(now, TimeUnit.HOUR)).toEqual(roundNowDown(3_600_000));
+    expect(DateTimeUtils.toBaseDate(now, TimeUnit.MILLISECOND)).toEqual(new Date(now));
+    expect(DateTimeUtils.toBaseDate(now, TimeUnit.SECOND)).toEqual(roundNowDown(1_000));
+    expect(DateTimeUtils.toBaseDate(now, TimeUnit.MINUTE)).toEqual(roundNowDown(60_000));
+    expect(DateTimeUtils.toBaseDate(now, TimeUnit.HOUR)).toEqual(roundNowDown(3_600_000));
   });
 
-  it('#toDate should return down-rounded day', () => {
+  it('#toBaseDate should return down-rounded day', () => {
 
     // when
-    const d = DateTimeUtils.toDate(now, TimeUnit.DAY)
+    const d = DateTimeUtils.toBaseDate(now, TimeUnit.DAY)
 
     // then
     const today = new Date(now);
@@ -358,10 +358,10 @@ describe('DateTimeUtils', () => {
     expect(d).toEqual(today);
   });
 
-  it('#toDate should return down-rounded month', () => {
+  it('#toBaseDate should return down-rounded month', () => {
 
     // when
-    const month = DateTimeUtils.toDate(now, TimeUnit.MONTH)
+    const month = DateTimeUtils.toBaseDate(now, TimeUnit.MONTH)
 
     // then
     const today = new Date(now);
@@ -373,10 +373,10 @@ describe('DateTimeUtils', () => {
     expect(month).toEqual(today);
   });
 
-  it('#toDate should return down-rounded year', () => {
+  it('#toBaseDate should return down-rounded year', () => {
 
     // when
-    const year = DateTimeUtils.toDate(now, TimeUnit.YEAR)
+    const year = DateTimeUtils.toBaseDate(now, TimeUnit.YEAR)
 
     // then
     const today = new Date(now);

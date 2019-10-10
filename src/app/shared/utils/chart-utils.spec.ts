@@ -1,5 +1,6 @@
-import { DataType, Column, ChartContext, ChartType } from '../model';
+import { DataType, Column } from '../model';
 import { ChartUtils } from './chart-utils';
+import { ChartContext, ChartType } from '../model/chart';
 
 describe('ChartUtils', () => {
 

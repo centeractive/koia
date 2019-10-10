@@ -1,4 +1,5 @@
-import { ChartContext, ChartType, Query, Route, Aggregation, DataType, Column, TimeUnit, PropertyFilter, Operator } from 'app/shared/model';
+import { Query, Route, Aggregation, DataType, Column, TimeUnit, PropertyFilter, Operator } from 'app/shared/model';
+import { ChartType, ChartContext } from 'app/shared/model/chart';
 import { ChartOptionsProvider } from './chart-options-provider';
 import { DatePipe } from '@angular/common';
 import { DateTimeUtils } from 'app/shared/utils';
@@ -361,7 +362,6 @@ describe('ChartOptionsProvider', () => {
       expect(formatXAxisTick('server001')).toEqual('server001');
    });
 
-   
    it('#createOptions horizontal multi bar chart Y-axis label should be "Count" when count distinct values', () => {
 
       // given

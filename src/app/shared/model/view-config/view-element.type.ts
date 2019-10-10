@@ -10,6 +10,7 @@ export interface ViewElement {
    width: number;
    height: number;
    dataColumns: Column[];
+   splitColumns: Column[];
    groupByColumns: Column[];
    aggregations: Aggregation[];
    valueGroupings: ValueGrouping[];

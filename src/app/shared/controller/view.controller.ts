@@ -1,12 +1,9 @@
-import {
-   ElementContext, Column, Query, SummaryContext, ChartContext, GraphContext, ChartType, Route, Scene,
-   DataType, ExportFormat
-} from '../model';
+import { ElementContext, Column, Query, SummaryContext, GraphContext, Route, Scene, DataType, ExportFormat } from '../model';
 import { Observable, Subscription } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
 import { MatSidenav, MatBottomSheet } from '@angular/material';
-import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService, DialogService } from '../services';
+import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../services';
 import { Router } from '@angular/router';
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
@@ -16,6 +13,8 @@ import { ChartComponent } from 'app/chart/chart.component';
 import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
 import { View } from '../model/view-config';
 import { InputDialogData } from '../component/input-dialog/input-dialog.component';
+import { ChartMarginService } from '../services/chart';
+import { ChartContext, ChartType } from '../model/chart';
 
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit {
 

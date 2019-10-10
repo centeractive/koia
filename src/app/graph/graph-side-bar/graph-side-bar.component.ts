@@ -15,9 +15,4 @@ export class GraphSideBarComponent extends SideBarController implements OnChange
     super.ngOnChanges(changes);
     this.defineSelectableItems();
   }
-
-  protected defineSelectableItems() {
-    this.selectedGroupByColumns = this.context.groupByColumns;
-    super.defineSelectableItems();
-  }
 }

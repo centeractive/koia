@@ -119,7 +119,7 @@ export class DateTimeUtils {
   /**
    * @returns a time unit down-rounded date or [[undefined]] when time is missing or not a number
    */
-  static toDate(time: number, timeUnit: TimeUnit): Date {
+  static toBaseDate(time: number, timeUnit: TimeUnit): Date {
     if (time === null || time === undefined || isNaN(time)) {
       return undefined;
     }

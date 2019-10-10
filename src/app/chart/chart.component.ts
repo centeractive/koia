@@ -3,17 +3,19 @@ import {
   ViewChild, Output, EventEmitter
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChangeEvent, ChartContext, ChartType, Route } from '../shared/model';
+import { ChangeEvent, Route } from '../shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartOptionsProvider } from './options/chart-options-provider';
-import { ChartDataService } from '../shared/services/chart-data.service';
+import { ChartDataService } from '../shared/services/chart/chart-data.service';
 import { CommonUtils } from 'app/shared/utils';
 import { ResizeEvent } from 'angular-resizable-element';
 import { Margin } from 'nvd3';
-import { ChartMarginService, RawDataRevealService } from 'app/shared/services';
+import { RawDataRevealService } from 'app/shared/services';
 import { Router } from '@angular/router';
 import { NvD3Component } from 'ng2-nvd3';
 import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
+import { ChartMarginService } from 'app/shared/services/chart';
 
 @Component({
   selector: 'koia-chart',

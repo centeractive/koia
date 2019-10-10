@@ -1,11 +1,11 @@
 import { fakeAsync, flush } from '@angular/core/testing';
-import { ChangeEvent } from './change-event.enum';
-import { Column } from './column.type';
-import { DataType } from './data-type.enum';
+import { ChangeEvent } from '../change-event.enum';
+import { Column } from '../column.type';
+import { DataType } from '../data-type.enum';
 import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
-import { ExportFormat } from './export-format.enum';
-import { Aggregation } from './aggregation.enum';
+import { ExportFormat } from '../export-format.enum';
+import { Aggregation } from '../aggregation.enum';
 
 describe('ChartContext', () => {
 

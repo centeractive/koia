@@ -1,4 +1,4 @@
-import { GroupingType } from './grouping-type.enum';
+import { GroupingType } from '../grouping-type.enum';
 
 export class ChartType {
 

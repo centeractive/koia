@@ -1,11 +1,12 @@
 import { Component, ElementRef, Inject, AfterViewChecked } from '@angular/core';
 import { MatBottomSheet } from '@angular/material';
 import { Route } from '../shared/model';
-import { NotificationService, ChartMarginService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
+import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
 import { ViewController } from 'app/shared/controller';
 import { Router } from '@angular/router';
 import { DBService } from 'app/shared/services/backend';
 import { View } from 'app/shared/model/view-config';
+import { ChartMarginService } from 'app/shared/services/chart';
 
 @Component({
   selector: 'koia-grid',

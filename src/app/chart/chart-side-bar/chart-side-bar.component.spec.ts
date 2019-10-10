@@ -7,7 +7,8 @@ import {
   MatFormFieldModule, MatMenuModule, MatSelectModule, MatSlideToggle
 } from '@angular/material';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Column, ChartContext, ChartType, Aggregation, DataType, TimeUnit } from 'app/shared/model';
+import { Column, Aggregation, DataType, TimeUnit } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { MatIconModuleMock } from 'app/shared/test';

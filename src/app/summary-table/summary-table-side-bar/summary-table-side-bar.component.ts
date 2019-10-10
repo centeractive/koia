@@ -65,7 +65,6 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
   protected defineSelectableItems() {
     this.dataColumns = this.context.columns
       .filter(c => c.dataType !== DataType.TIME);
-    this.selectedGroupByColumns = this.context.groupByColumns;
     this.initSelectedAndAvailableAggregations();
     super.defineSelectableItems();
   }

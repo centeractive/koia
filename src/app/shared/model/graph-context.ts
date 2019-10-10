@@ -106,7 +106,7 @@ export class GraphContext extends ElementContext {
       if (this.groupByColumns.length === 0) {
          return 'Relationship: to be defined';
       }
-      return 'Relationship: Root 🠞 ' + this.groupByColumns.map(c => c.name).join(' 🠞 ');
+      return 'Relationship: Root⯈' + this.groupByColumns.map(c => c.name).join('⯈');
    }
 
    getSupportedExportFormats(): ExportFormat[] {

@@ -57,7 +57,7 @@ describe('QueryEnhancer', () => {
 
       // given
       column('Time').groupingTimeUnit = TimeUnit.MILLISECOND;
-      const downroundedTime = DateTimeUtils.toDate(now, TimeUnit.DAY).getTime();
+      const downroundedTime = DateTimeUtils.toBaseDate(now, TimeUnit.DAY).getTime();
       const formattedTime = DateTimeUtils.formatTime(downroundedTime, TimeUnit.MILLISECOND);
       const filters = { Time: formattedTime };
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
@@ -76,7 +76,7 @@ describe('QueryEnhancer', () => {
 
       // given
       column('Time').groupingTimeUnit = TimeUnit.SECOND;
-      const downroundedTime = DateTimeUtils.toDate(now, TimeUnit.SECOND).getTime();
+      const downroundedTime = DateTimeUtils.toBaseDate(now, TimeUnit.SECOND).getTime();
       const formattedTime = DateTimeUtils.formatTime(downroundedTime, TimeUnit.SECOND);
       const filters = { Time: formattedTime };
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
@@ -176,7 +176,7 @@ describe('QueryEnhancer', () => {
 
       // given
       const filters = { Amount: 12 };
-      const baseTime = DateTimeUtils.toDate(now, TimeUnit.MINUTE).getTime();
+      const baseTime = DateTimeUtils.toBaseDate(now, TimeUnit.MINUTE).getTime();
       const formattedTime = DateTimeUtils.formatTime(baseTime, TimeUnit.MINUTE);
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
 

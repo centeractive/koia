@@ -1,4 +1,5 @@
-import { Column, ChartContext, DataType } from '../model';
+import { Column, DataType } from '../model';
+import { ChartContext } from '../model/chart';
 
 export class ChartUtils {
 

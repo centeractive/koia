@@ -114,7 +114,7 @@ export class EntryMapper {
     * @see [[TimeRangeFilter]]
     */
    private roundDownToTargetFormat(date: Date, format: string): Date {
-      return DateTimeUtils.toDate(date.getTime(), DateTimeUtils.timeUnitFromNgFormat(format));
+      return DateTimeUtils.toBaseDate(date.getTime(), DateTimeUtils.timeUnitFromNgFormat(format));
    }
 
    private abbreviate(value: any): string {

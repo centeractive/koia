@@ -1,4 +1,4 @@
-import { ChartContext, ChartType } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 
 export class ChartJsUtils {
 

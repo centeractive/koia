@@ -38,6 +38,8 @@ export class ExportService {
   exportImage(svgElement: SVGElement, exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.PNG) {
       svg.saveSvgAsPng(svgElement, this.generateFileName(baseFileName, '.png'));
+    } else {
+      throw new Error('export format ' + exportFormat + ' is not supported');
     }
   }
 

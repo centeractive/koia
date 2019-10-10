@@ -1,5 +1,5 @@
 import { ChartMarginService } from './chart-margin.service';
-import { ChartType } from '../model';
+import { ChartType } from '../../model/chart';
 import { Margin } from 'nvd3';
 
 describe('ChartMarginService', () => {

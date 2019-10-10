@@ -4,15 +4,13 @@ import { GridComponent } from './grid.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
 import {
   MatBottomSheet, MatSidenavModule, MatIconModule, MatButtonModule, MatGridListModule, MatMenuModule,
-  MatBottomSheetModule,
-  MatDialogRef
+  MatBottomSheetModule, MatDialogRef
 } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import {
-  Column, ChartContext, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat
-} from 'app/shared/model';
+import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
+import { Column, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat } from 'app/shared/model';
+import { ChartContext } from 'app/shared/model/chart';
 import { StatusComponent } from 'app/shared/component/status/status.component';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { ViewController } from 'app/shared/controller';
@@ -22,6 +20,7 @@ import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { ChartMarginService } from 'app/shared/services/chart';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }

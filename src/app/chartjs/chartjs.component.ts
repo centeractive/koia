@@ -1,7 +1,8 @@
 import { Component, OnInit, Input, OnChanges, Inject, ElementRef, SimpleChanges } from '@angular/core';
 import { ChartOptions, ChartType, ChartDataSets } from 'chart.js';
 import { Label } from 'ng2-charts';
-import { ChartContext, ChangeEvent } from 'app/shared/model';
+import { ChangeEvent } from 'app/shared/model';
+import { ChartContext } from 'app/shared/model/chart';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { AggregationService } from 'app/shared/services';

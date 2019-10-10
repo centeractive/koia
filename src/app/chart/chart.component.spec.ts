@@ -2,10 +2,11 @@ import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testi
 import { MatProgressBarModule, MatDialogModule } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { ChartComponent } from './chart.component';
-import { ChartContext, ChartType, DataType, Column, Scene, Route } from 'app/shared/model';
+import { DataType, Column, Scene, Route } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { NvD3Module, NvD3Component } from 'ng2-nvd3';
 import { SimpleChange } from '@angular/core';
-import { ChartDataService, ChartMarginService, RawDataRevealService } from 'app/shared/services';
+import { RawDataRevealService } from 'app/shared/services';
 import { ResizableDirective } from 'angular-resizable-element';
 import { Margin } from 'nvd3';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -13,6 +14,7 @@ import 'nvd3';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { Router } from '@angular/router';
+import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 
 describe('ChartComponent', () => {
 

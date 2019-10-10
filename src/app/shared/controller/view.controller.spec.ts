@@ -1,7 +1,8 @@
-import { ViewController } from './view.controller';
-import { GraphContext, ChartType, ChartContext, ExportFormat, SummaryContext } from '../model';
+import { ChartContext, ChartType } from '../model/chart';
+import { GraphContext } from '../model';
 import { MatSidenav } from '@angular/material';
 import { View } from '../model/view-config';
+import { ViewController } from './view.controller';
 import { ExportService } from '../services';
 
 class ViewControllerTestable extends ViewController {

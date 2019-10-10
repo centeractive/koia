@@ -59,6 +59,59 @@ describe('SummaryTableSideBarComponent', () => {
       expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
    });
 
+   it('#dropSplitColumn should re-position context split columns when moved inside selected columns', () => {
+
+      // given
+      context.splitColumns = [findColumn('Time'), findColumn('Host'), findColumn('Level')];
+      controller.selectedSplitColumns = context.splitColumns.slice(0);
+      const dragDropEvent = dragDropEventFactory.createInContainerEvent('selectedSplitColumns', controller.selectedSplitColumns, 1, 0);
+
+      // when
+      controller.dropSplitColumn(dragDropEvent);
+
+      // then
+      expect(context.splitColumns.map(c => c.name)).toEqual(['Host', 'Time', 'Level']);
+   });
+
+   it('#dropSplitColumn should not change context split column when moved inside available columns', () => {
+
+      // given
+      context.splitColumns = [findColumn('Time'), findColumn('Host'), findColumn('Level')];
+      controller.selectedSplitColumns = context.splitColumns.slice(0);
+      const data = [findColumn('Path'), findColumn('Percent')];
+      const dragDropEvent = dragDropEventFactory.createInContainerEvent('availableSplitColumns', data, 1, 0);
+
+      // when
+      controller.dropSplitColumn(dragDropEvent);
+
+      // then
+      expect(context.splitColumns.map(c => c.name)).toEqual(['Time', 'Host', 'Level']);
+   });
+
+   it('#dropSplitColumn should change context split column when moved into selected columns', () => {
+
+      // given
+      context.splitColumns = [findColumn('Time'), findColumn('Host')];
+      controller.selectedSplitColumns = context.splitColumns.slice(0);
+      const from: ContainerModel<Column> = {
+         id: 'availableSplitColumns',
+         data: [findColumn('Path'), findColumn('Level'), findColumn('Percent')],
+         index: 1
+      };
+      const to: ContainerModel<Column> = {
+         id: 'selectedSplitColumns',
+         data: controller.selectedSplitColumns,
+         index: 2
+      };
+      const dragDropEvent = dragDropEventFactory.createCrossContainerEvent(from, to);
+
+      // when
+      controller.dropSplitColumn(dragDropEvent);
+
+      // then
+      expect(context.splitColumns.map(c => c.name)).toEqual(['Time', 'Host', 'Level']);
+   });
+
    it('#dropGroupByColumn should re-position context group-by columns when moved inside selected columns', () => {
 
       // given

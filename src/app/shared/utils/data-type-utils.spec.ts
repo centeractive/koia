@@ -49,6 +49,16 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.typeOf('%')).toEqual(DataType.TEXT);
    });
 
+   it('#isNumeric should return true when column is numeric', () => {
+      expect(DataTypeUtils.isNumeric(DataType.NUMBER)).toBeTruthy();
+      expect(DataTypeUtils.isNumeric(DataType.TIME)).toBeTruthy();
+   });
+
+   it('#isNumeric should return false when column is not numeric', () => {
+      expect(DataTypeUtils.isNumeric(DataType.TEXT)).toBeFalsy();
+      expect(DataTypeUtils.isNumeric(DataType.BOOLEAN)).toBeFalsy();
+   });
+
    it('#toTypedValue should return undefined when value is missing', () => {
       expect(DataTypeUtils.toTypedValue(undefined, DataType.BOOLEAN)).toBeUndefined();
       expect(DataTypeUtils.toTypedValue(null, DataType.BOOLEAN)).toBeUndefined();

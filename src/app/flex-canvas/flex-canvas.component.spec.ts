@@ -9,11 +9,9 @@ import {
 import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-resizable-element';
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ChartMarginService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import {
-  Column, StatusType, SummaryContext, ChartContext, GraphContext, Route, ChartType,
-  DataType, Scene, ExportFormat
-} from 'app/shared/model';
+import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
+import { Column, StatusType, SummaryContext, GraphContext, Route, DataType, Scene, ExportFormat } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
@@ -23,6 +21,7 @@ import { By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { ChartMarginService } from 'app/shared/services/chart';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }

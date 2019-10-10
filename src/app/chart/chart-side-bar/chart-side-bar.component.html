@@ -31,8 +31,8 @@
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             {{ column.name }}
          </button>
-      </div>  
-      <br>      
+      </div>
+      <br>
       <div>
          <mat-radio-group [value]="context.isAggregationCountSelected()">
             <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
@@ -64,7 +64,39 @@
             </mat-option>
          </mat-select>
       </mat-form-field>
-   </mat-expansion-panel>   
+   </mat-expansion-panel>
+
+   <mat-expansion-panel *ngIf="context.isSingleGrouping()">
+      <mat-expansion-panel-header>Value Splitting</mat-expansion-panel-header>
+
+      <div div_column_swap_list>
+         <span class="span_left_to_right">
+            <label>Selected Columns</label>
+            <mat-icon matTooltipClass="multi-line-tooltip"
+               matTooltip="Drag & Drop available columns to make them selected
+
+            Values are shown separately for distinct content of the selected split columns. If any split column cell is empty, the value is ignored">
+               help
+            </mat-icon>
+         </span>
+         <div id="selectedSplitColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
+            [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList" class="div_column_list"
+            (cdkDropListDropped)="dropSplitColumn($event)">
+            <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns" cdkDrag>
+               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+            </div>
+         </div>
+         <br>
+         <label>Available Columns</label>
+         <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableSplitColumns"
+            [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+            (cdkDropListDropped)="dropSplitColumn($event)">
+            <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableSplitColumns" cdkDrag>
+               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+            </div>
+         </div>
+      </div>
+   </mat-expansion-panel>
 
    <mat-expansion-panel *ngIf="!context.isNonGrouping()">
       <mat-expansion-panel-header>{{ groupingPanelName() }}</mat-expansion-panel-header>
@@ -84,7 +116,8 @@
          </mat-select>
       </mat-form-field>
 
-      <mat-form-field *ngIf="context.isAggregationCountSelected() && groupByTimeColumn && !context.isMultipleGrouping()">
+      <mat-form-field
+         *ngIf="context.isAggregationCountSelected() && groupByTimeColumn && !context.isMultipleGrouping()">
          <mat-select placeholder="Time Unit Grouping" [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
             <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
                (click)="context.fireStructureChanged()">{{ timeUnit }}</mat-option>
@@ -159,7 +192,8 @@
 
    <mat-expansion-panel>
       <mat-expansion-panel-header>Labels & Legend </mat-expansion-panel-header>
-      <mat-slide-toggle *ngIf="isPieOrDonutChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels</mat-slide-toggle>
+      <mat-slide-toggle *ngIf="isPieOrDonutChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels
+      </mat-slide-toggle>
       <div *ngIf="!isPieOrDonutChart()" class="div_label_rotation">
          X-Axis Label Rotation
          <mat-slider min="0" max="90" step="1" [value]="- context.xLabelRotation"

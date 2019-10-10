@@ -19,7 +19,7 @@ export class TimeGroupingService {
     */
    groupByTimeUnit(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
       return this.group(dataFrame, timeColumn, t => {
-         const date = DateTimeUtils.toDate(t, timeColumn.groupingTimeUnit);
+         const date = DateTimeUtils.toBaseDate(t, timeColumn.groupingTimeUnit);
          return date ? date.getTime() : undefined;
       });
    }
@@ -30,7 +30,7 @@ export class TimeGroupingService {
     */
    groupByFormattedTimeUnit(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
       return this.group(dataFrame, timeColumn, t => {
-         const date = DateTimeUtils.toDate(t, timeColumn.groupingTimeUnit);
+         const date = DateTimeUtils.toBaseDate(t, timeColumn.groupingTimeUnit);
          return date ? DateTimeUtils.formatTime(date.getTime(), timeColumn.groupingTimeUnit) : TimeGroupingService.EMPTY;
       });
    }

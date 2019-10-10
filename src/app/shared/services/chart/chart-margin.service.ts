@@ -1,8 +1,8 @@
-import { ChartType } from '../model';
+import { ChartType } from '../../model/chart';
 import { Margin } from 'nvd3';
 import { Injectable } from '@angular/core';
 import { ResizeEvent } from 'angular-resizable-element';
-import { CommonUtils } from '../utils';
+import { CommonUtils } from '../../utils';
 
 @Injectable({
    providedIn: 'root'

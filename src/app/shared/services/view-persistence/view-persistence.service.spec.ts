@@ -1,4 +1,4 @@
-import { Route, Aggregation, StatusType, Scene, DataType, Column, Config } from '../../model';
+import { Route, Aggregation, StatusType, Scene, DataType, Column } from '../../model';
 import { Chart } from '../view-persistence/chart.type';
 import { ViewPersistenceService } from './view-persistence.service';
 import { DBService } from '../backend';
@@ -13,8 +13,6 @@ describe('ViewPersistenceService', () => {
   const NOW = new Date().getTime();
   const A_MINUTE_AGO = NOW - 60_000;
 
-  let levelColumn: Column;
-  let timeColumn: Column;
   let pivotTableRecord: ConfigRecord;
   let summary: Summary;
   let chart: Chart;
@@ -25,16 +23,18 @@ describe('ViewPersistenceService', () => {
   let service: ViewPersistenceService;
 
   beforeAll(() => {
-    levelColumn = createColumn('Level', DataType.TEXT);
-    timeColumn = createColumn('Time', DataType.TIME);
+    const amountColum = createColumn('Amount', DataType.NUMBER);
+    const levelColumn = createColumn('Level', DataType.TEXT);
+    const timeColumn = createColumn('Time', DataType.TIME);
     summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
-      dataColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], valueGroupings: [], empty: ''
+      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], 
+      valueGroupings: [], empty: ''
     };
     chart = {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
-      dataColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], valueGroupings: [],
-      chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
+      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], 
+      valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
       legendPosition: 'top', xLabelRotation: -12, stacked: false
     };
   });

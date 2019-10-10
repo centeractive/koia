@@ -20,6 +20,10 @@ export class DataTypeUtils {
       return undefined;
    }
 
+   static isNumeric(dataType: DataType): boolean {
+      return dataType === DataType.NUMBER || dataType === DataType.TIME;
+   }
+
    /**
     * @returns the specified value in form of a value that corresponds to given data type
     * or [[undefined]] if value is not compliant with the data type

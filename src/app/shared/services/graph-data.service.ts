@@ -30,7 +30,7 @@ export class GraphDataService {
    private convertTime(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
       return dataFrame.transformSeries({
          [timeColumn.name]: ts => {
-            const date = DateTimeUtils.toDate(ts, timeColumn.groupingTimeUnit);
+            const date = DateTimeUtils.toBaseDate(ts, timeColumn.groupingTimeUnit);
             return date ? date.getTime() : undefined;
          }
       });

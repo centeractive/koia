@@ -124,7 +124,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   }
 
   isNumericColumn(column: Column): boolean {
-    return column && (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME);
+    return column && DataTypeUtils.isNumeric(column.dataType);
   }
 
   iconOf(dataType: DataType): string {

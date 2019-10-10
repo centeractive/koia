@@ -1,10 +1,11 @@
-import { ElementContext } from './element-context';
+import { ElementContext } from '../element-context';
 import { Margin } from 'nvd3';
-import { Column } from './column.type';
-import { ExportFormat } from './export-format.enum';
-import { ValueRange } from '../value-range/model/value-range.type';
+import { Column } from '../column.type';
+import { ExportFormat } from '../export-format.enum';
+import { ValueRange } from '../../value-range/model/value-range.type';
 import { ChartType } from './chart-type';
-import { GroupingType } from './grouping-type.enum';
+import { GroupingType } from '../grouping-type.enum';
+import { SeriesNameConverter } from '../../services/chart/series-name-converter';
 
 export class ChartContext extends ElementContext {
 
@@ -51,6 +52,10 @@ export class ChartContext extends ElementContext {
 
    isNonGrouping() {
       return ChartType.fromType(this._chartType).groupingType === GroupingType.NONE;
+   }
+
+   isSingleGrouping() {
+      return ChartType.fromType(this._chartType).groupingType === GroupingType.SINGLE;
    }
 
    isMultipleGrouping() {
@@ -197,7 +202,13 @@ export class ChartContext extends ElementContext {
       if (this.groupByColumns.length > 0 && (!this.isNonGrouping() || !this.isAggregationCountSelected())) {
          title += ' by ' + this.groupByColumns.map(c => c.name).join(', ');
       }
-      return this.dataSampledDown ? title + ' (Sample)' : title;
+      if (this.dataSampledDown) {
+         title += ' (Sample)';
+      }
+      if (this.isSingleGrouping() && this.splitColumns.length > 0) {
+         title += '\nsplit by ' + this.splitColumns.map(c => c.name).join(SeriesNameConverter.SEPARATOR);
+      }
+      return title;
    }
 
    getSupportedExportFormats(): ExportFormat[] {

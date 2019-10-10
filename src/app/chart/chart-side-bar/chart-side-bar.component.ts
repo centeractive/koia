@@ -1,7 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ChartContext, ChartType, Aggregation, DataType, Column, GroupingType } from '../../shared/model';
+import { Aggregation, DataType, Column, GroupingType } from '../../shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { SideBarController } from 'app/shared/controller';
-import { ChartMarginService } from 'app/shared/services/chart-margin.service';
+import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { DataTypeUtils, ChartUtils } from 'app/shared/utils';
 
 @Component({
@@ -35,11 +36,10 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     this.selectableDataColumns = this.context.columns
       .filter(c => c.indexed)
       .filter(c => c.dataType !== DataType.TIME);
-    this.selectedGroupByColumns = this.context.groupByColumns;
+    super.defineSelectableItems();
     if (this.selectedGroupByColumns.length > 0 && this.selectedGroupByColumns[0].dataType === DataType.TIME) {
       this.groupByTimeColumn = this.selectedGroupByColumns[0];
     }
-    super.defineSelectableItems();
   }
 
   chartTypeColor(chartType: ChartType): string {

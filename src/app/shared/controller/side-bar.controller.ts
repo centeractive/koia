@@ -21,6 +21,10 @@ export abstract class SideBarController implements OnChanges {
 
    multiExpandable: boolean;
    readonly selectableTimeUnits = [undefined, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];
+
+   availableSplitColumns: Column[];
+   selectedSplitColumns: Column[];
+
    nonGroupedColumns: Column[];
    availableGroupByColumns: Column[];
    selectedGroupByColumns: Column[];
@@ -57,7 +61,17 @@ export abstract class SideBarController implements OnChanges {
       if (this.elementCount) {
          this.elementPositions = NumberUtils.rangeClosedIntArray(this.elementCount);
       }
+      this.selectedSplitColumns = this.elementContext.splitColumns;
+      this.availableSplitColumns = this.determineAvailableSplitColumns();
+      this.selectedGroupByColumns = this.elementContext.groupByColumns;
       this.availableGroupByColumns = this.determineAvailableGroupByColumns();
+   }
+
+   private determineAvailableSplitColumns(): Column[] {
+      return this.elementContext.columns
+         .filter(c => c.dataType !== DataType.TIME)
+         .filter(c => !this.elementContext.dataColumns.includes(c))
+         .filter(c => !this.selectedSplitColumns.includes(c));
    }
 
    private determineAvailableGroupByColumns(): Column[] {
@@ -68,6 +82,18 @@ export abstract class SideBarController implements OnChanges {
 
    iconOf(dataType: DataType): string {
       return DataTypeUtils.iconOf(dataType);
+   }
+
+   dropSplitColumn(event: CdkDragDrop<Column[]>): void {
+      if (event.previousContainer === event.container) {
+         moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+         if (event.container.id === 'selectedSplitColumns') {
+            this.elementContext.splitColumns = this.selectedSplitColumns;
+         }
+      } else {
+         transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex);
+         this.elementContext.splitColumns = this.selectedSplitColumns;
+      }
    }
 
    dropGroupByColumn(event: CdkDragDrop<Column[]>): void {
@@ -129,7 +155,7 @@ export abstract class SideBarController implements OnChanges {
    }
 
    isNumericColumn(column: Column): boolean {
-      return column && (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME);
+      return column && DataTypeUtils.isNumeric(column.dataType);
    }
 
    setElementPosition(elementPosition: number): void {

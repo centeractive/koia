@@ -1,6 +1,7 @@
 import { ChartDataService } from './chart-data.service';
-import { ChartType, ChartContext, Column, DataType, TimeUnit } from '../model';
-import { TestUtils } from '../test';
+import { Column, DataType, TimeUnit } from '../../model';
+import { TestUtils } from '../../test';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 
 declare var d3: any;
 
@@ -521,6 +522,41 @@ describe('ChartDataService', () => {
       expect(context.warning).toBeFalsy();
    });
 
+   it('#createData should create chronologically sorted and splitted individual values data', () => {
+
+      // given
+      context.chartType = ChartType.LINE_WITH_FOCUS.type;
+      context.dataColumns = [createColumn('c3', DataType.NUMBER)];
+      context.splitColumns = [createColumn('c2', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [];
+
+      // when
+      const result = dataProvider.createData(context);
+
+      // then
+      const expected = [
+         {
+            key: '3⯈c3',
+            values: [
+               { id: 3, x: entries[0]['Time'], y: -1 },
+               { id: 4, x: entries[2]['Time'], y: 4 }
+            ]
+         },
+         {
+            key: '2⯈c3',
+            values: [
+               { id: 2, x: entries[1]['Time'], y: 0 }
+            ]
+         }
+      ];
+      expect(result.data).toEqual(expected);
+      expect(context.valueRange).toEqual({ min: -1, max: 4 });
+      expect(result.error).toBeUndefined();
+      expect(context.dataSampledDown).toBeFalsy();
+      expect(context.warning).toBeFalsy();
+   });
+
    it('#createData should create down-sampled data when max number of entries is exceeded', () => {
 
       // given
@@ -550,6 +586,7 @@ describe('ChartDataService', () => {
       // given
       context.chartType = ChartType.LINE.type;
       context.dataColumns = [createColumn('c1', DataType.TEXT)];
+      context.splitColumns = [];
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
 
       // when
@@ -563,6 +600,34 @@ describe('ChartDataService', () => {
          },
          {
             key: 'a',
+            values: [{ x: now, y: 1 }]
+         }
+      ];
+      expect(result.data).toEqual(expectedData);
+      expect(context.valueRange).toEqual({ min: 1, max: 2 });
+      expect(result.error).toBeUndefined();
+   });
+
+   it('#createData should create chronologically sorted and splitted timeline data (count distinct values)', () => {
+
+      // given
+      context.entries.push({ _id: 5, c1: 'a', c2: -2 });
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [createColumn('c1', DataType.TEXT)];
+      context.splitColumns = [createColumn('c2', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+
+      // when
+      const result = dataProvider.createData(context);
+
+      // then
+      const expectedData = [
+         {
+            key: '3⯈b',
+            values: [{ x: now + min, y: 2 }]
+         },
+         {
+            key: '2⯈b',
             values: [{ x: now, y: 1 }]
          }
       ];

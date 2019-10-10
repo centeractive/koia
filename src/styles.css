@@ -42,6 +42,10 @@ body {
   border-bottom: 1px solid 	rgb(145, 144, 144);    
 }
 
+.multi-line-tooltip {
+  white-space: pre-line;
+}
+
 #view_toolbar {
   background-color: #CFD8DC;
   width: 100%;
