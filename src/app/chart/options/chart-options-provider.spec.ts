@@ -13,6 +13,14 @@ describe('ChartOptionsProvider', () => {
    const sec = 1000;
    const min = 60 * sec;
 
+   const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
+   const levelColumn = createColumn('Level', DataType.TEXT);
+   const hostColumn = createColumn('Host', DataType.TEXT);
+   const pathColumn = createColumn('Path', DataType.TEXT);
+   const amountColumn = createColumn('Amount', DataType.NUMBER);
+   const yearColumn = createColumn('Year', DataType.NUMBER);
+   const roomNoColumn = createColumn('Room-Number', DataType.NUMBER);
+
    let now: number;
    let entries: Object[];
 
@@ -35,14 +43,15 @@ describe('ChartOptionsProvider', () => {
    });
 
    beforeEach(() => {
-      context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context = new ChartContext([timeColumn, levelColumn, hostColumn, pathColumn, amountColumn, yearColumn, roomNoColumn],
+         ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
       context.dataColumns = [createColumn('c1', DataType.TEXT)];
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
       context.entries = entries;
       context.legendItems = 1;
       context.query = new Query();
       router = <Router>{ navigateByUrl: (url: string) => null };
-      dialogService = <MatDialog> {};
+      dialogService = <MatDialog>{};
       const rawDataRevealService = new RawDataRevealService(router, dialogService);
       rawDataRevealService.setUseDialog(false);
       optionsProvider = new ChartOptionsProvider(rawDataRevealService);
@@ -540,7 +549,7 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.PIE.type;
-      context.dataColumns = [createColumn('Path', DataType.TEXT)];
+      context.dataColumns = [pathColumn];
       spyOn(router, 'navigateByUrl');
 
       // when
@@ -557,7 +566,7 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.BAR.type;
-      context.dataColumns = [createColumn('Host', DataType.TEXT)];
+      context.dataColumns = [hostColumn];
       spyOn(router, 'navigateByUrl');
 
       // when
@@ -575,8 +584,8 @@ describe('ChartOptionsProvider', () => {
       // given
       context.query.addPropertyFilter(new PropertyFilter('Year', Operator.LESS_THAN, 2000));
       context.chartType = ChartType.BAR.type;
-      context.dataColumns = [createColumn('Amount', DataType.NUMBER)];
-      context.groupByColumns = [createColumn('Year', DataType.NUMBER)];
+      context.dataColumns = [amountColumn];
+      context.groupByColumns = [yearColumn];
       context.aggregations = [];
       spyOn(router, 'navigateByUrl');
 
@@ -594,8 +603,8 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.MULTI_BAR.type;
-      context.dataColumns = [createColumn('Level', DataType.TEXT)];
-      context.groupByColumns = [createColumn('Path', DataType.TEXT)];
+      context.dataColumns = [levelColumn];
+      context.groupByColumns = [pathColumn];
       context.aggregations = [Aggregation.COUNT];
       spyOn(router, 'navigateByUrl');
 
@@ -613,8 +622,8 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.MULTI_BAR.type;
-      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
-      context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.MINUTE)];
+      context.dataColumns = [amountColumn];
+      context.groupByColumns = [timeColumn];
       context.aggregations = [];
       spyOn(router, 'navigateByUrl');
 
@@ -632,8 +641,9 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.MULTI_BAR.type;
-      context.dataColumns = [createColumn('Level', DataType.TEXT)];
-      context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.MINUTE)];
+      timeColumn.groupingTimeUnit = TimeUnit.MINUTE;
+      context.dataColumns = [levelColumn];
+      context.groupByColumns = [timeColumn];
       context.aggregations = [Aggregation.COUNT];
       spyOn(router, 'navigateByUrl');
 
@@ -652,8 +662,8 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
-      context.dataColumns = [createColumn('Level', DataType.TEXT)];
-      context.groupByColumns = [createColumn('Path', DataType.TEXT)];
+      context.dataColumns = [levelColumn];
+      context.groupByColumns = [pathColumn];
       context.aggregations = [Aggregation.COUNT];
       spyOn(router, 'navigateByUrl');
 
@@ -671,8 +681,8 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.LINE.type;
-      context.dataColumns = [createColumn('Amount', DataType.NUMBER)];
-      context.groupByColumns = [createColumn('Room-Number', DataType.NUMBER)];
+      context.dataColumns = [amountColumn];
+      context.groupByColumns = [roomNoColumn];
       context.aggregations = [];
       spyOn(router, 'navigateByUrl');
 
@@ -681,7 +691,7 @@ describe('ChartOptionsProvider', () => {
 
       // then
       const onElementClick: Function = options['chart'].lines.dispatch.elementClick;
-      const event = { point: { x: 2, y: 2155 }, series: { key: 'Amount' } };
+      const event = { point: { x: 2, y: '2155' }, series: { key: 'Amount' } };
       onElementClick(event, context);
       expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?Amount=2155&Room-Number=2');
    });
@@ -690,8 +700,9 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.LINE.type;
-      context.dataColumns = [createColumn('Level', DataType.TEXT)];
-      context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.SECOND)];
+      context.dataColumns = [levelColumn];
+      timeColumn.groupingTimeUnit = TimeUnit.SECOND;
+      context.groupByColumns = [timeColumn];
       context.aggregations = [Aggregation.COUNT];
       spyOn(router, 'navigateByUrl');
 
@@ -710,8 +721,8 @@ describe('ChartOptionsProvider', () => {
 
       // given
       context.chartType = ChartType.LINE.type;
-      context.dataColumns = [createColumn('Amount', DataType.TEXT)];
-      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.dataColumns = [amountColumn];
+      context.groupByColumns = [timeColumn];
       context.aggregations = [];
       spyOn(router, 'navigateByUrl');
 

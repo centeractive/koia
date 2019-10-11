@@ -4,6 +4,31 @@ import { ValueRangeFilter } from '../value-range/model';
 
 describe('QuerySanitizer', () => {
 
+  it('#sanitize should return unchanged query when no filter exist', () => {
+
+    // given
+    const query = new Query();
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    expect(actualQuery).toEqual(query);
+  });
+
+  it('#sanitize should return query with full text filter only exists', () => {
+
+    // given
+    const query = new Query();
+    query.setFullTextFilter('abc');
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    expect(actualQuery).toEqual(query);
+  });
+
   it('#sanitize should return query with unified property filter', () => {
 
     // given

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Query, Operator, PropertyFilter, Column, DataType, Route } from '../model';
-import { DateTimeUtils, CommonUtils, ArrayUtils } from '../utils';
+import { Query, Operator, PropertyFilter, Column, DataType, Route, ElementContext } from '../model';
+import { DateTimeUtils, CommonUtils, QuerySanitizer } from '../utils';
 import { CouchDBConstants } from './backend/couchdb';
 import { Router } from '@angular/router';
 import { JSQueryFactory } from './backend/jsonserver';
@@ -41,21 +41,14 @@ export class RawDataRevealService {
    * column names and their values
    */
   ofTimeUnit(baseQuery: Query, timeColumns: Column[], startTimes: number[], columnNames: string[],
-    columnValues: any[]): void {
+    columnValues: any[], context: ElementContext): void {
     const query = baseQuery.clone();
     for (let i = 0; i < timeColumns.length; i++) {
       const timeStart = startTimes[i];
       const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, timeColumns[i].groupingTimeUnit);
-      const valueRangeFilter = baseQuery.findValueRangeFilter(timeColumns[i].name);
-      if (valueRangeFilter) {
-        const valueRange = valueRangeFilter.valueRange;
-        valueRange.min = Math.max(timeStart, valueRange.min || Number.MIN_VALUE);
-        valueRange.max = Math.min(timeEnd, valueRange.max || Number.MAX_VALUE);
-      } else {
-        query.addValueRangeFilter(timeColumns[i].name, timeStart, timeEnd);
-      }
+      query.addValueRangeFilter(timeColumns[i].name, timeStart, timeEnd);
     };
-    this.ofQuery(query, columnNames, columnValues);
+    this.ofQuery(query, columnNames, columnValues, context);
   }
 
   /**
@@ -66,15 +59,21 @@ export class RawDataRevealService {
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
    */
-  ofQuery(baseQuery: Query, columnNames: string[], columnValues: any[]): void {
+  ofQuery(baseQuery: Query, columnNames: string[], columnValues: any[], context: ElementContext): void {
     const query = baseQuery.clone();
     for (let i = 0; i < columnNames.length; i++) {
-      query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i]));
+      const dataType = context.columns.find(c => c.name === columnNames[i]).dataType;
+      if (dataType === DataType.TIME) {
+        query.addValueRangeFilter(columnNames[i], columnValues[i], columnValues[i]);
+      } else {
+        query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i]));
+      }
     }
     this.show(query);
   }
 
   show(query: Query): void {
+    query = new QuerySanitizer(query).sanitize();
     if (this.useDialog) {
       this.dialogService.open(RawDataDialogComponent, { data: query, panelClass: 'dialog-container' });
     } else {

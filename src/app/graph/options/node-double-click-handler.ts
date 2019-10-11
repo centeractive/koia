@@ -23,16 +23,17 @@ export class NodeDoubleClickHandler {
             columnValues.push(value);
          }
       });
-      this.revealRawData(graphNode, query, context.groupByColumns, columnNames, columnValues);
+      this.revealRawData(graphNode, query, context.groupByColumns, columnNames, columnValues, context);
    }
 
-   private revealRawData(graphNode: GraphNode, query: Query, groupByColumns: Column[], columnNames: string[], columnValues: any[]) {
+   private revealRawData(graphNode: GraphNode, query: Query, groupByColumns: Column[], columnNames: string[], columnValues: any[],
+      context: GraphContext) {
       if (groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
          const timeColumns = groupByColumns.filter(c => c.dataType === DataType.TIME);
          const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
-         this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues);
+         this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues, context);
       } else {
-         this.rawDataRevealService.ofQuery(query, columnNames, columnValues);
+         this.rawDataRevealService.ofQuery(query, columnNames, columnValues, context);
       }
    }
 }

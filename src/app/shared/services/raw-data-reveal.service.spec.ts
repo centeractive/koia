@@ -1,8 +1,5 @@
 import { RawDataRevealService } from './raw-data-reveal.service';
-import {
-  Query, ElementContext, Route, SummaryContext, GraphNode, GraphContext, PropertyFilter, DataType,
-  TimeUnit, Operator, Column
-} from '../model';
+import { Query, ElementContext, Route, SummaryContext, PropertyFilter, DataType, TimeUnit, Operator, Column } from '../model';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { CouchDBConstants } from './backend/couchdb';
@@ -19,6 +16,12 @@ describe('RawDataRevealService', () => {
   const oneHourAgo = now - (60 * min);
   const linkbase = '/' + Route.RAWDATA;
 
+  const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
+  const levelColumn = createColumn('Level', DataType.TEXT);
+  const hostColumn = createColumn('Host', DataType.TEXT);
+  const pathColumn = createColumn('Path', DataType.TEXT);
+  const amountColumn = createColumn('Amount', DataType.NUMBER);
+
   let query: Query;
   let context: ElementContext;
   let router: Router;
@@ -27,7 +30,7 @@ describe('RawDataRevealService', () => {
 
   beforeEach(() => {
     query = new Query();
-    context = new SummaryContext([]);
+    context = new SummaryContext([timeColumn, levelColumn, hostColumn, pathColumn, amountColumn]);
     context.query = query;
     router = <Router>{ navigateByUrl: (url: string) => null };
     const matDialog: unknown = { open: () => null };
@@ -63,10 +66,9 @@ describe('RawDataRevealService', () => {
 
     // given
     service.setUseDialog(false);
-    const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
 
     // when
-    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR']);
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
@@ -77,15 +79,43 @@ describe('RawDataRevealService', () => {
 
     // given
     service.setUseDialog(false);
-    const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.HOUR);
+    timeColumn.groupingTimeUnit = TimeUnit.HOUR;
     query.addValueRangeFilter('Time', oneHourAgo + min, now - min);
 
     // when
-    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Host'], ['server1']);
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Host'], ['server1'], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
       linkbase + '?Host=server1&Time_gte=' + (oneHourAgo + min) + '&Time_lte=' + (now - min));
+  });
+
+  it('#ofTimeUnit should navigate to raw data view for for time period when base query time range min is undefined', () => {
+
+    // given
+    service.setUseDialog(false);
+    timeColumn.groupingTimeUnit = TimeUnit.HOUR;
+    query.addValueRangeFilter('Time', undefined, now - min);
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Host'], ['server1'], context);
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Host=server1&Time_gte=' + oneHourAgo + '&Time_lte=' + (now - min));
+  });
+
+  it('#ofTimeUnit should navigate to raw data view for time period when base query value time max is undefined', () => {
+
+    // given
+    service.setUseDialog(false);
+    timeColumn.groupingTimeUnit = TimeUnit.MINUTE;
+    query.addValueRangeFilter('Time', oneHourAgo, undefined);
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [now - min], ['Host'], ['server1'], context);
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Host=server1&Time_gte=' + (now - min) + '&Time_lte=' + now);
   });
 
   it('#ofQuery should navigate to raw data view for query', () => {
@@ -94,7 +124,7 @@ describe('RawDataRevealService', () => {
     service.setUseDialog(false);
 
     // when
-    service.ofQuery(query, [], []);
+    service.ofQuery(query, [], [], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase);
@@ -107,7 +137,7 @@ describe('RawDataRevealService', () => {
     query.setFullTextFilter('x#y');
 
     // when
-    service.ofQuery(query, [], []);
+    service.ofQuery(query, [], [], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?q=x%23y');
@@ -122,7 +152,7 @@ describe('RawDataRevealService', () => {
     query.addPropertyFilter(new PropertyFilter('Path', Operator.CONTAINS, '.log'));
 
     // when
-    service.ofQuery(query, [], []);
+    service.ofQuery(query, [], [], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?q=asdf&Host=server1&Path_like=.log');
@@ -134,24 +164,37 @@ describe('RawDataRevealService', () => {
     service.setUseDialog(false);
 
     // when
-    service.ofQuery(query, ['Level'], ['ERROR']);
+    service.ofQuery(query, ['Level'], ['ERROR'], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Level=ERROR');
   });
 
-  it('#ofQuery should navigate to raw data view for multiple property filters', () => {
+  it('#ofQuery should navigate to raw data view for single time range filter', () => {
 
     // given
     service.setUseDialog(false);
-    const columnNames = ['Host', 'Path', 'Level'];
-    const columnValues = ['Server', '/opt/tomcat/log/catalina.log', 'ERROR'];
 
     // when
-    service.ofQuery(query, columnNames, columnValues);
+    service.ofQuery(query, ['Time'], [now], context);
 
     // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Host=Server&Path=/opt/tomcat/log/catalina.log&Level=ERROR');
+    expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + now + '&Time_lte=' + now);
+  });
+
+  it('#ofQuery should navigate to raw data view for time range filter and multiple property filters', () => {
+
+    // given
+    service.setUseDialog(false);
+    const columnNames = ['Time', 'Host', 'Path', 'Level'];
+    const columnValues = [now, 'Server', '/opt/tomcat/log/catalina.log', 'ERROR'];
+
+    // when
+    service.ofQuery(query, columnNames, columnValues, context);
+
+    // then
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
+      linkbase + '?Host=Server&Path=/opt/tomcat/log/catalina.log&Level=ERROR&Time_gte=' + now + '&Time_lte=' + now);
   });
 
   it('#ofQuery should navigate to raw data view for time period', () => {
@@ -161,7 +204,7 @@ describe('RawDataRevealService', () => {
     query.addValueRangeFilter('Time', oneHourAgo, now);
 
     // when
-    service.ofQuery(query, [], []);
+    service.ofQuery(query, [], [], context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(linkbase + '?Time_gte=' + oneHourAgo + '&Time_lte=' + now);
@@ -179,13 +222,12 @@ describe('RawDataRevealService', () => {
     const columnValues = ['WARN', '1000'];
 
     // when
-    service.ofQuery(query, columnNames, columnValues);
+    service.ofQuery(query, columnNames, columnValues, context);
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(
       linkbase + '?q=xyz&Host_gte=&Path_like=.txt&Level=WARN&Amount=1000&Time_gte=' + oneHourAgo + '&Time_lte=' + now);
   });
-
 
   function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {
     return {

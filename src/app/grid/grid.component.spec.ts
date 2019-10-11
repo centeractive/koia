@@ -352,7 +352,8 @@ describe('GridComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Test Chart';
-    chartContext.dataColumns = [findColumn('Level')];
+    chartContext.dataColumns = [findColumn('Amount')];
+    chartContext.splitColumns = [findColumn('Path')];
     const graphContext = component.addGraph();
     graphContext.title = 'Test Graph';
     graphContext.groupByColumns = [findColumn('Level')];

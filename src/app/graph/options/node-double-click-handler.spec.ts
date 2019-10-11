@@ -8,10 +8,15 @@ describe('NodeDoubleClickHandler', () => {
    const min = 60_000;
    const oneHourAgo = now - (60 * min);
 
+   const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
+   const levelColumn = createColumn('Level', DataType.TEXT);
+
+   let graphContext: GraphContext;
    let rawDataRevealService: RawDataRevealService;
    let handler: NodeDoubleClickHandler;
 
    beforeEach(() => {
+      graphContext = new GraphContext([timeColumn, levelColumn]);
       rawDataRevealService = new RawDataRevealService(null, null);
       handler = new NodeDoubleClickHandler(rawDataRevealService);
       spyOn(rawDataRevealService, 'ofTimeUnit');
@@ -22,14 +27,13 @@ describe('NodeDoubleClickHandler', () => {
 
       // given
       const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '25' };
-      const graphContext = new GraphContext([]);
       graphContext.query = new Query();
 
       // when
       handler.onNodeDoubleClicked(rootNode, graphContext);
 
       // then
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, [], []);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, [], [], graphContext);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of leaf node', () => {
@@ -37,15 +41,14 @@ describe('NodeDoubleClickHandler', () => {
       // given
       const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
       const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '25' };
-      const graphContext = new GraphContext([]);
-      graphContext.groupByColumns = [createColumn('Level', DataType.TEXT)];
+      graphContext.groupByColumns = [levelColumn];
       graphContext.query = new Query();
 
       // when
       handler.onNodeDoubleClicked(node, graphContext);
 
       // then
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, ['Level'], ['ERROR']);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, ['Level'], ['ERROR'], graphContext);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of leaf node with <empty> value', () => {
@@ -53,7 +56,6 @@ describe('NodeDoubleClickHandler', () => {
       // given
       const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
       const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: PropertyFilter.EMPTY_VALUE, info: '25' };
-      const graphContext = new GraphContext([]);
       graphContext.query = new Query();
 
       // when
@@ -61,7 +63,7 @@ describe('NodeDoubleClickHandler', () => {
 
       // then
       const expectedQuery = new Query(new PropertyFilter('Level', Operator.EMPTY, ''));
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], []);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], [], graphContext);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of time node', () => {
@@ -69,8 +71,7 @@ describe('NodeDoubleClickHandler', () => {
       // given
       const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
       const node: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '25' };
-      const graphContext = new GraphContext([]);
-      const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.HOUR);
+      timeColumn.groupingTimeUnit = TimeUnit.HOUR;
       graphContext.groupByColumns = [timeColumn];
       graphContext.query = new Query();
 
@@ -78,7 +79,7 @@ describe('NodeDoubleClickHandler', () => {
       handler.onNodeDoubleClicked(node, graphContext);
 
       // then
-      expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], [], []);
+      expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], [], [], graphContext);
    });
 
    function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {

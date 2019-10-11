@@ -18,7 +18,9 @@ export class QuerySanitizer {
     */
    sanitize(): Query {
       const newQuery = new Query();
-      newQuery.setFullTextFilter(this.query.getFullTextFilter());
+      if (this.query.getFullTextFilter()) {
+         newQuery.setFullTextFilter(this.query.getFullTextFilter());
+      }
       this.cleanUpPropertyFilters(this.query).forEach(f => newQuery.addPropertyFilter(f));
       this.cleanUpValueRangeFilters(this.query).forEach(f =>
          newQuery.addValueRangeFilter(f.name, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding, f.inverted));

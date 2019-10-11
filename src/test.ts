@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
+// const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
@@ -74,7 +74,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /element-context\.spec\.ts$/);
 // const context = require.context('./', true, /chart-context\.spec\.ts$/);
 // onst context = require.context('./', true, /chart.component\.spec\.ts$/);
-// const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
+const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-data-helper.service\.spec\.ts$/);
 // const context = require.context('./', true, /series-name-converter\.spec\.ts$/);
 // const context = require.context('./', true, /chart-margin.service\.spec\.ts$/);
@@ -91,6 +91,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /graph-options-provider\.spec\.ts$/);
 // const context = require.context('./', true, /graph.component\.spec\.ts$/);
 // const context = require.context('./', true, /graph-side-bar.component\.spec\.ts$/);
+// const context = require.context('./', true, /node-double-click-handler\.spec\.ts$/);
 
 // const context = require.context('./', true, /pivot-table.component\.spec\.ts$/);
 // const context = require.context('./', true, /pivot-table-side-bar.component\.spec\.ts$/);

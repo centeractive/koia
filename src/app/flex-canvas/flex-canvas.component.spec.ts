@@ -368,7 +368,8 @@ describe('FlexCanvasComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Tet Chart';
-    chartContext.dataColumns = [findColumn('Level')];
+    chartContext.dataColumns = [findColumn('Amount')];
+    chartContext.splitColumns = [findColumn('Path')];
     const graphContext = component.addGraph();
     graphContext.title = 'Tet Graph';
     graphContext.groupByColumns = [findColumn('Level')];

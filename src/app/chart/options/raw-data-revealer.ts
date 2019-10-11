@@ -17,9 +17,8 @@ export class RawDataRevealer {
          if (event.point.id) {
             this.rawDataRevealService.ofID(event.point.id);
          } else {
-            this.rawDataRevealService.ofID(event.point.id);
+            this.fromDataPoint(event, context);
          }
-         this.fromDataPoint(event, context);
       } else if (context.isNonGrouping()) {
          this.fromFlatData(event, context);
       } else {
@@ -39,18 +38,18 @@ export class RawDataRevealer {
       const groupByColumn = context.groupByColumns[0];
       if (groupByColumn.dataType === DataType.TIME) {
          const timeStart: number = event.point.x;
-         this.rawDataRevealService.ofTimeUnit(context.query, [groupByColumn], [timeStart], columnNames, values);
+         this.rawDataRevealService.ofTimeUnit(context.query, [groupByColumn], [timeStart], columnNames, values, context);
       } else {
          columnNames.push(groupByColumn.name);
          values.push(event.point.x);
-         this.rawDataRevealService.ofQuery(context.query, columnNames, values);
+         this.rawDataRevealService.ofQuery(context.query, columnNames, values, context);
       }
    }
 
    private fromFlatData(event: any, context: ChartContext): void {
       const query = context.query;
       const column = context.isAggregationCountSelected() ? context.dataColumns[0] : context.groupByColumns[0];
-      this.rawDataRevealService.ofQuery(query, [column.name], [event.data.x]);
+      this.rawDataRevealService.ofQuery(query, [column.name], [event.data.x], context);
    }
 
    private fromGroupedData(event: any, context: ChartContext): void {
@@ -60,11 +59,11 @@ export class RawDataRevealer {
       const groupByColumn = context.groupByColumns[0];
       if (context.groupByColumns[0].dataType === DataType.TIME) {
          const timeStart: number = event.data.x;
-         this.rawDataRevealService.ofTimeUnit(context.query, [groupByColumn], [timeStart], columnNames, values);
+         this.rawDataRevealService.ofTimeUnit(context.query, [groupByColumn], [timeStart], columnNames, values, context);
       } else {
          columnNames.push(groupByColumn.name);
          values.push(event.data.x);
-         this.rawDataRevealService.ofQuery(context.query, columnNames, values);
+         this.rawDataRevealService.ofQuery(context.query, columnNames, values, context);
       }
    }
 }
