@@ -74,9 +74,9 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /element-context\.spec\.ts$/);
 // const context = require.context('./', true, /chart-context\.spec\.ts$/);
 // onst context = require.context('./', true, /chart.component\.spec\.ts$/);
-const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
+// const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-data-helper.service\.spec\.ts$/);
-// const context = require.context('./', true, /series-name-converter\.spec\.ts$/);
+const context = require.context('./', true, /series-name-converter\.spec\.ts$/);
 // const context = require.context('./', true, /chart-margin.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /chart-options-provider\.spec\.ts$/);

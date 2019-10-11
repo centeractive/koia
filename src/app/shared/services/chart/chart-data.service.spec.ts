@@ -12,7 +12,7 @@ describe('ChartDataService', () => {
 
    let now: number;
    let entries: Object[];
-   let dataProvider: ChartDataService;
+   let chartDataService: ChartDataService;
    let context: ChartContext;
 
    beforeAll(() => {
@@ -26,7 +26,7 @@ describe('ChartDataService', () => {
          { _id: 4, Time: now + min + 30 * sec, /**/ c1: 'b', c2: 3, c3: 4 },
          { _id: 1, Time: now, /*                 */ c1: 'a', c2: null, c3: -2 }
       ];
-      dataProvider = new ChartDataService();
+      chartDataService = new ChartDataService();
    });
 
    beforeEach(() => {
@@ -43,7 +43,7 @@ describe('ChartDataService', () => {
       context.dataColumns = [createColumn('x', DataType.NUMBER)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedError = ChartType.DONUT.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
@@ -60,7 +60,7 @@ describe('ChartDataService', () => {
       context.dataColumns = [createColumn('c1', DataType.TEXT)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -90,7 +90,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -117,7 +117,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.error).toBe('Names are not unique');
@@ -133,7 +133,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.error).toBe('Name column is not defined');
@@ -148,7 +148,7 @@ describe('ChartDataService', () => {
       context.dataColumns = [createColumn('c1', DataType.TEXT)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -182,7 +182,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -213,7 +213,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.error).toBe('Names are not unique');
@@ -229,7 +229,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.error).toBe('Name column is not defined');
@@ -244,7 +244,7 @@ describe('ChartDataService', () => {
       context.dataColumns = [createColumn('c1', DataType.TEXT)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -268,7 +268,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('c1', DataType.TEXT)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expected = [
@@ -301,7 +301,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME), createColumn('c1', DataType.TEXT)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const timeFormat = d3.time.format('%-d %b %Y %H:%M');
@@ -339,7 +339,7 @@ describe('ChartDataService', () => {
       context.dataColumns = [createColumn('c2', DataType.NUMBER)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.error).toBe('X-Axis is not defined');
@@ -355,7 +355,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('c1', DataType.TEXT)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -378,7 +378,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME, TimeUnit.MILLISECOND)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedError = ChartType.MULTI_BAR.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
@@ -396,7 +396,7 @@ describe('ChartDataService', () => {
       context.aggregations = []
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.error).toBe('X-Axis is not defined');
@@ -416,7 +416,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedError = ChartType.MULTI_HORIZONTAL_BAR.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
@@ -436,7 +436,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [{
@@ -463,7 +463,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -504,7 +504,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expected = [{
@@ -532,7 +532,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expected = [
@@ -568,7 +568,7 @@ describe('ChartDataService', () => {
       context.aggregations = [];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       expect(result.data).toBeDefined();
@@ -590,7 +590,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [
@@ -618,7 +618,7 @@ describe('ChartDataService', () => {
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
 
       // when
-      const result = dataProvider.createData(context);
+      const result = chartDataService.createData(context);
 
       // then
       const expectedData = [

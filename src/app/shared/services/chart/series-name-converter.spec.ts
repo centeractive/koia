@@ -5,20 +5,20 @@ describe('SeriesNameConverter', () => {
 
    const converter = new SeriesNameConverter();
 
-   it('#toGroupName should return name derived from data column value', () => {
+   it('#toGroupKey should return name derived from data column value', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
       const dataColumn = createColumn('y', DataType.NUMBER);
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, []);
+      const id = converter.toGroupKey(entry, dataColumn, []);
 
       // then
-      expect(name).toEqual('1');
+      expect(id).toEqual(1);
    });
 
-   it('#toGroupName should return name derived from split column value and data column value', () => {
+   it('#toGroupKey should return name derived from split column value and data column value', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -26,13 +26,13 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT)];
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, splitColumns);
+      const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toEqual('a⯈1');
+      expect(id).toEqual('a⯈1');
    });
 
-   it('#toGroupName should return name derived from split column values and data column value', () => {
+   it('#toGroupKey should return name derived from split column values and data column value', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -40,13 +40,13 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT), createColumn('z', DataType.NUMBER)];
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, splitColumns);
+      const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toEqual('a⯈4⯈1');
+      expect(id).toEqual('a⯈4⯈1');
    });
 
-   it('#toGroupName should return undefined when split column is null', () => {
+   it('#toGroupKey should return undefined when split column is null', () => {
 
       // given
       const entry = { _id: 1, x: null, y: 1, z: 4 };
@@ -54,13 +54,13 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT)];
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, splitColumns);
+      const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toBeUndefined();
+      expect(id).toBeUndefined();
    });
 
-   it('#toGroupName should return undefined when split column is undefined', () => {
+   it('#toGroupKey should return undefined when split column is undefined', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -68,13 +68,13 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('s', DataType.TEXT)];
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, splitColumns);
+      const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toBeUndefined();
+      expect(id).toBeUndefined();
    });
 
-   it('#toGroupName should return undefined when split column is empty string', () => {
+   it('#toGroupKey should return undefined when split column is empty string', () => {
 
       // given
       const entry = { _id: 1, x: '', y: 1, z: 4 };
@@ -82,13 +82,13 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT)];
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, splitColumns);
+      const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toBeUndefined();
+      expect(id).toBeUndefined();
    });
 
-   it('#toGroupName should return undefined when any split column is undefined', () => {
+   it('#toGroupKey should return undefined when any split column is undefined', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -96,13 +96,13 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT), createColumn('s', DataType.TEXT)];
 
       // when
-      const name = converter.toGroupName(entry, dataColumn, splitColumns);
+      const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toBeUndefined();
+      expect(id).toBeUndefined();
    });
 
-   it('#toSeriesName should return name derived from data column name', () => {
+   it('#toSeriesId should return name derived from data column name', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -199,16 +199,40 @@ describe('SeriesNameConverter', () => {
       expect(name).toBeUndefined();
    });
 
-   it('#toValues should return value when no split column is defined', () => {
+   it('#toValues should return value when NUMBER data column and no split column is defined', () => {
 
       // given
       const dataColumn = createColumn('a', DataType.NUMBER);
 
       // when
-      const values = converter.toValues('1', dataColumn,  []);
+      const values = converter.toValues(1, dataColumn,  []);
 
       // then
       expect(values).toEqual([1]);
+   });
+
+   it('#toValues should return value when TEXT data column and no split column is defined', () => {
+
+      // given
+      const dataColumn = createColumn('a', DataType.TEXT);
+
+      // when
+      const values = converter.toValues('1', dataColumn,  []);
+
+      // then
+      expect(values).toEqual(['1']);
+   });
+
+   it('#toValues should return value when BOOLEAN data column and no split column is defined', () => {
+
+      // given
+      const dataColumn = createColumn('a', DataType.BOOLEAN);
+
+      // when
+      const values = converter.toValues(true, dataColumn,  []);
+
+      // then
+      expect(values).toEqual([true]);
    });
 
    it('#toValues should return values when split column is defined', () => {

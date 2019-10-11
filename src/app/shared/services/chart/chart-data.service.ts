@@ -93,7 +93,7 @@ export class ChartDataService {
       const distinctGroupingValues = new Set<any>();
       const datasets: Object[] = [];
       context.entries.map((entry, index) => {
-         const key = this.dataNameConverter.toGroupName(entry, context.dataColumns[0], context.splitColumns);
+         const key = this.dataNameConverter.toGroupKey(entry, context.dataColumns[0], context.splitColumns);
          if (key !== undefined && key !== null) {
             const groupingValue = ChartDataHelper.extractGroupingValue(entry, context.groupByColumns[0]);
             if (groupingValue !== null && groupingValue !== undefined) {
