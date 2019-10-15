@@ -14,6 +14,34 @@ describe('DateTimeUtils', () => {
   const hour = 60 * min;
   const day = 24 * hour;
 
+  it('#maxTimeUnit should return first time unit when second time unit is missing', () => {
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, undefined)).toEqual(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, null)).toEqual(TimeUnit.HOUR);
+  });
+
+  it('#maxTimeUnit should return second time unit when first time unit is missing', () => {
+    expect(DateTimeUtils.maxTimeUnit(undefined, TimeUnit.SECOND)).toEqual(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(null, TimeUnit.HOUR)).toEqual(TimeUnit.HOUR);
+  });
+
+  it('#maxTimeUnit should return first time unit when first time unit is bigger', () => {
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.MILLISECOND)).toEqual(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MINUTE, TimeUnit.SECOND)).toEqual(TimeUnit.MINUTE);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, TimeUnit.MINUTE)).toEqual(TimeUnit.HOUR);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.DAY, TimeUnit.HOUR)).toEqual(TimeUnit.DAY);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MONTH, TimeUnit.DAY)).toEqual(TimeUnit.MONTH);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.YEAR, TimeUnit.MONTH)).toEqual(TimeUnit.YEAR);
+  });
+
+  it('#maxTimeUnit should return second time unit when second time unit is bigger', () => {
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MILLISECOND, TimeUnit.SECOND)).toEqual(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.MINUTE)).toEqual(TimeUnit.MINUTE);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MINUTE, TimeUnit.HOUR)).toEqual(TimeUnit.HOUR);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, TimeUnit.DAY)).toEqual(TimeUnit.DAY);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.DAY, TimeUnit.MONTH)).toEqual(TimeUnit.MONTH);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MONTH, TimeUnit.YEAR)).toEqual(TimeUnit.YEAR);
+  });
+
   it('#allTimeUnits should return ascending sorted time units', () => {
 
     // when
@@ -584,6 +612,21 @@ describe('DateTimeUtils', () => {
     expect(timeColumns[0].groupingTimeUnit).toBeUndefined();
   });
 
+  it('#defineTimeUnits should not set time unit when no entry contains time value', () => {
+
+    // given
+    const timeColumns: Column[] = [
+      { name: 'X', dataType: DataType.TIME, width: 10 }
+    ];
+    const entries = [{ A: 1 }, { A: 2 }];
+
+    // when
+    DateTimeUtils.defineTimeUnits(timeColumns, entries);
+
+    // then
+    expect(timeColumns[0].groupingTimeUnit).toBeUndefined();
+  });
+
   it('#defineTimeUnits should set MILLISECOND', () => {
 
     // given
@@ -594,7 +637,7 @@ describe('DateTimeUtils', () => {
       { X: now - sec },
       { A: 'test' },
       { X: now }
-    ]
+    ];
 
     // when
     DateTimeUtils.defineTimeUnits(timeColumns, entries);

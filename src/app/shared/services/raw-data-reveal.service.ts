@@ -1,27 +1,16 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Query, Operator, PropertyFilter, Column, DataType, Route, ElementContext } from '../model';
-import { DateTimeUtils, CommonUtils, QuerySanitizer } from '../utils';
+import { Query, Operator, PropertyFilter, Column, DataType, ElementContext } from '../model';
+import { DateTimeUtils, QuerySanitizer } from '../utils';
 import { CouchDBConstants } from './backend/couchdb';
-import { Router } from '@angular/router';
-import { JSQueryFactory } from './backend/jsonserver';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RawDataRevealService {
 
-  private useDialog = true;
-
-  constructor(private router: Router, private dialogService: MatDialog) { }
-
-  /**
-   * @param useDialog [[true]] to have raw data shown in a dialog (default), [[false]] to have it shown in the standard raw data view
-   */
-  setUseDialog(useDialog: boolean) {
-    this.useDialog = useDialog;
-  }
+  constructor(private dialogService: MatDialog) { }
 
   /**
    * displays raw data of a single entry identified by its ID
@@ -73,12 +62,6 @@ export class RawDataRevealService {
   }
 
   show(query: Query): void {
-    query = new QuerySanitizer(query).sanitize();
-    if (this.useDialog) {
-      this.dialogService.open(RawDataDialogComponent, { data: query, panelClass: 'dialog-container' });
-    } else {
-      const link = CommonUtils.encodeURL('/' + Route.RAWDATA + new JSQueryFactory().create(query));
-      this.router.navigateByUrl(link);
-    }
+    this.dialogService.open(RawDataDialogComponent, { data: new QuerySanitizer(query).sanitize(), panelClass: 'dialog-container' });
   }
 }

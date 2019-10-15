@@ -1,7 +1,6 @@
 import { Column, DataType, TimeUnit, Query, PropertyFilter, Operator } from 'app/shared/model';
 import { RawDataRevealService, TimeGroupingService } from 'app/shared/services';
 import { CellClickHandler } from './cell-click-handler';
-import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
 import { ValueRangeFilter, ValueGrouping, ValueRange } from 'app/shared/value-range/model';
 import { flush, fakeAsync } from '@angular/core/testing';
 import { QueryProvider } from './query-provider';
@@ -24,7 +23,7 @@ describe('CellClickHandler', () => {
          { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
          { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true }
       ];
-      rawDataRevealService = new RawDataRevealService(null, null);
+      rawDataRevealService = new RawDataRevealService(null);
       baseQueryProvider = { provide: () => new Query() };
       cellClickHandler = new CellClickHandler(columns, baseQueryProvider, rawDataRevealService);
       showSpy = spyOn(rawDataRevealService, 'show').and.callFake(q => null);

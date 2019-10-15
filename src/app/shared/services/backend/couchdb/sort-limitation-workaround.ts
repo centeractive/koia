@@ -4,6 +4,7 @@ import { DBService } from '../db.service';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { DialogService } from '../../dialog.service';
 import { CommonUtils } from 'app/shared/utils';
+
 /**
  * CouchDB (v. 2.3.1) doesn't include documents in the _find result if they don't contain the field (attribute) specified in sort
  * (see https://stackoverflow.com/a/58351340/2358409). Therefore, we...

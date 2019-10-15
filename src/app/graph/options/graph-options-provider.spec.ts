@@ -1,8 +1,5 @@
 import { GraphOptionsProvider } from './graph-options-provider';
 import { GraphContext, GraphNode, DataType, Column, TimeUnit } from 'app/shared/model';
-import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material';
-import { RawDataRevealService } from 'app/shared/services';
 import { NodeDoubleClickHandler } from './node-double-click-handler';
 
 describe('GraphOptionsProvider', () => {

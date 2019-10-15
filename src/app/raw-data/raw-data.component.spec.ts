@@ -1,24 +1,21 @@
-import { async, ComponentFixture, TestBed, flush, fakeAsync, flushMicrotasks } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
 
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
 import {
   MatTableModule, MatSortModule, MatProgressBarModule, MatSidenavModule, MatPaginatorModule,
-  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet, MatDialogRef
+  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet
 } from '@angular/material';
 import { RawDataComponent } from './raw-data.component';
 import { Router } from '@angular/router';
-import { of, Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Column, Query, DataType, Scene, Route } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
-import { JSQueryFactory } from 'app/shared/services/backend/jsonserver';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NotificationService, DialogService } from 'app/shared/services';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
-import { RawDataDialogComponent } from './raw-data-dialog.component';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 
 describe('RawDataComponent', () => {
@@ -99,7 +96,6 @@ describe('RawDataComponent', () => {
     const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
     expect(query.getPageIndex()).toBe(0);
     expect(query.getRowsPerPage()).toBe(5);
-    expect(new JSQueryFactory().create(component.query)).toBe('?_page=1&_limit=5');
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
     expect(component.entries).toBe(entries);
   });

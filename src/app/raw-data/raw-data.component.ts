@@ -6,7 +6,6 @@ import { DBService } from '../shared/services/backend';
 import { NotificationService, DialogService } from 'app/shared/services';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
-import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 
 @Component({

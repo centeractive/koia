@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule, MatDialog } from '@angular/material';
+import { MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule } from '@angular/material';
 import { of } from 'rxjs';
 import { SummaryTableComponent } from './summary-table.component';
-import { SummaryContext, Query, Route, Column, DataType, TimeUnit, Aggregation } from 'app/shared/model';
+import { SummaryContext, Query, Route, Column, DataType, TimeUnit, Aggregation, PropertyFilter, Operator } from 'app/shared/model';
 import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DatePipe } from '@angular/common';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -11,6 +11,7 @@ import { SimpleChange } from '@angular/core';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { ValueRangeFilter } from 'app/shared/value-range/model';
 
 describe('SummaryTableComponent', () => {
 
@@ -24,10 +25,10 @@ describe('SummaryTableComponent', () => {
 
   let component: SummaryTableComponent;
   let fixture: ComponentFixture<SummaryTableComponent>;
-  let router: Router;
   const dbService = new DBService(null);
   const datePipe = new DatePipe('en-US');
   let getActiveSceneSpy: jasmine.Spy;
+  let showRawDataSpy: jasmine.Spy;
 
   beforeAll(() => {
     const date = new Date();
@@ -51,9 +52,6 @@ describe('SummaryTableComponent', () => {
   });
 
   beforeEach(() => {
-    router = <Router> { navigateByUrl: (url: string) => null };
-    const rawDataRevealService = new RawDataRevealService(router, <MatDialog> {});
-    rawDataRevealService.setUseDialog(false);
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(SceneFactory.createScene('1', columns));
     TestBed.configureTestingModule({
       imports: [MatTableModule, MatSortModule, MatProgressBarModule, RouterTestingModule, MatDialogModule],
@@ -62,7 +60,7 @@ describe('SummaryTableComponent', () => {
         { provide: DBService, useValue: dbService },
         { provide: AggregationService, useClass: AggregationService },
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
-        { provide: RawDataRevealService, useValue: rawDataRevealService }
+        { provide: RawDataRevealService, useClass: RawDataRevealService }
       ]
     });
     fixture = TestBed.createComponent(SummaryTableComponent);
@@ -71,6 +69,7 @@ describe('SummaryTableComponent', () => {
     context.dataColumns = [findColumn('t2')];
     component.context = context;
     component.entries$ = of(entries.slice(0));
+    showRawDataSpy = spyOn(TestBed.get(RawDataRevealService), 'show').and.callFake(query => null);
   });
 
   it('should create', () => {
@@ -250,13 +249,17 @@ describe('SummaryTableComponent', () => {
     context.dataColumns = [findColumn('t1')];
     context.groupByColumns = [findColumn('t2')];
     context.query = new Query();
-    spyOn(router, 'navigateByUrl').and.returnValue(null);
 
     // when
     component.onAggregationCellClick({ t1: 'a', t2: 'x', 'Count': 522 });
 
     // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?t2=x&t1=a');
+    const query: Query = showRawDataSpy.calls.argsFor(0)[0];
+    expect(query.getPropertyFilters()).toEqual([
+      new PropertyFilter('t2', Operator.EQUAL, 'x'),
+      new PropertyFilter('t1', Operator.EQUAL, 'a')
+    ]);
+    expect(query.getValueRangeFilters()).toEqual([]);
   });
 
   it('#onAggregationCellClick should open raw data view for matching column and time period', () => {
@@ -266,13 +269,16 @@ describe('SummaryTableComponent', () => {
     context.groupByColumns = [findColumn('Time')];
     context.query = new Query();
     const oneMinuteAgo = now - 60 * sec;
-    spyOn(router, 'navigateByUrl').and.returnValue(null);
 
     // when
     component.onAggregationCellClick({ 'Time (per minute)': oneMinuteAgo, t1: 'a', 'Count': 522 });
 
     // then
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/' + Route.RAWDATA + '?t1=a&Time_gte=' + oneMinuteAgo + '&Time_lte=' + now);
+    const query: Query = showRawDataSpy.calls.argsFor(0)[0];
+    expect(query.getPropertyFilters()).toEqual([new PropertyFilter('t1', Operator.EQUAL, 'a')]);
+    expect(query.getValueRangeFilters()).toEqual([
+      new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: undefined })
+    ]);
   });
 
   it('#sort should sort ascending', fakeAsync(() => {

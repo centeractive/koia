@@ -5,6 +5,16 @@ import { ArrayUtils } from './array-utils';
 
 export class DateTimeUtils {
 
+  static maxTimeUnit(tu1: TimeUnit, tu2: TimeUnit): TimeUnit {
+    if (!tu1) {
+      return tu2;
+    } else if (!tu2) {
+      return tu1;
+    }
+    const allTimeUnits = DateTimeUtils.allTimeUnits('asc');
+    return allTimeUnits.indexOf(tu1) > allTimeUnits.indexOf(tu2) ? tu1 : tu2;
+  }
+
   /**
    * @returns a sorted array of all [[TimeUnit]]s
    */

@@ -17,7 +17,7 @@ describe('NodeDoubleClickHandler', () => {
 
    beforeEach(() => {
       graphContext = new GraphContext([timeColumn, levelColumn]);
-      rawDataRevealService = new RawDataRevealService(null, null);
+      rawDataRevealService = new RawDataRevealService(null);
       handler = new NodeDoubleClickHandler(rawDataRevealService);
       spyOn(rawDataRevealService, 'ofTimeUnit');
       spyOn(rawDataRevealService, 'ofQuery');

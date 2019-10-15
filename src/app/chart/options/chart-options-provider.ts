@@ -272,8 +272,7 @@ export class ChartOptionsProvider {
             chartType === ChartType.AREA;
          if (context.legendPosition === 'top' && lineOrAreaChart) {
             chart.legend = { margin: { bottom: context.margin.top } };
-         }
-         if (context.legendPosition === 'bottom' && chartType !== ChartType.SCATTER) {
+         } else if (context.legendPosition === 'bottom' && chartType !== ChartType.SCATTER) {
             const scaling = context.margin.bottom / 2;
             chart.legend = { margin: { top: scaling, bottom: scaling } };
          }
@@ -302,7 +301,8 @@ export class ChartOptionsProvider {
          DateTimeUtils.toMilliseconds(1, timeColumn.groupingTimeUnit) > DateTimeUtils.toMilliseconds(1, timeUnit)) {
          timeUnit = timeColumn.groupingTimeUnit;
       }
-      return DateTimeUtils.d3FormatOf(timeUnit);
+      const groupingTimeUnit = context.groupByColumns[0].groupingTimeUnit;
+      return DateTimeUtils.d3FormatOf(DateTimeUtils.maxTimeUnit(groupingTimeUnit, timeUnit));
    }
 
    /**
