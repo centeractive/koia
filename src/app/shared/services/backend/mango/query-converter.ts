@@ -1,6 +1,7 @@
 import { MangoQueryBuilder } from './mango-query-builder';
 import { CouchDBConstants } from '../couchdb/couchdb-constants';
 import { Column, Query, Operator } from 'app/shared/model';
+import { SortLimitationWorkaround } from '../couchdb';
 
 export class QueryConverter {
 
@@ -17,6 +18,7 @@ export class QueryConverter {
       const builder = new MangoQueryBuilder(this.forPouchDB, columns)
          .includeFields([CouchDBConstants._ID]);
       this.defineFilters(builder, query);
+      SortLimitationWorkaround.sortByMatchingIDsQueryWhenCouchDbWithSort(!this.forPouchDB, builder, query);
       return builder.toQuery();
    }
 

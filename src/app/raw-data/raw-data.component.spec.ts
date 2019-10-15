@@ -1,22 +1,25 @@
-import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, flush, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
 import {
   MatTableModule, MatSortModule, MatProgressBarModule, MatSidenavModule, MatPaginatorModule,
-  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet
+  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet, MatDialogRef
 } from '@angular/material';
 import { RawDataComponent } from './raw-data.component';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Column, Query, DataType, Scene, Route } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { JSQueryFactory } from 'app/shared/services/backend/jsonserver';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NotificationService } from 'app/shared/services';
+import { NotificationService, DialogService } from 'app/shared/services';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { RawDataDialogComponent } from './raw-data-dialog.component';
+import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 
 describe('RawDataComponent', () => {
 
@@ -27,6 +30,7 @@ describe('RawDataComponent', () => {
   let fixture: ComponentFixture<RawDataComponent>;
   const dbService: DBService = new DBService(null);
   let getActiveSceneSpy: jasmine.Spy;
+  const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   let requestEntriesPageSpy: jasmine.Spy;
 
@@ -65,6 +69,7 @@ describe('RawDataComponent', () => {
       providers: [
         { provide: MatBottomSheet, useClass: MatBottomSheet },
         { provide: DBService, useValue: dbService },
+        { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
@@ -77,6 +82,7 @@ describe('RawDataComponent', () => {
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
     requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(of(page).toPromise());
+    spyOn(dialogService, 'showConfirmDialog').and.returnValue(null);
     fixture.detectChanges();
     flush();
   }));
@@ -111,6 +117,79 @@ describe('RawDataComponent', () => {
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#ngOnInit should not define new query when query is definedactive', fakeAsync(() => {
+
+    // given
+    const query = new Query();
+    component.query = query;
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.query).toBe(query);
+  }));
+
+  it('#onFilterChanged should notify error when entries page request fails', fakeAsync(() => {
+
+    // given
+    requestEntriesPageSpy.and.returnValue(Promise.reject('server error'));
+    spyOn(component, 'notifyError').and.callFake(err => null);
+
+    // when
+    component.onFilterChanged(new Query());
+    flush();
+
+    // then
+    expect(component.loading).toBeFalsy();
+    expect(component.notifyError).toHaveBeenCalledWith('server error');
+  }));
+
+  it('#sortEntries should fetch first page of sorted data', () => {
+
+    // given
+    component.paginator.pageSize = 10;
+
+    // when
+    component.sortEntries({ active: 'Path', direction: 'desc' });
+
+    // then
+    expect(dbService.requestEntriesPage).toHaveBeenCalled();
+    const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
+    expect(query.getSort()).toEqual(<Sort>{ active: 'Path', direction: 'desc' });
+    expect(query.getPageIndex()).toBe(0);
+    expect(query.getRowsPerPage()).toBe(10);
+  });
+
+  it('#sortEntries should show CouchDB limitation dialog when CouchDB is in use', fakeAsync(() => {
+
+    // given
+    SortLimitationWorkaround.couchDbSortLimitationDialogData.rememberChoice = false;
+    spyOn(dbService, 'isCouchDbInUse').and.returnValue(true);
+
+    // when
+    component.sortEntries({ active: 'Level', direction: 'asc' });
+    flush();
+
+    // then
+    expect(dialogService.showConfirmDialog).toHaveBeenCalled();
+  }));
+
+  it('#sortEntries should not show CouchDB limitation dialog when user suppressed it', fakeAsync(() => {
+
+    // given
+    SortLimitationWorkaround.couchDbSortLimitationDialogData.rememberChoice = true;
+    spyOn(dbService, 'isCouchDbInUse').and.returnValue(true);
+
+    // when
+    component.sortEntries({ active: 'Level', direction: 'asc' });
+    flush();
+
+    // then
+    expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
   }));
 
   it('#formattedValueOf should return empty string when value is null', () => {
@@ -184,23 +263,7 @@ describe('RawDataComponent', () => {
     expect(query.getRowsPerPage()).toBe(50);
   });
 
-  it('#sortEntries should fetch first page of sorted data', () => {
-
-    // given
-    component.paginator.pageSize = 10;
-
-    // when
-    component.sortEntries({ active: 'Path', direction: 'desc' });
-
-    // then
-    expect(dbService.requestEntriesPage).toHaveBeenCalled();
-    const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
-    expect(query.getSort()).toEqual(<Sort>{ active: 'Path', direction: 'desc' });
-    expect(query.getPageIndex()).toBe(0);
-    expect(query.getRowsPerPage()).toBe(10);
-  });
-
-  it('#adjustLayout should adjust content margin top', () => {
+  it('#adjustLayout should adjust content margin top when non-dialog style', () => {
 
     // given
     const divHeader = { offsetHeight: 55 };
@@ -213,6 +276,20 @@ describe('RawDataComponent', () => {
 
     // then
     expect(divContent.style.marginTop).toEqual((55 + RawDataComponent.MARGIN_TOP) + 'px');
+  });
+
+  it('#adjustLayout should adjust content margin top when dialog style', () => {
+
+    // given
+    component.dialogStyle = true;
+    const divContent = { style: { marginTop: '' } };
+    component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
+
+    // when
+    component.adjustLayout();
+
+    // then
+    expect(divContent.style.marginTop).toEqual(RawDataComponent.MARGIN_TOP + 'px');
   });
 
   it('#click on print button should print window', fakeAsync(() => {

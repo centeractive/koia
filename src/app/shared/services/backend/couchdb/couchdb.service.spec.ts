@@ -334,6 +334,40 @@ describe('CouchDBService', () => {
          .catch(e => fail(e));
    });
 
+   it('#clear should delete matching databases when prefix is provided', async () => {
+
+      // given
+      const databases = ['scenes', 'data_1', testDBPrefix + 'scenes', testDBPrefix + 'data_1', testDBPrefix + 'data_2'];
+      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve(databases));
+      spyOn(couchDBService, 'deleteDatabase').and.returnValue(db => Promise.resolve());
+
+      // when
+      await couchDBService.clear(testDBPrefix);
+
+      // then
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledTimes(3);
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledWith(testDBPrefix + 'scenes');
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledWith(testDBPrefix + 'data_1');
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledWith(testDBPrefix + 'data_2');
+   });
+
+   it('#clear should delete all non-system databases when no prefix is provided', async () => {
+
+      // given
+      const databases = ['scenes', 'data_1', 'data_2'];
+      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve(databases));
+      spyOn(couchDBService, 'deleteDatabase').and.callFake(db => Promise.resolve());
+
+      // when
+      await couchDBService.clear();
+
+      // then
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledTimes(3);
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledWith('scenes');
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledWith('data_1');
+      expect(couchDBService.deleteDatabase).toHaveBeenCalledWith('data_2');
+   });
+
    function checkDocument(doc: Document, expID: string, expName: string): void {
       expect(doc).toBeDefined();
       expect(doc._id).toBe(expID);

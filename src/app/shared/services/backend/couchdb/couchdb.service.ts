@@ -78,7 +78,8 @@ export class CouchDBService implements DB {
     const index = {
       index: {
         fields: [columnName]
-      }
+      },
+      ddoc: 'index_' + columnName
     };
     return this.http.post<any>(this.url(HTTPMethod.POST, database, '_index'), index, this.httpOptions).toPromise();
   }

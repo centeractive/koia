@@ -24,7 +24,7 @@ describe('EntryPersister', () => {
       monitorOnProgressSpy = spyOn(monitor, 'onProgress');
       spyOn(monitor, 'onError');
       spyOn(monitor, 'onComplete');
-      spyOn(console, 'log').and.callFake(m => null)
+      spyOn(console, 'log').and.callFake(m => null);
       persister = new EntryPersister(dbService, database, batchSize, monitor);
    });
 

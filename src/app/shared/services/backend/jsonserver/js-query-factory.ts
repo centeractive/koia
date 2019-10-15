@@ -25,7 +25,7 @@ export class JSQueryFactory {
             jsQuery = this.appendPropertyFilter(jsQuery, propertyFilter);
          }
       }
-      if (query.getSort()) {
+      if (query.hasSort()) {
          jsQuery = this.append(jsQuery, '_sort', query.getSort().active);
          jsQuery = this.append(jsQuery, '_order', query.getSort().direction);
       }

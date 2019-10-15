@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
-import { QueryUtils } from 'app/shared/utils';
+import { QueryUtils, CommonUtils } from 'app/shared/utils';
 import { QueryConverter } from './mango/query-converter';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
 import { SortDirection } from '@angular/material';
-import { CouchDBService } from './couchdb';
+import { CouchDBService, SortLimitationWorkaround } from './couchdb';
 import { DB } from './db.type';
 import { PouchDBAccess } from './pouchdb';
 import { Scene, SceneInfo, DataType, Operator, Query, Page, Column, Document } from 'app/shared/model';
@@ -82,6 +82,10 @@ export class DBService {
 
   isIndexedDbInUse(): boolean {
     return this.db !== this.couchDBService;
+  }
+
+  isCouchDbInUse(): boolean {
+    return this.db === this.couchDBService;
   }
 
   getMaxDataItemsPerScene(): number {
@@ -161,7 +165,8 @@ export class DBService {
   }
 
   async requestEntriesPage(query: Query, prevPage?: Page): Promise<Page> {
-    if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query)) {
+    if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query) &&
+      !SortLimitationWorkaround.isCouchDbWithChangedSort(this, query, prevPage)) {
       return this.findEntries(query, false).toPromise()
         .then(entries => this.toPage(query, entries, prevPage.totalRowCount));
     } else {
@@ -186,7 +191,7 @@ export class DBService {
   }
 
   private async countMatchingEntries(query: Query): Promise<number> {
-    if (query.hasFilter()) {
+    if (query.hasFilter() || SortLimitationWorkaround.isCouchDbWithSort(this, query)) {
       const mangoQuery = this.queryConverter.queryForAllMatchingIds(this.activeScene.columns, query);
       const objects = await this.db.find(this.activeScene.database, mangoQuery).toPromise();
       return objects.length;

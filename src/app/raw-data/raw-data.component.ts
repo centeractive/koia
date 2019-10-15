@@ -3,9 +3,11 @@ import { Router } from '@angular/router';
 import { Sort, MatPaginator, MatBottomSheet } from '@angular/material';
 import { Column, Query, Route, Page } from '../shared/model';
 import { DBService } from '../shared/services/backend';
-import { NotificationService } from 'app/shared/services';
+import { NotificationService, DialogService } from 'app/shared/services';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 
 @Component({
   selector: 'koia-raw-data',
@@ -37,7 +39,8 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   private page: Page;
   private valueFormatter = new ValueFormatter();
 
-  constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService, notificationService: NotificationService) {
+  constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService,
+    private dialogService: DialogService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.wrapWords = true;
@@ -85,6 +88,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
         this.entries = page.entries;
         this.totalRowCount = page.totalRowCount;
         this.loading = false;
+        SortLimitationWorkaround.showInfoDialog(this.dbService, this.dialogService, this.query);
       })
       .catch(err => {
         this.loading = false;

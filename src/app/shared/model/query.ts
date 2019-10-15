@@ -66,6 +66,10 @@ export class Query {
       return this.sort;
    }
 
+   hasSort(): boolean {
+      return this.sort !== undefined;
+   }
+
    setSort(sort: Sort): void {
       this.sort = sort;
    }

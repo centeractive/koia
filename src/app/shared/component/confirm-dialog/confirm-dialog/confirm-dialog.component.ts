@@ -12,7 +12,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
                             (click)="onButtonPressed(button)">{{ button }}</button>
                   </div>
                   <div id="div_remember" *ngIf="data.letRememberChoice">
-                    <mat-checkbox [(ngModel)]="data.rememberChoice">Remember Choice</mat-checkbox>
+                    <mat-checkbox [(ngModel)]="data.rememberChoice">{{ rememberChoiceLabel }}</mat-checkbox>
                   </div>
                 </mat-card-content>
              </mat-card>`,
@@ -35,8 +35,11 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 })
 export class ConfirmDialogComponent {
 
+  rememberChoiceLabel: string;
+
   constructor(public dialogRef: MatDialogRef<ConfirmDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData) {
     this.dialogRef.disableClose = true;
+    this.rememberChoiceLabel = data.buttonNames.length === 1 ? 'Don\'t show again' : 'Remember choice';
   }
 
   onButtonPressed(buttonName: string) {
@@ -52,7 +55,7 @@ export class ConfirmDialogData {
 
   closedWithButtonIndex: number;
   closedWithButtonName: string;
-  rememberChoice: boolean;
+  rememberChoice = false;
 
   /**
    * @param title dialog title

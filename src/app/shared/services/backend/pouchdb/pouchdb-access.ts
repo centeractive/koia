@@ -27,7 +27,8 @@ export class PouchDBAccess implements DB {
     const index = {
       index: {
         fields: [columnName]
-      }
+      },
+      ddoc: 'index_' + columnName
     };
     console.log('createIndex ' + database + ' ' + JSON.stringify(index));
     return new PouchDB(database).createIndex(index);

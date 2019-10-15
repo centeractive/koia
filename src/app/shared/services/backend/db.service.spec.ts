@@ -96,6 +96,7 @@ describe('DBService', () => {
     // then
     expect(console.log).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
     expect(dbService.isIndexedDbInUse()).toBeTruthy();
+    expect(dbService.isCouchDbInUse()).toBeFalsy();
     expect(dbService.isBackendInitialized()).toBeTruthy();
   }));
 

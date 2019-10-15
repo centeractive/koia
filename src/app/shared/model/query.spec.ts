@@ -114,6 +114,7 @@ describe('Query', () => {
     query.clearSort();
 
     // then
+    expect(query.hasSort()).toBeFalsy();
     expect(query.getSort()).toBeUndefined();
   });
 

@@ -166,6 +166,47 @@ describe('QueryConverter', () => {
       expect(mangoQuery).toEqual(expected);
    });
 
+   it('#queryForAllMatchingIds when CouchDB query has sort', () => {
+
+      // given
+      query.setSort({ active: 'Level', direction: 'desc' });
+
+      // when
+      const mangoQuery = queryConverter.queryForAllMatchingIds(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            _id: { $gt: null }
+         },
+         fields: [CouchDBConstants._ID],
+         sort: [
+            { Level: 'desc' }
+         ],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#queryForAllMatchingIds when PouchDB query has sort', () => {
+
+      // given
+      query.setSort({ active: 'Level', direction: 'desc' });
+
+      // when
+      const mangoQuery = new QueryConverter(true).queryForAllMatchingIds(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            _id: { $gt: null }
+         },
+         fields: [CouchDBConstants._ID],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
    it('#toMango when query has no filter', () => {
 
       // when

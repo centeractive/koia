@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
 
@@ -76,7 +76,7 @@ getTestBed().initTestEnvironment(
 // onst context = require.context('./', true, /chart.component\.spec\.ts$/);
 // const context = require.context('./', true, /chart-data.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-data-helper.service\.spec\.ts$/);
-const context = require.context('./', true, /series-name-converter\.spec\.ts$/);
+// const context = require.context('./', true, /series-name-converter\.spec\.ts$/);
 // const context = require.context('./', true, /chart-margin.service\.spec\.ts$/);
 // const context = require.context('./', true, /chart-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /chart-options-provider\.spec\.ts$/);
