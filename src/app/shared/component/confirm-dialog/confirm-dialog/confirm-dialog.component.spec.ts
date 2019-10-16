@@ -57,6 +57,16 @@ describe('ConfirmDialogComponent', () => {
     }
   });
 
+  it('should define remember choice label when dialog contains multiple buttons', () => {
+    expect(component.rememberChoiceLabel).toBe('Remember choice');
+  });
+
+  it('should define remember choice label when dialog contains single button', () => {
+    component = new ConfirmDialogComponent(null, new ConfirmDialogData(title, textBlock, ['OK']));
+
+    expect(component.rememberChoiceLabel).toBe('Don\'t show again');
+  });
+
   it('#click on first button should close dialog', () => {
 
     // given

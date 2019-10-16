@@ -3,7 +3,7 @@ import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 
 /**
  * Maps data of different format to target entries and adds an "_id" attribute to each target entry.
- * Target entries are ready to be inserted as document to the CouchDB.
+ * Target entries are ready to be inserted as documents to CouchDB or PouchDB.
  *
  * - values are NOT written to target entries...
  *   - when they're [[null]] or [[undefined]]
@@ -19,14 +19,14 @@ export class EntryMapper {
 
    constructor(private columnMapping: ColumnPair[], private locale: string) { }
 
-   mapObjects(sourceEntries: Object[]): MappingResult[] {
-      let id = this.reserveIDs(sourceEntries.length);
-      return this.sanitize(sourceEntries.map(entry => this.mapObject(entry, ++id)));
-   }
-
    mapRows(rows: string[][]): MappingResult[] {
       let id = this.reserveIDs(rows.length);
       return this.sanitize(rows.map(row => this.mapRow(row, ++id)));
+   }
+
+   mapObjects(sourceEntries: Object[]): MappingResult[] {
+      let id = this.reserveIDs(sourceEntries.length);
+      return this.sanitize(sourceEntries.map(entry => this.mapObject(entry, ++id)));
    }
 
    private sanitize(mappingResults: MappingResult[]): MappingResult[] {
@@ -69,7 +69,7 @@ export class EntryMapper {
    }
 
    private mapValue(columnPair: ColumnPair, sourceValue: any, mappingResult: MappingResult): void {
-      if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') { // may be false or 0
+      if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
          if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)
             && columnPair.target.dataType === DataType.TIME) {
             this.mapTextToTime(sourceValue.toString(), columnPair, mappingResult);
@@ -88,9 +88,7 @@ export class EntryMapper {
    private mapTextToTime(sourceValue: string, columnPair: ColumnPair, mappingResult: MappingResult) {
       try {
          const date = this.parseDate(sourceValue, columnPair.source.format);
-         if (date) {
-            mappingResult.entry[columnPair.target.name] = this.roundDownToTargetFormat(date, columnPair.target.format).getTime();
-         }
+         mappingResult.entry[columnPair.target.name] = this.roundDownToTargetFormat(date, columnPair.target.format).getTime();
       } catch (e) {
          mappingResult.errors.push('Column \'' + columnPair.source.name + '\': ' + e.message);
       }

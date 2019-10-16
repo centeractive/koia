@@ -42,13 +42,26 @@ describe('ChartContext', () => {
    it('#legendPosition should fire look change event when legendPosition is changed', fakeAsync(() => {
 
       // when
-      context.legendPosition = 'test';
+      context.legendPosition = 'left';
       flush();
 
       // then
-      expect(context.legendPosition).toBe('test');
+      expect(context.legendPosition).toBe('left');
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
+   it('#legendPosition should not fire look change event when legendPosition is changed but legend is not shown', fakeAsync(() => {
+
+      // when
+      context.showLegend = false;
+      flush();
+      eventHandlerSpy.calls.reset();
+      context.legendPosition = 'left';
+      flush();
+
+      // then
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
    it('#showLegend should not fire look change event when value is not changed', fakeAsync(() => {
@@ -238,6 +251,21 @@ describe('ChartContext', () => {
 
       // then
       expect(title).toBe('test title');
+   });
+
+   it('#getTitle when single grouping with split columns', () => {
+
+      // given
+      context.chartType = ChartType.AREA.type;
+      context.dataColumns = [column('Percent')];
+      context.splitColumns = [column('Name'), column('Amount')];
+      context.groupByColumns = [column('Time')];
+
+      // when
+      const title = context.getTitle();
+
+      // then
+      expect(title).toBe('Count distinct values of Percent by Time\nsplit by Name⯈Amount');
    });
 
    it('#getSupportedExportFormats should return PNG', () => {

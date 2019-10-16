@@ -219,7 +219,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   refreshEntries(): void {
     const query = new Query();
     if (this.fullTextFilter && this.fullTextFilter.length > 0) {
-      this.defineFullTextFilter(query);
+      query.setFullTextFilter(this.fullTextFilter);
     }
     this.columnFilters
       .filter(f => f.operator === Operator.EMPTY || f.operator === Operator.NOT_EMPTY
@@ -230,22 +230,5 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       .forEach(f =>
         query.addValueRangeFilter(f.column.name, f.selValueRange.min, f.selValueRange.max, f.selValueRange.maxExcluding, f.inverted));
     this.onFilterChange.emit(query);
-  }
-
-  private defineFullTextFilter(query: Query): void {
-    query.setFullTextFilter(this.fullTextFilter);
-
-
-    // jsonserver
-    //
-    // [[Query.setFullTextFilter]] would be the proper method to be used but this results in a json-server full text search within
-    // all columns. Since the time column is stored as a number, this may produces wrong results when the search term is also a
-    // number. As a workaround, we search within the 'Data' column for now.
-    //
-    // TODO: find generic solution that works also when 'Data' column does not exist
-    //
-    // if (this.dataColumnExists) {
-    //  query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, this.fullTextFilter));
-    // }
   }
 }

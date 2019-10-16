@@ -115,7 +115,7 @@ describe('EntryMapper', () => {
       expect(actual[0].errors).toEqual([]);
    });
 
-   it('#mapRows TEXT to TIME', () => {
+   it('#mapRows TEXT to TIME with valid date/time', () => {
 
       // given
       const cp = columnPair('Text');
@@ -181,31 +181,6 @@ describe('EntryMapper', () => {
       const date = new Date(actual[0].entry['Date/Time']);
       expect(date.getFullYear()).toBe(2019);
       expect(date.getMonth()).toBe(4);
-      expect(date.getDate()).toBe(1);
-      expect(date.getHours()).toBe(0);
-      expect(date.getMinutes()).toBe(0);
-      expect(date.getSeconds()).toBe(0);
-      expect(date.getMilliseconds()).toBe(0);
-      expect(actual[0].errors).toEqual([]);
-   });
-
-   it('#mapRows TEXT to TIME should round down when target format is year', () => {
-
-      // given
-      const cp = columnPair('Text');
-      cp.source.format = dateTimeFormat;
-      cp.target.name = 'Date/Time';
-      cp.target.dataType = DataType.TIME;
-      cp.target.format = 'yyyy'
-
-      // when
-      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']]);
-
-      // then
-      expect(actual.length).toBe(1);
-      const date = new Date(actual[0].entry['Date/Time']);
-      expect(date.getFullYear()).toBe(2019);
-      expect(date.getMonth()).toBe(0);
       expect(date.getDate()).toBe(1);
       expect(date.getHours()).toBe(0);
       expect(date.getMinutes()).toBe(0);
@@ -559,6 +534,22 @@ describe('EntryMapper', () => {
       expect(actual[1].errors).toEqual([]);
    });
 
+   it('#mapObjects TEXT to TIME should return no entry but error when value is invalid', () => {
+
+      // given
+      const cp = columnPair('Text');
+      cp.source.format = dateTimeFormat;
+      cp.target.name = 'Date/Time';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapObjects([{ Text: 'xy' }]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "xy" to Time using format "yyyy.MM.dd HH:mm:ss SSS"' ]);
+   });
+
    it('#mapObjects NUMBER to TEXT', () => {
 
       // given
@@ -643,6 +634,20 @@ describe('EntryMapper', () => {
       expect(actual.length).toBe(1);
       expect(actual[0].entry).toBeUndefined();
       expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "X" to Number']);
+   });
+
+   it('#mapObjects should return no entry but error for invalid number II', () => {
+
+      // given
+      columnPairs[0].target.dataType = DataType.NUMBER;
+
+      // when
+      const actual = mapper.mapObjects([{ Text: true }]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toBeUndefined();
+      expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "true" to Number']);
    });
 
    it('#mapObjects should return no entry but error for invalid time', () => {

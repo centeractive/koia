@@ -83,6 +83,13 @@ export class ChartContext extends ElementContext {
       return this._showLegend;
    }
 
+   set showLegend(showLegend: boolean) {
+      if (this._showLegend !== showLegend) {
+         this._showLegend = showLegend;
+         this.fireLookChanged();
+      }
+   }
+
    get legendPosition(): string {
       return this._legendPosition;
    }
@@ -97,13 +104,6 @@ export class ChartContext extends ElementContext {
          if (this.showLegend) {
             this.fireLookChanged();
          }
-      }
-   }
-
-   set showLegend(showLegend: boolean) {
-      if (this._showLegend !== showLegend) {
-         this._showLegend = showLegend;
-         this.fireLookChanged();
       }
    }
 

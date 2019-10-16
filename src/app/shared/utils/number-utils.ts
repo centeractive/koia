@@ -90,8 +90,7 @@ export class NumberUtils {
       } else if (!this.representsNumber(str)) {
          return undefined;
       }
-      const result = parseInt(this.removeThousandsSeparators(str), 10);
-      return isNaN(result) ? undefined : result;
+      return parseInt(this.removeThousandsSeparators(str), 10);
    }
 
    /**
@@ -109,8 +108,7 @@ export class NumberUtils {
       } else if (!this.representsNumber(str)) {
          return undefined;
       }
-      const result = parseFloat(this.removeThousandsSeparators(str));
-      return isNaN(result) ? undefined : result;
+      return parseFloat(this.removeThousandsSeparators(str));
    }
 
    private static removeThousandsSeparators(str: string): string {
@@ -124,7 +122,7 @@ export class NumberUtils {
       if (!num || Math.floor(num) === num) {
          return 0;
       }
-      return num.toString().split(NumberUtils.DECIMAL_SEPARATOR)[1].length || 0;
+      return num.toString().split(NumberUtils.DECIMAL_SEPARATOR)[1].length;
    }
 
    /**

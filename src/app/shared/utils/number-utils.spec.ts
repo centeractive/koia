@@ -388,9 +388,11 @@ describe('NumberUtils', () => {
   });
 
   it('#countDecimals should return zero when number has no decimals', () => {
+    expect(NumberUtils.countDecimals(-84)).toBe(0);
     expect(NumberUtils.countDecimals(-1)).toBe(0);
     expect(NumberUtils.countDecimals(0)).toBe(0);
     expect(NumberUtils.countDecimals(1)).toBe(0);
+    expect(NumberUtils.countDecimals(84)).toBe(0);
   });
 
   it('#countDecimals should return number of decimals when number has decimals', () => {

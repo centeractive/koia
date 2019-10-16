@@ -172,6 +172,21 @@ describe('SummaryTableComponent', () => {
     expect(component.frameData).not.toBe(prevFrameData);
   }));
 
+  it('#ngOnChanges should not refresh frame data when entries$ do not changed', fakeAsync(() => {
+
+    // given
+    fixture.detectChanges();
+    flush();
+    const prevFrameData = component.frameData;
+
+    // when
+    component.ngOnChanges({ unknown$: new SimpleChange(null, {}, false) });
+    flush();
+
+    // then
+    expect(component.frameData).toBe(prevFrameData);
+  }));
+
   it('should create summary data', fakeAsync(() => {
 
     // given

@@ -22,11 +22,28 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 10, indexed: true });
    });
 
-   it('#generate should return non indexed text to text mapping', () => {
+   it('#generate should return non indexed text to text mapping when value is too long', () => {
 
       // when
       const entry = { X: 'This text is too long to be indexed and cannot be used for charting, summaries and further computations' };
       const mapping = generator.generate([entry], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 103, indexed: false });
+   });
+
+   it('#generate should return non indexed text to text mapping when any value is too long', () => {
+
+      // when
+      const entries = [
+         { X: 'a' },
+         { X: 'b' },
+         { X: 'This text is too long to be indexed and cannot be used for charting, summaries and further computations' },
+         { X: 'c' }
+      ]
+      const mapping = generator.generate(entries, 'en');
 
       // then
       expect(mapping.length).toBe(1);
@@ -112,10 +129,22 @@ describe('ColumnMappingGenerator', () => {
          .toEqual({ name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', indexed: true });
    });
 
-   it('#generate should return date text to time mapping with undefined source format when first value is empty', () => {
+   it('#generate should return date text to time mapping with undefined source format when second value is empty', () => {
 
       // when
       const mapping = generator.generate([{ X: '' }, { X: '2019-01-30' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined, format: undefined });
+      expect(mapping[0].target)
+         .toEqual({ name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', indexed: true });
+   });
+
+   it('#generate should return date text to time mapping with undefined source format when first value is empty', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '2019-01-30' }, { X: '' }], 'en');
 
       // then
       expect(mapping.length).toBe(1);
