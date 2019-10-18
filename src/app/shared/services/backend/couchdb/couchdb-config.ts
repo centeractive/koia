@@ -3,9 +3,21 @@ import { ConnectionInfo, Protocol } from 'app/shared/model';
 
 export class CouchDBConfig {
 
-   private static readonly DEFAULT_CONN_INFO: ConnectionInfo =
-      { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'admin', password: 'admin' };
+   public static readonly DEFAULT_HTTP_PORT = 5984;
+   public static readonly DEFAULT_HTTPS_PORT = 6984;
+
+   private static readonly DEFAULT_CONN_INFO: ConnectionInfo = {
+      protocol: Protocol.HTTP,
+      host: 'localhost',
+      port: CouchDBConfig.DEFAULT_HTTP_PORT,
+      user: 'admin',
+      password: 'admin'
+   };
    private static readonly CONN_INFO_NAME = 'CouchDBConnectionInfo';
+
+   static defaultPortOf(protocol: Protocol): number {
+      return protocol === Protocol.HTTP ? CouchDBConfig.DEFAULT_HTTP_PORT : CouchDBConfig.DEFAULT_HTTPS_PORT;
+   }
 
    readConnectionInfo(): ConnectionInfo {
       const connInfo = localStorage.getItem(CouchDBConfig.CONN_INFO_NAME);

@@ -14,6 +14,11 @@ describe('CouchDBConfig', () => {
       couchDBConfig.reset();
    });
 
+   it('#defaultPortOf should return port', () => {
+      expect(CouchDBConfig.defaultPortOf(Protocol.HTTP)).toEqual(CouchDBConfig.DEFAULT_HTTP_PORT);
+      expect(CouchDBConfig.defaultPortOf(Protocol.HTTPS)).toEqual(CouchDBConfig.DEFAULT_HTTPS_PORT);
+   });
+
    it('#readConnectionInfo should return default when no connection was saved', () => {
 
       // when

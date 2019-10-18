@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { Protocol, ConnectionInfo } from 'app/shared/model';
+import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 
 describe('ConnectionDialogComponent', () => {
 
@@ -50,6 +51,24 @@ describe('ConnectionDialogComponent', () => {
     expect(getInputValue('port')).toBe(connectionInfo.port.toString());
     expect(getInputValue('user')).toBe(connectionInfo.user);
     expect(getInputValue('password')).toBe(connectionInfo.password);
+  });
+
+  it('#onProtocolChanged should update connection info with HTTP default port', () => {
+
+    // when
+    component.onProtocolChanged(Protocol.HTTP);
+
+    // then
+    expect(component.data.connectionInfo.port).toBe(CouchDBConfig.DEFAULT_HTTP_PORT);
+  });
+
+  it('#onProtocolChanged should update connection info with HTTPS default port', () => {
+
+    // when
+    component.onProtocolChanged(Protocol.HTTPS);
+
+    // then
+    expect(component.data.connectionInfo.port).toBe(CouchDBConfig.DEFAULT_HTTPS_PORT);
   });
 
   it('#click on cancel button should close dialog', () => {

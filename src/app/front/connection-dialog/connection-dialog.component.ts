@@ -1,11 +1,14 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewEncapsulation } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CommonUtils } from 'app/shared/utils';
 import { Protocol, ConnectionInfo } from 'app/shared/model';
+import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 
 @Component({
   selector: 'koia-connection-dialog',
-  templateUrl: './connection-dialog.component.html'
+  templateUrl: './connection-dialog.component.html',
+  styleUrls: ['./connection-dialog.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class ConnectionDialogComponent {
 
@@ -17,6 +20,10 @@ export class ConnectionDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogData) {
     this.originalConnInfo = <ConnectionInfo> CommonUtils.clone(data.connectionInfo);
     this.dialogRef.disableClose = true;
+  }
+
+  onProtocolChanged(protocol: Protocol): void {
+    this.data.connectionInfo.port = CouchDBConfig.defaultPortOf(protocol);
   }
 
   onCancel() {

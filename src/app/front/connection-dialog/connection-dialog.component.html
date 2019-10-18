@@ -1,28 +1,28 @@
 <mat-card>
   <mat-card-subtitle>CouchDB Access</mat-card-subtitle>
   <mat-card-content>
-    <mat-form-field>
-      <mat-select id="protocol" placeholder="Protocol" [(ngModel)]="data.connectionInfo.protocol">
-        <mat-option *ngFor="let protocol of protocols" [value]="protocol">
+    <mat-form-field class="form_field_protocol">
+      <mat-select id="protocol" placeholder="Protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
+        <mat-option *ngFor="let protocol of protocols" [value]="protocol" (click)="onProtocolChanged(protocol)">
           {{ protocol }}
         </mat-option>
       </mat-select>
     </mat-form-field>
     <div>
-      <mat-form-field>
+      <mat-form-field class="form_field_default">
         <input id="host" matInput type="text" placeholder="Host" [(ngModel)]="data.connectionInfo.host">
       </mat-form-field>
       &nbsp;
-      <mat-form-field>
+      <mat-form-field class="form_field_port">
         <input id="port" matInput type="number" placeholder="Port" [(ngModel)]="data.connectionInfo.port">
       </mat-form-field>
     </div>
     <div>
-      <mat-form-field>
+      <mat-form-field class="form_field_default">
         <input id="user" matInput type="text" placeholder="User" [(ngModel)]="data.connectionInfo.user">
       </mat-form-field>
       &nbsp;
-      <mat-form-field>
+      <mat-form-field class="form_field_default">
         <input id="password" matInput type="password" placeholder="Password" [(ngModel)]="data.connectionInfo.password">
       </mat-form-field>
     </div>

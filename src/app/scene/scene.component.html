@@ -27,7 +27,7 @@
           <mat-icon color="primary">looks_one</mat-icon>&nbsp;Data Source
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <mat-form-field>
+      <mat-form-field class="form_field_source_type">
         <mat-select placeholder="Source Type" [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
           <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
         </mat-select>
@@ -54,7 +54,7 @@
           <mat-icon color="primary">looks_two</mat-icon>&nbsp;{{ selectedReader.getSourceName() }} Source Attributes
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <mat-form-field>
+      <mat-form-field class="form_field_language">
         <mat-select placeholder="Language" [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
           matTooltip="Proper language is required when parsing date/time data">
           <mat-option *ngFor="let locale of locales" [value]="locale">{{ locale }}</mat-option>

@@ -16,7 +16,7 @@ describe('ConfirmDialogComponent', () => {
   let fixture: ComponentFixture<ConfirmDialogComponent>;
 
   beforeEach(async(() => {
-    const dialogRef = <MatDialogRef<ConfirmDialogComponent>>{
+    const dialogRef = <MatDialogRef<ConfirmDialogComponent, any>>{
       close(): void { }
     };
     dialogData = new ConfirmDialogData(title, textBlock, ConfirmDialogData.YES_NO);
@@ -62,9 +62,28 @@ describe('ConfirmDialogComponent', () => {
   });
 
   it('should define remember choice label when dialog contains single button', () => {
-    component = new ConfirmDialogComponent(null, new ConfirmDialogData(title, textBlock, ['OK']));
 
-    expect(component.rememberChoiceLabel).toBe('Don\'t show again');
+    // given
+    TestBed.resetTestingModule();
+    const dialogRef = <MatDialogRef<ConfirmDialogComponent, any>>{
+      close(): void { }
+    };
+    dialogData = new ConfirmDialogData(title, textBlock, ['OK']);
+    TestBed.configureTestingModule({
+      declarations: [ConfirmDialogComponent],
+      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
+      providers: [
+        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+      ]
+    })
+      .compileComponents();
+
+    // when
+    fixture = TestBed.createComponent(ConfirmDialogComponent);
+
+    // then
+    expect(fixture.componentInstance.rememberChoiceLabel).toBe('Don\'t show again');
   });
 
   it('#click on first button should close dialog', () => {

@@ -18,6 +18,10 @@ h1 {
   padding-right: 10px;
 }
 
+.form_field_source_type {
+  width: 80px;
+}
+
 .file_name {
   width: 500px;
   padding-left: 10px;
@@ -36,6 +40,10 @@ p {
 
 mat-slide-toggle {
   margin-bottom: 8px;
+}
+
+.form_field_language {
+  width: 80px;
 }
 
 .but_value_choice {

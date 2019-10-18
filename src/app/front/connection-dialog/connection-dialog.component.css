@@ -1,0 +1,12 @@
+.form_field_default { 
+   width: 180px; 
+}
+
+.form_field_protocol { 
+   width: 80px; 
+}
+
+.form_field_port { 
+   width: 60px; 
+}
+
