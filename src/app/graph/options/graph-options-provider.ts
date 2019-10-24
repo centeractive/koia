@@ -1,8 +1,6 @@
-import { GraphContext, PropertyFilter, DataType } from '../../shared/model';
+import { GraphContext } from '../../shared/model';
 import { GraphNode } from '../../shared/model/graph-node.type';
 import { GraphUtils } from './graph-utils';
-import { RawDataRevealService } from 'app/shared/services';
-import { ColumnNameConverter } from 'app/shared/utils';
 import { NodeDoubleClickHandler } from './node-double-click-handler';
 
 declare var d3: any;
@@ -41,12 +39,15 @@ export class GraphOptionsProvider {
       }
    }
 
-   private shapeNodes(nodes, context: GraphContext) {
-      return nodes
+   private shapeNodes(node, context: GraphContext) {
+
+      console.log(node);
+
+      return node
          .attr('cursor', 'pointer')
          .on('dblclick', d => this.nodeDoubleClickHandler.onNodeDoubleClicked(d, context))
          &&
-         nodes
+         node
             .append('a')
             .on('dblclick', d => this.nodeDoubleClickHandler.onNodeDoubleClicked(d, context))
             .append('text')

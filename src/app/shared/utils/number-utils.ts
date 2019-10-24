@@ -122,7 +122,8 @@ export class NumberUtils {
       if (!num || Math.floor(num) === num) {
          return 0;
       }
-      return num.toString().split(NumberUtils.DECIMAL_SEPARATOR)[1].length;
+      const tokens = num.toString().split(NumberUtils.DECIMAL_SEPARATOR);
+      return tokens.length === 2 ? tokens[1].length : 0;
    }
 
    /**

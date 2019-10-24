@@ -49,7 +49,7 @@ export class DBService {
           }
         })
         .catch(err => {
-          console.log('CouchDB cannot be accessed, browser storage is used instead', err);
+          console.warn('CouchDB cannot be accessed, browser storage is used instead', err);
           return this.useIndexedDb();
         });
     }

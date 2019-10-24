@@ -52,3 +52,7 @@ td {
   bottom: 0px;
   z-index: 10;
 }
+
+:host ::ng-deep.mat-paginator .mat-form-field-underline {
+  display: none;
+}

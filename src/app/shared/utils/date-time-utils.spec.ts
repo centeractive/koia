@@ -145,20 +145,24 @@ describe('DateTimeUtils', () => {
       .toThrow(new Error('cannot count number of years with variable duration'));
   });
 
-  it('#addTimeUnits should add single fixed timeunit to given time', () => {
+  it('#addTimeUnits should add single timeunit to given time', () => {
     expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MILLISECOND)).toEqual(now + 1);
     expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.SECOND)).toEqual(now + 1_000);
     expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MINUTE)).toEqual(now + 60_000);
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.HOUR)).toEqual(now + 3_600_000);
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.DAY)).toEqual(now + 86_400_000);
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.HOUR)).toEqual(fromNow(1, TimeUnit.HOUR));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.DAY)).toEqual(fromNow(1, TimeUnit.DAY));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MONTH)).toEqual(fromNow(1, TimeUnit.MONTH));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.YEAR)).toEqual(fromNow(1, TimeUnit.YEAR));
   });
 
-  it('#addTimeUnits should add many fixed timeunit to given time', () => {
+  it('#addTimeUnits should add many timeunit to given time', () => {
     expect(DateTimeUtils.addTimeUnits(now, 3, TimeUnit.MILLISECOND)).toEqual(now + 3);
     expect(DateTimeUtils.addTimeUnits(now, 4, TimeUnit.SECOND)).toEqual(now + 4 * 1_000);
     expect(DateTimeUtils.addTimeUnits(now, 5, TimeUnit.MINUTE)).toEqual(now + 5 * 60_000);
-    expect(DateTimeUtils.addTimeUnits(now, 6, TimeUnit.HOUR)).toEqual(now + 6 * 3_600_000);
-    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.DAY)).toEqual(now + 7 * 86_400_000);
+    expect(DateTimeUtils.addTimeUnits(now, 6, TimeUnit.HOUR)).toEqual(fromNow(6, TimeUnit.HOUR));
+    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.DAY)).toEqual(fromNow(7, TimeUnit.DAY));
+    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.MONTH)).toEqual(fromNow(7, TimeUnit.MONTH));
+    expect(DateTimeUtils.addTimeUnits(now, 12, TimeUnit.YEAR)).toEqual(fromNow(12, TimeUnit.YEAR));
   });
 
   it('#addTimeUnits should add single month to given time', () => {
@@ -548,7 +552,7 @@ describe('DateTimeUtils', () => {
   it('#sortTimeUnits should return same descending sorted array', () => {
     const timeUnits: TimeUnit[] = [TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY];
     expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toBe(timeUnits);
-    expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toEqual([ TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MINUTE, TimeUnit.MILLISECOND]);
+    expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toEqual([TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MINUTE, TimeUnit.MILLISECOND]);
   });
 
   it('#defineTimeUnits should not set time unit when column is not time', () => {
@@ -744,5 +748,28 @@ describe('DateTimeUtils', () => {
     expect(timeColumns[1].groupingTimeUnit).toBe(TimeUnit.HOUR);
     expect(timeColumns[2].groupingTimeUnit).toBe(TimeUnit.MINUTE);
   });
+
+  /**
+   * use this function to also cover corner cases such as daylight saving time
+   */
+  function fromNow(numberOfTimeUnit: number, timeUnit: TimeUnit): number {
+    const date = new Date(now);
+    switch (timeUnit) {
+      case TimeUnit.MILLISECOND:
+        return date.setMilliseconds(date.getMilliseconds() + numberOfTimeUnit);
+      case TimeUnit.SECOND:
+        return date.setSeconds(date.getSeconds() + numberOfTimeUnit);
+      case TimeUnit.MINUTE:
+        return date.setMinutes(date.getMinutes() + numberOfTimeUnit);
+      case TimeUnit.HOUR:
+        return date.setHours(date.getHours() + numberOfTimeUnit);
+      case TimeUnit.DAY:
+        return date.setDate(date.getDate() + numberOfTimeUnit);
+      case TimeUnit.MONTH:
+        return date.setMonth(date.getMonth() + numberOfTimeUnit);
+      case TimeUnit.YEAR:
+        return date.setFullYear(date.getFullYear() + numberOfTimeUnit);
+    }
+  }
 
 });

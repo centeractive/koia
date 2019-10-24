@@ -387,6 +387,21 @@ describe('NumberUtils', () => {
     expect(NumberUtils.countDecimals(undefined)).toBe(0);
   });
 
+  it('#countDecimals should return zero when argument is string', () => {
+    const s: any = '12';
+    expect(NumberUtils.countDecimals(<number> s)).toBe(0);
+  });
+
+  it('#countDecimals should return zero when argument is string', () => {
+    const b: any = true;
+    expect(NumberUtils.countDecimals(<number> b)).toBe(0);
+  });
+
+  it('#countDecimals should return zero when argument is object', () => {
+    const o: any = { num: 12 };
+    expect(NumberUtils.countDecimals(<number> o)).toBe(0);
+  });
+
   it('#countDecimals should return zero when number has no decimals', () => {
     expect(NumberUtils.countDecimals(-84)).toBe(0);
     expect(NumberUtils.countDecimals(-1)).toBe(0);

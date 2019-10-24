@@ -24,7 +24,7 @@ export class CSVReader implements DataReader {
       return '.csv';
    }
 
-   expectsPlainTextData() {
+   expectsPlainTextData(): boolean {
       return true;
    }
 

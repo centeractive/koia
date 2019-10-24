@@ -43,6 +43,7 @@ describe('DBService', () => {
     });
     couchDBService = TestBed.get(CouchDBService);
     spyOn(console, 'log').and.callFake(m => null);
+    spyOn(console, 'warn').and.callFake(m => null);
   });
 
   beforeEach(async () => {
@@ -94,7 +95,7 @@ describe('DBService', () => {
     flush();
 
     // then
-    expect(console.log).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
+    expect(console.warn).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
     expect(dbService.isIndexedDbInUse()).toBeTruthy();
     expect(dbService.isCouchDbInUse()).toBeFalsy();
     expect(dbService.isBackendInitialized()).toBeTruthy();

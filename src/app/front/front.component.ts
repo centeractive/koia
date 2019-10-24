@@ -91,6 +91,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   onDataStorageChanged(dataStorage: string): void {
     if (this.selectedDataStorage !== dataStorage) {
+      this.ready = false;
       this.selectedDataStorage = dataStorage;
       if (this.selectedDataStorage === this.couchDB) {
         this.showCouchDBConnectionDialog();

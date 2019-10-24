@@ -10,7 +10,7 @@ import { CouchDBConfig } from './couchdb-config';
 import { Scene, Document, HTTPMethod } from 'app/shared/model';
 
 /**
- * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
+ * Locally installed CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
  *
  * [httpd]
  * enable_cors = true
@@ -39,8 +39,10 @@ export class CouchDBService implements DB {
     this.couchDBConfig.saveConnectionInfo(connectionInfo);
     this.httpOptions = this.createHttpOptions();
     this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
-    const r = await this.listDatabases();
-    return 'Connection to CouchDB at ' + this.baseURL + ' established';
+    return this.listDatabases()
+      .then(dbs => {
+        return 'Connection to CouchDB at ' + this.baseURL + ' established';
+      });
   }
 
   getConnectionInfo(): ConnectionInfo {

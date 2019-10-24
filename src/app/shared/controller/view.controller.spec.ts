@@ -3,7 +3,6 @@ import { GraphContext } from '../model';
 import { MatSidenav } from '@angular/material';
 import { View } from '../model/view-config';
 import { ViewController } from './view.controller';
-import { ExportService } from '../services';
 
 class ViewControllerTestable extends ViewController {
 
@@ -18,7 +17,6 @@ class ViewControllerTestable extends ViewController {
 
 describe('ViewController', () => {
 
-   const exportService = new ExportService();
    let viewController: ViewControllerTestable;
 
    beforeAll(() => {
