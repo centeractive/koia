@@ -85,7 +85,7 @@ describe('DBService', () => {
   });
 
 
-  it('#initBackend should switch to browser storage when CouchDB access fails', fakeAsync(() => {
+  it('#initBackend should switch to IndexedDB when CouchDB access fails', fakeAsync(() => {
 
     // given
     spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.reject('error'));
@@ -105,7 +105,7 @@ describe('DBService', () => {
     expect(dbService.getActiveScene()).toBe(initialScene);
   });
 
-  it('#isIndexedDbInUse should switch to browser storage', async () => {
+  it('#isIndexedDbInUse should switch to IndexedDB', async () => {
 
     // when
     await dbService.useIndexedDb().then(db => {
@@ -151,9 +151,7 @@ describe('DBService', () => {
 
     // given
     await dbService.useIndexedDb();
-    await dbService.findSceneInfos().then(r => r.forEach(si => dbService.deleteScene(si)));
-    const scene = SceneFactory.createScene('1', columns);
-    await dbService.persistScene(scene, true).then(r => null).catch(e => fail(e));
+    await trimToSingleDatabase();
 
     // when
     await dbService.findFreeDatabaseName()
@@ -183,7 +181,7 @@ describe('DBService', () => {
     expect(maxDataItems).toBeUndefined();
   });
 
-  it('#getMaxDataItemsPerScene should return value when browser storage is used', async () => {
+  it('#getMaxDataItemsPerScene should return value when IndexedDB is used', async () => {
 
     // given
     await dbService.useIndexedDb().then(db => null);
@@ -569,4 +567,23 @@ describe('DBService', () => {
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);
   }
+
+  async function trimToSingleDatabase() {
+    let dbOneExists = false;
+    await dbService.findSceneInfos()
+      .then(r => r.forEach(si => {
+        if (si._id === '1') {
+          dbOneExists = true;
+        } else {
+          dbService.deleteScene(si);
+        }
+      }));
+    if (!dbOneExists) {
+      const scene = SceneFactory.createScene('1', columns);
+      await dbService.persistScene(scene, true)
+        .then(r => null)
+        .catch(e => fail(e));
+    }
+  }
+
 });
