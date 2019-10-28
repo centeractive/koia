@@ -17,7 +17,7 @@ import { Scene } from 'app/shared/model';
                 <table>
                   <tr *ngFor="let column of scene.columns">
                      <th>{{ column.name }}</th>
-                     <td>{{ column.dataType }}</td>
+                     <td>{{ column.dataType + ' (' + column.width + ')' }}</td>
                   </tr>
                 </table>
               </mat-card>`,

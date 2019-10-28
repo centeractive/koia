@@ -151,7 +151,7 @@ describe('DBService', () => {
 
     // given
     await dbService.useIndexedDb();
-    await trimToSingleDatabase();
+    await initWithSingleDatabase();
 
     // when
     await dbService.findFreeDatabaseName()
@@ -568,7 +568,7 @@ describe('DBService', () => {
     return columns.find(c => c.name === name);
   }
 
-  async function trimToSingleDatabase() {
+  async function initWithSingleDatabase() {
     let dbOneExists = false;
     await dbService.findSceneInfos()
       .then(r => r.forEach(si => {

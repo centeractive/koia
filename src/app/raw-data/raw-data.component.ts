@@ -32,7 +32,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   totalRowCount: number;
   pageSizeOptions: number[];
   loading: boolean;
-  wrapWords: boolean;
+  considerColumnWidths: boolean;
   highlight: boolean;
 
   private page: Page;
@@ -42,7 +42,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
     private dialogService: DialogService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
-    this.wrapWords = true;
+    this.considerColumnWidths = true;
     this.highlight = true;
   }
 
