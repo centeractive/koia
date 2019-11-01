@@ -17,6 +17,7 @@
             "tsConfig": "src/tsconfig.app.json",
             "polyfills": "src/polyfills.ts",
             "assets": [
+              "src/intro",
               "src/.htaccess",
               "src/assets",
               "src/WEB-INF",
