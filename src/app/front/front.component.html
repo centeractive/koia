@@ -93,9 +93,9 @@
     </div>
 
     <div id="div_start">
-      <button mat-button mat-icon-button matTooltip="Start" [disabled]="!ready" [routerLink]="[urlScenes]">
-        <mat-icon id="start_button" [color]="ready ? 'accent' : ''">play_circle_outline</mat-icon>
-      </button>
+      <mat-icon [id]="'start_button' + (ready ? '' : '_disabled')" [inline]="true" color="accent"
+        matTooltip="Start" [routerLink]="ready ? [urlScenes] : null">
+        play_circle_outline</mat-icon>
     </div>
 
     <mat-horizontal-stepper [linear]="!stepsVisible" #stepper>

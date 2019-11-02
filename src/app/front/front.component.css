@@ -74,10 +74,15 @@ p {
    display: flex;
    justify-content: center;
    margin: 30px 40px 30px 0px;
+   font-size: 80px;   
 }
 
 #start_button {
-   font-size: 80px;
+   cursor: pointer;
+}
+
+#start_button_disabled {
+   opacity: 0.4;
 }
 
 #monitor-image {
