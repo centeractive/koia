@@ -15,11 +15,11 @@ import { ContextInfo, Column, Route, PropertyFilter, Operator, Query, DataType, 
 import { of } from 'rxjs';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
-import { TimeRangeFilter } from './filter/time-range-filter';
 import { MatIconModuleMock } from 'app/shared/test';
-import { NumberRangeFilter } from './filter/number-range-filter';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { DialogService } from 'app/shared/services';
+import { NumberRangeFilter } from './range-filter/model/number-range-filter';
+import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 
 @Component({ template: '' })
 class DummyComponent { }
@@ -34,6 +34,7 @@ describe('MainToolbarComponent', () => {
   let fixture: ComponentFixture<MainToolbarComponent>;
   const dbService = new DBService(null);
   const dialogService = new DialogService(null);
+  let getActiveSceneSpy: jasmine.Spy; 
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -88,7 +89,7 @@ describe('MainToolbarComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(MainToolbarComponent);
     component = fixture.componentInstance;
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     spyOn(dbService, 'numberRangeOf').and.returnValue(Promise.resolve(valueRange));
     spyOn(dbService, 'findEntries').and.returnValue(of(entries));
     fixture.detectChanges();
@@ -104,12 +105,25 @@ describe('MainToolbarComponent', () => {
     expect(dbService.getActiveScene).toHaveBeenCalled();
   });
 
+  it('#ngOnInit should not retain initial filters when active scene is not defeined', () => {
+
+    // given
+    getActiveSceneSpy.and.returnValue(undefined);
+    spyOn(component, 'retainInitialFilters');
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.retainInitialFilters).not.toHaveBeenCalled();
+  });
+
   it('#ngOnInit should init selected time range from query when it has time defined', fakeAsync(() => {
 
     // given
     component.query = new Query();
     component.query.addValueRangeFilter('Time', now - 1_000, now);
-    component.columnFilters = [];
+    component.propertyFilters = [];
     component.rangeFilters = [];
     fixture.detectChanges();
 
@@ -118,7 +132,7 @@ describe('MainToolbarComponent', () => {
     flush();
 
     // then
-    expect(component.columnFilters.length).toBe(0);
+    expect(component.propertyFilters.length).toBe(0);
     expect(component.rangeFilters.length).toBe(1);
     const timeRangeFilter = component.rangeFilters[0];
     expect(timeRangeFilter.selValueRange.min).toEqual(now - 1_000);
@@ -135,7 +149,7 @@ describe('MainToolbarComponent', () => {
     query.addPropertyFilter(levelFilter);
     query.addPropertyFilter(amountFilter);
     component.query = query;
-    component.columnFilters = [];
+    component.propertyFilters = [];
     component.rangeFilters = [];
 
     // when
@@ -144,9 +158,9 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.fullTextFilter).toBe('abc');
-    expect(component.columnFilters.length).toBe(2);
-    expect(component.columnFilters[0]).toBe(levelFilter);
-    expect(component.columnFilters[1]).toBe(amountFilter);
+    expect(component.propertyFilters.length).toBe(2);
+    expect(component.propertyFilters[0]).toBe(levelFilter);
+    expect(component.propertyFilters[1]).toBe(amountFilter);
   }));
 
   it('#ngAfterViewChecked should re-create time slider options once the view became active', fakeAsync(() => {
@@ -185,39 +199,6 @@ describe('MainToolbarComponent', () => {
     // then
     expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scene);
   }));
-
-  it('#availableOperatorsOf should return all operators when column has TEXT data type', () => {
-
-    // given
-    const operators = Object.keys(Operator)
-      .map(key => Operator[key]);
-
-    // when / then
-    expect(component.availableOperatorsOf('Level')).toEqual(operators);
-    expect(component.availableOperatorsOf('Host')).toEqual(operators);
-    expect(component.availableOperatorsOf('Path')).toEqual(operators);
-  });
-
-  it('#availableOperatorsOf should return operators for TIME data type', () => {
-
-    // when
-    const operators = component.availableOperatorsOf('Time');
-
-    // then
-    expect(operators).toEqual([Operator.EMPTY, Operator.NOT_EMPTY]);
-  });
-
-  it('#availableOperatorsOf should return operators for NUMBER data type', () => {
-
-    // when
-    const operators = component.availableOperatorsOf('Amount')
-
-    // then
-    const expected = Object.keys(Operator)
-      .map(key => Operator[key])
-      .filter(o => o !== Operator.CONTAINS);
-    expect(operators).toEqual(expected);
-  });
 
   it('#refreshEntries should emit filter change with no time', () => {
 
@@ -305,6 +286,27 @@ describe('MainToolbarComponent', () => {
     expect(link).toEqual('/' + Route.FLEX);
   });
 
+  it('pressing non-<enter> key in full text filter field should not emit onFilterChange', () => {
+
+    // given
+    component.showFullTextFilter = true;
+    fixture.detectChanges();
+    const htmlInput: HTMLInputElement = fixture.debugElement.query(By.css('#fullTextFilter')).nativeElement;
+    htmlInput.value = 'abc';
+    htmlInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    spyOn(component.onFilterChange, 'emit');
+
+    // when
+    const event: any = document.createEvent('Event');
+    event.key = 'x';
+    event.initEvent('keyup');
+    htmlInput.dispatchEvent(event);
+
+    // then
+    expect(component.onFilterChange.emit).not.toHaveBeenCalled();
+  });
+
   it('pressing <enter> in full text filter field should emit onFilterChange', () => {
 
     // given
@@ -354,200 +356,48 @@ describe('MainToolbarComponent', () => {
   it('#addValueFilter should add EQUAL filter for number column', fakeAsync(() => {
 
     // given
-    component.columnFilters = [];
+    component.propertyFilters = [];
 
     // when
     component.addValueFilter(column('Amount'));
 
     // then
-    expect(component.columnFilters).toEqual([new PropertyFilter('Amount', Operator.EQUAL, '', DataType.NUMBER)]);
+    expect(component.propertyFilters).toEqual([new PropertyFilter('Amount', Operator.EQUAL, '', DataType.NUMBER)]);
   }));
 
   it('#addValueFilter should add NOT_EMPTY filter for time column', fakeAsync(() => {
 
     // given
-    component.columnFilters = [];
+    component.propertyFilters = [];
 
     // when
     component.addValueFilter(column('Time'));
 
     // then
-    expect(component.columnFilters).toEqual([new PropertyFilter('Time', Operator.NOT_EMPTY, '', DataType.TIME)]);
+    expect(component.propertyFilters).toEqual([new PropertyFilter('Time', Operator.NOT_EMPTY, '', DataType.TIME)]);
   }));
 
   it('selecting "add column filter" menu item should add non-time column filter', fakeAsync(() => {
 
     // given
-    component.columnFilters = [];
+    component.propertyFilters = [];
 
     // when
     addLevelFilterThroughMenu();
 
     // then
-    expect(component.columnFilters.length).toBe(1);
+    expect(component.propertyFilters.length).toBe(1);
   }));
-
-  it('pressing <enter> in column filter field should emit onFilterChange', fakeAsync(() => {
-
-    // given
-    component.columnFilters = [];
-    addLevelFilterThroughMenu();
-    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
-    htmlInput.value = 'ERR';
-    htmlInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
-
-    // when
-    const event: any = document.createEvent('Event');
-    event.key = 'Enter';
-    event.initEvent('keyup');
-    htmlInput.dispatchEvent(event);
-
-    // then
-    expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.getPropertyFilters().length).toBe(1);
-    const propFilter = query.getPropertyFilters()[0];
-    expect(propFilter.name).toBe('Level');
-    expect(propFilter.operator).toBe(Operator.EQUAL);
-    expect(propFilter.value).toBe('ERR');
-  }));
-
-  it('pressing character key in column filter field should not emit onFilterChange', fakeAsync(() => {
-
-    // given
-    component.columnFilters = [];
-    addLevelFilterThroughMenu();
-    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
-    spyOn(component.onFilterChange, 'emit');
-
-    // when
-    const event: any = document.createEvent('Event');
-    event.key = 'x';
-    event.initEvent('keyup');
-    htmlInput.dispatchEvent(event);
-
-    // then
-    expect(component.onFilterChange.emit).not.toHaveBeenCalled();
-  }));
-
-  it('pressing <clear> button in column filter field should emit onFilterChange', fakeAsync(() => {
-
-    // given
-    component.columnFilters = [];
-    addLevelFilterThroughMenu();
-    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
-    htmlInput.value = 'ERR';
-    htmlInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
-    const clearButton = <HTMLButtonElement>formField.getElementsByTagName('BUTTON')[0];
-
-    // when
-    clearButton.click();
-
-    // then
-    expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.hasFilter()).toBeFalsy();
-  }));
-
-  it('#onColumnFilterNameChanged should change property filter name and data type', () => {
-
-    // given
-    const columnFilter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT);
-    component.columnFilters = [columnFilter];
-    spyOn(component, 'refreshEntries');
-
-    // when
-    component.onColumnFilterNameChanged(columnFilter, column('Amount'));
-
-    // then
-    expect(columnFilter.name).toBe('Amount');
-    expect(columnFilter.dataType).toBe(DataType.NUMBER);
-  });
-
-  it('#onColumnFilterNameChanged should refresh entries when filter is applicable', () => {
-
-    // given
-    const columnFilter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR');
-    component.columnFilters = [columnFilter];
-    spyOn(component, 'refreshEntries');
-
-    // when
-    component.onColumnFilterNameChanged(columnFilter, column('Host'));
-
-    // then
-    expect(component.refreshEntries).toHaveBeenCalled();
-  });
-
-  it('#onColumnFilterNameChanged should not refresh entries when filter is not applicable', () => {
-
-    // given
-    const columnFilter = new PropertyFilter('Level', Operator.EQUAL, '');
-    component.columnFilters = [columnFilter];
-    spyOn(component, 'refreshEntries');
-
-    // when
-    component.onColumnFilterNameChanged(columnFilter, column('Host'));
-
-    // then
-    expect(component.refreshEntries).not.toHaveBeenCalled();
-  });
-
-  it('#onColumnFilterNameChanged should change operator when CONTAINS with non TEXT column', () => {
-
-    // given
-    const columnFilter = new PropertyFilter('Level', Operator.CONTAINS, 'ERR');
-    component.columnFilters = [columnFilter];
-    spyOn(component, 'refreshEntries');
-
-    // when
-    component.onColumnFilterNameChanged(columnFilter, column('Amount'));
-
-    // then
-    expect(columnFilter.operator).toBe(Operator.EQUAL);
-  });
-
-  it('#onColumnFilterValueChanged should change text value', () => {
-
-    // given
-    const columnFilter = new PropertyFilter('Level', Operator.CONTAINS, 'WARN', DataType.TEXT);
-    component.columnFilters = [columnFilter];
-
-    // when
-    component.onColumnFilterValueChanged(columnFilter, 'ERR');
-
-    // then
-    expect(columnFilter.value).toBe('ERR');
-  });
-
-  it('#onColumnFilterValueChanged should change number value', () => {
-
-    // given
-    const columnFilter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
-    component.columnFilters = [columnFilter];
-
-    // when
-    component.onColumnFilterValueChanged(columnFilter, '1,200,300.55');
-
-    // then
-    expect(columnFilter.value).toBe(1_200_300.55);
-  });
 
   it('#removeColumnFilter should emit onFilterChange when removed filter was effective', () => {
 
     // given
     const columnFilter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR');
-    component.columnFilters = [columnFilter];
+    component.propertyFilters = [columnFilter];
     const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
 
     // when
-    component.removeColumnFilter(columnFilter);
+    component.removePropertyFilter(columnFilter);
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
@@ -559,11 +409,11 @@ describe('MainToolbarComponent', () => {
 
     // given
     const columnFilter = new PropertyFilter('Level', Operator.EQUAL, '');
-    component.columnFilters = [columnFilter];
+    component.propertyFilters = [columnFilter];
     spyOn(component.onFilterChange, 'emit');
 
     // when
-    component.removeColumnFilter(columnFilter);
+    component.removePropertyFilter(columnFilter);
 
     // then
     expect(component.onFilterChange.emit).not.toHaveBeenCalled();
@@ -595,55 +445,6 @@ describe('MainToolbarComponent', () => {
     const numberRangeFilter = <NumberRangeFilter>component.rangeFilters[0];
     expect(numberRangeFilter.start).toBe(valueRange.min);
     expect(numberRangeFilter.end).toBe(valueRange.max);
-  }));
-
-  it('#onRangeFilterChanged should refresh entries', fakeAsync(() => {
-
-    // given
-    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
-    component.rangeFilters = [rangeFilter];
-    spyOn(component, 'refreshEntries');
-
-    // when
-    component.onRangeFilterChanged(rangeFilter, { value: 3, highValue: 7, pointerType: undefined });
-
-    // then
-    expect(rangeFilter.selValueRange.min).toBe(3);
-    expect(rangeFilter.selValueRange.max).toBe(7);
-    expect(component.refreshEntries).toHaveBeenCalled();
-  }));
-
-  it('#onRangeFilterInvertedChanged should refresh entries', fakeAsync(() => {
-
-    // given
-    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
-    component.rangeFilters = [rangeFilter];
-    spyOn(component, 'refreshEntries');
-
-    // when
-    component.onRangeFilterInvertedChanged(rangeFilter, true);
-
-    // then
-    expect(rangeFilter.inverted).toBeTruthy();
-    expect(component.refreshEntries).toHaveBeenCalled();
-  }));
-
-  it('#click on "Remove value range filter" button should remove time range filter', fakeAsync(() => {
-
-    // given
-    component.columnFilters = [];
-    component.addRangeFilter(column('Time'), null, false);
-    flush();
-    fixture.detectChanges();
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_remove_range_filter')).nativeElement;
-
-    // when
-    htmlButton.click();
-    fixture.detectChanges();
-
-    // then
-    flush();
-    expect(component.rangeFilters.length).toBe(0);
   }));
 
   it('#onStepChanged should change time step when millisecond is selected', fakeAsync(() => {
@@ -706,31 +507,6 @@ describe('MainToolbarComponent', () => {
     expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.HOUR);
     expect(component.rangeFilters[0].selectedStepAbbrev).toBe('h');
     expect(component.rangeFilters[0].sliderOptions.step).toBe(3_600_000);
-  }));
-
-  it('pressing "value range" button should reset value range and emit onFilterChange', fakeAsync(() => {
-
-    // given
-    component.addRangeFilter(column('Time'), null, false);
-    flush();
-    const timeStart = entries[0]['Time'];
-    const timeEnd = entries[entries.length - 1]['Time'];
-    component.rangeFilters[0].selValueRange.min = timeStart + 1000;
-    component.rangeFilters[0].selValueRange.max = timeEnd - 1000;
-    component.showRangeFilters = true;
-    fixture.detectChanges();
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_reset_range_filter')).nativeElement;
-    spyOn(component.onFilterChange, 'emit');
-
-    // when
-    htmlButton.click();
-    flush();
-
-    // then
-    const selValueRange = component.rangeFilters[0].selValueRange;
-    expect(selValueRange.min).toBe(timeStart);
-    expect(selValueRange.max).toBe(timeEnd);
-    expect(component.onFilterChange.emit).toHaveBeenCalled();
   }));
 
   it('#removeRangeFilter should refresh entries when range filter was filtered', () => {

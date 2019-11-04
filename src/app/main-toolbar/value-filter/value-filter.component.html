@@ -1,0 +1,31 @@
+<div class="div_property_filter" *ngIf="filter">
+  <span class="span_menu_trigger" [matMenuTriggerFor]="nameMenu">{{ filter.name }}</span>
+  <mat-menu #nameMenu="matMenu">
+    <button mat-menu-item *ngFor="let column of columns" [disabled]="column.name === filter.name"
+      (click)="onNameChanged(column)">
+      <span>&nbsp;{{ column.name }}</span>
+    </button>
+  </mat-menu>
+
+  <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
+    [matTooltip]="valueFilterCustomizer.tooltipOf(filter)">{{ filter.operator }}</span>
+  <mat-menu #operatorMenu="matMenu">
+    <button mat-menu-item *ngFor="let operator of availableOperators()"
+      [disabled]="operator === filter.operator" (click)="filter.operator = operator; onChange.emit()">
+      <span>{{ operator }}</span>
+    </button>
+  </mat-menu>
+
+  <mat-form-field class="column_filter_value" *ngIf="!filter.operator.endsWith('empty')">
+    <input matInput type="text" placeholder="Filter Value"
+      [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
+      [value]="valueFilterCustomizer.formattedValueOf(filter)" (input)="onValueChanged($event.target.value)"
+      (keyup)="onKeyUp($event)">
+    <button mat-button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
+      (click)="reset()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </mat-form-field>
+  <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter" (click)="onRemove.emit()">
+    remove_circle_outline</mat-icon>
+</div>

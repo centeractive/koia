@@ -56,6 +56,18 @@ describe('NumberRangeFilter', () => {
       expect(filter.isFiltered()).toBeTruthy();
    });
 
+   it('#constructor should create non-inverted filter when inverted is not defined', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+
+      // when
+      const filter = new NumberRangeFilter(column, 0, 10, { min: null, max: 9 }, undefined);
+
+      // then
+      expect(filter.inverted).toBeFalsy();
+   });
+
    it('#constructor should create active filter when selected end time is defined', () => {
 
       // given

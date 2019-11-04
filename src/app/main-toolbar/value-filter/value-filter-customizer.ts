@@ -3,7 +3,7 @@ import { NumberFormatter } from 'app/shared/format';
 import { values } from 'd3';
 import { NumberUtils } from 'app/shared/utils';
 
-export class PropertyFilterCustomizer {
+export class ValueFilterCustomizer {
 
       private numberFormatter = new NumberFormatter();
 

@@ -1,9 +1,9 @@
 import { Operator, PropertyFilter, DataType } from 'app/shared/model';
-import { PropertyFilterCustomizer } from './property-filter-customizer';
+import { ValueFilterCustomizer } from './value-filter-customizer';
 
-describe('PropertyFilterCustomizer', () => {
+describe('ValueFilterCustomizer', () => {
 
-   const customizer = new PropertyFilterCustomizer();
+   const customizer = new ValueFilterCustomizer();
 
    it('#tooltipOf should return undefined when filter has no operator', () => {
 

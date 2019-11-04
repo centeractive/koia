@@ -1,22 +1,18 @@
-import {
-  Component, ViewEncapsulation, OnInit, Input, Output, EventEmitter, AfterViewChecked
-} from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, AfterViewChecked } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene } from '../shared/model';
-import { ArrayUtils, DataTypeUtils, NumberUtils } from 'app/shared/utils';
+import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
-import { TimeRangeFilter } from './filter/time-range-filter';
-import { NumberRangeFilter } from './filter/number-range-filter';
-import { PropertyFilterCustomizer } from './filter/property-filter-customizer';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { ChangeContext } from 'ng5-slider';
 import { DialogService } from 'app/shared/services';
+import { TimeRangeFilter } from './range-filter/model/time-range-filter';
+import { NumberRangeFilter } from './range-filter/model/number-range-filter';
+import { QueryBuilder } from './query-builder';
 
 @Component({
   selector: 'koia-main-toolbar',
   templateUrl: './main-toolbar.component.html',
-  styleUrls: ['./main-toolbar.component.css'],
-  encapsulation: ViewEncapsulation.None
+  styleUrls: ['./main-toolbar.component.css']
 })
 export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
@@ -24,7 +20,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   @Input() route: Route;
   @Input() query: Query;
   @Output() onAfterViewChecked: EventEmitter<void> = new EventEmitter();
-  @Output() onFilterChange: EventEmitter<Query> = new EventEmitter(true);
+  @Output() onFilterChange: EventEmitter<Query> = new EventEmitter();
 
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
@@ -39,15 +35,12 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   showFullTextFilter: boolean;
   showRangeFilters: boolean;
   fullTextFilter = '';
-  readonly operators: Operator[];
-  columnFilters: PropertyFilter[] = [];
+  propertyFilters: PropertyFilter[] = [];
   rangeFilters: NumberRangeFilter[] = [];
-  propertyFilterCustomizer = new PropertyFilterCustomizer();
 
   private justNavigatedToParentView: boolean;
 
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService) {
-    this.operators = Object.keys(Operator).map(key => Operator[key]);
   }
 
   ngOnInit(): void {
@@ -88,10 +81,10 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.onAfterViewChecked.emit();
   }
 
-  private retainInitialFilters(): void {
+  retainInitialFilters(): void {
     if (this.query) {
       this.fullTextFilter = this.query.getFullTextFilter();
-      this.columnFilters = this.query.getPropertyFilters();
+      this.propertyFilters = this.query.getPropertyFilters();
       this.query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
         this.addRangeFilter(column, f.valueRange, f.inverted);
@@ -103,21 +96,10 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.dialogService.showSceneDetailsDialog(this.scene);
   }
 
-  availableOperatorsOf(columnName: string): Operator[] {
-    const column = this.scene.columns.find(c => c.name === columnName);
-    if (column.dataType === DataType.TEXT) {
-      return this.operators;
-    } else if (column.dataType === DataType.TIME) {
-      return [Operator.EMPTY, Operator.NOT_EMPTY];
-    } else {
-      return this.operators.filter(o => o !== Operator.CONTAINS);
-    }
-  }
-
   addValueFilter(column: Column): void {
     const timeColumn = column.dataType === DataType.TIME;
     const operator = timeColumn ? Operator.NOT_EMPTY : Operator.EQUAL;
-    this.columnFilters.push(new PropertyFilter(column.name, operator, '', column.dataType));
+    this.propertyFilters.push(new PropertyFilter(column.name, operator, '', column.dataType));
     if (timeColumn) {
       this.refreshEntries();
     }
@@ -133,7 +115,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   canAddValueFilter(column: Column) {
     if (column.dataType === DataType.TIME) {
-      return this.columnFilters.find(f => f.name === column.name) === undefined;
+      return this.propertyFilters.find(f => f.name === column.name) === undefined;
     }
     return true;
   }
@@ -150,35 +132,15 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       });
   }
 
-  onColumnFilterNameChanged(filter: PropertyFilter, column: Column): void {
-    filter.name = column.name;
-    filter.dataType = column.dataType;
-    if (column.dataType !== DataType.TEXT && filter.operator === Operator.CONTAINS) {
-      filter.operator = Operator.EQUAL;
-    }
-    if (filter.isApplicable()) {
-      this.refreshEntries();
-    }
-  }
-
-  onColumnFilterValueChanged(filter: PropertyFilter, value: string): void {
-    if (filter.dataType === DataType.NUMBER) {
-      const num = NumberUtils.parseNumber(value);
-      filter.value = num === undefined ? value : num;
-    } else {
-      filter.value = value;
-    }
-  }
-
-  onFilterFieldKeyUp(event: KeyboardEvent): void {
+  onFullTextFilterFieldKeyUp(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
       this.refreshEntries();
     }
   }
 
-  removeColumnFilter(columnFilter: PropertyFilter): void {
-    this.columnFilters = this.columnFilters.filter(cf => cf !== columnFilter);
-    if (columnFilter.isApplicable()) {
+  removePropertyFilter(propertyFilter: PropertyFilter): void {
+    this.propertyFilters = this.propertyFilters.filter(cf => cf !== propertyFilter);
+    if (propertyFilter.isApplicable()) {
       this.refreshEntries();
     }
   }
@@ -186,27 +148,6 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   resetFullTextFilter(): void {
     this.fullTextFilter = '';
     this.refreshEntries();
-  }
-
-  resetColumnFilter(columnFilter: PropertyFilter): void {
-    columnFilter.clearFilterValue();
-    this.refreshEntries();
-  }
-
-  onRangeFilterChanged(filter: NumberRangeFilter, changeContext: ChangeContext): void {
-    filter.selValueRange.min = changeContext.value;
-    filter.selValueRange.max = changeContext.highValue;
-    this.refreshEntries();
-  }
-
-  onRangeFilterInvertedChanged(filter: NumberRangeFilter, inverted: boolean): void {
-    filter.inverted = inverted;
-    this.refreshEntries();
-  }
-
-  resetRangeFilter(rangeFilter: NumberRangeFilter): void {
-    rangeFilter.reset();
-    setTimeout(() => this.refreshEntries(), 500); // let slider properly reset itself
   }
 
   removeRangeFilter(rangeFilter: NumberRangeFilter): void {
@@ -217,18 +158,11 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   }
 
   refreshEntries(): void {
-    const query = new Query();
-    if (this.fullTextFilter && this.fullTextFilter.length > 0) {
-      query.setFullTextFilter(this.fullTextFilter);
-    }
-    this.columnFilters
-      .filter(f => f.operator === Operator.EMPTY || f.operator === Operator.NOT_EMPTY
-        || (f.value !== undefined && f.value !== ''))
-      .forEach(f => query.addPropertyFilter(f.clone()));
-    this.rangeFilters
-      .filter(f => f.isStartFiltered() || f.isEndFiltered())
-      .forEach(f =>
-        query.addValueRangeFilter(f.column.name, f.selValueRange.min, f.selValueRange.max, f.selValueRange.maxExcluding, f.inverted));
+    const query = new QueryBuilder()
+      .fullTextFilter(this.fullTextFilter)
+      .propertyFilters(this.propertyFilters)
+      .rangeFilters(this.rangeFilters)
+      .getQuery();
     this.onFilterChange.emit(query);
   }
 }

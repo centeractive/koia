@@ -1,0 +1,39 @@
+.div_property_filter {
+   display: flex;
+   flex-wrap: nowrap;
+   align-items: center;
+}
+
+button {
+   z-index: 999;
+}
+
+.operator {
+   width: 80px;
+   padding-left: 5px;
+}
+ 
+.column_filter_value {
+   width: 200px;
+}
+ 
+.icon_remove_column_filter {
+   cursor: pointer;
+   padding-bottom: 4px;
+   opacity: 0.2;  
+}
+ 
+.icon_remove_column_filter:hover {
+   opacity: 1;
+}
+
+.span_menu_trigger {
+   padding: 3px;
+   margin-right: 4px;
+   margin-bottom: 5px;
+   border: 1px;
+   border-style: solid;
+   border-radius: 5px;  
+   border-color: lightgray;
+   cursor: pointer;
+}

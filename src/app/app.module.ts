@@ -61,6 +61,8 @@ import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
 import { ValueRangeGroupingService } from './shared/value-range';
 import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
+import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 
 @NgModule({
   declarations: [
@@ -89,7 +91,9 @@ import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confir
     ConnectionDialogComponent,
     FrontComponent,
     InputDialogComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    ValueFilterComponent,
+    RangeFilterComponent
   ],
   entryComponents: [
     ConfirmDialogComponent,

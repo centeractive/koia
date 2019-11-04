@@ -5,7 +5,8 @@
       <button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
         <mat-icon>home</mat-icon>
       </button>
-      <button id="butShowSceneDetails" mat-button mat-icon-button matTooltip="Show Scene Details" (click)="showSceneDetails()">
+      <button id="butShowSceneDetails" mat-button mat-icon-button matTooltip="Show Scene Details"
+        (click)="showSceneDetails()">
         <mat-icon>info_outlined</mat-icon>
       </button>
       <button id="butScenes" mat-button mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
@@ -39,46 +40,16 @@
     <div id="div_filter">
       <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
         <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"
-          [(ngModel)]="fullTextFilter" (keyup)="onFilterFieldKeyUp($event)">
+          [(ngModel)]="fullTextFilter" (keyup)="onFullTextFilterFieldKeyUp($event)">
         <button mat-button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
           mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
 
-      <span class="span_column_filter" *ngFor="let columnFilter of columnFilters">
-
-        <span class="span_menu_trigger" [matMenuTriggerFor]="nameMenu">{{ columnFilter.name }}</span>
-        <mat-menu #nameMenu="matMenu">
-          <button mat-menu-item *ngFor="let column of scene.columns"
-            [disabled]="column.name === columnFilter.name"
-            (click)="onColumnFilterNameChanged(columnFilter, column)">
-            <span>&nbsp;{{ column.name }}</span>
-          </button>
-        </mat-menu>
-
-        <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
-          [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)">{{ columnFilter.operator }}</span>
-        <mat-menu #operatorMenu="matMenu">
-          <button mat-menu-item *ngFor="let operator of availableOperatorsOf(columnFilter.name)"
-            [disabled]="operator === columnFilter.operator"
-            (click)="columnFilter.operator = operator; refreshEntries()">
-            <span>{{ operator }}</span>
-          </button>
-        </mat-menu>
-
-        <mat-form-field class="column_filter_value" *ngIf="!columnFilter.operator.endsWith('empty')">
-          <input matInput type="text" placeholder="Filter Value"
-            [matTooltip]="propertyFilterCustomizer.tooltipOf(columnFilter)" [value]="propertyFilterCustomizer.formattedValueOf(columnFilter)"
-            (input)="onColumnFilterValueChanged(columnFilter, $event.target.value)"
-            (keyup)="onFilterFieldKeyUp($event)">
-          <button mat-button color="primary" *ngIf="columnFilter.value" matSuffix mat-icon-button
-            aria-label="Clear" (click)="resetColumnFilter(columnFilter)">
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-form-field>
-        <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter"
-          (click)="removeColumnFilter(columnFilter)">remove_circle_outline</mat-icon>
+      <span class="span_column_filter" *ngFor="let propertyFilter of propertyFilters">
+        <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()"
+          (onRemove)="removePropertyFilter(propertyFilter)"></koia-value-filter>
       </span>
     </div>
 
@@ -92,8 +63,8 @@
       <mat-menu #columnFilterMenu="matMenu">
         <span *ngFor="let column of scene.columns">
 
-          <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)"
-            mat-menu-item (click)="addValueFilter(column)">
+          <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)" mat-menu-item
+            (click)="addValueFilter(column)">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
@@ -131,47 +102,8 @@
 
   <div *ngIf="showRangeFilters">
     <div *ngFor="let rangeFilter of rangeFilters">
-      <div class="div_range_slider">
-        <button mat-button color="accent" mat-icon-button matTooltip="Define slider step size"
-          [matMenuTriggerFor]="stepmenu">
-          <mat-icon [matBadge]="rangeFilter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="accent">
-            linear_scale
-          </mat-icon>
-        </button>
-        <mat-menu #stepmenu="matMenu">
-          <button mat-menu-item *ngFor="let step of rangeFilter.availableSteps"
-            [disabled]="step === rangeFilter.selectedStep" (click)="rangeFilter.onStepChanged(step)">
-            <span>Step by {{ rangeFilter.formatStep(step) }}</span>
-          </button>
-        </mat-menu>
-        &nbsp;&nbsp;
-        <ng5-slider [value]="rangeFilter.selValueRange.min" [highValue]="rangeFilter.selValueRange.max"
-          [options]="rangeFilter.sliderOptions" (highValueChange)="rangeFilter.selValueRange.maxExcluding = false"
-          (userChangeEnd)="onRangeFilterChanged(rangeFilter, $event)"></ng5-slider>
-        <button class="but_reset_range_filter" mat-button color="accent" mat-icon-button
-          matTooltip="Reset value range filter" [disabled]="!rangeFilter.isFiltered()"
-          (click)="resetRangeFilter(rangeFilter)">
-          <mat-icon>undo</mat-icon>
-        </button>
-        <button class="but_remove_range_filter" mat-button mat-icon-button matTooltip="Remove value range filter"
-          (click)="removeRangeFilter(rangeFilter)">
-          <mat-icon>remove_circle_outline</mat-icon>
-        </button>
-      </div>
-      <div class="div_range_column_name">{{ rangeFilter.column.name }}
-        <span [class]="rangeFilter.inverted ? 'span_outside_range_menu_trigger' : 'span_menu_trigger'"
-          [matMenuTriggerFor]="rangeTypeMenu">{{ rangeFilter.inverted ? 'is outside range' : 'is inside range' }}</span>
-        <mat-menu #rangeTypeMenu="matMenu">
-          <button mat-menu-item [disabled]="!rangeFilter.inverted"
-            (click)="onRangeFilterInvertedChanged(rangeFilter, false)">
-            <span>is inside range</span>
-          </button>
-          <button mat-menu-item [disabled]="rangeFilter.inverted"
-            (click)="onRangeFilterInvertedChanged(rangeFilter, true)">
-            <span>is outside range</span>
-          </button>
-        </mat-menu>
-      </div>
+      <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()"
+        (onRemove)="removeRangeFilter(rangeFilter)"></koia-range-filter>
     </div>
   </div>
 </div>

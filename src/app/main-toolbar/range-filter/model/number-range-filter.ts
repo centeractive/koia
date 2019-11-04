@@ -2,7 +2,7 @@ import { Options, LabelType } from 'ng5-slider';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { RangeSliderCustomizer } from './range-slider-customizer';
+import { RangeSliderCustomizer } from '../range-slider-customizer';
 
 export class NumberRangeFilter {
 
