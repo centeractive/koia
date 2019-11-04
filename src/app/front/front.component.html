@@ -4,9 +4,28 @@
     <div id="header">
       <img id="img_koia" src="/assets/koialogo_textblack.png">
     </div>
-    <a href="https://retrospective.centeractive.com/" target="_blank">
-      <img id="img_retro_compatible" src="/assets/retrospective_compatible.png">
-    </a>
+
+    <mat-card class="info-card">
+      <mat-card-header>
+        <div mat-card-avatar id="about-image"></div>
+        <mat-card-title>About Koia</mat-card-title>
+        <mat-card-subtitle>What is Koia and where does it come from?</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          Koia is an open-source application that anyone can use for free to create pivot tables,
+          summaries and charts out of custom data in just a few minutes.
+        </p>
+        <p>
+          Koia was originally built to improve analysis and visualization capabilities for data collected and
+          structured with
+          <a href="https://retrospective.centeractive.com/" target="_blank">
+            <img style='vertical-align: middle' src="/assets/retrospective-log-analyzer.png">
+          </a>
+        </p>
+      </mat-card-content>
+    </mat-card>
+    <br>
 
     <div id="div_action_cards">
 
@@ -93,8 +112,8 @@
     </div>
 
     <div id="div_start">
-      <mat-icon [id]="'start_button' + (ready ? '' : '_disabled')" [inline]="true" color="accent"
-        matTooltip="Start" [routerLink]="ready ? [urlScenes] : null">
+      <mat-icon [id]="'start_button' + (ready ? '' : '_disabled')" [inline]="true" color="accent" matTooltip="Start"
+        [routerLink]="ready ? [urlScenes] : null">
         play_circle_outline</mat-icon>
     </div>
 
@@ -104,9 +123,6 @@
         <mat-icon>check</mat-icon>
       </ng-template>
 
-      <ng-template matStepperIcon="about">
-        <mat-icon>contact_support</mat-icon>
-      </ng-template>
       <ng-template matStepperIcon="trust">
         <mat-icon>security</mat-icon>
       </ng-template>
@@ -125,29 +141,6 @@
       <ng-template matStepperIcon="screenshots">
         <mat-icon>laptop_mac</mat-icon>
       </ng-template>
-
-      <mat-step label="About Koia" state="about" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
-          <mat-card-header>
-            <div mat-card-avatar id="about-image"></div>
-            <mat-card-title>About Koia</mat-card-title>
-            <mat-card-subtitle>What is Koia and where does it come from?</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <p>
-              Koia is an open-source application that anyone can use for free to create pivot tables,
-              summaries and charts out of custom data in just a few minutes.
-            </p>
-            <p>
-              Koia was originally built to improve analysis and visualization capabilities for data collected and
-              structured with <a href="https://retrospective.centeractive.com/" target="_blank">Retrospective
-                Log Analyzer</a>&nbsp;
-              <a href="https://retrospective.centeractive.com/" target="_blank"><img id="img_retro"
-                  src="/assets/retrospective.png"></a>
-            </p>
-          </mat-card-content>
-        </mat-card>
-      </mat-step>
 
       <mat-step label="Trust" state="trust" [stepControl]="stepVisibleControl">
         <mat-card class="info-card" *ngIf="stepsVisible">
