@@ -8,6 +8,7 @@ import { DialogService } from 'app/shared/services';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { QueryBuilder } from './query-builder';
+import { PropertyFilterValidator } from 'app/shared/validator';
 
 @Component({
   selector: 'koia-main-toolbar',
@@ -38,6 +39,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   propertyFilters: PropertyFilter[] = [];
   rangeFilters: NumberRangeFilter[] = [];
 
+  private propertyFilterValidator: PropertyFilterValidator;
   private justNavigatedToParentView: boolean;
 
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService) {
@@ -47,6 +49,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     this.currURL = '/' + this.route;
     this.scene = this.dbService.getActiveScene();
     if (this.scene) {
+      this.propertyFilterValidator = new PropertyFilterValidator(this.scene.columns);
       this.listenOnNavigationEvents();
       this.retainInitialFilters();
     }
@@ -163,6 +166,17 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       .propertyFilters(this.propertyFilters)
       .rangeFilters(this.rangeFilters)
       .getQuery();
-    this.onFilterChange.emit(query);
+    if (this.isValid(query)) {
+      this.onFilterChange.emit(query);
+    }
+  }
+
+  private isValid(query: Query): boolean {
+    for (const propertyFilter of query.getPropertyFilters()) {
+      if (this.propertyFilterValidator.validate(propertyFilter)) {
+        return false;
+      }
+    }
+    return true;
   }
 }

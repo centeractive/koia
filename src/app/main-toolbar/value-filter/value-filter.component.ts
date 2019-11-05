@@ -3,6 +3,8 @@ import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { ValueFilterCustomizer } from './value-filter-customizer';
+import { PropertyFilterValidator } from 'app/shared/validator';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'koia-value-filter',
@@ -18,6 +20,8 @@ export class ValueFilterComponent implements OnInit {
   readonly operators: Operator[];
   valueFilterCustomizer = new ValueFilterCustomizer();
   columns: Column[];
+  valueControl = new FormControl();
+  private validator: PropertyFilterValidator;
 
   constructor(private dbService: DBService) {
     this.operators = Object.keys(Operator).map(key => Operator[key]);
@@ -25,13 +29,14 @@ export class ValueFilterComponent implements OnInit {
 
   ngOnInit() {
     this.columns = this.dbService.getActiveScene().columns;
+    this.validator = new PropertyFilterValidator(this.columns);
   }
 
   availableOperators(): Operator[] {
-    const column = this.columns.find(c => c.name === this.filter.name);
-    if (column.dataType === DataType.TEXT) {
+    const dataType = this.columns.find(c => c.name === this.filter.name).dataType;
+    if (dataType === DataType.TEXT) {
       return this.operators;
-    } else if (column.dataType === DataType.TIME) {
+    } else if (dataType === DataType.TIME) {
       return [Operator.EMPTY, Operator.NOT_EMPTY];
     } else {
       return this.operators.filter(o => o !== Operator.CONTAINS);
@@ -47,6 +52,7 @@ export class ValueFilterComponent implements OnInit {
     if (this.filter.isApplicable()) {
       this.onChange.emit();
     }
+    this.validate();
   }
 
   onValueChanged(value: string): void {
@@ -56,6 +62,13 @@ export class ValueFilterComponent implements OnInit {
     } else {
       this.filter.value = value;
     }
+    this.validate();
+  }
+
+  private validate(): void {
+    const error = this.validator.validate(this.filter);
+    this.valueControl.setErrors(error ? { error: error } : null);
+    this.valueControl.markAsTouched();
   }
 
   onKeyUp(event: KeyboardEvent): void {

@@ -63,6 +63,7 @@ import { ValueRangeGroupingService } from './shared/value-range';
 import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
+import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.component';
 
 @NgModule({
   declarations: [
@@ -93,7 +94,8 @@ import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.c
     InputDialogComponent,
     ConfirmDialogComponent,
     ValueFilterComponent,
-    RangeFilterComponent
+    RangeFilterComponent,
+    ColumnMappingComponent
   ],
   entryComponents: [
     ConfirmDialogComponent,

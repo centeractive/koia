@@ -9,7 +9,7 @@ import {
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Ng5SliderModule } from 'ng5-slider';
 import { RouterModule, Router, NavigationEnd, Event } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ContextInfo, Column, Route, PropertyFilter, Operator, Query, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { of } from 'rxjs';
@@ -20,6 +20,8 @@ import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { DialogService } from 'app/shared/services';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
+import { RangeFilterComponent } from './range-filter/range-filter.component';
+import { ValueFilterCustomizer } from './value-filter/value-filter-customizer';
 
 @Component({ template: '' })
 class DummyComponent { }
@@ -34,7 +36,7 @@ describe('MainToolbarComponent', () => {
   let fixture: ComponentFixture<MainToolbarComponent>;
   const dbService = new DBService(null);
   const dialogService = new DialogService(null);
-  let getActiveSceneSpy: jasmine.Spy; 
+  let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -72,9 +74,9 @@ describe('MainToolbarComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [MainToolbarComponent, DummyComponent],
       imports: [
-        MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, MatFormFieldModule, MatSelectModule,
-        MatInputModule, MatMenuModule, Ng5SliderModule, BrowserAnimationsModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }])
+        MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
+        MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, Ng5SliderModule, BrowserAnimationsModule,
+        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }])
       ],
       providers: [
         { provide: DBService, useValue: dbService },
@@ -199,6 +201,20 @@ describe('MainToolbarComponent', () => {
     // then
     expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scene);
   }));
+
+  it('#refreshEntries should not emit filter change when number filter is invalid', () => {
+
+    // given
+    component.addValueFilter(column('Amount'));
+    component.propertyFilters[0].value = 'x';
+    spyOn(component.onFilterChange, 'emit');
+
+    // when
+    component.refreshEntries();
+
+    // then
+    expect(component.onFilterChange.emit).not.toHaveBeenCalled();
+  });
 
   it('#refreshEntries should emit filter change with no time', () => {
 

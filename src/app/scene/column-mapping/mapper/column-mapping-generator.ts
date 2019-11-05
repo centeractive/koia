@@ -4,6 +4,8 @@ import { TimeUnitDetector } from './time-unit-detector';
 
 export class ColumnMappingGenerator {
 
+   static readonly COLUMN_NAME_MAX_LENGTH = 25;
+
    private static readonly MIN_WIDTH = 10;
    private static readonly MAX_WIDTH = 300;
    private static readonly MAX_TEXT_LENGTH_TO_BE_INDEXED = 100;

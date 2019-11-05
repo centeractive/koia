@@ -1,10 +1,10 @@
-import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ValueFilterComponent } from './value-filter.component';
 import { Operator, DataType, Column, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule, MatTooltipModule, MatIconModule, MatButtonModule, MatInputModule, MatMenuModule } from '@angular/material';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SceneFactory } from 'app/shared/test';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 
@@ -31,7 +31,7 @@ describe('ValueFilterComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ValueFilterComponent],
       imports: [
-        MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, MatFormFieldModule, MatInputModule,
+        MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
         MatMenuModule, BrowserAnimationsModule
       ],
       providers: [
@@ -178,6 +178,20 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.filter.value).toBe(1_200_300.55);
+    expect(component.valueControl.hasError('error')).toBeFalsy();
+  });
+
+  it('#onValueChanged should change control state if value is invalid', () => {
+
+    // given
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
+
+    // when
+    component.onValueChanged('x');
+
+    // then
+    expect(component.valueControl.hasError('error')).toBeTruthy();
+    expect(component.valueControl.getError('error')).toBe('Invalid number');
   });
 
   it('pressing character key in value field should not emit change event', fakeAsync(() => {
@@ -191,12 +205,13 @@ describe('ValueFilterComponent', () => {
 
     // when
     const event: any = document.createEvent('Event');
-    event.key = 'x';
+    event.key = '1';
     event.initEvent('keyup');
     htmlInput.dispatchEvent(event);
 
     // then
     expect(component.onChange.emit).not.toHaveBeenCalled();
+    expect(component.valueControl.hasError('error')).toBeFalsy();
   }));
 
   it('pressing <enter> in column filter field should emit onFilterChange', fakeAsync(() => {

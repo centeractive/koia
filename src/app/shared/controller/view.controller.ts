@@ -19,7 +19,7 @@ import { ChartContext, ChartType } from '../model/chart';
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit {
 
    static readonly MARGIN_TOP = 10;
-   static readonly SIDENAV_WIDTH = 300; // keep in sync with .sidenav in styles.css
+   static readonly SIDENAV_WIDTH = 340; // keep in sync with .sidenav in styles.css
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
 
    @ViewChild(MatSidenav, undefined) sidenav: MatSidenav;

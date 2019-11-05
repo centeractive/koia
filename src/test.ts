@@ -42,12 +42,13 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /mango-query-builder\.spec\.ts$/);
 // const context = require.context('./', true, /query-converter\.spec\.ts$/);
 
+// const context = require.context('./', true, /scene.*\.spec\.ts$/);
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
 // const context = require.context('./', true, /scene.component\.spec\.ts$/);
 // const context = require.context('./', true, /scenes.component\.spec\.ts$/);
 // const context = require.context('./', true, /scene-details-dialog.component\.spec\.ts$/)
 // const context = require.context('./', true, /scene-utils.*\.spec\.ts$/);
-// const context = require.context('./', true, /scene.*\.spec\.ts$/);
+// const context = require.context('./', true, /column-mapping.component.*\.spec\.ts$/);
 // const context = require.context('./', true, /reader.service\.spec\.ts$/);
 // const context = require.context('./', true, /csv-reader\.spec\.ts$/);
 // const context = require.context('./', true, /excel-reader\.spec\.ts$/);

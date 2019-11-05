@@ -1,0 +1,23 @@
+.column_name {
+   width: 220px;
+   padding-right: 10px;
+}
+
+.column_data_type {
+   width: 70px;
+   padding-right: 10px;
+}
+ 
+.column_width {
+   width: 50px;
+   padding-right: 10px;
+}
+
+.span_source_format {
+   margin-right: 10px;
+   vertical-align: bottom;
+}
+
+.column_format {
+   width: 200px;
+}

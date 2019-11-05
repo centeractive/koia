@@ -5,11 +5,11 @@ import { Router } from '@angular/router';
 import { MatBottomSheet, MatAccordion } from '@angular/material';
 import { DBService } from 'app/shared/services/backend';
 import { DataReader, DataHandler, ReaderService } from '../shared/services/reader';
-import { SceneUtils, ColumnDefinitionAssistant } from './utils';
+import { SceneUtils } from './utils';
 import { ProgressMonitor, EntryPersister } from './persister';
 import { DateTimeUtils, ArrayUtils } from 'app/shared/utils';
-import { DatePipe, Location } from '@angular/common';
-import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './mapper';
+import { Location } from '@angular/common';
+import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './column-mapping/mapper';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
 
@@ -27,9 +27,6 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
   readonly columnDefinitions = 'Column Definitions';
-  readonly columnDefAssistant = new ColumnDefinitionAssistant();
-  readonly now = new Date();
-  readonly datePipe = new DatePipe('en-US');
 
   @ViewChild(MatAccordion, undefined) accordion: MatAccordion;
   @ViewChild('fileInput', undefined) fileInputRef: ElementRef<HTMLInputElement>;
@@ -42,6 +39,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   locales: string[];
   selectedLocale: string;
   columnMappings: ColumnPair[];
+  columnMappingsValid: boolean;
   targetColumnNames: string[];
   dateFormats: string[];
   previewData: MappingResult[];
@@ -190,10 +188,6 @@ export class SceneComponent extends AbstractComponent implements OnInit {
     this.onColumnChanged();
   }
 
-  formattedNow(format: string): string {
-    return this.datePipe.transform(this.now, format);
-  }
-
   formatValue(column: Column, entry: Object): any {
     return this.valueFormatter.formatValue(column, entry[column.name]);
   }
@@ -207,11 +201,15 @@ export class SceneComponent extends AbstractComponent implements OnInit {
 
   onColumnChanged(): void {
     this.targetColumnNames = this.columnMappings.map(cp => cp.target.name);
+    this.validateColumnMappings();
     this.previewData = new EntryMapper(this.columnMappings, this.selectedLocale).mapObjects(this.sampleEntries);
   }
 
-  openDatePipeFormatPage() {
-    window.open('https://angular.io/api/common/DatePipe#custom-format-options');
+  private validateColumnMappings(): void {
+    this.columnMappingsValid = this.targetColumnNames.length > 0 && this.targetColumnNames
+      .find(n => !n || n.length > ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH) === undefined;
+
+    console.log('columnMappingsValid: ' + this.columnMappingsValid);
   }
 
   isPreviewDirty(): boolean {

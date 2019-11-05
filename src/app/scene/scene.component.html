@@ -100,41 +100,8 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div *ngFor="let columnPair of columnMappings">
-        <button class="but_column_mapping" mat-button mat-icon-button matTooltip="Delete irrelevant column"
-          (click)="deleteColumnMapping(columnPair)">
-          <mat-icon>delete_forever</mat-icon>
-        </button>
-        <mat-form-field class="column_name">
-          <input matInput type="text" placeholder="Column Name" [(ngModel)]="columnPair.target.name"
-            (change)="onColumnChanged()">
-        </mat-form-field>
-        <mat-form-field class="column_data_type">
-          <mat-select class="select_data_type" placeholder="Data Type" [(value)]="columnPair.target.dataType"
-            (selectionChange)="onDataTypeChanged(columnPair.target)">
-            <mat-option class="option_data_type"
-              *ngFor="let dataType of columnDefAssistant.selectableDataTypeOf(columnPair)" [value]="dataType">
-              {{ dataType }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field class="column_width">
-          <input matInput type="number" placeholder="Width" required min="1" max="9999" step="1"
-            oninput="validity.valid||(value='')" [(ngModel)]="columnPair.target.width">
-        </mat-form-field>
-        <span class="span_source_format" *ngIf="columnDefAssistant.canHaveSourceFormat(columnPair)">
-          <mat-form-field class="column_format" class="column_format">
-            <input class="input_source_format" matInput type="text" placeholder="Source Format"
-              [(ngModel)]="columnPair.source.format" (change)="onColumnChanged()">
-          </mat-form-field>
-          <mat-icon class="icon_link" matTooltip="Show custom format opitons" (click)="openDatePipeFormatPage()">help
-          </mat-icon>
-        </span>
-        <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(columnPair)">
-          <mat-select class="select_display_format" placeholder="Display Format" [(value)]="columnPair.target.format">
-            <mat-option *ngFor="let format of dateFormats" [value]="format">{{ formattedNow(format) }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
+          (onRemove)="deleteColumnMapping(columnPair)"></koia-column-mapping>
       </div>
     </mat-expansion-panel>
 
@@ -172,7 +139,7 @@
         matTooltipClass="tooltip_preview_warning" />
       &nbsp;
       <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
-        [disabled]="!(maxItemsToLoad > 0)" (click)="persistScene()">
+        [disabled]="!columnMappingsValid || !(maxItemsToLoad > 0)" (click)="persistScene()">
         Load Data
       </button>
       &nbsp;

@@ -4,7 +4,7 @@
 
 $koia-primary: mat-palette($mat-indigo, 700, 300, 900);
 $koia-accent:  mat-palette($mat-green, 700);
-$koia-warn:    mat-palette($mat-orange);
+$koia-warn:    mat-palette($mat-red);
 
 $koia-theme: mat-light-theme($koia-primary, $koia-accent, $koia-warn);
 

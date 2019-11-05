@@ -53,7 +53,7 @@ body {
 }
 
 .sidenav {
-  width: 300px; /* keep in sync with ViewController#SIDENAV_WIDTH */
+  width: 340px; /* keep in sync with ViewController#SIDENAV_WIDTH */
 }
 
 .div_accordion_options {

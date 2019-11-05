@@ -9,14 +9,15 @@ import { NotificationService } from 'app/shared/services';
 import { Route, Scene, DataType, ColumnPair } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { DatePipe, Location } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { SceneFactory, TestUtils } from 'app/shared/test';
+import { SceneFactory } from 'app/shared/test';
+import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
 
 describe('SceneComponent', () => {
 
@@ -50,10 +51,10 @@ describe('SceneComponent', () => {
     spyOn(console, 'log').and.callFake(s => null);
     dbService = new DBService(null);
     TestBed.configureTestingModule({
-      declarations: [SceneComponent],
+      declarations: [SceneComponent, ColumnMappingComponent],
       imports: [RouterTestingModule, MatBottomSheetModule, MatExpansionModule, MatCardModule, FormsModule, MatFormFieldModule,
-        MatInputModule, MatSelectModule, MatProgressBarModule, MatSlideToggleModule, MatTableModule, MatButtonModule, MatIconModule,
-        MatMenuModule, MatTooltipModule, BrowserAnimationsModule],
+        ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule, MatSlideToggleModule, MatTableModule,
+        MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, BrowserAnimationsModule],
       providers: [Location, MatBottomSheet,
         { provide: ReaderService, useValue: readerService },
         { provide: DBService, useValue: dbService },

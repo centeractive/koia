@@ -51,32 +51,8 @@ mat-slide-toggle {
   right: 30px;
 }
 
-.column_name {
-  width: 150px;
-  padding-right: 10px;
-}
-
-.column_data_type {
-  width: 70px;
-  padding-right: 10px;
-}
-
-.column_width {
-  width: 50px;
-  padding-right: 10px;
-}
-
-.span_source_format {
-  margin-right: 10px;
-  vertical-align: bottom;
-}
-
 .icon_link {
   cursor: pointer;
-}
-
-.column_format {
-  width: 200px;
 }
 
 #div_preview_table {
