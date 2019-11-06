@@ -133,13 +133,13 @@
   <div *ngIf="scene">
     <button id="but_cancel" *ngIf="!canceled" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
     &nbsp;
-    <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappings">
+    <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappingsValid">
       <img *ngIf="isPreviewDirty()" src="/assets/warning.png"
         matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
         matTooltipClass="tooltip_preview_warning" />
       &nbsp;
       <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
-        [disabled]="!columnMappingsValid || !(maxItemsToLoad > 0)" (click)="persistScene()">
+        [disabled]="!(maxItemsToLoad > 0)" (click)="persistScene()">
         Load Data
       </button>
       &nbsp;
