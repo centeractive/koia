@@ -67,6 +67,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /main-toolbar.component\.spec\.ts$/);
 // const context = require.context('./', true, /value-filter.component\.spec\.ts$/);
 // const context = require.context('./', true, /filter-value-input.directive\.spec\.ts$/);
+// const context = require.context('./', true, /filter-value-parser\.spec\.ts$/);
 // const context = require.context('./', true, /range-filter.component\.spec\.ts$/);
 // const context = require.context('./', true, /property-filter-customizer\.spec\.ts$/);
 
