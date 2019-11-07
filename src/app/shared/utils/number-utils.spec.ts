@@ -116,20 +116,27 @@ describe('NumberUtils', () => {
     expect(NumberUtils.isNumber(1.1)).toBeTruthy();
   });
 
-  it('#isNumber should return true when string value contains number', () => {
+  it('#isNumber should return true when string contains completable float', () => {
+    expect(NumberUtils.isNumber('-.1')).toBeTruthy();
+    expect(NumberUtils.isNumber('.1')).toBeTruthy();
+  });
+
+  it('#isNumber should return true when string contains number', () => {
     expect(NumberUtils.isNumber('-1.1')).toBeTruthy();
     expect(NumberUtils.isNumber('-1')).toBeTruthy();
+    expect(NumberUtils.isNumber('-0.1')).toBeTruthy();
     expect(NumberUtils.isNumber('0')).toBeTruthy();
+    expect(NumberUtils.isNumber('0.1')).toBeTruthy();
     expect(NumberUtils.isNumber('1')).toBeTruthy();
     expect(NumberUtils.isNumber('1.1')).toBeTruthy();
   });
 
-  it('#isNumber should return true when string value contains formatted number', () => {
+  it('#isNumber should return true when string contains formatted number', () => {
     expect(NumberUtils.isNumber((-1_000_000.1).toLocaleString())).toBeTruthy();
     expect(NumberUtils.isNumber((1_000_000.1).toLocaleString())).toBeTruthy();
   });
 
-  it('#isNumber should return false when string value contains misplaced thousands separator', () => {
+  it('#isNumber should return false when string contains misplaced thousands separator', () => {
     expect(NumberUtils.isNumber('-1,0,000.1')).toBeFalsy();
     expect(NumberUtils.isNumber('-1,0,000.1')).toBeFalsy();
   });
@@ -290,6 +297,11 @@ describe('NumberUtils', () => {
     expect(NumberUtils.parseNumber('1,0,000')).toBeUndefined();
   });
 
+  it('#parseNumber should return float when string contains completable float', () => {
+    expect(NumberUtils.parseNumber('-.1')).toBe(-0.1);
+    expect(NumberUtils.parseNumber('.1')).toBe(0.1);
+  });
+
   it('#parseNumber should return float when string contains float', () => {
     expect(NumberUtils.parseNumber('-1.1')).toBe(-1.1);
     expect(NumberUtils.parseNumber('1.1')).toBe(1.1);
@@ -380,6 +392,21 @@ describe('NumberUtils', () => {
   it('#parseFloat should return undefined when string contains float with misplaced thousands separators', () => {
     expect(NumberUtils.parseFloat('-1,0,000.5')).toBeUndefined();
     expect(NumberUtils.parseFloat('1,0,000.5')).toBeUndefined();
+  });
+
+  it('#parseFloat should return float when string contains completable float', () => {
+    expect(NumberUtils.parseFloat('-.1')).toBe(-0.1);
+    expect(NumberUtils.parseFloat('.1')).toBe(0.1);
+  });
+
+  it('#removeThousandsSeparators should return unchanged string when no thousands separator is present', () => {
+    expect(NumberUtils.removeThousandsSeparators('1000')).toBe('1000');
+    expect(NumberUtils.removeThousandsSeparators('7111000.51')).toBe('7111000.51');
+  });
+
+  it('#removeThousandsSeparators should return string without thousands separators', () => {
+    expect(NumberUtils.removeThousandsSeparators('1,000')).toBe('1000');
+    expect(NumberUtils.removeThousandsSeparators('7,111,000.51')).toBe('7111000.51');
   });
 
   it('#countDecimals should return zero when number is missing', () => {

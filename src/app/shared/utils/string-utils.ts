@@ -15,12 +15,12 @@ export class StringUtils {
    /**
    * capitalizes a string changing the first letter to uppercase; no other letters are changed
    */
-  static capitalize(s: string): string {
-   if (s && s.length > 0) {
-     return s[0].toUpperCase() + s.slice(1);
+   static capitalize(s: string): string {
+      if (s && s.length > 0) {
+         return s[0].toUpperCase() + s.slice(1);
+      }
+      return s;
    }
-   return s;
- }
 
    /**
     * quote the given string with single quotes
@@ -29,5 +29,26 @@ export class StringUtils {
     */
    static quote(s: string): string {
       return '\'' + (s || StringUtils.EMPTY) + '\'';
+   }
+
+   static insertAt(baseString: string, stringToInsert: string, position: number): string {
+      if (position === 0) {
+         return stringToInsert + baseString;
+      } else if (position === baseString.length) {
+         return baseString + stringToInsert;
+      } else {
+         return baseString.substring(0, position) + stringToInsert + baseString.substring(position);
+      }
+   }
+
+   static removeCharAt(s: string, position: number): string {
+      return s.slice(0, position) + s.slice(position + 1);
+   }
+
+   /**
+    * @returns a number that indicates how many times the 'word' is contained in the 'baseString' (no overlapping)
+    */
+   static occurrences(baseString: string, word: string): number {
+      return baseString.split(word).length - 1;
    }
 }

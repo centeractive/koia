@@ -17,9 +17,9 @@
   </mat-menu>
 
   <mat-form-field class="column_filter_value" *ngIf="!filter.operator.endsWith('empty')">
-    <input matInput type="text" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
-      [value]="valueFilterCustomizer.formattedValueOf(filter)" (input)="onValueChanged($event.target.value)"
-      (keyup)="onKeyUp($event)" [formControl]="valueControl">
+    <input matInput type="text" placeholder="Filter Value"
+      [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" [value]="valueFilterCustomizer.formattedValueOf(filter)"
+      (input)="onValueChanged($event.target.value)" (keyup)="onKeyUp($event)" [formControl]="valueControl" [koiaFilterValueInput]="filter">
     <button mat-button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
       (click)="reset()">
       <mat-icon>close</mat-icon>

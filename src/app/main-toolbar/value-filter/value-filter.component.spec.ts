@@ -7,6 +7,7 @@ import { MatFormFieldModule, MatTooltipModule, MatIconModule, MatButtonModule, M
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SceneFactory } from 'app/shared/test';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { FilterValueInputDirective } from './filter-value-input.directive';
 
 describe('ValueFilterComponent', () => {
 
@@ -21,7 +22,8 @@ describe('ValueFilterComponent', () => {
       { name: 'Level', dataType: DataType.TEXT, width: 60 },
       { name: 'Host', dataType: DataType.TEXT, width: 80 },
       { name: 'Path', dataType: DataType.TEXT, width: 200 },
-      { name: 'Amount', dataType: DataType.NUMBER, width: 70 }
+      { name: 'Amount', dataType: DataType.NUMBER, width: 70 },
+      { name: 'Valid', dataType: DataType.BOOLEAN, width: 30 }
     ];
     const scene = SceneFactory.createScene('1', columns);
     spyOn(dbService, 'getActiveScene').and.returnValue(scene);
@@ -29,7 +31,7 @@ describe('ValueFilterComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ValueFilterComponent],
+      declarations: [ValueFilterComponent, FilterValueInputDirective],
       imports: [
         MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
         MatMenuModule, BrowserAnimationsModule
@@ -45,6 +47,7 @@ describe('ValueFilterComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ValueFilterComponent);
     component = fixture.componentInstance;
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '', DataType.NUMBER);
     fixture.detectChanges();
   });
 
@@ -95,18 +98,15 @@ describe('ValueFilterComponent', () => {
 
   it('#onNameChanged should change property filter name and data type', () => {
 
-    // given
-    component.filter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT);
-
     // when
-    component.onNameChanged(column('Amount'));
+    component.onNameChanged(column('Valid'));
 
     // then
-    expect(component.filter.name).toBe('Amount');
-    expect(component.filter.dataType).toBe(DataType.NUMBER);
+    expect(component.filter.name).toBe('Valid');
+    expect(component.filter.dataType).toBe(DataType.BOOLEAN);
   });
 
-  it('#onNameChanged should refresh entries when filter is applicable', () => {
+  it('#onNameChanged should emit change event when filter is applicable', () => {
 
     // given
     component.filter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR');
@@ -119,7 +119,7 @@ describe('ValueFilterComponent', () => {
     expect(component.onChange.emit).toHaveBeenCalled();
   });
 
-  it('#onNameChanged should not refresh entries when filter is not applicable', () => {
+  it('#onNameChanged should not emit change event when filter is not applicable', () => {
 
     // given
     component.filter = new PropertyFilter('Level', Operator.EQUAL, '');
@@ -144,7 +144,7 @@ describe('ValueFilterComponent', () => {
     expect(component.filter.operator).toBe(Operator.EQUAL);
   });
 
-  it('#onNameChanged should change operator when TIME column', () => {
+  it('#onNameChanged should change filter operator when TIME column', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.GREATER_THAN, 22);
@@ -156,7 +156,7 @@ describe('ValueFilterComponent', () => {
     expect(component.filter.operator).toBe(Operator.NOT_EMPTY);
   });
 
-  it('#onValueChanged should change text value', () => {
+  it('#onValueChanged should change filter text value', () => {
 
     // given
     component.filter = new PropertyFilter('Level', Operator.CONTAINS, 'WARN', DataType.TEXT);
@@ -168,7 +168,7 @@ describe('ValueFilterComponent', () => {
     expect(component.filter.value).toBe('ERR');
   });
 
-  it('#onValueChanged should change number value', () => {
+  it('#onValueChanged should change filter number value when number is valid', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
@@ -181,6 +181,32 @@ describe('ValueFilterComponent', () => {
     expect(component.valueControl.hasError('error')).toBeFalsy();
   });
 
+  it('#onValueChanged should change filter number value when number has misplaced thousands separators', () => {
+
+    // given
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '2,000', DataType.NUMBER);
+
+    // when
+    component.onValueChanged('2,0000');
+
+    // then
+    expect(component.filter.value).toBe(20_000);
+    expect(component.valueControl.hasError('error')).toBeFalsy();
+  });
+
+  it('#onValueChanged should change filter value when value completable float', () => {
+
+    // given
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '1.7', DataType.NUMBER);
+
+    // when
+    component.onValueChanged('.7');
+
+    // then
+    expect(component.filter.value).toBe(0.7);
+    expect(component.valueControl.hasError('error')).toBeFalsy();
+  });
+
   it('#onValueChanged should change control state if value is invalid', () => {
 
     // given
@@ -190,6 +216,7 @@ describe('ValueFilterComponent', () => {
     component.onValueChanged('x');
 
     // then
+    expect(component.filter.value).toBe('x');
     expect(component.valueControl.hasError('error')).toBeTruthy();
     expect(component.valueControl.getError('error')).toBe('Invalid number');
   });
@@ -251,6 +278,7 @@ describe('ValueFilterComponent', () => {
 
     // when
     clearButton.click();
+    tick();
 
     // then
     expect(component.onChange.emit).toHaveBeenCalled();

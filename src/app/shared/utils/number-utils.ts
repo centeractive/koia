@@ -26,7 +26,7 @@ export class NumberUtils {
       } else if (typeof value === 'string') {
          return this.representsNumber(value);
       }
-      return !isNaN(Number(value));
+      return !Number.isNaN(value);
    }
 
    /**
@@ -73,7 +73,7 @@ export class NumberUtils {
       if (!str || str.trim() === '') {
          return undefined;
       }
-      return str.indexOf(NumberUtils.DECIMAL_SEPARATOR) > 0 ? NumberUtils.parseFloat(str) : NumberUtils.parseInt(str);
+      return str.indexOf(NumberUtils.DECIMAL_SEPARATOR) >= 0 ? NumberUtils.parseFloat(str) : NumberUtils.parseInt(str);
    }
 
    /**
@@ -102,7 +102,11 @@ export class NumberUtils {
    static parseFloat(str: string): number {
       if (!str || str.trim() === '') {
          return undefined;
-      } else if (!str || !NumberUtils.isNumber(str.slice(-1)) ||
+      }
+      if (str.startsWith(NumberUtils.DECIMAL_SEPARATOR)) {
+         str = '0' + str;
+      }
+      if (!NumberUtils.isNumber(str.slice(-1)) ||
          str.indexOf(NumberUtils.DECIMAL_SEPARATOR) !== str.lastIndexOf(NumberUtils.DECIMAL_SEPARATOR)) {
          return undefined;
       } else if (!this.representsNumber(str)) {
@@ -111,7 +115,10 @@ export class NumberUtils {
       return parseFloat(this.removeThousandsSeparators(str));
    }
 
-   private static removeThousandsSeparators(str: string): string {
+   /**
+    * removes thousands separators regardless of whether they appear at correct position
+    */
+   static removeThousandsSeparators(str: string): string {
       return str.split(NumberUtils.THOUSANDS_SEPARATOR).join('');
    }
 

@@ -66,6 +66,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /main-toolbar.*\.spec\.ts$/);
 // const context = require.context('./', true, /main-toolbar.component\.spec\.ts$/);
 // const context = require.context('./', true, /value-filter.component\.spec\.ts$/);
+// const context = require.context('./', true, /filter-value-input.directive\.spec\.ts$/);
 // const context = require.context('./', true, /range-filter.component\.spec\.ts$/);
 // const context = require.context('./', true, /property-filter-customizer\.spec\.ts$/);
 
@@ -119,6 +120,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /side-bar.controller\.spec\.ts$/);
 
 // const context = require.context('./', true, /array-utils\.spec\.ts$/);
+// const context = require.context('./', true, /string-utils\.spec\.ts$/);
 // const context = require.context('./', true, /chart-utils\.spec\.ts$/);
 // const context = require.context('./', true, /common-utils\.spec\.ts$/);
 // const context = require.context('./', true, /column-name-converter\.spec\.ts$/);

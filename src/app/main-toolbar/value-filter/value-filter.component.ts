@@ -1,10 +1,10 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
-import { NumberUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { ValueFilterCustomizer } from './value-filter-customizer';
 import { PropertyFilterValidator } from 'app/shared/validator';
 import { FormControl } from '@angular/forms';
+import { FilterValueParser } from './filter-value-parser';
 
 @Component({
   selector: 'koia-value-filter',
@@ -22,6 +22,7 @@ export class ValueFilterComponent implements OnInit {
   columns: Column[];
   valueControl = new FormControl();
   private validator: PropertyFilterValidator;
+  private valueParser: FilterValueParser;
 
   constructor(private dbService: DBService) {
     this.operators = Object.keys(Operator).map(key => Operator[key]);
@@ -30,6 +31,7 @@ export class ValueFilterComponent implements OnInit {
   ngOnInit() {
     this.columns = this.dbService.getActiveScene().columns;
     this.validator = new PropertyFilterValidator(this.columns);
+    this.valueParser = new FilterValueParser(this.filter);
   }
 
   availableOperators(): Operator[] {
@@ -56,12 +58,7 @@ export class ValueFilterComponent implements OnInit {
   }
 
   onValueChanged(value: string): void {
-    if (this.filter.dataType === DataType.NUMBER) {
-      const num = NumberUtils.parseNumber(value);
-      this.filter.value = num === undefined ? value : num;
-    } else {
-      this.filter.value = value;
-    }
+    this.filter.value = this.valueParser.parse(value);
     this.validate();
   }
 

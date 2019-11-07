@@ -64,6 +64,7 @@ import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confir
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.component';
+import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-value-input.directive';
 
 @NgModule({
   declarations: [
@@ -89,6 +90,7 @@ import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.co
     ChartjsComponent,
     MatIconModuleMock,
     TextareaMaxRowsDirective,
+    FilterValueInputDirective,
     ConnectionDialogComponent,
     FrontComponent,
     InputDialogComponent,

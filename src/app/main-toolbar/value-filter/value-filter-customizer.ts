@@ -1,6 +1,5 @@
 import { PropertyFilter, Operator, DataType } from 'app/shared/model';
 import { NumberFormatter } from 'app/shared/format';
-import { values } from 'd3';
 import { NumberUtils } from 'app/shared/utils';
 
 export class ValueFilterCustomizer {

@@ -46,5 +46,25 @@ describe('StringUtils', () => {
 
    it('#quote should return quoted string', () => {
       expect(StringUtils.quote('abc')).toBe('\'abc\'');
+      expect(StringUtils.insertAt('abc', '-', 0)).toBe('-abc');
+      expect(StringUtils.insertAt('abc', '-', 1)).toBe('a-bc');
+      expect(StringUtils.insertAt('abc', '-', 2)).toBe('ab-c');
+      expect(StringUtils.insertAt('abc', '-', 3)).toBe('abc-');
+   });
+
+   it('#removeCharAt should remove character', () => {
+      expect(StringUtils.removeCharAt('abc', 0)).toBe('bc');
+      expect(StringUtils.removeCharAt('abc', 1)).toBe('ac');
+      expect(StringUtils.removeCharAt('abc', 2)).toBe('ab');
+   });
+
+   it('#occurrences should return zero when word is not contained', () => {
+      expect(StringUtils.occurrences('abc', 'x')).toBe(0);
+   });
+
+   it('#occurrences should return positive integer when word is contained', () => {
+      expect(StringUtils.occurrences('abcabc', 'ca')).toBe(1);
+      expect(StringUtils.occurrences('abcabc', 'bc')).toBe(2);
+      expect(StringUtils.occurrences('abcabc', 'ab')).toBe(2);
    });
 });
