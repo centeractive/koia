@@ -40,7 +40,7 @@ steps:
   inputs:
     secureFile: 'couchdb_local.ini'    
 - task: PowerShell@2
-  displayName: 'Copy install4j config.xml to home directory'
+  displayName: 'Copy couchdb local.ini to $HOME/couchdb/local.d''
   inputs:
     targetType: 'inline'
     script: |
