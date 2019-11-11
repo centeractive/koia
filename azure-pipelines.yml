@@ -26,8 +26,12 @@ steps:
     workingDir: .  
 
 - script: |
+    ng test --browsers=ChromeHeadless
+  displayName: 'perform unit tests with "ng test --browsers=ChromeHeadless"'    
+
+- script: |
     ng build --prod
-  displayName: 'build koia with ng build --prod'
+  displayName: 'build koia with "ng build --prod"'
 
 - task: PublishPipelineArtifact@0
   inputs:
