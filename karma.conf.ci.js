@@ -12,7 +12,8 @@ module.exports = function (config) {
       require('karma-jasmine-html-reporter'),
       require('karma-coverage-istanbul-reporter'),
       require('@angular-devkit/build-angular/plugins/karma'),
-      require('karma-spec-reporter')
+      require('karma-spec-reporter'),
+      require('karma-junit-reporter')
     ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
@@ -46,8 +47,8 @@ module.exports = function (config) {
       fixWebpackSourcePaths: true
     },
     reporters: config.angularCli && config.angularCli.codeCoverage
-      ? ['spec', 'progress', 'coverage-istanbul']
-      : ['spec', 'progress', 'kjhtml'],
+      ? ['spec', 'progress', 'coverage-istanbul', 'junit']
+      : ['spec', 'progress', 'kjhtml', 'junit'],
     specReporter: {
       maxLogLines: 5,             // limit number of lines logged per test
       suppressErrorSummary: true, // do not print error summary

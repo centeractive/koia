@@ -36,12 +36,12 @@ steps:
     secureFile: 'couchdb_local.ini'    
 
 - task: PowerShell@2
-  displayName: 'Copy couchdb local.ini to $HOME/couchdb/local.d'
+  displayName: 'Copy couchdb local.ini to $HOME/couchdb/etc/local.d'
   inputs:
     targetType: 'inline'
     script: |
-      New-Item -Type Directory -Force "${HOME}/couchdb/local.d"
-      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/local.d/local.ini"    
+      New-Item -Type Directory -Force "${HOME}/couchdb/etc/local.d"
+      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/local.d/etc/local.ini"    
 
 - task: DockerInstaller@0
   displayName: Install Docker
@@ -57,9 +57,19 @@ steps:
     npx ng test --watch=false --karmaConfig karma.conf.ci.js
   displayName: 'perform unit tests'    
 
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/TESTS-*.xml'
+  displayName: 'Publish Test Results'
+
 - script: |
     ng build --prod
   displayName: 'build koia with "ng build --prod"'
+
+- script: npx ng lint
+  displayName: 'perform code analysis'  
 
 - task: PublishPipelineArtifact@0
   inputs:
