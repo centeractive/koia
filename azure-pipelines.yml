@@ -50,7 +50,8 @@ steps:
     releaseType: stable
     
 - script: |
-    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 --name couchdb -v ${HOME}/couchdb/local.d -d couchdb
+    docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/local.d -d couchdb
+#    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 --name couchdb -v ${HOME}/couchdb/local.d -d couchdb
   displayName: 'run couchdb Docker image'
 
 - script: |
