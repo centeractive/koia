@@ -16,7 +16,6 @@ body {
 p {
   margin-bottom: 15px;
   line-height: 1.5;
-  text-align: justify;
 }
 a {
   color: #db2a0b;
@@ -150,7 +149,7 @@ select {
   -webkit-appearance: none;
 }
 #topcontrol {
-  background: #db2a0b;
+  background: #ff9d00;
   color: #fff;
   text-align: center;
   display: inline-block;
@@ -172,7 +171,7 @@ select {
   z-index: 30;
 }
 #topcontrol:hover {
-  background: #b82309;
+  background: #ff9d00;
 }
 #topcontrol .fa {
   position: relative;
@@ -394,6 +393,9 @@ select {
   background: #2e4050;
   color: #fff;
 }
+.justify {
+  text-align: justify;
+}
 /* Override bootstrap default */
 .nav .open > a,
 .nav .open > a:hover,
@@ -571,7 +573,7 @@ select {
   font-size: 18px;
 }
 .why .item {
-  padding: 30px 0;
+  padding: 90px 0;
   border-bottom: 1px solid #eee;
 }
 .why .item.last-item {
