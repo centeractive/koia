@@ -24,7 +24,7 @@ getTestBed().initTestEnvironment(
 );
 
 // Then we find all the tests.
-// const context = require.context('./', true, /\.spec\.ts$/);
+const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /view-launcher-dialog.component\.spec\.ts$/);
 
@@ -33,8 +33,7 @@ getTestBed().initTestEnvironment(
 // const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
 // const context = require.context('./', true, /connection-dialog.component\.spec\.ts$/);
 
-
-const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
+// const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb-config\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb\.service\.spec\.ts$/);
 // const context = require.context('./', true, /pouchdb-access\.spec\.ts$/);

@@ -51,7 +51,6 @@ steps:
     
 - script: |
     docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb
-#    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 --name couchdb -v ${HOME}/couchdb/local.d -d couchdb
   displayName: 'run couchdb Docker image'
 
 - script: |
@@ -68,9 +67,6 @@ steps:
 - script: |
     npx ng build --prod
   displayName: 'build koia with "npx ng build --prod"'
-
-- script: npx ng lint
-  displayName: 'perform code analysis'  
 
 - task: PublishPipelineArtifact@0
   inputs:
