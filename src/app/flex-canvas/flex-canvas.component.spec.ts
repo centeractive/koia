@@ -4,7 +4,7 @@ import { FlexCanvasComponent } from './flex-canvas.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef, QueryList } from '@angular/core';
 import {
   MatBottomSheet, MatSidenavModule, MatIconModule, MatButtonModule, MatBottomSheetModule,
-  MatMenuModule, MatDialogRef
+  MatMenuModule, MatDialogRef, MatDialogModule
 } from '@angular/material';
 import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-resizable-element';
 import { of, Observable } from 'rxjs';
@@ -111,6 +111,7 @@ describe('FlexCanvasComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(FlexCanvasComponent);
     component = fixture.componentInstance;
+    spyOn(dialogService, 'showViewLauncherDialog').and.stub();
     spyOn(notificationService, 'showStatus').and.stub();
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));

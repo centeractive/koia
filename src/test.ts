@@ -26,7 +26,7 @@ getTestBed().initTestEnvironment(
 // Then we find all the tests.
 const context = require.context('./', true, /\.spec\.ts$/);
 
-// const context = require.context('./', true, /confirm-dialog.component\.spec\.ts$/);
+// const context = require.context('./', true, /view-launcher-dialog.component\.spec\.ts$/);
 
 // const context = require.context('./', true, /shared\/model.*\.spec\.ts$/);
 // const context = require.context('./', true, /front.component\.spec\.ts$/);

@@ -65,6 +65,7 @@ import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.c
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.component';
 import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-value-input.directive';
+import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 
 @NgModule({
   declarations: [
@@ -97,7 +98,8 @@ import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-va
     ConfirmDialogComponent,
     ValueFilterComponent,
     RangeFilterComponent,
-    ColumnMappingComponent
+    ColumnMappingComponent,
+    ViewLauncherDialogComponent
   ],
   entryComponents: [
     ConfirmDialogComponent,
@@ -105,7 +107,8 @@ import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-va
     ConnectionDialogComponent,
     StatusComponent,
     RawDataDialogComponent,
-    SceneDetailsDialogComponent
+    SceneDetailsDialogComponent,
+    ViewLauncherDialogComponent
   ],
   imports: [
     BrowserModule,

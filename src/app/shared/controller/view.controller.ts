@@ -15,8 +15,9 @@ import { View } from '../model/view-config';
 import { InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ChartMarginService } from '../services/chart';
 import { ChartContext, ChartType } from '../model/chart';
+import { ViewLauncherContext } from '../component/view-launcher-dialog';
 
-export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit {
+export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext {
 
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 340; // keep in sync with .sidenav in styles.css
@@ -63,12 +64,18 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    ngAfterViewInit(): void {
-      this.elementContainerDivRefs.changes.subscribe(c => {
-         if (this.elementContainerDivRefs.last) {
-            const htmlDiv = this.elementContainerDivRefs.last.nativeElement;
-            htmlDiv.scrollIntoView();
+      if (this.scene) {
+         if (this.elementContainerDivRefs.length === 0) {
+            this.dialogService.showViewLauncherDialog(this);
+         } else {
+            this.elementContainerDivRefs.changes.subscribe(c => {
+               if (this.elementContainerDivRefs.last) {
+                  const htmlDiv = this.elementContainerDivRefs.last.nativeElement;
+                  htmlDiv.scrollIntoView();
+               }
+            });
          }
-      });
+      }
    }
 
    private identifyColumns(): void {

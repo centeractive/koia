@@ -7,7 +7,10 @@ import { InputDialogComponent, InputDialogData } from '../component/input-dialog
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog.component';
 import { SceneFactory } from '../test';
-import { Protocol } from '../model';
+import { Protocol, GraphContext, SummaryContext } from '../model';
+import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
+import { View } from '../model/view-config';
+import { ChartContext } from '../model/chart';
 
 
 describe('DialogService', () => {
@@ -74,4 +77,34 @@ describe('DialogService', () => {
     expect(matDialogService.open).toHaveBeenCalledWith(SceneDetailsDialogComponent, { data: scene, panelClass: 'dialog-container' });
   });
 
+  it('#showViewLauncherDialog should open dialog', () => {
+
+    // when
+    const context = new ViewController();
+    service.showViewLauncherDialog(context);
+
+    // then
+    expect(matDialogService.open).toHaveBeenCalledWith(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  });
+
 });
+
+class ViewController implements ViewLauncherContext {
+  findViews(): View[] {
+    return [];
+  }
+
+  loadView(view: View): void {}
+
+  addSummaryTable(): SummaryContext {
+    return null;
+  }
+
+  addChart(): ChartContext {
+    return null;
+  }
+
+  addGraph(): GraphContext {
+    return null;
+  }
+}

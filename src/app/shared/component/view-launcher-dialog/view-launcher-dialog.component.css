@@ -1,0 +1,11 @@
+#div_views {
+   max-height: 200px;
+   overflow: auto;   
+}
+
+#div_close_button {
+   width: 100%;
+   display: flex;
+   justify-content: center;
+   margin-top: 20px;
+}

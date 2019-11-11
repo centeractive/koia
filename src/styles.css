@@ -152,7 +152,7 @@ mat-panel-description {
 
 var {
   color: gray;
-  padding-left: 20px;
+  padding-left: 15px;
 }
 
 @media print {

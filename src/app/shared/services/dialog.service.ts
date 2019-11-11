@@ -5,6 +5,7 @@ import { Scene } from '../model';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ConfirmDialogData, ConfirmDialogComponent } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { ViewLauncherDialogComponent, ViewLauncherContext } from '../component/view-launcher-dialog';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,10 @@ export class DialogService {
   }
 
   showSceneDetailsDialog(scene: Scene): MatDialogRef<SceneDetailsDialogComponent> {
-      return this.dialogService.open(SceneDetailsDialogComponent, { data: scene, panelClass: 'dialog-container' });
+    return this.dialogService.open(SceneDetailsDialogComponent, { data: scene, panelClass: 'dialog-container' });
+  }
+
+  showViewLauncherDialog(context: ViewLauncherContext): MatDialogRef<ViewLauncherDialogComponent> {
+    return this.dialogService.open(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 }

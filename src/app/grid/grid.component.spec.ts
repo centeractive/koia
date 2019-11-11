@@ -102,6 +102,7 @@ describe('GridComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(GridComponent);
     component = fixture.componentInstance;
+    spyOn(dialogService, 'showViewLauncherDialog').and.stub();
     spyOn(notificationService, 'showStatus').and.stub();
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));
