@@ -85,6 +85,7 @@
     "karma-spec-reporter": "0.0.32",
     "ng-packagr": "^5.2.0",
     "protractor": "^5.4.2",
+    "puppeteer": "^2.0.0",
     "rxjs-tslint": "^0.1.7",
     "ts-node": "^4.1.0",
     "tsickle": "^0.35.0",

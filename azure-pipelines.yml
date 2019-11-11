@@ -54,8 +54,8 @@ steps:
   displayName: 'run couchdb Docker image'
 
 - script: |
-    ng test --browsers=ChromeHeadless
-  displayName: 'perform unit tests with "ng test --browsers=ChromeHeadless"'    
+    ng test --karmaConfig karma.conf.ci.js
+  displayName: 'perform unit tests'    
 
 - script: |
     ng build --prod
