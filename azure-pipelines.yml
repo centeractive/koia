@@ -18,6 +18,7 @@ steps:
     key: npm | $(Agent.OS) | package-lock.json
     path: $(npm_config_cache)
   displayName: Cache npm
+
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
@@ -25,20 +26,15 @@ steps:
 
 - script: |
     npm install -g @angular/cli
-  displayName: 'npm install angular-cli globally'
-
-- task: Npm@1
+    npm install
   displayName: 'npm install'
-  inputs:
-    command: install
-    workingDir: .  
 
-# Download install4j config.xml file
 - task: DownloadSecureFile@1
   displayName: 'Download couchdb local.ini file'
   name: localini
   inputs:
     secureFile: 'couchdb_local.ini'    
+
 - task: PowerShell@2
   displayName: 'Copy couchdb local.ini to $HOME/couchdb/local.d'
   inputs:
@@ -54,7 +50,7 @@ steps:
     releaseType: stable
     
 - script: |
-    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 --name my-couchdb -v ${HOME}/couchdb/local.d -d couchdb
+    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 --name couchdb -v ${HOME}/couchdb/local.d -d couchdb
   displayName: 'run couchdb Docker image'
 
 - script: |
