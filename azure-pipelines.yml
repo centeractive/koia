@@ -31,7 +31,7 @@ steps:
 
 - task: DownloadSecureFile@1
   displayName: 'Download couchdb local.ini file'
-  name: localini
+  name: couchdb_local_ini
   inputs:
     secureFile: 'couchdb_local.ini'    
 
@@ -41,7 +41,7 @@ steps:
     targetType: 'inline'
     script: |
       New-Item -Type Directory -Force "${HOME}/couchdb/local.d"
-      Copy-Item -Force "$(localini.secureFilePath)" "${HOME}/couchdb/local.d/local.ini"    
+      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/local.d/local.ini"    
 
 - task: DockerInstaller@0
   displayName: Install Docker
@@ -54,7 +54,7 @@ steps:
   displayName: 'run couchdb Docker image'
 
 - script: |
-    ng test --karmaConfig karma.conf.ci.js
+    npx ng test --watch=false --karmaConfig karma.conf.ci.js
   displayName: 'perform unit tests'    
 
 - script: |
