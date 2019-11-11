@@ -10,6 +10,11 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: CacheBeta@0
+  inputs:
+    key: npm | $(Agent.OS) | package-lock.json
+    path: $(npm_config_cache)
+  displayName: Cache npm
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
@@ -25,9 +30,9 @@ steps:
     command: install
     workingDir: .  
 
-- script: |
-    ng test --browsers=ChromeHeadless
-  displayName: 'perform unit tests with "ng test --browsers=ChromeHeadless"'    
+# - script: |
+#     ng test --browsers=ChromeHeadless
+#   displayName: 'perform unit tests with "ng test --browsers=ChromeHeadless"'    
 
 - script: |
     ng build --prod
