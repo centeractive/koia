@@ -65,8 +65,8 @@ steps:
   displayName: 'Publish Test Results'
 
 - script: |
-    ng build --prod
-  displayName: 'build koia with "ng build --prod"'
+    npx ng build --prod
+  displayName: 'build koia with "npx ng build --prod"'
 
 - script: npx ng lint
   displayName: 'perform code analysis'  
