@@ -32,10 +32,19 @@ steps:
   inputs:
     command: install
     workingDir: .  
+- task: DockerInstaller@0
+  displayName: Install Docker
+  inputs:
+    dockerVersion: 17.09.0-ce
+    releaseType: stable
 
-# - script: |
-#     ng test --browsers=ChromeHeadless
-#   displayName: 'perform unit tests with "ng test --browsers=ChromeHeadless"'    
+- script: |
+    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 -d couchdb
+  displayName: 'run couchdb Docker image'
+
+- script: |
+    ng test --browsers=ChromeHeadless
+  displayName: 'perform unit tests with "ng test --browsers=ChromeHeadless"'    
 
 - script: |
     ng build --prod
