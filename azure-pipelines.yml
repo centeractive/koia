@@ -32,14 +32,29 @@ steps:
   inputs:
     command: install
     workingDir: .  
+
+# Download install4j config.xml file
+- task: DownloadSecureFile@1
+  displayName: 'Download couchdb local.ini file'
+  name: localini
+  inputs:
+    secureFile: 'couchdb_local.ini'    
+- task: PowerShell@2
+  displayName: 'Copy install4j config.xml to home directory'
+  inputs:
+    targetType: 'inline'
+    script: |
+      New-Item -Type Directory -Force "${HOME}/couchdb/local.d"
+      Copy-Item -Force "$(localini.secureFilePath)" "${HOME}/couchdb/local.d/local.ini"    
+
 - task: DockerInstaller@0
   displayName: Install Docker
   inputs:
     dockerVersion: 17.09.0-ce
     releaseType: stable
-
+    
 - script: |
-    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 -d couchdb
+    docker run -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=admin -p 5984:5984 --name my-couchdb -v ${HOME}/couchdb/local.d -d couchdb
   displayName: 'run couchdb Docker image'
 
 - script: |
