@@ -1,8 +1,3 @@
-# Node.js with Angular
-# Build a Node.js project that uses Angular.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - master
 
@@ -13,11 +8,13 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+
+# install Node.js and npm packages
 - task: CacheBeta@0
   inputs:
     key: npm | $(Agent.OS) | package-lock.json
     path: $(npm_config_cache)
-  displayName: Cache npm
+  displayName: Cache npm packages
 
 - task: NodeTool@0
   inputs:
@@ -25,10 +22,11 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm install -g @angular/cli
-    npm install
-  displayName: 'npm install'
+    npm ci -g @angular/cli
+    npm ci
+  displayName: 'Install npm packages'
 
+# set-up and rund CouchDB in Docker container (used by unit tests)
 - task: DownloadSecureFile@1
   displayName: 'Download couchdb local.ini file'
   name: couchdb_local_ini
@@ -51,8 +49,9 @@ steps:
     
 - script: |
     docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb
-  displayName: 'run couchdb Docker image'
+  displayName: 'run CouchDb in Docker container'
 
+# perform and publish unit-tets
 - script: |
     npx ng test --watch=false --karmaConfig karma.conf.ci.js
   displayName: 'perform unit tests'    
@@ -62,13 +61,15 @@ steps:
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/TESTS-*.xml'
-  displayName: 'Publish Test Results'
+  displayName: 'publish unit test results'
 
+# build product and publish artifact
 - script: |
     npx ng build --prod
-  displayName: 'build koia with "npx ng build --prod"'
+  displayName: 'build koia product'
 
 - task: PublishPipelineArtifact@0
   inputs:
     artifactName: 'koiadist'
     targetPath: 'dist/koia'
+  displayName: 'publish artifact'
