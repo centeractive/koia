@@ -28,13 +28,13 @@ steps:
 
 # set-up and rund CouchDB in Docker container (used by unit tests)
 - task: DownloadSecureFile@1
-  displayName: 'cownload couchdb local.ini file'
+  displayName: 'download CouchDB local.ini file'
   name: couchdb_local_ini
   inputs:
     secureFile: 'couchdb_local.ini'    
 
 - task: PowerShell@2
-  displayName: 'copy couchdb local.ini to target directory'
+  displayName: 'copy CouchDB local.ini to target directory'
   inputs:
     targetType: 'inline'
     script: |
@@ -49,7 +49,7 @@ steps:
     
 - script: |
     docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb
-  displayName: 'run CouchDb in Docker container'
+  displayName: 'run CouchDB in Docker container'
 
 # perform unit-tets and publish test and code coverage results
 - script: |
@@ -64,7 +64,7 @@ steps:
   displayName: 'publish unit test results'
 
 - task: PublishCodeCoverageResults@1
-  displayName: 'publish code coverage results'
+  displayName: 'publish code coverage report'
   condition: succeededOrFailed()
   inputs:
     codeCoverageTool: Cobertura
