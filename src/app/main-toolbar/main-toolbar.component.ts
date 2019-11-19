@@ -104,7 +104,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     const operator = timeColumn ? Operator.NOT_EMPTY : Operator.EQUAL;
     const value = column.dataType === DataType.BOOLEAN ? true : '';
     this.propertyFilters.push(new PropertyFilter(column.name, operator, value, column.dataType));
-    if (timeColumn) {
+    if (timeColumn || column.dataType === DataType.BOOLEAN) {
       this.refreshEntries();
     }
   }
