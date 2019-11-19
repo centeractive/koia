@@ -1,3 +1,0 @@
-[0603/095701.263:ERROR:prune_crash_reports.cc(34)] PruneCrashReportDatabase: Failed to get pending reports
-[0728/123712.420:ERROR:exception_handler_server.cc(527)] ConnectNamedPipe: The pipe is being closed. (0xE8)
-[0819/090345.878:ERROR:prune_crash_reports.cc(34)] PruneCrashReportDatabase: Failed to get pending reports

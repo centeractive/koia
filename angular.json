@@ -120,7 +120,7 @@
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
-            "protractorConfig": "./protractor.conf.js",
+            "protractorConfig": "./e2e/protractor.conf.js",
             "devServerTarget": "koia:serve"
           }
         },
@@ -128,7 +128,7 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "e2e/tsconfig.e2e.json"
+              "e2e/tsconfig.json"
             ],
             "exclude": []
           }

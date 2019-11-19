@@ -32,7 +32,7 @@
           <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
         </mat-select>
       </mat-form-field>&nbsp;
-      <button mat-raised-button color="primary" (click)="fileInput.click()">
+      <button id="select_file_button" mat-raised-button color="primary" (click)="fileInput.click()">
         <mat-icon>folder</mat-icon>
         <span>&nbsp;Select File</span>
       </button>

@@ -1,4 +1,4 @@
-import { Component, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, Inject, ViewEncapsulation, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CommonUtils } from 'app/shared/utils';
 import { Protocol, ConnectionInfo } from 'app/shared/model';
@@ -10,7 +10,7 @@ import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-confi
   styleUrls: ['./connection-dialog.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class ConnectionDialogComponent {
+export class ConnectionDialogComponent implements OnInit {
 
   readonly protocols: Protocol[] = [Protocol.HTTP, Protocol.HTTPS];
 
@@ -20,6 +20,10 @@ export class ConnectionDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogData) {
     this.originalConnInfo = <ConnectionInfo> CommonUtils.clone(data.connectionInfo);
     this.dialogRef.disableClose = true;
+  }
+
+  ngOnInit() {
+    console.log('on init')
   }
 
   onProtocolChanged(protocol: Protocol): void {
