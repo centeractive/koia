@@ -40,9 +40,15 @@ export class ValueFilterComponent implements OnInit {
       return this.operators;
     } else if (dataType === DataType.TIME) {
       return [Operator.EMPTY, Operator.NOT_EMPTY];
+    } else if (dataType === DataType.BOOLEAN) {
+      return [Operator.EQUAL];
     } else {
       return this.operators.filter(o => o !== Operator.CONTAINS);
     }
+  }
+
+  isBooleanDataType(): boolean {
+    return this.filter.dataType === DataType.BOOLEAN;
   }
 
   onNameChanged(column: Column): void {
@@ -50,6 +56,9 @@ export class ValueFilterComponent implements OnInit {
     this.filter.dataType = column.dataType;
     if (!this.availableOperators().includes(this.filter.operator)) {
       this.filter.operator = column.dataType === DataType.TIME ? Operator.NOT_EMPTY : Operator.EQUAL;
+    }
+    if (column.dataType === DataType.BOOLEAN && this.filter.value !== true && this.filter.value !== false) {
+      this.filter.value = true;
     }
     if (this.filter.isApplicable()) {
       this.onChange.emit();

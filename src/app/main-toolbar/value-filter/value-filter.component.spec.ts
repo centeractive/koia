@@ -23,7 +23,8 @@ describe('ValueFilterComponent', () => {
       { name: 'Host', dataType: DataType.TEXT, width: 80 },
       { name: 'Path', dataType: DataType.TEXT, width: 200 },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70 },
-      { name: 'Valid', dataType: DataType.BOOLEAN, width: 30 }
+      { name: 'Valid', dataType: DataType.BOOLEAN, width: 30 },
+      { name: 'Signed Off', dataType: DataType.BOOLEAN, width: 30 }
     ];
     const scene = SceneFactory.createScene('1', columns);
     spyOn(dbService, 'getActiveScene').and.returnValue(scene);
@@ -96,7 +97,7 @@ describe('ValueFilterComponent', () => {
     expect(operators).toEqual(expected);
   });
 
-  it('#onNameChanged should change property filter name and data type', () => {
+  it('#onNameChanged should change property filter name, data type and initialize value', () => {
 
     // when
     component.onNameChanged(column('Valid'));
@@ -104,6 +105,23 @@ describe('ValueFilterComponent', () => {
     // then
     expect(component.filter.name).toBe('Valid');
     expect(component.filter.dataType).toBe(DataType.BOOLEAN);
+    expect(component.filter.value).toBe(true);
+  });
+
+  it('#onNameChanged should change property filter name but keep data type and value', () => {
+
+    // given
+    component.filter.name = 'Valid';
+    component.filter.dataType = DataType.BOOLEAN;
+    component.filter.value = false;
+
+    // when
+    component.onNameChanged(column('Signed Off'));
+
+    // then
+    expect(component.filter.name).toBe('Signed Off');
+    expect(component.filter.dataType).toBe(DataType.BOOLEAN);
+    expect(component.filter.value).toBe(false);
   });
 
   it('#onNameChanged should emit change event when filter is applicable', () => {

@@ -16,16 +16,28 @@
     </button>
   </mat-menu>
 
-  <mat-form-field class="column_filter_value" *ngIf="!filter.operator.endsWith('empty')">
-    <input matInput type="text" placeholder="Filter Value"
-      [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" [value]="valueFilterCustomizer.formattedValueOf(filter)"
-      (input)="onValueChanged($event.target.value)" (keyup)="onKeyUp($event)" [formControl]="valueControl" [koiaFilterValueInput]="filter">
+  <mat-form-field class="column_filter_value" *ngIf="!isBooleanDataType() && !filter.operator.endsWith('empty')">
+    <input matInput type="text" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
+      [value]="valueFilterCustomizer.formattedValueOf(filter)" (input)="onValueChanged($event.target.value)"
+      (keyup)="onKeyUp($event)" [formControl]="valueControl" [koiaFilterValueInput]="filter">
     <button mat-button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
       (click)="reset()">
       <mat-icon>close</mat-icon>
     </button>
     <mat-error *ngIf="valueControl.invalid">{{ valueControl.getError('error') }}</mat-error>
   </mat-form-field>
+
+  <span class="span_menu_trigger" *ngIf="isBooleanDataType()"
+    [matMenuTriggerFor]="booleanMenu">{{ filter.value ? 'true' : 'false' }}</span>
+  <mat-menu #booleanMenu="matMenu">
+    <button mat-menu-item [disabled]="filter.value === true" (click)="filter.value = true; onChange.emit()">
+      <span>true</span>
+    </button>
+    <button mat-menu-item [disabled]="filter.value === false" (click)="filter.value = false; onChange.emit()">
+      <span>false</span>
+    </button>
+  </mat-menu>
+
   <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter" (click)="onRemove.emit()">
     remove_circle_outline</mat-icon>
 </div>

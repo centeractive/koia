@@ -7,10 +7,10 @@ export class PropertyFilter {
 
    private _name: string;
    private _operator: Operator;
-   private _value: string | number;
+   private _value: string | number | boolean;
    private _dataType?: DataType;
 
-   constructor(name: string, operator: Operator, filterValue: string | number, dataType?: DataType) {
+   constructor(name: string, operator: Operator, filterValue: string | number | boolean, dataType?: DataType) {
       this._name = name;
       this._operator = operator;
       this._value = filterValue;
@@ -36,11 +36,11 @@ export class PropertyFilter {
       }
    }
 
-   get value(): string | number {
+   get value(): string | number | boolean {
       return this._value;
    }
 
-   set value(filterValue: string | number) {
+   set value(filterValue: string | number | boolean) {
       this._value = filterValue;
    }
 

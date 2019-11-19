@@ -102,7 +102,8 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   addValueFilter(column: Column): void {
     const timeColumn = column.dataType === DataType.TIME;
     const operator = timeColumn ? Operator.NOT_EMPTY : Operator.EQUAL;
-    this.propertyFilters.push(new PropertyFilter(column.name, operator, '', column.dataType));
+    const value = column.dataType === DataType.BOOLEAN ? true : '';
+    this.propertyFilters.push(new PropertyFilter(column.name, operator, value, column.dataType));
     if (timeColumn) {
       this.refreshEntries();
     }
