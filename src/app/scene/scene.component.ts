@@ -208,8 +208,6 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   private validateColumnMappings(): void {
     this.columnMappingsValid = this.targetColumnNames.length > 0 && this.targetColumnNames
       .find(n => !n || n.length > ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH) === undefined;
-
-    console.log('columnMappingsValid: ' + this.columnMappingsValid);
   }
 
   isPreviewDirty(): boolean {

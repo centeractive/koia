@@ -14,7 +14,7 @@ import {
   MatSelectModule, MatMenuModule, MatIconModule, MatProgressBarModule, MatInputModule,
   MatSidenavModule, MatBadgeModule, MatTableModule, MatSortModule, MatPaginatorModule,
   MatSlideToggleModule, MatSliderModule, MatBottomSheetModule, MatToolbarModule, MatDialog,
-  MatDialogModule, MatStepperModule
+  MatDialogModule, MatStepperModule, MatSnackBarModule
 } from '@angular/material';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -144,6 +144,7 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
     AppRoutingModule,
     MatDialogModule,
     MatStepperModule,
+    MatSnackBarModule,
     ReactiveFormsModule
   ],
   providers: [

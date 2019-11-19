@@ -3,17 +3,17 @@ import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/cor
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
 import {
   MatTableModule, MatSortModule, MatProgressBarModule, MatSidenavModule, MatPaginatorModule,
-  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet
+  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet, MatSnackBarModule, MatMenuModule
 } from '@angular/material';
 import { RawDataComponent } from './raw-data.component';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Column, Query, DataType, Scene, Route } from 'app/shared/model';
+import { Column, Query, DataType, Scene, Route, ExportFormat } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NotificationService, DialogService } from 'app/shared/services';
+import { NotificationService, DialogService, ExportService } from 'app/shared/services';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
@@ -29,6 +29,7 @@ describe('RawDataComponent', () => {
   let getActiveSceneSpy: jasmine.Spy;
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
+  let exportService: ExportService;
   let requestEntriesPageSpy: jasmine.Spy;
 
   beforeAll(() => {
@@ -60,8 +61,8 @@ describe('RawDataComponent', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent],
       imports: [
-        MatSidenavModule, MatProgressBarModule, MatTableModule, MatSortModule, MatPaginatorModule,
-        MatButtonModule, MatIconModule, MatTooltipModule, BrowserAnimationsModule, RouterTestingModule
+        MatSidenavModule, MatProgressBarModule, MatTableModule, MatSortModule, MatPaginatorModule, MatMenuModule,
+        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, RouterTestingModule
       ],
       providers: [
         { provide: MatBottomSheet, useClass: MatBottomSheet },
@@ -80,6 +81,7 @@ describe('RawDataComponent', () => {
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
     requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(of(page).toPromise());
     spyOn(dialogService, 'showConfirmDialog').and.returnValue(null);
+    exportService = TestBed.get(ExportService);
     fixture.detectChanges();
     flush();
   }));
@@ -287,6 +289,119 @@ describe('RawDataComponent', () => {
     // then
     expect(divContent.style.marginTop).toEqual(RawDataComponent.MARGIN_TOP + 'px');
   });
+
+  it('#saveAs should save complete data as CSV file', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    spyOn(component.snackBar, 'open').and.callThrough();
+    spyOn(exportService, 'exportData').and.callFake(() => null);
+
+    // when
+    component.saveAs(ExportFormat.CSV);
+    flush();
+
+    // then
+    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as CSV in the background', undefined, { duration: 3000 });
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
+  }));
+
+  it('#saveAs should save filtered data as CSV file', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    spyOn(component.snackBar, 'open').and.callThrough();
+    spyOn(exportService, 'exportData').and.callFake(() => null);
+    component.query.setFullTextFilter('x');
+
+    // when
+    component.saveAs(ExportFormat.CSV);
+    flush();
+
+    // then
+    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as CSV in the background', undefined, { duration: 3000 });
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
+  }));
+
+  it('#saveAs should save complete data as Excel file', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    spyOn(component.snackBar, 'open').and.callThrough();
+    spyOn(exportService, 'exportData').and.callFake(() => null);
+
+    // when
+    component.saveAs(ExportFormat.EXCEL);
+    flush();
+
+    // then
+    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as Excel in the background', undefined, { duration: 3000 });
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
+  }));
+
+  it('#saveAs should save filtered data as Excel file', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    spyOn(component.snackBar, 'open').and.callThrough();
+    spyOn(exportService, 'exportData').and.callFake(() => null);
+    component.query.setFullTextFilter('x');
+
+    // when
+    component.saveAs(ExportFormat.EXCEL);
+    flush();
+
+    // then
+    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as Excel in the background', undefined, { duration: 3000 });
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
+  }));
+
+  it('#saveAs should save complete data as JSON file', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    spyOn(component.snackBar, 'open').and.callThrough();
+    spyOn(exportService, 'exportData').and.callFake(() => null);
+
+    // when
+    component.saveAs(ExportFormat.JSON);
+    flush();
+
+    // then
+    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as JSON in the background', undefined, { duration: 3000 });
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
+  }));
+
+  it('#saveAs should save filtered data as JSON file', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    spyOn(component.snackBar, 'open').and.callThrough();
+    spyOn(exportService, 'exportData').and.callFake(() => null);
+    component.query.setFullTextFilter('x');
+
+    // when
+    component.saveAs(ExportFormat.JSON);
+    flush();
+
+    // then
+    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as JSON in the background', undefined, { duration: 3000 });
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
+  }));
+
+  it('#saveAs should notify error', fakeAsync(() => {
+
+    // given;
+    spyOn(dbService, 'findEntries').and.returnValue(throwError({status: 404}));
+    spyOn(notificationService, 'onError');
+
+    // when
+    component.saveAs(ExportFormat.JSON);
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalled();
+  }));
 
   it('#click on print button should print window', fakeAsync(() => {
 

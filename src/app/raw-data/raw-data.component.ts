@@ -1,9 +1,9 @@
 import { Component, ViewChild, OnInit, ElementRef, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Sort, MatPaginator, MatBottomSheet } from '@angular/material';
-import { Column, Query, Route, Page } from '../shared/model';
+import { Sort, MatPaginator, MatBottomSheet, MatSnackBar } from '@angular/material';
+import { Column, Query, Route, Page, ExportFormat } from '../shared/model';
 import { DBService } from '../shared/services/backend';
-import { NotificationService, DialogService } from 'app/shared/services';
+import { NotificationService, DialogService, ExportService } from 'app/shared/services';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
@@ -34,12 +34,14 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   loading: boolean;
   considerColumnWidths: boolean;
   highlight: boolean;
+  exportFormats: ExportFormat[] = [ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON];
 
   private page: Page;
   private valueFormatter = new ValueFormatter();
 
   constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService,
-    private dialogService: DialogService, notificationService: NotificationService) {
+    private dialogService: DialogService, notificationService: NotificationService,
+    private exportService: ExportService, public snackBar: MatSnackBar) {
     super(bottomSheet, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.considerColumnWidths = true;
@@ -108,6 +110,16 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
       style.marginTop = marginTop + 'px';
       style.maxHeight = (window.innerHeight - marginTop - RawDataComponent.MARGIN_TOP) + 'px';
     }
+  }
+
+  saveAs(exportFormat: ExportFormat): void {
+    const query = this.query.clone();
+    const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' + exportFormat + ' in the background';
+    this.snackBar.open(message, undefined, { duration: 3000 });
+    query.clearPageDefinition();
+    this.dbService.findEntries(query, false).toPromise()
+      .then(entries => this.exportService.exportData(entries, exportFormat, 'Raw-Data'))
+      .catch(error => this.notifyError(error));
   }
 
   printView(): void {

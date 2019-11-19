@@ -4,6 +4,15 @@
   </koia-main-toolbar>
   <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
   <div id="view_toolbar">
+    <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #moreMenu="matMenu">
+      <button mat-menu-item *ngFor="let exportFormat of exportFormats" (click)="saveAs(exportFormat)">
+        <mat-icon>insert_drive_file</mat-icon>
+        <span>Save As {{ exportFormat }}</span>
+      </button>
+    </mat-menu>
     <button id="but_print" mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint
       matTooltip="Print current view" (click)="printView()">
       <mat-icon>print</mat-icon>
@@ -22,8 +31,8 @@
 
 <div #content id="div_table" class="mat-elevation-z8 printable">
 
-  <table [class]="considerColumnWidths ? 'table_layout_fixed' : 'table_layout_auto'" mat-table [dataSource]="entries" matSort
-    (matSortChange)="sortEntries($event)">
+  <table [class]="considerColumnWidths ? 'table_layout_fixed' : 'table_layout_auto'" mat-table [dataSource]="entries"
+    matSort (matSortChange)="sortEntries($event)">
 
     <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
       <span *ngIf="column.indexed">
