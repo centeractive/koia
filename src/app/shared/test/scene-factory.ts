@@ -8,6 +8,7 @@ export class SceneFactory {
         creationTime: new Date().getTime(),
         name: 'Scene ' + id,
         shortDescription: 'Scene ' + id + ' Short Description',
+        columnMappings: undefined,
         columns: columns,
         database: 'test_data_' + id,
         config: {

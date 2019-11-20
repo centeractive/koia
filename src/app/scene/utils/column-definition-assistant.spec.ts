@@ -41,6 +41,18 @@ describe('ColumnDefinitionAssistant', () => {
       expect(dataTypes).toEqual([DataType.BOOLEAN, DataType.TEXT]);
    });
 
+   it('#selectableDataTypeOf when source data type is OBJECT', () => {
+
+      // given
+      const columnPair: ColumnPair = createColumnPair(DataType.OBJECT);
+
+      // when
+      const dataTypes = colDefAssistant.selectableDataTypeOf(columnPair);
+
+      // then
+      expect(dataTypes).toEqual([DataType.OBJECT]);
+   });
+
    it('#selectableDataTypeOf when source data type is TEXT', () => {
 
       // given

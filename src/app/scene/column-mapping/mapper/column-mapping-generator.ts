@@ -43,13 +43,15 @@ export class ColumnMappingGenerator {
       return this.extractColumnPairs(columnNamesToPair);
    }
 
-   private createColumnPair(name: string, value: string | number | boolean, locale: string): ColumnPair {
+   private createColumnPair(name: string, value: string | number | boolean | Object, locale: string): ColumnPair {
       const dataType = this.guessDataTypeOf(value);
       const columnPair: ColumnPair = {
          source: { name: name, dataType: dataType, width: undefined },
          target: { name: name, dataType: dataType, width: this.computeWidth(value, dataType), indexed: this.shallBeIndexed(value) }
       };
-      this.detectDateTime(columnPair, value, locale);
+      if (dataType !== DataType.OBJECT && dataType !== DataType.BOOLEAN) {
+         this.detectDateTime(columnPair, <string | number>value, locale);
+      }
       return columnPair;
    }
 
@@ -60,7 +62,9 @@ export class ColumnMappingGenerator {
       } else if (columnPair.source.dataType === undefined) {
          columnPair.source.dataType = dataType;
          columnPair.target.dataType = dataType;
-         this.detectDateTime(columnPair, value, locale);
+         if (dataType !== DataType.OBJECT && dataType !== DataType.BOOLEAN) {
+            this.detectDateTime(columnPair, <string | number>value, locale);
+         }
       } else if (dataType === DataType.NUMBER && columnPair.source.dataType === DataType.TIME) {
          if (!NumberUtils.isInteger(value)) {
             this.downgrade(columnPair, DataType.NUMBER);
@@ -83,7 +87,7 @@ export class ColumnMappingGenerator {
       delete columnPair.target.format;
    }
 
-   private detectDateTime(columnPair: ColumnPair, value: string | number | boolean, locale: string): void {
+   private detectDateTime(columnPair: ColumnPair, value: string | number, locale: string): void {
       if (columnPair.source.dataType === DataType.TEXT &&
          NumberUtils.countDigits(<string>value) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
          for (const formatToTimeUnit of ColumnMappingGenerator.DATE_FORMATS_TO_TIMEUNITS) {
@@ -106,7 +110,7 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private guessDataTypeOf(value: string | number | boolean): DataType {
+   private guessDataTypeOf(value: string | number | boolean | Object): DataType {
       return value === '' ? undefined : DataTypeUtils.typeOf(value);
    }
 
@@ -119,14 +123,17 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private shallBeIndexed(value: string | number | boolean): boolean {
+   private shallBeIndexed(value: string | number | boolean | Object): boolean {
       if (value === null || value === undefined) {
          return true;
       }
-      return typeof value !== 'string' || (<string>value).length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED
+      if (typeof value === 'object') {
+         value = JSON.stringify(value, undefined, '  ');
+      }
+      return typeof value !== 'string' || (<string>value).length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED;
    }
 
-   private computeWidth(value: string | number | boolean, dataType: DataType): number {
+   private computeWidth(value: string | number | boolean | Object, dataType: DataType): number {
       let width = ColumnMappingGenerator.MIN_WIDTH;
       if (value && dataType !== DataType.BOOLEAN) {
          if (value.toString().length > width) {

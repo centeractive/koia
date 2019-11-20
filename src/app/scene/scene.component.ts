@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { NotificationService } from 'app/shared/services';
-import { Route, Scene, Attribute, DataType, Column, ColumnPair } from 'app/shared/model';
+import { Route, Scene, Attribute, DataType, Column, ColumnPair, SceneInfo } from 'app/shared/model';
 import { Router } from '@angular/router';
 import { MatBottomSheet, MatAccordion } from '@angular/material';
 import { DBService } from 'app/shared/services/backend';
@@ -38,6 +38,9 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   readerAttributes: Attribute[];
   locales: string[];
   selectedLocale: string;
+  columnMappingsSourceCandidates: SceneInfo[];
+  adoptColumnsFromExistingScene: false;
+  columnMappingsSource: SceneInfo;
   columnMappings: ColumnPair[];
   columnMappingsValid: boolean;
   targetColumnNames: string[];
@@ -74,10 +77,16 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       this.readers = this.readerService.getReaders();
       this.selectedReader = this.readers[0];
       this.defineLocales();
+      this.collectColumnMappingSources();
       this.initScene();
       this.detectIfScenesExist();
       this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
     }
+  }
+
+  private defineLocales(): void {
+    this.locales = DateTimeUtils.listMomentLocals();
+    this.selectedLocale = this.locales.includes('en') ? 'en' : this.locales[0];
   }
 
   private detectIfScenesExist(): void {
@@ -85,9 +94,13 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       .then(sceneInfos => this.scenesExist = sceneInfos && sceneInfos.length > 0);
   }
 
-  private defineLocales(): void {
-    this.locales = DateTimeUtils.listMomentLocals();
-    this.selectedLocale = this.locales.includes('en') ? 'en' : this.locales[0];
+  private collectColumnMappingSources(): void {
+    this.dbService.findSceneInfos().then(sceneInfos => {
+      this.columnMappingsSourceCandidates = sceneInfos.filter(si => si.columnMappings);
+      if (this.columnMappingsSourceCandidates.length > 0) {
+        this.columnMappingsSource = this.columnMappingsSourceCandidates[0];
+      }
+    });
   }
 
   private initScene(): void {
@@ -177,7 +190,8 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       .then(sample => {
         this.closeExpPanelsAbove(this.columnDefinitions);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
-        this.columnMappings = this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
+        this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
+          this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
         this.onColumnChanged();
       })
       .catch(err => this.notifyError(err));
@@ -216,6 +230,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
 
   persistScene() {
     this.scene.creationTime = new Date().getTime();
+    this.scene.columnMappings = this.columnMappings;
     this.scene.columns = this.columnMappings.map(cp => cp.target);
     this.accordion.closeAll();
     this.progressBarMode = 'query';

@@ -106,7 +106,8 @@ export class DBService {
     const query = new MangoQueryBuilder(false, undefined)
       .where('creationTime', Operator.NOT_EMPTY, null, DataType.TIME) // PouchDB expects sorted field to be part of the selector
       .sortBy({ active: 'creationTime', direction: 'desc' })
-      .includeFields([CouchDBConstants._ID, CouchDBConstants._REV, 'creationTime', 'name', 'shortDescription', 'database'])
+      .includeFields([CouchDBConstants._ID, CouchDBConstants._REV,
+        'creationTime', 'name', 'shortDescription', 'database', 'columnMappings'])
       .toQuery();
     return this.db.find(this.scenesDbName(), query).toPromise()
       .then(docs => docs.map(d => <SceneInfo>d));

@@ -324,7 +324,13 @@ describe('FrontComponent', () => {
     const sceneInfos: SceneInfo[] = [];
     const now = new Date().getTime();
     for (let i = 0; i < count; i++) {
-      sceneInfos.push({ creationTime: now, name: 'abc ' + i, shortDescription: 'xyz ' + i, database: 'data_' + i });
+      sceneInfos.push({
+        creationTime: now,
+        name: 'abc ' + i,
+        shortDescription: 'xyz ' + i,
+        database: 'data_' + i,
+        columnMappings: undefined
+      });
     }
     return sceneInfos;
   }

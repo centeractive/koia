@@ -51,12 +51,17 @@ mat-slide-toggle {
   right: 30px;
 }
 
+.column_mapping_source {
+    width: 550px;
+    padding-left: 20px;
+}
+
 .icon_link {
   cursor: pointer;
 }
 
 #div_preview_table {
-  height: 300px;
+  height: 500px;
   overflow-y: auto;
 }
 

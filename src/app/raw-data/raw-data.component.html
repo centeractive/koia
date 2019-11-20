@@ -22,7 +22,7 @@
       (click)="considerColumnWidths = !considerColumnWidths">
       <mat-icon>wrap_text</mat-icon>
     </button>
-    <button mat-button [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
+    <button mat-button *ngIf="hasObjectDataTypeColumns" [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
       [matTooltip]="showNestedObjects ? 'Hide nested objects' : 'Show nested objects'"
       (click)="showNestedObjects = !showNestedObjects">
       <mat-icon>code</mat-icon>

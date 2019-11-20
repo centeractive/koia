@@ -9,6 +9,8 @@ export class ColumnDefinitionAssistant {
             return [DataType.NUMBER, DataType.TEXT, DataType.TIME];
          case DataType.BOOLEAN:
             return [DataType.BOOLEAN, DataType.TEXT];
+         case DataType.OBJECT:
+            return [DataType.OBJECT];
          default:
             return [DataType.TEXT, DataType.TIME];
       }

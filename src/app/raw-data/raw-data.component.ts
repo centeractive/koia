@@ -29,6 +29,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   readonly route = Route.RAWDATA;
   columns: Column[];
   columnNames: string[];
+  hasObjectDataTypeColumns: boolean;
   entries: Object[];
   totalRowCount: number;
   pageSizeOptions: number[];
@@ -59,6 +60,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
       }
       this.query.setPageDefinition(0, this.pageSizeOptions[0]);
       this.columns = scene.columns;
+      this.hasObjectDataTypeColumns = this.columns.find(c => c.dataType === DataType.OBJECT) !== undefined;
       this.columnNames = this.columns.map(c => c.name);
       this.fetchEntriesPage();
     } else {

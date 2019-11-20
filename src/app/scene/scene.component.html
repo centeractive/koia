@@ -88,8 +88,21 @@
         </div>
       </div>
       <div>
+        <div *ngIf="columnMappingsSource">
+          <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">Adopt columns from
+            existing Scene&nbsp;
+          </mat-slide-toggle>
+          <mat-form-field class="column_mapping_source" *ngIf="columnMappingsSource && adoptColumnsFromExistingScene">
+            <mat-select placeholder="Scene" [(ngModel)]="columnMappingsSource">
+              <mat-option *ngFor="let sceneInfo of columnMappingsSourceCandidates" [value]="sceneInfo">
+                {{ sceneInfo.name }} (created {{ sceneInfo.creationTime | date: 'medium' }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
         <button id="but_detect_columns" mat-raised-button color="primary"
-          matTooltip="Detect columns by considering defined attributes" (click)="readSample()">Detect Columns</button>
+          [matTooltip]="adoptColumnsFromExistingScene ? '' : 'Detect columns by considering defined attributes'"
+          (click)="readSample()">{{ adoptColumnsFromExistingScene ? 'Adopt' : 'Detect' }} Columns</button>
       </div>
     </mat-expansion-panel>
 

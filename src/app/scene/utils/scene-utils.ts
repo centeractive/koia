@@ -11,6 +11,7 @@ export class SceneUtils {
          creationTime: undefined,
          name: undefined,
          shortDescription: undefined,
+         columnMappings: undefined,
          columns: undefined,
          database: db,
          config: {

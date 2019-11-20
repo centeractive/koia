@@ -562,6 +562,7 @@ describe('MainToolbarComponent', () => {
       context: context,
       columns: columns,
       database: 'test_data_' + id,
+      columnMappings: undefined,
       config: {
         records: [],
         views: []
