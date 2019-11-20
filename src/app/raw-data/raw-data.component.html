@@ -22,6 +22,11 @@
       (click)="considerColumnWidths = !considerColumnWidths">
       <mat-icon>wrap_text</mat-icon>
     </button>
+    <button mat-button [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
+      [matTooltip]="showNestedObjects ? 'Hide nested objects' : 'Show nested objects'"
+      (click)="showNestedObjects = !showNestedObjects">
+      <mat-icon>code</mat-icon>
+    </button>
     <button mat-button [color]="highlight ? 'accent' : ''" mat-icon-button
       [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
       <mat-icon>highlight</mat-icon>
@@ -42,7 +47,8 @@
       <span *ngIf="!column.indexed">
         <th mat-header-cell *matHeaderCellDef [style.width]="column.width + 'px'">{{ column.name }}</th>
       </span>
-      <td [class]="'td_' + column.dataType" *matCellDef="let entry">{{ formattedValueOf(column, entry) }}</td>
+      <td [class]="'td_' + column.dataType" *matCellDef="let entry" (click)="displayValue(column, entry)">
+        {{ formattedValueOf(column, entry) }}</td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>

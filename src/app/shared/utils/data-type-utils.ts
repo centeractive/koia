@@ -7,12 +7,14 @@ export class DataTypeUtils {
    /**
     * @returns the best matching data type of the specified value or [[undefined]] (DataType#TIME is never returned)
     */
-   static typeOf(value: string | number | boolean): DataType {
+   static typeOf(value: string | number | boolean | Object): DataType {
       if (value !== null && value !== undefined) {
          if (typeof value === 'boolean' || ['TRUE', 'FALSE'].includes(value.toString().toUpperCase())) {
             return DataType.BOOLEAN;
          } else if (NumberUtils.isNumber(value)) {
             return DataType.NUMBER;
+         } else if (typeof value === 'object') {
+            return DataType.OBJECT;
          } else {
             return DataType.TEXT;
          }
@@ -26,21 +28,23 @@ export class DataTypeUtils {
 
    /**
     * @returns the specified value in form of a value that corresponds to given data type
-    * or [[undefined]] if value is not compliant with the data type
+    * or [[undefined]] if value is not compliant with the data type (values of [[DataType.OBJECT]] are converted to a JSON string)
     */
-   static toTypedValue(value: string | number | boolean, dataType: DataType): string | number | boolean {
+   static toTypedValue(value: string | number | boolean | Object, dataType: DataType): string | number | boolean {
       if (value === null || value === undefined) {
          return undefined;
       }
       switch (dataType) {
          case DataType.BOOLEAN:
-            return DataTypeUtils.asBoolean(value);
+            return DataTypeUtils.asBoolean(<string | number | boolean>value);
          case DataType.NUMBER:
          case DataType.TIME:
             if (typeof value === 'string' || typeof value === 'number') {
                return NumberUtils.asNumber(value);
             }
             return undefined;
+         case DataType.OBJECT:
+            return JSON.stringify(value, undefined, '  ');
          default:
             return value.toString();
       }
@@ -73,6 +77,8 @@ export class DataTypeUtils {
             return 'check_circle';
          case DataType.NUMBER:
             return 'looks_one';
+         case DataType.OBJECT:
+               return 'code';
          case DataType.TEXT:
             return 'title';
          case DataType.TIME:

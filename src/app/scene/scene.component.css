@@ -69,6 +69,7 @@ th {
    text-align: left;
    padding: 5px;   
    background-color: white;
+   overflow: hidden;
 }
 
 td {
@@ -79,6 +80,11 @@ td {
 
 .td_Text {
   text-align: left;
+}
+
+.td_Object {
+  white-space: pre;
+  overflow: hidden;
 }
 
 .td_Number {

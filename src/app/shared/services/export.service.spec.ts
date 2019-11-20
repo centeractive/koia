@@ -1,6 +1,6 @@
 import { ExportService } from './export.service';
 import * as FileSaver from 'file-saver';
-import { ExportFormat } from '../model';
+import { ExportFormat, DataType, Column } from '../model';
 import * as svg from 'save-svg-as-png';
 
 describe('ExportService', () => {
@@ -9,6 +9,37 @@ describe('ExportService', () => {
 
   beforeEach(() => {
     exportService = new ExportService();
+  });
+
+  it('#restoreJSONObjects should restore stringified JSON objects', () => {
+
+    // given
+    const object = { x: 'test', y: 100, z: [ 1, 2, 3, 4] };
+    const objectAsString = JSON.stringify(object);
+    const array = [{ n: 1 }, { n: 2 }, { n: 3 } ];
+    const arrayAsString = JSON.stringify(array);
+    const data = [
+      { a: 'x', b: 1, c: objectAsString, d: arrayAsString },
+      { a: 'y', b: 2, c: objectAsString },
+      { a: 'z', b: 3, d: arrayAsString }
+    ];
+    const columns: Column[] = [
+      { name: 'a', dataType: DataType.TEXT, width: 100 },
+      { name: 'b', dataType: DataType.NUMBER, width: 60 },
+      { name: 'c', dataType: DataType.OBJECT, width: 200 },
+      { name: 'd', dataType: DataType.OBJECT, width: 200 }
+    ];
+
+    // when
+    exportService.restoreJSONObjects(data, columns);
+
+    // then
+    const expected = [
+      { a: 'x', b: 1, c: object, d: array },
+      { a: 'y', b: 2, c: object },
+      { a: 'z', b: 3, d: array }
+    ];
+    expect(data).toEqual(expected);
   });
 
   it('#exportData should create CSV formatted data', () => {

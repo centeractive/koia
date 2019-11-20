@@ -119,18 +119,20 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /data-frame-sorter\.spec\.ts$/);
 // const context = require.context('./', true, /side-bar.controller\.spec\.ts$/);
 
+// const context = require.context('./', true, /export.service\.spec\.ts$/);
+// const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
+
 // const context = require.context('./', true, /array-utils\.spec\.ts$/);
 // const context = require.context('./', true, /string-utils\.spec\.ts$/);
 // const context = require.context('./', true, /chart-utils\.spec\.ts$/);
 // const context = require.context('./', true, /common-utils\.spec\.ts$/);
 // const context = require.context('./', true, /column-name-converter\.spec\.ts$/);
 // const context = require.context('./', true, /date-time-utils\.spec\.ts$/);
-// const context = require.context('./', true, /number-utils\.spec\.ts$/);
 // const context = require.context('./', true, /data-type-utils\.spec\.ts$/);
+// const context = require.context('./', true, /number-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-utils\.spec\.ts$/);
 // const context = require.context('./', true, /query-sanitizer\.spec\.ts$/);
 // const context = require.context('./', true, /test-utils\.spec\.ts$/);
-// const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
 // const context = require.context('./', true, /value-formatter\.spec\.ts$/);
 
 

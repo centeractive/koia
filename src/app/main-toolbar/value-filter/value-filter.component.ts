@@ -5,6 +5,7 @@ import { ValueFilterCustomizer } from './value-filter-customizer';
 import { PropertyFilterValidator } from 'app/shared/validator';
 import { FormControl } from '@angular/forms';
 import { FilterValueParser } from './filter-value-parser';
+import { ValueFilterUtils } from './value-filter-utils';
 
 @Component({
   selector: 'koia-value-filter',
@@ -42,6 +43,8 @@ export class ValueFilterComponent implements OnInit {
       return [Operator.EMPTY, Operator.NOT_EMPTY];
     } else if (dataType === DataType.BOOLEAN) {
       return [Operator.EQUAL, Operator.EMPTY, Operator.NOT_EMPTY];
+    } else if (dataType === DataType.OBJECT) {
+      return [Operator.CONTAINS, Operator.EMPTY, Operator.NOT_EMPTY];
     } else {
       return this.operators.filter(o => o !== Operator.CONTAINS);
     }
@@ -55,7 +58,7 @@ export class ValueFilterComponent implements OnInit {
     this.filter.name = column.name;
     this.filter.dataType = column.dataType;
     if (!this.availableOperators().includes(this.filter.operator)) {
-      this.filter.operator = column.dataType === DataType.TIME ? Operator.NOT_EMPTY : Operator.EQUAL;
+      this.filter.operator = ValueFilterUtils.defaultOperatorOf(column.dataType);
     }
     if (this.filter.operator === Operator.EQUAL && column.dataType === DataType.BOOLEAN &&
       this.filter.value !== true && this.filter.value !== false) {

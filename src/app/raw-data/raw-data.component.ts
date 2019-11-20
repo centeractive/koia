@@ -1,12 +1,13 @@
 import { Component, ViewChild, OnInit, ElementRef, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Sort, MatPaginator, MatBottomSheet, MatSnackBar } from '@angular/material';
-import { Column, Query, Route, Page, ExportFormat } from '../shared/model';
+import { Column, Query, Route, Page, ExportFormat, DataType } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { NotificationService, DialogService, ExportService } from 'app/shared/services';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'koia-raw-data',
@@ -33,6 +34,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   pageSizeOptions: number[];
   loading: boolean;
   considerColumnWidths: boolean;
+  showNestedObjects: boolean;
   highlight: boolean;
   exportFormats: ExportFormat[] = [ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON];
 
@@ -45,6 +47,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
     super(bottomSheet, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.considerColumnWidths = true;
+    this.showNestedObjects = false;
     this.highlight = true;
   }
 
@@ -98,7 +101,17 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   }
 
   formattedValueOf(column: Column, entry: Object): any {
+    if (!this.showNestedObjects && column.dataType === DataType.OBJECT) {
+      return entry[column.name] ? '...' : '';
+    }
     return this.valueFormatter.formatValue(column, entry[column.name]);
+  }
+
+  displayValue(column: Column, entry: Object): void {
+    if (column.dataType === DataType.OBJECT) {
+      const data = new ConfirmDialogData('Column ' + column.name, '<pre>' + entry[column.name] + '</pre>', ['CLose']);
+      this.dialogService.showConfirmDialog(data);
+    }
   }
 
   adjustLayout() {
@@ -114,11 +127,17 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
 
   saveAs(exportFormat: ExportFormat): void {
     const query = this.query.clone();
-    const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' + exportFormat + ' in the background';
+    const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' +
+      exportFormat + ' in the background';
     this.snackBar.open(message, undefined, { duration: 3000 });
     query.clearPageDefinition();
     this.dbService.findEntries(query, false).toPromise()
-      .then(entries => this.exportService.exportData(entries, exportFormat, 'Raw-Data'))
+      .then(entries => {
+        if (exportFormat === ExportFormat.JSON) {
+          this.exportService.restoreJSONObjects(entries, this.columns);
+        }
+        this.exportService.exportData(entries, exportFormat, 'Raw-Data');
+      })
       .catch(error => this.notifyError(error));
   }
 

@@ -40,6 +40,11 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.typeOf('1.1')).toEqual(DataType.NUMBER);
    });
 
+   it('#typeOf should return OBJECT when value is object', () => {
+      expect(DataTypeUtils.typeOf({ name: 'abc' })).toEqual(DataType.OBJECT);
+      expect(DataTypeUtils.typeOf([{ name: 'abc' }, { name: 'xyz' }])).toEqual(DataType.OBJECT);
+   });
+
    it('#typeOf should return TEXT when value is text', () => {
       expect(DataTypeUtils.typeOf('this is text')).toEqual(DataType.TEXT);
       expect(DataTypeUtils.typeOf('x1')).toEqual(DataType.TEXT);
@@ -146,6 +151,20 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.toTypedValue('1-', DataType.NUMBER)).toBeUndefined();
       expect(DataTypeUtils.toTypedValue(false, DataType.NUMBER)).toBeUndefined();
       expect(DataTypeUtils.toTypedValue(true, DataType.NUMBER)).toBeUndefined();
+   });
+
+   it('#toTypedValue should return string when value is an object', () => {
+      const object = { a: 'x', b: 1, c: [1, 2, 3] };
+      const expected = JSON.stringify(object, undefined, '  ');
+
+      expect(DataTypeUtils.toTypedValue(object, DataType.OBJECT)).toEqual(expected);
+   });
+
+   it('#toTypedValue should return string when value is an array', () => {
+      const array = [{ a: 'x', b: 1 }, { a: 'y', b: 2 }];
+      const expected = JSON.stringify(array, undefined, '  ');
+
+      expect(DataTypeUtils.toTypedValue(array, DataType.OBJECT)).toEqual(expected);
    });
 
    it('#asBoolean should return unchanged when value is missing', () => {

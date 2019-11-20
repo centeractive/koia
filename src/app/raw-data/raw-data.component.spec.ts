@@ -190,7 +190,33 @@ describe('RawDataComponent', () => {
     expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
   }));
 
-  it('#formattedValueOf should return empty string when value is null', () => {
+  it('#formattedValueOf should return empty string when object value is null', () => {
+
+    // given
+    const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
+    const entry = { ID: 1, Nested: null };
+
+    // when
+    const formatted = component.formattedValueOf(column, entry);
+
+    // then
+    expect(formatted).toBe('');
+  });
+
+  it('#formattedValueOf should return ellipsis when object value is defined', () => {
+
+    // given
+    const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
+    const entry = { ID: 1, Nested: '{ a: \'x\' }' };
+
+    // when
+    const formatted = component.formattedValueOf(column, entry);
+
+    // then
+    expect(formatted).toBe('...');
+  });
+
+  it('#formattedValueOf should return empty string when number value is null', () => {
 
     // given
     const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
@@ -244,6 +270,32 @@ describe('RawDataComponent', () => {
 
     // then
     expect(formatted).toBe('server1');
+  });
+
+  it('#displayValue should display dialog when data type is OBJECT', () => {
+
+    // given
+    const column: Column = { name: 'Data', dataType: DataType.OBJECT, width: 100 };
+    const entry = { ID: 1, Data: '[ 1, 2, 3]' };
+
+    // when
+    component.displayValue(column, entry);
+
+    // then
+    expect(dialogService.showConfirmDialog).toHaveBeenCalled();
+  });
+
+  it('#displayValue should not display dialog when data type is not OBJECT', () => {
+
+    // given
+    const column: Column = { name: 'Host', dataType: DataType.TEXT, width: 100 };
+    const entry = { ID: 1, Host: 'server1' };
+
+    // when
+    component.displayValue(column, entry);
+
+    // then
+    expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
   });
 
   it('#onFilterChanged should fetch first page using new query', () => {
@@ -302,7 +354,8 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as CSV in the background', undefined, { duration: 3000 });
+    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as CSV in the background',
+      undefined, { duration: 3000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
   }));
 
@@ -319,7 +372,8 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as CSV in the background', undefined, { duration: 3000 });
+    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as CSV in the background',
+      undefined, { duration: 3000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
   }));
 
@@ -335,7 +389,8 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as Excel in the background', undefined, { duration: 3000 });
+    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as Excel in the background',
+      undefined, { duration: 3000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
   }));
 
@@ -352,7 +407,8 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as Excel in the background', undefined, { duration: 3000 });
+    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as Excel in the background',
+      undefined, { duration: 3000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
   }));
 
@@ -368,7 +424,8 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as JSON in the background', undefined, { duration: 3000 });
+    expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as JSON in the background',
+      undefined, { duration: 3000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
   }));
 
@@ -385,14 +442,15 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as JSON in the background', undefined, { duration: 3000 });
+    expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as JSON in the background',
+      undefined, { duration: 3000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
   }));
 
   it('#saveAs should notify error', fakeAsync(() => {
 
     // given;
-    spyOn(dbService, 'findEntries').and.returnValue(throwError({status: 404}));
+    spyOn(dbService, 'findEntries').and.returnValue(throwError({ status: 404 }));
     spyOn(notificationService, 'onError');
 
     // when

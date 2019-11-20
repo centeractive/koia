@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ExportFormat } from '../model';
+import { ExportFormat, Column, DataType } from '../model';
 import * as FileSaver from 'file-saver';
 import * as XLSX from 'xlsx';
 import * as svg from 'save-svg-as-png';
@@ -17,6 +17,21 @@ export class ExportService {
   private newline = '\n';
   private datePipe = new DatePipe('en-US');
   private timeFormat = 'yyyy-mm-dd_HHmmss';
+
+  /**
+   * converts the stringified values of all [[DataType.OBJECT]] columns back to JSON objects
+   */
+  restoreJSONObjects(data: Object[], columns: Column[]): void {
+    const objectTypeColumns = columns.filter(c => c.dataType === DataType.OBJECT);
+    for (const column of objectTypeColumns) {
+      for (const item of data) {
+        const value = item[column.name];
+        if (value) {
+          item[column.name] = JSON.parse(value);
+        }
+      }
+    }
+  }
 
   exportData(data: Object[], exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.CSV) {
@@ -69,8 +84,7 @@ export class ExportService {
   }
 
   private exportAsJSON(data: Object[], baseFileName: string): void {
-    const json = JSON.stringify(data);
-    const blob: Blob = new Blob([json], { type: ExportService.TYPE_JSON });
+    const blob: Blob = new Blob([JSON.stringify(data, undefined, '  ')], { type: ExportService.TYPE_JSON });
     FileSaver.saveAs(blob, this.generateFileName(baseFileName, '.json'));
   }
 

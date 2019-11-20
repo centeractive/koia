@@ -9,6 +9,7 @@ import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { QueryBuilder } from './query-builder';
 import { PropertyFilterValidator } from 'app/shared/validator';
+import { ValueFilterUtils } from './value-filter/value-filter-utils';
 
 @Component({
   selector: 'koia-main-toolbar',
@@ -100,11 +101,10 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   }
 
   addValueFilter(column: Column): void {
-    const timeColumn = column.dataType === DataType.TIME;
-    const operator = timeColumn ? Operator.NOT_EMPTY : Operator.EQUAL;
+    const operator = ValueFilterUtils.defaultOperatorOf(column.dataType);
     const value = column.dataType === DataType.BOOLEAN ? true : '';
     this.propertyFilters.push(new PropertyFilter(column.name, operator, value, column.dataType));
-    if (timeColumn || column.dataType === DataType.BOOLEAN) {
+    if (column.dataType === DataType.TIME || column.dataType === DataType.BOOLEAN) {
       this.refreshEntries();
     }
   }
