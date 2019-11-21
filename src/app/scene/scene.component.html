@@ -92,10 +92,19 @@
           <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">Adopt columns from
             existing Scene&nbsp;
           </mat-slide-toggle>
-          <mat-form-field class="column_mapping_source" *ngIf="columnMappingsSource && adoptColumnsFromExistingScene">
+          <mat-form-field id="column_mapping_source" *ngIf="columnMappingsSource && adoptColumnsFromExistingScene">
             <mat-select placeholder="Scene" [(ngModel)]="columnMappingsSource">
+              <mat-select-trigger>
+                {{ columnMappingsSource.name }}
+                <var class="scene_info_creation_time">
+                  (created {{ columnMappingsSource.creationTime | date: 'medium' }})
+                </var>
+              </mat-select-trigger>
               <mat-option *ngFor="let sceneInfo of columnMappingsSourceCandidates" [value]="sceneInfo">
-                {{ sceneInfo.name }} (created {{ sceneInfo.creationTime | date: 'medium' }})
+                {{ sceneInfo.name }}
+                <var class="scene_info_creation_time">
+                  (created {{ sceneInfo.creationTime | date: 'medium' }})
+                </var>
               </mat-option>
             </mat-select>
           </mat-form-field>

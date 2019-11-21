@@ -6,7 +6,7 @@ import {
   MatBottomSheet, MatSidenavModule, MatIconModule, MatButtonModule, MatGridListModule, MatMenuModule,
   MatBottomSheetModule, MatDialogRef
 } from '@angular/material';
-import { of, Observable } from 'rxjs';
+import { of, Observable, throwError  } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
 import { Column, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat } from 'app/shared/model';
@@ -50,6 +50,7 @@ describe('GridComponent', () => {
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   let getActiveSceneSpy: jasmine.Spy;
+  let findEntriesSpy: jasmine.Spy;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -105,7 +106,7 @@ describe('GridComponent', () => {
     spyOn(dialogService, 'showViewLauncherDialog').and.stub();
     spyOn(notificationService, 'showStatus').and.stub();
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));
+    findEntriesSpy = spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));
     fixture.detectChanges();
     flush();
   }));
@@ -236,6 +237,20 @@ describe('GridComponent', () => {
     // then
     expect(dbService.findEntries).toHaveBeenCalledWith(query, true);
   });
+
+  it('#onFilterChanged should notify error when error occurs', fakeAsync(() => {
+
+    // given
+    findEntriesSpy.and.returnValue(throwError('server error'));
+    spyOn(component, 'notifyError');
+
+    // when
+    component.onFilterChanged(new Query());
+    flush();
+
+    // then
+    expect(component.notifyError).toHaveBeenCalled();
+  }));
 
   it('config button click should open side bar', () => {
 

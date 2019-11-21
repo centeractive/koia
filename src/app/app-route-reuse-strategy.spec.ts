@@ -1,6 +1,7 @@
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
 import { Route } from './shared/model';
+import { DebugElement } from '@angular/core';
 
 describe('AppRouteReuseStrategy', () => {
 
@@ -64,7 +65,24 @@ describe('AppRouteReuseStrategy', () => {
       expect(shouldAttach).toBeTruthy();
    });
 
-   it('#shouldAttach should return undefined when detached route handle is not stored', () => {
+   it('#shouldAttach should remove stale tooltips', () => {
+
+      // given
+      const routeSnapshot = createActivatedRouteSnapshot(Route.PIVOT);
+      const routeHandle: DetachedRouteHandle = {};
+      strategy.store(routeSnapshot, routeHandle);
+      document.body.appendChild(document.createElement('mat-tooltip-component'));
+      expect(document.getElementsByTagName('mat-tooltip-component').length).toBe(1);
+
+      // when
+      strategy.shouldAttach(routeSnapshot);
+
+      // then
+      expect(document.getElementsByTagName('mat-tooltip-component').length).toBe(0);
+   });
+
+
+   it('#retrieve should return undefined when detached route handle is not stored', () => {
 
       // given
       const routeSnapshot = createActivatedRouteSnapshot(Route.PIVOT);
@@ -76,7 +94,7 @@ describe('AppRouteReuseStrategy', () => {
       expect(handle).toBeUndefined();
    });
 
-   it('#shouldAttach should return detached route handle when it is stored', () => {
+   it('#retrieve should return detached route handle when it is stored', () => {
 
       // given
       const routeSnapshot = createActivatedRouteSnapshot(Route.PIVOT);

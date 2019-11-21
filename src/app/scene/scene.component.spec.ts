@@ -6,7 +6,7 @@ import {
   MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
-import { Route, Scene, DataType, ColumnPair } from 'app/shared/model';
+import { Route, Scene, DataType, ColumnPair, SceneInfo } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -30,6 +30,7 @@ describe('SceneComponent', () => {
   let tableData: string[][];
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
+  let findSceneInfos: jasmine.Spy;
   let writeEntriesSpy: jasmine.Spy;
 
   beforeAll(() => {
@@ -73,7 +74,7 @@ describe('SceneComponent', () => {
     isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
-    spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
+    findSceneInfos = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
     writeEntriesSpy = spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
     fixture.detectChanges();
     flush();
@@ -96,6 +97,21 @@ describe('SceneComponent', () => {
     // then
     expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.FRONT);
   });
+
+  it('#ngOnInit should predefine column mapping source', fakeAsync(() => {
+
+    // given
+    const sceneInfos = createSceneInfos(3);
+    findSceneInfos.and.returnValue(Promise.resolve(sceneInfos));
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.columnMappingsSourceCandidates).toEqual(sceneInfos);
+    expect(component.columnMappingsSource).toBe(sceneInfos[0]);
+  }));
 
   it('home button should point to front component', () => {
 
@@ -138,7 +154,7 @@ describe('SceneComponent', () => {
     // given
     component.file = new File([], 'Test.csv');
     component.fileHeader = 'xyz';
-    component.columnMappings = [createColumnPair()];
+    component.columnMappings = [createColumnPair('x')];
     component.feedback = 'abc';
 
     // when
@@ -166,6 +182,20 @@ describe('SceneComponent', () => {
     expect(component.scene.name).toBe(expectedName);
     const expectedShortDesc = 'CSV Test.csv (modified on ' + datePipe.transform(new Date(), 'medium') + ')';
     expect(component.scene.shortDescription).toBe(expectedShortDesc);
+  }));
+
+  it('#onFileSelChange should notify error when file header cannot be read', fakeAsync(() => {
+
+    // given
+    const fileList = createFileList('dummy data');
+    spyOn(readerService, 'readHeader').and.returnValue(Promise.reject('error'));
+
+    // when
+    component.onFileSelChange(fileList);
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalled();
   }));
 
   it('#click on "Detect Columns" button should detect columns within sample data', fakeAsync(() => {
@@ -328,6 +358,21 @@ describe('SceneComponent', () => {
     expect(location.back).toHaveBeenCalled();
   });
 
+  function createSceneInfos(count: number): SceneInfo[] {
+    const sceneInfos: SceneInfo[] = [];
+    const now = new Date().getTime();
+    for (let i = 0; i < count; i++) {
+      sceneInfos.push({
+        creationTime: now,
+        name: 'abc ' + i,
+        shortDescription: 'xyz ' + i,
+        database: 'data_' + i,
+        columnMappings: [createColumnPair('a'), createColumnPair('b')]
+      });
+    }
+    return sceneInfos;
+  }
+
   function createFileList(data: string) {
     const file = new File([data], 'Test.csv');
     return {
@@ -349,15 +394,15 @@ describe('SceneComponent', () => {
     fixture.detectChanges();
   }
 
-  function createColumnPair(): ColumnPair {
+  function createColumnPair(name: string): ColumnPair {
     return {
       source: {
-        name: 'x',
+        name: name,
         dataType: DataType.NUMBER,
         width: 10
       },
       target: {
-        name: 'x',
+        name: name,
         dataType: DataType.TIME,
         width: 10
       }

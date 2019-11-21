@@ -51,9 +51,14 @@ mat-slide-toggle {
   right: 30px;
 }
 
-.column_mapping_source {
+#column_mapping_source {
     width: 550px;
     padding-left: 20px;
+}
+
+.scene_info_creation_time {
+  opacity: 0.75;
+  font-size: 0.75em;
 }
 
 .icon_link {

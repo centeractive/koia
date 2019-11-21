@@ -106,4 +106,8 @@ describe('ViewController', () => {
       expect(viewController.sidenav.mode).toBe('over');
       expect(viewController.sidenav.open).toHaveBeenCalled();
    });
+
+   it('#findViews should return empty array when scene is undefined', () => {
+      expect(viewController.findViews()).toEqual([]);
+   });
 });
