@@ -6,8 +6,11 @@ export class NumberUtils {
    private static readonly FORMATTED_NUM_REGEX = /^(\+|-)?\s?\d{1,3}(,\d{3})*(\.\d+)?$/;
 
    /**
-    * @returns [[true]], if the value is a n integer or represents an integer (may contain thousands separators of the current locale),
-    * [[false]] otherwise (non-compliant string, boolean, object, array etc.)
+    * @returns [[true]], if the value is an integer or represents an integer (may contain thousands separators of the current locale),
+    * [[false]] otherwise (non-compliant string, boolean, object, array etc.). If the number contains the decimal separator, it is not
+    * considered to be an integer, even if the digit after the decimal separator is zero (i.e. '1.0').
+    *
+    * Note: the number 1.0 is considered to be an integer but the string "1.0" is not.
     */
    static isInteger(value: any): boolean {
       return value !== null && value !== undefined && NumberUtils.isNumber(value) &&

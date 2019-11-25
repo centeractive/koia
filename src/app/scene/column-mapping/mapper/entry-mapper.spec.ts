@@ -606,6 +606,48 @@ describe('EntryMapper', () => {
       expect(actual[0].errors).toEqual([]);
    });
 
+   it('#mapObjects date object to NUMBER', () => {
+
+      // given
+      const today = new Date();
+
+      // when
+      const actual = mapper.mapObjects([{ Number: today }]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry['Number']).toBe(today.getTime());
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapObjects date object to TIME', () => {
+
+      // given
+      const today = new Date();
+
+      // when
+      const actual = mapper.mapObjects([{ Time: today }]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry['Time']).toBe(today.getTime());
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapObjects date object to TEXT', () => {
+
+      // given
+      const today = new Date();
+
+      // when
+      const actual = mapper.mapObjects([{ Text: today }]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry['Text']).toBe(today.toString());
+      expect(actual[0].errors).toEqual([]);
+   });
+
    it('#mapObjects should return entry with all values mapped', () => {
 
       // when

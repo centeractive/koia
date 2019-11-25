@@ -42,10 +42,13 @@ describe('NumberUtils', () => {
     expect(NumberUtils.isInteger(1.1)).toBeFalsy();
   });
 
-  it('#isInteger should return false when string value contains float', () => {
+  it('#isInteger should return false when string value represents float', () => {
     expect(NumberUtils.isInteger('-1.1')).toBeFalsy();
+    expect(NumberUtils.isInteger('-1.0')).toBeFalsy();
     expect(NumberUtils.isInteger('-0.1')).toBeFalsy();
+    expect(NumberUtils.isInteger('0.0')).toBeFalsy();
     expect(NumberUtils.isInteger('0.1')).toBeFalsy();
+    expect(NumberUtils.isInteger('1.0')).toBeFalsy();
     expect(NumberUtils.isInteger('1.1')).toBeFalsy();
   });
 
@@ -57,7 +60,7 @@ describe('NumberUtils', () => {
     expect(NumberUtils.isInteger(100)).toBeTruthy();
   });
 
-  it('#isInteger should return true when string value contains integer', () => {
+  it('#isInteger should return true when string value represents integer', () => {
     expect(NumberUtils.isInteger('-100')).toBeTruthy();
     expect(NumberUtils.isInteger('-1')).toBeTruthy();
     expect(NumberUtils.isInteger('0')).toBeTruthy();

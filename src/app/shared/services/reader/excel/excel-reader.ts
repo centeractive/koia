@@ -3,7 +3,6 @@ import { DataReader } from '../data-reader.type';
 import { DataHandler } from '../data-handler.type';
 import { Sample } from '../sample.type';
 import * as XLSX from 'xlsx';
-import { ArrayUtils } from 'app/shared/utils';
 
 export class ExcelReader implements DataReader {
 
@@ -49,7 +48,7 @@ export class ExcelReader implements DataReader {
 
    private readEntries(url: string, rowCount: number): Promise<Object[]> {
       return new Promise<Object[]>((resolve, reject) => {
-         fetch(url)
+         return fetch(url)
             .then(r => r.blob())
             .then(b => this.read(b))
             .then(data => {
@@ -59,8 +58,7 @@ export class ExcelReader implements DataReader {
                if (!sheet) {
                   reject('Worksheet "' + sheetName + '" does not exist');
                }
-               const entries = XLSX.utils.sheet_to_json(sheet);
-               resolve(ArrayUtils.convertAllDateToTime(entries));
+               resolve(XLSX.utils.sheet_to_json(sheet));
             });
       });
    }

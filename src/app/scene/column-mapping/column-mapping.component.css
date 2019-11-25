@@ -21,3 +21,10 @@
 .column_format {
    width: 200px;
 }
+
+::ng-deep .tooltip_warning {  
+  color: red !important;;
+  background-color: rgb(218, 196, 74);
+  white-space: pre-line;
+  max-width: 800px !important;
+}

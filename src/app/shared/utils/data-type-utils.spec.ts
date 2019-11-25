@@ -24,6 +24,10 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.typeOf('FALSE')).toEqual(DataType.BOOLEAN);
    });
 
+   it('#typeOf should return TIME when value is a date', () => {
+      expect(DataTypeUtils.typeOf(new Date())).toEqual(DataType.TIME);
+   });
+
    it('#typeOf should return NUMBER when value is number', () => {
       expect(DataTypeUtils.typeOf(-1.1)).toEqual(DataType.NUMBER);
       expect(DataTypeUtils.typeOf(-1)).toEqual(DataType.NUMBER);

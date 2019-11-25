@@ -20,8 +20,6 @@ import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { DialogService } from 'app/shared/services';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
-import { RangeFilterComponent } from './range-filter/range-filter.component';
-import { ValueFilterCustomizer } from './value-filter/value-filter-customizer';
 
 @Component({ template: '' })
 class DummyComponent { }

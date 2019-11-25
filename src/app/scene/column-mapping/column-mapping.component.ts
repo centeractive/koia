@@ -28,6 +28,7 @@ export class ColumnMappingComponent implements OnInit {
       .map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
     this.columnNameControl = new FormControl('', [
       Validators.required,
+      Validators.pattern(/^(?!\$).*/), // see https://github.com/apache/couchdb/issues/2028
       Validators.maxLength(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH)
     ]);
     this.columnNameControl.setValue(this.mapping.target.name);
@@ -42,6 +43,8 @@ export class ColumnMappingComponent implements OnInit {
   getColumnNameErrorMessage(): string {
     if (this.columnNameControl.hasError('required')) {
       return 'Name is required';
+    } else if (this.columnNameControl.hasError('pattern')) {
+      return 'Name must not start with $';
     } else if (this.columnNameControl.hasError('maxlength')) {
       return 'Name must not exceed ' + ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH + ' characters';
     } else {

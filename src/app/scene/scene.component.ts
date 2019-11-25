@@ -203,6 +203,9 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   }
 
   formatValue(column: Column, entry: Object): any {
+    if (column.dataType === DataType.OBJECT) {
+      return entry[column.name] ? '...' : '';
+    }
     return this.valueFormatter.formatValue(column, entry[column.name]);
   }
 

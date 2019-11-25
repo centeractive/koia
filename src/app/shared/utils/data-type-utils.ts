@@ -5,12 +5,14 @@ import { Column } from '../model';
 export class DataTypeUtils {
 
    /**
-    * @returns the best matching data type of the specified value or [[undefined]] (DataType#TIME is never returned)
+    * @returns the best matching data type of the specified value or [[undefined]]
     */
    static typeOf(value: string | number | boolean | Object): DataType {
       if (value !== null && value !== undefined) {
          if (typeof value === 'boolean' || ['TRUE', 'FALSE'].includes(value.toString().toUpperCase())) {
             return DataType.BOOLEAN;
+         } else if (value instanceof Date) {
+            return DataType.TIME;
          } else if (NumberUtils.isNumber(value)) {
             return DataType.NUMBER;
          } else if (typeof value === 'object') {

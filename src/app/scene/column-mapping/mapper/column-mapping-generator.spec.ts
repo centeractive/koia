@@ -3,7 +3,10 @@ import { DataType } from 'app/shared/model';
 
 describe('ColumnMappingGenerator', () => {
 
+   const now = new Date().getTime();
+   const oneHour = 3_600_000;
    const generator = new ColumnMappingGenerator();
+
 
    it('#generate should return empty array when entries are missing', () => {
       expect(generator.generate(undefined, 'en')).toEqual([]);
@@ -22,7 +25,7 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 10, indexed: true });
    });
 
-   it('#generate should return non indexed text to text mapping when value is too long', () => {
+   it('#generate should return non-indexed text to text mapping when value is too long', () => {
 
       // when
       const entry = { X: 'This text is too long to be indexed and cannot be used for charting, summaries and further computations' };
@@ -34,7 +37,41 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 103, indexed: false });
    });
 
-   it('#generate should return non indexed text to text mapping when any value is too long', () => {
+   it('#generate should return indexed object to object mapping when value contains small JSON object', () => {
+
+      // when
+      const entry = { X: { name: 'John', firstname: 'Muller', age: 42 } };
+      const mapping = generator.generate([entry], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.OBJECT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.OBJECT, width: 15, indexed: true });
+   });
+
+   it('#generate should return non-indexed object to object mapping when value contains large JSON object', () => {
+
+      // when
+      const entry = {
+         X: {
+            name: 'John-Anthony',
+            firstname: 'Muller-Villepain',
+            profession: 'Retired Horse Whisperer',
+            domicile: 'The farm on the blue river',
+            State: 'Montana',
+            age: 42
+         }
+      };
+      const mapping = generator.generate([entry], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.OBJECT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.OBJECT, width: 15, indexed: false });
+   });
+
+
+   it('#generate should return non-indexed text to text mapping when any value is too long', () => {
 
       // when
       const entries = [
@@ -49,6 +86,17 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping.length).toBe(1);
       expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 103, indexed: false });
+   });
+
+   it('#generate should return indexed time to time mapping when value is date', () => {
+
+      // when
+      const mapping = generator.generate([{ X: new Date() }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TIME, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TIME, width: 20, format: 'd MMM yyyy HH:mm:ss', indexed: true });
    });
 
    it('#generate should return no mapping when entry is empty', () => {
@@ -276,7 +324,7 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'start-date', dataType: DataType.NUMBER, width: 10, indexed: true });
    });
 
-   it('#generate should return number to time mapping when column name ends with time and values are integers', () => {
+   it('#generate should return time to time mapping when column name ends with time and values are integers', () => {
 
       // when
       const mapping = generator.generate([{ 'creation-time': 0 }, { 'creation-time': 0 }], 'en');
@@ -284,10 +332,7 @@ describe('ColumnMappingGenerator', () => {
       // then
       expect(mapping.length).toBe(1);
       expect(mapping[0].source).toEqual({ name: 'creation-time', dataType: DataType.TIME, width: undefined });
-      expect(mapping[0].target).toEqual({
-         name: 'creation-time', dataType: DataType.TIME, width: 10,
-         format: 'd MMM yyyy HH:mm:ss SSS', indexed: true
-      });
+      expect(mapping[0].target).toEqual({ name: 'creation-time', dataType: DataType.TIME, width: 10, indexed: true });
    });
 
    it('#generate should return number mapping when column name ends with time but any value is not integer', () => {
@@ -332,6 +377,30 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping.length).toBe(1);
       expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
+   });
+
+   it('#generate should downgrade to TEXT and report incompatible data types when column contains date and float values', () => {
+
+      // when
+      const mapping = generator.generate([{ X: new Date() }, { X: 1.5 }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].warning).toBe(ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 20, indexed: true });
+   });
+
+   it('#generate should downgrade to TEXT and report incompatible data types when column contains date and text values', () => {
+
+      // when
+      const mapping = generator.generate([{ X: new Date() }, { X: 'abc' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].warning).toBe(ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 20, indexed: true });
    });
 
    it('#generate should return text to boolean mapping', () => {
@@ -439,5 +508,49 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'A', dataType: DataType.TEXT, width: 10, indexed: true });
       expect(mapping[1].target).toEqual({ name: 'B', dataType: DataType.TEXT, width: 10, indexed: true });
       expect(mapping[2].target).toEqual({ name: 'C', dataType: DataType.TEXT, width: 10, indexed: true });
+   });
+
+   /**
+    * Test for issue: "Date column is not recognized when importing Excel data"
+    */
+   it('#generate should return mapping with two time columns among others', () => {
+
+      // given
+      const entries = [
+         {
+            'Name': 'A',
+            'Amount': 100.5,
+            'Created': now - oneHour - 3000,
+            'Updated': now - 3000
+         },
+         {
+            'Name': 'B',
+            'Amount': 101.5,
+            'Created': now - oneHour - 2000,
+            'Updated': now - 2000
+         },
+         {
+            'Name': 'C',
+            'Amount': 102.5,
+            'Created': now - oneHour - 1000,
+            'Updated': now - 1000
+         }
+      ];
+
+      // when
+      const mapping = generator.generate(entries, 'en');
+
+      // then
+      expect(mapping.length).toBe(4);
+
+      expect(mapping[0].source).toEqual({ name: 'Name', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[1].source).toEqual({ name: 'Amount', dataType: DataType.NUMBER, width: undefined });
+      expect(mapping[2].source).toEqual({ name: 'Created', dataType: DataType.TIME, width: undefined });
+      expect(mapping[3].source).toEqual({ name: 'Updated', dataType: DataType.TIME, width: undefined });
+
+      expect(mapping[0].target).toEqual({ name: 'Name', dataType: DataType.TEXT, width: 10, indexed: true });
+      expect(mapping[1].target).toEqual({ name: 'Amount', dataType: DataType.NUMBER, width: 10, indexed: true });
+      expect(mapping[2].target).toEqual({ name: 'Created', dataType: DataType.TIME, width: 13, indexed: true });
+      expect(mapping[3].target).toEqual({ name: 'Updated', dataType: DataType.TIME, width: 13, indexed: true });
    });
 });

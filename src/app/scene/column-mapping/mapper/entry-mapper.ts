@@ -10,8 +10,6 @@ import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
  *   - when they're empty
  *   - when the target value of specified data type cannot be created (parsed)
  * - the "_id" attribute starts at 1 and is incremented for each mapped target entry
- *
- * TODO: target column names must not start with '$' (see https://github.com/apache/couchdb/issues/2028)
  */
 export class EntryMapper {
 
@@ -70,9 +68,11 @@ export class EntryMapper {
 
    private mapValue(columnPair: ColumnPair, sourceValue: any, mappingResult: MappingResult): void {
       if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
-         if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)
+         if (sourceValue instanceof Date) {
+            this.mapDate(<Date>sourceValue, columnPair, mappingResult);
+         } else if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)
             && columnPair.target.dataType === DataType.TIME) {
-            this.mapTextToTime(sourceValue.toString(), columnPair, mappingResult);
+            this.mapTextToTime(<string>sourceValue, columnPair, mappingResult);
          } else {
             const value = DataTypeUtils.toTypedValue(sourceValue, columnPair.target.dataType);
             if (value === undefined) {
@@ -85,7 +85,15 @@ export class EntryMapper {
       }
    }
 
-   private mapTextToTime(sourceValue: string, columnPair: ColumnPair, mappingResult: MappingResult) {
+   private mapDate(sourceValue: Date, columnPair: ColumnPair, mappingResult: MappingResult): void {
+      if (columnPair.target.dataType === DataType.NUMBER || columnPair.target.dataType === DataType.TIME) {
+         mappingResult.entry[columnPair.target.name] = sourceValue.getTime();
+      } else {
+         mappingResult.entry[columnPair.target.name] = sourceValue.toString();
+      }
+   }
+
+   private mapTextToTime(sourceValue: string, columnPair: ColumnPair, mappingResult: MappingResult): void {
       try {
          const date = this.parseDate(sourceValue, columnPair.source.format);
          mappingResult.entry[columnPair.target.name] = this.roundDownToTargetFormat(date, columnPair.target.format).getTime();

@@ -17,7 +17,7 @@ export class ColumnDefinitionAssistant {
    }
 
    canHaveSourceFormat(columnPair: ColumnPair): boolean {
-      return columnPair.target.dataType === DataType.TIME;
+      return columnPair.source.dataType !== DataType.TIME && columnPair.target.dataType === DataType.TIME;
    }
 
    canHaveDisplayFormat(columnPair: ColumnPair): boolean {

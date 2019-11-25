@@ -43,6 +43,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 
 // const context = require.context('./', true, /scene.*\.spec\.ts$/);
 // const context = require.context('./', true, /column-mapping-generator\.spec\.ts$/);
+// const context = require.context('./', true, /time-guesser\.spec\.ts$/);
 // const context = require.context('./', true, /scene.component\.spec\.ts$/);
 // const context = require.context('./', true, /scenes.component\.spec\.ts$/);
 // const context = require.context('./', true, /scene-details-dialog.component\.spec\.ts$/)

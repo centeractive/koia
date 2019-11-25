@@ -65,7 +65,19 @@ describe('ColumnDefinitionAssistant', () => {
       expect(dataTypes).toEqual([DataType.TEXT, DataType.TIME]);
    });
 
-   it('#canHaveSourceFormat should return true when target data type is TIME', () => {
+   it('#canHaveSourceFormat should return false when source and target data type is TIME', () => {
+
+      // given
+      const columnPair: ColumnPair = createColumnPair(DataType.TIME, DataType.TIME);
+
+      // when
+      const result = colDefAssistant.canHaveSourceFormat(columnPair);
+
+      // then
+      expect(result).toBe(false);
+   });
+
+   it('#canHaveSourceFormat should return true when source data type is not TIME and target data type is TIME', () => {
 
       // given
       const columnPair: ColumnPair = createColumnPair(DataType.TEXT, DataType.TIME);
@@ -74,7 +86,7 @@ describe('ColumnDefinitionAssistant', () => {
       const result = colDefAssistant.canHaveSourceFormat(columnPair);
 
       // then
-      expect(result).toBeTruthy();
+      expect(result).toBe(true);
    });
 
    it('#canHaveSourceFormat should return false when target data type is not TIME', () => {
@@ -86,7 +98,7 @@ describe('ColumnDefinitionAssistant', () => {
       const result = colDefAssistant.canHaveSourceFormat(columnPair);
 
       // then
-      expect(result).toBeFalsy();
+      expect(result).toBe(false);
    });
 
    it('#canHaveDisplayFormat should return true when target data type is TIME', () => {
@@ -98,7 +110,7 @@ describe('ColumnDefinitionAssistant', () => {
       const result = colDefAssistant.canHaveDisplayFormat(columnPair);
 
       // then
-      expect(result).toBeTruthy();
+      expect(result).toBe(true);
    });
 
    it('#canHaveDisplayFormat should return false when target data type is not TIME', () => {
@@ -110,7 +122,7 @@ describe('ColumnDefinitionAssistant', () => {
       const result = colDefAssistant.canHaveDisplayFormat(columnPair);
 
       // then
-      expect(result).toBeFalsy();
+      expect(result).toBe(false);
    });
 
    function createColumnPair(sourceDataType: DataType, targetDataType?: DataType): ColumnPair {

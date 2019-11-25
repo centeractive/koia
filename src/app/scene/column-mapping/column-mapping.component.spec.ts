@@ -113,6 +113,30 @@ describe('ColumnMappingComponent', () => {
     expect(error).toBe('Name is required');
   });
 
+  it('#getColumnNameErrorMessage should return error when column name is $', () => {
+
+    // given
+    component.columnNameControl.setValue('$');
+
+    // when
+    const error = component.getColumnNameErrorMessage();
+
+    // then
+    expect(error).toBe('Name must not start with $');
+  });
+
+  it('#getColumnNameErrorMessage should return error when column name starts with $', () => {
+
+    // given
+    component.columnNameControl.setValue('$Name');
+
+    // when
+    const error = component.getColumnNameErrorMessage();
+
+    // then
+    expect(error).toBe('Name must not start with $');
+  });
+
   it('#getColumnNameErrorMessage should return error when column name is too long', () => {
 
     // given

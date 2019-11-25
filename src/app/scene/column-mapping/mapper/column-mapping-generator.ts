@@ -1,10 +1,13 @@
 import { DataType, TimeUnit, ColumnPair } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
 import { TimeUnitDetector } from './time-unit-detector';
+import { TimeGuesser } from './time-guesser';
+import { DatePipe } from '@angular/common';
 
 export class ColumnMappingGenerator {
 
    static readonly COLUMN_NAME_MAX_LENGTH = 25;
+   static readonly INCOMPATIBLE_DATA_TYPES = 'Column contains values of incompatible data types';
 
    private static readonly MIN_WIDTH = 10;
    private static readonly MAX_WIDTH = 300;
@@ -23,7 +26,10 @@ export class ColumnMappingGenerator {
       { format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND }
    ];
 
+
+   private datePipe = new DatePipe('en-US');
    private timeUnitDetector = new TimeUnitDetector();
+   private timeGuesser = new TimeGuesser();
 
    generate(entries: Object[], locale: string): ColumnPair[] {
       if (!entries || entries.length === 0) {
@@ -43,40 +49,49 @@ export class ColumnMappingGenerator {
       return this.extractColumnPairs(columnNamesToPair);
    }
 
-   private createColumnPair(name: string, value: string | number | boolean | Object, locale: string): ColumnPair {
+   private createColumnPair(name: string, value: any, locale: string): ColumnPair {
       const dataType = this.guessDataTypeOf(value);
       const columnPair: ColumnPair = {
          source: { name: name, dataType: dataType, width: undefined },
-         target: { name: name, dataType: dataType, width: this.computeWidth(value, dataType), indexed: this.shallBeIndexed(value) }
+         target: { name: name, dataType: dataType, width: undefined, indexed: this.shallBeIndexed(value) }
       };
-      if (dataType !== DataType.OBJECT && dataType !== DataType.BOOLEAN) {
-         this.detectDateTime(columnPair, <string | number>value, locale);
-      }
+      this.sharpenMapping(dataType, columnPair, value, locale);
+      columnPair.target.width = this.computeWidth(value, columnPair);
       return columnPair;
    }
 
-   private refine(columnPair: ColumnPair, value: string | number | boolean, locale: string): void {
+   private refine(columnPair: ColumnPair, value: any, locale: string): void {
       const dataType = this.guessDataTypeOf(value);
       if (dataType === undefined) {
          return;
       } else if (columnPair.source.dataType === undefined) {
          columnPair.source.dataType = dataType;
          columnPair.target.dataType = dataType;
-         if (dataType !== DataType.OBJECT && dataType !== DataType.BOOLEAN) {
-            this.detectDateTime(columnPair, <string | number>value, locale);
-         }
+         this.sharpenMapping(dataType, columnPair, value, locale);
       } else if (dataType === DataType.NUMBER && columnPair.source.dataType === DataType.TIME) {
          if (!NumberUtils.isInteger(value)) {
+            columnPair.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
             this.downgrade(columnPair, DataType.NUMBER);
          }
       } else if (dataType !== columnPair.source.dataType) {
+         if (columnPair.source.dataType === DataType.TIME) {
+            columnPair.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
+         }
          this.downgrade(columnPair, DataType.TEXT);
       } else if (columnPair.target.dataType === DataType.TIME && columnPair.source.format === undefined) {
          this.refineDateTimeFormat(columnPair, value, locale);
       }
-      columnPair.target.width = Math.max(columnPair.target.width, this.computeWidth(value, columnPair.target.dataType));
+      columnPair.target.width = Math.max(columnPair.target.width, this.computeWidth(value, columnPair));
       if (columnPair.target.indexed && !this.shallBeIndexed(value)) {
          columnPair.target.indexed = false;
+      }
+   }
+
+   private sharpenMapping(dataType: DataType, columnPair: ColumnPair, value: any, locale: string) {
+      if (dataType === DataType.TIME) {
+         columnPair.target.format = DateTimeUtils.ngFormatOf(TimeUnit.SECOND);
+      } else if (dataType === DataType.NUMBER || dataType === DataType.TEXT) {
+         this.detectDateTime(columnPair, <string | number>value, locale);
       }
    }
 
@@ -90,18 +105,31 @@ export class ColumnMappingGenerator {
    private detectDateTime(columnPair: ColumnPair, value: string | number, locale: string): void {
       if (columnPair.source.dataType === DataType.TEXT &&
          NumberUtils.countDigits(<string>value) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
-         for (const formatToTimeUnit of ColumnMappingGenerator.DATE_FORMATS_TO_TIMEUNITS) {
-            if (DateTimeUtils.parseDate(<string>value, formatToTimeUnit.format, locale)) {
-               columnPair.source.format = formatToTimeUnit.format;
-               columnPair.target.dataType = DataType.TIME;
-               const timeUnit = formatToTimeUnit.timeUnit ? formatToTimeUnit.timeUnit :
-                  this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND);
-               columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
-               return;
-            }
-         }
+         this.detectDateTimeFromString(columnPair, <string>value, locale);
       } else if (columnPair.source.dataType === DataType.NUMBER) {
-         const timeUnit = this.timeUnitDetector.fromColumnName(columnPair, <number>value, undefined);
+         this.detectDateTimeFromNumber(columnPair, <number>value);
+      }
+   }
+
+   private detectDateTimeFromString(columnPair: ColumnPair, value: string, locale: string) {
+      for (const formatToTimeUnit of ColumnMappingGenerator.DATE_FORMATS_TO_TIMEUNITS) {
+         if (DateTimeUtils.parseDate(<string>value, formatToTimeUnit.format, locale)) {
+            columnPair.source.format = formatToTimeUnit.format;
+            columnPair.target.dataType = DataType.TIME;
+            const timeUnit = formatToTimeUnit.timeUnit ? formatToTimeUnit.timeUnit :
+               this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND);
+            columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
+            return;
+         }
+      }
+   }
+
+   private detectDateTimeFromNumber(columnPair: ColumnPair, value: number) {
+      if (this.timeGuesser.isAssumedlyTime(columnPair, value)) {
+         columnPair.source.dataType = DataType.TIME;
+         columnPair.target.dataType = DataType.TIME;
+      } else {
+         const timeUnit = this.timeUnitDetector.fromColumnName(columnPair, value, undefined);
          if (timeUnit) {
             columnPair.source.dataType = DataType.TIME;
             columnPair.target.dataType = DataType.TIME;
@@ -110,11 +138,11 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private guessDataTypeOf(value: string | number | boolean | Object): DataType {
+   private guessDataTypeOf(value: any): DataType {
       return value === '' ? undefined : DataTypeUtils.typeOf(value);
    }
 
-   private refineDateTimeFormat(columnPair: ColumnPair, value: string | number | boolean, locale: string): void {
+   private refineDateTimeFormat(columnPair: ColumnPair, value: any, locale: string): void {
       for (const formatToTimeUnit of ColumnMappingGenerator.DATE_FORMATS_TO_TIMEUNITS) {
          if (formatToTimeUnit.format && DateTimeUtils.parseDate(<string>value, formatToTimeUnit.format, locale)) {
             columnPair.source.format = formatToTimeUnit.format;
@@ -123,7 +151,7 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private shallBeIndexed(value: string | number | boolean | Object): boolean {
+   private shallBeIndexed(value: any): boolean {
       if (value === null || value === undefined) {
          return true;
       }
@@ -133,11 +161,17 @@ export class ColumnMappingGenerator {
       return typeof value !== 'string' || (<string>value).length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED;
    }
 
-   private computeWidth(value: string | number | boolean | Object, dataType: DataType): number {
+   private computeWidth(value: any, columnPair: ColumnPair): number {
       let width = ColumnMappingGenerator.MIN_WIDTH;
-      if (value && dataType !== DataType.BOOLEAN) {
-         if (value.toString().length > width) {
-            width = Math.min(value.toString().length, ColumnMappingGenerator.MAX_WIDTH);
+      if (value) {
+         let formattedValue: string = null;
+         if (value instanceof Date && columnPair.target.format) {
+            formattedValue = this.datePipe.transform(<Date>value, columnPair.target.format);
+         } else if (columnPair.target.dataType !== DataType.BOOLEAN && value.toString().length > width) {
+            formattedValue = value.toString();
+         }
+         if (formattedValue) {
+            width = Math.min(formattedValue.length, ColumnMappingGenerator.MAX_WIDTH);
          }
       }
       return width;

@@ -6,7 +6,7 @@ import {
   MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
-import { Route, Scene, DataType, ColumnPair, SceneInfo } from 'app/shared/model';
+import { Route, Scene, DataType, ColumnPair, SceneInfo, Column } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -276,6 +276,88 @@ describe('SceneComponent', () => {
     expect(component.columnMappings.length).toBe(1);
     expect(component.columnMappings[0].source.name).toBe('Column 1');
   }));
+
+  it('#formatValue should return empty string when object value is null', () => {
+
+    // given
+    const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
+    const entry = { ID: 1, Nested: null };
+
+    // when
+    const formatted = component.formatValue(column, entry);
+
+    // then
+    expect(formatted).toBe('');
+  });
+
+  it('#formatValue should return ellipsis when object value is defined', () => {
+
+    // given
+    const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
+    const entry = { ID: 1, Nested: '{ a: \'x\' }' };
+
+    // when
+    const formatted = component.formatValue(column, entry);
+
+    // then
+    expect(formatted).toBe('...');
+  });
+
+  it('#formatValue should return empty string when number value is null', () => {
+
+    // given
+    const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
+    const entry = { ID: 1, Amount: null };
+
+    // when
+    const formatted = component.formatValue(column, entry);
+
+    // then
+    expect(formatted).toBe('');
+  });
+
+  it('#formatValue should return formatted time using column displayFormat', () => {
+
+    // given
+    const column: Column = {
+      name: 'Time', dataType: DataType.TIME, width: 100,
+      format: 'yyyy-MM-dd HH:mm:ss SSS'
+    };
+    const time = new Date('2019-01-30T18:24:17').getTime() + 557;
+    const entry = { ID: 1, Time: time };
+
+    // when
+    const formatted = component.formatValue(column, entry);
+
+    // then
+    expect(formatted).toBe('2019-01-30 18:24:17 557');
+  });
+
+  it('#formatValue should return formatted number using locale en-US', () => {
+
+    // given
+    const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
+    const entry = { ID: 1, Amount: 15_000 };
+
+    // when
+    const formatted = component.formatValue(column, entry);
+
+    // then
+    expect(formatted).toBe('15,000');
+  });
+
+  it('#formatValue should return value when value is text', () => {
+
+    // given
+    const column: Column = { name: 'Host', dataType: DataType.TEXT, width: 100 };
+    const entry = { ID: 1, Host: 'server1' };
+
+    // when
+    const formatted = component.formatValue(column, entry);
+
+    // then
+    expect(formatted).toBe('server1');
+  });
 
   it('#click on "Load Data" should notify error when scene cannot be persisted', fakeAsync(() => {
 
