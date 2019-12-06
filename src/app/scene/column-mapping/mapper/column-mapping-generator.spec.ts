@@ -91,12 +91,12 @@ describe('ColumnMappingGenerator', () => {
    it('#generate should return indexed time to time mapping when value is date', () => {
 
       // when
-      const mapping = generator.generate([{ X: new Date() }], 'en');
+      const mapping = generator.generate([{ X: new Date(0) }], 'en');
 
       // then
       expect(mapping.length).toBe(1);
       expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TIME, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TIME, width: 20, format: 'd MMM yyyy HH:mm:ss', indexed: true });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TIME, width: 19, format: 'd MMM yyyy HH:mm:ss', indexed: true });
    });
 
    it('#generate should return no mapping when entry is empty', () => {
@@ -382,25 +382,25 @@ describe('ColumnMappingGenerator', () => {
    it('#generate should downgrade to TEXT and report incompatible data types when column contains date and float values', () => {
 
       // when
-      const mapping = generator.generate([{ X: new Date() }, { X: 1.5 }], 'en');
+      const mapping = generator.generate([{ X: new Date(0) }, { X: 1.5 }], 'en');
 
       // then
       expect(mapping.length).toBe(1);
       expect(mapping[0].warning).toBe(ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES);
       expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 20, indexed: true });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 19, indexed: true });
    });
 
    it('#generate should downgrade to TEXT and report incompatible data types when column contains date and text values', () => {
 
       // when
-      const mapping = generator.generate([{ X: new Date() }, { X: 'abc' }], 'en');
+      const mapping = generator.generate([{ X: new Date(0) }, { X: 'abc' }], 'en');
 
       // then
       expect(mapping.length).toBe(1);
       expect(mapping[0].warning).toBe(ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES);
       expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 20, indexed: true });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 19, indexed: true });
    });
 
    it('#generate should return text to boolean mapping', () => {
