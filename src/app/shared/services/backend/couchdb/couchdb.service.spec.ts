@@ -7,11 +7,11 @@ import { CouchDBConfig } from './couchdb-config';
 describe('CouchDBService', () => {
 
    const testDBPrefix = 'test_';
-   const couchDBConfig = new CouchDBConfig();
+   const config = new CouchDBConfig();
    let couchDBService: CouchDBService;
 
    beforeAll(() => {
-      couchDBConfig.reset();
+      config.reset();
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
@@ -27,8 +27,8 @@ describe('CouchDBService', () => {
    });
 
    afterEach(async () => {
-      couchDBConfig.reset();
-      await couchDBService.initConnection(couchDBConfig.readConnectionInfo()).then(r => null);
+      config.reset();
+      await couchDBService.initConnection(config.readConnectionInfo()).then(r => null);
    });
 
    it('#initConnection should store config', fakeAsync(() => {

@@ -196,7 +196,7 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.filter.value).toBe(1_200_300.55);
-    expect(component.valueControl.hasError('error')).toBeFalsy();
+    expect(component.valueControl.hasError('error')).toBe(false);
   });
 
   it('#onValueChanged should change filter number value when number has misplaced thousands separators', () => {
@@ -209,10 +209,10 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.filter.value).toBe(20_000);
-    expect(component.valueControl.hasError('error')).toBeFalsy();
+    expect(component.valueControl.hasError('error')).toBe(false);
   });
 
-  it('#onValueChanged should change filter value when value completable float', () => {
+  it('#onValueChanged should change filter value when value is completable float', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '1.7', DataType.NUMBER);
@@ -222,7 +222,20 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.filter.value).toBe(0.7);
-    expect(component.valueControl.hasError('error')).toBeFalsy();
+    expect(component.valueControl.hasError('error')).toBe(false);
+  });
+
+  it('#onValueChanged should change filter value when value is list of floats', () => {
+
+    // given
+    component.filter = new PropertyFilter('Amount', Operator.ANY_OF, '1.7', DataType.NUMBER);
+
+    // when
+    component.onValueChanged('1.7;2.5');
+
+    // then
+    expect(component.filter.value).toBe('1.7;2.5');
+    expect(component.valueControl.hasError('error')).toBe(false);
   });
 
   it('#onValueChanged should change control state if value is invalid', () => {
@@ -235,7 +248,7 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.filter.value).toBe('x');
-    expect(component.valueControl.hasError('error')).toBeTruthy();
+    expect(component.valueControl.hasError('error')).toBe(true);
     expect(component.valueControl.getError('error')).toBe('Invalid number');
   });
 
@@ -256,7 +269,7 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.onChange.emit).not.toHaveBeenCalled();
-    expect(component.valueControl.hasError('error')).toBeFalsy();
+    expect(component.valueControl.hasError('error')).toBe(false);
   }));
 
   it('pressing <enter> in column filter field should emit onFilterChange', fakeAsync(() => {

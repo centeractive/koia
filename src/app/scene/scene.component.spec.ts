@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/cor
 import { SceneComponent } from './scene.component';
 import {
   MatBottomSheetModule, MatBottomSheet, MatProgressBarModule, MatTableModule, MatButtonModule, MatIconModule, MatTooltipModule,
-  MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect
+  MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect, MatFormFieldControl
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
 import { Route, Scene, DataType, ColumnPair, SceneInfo, Column } from 'app/shared/model';

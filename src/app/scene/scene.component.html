@@ -161,14 +161,16 @@
         matTooltipClass="tooltip_preview_warning" />
       &nbsp;
       <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
-        [disabled]="!(maxItemsToLoad > 0)" (click)="persistScene()">
+        [disabled]="maxItemsToLoad < 1 || maxItemsToLoad > maxItemsPerScene" (click)="persistScene()">
         Load Data
       </button>
       &nbsp;
       <mat-form-field class="max_items">
-        <input matInput type="number" placeholder="Max. items" min="1" [max]="maxItemsPerScene" step="1"
-          oninput="validity.valid||(value='')" [(ngModel)]="maxItemsToLoad"
-          matTooltip="Maximum number of items to be loaded">
+        <input matInput type="number" placeholder="Max. items" [(ngModel)]="maxItemsToLoad" required min="1"
+          [max]="maxItemsPerScene" step="1" [formControl]="maxItemsToLoadControl"
+          [matTooltip]="'Maximum number of items to be loaded\n(min: 1, max: ' + maxItemsPerScene.toLocaleString() + ')'"
+          matTooltipClass="multi-line-tooltip">
+        <mat-error *ngIf="maxItemsToLoadControl.invalid">{{ 'Exp. 1-' + maxItemsPerScene }}</mat-error>
       </mat-form-field>
       &nbsp;
       <mat-slide-toggle [(ngModel)]="abortDataloadOnError"

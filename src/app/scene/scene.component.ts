@@ -12,6 +12,7 @@ import { Location } from '@angular/common';
 import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './column-mapping/mapper';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
+import { FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'koia-front',
@@ -53,6 +54,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   entryPersister: EntryPersister;
   maxItemsPerScene: number;
   maxItemsToLoad: number;
+  maxItemsToLoadControl: FormControl;
   abortDataloadOnError = true;
   progressBarMode: string;
 
@@ -109,6 +111,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
         this.scene = SceneUtils.createScene(db);
         this.maxItemsPerScene = this.dbService.getMaxDataItemsPerScene();
         this.maxItemsToLoad = this.maxItemsPerScene;
+        this.maxItemsToLoadControl = new FormControl('', [Validators.min(1), Validators.max(this.maxItemsPerScene)]);
         this.entryPersister = this.createEntryPersister();
       })
       .catch(err => this.notifyError(err));

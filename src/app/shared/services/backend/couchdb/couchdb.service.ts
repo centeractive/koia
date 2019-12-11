@@ -10,7 +10,7 @@ import { CouchDBConfig } from './couchdb-config';
 import { Scene, Document, HTTPMethod } from 'app/shared/model';
 
 /**
- * Locally installed CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
+ * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
  *
  * [httpd]
  * enable_cors = true
@@ -25,18 +25,18 @@ export class CouchDBService implements DB {
 
   static readonly MAX_DATA_ITEMS_PER_SCENE = 100_000;
 
-  private couchDBConfig = new CouchDBConfig();
+  private config = new CouchDBConfig();
   private connectionInfo: ConnectionInfo;
   private baseURL: string;
   private httpOptions: {};
 
   constructor(private http: HttpClient) {
-    this.initConnection(this.couchDBConfig.readConnectionInfo());
+    this.initConnection(this.config.readConnectionInfo());
   }
 
   async initConnection(connectionInfo: ConnectionInfo): Promise<string> {
     this.connectionInfo = connectionInfo;
-    this.couchDBConfig.saveConnectionInfo(connectionInfo);
+    this.config.saveConnectionInfo(connectionInfo);
     this.httpOptions = this.createHttpOptions();
     this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
     return this.listDatabases()

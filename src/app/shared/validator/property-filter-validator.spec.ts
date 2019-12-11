@@ -61,4 +61,26 @@ describe('PropertyFilterValidator', () => {
       expect(validator.validate(new PropertyFilter('Valid', Operator.EQUAL, 'abc'))).toBe('Invalid boolean');
       expect(validator.validate(new PropertyFilter('Valid', Operator.NOT_EQUAL, '123'))).toBe('Invalid boolean');
    });
+
+   it('#validate with "is any of" should return <null> when all NUMBERs are valid', () => {
+      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1;2;3'))).toBeNull();
+      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1.5;2.7;3.78'))).toBeNull();
+   });
+
+   it('#validate with "is any of" should return error message when any NUMBER is invalid', () => {
+      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, 'x;2;3'))).toBe('\'x\' is not a number');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1;y;3'))).toBe('\'y\' is not a number');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1;2;z'))).toBe('\'z\' is not a number');
+   });
+
+   it('#validate with "is none of" should return <null> when all NUMBERs are valid', () => {
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;2;3'))).toBeNull();
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1.5;2.7;3.78'))).toBeNull();
+   });
+
+   it('#validate with "is none of" should return error message when any NUMBER is invalid', () => {
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, 'x;2;3'))).toBe('\'x\' is not a number');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;y;3'))).toBe('\'y\' is not a number');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;2;z'))).toBe('\'z\' is not a number');
+   });
 });

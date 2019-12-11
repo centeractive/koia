@@ -1,5 +1,5 @@
-import { Column, PropertyFilter } from '../model';
-import { DataTypeUtils } from '../utils';
+import { Column, PropertyFilter, Operator, DataType } from '../model';
+import { DataTypeUtils, ArrayUtils } from '../utils';
 
 export class PropertyFilterValidator {
 
@@ -13,10 +13,23 @@ export class PropertyFilterValidator {
       const value = filter.value;
       if (value && value.toString() !== '') {
          const dataType = this.columns.find(c => c.name === filter.name).dataType;
-         if (DataTypeUtils.toTypedValue(value, dataType) === undefined) {
+         if (filter.operator === Operator.ANY_OF || filter.operator === Operator.NONE_OF) {
+            return this.validateListedValues(dataType, value.toString());
+         } else if (DataTypeUtils.toTypedValue(value, dataType) === undefined) {
             return 'Invalid ' + dataType.toString().toLowerCase();
          }
       }
       return null;
+   }
+
+   private validateListedValues(dataType: DataType, value: string): string | null {
+      try {
+         if (dataType === DataType.NUMBER) {
+            ArrayUtils.toNumberArray(value.toString());
+         }
+         return null;
+      } catch (e) {
+         return e.message;
+      }
    }
 }
