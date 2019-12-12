@@ -6,7 +6,7 @@ import { DatePipe } from '@angular/common';
 
 export class ColumnMappingGenerator {
 
-   static readonly COLUMN_NAME_MAX_LENGTH = 25;
+   static readonly COLUMN_NAME_MAX_LENGTH = 100;
    static readonly INCOMPATIBLE_DATA_TYPES = 'Column contains values of incompatible data types';
 
    private static readonly MIN_WIDTH = 10;

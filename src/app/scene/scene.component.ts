@@ -53,10 +53,10 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   percentPersisted: number;
   entryPersister: EntryPersister;
   maxItemsPerScene: number;
-  maxItemsToLoad: number;
   maxItemsToLoadControl: FormControl;
   abortDataloadOnError = true;
   progressBarMode: string;
+  canceled = false;
 
   private generatedSceneName: string;
   private generatedSceneShortDesc: string;
@@ -64,7 +64,6 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   private columnFactory = new ColumnMappingGenerator();
   private mappingErrors = new ConfinedStringSet(10);
   private valueFormatter = new ValueFormatter();
-  private canceled = false;
 
   constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
@@ -110,8 +109,8 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       .then(db => {
         this.scene = SceneUtils.createScene(db);
         this.maxItemsPerScene = this.dbService.getMaxDataItemsPerScene();
-        this.maxItemsToLoad = this.maxItemsPerScene;
         this.maxItemsToLoadControl = new FormControl('', [Validators.min(1), Validators.max(this.maxItemsPerScene)]);
+        this.maxItemsToLoadControl.setValue(this.maxItemsPerScene);
         this.entryPersister = this.createEntryPersister();
       })
       .catch(err => this.notifyError(err));
@@ -282,8 +281,8 @@ export class SceneComponent extends AbstractComponent implements OnInit {
         const entries = mappingResults
           .filter(mr => mr.entry)
           .map(mr => mr.entry);
-        if (this.entryPersister.getPosted() + entries.length > this.maxItemsToLoad) {
-          this.entryPersister.post(entries.slice(0, this.maxItemsToLoad - this.entryPersister.getPosted()));
+        if (this.entryPersister.getPosted() + entries.length > this.maxItemsToLoadControl.value) {
+          this.entryPersister.post(entries.slice(0, this.maxItemsToLoadControl.value - this.entryPersister.getPosted()));
           this.entryPersister.postingComplete(true);
         } else {
           this.entryPersister.post(entries);

@@ -98,6 +98,25 @@ describe('ChartComponent', () => {
     expect(context.getContainer()).toBeTruthy();
   }));
 
+  it('should emit warning when when context changes but new chart data cannot be obtained', fakeAsync(() => {
+
+    // given
+    spyOn(TestBed.get(ChartDataService), 'createData').and.returnValue({ error: 'server not available'});
+    spyOn(component.onWarning, 'emit');
+    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
+    fixture.detectChanges();
+    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
+    flush();
+
+    // when
+    context.groupByColumns = [createColumn('t1', DataType.TEXT)];
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.onWarning.emit).toHaveBeenCalledWith('server not available');
+  }));
+
   it('should clear NVD3 element when scatter chart context changes', fakeAsync(() => {
 
     // given

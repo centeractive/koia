@@ -34,15 +34,12 @@ export class GraphOptionsProvider {
                contentGenerator: node => this.generateTooltip(node, context)
             },
             color: node => color(node.group),
-            nodeExtras: nodes => this.shapeNodes(nodes, context)
+            nodeExtras: node => this.shapeNodes(node, context)
          }
       }
    }
 
    private shapeNodes(node, context: GraphContext) {
-
-      console.log(node);
-
       return node
          .attr('cursor', 'pointer')
          .on('dblclick', d => this.nodeDoubleClickHandler.onNodeDoubleClicked(d, context))
