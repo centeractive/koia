@@ -20,7 +20,6 @@ module.exports = function (config) {
       { pattern: 'src/assets/*.ico', included: false, watched: false, served: true },
       { pattern: 'src/assets/*.png', included: false, watched: false, served: true },
       { pattern: 'src/assets/mat-icons/*.png', included: false, watched: false, served: true },
-      { pattern: 'src/assets/screenshots/*.png', included: false, watched: false, served: true },
       { pattern: 'src/assets/svg-icons/*.svg', included: false, watched: false, served: true },
       { pattern: 'src/app/shared/services/reader/excel/test.xlsx', included: false, watched: false, served: true },
       

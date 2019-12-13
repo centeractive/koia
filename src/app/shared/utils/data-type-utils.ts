@@ -52,25 +52,44 @@ export class DataTypeUtils {
       }
    }
 
-   static asBoolean(value: string | number | boolean) {
+   static asBoolean(value: string | number | boolean): boolean | undefined {
       if (value === null || value === undefined) {
-         return value;
+         return false;
       }
       if (typeof value === 'boolean') {
          return value;
-      } else if (value === 0 || value === '0') {
+      } else if (value === 0) {
          return false;
-      } else if (value === 1 || value === '1') {
+      } else if (value === 1) {
          return true;
       } else if (typeof value === 'string') {
-         const valueUpperCase = value.toUpperCase();
-         if (valueUpperCase === 'TRUE' || valueUpperCase === '+') {
-            return true;
-         } else if (valueUpperCase === 'FALSE' || valueUpperCase === '-') {
-            return false;
-         }
+         return DataTypeUtils.toBoolean(value);
       }
       return undefined;
+   }
+
+   static toBoolean(str: string): boolean | undefined {
+      if (!str) {
+         return false;
+      }
+      switch (str.toLowerCase().trim()) {
+         case 'true':
+         case 'yes':
+         case 'ok':
+         case 'y':
+         case '1':
+         case '+':
+            return true;
+         case 'false':
+         case 'no':
+         case 'nok':
+         case 'n':
+         case '0':
+         case '-':
+            return false;
+         default:
+            return undefined;
+      }
    }
 
    static iconOf(dataType: DataType): string {
@@ -80,7 +99,7 @@ export class DataTypeUtils {
          case DataType.NUMBER:
             return 'looks_one';
          case DataType.OBJECT:
-               return 'code';
+            return 'code';
          case DataType.TEXT:
             return 'title';
          case DataType.TIME:

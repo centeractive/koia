@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { Route, ConnectionInfo } from 'app/shared/model';
@@ -6,8 +6,6 @@ import { DBService } from 'app/shared/services/backend';
 import { ReaderService, DataReader } from 'app/shared/services/reader';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { MatBottomSheet } from '@angular/material';
-import * as $ from 'jquery';
-import 'slick-carousel';
 import { Router, ActivatedRoute } from '@angular/router';
 import { QueryParamExtractor, CommonUtils } from 'app/shared/utils';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
@@ -18,31 +16,15 @@ import { AbstractComponent } from 'app/shared/component/abstract.component';
   templateUrl: './front.component.html',
   styleUrls: ['./front.component.css']
 })
-export class FrontComponent extends AbstractComponent implements OnInit, AfterViewInit {
+export class FrontComponent extends AbstractComponent implements OnInit {
 
   readonly indexedDB = 'IndexedDB';
   readonly couchDB = 'CouchDB';
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
 
-  private readonly carouselOptions = {
-    slidesToShow: 1,
-    arrows: false,
-    dots: true,
-    infinite: true,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    pauseOnFocus: true,
-    fade: true,
-    speed: 1000
-  };
-  private readonly screenshots = ['chart_details', 'chart_options', 'columns', 'grid_view', 'pivot_filters', 'rawdata_withfilters',
-    'scenes_detail'];
-
   stepsVisible = true;
   stepVisibleControl: FormGroup;
-  showScreenshots = true;
-  imagePaths: string[];
   dataStorages = [this.indexedDB, this.couchDB];
   selectedDataStorage: string;
   ready = false;
@@ -57,7 +39,6 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
 
   ngOnInit() {
     this.stepVisibleControl = this.formBuilder.group({ firstCtrl: ['', Validators.required] });
-    this.imagePaths = this.screenshots.map(s => '/assets/screenshots/' + s + '.png');
     this.readers = this.readerService.getReaders();
 
     this.activatedRoute.queryParamMap.subscribe(params => {
@@ -81,12 +62,6 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
         .then(r => this.dbService.activateScene(queryParamExtractor.getSceneID())
           .then(scene => this.router.navigateByUrl(Route.RAWDATA)))
         .catch(err => this.notifyError('cannot show raw data of scene with _id ' + queryParamExtractor.getSceneID() + ':\n\n' + err)));
-  }
-
-  ngAfterViewInit(): void {
-    if (this.showScreenshots) {
-      $('.carousel').slick(this.carouselOptions);
-    }
   }
 
   onDataStorageChanged(dataStorage: string): void {
@@ -161,13 +136,5 @@ export class FrontComponent extends AbstractComponent implements OnInit, AfterVi
       return 'inactive';
     }
     return this.selectedDataStorage === this.indexedDB ? 'active' : 'inactive';
-  }
-
-  prevScreenshot() {
-    $('.carousel').slick('slickPrev');
-  }
-
-  nextScreenshot() {
-    $('.carousel').slick('slickNext');
   }
 }

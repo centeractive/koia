@@ -138,9 +138,6 @@
       <ng-template matStepperIcon="views">
         <mat-icon>pageview</mat-icon>
       </ng-template>
-      <ng-template matStepperIcon="screenshots">
-        <mat-icon>laptop_mac</mat-icon>
-      </ng-template>
 
       <mat-step label="Trust" state="trust" [stepControl]="stepVisibleControl">
         <mat-card class="info-card" *ngIf="stepsVisible">
@@ -283,29 +280,6 @@
             </ul>
           </mat-card-content>
         </mat-card>
-      </mat-step>
-
-      <mat-step label="Screenshots" state="screenshots" [stepControl]="stepVisibleControl">
-        <!-- if we remove mat-card (*ngIf) instead of hiding enclosing div, we would loose carousel -->
-        <div [hidden]="!stepsVisible">
-          <mat-card class="info-card">
-            <mat-card-header>
-              <div mat-card-avatar id="screenshots-image"></div>
-              <mat-card-title>Screenshots</mat-card-title>
-              <mat-card-subtitle>This is what Koia in action may look like</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-              <div id="div_screenshots">
-                <div class="carousel" *ngIf="showScreenshots">
-                  <img *ngFor="let imagePath of imagePaths" [src]="imagePath">
-                </div>
-                <mat-icon class="but_arrow" (click)="prevScreenshot()">keyboard_arrow_left</mat-icon>
-                <mat-icon id="but_next" class="but_arrow" (click)="nextScreenshot()">keyboard_arrow_right</mat-icon>
-              </div>
-              <br>
-            </mat-card-content>
-          </mat-card>
-        </div>
       </mat-step>
     </mat-horizontal-stepper>
   </mat-card-content>

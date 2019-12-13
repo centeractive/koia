@@ -171,9 +171,9 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.toTypedValue(array, DataType.OBJECT)).toEqual(expected);
    });
 
-   it('#asBoolean should return unchanged when value is missing', () => {
-      expect(DataTypeUtils.asBoolean(null)).toBeNull();
-      expect(DataTypeUtils.asBoolean(undefined)).toBeUndefined();
+   it('#asBoolean should return false when value is missing', () => {
+      expect(DataTypeUtils.asBoolean(null)).toBe(false);
+      expect(DataTypeUtils.asBoolean(undefined)).toBe(false);
    });
 
    it('#asBoolean should return undefined when value is not boolean compatible', () => {
@@ -188,20 +188,64 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.asBoolean(false)).toBe(false);
    });
 
-   it('#asBoolean should return boolean when value includes boolean', () => {
+   it('#asBoolean should return true when value represents true', () => {
       expect(DataTypeUtils.asBoolean('true')).toBe(true);
-      expect(DataTypeUtils.asBoolean('false')).toBe(false);
       expect(DataTypeUtils.asBoolean('TRUE')).toBe(true);
-      expect(DataTypeUtils.asBoolean('FALSE')).toBe(false);
+      expect(DataTypeUtils.asBoolean('yes')).toBe(true);
+      expect(DataTypeUtils.asBoolean('YES')).toBe(true);
+      expect(DataTypeUtils.asBoolean('ok')).toBe(true);
+      expect(DataTypeUtils.asBoolean('OK')).toBe(true);
+      expect(DataTypeUtils.asBoolean('y')).toBe(true);
+      expect(DataTypeUtils.asBoolean('Y')).toBe(true);
+      expect(DataTypeUtils.asBoolean(1)).toBe(true);
+      expect(DataTypeUtils.asBoolean('1')).toBe(true);
+      expect(DataTypeUtils.asBoolean('+')).toBe(true);
    });
 
-   it('#asBoolean should return boolean when value represents boolean', () => {
-      expect(DataTypeUtils.asBoolean(1)).toBe(true);
+   it('#asBoolean should return false when value represents false', () => {
+      expect(DataTypeUtils.asBoolean('false')).toBe(false);
+      expect(DataTypeUtils.asBoolean('FALSE')).toBe(false);
+      expect(DataTypeUtils.asBoolean('no')).toBe(false);
+      expect(DataTypeUtils.asBoolean('NO')).toBe(false);
+      expect(DataTypeUtils.asBoolean('nok')).toBe(false);
+      expect(DataTypeUtils.asBoolean('NOK')).toBe(false);
+      expect(DataTypeUtils.asBoolean('n')).toBe(false);
+      expect(DataTypeUtils.asBoolean('N')).toBe(false);
       expect(DataTypeUtils.asBoolean(0)).toBe(false);
-      expect(DataTypeUtils.asBoolean('1')).toBe(true);
       expect(DataTypeUtils.asBoolean('0')).toBe(false);
-      expect(DataTypeUtils.asBoolean('+')).toBe(true);
       expect(DataTypeUtils.asBoolean('-')).toBe(false);
+   });
+
+   it('#toBoolean should return false when value is missing', () => {
+      expect(DataTypeUtils.toBoolean(null)).toBe(false);
+      expect(DataTypeUtils.toBoolean(undefined)).toBe(false);
+   });
+
+   it('#toBoolean should return undefined when value is not boolean compatible', () => {
+      expect(DataTypeUtils.asBoolean('abc')).toBeUndefined();
+      expect(DataTypeUtils.asBoolean('-1')).toBeUndefined();
+   });
+
+   it('#toBoolean should return true when value represents true', () => {
+      expect(DataTypeUtils.toBoolean('true')).toBe(true);
+      expect(DataTypeUtils.toBoolean('TRUE')).toBe(true);
+      expect(DataTypeUtils.toBoolean('yes')).toBe(true);
+      expect(DataTypeUtils.toBoolean('YES')).toBe(true);
+      expect(DataTypeUtils.toBoolean('y')).toBe(true);
+      expect(DataTypeUtils.toBoolean('Y')).toBe(true);
+      expect(DataTypeUtils.toBoolean('1')).toBe(true);
+      expect(DataTypeUtils.toBoolean('+')).toBe(true);
+   });
+
+   it('#toBoolean should return false when value represents false', () => {
+      expect(DataTypeUtils.toBoolean('false')).toBe(false);
+      expect(DataTypeUtils.toBoolean('FALSE')).toBe(false);
+      expect(DataTypeUtils.toBoolean('no')).toBe(false);
+      expect(DataTypeUtils.toBoolean('NO')).toBe(false);
+      expect(DataTypeUtils.toBoolean('n')).toBe(false);
+      expect(DataTypeUtils.toBoolean('N')).toBe(false);
+      expect(DataTypeUtils.toBoolean('0')).toBe(false);
+      expect(DataTypeUtils.toBoolean('-')).toBe(false);
    });
 
    it('#iconOf should return undefined when data types is unknown', () => {

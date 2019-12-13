@@ -23,6 +23,7 @@ describe('ValueFilterComponent', () => {
       { name: 'Host', dataType: DataType.TEXT, width: 80 },
       { name: 'Path', dataType: DataType.TEXT, width: 200 },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70 },
+      { name: 'Address', dataType: DataType.OBJECT, width: 50 },
       { name: 'Valid', dataType: DataType.BOOLEAN, width: 30 },
       { name: 'Signed Off', dataType: DataType.BOOLEAN, width: 30 }
     ];
@@ -80,6 +81,30 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(operators).toEqual([Operator.EMPTY, Operator.NOT_EMPTY]);
+  });
+
+  it('#availableOperators should return operators for BOOLEAN data type', () => {
+
+    // given
+    component.filter = new PropertyFilter('Signed Off', Operator.NOT_EMPTY, '', DataType.TIME);
+
+    // when
+    const operators = component.availableOperators();
+
+    // then
+    expect(operators).toEqual([Operator.EQUAL, Operator.EMPTY, Operator.NOT_EMPTY]);
+  });
+
+  it('#availableOperators should return operators for OBJECT data type', () => {
+
+    // given
+    component.filter = new PropertyFilter('Address', Operator.NOT_EMPTY, '', DataType.TIME);
+
+    // when
+    const operators = component.availableOperators();
+
+    // then
+    expect(operators).toEqual([Operator.CONTAINS, Operator.EMPTY, Operator.NOT_EMPTY]);
   });
 
   it('#availableOperators should return operators for NUMBER data type', () => {

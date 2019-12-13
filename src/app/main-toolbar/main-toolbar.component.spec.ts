@@ -47,20 +47,21 @@ describe('MainToolbarComponent', () => {
       { name: 'Level', dataType: DataType.TEXT, width: 60 },
       { name: 'Host', dataType: DataType.TEXT, width: 80 },
       { name: 'Path', dataType: DataType.TEXT, width: 200 },
-      { name: 'Amount', dataType: DataType.NUMBER, width: 70 }
+      { name: 'Amount', dataType: DataType.NUMBER, width: 70 },
+      { name: 'Paid', dataType: DataType.BOOLEAN, width: 10 }
     ];
     scene = createScene('1', context, columns);
     entries = [
-      { ID: 1, Time: now - 90_000, Level: 'INFO', Host: 'server1', Path: '/opt/log/info.log', Amount: 10 },
-      { ID: 2, Time: now - 80_000, Level: 'INFO', Host: 'server1', Path: '/opt/log/info.log', Amount: 20 },
-      { ID: 3, Time: now - 70_000, Level: 'INFO', Host: 'server1', Path: '/opt/log/info.log', Amount: 30 },
-      { ID: 4, Time: now - 60_000, Level: 'WARN', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 40 },
-      { ID: 5, Time: now - 50_000, Level: 'WARN', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 50 },
-      { ID: 6, Time: now - 40_000, Level: 'WARN', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 60 },
-      { ID: 7, Time: now - 30_000, Level: 'ERROR', Host: 'server2', Path: '/var/log/error.log', Amount: 70 },
-      { ID: 8, Time: now - 20_000, Level: 'ERROR', Host: 'server2', Path: '/var/log/error.log', Amount: 80 },
-      { ID: 9, Time: now - 10_000, Level: 'ERROR', Host: 'server2', Path: '/var/log/error.log', Amount: 90 },
-      { ID: 10, Time: now, Level: 'ERROR', Data: 'ERROR line four', Host: 'server2', Path: '/var/log/error.log', Amount: 100 },
+      { ID: 1, Time: now - 90_000, Level: 'INFO', Host: 'server1', Path: '/opt/log/info.log', Amount: 10, Paid: false },
+      { ID: 2, Time: now - 80_000, Level: 'INFO', Host: 'server1', Path: '/opt/log/info.log', Amount: 20, Paid: false },
+      { ID: 3, Time: now - 70_000, Level: 'INFO', Host: 'server1', Path: '/opt/log/info.log', Amount: 30, Paid: true },
+      { ID: 4, Time: now - 60_000, Level: 'WARN', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 40, Paid: false },
+      { ID: 5, Time: now - 50_000, Level: 'WARN', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 50, Paid: true },
+      { ID: 6, Time: now - 40_000, Level: 'WARN', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 60, Paid: true },
+      { ID: 7, Time: now - 30_000, Level: 'ERROR', Host: 'server2', Path: '/var/log/error.log', Amount: 70, Paid: false },
+      { ID: 8, Time: now - 20_000, Level: 'ERROR', Host: 'server2', Path: '/var/log/error.log', Amount: 80, Paid: true },
+      { ID: 9, Time: now - 10_000, Level: 'ERROR', Host: 'server2', Path: '/var/log/error.log', Amount: 90, Paid: true },
+      { ID: 10, Time: now, Level: 'ERROR', Data: 'ERROR line four', Host: 'server2', Path: '/var/log/error.log', Amount: 100, Paid: false }
     ];
     const timeMin = entries[0]['Time'];
     const timeMax = entries[entries.length - 1]['Time'];
@@ -366,6 +367,18 @@ describe('MainToolbarComponent', () => {
     const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
   });
+
+  it('#addValueFilter should add EQUAL filter for boolean column', fakeAsync(() => {
+
+    // given
+    component.propertyFilters = [];
+
+    // when
+    component.addValueFilter(column('Paid'));
+
+    // then
+    expect(component.propertyFilters).toEqual([new PropertyFilter('Paid', Operator.EQUAL, '', DataType.BOOLEAN)]);
+  }));
 
   it('#addValueFilter should add EQUAL filter for number column', fakeAsync(() => {
 

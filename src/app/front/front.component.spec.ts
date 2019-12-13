@@ -34,6 +34,7 @@ const notificationService = new NotificationServiceMock();
 let dbService: DBService;
 let isIndexedDbInUseSpy: jasmine.Spy;
 let initBackendSpy: jasmine.Spy;
+let findSceneInfosSpy: jasmine.Spy;
 
 describe('FrontComponent', () => {
 
@@ -67,11 +68,10 @@ describe('FrontComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
-    component.showScreenshots = false;
     initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
     isIndexedDbInUseSpy = spyOn(dbService, 'isIndexedDbInUse').and.returnValue(true);
     const sceneInfos = createSceneInfos(5);
-    spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
+    findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
     fixture.detectChanges();
     flush();
   }));
@@ -185,7 +185,7 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    isIndexedDbInUseSpy.and.returnValue(false);
+    isIndexedDbInUseSpy.and.returnValue(true);
     spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
     spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
@@ -205,7 +205,8 @@ describe('FrontComponent', () => {
     expect(dialogService.showConnectionDialog).toHaveBeenCalled();
     expect(couchDBService.initConnection).toHaveBeenCalled();
     expect(dbService.initBackend).toHaveBeenCalled();
-    expect(notificationService.onSuccess).toHaveBeenCalled();
+    const bottomSheet = TestBed.get(MatBottomSheet);
+    expect(notificationService.onSuccess).toHaveBeenCalledWith(bottomSheet, 'connection establihed');
   }));
 
   it('#onDataStorageChanged should show error when connection to CouchDB fails', fakeAsync(() => {
@@ -260,7 +261,33 @@ describe('FrontComponent', () => {
     expect(notificationService.onError).toHaveBeenCalled();
   }));
 
-  it('#showCouchDBConnectionDialog should not init connection when connection was not not changed', fakeAsync(() => {
+  it('#onDataStorageChanged should show error when scene infos cannot be read', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.indexedDB;
+    isIndexedDbInUseSpy.and.returnValue(false);
+    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
+    const dialogRef = createConnectionDialogRef();
+    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+      data.connectionInfo.port = 999;
+      data.closedWithOK = true;
+      return dialogRef;
+    });
+    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
+    initBackendSpy.calls.reset();
+    findSceneInfosSpy.and.returnValue(Promise.reject('backend not available'));
+    spyOn(notificationService, 'onError');
+
+    // when
+    component.onDataStorageChanged(component.couchDB);
+    flush();
+
+    // then
+    const bottomSheet = TestBed.get(MatBottomSheet);
+    expect(notificationService.onError).toHaveBeenCalledWith(bottomSheet, 'backend not available');
+  }));
+
+  it('#showCouchDBConnectionDialog should not init connection when connection was not changed', fakeAsync(() => {
 
     // given
     component.selectedDataStorage = component.couchDB;
@@ -377,7 +404,6 @@ describe('FrontComponent (external invocation)', () => {
   beforeEach(fakeAsync(() => {
     const fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
-    component.showScreenshots = false;
     router = TestBed.get(Router);
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection established'));
     initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());

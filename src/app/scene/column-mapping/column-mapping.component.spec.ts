@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER } from '@angular/platform-browser';
 import { DataType, ColumnPair } from 'app/shared/model';
 import { DatePipe } from '@angular/common';
+import { ColumnMappingGenerator } from './mapper';
 
 describe('ColumnMappingComponent', () => {
   let component: ColumnMappingComponent;
@@ -140,13 +141,13 @@ describe('ColumnMappingComponent', () => {
   it('#getColumnNameErrorMessage should return error when column name is too long', () => {
 
     // given
-    component.columnNameControl.setValue('This is a far too long column name');
+    component.columnNameControl.setValue('x'.repeat(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH) + 1);
 
     // when
     const error = component.getColumnNameErrorMessage();
 
     // then
-    expect(error).toBe('Name must not exceed 25 characters');
+    expect(error).toBe('Name must not exceed 100 characters');
   });
 
   it('#formattedNow should return formatted time', () => {

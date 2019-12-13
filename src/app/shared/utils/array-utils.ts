@@ -1,6 +1,7 @@
 import { Sort } from '@angular/material';
 import { NumberUtils } from './number-utils';
 import { ValueRange } from '../value-range/model/value-range.type';
+import { DataTypeUtils } from './data-type-utils';
 
 export class ArrayUtils {
 
@@ -50,24 +51,9 @@ export class ArrayUtils {
     if (str) {
       return str.split(separator || ArrayUtils.DEFAULT_SEPARATOR)
         .map(s => s.trim())
-        .map(s => this.toBoolean(s));
+        .map(s => DataTypeUtils.toBoolean(s));
     }
     return [];
-  }
-
-  static toBoolean(str: string): boolean {
-    switch (str.toLowerCase().trim()) {
-      case 'true':
-      case 'yes':
-      case '1':
-        return true;
-      case 'false':
-      case 'no':
-      case '0':
-      case null:
-        return false;
-      default: return Boolean(str);
-    }
   }
 
   /**

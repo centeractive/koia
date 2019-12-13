@@ -103,13 +103,6 @@ p {
    background-size: cover;
 } 
 
-#div_screenshots {
-   position: relative;
-   margin-left: auto;
-   margin-right: auto;
-   max-width: 800px;
-}
-
 .but_arrow {
    position: absolute;
    bottom: -26px;
@@ -153,10 +146,4 @@ p {
    background-image: url('/assets/mat-icons/view_data.png');
    background-repeat:no-repeat;
    background-size: cover;
-} 
-
-#screenshots-image {
-   background-image: url('/assets/mat-icons/computer.png');
-   background-repeat:no-repeat;
-   background-size: cover;
-} 
+}

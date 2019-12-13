@@ -24,8 +24,6 @@
               "src/web.config"
             ],
             "styles": [
-              "node_modules/slick-carousel/slick/slick.scss",
-              "node_modules/slick-carousel/slick/slick-theme.scss",
               "node_modules/c3/c3.min.css",
               "node_modules/pivottable/dist/pivot.css",              
               "src/assets/themes/koia-theme.scss",
@@ -42,8 +40,7 @@
               "node_modules/d3/d3.min.js",
               "node_modules/c3/c3.min.js",
               "node_modules/pivottable/dist/pivot.min.js",
-              "node_modules/pivottable/dist/c3_renderers.js",
-              "node_modules/slick-carousel/slick/slick.min.js"
+              "node_modules/pivottable/dist/c3_renderers.js"
             ]
           },
           "configurations": {

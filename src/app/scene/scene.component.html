@@ -169,7 +169,7 @@
         <input matInput type="number" placeholder="Max. items" required min="1"
           [max]="maxItemsPerScene" step="1" [formControl]="maxItemsToLoadControl"
           [matTooltip]="'Maximum number of items to be loaded\n(min: 1, max: ' + maxItemsPerScene.toLocaleString() + ')'"
-          matTooltipClass="multi-line-tooltip">
+          matTooltipClass="multi-line-tooltip" onfocusout="this.value = Number(this.value)">
         <mat-error *ngIf="maxItemsToLoadControl.invalid">{{ 'Exp. 1-' + maxItemsPerScene }}</mat-error>
       </mat-form-field>
       &nbsp;
