@@ -377,7 +377,7 @@ describe('MainToolbarComponent', () => {
     component.addValueFilter(column('Paid'));
 
     // then
-    expect(component.propertyFilters).toEqual([new PropertyFilter('Paid', Operator.EQUAL, '', DataType.BOOLEAN)]);
+    expect(component.propertyFilters).toEqual([new PropertyFilter('Paid', Operator.EQUAL, true, DataType.BOOLEAN)]);
   }));
 
   it('#addValueFilter should add EQUAL filter for number column', fakeAsync(() => {

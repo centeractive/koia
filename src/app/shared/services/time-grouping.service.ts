@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IDataFrame } from 'data-forge';
-import { DateTimeUtils, CommonUtils, ColumnNameConverter } from '../utils';
+import { DateTimeUtils, ColumnNameConverter } from '../utils';
 import { Column, TimeUnit } from '../model';
 
 /**
