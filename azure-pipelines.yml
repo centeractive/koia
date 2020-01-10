@@ -22,7 +22,7 @@ steps:
   displayName: 'install Node.js'
 
 - script: |
-    npm ci -g @angular/cli@8.3.21
+    npm ci -g @angular/cli@8.3.22
     npm ci
   displayName: 'install npm packages'
 
