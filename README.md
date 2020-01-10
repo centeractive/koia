@@ -60,4 +60,4 @@ It is recommended to use [CouchDB](http://couchdb.apache.org/) as described down
 
 ## License
 
-Koia is [MIT licensed](LICENSE). Copyright (c) 2019 centeractive ag.
+Koia is [MIT licensed](LICENSE). Copyright (c) 2020 centeractive ag.
