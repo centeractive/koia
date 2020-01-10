@@ -4,7 +4,7 @@
 
 <img align="left" src="./doc/koialogo.png">
 
-Koia is an [angular-based](https://angular.io/), open-source web application for visualizing and analyzing table-like data structures. It offers a modern and minimalistic approach for creating flat tables, pivot-tables, summaries, relationship graphs and charts of your data.
+Koia is an [angular-based](https://angular.io/), a **privacy-focused open-source web application for visualizing and analyzing table-like data structures**. It offers a modern and minimalistic approach for creating flat tables, pivot-tables, summaries, relationship graphs and charts while having total control over your data.
 
 Koia has originally been developed for analyzing and visualizing **log data** collected and structured with the [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
 ![alt text](./doc/retrospective.png "Retrospective Log Analyzer") from files (local and remote), [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/).
@@ -15,7 +15,7 @@ Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or cont
 
 Koia differs from similar programs mainly in that the **context to the original data** is never lost. You are always only a mouseclick apart from seeing the raw data on which the displayed element or value is based.
 
-Next to this, Koia enables the **uploading of multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
+Next to this, Koia enables the **switch between mulitple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
 ## How it works
 
@@ -57,6 +57,12 @@ It is recommended to use [CouchDB](http://couchdb.apache.org/) as described down
 
 4. After editing the configuration file, CouchDB should be restarted to have the changes applied.
 5. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
+
+
+## Building
+Koia is built on Azure DevOps. We set the Koia DevOps project to public, but viewing is pretty limited: [**https://dev.azure.com/centeractive/koia/_dashboards/dashboard/9c75542e-dbe6-43a6-a10c-f9158a7a7b3f**](https://dev.azure.com/centeractive/koia/_dashboards/dashboard/9c75542e-dbe6-43a6-a10c-f9158a7a7b3f).
+
+Building locally is a straightforward **npx ng build --prod** followed by **ng serve**.
 
 ## License
 
