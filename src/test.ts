@@ -121,6 +121,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /data-frame-sorter\.spec\.ts$/);
 // const context = require.context('./', true, /side-bar.controller\.spec\.ts$/);
 
+// const context = require.context('./', true, /dialog.service\.spec\.ts$/);
 // const context = require.context('./', true, /export.service\.spec\.ts$/);
 // const context = require.context('./', true, /raw-data-reveal\.service\.spec\.ts$/);
 

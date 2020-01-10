@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { FilterValueInputDirective } from './filter-value-input.directive';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { PropertyFilter, Operator, DataType } from 'app/shared/model';
@@ -24,7 +24,6 @@ describe('FilterValueInputDirective', () => {
       fixture.detectChanges();
       component = fixture.componentInstance;
       inputElement = <HTMLInputElement>fixture.debugElement.nativeElement.querySelector('INPUT');
-      fixture.detectChanges();
       spyOn(inputElement, 'setSelectionRange');
    });
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Aggregation, ElementContext, DataType } from '../model';
 import { IDataFrame, DataFrame, ISeries } from 'data-forge';
 import { TimeGroupingService } from './time-grouping.service';
-import { CommonUtils, ColumnNameConverter } from '../utils';
+import { ColumnNameConverter } from '../utils';
 
 /**
  * computes aggregated data
