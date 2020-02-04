@@ -20,7 +20,7 @@ export class PivotTableSideBarComponent implements OnChanges {
   @Input() context: PivotContext;
   @Input() data: IDataFrame;
 
-  @ViewChild(MatAccordion, undefined) accordion: MatAccordion;
+  @ViewChild(MatAccordion) accordion: MatAccordion;
 
   multiExpandable: boolean;
   nonGroupedColumns: Column[];

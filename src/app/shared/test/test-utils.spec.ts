@@ -56,6 +56,7 @@ describe('TestUtils', () => {
    });
 
    it('#temporary', () => {
+      expect(1).toBe(2);
    });
 
 });

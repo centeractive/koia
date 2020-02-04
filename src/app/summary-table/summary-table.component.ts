@@ -26,7 +26,7 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
   @Input() entries$: Observable<Object[]>;
   @Input() gridView: boolean;
 
-  @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
+  @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
 
   frameColumns: string[];
   frameData: Object[];

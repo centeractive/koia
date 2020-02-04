@@ -1,7 +1,7 @@
 import { ElementContext, Column, Query, SummaryContext, GraphContext, Route, Scene, DataType, ExportFormat } from '../model';
 import { Observable, Subscription } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
-import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit } from '@angular/core';
+import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit, Directive } from '@angular/core';
 import { MatSidenav, MatBottomSheet } from '@angular/material';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../services';
 import { Router } from '@angular/router';
@@ -17,15 +17,16 @@ import { ChartMarginService } from '../services/chart';
 import { ChartContext, ChartType } from '../model/chart';
 import { ViewLauncherContext } from '../component/view-launcher-dialog';
 
+@Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext {
 
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 340; // keep in sync with .sidenav in styles.css
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
 
-   @ViewChild(MatSidenav, undefined) sidenav: MatSidenav;
-   @ViewChild('header', undefined) divHeaderRef: ElementRef<HTMLDivElement>;
-   @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
+   @ViewChild(MatSidenav) sidenav: MatSidenav;
+   @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
+   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
    @ViewChildren('elementContainer') elementContainerDivRefs: QueryList<ElementRef<HTMLDivElement>>;
    @ViewChildren(ChartComponent) chartComponents: QueryList<ChartComponent>;
    @ViewChildren(SummaryTableComponent) sumTableComponents: QueryList<SummaryTableComponent>;

@@ -31,10 +31,10 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
 
   static readonly MARGIN_TOP = 10;
 
-  @ViewChild(MatSidenav, undefined) sidenav: MatSidenav;
-  @ViewChild('header', undefined) divHeaderRef: ElementRef<HTMLDivElement>;
-  @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
-  @ViewChild('pivot', undefined) divPivot: ElementRef<HTMLDivElement>;
+  @ViewChild(MatSidenav) sidenav: MatSidenav;
+  @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
+  @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
+  @ViewChild('pivot') divPivot: ElementRef<HTMLDivElement>;
 
   readonly route = Route.PIVOT;
   readonly timeUnits = Object.keys(TimeUnit).map(key => TimeUnit[key]);

@@ -1,4 +1,4 @@
-import { Output, EventEmitter, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
+import { Output, EventEmitter, Input, ViewChild, SimpleChanges, OnChanges, Directive } from '@angular/core';
 import { MatAccordion } from '@angular/material';
 import { Column, ElementContext, DataType, TimeUnit } from '../model';
 import { NumberUtils, ArrayUtils, DataTypeUtils } from '../utils';
@@ -9,6 +9,7 @@ import { ValueGroupingGenerator } from '../value-range';
 import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { ValueRange } from '../value-range/model/value-range.type';
 
+@Directive()
 export abstract class SideBarController implements OnChanges {
 
    @Input() entries$: Observable<Object[]>;
@@ -17,7 +18,7 @@ export abstract class SideBarController implements OnChanges {
    @Input() elementPosition: number;
    @Output() onElementPositionChange: EventEmitter<number> = new EventEmitter(true);
 
-   @ViewChild(MatAccordion, undefined) accordion: MatAccordion;
+   @ViewChild(MatAccordion) accordion: MatAccordion;
 
    multiExpandable: boolean;
    readonly selectableTimeUnits = [undefined, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];

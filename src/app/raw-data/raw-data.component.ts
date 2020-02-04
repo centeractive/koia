@@ -22,9 +22,9 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
   @Input() query: Query;
   @Input() hideToolbar: boolean;
 
-  @ViewChild('header', undefined) divHeaderRef: ElementRef<HTMLDivElement>;
-  @ViewChild('content', undefined) divContentRef: ElementRef<HTMLDivElement>;
-  @ViewChild(MatPaginator, undefined) paginator: MatPaginator;
+  @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
+  @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
   readonly route = Route.RAWDATA;
   columns: Column[];

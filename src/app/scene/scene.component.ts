@@ -29,8 +29,8 @@ export class SceneComponent extends AbstractComponent implements OnInit {
   readonly urlScenes = '/' + Route.SCENES;
   readonly columnDefinitions = 'Column Definitions';
 
-  @ViewChild(MatAccordion, undefined) accordion: MatAccordion;
-  @ViewChild('fileInput', undefined) fileInputRef: ElementRef<HTMLInputElement>;
+  @ViewChild(MatAccordion) accordion: MatAccordion;
+  @ViewChild('fileInput') fileInputRef: ElementRef<HTMLInputElement>;
 
   readers: DataReader[];
   selectedReader: DataReader;

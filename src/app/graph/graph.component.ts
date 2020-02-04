@@ -26,7 +26,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   @Input() context: GraphContext;
   @Input() entries$: Observable<Object[]>;
 
-  @ViewChild(NvD3Component, undefined) nvD3Component: NvD3Component;
+  @ViewChild(NvD3Component) nvD3Component: NvD3Component;
 
   @Output() onWarning: EventEmitter<string> = new EventEmitter();
 
