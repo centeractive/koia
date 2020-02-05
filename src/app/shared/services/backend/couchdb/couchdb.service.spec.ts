@@ -10,17 +10,17 @@ describe('CouchDBService', () => {
    const config = new CouchDBConfig();
    let couchDBService: CouchDBService;
 
-   beforeAll(() => {
+   beforeAll(async() => {
       config.reset();
-   });
-
-   beforeEach(async () => {
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
       });
       couchDBService = TestBed.get(CouchDBService);
       spyOn(console, 'log').and.callFake(m => null);
+   });
+
+   beforeEach(async () => {      
       await couchDBService.clear(testDBPrefix)
          .then(r => null)
          .catch(e => fail(e));
