@@ -19,7 +19,6 @@ describe('ViewPersistenceService', () => {
   let gridView: View;
   let scene: Scene;
   let dbService: DBService;
-  let updateSceneOK: DocChangeResponse;
   let service: ViewPersistenceService;
 
   beforeAll(() => {
@@ -44,7 +43,6 @@ describe('ViewPersistenceService', () => {
     pivotTableRecord = { route: Route.PIVOT, name: 'pivot', modifiedTime: NOW, data: { a: 1, b: 2, c: 3 } };
     gridView = createGridView('grid', A_MINUTE_AGO, chart);
     scene.config = { records: [pivotTableRecord], views: [gridView] };
-    updateSceneOK = { ok: true, id: scene._id, rev: scene._rev };
     dbService = new DBService(null);
     service = new ViewPersistenceService(dbService);
   });
@@ -71,7 +69,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const data = { x: 'one', y: 'two' };
-    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
     const status$ = service.saveRecord(scene, Route.PIVOT, 'new', data);
@@ -86,7 +84,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const data = { x: 'one', y: 'two' };
-    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
     const status$ = service.saveRecord(scene, Route.PIVOT, pivotTableRecord.name, data);
@@ -150,7 +148,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
-    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
     const status$ = service.saveView(scene, flexView);
@@ -165,7 +163,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const newGridView = createGridView('new', NOW, summary);
-    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
     const status$ = service.saveView(scene, newGridView);
@@ -180,7 +178,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const newGridView = createGridView(gridView.name, NOW, summary);
-    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(updateSceneOK));
+    spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
     const status$ = service.saveView(scene, newGridView);

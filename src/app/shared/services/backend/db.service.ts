@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
-import { QueryUtils, CommonUtils } from 'app/shared/utils';
+import { QueryUtils } from 'app/shared/utils';
 import { QueryConverter } from './mango/query-converter';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
 import { SortDirection } from '@angular/material';

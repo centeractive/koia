@@ -1,7 +1,6 @@
 <div #header [class]="dialogStyle ? '' : 'sticky_header'">
   <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query"
-    (onAfterViewChecked)="adjustLayout()" (onFilterChange)="onFilterChanged($event)">
-  </koia-main-toolbar>
+    (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
   <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
   <div id="view_toolbar">
     <button mat-icon-button [matMenuTriggerFor]="moreMenu">

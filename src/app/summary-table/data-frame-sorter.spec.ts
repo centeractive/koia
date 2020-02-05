@@ -8,7 +8,7 @@ describe('DataFrameSorter', () => {
    let context: SummaryContext;
    let sorter: DataFrameSorter;
 
-   beforeAll(() => {
+   beforeEach(() => {
       const data = [
          { t: 'b', n: 2, g: '100 - 200' },
          { t: 'a', n: 3, g: '-100 - 0' },
@@ -18,9 +18,6 @@ describe('DataFrameSorter', () => {
          { t: 'c', n: -2, g: '0 - 100' }
       ];
       dataFrame = new DataFrame(data);
-   });
-
-   beforeEach(() => {
       context = new SummaryContext([]);
       sorter = new DataFrameSorter();
    });
@@ -32,7 +29,7 @@ describe('DataFrameSorter', () => {
 
       // then
       expect(sortedDataFrame).toBe(dataFrame);
-   });
+   });      
 
    it('#sort should return original data frame when sort column is not contained in data frame', () => {
 
@@ -99,7 +96,7 @@ describe('DataFrameSorter', () => {
       expect(sortedDataFrame.getSeries('g').toArray())
          .toEqual(['min - 2', '2 - 4', '4 - 6', '6 - 8', '8 - 10', '10 - max']);
    });
-
+   
    it('#sort should ascending sort grouped column', () => {
 
       // given
@@ -125,7 +122,7 @@ describe('DataFrameSorter', () => {
       expect(sortedDataFrame.getSeries('g').toArray())
          .toEqual(['300 - max', '200 - 300', '100 - 200', '0 - 100', '-100 - 0', 'min - -100']);
    });
-
+   
    it('#sort should ascending sort grouped column having values with thousands separator', () => {
 
       // given
@@ -159,8 +156,11 @@ describe('DataFrameSorter', () => {
       // then
       expect(sortedDataFrame.getSeries('g').toArray()).toEqual([range4, range3, range2, range1]);
    });
+
+   function format(num: number): string {
+      return num.toLocaleString();
+   }
 });
 
-function format(num: number): string {
-   return num.toLocaleString();
-}
+
+

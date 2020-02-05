@@ -1,5 +1,5 @@
 import { RawDataRevealService } from './raw-data-reveal.service';
-import { Query, ElementContext, Route, SummaryContext, PropertyFilter, DataType, TimeUnit, Operator, Column } from '../model';
+import { Query, ElementContext, SummaryContext, PropertyFilter, DataType, TimeUnit, Operator, Column } from '../model';
 import { MatDialog, MatDialogModule } from '@angular/material';
 import { CouchDBConstants } from './backend/couchdb';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
@@ -16,7 +16,6 @@ describe('RawDataRevealService', () => {
   const now = new Date().getTime();
   const min = 60_000;
   const oneHourAgo = now - (60 * min);
-  const linkbase = '/' + Route.RAWDATA;
 
   const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
   const levelColumn = createColumn('Level', DataType.TEXT);
@@ -75,7 +74,7 @@ describe('RawDataRevealService', () => {
     const actualQuery: Query = dialogServiceOpenSpy.calls.argsFor(0)[1].data;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
-      new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo + 60_000, maxExcluding: undefined })
+      new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo + min, maxExcluding: undefined })
     ]);
   });
 

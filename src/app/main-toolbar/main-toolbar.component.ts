@@ -21,7 +21,6 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
   @Input() dialogStyle: boolean;
   @Input() route: Route;
   @Input() query: Query;
-  @Output() onAfterViewChecked: EventEmitter<void> = new EventEmitter();
   @Output() onFilterChange: EventEmitter<Query> = new EventEmitter();
 
   readonly urlFront = '/' + Route.FRONT;
@@ -82,7 +81,6 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
       this.justNavigatedToParentView = false;
       this.rangeFilters.forEach(f => f.defineSliderOptions());
     }
-    this.onAfterViewChecked.emit();
   }
 
   retainInitialFilters(): void {

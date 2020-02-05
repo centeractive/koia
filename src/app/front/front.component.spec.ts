@@ -19,7 +19,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { Observable, of } from 'rxjs';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { CouchDBServiceMock, QueryParams } from 'app/shared/test';
+import { CouchDBServiceMock, QueryParams, SceneFactory } from 'app/shared/test';
 import { QueryParamExtractor } from 'app/shared/utils';
 
 @Component({ template: '' })
@@ -407,7 +407,7 @@ describe('FrontComponent (external invocation)', () => {
     router = TestBed.get(Router);
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection established'));
     initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
-    spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve({}));
+    spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve(SceneFactory.createScene('1', [])));
     spyOn(router, 'navigateByUrl');
     fixture.detectChanges();
     flush();
@@ -419,7 +419,7 @@ describe('FrontComponent (external invocation)', () => {
 
   it('should activate scene and navigate to raw data view', () => {
     expect(couchDBService.initConnection).toHaveBeenCalledWith(
-      { protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
+      <ConnectionInfo> { protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
     expect(dbService.initBackend).toHaveBeenCalled();
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);

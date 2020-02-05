@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation, AfterViewInit } from '@angular/core';
 import { Query, Route, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
 import {
   NotificationService, ExportService, TimeGroupingService, ViewPersistenceService,
@@ -27,7 +27,7 @@ declare var jQuery: any;
   styleUrls: ['./pivot-table.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class PivotTableComponent extends AbstractComponent implements OnInit {
+export class PivotTableComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
   static readonly MARGIN_TOP = 10;
 
@@ -72,10 +72,14 @@ export class PivotTableComponent extends AbstractComponent implements OnInit {
       const baseQueryProvider: QueryProvider = { provide: () => this.query };
       const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService)
       this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
-      this.fetchData(new Query());
-      this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
-      this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
+      this.fetchData(new Query());      
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
+    this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
+    this.adjustLayout();
   }
 
   private onSidenavClosing() {

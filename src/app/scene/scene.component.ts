@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { NotificationService } from 'app/shared/services';
 import { Route, Scene, Attribute, DataType, Column, ColumnPair, SceneInfo } from 'app/shared/model';
 import { Router } from '@angular/router';
@@ -19,7 +19,7 @@ import { FormControl, Validators } from '@angular/forms';
   templateUrl: './scene.component.html',
   styleUrls: ['./scene.component.css']
 })
-export class SceneComponent extends AbstractComponent implements OnInit {
+export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
   private static readonly HEADER_SIZE = 10_000;
   private static readonly SAMPLE_SIZE = 100;
@@ -70,7 +70,7 @@ export class SceneComponent extends AbstractComponent implements OnInit {
     super(bottomSheet, notificationService);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (!this.dbService.isBackendInitialized()) {
       this.router.navigateByUrl(Route.FRONT);
     } else {
@@ -80,9 +80,12 @@ export class SceneComponent extends AbstractComponent implements OnInit {
       this.defineLocales();
       this.collectColumnMappingSources();
       this.initScene();
-      this.detectIfScenesExist();
-      this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
+      this.detectIfScenesExist();      
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
   }
 
   private defineLocales(): void {

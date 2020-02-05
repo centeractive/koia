@@ -77,6 +77,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
             });
          }
       }
+      this.adjustLayout();
    }
 
    private identifyColumns(): void {

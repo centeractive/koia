@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Sort } from '@angular/material';
 import { Observable } from 'rxjs';
 import { AggregationService, RawDataRevealService } from '../shared/services';
@@ -20,7 +20,7 @@ import { NumberFormatter } from 'app/shared/format';
   templateUrl: './summary-table.component.html',
   styleUrls: ['./summary-table.component.css']
 })
-export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvider {
+export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, ExportDataProvider {
 
   @Input() context: SummaryContext;
   @Input() entries$: Observable<Object[]>;
@@ -46,16 +46,19 @@ export class SummaryTableComponent implements OnInit, OnChanges, ExportDataProvi
   constructor(private router: Router, private dbService: DBService, private aggregationService: AggregationService,
     private valueRangeGroupingService: ValueRangeGroupingService, private rawDataRevealService: RawDataRevealService) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
       this.context.subscribeToChanges((e: ChangeEvent) => this.refreshDataFrameAsync(e));
-      this.entries$.subscribe(entries => this.createBaseDataFrame(entries));
-      this.adjustSize();
+      this.entries$.subscribe(entries => this.createBaseDataFrame(entries));      
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.adjustSize();
   }
 
   ngOnChanges(changes: SimpleChanges): void {

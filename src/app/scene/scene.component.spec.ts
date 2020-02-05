@@ -6,7 +6,7 @@ import {
   MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect, MatFormFieldControl
 } from '@angular/material';
 import { NotificationService } from 'app/shared/services';
-import { Route, Scene, DataType, ColumnPair, SceneInfo, Column } from 'app/shared/model';
+import { Route, Scene, DataType, ColumnPair, SceneInfo, Column, Document } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -31,7 +31,6 @@ describe('SceneComponent', () => {
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
   let findSceneInfos: jasmine.Spy;
-  let writeEntriesSpy: jasmine.Spy;
 
   beforeAll(() => {
     scenes = [SceneFactory.createScene('1', []), SceneFactory.createScene('2', []), SceneFactory.createScene('3', [])];
@@ -75,7 +74,7 @@ describe('SceneComponent', () => {
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     findSceneInfos = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
-    writeEntriesSpy = spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
+    spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
     fixture.detectChanges();
     flush();
     fixture.detectChanges();

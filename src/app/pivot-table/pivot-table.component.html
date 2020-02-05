@@ -6,8 +6,7 @@
   </mat-sidenav>
 
   <div #header class="sticky_header">
-    <koia-main-toolbar [route]="route" (onAfterViewChecked)="adjustLayout()" (onFilterChange)="fetchData($event)">
-    </koia-main-toolbar>
+    <koia-main-toolbar [route]="route" (onFilterChange)="fetchData($event)"></koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
     <div id="view_toolbar">
 

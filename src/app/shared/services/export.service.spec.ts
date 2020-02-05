@@ -39,7 +39,7 @@ describe('ExportService', () => {
       { a: 'y', b: 2, c: object },
       { a: 'z', b: 3, d: array }
     ];
-    expect(data).toEqual(expected);
+    expect(<any>data).toEqual(expected);
   });
 
   it('#exportData should create CSV formatted data', () => {

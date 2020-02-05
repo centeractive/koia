@@ -78,7 +78,7 @@ export class ViewPersistenceService {
    private updateScene(scene: Scene, viewName: string): Promise<Status> {
       return new Promise<Status>(resolve => {
          this.dbService.updateScene(scene)
-            .then(c => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
+            .then(s => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
             .catch(e => {
                const message = typeof e === 'string' ? e : e.message;
                resolve({ type: StatusType.ERROR, msg: 'View "' + viewName + '" cannot be saved: ' + message })

@@ -7,9 +7,9 @@ export class SeriesNameConverter {
 
    /**
     * @returns the data group ID from the entry by considering data column and split column(s) value,
-    * [[undefined]] if data data column vlaue or any split column value is empty
+    * [[undefined]] if the data column value or any split column value is empty
     */
-   toGroupKey(entry: Object, dataColumn: Column, splitColumns: Column[]): string | undefined {
+   toGroupKey(entry: Object, dataColumn: Column, splitColumns: Column[]): any | undefined {
       if (splitColumns.length === 0) {
          return entry[dataColumn.name];
       }

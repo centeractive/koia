@@ -24,7 +24,7 @@ describe('ViewLauncherDialogComponent', () => {
       imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+        { provide: MAT_DIALOG_DATA, useValue: dialogData }
       ]
     })
     .compileComponents();

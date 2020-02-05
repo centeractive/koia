@@ -12,15 +12,15 @@ describe('CouchDBService', () => {
 
    beforeAll(() => {
       config.reset();
+   });
+
+   beforeEach(async () => {
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
       });
       couchDBService = TestBed.get(CouchDBService);
       spyOn(console, 'log').and.callFake(m => null);
-   });
-
-   beforeEach(async () => {
       await couchDBService.clear(testDBPrefix)
          .then(r => null)
          .catch(e => fail(e));
@@ -35,7 +35,7 @@ describe('CouchDBService', () => {
 
       // given
       const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
-      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve());
+      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve([]));
 
       // when
       couchDBService.initConnection(connInfo).then(dbs => null);
@@ -339,7 +339,7 @@ describe('CouchDBService', () => {
       // given
       const databases = ['scenes', 'data_1', testDBPrefix + 'scenes', testDBPrefix + 'data_1', testDBPrefix + 'data_2'];
       spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve(databases));
-      spyOn(couchDBService, 'deleteDatabase').and.returnValue(db => Promise.resolve());
+      spyOn(couchDBService, 'deleteDatabase').and.returnValue(Promise.resolve());
 
       // when
       await couchDBService.clear(testDBPrefix);

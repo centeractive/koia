@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, ElementRef, Input } from '@angular/core';
+import { Component, ViewChild, OnInit, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Sort, MatPaginator, MatBottomSheet, MatSnackBar } from '@angular/material';
 import { Column, Query, Route, Page, ExportFormat, DataType } from '../shared/model';
@@ -14,7 +14,7 @@ import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-d
   templateUrl: './raw-data.component.html',
   styleUrls: ['./raw-data.component.css']
 })
-export class RawDataComponent extends AbstractComponent implements OnInit {
+export class RawDataComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
   static readonly MARGIN_TOP = 10;
 
@@ -66,6 +66,10 @@ export class RawDataComponent extends AbstractComponent implements OnInit {
     } else {
       this.router.navigateByUrl(Route.SCENES);
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.adjustLayout();
   }
 
   onFilterChanged(query: Query): void {

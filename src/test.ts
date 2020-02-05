@@ -33,6 +33,7 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /query-param-extractor\.spec\.ts$/);
 // const context = require.context('./', true, /connection-dialog.component\.spec\.ts$/);
 
+// const context = require.context('./', true, /backend.*\.spec\.ts$/);
 // const context = require.context('./', true, /backend\/db\.service\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb-config\.spec\.ts$/);
 // const context = require.context('./', true, /couchdb\.service\.spec\.ts$/);

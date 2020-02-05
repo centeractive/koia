@@ -5,7 +5,7 @@ describe('SeriesNameConverter', () => {
 
    const converter = new SeriesNameConverter();
 
-   it('#toGroupKey should return name derived from data column value', () => {
+   it('#toGroupKey should return key derived from data column value', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -18,7 +18,7 @@ describe('SeriesNameConverter', () => {
       expect(id).toEqual(1);
    });
 
-   it('#toGroupKey should return name derived from split column value and data column value', () => {
+   it('#toGroupKey should return key derived from split column value and data column value', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -32,7 +32,7 @@ describe('SeriesNameConverter', () => {
       expect(id).toEqual('a⯈1');
    });
 
-   it('#toGroupKey should return name derived from split column values and data column value', () => {
+   it('#toGroupKey should return key derived from split column values and data column value', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
@@ -102,7 +102,7 @@ describe('SeriesNameConverter', () => {
       expect(id).toBeUndefined();
    });
 
-   it('#toSeriesId should return name derived from data column name', () => {
+   it('#toSeriesName should return name derived from data column name', () => {
 
       // given
       const entry = { _id: 1, x: 'a', y: 1, z: 4 };
