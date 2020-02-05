@@ -88,7 +88,6 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /chart-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /chart-options-provider\.spec\.ts$/);
 // const context = require.context('./', true, /force-y-computer\.spec\.ts$/);
-// const context = require.context('./', true, /raw-data-revealer\.spec\.ts$/);
 
 
 // const context = require.context('./', true, /graph.*\.spec\.ts$/);

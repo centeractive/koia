@@ -74,7 +74,7 @@ steps:
 # build product and publish artifact
 - script: |
     npx ng build --prod
-  failOnStderr: false    
+  failOnStderr: true    
   displayName: 'build koia product'
 
 - task: PublishPipelineArtifact@0
