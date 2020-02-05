@@ -17,11 +17,11 @@ describe('RawDataRevealService', () => {
   const min = 60_000;
   const oneHourAgo = now - (60 * min);
 
-  const timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
-  const levelColumn = createColumn('Level', DataType.TEXT);
-  const hostColumn = createColumn('Host', DataType.TEXT);
-  const pathColumn = createColumn('Path', DataType.TEXT);
-  const amountColumn = createColumn('Amount', DataType.NUMBER);
+  let timeColumn: Column;
+  let levelColumn: Column;
+  let hostColumn: Column;
+  let pathColumn: Column;
+  let amountColumn: Column;
 
   let query: Query;
   let context: ElementContext;
@@ -30,6 +30,7 @@ describe('RawDataRevealService', () => {
   let dialogServiceOpenSpy: jasmine.Spy;
 
   beforeEach(() => {
+    initColumns();
     query = new Query();
     context = new SummaryContext([timeColumn, levelColumn, hostColumn, pathColumn, amountColumn]);
     context.query = query;
@@ -41,6 +42,14 @@ describe('RawDataRevealService', () => {
     dialogService = TestBed.get(MatDialog);
     dialogServiceOpenSpy = spyOn(dialogService, 'open').and.returnValue(null);
   });
+
+  function initColumns() {
+    timeColumn = createColumn('Time', DataType.TIME, TimeUnit.MINUTE);
+    levelColumn = createColumn('Level', DataType.TEXT);
+    hostColumn = createColumn('Host', DataType.TEXT);
+    pathColumn = createColumn('Path', DataType.TEXT);
+    amountColumn = createColumn('Amount', DataType.NUMBER);
+  }
 
   it('#ofID should show raw data dialog for ID', () => {
 
