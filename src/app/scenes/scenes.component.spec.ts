@@ -1,10 +1,6 @@
 import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
 
 import { ScenesComponent } from './scenes.component';
-import {
-  MatIconModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatBottomSheetModule,
-  MatBottomSheet, MatMenuModule, MatDialogModule, MatDialogRef
-} from '@angular/material';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
 import { DBService } from 'app/shared/services/backend';
@@ -20,6 +16,14 @@ import { Location } from '@angular/common';
 import { SceneFactory } from 'app/shared/test';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Observable, of } from 'rxjs';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({ template: '' })
 class RawDataComponent { }

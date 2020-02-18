@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { NotificationService } from './notification.service';
-import { MatBottomSheet, MatBottomSheetModule } from '@angular/material';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { StatusType } from '../model';
 
 describe('NotificationService', () => {

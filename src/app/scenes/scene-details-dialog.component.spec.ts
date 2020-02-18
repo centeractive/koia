@@ -1,10 +1,11 @@
-import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MatCardModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
 import { DataType, Scene } from 'app/shared/model';
 import { SceneFactory } from 'app/shared/test';
 import { SceneDetailsDialogComponent } from './scene-details-dialog.component';
+import { MatCardModule } from '@angular/material/card';
 
 describe('SceneDetailsDialogComponent', () => {
 

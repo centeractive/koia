@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule } from '@angular/material';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule } from '@angular/material/sort';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDialogModule } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { SummaryTableComponent } from './summary-table.component';
 import { SummaryContext, Query, Route, Column, DataType, TimeUnit, Aggregation, PropertyFilter, Operator } from 'app/shared/model';

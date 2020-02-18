@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { NotificationService } from 'app/shared/services';
 import { Route, Scene, Attribute, DataType, Column, ColumnPair, SceneInfo } from 'app/shared/model';
 import { Router } from '@angular/router';
-import { MatBottomSheet, MatAccordion } from '@angular/material';
 import { DBService } from 'app/shared/services/backend';
 import { DataReader, DataHandler, ReaderService } from '../shared/services/reader';
 import { SceneUtils } from './utils';
@@ -13,6 +12,8 @@ import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper }
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
 import { FormControl, Validators } from '@angular/forms';
+import { MatAccordion } from '@angular/material/expansion';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'koia-front',

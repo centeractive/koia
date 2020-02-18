@@ -2,10 +2,6 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angul
 
 import { GridComponent } from './grid.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
-import {
-  MatBottomSheet, MatSidenavModule, MatIconModule, MatButtonModule, MatGridListModule, MatMenuModule,
-  MatBottomSheetModule, MatDialogRef
-} from '@angular/material';
 import { of, Observable, throwError  } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
@@ -21,6 +17,13 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -87,7 +90,7 @@ describe('GridComponent', () => {
         RouterTestingModule
       ],
       providers: [
-        { provide: MatBottomSheet, useClass: MatBottomSheet },
+        MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
         { provide: ViewPersistenceService, useValue: viewPersistenceService },

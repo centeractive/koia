@@ -1,5 +1,5 @@
 import { Component, ElementRef, Inject, AfterViewChecked } from '@angular/core';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Route } from '../shared/model';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
 import { ViewController } from 'app/shared/controller';

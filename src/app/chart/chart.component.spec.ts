@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatProgressBarModule, MatDialogModule } from '@angular/material';
+import { MatDialogModule } from '@angular/material/dialog';
 import { of, Observable } from 'rxjs';
 import { ChartComponent } from './chart.component';
 import { DataType, Column, Scene, Route } from 'app/shared/model';
@@ -15,6 +15,7 @@ import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { Router } from '@angular/router';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 describe('ChartComponent', () => {
 

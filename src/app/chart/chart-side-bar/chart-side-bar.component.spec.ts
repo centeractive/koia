@@ -2,16 +2,19 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ChartSideBarComponent } from './chart-side-bar.component';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
-import {
-  MatSlideToggleModule, MatButtonModule, MatIconModule, MatExpansionModule,
-  MatFormFieldModule, MatMenuModule, MatSelectModule, MatSlideToggle
-} from '@angular/material';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Column, Aggregation, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { MatIconModuleMock } from 'app/shared/test';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('ChartSideBarComponent', () => {
 

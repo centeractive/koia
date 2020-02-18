@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SceneInfo, Route, Scene } from 'app/shared/model';
 import { Router } from '@angular/router';
 import { NotificationService, DialogService } from 'app/shared/services';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { DBService } from 'app/shared/services/backend';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Location } from '@angular/common';

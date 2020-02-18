@@ -79,9 +79,9 @@ export class CSVReader implements DataReader {
             delimiter: this.separator(),
             step: (result, parser) => {
                if (this.hasHeaderColumn() && !sample.columnNames) {
-                  sample.columnNames = result.data[0];
+                  sample.columnNames = result.data;
                } else {
-                  sample.tableData.push(result.data[0]);
+                  sample.tableData.push(result.data);
                }
                if (sample.tableData.length === entriesCount) {
                   parser.abort();

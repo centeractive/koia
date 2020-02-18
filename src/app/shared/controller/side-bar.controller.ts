@@ -1,5 +1,5 @@
 import { Output, EventEmitter, Input, ViewChild, SimpleChanges, OnChanges, Directive } from '@angular/core';
-import { MatAccordion } from '@angular/material';
+import { MatAccordion } from '@angular/material/expansion';
 import { Column, ElementContext, DataType, TimeUnit } from '../model';
 import { NumberUtils, ArrayUtils, DataTypeUtils } from '../utils';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';

@@ -1,15 +1,18 @@
-import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
-import {
-  MatButtonModule, MatFormFieldModule, MatInputModule, MatCardModule, MatDialogRef, MAT_DIALOG_DATA,
-  MatSelectModule, MatSelect, MatOption
-} from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { Protocol, ConnectionInfo } from 'app/shared/model';
 import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule, MatSelect } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatOption } from '@angular/material/core';
 
 describe('ConnectionDialogComponent', () => {
 

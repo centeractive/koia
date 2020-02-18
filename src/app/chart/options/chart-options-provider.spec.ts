@@ -4,7 +4,7 @@ import { ChartOptionsProvider } from './chart-options-provider';
 import { DatePipe } from '@angular/common';
 import { DateTimeUtils } from 'app/shared/utils';
 import { RawDataRevealService } from 'app/shared/services';
-import { MatDialog, MatDialogModule } from '@angular/material';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';

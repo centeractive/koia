@@ -4,10 +4,6 @@ import { PivotTableComponent } from './pivot-table.component';
 import { ElementRef, Injectable, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { NotificationService, ExportService, TimeGroupingService, DialogService, RawDataRevealService } from 'app/shared/services';
 import { of, Observable } from 'rxjs';
-import {
-  MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule,
-  MatBottomSheet, MatDialogRef
-} from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { StatusType, Column, DataType, Scene, TimeUnit, Route, Query } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
@@ -24,6 +20,14 @@ import { Router } from '@angular/router';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { PivotContext } from './model';
 import { ValueGrouping } from 'app/shared/value-range/model';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Injectable()
 export class MockElementRef {
@@ -146,12 +150,13 @@ describe('PivotTableComponent', () => {
 
     // given
     const valueGroupings: ValueGrouping[] = [
-      {columnName: 'Amount',
-      ranges: [
-        { min: 30, max: 50, active: true },
-        { min: 0, max: 30, active: true }
-      ]
-    }];
+      {
+        columnName: 'Amount',
+        ranges: [
+          { min: 30, max: 50, active: true },
+          { min: 0, max: 30, active: true }
+        ]
+      }];
     component.context.valueGroupings = valueGroupings;
 
     // when
@@ -187,12 +192,13 @@ describe('PivotTableComponent', () => {
     fixture.detectChanges();
     flush();
     component.context.valueGroupings = [
-      {columnName: 'Amount',
-      ranges: [
-        { min: 30, max: 50, active: true },
-        { min: 0, max: 30, active: true }
-      ]
-    }];
+      {
+        columnName: 'Amount',
+        ranges: [
+          { min: 30, max: 50, active: true },
+          { min: 0, max: 30, active: true }
+        ]
+      }];
 
     // when
     component.sidenav.close();
@@ -292,13 +298,14 @@ describe('PivotTableComponent', () => {
 
     // given
     component.context.valueGroupings = [
-      {columnName: 'Amount',
-      ranges: [
-        { min: 30, max: 50, active: true },
-        { min: 0, max: 30, active: true }
-      ],
-      minMaxValues: { min: 10, max: 40 }
-    }];
+      {
+        columnName: 'Amount',
+        ranges: [
+          { min: 30, max: 50, active: true },
+          { min: 0, max: 30, active: true }
+        ],
+        minMaxValues: { min: 10, max: 40 }
+      }];
     const dialogRef = createInputDialogRef();
     spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
       data.input = 'test';
@@ -318,13 +325,14 @@ describe('PivotTableComponent', () => {
     expect(viewPersistenceService.saveRecord).toHaveBeenCalled();
     const context = saveRecordSpy.calls.mostRecent().args[3];
     const expectedValueGroupings = [
-      {columnName: 'Amount',
-      ranges: [
-        { min: 30, max: 50, active: true },
-        { min: 0, max: 30, active: true }
-      ],
-      minMaxValues: null
-    }];
+      {
+        columnName: 'Amount',
+        ranges: [
+          { min: 30, max: 50, active: true },
+          { min: 0, max: 30, active: true }
+        ],
+        minMaxValues: null
+      }];
     expect(context.valueGroupings).toEqual(expectedValueGroupings);
   }));
 

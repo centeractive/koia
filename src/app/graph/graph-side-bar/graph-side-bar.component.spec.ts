@@ -2,16 +2,19 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { GraphSideBarComponent } from './graph-side-bar.component';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
-import {
-  MatSlideToggleModule, MatButtonModule, MatIconModule, MatExpansionModule,
-  MatFormFieldModule, MatMenuModule, MatSelectModule, MatSlideToggle
-} from '@angular/material';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Column, GraphContext, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('GraphSideBarComponent', () => {
 

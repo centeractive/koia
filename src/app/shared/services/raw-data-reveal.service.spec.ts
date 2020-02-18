@@ -1,6 +1,6 @@
 import { RawDataRevealService } from './raw-data-reveal.service';
 import { Query, ElementContext, SummaryContext, PropertyFilter, DataType, TimeUnit, Operator, Column } from '../model';
-import { MatDialog, MatDialogModule } from '@angular/material';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CouchDBConstants } from './backend/couchdb';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { TestBed } from '@angular/core/testing';

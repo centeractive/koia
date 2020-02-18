@@ -1,4 +1,4 @@
-import { Sort } from '@angular/material';
+import { Sort } from '@angular/material/sort';
 import { NumberUtils } from './number-utils';
 import { ValueRange } from '../value-range/model/value-range.type';
 import { DataTypeUtils } from './data-type-utils';

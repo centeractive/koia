@@ -1,6 +1,7 @@
 import { Component, ViewChild, OnInit, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Sort, MatPaginator, MatBottomSheet, MatSnackBar } from '@angular/material';
+import { Sort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { Column, Query, Route, Page, ExportFormat, DataType } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { NotificationService, DialogService, ExportService } from 'app/shared/services';
@@ -8,6 +9,8 @@ import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'koia-raw-data',

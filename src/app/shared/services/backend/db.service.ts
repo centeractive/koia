@@ -4,7 +4,7 @@ import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryUtils } from 'app/shared/utils';
 import { QueryConverter } from './mango/query-converter';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
-import { SortDirection } from '@angular/material';
+import { SortDirection } from '@angular/material/sort';
 import { CouchDBService, SortLimitationWorkaround } from './couchdb';
 import { DB } from './db.type';
 import { PouchDBAccess } from './pouchdb';

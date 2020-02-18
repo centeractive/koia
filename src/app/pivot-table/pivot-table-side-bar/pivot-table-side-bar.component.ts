@@ -3,7 +3,7 @@ import { Column, DataType } from '../../shared/model';
 import { IDataFrame, ISeries } from 'data-forge';
 import { NumberUtils, ArrayUtils } from 'app/shared/utils';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { MatAccordion } from '@angular/material';
+import { MatAccordion } from '@angular/material/expansion';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';

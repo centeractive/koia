@@ -2,10 +2,6 @@ import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/cor
 
 import { MainToolbarComponent } from './main-toolbar.component';
 import { NO_ERRORS_SCHEMA, Component } from '@angular/core';
-import {
-  MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, MatFormFieldModule, MatSelectModule,
-  MatInputModule, MatMenuModule
-} from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Ng5SliderModule } from 'ng5-slider';
 import { RouterModule, Router, NavigationEnd, Event } from '@angular/router';
@@ -20,6 +16,14 @@ import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { DialogService } from 'app/shared/services';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({ template: '' })
 class DummyComponent { }

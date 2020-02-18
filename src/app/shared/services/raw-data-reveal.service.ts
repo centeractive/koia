@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material';
+import { MatDialog } from '@angular/material/dialog';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { Query, Operator, PropertyFilter, Column, DataType, ElementContext } from '../model';
 import { DateTimeUtils, QuerySanitizer } from '../utils';

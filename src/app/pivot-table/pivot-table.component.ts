@@ -6,7 +6,6 @@ import {
 } from '../shared/services';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
-import { MatBottomSheet, MatSidenav } from '@angular/material';
 import { PivotOptionsProvider } from './options/pivot-options-provider';
 import { DBService } from 'app/shared/services/backend';
 import { Router } from '@angular/router';
@@ -18,6 +17,8 @@ import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { CellClickHandler } from './options/cell-click-handler';
 import { PivotContextFactory, PivotContext } from './model';
 import { QueryProvider } from './options/query-provider';
+import { MatSidenav } from '@angular/material/sidenav';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 declare var jQuery: any;
 

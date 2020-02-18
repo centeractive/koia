@@ -3,9 +3,13 @@ import { RangeFilterComponent } from './range-filter.component';
 import { NumberRangeFilter } from './model/number-range-filter';
 import { Column, DataType } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatButtonModule, MatIconModule, MatTooltipModule, MatMenuModule, MatBadgeModule } from '@angular/material';
 import { Ng5SliderModule } from 'ng5-slider';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('RangeFilterComponent', () => {
 

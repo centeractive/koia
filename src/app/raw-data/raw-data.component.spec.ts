@@ -1,10 +1,6 @@
 import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
 
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
-import {
-  MatTableModule, MatSortModule, MatProgressBarModule, MatSidenavModule, MatPaginatorModule,
-  MatIconModule, MatButtonModule, MatTooltipModule, Sort, MatBottomSheet, MatSnackBarModule, MatMenuModule
-} from '@angular/material';
 import { RawDataComponent } from './raw-data.component';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -17,6 +13,17 @@ import { NotificationService, DialogService, ExportService } from 'app/shared/se
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('RawDataComponent', () => {
 
@@ -65,7 +72,7 @@ describe('RawDataComponent', () => {
         MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, RouterTestingModule
       ],
       providers: [
-        { provide: MatBottomSheet, useClass: MatBottomSheet },
+        MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },

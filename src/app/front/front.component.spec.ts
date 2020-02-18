@@ -1,10 +1,6 @@
 import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
 
 import { FrontComponent } from './front.component';
-import {
-  MatCardModule, MatButtonModule, MatSelectModule, MatFormFieldModule, MatBottomSheet, MatIconModule,
-  MatDialogModule, MatStepperModule, MatTooltipModule, MatDialogRef
-} from '@angular/material';
 import { NotificationService, DialogService } from 'app/shared/services';
 import { SceneInfo, Route, Protocol, ConnectionInfo } from 'app/shared/model';
 import { ReaderService } from 'app/shared/services/reader';
@@ -21,6 +17,15 @@ import { Observable, of } from 'rxjs';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { CouchDBServiceMock, QueryParams, SceneFactory } from 'app/shared/test';
 import { QueryParamExtractor } from 'app/shared/utils';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Component({ template: '' })
 

@@ -1,5 +1,5 @@
 import { Input, Component } from '@angular/core';
-import { MatIcon } from '@angular/material';
+import { MatIcon } from '@angular/material/icon';
 import { MetadataOverride } from '@angular/core/testing';
 import { NgModule } from '@angular/compiler/src/core';
 

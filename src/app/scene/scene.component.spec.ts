@@ -1,10 +1,6 @@
 import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
 
 import { SceneComponent } from './scene.component';
-import {
-  MatBottomSheetModule, MatBottomSheet, MatProgressBarModule, MatTableModule, MatButtonModule, MatIconModule, MatTooltipModule,
-  MatCardModule, MatInputModule, MatSelectModule, MatFormFieldModule, MatExpansionModule, MatSlideToggleModule, MatMenuModule, MatSelect, MatFormFieldControl
-} from '@angular/material';
 import { NotificationService } from 'app/shared/services';
 import { Route, Scene, DataType, ColumnPair, SceneInfo, Column, Document } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -18,6 +14,19 @@ import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { SceneFactory } from 'app/shared/test';
 import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
+import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule, MatSelect } from '@angular/material/select';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 describe('SceneComponent', () => {
 

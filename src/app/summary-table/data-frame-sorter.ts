@@ -1,6 +1,6 @@
 import { IDataFrame } from 'data-forge';
 import { ElementContext } from 'app/shared/model';
-import { Sort } from '@angular/material';
+import { Sort } from '@angular/material/sort';
 import { ValueRangeConverter } from 'app/shared/value-range';
 
 export class DataFrameSorter {

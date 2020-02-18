@@ -3,11 +3,16 @@ import { ValueFilterComponent } from './value-filter.component';
 import { Operator, DataType, Column, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatFormFieldModule, MatTooltipModule, MatIconModule, MatButtonModule, MatInputModule, MatMenuModule } from '@angular/material';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SceneFactory } from 'app/shared/test';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { FilterValueInputDirective } from './filter-value-input.directive';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('ValueFilterComponent', () => {
 

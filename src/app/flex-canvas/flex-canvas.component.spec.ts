@@ -2,10 +2,6 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angul
 
 import { FlexCanvasComponent } from './flex-canvas.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef, QueryList } from '@angular/core';
-import {
-  MatBottomSheet, MatSidenavModule, MatIconModule, MatButtonModule, MatBottomSheetModule,
-  MatMenuModule, MatDialogRef, MatDialogModule
-} from '@angular/material';
 import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-resizable-element';
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -22,6 +18,12 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -95,7 +97,7 @@ describe('FlexCanvasComponent', () => {
         MatMenuModule
       ],
       providers: [
-        { provide: MatBottomSheet, useClass: MatBottomSheet },
+        MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
         { provide: ViewPersistenceService, useValue: viewPersistenceService },

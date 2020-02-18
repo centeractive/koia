@@ -144,7 +144,7 @@
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "koia",
-      "styleext": "css"
+      "style": "css"
     },
     "@schematics/angular:directive": {
       "prefix": "koia"

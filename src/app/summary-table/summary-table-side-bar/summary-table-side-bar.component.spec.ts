@@ -2,16 +2,20 @@ import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/cor
 
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
-import {
-  MatSlideToggleModule, MatButtonModule, MatIconModule, MatExpansionModule,
-  MatFormFieldModule, MatMenuModule, MatSelectModule, MatRadioModule, MatSlideToggle
-} from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Column, SummaryContext, Aggregation, DataType, TimeUnit, ChangeEvent } from 'app/shared/model';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { DragDropEventFactory, ContainerModel } from 'app/shared/test';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 
 describe('SummaryTableSideBarComponent', () => {
 

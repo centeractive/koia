@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Status, StatusType } from '../model';
 import { StatusComponent } from 'app/shared/component/status/status.component';
 

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { IconRegistrarService } from './icon-registrar.service';
-import { MatIconRegistry } from '@angular/material';
+import { MatIconRegistry } from '@angular/material/icon';
 
 describe('IconRegistrarService', () => {
 

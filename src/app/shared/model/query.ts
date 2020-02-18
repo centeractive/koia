@@ -1,4 +1,4 @@
-import { Sort } from '@angular/material';
+import { Sort } from '@angular/material/sort';
 import { PropertyFilter } from './property-filter';
 import { Operator } from './operator.enum';
 import { ValueRangeFilter } from '../value-range/model/value-range-filter';

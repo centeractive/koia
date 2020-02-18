@@ -2,7 +2,6 @@ import { ElementContext, Column, Query, SummaryContext, GraphContext, Route, Sce
 import { Observable, Subscription } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit, Directive } from '@angular/core';
-import { MatSidenav, MatBottomSheet } from '@angular/material';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../services';
 import { Router } from '@angular/router';
 import { DBService } from '../services/backend';
@@ -16,6 +15,8 @@ import { InputDialogData } from '../component/input-dialog/input-dialog.componen
 import { ChartMarginService } from '../services/chart';
 import { ChartContext, ChartType } from '../model/chart';
 import { ViewLauncherContext } from '../component/view-launcher-dialog';
+import { MatSidenav } from '@angular/material/sidenav';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext {

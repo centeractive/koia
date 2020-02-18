@@ -5,7 +5,7 @@ import { Route, ConnectionInfo } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { ReaderService, DataReader } from 'app/shared/services/reader';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router, ActivatedRoute } from '@angular/router';
 import { QueryParamExtractor, CommonUtils } from 'app/shared/utils';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';

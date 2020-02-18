@@ -1,10 +1,6 @@
 import { async, TestBed, ComponentFixture } from '@angular/core/testing';
 
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import {
-  MatSlideToggleModule, MatButtonModule, MatIconModule, MatExpansionModule,
-  MatFormFieldModule, MatSelectModule, MatSlideToggle
-} from '@angular/material';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
@@ -14,6 +10,12 @@ import { Column, DataType, TimeUnit } from '../../shared/model';
 import { ValueRange } from '../../shared/value-range/model/value-range.type';
 import { ValueGrouping } from '../../shared/value-range/model/value-grouping.type';
 import { PivotContext } from '../model';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 
 describe('PivotTableSideBarComponent', () => {
 

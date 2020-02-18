@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { RawDataDialogComponent } from './raw-data-dialog.component';
 import { Query, PropertyFilter, Operator } from 'app/shared/model';
 import { Component, Input } from '@angular/core';

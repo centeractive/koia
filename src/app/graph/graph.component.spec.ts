@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatProgressBarModule, MatDialogModule } from '@angular/material';
 import { of, Observable } from 'rxjs';
 import { GraphComponent } from './graph.component';
 import { GraphContext, Column, GraphNode, DataType, Scene } from 'app/shared/model';
@@ -9,6 +8,8 @@ import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import 'nvd3';
 import { SceneFactory } from 'app/shared/test';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('GraphComponent', () => {
 

@@ -1,5 +1,5 @@
 import { NotificationService } from '../services';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Status } from '../model';
 
 export class NotificationServiceMock extends NotificationService {

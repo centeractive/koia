@@ -1,5 +1,5 @@
 import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
-import { MatBottomSheet } from '@angular/material';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ResizeEvent, Edges } from 'angular-resizable-element';
 import { ElementContext, Route } from '../shared/model';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
