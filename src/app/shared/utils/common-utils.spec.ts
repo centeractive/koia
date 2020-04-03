@@ -81,7 +81,7 @@ describe('CommonUtils', () => {
   });
 
   it('#clone should return undefined when value is undefined', () => {
-    expect(CommonUtils.clone(null)).toBeNull();
+    expect(CommonUtils.clone(undefined)).toBeUndefined();
   });
 
   it('#clone should return value when value is boolean', () => {
