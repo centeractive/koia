@@ -45,7 +45,7 @@
     "extract-zip": "^1.6.7",
     "file-saver": "^2.0.1",
     "hammerjs": "^2.0.8",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery-ui-dist": "^1.12.1",
     "moment": "^2.24.0",
     "ng2-charts": "^2.3.0",
