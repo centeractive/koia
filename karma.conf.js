@@ -33,7 +33,7 @@ module.exports = function (config) {
     },
     preprocessors: {
 
-    },
+    },    
     mime: {
       'text/x-typescript': ['ts', 'tsx']
     },
@@ -78,6 +78,7 @@ module.exports = function (config) {
       }
     },
     browsers: ['Chrome'],
-    singleRun: false
+    singleRun: false,
+    formatError: msg => msg.replace(/http:\/\/localhost:9876\/_karma_webpack_\//g, '')
   });
 };

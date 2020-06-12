@@ -34,7 +34,6 @@ module.exports = function (config) {
       '/assets/': '/assets/'
     },
     preprocessors: {
-
     },
     mime: {
       'text/x-typescript': ['ts', 'tsx']
