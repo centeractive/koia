@@ -1,7 +1,7 @@
 import { fakeAsync, flush } from '@angular/core/testing';
 
 import { Column, ElementContext, Aggregation, DataType, TimeUnit, ExportFormat } from '../model';
-import { SimpleChange } from '@angular/core';
+import { SimpleChange, Directive } from '@angular/core';
 import { SideBarController } from './side-bar.controller';
 import { of } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -9,6 +9,7 @@ import { NumberUtils } from '../utils';
 import { ValueRange } from '../value-range/model/value-range.type';
 import { DragDropEventFactory, ContainerModel } from '../test';
 
+@Directive()
 class SideBarControllerTestable extends SideBarController { }
 
 class ContextTestable extends ElementContext {

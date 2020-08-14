@@ -3,7 +3,9 @@ import { GraphContext } from '../model';
 import { MatSidenav } from '@angular/material/sidenav';
 import { View } from '../model/view-config';
 import { ViewController } from './view.controller';
+import { Directive } from "@angular/core";
 
+@Directive()
 class ViewControllerTestable extends ViewController {
 
    constructor() {
