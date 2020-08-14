@@ -368,7 +368,7 @@ describe('ScenesComponent', () => {
   it('#click on cancel button should navigate to previous page', () => {
 
     // given
-    const location = TestBed.get(Location);
+    const location = TestBed.inject(Location);
     spyOn(location, 'back');
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
 

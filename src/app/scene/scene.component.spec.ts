@@ -429,7 +429,7 @@ describe('SceneComponent', () => {
     htmlButton.click();
 
     // then
-    const bottomSheet = TestBed.get(MatBottomSheet);
+    const bottomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.onWarning).toHaveBeenCalledWith(bottomSheet,
       'Currently there exists no scene, at least one must be created!');
   });
@@ -437,7 +437,7 @@ describe('SceneComponent', () => {
   it('#click on cancel button should navigate to previous page when scenes exist', () => {
 
     // given
-    const location = TestBed.get(Location);
+    const location = TestBed.inject(Location);
     spyOn(location, 'back');
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
 

@@ -72,7 +72,7 @@ describe('SummaryTableComponent', () => {
     context.dataColumns = [findColumn('t2')];
     component.context = context;
     component.entries$ = of(entries.slice(0));
-    showRawDataSpy = spyOn(TestBed.get(RawDataRevealService), 'show').and.callFake(query => null);
+    showRawDataSpy = spyOn(TestBed.inject(RawDataRevealService), 'show').and.callFake(query => null);
   });
 
   it('should create', () => {
@@ -83,7 +83,7 @@ describe('SummaryTableComponent', () => {
 
     // given
     getActiveSceneSpy.and.returnValue(null);
-    const r = TestBed.get(Router);
+    const r = TestBed.inject(Router);
     spyOn(r, 'navigateByUrl');
 
     // when

@@ -210,7 +210,7 @@ describe('FrontComponent', () => {
     expect(dialogService.showConnectionDialog).toHaveBeenCalled();
     expect(couchDBService.initConnection).toHaveBeenCalled();
     expect(dbService.initBackend).toHaveBeenCalled();
-    const bottomSheet = TestBed.get(MatBottomSheet);
+    const bottomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.onSuccess).toHaveBeenCalledWith(bottomSheet, 'connection establihed');
   }));
 
@@ -288,7 +288,7 @@ describe('FrontComponent', () => {
     flush();
 
     // then
-    const bottomSheet = TestBed.get(MatBottomSheet);
+    const bottomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.onError).toHaveBeenCalledWith(bottomSheet, 'backend not available');
   }));
 
@@ -409,7 +409,7 @@ describe('FrontComponent (external invocation)', () => {
   beforeEach(fakeAsync(() => {
     const fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
-    router = TestBed.get(Router);
+    router = TestBed.inject(Router);
     spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection established'));
     initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
     spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve(SceneFactory.createScene('1', [])));

@@ -38,8 +38,8 @@ describe('RawDataRevealService', () => {
       imports: [MatDialogModule, BrowserAnimationsModule],
       providers: [RawDataRevealService]
     });
-    service = TestBed.get(RawDataRevealService);
-    dialogService = TestBed.get(MatDialog);
+    service = TestBed.inject(RawDataRevealService);
+    dialogService = TestBed.inject(MatDialog);
     dialogServiceOpenSpy = spyOn(dialogService, 'open').and.returnValue(null);
   });
 

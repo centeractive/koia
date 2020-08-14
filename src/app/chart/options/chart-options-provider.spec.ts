@@ -68,7 +68,7 @@ describe('ChartOptionsProvider', () => {
          imports: [MatDialogModule, BrowserAnimationsModule],
          providers: [MatDialog]
       });
-      dialogService = TestBed.get(MatDialog);
+      dialogService = TestBed.inject(MatDialog);
       dialogServiceOpenSpy = spyOn(dialogService, 'open').and.returnValue(null);
       const rawDataRevealService = new RawDataRevealService(dialogService);
       optionsProvider = new ChartOptionsProvider(rawDataRevealService);

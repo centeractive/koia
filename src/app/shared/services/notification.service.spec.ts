@@ -14,7 +14,7 @@ describe('NotificationService', () => {
          providers: [ MatBottomSheet]
       });
       notificationService = new NotificationService();
-      bottomSheet = TestBed.get(MatBottomSheet);
+      bottomSheet = TestBed.inject(MatBottomSheet);
       spyOn(bottomSheet, 'open');
    });
 

@@ -41,7 +41,7 @@ describe('DBService', () => {
       imports: [HttpClientModule],
       providers: [CouchDBService, DBService]
     });
-    couchDBService = TestBed.get(CouchDBService);
+    couchDBService = TestBed.inject(CouchDBService);
     spyOn(console, 'log').and.callFake(m => null);
     spyOn(console, 'warn').and.callFake(m => null);
   });

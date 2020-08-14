@@ -122,7 +122,7 @@ describe('GridComponent', () => {
 
     // given
     getActiveSceneSpy.and.returnValue(null);
-    const router = TestBed.get(Router);
+    const router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl');
 
     // when
@@ -419,7 +419,7 @@ describe('GridComponent', () => {
     component.saveView();
 
     // then
-    const bootomSheet = TestBed.get(MatBottomSheet);
+    const bootomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet,
       { type: StatusType.WARNING, msg: 'View contains no elements' });
   });
@@ -443,7 +443,7 @@ describe('GridComponent', () => {
     tick();
 
     // then
-    const bootomSheet = TestBed.get(MatBottomSheet);
+    const bootomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
   }));
 

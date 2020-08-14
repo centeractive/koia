@@ -23,9 +23,9 @@ describe('DialogService', () => {
       imports: [MatDialogModule],
       providers: [MatDialog]
     });
-    matDialogService = TestBed.get(MatDialog);
+    matDialogService = TestBed.inject(MatDialog);
     spyOn(matDialogService, 'open');
-    service = TestBed.get(DialogService);
+    service = TestBed.inject(DialogService);
   });
 
   it('should be created', () => {

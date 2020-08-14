@@ -88,7 +88,7 @@ describe('RawDataComponent', () => {
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
     requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(of(page).toPromise());
     spyOn(dialogService, 'showConfirmDialog').and.returnValue(null);
-    exportService = TestBed.get(ExportService);
+    exportService = TestBed.inject(ExportService);
     fixture.detectChanges();
     flush();
   }));
@@ -113,7 +113,7 @@ describe('RawDataComponent', () => {
 
     // given
     getActiveSceneSpy.and.returnValue(null);
-    const router = TestBed.get(Router);
+    const router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl');
 
     // when

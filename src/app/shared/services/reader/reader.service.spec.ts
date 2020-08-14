@@ -24,7 +24,7 @@ describe('ReaderService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({})
-    service = TestBed.get(ReaderService);
+    service = TestBed.inject(ReaderService);
   });
 
   it('should be created', () => {

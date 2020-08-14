@@ -9,7 +9,7 @@ describe('IconRegistrarService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.get(IconRegistrarService);
+    service = TestBed.inject(IconRegistrarService);
   });
 
   it('should be created', () => {
@@ -19,7 +19,7 @@ describe('IconRegistrarService', () => {
   it('#registerSvgIcons should register icons', () => {
 
     // given
-    const iconRegistry = TestBed.get(MatIconRegistry);
+    const iconRegistry = TestBed.inject(MatIconRegistry);
     spyOn(iconRegistry, 'addSvgIcon');
 
     // when

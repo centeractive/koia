@@ -64,7 +64,7 @@ describe('ChartComponent', () => {
 
     // given
     getActiveSceneSpy.and.returnValue(null);
-    const router = TestBed.get(Router);
+    const router = TestBed.inject(Router);
     spyOn(router, 'navigateByUrl');
 
     // when
@@ -99,10 +99,10 @@ describe('ChartComponent', () => {
     expect(context.getContainer()).toBeTruthy();
   }));
 
-  it('should emit warning when when context changes but new chart data cannot be obtained', fakeAsync(() => {
+  it('should emit warning when context changes but new chart data cannot be obtained', fakeAsync(() => {
 
     // given
-    spyOn(TestBed.get(ChartDataService), 'createData').and.returnValue({ error: 'server not available'});
+    spyOn(TestBed.inject(ChartDataService), 'createData').and.returnValue({ error: 'server not available'});
     spyOn(component.onWarning, 'emit');
     context.dataColumns = [createColumn('n1', DataType.NUMBER)];
     fixture.detectChanges();
