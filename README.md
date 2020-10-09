@@ -37,7 +37,7 @@ Besides simply visualizing data, Koia also features **time and value filters** t
 
 ## Getting Started
 
-It is recommended to use [ 2.3.1](http://couchdb.apache.org/) as described down below since the data scenes in Koia will be lost when the browser cache is emptied when using the IndexedDB.
+It is recommended to use [CouchDB 2.3.1](http://couchdb.apache.org/) as described down below since the data scenes in Koia will be lost when the browser cache is emptied when using the IndexedDB.
 
 ### Installing
 
