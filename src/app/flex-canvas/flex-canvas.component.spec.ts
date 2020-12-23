@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
 
 import { FlexCanvasComponent } from './flex-canvas.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef, QueryList } from '@angular/core';
@@ -85,7 +85,7 @@ describe('FlexCanvasComponent', () => {
     ];
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [

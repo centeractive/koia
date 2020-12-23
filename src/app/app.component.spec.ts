@@ -1,4 +1,4 @@
-import { TestBed, async} from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 import { AppComponent } from './app.component';
@@ -9,7 +9,7 @@ describe('AppComponent', () => {
   let iconRegistrarService: IconRegistrarService;
   let app: AppComponent;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     iconRegistrarService = <IconRegistrarService> {
       registerSvgIcons(): void {}
     }
@@ -21,7 +21,7 @@ describe('AppComponent', () => {
     }).compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const fixture = TestBed.createComponent(AppComponent);
     app = fixture.debugElement.componentInstance;
   }));

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
 
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
 import { RawDataComponent } from './raw-data.component';
@@ -63,7 +63,7 @@ describe('RawDataComponent', () => {
     ];
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent],

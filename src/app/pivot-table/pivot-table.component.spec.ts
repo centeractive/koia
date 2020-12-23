@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
 
 import { PivotTableComponent } from './pivot-table.component';
 import { ElementRef, Injectable, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
@@ -72,7 +72,7 @@ describe('PivotTableComponent', () => {
     ];
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [PivotTableComponent],

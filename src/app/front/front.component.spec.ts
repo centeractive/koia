@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
 
 import { FrontComponent } from './front.component';
 import { NotificationService, DialogService } from 'app/shared/services';
@@ -46,14 +46,14 @@ describe('FrontComponent', () => {
   let component: FrontComponent;
   let fixture: ComponentFixture<FrontComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     spyOn(console, 'log').and.callFake(s => null);
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
         MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }])
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }], { relativeLinkResolution: 'legacy' })
       ],
       providers: [
         { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
@@ -382,14 +382,14 @@ describe('FrontComponent (external invocation)', () => {
   let component: FrontComponent;
   let router: Router;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     spyOn(console, 'log').and.callFake(s => null);
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
         MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }])
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }], { relativeLinkResolution: 'legacy' })
       ],
       providers: [
         { provide: ActivatedRoute, useValue: { queryParamMap: of(createQueryParams()) } },

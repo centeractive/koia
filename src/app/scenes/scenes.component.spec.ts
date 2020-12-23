@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 
 import { ScenesComponent } from './scenes.component';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -48,12 +48,12 @@ describe('ScenesComponent', () => {
     scenes = [scene1, scene2, scene3];
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ScenesComponent, RawDataComponent],
       imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
         MatMenuModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
-        RouterModule.forRoot([{ path: '**', component: RawDataComponent }])],
+        RouterModule.forRoot([{ path: '**', component: RawDataComponent }], { relativeLinkResolution: 'legacy' })],
       providers: [Location, MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },

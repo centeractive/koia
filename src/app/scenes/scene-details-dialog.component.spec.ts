@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
@@ -22,7 +22,7 @@ describe('SceneDetailsDialogComponent', () => {
       scene = SceneFactory.createScene('1', columns);
    });
 
-   beforeEach(async(() => {
+   beforeEach(waitForAsync(() => {
       const dialogRef = <MatDialogRef<SceneDetailsDialogComponent>>{
          close(): void { }
       };

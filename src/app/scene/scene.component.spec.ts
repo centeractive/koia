@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 
 import { SceneComponent } from './scene.component';
 import { NotificationService } from 'app/shared/services';
@@ -56,7 +56,7 @@ describe('SceneComponent', () => {
     ];
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     spyOn(console, 'log').and.callFake(s => null);
     dbService = new DBService(null);
     TestBed.configureTestingModule({

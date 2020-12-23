@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { RangeFilterComponent } from './range-filter.component';
 import { NumberRangeFilter } from './model/number-range-filter';
 import { Column, DataType } from 'app/shared/model';
@@ -18,7 +18,7 @@ describe('RangeFilterComponent', () => {
   let component: RangeFilterComponent;
   let fixture: ComponentFixture<RangeFilterComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ RangeFilterComponent ],
       imports: [

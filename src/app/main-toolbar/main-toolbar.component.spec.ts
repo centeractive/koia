@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
 
 import { MainToolbarComponent } from './main-toolbar.component';
 import { NO_ERRORS_SCHEMA, Component } from '@angular/core';
@@ -72,14 +72,14 @@ describe('MainToolbarComponent', () => {
     valueRange = { min: timeMin, max: timeMax };
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [MainToolbarComponent, DummyComponent],
       imports: [
         MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
         MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule,
-        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }])
+        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], { relativeLinkResolution: 'legacy' })
       ],
       providers: [
         { provide: DBService, useValue: dbService },

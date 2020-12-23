@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
@@ -43,7 +43,7 @@ describe('SummaryTableSideBarComponent', () => {
     ];
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [SummaryTableSideBarComponent],

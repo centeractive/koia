@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { GraphSideBarComponent } from './graph-side-bar.component';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
@@ -36,7 +36,7 @@ describe('GraphSideBarComponent', () => {
     scene = SceneFactory.createScene('1', []);
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [GraphSideBarComponent],

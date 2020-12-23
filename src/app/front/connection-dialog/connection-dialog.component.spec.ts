@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +22,7 @@ describe('ConnectionDialogComponent', () => {
   let component: ConnectionDialogComponent;
   let fixture: ComponentFixture<ConnectionDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const dialogRef = <MatDialogRef<ConnectionDialogComponent>>{
       close(): void { }
     };
@@ -38,7 +38,7 @@ describe('ConnectionDialogComponent', () => {
       .compileComponents();
   }));
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     fixture = TestBed.createComponent(ConnectionDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

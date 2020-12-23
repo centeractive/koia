@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 import { ValueFilterComponent } from './value-filter.component';
 import { Operator, DataType, Column, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
@@ -36,7 +36,7 @@ describe('ValueFilterComponent', () => {
     spyOn(dbService, 'getActiveScene').and.returnValue(scene);
   });
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ValueFilterComponent, FilterValueInputDirective],
       imports: [

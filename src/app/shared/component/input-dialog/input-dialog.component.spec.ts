@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { InputDialogComponent, InputDialogData } from './input-dialog.component';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ describe('InputDialogComponent', () => {
   let component: InputDialogComponent;
   let fixture: ComponentFixture<InputDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const dialogRef = <MatDialogRef<InputDialogComponent>>{
       close(): void { }
     };

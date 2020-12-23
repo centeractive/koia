@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ViewLauncherDialogComponent } from './view-launcher-dialog.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -17,7 +17,7 @@ describe('ViewLauncherDialogComponent', () => {
   let component: ViewLauncherDialogComponent;
   let fixture: ComponentFixture<ViewLauncherDialogComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const dialogRef = <MatDialogRef<ViewLauncherDialogComponent>>{
       close(): void { }
     };
