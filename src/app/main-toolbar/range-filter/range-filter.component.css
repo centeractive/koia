@@ -9,11 +9,11 @@ button {
    z-index: 999;
 }
  
-.ng5-slider {
+.ngx-slider {
    margin-top: 0px;
 }
  
-.ng5-slider-pointer {
+.ngx-slider-pointer {
    background-color: rgb(3, 204, 3) !important;
    width: 16px !important;
    height: 16px !important;
@@ -23,7 +23,7 @@ button {
            border-radius: 8px !important;
 }
  
-.ng5-slider .ng5-slider-pointer:after {
+.ngx-slider .ngx-slider-pointer:after {
    position: absolute !important;
    top: 6px !important;
    left: 6px !important;
@@ -36,31 +36,31 @@ button {
    content: '' !important;
 }
  
-.ng5-slider .ng5-slider-pointer:hover:after {
+.ngx-slider .ngx-slider-pointer:hover:after {
    background-color: #ffffff !important;
 }
  
-.ng5-slider .ng5-slider-pointer.ng5-slider-active:after {
+.ngx-slider .ngx-slider-pointer.ngx-slider-active:after {
    background-color: #ffffff !important;
 }
  
-.ng5-slider-bubble {
+.ngx-slider-bubble {
    background-color: rgb(238, 250, 237) !important;
    border: 1px solid rgb(212, 209, 209); 
    border-radius: 4px;
    font-size: 12px !important;
 }
  
-.div_range_filter .ng5-slider-bubble.ng5-slider-selection {
+.div_range_filter .ngx-slider-bubble.ngx-slider-selection {
    background-color: rgb(3, 204, 3) !important;
 }
  
-.div_range_filter .ng5-slider-bubble.ng5-slider-limit {
+.div_range_filter .ngx-slider-bubble.ngx-slider-limit {
    background-color: white !important;
    border-style: dashed !important;
 }
  
-.div_range_filter .ng5-slider-selection {
+.div_range_filter .ngx-slider-selection {
    background: rgb(3, 204, 3) !important;
 }
  

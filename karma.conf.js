@@ -8,7 +8,7 @@ module.exports = function (config) {
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
-      require('karma-coverage-istanbul-reporter'),
+      require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma'),
       require('karma-spec-reporter')
     ],
@@ -37,13 +37,14 @@ module.exports = function (config) {
     mime: {
       'text/x-typescript': ['ts', 'tsx']
     },
-    coverageIstanbulReporter: {
+    coverageReporter: {
       dir: require('path').join(__dirname, 'coverage'),
+      subdir: '.',
       reports: ['html', 'lcovonly'],
       fixWebpackSourcePaths: true
     },
     reporters: config.angularCli && config.angularCli.codeCoverage
-      ? ['spec', 'progress', 'coverage-istanbul']
+      ? ['spec', 'progress']
       : ['spec', 'progress', 'kjhtml'],
     specReporter: {
       maxLogLines: 5,             // limit number of lines logged per test
@@ -79,6 +80,7 @@ module.exports = function (config) {
     },
     browsers: ['Chrome'],
     singleRun: false,
-    formatError: msg => msg.replace(/http:\/\/localhost:9876\/_karma_webpack_\//g, '')
+    formatError: msg => msg.replace(/http:\/\/localhost:9876\/_karma_webpack_\//g, ''),
+    browserNoActivityTimeout: 400000
   });
 };

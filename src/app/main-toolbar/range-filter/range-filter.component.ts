@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation, Input, Output, EventEmitter } from '@angular/core';
 import { NumberRangeFilter } from './model/number-range-filter';
-import { ChangeContext } from 'ng5-slider';
+import { ChangeContext } from '@angular-slider/ngx-slider';
 
 @Component({
   selector: 'koia-range-filter',

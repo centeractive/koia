@@ -43,7 +43,7 @@ import { ChartsModule } from 'ng2-charts';
 import { NvD3Module } from 'ng2-nvd3';
 import 'd3';
 import 'nvd3';
-import { Ng5SliderModule } from 'ng5-slider';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import {
   NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService,
   RawDataRevealService
@@ -158,7 +158,7 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
     ResizableModule,
     ChartsModule,
     NvD3Module,
-    Ng5SliderModule,
+    NgxSliderModule,
     AppRoutingModule,
     MatDialogModule,
     MatStepperModule,

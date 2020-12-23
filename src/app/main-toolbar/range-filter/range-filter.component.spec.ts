@@ -3,7 +3,7 @@ import { RangeFilterComponent } from './range-filter.component';
 import { NumberRangeFilter } from './model/number-range-filter';
 import { Column, DataType } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Ng5SliderModule } from 'ng5-slider';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +22,7 @@ describe('RangeFilterComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ RangeFilterComponent ],
       imports: [
-        MatButtonModule, MatIconModule, MatBadgeModule, MatTooltipModule, MatMenuModule, Ng5SliderModule, BrowserAnimationsModule
+        MatButtonModule, MatIconModule, MatBadgeModule, MatTooltipModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule
       ],
       providers: [
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }

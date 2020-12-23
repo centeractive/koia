@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed, flush, fakeAsync } from '@angular/cor
 import { MainToolbarComponent } from './main-toolbar.component';
 import { NO_ERRORS_SCHEMA, Component } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Ng5SliderModule } from 'ng5-slider';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { RouterModule, Router, NavigationEnd, Event } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -78,7 +78,7 @@ describe('MainToolbarComponent', () => {
       declarations: [MainToolbarComponent, DummyComponent],
       imports: [
         MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
-        MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, Ng5SliderModule, BrowserAnimationsModule,
+        MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule,
         RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }])
       ],
       providers: [

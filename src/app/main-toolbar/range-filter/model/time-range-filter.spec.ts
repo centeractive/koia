@@ -1,6 +1,6 @@
 import { DataType, TimeUnit } from 'app/shared/model';
 import { TimeRangeFilter } from './time-range-filter';
-import { LabelType } from 'ng5-slider';
+import { LabelType } from '@angular-slider/ngx-slider';
 
 describe('TimeRangeFilter', () => {
 

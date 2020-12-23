@@ -1,4 +1,4 @@
-import { LabelType } from 'ng5-slider';
+import { LabelType } from '@angular-slider/ngx-slider';
 import { NumberFormatter } from 'app/shared/format';
 import { ValueRange } from 'app/shared/value-range/model';
 

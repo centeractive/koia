@@ -61,7 +61,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
    *
    * 1. we listen on navigation events in order to detect when the parent view gets activated.
    * 2. when #ngAfterViewChecked is invoked after such an event, we re-create the time slide options, thus forcing updates
-   * of the ng5-sliders.
+   * of the ngx-sliders.
    *
    * @see #ngAfterViewChecked
    */
