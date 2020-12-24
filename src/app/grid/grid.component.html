@@ -15,128 +15,131 @@
       </koia-summary-table-side-bar>
    </mat-sidenav>
 
-   <div #header class="sticky_header">
-      <koia-main-toolbar [route]="route" (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
-      <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
-      <div id="view_toolbar">
-         <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-            <mat-icon>more_vert</mat-icon>
-         </button>
-         <mat-menu #moreMenu="matMenu">
-            <button mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
-               <mat-icon>view_column</mat-icon>
-               <span>Grid Columns</span>
+   <div class="div_wrapper">
+      <div #header class="div_header">
+         <koia-main-toolbar [route]="route" (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
+         <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
+         <div id="view_toolbar">
+            <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+               <mat-icon>more_vert</mat-icon>
             </button>
-            <button mat-menu-item [matMenuTriggerFor]="gridRatioMenu">
-               <mat-icon>aspect_ratio</mat-icon>
-               <span>Grid Cell Ratio (width:height)</span>
-            </button>
-         </mat-menu>
+            <mat-menu #moreMenu="matMenu">
+               <button mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
+                  <mat-icon>view_column</mat-icon>
+                  <span>Grid Columns</span>
+               </button>
+               <button mat-menu-item [matMenuTriggerFor]="gridRatioMenu">
+                  <mat-icon>aspect_ratio</mat-icon>
+                  <span>Grid Cell Ratio (width:height)</span>
+               </button>
+            </mat-menu>
 
-         <mat-menu #gridColumnsMenu="matMenu">
-            <button mat-menu-item *ngFor="let columns of [ 1, 2, 3, 4, 5]" [value]="columns"
-               [disabled]="columns === gridColumns" (click)="setGridColumns(columns)">{{ columns }}
-               Column{{ columns === 1 ? '' : 's' }}</button>
-         </mat-menu>
+            <mat-menu #gridColumnsMenu="matMenu">
+               <button mat-menu-item *ngFor="let columns of [ 1, 2, 3, 4, 5]" [value]="columns"
+                  [disabled]="columns === gridColumns" (click)="setGridColumns(columns)">{{ columns }}
+                  Column{{ columns === 1 ? '' : 's' }}</button>
+            </mat-menu>
 
-         <mat-menu #gridRatioMenu="matMenu">
-            <button mat-menu-item *ngFor="let ratio of [ '1:1', '2:3', '3:2']" [value]="ratio"
-               [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
-         </mat-menu>
+            <mat-menu #gridRatioMenu="matMenu">
+               <button mat-menu-item *ngFor="let ratio of [ '1:1', '2:3', '3:2']" [value]="ratio"
+                  [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
+            </mat-menu>
 
-         <!--
+            <!--
          <button mat-button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
             [disabled]="elementContexts.length === 0" (click)="printView()">
             <mat-icon>print</mat-icon>
          </button>
          -->
-         <button mat-button mat-icon-button matTooltip="Save current view"
-            [disabled]="!elementContexts || elementContexts.length === 0" (click)="saveView()">
-            <mat-icon>save_alt</mat-icon>
-         </button>
-
-         <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="findViews().length === 0"
-            [matMenuTriggerFor]="restoreViewMenu">
-            <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="findViews().length === 0" matBadgeSize="small"
-               matBadgeColor="accent">open_in_browser</mat-icon>
-         </button>
-         <mat-menu #restoreViewMenu="matMenu">
-            <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item (click)="loadView(view)">
-               <mat-icon>open_in_browser</mat-icon>
-               <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
+            <button mat-button mat-icon-button matTooltip="Save current view"
+               [disabled]="!elementContexts || elementContexts.length === 0" (click)="saveView()">
+               <mat-icon>save_alt</mat-icon>
             </button>
-         </mat-menu>
 
-         &nbsp;&nbsp;&nbsp;
-         <button mat-button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
-            <mat-icon svgIcon="add_chart"></mat-icon>
-         </button>
-         <button mat-button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
-            <mat-icon svgIcon="add_graph"></mat-icon>
-         </button>
-         <button mat-button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
-            <mat-icon svgIcon="add_summary"></mat-icon>
-         </button>
+            <button class="but_more" mat-icon-button matTooltip="Restore saved view"
+               [disabled]="findViews().length === 0" [matMenuTriggerFor]="restoreViewMenu">
+               <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="findViews().length === 0"
+                  matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
+            </button>
+            <mat-menu #restoreViewMenu="matMenu">
+               <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item
+                  (click)="loadView(view)">
+                  <mat-icon>open_in_browser</mat-icon>
+                  <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
+               </button>
+            </mat-menu>
+
+            &nbsp;&nbsp;&nbsp;
+            <button mat-button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
+               <mat-icon svgIcon="add_chart"></mat-icon>
+            </button>
+            <button mat-button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
+               <mat-icon svgIcon="add_graph"></mat-icon>
+            </button>
+            <button mat-button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
+               <mat-icon svgIcon="add_summary"></mat-icon>
+            </button>
+         </div>
       </div>
-   </div>
 
-   <div #content id="div_content">
-      <mat-grid-list #content id="grid_list" [cols]="gridColumns" [rowHeight]="gridCellRatio" gutterSize="10">
-         <mat-grid-tile class="mat-elevation-z8" *ngFor="let context of elementContexts"
-            [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan">
-            <div #elementContainer class="div_element">
-               <div class="div_element_header">
-                  <div style="display: flex">
-                     <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
-                        *ngIf="context.getSupportedExportFormats().length > 0">
-                        <mat-icon>more_vert</mat-icon>
-                     </button>
-                     <mat-menu #moreMenu="matMenu">
-                        <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
-                           (click)="saveAs(context, exportFormat)">
-                           <mat-icon>insert_drive_file</mat-icon>
-                           <span>Save As {{ exportFormat }}</span>
+      <div #content class="div_content">
+         <mat-grid-list #content id="grid_list" [cols]="gridColumns" [rowHeight]="gridCellRatio" gutterSize="10">
+            <mat-grid-tile class="mat-elevation-z8" *ngFor="let context of elementContexts"
+               [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan">
+               <div #elementContainer class="div_element">
+                  <div class="div_element_header">
+                     <div style="display: flex">
+                        <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
+                           *ngIf="context.getSupportedExportFormats().length > 0">
+                           <mat-icon>more_vert</mat-icon>
                         </button>
-                     </mat-menu>
-                     <button id="configButton" class="but_config" mat-button mat-icon-button matTooltip="Configure..."
-                        (click)="configure($event, context)">
-                        <mat-icon>settings</mat-icon>
+                        <mat-menu #moreMenu="matMenu">
+                           <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
+                              (click)="saveAs(context, exportFormat)">
+                              <mat-icon>insert_drive_file</mat-icon>
+                              <span>Save As {{ exportFormat }}</span>
+                           </button>
+                        </mat-menu>
+                        <button id="configButton" class="but_config" mat-button mat-icon-button
+                           matTooltip="Configure..." (click)="configure($event, context)">
+                           <mat-icon>settings</mat-icon>
+                        </button>
+                        <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
+                           *ngIf="isChartContext(context)" mat-button mat-icon-button
+                           [color]="isShowResizableMargin(context) ? 'primary' : null"
+                           matTooltip="Toggle resizable chart margin"
+                           (click)="asChartContext(context).toggleShowResizableMargin()">
+                           <mat-icon>crop_free</mat-icon>
+                        </button>
+                     </div>
+                     <div class="div_title">
+                        <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
+                           koiaTextareaMaxRows="2" (keyup)="context.title = $event.target.value"></textarea>
+                     </div>
+                     <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning"
+                        color="warn">
+                        <mat-icon>error</mat-icon>
                      </button>
-                     <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
-                        *ngIf="isChartContext(context)" mat-button mat-icon-button
-                        [color]="isShowResizableMargin(context) ? 'primary' : null"
-                        matTooltip="Toggle resizable chart margin"
-                        (click)="asChartContext(context).toggleShowResizableMargin()">
-                        <mat-icon>crop_free</mat-icon>
+                     <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
+                        <mat-icon>delete_forever</mat-icon>
                      </button>
                   </div>
-                  <div class="div_title">
-                     <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
-                        koiaTextareaMaxRows="2" (keyup)="context.title = $event.target.value"></textarea>
+                  <div class="div_chart">
+                     <koia-summary-table *ngIf="isSummaryContext(context)" [gridView]="true" [context]="context"
+                        [entries$]="entries$" (onRemove)="removeElement($event)">
+                     </koia-summary-table>
+                     <koia-chart *ngIf="isChartContext(context)" [context]="context" [entries$]="entries$"
+                        [parentConstraintSize]="true" (onRemove)="removeElement($event)"
+                        (onWarning)="notifyWarning($event)">
+                     </koia-chart>
+                     <koia-graph *ngIf="isGraphContext(context)" [context]="context" [entries$]="entries$"
+                        [parentConstraintSize]="true" (onRemove)="removeElement($event)"
+                        (onWarning)="notifyWarning($event)">
+                     </koia-graph>
                   </div>
-                  <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning"
-                     color="warn">
-                     <mat-icon>error</mat-icon>
-                  </button>
-                  <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
-                     <mat-icon>delete_forever</mat-icon>
-                  </button>
                </div>
-               <div class="div_chart">
-                  <koia-summary-table *ngIf="isSummaryContext(context)" [gridView]="true" [context]="context"
-                     [entries$]="entries$" (onRemove)="removeElement($event)">
-                  </koia-summary-table>
-                  <koia-chart *ngIf="isChartContext(context)" [context]="context" [entries$]="entries$"
-                     [parentConstraintSize]="true" (onRemove)="removeElement($event)"
-                     (onWarning)="notifyWarning($event)">
-                  </koia-chart>
-                  <koia-graph *ngIf="isGraphContext(context)" [context]="context" [entries$]="entries$"
-                     [parentConstraintSize]="true" (onRemove)="removeElement($event)"
-                     (onWarning)="notifyWarning($event)">
-                  </koia-graph>
-               </div>
-            </div>
-         </mat-grid-tile>
-      </mat-grid-list>
+            </mat-grid-tile>
+         </mat-grid-list>
+      </div>
    </div>
 </mat-sidenav-container>

@@ -8,5 +8,11 @@
   "files": [
     "main.ts",
     "polyfills.ts"
-  ]
+  ],
+
+  // TODO: remove this once ng2-nvd3 got replaced
+  "angularCompilerOptions": {
+    "enableIvy": false  // added because ng2-nvd3 is not compatible with Ivy
+  }
+
 }

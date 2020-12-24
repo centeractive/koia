@@ -19,13 +19,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class RawDataComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
-  static readonly MARGIN_TOP = 10;
-
   @Input() dialogStyle: boolean;
   @Input() query: Query;
   @Input() hideToolbar: boolean;
 
-  @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -124,14 +121,12 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
   }
 
   adjustLayout() {
-    const style = this.divContentRef.nativeElement.style;
+    let maxHeight = window.innerHeight;
     if (this.dialogStyle) {
-      style.marginTop = RawDataComponent.MARGIN_TOP + 'px';
-    } else {
-      const marginTop = this.divHeaderRef.nativeElement.offsetHeight + RawDataComponent.MARGIN_TOP;
-      style.marginTop = marginTop + 'px';
-      style.maxHeight = (window.innerHeight - marginTop - RawDataComponent.MARGIN_TOP) + 'px';
+      maxHeight -= 200; // TODO: compute dependent on dialog height and toolbar
     }
+    const style = this.divContentRef.nativeElement.style;
+    style.maxHeight = maxHeight + 'px';
   }
 
   saveAs(exportFormat: ExportFormat): void {

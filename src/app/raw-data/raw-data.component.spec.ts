@@ -320,11 +320,9 @@ describe('RawDataComponent', () => {
     expect(query.getRowsPerPage()).toBe(50);
   });
 
-  it('#adjustLayout should adjust content margin top when non-dialog style', () => {
+  it('#adjustLayout should adjust content max height when non-dialog style', () => {
 
     // given
-    const divHeader = { offsetHeight: 55 };
-    component.divHeaderRef = new ElementRef(<HTMLDivElement>divHeader);
     const divContent = { style: { marginTop: '' } };
     component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
 
@@ -332,10 +330,10 @@ describe('RawDataComponent', () => {
     component.adjustLayout();
 
     // then
-    expect(divContent.style.marginTop).toEqual((55 + RawDataComponent.MARGIN_TOP) + 'px');
+    expect(divContent.style['maxHeight']).toBeDefined();
   });
 
-  it('#adjustLayout should adjust content margin top when dialog style', () => {
+  it('#adjustLayout should adjust content max height when dialog style', () => {
 
     // given
     component.dialogStyle = true;
@@ -346,7 +344,7 @@ describe('RawDataComponent', () => {
     component.adjustLayout();
 
     // then
-    expect(divContent.style.marginTop).toEqual(RawDataComponent.MARGIN_TOP + 'px');
+    expect(divContent.style['maxHeight']).toBeDefined();
   });
 
   it('#saveAs should save complete data as CSV file', fakeAsync(() => {

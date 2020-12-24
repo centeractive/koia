@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, AfterViewChecked } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { Route, Column, Query, PropertyFilter, Operator, DataType, Scene } from '../shared/model';
+import { Route, Column, Query, PropertyFilter, DataType, Scene } from '../shared/model';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { DBService } from 'app/shared/services/backend';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';

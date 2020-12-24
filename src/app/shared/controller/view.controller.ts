@@ -26,7 +26,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
 
    @ViewChild(MatSidenav) sidenav: MatSidenav;
-   @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
    @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
    @ViewChildren('elementContainer') elementContainerDivRefs: QueryList<ElementRef<HTMLDivElement>>;
    @ViewChildren(ChartComponent) chartComponents: QueryList<ChartComponent>;
@@ -78,7 +77,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
             });
          }
       }
-      this.adjustLayout();
    }
 
    private identifyColumns(): void {
@@ -216,10 +214,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    printView(): void {
       window.print();
-   }
-
-   adjustLayout() {
-      this.divContentRef.nativeElement.style.marginTop = (this.divHeaderRef.nativeElement.offsetHeight + ViewController.MARGIN_TOP) + 'px';
    }
 
    saveAs(context: ElementContext, exportFormat: ExportFormat): void {

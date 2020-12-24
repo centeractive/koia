@@ -10,7 +10,7 @@ describe('CouchDBService', () => {
    const config = new CouchDBConfig();
    let couchDBService: CouchDBService;
 
-   beforeAll(async() => {
+   beforeAll(async () => {
       config.reset();
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
@@ -20,7 +20,7 @@ describe('CouchDBService', () => {
       spyOn(console, 'log').and.callFake(m => null);
    });
 
-   beforeEach(async () => {      
+   beforeEach(async () => {
       await couchDBService.clear(testDBPrefix)
          .then(r => null)
          .catch(e => fail(e));

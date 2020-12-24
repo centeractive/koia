@@ -1,15 +1,12 @@
-#div_content {
+.div_flex_content {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;  
   align-items: flex-start;
-  position: relative;
-  margin: 10px;
 }
 
 .div_element {
   flex-shrink: 0;
-  z-index: 1; /* otherwise, summary table header doesn't stay behind sticky header when scrolling */ 
   position: relative;
   margin: 5px;
   float: left;

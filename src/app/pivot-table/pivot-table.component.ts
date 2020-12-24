@@ -30,10 +30,7 @@ declare var jQuery: any;
 })
 export class PivotTableComponent extends AbstractComponent implements OnInit, AfterViewInit {
 
-  static readonly MARGIN_TOP = 10;
-
   @ViewChild(MatSidenav) sidenav: MatSidenav;
-  @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild('pivot') divPivot: ElementRef<HTMLDivElement>;
 
@@ -73,14 +70,13 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
       const baseQueryProvider: QueryProvider = { provide: () => this.query };
       const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService)
       this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
-      this.fetchData(new Query());      
+      this.fetchData(new Query());
     }
   }
 
   ngAfterViewInit(): void {
     this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
     this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
-    this.adjustLayout();
   }
 
   private onSidenavClosing() {
@@ -244,10 +240,5 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   exportToExcel() {
     const table = <HTMLTableElement>this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0];
     this.exportService.exportTableAsExcel(table, 'PivotTable');
-  }
-
-  adjustLayout() {
-    this.divContentRef.nativeElement.style.marginTop =
-      (this.divHeaderRef.nativeElement.offsetHeight + PivotTableComponent.MARGIN_TOP) + 'px';
   }
 }

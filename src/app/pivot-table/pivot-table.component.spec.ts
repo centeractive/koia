@@ -458,21 +458,6 @@ describe('PivotTableComponent', () => {
     expect(exportService.exportTableAsExcel).toHaveBeenCalledWith(jasmine.any(Object), 'PivotTable');
   });
 
-  it('#adjustLayout should adjust content margin top', () => {
-
-    // given
-    const divHeader = { offsetHeight: 55 };
-    component.divHeaderRef = new ElementRef(<HTMLDivElement>divHeader);
-    const divContent = { style: { marginTop: '' } };
-    component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
-
-    // when
-    component.adjustLayout();
-
-    // then
-    expect(divContent.style.marginTop).toEqual((55 + PivotTableComponent.MARGIN_TOP) + 'px');
-  });
-
   it('#click on print button should print window', fakeAsync(() => {
 
     // given;

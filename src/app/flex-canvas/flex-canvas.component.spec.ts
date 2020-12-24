@@ -281,7 +281,7 @@ describe('FlexCanvasComponent', () => {
     fixture.detectChanges();
     const headerHeight = 26;
     component.elementHeaderDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementHeaderDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement> { offsetHeight: headerHeight })]);
+    spyOn(component.elementHeaderDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
     const context = component.elementContexts[0];
     spyOn(context, 'setSize');
 
@@ -462,21 +462,6 @@ describe('FlexCanvasComponent', () => {
     const bootomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
   }));
-
-  it('#adjustLayout should adjust content margin top', () => {
-
-    // given
-    const divHeader = { offsetHeight: 55 };
-    component.divHeaderRef = new ElementRef(<HTMLDivElement>divHeader);
-    const divContent = { style: { marginTop: '' } };
-    component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
-
-    // when
-    component.adjustLayout();
-
-    // then
-    expect(divContent.style.marginTop).toEqual((55 + ViewController.MARGIN_TOP) + 'px');
-  });
 
   it('#click on print button should print window', fakeAsync(() => {
 

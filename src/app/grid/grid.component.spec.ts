@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from 
 
 import { GridComponent } from './grid.component';
 import { Component, NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
-import { of, Observable, throwError  } from 'rxjs';
+import { of, Observable, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
 import { Column, GraphContext, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat } from 'app/shared/model';
@@ -446,21 +446,6 @@ describe('GridComponent', () => {
     const bootomSheet = TestBed.inject(MatBottomSheet);
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
   }));
-
-  it('#adjustLayout should adjust content margin top', () => {
-
-    // given
-    const divHeader = { offsetHeight: 55 };
-    component.divHeaderRef = new ElementRef(<HTMLDivElement>divHeader);
-    const divContent = { style: { marginTop: '' } };
-    component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
-
-    // when
-    component.adjustLayout();
-
-    // then
-    expect(divContent.style.marginTop).toEqual((55 + ViewController.MARGIN_TOP) + 'px');
-  });
 
   it('#saveAs should export image when chart context is provided', () => {
 

@@ -5,105 +5,106 @@
     </koia-pivot-table-side-bar>
   </mat-sidenav>
 
-  <div #header class="sticky_header">
-    <koia-main-toolbar [route]="route" (onFilterChange)="fetchData($event)"></koia-main-toolbar>
-    <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
-    <div id="view_toolbar">
+  <div class="div_wrapper">
+    <div #header class="div_header">
+      <koia-main-toolbar [route]="route" (onFilterChange)="fetchData($event)"></koia-main-toolbar>
+      <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
+      <div id="view_toolbar">
 
-      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-      <mat-menu #moreMenu="matMenu">
-        <button mat-menu-item [matMenuTriggerFor]="showTotalsMenu">Show Overall Totals</button>
-        <button mat-menu-item (click)="exportToExcel()">
-          <mat-icon>insert_drive_file</mat-icon>
-          <span>Save As Excel</span>
+        <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+          <mat-icon>more_vert</mat-icon>
         </button>
-      </mat-menu>
+        <mat-menu #moreMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="showTotalsMenu">Show Overall Totals</button>
+          <button mat-menu-item (click)="exportToExcel()">
+            <mat-icon>insert_drive_file</mat-icon>
+            <span>Save As Excel</span>
+          </button>
+        </mat-menu>
 
-      <mat-menu #showTotalsMenu="matMenu">
-        <button mat-menu-item (click)="onShowRowTotalsChanged()">
-          <mat-icon>{{ context.showRowTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-          <span>Rows</span>
+        <mat-menu #showTotalsMenu="matMenu">
+          <button mat-menu-item (click)="onShowRowTotalsChanged()">
+            <mat-icon>{{ context.showRowTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            <span>Rows</span>
+          </button>
+          <button mat-menu-item (click)="onShowColumnTotalsChanged()">
+            <mat-icon>{{ context.showColumnTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            <span>Columns</span>
+          </button>
+        </mat-menu>
+
+        <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
+          matTooltip="Print current view" (click)="printView()">
+          <mat-icon>print</mat-icon>
         </button>
-        <button mat-menu-item (click)="onShowColumnTotalsChanged()">
-          <mat-icon>{{ context.showColumnTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-          <span>Columns</span>
+        <button mat-button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
+          <mat-icon>save_alt</mat-icon>
         </button>
-      </mat-menu>
 
-      <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
-        matTooltip="Print current view" (click)="printView()">
-        <mat-icon>print</mat-icon>
-      </button>
-      <button mat-button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
-        <mat-icon>save_alt</mat-icon>
-      </button>
-
-      <button class="but_more" mat-icon-button matTooltip="Restore saved view"
-        [disabled]="findConfigRecords().length === 0" [matMenuTriggerFor]="restoreViewMenu">
-        <mat-icon [matBadge]="findConfigRecords().length" [matBadgeHidden]="findConfigRecords().length === 0"
-          matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
-      </button>
-      <mat-menu #restoreViewMenu="matMenu">
-        <button class="menu_item_details" *ngFor="let configRecord of findConfigRecords()" mat-menu-item
-          (click)="loadConfig(configRecord)">
-          <mat-icon>open_in_browser</mat-icon>
-          <span>{{ configRecord.name }} <var>{{ configRecord.modifiedTime | date:'short' }}</var></span>
+        <button class="but_more" mat-icon-button matTooltip="Restore saved view"
+          [disabled]="findConfigRecords().length === 0" [matMenuTriggerFor]="restoreViewMenu">
+          <mat-icon [matBadge]="findConfigRecords().length" [matBadgeHidden]="findConfigRecords().length === 0"
+            matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
         </button>
-      </mat-menu>
+        <mat-menu #restoreViewMenu="matMenu">
+          <button class="menu_item_details" *ngFor="let configRecord of findConfigRecords()" mat-menu-item
+            (click)="loadConfig(configRecord)">
+            <mat-icon>open_in_browser</mat-icon>
+            <span>{{ configRecord.name }} <var>{{ configRecord.modifiedTime | date:'short' }}</var></span>
+          </button>
+        </mat-menu>
 
-      &nbsp;&nbsp;&nbsp;
-      <button class="but_config" *ngIf="allowsForValueGrouping" mat-button mat-icon-button
-        matTooltip="Define Value Grouping..." (click)="sidenav.open()">
-        <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
-          matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
-        </mat-icon>
-      </button>
-
-      <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
-        matTooltip="Time Unit Grouping">
-        <mat-icon>timer</mat-icon>
-      </button>
-      <mat-menu #timeColumnMenu="matMenu">
-        <button *ngFor="let column of context.timeColumns" mat-menu-item [matMenuTriggerFor]="timeUnitMenu"
-          [matMenuTriggerData]="{ column: column }">{{ column.name }}</button>
-      </mat-menu>
-      <mat-menu #timeUnitMenu="matMenu">
-        <ng-template matMenuContent let-column="column">
-          <button *ngFor="let timeUnit of timeUnits" mat-menu-item [disabled]="timeUnit === column.groupingTimeUnit"
-            (click)="onTimeUnitChanged(column, timeUnit)">{{ timeUnit }}</button>
-        </ng-template>
-      </mat-menu>
-
-      <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
-        matTooltip="Heatmap Colors">
-        <mat-icon>color_lens</mat-icon>
-      </button>
-      <mat-menu #heatmapColorsMenu="matMenu">
-        <button mat-menu-item [matMenuTriggerFor]="colorsNegativeValsMenu">Negative Values</button>
-        <button mat-menu-item [matMenuTriggerFor]="colorsPositiveValsMenu">Positive Values</button>
-      </mat-menu>
-      <mat-menu #colorsNegativeValsMenu="matMenu">
-        <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.negativeColor"
-          (click)="onNegativeColorChanged(color)">
-          <span [class]="'span_color' + (color === context.negativeColor ? '_inactive' : '')"
-            [ngStyle]="{'background-color':color}"></span>
+        &nbsp;&nbsp;&nbsp;
+        <button class="but_config" *ngIf="allowsForValueGrouping" mat-button mat-icon-button
+          matTooltip="Define Value Grouping..." (click)="sidenav.open()">
+          <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
+            matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
+          </mat-icon>
         </button>
-      </mat-menu>
-      <mat-menu #colorsPositiveValsMenu="matMenu">
-        <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.positiveColor"
-          (click)="onPositiveColorChanged(color)">
-          <span [class]="'span_color' + (color === context.positiveColor ? '_inactive' : '')"
-            [ngStyle]="{'background-color':color}"></span>
+
+        <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
+          matTooltip="Time Unit Grouping">
+          <mat-icon>timer</mat-icon>
         </button>
-      </mat-menu>
+        <mat-menu #timeColumnMenu="matMenu">
+          <button *ngFor="let column of context.timeColumns" mat-menu-item [matMenuTriggerFor]="timeUnitMenu"
+            [matMenuTriggerData]="{ column: column }">{{ column.name }}</button>
+        </mat-menu>
+        <mat-menu #timeUnitMenu="matMenu">
+          <ng-template matMenuContent let-column="column">
+            <button *ngFor="let timeUnit of timeUnits" mat-menu-item [disabled]="timeUnit === column.groupingTimeUnit"
+              (click)="onTimeUnitChanged(column, timeUnit)">{{ timeUnit }}</button>
+          </ng-template>
+        </mat-menu>
+
+        <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
+          matTooltip="Heatmap Colors">
+          <mat-icon>color_lens</mat-icon>
+        </button>
+        <mat-menu #heatmapColorsMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="colorsNegativeValsMenu">Negative Values</button>
+          <button mat-menu-item [matMenuTriggerFor]="colorsPositiveValsMenu">Positive Values</button>
+        </mat-menu>
+        <mat-menu #colorsNegativeValsMenu="matMenu">
+          <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.negativeColor"
+            (click)="onNegativeColorChanged(color)">
+            <span [class]="'span_color' + (color === context.negativeColor ? '_inactive' : '')"
+              [ngStyle]="{'background-color':color}"></span>
+          </button>
+        </mat-menu>
+        <mat-menu #colorsPositiveValsMenu="matMenu">
+          <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.positiveColor"
+            (click)="onPositiveColorChanged(color)">
+            <span [class]="'span_color' + (color === context.positiveColor ? '_inactive' : '')"
+              [ngStyle]="{'background-color':color}"></span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <div #content class="div_content div_table mat-elevation-z8">
+      <mat-progress-bar *ngIf="computing" mode="indeterminate" color="accent"></mat-progress-bar>
+      <div class="printable" #pivot id="pivot"></div>
     </div>
   </div>
-
-  <div #content class="div_table mat-elevation-z8">
-    <mat-progress-bar *ngIf="computing" mode="indeterminate" color="accent"></mat-progress-bar>
-    <div class="printable" #pivot id="pivot"></div>
-  </div>
-
 </mat-sidenav-container>
