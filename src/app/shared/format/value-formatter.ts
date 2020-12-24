@@ -15,7 +15,7 @@ export class ValueFormatter {
       if (value === null || value === undefined) {
          return '';
       } else if (column.dataType === DataType.TIME && NumberUtils.isNumber(value)) {
-         return this.datePipe.transform(value, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
+         return this.datePipe.transform(<string|number>value, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
       } else if (column.dataType === DataType.NUMBER) {
          return this.numberFormatter.format(<number>value);
       } else if (column.dataType === DataType.BOOLEAN && typeof value === 'boolean') {
