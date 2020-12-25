@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from 'app/shared/model';
@@ -16,7 +16,7 @@ describe('DBService', () => {
   let dbService: DBService;
   let initialScene: Scene;
 
-  beforeAll(() => {
+  beforeEach(waitForAsync(() => {
     new CouchDBConfig().reset();
     columns = [
       { name: 'ID', dataType: DataType.NUMBER, width: 10, indexed: true },
@@ -44,7 +44,7 @@ describe('DBService', () => {
     couchDBService = TestBed.inject(CouchDBService);
     spyOn(console, 'log').and.callFake(m => null);
     spyOn(console, 'warn').and.callFake(m => null);
-  });
+  }));
 
   beforeEach(async () => {
     await couchDBService.clear(testDBPrefix).then(dbs => null).catch(e => fail(e));
@@ -59,7 +59,7 @@ describe('DBService', () => {
     expect(dbService.isBackendInitialized()).toBeTruthy();
   });
 
-  it('#initBackend should be ignored when backend is initialized', async () => {
+  it('#initBackend should be ignored when backend is already initialized', async () => {
 
     // given
     spyOn(couchDBService, 'listDatabases');
