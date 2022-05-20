@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from 'app/shared/model';
@@ -16,7 +16,7 @@ describe('DBService', () => {
   let dbService: DBService;
   let initialScene: Scene;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async () => {
     new CouchDBConfig().reset();
     columns = [
       { name: 'ID', dataType: DataType.NUMBER, width: 10, indexed: true },
@@ -32,31 +32,35 @@ describe('DBService', () => {
       { _id: '2', ID: 2, Time: 1420053117000, Level: 'WARN', Data: 'WARN line one', Host: 'local drive', Path: '/warn.log', Amount: 22 },
       { _id: '3', ID: 3, Time: 1420053118000, Level: 'ERROR', Data: 'ERROR line one', Host: 'local drive', Path: '/error.log', Amount: 33 },
       { _id: '4', ID: 4, Time: 1420053119000, Level: 'ERROR', Data: 'ERROR line two', Host: 'local drive', Path: '/error.log', Amount: 44 },
-      {
-        _id: '5', ID: 5, Time: 1420053120000, Level: 'ERROR', Data: 'ERROR line three', Host: 'local drive',
-        Path: '/error.log', Amount: 55
-      }
+      { _id: '5', ID: 5, Time: 1420053120000, Level: 'ERROR', Data: 'ERROR line three', Host: 'local drive', Path: '/error.log', Amount: 55 }
     ];
     TestBed.configureTestingModule({
       imports: [HttpClientModule],
       providers: [CouchDBService, DBService]
     });
     couchDBService = TestBed.inject(CouchDBService);
-    spyOn(console, 'log').and.callFake(m => null);
-    spyOn(console, 'warn').and.callFake(m => null);
-  }));
+    spyOn(console, 'log').and.callFake(() => null);
+    spyOn(console, 'warn').and.callFake(() => null);
+  });
 
-  beforeEach(async () => {
-    await couchDBService.clear(testDBPrefix).then(dbs => null).catch(e => fail(e));
+  beforeEach((done) => {
     dbService = new DBService(couchDBService);
-    dbService.setDbPrefix(testDBPrefix);
-    await dbService.initBackend(false).then(r => null).catch(e => fail(e));
-    initialScene = SceneFactory.createScene('0', columns);
-    await dbService.persistScene(initialScene, true).then(r => null).catch(e => fail(e));
+    couchDBService.clear(testDBPrefix)
+      .then(() => {
+        dbService = new DBService(couchDBService);
+        dbService.setDbPrefix(testDBPrefix);
+        return dbService.initBackend(false);
+      })
+      .then(() => {
+        initialScene = SceneFactory.createScene('0', columns);
+        return dbService.persistScene(initialScene, true);
+      })
+      .then(() => done())
+      .catch(e => fail(e));
   });
 
   it('#isBackendInitialized should return true', () => {
-    expect(dbService.isBackendInitialized()).toBeTruthy();
+    expect(dbService.isBackendInitialized()).toBeTrue();
   });
 
   it('#initBackend should be ignored when backend is already initialized', async () => {
@@ -96,9 +100,9 @@ describe('DBService', () => {
 
     // then
     expect(console.warn).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
-    expect(dbService.isIndexedDbInUse()).toBeTruthy();
-    expect(dbService.isCouchDbInUse()).toBeFalsy();
-    expect(dbService.isBackendInitialized()).toBeTruthy();
+    expect(dbService.isIndexedDbInUse()).toBeTrue();
+    expect(dbService.isCouchDbInUse()).toBeFalse();
+    expect(dbService.isBackendInitialized()).toBeTrue();
   }));
 
   it('#getActiveScene should return active scene', () => {
@@ -287,10 +291,10 @@ describe('DBService', () => {
         expect(scenes).toBeTruthy();
         expect(scenes.length).toBe(4);
         const sceneNames = scenes.map(s => s.name);
-        expect(sceneNames.includes(initialScene.name)).toBeTruthy();
-        expect(sceneNames.includes('Scene 1')).toBeTruthy();
-        expect(sceneNames.includes('Scene 2')).toBeTruthy();
-        expect(sceneNames.includes('Scene 3')).toBeTruthy();
+        expect(sceneNames.includes(initialScene.name)).toBeTrue();
+        expect(sceneNames.includes('Scene 1')).toBeTrue();
+        expect(sceneNames.includes('Scene 2')).toBeTrue();
+        expect(sceneNames.includes('Scene 3')).toBeTrue();
       })
       .catch(e => fail(e));
   });
@@ -315,7 +319,6 @@ describe('DBService', () => {
   it('#updateScene should update scene and its _rev', async () => {
 
     // given
-    console.log(JSON.stringify(initialScene));
     const sceneRev = initialScene._rev;
     initialScene.name = 'updated';
 

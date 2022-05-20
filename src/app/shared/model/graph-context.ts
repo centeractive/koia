@@ -18,7 +18,7 @@ export class GraphContext extends ElementContext {
    private _theta = 0.8;
    private _alpha = 0.1;
 
-   constructor(columns: Column[], ) {
+   constructor(columns: Column[],) {
       super(columns);
    }
 

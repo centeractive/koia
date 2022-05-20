@@ -18,7 +18,6 @@ import { ValueRangeFilter } from 'app/shared/value-range/model';
 
 describe('SummaryTableComponent', () => {
 
-  const ts = Number(1000).toLocaleString().charAt(1); // Thousands separator
   let now: number;
   const sec = 1_000;
 
@@ -410,7 +409,8 @@ describe('SummaryTableComponent', () => {
     const formattedValue = component.formattedValueOf(0, -1_000_000.5);
 
     // then
-    expect(formattedValue).toBe('-1' + ts + '000' + ts + '000.5');
+    const expectedFormattedValue = (-1_000_000.5).toLocaleString();
+    expect(formattedValue).toBe(expectedFormattedValue);
   });
 
   it('#formattedValueOf should return formatted hierarchy column value is number', () => {
@@ -423,7 +423,8 @@ describe('SummaryTableComponent', () => {
     const formattedValue = component.formattedValueOf(0, -1_000_000.5);
 
     // then
-    expect(formattedValue).toBe('-1' + ts + '000' + ts + '000.5');
+    const expectedFormattedValue = (-1_000_000.5).toLocaleString();
+    expect(formattedValue).toBe(expectedFormattedValue);
   });
 
 

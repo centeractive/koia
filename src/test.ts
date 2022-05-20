@@ -7,7 +7,7 @@ import 'zone.js/dist/jasmine-patch';
 import 'zone.js/dist/async-test';
 import 'zone.js/dist/fake-async-test';
 import { getTestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 import 'd3';
 
 // Unfortunately there's no typing for the `__karma__` variable. Just declare it as any.
@@ -15,7 +15,7 @@ declare var __karma__: any;
 declare var require: any;
 
 // Prevent Karma from running prematurely.
-__karma__.loaded = function () {};
+__karma__.loaded = function () { };
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
@@ -106,14 +106,8 @@ const context = require.context('./', true, /\.spec\.ts$/);
 // const context = require.context('./', true, /cell-click-handler\.spec\.ts$/);
 // const context = require.context('./', true, /pivot.*\.spec\.ts$/);
 // const context = require.context('./', true, /rawdata-link-factory\.spec\.ts$/);
-// const context = require.context('./', true, /value-range-filter\.spec\.ts$/);
-// const context = require.context('./', true, /value-grouping-generator\.spec\.ts$/);
-// const context = require.context('./', true, /value-range-grouping.service\.spec\.ts$/);
-// const context = require.context('./', true, /value-range-converter\.spec\.ts$/);
-// const context = require.context('./', true, /value-range-filter-merger\.spec\.ts$/);
-// const context = require.context('./', true, /value-range-filter-sorter\.spec\.ts$/);
+// const context = require.context('./', true, /value-range.*\.spec\.ts$/);
 // const context = require.context('./', true, /time-grouping.service\.spec\.ts$/);
-// const context = require.context('./', true, /value-range-label-comparator\.spec\.ts$/);
 // const context = require.context('./', true, /summary-table.component\.spec\.ts$/);
 // const context = require.context('./', true, /summary-table-side-bar.component\.spec\.ts$/);
 // const context = require.context('./', true, /summary.*\.spec\.ts$/);

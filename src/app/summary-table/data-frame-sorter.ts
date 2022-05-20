@@ -7,7 +7,7 @@ export class DataFrameSorter {
 
   /**
    * @returns a new data frame with the sorted data or the original data frame when sorting could not be performed
-   * (undefined sort or sort column not contaied in data frame)
+   * (when sort is undefined or sort column is not contained in the data frame)
    */
   sort(dataFrame: IDataFrame<number, any>, sort: Sort, context: ElementContext): IDataFrame<number, any> {
     if (!sort || !dataFrame.getColumnNames().includes(sort.active)) {
@@ -24,7 +24,7 @@ export class DataFrameSorter {
     let value = entry[columnName];
     if (context.hasValueGrouping(columnName)) {
       const minValue = ValueRangeConverter.toMinValue(<string>value);
-      value = minValue === undefined ? - Number.MAX_VALUE : minValue;
+      value = minValue == undefined ? - Number.MAX_VALUE : minValue;
     }
     return value;
   }

@@ -8,7 +8,6 @@ export * from './scene.type';
 export * from './context-info.type';
 export * from './column.type';
 export * from './column-pair.type';
-export * from './grouping-type.enum';
 export * from './graph-node.type';
 export * from './change-event.enum';
 export * from './element-context';

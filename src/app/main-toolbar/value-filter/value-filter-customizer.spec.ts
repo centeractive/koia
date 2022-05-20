@@ -121,7 +121,8 @@ describe('ValueFilterCustomizer', () => {
       const formattedValue = customizer.formattedValueOf(filter);
 
       // then
-      expect(formattedValue).toBe('123.55');
+      const expectedValue = 123.55.toLocaleString();
+      expect(formattedValue).toBe(expectedValue);
    });
 
    it('#formattedValueOf should return unchanged value when data type is number but value is string', () => {
@@ -145,7 +146,8 @@ describe('ValueFilterCustomizer', () => {
       const formattedValue = customizer.formattedValueOf(filter);
 
       // then
-      expect(formattedValue).toBe('1,234,567.89');
+      const expectedValue = 1234567.89.toLocaleString();
+      expect(formattedValue).toBe(expectedValue);
    });
 
    it('#formattedValueOf should return unchanged value if value is text', () => {

@@ -8,11 +8,11 @@ export class ValueRangeConverter {
    static readonly DELIMITER = ' - ';
 
    static toLabel(min: number, max: number): string {
-      if (min === undefined && max === undefined) {
+      if (min == undefined && max == undefined) {
          return ValueRangeConverter.EMPTY;
       }
-      const minString = min === undefined ? ValueRangeConverter.MIN : min.toLocaleString();
-      const maxString = max === undefined ? ValueRangeConverter.MAX : max.toLocaleString();
+      const minString = min == undefined ? ValueRangeConverter.MIN : min.toLocaleString();
+      const maxString = max == undefined ? ValueRangeConverter.MAX : max.toLocaleString();
       return minString + ValueRangeConverter.DELIMITER + maxString;
    }
 
@@ -21,7 +21,7 @@ export class ValueRangeConverter {
          return undefined;
       }
       const value = label.substring(0, label.indexOf(ValueRangeConverter.DELIMITER));
-      return value === ValueRangeConverter.MIN ? undefined : NumberUtils.parseNumber(value);
+      return value === ValueRangeConverter.MIN ? undefined : NumberUtils.parseNumber(value, undefined);
    }
 
    static toMaxValue(label: string): number | undefined {
@@ -29,6 +29,6 @@ export class ValueRangeConverter {
          return undefined;
       }
       const value = label.substring(label.lastIndexOf(ValueRangeConverter.DELIMITER) + ValueRangeConverter.DELIMITER.length);
-      return value === ValueRangeConverter.MAX ? undefined : NumberUtils.parseNumber(value);
+      return value === ValueRangeConverter.MAX ? undefined : NumberUtils.parseNumber(value, undefined);
    }
 }

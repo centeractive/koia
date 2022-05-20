@@ -1,5 +1,5 @@
 import { Column, DataType } from 'app/shared/model';
-import { DataPoint, ChartContext } from 'app/shared/model/chart';
+import { DataPoint, ChartContext, CategoryData, LabeledValues } from 'app/shared/model/chart';
 import { DateTimeUtils, ArrayUtils } from 'app/shared/utils';
 
 export class ChartDataHelper {
@@ -54,15 +54,42 @@ export class ChartDataHelper {
       for (const entry of context.entries) {
          const name = entry[nameColumn.name];
          const value = entry[dataColumn.name];
-         if (name !== null && name !== undefined && value !== null && value !== undefined) {
+         if (!!name && !!value) {
             if (names.includes(name)) {
-               throw new Error('Names are not unique');
+               throw new Error('Name \'' + name + '\' is not unique');
             }
             names.push(name);
             data.push({ x: name, y: value });
          }
       }
       return data;
+   }
+
+   static categoryData(context: ChartContext): CategoryData {
+      const nameColumn = context.groupByColumns[0];
+      const labels: any[] = [];
+      const labeledValues: LabeledValues[] = [];
+      context.entries.forEach(e => {
+         const label = e[nameColumn.name];
+         if (!!label) {
+            if (labels.includes(label)) {
+               throw new Error('Name \'' + label + '\' is not unique');
+            }
+            const someValueFound = context.dataColumns
+               .map(c => e[c.name])
+               .some(v => v !== null && v != undefined);
+            if (someValueFound) {
+               context.dataColumns.forEach((c, iCol) => {
+                  if (!labeledValues[iCol]) {
+                     labeledValues.push({ label: c.name, values: [] });
+                  }
+                  labeledValues[iCol].values.push(e[c.name]);
+               });
+               labels.push(label);
+            }
+         }
+      });
+      return { labels: labels, dataSets: labeledValues };
    }
 
    static extractGroupingValue(entry: Object, groupByColumn: Column): number {

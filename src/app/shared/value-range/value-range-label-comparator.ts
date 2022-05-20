@@ -12,9 +12,9 @@ export class ValueRangeLabelComparator {
    }
 
    private compareNumbers(n1: number, n2: number): number {
-      if (n1 === undefined) {
-         return n2 === undefined ? 0 : -1;
-      } else if (n2 === undefined) {
+      if (n1 == undefined) {
+         return n2 == undefined ? 0 : -1;
+      } else if (n2 == undefined) {
          return 1;
       }
       return n1 - n2;

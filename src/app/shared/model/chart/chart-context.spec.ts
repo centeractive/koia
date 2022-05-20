@@ -141,33 +141,6 @@ describe('ChartContext', () => {
       expect(context.stacked).toBeFalsy();
    });
 
-   it('#stacked should return false when non-multibar chart', () => {
-
-      // given
-      context.chart = { pie: { }};
-
-      // when/then
-      expect(context.stacked).toBeFalsy();
-   });
-
-   it('#stacked should return true when stacked multibar', () => {
-
-      // given
-      context.chart = { multibar: { stacked: () => true }};
-
-      // when/then
-      expect(context.stacked).toBeTruthy();
-   });
-
-   it('#stacked should return false when non-stacked multibar', () => {
-
-      // given
-      context.chart = { multibar: { stacked: () => false }};
-
-      // when/then
-      expect(context.stacked).toBeFalsy();
-   });
-
    it('#getTitle when no data column defined', () => {
       expect(context.getTitle()).toBe('Data: to be defined');
    });

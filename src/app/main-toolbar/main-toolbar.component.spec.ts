@@ -369,7 +369,7 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
     const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.hasFilter()).toBeFalsy();
+    expect(query.hasFilter()).toBeFalse();
   });
 
   it('#addValueFilter should add EQUAL filter for boolean column', fakeAsync(() => {
@@ -458,7 +458,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters.length).toBe(1);
-    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTruthy();
+    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTrue();
     const timeRangeFilter = <TimeRangeFilter>component.rangeFilters[0];
     expect(timeRangeFilter.start).toBe(valueRange.min);
     expect(timeRangeFilter.end).toBe(valueRange.max);
@@ -472,7 +472,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters.length).toBe(1);
-    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTruthy();
+    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTrue();
     const numberRangeFilter = <NumberRangeFilter>component.rangeFilters[0];
     expect(numberRangeFilter.start).toBe(valueRange.min);
     expect(numberRangeFilter.end).toBe(valueRange.max);

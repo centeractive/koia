@@ -9,8 +9,8 @@ export class TimeGuesser {
     * @returns [[true]] if the specified value is assumed to represent the number of milliseconds
     * that have elapsed since midnight on January 1, 1970, UTC
     */
-   isAssumedlyTime(columnPair: ColumnPair, value: number): boolean {
-      if (NumberUtils.isInteger(value)) {
+   isAssumedlyTime(columnPair: ColumnPair, value: number, locale: string): boolean {
+      if (NumberUtils.isInteger(value, locale)) {
          const lowerCaseColName = columnPair.source.name.toLowerCase();
          return lowerCaseColName.endsWith('time') ||
             lowerCaseColName.endsWith('timestamp') ||

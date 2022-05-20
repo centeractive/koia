@@ -3,450 +3,450 @@ import { NumberUtils } from './number-utils';
 describe('NumberUtils', () => {
 
   it('#isInteger should return false when value is not present', () => {
-    expect(NumberUtils.isInteger(null)).toBeFalsy();
-    expect(NumberUtils.isInteger(undefined)).toBeFalsy();
+    expect(NumberUtils.isInteger(null, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger(undefined, 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when value is boolean', () => {
-    expect(NumberUtils.isInteger(true)).toBeFalsy();
-    expect(NumberUtils.isInteger(false)).toBeFalsy();
+    expect(NumberUtils.isInteger(true, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger(false, 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when value is blank string', () => {
-    expect(NumberUtils.isInteger('')).toBeFalsy();
-    expect(NumberUtils.isInteger('  ')).toBeFalsy();
+    expect(NumberUtils.isInteger('', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('  ', 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when string value represents not a number', () => {
-    expect(NumberUtils.isInteger('1-')).toBeFalsy();
-    expect(NumberUtils.isInteger('y')).toBeFalsy();
-    expect(NumberUtils.isInteger('.')).toBeFalsy();
-    expect(NumberUtils.isInteger('1.1.0')).toBeFalsy();
+    expect(NumberUtils.isInteger('1-', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('y', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('.', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('1.1.0', 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when value is an object', () => {
-    expect(NumberUtils.isInteger({})).toBeFalsy();
-    expect(NumberUtils.isInteger({ a: 1 })).toBeFalsy();
-    expect(NumberUtils.isInteger(new Date())).toBeFalsy();
+    expect(NumberUtils.isInteger({}, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger({ a: 1 }, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger(new Date(), 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when value is an array', () => {
-    expect(NumberUtils.isInteger([])).toBeFalsy();
-    expect(NumberUtils.isInteger([1])).toBeFalsy();
+    expect(NumberUtils.isInteger([], 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger([1], 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when value is float', () => {
-    expect(NumberUtils.isInteger(-1.1)).toBeFalsy();
-    expect(NumberUtils.isInteger(-0.1)).toBeFalsy();
-    expect(NumberUtils.isInteger(0.1)).toBeFalsy();
-    expect(NumberUtils.isInteger(1.1)).toBeFalsy();
+    expect(NumberUtils.isInteger(-1.1, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger(-0.1, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger(0.1, 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger(1.1, 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return false when string value represents float', () => {
-    expect(NumberUtils.isInteger('-1.1')).toBeFalsy();
-    expect(NumberUtils.isInteger('-1.0')).toBeFalsy();
-    expect(NumberUtils.isInteger('-0.1')).toBeFalsy();
-    expect(NumberUtils.isInteger('0.0')).toBeFalsy();
-    expect(NumberUtils.isInteger('0.1')).toBeFalsy();
-    expect(NumberUtils.isInteger('1.0')).toBeFalsy();
-    expect(NumberUtils.isInteger('1.1')).toBeFalsy();
+    expect(NumberUtils.isInteger('-1.1', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('-1.0', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('-0.1', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('0.0', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('0.1', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('1.0', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('1.1', 'en-US')).toBeFalse();
   });
 
   it('#isInteger should return true when value is integer', () => {
-    expect(NumberUtils.isInteger(-100)).toBeTruthy();
-    expect(NumberUtils.isInteger(-1)).toBeTruthy();
-    expect(NumberUtils.isInteger(0)).toBeTruthy();
-    expect(NumberUtils.isInteger(1)).toBeTruthy();
-    expect(NumberUtils.isInteger(100)).toBeTruthy();
+    expect(NumberUtils.isInteger(-100, 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger(-1, 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger(0, 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger(1, 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger(100, 'en-US')).toBeTrue();
   });
 
   it('#isInteger should return true when string value represents integer', () => {
-    expect(NumberUtils.isInteger('-100')).toBeTruthy();
-    expect(NumberUtils.isInteger('-1')).toBeTruthy();
-    expect(NumberUtils.isInteger('0')).toBeTruthy();
-    expect(NumberUtils.isInteger('1')).toBeTruthy();
-    expect(NumberUtils.isInteger('100')).toBeTruthy();
+    expect(NumberUtils.isInteger('-100', 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger('-1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger('0', 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger('1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger('100', 'en-US')).toBeTrue();
   });
 
   it('#isInteger should return true when string value contains formatted integer', () => {
-    expect(NumberUtils.isInteger((-1_000_000).toLocaleString())).toBeTruthy();
-    expect(NumberUtils.isInteger((1_000_000).toLocaleString())).toBeTruthy();
+    expect(NumberUtils.isInteger('-1,000,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.isInteger('-1,000,000', 'en-US')).toBeTrue();
   });
 
   it('#isInteger should return false when string value contains misplaced thousands separator', () => {
-    expect(NumberUtils.isInteger('-1,0,000')).toBeFalsy();
-    expect(NumberUtils.isInteger('-1,0,000')).toBeFalsy();
+    expect(NumberUtils.isInteger('-1,0,000', 'en-US')).toBeFalse();
+    expect(NumberUtils.isInteger('-1,0,000', 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return false when value is not present', () => {
-    expect(NumberUtils.isNumber(null)).toBeFalsy();
-    expect(NumberUtils.isNumber(undefined)).toBeFalsy();
+    expect(NumberUtils.isNumber(null, 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber(undefined, 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return false when value is boolean', () => {
-    expect(NumberUtils.isNumber(true)).toBeFalsy();
-    expect(NumberUtils.isNumber(false)).toBeFalsy();
+    expect(NumberUtils.isNumber(true, 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber(false, 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return false when value is blank string', () => {
-    expect(NumberUtils.isNumber('')).toBeFalsy();
-    expect(NumberUtils.isNumber('  ')).toBeFalsy();
+    expect(NumberUtils.isNumber('', 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber('  ', 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return false when string value represents not a number', () => {
-    expect(NumberUtils.isNumber('1-')).toBeFalsy();
-    expect(NumberUtils.isNumber('y')).toBeFalsy();
-    expect(NumberUtils.isNumber('.')).toBeFalsy();
-    expect(NumberUtils.isNumber('1.1.0')).toBeFalsy();
+    expect(NumberUtils.isNumber('1-', 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber('y', 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber('.', 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber('1.1.0', 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return false when value is an object', () => {
-    expect(NumberUtils.isNumber({})).toBeFalsy();
-    expect(NumberUtils.isNumber({ a: 1 })).toBeFalsy();
-    expect(NumberUtils.isNumber(new Date())).toBeFalsy();
+    expect(NumberUtils.isNumber({}, 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber({ a: 1 }, 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber(new Date(), 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return false when value is an array', () => {
-    expect(NumberUtils.isNumber([])).toBeFalsy();
-    expect(NumberUtils.isNumber([1])).toBeFalsy();
+    expect(NumberUtils.isNumber([], 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber([1], 'en-US')).toBeFalse();
   });
 
   it('#isNumber should return true when value is number', () => {
-    expect(NumberUtils.isNumber(-1.1)).toBeTruthy();
-    expect(NumberUtils.isNumber(-1)).toBeTruthy();
-    expect(NumberUtils.isNumber(0)).toBeTruthy();
-    expect(NumberUtils.isNumber(1)).toBeTruthy();
-    expect(NumberUtils.isNumber(1.1)).toBeTruthy();
+    expect(NumberUtils.isNumber(-1.1, 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber(-1, 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber(0, 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber(1, 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber(1.1, 'en-US')).toBeTrue();
   });
 
   it('#isNumber should return true when string contains completable float', () => {
-    expect(NumberUtils.isNumber('-.1')).toBeTruthy();
-    expect(NumberUtils.isNumber('.1')).toBeTruthy();
+    expect(NumberUtils.isNumber('-.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('.1', 'en-US')).toBeTrue();
   });
 
   it('#isNumber should return true when string contains number', () => {
-    expect(NumberUtils.isNumber('-1.1')).toBeTruthy();
-    expect(NumberUtils.isNumber('-1')).toBeTruthy();
-    expect(NumberUtils.isNumber('-0.1')).toBeTruthy();
-    expect(NumberUtils.isNumber('0')).toBeTruthy();
-    expect(NumberUtils.isNumber('0.1')).toBeTruthy();
-    expect(NumberUtils.isNumber('1')).toBeTruthy();
-    expect(NumberUtils.isNumber('1.1')).toBeTruthy();
+    expect(NumberUtils.isNumber('-1.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('-1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('-0.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('0', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('0.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('1.1', 'en-US')).toBeTrue();
   });
 
   it('#isNumber should return true when string contains formatted number', () => {
-    expect(NumberUtils.isNumber((-1_000_000.1).toLocaleString())).toBeTruthy();
-    expect(NumberUtils.isNumber((1_000_000.1).toLocaleString())).toBeTruthy();
+    expect(NumberUtils.isNumber('-1,000,000.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.isNumber('1,000,000.1', 'en-US')).toBeTrue();
   });
 
   it('#isNumber should return false when string contains misplaced thousands separator', () => {
-    expect(NumberUtils.isNumber('-1,0,000.1')).toBeFalsy();
-    expect(NumberUtils.isNumber('-1,0,000.1')).toBeFalsy();
+    expect(NumberUtils.isNumber('-1,0,000.1', 'en-US')).toBeFalse();
+    expect(NumberUtils.isNumber('-1,0,000.1', 'en-US')).toBeFalse();
   });
 
   it('#representsNumber should return false when string is missing', () => {
-    expect(NumberUtils.representsNumber(null)).toBeFalsy();
-    expect(NumberUtils.representsNumber(undefined)).toBeFalsy();
+    expect(NumberUtils.representsNumber(null, 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber(undefined, 'en-US')).toBeFalse();
   });
 
   it('#representsNumber should return false when string is blank', () => {
-    expect(NumberUtils.representsNumber('')).toBeFalsy();
-    expect(NumberUtils.representsNumber('   ')).toBeFalsy();
+    expect(NumberUtils.representsNumber('', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('   ', 'en-US')).toBeFalse();
   });
 
   it('#representsNumber should return false when string represents no number', () => {
-    expect(NumberUtils.representsNumber('a')).toBeFalsy();
-    expect(NumberUtils.representsNumber('1a')).toBeFalsy();
-    expect(NumberUtils.representsNumber('1-')).toBeFalsy();
-    expect(NumberUtils.representsNumber('-  1')).toBeFalsy();
-    expect(NumberUtils.representsNumber('--1')).toBeFalsy();
-    expect(NumberUtils.representsNumber('++1')).toBeFalsy();
-    expect(NumberUtils.representsNumber('+  1')).toBeFalsy();
-    expect(NumberUtils.representsNumber('1+')).toBeFalsy();
-    expect(NumberUtils.representsNumber('1..1')).toBeFalsy();
-    expect(NumberUtils.representsNumber('1,0,00')).toBeFalsy();
+    expect(NumberUtils.representsNumber('a', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('1a', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('1-', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('- 1.1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('-  1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('--1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('++1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('+  1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('+ 1.1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('1+', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('1..1', 'en-US')).toBeFalse();
+    expect(NumberUtils.representsNumber('1,0,00', 'en-US')).toBeFalse();
   });
 
   it('#representsNumber should return true when string represents number', () => {
-    expect(NumberUtils.representsNumber('-1000000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('- 1.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('-1.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('-0.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('0')).toBeTruthy();
-    expect(NumberUtils.representsNumber('0.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1000000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+0.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+ 1.1')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1000000.123')).toBeTruthy();
+    expect(NumberUtils.representsNumber('-1000000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('-1.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('-0.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('0', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('0.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1000000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+0.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1.1', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1000000.123', 'en-US')).toBeTrue();
   });
 
   it('#representsNumber should return true when string represents number with thousands separator', () => {
-    expect(NumberUtils.representsNumber('-1,000,000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('-1,000,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('-1,000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('-1,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1,000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1,000,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('1,000,000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1,000.123')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1,000,000')).toBeTruthy();
-    expect(NumberUtils.representsNumber('+1,000,000.123')).toBeTruthy();
+    expect(NumberUtils.representsNumber('-1,000,000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('-1,000,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('-1,000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('-1,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1,000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1,000,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('1,000,000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1,000.123', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1,000,000', 'en-US')).toBeTrue();
+    expect(NumberUtils.representsNumber('+1,000,000.123', 'en-US')).toBeTrue();
   });
 
   it('#asNumber should return undefined when value is undefined', () => {
-    expect(NumberUtils.asNumber(undefined)).toBeUndefined();
-    expect(NumberUtils.asNumber(null)).toBeUndefined();
+    expect(NumberUtils.asNumber(undefined, 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber(null, 'en-US')).toBeUndefined();
   });
 
   it('#asNumber should return undefined when value is an object', () => {
-    expect(NumberUtils.asNumber(<number>{})).toBeUndefined();
+    expect(NumberUtils.asNumber(<number>{}, 'en-US')).toBeUndefined();
   });
 
   it('#asNumber should return undefined when value is not a number', () => {
-    expect(NumberUtils.asNumber('X')).toBeUndefined();
-    expect(NumberUtils.asNumber('1-')).toBeUndefined();
-    expect(NumberUtils.asNumber('1.1.1')).toBeUndefined();
+    expect(NumberUtils.asNumber('X', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('1-', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('1.1.1', 'en-US')).toBeUndefined();
   });
 
   it('#asNumber should return number when value is boolean', () => {
-    expect(NumberUtils.asNumber(true)).toBe(1);
-    expect(NumberUtils.asNumber(false)).toBe(0);
+    expect(NumberUtils.asNumber(true, 'en-US')).toBe(1);
+    expect(NumberUtils.asNumber(false, 'en-US')).toBe(0);
   });
 
   it('#asNumber should return undefined when value is blank string', () => {
-    expect(NumberUtils.asNumber('')).toBeUndefined();
-    expect(NumberUtils.asNumber('  ')).toBeUndefined();
+    expect(NumberUtils.asNumber('', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('  ', 'en-US')).toBeUndefined();
   });
 
   it('#asNumber should return number when value is number', () => {
-    expect(NumberUtils.asNumber(-1.1)).toBe(-1.1);
-    expect(NumberUtils.asNumber(-1)).toBe(-1);
-    expect(NumberUtils.asNumber(-0.1)).toBe(-0.1);
-    expect(NumberUtils.asNumber(0)).toBe(0);
-    expect(NumberUtils.asNumber(0.1)).toBe(0.1);
-    expect(NumberUtils.asNumber(1)).toBe(1);
-    expect(NumberUtils.asNumber(1.1)).toBe(1.1);
+    expect(NumberUtils.asNumber(-1.1, 'en-US')).toBe(-1.1);
+    expect(NumberUtils.asNumber(-1, 'en-US')).toBe(-1);
+    expect(NumberUtils.asNumber(-0.1, 'en-US')).toBe(-0.1);
+    expect(NumberUtils.asNumber(0, 'en-US')).toBe(0);
+    expect(NumberUtils.asNumber(0.1, 'en-US')).toBe(0.1);
+    expect(NumberUtils.asNumber(1, 'en-US')).toBe(1);
+    expect(NumberUtils.asNumber(1.1, 'en-US')).toBe(1.1);
   });
 
   it('#asNumber should return integer when value contains integer', () => {
-    expect(NumberUtils.asNumber('-1')).toBe(-1);
-    expect(NumberUtils.asNumber('0')).toBe(0);
-    expect(NumberUtils.asNumber('1')).toBe(1);
+    expect(NumberUtils.asNumber('-1', 'en-US')).toBe(-1);
+    expect(NumberUtils.asNumber('0', 'en-US')).toBe(0);
+    expect(NumberUtils.asNumber('1', 'en-US')).toBe(1);
   });
 
   it('#asNumber should return integer when value contains integer with thousands separators', () => {
-    expect(NumberUtils.asNumber('-1,000,000')).toBe(-1_000_000);
-    expect(NumberUtils.asNumber('1,000,000')).toBe(1_000_000);
+    expect(NumberUtils.asNumber('-1,000,000', 'en-US')).toBe(-1_000_000);
+    expect(NumberUtils.asNumber('1,000,000', 'en-US')).toBe(1_000_000);
   });
 
   it('#asNumber should return undefined value contains integer with misplaced thousands separators', () => {
-    expect(NumberUtils.asNumber('-1,0,000')).toBeUndefined();
-    expect(NumberUtils.asNumber('1,0,000')).toBeUndefined();
+    expect(NumberUtils.asNumber('-1,0,000', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('1,0,000', 'en-US')).toBeUndefined();
   });
 
   it('#asNumber should return float when value contains float', () => {
-    expect(NumberUtils.asNumber('-1.1')).toBe(-1.1);
-    expect(NumberUtils.asNumber('1.1')).toBe(1.1);
+    expect(NumberUtils.asNumber('-1.1', 'en-US')).toBe(-1.1);
+    expect(NumberUtils.asNumber('1.1', 'en-US')).toBe(1.1);
   });
 
   it('#asNumber should return float when value contains float with thousands separators', () => {
-    expect(NumberUtils.asNumber('-1,000,000.5')).toBe(-1_000_000.5);
-    expect(NumberUtils.asNumber('1,000,000.5')).toBe(1_000_000.5);
+    expect(NumberUtils.asNumber('-1,000,000.5', 'en-US')).toBe(-1_000_000.5);
+    expect(NumberUtils.asNumber('1,000,000.5', 'en-US')).toBe(1_000_000.5);
   });
 
   it('#asNumber should return undefined value contains float with misplaced thousands separators', () => {
-    expect(NumberUtils.asNumber('-1,0,000.5')).toBeUndefined();
-    expect(NumberUtils.asNumber('1,0,000.5')).toBeUndefined();
+    expect(NumberUtils.asNumber('-1,0,000.5', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('1,0,000.5', 'en-US')).toBeUndefined();
   });
 
   it('#parseNumber should return undefined when string is undefined', () => {
-    expect(NumberUtils.parseNumber(undefined)).toBeUndefined();
-    expect(NumberUtils.parseNumber(null)).toBeUndefined();
+    expect(NumberUtils.parseNumber(undefined, 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber(null, 'en-US')).toBeUndefined();
   });
 
   it('#parseNumber should return undefined when string is blank', () => {
-    expect(NumberUtils.parseNumber('')).toBeUndefined();
-    expect(NumberUtils.parseNumber('   ')).toBeUndefined();
+    expect(NumberUtils.parseNumber('', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('   ', 'en-US')).toBeUndefined();
   });
 
   it('#parseNumber should return undefined when string is not a number', () => {
-    expect(NumberUtils.parseNumber('X')).toBeUndefined();
-    expect(NumberUtils.parseNumber('1A')).toBeUndefined();
-    expect(NumberUtils.parseNumber('1-')).toBeUndefined();
-    expect(NumberUtils.parseNumber('1+')).toBeUndefined();
-    expect(NumberUtils.parseNumber('1.1.1')).toBeUndefined();
+    expect(NumberUtils.parseNumber('X', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('1A', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('1-', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('1+', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('1.1.1', 'en-US')).toBeUndefined();
   });
 
   it('#parseNumber should return integer when string contains integer', () => {
-    expect(NumberUtils.parseNumber('-1')).toBe(-1);
-    expect(NumberUtils.parseNumber('0')).toBe(0);
-    expect(NumberUtils.parseNumber('1')).toBe(1);
-    expect(NumberUtils.parseNumber('+1')).toBe(1);
+    expect(NumberUtils.parseNumber('-1', 'en-US')).toBe(-1);
+    expect(NumberUtils.parseNumber('0', 'en-US')).toBe(0);
+    expect(NumberUtils.parseNumber('1', 'en-US')).toBe(1);
+    expect(NumberUtils.parseNumber('+1', 'en-US')).toBe(1);
   });
 
   it('#parseNumber should return integer when string contains integer with thousands separators', () => {
-    expect(NumberUtils.parseNumber('-1,000,000')).toBe(-1_000_000);
-    expect(NumberUtils.parseNumber('1,000,000')).toBe(1_000_000);
+    expect(NumberUtils.parseNumber('-1,000,000', 'en-US')).toBe(-1_000_000);
+    expect(NumberUtils.parseNumber('1,000,000', 'en-US')).toBe(1_000_000);
   });
 
   it('#parseNumber should return undefined when string contains integer with misplaced thousands separators', () => {
-    expect(NumberUtils.parseNumber('-1,0,000')).toBeUndefined();
-    expect(NumberUtils.parseNumber('1,0,000')).toBeUndefined();
+    expect(NumberUtils.parseNumber('-1,0,000', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('1,0,000', 'en-US')).toBeUndefined();
   });
 
   it('#parseNumber should return float when string contains completable float', () => {
-    expect(NumberUtils.parseNumber('-.1')).toBe(-0.1);
-    expect(NumberUtils.parseNumber('.1')).toBe(0.1);
+    expect(NumberUtils.parseNumber('-.1', 'en-US')).toBe(-0.1);
+    expect(NumberUtils.parseNumber('.1', 'en-US')).toBe(0.1);
   });
 
   it('#parseNumber should return float when string contains float', () => {
-    expect(NumberUtils.parseNumber('-1.1')).toBe(-1.1);
-    expect(NumberUtils.parseNumber('1.1')).toBe(1.1);
+    expect(NumberUtils.parseNumber('-1.1', 'en-US')).toBe(-1.1);
+    expect(NumberUtils.parseNumber('1.1', 'en-US')).toBe(1.1);
   });
 
   it('#parseNumber should return float when string contains float with thousands separators', () => {
-    expect(NumberUtils.parseNumber('-1,000,000.5')).toBe(-1_000_000.5);
-    expect(NumberUtils.parseNumber('1,000,000.5')).toBe(1_000_000.5);
+    expect(NumberUtils.parseNumber('-1,000,000.5', 'en-US')).toBe(-1_000_000.5);
+    expect(NumberUtils.parseNumber('1,000,000.5', 'en-US')).toBe(1_000_000.5);
   });
 
   it('#parseNumber should return undefined when string contains float with misplaced thousands separators', () => {
-    expect(NumberUtils.parseNumber('-1,0,000.5')).toBeUndefined();
-    expect(NumberUtils.parseNumber('1,0,000.5')).toBeUndefined();
+    expect(NumberUtils.parseNumber('-1,0,000.5', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseNumber('1,0,000.5', 'en-US')).toBeUndefined();
   });
 
   it('#parseInt should return undefined when string is undefined', () => {
-    expect(NumberUtils.parseInt(undefined)).toBeUndefined();
-    expect(NumberUtils.parseInt(null)).toBeUndefined();
+    expect(NumberUtils.parseInt(undefined, 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt(null, 'en-US')).toBeUndefined();
   });
 
   it('#parseInt should return undefined when string is blank', () => {
-    expect(NumberUtils.parseInt('')).toBeUndefined();
-    expect(NumberUtils.parseInt('   ')).toBeUndefined();
+    expect(NumberUtils.parseInt('', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt('   ', 'en-US')).toBeUndefined();
   });
 
   it('#parseInt should return undefined when string is not a number', () => {
-    expect(NumberUtils.parseInt('X')).toBeUndefined();
-    expect(NumberUtils.parseInt('1A')).toBeUndefined();
-    expect(NumberUtils.parseInt('1-')).toBeUndefined();
-    expect(NumberUtils.parseInt('1+')).toBeUndefined();
-    expect(NumberUtils.parseInt('1.1.1')).toBeUndefined();
+    expect(NumberUtils.parseInt('X', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt('1A', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt('1-', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt('1+', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt('1.1.1', 'en-US')).toBeUndefined();
   });
 
   it('#parseInt should return integer when string contains no thousands separators', () => {
-    expect(NumberUtils.parseInt('-1')).toBe(-1);
-    expect(NumberUtils.parseInt('0')).toBe(0);
-    expect(NumberUtils.parseInt('1')).toBe(1);
-    expect(NumberUtils.parseInt('+1')).toBe(1);
-    expect(NumberUtils.parseInt('1000')).toBe(1_000);
-    expect(NumberUtils.parseInt('7111000')).toBe(7_111_000);
+    expect(NumberUtils.parseInt('-1', 'en-US')).toBe(-1);
+    expect(NumberUtils.parseInt('0', 'en-US')).toBe(0);
+    expect(NumberUtils.parseInt('1', 'en-US')).toBe(1);
+    expect(NumberUtils.parseInt('+1', 'en-US')).toBe(1);
+    expect(NumberUtils.parseInt('1000', 'en-US')).toBe(1_000);
+    expect(NumberUtils.parseInt('7111000', 'en-US')).toBe(7_111_000);
   });
 
   it('#parseInt should return integer when string contains thousands separators', () => {
-    expect(NumberUtils.parseInt('1,000')).toBe(1_000);
-    expect(NumberUtils.parseInt('7,111,000')).toBe(7_111_000);
+    expect(NumberUtils.parseInt('1,000', 'en-US')).toBe(1_000);
+    expect(NumberUtils.parseInt('7,111,000', 'en-US')).toBe(7_111_000);
   });
 
   it('#parseInt should return undefined when string contains integer with misplaced thousands separators', () => {
-    expect(NumberUtils.parseInt('-1,0,000')).toBeUndefined();
-    expect(NumberUtils.parseInt('1,0,000')).toBeUndefined();
+    expect(NumberUtils.parseInt('-1,0,000', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseInt('1,0,000', 'en-US')).toBeUndefined();
   });
 
   it('#parseFloat should return undefined when string is undefined', () => {
-    expect(NumberUtils.parseFloat(undefined)).toBeUndefined();
-    expect(NumberUtils.parseFloat(null)).toBeUndefined();
+    expect(NumberUtils.parseFloat(undefined, 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat(null, 'en-US')).toBeUndefined();
   });
 
   it('#parseFloat should return undefined when string is blank', () => {
-    expect(NumberUtils.parseFloat('')).toBeUndefined();
-    expect(NumberUtils.parseFloat('   ')).toBeUndefined();
+    expect(NumberUtils.parseFloat('', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat('   ', 'en-US')).toBeUndefined();
   });
 
   it('#parseFloat should return undefined when string is not a number', () => {
-    expect(NumberUtils.parseFloat('X')).toBeUndefined();
-    expect(NumberUtils.parseFloat('1A')).toBeUndefined();
-    expect(NumberUtils.parseFloat('1-')).toBeUndefined();
-    expect(NumberUtils.parseFloat('1+')).toBeUndefined();
-    expect(NumberUtils.parseFloat('1.1.1')).toBeUndefined();
+    expect(NumberUtils.parseFloat('X', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat('1A', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat('1-', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat('1+', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat('1.1.1', 'en-US')).toBeUndefined();
   });
 
   it('#parseFloat should return float when string contains no thousands separators', () => {
-    expect(NumberUtils.parseFloat('-1.1')).toBe(-1.1);
-    expect(NumberUtils.parseFloat('-0.1')).toBe(-0.1);
-    expect(NumberUtils.parseFloat('0.0')).toBe(0);
-    expect(NumberUtils.parseFloat('0.0000')).toBe(0);
-    expect(NumberUtils.parseFloat('0.1')).toBe(0.1);
-    expect(NumberUtils.parseFloat('1.1')).toBe(1.1);
-    expect(NumberUtils.parseFloat('+1.1')).toBe(1.1);
-    expect(NumberUtils.parseFloat('1000.51')).toBe(1_000.51);
-    expect(NumberUtils.parseFloat('7111000.51')).toBe(7_111_000.51);
+    expect(NumberUtils.parseFloat('-1.1', 'en-US')).toBe(-1.1);
+    expect(NumberUtils.parseFloat('-0.1', 'en-US')).toBe(-0.1);
+    expect(NumberUtils.parseFloat('0.0', 'en-US')).toBe(0);
+    expect(NumberUtils.parseFloat('0.0000', 'en-US')).toBe(0);
+    expect(NumberUtils.parseFloat('0.1', 'en-US')).toBe(0.1);
+    expect(NumberUtils.parseFloat('1.1', 'en-US')).toBe(1.1);
+    expect(NumberUtils.parseFloat('+1.1', 'en-US')).toBe(1.1);
+    expect(NumberUtils.parseFloat('1000.51', 'en-US')).toBe(1_000.51);
+    expect(NumberUtils.parseFloat('7111000.51', 'en-US')).toBe(7_111_000.51);
   });
 
   it('#parseFloat should return float when string contains thousands separators', () => {
-    expect(NumberUtils.parseFloat('1,000.51')).toBe(1_000.51);
-    expect(NumberUtils.parseFloat('7,111,000.51')).toBe(7_111_000.51);
+    expect(NumberUtils.parseFloat('1,000.51', 'en-US')).toBe(1_000.51);
+    expect(NumberUtils.parseFloat('7,111,000.51', 'en-US')).toBe(7_111_000.51);
   });
 
   it('#parseFloat should return undefined when string contains float with misplaced thousands separators', () => {
-    expect(NumberUtils.parseFloat('-1,0,000.5')).toBeUndefined();
-    expect(NumberUtils.parseFloat('1,0,000.5')).toBeUndefined();
+    expect(NumberUtils.parseFloat('-1,0,000.5', 'en-US')).toBeUndefined();
+    expect(NumberUtils.parseFloat('1,0,000.5', 'en-US')).toBeUndefined();
   });
 
   it('#parseFloat should return float when string contains completable float', () => {
-    expect(NumberUtils.parseFloat('-.1')).toBe(-0.1);
-    expect(NumberUtils.parseFloat('.1')).toBe(0.1);
+    expect(NumberUtils.parseFloat('-.1', 'en-US')).toBe(-0.1);
+    expect(NumberUtils.parseFloat('.1', 'en-US')).toBe(0.1);
   });
 
   it('#removeThousandsSeparators should return unchanged string when no thousands separator is present', () => {
-    expect(NumberUtils.removeThousandsSeparators('1000')).toBe('1000');
-    expect(NumberUtils.removeThousandsSeparators('7111000.51')).toBe('7111000.51');
+    expect(NumberUtils.removeThousandsSeparators('1000', 'en-US')).toBe('1000');
+    expect(NumberUtils.removeThousandsSeparators('7111000.51', 'en-US')).toBe('7111000.51');
   });
 
   it('#removeThousandsSeparators should return string without thousands separators', () => {
-    expect(NumberUtils.removeThousandsSeparators('1,000')).toBe('1000');
-    expect(NumberUtils.removeThousandsSeparators('7,111,000.51')).toBe('7111000.51');
+    expect(NumberUtils.removeThousandsSeparators('1,000', 'en-US')).toBe('1000');
+    expect(NumberUtils.removeThousandsSeparators('7,111,000.51', 'en-US')).toBe('7111000.51');
   });
 
   it('#countDecimals should return zero when number is missing', () => {
-    expect(NumberUtils.countDecimals(null)).toBe(0);
-    expect(NumberUtils.countDecimals(undefined)).toBe(0);
+    expect(NumberUtils.countDecimals(null, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(undefined, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is string', () => {
     const s: any = '12';
-    expect(NumberUtils.countDecimals(<number> s)).toBe(0);
+    expect(NumberUtils.countDecimals(<number>s, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is string', () => {
     const b: any = true;
-    expect(NumberUtils.countDecimals(<number> b)).toBe(0);
+    expect(NumberUtils.countDecimals(<number>b, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is object', () => {
     const o: any = { num: 12 };
-    expect(NumberUtils.countDecimals(<number> o)).toBe(0);
+    expect(NumberUtils.countDecimals(<number>o, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when number has no decimals', () => {
-    expect(NumberUtils.countDecimals(-84)).toBe(0);
-    expect(NumberUtils.countDecimals(-1)).toBe(0);
-    expect(NumberUtils.countDecimals(0)).toBe(0);
-    expect(NumberUtils.countDecimals(1)).toBe(0);
-    expect(NumberUtils.countDecimals(84)).toBe(0);
+    expect(NumberUtils.countDecimals(-84, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(-1, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(0, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(1, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(84, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return number of decimals when number has decimals', () => {
-    expect(NumberUtils.countDecimals(-1000.1234)).toBe(4);
-    expect(NumberUtils.countDecimals(-1.123)).toBe(3);
-    expect(NumberUtils.countDecimals(-0.12)).toBe(2);
-    expect(NumberUtils.countDecimals(0.12)).toBe(2);
-    expect(NumberUtils.countDecimals(1.123)).toBe(3);
-    expect(NumberUtils.countDecimals(1000.1234)).toBe(4);
+    expect(NumberUtils.countDecimals(-1000.1234, 'en-US')).toBe(4);
+    expect(NumberUtils.countDecimals(-1.123, 'en-US')).toBe(3);
+    expect(NumberUtils.countDecimals(-0.12, 'en-US')).toBe(2);
+    expect(NumberUtils.countDecimals(0.12, 'en-US')).toBe(2);
+    expect(NumberUtils.countDecimals(1.123, 'en-US')).toBe(3);
+    expect(NumberUtils.countDecimals(1000.1234, 'en-US')).toBe(4);
   });
 
   it('#countDigits should return zero when string is missing or empty', () => {
@@ -687,18 +687,19 @@ describe('NumberUtils', () => {
   it('#isNumberKey should return true when key is digit', () => {
     for (const key of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) {
       const event = new KeyboardEvent('keydown', { key: key.toString() });
-      expect(NumberUtils.isNumberKey(event)).toBeTruthy();
+      expect(NumberUtils.isNumberKey(event)).toBeTrue();
     }
   });
 
   it('#isNumberKey should return true when key is minus sign', () => {
     const event = new KeyboardEvent('keydown', { key: '-' });
-    expect(NumberUtils.isNumberKey(event)).toBeTruthy();
+    expect(NumberUtils.isNumberKey(event)).toBeTrue();
   });
 
   it('#isNumberKey should return true when key is local decimal separator', () => {
-    const event = new KeyboardEvent('keydown', { key: '.' });
-    expect(NumberUtils.isNumberKey(event)).toBeTruthy();
+    const key = Number(1.1).toLocaleString().charAt(1);
+    const event = new KeyboardEvent('keydown', { key });
+    expect(NumberUtils.isNumberKey(event)).toBeTrue();
   });
 
   it('#isNumberKey should return false when no-number key', () => {

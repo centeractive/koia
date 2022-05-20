@@ -229,16 +229,18 @@ describe('PivotTableSideBarComponent', () => {
     grouping.ranges = [range1, range2, range3];
 
     // when
-    component.dropGroupingRange(grouping, <CdkDragDrop<string[]>> { previousIndex: 2, currentIndex: 0 });
+    component.dropGroupingRange(grouping, <CdkDragDrop<string[]>>{ previousIndex: 2, currentIndex: 0 });
 
     // then
     expect(grouping.ranges).toEqual([range3, range1, range2]);
   });
 
   it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1'.toString() }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-'.toString() }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '.'.toString() }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a'.toString() }))).toBeFalsy();
+    const decimalSeparator = (0.1).toLocaleString().charAt(1);
+
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBeTrue();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBeTrue();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBeTrue();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBeFalse();
   });
 });

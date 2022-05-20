@@ -462,7 +462,7 @@ describe('ColumnMappingGenerator', () => {
 
       // given
       const entries = [
-         { A: '-1.5', B: 'X', C: true },
+         { A: '1,000.5', B: 'X', C: true },
          { A: 2, B: 'Y', C: 'FALSE' },
          { A: '3', B: 'X', C: true },
          { A: 4, B: 'Y', C: false },
@@ -470,7 +470,7 @@ describe('ColumnMappingGenerator', () => {
       ];
 
       // when
-      const mapping = generator.generate(entries, 'en');
+      const mapping = generator.generate(entries, 'en-US');
 
       // then
       expect(mapping.length).toBe(3);

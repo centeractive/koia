@@ -94,7 +94,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  showSceneDetails(sceneID: string): void {
+  showSceneDetails(): void {
     this.dialogService.showSceneDetailsDialog(this.scene);
   }
 
@@ -117,12 +117,12 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
 
   canAddValueFilter(column: Column) {
     if (column.dataType === DataType.TIME) {
-      return this.propertyFilters.find(f => f.name === column.name) === undefined;
+      return this.propertyFilters.find(f => f.name === column.name) == undefined;
     }
     return true;
   }
 
-  addRangeFilter(column: Column, selValueRange: ValueRange, inverted: boolean): void {
+  addRangeFilter(column: Column, selValueRange: ValueRange, inverted: boolean = false): void {
     this.dbService.numberRangeOf(column)
       .then(vr => {
         if (column.dataType === DataType.TIME) {

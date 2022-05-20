@@ -37,7 +37,7 @@
         <span>&nbsp;Select File</span>
       </button>
       <input #fileInput id="fileInput" hidden type="file"
-        [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
+             [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
       <mat-form-field class="file_name" *ngIf="file">
         <input matInput type="text" placeholder="File Name" readonly [value]="file.name">
       </mat-form-field>
@@ -56,34 +56,35 @@
       </mat-expansion-panel-header>
       <mat-form-field class="form_field_language">
         <mat-select placeholder="Language" [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
-          matTooltip="Proper language is required when parsing date/time data">
+                    matTooltip="Proper language is required when parsing date/time and number data">
           <mat-option *ngFor="let locale of locales" [value]="locale">{{ locale }}</mat-option>
         </mat-select>
       </mat-form-field>
       <div *ngFor="let attr of readerAttributes">
         <mat-slide-toggle class="reader_attribute" *ngIf="attr.isBoolean()" color="primary"
-          (change)="columnMappings = null" [(ngModel)]="attr.value" [matTooltip]="attr.description">
+                          (change)="columnMappings = null" [(ngModel)]="attr.value" [matTooltip]="attr.description">
           {{ attr.name }}
         </mat-slide-toggle>
 
         <div *ngIf="!attr.isBoolean()">
           <mat-form-field class="reader_attribute">
             <input matInput [type]="attr.isNumber() ? 'number' : 'text'"
-              *ngIf="!attr.hasValueChoice() || !attr.isValueChoiceBinding" [placeholder]="attr.name"
-              [(ngModel)]="attr.value" [matTooltip]="attr.description" (change)="columnMappings = null">
+                   *ngIf="!attr.hasValueChoice() || !attr.isValueChoiceBinding" [placeholder]="attr.name"
+                   [(ngModel)]="attr.value" [matTooltip]="attr.description" (change)="columnMappings = null">
             <mat-select *ngIf="attr.hasValueChoice() && attr.isValueChoiceBinding" [placeholder]="attr.name"
-              [(value)]="attr.value" [matTooltip]="attr.description" (selectionChange)="columnMappings = null">
+                        [(value)]="attr.value" [matTooltip]="attr.description"
+                        (selectionChange)="columnMappings = null">
               <mat-option *ngFor="let choice of attr.valueChoice" [value]="choice">{{ choice }}</mat-option>
             </mat-select>
           </mat-form-field>
 
           <button class="but_value_choice" mat-icon-button *ngIf="attr.hasValueChoice() && !attr.isValueChoiceBinding"
-            [matMenuTriggerFor]="valueChoiceMenu">
+                  [matMenuTriggerFor]="valueChoiceMenu">
             <mat-icon>expand_more</mat-icon>
           </button>
           <mat-menu #valueChoiceMenu="matMenu">
             <button mat-menu-item *ngFor="let choice of attr.valueChoice" [disabled]="choice === attr.value"
-              (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
+                    (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
           </mat-menu>
         </div>
       </div>
@@ -110,8 +111,8 @@
           </mat-form-field>
         </div>
         <button id="but_detect_columns" mat-raised-button color="primary"
-          [matTooltip]="adoptColumnsFromExistingScene ? '' : 'Detect columns by considering defined attributes'"
-          (click)="readSample()">{{ adoptColumnsFromExistingScene ? 'Adopt' : 'Detect' }} Columns</button>
+                [matTooltip]="adoptColumnsFromExistingScene ? '' : 'Detect columns by considering defined attributes'"
+                (click)="readSample()">{{ adoptColumnsFromExistingScene ? 'Adopt' : 'Detect' }} Columns</button>
       </div>
     </mat-expansion-panel>
 
@@ -123,7 +124,7 @@
       </mat-expansion-panel-header>
       <div *ngFor="let columnPair of columnMappings">
         <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
-          (onRemove)="deleteColumnMapping(columnPair)"></koia-column-mapping>
+                             (onRemove)="deleteColumnMapping(columnPair)"></koia-column-mapping>
       </div>
     </mat-expansion-panel>
 
@@ -136,13 +137,14 @@
       <div #content id="div_preview_table">
         <table mat-table [dataSource]="previewData">
           <ng-container *ngFor="let columnPair of columnMappings; let iCol = index"
-            [matColumnDef]="columnPair.target.name">
+                        [matColumnDef]="columnPair.target.name">
             <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'px'">
               {{ columnPair.target.name }}</th>
             <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
               <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="/assets/warning.png"
-                [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
-              {{ formatValue(columnPair.target, mappingResult.entry) }}</td>
+                   [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
+              {{ formatValue(columnPair.target, mappingResult.entry) }}
+            </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="targetColumnNames, sticky: true"></tr>
           <tr mat-row *matRowDef="let mappingResult; columns: targetColumnNames;"></tr>
@@ -157,29 +159,31 @@
     &nbsp;
     <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappingsValid">
       <img *ngIf="isPreviewDirty()" src="/assets/warning.png"
-        matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
-        matTooltipClass="tooltip_preview_warning" />
+           matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
+           matTooltipClass="tooltip_preview_warning" />
       &nbsp;
       <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
-        [disabled]="maxItemsToLoadControl.value < 1 || maxItemsToLoadControl.value > maxItemsPerScene" (click)="persistScene()">
+              [disabled]="maxItemsToLoadControl.value < 1 || maxItemsToLoadControl.value > maxItemsPerScene"
+              (click)="persistScene()">
         Load Data
       </button>
       &nbsp;
       <mat-form-field class="max_items">
         <input matInput type="number" placeholder="Max. items" required min="1"
-          [max]="maxItemsPerScene" step="1" [formControl]="maxItemsToLoadControl"
-          [matTooltip]="'Maximum number of items to be loaded\n(min: 1, max: ' + maxItemsPerScene.toLocaleString() + ')'"
-          matTooltipClass="multi-line-tooltip" onfocusout="this.value = Number(this.value)">
+               [max]="maxItemsPerScene" step="1" [formControl]="maxItemsToLoadControl"
+               [matTooltip]="'Maximum number of items to be loaded\n(min: 1, max: ' + maxItemsPerScene.toLocaleString() + ')'"
+               matTooltipClass="multi-line-tooltip" onfocusout="this.value = Number(this.value)">
         <mat-error *ngIf="maxItemsToLoadControl.invalid">{{ 'Exp. 1-' + maxItemsPerScene }}</mat-error>
       </mat-form-field>
       &nbsp;
       <mat-slide-toggle [(ngModel)]="abortDataloadOnError"
-        matTooltip="Abort loading data when inconsitent data is encountered">Abort on data error</mat-slide-toggle>
+                        matTooltip="Abort loading data when inconsitent data is encountered">Abort on data error
+      </mat-slide-toggle>
     </span>
   </div>
   <div id="div_progress" *ngIf="progressBarMode">
     {{ feedback }}
     <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
-      [color]="progressBarMode === 'determinate' ? 'accent' : ''"></mat-progress-bar>
+                      [color]="progressBarMode === 'determinate' ? 'accent' : ''"></mat-progress-bar>
   </div>
 </mat-card>

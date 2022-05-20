@@ -215,7 +215,7 @@ describe('SummaryTableSideBarComponent', () => {
       // then
       expect(context.valueGroupings[0]).toBe(amountValueGrouping);
       expect(range).toBeTruthy();
-      expect(amountValueGrouping.ranges.includes(range)).toBeTruthy();
+      expect(amountValueGrouping.ranges.includes(range)).toBeTrue();
       expect(amountValueGrouping.ranges.length).toEqual(rangesCount + 1);
    });
 
@@ -324,15 +324,15 @@ describe('SummaryTableSideBarComponent', () => {
    });
 
    it('#isNumericColumn should return true when column is "Number"', () => {
-      expect(controller.isNumericColumn(findColumn('Time'))).toBeTruthy();
-      expect(controller.isNumericColumn(findColumn('Amount'))).toBeTruthy();
-      expect(controller.isNumericColumn(findColumn('Percent'))).toBeTruthy();
+      expect(controller.isNumericColumn(findColumn('Time'))).toBeTrue();
+      expect(controller.isNumericColumn(findColumn('Amount'))).toBeTrue();
+      expect(controller.isNumericColumn(findColumn('Percent'))).toBeTrue();
    });
 
    it('#isNumericColumn should return false when column is "Text"', () => {
-      expect(controller.isNumericColumn(findColumn('Level'))).toBeFalsy();
-      expect(controller.isNumericColumn(findColumn('Host'))).toBeFalsy();
-      expect(controller.isNumericColumn(findColumn('Path'))).toBeFalsy();
+      expect(controller.isNumericColumn(findColumn('Level'))).toBeFalse();
+      expect(controller.isNumericColumn(findColumn('Host'))).toBeFalse();
+      expect(controller.isNumericColumn(findColumn('Path'))).toBeFalse();
    });
 
    it('#isNumericColumn should return false when column is missing', () => {

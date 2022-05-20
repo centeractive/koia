@@ -3,7 +3,7 @@ import { NumberUtils } from 'app/shared/utils';
 
 export class FilterValueParser {
 
-   constructor(private filter: PropertyFilter) {}
+   constructor(private filter: PropertyFilter) { }
 
    /**
     * Parses the string representation of a filter value. If the filter data type is NUMBER, misplaced thousands separators
@@ -13,8 +13,8 @@ export class FilterValueParser {
     */
    parse(value: string): string | number {
       if (this.filter.dataType === DataType.NUMBER) {
-         const num = NumberUtils.parseNumber(NumberUtils.removeThousandsSeparators(value));
-         return num === undefined ? value : num;
+         const num = NumberUtils.parseNumber(NumberUtils.removeThousandsSeparators(value, undefined), undefined);
+         return num == undefined ? value : num;
       }
       return value;
    }

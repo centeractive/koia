@@ -78,8 +78,9 @@ steps:
   failOnStderr: false    
   displayName: 'build koia product'
 
-- task: PublishPipelineArtifact@0
+- task: PublishPipelineArtifact@0  
   inputs:
     artifactName: 'koiadist'
     targetPath: 'dist/koia'
+  enabled: false
   displayName: 'publish artifact'

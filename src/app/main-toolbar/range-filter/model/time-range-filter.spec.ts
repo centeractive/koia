@@ -53,7 +53,7 @@ describe('TimeRangeFilter', () => {
       expect(filter.end).toBe(toTime(2010));
       expect(filter.selValueRange.min).toBe(toTime(2001));
       expect(filter.selValueRange.max).toBe(toTime(2010));
-      expect(filter.isFiltered()).toBeTruthy();
+      expect(filter.isFiltered()).toBeTrue();
    });
 
    it('#constructor should create active time filter when selected end time is defined', () => {
@@ -69,7 +69,7 @@ describe('TimeRangeFilter', () => {
       expect(filter.end).toBe(toTime(2010));
       expect(filter.selValueRange.min).toBe(toTime(2000));
       expect(filter.selValueRange.max).toBe(toTime(2009));
-      expect(filter.isFiltered()).toBeTruthy();
+      expect(filter.isFiltered()).toBeTrue();
    });
 
    it('#constructor should create active time filter when start and end time are defined', () => {
@@ -78,14 +78,14 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
 
       // when
-      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: toTime(2009)}, false);
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: toTime(2001), max: toTime(2009) }, false);
 
       // then
       expect(filter.start).toBe(toTime(2000));
       expect(filter.end).toBe(toTime(2010));
       expect(filter.selValueRange.min).toBe(toTime(2001));
       expect(filter.selValueRange.max).toBe(toTime(2009));
-      expect(filter.isFiltered()).toBeTruthy();
+      expect(filter.isFiltered()).toBeTrue();
    });
 
    it('#constructor should predefine day step only when column has YEAR format', () => {
@@ -202,7 +202,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000');
       expect(options.combineLabels('1 Jan 2008', '1 Jan 2009')).toBe('1 Jan 2008 - 1 Jan 2009');
    });
@@ -223,7 +223,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000');
       expect(options.combineLabels('1 Jan 2008', '1 Feb 2008')).toBe('1 Jan 2008 - 1 Feb 2008');
    });
@@ -243,8 +243,8 @@ describe('TimeRangeFilter', () => {
       expect(options.floor).toBe(timeStart);
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(86_400_000);
-      expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.enforceStep).toBeFalse();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000');
       expect(options.combineLabels('1 Jan 2008', '2 Jan 2008')).toBe('1 Jan 2008 - 2 Jan 2008');
    });
@@ -265,7 +265,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(3_600_000);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000 00');
       expect(options.combineLabels('1 Jan 2008 05', '1 Jan 2008 06')).toBe('1 Jan 2008 05 - 1 Jan 2008 06');
    });
@@ -286,7 +286,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(60_000);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000 00:00');
       expect(options.combineLabels('1 Jan 2008 05:00', '1 Jan 2008 05:01')).toBe('1 Jan 2008 05:00 - 1 Jan 2008 05:01');
    });
@@ -307,7 +307,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(1_000);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000 00:00:00');
       expect(options.combineLabels('1 Jan 2008 05:00:00', '1 Jan 2008 05:00:01')).toBe('1 Jan 2008 05:00:00 - 1 Jan 2008 05:00:01');
    });
@@ -328,7 +328,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(1);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000 00:00:00 000');
       expect(options.combineLabels('1 Jan 2008 05:00:00 000', '1 Jan 2008 05:00:00 001'))
          .toBe('1 Jan 2008 05:00:00 000 - 1 Jan 2008 05:00:00 001');
@@ -366,7 +366,7 @@ describe('TimeRangeFilter', () => {
       expect(options.ceil).toBe(timeEnd);
       expect(options.step).toBe(3_600_000);
       expect(options.enforceStep).toBeFalsy();
-      expect(options.draggableRange).toBeTruthy();
+      expect(options.draggableRange).toBeTrue();
       expect(options.translate(timeStart, LabelType.Ceil)).toBe('1 Jan 2000 00:00:00 000');
       expect(options.combineLabels('1 Jan 2008 05', '1 Jan 2008 06')).toBe('1 Jan 2008 05 - 1 Jan 2008 06');
    });
@@ -377,7 +377,7 @@ describe('TimeRangeFilter', () => {
       const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
       const timeStart = toTime(2000);
       const timeEnd = toTime(2010);
-      const filter = new TimeRangeFilter(column, timeStart, timeEnd,  { min: toTime(2001), max: toTime(2009) }, false);
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, { min: toTime(2001), max: toTime(2009) }, false);
 
       // when
       filter.reset();

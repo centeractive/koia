@@ -3,8 +3,8 @@ import { NumberUtils } from 'app/shared/utils';
 
 export class TimeUnitDetector {
 
-   fromColumnName(columnPair: ColumnPair, value: number, defaultTimeUnit: TimeUnit): TimeUnit {
-      if (NumberUtils.isInteger(value)) {
+   fromColumnName(columnPair: ColumnPair, value: number, defaultTimeUnit: TimeUnit, locale: string): TimeUnit {
+      if (NumberUtils.isInteger(value, locale)) {
          const lowerCaseColName = columnPair.source.name.toLowerCase();
          if (lowerCaseColName.includes('millisecond') || lowerCaseColName.includes('time')) {
             return TimeUnit.MILLISECOND;

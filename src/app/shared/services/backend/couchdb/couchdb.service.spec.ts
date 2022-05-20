@@ -17,12 +17,12 @@ describe('CouchDBService', () => {
          providers: [CouchDBService]
       });
       couchDBService = TestBed.inject(CouchDBService);
-      spyOn(console, 'log').and.callFake(m => null);
+      spyOn(console, 'log').and.callFake(() => null);
    });
 
    beforeEach(async () => {
       await couchDBService.clear(testDBPrefix)
-         .then(r => null)
+         .then(() => null)
          .catch(e => fail(e));
    });
 
@@ -52,7 +52,7 @@ describe('CouchDBService', () => {
 
       // when
       await couchDBService.initConnection(connInfo)
-         .then(dbs => fail('should have been rejected'))
+         .then(() => fail('should have been rejected'))
          .catch(err => {
 
             // then
@@ -87,8 +87,8 @@ describe('CouchDBService', () => {
             // then
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(2);
-            expect(dbs.includes(testDBPrefix + 'db1')).toBeTruthy();
-            expect(dbs.includes(testDBPrefix + 'db2')).toBeTruthy();
+            expect(dbs.includes(testDBPrefix + 'db1')).toBeTrue();
+            expect(dbs.includes(testDBPrefix + 'db2')).toBeTrue();
          })
          .catch(e => fail(e));
    });
@@ -135,7 +135,7 @@ describe('CouchDBService', () => {
          .then(dbs => {
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(1);
-            expect(dbs.includes(testDBPrefix + 'db2')).toBeTruthy();
+            expect(dbs.includes(testDBPrefix + 'db2')).toBeTrue();
          })
          .catch(e => fail(e));
    });
@@ -200,9 +200,9 @@ describe('CouchDBService', () => {
          .catch(err => {
 
             // then
-            expect(err instanceof HttpErrorResponse).toBeTruthy();
+            expect(err instanceof HttpErrorResponse).toBeTrue();
             const httpErrorResponse = <HttpErrorResponse>err;
-            expect(httpErrorResponse.ok).toBeFalsy();
+            expect(httpErrorResponse.ok).toBeFalse();
             expect(httpErrorResponse.error).toEqual({ error: 'conflict', reason: 'Document update conflict.' });
          });
    });

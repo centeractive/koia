@@ -36,8 +36,8 @@ describe('Query', () => {
     query.setFullTextFilter('abc');
 
     // when/then
-    expect(query.hasFilter()).toBeTruthy();
-    expect(query.hasFullTextFilter()).toBeTruthy();
+    expect(query.hasFilter()).toBeTrue();
+    expect(query.hasFullTextFilter()).toBeTrue();
   });
 
   it('#hasFilter should return true when applicable property filter exists', () => {
@@ -49,7 +49,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeTruthy();
+    expect(hasFilter).toBeTrue();
   });
 
   it('#hasFilter should return false when non-applicable property filter exists', () => {
@@ -74,7 +74,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeTruthy();
+    expect(hasFilter).toBeTrue();
   });
 
   it('#hasFilter should return true when non-applicable value range filter exists', () => {
@@ -127,7 +127,7 @@ describe('Query', () => {
     query.setPageDefinition(8, 10);
 
     // then
-    expect(query.hasPageDefinition()).toBeTruthy();
+    expect(query.hasPageDefinition()).toBeTrue();
     expect(query.getPageIndex()).toBe(8);
     expect(query.getRowsPerPage()).toBe(10);
   });
@@ -169,9 +169,9 @@ describe('Query', () => {
     ]);
     expect(clone.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Amount', { min: 100, max: 105, maxExcluding: undefined }),
-      new ValueRangeFilter('Percent', { min: 3, max: 6, maxExcluding: undefined})
+      new ValueRangeFilter('Percent', { min: 3, max: 6, maxExcluding: undefined })
     ]);
-    expect(clone.getSort()).toEqual( { active: 'Amount', direction: 'desc' });
+    expect(clone.getSort()).toEqual({ active: 'Amount', direction: 'desc' });
     expect(clone.getPageIndex()).toBe(10);
     expect(clone.getRowsPerPage()).toBe(5);
   });

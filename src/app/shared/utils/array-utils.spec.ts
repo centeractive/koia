@@ -40,14 +40,14 @@ describe('ArrayUtils', () => {
 
   it('#toNumberArray should return array when string contain single value', () => {
     expect(ArrayUtils.toNumberArray('-1')).toEqual([-1]);
-    expect(ArrayUtils.toNumberArray('-0.1')).toEqual([-0.1]);
+    expect(ArrayUtils.toNumberArray((-0.1).toLocaleString())).toEqual([-0.1]);
     expect(ArrayUtils.toNumberArray('0')).toEqual([0]);
-    expect(ArrayUtils.toNumberArray('0.1')).toEqual([0.1]);
+    expect(ArrayUtils.toNumberArray((0.1).toLocaleString())).toEqual([0.1]);
     expect(ArrayUtils.toNumberArray('1')).toEqual([1]);
     expect(ArrayUtils.toNumberArray('-1', '|')).toEqual([-1]);
-    expect(ArrayUtils.toNumberArray('-0.1', '|')).toEqual([-0.1]);
+    expect(ArrayUtils.toNumberArray((-0.1).toLocaleString(), '|')).toEqual([-0.1]);
     expect(ArrayUtils.toNumberArray('0', '|')).toEqual([0]);
-    expect(ArrayUtils.toNumberArray('0.1', '|')).toEqual([0.1]);
+    expect(ArrayUtils.toNumberArray((0.1).toLocaleString(), '|')).toEqual([0.1]);
     expect(ArrayUtils.toNumberArray('1', '|')).toEqual([1]);
   });
 

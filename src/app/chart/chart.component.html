@@ -3,4 +3,6 @@
    [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize"
    [resizeEdges]="{ top: true, right: true, bottom: true, left: true }" (resizeEnd)="onMarginResizeEnd($event)">
 </div>
-<nvd3 *ngIf="chartOptions && chartData" [options]="chartOptions" [data]="chartData"></nvd3>
+<div id="div_chartjs">
+   <canvas #canvas></canvas>
+</div>

@@ -1,6 +1,6 @@
 <div class="div_accordion_options">
    <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-      (change)="onMultiExpandableChanged($event.checked)">
+                     (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
@@ -15,7 +15,7 @@
 
 <div id="div_charts">
    <button class="but_chart_type" mat-raised-button mat-icon-button *ngFor="let chartType of chartTypes"
-      [color]="chartTypeColor(chartType)" [matTooltip]="chartType.name + ' Chart'" (click)="setChartType(chartType)">
+           [color]="chartTypeColor(chartType)" [matTooltip]="chartType.name + ' Chart'" (click)="switchTo(chartType)">
       <mat-icon *ngIf="chartType.customIcon" [svgIcon]="chartType.icon"></mat-icon>
       <mat-icon *ngIf="!chartType.customIcon">{{ chartType.icon }}</mat-icon>
    </button>
@@ -27,7 +27,7 @@
       <mat-expansion-panel-header>{{ dataPanelName() }}</mat-expansion-panel-header>
       <div>
          <button class="but_column" mat-raised-button *ngFor="let column of selectableDataColumns"
-            [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
+                 [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             {{ column.name }}
          </button>
@@ -36,21 +36,23 @@
       <div>
          <mat-radio-group [value]="context.isAggregationCountSelected()">
             <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
-               (change)="onAggregationTypeChanged(true)">
+                              (change)="onAggregationTypeChanged(true)">
                Count Distinct Values
             </mat-radio-button>
             <mat-radio-button [value]="false" [disabled]="!individualValuesEnabled"
-               (change)="onAggregationTypeChanged(false)">
-               {{ context.isNonGrouping() ? 'Unique Named' : 'Individual' }} Values
+                              (change)="onAggregationTypeChanged(false)">
+               {{ context.isCircularChart() ? 'Unique Named' : 'Individual' }} Values
             </mat-radio-button>
-         </mat-radio-group>
+         </mat-radio-group>&nbsp;&nbsp;&nbsp;
+         <mat-checkbox *ngIf="!context.isCircularChart()" class="example-margin" [(ngModel)]="context.stacked"> Stacked
+         </mat-checkbox>
       </div>
    </mat-expansion-panel>
 
-   <mat-expansion-panel *ngIf="context.isNonGrouping() && !context.isAggregationCountSelected()">
+   <mat-expansion-panel *ngIf="context.isCircularChart() && !context.isAggregationCountSelected()">
       <mat-expansion-panel-header>Names</mat-expansion-panel-header>
 
-      <mat-form-field *ngIf="!context.isMultipleGrouping()">
+      <mat-form-field>
          <mat-select placeholder="Name Column" [value]="getSingleGroupByColumn()">
             <mat-select-trigger>
                <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
@@ -58,7 +60,7 @@
                {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
             </mat-select-trigger>
             <mat-option *ngFor="let column of context.columns" [value]="column"
-               (click)="context.groupByColumns = [column]">
+                        (click)="context.groupByColumns = [column]">
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                {{ column.name }}
             </mat-option>
@@ -66,22 +68,23 @@
       </mat-form-field>
    </mat-expansion-panel>
 
-   <mat-expansion-panel *ngIf="context.isSingleGrouping()">
+   <mat-expansion-panel *ngIf="!context.isCategoryChart()">
       <mat-expansion-panel-header>Value Splitting</mat-expansion-panel-header>
 
       <div div_column_swap_list>
          <span class="span_left_to_right">
             <label>Selected Columns</label>
             <mat-icon matTooltipClass="multi-line-tooltip"
-               matTooltip="Drag & Drop available columns to make them selected
+                      matTooltip="Drag & Drop available columns to make them selected
 
             Values are shown separately for distinct content of the selected split columns. If any split column cell is empty, the value is ignored">
                help
             </mat-icon>
          </span>
          <div id="selectedSplitColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-            [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList" class="div_column_list"
-            (cdkDropListDropped)="dropSplitColumn($event)">
+              [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList"
+              class="div_column_list"
+              (cdkDropListDropped)="dropSplitColumn($event)">
             <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns" cdkDrag>
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
             </div>
@@ -89,8 +92,8 @@
          <br>
          <label>Available Columns</label>
          <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableSplitColumns"
-            [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-            (cdkDropListDropped)="dropSplitColumn($event)">
+              [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+              (cdkDropListDropped)="dropSplitColumn($event)">
             <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableSplitColumns" cdkDrag>
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
             </div>
@@ -98,70 +101,33 @@
       </div>
    </mat-expansion-panel>
 
-   <mat-expansion-panel *ngIf="!context.isNonGrouping()">
+   <mat-expansion-panel
+                        *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())">
       <mat-expansion-panel-header>{{ groupingPanelName() }}</mat-expansion-panel-header>
 
-      <mat-form-field *ngIf="!context.isMultipleGrouping() && elementContext.getNumericColumns().length > 0">
-         <mat-select placeholder="Group by" [value]="getSingleGroupByColumn()">
+      <mat-form-field>
+         <mat-select [placeholder]="context.isCategoryChart() ? 'Column Name' : 'Group by'"
+                     [value]="getSingleGroupByColumn()">
             <mat-select-trigger>
                <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
                   {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
                {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
             </mat-select-trigger>
-            <mat-option *ngFor="let column of elementContext.getNumericColumns()" [value]="column"
-               (click)="onGroupByColumnChanged(column)">
+            <mat-option *ngFor="let column of selectableGroupByColumns()" [value]="column"
+                        (click)="onGroupByColumnChanged(column)">
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                {{ column.name }}
             </mat-option>
          </mat-select>
       </mat-form-field>
 
-      <mat-form-field
-         *ngIf="context.isAggregationCountSelected() && groupByTimeColumn && !context.isMultipleGrouping()">
+      <mat-form-field *ngIf="context.isAggregationCountSelected() && groupByTimeColumn">
          <mat-select placeholder="Time Unit Grouping" [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
             <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-               (click)="context.fireStructureChanged()">{{ timeUnit }}</mat-option>
+                        (click)="context.fireStructureChanged()">{{ timeUnit }}</mat-option>
          </mat-select>
       </mat-form-field>
 
-      <div *ngIf="context.isMultipleGrouping()" div_column_swap_list>
-         <span class="span_left_to_right">
-            <label>Selected Columns</label>
-            <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
-         </span>
-         <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-            [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList"
-            class="div_column_list" (cdkDropListDropped)="dropGroupByColumn($event)">
-            <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns"
-               cdkDrag>
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                  [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                     (click)="context.fireStructureChanged()">
-                     {{ timeUnit ? 'per ' +  timeUnit : '' }}</mat-option>
-               </mat-select>
-            </div>
-         </div>
-         <br>
-         <label>Available Columns</label>
-         <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
-            [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-            (cdkDropListDropped)="dropGroupByColumn($event)">
-            <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableGroupByColumns"
-               cdkDrag>
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                  [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                     (click)="context.fireStructureChanged()">
-                     {{ timeUnit ? 'per ' +  timeUnit : '' }}</mat-option>
-               </mat-select>
-            </div>
-         </div>
-      </div>
    </mat-expansion-panel>
 
    <mat-expansion-panel>
@@ -183,7 +149,7 @@
       <mat-form-field class="field_small_integer">
          <mat-select placeholder="Position" [value]="elementPosition">
             <mat-option *ngFor="let position of elementPositions" [value]="position"
-               (click)="setElementPosition(position)">
+                        (click)="setElementPosition(position)">
                {{ position }}
             </mat-option>
          </mat-select>
@@ -192,22 +158,23 @@
 
    <mat-expansion-panel>
       <mat-expansion-panel-header>Labels & Legend </mat-expansion-panel-header>
-      <mat-slide-toggle *ngIf="isPieOrDonutChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels
+      <mat-slide-toggle *ngIf="isCircularChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels
       </mat-slide-toggle>
-      <div *ngIf="!isPieOrDonutChart()" class="div_label_rotation">
+      <div *ngIf="!isCircularChart()" class="div_label_rotation">
          X-Axis Label Rotation
          <mat-slider min="0" max="90" step="1" [value]="- context.xLabelRotation"
-            (change)="context.xLabelRotation = -$event.value"></mat-slider>
+                     (change)="context.xLabelRotation = -$event.value"></mat-slider>
       </div>
       <span class="span_row" *ngIf="context.chartType !== 'discreteBarChart'">
          <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>
          <button mat-button *ngIf="context.showLegend && context.chartType !== 'scatterChart'"
-            [matMenuTriggerFor]="menu" color="accent">{{
+                 [matMenuTriggerFor]="menu" color="accent">{{
             context.legendPosition }}</button>
          <mat-menu #menu="matMenu">
             <button mat-menu-item class="menu_item_legend_position" *ngFor="let position of legendPositions"
-               (click)="context.legendPosition = position"
-               [disabled]="context.isCurrentLegendPosition(position)">{{ position }}</button>
+                    (click)="context.legendPosition = position"
+                    [disabled]="context.isCurrentLegendPosition(position)">{{
+               position }}</button>
          </mat-menu>
       </span>
    </mat-expansion-panel>

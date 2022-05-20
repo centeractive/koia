@@ -74,8 +74,8 @@ export class EntryMapper {
             && columnPair.target.dataType === DataType.TIME) {
             this.mapTextToTime(<string>sourceValue, columnPair, mappingResult);
          } else {
-            const value = DataTypeUtils.toTypedValue(sourceValue, columnPair.target.dataType);
-            if (value === undefined) {
+            const value = DataTypeUtils.toTypedValue(sourceValue, columnPair.target.dataType, this.locale);
+            if (value == undefined) {
                mappingResult.errors.push('Column \'' + columnPair.source.name + '\': Cannot convert "' + this.abbreviate(sourceValue) +
                   '" to ' + columnPair.target.dataType);
             } else {

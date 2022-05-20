@@ -14,6 +14,7 @@ import { ValueFormatter } from 'app/shared/format';
 import { FormControl, Validators } from '@angular/forms';
 import { MatAccordion } from '@angular/material/expansion';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { ProgressBarMode } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'koia-front',
@@ -56,7 +57,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   maxItemsPerScene: number;
   maxItemsToLoadControl: FormControl;
   abortDataloadOnError = true;
-  progressBarMode: string;
+  progressBarMode: ProgressBarMode;
   canceled = false;
 
   private generatedSceneName: string;
@@ -81,7 +82,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       this.defineLocales();
       this.collectColumnMappingSources();
       this.initScene();
-      this.detectIfScenesExist();      
+      this.detectIfScenesExist();
     }
   }
 
@@ -179,7 +180,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     } else {
       this.fileHeader = '*** binary data cannot be displayed ***';
     }
-    this.readerAttributes = this.selectedReader.furnishAttributes(this.fileHeader);
+    this.readerAttributes = this.selectedReader.furnishAttributes(this.fileHeader, this.selectedLocale);
   }
 
   initContext(): void {
@@ -230,7 +231,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   private validateColumnMappings(): void {
     this.columnMappingsValid = this.targetColumnNames.length > 0 && this.targetColumnNames
-      .find(n => !n || n.length > ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH) === undefined;
+      .find(n => !n || n.length > ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH) == undefined;
   }
 
   isPreviewDirty(): boolean {

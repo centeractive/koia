@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { DB } from '../db.type';
 import { ConnectionInfo } from '../../../model/connection-info.type';
-import { CommonUtils } from 'app/shared/utils';
+import { CommonUtils, LogUtils } from 'app/shared/utils';
 import { CouchDBConfig } from './couchdb-config';
 import { Scene, Document, HTTPMethod } from 'app/shared/model';
 
@@ -40,9 +40,7 @@ export class CouchDBService implements DB {
     this.httpOptions = this.createHttpOptions();
     this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
     return this.listDatabases()
-      .then(dbs => {
-        return 'Connection to CouchDB at ' + this.baseURL + ' established';
-      });
+      .then(() => 'Connection to CouchDB at ' + this.baseURL + ' established');
   }
 
   getConnectionInfo(): ConnectionInfo {
@@ -62,14 +60,17 @@ export class CouchDBService implements DB {
     */
   listDatabases(): Promise<string[]> {
     const url = this.baseURL + '_all_dbs';
-    console.log(HTTPMethod.GET + ' ' + url);
-    return this.http.get<string[]>(url, this.httpOptions).pipe(
-      map(dbs => dbs.filter(db => !db.startsWith('_')))
-    ).toPromise();
+    LogUtils.logHttpRequest(HTTPMethod.GET, url);
+    return this.http.get<string[]>(url, this.httpOptions)
+      .pipe(
+        map(dbs => dbs.filter(db => !db.startsWith('_')))
+      ).toPromise();
   }
 
   createDatabase(database: string): Promise<any> {
-    return this.http.put<string>(this.url(HTTPMethod.PUT, database), '', this.httpOptions).toPromise();
+    const url = this.url(database);
+    LogUtils.logHttpRequest(HTTPMethod.PUT, url);
+    return this.http.put<string>(url, '', this.httpOptions).toPromise();
   }
 
   getMaxDataItemsPerScene(): number {
@@ -83,30 +84,38 @@ export class CouchDBService implements DB {
       },
       ddoc: 'index_' + columnName
     };
-    return this.http.post<any>(this.url(HTTPMethod.POST, database, '_index'), index, this.httpOptions).toPromise();
+    const url = this.url(database, '_index');
+    LogUtils.logHttpRequest(HTTPMethod.POST, url, index);
+    return this.http.post<any>(url, index, this.httpOptions).toPromise();
   }
 
   deleteDatabase(database: string): Promise<any> {
     if (database.startsWith('_')) {
       return Promise.reject('You have no permission to delete the system database ' + database);
     }
-    return this.http.delete<any>(this.url(HTTPMethod.DELETE, database), this.httpOptions).toPromise();
+    const url = this.url(database);
+    LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
+    return this.http.delete<any>(url, this.httpOptions).toPromise();
   }
 
   findById(database: string, id: string): Promise<Document> {
-    return this.http.get<Scene>(this.url(HTTPMethod.GET, database, id), this.httpOptions).toPromise();
+    const url = this.url(database, id);
+    LogUtils.logHttpRequest(HTTPMethod.GET, url);
+    return this.http.get<Scene>(url, this.httpOptions).toPromise();
   }
 
   find(database: string, mangoQuery: any): Observable<Document[]> {
     const url = this.baseURL + database + '/_find';
-    console.log(HTTPMethod.POST + ' ' + url + ' ' + JSON.stringify(mangoQuery));
+    LogUtils.logHttpRequest(HTTPMethod.POST, url, mangoQuery);
     return this.http.post<any>(url, mangoQuery, this.httpOptions).pipe(
       map(res => res.docs)
     );
   }
 
   async insert(database: string, document: Document): Promise<Document> {
-    return this.http.post<DocChangeResponse>(this.url(HTTPMethod.POST, database), document, this.httpOptions).toPromise()
+    const url = this.url(database);
+    LogUtils.logHttpRequest(HTTPMethod.POST, url, document);
+    return this.http.post<DocChangeResponse>(url, document, this.httpOptions).toPromise()
       .then(dcr => {
         document._id = dcr.id;
         document._rev = dcr.rev;
@@ -115,9 +124,9 @@ export class CouchDBService implements DB {
   }
 
   async insertBulk(database: string, documents: Document[]): Promise<void> {
-    console.log(JSON.stringify(documents));
-    return this.http.post<DocChangeResponse[]>(this.url(HTTPMethod.POST, database, '_bulk_docs'),
-      { docs: documents }, this.httpOptions).toPromise()
+    const url = this.url(database, '_bulk_docs');
+    LogUtils.logHttpRequest(HTTPMethod.POST, url, { docs: documents });
+    return this.http.post<DocChangeResponse[]>(url, { docs: documents }, this.httpOptions).toPromise()
       .then(r => {
         const errors = r.filter(dcr => dcr.error).map(dcr => 'id: ' + dcr.id + ', error: ' + dcr.error + ', reason: ' + dcr.reason);
         if (errors.length > 0) {
@@ -127,7 +136,9 @@ export class CouchDBService implements DB {
   }
 
   async update(database: string, document: Document): Promise<Document> {
-    return this.http.put<DocChangeResponse>(this.url(HTTPMethod.PUT, database, document._id), document, this.httpOptions).toPromise()
+    const url = this.url(database, document._id);
+    LogUtils.logHttpRequest(HTTPMethod.PUT, url, document);
+    return this.http.put<DocChangeResponse>(url, document, this.httpOptions).toPromise()
       .then(r => {
         document._rev = r.rev;
       })
@@ -135,12 +146,15 @@ export class CouchDBService implements DB {
   }
 
   delete(database: string, document: Document): Promise<any> {
-    const url = this.url(HTTPMethod.DELETE, database, document._id + '?rev=' + document._rev);
+    const url = this.url(database, document._id + '?rev=' + document._rev);
+    LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
     return this.http.delete<any>(url, this.httpOptions).toPromise();
   }
 
   async countDocuments(database: string): Promise<number> {
-    return this.http.get<any>(this.url(HTTPMethod.GET, database), this.httpOptions).toPromise()
+    const url = this.url(database);
+    LogUtils.logHttpRequest(HTTPMethod.GET, url);
+    return this.http.get<any>(url, this.httpOptions).toPromise()
       .then(info => info['doc_count']);
   }
 
@@ -152,9 +166,8 @@ export class CouchDBService implements DB {
       );
   }
 
-  private url(method: HTTPMethod, database: string, properties?: string): string {
-    const url = this.baseURL + database + (properties ? '/' + properties : '');
-    console.log(method + ' ' + url);
-    return url;
+  private url(database: string, properties?: string): string {
+    return this.baseURL + database + (properties ? '/' + properties : '');
   }
+
 }

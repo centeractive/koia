@@ -273,7 +273,7 @@ describe('DateTimeUtils', () => {
   it('#parseDate should return undefined when date is followed by text', () => {
 
     // given
-    const value = '2019.06.05 11:25:16 abcdef';
+    const value = '2021.01.30 11:25:16 abcdef';
 
     // when
     const date = DateTimeUtils.parseDate(value, 'yyyy-MM-dd HH:mm:ss');
@@ -285,7 +285,7 @@ describe('DateTimeUtils', () => {
   it('#parseDate should return undefined when date is among text', () => {
 
     // given
-    const value = 'abcdef 2019.06.05 11:25:16 opyrst';
+    const value = 'abcdef 2021.01.30 11:25:16 opyrst';
 
     // when
     const date = DateTimeUtils.parseDate(value, 'yyyy-MM-dd HH:mm:ss');
@@ -749,27 +749,8 @@ describe('DateTimeUtils', () => {
     expect(timeColumns[2].groupingTimeUnit).toBe(TimeUnit.MINUTE);
   });
 
-  /**
-   * use this function to also cover corner cases such as daylight saving time
-   */
   function fromNow(numberOfTimeUnit: number, timeUnit: TimeUnit): number {
-    const date = new Date(now);
-    switch (timeUnit) {
-      case TimeUnit.MILLISECOND:
-        return date.setMilliseconds(date.getMilliseconds() + numberOfTimeUnit);
-      case TimeUnit.SECOND:
-        return date.setSeconds(date.getSeconds() + numberOfTimeUnit);
-      case TimeUnit.MINUTE:
-        return date.setMinutes(date.getMinutes() + numberOfTimeUnit);
-      case TimeUnit.HOUR:
-        return date.setHours(date.getHours() + numberOfTimeUnit);
-      case TimeUnit.DAY:
-        return date.setDate(date.getDate() + numberOfTimeUnit);
-      case TimeUnit.MONTH:
-        return date.setMonth(date.getMonth() + numberOfTimeUnit);
-      case TimeUnit.YEAR:
-        return date.setFullYear(date.getFullYear() + numberOfTimeUnit);
-    }
+    return moment(now).add(numberOfTimeUnit, timeUnit).toDate().getTime();
   }
 
 });

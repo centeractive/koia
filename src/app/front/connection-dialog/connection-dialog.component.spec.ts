@@ -81,7 +81,7 @@ describe('ConnectionDialogComponent', () => {
     changeInputValue('port', '999');
     changeInputValue('user', 'abc123');
     changeInputValue('password', '%ad3Zds_');
-    const cancelButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
+    const cancelButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
     spyOn(component.dialogRef, 'close');
 
     // when
@@ -107,7 +107,7 @@ describe('ConnectionDialogComponent', () => {
     okButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeTruthy();
+    expect(component.data.closedWithOK).toBeTrue();
     expect(component.data.connectionInfo.host).toBe('server-x');
     expect(component.data.connectionInfo.port).toBe(999);
     expect(component.data.connectionInfo.user).toBe('abc123');

@@ -341,7 +341,7 @@ describe('SceneComponent', () => {
     expect(formatted).toBe('2019-01-30 18:24:17 557');
   });
 
-  it('#formatValue should return formatted number using locale en-US', () => {
+  it('#formatValue should return formatted number using current locale', () => {
 
     // given
     const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
@@ -351,7 +351,7 @@ describe('SceneComponent', () => {
     const formatted = component.formatValue(column, entry);
 
     // then
-    expect(formatted).toBe('15,000');
+    expect(formatted).toBe((15_000).toLocaleString());
   });
 
   it('#formatValue should return value when value is text', () => {

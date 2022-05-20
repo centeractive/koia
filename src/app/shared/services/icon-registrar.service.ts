@@ -8,16 +8,17 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class IconRegistrarService {
 
   readonly svgIcons = [
+    'add_chart',
+    'add_summary',
     'area_chart',
+    'add_graph',
     'flex_view',
     'grid_view',
-    'horizontal_bar_chart',
     'grouped_bar_chart',
     'grouped_horizontal_bar_chart',
-    'add_chart',
-    'add_graph',
-    'add_summary',
+    'horizontal_bar_chart',
     'pivot_table',
+    'polar_area_chart',
     'raw_data_view',
     'zoomable_line_chart'
   ];

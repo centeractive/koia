@@ -22,7 +22,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldDetach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeFalsy();
+      expect(shouldAttach).toBeFalse();
    });
 
    it('#shouldDetach should return true for cached route', () => {
@@ -36,7 +36,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldDetach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeTruthy();
+      expect(shouldAttach).toBeTrue();
    });
 
    it('#shouldAttach should return false for non-stored route', () => {
@@ -48,7 +48,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldAttach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeFalsy();
+      expect(shouldAttach).toBeFalse();
    });
 
    it('#shouldAttach should return true for stored route', () => {
@@ -62,7 +62,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldAttach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeTruthy();
+      expect(shouldAttach).toBeTrue();
    });
 
    it('#shouldAttach should remove stale tooltips', () => {
@@ -118,7 +118,7 @@ describe('AppRouteReuseStrategy', () => {
       const reuse = strategy.shouldReuseRoute(futureRouteSnapshot, currentRouteSnapshot);
 
       // then
-      expect(reuse).toBeFalsy();
+      expect(reuse).toBeFalse();
    });
 
    it('#shouldReuseRoute should return true when route configs are same', () => {
@@ -130,7 +130,7 @@ describe('AppRouteReuseStrategy', () => {
       const reuse = strategy.shouldReuseRoute(routeSnapshot, routeSnapshot);
 
       // then
-      expect(reuse).toBeTruthy();
+      expect(reuse).toBeTrue();
    });
 
    it('#clear should remove stored routes', () => {
@@ -150,7 +150,7 @@ describe('AppRouteReuseStrategy', () => {
    });
 
    function createActivatedRouteSnapshot(route: Route): ActivatedRouteSnapshot {
-      return <ActivatedRouteSnapshot> {
+      return <ActivatedRouteSnapshot>{
          routeConfig: {
             path: route
          }

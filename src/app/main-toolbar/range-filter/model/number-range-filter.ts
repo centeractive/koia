@@ -28,7 +28,7 @@ export class NumberRangeFilter {
       this.column = column;
       this.start = start;
       this.end = end;
-      this.inverted = inverted === undefined ? false : inverted;
+      this.inverted = inverted == undefined ? false : inverted;
       this.initSelectedRange(selValueRange);
       this.initSliderSteps();
       this.defineSliderOptions();
@@ -37,10 +37,10 @@ export class NumberRangeFilter {
    private initSelectedRange(selValueRange: ValueRange): void {
       this.selValueRange = selValueRange || { min: this.start, max: this.end }
       if (selValueRange) {
-         if (selValueRange.min === null || selValueRange.min === undefined) {
+         if (selValueRange.min == undefined) {
             this.selValueRange.min = this.start;
          }
-         if (selValueRange.max === null || selValueRange.max === undefined) {
+         if (selValueRange.max == undefined) {
             this.selValueRange.max = this.end;
             this.selValueRange.maxExcluding = false;
          }
@@ -62,8 +62,8 @@ export class NumberRangeFilter {
    }
 
    formatStep(step: any): any {
-      const num = NumberUtils.asNumber(step);
-      return num === undefined || num < 1_000 ? step : num.toLocaleString();
+      const num = NumberUtils.asNumber(step, undefined);
+      return num == undefined || num < 1_000 ? step : num.toLocaleString();
    }
 
    onStepChanged(step: any): void {

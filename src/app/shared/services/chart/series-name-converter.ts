@@ -39,7 +39,7 @@ export class SeriesNameConverter {
       const splitColumnValues = [];
       for (const splitColumn of splitColumns) {
          const splitColumnValue = entry[splitColumn.name];
-         if (splitColumnValue === null || splitColumnValue === undefined || splitColumnValue === '') {
+         if (splitColumnValue == undefined || splitColumnValue === '') {
             return undefined;
          }
          splitColumnValues.push(splitColumnValue);
@@ -55,7 +55,7 @@ export class SeriesNameConverter {
       const columns = splitColumns.concat(dataColumn);
       const tokens = groupKey.toString().split(SeriesNameConverter.SEPARATOR);
       for (let i = 0; i < columns.length; i++) {
-         values.push(DataTypeUtils.toTypedValue(tokens[i], columns[i].dataType));
+         values.push(DataTypeUtils.toTypedValue(tokens[i], columns[i].dataType, undefined));
       }
       return values;
    }

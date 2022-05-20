@@ -30,7 +30,7 @@ export class DBService {
   }
 
   isBackendInitialized(): boolean {
-    return this.db !== null && this.db !== undefined;
+    return !!this.db;
   }
 
   /**
@@ -64,7 +64,7 @@ export class DBService {
   private async createScenesDB(): Promise<any> {
     const scenesDB = this.scenesDbName();
     return this.db.createDatabase(scenesDB)
-      .then(r => this.db.createIndex(scenesDB, 'creationTime'));
+      .then(() => this.db.createIndex(scenesDB, 'creationTime'));
   }
 
   /**
@@ -120,7 +120,7 @@ export class DBService {
 
   async persistScene(scene: Scene, activate: boolean): Promise<Scene> {
     return this.db.insert(this.scenesDbName(), scene)
-      .then(r => {
+      .then(() => {
         if (activate) {
           this.activeScene = scene;
           console.log('scene activated (id: ' + scene._id + ', rev: ' + scene._rev + ')');
@@ -135,7 +135,7 @@ export class DBService {
 
   async updateScene(scene: Scene): Promise<Scene> {
     return this.db.update(this.scenesDbName(), scene)
-      .then(d => scene);
+      .then(() => scene);
   }
 
   async deleteScene(sceneInfo: SceneInfo): Promise<any> {
@@ -143,7 +143,7 @@ export class DBService {
       this.activeScene = undefined;
     }
     return this.db.delete(this.scenesDbName(), sceneInfo)
-      .then(r => this.db.deleteDatabase(sceneInfo.database));
+      .then(() => this.db.deleteDatabase(sceneInfo.database));
   }
 
   async activateScene(id: string): Promise<Scene> {

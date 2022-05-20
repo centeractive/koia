@@ -11,7 +11,7 @@ export class ValueRangeFilter {
    constructor(name: string, valueRange: ValueRange, inverted?: boolean) {
       this._name = name;
       this._valueRange = valueRange;
-      this._inverted = inverted === undefined ? false : inverted;
+      this._inverted = inverted == undefined ? false : inverted;
    }
 
    get name(): string {

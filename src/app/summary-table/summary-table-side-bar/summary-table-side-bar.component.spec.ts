@@ -245,10 +245,12 @@ describe('SummaryTableSideBarComponent', () => {
   });
 
   it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1'.toString() }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-'.toString() }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '.'.toString() }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a'.toString() }))).toBeFalsy();
+    const decimalSeparator = (0.1).toLocaleString().charAt(1);
+
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBeTruthy();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBeTruthy();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBeTruthy();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBeFalsy();
   });
 
   it('#dropAggregation should re-position context aggregations when moved inside selected aggregations', () => {

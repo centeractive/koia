@@ -9,7 +9,6 @@ import { NotificationService, ViewPersistenceService, DialogService, ExportServi
 import { Column, StatusType, SummaryContext, GraphContext, Route, DataType, Scene, ExportFormat } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
-import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
@@ -197,8 +196,8 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(2);
     const context = component.elementContexts[1];
-    expect(component.isSummaryContext(context)).toBeTruthy();
-    expect(context instanceof SummaryContext).toBeTruthy();
+    expect(component.isSummaryContext(context)).toBeTrue();
+    expect(context instanceof SummaryContext).toBeTrue();
   });
 
   it('#addChart should add chart context', () => {
@@ -210,8 +209,8 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(2);
     const context = component.elementContexts[1];
-    expect(component.isChartContext(context)).toBeTruthy();
-    expect(context instanceof ChartContext).toBeTruthy();
+    expect(component.isChartContext(context)).toBeTrue();
+    expect(context instanceof ChartContext).toBeTrue();
   });
 
   it('#addGraph should add graph context', () => {
@@ -223,8 +222,8 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(2);
     const context = component.elementContexts[1];
-    expect(component.isGraphContext(context)).toBeTruthy();
-    expect(context instanceof GraphContext).toBeTruthy();
+    expect(component.isGraphContext(context)).toBeTrue();
+    expect(context instanceof GraphContext).toBeTrue();
   });
 
   it('#validateElementResize should return false when width is to small', () => {
@@ -240,7 +239,7 @@ describe('FlexCanvasComponent', () => {
     const validation = component.validateElementResize(resizeEvent);
 
     // then
-    expect(validation).toBeFalsy();
+    expect(validation).toBeFalse();
   });
 
   it('#validateElementResize should return false when height is to small', () => {
@@ -256,7 +255,7 @@ describe('FlexCanvasComponent', () => {
     const validation = component.validateElementResize(resizeEvent);
 
     // then
-    expect(validation).toBeFalsy();
+    expect(validation).toBeFalse();
   });
 
   it('#validateElementResize should return true when width and height are fine', () => {
@@ -271,7 +270,7 @@ describe('FlexCanvasComponent', () => {
     const validation = component.validateElementResize(resizeEvent);
 
     // then
-    expect(validation).toBeTruthy();
+    expect(validation).toBeTrue();
   });
 
   it('#onResizeEnd should set graph context size', () => {
@@ -318,7 +317,7 @@ describe('FlexCanvasComponent', () => {
 
     // then
     expect(context.setSize).toHaveBeenCalledWith(SummaryContext.UNLIMITED_WITH, 199 - headerHeight);
-    expect(context.hasUnlimitedWidth()).toBeTruthy();
+    expect(context.hasUnlimitedWidth()).toBeTrue();
   });
 
   it('#click on config button should open side bar', () => {
@@ -478,10 +477,12 @@ describe('FlexCanvasComponent', () => {
     expect(window.print).toHaveBeenCalled();
   }));
 
-  it('#saveAs should export image when chart context is provided', () => {
+  it('#saveAs should export image', () => {
 
     // given
     const chartContext = component.addChart();
+    chartContext.title = 'Test';
+    chartContext.chart = <any>{ toBase64Image: () => 'base64Image...' };
     spyOn(exportService, 'exportImage');
 
     // when
@@ -489,7 +490,7 @@ describe('FlexCanvasComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(exportService.exportImage).toHaveBeenCalled();
+    expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
 
   /**

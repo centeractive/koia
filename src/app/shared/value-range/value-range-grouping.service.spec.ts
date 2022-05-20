@@ -23,8 +23,14 @@ describe('ValueRangeGroupingService', () => {
    it('#compute should group data by defined sorted ranges', () => {
 
       // given
-      const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }, { max: 30, active: true }]
-      const groupings: ValueGrouping[] = [{ columnName: 'Amount', ranges: ranges }];
+      const ranges: ValueRange[] = [
+         { max: 10, active: true },
+         { max: 20, active: true },
+         { max: 30, active: true }
+      ];
+      const groupings: ValueGrouping[] = [
+         { columnName: 'Amount', ranges: ranges }
+      ];
 
       // when
       const dataFrame = groupingService.compute(baseDataFrame, groupings);
@@ -37,15 +43,21 @@ describe('ValueRangeGroupingService', () => {
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - 30' },
          { ID: 4, Level: 'WARN', Data: 'four', Amount: '20 - 30' },
          { ID: 5, Level: 'WARN', Data: 'fife', Amount: '20 - 30' }
-      ]
+      ];
       expect(dataFrame.toArray()).toEqual(expectedData);
    });
 
    it('#compute should group data by non-sorted ranges', () => {
 
       // given
-      const ranges: ValueRange[] = [{ max: 20, active: true }, { max: 10, active: true }, { max: 30, active: true }]
-      const groupings: ValueGrouping[] = [{ columnName: 'Amount', ranges: ranges }];
+      const ranges: ValueRange[] = [
+         { max: 20, active: true },
+         { max: 10, active: true },
+         { max: 30, active: true }
+      ];
+      const groupings: ValueGrouping[] = [
+         { columnName: 'Amount', ranges: ranges }
+      ];
 
       // when
       const dataFrame = groupingService.compute(baseDataFrame, groupings);
@@ -58,15 +70,21 @@ describe('ValueRangeGroupingService', () => {
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - 30' },
          { ID: 4, Level: 'WARN', Data: 'four', Amount: '20 - 30' },
          { ID: 5, Level: 'WARN', Data: 'fife', Amount: '20 - 30' }
-      ]
+      ];
       expect(dataFrame.toArray()).toEqual(expectedData);
    });
 
    it('#compute should group data by sorted active ranges', () => {
 
       // given
-      const ranges: ValueRange[] = [{ max: 20, active: true }, { max: 10, active: false }, { max: 30, active: true }]
-      const groupings: ValueGrouping[] = [{ columnName: 'Amount', ranges: ranges }];
+      const ranges: ValueRange[] = [
+         { max: 20, active: true },
+         { max: 10, active: false },
+         { max: 30, active: true }
+      ];
+      const groupings: ValueGrouping[] = [
+         { columnName: 'Amount', ranges: ranges }
+      ];
 
       // when
       const dataFrame = groupingService.compute(baseDataFrame, groupings);
@@ -79,14 +97,14 @@ describe('ValueRangeGroupingService', () => {
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - 30' },
          { ID: 4, Level: 'WARN', Data: 'four', Amount: '20 - 30' },
          { ID: 5, Level: 'WARN', Data: 'fife', Amount: '20 - 30' }
-      ]
+      ];
       expect(dataFrame.toArray()).toEqual(expectedData);
    });
 
    it('#compute should group data by defined sorted ranges and max range', () => {
 
       // given
-      const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }]
+      const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }];
       const groupings: ValueGrouping[] = [{ columnName: 'Amount', ranges: ranges }];
 
       // when
@@ -100,7 +118,7 @@ describe('ValueRangeGroupingService', () => {
          { ID: 3, Level: 'INFO', Data: 'three', Amount: '20 - max' },
          { ID: 4, Level: 'WARN', Data: 'four', Amount: '20 - max' },
          { ID: 5, Level: 'WARN', Data: 'fife', Amount: '20 - max' }
-      ]
+      ];
       expect(dataFrame.toArray()).toEqual(expectedData);
    });
 });

@@ -50,7 +50,7 @@ export class PivotOptionsProvider {
    /**
     * indicates if one of the heatmap renderers is currently selected
     */
-   isHeatmapRendererSelected(pivotOptions: Object) {
+   isHeatmapRendererSelected(pivotOptions: Object): boolean {
       return pivotOptions['rendererName'].includes('Heatmap');
    }
 

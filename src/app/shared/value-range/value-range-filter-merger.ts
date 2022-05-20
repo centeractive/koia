@@ -41,9 +41,9 @@ export class ValueRangeFilterMerger {
    }
 
    private maxExcluding(vr1: ValueRange, vr2: ValueRange): boolean {
-      if (vr1.max === undefined) {
+      if (vr1.max == undefined) {
          return vr2.maxExcluding;
-      } else if (vr2.max === undefined) {
+      } else if (vr2.max == undefined) {
          return vr1.maxExcluding;
       }
       if (vr1.max === vr2.max) {

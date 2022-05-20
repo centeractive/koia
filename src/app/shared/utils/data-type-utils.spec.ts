@@ -1,61 +1,57 @@
 import { DataType, Column } from '../model';
 import { DataTypeUtils } from './data-type-utils';
-import { NumberUtils } from './number-utils';
 
 describe('DataTypeUtils', () => {
 
-   const t = NumberUtils.THOUSANDS_SEPARATOR;
-   const d = NumberUtils.DECIMAL_SEPARATOR;
-
    it('#typeOf should return undefined when value is not present', () => {
-      expect(DataTypeUtils.typeOf(null)).toBeUndefined();
-      expect(DataTypeUtils.typeOf(undefined)).toBeUndefined();
+      expect(DataTypeUtils.typeOf(null, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.typeOf(undefined, 'en-US')).toBeUndefined();
    });
 
    it('#typeOf should return BOOLEAN when value is boolean', () => {
-      expect(DataTypeUtils.typeOf(true)).toEqual(DataType.BOOLEAN);
-      expect(DataTypeUtils.typeOf(false)).toEqual(DataType.BOOLEAN);
+      expect(DataTypeUtils.typeOf(true, 'en-US')).toEqual(DataType.BOOLEAN);
+      expect(DataTypeUtils.typeOf(false, 'en-US')).toEqual(DataType.BOOLEAN);
    });
 
    it('#typeOf should return BOOLEAN when value contains boolean', () => {
-      expect(DataTypeUtils.typeOf('true')).toEqual(DataType.BOOLEAN);
-      expect(DataTypeUtils.typeOf('false')).toEqual(DataType.BOOLEAN);
-      expect(DataTypeUtils.typeOf('TRUE')).toEqual(DataType.BOOLEAN);
-      expect(DataTypeUtils.typeOf('FALSE')).toEqual(DataType.BOOLEAN);
+      expect(DataTypeUtils.typeOf('true', 'en-US')).toEqual(DataType.BOOLEAN);
+      expect(DataTypeUtils.typeOf('false', 'en-US')).toEqual(DataType.BOOLEAN);
+      expect(DataTypeUtils.typeOf('TRUE', 'en-US')).toEqual(DataType.BOOLEAN);
+      expect(DataTypeUtils.typeOf('FALSE', 'en-US')).toEqual(DataType.BOOLEAN);
    });
 
    it('#typeOf should return TIME when value is a date', () => {
-      expect(DataTypeUtils.typeOf(new Date())).toEqual(DataType.TIME);
+      expect(DataTypeUtils.typeOf(new Date(), 'en-US')).toEqual(DataType.TIME);
    });
 
    it('#typeOf should return NUMBER when value is number', () => {
-      expect(DataTypeUtils.typeOf(-1.1)).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf(-1)).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf(0)).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf(1)).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf(1.1)).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf(-1.1, 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf(-1, 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf(0, 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf(1, 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf(1.1, 'en-US')).toEqual(DataType.NUMBER);
    });
 
    it('#typeOf should return NUMBER when value contains number', () => {
-      expect(DataTypeUtils.typeOf('-1.1')).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf('-1')).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf('0')).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf('1')).toEqual(DataType.NUMBER);
-      expect(DataTypeUtils.typeOf('1.1')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf('-1.1', 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf('-1', 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf('0', 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf('1', 'en-US')).toEqual(DataType.NUMBER);
+      expect(DataTypeUtils.typeOf('1.1', 'en-US')).toEqual(DataType.NUMBER);
    });
 
    it('#typeOf should return OBJECT when value is object', () => {
-      expect(DataTypeUtils.typeOf({ name: 'abc' })).toEqual(DataType.OBJECT);
-      expect(DataTypeUtils.typeOf([{ name: 'abc' }, { name: 'xyz' }])).toEqual(DataType.OBJECT);
+      expect(DataTypeUtils.typeOf({ name: 'abc' }, 'en-US')).toEqual(DataType.OBJECT);
+      expect(DataTypeUtils.typeOf([{ name: 'abc' }, { name: 'xyz' }], 'en-US')).toEqual(DataType.OBJECT);
    });
 
    it('#typeOf should return TEXT when value is text', () => {
-      expect(DataTypeUtils.typeOf('this is text')).toEqual(DataType.TEXT);
-      expect(DataTypeUtils.typeOf('x1')).toEqual(DataType.TEXT);
-      expect(DataTypeUtils.typeOf('2-1')).toEqual(DataType.TEXT);
-      expect(DataTypeUtils.typeOf('.')).toEqual(DataType.TEXT);
-      expect(DataTypeUtils.typeOf(',')).toEqual(DataType.TEXT);
-      expect(DataTypeUtils.typeOf('%')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('this is text', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('x1', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('2-1', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('.', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf(',', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('%', 'en-US')).toEqual(DataType.TEXT);
    });
 
    it('#isNumeric should return true when column is numeric', () => {
@@ -69,106 +65,106 @@ describe('DataTypeUtils', () => {
    });
 
    it('#toTypedValue should return undefined when value is missing', () => {
-      expect(DataTypeUtils.toTypedValue(undefined, DataType.BOOLEAN)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(null, DataType.BOOLEAN)).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(undefined, DataType.BOOLEAN, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(null, DataType.BOOLEAN, 'en-US')).toBeUndefined();
    });
 
    it('#toTypedValue should return undefined when value is not boolean compatible', () => {
-      expect(DataTypeUtils.toTypedValue('abc', DataType.BOOLEAN)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue('-1', DataType.BOOLEAN)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(-1, DataType.BOOLEAN)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(123, DataType.BOOLEAN)).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('abc', DataType.BOOLEAN, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('-1', DataType.BOOLEAN, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(-1, DataType.BOOLEAN, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(123, DataType.BOOLEAN, 'en-US')).toBeUndefined();
    });
 
    it('#toTypedValue should return boolean when value is boolean', () => {
-      expect(DataTypeUtils.toTypedValue(true, DataType.BOOLEAN)).toBe(true);
-      expect(DataTypeUtils.toTypedValue(false, DataType.BOOLEAN)).toBe(false);
+      expect(DataTypeUtils.toTypedValue(true, DataType.BOOLEAN, 'en-US')).toBe(true);
+      expect(DataTypeUtils.toTypedValue(false, DataType.BOOLEAN, 'en-US')).toBe(false);
    });
 
    it('#toTypedValue should return boolean when value includes boolean', () => {
-      expect(DataTypeUtils.toTypedValue('true', DataType.BOOLEAN)).toBe(true);
-      expect(DataTypeUtils.toTypedValue('false', DataType.BOOLEAN)).toBe(false);
-      expect(DataTypeUtils.toTypedValue('TRUE', DataType.BOOLEAN)).toBe(true);
-      expect(DataTypeUtils.toTypedValue('FALSE', DataType.BOOLEAN)).toBe(false);
+      expect(DataTypeUtils.toTypedValue('true', DataType.BOOLEAN, 'en-US')).toBe(true);
+      expect(DataTypeUtils.toTypedValue('false', DataType.BOOLEAN, 'en-US')).toBe(false);
+      expect(DataTypeUtils.toTypedValue('TRUE', DataType.BOOLEAN, 'en-US')).toBe(true);
+      expect(DataTypeUtils.toTypedValue('FALSE', DataType.BOOLEAN, 'en-US')).toBe(false);
    });
 
    it('#toTypedValue should return boolean when value represents boolean', () => {
-      expect(DataTypeUtils.toTypedValue(1, DataType.BOOLEAN)).toBe(true);
-      expect(DataTypeUtils.toTypedValue(0, DataType.BOOLEAN)).toBe(false);
-      expect(DataTypeUtils.toTypedValue('1', DataType.BOOLEAN)).toBe(true);
-      expect(DataTypeUtils.toTypedValue('0', DataType.BOOLEAN)).toBe(false);
-      expect(DataTypeUtils.toTypedValue('+', DataType.BOOLEAN)).toBe(true);
-      expect(DataTypeUtils.toTypedValue('-', DataType.BOOLEAN)).toBe(false);
+      expect(DataTypeUtils.toTypedValue(1, DataType.BOOLEAN, 'en-US')).toBe(true);
+      expect(DataTypeUtils.toTypedValue(0, DataType.BOOLEAN, 'en-US')).toBe(false);
+      expect(DataTypeUtils.toTypedValue('1', DataType.BOOLEAN, 'en-US')).toBe(true);
+      expect(DataTypeUtils.toTypedValue('0', DataType.BOOLEAN, 'en-US')).toBe(false);
+      expect(DataTypeUtils.toTypedValue('+', DataType.BOOLEAN, 'en-US')).toBe(true);
+      expect(DataTypeUtils.toTypedValue('-', DataType.BOOLEAN, 'en-US')).toBe(false);
    });
 
    it('#toTypedValue should return number when value is number', () => {
-      expect(DataTypeUtils.toTypedValue(-1.1, DataType.NUMBER)).toBe(-1.1);
-      expect(DataTypeUtils.toTypedValue(-1, DataType.NUMBER)).toBe(-1);
-      expect(DataTypeUtils.toTypedValue(0, DataType.NUMBER)).toBe(0);
-      expect(DataTypeUtils.toTypedValue(1, DataType.NUMBER)).toBe(1);
-      expect(DataTypeUtils.toTypedValue(1.1, DataType.NUMBER)).toBe(1.1);
+      expect(DataTypeUtils.toTypedValue(-1.1, DataType.NUMBER, 'en-US')).toBe(-1.1);
+      expect(DataTypeUtils.toTypedValue(-1, DataType.NUMBER, 'en-US')).toBe(-1);
+      expect(DataTypeUtils.toTypedValue(0, DataType.NUMBER, 'en-US')).toBe(0);
+      expect(DataTypeUtils.toTypedValue(1, DataType.NUMBER, 'en-US')).toBe(1);
+      expect(DataTypeUtils.toTypedValue(1.1, DataType.NUMBER, 'en-US')).toBe(1.1);
    });
 
    it('#toTypedValue should return number when value includes number', () => {
-      expect(DataTypeUtils.toTypedValue('-1' + d + '1', DataType.NUMBER)).toBe(-1.1);
-      expect(DataTypeUtils.toTypedValue('-1', DataType.NUMBER)).toBe(-1);
-      expect(DataTypeUtils.toTypedValue('0', DataType.NUMBER)).toBe(0);
-      expect(DataTypeUtils.toTypedValue('1', DataType.NUMBER)).toBe(1);
-      expect(DataTypeUtils.toTypedValue('1' + d + '1', DataType.NUMBER)).toBe(1.1);
+      expect(DataTypeUtils.toTypedValue('-1.1', DataType.NUMBER, 'en-US')).toBe(-1.1);
+      expect(DataTypeUtils.toTypedValue('-1', DataType.NUMBER, 'en-US')).toBe(-1);
+      expect(DataTypeUtils.toTypedValue('0', DataType.NUMBER, 'en-US')).toBe(0);
+      expect(DataTypeUtils.toTypedValue('1', DataType.NUMBER, 'en-US')).toBe(1);
+      expect(DataTypeUtils.toTypedValue('1.1', DataType.NUMBER, 'en-US')).toBe(1.1);
    });
 
    it('#toTypedValue should return time when value is time', () => {
-      expect(DataTypeUtils.toTypedValue(-1, DataType.TIME)).toBe(-1);
-      expect(DataTypeUtils.toTypedValue(0, DataType.TIME)).toBe(0);
-      expect(DataTypeUtils.toTypedValue(1, DataType.TIME)).toBe(1);
+      expect(DataTypeUtils.toTypedValue(-1, DataType.TIME, 'en-US')).toBe(-1);
+      expect(DataTypeUtils.toTypedValue(0, DataType.TIME, 'en-US')).toBe(0);
+      expect(DataTypeUtils.toTypedValue(1, DataType.TIME, 'en-US')).toBe(1);
    });
 
    it('#toTypedValue should return time when value includes time', () => {
-      expect(DataTypeUtils.toTypedValue('-1', DataType.TIME)).toBe(-1);
-      expect(DataTypeUtils.toTypedValue('0', DataType.TIME)).toBe(0);
-      expect(DataTypeUtils.toTypedValue('1', DataType.TIME)).toBe(1);
+      expect(DataTypeUtils.toTypedValue('-1', DataType.TIME, 'en-US')).toBe(-1);
+      expect(DataTypeUtils.toTypedValue('0', DataType.TIME, 'en-US')).toBe(0);
+      expect(DataTypeUtils.toTypedValue('1', DataType.TIME, 'en-US')).toBe(1);
    });
 
    it('#toTypedValue should return number when value includes number with thousands separator', () => {
-      expect(DataTypeUtils.toTypedValue('-1' + t + '000', DataType.NUMBER)).toBe(-1000);
-      expect(DataTypeUtils.toTypedValue('1' + t + '000', DataType.NUMBER)).toBe(1000);
+      expect(DataTypeUtils.toTypedValue('-1,000', DataType.NUMBER, 'en-US')).toBe(-1000);
+      expect(DataTypeUtils.toTypedValue('1,000', DataType.NUMBER, 'en-US')).toBe(1000);
    });
 
    it('#toTypedValue should return text when data type is text', () => {
-      expect(DataTypeUtils.toTypedValue(true, DataType.TEXT)).toBe('true');
-      expect(DataTypeUtils.toTypedValue(false, DataType.TEXT)).toBe('false');
-      expect(DataTypeUtils.toTypedValue(-1, DataType.TEXT)).toBe('-1');
-      expect(DataTypeUtils.toTypedValue(0, DataType.TEXT)).toBe('0');
-      expect(DataTypeUtils.toTypedValue(1, DataType.TEXT)).toBe('1');
-      expect(DataTypeUtils.toTypedValue('abc', DataType.TEXT)).toBe('abc');
+      expect(DataTypeUtils.toTypedValue(true, DataType.TEXT, 'en-US')).toBe('true');
+      expect(DataTypeUtils.toTypedValue(false, DataType.TEXT, 'en-US')).toBe('false');
+      expect(DataTypeUtils.toTypedValue(-1, DataType.TEXT, 'en-US')).toBe('-1');
+      expect(DataTypeUtils.toTypedValue(0, DataType.TEXT, 'en-US')).toBe('0');
+      expect(DataTypeUtils.toTypedValue(1, DataType.TEXT, 'en-US')).toBe('1');
+      expect(DataTypeUtils.toTypedValue('abc', DataType.TEXT, 'en-US')).toBe('abc');
    });
 
    it('#toTypedValue should return undefined when value is not a number', () => {
-      expect(DataTypeUtils.toTypedValue('X', DataType.NUMBER)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue('1-', DataType.NUMBER)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(false, DataType.NUMBER)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(true, DataType.NUMBER)).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('X', DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('1-', DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(false, DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(true, DataType.NUMBER, 'en-US')).toBeUndefined();
    });
 
    it('#toTypedValue should return undefined when value is not time compatible', () => {
-      expect(DataTypeUtils.toTypedValue('X', DataType.NUMBER)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue('1-', DataType.NUMBER)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(false, DataType.NUMBER)).toBeUndefined();
-      expect(DataTypeUtils.toTypedValue(true, DataType.NUMBER)).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('X', DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('1-', DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(false, DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue(true, DataType.NUMBER, 'en-US')).toBeUndefined();
    });
 
    it('#toTypedValue should return string when value is an object', () => {
       const object = { a: 'x', b: 1, c: [1, 2, 3] };
       const expected = JSON.stringify(object, undefined, '  ');
 
-      expect(DataTypeUtils.toTypedValue(object, DataType.OBJECT)).toEqual(expected);
+      expect(DataTypeUtils.toTypedValue(object, DataType.OBJECT, 'en-US')).toEqual(expected);
    });
 
    it('#toTypedValue should return string when value is an array', () => {
       const array = [{ a: 'x', b: 1 }, { a: 'y', b: 2 }];
       const expected = JSON.stringify(array, undefined, '  ');
 
-      expect(DataTypeUtils.toTypedValue(array, DataType.OBJECT)).toEqual(expected);
+      expect(DataTypeUtils.toTypedValue(array, DataType.OBJECT, 'en-US')).toEqual(expected);
    });
 
    it('#asBoolean should return false when value is missing', () => {

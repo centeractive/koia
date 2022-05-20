@@ -1,7 +1,6 @@
 import { ExportService } from './export.service';
-import * as FileSaver from 'file-saver';
 import { ExportFormat, DataType, Column } from '../model';
-import * as svg from 'save-svg-as-png';
+import * as FileSaver from 'file-saver';
 
 describe('ExportService', () => {
 
@@ -14,9 +13,9 @@ describe('ExportService', () => {
   it('#restoreJSONObjects should restore stringified JSON objects', () => {
 
     // given
-    const object = { x: 'test', y: 100, z: [ 1, 2, 3, 4] };
+    const object = { x: 'test', y: 100, z: [1, 2, 3, 4] };
     const objectAsString = JSON.stringify(object);
-    const array = [{ n: 1 }, { n: 2 }, { n: 3 } ];
+    const array = [{ n: 1 }, { n: 2 }, { n: 3 }];
     const arrayAsString = JSON.stringify(array);
     const data = [
       { a: 'x', b: 1, c: objectAsString, d: arrayAsString },
@@ -146,20 +145,18 @@ describe('ExportService', () => {
   it('#exportImage should save .png file', () => {
 
     // given
-    const saveAsSpy = spyOn(svg, 'saveSvgAsPng').and.stub();
+    const saveAsSpy = spyOn(FileSaver, 'saveAs');
 
     // when
-    const svgElement = <SVGElement>{};
-    exportService.exportImage(svgElement, ExportFormat.PNG, 'testfile');
+    exportService.exportImage('base64Image...', ExportFormat.PNG, 'testfile');
 
     // then
-    expect(svg.saveSvgAsPng).toHaveBeenCalled();
-    expect(saveAsSpy.calls.mostRecent().args[0]).toBe(svgElement);
+    expect(saveAsSpy.calls.mostRecent().args[0]).toBe('base64Image...');
     expect(saveAsSpy.calls.mostRecent().args[1]).toMatch(/testfile.*\.png/);
   });
 
   it('#exportImage should throw error when format is not supported', () => {
-    expect(() => exportService.exportImage(<SVGElement>{}, ExportFormat.JSON, 'testfile'))
+    expect(() => exportService.exportImage('base64Image...', ExportFormat.JSON, 'testfile'))
       .toThrowError('export format JSON is not supported');
   });
 });

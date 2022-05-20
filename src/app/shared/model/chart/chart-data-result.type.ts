@@ -1,4 +1,6 @@
+import { ChartData } from 'chart.js';
+
 export interface ChartDataResult {
-   data?: Object[];
+   data?: ChartData;
    error?: string;
 }

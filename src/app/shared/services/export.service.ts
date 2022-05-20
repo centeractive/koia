@@ -3,7 +3,6 @@ import { DatePipe } from '@angular/common';
 import { ExportFormat, Column, DataType } from '../model';
 import * as FileSaver from 'file-saver';
 import * as XLSX from 'xlsx';
-import * as svg from 'save-svg-as-png';
 
 @Injectable({
   providedIn: 'root'
@@ -50,9 +49,9 @@ export class ExportService {
     this.saveExcelFile(XLSX.utils.table_to_sheet(htmlTable, options), baseFileName);
   }
 
-  exportImage(svgElement: SVGElement, exportFormat: ExportFormat, baseFileName: string): void {
+  exportImage(base64Image: string, exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.PNG) {
-      svg.saveSvgAsPng(svgElement, this.generateFileName(baseFileName, '.png'));
+      FileSaver.saveAs(base64Image, this.generateFileName(baseFileName, '.png'));
     } else {
       throw new Error('export format ' + exportFormat + ' is not supported');
     }

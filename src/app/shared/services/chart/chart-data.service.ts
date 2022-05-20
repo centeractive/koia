@@ -1,193 +1,240 @@
 import { Injectable } from '@angular/core';
-import { CouchDBConstants } from '../backend/couchdb/couchdb-constants';
-import { ValueRange } from '../../value-range/model/value-range.type';
+import { ChartContext, ChartType, DataPoint, DataSet } from 'app/shared/model/chart';
+import { ChartDataResult } from 'app/shared/model/chart/chart-data-result.type';
+import { ChartData } from 'chart.js';
 import { SeriesNameConverter } from './series-name-converter';
-import { ChartDataHelper } from './chart-data-helper';
-import { largestTriangleThreeBucket } from 'd3fc-sample';
-import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
-import { ChartDataResult, ChartType, ChartContext, DataPoint } from 'app/shared/model/chart';
-import { Column, DataType, PropertyFilter } from 'app/shared/model';
 import { ErrorResultFactory } from './error-result-factory';
-
-declare var d3: any;
+import { largestTriangleThreeBucket } from 'd3fc-sample';
+import { ChartDataHelper } from './chart-data-helper';
+import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
+import { ValueRange } from 'app/shared/value-range/model';
+import { CouchDBConstants } from '../backend/couchdb';
+import { Column, DataType } from 'app/shared/model';
+import { ColorProvider } from './color-provider';
 
 @Injectable({
-   providedIn: 'root'
+  providedIn: 'root'
 })
 export class ChartDataService {
 
-   static readonly MAX_DATA_POINTS = 1_000;
+  static readonly MAX_DATA_POINTS = 1_000;
 
-   private dataNameConverter = new SeriesNameConverter();
-   private errorResultFactory = new ErrorResultFactory();
+  private dataNameConverter = new SeriesNameConverter();
+  private errorResultFactory = new ErrorResultFactory();
+  private colorProvider = new ColorProvider();
 
-   createData(context: ChartContext): ChartDataResult {
-      context.dataSampledDown = false;
-      context.valueRange = undefined;
-      context.warning = undefined;
-      const chartType = ChartType.fromType(context.chartType);
-      if (context.isNonGrouping()) {
-         return this.createSimpleChartData(chartType, context);
-      } else if (chartType === ChartType.SUNBURST) {
-         return { data: this.createSunburstData(context) };
-      } else if (context.isAggregationCountSelected()) {
-         return this.valueCountData(chartType, context);
+  createData(context: ChartContext): ChartDataResult {
+    context.dataSampledDown = false;
+    context.valueRange = undefined;
+    context.warning = undefined;
+    const chartType = ChartType.fromType(context.chartType);
+    try {
+      if (context.isAggregationCountSelected()) {
+        if (context.isCategoryChart()) {
+          return { data: this.countDistinctValuesData(chartType, context) };
+        } else {
+          return { data: this.valueCountData(chartType, context) };
+        }
+      } else if (context.isCategoryChart() || context.groupByColumns[0]?.dataType === DataType.TEXT) {
+        return { data: this.categoryData(chartType, context) };
       } else {
-         return this.individualValuesData(chartType, context);
+        return { data: this.individualValuesData(chartType, context) };
       }
-   }
+    } catch (err) {
+      return { error: (<Error>err).message };
+    }
+  }
 
-   private createSimpleChartData(chartType: ChartType, context: ChartContext): ChartDataResult {
-      const countDistinct = context.isAggregationCountSelected();
-      if (!countDistinct && context.groupByColumns.length === 0) {
-         return { error: 'Name column is not defined' };
-      }
-      try {
-         const data = countDistinct ? ChartDataHelper.countDistinctValues(context) : ChartDataHelper.valuesOfDistinctNames(context);
-         if (data.length > chartType.maxValues) {
-            return this.errorResultFactory.exceedingValues(chartType);
-         }
-         context.valueRange = ArrayUtils.numberValueRange(data, 'y');
-         if (chartType === ChartType.BAR) {
-            return { data: [{ values: data }] };
-         } else {
-            return { data: data };
-         }
-      } catch (err) {
-         return { error: (<Error>err).message };
-      }
-   }
+  private countDistinctValuesData(chartType: ChartType, context: ChartContext): ChartData {
+    const dataPoints = this.createDistinctValuesData(chartType, context);
+    return {
+      labels: dataPoints.map(p => p.x),
+      datasets: [{
+        label: context.dataColumns[0].name,
+        data: dataPoints.map(p => p.y),
+        backgroundColor: this.colorProvider.bgColors(dataPoints.length),
+        borderColor: this.colorProvider.borderColors(dataPoints.length),
+        hoverOffset: 10, // PIE & DOUGHNUT charts
+        borderAlign: 'inner' // PIE & DOUGHNUT charts
+      }]
+    };
+  }
 
-   private createSunburstData(context: ChartContext): Object[] {
-      let entries = context.entries;
-      for (const column of context.groupByColumns) {
-         if (column.dataType === DataType.TIME) {
-            entries = ChartDataHelper.convertTime(context.entries, column);
-         }
-      }
-      let nest = d3.nest();
-      context.groupByColumns.concat(context.dataColumns[0]) //
-         .forEach(c => nest.key(entry => entry[c.name] || PropertyFilter.EMPTY_VALUE));
-      nest = nest.rollup(v => v.length); // count elements
-      const rootChildren = nest.entries(entries);
-      rootChildren.forEach(n => this.transformTreeNode(n));
-      return [{ name: 'Data', children: rootChildren }];
-   }
+  protected createDistinctValuesData(chartType: ChartType, context: ChartContext): DataPoint[] {
+    const data = ChartDataHelper.countDistinctValues(context);
+    if (data.length > chartType.maxValues) {
+      throw this.errorResultFactory.exceedingValues(chartType);
+    }
+    context.valueRange = ArrayUtils.numberValueRange(data, 'y');
+    return data;
+  }
 
-   private transformTreeNode(treeNode: Object): void {
-      treeNode['name'] = treeNode['key'];
-      delete treeNode['key'];
-      if (Number.isInteger(treeNode['values'])) {
-         treeNode['value'] = treeNode['values'];
-      } else {
-         treeNode['children'] = treeNode['values'];
-         treeNode['children'].forEach(n => this.transformTreeNode(n));
-      }
-      delete treeNode['values'];
-   }
+  private categoryData(chartType: ChartType, context: ChartContext): ChartData {
+    if (context.groupByColumns.length === 0) {
+      throw this.errorResultFactory.toError('Name column is not defined');
+    }
+    const labeledData = ChartDataHelper.categoryData(context);
+    if (labeledData.labels.length > chartType.maxValues) {
+      throw this.errorResultFactory.exceedingValues(chartType);
+    }
+    const labels = labeledData.labels;
+    const colorPerLabel = this.useDifferentColorPerLabel(chartType, context);
+    context.valueRange = ArrayUtils.categoryDataToValueRange(labeledData);
+    return {
+      labels: labels,
+      datasets: labeledData.dataSets.map((ds, i) => ({
+        label: ds.label,
+        data: ds.values,
+        backgroundColor: colorPerLabel ? this.colorProvider.bgColors(labels.length) : this.colorProvider.bgColorAt(i),
+        borderColor: colorPerLabel ? this.colorProvider.borderColors(labels.length) : this.colorProvider.borderColorAt(i),
+        fill: chartType == ChartType.AREA,
+        hoverOffset: 10, // PIE & DOUGHNUT charts
+        borderAlign: 'inner' // PIE & DOUGHNUT charts
+      }))
+    };
+  }
 
-   private valueCountData(chartType: ChartType, context: ChartContext): ChartDataResult {
-      if (context.groupByColumns.length === 0) {
-         return this.errorResultFactory.groupByColumnNotDefined(chartType);
-      }
-      const distinctGroupingValues = new Set<any>();
-      const datasets: Object[] = [];
-      context.entries.map((entry, index) => {
-         const key = this.dataNameConverter.toGroupKey(entry, context.dataColumns[0], context.splitColumns);
-         if (key !== undefined && key !== null) {
-            const groupingValue = ChartDataHelper.extractGroupingValue(entry, context.groupByColumns[0]);
-            if (groupingValue !== null && groupingValue !== undefined) {
-               distinctGroupingValues.add(groupingValue);
-               this.addGroupValue(datasets, key, groupingValue);
-            }
-         }
-      });
-      if (distinctGroupingValues.size > chartType.maxValues) {
-         return this.errorResultFactory.exceedingValues(chartType);
-      } else if (DataTypeUtils.isNumeric(context.groupByColumns[0].dataType)) {
-         datasets.forEach(ds => ChartDataHelper.sortAscending(ds['values']));
-      }
-      const valueRanges = datasets.map(ds => ArrayUtils.numberValueRange(ds['values'], 'y'));
-      context.valueRange = ArrayUtils.overallValueRange(valueRanges);
-      return { data: datasets };
-   }
+  private useDifferentColorPerLabel(chartType: ChartType, context: ChartContext): boolean {
+    switch (chartType) {
+      case ChartType.PIE:
+      case ChartType.DOUGHNUT:
+      case ChartType.POLAR_AREA:
+        return true;
+      case ChartType.BAR:
+      case ChartType.HORIZONTAL_BAR:
+        return context.dataColumns.length === 1;
+      default:
+        return false;
+    }
+  }
 
-   private addGroupValue(datasets: Object[], key: string, value: number): void {
-      let dataset = ArrayUtils.findObjectByKeyValue(datasets, 'key', key);
-      if (dataset === null) {
-         dataset = { key: key, values: [] };
-         datasets.push(dataset);
-      }
-      let dataPoint = ChartDataHelper.findDataPoint(dataset['values'], value);
-      if (dataPoint === undefined) {
-         dataPoint = { x: value, y: 0 };
-         dataset['values'].push(dataPoint);
-      }
-      dataPoint.y++;
-   }
+  private valueCountData(chartType: ChartType, context: ChartContext): ChartData {
+    const datasets = this.createValueCountData(chartType, context);
+    return {
+      datasets: datasets.map((ds, i) => ({
+        label: ds.key,
+        data: ds.values,
+        backgroundColor: this.colorProvider.bgColorAt(i),
+        borderColor: this.colorProvider.borderColorAt(i),
+        fill: chartType == ChartType.AREA
+      }))
+    };
+  }
 
-   private individualValuesData(chartType: ChartType, context: ChartContext): ChartDataResult {
-      if (context.groupByColumns.length === 0) {
-         return this.errorResultFactory.groupByColumnNotDefined(chartType);
-      }
-      const data = [];
-      const valueRanges: ValueRange[] = [];
-      for (const dataColumn of context.dataColumns) {
-         const namedSeries = this.individualValuesSeries(context.entries, dataColumn, context);
-         for (const seriesName of Array.from(namedSeries.keys())) {
-            const dataPoints = namedSeries.get(seriesName);
-            const distinctXValues = new Set(dataPoints.map(p => p.x));
-            if (distinctXValues.size > chartType.maxValues) {
-               return this.errorResultFactory.exceedingValues(chartType);
-            }
-            data.push({
-               key: seriesName,
-               values: this.optionallySampleDown(dataPoints, context),
-            });
-            valueRanges.push(ArrayUtils.numberValueRange(dataPoints, 'y'));
-         }
-      }
-      context.valueRange = ArrayUtils.overallValueRange(valueRanges);
-      return { data: data };
-   }
+  private individualValuesData(chartType: ChartType, context: ChartContext): ChartData {
+    const datasets = this.createIndividualValuesData(chartType, context);
+    return {
+      datasets: datasets.map((ds, i) => ({
+        label: ds.key,
+        data: ds.values,
+        backgroundColor: this.colorProvider.bgColorAt(i),
+        borderColor: this.colorProvider.borderColorAt(i),
+        fill: chartType == ChartType.AREA
+      }))
+    };
+  }
 
-   private individualValuesSeries(entries: Object[], dataColumn: Column, context: ChartContext):
-      Map<string, DataPoint[]> {
-      const namedSeries = new Map<string, DataPoint[]>();
-      entries.map((entry, index) => {
-         const seriesName = this.dataNameConverter.toSeriesName(entry, dataColumn, context.splitColumns);
-         if (seriesName) {
-            let dataPoints = namedSeries.get(seriesName);
-            if (dataPoints === undefined) {
-               dataPoints = [];
-               namedSeries.set(seriesName, dataPoints);
-            }
-            const dataAxisValue: number = entry[dataColumn.name];
-            if (dataAxisValue !== null && dataAxisValue !== undefined) {
-               const groupingAxisValue = entry[context.groupByColumns[0].name];
-               if (groupingAxisValue !== null && groupingAxisValue !== undefined) {
-                  dataPoints.push({ id: entry[CouchDBConstants._ID], x: groupingAxisValue, y: dataAxisValue });
-               }
-            }
-         }
-      });
-      for (const dataPoints of Array.from(namedSeries.values())) {
-         ChartDataHelper.sortAscending(dataPoints);
+  protected createValueCountData(chartType: ChartType, context: ChartContext): DataSet[] {
+    if (context.groupByColumns.length === 0) {
+      throw this.errorResultFactory.groupByColumnNotDefined(chartType);
+    }
+    const distinctGroupingValues = new Set<any>();
+    const datasets: DataSet[] = [];
+    context.entries.map(entry => {
+      const key = this.dataNameConverter.toGroupKey(entry, context.dataColumns[0], context.splitColumns);
+      if (key !== undefined && key !== null) {
+        const groupingValue = ChartDataHelper.extractGroupingValue(entry, context.groupByColumns[0]);
+        if (groupingValue !== null && groupingValue !== undefined) {
+          distinctGroupingValues.add(groupingValue);
+          this.addGroupValue(datasets, key, groupingValue);
+        }
       }
-      return namedSeries;
-   }
+    });
+    if (distinctGroupingValues.size > chartType.maxValues) {
+      throw this.errorResultFactory.exceedingValues(chartType);
+    } else if (DataTypeUtils.isNumeric(context.groupByColumns[0].dataType)) {
+      datasets.forEach(ds => ChartDataHelper.sortAscending(ds.values));
+    }
+    const valueRanges = datasets.map(ds => ArrayUtils.numberValueRange(ds.values, 'y'));
+    context.valueRange = ArrayUtils.overallValueRange(valueRanges);
+    return datasets;
+  }
 
-   private optionallySampleDown(values: DataPoint[], context: ChartContext): DataPoint[] {
-      if (values.length <= ChartDataService.MAX_DATA_POINTS) {
-         return values;
+  private addGroupValue(datasets: DataSet[], key: string, value: number): void {
+    let dataset = datasets.find(ds => ds.key == key);
+    if (dataset == undefined) {
+      dataset = { key: key, values: [] };
+      datasets.push(dataset);
+    }
+    let dataPoint = ChartDataHelper.findDataPoint(dataset.values, value);
+    if (dataPoint == undefined) {
+      dataPoint = { x: value, y: 0 };
+      dataset.values.push(dataPoint);
+    }
+    dataPoint.y++;
+  }
+
+  protected createIndividualValuesData(chartType: ChartType, context: ChartContext): DataSet[] {
+    if (context.groupByColumns.length === 0) {
+      throw this.errorResultFactory.groupByColumnNotDefined(chartType);
+    }
+    const data: DataSet[] = [];
+    const valueRanges: ValueRange[] = [];
+    for (const dataColumn of context.dataColumns) {
+      const namedSeries = this.createIndividualValuesSeries(context.entries, dataColumn, context);
+      for (const seriesName of Array.from(namedSeries.keys())) {
+        const dataPoints = namedSeries.get(seriesName);
+        const distinctXValues = new Set(dataPoints.map(p => p.x));
+        if (distinctXValues.size > chartType.maxValues) {
+          throw this.errorResultFactory.exceedingValues(chartType);
+        }
+        data.push({
+          key: seriesName,
+          values: this.optionallySampleDown(dataPoints, context),
+        });
+        valueRanges.push(ArrayUtils.numberValueRange(dataPoints, 'y'));
       }
-      const sampler = largestTriangleThreeBucket();
-      sampler.x(d => d.x).y(d => d.y);
-      const bucketSize = Math.ceil(values.length / ChartDataService.MAX_DATA_POINTS);
-      sampler.bucketSize(bucketSize);
-      context.dataSampledDown = true;
-      context.warning = 'Data has been down-sampled and the chart contains part of available values only,' +
-         ' apply filters to limit the data and see all values of the chosen context.'
-      return sampler(values);
-   }
+    }
+    context.valueRange = ArrayUtils.overallValueRange(valueRanges);
+    return data;
+  }
+
+  protected createIndividualValuesSeries(entries: Object[], dataColumn: Column, context: ChartContext):
+    Map<string, DataPoint[]> {
+    const namedSeries = new Map<string, DataPoint[]>();
+    entries.map(entry => {
+      const seriesName = this.dataNameConverter.toSeriesName(entry, dataColumn, context.splitColumns);
+      if (seriesName) {
+        let dataPoints = namedSeries.get(seriesName);
+        if (dataPoints == undefined) {
+          dataPoints = [];
+          namedSeries.set(seriesName, dataPoints);
+        }
+        const dataAxisValue: number = entry[dataColumn.name];
+        if (dataAxisValue !== null && dataAxisValue !== undefined) {
+          const groupingAxisValue = entry[context.groupByColumns[0].name];
+          if (groupingAxisValue !== null && groupingAxisValue !== undefined) {
+            dataPoints.push({ id: entry[CouchDBConstants._ID], x: groupingAxisValue, y: dataAxisValue });
+          }
+        }
+      }
+    });
+    Array.from(namedSeries.values()).forEach(dataPoints => ChartDataHelper.sortAscending(dataPoints));
+    return namedSeries;
+  }
+
+  private optionallySampleDown(values: DataPoint[], context: ChartContext): DataPoint[] {
+    if (values.length <= ChartDataService.MAX_DATA_POINTS) {
+      return values;
+    }
+    const sampler = largestTriangleThreeBucket();
+    sampler.x(d => d.x).y(d => d.y);
+    const bucketSize = Math.ceil(values.length / ChartDataService.MAX_DATA_POINTS);
+    sampler.bucketSize(bucketSize);
+    context.dataSampledDown = true;
+    context.warning = 'Data has been down-sampled and the chart contains part of available values only,' +
+      ' apply filters to limit the data and see all values of the chosen context.'
+    return sampler(values);
+  }
+
 }

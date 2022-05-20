@@ -1,24 +1,22 @@
 {
-   "version": "0.2.0",
-   "configurations": [
-   
-     {
-       "name": "chrome",
-       "type": "chrome",
-       "request": "launch",
-       "url": "http://localhost:4200",
-       "sourceMaps": true,
-       "trace": true,
-       "webRoot": "${workspaceRoot}",
-       "userDataDir": "${workspaceRoot}/.vscode/chrome"
-     },   
-     {
-       "name": "Debug tests",
-       "type": "chrome",
-       "request": "attach",
-       "port": 9222,
-       "sourceMaps": true,
-       "webRoot": "${workspaceRoot}"
-     }   
-   ]
- }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "pwa-chrome",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Karma Attach",
+      "url": "http://localhost:9876/debug.html",
+      "webRoot": "${workspaceFolder}",
+      "pathMapping": {
+        "/_karma_webpack_/": "${workspaceRoot}/"
+      }
+    }
+  ]
+}

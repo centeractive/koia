@@ -5,8 +5,8 @@ export class ValueRangeUtils {
 
    static toComparable(valueRange: ValueRange): ValueRange {
       const vr = <ValueRange>CommonUtils.clone(valueRange);
-      vr.min = vr.min === undefined || vr.max === null ? Number.MIN_SAFE_INTEGER : vr.min;
-      vr.max = vr.max === undefined || vr.max === null ? Number.MAX_SAFE_INTEGER : vr.max;
+      vr.min = vr.min == undefined ? Number.MIN_SAFE_INTEGER : vr.min;
+      vr.max = vr.max == undefined ? Number.MAX_SAFE_INTEGER : vr.max;
       return vr;
    }
 }

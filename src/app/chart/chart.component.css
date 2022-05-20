@@ -7,9 +7,9 @@ mwlResizable {
   border: 1px dashed green;
 }
 
-.nvd3 .nv-pie .hover,
-.nvd3 .nv-discretebar .hover,
-.nvd3 .nv-multibar .hover,
-.nvd3 .nv-multibarHorizontal .hover {
-  cursor: pointer;
+#div_chartjs {
+  position: relative;
+  display: block; 
+  width:100%; 
+  height: 100%;
 }

@@ -56,7 +56,6 @@ describe('ChartSideBarComponent', () => {
     context = new ChartContext(columns, ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
     context.dataColumns = [findColumn('Level')];
     context.groupByColumns = [findColumn('Time')];
-
     component.context = context;
     component.gridColumns = 4;
     component.elementCount = 3;
@@ -132,7 +131,7 @@ describe('ChartSideBarComponent', () => {
     expect(context.width).toBe(initialWidth * 2);
   });
 
-  it('#click on PIE chart button should decrease number of data columns to one', () => {
+  it('#click on PIE chart button should keep previous selected data column', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
@@ -144,9 +143,9 @@ describe('ChartSideBarComponent', () => {
     butChart.click();
 
     // then
-    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeTruthy();
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
+    expect(component.countDistinctValuesEnabled).toBeFalse();
+    expect(component.individualValuesEnabled).toBeTrue();
   });
 
   it('#click on LINE chart button should switch to individual values when number data column is selected', () => {
@@ -161,8 +160,8 @@ describe('ChartSideBarComponent', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeTruthy();
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeTrue();
     expect(context.isAggregationCountSelected()).toBeFalsy();
   });
 
@@ -177,29 +176,28 @@ describe('ChartSideBarComponent', () => {
 
     // given
     spyOn(component, 'onColumnChanged');
-    const butDataColumn = findDataColumnButton('Path');
+    const butPathColumn = findDataColumnButton('Path');
 
     // when
-    butDataColumn.click();
+    butPathColumn.click();
 
     // then
     expect(component.onColumnChanged).toHaveBeenCalled();
   });
 
-  it('#click on data column button should remove previous data column when chart is non-grouping', () => {
+  it('#click on text data column button should remove previous data column when chart is non-grouping', () => {
 
     // given
     context.chartType = ChartType.PIE.type;
-    const butDataColumnDebugElements = fixture.debugElement.queryAll(By.css('.but_column'));
+    context.dataColumns = [findColumn('Amount')];
+    const butPathColumn = findDataColumnButton('Path');
 
-    butDataColumnDebugElements.forEach(e => {
+    // when
+    butPathColumn.click();
 
-      // when
-      e.nativeElement.click();
-
-      // then
-      expect(context.dataColumns.length).toBe(1);
-    });
+    // then
+    expect(context.dataColumns.length).toBe(1);
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Path']);
   });
 
   it('#click on data column should remove data column when it was selected with another data columns', () => {
@@ -207,29 +205,27 @@ describe('ChartSideBarComponent', () => {
     // given
     context.chartType = ChartType.LINE.type;
     context.dataColumns = [findColumn('Level'), findColumn('Amount')];
-    const butDataColumn = findDataColumnButton('Level');
+    const butLevelColumn = findDataColumnButton('Level');
 
     // when
-    butDataColumn.click();
+    butLevelColumn.click();
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeTruthy();
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeTrue();
   });
 
-  it('#click on data column should keep column selected if it was the only selected one', () => {
+  it('#click on data column should remove data column if it was the only selected one', () => {
 
     // given
-    const butDataColumn = findDataColumnButton('Level');
+    const butLevelColumn = findDataColumnButton('Level');
 
     // when
-    butDataColumn.click();
+    butLevelColumn.click();
 
     // then
-    expect(context.dataColumns.map(c => c.name)).toEqual(['Level']);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeFalsy();
+    expect(context.dataColumns.map(c => c.name)).toEqual([]);
   });
 
   it('#click on text data column should remove column when chart is LINE chart and other column remains selected', () => {
@@ -244,8 +240,8 @@ describe('ChartSideBarComponent', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Host']);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeFalsy();
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeFalse();
   });
 
   it('#click on number data column button should replace number data column when chart is LINE chart with count distinct values', () => {
@@ -254,15 +250,15 @@ describe('ChartSideBarComponent', () => {
     context.chartType = ChartType.LINE.type;
     context.dataColumns = [findColumn('Amount')];
     context.aggregations = [Aggregation.COUNT];
-    const butDataColumn = findDataColumnButton('Percent');
+    const butPercentColumn = findDataColumnButton('Percent');
 
     // when
-    butDataColumn.click();
+    butPercentColumn.click();
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Percent']);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeTruthy();
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeTrue();
   });
 
   it('#click on number data column button should keep existing number data column when chart is LINE chart with individual values', () => {
@@ -271,15 +267,15 @@ describe('ChartSideBarComponent', () => {
     context.chartType = ChartType.LINE.type;
     context.dataColumns = [findColumn('Amount')];
     context.aggregations = [];
-    const butDataColumn = findDataColumnButton('Percent');
+    const butPercentColumn = findDataColumnButton('Percent');
 
     // when
-    butDataColumn.click();
+    butPercentColumn.click();
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
-    expect(component.countDistinctValuesEnabled).toBeFalsy();
-    expect(component.individualValuesEnabled).toBeTruthy();
+    expect(component.countDistinctValuesEnabled).toBeFalse();
+    expect(component.individualValuesEnabled).toBeTrue();
   });
 
   it('#click on data column should replace group by column when data column was used as group by column', () => {
@@ -288,10 +284,10 @@ describe('ChartSideBarComponent', () => {
     context.chartType = ChartType.LINE.type;
     context.dataColumns = [findColumn('Amount')];
     context.groupByColumns = [findColumn('Percent')];
-    const butDataColumn = findDataColumnButton('Percent');
+    const butPercentColumn = findDataColumnButton('Percent');
 
     // when
-    butDataColumn.click();
+    butPercentColumn.click();
 
     // then
     expect(context.groupByColumns).toEqual([findColumn('Time')]);
@@ -308,8 +304,8 @@ describe('ChartSideBarComponent', () => {
 
     // then
     expect(context.aggregations).toEqual([Aggregation.COUNT]);
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
-    expect(component.individualValuesEnabled).toBeFalsy();
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeFalse();
     expect(context.dataColumns.map(c => c.name)).toEqual(['Path']);
   });
 
@@ -323,8 +319,8 @@ describe('ChartSideBarComponent', () => {
     component.onColumnChanged(findColumn('Amount'));
 
     // then
-    expect(component.individualValuesEnabled).toBeTruthy();
-    expect(component.countDistinctValuesEnabled).toBeTruthy();
+    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBeTrue();
     expect(context.aggregations).toEqual([Aggregation.COUNT]);
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
   });
@@ -332,7 +328,7 @@ describe('ChartSideBarComponent', () => {
   it('#dataPanelName should return "Values" when non-grouping', () => {
 
     // given
-    context.chartType = ChartType.DONUT.type;
+    context.chartType = ChartType.DOUGHNUT.type;
 
     // when
     const panelName = component.dataPanelName();
@@ -356,7 +352,7 @@ describe('ChartSideBarComponent', () => {
   it('#dataPanelName should return "Values (X-Axis)" when horizontal grouped bar chart', () => {
 
     // given
-    context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
+    context.chartType = ChartType.HORIZONTAL_BAR.type;
 
     // when
     const panelName = component.dataPanelName();
@@ -365,22 +361,10 @@ describe('ChartSideBarComponent', () => {
     expect(panelName).toEqual('Values (X-Axis)');
   });
 
-  it('#dataPanelName should return "Values" when multiple-grouping', () => {
-
-    // given
-    context.chartType = ChartType.SUNBURST.type;
-
-    // when
-    const panelName = component.dataPanelName();
-
-    // then
-    expect(panelName).toEqual('Values');
-  });
-
   it('#groupingPanelName should return "Name" when non-grouping', () => {
 
     // given
-    context.chartType = ChartType.DONUT.type;
+    context.chartType = ChartType.DOUGHNUT.type;
 
     // when
     const panelName = component.groupingPanelName();
@@ -389,22 +373,11 @@ describe('ChartSideBarComponent', () => {
     expect(panelName).toEqual('Name');
   });
 
-  it('#groupingPanelName should return "Hierarchy" when multiple grouping available', () => {
-
-    // given
-    context.chartType = ChartType.SUNBURST.type;
-
-    // when
-    const panelName = component.groupingPanelName();
-
-    // then
-    expect(panelName).toEqual('Hierarchy');
-  });
 
   it('#groupingPanelName should return "X-Axis" when non-horizontal chart', () => {
 
     // given
-    context.chartType = ChartType.MULTI_BAR.type;
+    context.chartType = ChartType.BAR.type;
 
     // when
     const panelName = component.groupingPanelName();
@@ -416,7 +389,7 @@ describe('ChartSideBarComponent', () => {
   it('#groupingPanelName should return "Y-Axis" when horizontal chart', () => {
 
     // given
-    context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
+    context.chartType = ChartType.HORIZONTAL_BAR.type;
 
     // when
     const panelName = component.groupingPanelName();
@@ -425,40 +398,28 @@ describe('ChartSideBarComponent', () => {
     expect(panelName).toEqual('Y-Axis');
   });
 
-  it('#isPieOrDonutChart should return false when not PIE or DONUT chart', () => {
+  it('#isCircularChart should return false when LINE chart', () => {
 
     // given
-    context.chartType = ChartType.LINE_WITH_FOCUS.type;
+    context.chartType = ChartType.LINE.type;
 
     // when
-    const actual = component.isPieOrDonutChart();
+    const actual = component.isCircularChart();
 
     // then
     expect(actual).toBeFalsy();
   });
 
-  it('#isPieOrDonutChart should return true when PIE chart', () => {
+  it('#isCircularChart should return true when PIE chart', () => {
 
     // given
     context.chartType = ChartType.PIE.type;
 
     // when
-    const actual = component.isPieOrDonutChart();
+    const actual = component.isCircularChart();
 
     // then
-    expect(actual).toBeTruthy();
-  });
-
-  it('#isPieOrDonutChart should return true when DONUT chart', () => {
-
-    // given
-    context.chartType = ChartType.DONUT.type;
-
-    // when
-    const actual = component.isPieOrDonutChart();
-
-    // then
-    expect(actual).toBeTruthy();
+    expect(actual).toBeTrue();
   });
 
   it('#getSingleGroupByColumn should return undefined when no group-by columns exist', () => {

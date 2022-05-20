@@ -55,7 +55,7 @@ describe('PivotTableComponent', () => {
   let getActiveSceneSpy: jasmine.Spy;
 
   beforeAll(() => {
-    now = new Date().getTime();
+    now = Date.now();
     columns = [
       { name: 'ID', dataType: DataType.NUMBER, width: 30, indexed: true },
       { name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.MINUTE, indexed: true },

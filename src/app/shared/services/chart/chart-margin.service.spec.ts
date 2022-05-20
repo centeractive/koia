@@ -1,6 +1,5 @@
 import { ChartMarginService } from './chart-margin.service';
-import { ChartType } from '../../model/chart';
-import { Margin } from 'nvd3';
+import { ChartType, Margin } from '../../model/chart';
 
 describe('ChartMarginService', () => {
 
@@ -10,12 +9,22 @@ describe('ChartMarginService', () => {
       chartMarginService = new ChartMarginService();
    });
 
-   it('#marginOf should return zero-margin when chart type is null', () => {
-      expect(chartMarginService.marginOf(null)).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+   it('#marginOf should return default margin when chart type is null', () => {
+
+      // when
+      const margin = chartMarginService.marginOf(null);
+
+      // then
+      expect(margin).toEqual(ChartMarginService.DEFAULT_MARGINS);
    });
 
-   it('#marginOf should return zero-margin when chart type is undefined', () => {
-      expect(chartMarginService.marginOf(undefined)).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+   it('#marginOf should return default margin when chart type is undefined', () => {
+
+      // when
+      const margin = chartMarginService.marginOf(undefined);
+
+      // then
+      expect(margin).toEqual(ChartMarginService.DEFAULT_MARGINS);
    });
 
    it('#marginOf should return default margin when no other margin was remembered', () => {
@@ -47,7 +56,7 @@ describe('ChartMarginService', () => {
       const margin = chartMarginService.marginOf(ChartType.PIE);
 
       // then
-      expect(margin).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+      expect(margin).toEqual(ChartMarginService.DEFAULT_MARGINS);
    });
 
    it('#computeMargin should return computed margin when top-left corner was reiszed', () => {
@@ -57,7 +66,7 @@ describe('ChartMarginService', () => {
       const resizeEvent = {
          rectangle: { top: 0, right: 0, bottom: 0, left: 0 },
          edges: { top: 1, left: 2 }
-      }
+      };
 
       // when
       const computedMargin = chartMarginService.computeMargin(margin, resizeEvent);

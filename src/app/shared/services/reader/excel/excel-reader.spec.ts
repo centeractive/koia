@@ -1,7 +1,7 @@
 import { ExcelReader } from './excel-reader';
 import { DataHandler } from '../data-handler.type';
-import * as moment from 'moment';
 import { DataType } from 'app/shared/model';
+import * as moment from 'moment';
 
 describe('ExcelReader', () => {
 
@@ -13,7 +13,7 @@ describe('ExcelReader', () => {
    beforeEach(() => {
       reader = new ExcelReader();
       dataHandler = {
-         onValues: rows => null,
+         onValues: () => null,
          onEntries: entries => console.log(entries),
          onError: err => fail(err),
          onComplete: () => null,

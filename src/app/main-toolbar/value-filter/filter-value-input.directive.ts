@@ -72,8 +72,8 @@ export class FilterValueInputDirective implements OnChanges {
   }
 
   private countRemovedThousandSeparatorsLeftToCaret(cursorPos: number, value: string, formattedValue: string): number {
-    return StringUtils.occurrences(value.substring(0, cursorPos), NumberUtils.THOUSANDS_SEPARATOR) -
-      StringUtils.occurrences(formattedValue.substring(0, cursorPos), NumberUtils.THOUSANDS_SEPARATOR);
+    return StringUtils.occurrences(value.substring(0, cursorPos), NumberUtils.thousandsSeparator(undefined)) -
+      StringUtils.occurrences(formattedValue.substring(0, cursorPos), NumberUtils.thousandsSeparator(undefined));
   }
 
   private setCursorPosition(cursorPos: number): void {

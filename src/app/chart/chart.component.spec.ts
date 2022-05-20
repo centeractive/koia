@@ -3,14 +3,11 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { of, Observable } from 'rxjs';
 import { ChartComponent } from './chart.component';
 import { DataType, Column, Scene, Route } from 'app/shared/model';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
-import { NvD3Module, NvD3Component } from 'ng2-nvd3';
+import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { SimpleChange } from '@angular/core';
 import { RawDataRevealService } from 'app/shared/services';
 import { ResizableDirective } from 'angular-resizable-element';
-import { Margin } from 'nvd3';
 import { RouterTestingModule } from '@angular/router/testing';
-import 'nvd3';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { Router } from '@angular/router';
@@ -40,7 +37,7 @@ describe('ChartComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ChartComponent, ResizableDirective],
-      imports: [MatProgressBarModule, NvD3Module, RouterTestingModule, MatDialogModule],
+      imports: [MatProgressBarModule, RouterTestingModule, MatDialogModule],
       providers: [
         { provide: DBService, useValue: dbService },
         { provide: ChartDataService, useClass: ChartDataService },
@@ -89,20 +86,16 @@ describe('ChartComponent', () => {
     flush();
 
     // then
-    const expected = [
-      { x: 1, y: 1 },
-      { x: 2, y: 2 },
-      { x: 3, y: 1 }
-    ];
-    expect(component.chartData).toEqual(expected);
+    expect(context.data.labels).toEqual([1, 2, 3]);
+    expect(context.data.datasets.length).toBe(1);
+    expect(context.data.datasets[0].data).toEqual([1, 2, 1]);
     expect(context.chart).toBeTruthy();
-    expect(context.getContainer()).toBeTruthy();
   }));
 
   it('should emit warning when context changes but new chart data cannot be obtained', fakeAsync(() => {
 
     // given
-    spyOn(TestBed.inject(ChartDataService), 'createData').and.returnValue({ error: 'server not available'});
+    spyOn(TestBed.inject(ChartDataService), 'createData').and.returnValue({ error: 'server not available' });
     spyOn(component.onWarning, 'emit');
     context.dataColumns = [createColumn('n1', DataType.NUMBER)];
     fixture.detectChanges();
@@ -118,68 +111,6 @@ describe('ChartComponent', () => {
     expect(component.onWarning.emit).toHaveBeenCalledWith('server not available');
   }));
 
-  it('should clear NVD3 element when scatter chart context changes', fakeAsync(() => {
-
-    // given
-    context.chartType = ChartType.SCATTER.type;
-    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
-    context.groupByColumns = [createColumn('t1', DataType.TEXT)];
-    fixture.detectChanges();
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
-    flush();
-    component.nvD3Component = <NvD3Component>{ clearElement: () => null };
-    spyOn(component.nvD3Component, 'clearElement');
-
-    // when
-    context.dataColumns = [createColumn('t2', DataType.TEXT)];
-    flush();
-
-    // then
-    expect(component.nvD3Component.clearElement).toHaveBeenCalled();
-  }));
-
-  it('should update chart options when chart size changes', fakeAsync(() => {
-
-    // given
-    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
-    fixture.detectChanges();
-    component.parentConstraintSize = false;
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
-    flush();
-
-    // when
-    context.setSize(200, 300);
-    fixture.detectChanges();
-    flush();
-
-    // then
-    expect(component.chartOptions['chart'].width).toBe(200);
-    expect(component.chartOptions['chart'].height).toBe(300);
-    expect(context.chart).toBeTruthy();
-    expect(context.getContainer()).toBeTruthy();
-  }));
-
-  it('should update chart when parent constraint chart size changes', fakeAsync(() => {
-
-    // given
-    context.chart = { update: () => null };
-    spyOn(context.chart, 'update');
-    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
-    fixture.detectChanges();
-    component.parentConstraintSize = true;
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
-    flush();
-
-    // when
-    context.setSize(200, 300);
-    flush();
-
-    // then
-    expect(context.chart.update).toHaveBeenCalled();
-    expect(component.chartOptions['chart'].width).toBeNull();
-    expect(component.chartOptions['chart'].height).toBeNull();
-  }));
-
   it('#validateElementResize should return true when margin is valid', () => {
 
     // given
@@ -187,13 +118,13 @@ describe('ChartComponent', () => {
       rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: 100, width: 100 },
       edges: { top: 1 }
     }
-    component.ngOnChanges({'context': new SimpleChange(null, null, true) });
+    component.ngOnChanges({ 'context': new SimpleChange(null, null, true) });
 
     // when
     const validation = component.validateMarginResize(resizeEvent);
 
     // then
-    expect(validation).toBeTruthy();
+    expect(validation).toBeTrue();
   });
 
   it('#validateElementResize should return false when margin is invalid', () => {
@@ -203,13 +134,13 @@ describe('ChartComponent', () => {
       rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: 100, width: 100 },
       edges: { top: -1 }
     }
-    component.ngOnChanges({'context': new SimpleChange(null, null, true) });
+    component.ngOnChanges({ 'context': new SimpleChange(null, null, true) });
 
     // when
     const validation = component.validateMarginResize(resizeEvent);
 
     // then
-    expect(validation).toBeFalsy();
+    expect(validation).toBeFalse();
   });
 
   it('#onResizeEnd should define margin when resized at top left corner', () => {

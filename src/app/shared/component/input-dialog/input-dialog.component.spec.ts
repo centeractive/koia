@@ -71,7 +71,7 @@ describe('InputDialogComponent', () => {
     okButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeTruthy();
+    expect(component.data.closedWithOK).toBeTrue();
     expect(component.data.input).toEqual('test');
     expect(component.dialogRef.close).toHaveBeenCalled();
   });

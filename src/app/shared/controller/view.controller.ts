@@ -218,7 +218,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    saveAs(context: ElementContext, exportFormat: ExportFormat): void {
       if (this.isChartContext(context)) {
-         this.exportService.exportImage(this.asChartContext(context).getContainer(), exportFormat, context.getTitle());
+         const base64Image = this.asChartContext(context).chart.toBase64Image();
+         this.exportService.exportImage(base64Image, exportFormat, context.getTitle());
       } else if (this.isSummaryContext(context)) {
          const sumTableComponent = this.sumTableComponents.find(cmp => cmp.context === context);
          this.exportService.exportData(sumTableComponent.createExportData(), exportFormat, context.getTitle());

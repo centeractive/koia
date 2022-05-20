@@ -20,17 +20,16 @@ describe('ValueFormatter', () => {
       expect(formatter.formatValue(column, '123')).toBe('123');
    });
 
-   it('#formatValue should return formatted string if NUMBER', () => {
+   it('#formatValue should return formatted string using current locale if NUMBER', () => {
       const column: Column = { name: 'X', dataType: DataType.NUMBER, width: 90 };
 
-      const ts = Number(1000).toLocaleString().charAt(1); // Thousands separator
-      expect(formatter.formatValue(column, -1_000_000.5)).toBe('-1' + ts + '000' + ts + '000.5');
-      expect(formatter.formatValue(column, -95.5132)).toBe('-95.5132');
-      expect(formatter.formatValue(column, -0.1)).toBe('-0.1');
+      expect(formatter.formatValue(column, -1_000_000.5)).toBe((-1_000_000.5).toLocaleString());
+      expect(formatter.formatValue(column, -95.5132)).toBe((-95.5132).toLocaleString(undefined, { minimumFractionDigits: 4 }));
+      expect(formatter.formatValue(column, -0.1)).toBe((-0.1).toLocaleString());
       expect(formatter.formatValue(column, 0)).toBe('0');
-      expect(formatter.formatValue(column, 0.1)).toBe('0.1');
-      expect(formatter.formatValue(column, 95.5132)).toBe('95.5132');
-      expect(formatter.formatValue(column, 1_000_000.5)).toBe('1' + ts + '000' + ts + '000.5');
+      expect(formatter.formatValue(column, 0.1)).toBe((0.1).toLocaleString());
+      expect(formatter.formatValue(column, 95.5132)).toBe((95.5132).toLocaleString(undefined, { minimumFractionDigits: 4 }));
+      expect(formatter.formatValue(column, 1_000_000.5)).toBe((1_000_000.5).toLocaleString());
    });
 
    it('#formatValue should return formatted string if TIME', () => {

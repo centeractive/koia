@@ -51,7 +51,7 @@ describe('EntryPersister', () => {
       // then
       expect(persister.isPostingComplete()).toBeFalsy();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
-      expect(dbService.writeEntries).toHaveBeenCalledWith(database, [<Document> { id: 1 }, <Document>{ id: 2 }, <Document>{ id: 3 }, <Document>{ id: 4 }]);
+      expect(dbService.writeEntries).toHaveBeenCalledWith(database, [<Document>{ id: 1 }, <Document>{ id: 2 }, <Document>{ id: 3 }, <Document>{ id: 4 }]);
       expect(monitor.onProgress).toHaveBeenCalledTimes(2);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '4 items read');
       expect(monitor.onProgress).toHaveBeenCalledWith(100, '4 items read / 4 persisted');
@@ -86,7 +86,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeTruthy();
+      expect(persister.isPostingComplete()).toBeTrue();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '4 items read');
@@ -121,7 +121,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeTruthy();
+      expect(persister.isPostingComplete()).toBeTrue();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, [<Document>{ id: 5 }, <Document>{ id: 6 }]);
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
@@ -143,7 +143,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeTruthy();
+      expect(persister.isPostingComplete()).toBeTrue();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(0);
       expect(monitor.onProgress).toHaveBeenCalledTimes(0);
       expect(monitor.onComplete).toHaveBeenCalledTimes(1);

@@ -34,8 +34,11 @@ describe('FilterValueParser', () => {
 
    it('#parse should return number when value contains number with thousands separator', () => {
 
+      // given
+      const formattedNumber = (1_234.56).toLocaleString();
+
       // when
-      const value = parser.parse('1,234.56');
+      const value = parser.parse(formattedNumber);
 
       // then
       expect(value).toBe(1_234.56);
@@ -43,8 +46,12 @@ describe('FilterValueParser', () => {
 
    it('#parse should return number when value contains number with misplaced thousands separators', () => {
 
+      // given
+      const ts = (1_000).toLocaleString().charAt(1);
+      let wronglyFormatted = '1' + ts + '23' + ts + (4.56).toLocaleString();
+
       // when
-      const value = parser.parse('1,23,4.56');
+      const value = parser.parse(wronglyFormatted);
 
       // then
       expect(value).toBe(1_234.56);

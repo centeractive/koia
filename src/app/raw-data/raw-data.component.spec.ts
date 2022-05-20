@@ -104,7 +104,7 @@ describe('RawDataComponent', () => {
   it('should fetch initial entries page', () => {
     const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
     expect(query.getPageIndex()).toBe(0);
-    expect(query.getRowsPerPage()).toBe(5);
+    expect(query.getRowsPerPage()).toBe(10);
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
     expect(component.entries).toBe(entries);
   });
@@ -253,7 +253,7 @@ describe('RawDataComponent', () => {
     expect(formatted).toBe('2019-01-30 18:24:17 557');
   });
 
-  it('#formattedValueOf should return formatted number using locale en-US', () => {
+  it('#formattedValueOf should return formatted number using current locale', () => {
 
     // given
     const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
@@ -262,8 +262,8 @@ describe('RawDataComponent', () => {
     // when
     const formatted = component.formattedValueOf(column, entry);
 
-    // then
-    expect(formatted).toBe('15,000');
+    // then    
+    expect(formatted).toBe((15_000).toLocaleString());
   });
 
   it('#formattedValueOf should return value when value is text', () => {

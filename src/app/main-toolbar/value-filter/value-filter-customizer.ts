@@ -39,9 +39,9 @@ export class ValueFilterCustomizer {
       }
 
       formattedValueOf(filter: PropertyFilter): string {
-            if (filter.value === null || filter.value === undefined) {
+            if (filter.value == undefined) {
                   return '';
-            } else if (filter.dataType === DataType.NUMBER && NumberUtils.isNumber(filter.value)) {
+            } else if (filter.dataType === DataType.NUMBER && NumberUtils.isNumber(filter.value, undefined)) {
                   return this.numberFormatter.format(<number>filter.value);
             } else {
                   return filter.value.toString();

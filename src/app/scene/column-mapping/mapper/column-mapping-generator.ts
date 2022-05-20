@@ -50,7 +50,7 @@ export class ColumnMappingGenerator {
    }
 
    private createColumnPair(name: string, value: any, locale: string): ColumnPair {
-      const dataType = this.guessDataTypeOf(value);
+      const dataType = this.guessDataTypeOf(value, locale);
       const columnPair: ColumnPair = {
          source: { name: name, dataType: dataType, width: undefined },
          target: { name: name, dataType: dataType, width: undefined, indexed: this.shallBeIndexed(value) }
@@ -61,15 +61,15 @@ export class ColumnMappingGenerator {
    }
 
    private refine(columnPair: ColumnPair, value: any, locale: string): void {
-      const dataType = this.guessDataTypeOf(value);
-      if (dataType === undefined) {
+      const dataType = this.guessDataTypeOf(value, locale);
+      if (dataType == undefined) {
          return;
-      } else if (columnPair.source.dataType === undefined) {
+      } else if (columnPair.source.dataType == undefined) {
          columnPair.source.dataType = dataType;
          columnPair.target.dataType = dataType;
          this.sharpenMapping(dataType, columnPair, value, locale);
       } else if (dataType === DataType.NUMBER && columnPair.source.dataType === DataType.TIME) {
-         if (!NumberUtils.isInteger(value)) {
+         if (!NumberUtils.isInteger(value, locale)) {
             columnPair.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
             this.downgrade(columnPair, DataType.NUMBER);
          }
@@ -78,7 +78,7 @@ export class ColumnMappingGenerator {
             columnPair.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
          }
          this.downgrade(columnPair, DataType.TEXT);
-      } else if (columnPair.target.dataType === DataType.TIME && columnPair.source.format === undefined) {
+      } else if (columnPair.target.dataType === DataType.TIME && columnPair.source.format == undefined) {
          this.refineDateTimeFormat(columnPair, value, locale);
       }
       columnPair.target.width = Math.max(columnPair.target.width, this.computeWidth(value, columnPair));
@@ -107,7 +107,7 @@ export class ColumnMappingGenerator {
          NumberUtils.countDigits(<string>value) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
          this.detectDateTimeFromString(columnPair, <string>value, locale);
       } else if (columnPair.source.dataType === DataType.NUMBER) {
-         this.detectDateTimeFromNumber(columnPair, <number>value);
+         this.detectDateTimeFromNumber(columnPair, <number>value, locale);
       }
    }
 
@@ -117,19 +117,19 @@ export class ColumnMappingGenerator {
             columnPair.source.format = formatToTimeUnit.format;
             columnPair.target.dataType = DataType.TIME;
             const timeUnit = formatToTimeUnit.timeUnit ? formatToTimeUnit.timeUnit :
-               this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND);
+               this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND, locale);
             columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
             return;
          }
       }
    }
 
-   private detectDateTimeFromNumber(columnPair: ColumnPair, value: number) {
-      if (this.timeGuesser.isAssumedlyTime(columnPair, value)) {
+   private detectDateTimeFromNumber(columnPair: ColumnPair, value: number, locale: string) {
+      if (this.timeGuesser.isAssumedlyTime(columnPair, value, locale)) {
          columnPair.source.dataType = DataType.TIME;
          columnPair.target.dataType = DataType.TIME;
       } else {
-         const timeUnit = this.timeUnitDetector.fromColumnName(columnPair, value, undefined);
+         const timeUnit = this.timeUnitDetector.fromColumnName(columnPair, value, undefined, locale);
          if (timeUnit) {
             columnPair.source.dataType = DataType.TIME;
             columnPair.target.dataType = DataType.TIME;
@@ -138,8 +138,8 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private guessDataTypeOf(value: any): DataType {
-      return value === '' ? undefined : DataTypeUtils.typeOf(value);
+   private guessDataTypeOf(value: any, locale: string): DataType {
+      return value === '' ? undefined : DataTypeUtils.typeOf(value, locale);
    }
 
    private refineDateTimeFormat(columnPair: ColumnPair, value: any, locale: string): void {
@@ -152,7 +152,7 @@ export class ColumnMappingGenerator {
    }
 
    private shallBeIndexed(value: any): boolean {
-      if (value === null || value === undefined) {
+      if (value == undefined) {
          return true;
       }
       if (typeof value === 'object') {

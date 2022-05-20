@@ -1,57 +1,124 @@
 export class NumberUtils {
 
-   static readonly THOUSANDS_SEPARATOR = Number(1000).toLocaleString().charAt(1);
-   static readonly DECIMAL_SEPARATOR = Number(1.1).toLocaleString().charAt(1);
-
-   private static readonly FORMATTED_NUM_REGEX = /^(\+|-)?\s?\d{1,3}(,\d{3})*(\.\d+)?$/;
-
    /**
-    * @returns [[true]], if the value is an integer or represents an integer (may contain thousands separators of the current locale),
+    * @returns [[true]], if the value is an integer or represents an integer (may contain thousands separators of the specified locale),
     * [[false]] otherwise (non-compliant string, boolean, object, array etc.). If the number contains the decimal separator, it is not
     * considered to be an integer, even if the digit after the decimal separator is zero (i.e. '1.0').
     *
-    * Note: the number 1.0 is considered to be an integer but the string "1.0" is not.
+    * Note: the number 1.0 is considered to be an integer but the string '1.0' is not.
     */
-   static isInteger(value: any): boolean {
-      return value !== null && value !== undefined && NumberUtils.isNumber(value) &&
-         value.toString().indexOf(NumberUtils.DECIMAL_SEPARATOR) === -1;
+   static isInteger(value: any, locale: string): boolean {
+      if (value !== null && value !== undefined && this.isNumber(value, locale)) {
+         if (typeof value === 'string') {
+            if (value.includes(this.decimalSeparator(locale))) {
+               return false;
+            }
+            return Number.isInteger(Number(this.normalize(value, locale)));
+         }
+         return Number.isInteger(value);
+      }
+      return false;
    }
 
    /**
-    * @returns [[true]], if the value is a number or represents a number (may contain thousands separators of the current locale),
+    * @returns [[true]], if the value is a number or represents a number (may contain thousands separators of the specified locale),
     * [[false]] otherwise (non-compliant string, boolean, object, array etc.)
     */
-   static isNumber(value: any): boolean {
+   static isNumber(value: any, locale: string): boolean {
       if (value === 0) {
          return true;
       } else if (!value || typeof value === 'boolean' || typeof value === 'object' || Array.isArray(value)) {
          return false;
       } else if (typeof value === 'string') {
-         return this.representsNumber(value);
+         return this.representsNumber(value, locale);
       }
       return !Number.isNaN(value);
    }
 
    /**
-    * @returns [[true]], if the string represents a number (may contain thousands separators of the current locale)
+    * @returns [[true]], if the string represents a number (may contain thousands separators of the specified locale)
     */
-   static representsNumber(str: string): boolean {
+   static representsNumber(str: string, locale: string): boolean {
       if (!str) {
          return false;
       }
       str = str.trim();
-      if (str.trim() === '') {
+      if (str === '') {
          return false;
-      } else if (!isNaN(Number(str))) {
-         return true;
       }
-      return str.match(NumberUtils.FORMATTED_NUM_REGEX) !== null;
+      const decimalTokens = str.split(this.decimalSeparator(locale));
+      if (decimalTokens.length == 1) {
+         const thousandTokens = str.split(this.thousandsSeparator(locale));
+         if (!this.checkThousandTokens(thousandTokens)) {
+            return false;
+         }
+         str = thousandTokens.join('');
+      } else if (decimalTokens.length == 2) {
+         const thousandTokens = decimalTokens[0].split(this.thousandsSeparator(locale));
+         if (decimalTokens[0].length > 3) {
+            if (!this.checkThousandTokens(thousandTokens)) {
+               return false;
+            }
+         }
+         str = thousandTokens.join('') + '.' + decimalTokens[1];
+      } else {
+         return false;
+      }
+      return !isNaN(Number(str));
+   }
+
+   /**
+   * converts a string to a parsable number presentation, a number without thousands separator and with a
+   * dot as decimal separator.
+   *
+   * @param str  a number that may contain thousands separators of the specified locale
+   * @returns normalized number or [[undefined]] if the specified string does not represent a number
+   */
+   private static normalize(str: string, locale: string): string {
+      if (!str) {
+         return undefined;
+      }
+      str = str.trim();
+      if (str === '') {
+         return undefined;
+      }
+      const decimalTokens = str.split(this.decimalSeparator(locale));
+      if (decimalTokens.length == 1) {
+         const thousandTokens = str.split(this.thousandsSeparator(locale));
+         if (!this.checkThousandTokens(thousandTokens)) {
+            return undefined;
+         }
+         str = thousandTokens.join('');
+      } else if (decimalTokens.length == 2) {
+         const thousandTokens = decimalTokens[0].split(this.thousandsSeparator(locale));
+         if (decimalTokens[0].length > 3) {
+            if (!this.checkThousandTokens(thousandTokens)) {
+               return undefined;
+            }
+         }
+         str = thousandTokens.join('') + '.' + decimalTokens[1];
+      } else {
+         return undefined;
+      }
+      return str;
+   }
+
+   private static checkThousandTokens(tokens: string[]): boolean {
+      if (!Number.isInteger(Number(tokens[0]))) {
+         return false;
+      }
+      for (let i = 1; i < tokens.length; i++) {
+         if (tokens[i].length != 3 || !Number.isInteger(Number(tokens[i]))) {
+            return false;
+         }
+      }
+      return true;
    }
 
    /**
     * @returns the value as a number, 1 for boolean [[true]], 0 for boolean [[false]]
     */
-   static asNumber(value: string | number | boolean): number {
+   static asNumber(value: string | number | boolean, locale: string): number {
       if (value === null || value === undefined || (typeof value === 'string' && (<string>value).trim() === '')) {
          return undefined;
       }
@@ -60,7 +127,7 @@ export class NumberUtils {
       } else if (typeof value === 'boolean') {
          return value ? 1 : 0;
       } else if (typeof value === 'string') {
-         const result = NumberUtils.parseNumber(<string>value);
+         const result = this.parseNumber(<string>value, locale);
          return isNaN(result) ? undefined : result;
       }
       return undefined;
@@ -69,71 +136,84 @@ export class NumberUtils {
    /**
     * converts a string to a number
     *
-    * @param str  integer or float that may contain thousands separators of the current locale
+    * @param str  integer or float that may contain thousands separators of the specified locale
     * @returns a number or [[undefined]] if the specified string does not represent a number
     */
-   static parseNumber(str: string): number {
+   static parseNumber(str: string, locale: string): number {
       if (!str || str.trim() === '') {
          return undefined;
       }
-      return str.indexOf(NumberUtils.DECIMAL_SEPARATOR) >= 0 ? NumberUtils.parseFloat(str) : NumberUtils.parseInt(str);
+      str = this.normalize(str, locale);
+      if (!str) {
+         return undefined;
+      }
+      return str.indexOf('.') >= 0 ? parseFloat(str) : parseInt(str);
    }
 
    /**
     * converts a string to an integer
     *
-    * @param str  a number that may contain thousands separators of the current locale
+    * @param str  a number that may contain thousands separators of the specified locale
     * @returns an integer or [[undefined]] if the specified string does not represent an integer
     */
-   static parseInt(str: string): number {
+   static parseInt(str: string, locale: string): number {
       if (!str || str.trim() === '') {
          return undefined;
-      } else if (!NumberUtils.isNumber(str.slice(-1)) || str.indexOf(NumberUtils.DECIMAL_SEPARATOR) > 0) {
+      } else if (!this.isNumber(str.slice(-1), locale) || str.indexOf(this.decimalSeparator(locale)) > 0) {
          return undefined;
-      } else if (!this.representsNumber(str)) {
+      } else if (!this.representsNumber(str, locale)) {
          return undefined;
       }
-      return parseInt(this.removeThousandsSeparators(str), 10);
+      return parseInt(this.removeThousandsSeparators(str, locale), 10);
    }
 
    /**
     * converts a string to a floating-point number
     *
-    * @param str  a number that may contain thousands separators of the current locale
+    * @param str  a number that may contain thousands separators of the specified locale
     * @returns a floating number or [[undefined]] if the specified string does not represent a number
     */
-   static parseFloat(str: string): number {
+   static parseFloat(str: string, locale: string): number {
       if (!str || str.trim() === '') {
          return undefined;
       }
-      if (str.startsWith(NumberUtils.DECIMAL_SEPARATOR)) {
+      if (str.startsWith(this.decimalSeparator(locale))) {
          str = '0' + str;
       }
-      if (!NumberUtils.isNumber(str.slice(-1)) ||
-         str.indexOf(NumberUtils.DECIMAL_SEPARATOR) !== str.lastIndexOf(NumberUtils.DECIMAL_SEPARATOR)) {
+      if (!this.isNumber(str.slice(-1), locale) ||
+         str.indexOf(this.decimalSeparator(locale)) !== str.lastIndexOf(this.decimalSeparator(locale))) {
          return undefined;
-      } else if (!this.representsNumber(str)) {
+      } else if (!this.representsNumber(str, locale)) {
          return undefined;
       }
-      return parseFloat(this.removeThousandsSeparators(str));
+      return parseFloat(this.normalize(str, locale));
    }
 
    /**
     * removes thousands separators regardless of whether they appear at correct position
     */
-   static removeThousandsSeparators(str: string): string {
-      return str.split(NumberUtils.THOUSANDS_SEPARATOR).join('');
+   static removeThousandsSeparators(str: string, locale: string): string {
+      return str.split(this.thousandsSeparator(locale)).join('');
    }
 
    /**
-    * @returns the number of digits found after the decimal point
+    * @returns the number of digits found after the decimal point (max returned value is 20)
     */
-   static countDecimals(num: number): number {
+   static countDecimals(num: number, locale: string): number {
       if (!num || Math.floor(num) === num) {
          return 0;
       }
-      const tokens = num.toString().split(NumberUtils.DECIMAL_SEPARATOR);
+      const tokens = num.toLocaleString(locale, { maximumFractionDigits: 20 })
+         .split(this.decimalSeparator(locale));
       return tokens.length === 2 ? tokens[1].length : 0;
+   }
+
+   static thousandsSeparator(locale: string): string {
+      return Number(1_000).toLocaleString(locale).charAt(1);
+   }
+
+   static decimalSeparator(locale: string): string {
+      return Number(1.1).toLocaleString(locale).charAt(1);
    }
 
    /**
@@ -144,18 +224,18 @@ export class NumberUtils {
    }
 
    static min(n1: number, n2: number): number | undefined {
-      if (n1 === undefined || n1 === null) {
+      if (n1 == undefined) {
          return n2;
-      } else if (n2 === undefined || n2 === null) {
+      } else if (n2 == undefined) {
          return n1;
       }
       return Math.min(n1, n2);
    }
 
    static max(n1: number, n2: number): number | undefined {
-      if (n1 === undefined || n1 === null) {
+      if (n1 == undefined) {
          return n2;
-      } else if (n2 === undefined || n2 === null) {
+      } else if (n2 == undefined) {
          return n1;
       }
       return Math.max(n1, n2);
@@ -175,6 +255,14 @@ export class NumberUtils {
     */
    static rangeClosedIntArray(endInclusive: number): number[] {
       return Array.from(new Array(endInclusive), (x, i) => i + 1);
+   }
+
+   /**
+    * @returns a sequential ordered array of integers 
+    */
+   static intArray(from: number, to: number): number[] {
+      const count = to - from + 1;
+      return Array.from(new Array(count), (x, i) => i + from);
    }
 
    /**

@@ -119,7 +119,7 @@ describe('ChartDataHelper', () => {
       spyOn(ChartDataHelper, 'valuesOfDistinctNames').and.callThrough();
 
       // when -> then
-      expect(() => ChartDataHelper.valuesOfDistinctNames(context)).toThrowError('Names are not unique');
+      expect(() => ChartDataHelper.valuesOfDistinctNames(context)).toThrowError('Name \'a\' is not unique');
    });
 
    it('#extractGroupingValue should return unchanged value when data type is NUMBER', () => {

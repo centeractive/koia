@@ -3,7 +3,7 @@ import { GraphContext } from '../model';
 import { MatSidenav } from '@angular/material/sidenav';
 import { View } from '../model/view-config';
 import { ViewController } from './view.controller';
-import { Directive } from "@angular/core";
+import { Directive } from '@angular/core';
 
 @Directive()
 class ViewControllerTestable extends ViewController {
@@ -72,7 +72,7 @@ describe('ViewController', () => {
       spyOn(viewController.sidenav, 'open');
 
       // when
-      viewController.configure(<MouseEvent> { clientX: ViewController.SIDENAV_WIDTH - 1 }, chartContext);
+      viewController.configure(<MouseEvent>{ clientX: ViewController.SIDENAV_WIDTH - 1 }, chartContext);
 
       // then
       expect(viewController.sidenav.mode).toBe('push');
@@ -87,14 +87,14 @@ describe('ViewController', () => {
       spyOn(viewController.sidenav, 'open');
 
       // when
-      viewController.configure(<MouseEvent> { clientX: ViewController.SIDENAV_WIDTH + 1 }, chartContext);
+      viewController.configure(<MouseEvent>{ clientX: ViewController.SIDENAV_WIDTH + 1 }, chartContext);
 
       // then
       expect(viewController.sidenav.mode).toBe('over');
       expect(viewController.sidenav.open).toHaveBeenCalled();
-    });
+   });
 
-    it('#configure should open sidenav in "over" mode when x-position is missing in mouse event', () => {
+   it('#configure should open sidenav in "over" mode when x-position is missing in mouse event', () => {
 
       // given
       const chartContext = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
@@ -102,7 +102,7 @@ describe('ViewController', () => {
       spyOn(viewController.sidenav, 'open');
 
       // when
-      viewController.configure(<MouseEvent> {}, chartContext);
+      viewController.configure(<MouseEvent>{}, chartContext);
 
       // then
       expect(viewController.sidenav.mode).toBe('over');

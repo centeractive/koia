@@ -1,5 +1,4 @@
 import { ParamMap } from '@angular/router';
-import { NumberUtils } from './number-utils';
 import { Protocol, ConnectionInfo } from '../model';
 
 /**
@@ -37,7 +36,7 @@ export class QueryParamExtractor {
          return {
             protocol: this.determineProtocol(params),
             host: host,
-            port: NumberUtils.asNumber(port),
+            port: parseInt(port),
             user: user,
             password: atob(password)
          };

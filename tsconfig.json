@@ -18,5 +18,9 @@
       "dom"
     ],
     "module": "es2020"
+  },
+  "angularCompilerOptions": {
+    "fullTemplateTypeCheck": true,
+    "strictTemplates": true
   }
 }

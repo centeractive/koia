@@ -1,31 +1,25 @@
-import { GroupingType } from '../grouping-type.enum';
-
 export class ChartType {
 
-   static readonly PIE = new ChartType('Pie', 'pieChart', GroupingType.NONE, 'pie_chart', false, 500);
-   static readonly DONUT = new ChartType('Donut', 'donutChart', GroupingType.NONE, 'donut_small', false, 500);
-   static readonly BAR = new ChartType('Bar', 'discreteBarChart', GroupingType.NONE, 'bar_chart', false, 500);
-   static readonly MULTI_BAR = new ChartType('Grouped Bar', 'multiBarChart', GroupingType.SINGLE, 'grouped_bar_chart', true, 500);
-   static readonly MULTI_HORIZONTAL_BAR = new ChartType('Grouped Horizontal Bar', 'multiBarHorizontalChart',
-      GroupingType.SINGLE, 'grouped_horizontal_bar_chart', true, 500);
-   static readonly LINE = new ChartType('Line', 'lineChart', GroupingType.SINGLE, 'timeline', false, undefined);
-   static readonly LINE_WITH_FOCUS = new ChartType('Zoomable Line', 'lineWithFocusChart', GroupingType.SINGLE, 'zoomable_line_chart',
-      true, undefined);
-   static readonly AREA = new ChartType('Area', 'areaChart', GroupingType.SINGLE, 'area_chart', true, undefined);
-   static readonly SCATTER = new ChartType('Scatter', 'scatterChart', GroupingType.SINGLE, 'scatter_plot', false, undefined);
-   static readonly SUNBURST = new ChartType('Sunburst', 'sunburstChart', GroupingType.MULTIPLE, 'wb_sunny', false, undefined);
+   static readonly PIE = new ChartType('Pie', 'pie', 'pie_chart', false, 1000);
+   static readonly DOUGHNUT = new ChartType('Doughnut', 'doughnut', 'donut_small', false, 1000);
+   static readonly BAR = new ChartType('Bar', 'bar', 'bar_chart', false, 5000);
+   static readonly HORIZONTAL_BAR = new ChartType('Horizontal Bar', 'horizontalBar', 'horizontal_bar_chart', true, 5000);
+   static readonly RADAR = new ChartType('Radar', 'radar', 'radar_chart', false, 1000);
+   static readonly POLAR_AREA = new ChartType('Polar Area', 'polarArea', 'polar_area_chart', true, 1000);
+   static readonly LINE = new ChartType('Line', 'line', 'timeline', false);
+   static readonly AREA = new ChartType('Area', 'area', 'area_chart', true);
+   static readonly SCATTER = new ChartType('Scatter', 'scatter', 'scatter_plot', false);
 
    static readonly ALL = [
       ChartType.PIE,
-      ChartType.DONUT,
+      ChartType.DOUGHNUT,
       ChartType.BAR,
-      ChartType.MULTI_BAR,
-      ChartType.MULTI_HORIZONTAL_BAR,
+      ChartType.HORIZONTAL_BAR,
+      ChartType.RADAR,
+      ChartType.POLAR_AREA,
       ChartType.LINE,
-      ChartType.LINE_WITH_FOCUS,
       ChartType.AREA,
-      ChartType.SCATTER,
-      ChartType.SUNBURST
+      ChartType.SCATTER
    ];
 
    static fromType(type: string): ChartType {
@@ -34,9 +28,48 @@ export class ChartType {
             return chartType;
          }
       }
-      return undefined;
+      return this.fromOldType(type);
    }
 
-   constructor(readonly name: string, readonly type: string, readonly groupingType: GroupingType,
-      readonly icon: string, readonly customIcon: boolean, readonly maxValues: number) { }
+   /**
+    * tries to deduct the chart type from the former nvd3 type for backward compatibility
+    */
+   private static fromOldType(type: string): ChartType {
+      switch (type) {
+         case ('pieChart'):
+            return ChartType.PIE;
+         case ('donutChart'):
+            return ChartType.DOUGHNUT;
+         case ('discreteBarChart'):
+         case ('multiBarChart'):
+            return ChartType.BAR;
+         case ('multiBarHorizontalChart'):
+            return ChartType.HORIZONTAL_BAR;
+         case ('lineChart'):
+         case ('lineWithFocusChart'):
+            return ChartType.LINE;
+         case ('areaChart'):
+            return ChartType.AREA;
+         case ('scatterChart'):
+            return ChartType.SCATTER;
+         case ('sunburstChart'):
+            throw new Error('Sunburst chart does no longer exist in the current Koia version');
+         default:
+            throw new Error('unknown chart type ' + type);
+      }
+   }
+
+   constructor(readonly name: string, readonly type: string, readonly icon: string,
+      readonly customIcon: boolean, readonly maxValues?: number) { }
+
+   static isCircularChart(chartType: ChartType): boolean {
+      return chartType === ChartType.PIE || chartType === ChartType.DOUGHNUT ||
+         chartType === ChartType.RADAR || chartType === ChartType.POLAR_AREA;
+   }
+
+   static isCategoryChart(chartType: ChartType): boolean {
+      return chartType === ChartType.PIE || chartType === ChartType.DOUGHNUT ||
+         chartType === ChartType.BAR || chartType === ChartType.HORIZONTAL_BAR ||
+         chartType === ChartType.RADAR || chartType === ChartType.POLAR_AREA;
+   }
 }

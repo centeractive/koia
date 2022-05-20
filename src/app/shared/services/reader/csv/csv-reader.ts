@@ -28,11 +28,11 @@ export class CSVReader implements DataReader {
       return true;
    }
 
-   furnishAttributes(dataHeader: string): Attribute[] {
+   furnishAttributes(dataHeader: string, locale: string): Attribute[] {
       if (dataHeader && dataHeader.length > 0) {
          this.attrSeparator.value = this.detectSeparator(dataHeader);
          if (this.attrSeparator.value) {
-            this.attrHasHeaderColumn.value = this.detectHeaderColumn(dataHeader);
+            this.attrHasHeaderColumn.value = this.detectHeaderColumn(dataHeader, locale);
          }
       }
       return [this.attrHasHeaderColumn, this.attrSeparator];
@@ -55,18 +55,18 @@ export class CSVReader implements DataReader {
       return detected;
    }
 
-   private detectHeaderColumn(text: string): boolean {
+   private detectHeaderColumn(text: string, locale: string): boolean {
       const lines = text.split('\n');
       if (lines.length > 1) {
-         return this.includesTextValuesOnly(lines[0].split(this.attrSeparator.value));
+         return this.includesTextValuesOnly(lines[0].split(this.attrSeparator.value), locale);
       }
       return false;
    }
 
-   private includesTextValuesOnly(values: string[]): boolean {
+   private includesTextValuesOnly(values: string[], locale: string): boolean {
       return values
          .filter(v => v !== '')
-         .map(v => DataTypeUtils.typeOf(v))
+         .map(v => DataTypeUtils.typeOf(v, locale))
          .find(t => t !== DataType.TEXT) === undefined;
    }
 

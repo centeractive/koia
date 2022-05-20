@@ -20,7 +20,7 @@ describe('RangeFilterComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ RangeFilterComponent ],
+      declarations: [RangeFilterComponent],
       imports: [
         MatButtonModule, MatIconModule, MatBadgeModule, MatTooltipModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule
       ],
@@ -28,7 +28,7 @@ describe('RangeFilterComponent', () => {
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
@@ -65,7 +65,7 @@ describe('RangeFilterComponent', () => {
     component.onInvertedChanged(true);
 
     // then
-    expect(component.filter.inverted).toBeTruthy();
+    expect(component.filter.inverted).toBeTrue();
     expect(component.onChange.emit).toHaveBeenCalled();
   }));
 

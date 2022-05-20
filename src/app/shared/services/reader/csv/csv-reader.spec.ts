@@ -43,7 +43,7 @@ describe('CSVReader', () => {
    it('#furnishAttributes should return attributes with default values', () => {
 
       // when
-      const attributes = reader.furnishAttributes(undefined);
+      const attributes = reader.furnishAttributes(undefined, 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -66,7 +66,7 @@ describe('CSVReader', () => {
 
       // when
       const fileHeader = 'A,B,C';
-      const attributes = reader.furnishAttributes(fileHeader);
+      const attributes = reader.furnishAttributes(fileHeader, 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -80,7 +80,7 @@ describe('CSVReader', () => {
       const fileHeader =
          'A,1,C\n' +
          'X,Y,Z\n';
-      const attributes = reader.furnishAttributes(fileHeader);
+      const attributes = reader.furnishAttributes(fileHeader, 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -94,7 +94,7 @@ describe('CSVReader', () => {
       const fileHeader =
          'A,true,C\n' +
          'X,Y,Z\n';
-      const attributes = reader.furnishAttributes(fileHeader);
+      const attributes = reader.furnishAttributes(fileHeader, 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -108,7 +108,7 @@ describe('CSVReader', () => {
       const fileHeader =
          'A,B,C\n' +
          'X,Y,Z\n';
-      const attributes = reader.furnishAttributes(fileHeader);
+      const attributes = reader.furnishAttributes(fileHeader, 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -119,7 +119,7 @@ describe('CSVReader', () => {
    it('#furnishAttributes should return comma separator attribute', () => {
 
       // when
-      const attributes = reader.furnishAttributes('A,B,C|D');
+      const attributes = reader.furnishAttributes('A,B,C|D', 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -130,7 +130,7 @@ describe('CSVReader', () => {
    it('#furnishAttributes should return semicolon separator attribute', () => {
 
       // when
-      const attributes = reader.furnishAttributes('A;B;C,D');
+      const attributes = reader.furnishAttributes('A;B;C,D', 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -141,7 +141,7 @@ describe('CSVReader', () => {
    it('#furnishAttributes should return colon separator attribute', () => {
 
       // when
-      const attributes = reader.furnishAttributes('A:B:C,D');
+      const attributes = reader.furnishAttributes('A:B:C,D', 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -152,7 +152,7 @@ describe('CSVReader', () => {
    it('#furnishAttributes should return pipe separator attribute', () => {
 
       // when
-      const attributes = reader.furnishAttributes('A|B|C,D');
+      const attributes = reader.furnishAttributes('A|B|C,D', 'en-US');
 
       // then
       expect(attributes).toBeDefined();
@@ -164,7 +164,7 @@ describe('CSVReader', () => {
 
       // given
       const url = createURL(content);
-      reader.furnishAttributes('')[0].value = false;
+      reader.furnishAttributes('', 'en-US')[0].value = false;
 
       // when/then
       const expectedData = expectedValues.slice(0, 3);
@@ -182,7 +182,7 @@ describe('CSVReader', () => {
 
       // given
       const url = createURL(content);
-      reader.furnishAttributes('')[0].value = false;
+      reader.furnishAttributes('', 'en-US')[0].value = false;
 
       // when/then
       reader.readSample(url, 100)
@@ -199,7 +199,7 @@ describe('CSVReader', () => {
 
       // given
       const url = createURL(header + '\n' + content);
-      reader.furnishAttributes('')[0].value = true;
+      reader.furnishAttributes('', 'en-US')[0].value = true;
 
       // when/then
       const expectedData = expectedValues.slice(0, 3);
@@ -217,7 +217,7 @@ describe('CSVReader', () => {
 
       // given
       const url = createURL(content);
-      reader.furnishAttributes('')[0].value = false;
+      reader.furnishAttributes('', 'en-US')[0].value = false;
 
       // when/then
       let values: string[][];
@@ -238,7 +238,7 @@ describe('CSVReader', () => {
 
       // given
       const url = createURL(header + '\n' + content);
-      reader.furnishAttributes('')[0].value = true;
+      reader.furnishAttributes('', 'en-US')[0].value = true;
 
       // when/then
       let values: string[][];

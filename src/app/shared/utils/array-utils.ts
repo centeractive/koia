@@ -2,6 +2,7 @@ import { Sort } from '@angular/material/sort';
 import { NumberUtils } from './number-utils';
 import { ValueRange } from '../value-range/model/value-range.type';
 import { DataTypeUtils } from './data-type-utils';
+import { CategoryData } from '../model/chart';
 
 export class ArrayUtils {
 
@@ -32,8 +33,8 @@ export class ArrayUtils {
     if (str) {
       for (const s of str.split(separator || ArrayUtils.DEFAULT_SEPARATOR)) {
         const trimmed = s.trim();
-        const num = NumberUtils.parseNumber(trimmed);
-        if (num === undefined) {
+        const num = NumberUtils.parseNumber(trimmed, undefined);
+        if (num == undefined) {
           throw new Error('\'' + trimmed + '\' is not a number');
         }
         numbers.push(num);
@@ -211,15 +212,26 @@ export class ArrayUtils {
     if (!array || array.length === 0) {
       return ArrayUtils.UNDEFINED_VALUE_RANGE;
     }
-    const numbers = array
+    const numbers: number[] = array
       .map(o => o[attributeName])
       .filter(n => typeof n === 'number')
-      .filter(n => NumberUtils.isNumber(n));
-    if (numbers.length === 0) {
+      .filter(n => NumberUtils.isNumber(n, undefined));
+    return ArrayUtils.toValueRange(numbers);
+  }
+
+  static categoryDataToValueRange(categoryData: CategoryData): ValueRange {
+    const values = categoryData.dataSets
+      .map(ds => ds.values)
+      .reduce((acc, values) => acc.concat(values), []);
+    return ArrayUtils.toValueRange(values);
+  }
+
+  static toValueRange(values: number[]): ValueRange {
+    if (values.length === 0) {
       return ArrayUtils.UNDEFINED_VALUE_RANGE;
     }
     const valueRange: ValueRange = { min: Number.MAX_VALUE, max: - Number.MAX_VALUE };
-    numbers.forEach(n => {
+    values.forEach(n => {
       if (valueRange.max < n) {
         valueRange.max = n;
       }

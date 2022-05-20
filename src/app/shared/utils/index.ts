@@ -6,6 +6,7 @@ export * from './column-name-converter';
 export * from './number-utils';
 export * from './data-type-utils';
 export * from './date-time-utils';
+export * from './log-utils';
 export * from './query-utils';
 export * from './query-sanitizer';
 export * from './query-param-extractor';

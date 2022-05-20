@@ -87,7 +87,7 @@ describe('FrontComponent', () => {
 
   it('should pre-select IndexedDB', () => {
     expect(component.selectedDataStorage).toBe(component.indexedDB);
-    expect(component.ready).toBeTruthy();
+    expect(component.ready).toBeTrue();
   });
 
   it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
@@ -424,7 +424,7 @@ describe('FrontComponent (external invocation)', () => {
 
   it('should activate scene and navigate to raw data view', () => {
     expect(couchDBService.initConnection).toHaveBeenCalledWith(
-      <ConnectionInfo> { protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
+      <ConnectionInfo>{ protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
     expect(dbService.initBackend).toHaveBeenCalled();
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);

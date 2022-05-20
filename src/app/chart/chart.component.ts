@@ -1,27 +1,23 @@
 import {
   Component, Input, OnInit, OnChanges, SimpleChanges, ViewEncapsulation, Inject, ElementRef,
-  ViewChild, Output, EventEmitter
+  ViewChild, Output, EventEmitter, ChangeDetectorRef
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
-import { ChartOptionsProvider } from './options/chart-options-provider';
-import { ChartDataService } from '../shared/services/chart/chart-data.service';
+import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { CommonUtils } from 'app/shared/utils';
 import { ResizeEvent } from 'angular-resizable-element';
-import { Margin } from 'nvd3';
 import { RawDataRevealService } from 'app/shared/services';
 import { Router } from '@angular/router';
-import { NvD3Component } from 'ng2-nvd3';
 import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
-import { ChartMarginService } from 'app/shared/services/chart';
+import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { ChartJs } from './chartjs/chartjs';
 
 @Component({
   selector: 'koia-chart',
   templateUrl: './chart.component.html',
-  styleUrls: ['./chart.component.css',
-    '../../../node_modules/nvd3/build/nv.d3.css'],
+  styleUrls: ['./chart.component.css'],
   encapsulation: ViewEncapsulation.None
 })
 export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
@@ -29,23 +25,17 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   @Input() parentConstraintSize: boolean;
   @Input() context: ChartContext;
   @Input() entries$: Observable<Object[]>;
-
-  @ViewChild(NvD3Component) nvD3Component: NvD3Component;
-
   @Output() onWarning: EventEmitter<string> = new EventEmitter();
 
-  chartOptions: Object;
-  chartData: Object[];
+  @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement>;
+
   loading: boolean;
   marginDivStyle: Object;
-  validateMarginResize: Function;
-
-  private optionsProvider: ChartOptionsProvider;
+  validateMarginResize: (resizeEvent: ResizeEvent) => boolean;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     private chartDataService: ChartDataService, private chartMarginService: ChartMarginService,
-    rawDataRevealService: RawDataRevealService) {
-    this.optionsProvider = new ChartOptionsProvider(rawDataRevealService);
+    private cdr: ChangeDetectorRef, private rawDataRevealService: RawDataRevealService) {
   }
 
   ngOnInit(): void {
@@ -85,24 +75,15 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   private async prepareChart(changeEvent: ChangeEvent): Promise<void> {
-    if (this.context.dataColumns.length > 0 && this.context.entries) {
+    if (!!this.context.dataColumns.length && !!this.context.entries) {
       this.loading = true;
       await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
       try {
-        if (changeEvent === ChangeEvent.SIZE && this.parentConstraintSize && this.context.chart) {
-          this.context.chart.update();
-        } else {
-          this.clearChartWorkaround();
-          this.marginDivStyle = this.marginToStyle(this.context.margin);
-          if (changeEvent === ChangeEvent.STRUCTURE) {
-            const chartDataResult = this.chartDataService.createData(this.context);
-            if (chartDataResult.error) {
-              this.onWarning.emit(chartDataResult.error);
-            }
-            this.chartData = chartDataResult.data;
-          }
-          this.context.legendItems = this.chartData ? this.chartData.length : 0;
-          this.chartOptions = this.optionsProvider.createOptions(this.context, this.parentConstraintSize);
+        if (!this.parentConstraintSize) {
+          this.adjustCanvasContainerSize();
+        }
+        if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
+          this.updateChart(changeEvent);
         }
       } finally {
         this.loading = false;
@@ -111,15 +92,29 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   /**
-   * this workaround needs to be applied for the following reasons:
-   * - when adding data column to grouped bar chart, [[undefined]] forceY was not considered
-   * - direct switch from AREA to LINE chart didn't work (AREA chart staid visible)
-   * - when changing source data or resizing SCATTER charts, the data points were not properly laid out
+   * TODO: get rid of this - canvas should automatically adapt to the resized element in the flex-view
    */
-  private clearChartWorkaround(): void {
-    if (this.nvD3Component) {
-      this.nvD3Component.clearElement();
+  private adjustCanvasContainerSize(): void {
+    const chartContainer = this.canvasRef.nativeElement.parentElement;
+    chartContainer.style.width = this.context.width + 'px';
+    chartContainer.style.height = this.context.height + 'px';
+  }
+
+  private updateChart(changeEvent: ChangeEvent): void {
+    this.marginDivStyle = this.marginToStyle(this.context.margin);
+    if (changeEvent === ChangeEvent.STRUCTURE) {
+      const chartDataResult = this.chartDataService.createData(this.context);
+      if (chartDataResult.error) {
+        this.onWarning.emit(chartDataResult.error);
+        return;
+      }
+      this.context.data = chartDataResult.data;
     }
+    this.cdr.detectChanges();
+
+    // TODO: don't re-create chart each time but try to update existing one
+    new ChartJs(this.rawDataRevealService)
+      .create(this.canvasRef.nativeElement, this.context);
   }
 
   onMarginResizeEnd(event: ResizeEvent): void {

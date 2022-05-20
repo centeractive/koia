@@ -220,9 +220,10 @@ describe('ValueFilterComponent', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
+    const formattedValue = (1_200_300.55).toLocaleString();
 
     // when
-    component.onValueChanged('1,200,300.55');
+    component.onValueChanged(formattedValue);
 
     // then
     expect(component.filter.value).toBe(1_200_300.55);
@@ -232,10 +233,12 @@ describe('ValueFilterComponent', () => {
   it('#onValueChanged should change filter number value when number has misplaced thousands separators', () => {
 
     // given
-    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '2,000', DataType.NUMBER);
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, (2.000).toLocaleString(), DataType.NUMBER);
+    const ts = (1_000).toLocaleString().charAt(1);
+    let wronglyFormatted = '2' + ts + '0000';
 
     // when
-    component.onValueChanged('2,0000');
+    component.onValueChanged(wronglyFormatted);
 
     // then
     expect(component.filter.value).toBe(20_000);
@@ -246,9 +249,10 @@ describe('ValueFilterComponent', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '1.7', DataType.NUMBER);
+    const completableFloat = (0.7).toLocaleString().slice(1);
 
     // when
-    component.onValueChanged('.7');
+    component.onValueChanged(completableFloat);
 
     // then
     expect(component.filter.value).toBe(0.7);
@@ -258,13 +262,14 @@ describe('ValueFilterComponent', () => {
   it('#onValueChanged should change filter value when value is list of floats', () => {
 
     // given
-    component.filter = new PropertyFilter('Amount', Operator.ANY_OF, '1.7', DataType.NUMBER);
+    component.filter = new PropertyFilter('Amount', Operator.ANY_OF, (1.7).toLocaleString(), DataType.NUMBER);
+    const listOfFloats = [1.7, 2.5].map(f => f.toLocaleString()).join(';');
 
     // when
-    component.onValueChanged('1.7;2.5');
+    component.onValueChanged(listOfFloats);
 
     // then
-    expect(component.filter.value).toBe('1.7;2.5');
+    expect(component.filter.value).toBe(listOfFloats);
     expect(component.valueControl.hasError('error')).toBe(false);
   });
 

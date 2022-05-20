@@ -27,7 +27,7 @@ export abstract class ElementContext {
    private _valueGroupings: ValueGrouping[] = [];
 
    // transient
-   private _silent;
+   private _silent: boolean;
    private _columns: Column[];
    private _entries: Object[];
    private _warning: string;
@@ -217,6 +217,10 @@ export abstract class ElementContext {
 
    getNumericColumns(): Column[] {
       return this._columns.filter(c => c.dataType === DataType.NUMBER || c.dataType === DataType.TIME);
+   }
+
+   getTextColumns(): Column[] {
+      return this._columns.filter(c => c.dataType === DataType.TEXT);
    }
 
    get entries(): Object[] {

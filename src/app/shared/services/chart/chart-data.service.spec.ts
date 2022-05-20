@@ -1,9 +1,7 @@
 import { ChartDataService } from './chart-data.service';
 import { Column, DataType, TimeUnit } from '../../model';
 import { TestUtils } from '../../test';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
-
-declare var d3: any;
+import { ChartContext, ChartType } from '../../model/chart';
 
 describe('ChartDataService', () => {
 
@@ -34,11 +32,11 @@ describe('ChartDataService', () => {
       context.entries = entries.slice(0);
    });
 
-   it('#createData should return error when max. number of DONUT chart values is exceeded', () => {
+   it('#createData should return error when max. number of DOUGHNUT chart values is exceeded', () => {
 
       // given
-      context.chartType = ChartType.DONUT.type;
-      const maxValues = ChartType.DONUT.maxValues;
+      context.chartType = ChartType.DOUGHNUT.type;
+      const maxValues = ChartType.DOUGHNUT.maxValues;
       context.entries = TestUtils.generateEntries('x', maxValues + 1, 0, 1000);
       context.dataColumns = [createColumn('x', DataType.NUMBER)];
 
@@ -46,7 +44,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedError = ChartType.DONUT.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
+      const expectedError = ChartType.DOUGHNUT.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.'
       expect(result.error).toBe(expectedError);
       expect(result.data).toBeUndefined();
@@ -63,11 +61,9 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         { x: 'b', y: 3 },
-         { x: 'a', y: 1 }
-      ];
-      expect(result.data).toEqual(expectedData);
+      expect(result.data.labels).toEqual(['b', 'a']);
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].data).toEqual([3, 1]);
       expect(context.valueRange).toEqual({ min: 1, max: 3 });
       expect(result.error).toBeUndefined();
    });
@@ -93,12 +89,9 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         { x: 'a', y: 1 },
-         { x: 'b', y: 2 },
-         { x: 'c', y: 3 },
-      ];
-      expect(result.data).toEqual(expectedData);
+      expect(result.data.labels).toEqual(['a', 'b', 'c']);
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].data).toEqual([1, 2, 3]);
       expect(context.valueRange).toEqual({ min: 1, max: 3 });
       expect(result.error).toBeUndefined();
    });
@@ -120,7 +113,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.error).toBe('Names are not unique');
+      expect(result.error).toBe('Name \'a\' is not unique');
       expect(result.data).toBeUndefined();
       expect(context.valueRange).toBeUndefined();
    });
@@ -151,20 +144,14 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         {
-            values: [
-               { x: 'b', y: 3 },
-               { x: 'a', y: 1 }
-            ]
-         }
-      ];
-      expect(result.data).toEqual(expectedData);
+      expect(result.data.labels).toEqual(['b', 'a']);
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].data).toEqual([3, 1]);
       expect(context.valueRange).toEqual({ min: 1, max: 3 });
       expect(result.error).toBeUndefined();
    });
 
-   it('#createData should create BAR chart data of of unique named values', () => {
+   it('#createData should create BAR chart data of unique named values', () => {
 
       // given
       context.chartType = ChartType.BAR.type;
@@ -185,16 +172,9 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         {
-            values: [
-               { x: 'a', y: 1 },
-               { x: 'b', y: 2 },
-               { x: 'c', y: 3 },
-            ]
-         }
-      ];
-      expect(result.data).toEqual(expectedData);
+      expect(result.data.labels).toEqual(['a', 'b', 'c']);
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].data).toEqual([1, 2, 3]);
       expect(context.valueRange).toEqual({ min: 1, max: 3 });
       expect(result.error).toBeUndefined();
    });
@@ -216,7 +196,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.error).toBe('Names are not unique');
+      expect(result.error).toBe('Name \'a\' is not unique');
       expect(result.data).toBeUndefined();
       expect(context.valueRange).toBeUndefined();
    });
@@ -237,117 +217,7 @@ describe('ChartDataService', () => {
       expect(context.valueRange).toBeUndefined();
    });
 
-   it('#createData should create SUNBURST chart data when no hierarchy is specified', () => {
-
-      // given
-      context.chartType = ChartType.SUNBURST.type;
-      context.dataColumns = [createColumn('c1', DataType.TEXT)];
-
-      // when
-      const result = chartDataService.createData(context);
-
-      // then
-      const expectedData = [
-         {
-            name: 'Data', children: [
-               { name: 'b', value: 3 },
-               { name: 'a', value: 1 }
-            ]
-         }
-      ];
-      expect(result.data).toEqual(expectedData);
-      expect(context.valueRange).toBeUndefined();
-      expect(result.error).toBeUndefined();
-   });
-
-   it('#createData should create SUNBURST chart data when single columns hierarchy is specified', () => {
-
-      // given
-      context.chartType = ChartType.SUNBURST.type;
-      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
-      context.groupByColumns = [createColumn('c1', DataType.TEXT)];
-
-      // when
-      const result = chartDataService.createData(context);
-
-      // then
-      const expected = [
-         {
-            name: 'Data', children: [
-               {
-                  name: 'b', children: [
-                     { name: '2', value: 1 },
-                     { name: '3', value: 2 }
-                  ]
-               },
-               {
-                  name: 'a', children: [
-                     { name: '<empty>', value: 1 }
-                  ]
-               }
-            ]
-         }
-      ];
-      expect(result.data).toEqual(expected);
-      expect(context.valueRange).toBeUndefined();
-      expect(result.error).toBeUndefined();
-   });
-
-   it('#createData should create SUNBURST chart data when multi-column hierarchy is specified', () => {
-
-      // given
-      context.chartType = ChartType.SUNBURST.type;
-      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
-      context.groupByColumns = [createColumn('Time', DataType.TIME), createColumn('c1', DataType.TEXT)];
-
-      // when
-      const result = chartDataService.createData(context);
-
-      // then
-      const timeFormat = d3.time.format('%-d %b %Y %H:%M');
-      const nowFormatted = timeFormat(new Date(now));
-      const nowPlusMinFormatted = timeFormat(new Date(now + min));
-      const expectedData = [{
-         name: 'Data', children: [
-            {
-               name: nowPlusMinFormatted, children: [
-                  {
-                     name: 'b', children: [{ name: '3', value: 2 }]
-                  }
-               ]
-            },
-            {
-               name: nowFormatted, children: [
-                  {
-                     name: 'b', children: [{ name: '2', value: 1 }]
-                  },
-                  {
-                     name: 'a', children: [{ name: '<empty>', value: 1 }]
-                  }
-               ]
-            }]
-      }];
-      expect(result.data).toEqual(expectedData);
-      expect(context.valueRange).toBeUndefined();
-      expect(result.error).toBeUndefined();
-   });
-
-   it('#createData should return error when no X-Axis is defined for LINE_WITH_FOCUS chart (count distinct values)', () => {
-
-      // given
-      context.chartType = ChartType.LINE_WITH_FOCUS.type;
-      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
-
-      // when
-      const result = chartDataService.createData(context);
-
-      // then
-      expect(result.error).toBe('X-Axis is not defined');
-      expect(result.data).toBeUndefined();
-      expect(context.valueRange).toBeUndefined();
-   });
-
-   it('#createData should create multi-series LINE chart data (count distinct values)', () => {
+   it('#createData should create multi-series category LINE chart data (count distinct values)', () => {
 
       // given
       context.chartType = ChartType.LINE.type;
@@ -358,11 +228,10 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         { key: 3, values: [{ x: 'b', y: 2 }] },
-         { key: 2, values: [{ x: 'b', y: 1 }] }
-      ]
-      expect(result.data).toEqual(expectedData);
+      expect(result.data.labels).toBeUndefined();
+      expect(result.data.datasets.length).toBe(2);
+      expect(result.data.datasets[0].data).toEqual([{ x: 'b', y: 2 } as any]);
+      expect(result.data.datasets[1].data).toEqual([{ x: 'b', y: 1 } as any]);
       expect(context.valueRange).toEqual({ min: 1, max: 2 });
       expect(result.error).toBeUndefined();
    });
@@ -370,8 +239,8 @@ describe('ChartDataService', () => {
    it('#createData should return error when max. number of values for MULTI_BAR chart is exceeded (count distinct values)', () => {
 
       // given
-      context.chartType = ChartType.MULTI_BAR.type;
-      const maxValues = ChartType.MULTI_BAR.maxValues;
+      context.chartType = ChartType.BAR.type;
+      const maxValues = ChartType.BAR.maxValues;
       context.entries = TestUtils.generateEntries('x', maxValues + 1, 0, 1000);
       TestUtils.expandEntries(context.entries, 'Time', now - min, now);
       context.dataColumns = [createColumn('x', DataType.NUMBER)];
@@ -381,7 +250,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedError = ChartType.MULTI_BAR.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
+      const expectedError = ChartType.BAR.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.'
       expect(result.error).toBe(expectedError);
       expect(result.data).toBeUndefined();
@@ -393,7 +262,7 @@ describe('ChartDataService', () => {
       // given
       context.chartType = ChartType.LINE.type;
       context.dataColumns = [createColumn('c2', DataType.NUMBER)];
-      context.aggregations = []
+      context.aggregations = [];
 
       // when
       const result = chartDataService.createData(context);
@@ -404,11 +273,11 @@ describe('ChartDataService', () => {
       expect(context.valueRange).toBeUndefined();
    });
 
-   it('#createData should return error when max. number of individual values for MULTI_HORIZONTAL_BAR is exceeded', () => {
+   it('#createData should return error when max. number of individual values for HORIZONTAL_BAR is exceeded', () => {
 
       // given
-      context.chartType = ChartType.MULTI_HORIZONTAL_BAR.type;
-      const maxValues = ChartType.MULTI_HORIZONTAL_BAR.maxValues;
+      context.chartType = ChartType.HORIZONTAL_BAR.type;
+      const maxValues = ChartType.HORIZONTAL_BAR.maxValues;
       context.entries = TestUtils.generateEntries('x', maxValues + 1, 0, 1000);
       TestUtils.expandEntries(context.entries, 'Time', now - min, now);
       context.dataColumns = [createColumn('x', DataType.NUMBER)];
@@ -419,18 +288,17 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedError = ChartType.MULTI_HORIZONTAL_BAR.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
+      const expectedError = ChartType.HORIZONTAL_BAR.name + ' chart: Maximum number of ' + maxValues + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.'
       expect(result.error).toBe(expectedError);
       expect(result.data).toBeUndefined();
       expect(context.valueRange).toBeUndefined();
    });
 
-
    it('#createData should create chronologically sorted individual values data of single column', () => {
 
       // given
-      context.chartType = ChartType.MULTI_BAR.type;
+      context.chartType = ChartType.SCATTER.type;
       context.dataColumns = [createColumn('c2', DataType.NUMBER)];
       context.aggregations = [];
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
@@ -439,25 +307,24 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [{
-         key: 'c2',
-         values: [
-            { id: 2, x: entries[1]['Time'], y: 2 },
-            { id: 3, x: entries[0]['Time'], y: 3 },
-            { id: 4, x: entries[2]['Time'], y: 3 }
-         ]
-      }];
-      expect(result.data).toEqual(expectedData);
+      const expectedData: any = [
+         { id: 2, x: entries[1]['Time'], y: 2 },
+         { id: 3, x: entries[0]['Time'], y: 3 },
+         { id: 4, x: entries[2]['Time'], y: 3 }
+      ];
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].label).toBe('c2');
+      expect(result.data.datasets[0].data).toEqual(expectedData);
       expect(context.valueRange).toEqual({ min: 2, max: 3 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalsy();
+      expect(context.dataSampledDown).toBeFalse();
       expect(context.warning).toBeFalsy();
    });
 
-   it('#createData should create chronologically sorted individual values data of two column', () => {
+   it('#createData should create chronologically sorted individual values data of two columns', () => {
 
       // given
-      context.chartType = ChartType.MULTI_BAR.type;
+      context.chartType = ChartType.LINE.type;
       context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
       context.aggregations = [];
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
@@ -466,29 +333,25 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         {
-            key: 'c2',
-            values: [
-               { id: 2, x: entries[1]['Time'], y: 2 },
-               { id: 3, x: entries[0]['Time'], y: 3 },
-               { id: 4, x: entries[2]['Time'], y: 3 }
-            ]
-         },
-         {
-            key: 'c3',
-            values: [
-               { id: 1, x: entries[3]['Time'], y: -2 },
-               { id: 2, x: entries[1]['Time'], y: 0 },
-               { id: 3, x: entries[0]['Time'], y: -1 },
-               { id: 4, x: entries[2]['Time'], y: 4 }
-            ]
-         }
+      const expectedData0: any = [
+         { id: 2, x: entries[1]['Time'], y: 2 },
+         { id: 3, x: entries[0]['Time'], y: 3 },
+         { id: 4, x: entries[2]['Time'], y: 3 }
       ];
-      expect(result.data).toEqual(expectedData);
+      const expectedData1: any = [
+         { id: 1, x: entries[3]['Time'], y: -2 },
+         { id: 2, x: entries[1]['Time'], y: 0 },
+         { id: 3, x: entries[0]['Time'], y: -1 },
+         { id: 4, x: entries[2]['Time'], y: 4 }
+      ];
+      expect(result.data.datasets.length).toBe(2);
+      expect(result.data.datasets[0].label).toBe('c2');
+      expect(result.data.datasets[0].data).toEqual(expectedData0);
+      expect(result.data.datasets[1].label).toBe('c3');
+      expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: -2, max: 4 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalsy();
+      expect(context.dataSampledDown).toBeFalse();
       expect(context.warning).toBeFalsy();
    });
 
@@ -498,7 +361,7 @@ describe('ChartDataService', () => {
       context.entries.unshift({ _id: 3, Time: undefined, c1: 'b', c2: 8 });
       context.entries.push({ _id: 3, c1: 'b', c2: 3 });
       context.entries.push({ _id: 3, Time: null, c1: 'a', c2: 9 });
-      context.chartType = ChartType.LINE_WITH_FOCUS.type;
+      context.chartType = ChartType.LINE.type;
       context.dataColumns = [createColumn('c2', DataType.NUMBER)];
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
       context.aggregations = [];
@@ -507,15 +370,14 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expected = [{
-         key: 'c2',
-         values: [
-            { id: 2, x: entries[1]['Time'], y: 2 },
-            { id: 3, x: entries[0]['Time'], y: 3 },
-            { id: 4, x: entries[2]['Time'], y: 3 }
-         ]
-      }];
-      expect(result.data).toEqual(expected);
+      const expectedData: any = [
+         { id: 2, x: entries[1]['Time'], y: 2 },
+         { id: 3, x: entries[0]['Time'], y: 3 },
+         { id: 4, x: entries[2]['Time'], y: 3 }
+      ];
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].label).toBe('c2');
+      expect(result.data.datasets[0].data).toEqual(expectedData);
       expect(context.valueRange).toEqual({ min: 2, max: 3 });
       expect(result.error).toBeUndefined();
       expect(context.dataSampledDown).toBeFalsy();
@@ -525,7 +387,7 @@ describe('ChartDataService', () => {
    it('#createData should create chronologically sorted and splitted individual values data', () => {
 
       // given
-      context.chartType = ChartType.LINE_WITH_FOCUS.type;
+      context.chartType = ChartType.LINE.type;
       context.dataColumns = [createColumn('c3', DataType.NUMBER)];
       context.splitColumns = [createColumn('c2', DataType.NUMBER)];
       context.groupByColumns = [createColumn('Time', DataType.TIME)];
@@ -535,22 +397,18 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expected = [
-         {
-            key: '3⯈c3',
-            values: [
-               { id: 3, x: entries[0]['Time'], y: -1 },
-               { id: 4, x: entries[2]['Time'], y: 4 }
-            ]
-         },
-         {
-            key: '2⯈c3',
-            values: [
-               { id: 2, x: entries[1]['Time'], y: 0 }
-            ]
-         }
+      const expectedData0: any = [
+         { id: 3, x: entries[0]['Time'], y: -1 },
+         { id: 4, x: entries[2]['Time'], y: 4 }
       ];
-      expect(result.data).toEqual(expected);
+      const expectedData1: any = [
+         { id: 2, x: entries[1]['Time'], y: 0 }
+      ];
+      expect(result.data.datasets.length).toBe(2);
+      expect(result.data.datasets[0].label).toBe('3⯈c3');
+      expect(result.data.datasets[0].data).toEqual(expectedData0);
+      expect(result.data.datasets[1].label).toBe('2⯈c3');
+      expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: -1, max: 4 });
       expect(result.error).toBeUndefined();
       expect(context.dataSampledDown).toBeFalsy();
@@ -571,13 +429,12 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.data).toBeDefined();
-      expect(result.data.length).toBe(1);
-      expect(result.data[0]['key']).toBe('n1');
-      expect(result.data[0]['values'].length).toBeLessThan(10_000);
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].label).toBe('n1');
+      expect(result.data.datasets[0].data.length).toBeLessThan(10_000);
       expect(context.valueRange).toEqual({ min: 0, max: 1_000 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeTruthy();
+      expect(context.dataSampledDown).toBeTrue();
       expect(context.warning).toBeTruthy();
    });
 
@@ -593,17 +450,13 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         {
-            key: 'b',
-            values: [{ x: now, y: 1 }, { x: now + min, y: 2 }]
-         },
-         {
-            key: 'a',
-            values: [{ x: now, y: 1 }]
-         }
-      ];
-      expect(result.data).toEqual(expectedData);
+      const expectedData0: any = [{ x: now, y: 1 }, { x: now + min, y: 2 }];
+      const expectedData1: any = [{ x: now, y: 1 }];
+      expect(result.data.datasets.length).toBe(2);
+      expect(result.data.datasets[0].label).toBe('b');
+      expect(result.data.datasets[0].data).toEqual(expectedData0);
+      expect(result.data.datasets[1].label).toBe('a');
+      expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: 1, max: 2 });
       expect(result.error).toBeUndefined();
    });
@@ -621,17 +474,13 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData = [
-         {
-            key: '3⯈b',
-            values: [{ x: now + min, y: 2 }]
-         },
-         {
-            key: '2⯈b',
-            values: [{ x: now, y: 1 }]
-         }
-      ];
-      expect(result.data).toEqual(expectedData);
+      const expectedData0: any = [{ x: now + min, y: 2 }];
+      const expectedData1: any = [{ x: now, y: 1 }];
+      expect(result.data.datasets.length).toBe(2);
+      expect(result.data.datasets[0].label).toBe('3⯈b');
+      expect(result.data.datasets[0].data).toEqual(expectedData0);
+      expect(result.data.datasets[1].label).toBe('2⯈b');
+      expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: 1, max: 2 });
       expect(result.error).toBeUndefined();
    });

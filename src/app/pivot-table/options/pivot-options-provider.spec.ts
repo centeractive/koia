@@ -104,7 +104,7 @@ describe('PivotOptionsProvider', () => {
       const rendererOptions = pivotOptions['rendererOptions'];
       const clickCallback: Function = rendererOptions['table']['clickCallback'];
       const mouseEvent = {};
-      const filters = { x: '100', y: '57'};
+      const filters = { x: '100', y: '57' };
       const pivotData = {};
       clickCallback(mouseEvent, '100', filters, pivotData);
       expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, mouseEvent, filters, [], [], pivotData);
@@ -228,7 +228,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeTruthy();
+      expect(isHeatmapSelected).toBeTrue();
    });
 
    it('#isHeatmapRendererSelected should return true when row heatmap is selected', () => {
@@ -241,7 +241,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeTruthy();
+      expect(isHeatmapSelected).toBeTrue();
    });
 
    it('#isHeatmapRendererSelected should return true when column heatmap is selected', () => {
@@ -254,7 +254,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeTruthy();
+      expect(isHeatmapSelected).toBeTrue();
    });
 
    it('#replaceTimeColumnsInUse should not replace anything when no time column is in use', () => {

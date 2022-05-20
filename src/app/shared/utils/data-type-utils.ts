@@ -7,13 +7,13 @@ export class DataTypeUtils {
    /**
     * @returns the best matching data type of the specified value or [[undefined]]
     */
-   static typeOf(value: string | number | boolean | Object): DataType {
+   static typeOf(value: string | number | boolean | Object, locale: string): DataType {
       if (value !== null && value !== undefined) {
          if (typeof value === 'boolean' || ['TRUE', 'FALSE'].includes(value.toString().toUpperCase())) {
             return DataType.BOOLEAN;
          } else if (value instanceof Date) {
             return DataType.TIME;
-         } else if (NumberUtils.isNumber(value)) {
+         } else if (NumberUtils.isNumber(value, locale)) {
             return DataType.NUMBER;
          } else if (typeof value === 'object') {
             return DataType.OBJECT;
@@ -32,8 +32,8 @@ export class DataTypeUtils {
     * @returns the specified value in form of a value that corresponds to given data type
     * or [[undefined]] if value is not compliant with the data type (values of [[DataType.OBJECT]] are converted to a JSON string)
     */
-   static toTypedValue(value: string | number | boolean | Object, dataType: DataType): string | number | boolean {
-      if (value === null || value === undefined) {
+   static toTypedValue(value: string | number | boolean | Object, dataType: DataType, locale: string): string | number | boolean {
+      if (value == undefined) {
          return undefined;
       }
       switch (dataType) {
@@ -42,7 +42,7 @@ export class DataTypeUtils {
          case DataType.NUMBER:
          case DataType.TIME:
             if (typeof value === 'string' || typeof value === 'number') {
-               return NumberUtils.asNumber(value);
+               return NumberUtils.asNumber(value, locale);
             }
             return undefined;
          case DataType.OBJECT:
@@ -53,7 +53,7 @@ export class DataTypeUtils {
    }
 
    static asBoolean(value: string | number | boolean): boolean | undefined {
-      if (value === null || value === undefined) {
+      if (value == undefined) {
          return false;
       }
       if (typeof value === 'boolean') {

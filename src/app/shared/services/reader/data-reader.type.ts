@@ -30,7 +30,7 @@ export interface DataReader {
     * @property dataHeader data header that may be used to refine contextual attribute values
     * @returns attributes that may their values have modified by the user
     */
-   furnishAttributes(dataHeader: string): Attribute[];
+   furnishAttributes(dataHeader: string, locale: string): Attribute[];
 
    /**
     * reads a data sample from given URL

@@ -53,7 +53,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
       this.context.subscribeToChanges((e: ChangeEvent) => this.refreshDataFrameAsync(e));
-      this.entries$.subscribe(entries => this.createBaseDataFrame(entries));      
+      this.entries$.subscribe(entries => this.createBaseDataFrame(entries));
     }
   }
 
@@ -149,7 +149,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
   formattedValueOf(columnIndex: number, value: any): any {
     if (this.computing) {
       return '';
-    } else if (value === null || value === undefined || typeof value === 'string' || typeof value === 'boolean') {
+    } else if (value == undefined || typeof value === 'string' || typeof value === 'boolean') {
       return value;
     }
     let column: Column;

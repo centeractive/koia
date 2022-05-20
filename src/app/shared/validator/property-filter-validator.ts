@@ -15,7 +15,7 @@ export class PropertyFilterValidator {
          const dataType = this.columns.find(c => c.name === filter.name).dataType;
          if (filter.operator === Operator.ANY_OF || filter.operator === Operator.NONE_OF) {
             return this.validateListedValues(dataType, value.toString());
-         } else if (DataTypeUtils.toTypedValue(value, dataType) === undefined) {
+         } else if (DataTypeUtils.toTypedValue(value, dataType, undefined) === undefined) {
             return 'Invalid ' + dataType.toString().toLowerCase();
          }
       }

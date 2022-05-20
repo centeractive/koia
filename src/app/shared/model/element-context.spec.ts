@@ -145,7 +145,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).not.toHaveBeenCalled();
-      expect(context.hasValueGrouping('Amount')).toBeTruthy();
+      expect(context.hasValueGrouping('Amount')).toBeTrue();
    }));
 
    it('#addValueGrouping should fire structure change event when column is in use', fakeAsync(() => {
@@ -162,7 +162,7 @@ describe('ElementContext', () => {
       // then
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
-      expect(context.hasValueGrouping('Amount')).toBeTruthy();
+      expect(context.hasValueGrouping('Amount')).toBeTrue();
    }));
 
    it('#removeValueGrouping should not fire structure change when column is not in use', fakeAsync(() => {

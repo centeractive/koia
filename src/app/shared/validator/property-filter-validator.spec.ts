@@ -64,7 +64,9 @@ describe('PropertyFilterValidator', () => {
 
    it('#validate with "is any of" should return <null> when all NUMBERs are valid', () => {
       expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1;2;3'))).toBeNull();
-      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1.5;2.7;3.78'))).toBeNull();
+
+      const listOfFloats = [1.5, 2.7, 3.78].map(f => f.toLocaleString()).join(';');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, listOfFloats))).toBeNull();
    });
 
    it('#validate with "is any of" should return error message when any NUMBER is invalid', () => {
@@ -75,7 +77,9 @@ describe('PropertyFilterValidator', () => {
 
    it('#validate with "is none of" should return <null> when all NUMBERs are valid', () => {
       expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;2;3'))).toBeNull();
-      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1.5;2.7;3.78'))).toBeNull();
+
+      const listOfFloats = [1.5, 2.7, 3.78].map(f => f.toLocaleString()).join(';');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, listOfFloats))).toBeNull();
    });
 
    it('#validate with "is none of" should return error message when any NUMBER is invalid', () => {

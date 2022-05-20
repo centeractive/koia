@@ -37,7 +37,7 @@ describe('SummaryContext', () => {
       flush();
 
       // then
-      expect(context.hasUnlimitedWidth()).toBeTruthy();
+      expect(context.hasUnlimitedWidth()).toBeTrue();
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
@@ -53,7 +53,7 @@ describe('SummaryContext', () => {
       flush();
 
       // then
-      expect(context.hasUnlimitedWidth()).toBeTruthy();
+      expect(context.hasUnlimitedWidth()).toBeTrue();
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.SIZE);
    }));

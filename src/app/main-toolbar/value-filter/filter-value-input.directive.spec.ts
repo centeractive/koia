@@ -1,4 +1,4 @@
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component } from '@angular/core';
 import { FilterValueInputDirective } from './filter-value-input.directive';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { PropertyFilter, Operator, DataType } from 'app/shared/model';
@@ -118,7 +118,7 @@ describe('FilterValueInputDirective', () => {
    it('#keydown should set caret position when when thousands separator was removed', fakeAsync(() => {
 
       // given
-      inputElement.value = '1,234';
+      inputElement.value = (1_234).toLocaleString();
       inputElement.selectionStart = 4;
       inputElement.selectionEnd = 4;
       const event = new KeyboardEvent('keydown', { key: 'Backspace' });

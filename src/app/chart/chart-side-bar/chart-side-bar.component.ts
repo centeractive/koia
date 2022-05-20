@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Aggregation, DataType, Column, GroupingType } from '../../shared/model';
+import { Aggregation, DataType, Column } from '../../shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { SideBarController } from 'app/shared/controller';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
@@ -20,7 +20,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   individualValuesEnabled: boolean;
   groupByTimeColumn: Column;
   readonly chartTypes = ChartType.ALL;
-  readonly legendPositions = ['top', 'bottom'];
+  readonly legendPositions = ['top', 'right', 'bottom', 'left'];
 
   constructor(private chartMarginService: ChartMarginService) {
     super();
@@ -46,15 +46,14 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     return this.context.chartType === chartType.type ? 'accent' : '';
   }
 
-  setChartType(chartType: ChartType): void {
-    if (chartType.groupingType === GroupingType.NONE) {
-      if (this.context.dataColumns.length > 1) {
-        this.context.dataColumns = this.context.dataColumns.slice(0, 1);
-        this.defineGroupByColumns();
-      }
-    } else if (this.context.isNonGrouping() && !DataTypeUtils.containsNonNumericColumns(this.context.dataColumns)) {
+  switchTo(chartType: ChartType): void {
+    if (this.context.isCircularChart() && !DataTypeUtils.containsNonNumericColumns(this.context.dataColumns)) {
       this.context.aggregations = [];
     }
+    if (this.context.isCategoryChart() && this.context.isAggregationCountSelected()) {
+      this.context.groupByColumns = [];
+    }
+
     this.adjustInitialChartWidth(chartType);
     this.selectedChartType = chartType;
     this.context.switchChartType(chartType.type, this.chartMarginService.marginOf(chartType));
@@ -64,18 +63,24 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   onColumnChanged(column: Column): void {
     if (this.context.dataColumns.includes(column)) {
-      if (this.context.dataColumns.length > 1) {
-        this.context.removeDataColumn(column);
-      }
-    } else if (this.context.isNonGrouping() || this.context.isAggregationCountSelected() ||
+      this.context.removeDataColumn(column);
+    } else if (this.context.isAggregationCountSelected() ||
       DataTypeUtils.containsNonNumericColumns(this.context.dataColumns.concat(column))) {
       this.context.dataColumns = [column];
+      this.context.groupByColumns = [];
     } else {
       this.context.addDataColumn(column);
     }
     this.defineGroupByColumns();
     this.adjustAggregation();
     this.defineSelectableItems();
+  }
+
+  selectableGroupByColumns(): Column[] {
+    if (this.selectedChartType === ChartType.SCATTER) {
+      return this.context.getNumericColumns();
+    }
+    return this.context.columns;
   }
 
   private defineGroupByColumns(): void {
@@ -94,6 +99,9 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   onAggregationTypeChanged(countDistinctValues: boolean): void {
     this.context.aggregations = countDistinctValues ? [Aggregation.COUNT] : [];
+    if (countDistinctValues) {
+      this.context.groupByColumns = []; // TODO: is this correct?
+    }
   }
 
   private adjustInitialChartWidth(newChartType: ChartType): void {
@@ -108,35 +116,32 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   }
 
   private isLargeChartType(chartType: ChartType): boolean {
-    return chartType === ChartType.MULTI_BAR || chartType === ChartType.LINE || chartType === ChartType.LINE_WITH_FOCUS ||
-      chartType === ChartType.AREA || chartType === ChartType.SCATTER;
+    return chartType === ChartType.LINE || chartType === ChartType.AREA || chartType === ChartType.SCATTER;
   }
 
   dataPanelName(): string {
-    if (this.context.isNonGrouping() || this.context.isMultipleGrouping()) {
+    if (this.context.isCircularChart()) {
       return 'Values';
     }
-    return 'Values (' + (this.context.chartType.toLowerCase().includes('horizontal') ? 'X-Axis' : 'Y-Axis') + ')';
+    const chartType = ChartType.fromType(this.context.chartType);
+    return 'Values (' + (chartType === ChartType.HORIZONTAL_BAR ? 'X-Axis' : 'Y-Axis') + ')';
   }
 
   groupingPanelName(): string {
-    if (this.context.isNonGrouping()) {
+    if (this.context.isCircularChart()) {
       return 'Name';
-    } else if (this.context.isMultipleGrouping()) {
-      return 'Hierarchy';
     } else {
-      return this.context.chartType.toLowerCase().includes('horizontal') ? 'Y-Axis' : 'X-Axis';
+      return ChartType.fromType(this.context.chartType) === ChartType.HORIZONTAL_BAR ? 'Y-Axis' : 'X-Axis';
     }
   }
 
-  isPieOrDonutChart(): boolean {
-    return this.context.chartType === ChartType.PIE.type || this.context.chartType === ChartType.DONUT.type;
+  isCircularChart(): boolean {
+    return this.context.isCircularChart();
   }
 
   getSingleGroupByColumn(): Column {
     return this.context.groupByColumns.length > 0 ? this.context.groupByColumns[0] : undefined;
   }
-
 
   onGroupByColumnChanged(column: Column): void {
     this.context.groupByColumns = [column];

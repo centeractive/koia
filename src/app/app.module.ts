@@ -39,7 +39,6 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ResizableModule } from 'angular-resizable-element';
 
-import { ChartsModule } from 'ng2-charts';
 import { NvD3Module } from 'ng2-nvd3';
 import 'd3';
 import 'nvd3';
@@ -63,7 +62,6 @@ import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.com
 import { PivotTableComponent } from './pivot-table/pivot-table.component';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
 import { StatusComponent } from './shared/component/status/status.component';
-import { ChartjsComponent } from './chartjs/chartjs.component';
 import { ReaderService } from './shared/services/reader';
 import { CouchDBService } from './shared/services/backend/couchdb/couchdb.service';
 import { DBService } from './shared/services/backend';
@@ -75,7 +73,7 @@ import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog.compo
 import { DialogService } from './shared/services/dialog.service';
 import { FrontComponent } from './front/front.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
-import { MAT_STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
 import { ValueRangeGroupingService } from './shared/value-range';
 import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
@@ -106,7 +104,6 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
     PivotTableComponent,
     PivotTableSideBarComponent,
     StatusComponent,
-    ChartjsComponent,
     MatIconModuleMock,
     TextareaMaxRowsDirective,
     FilterValueInputDirective,
@@ -156,7 +153,6 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
     MatBottomSheetModule,
     DragDropModule,
     ResizableModule,
-    ChartsModule,
     NvD3Module,
     NgxSliderModule,
     AppRoutingModule,
@@ -167,7 +163,7 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
-    { provide: MAT_STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
+    { provide: STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
     ReaderService,
     CouchDBService,
     DBService,

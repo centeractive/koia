@@ -183,8 +183,8 @@ describe('GridComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(1);
     const context = component.elementContexts[0];
-    expect(component.isSummaryContext(context)).toBeTruthy();
-    expect(context instanceof SummaryContext).toBeTruthy();
+    expect(component.isSummaryContext(context)).toBeTrue();
+    expect(context instanceof SummaryContext).toBeTrue();
   });
 
   it('#addChart should add chart context', () => {
@@ -195,8 +195,8 @@ describe('GridComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(1);
     const context = component.elementContexts[0];
-    expect(component.isChartContext(context)).toBeTruthy();
-    expect(context instanceof ChartContext).toBeTruthy();
+    expect(component.isChartContext(context)).toBeTrue();
+    expect(context instanceof ChartContext).toBeTrue();
   });
 
   it('#addGraph should add graph context', () => {
@@ -207,8 +207,8 @@ describe('GridComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(1);
     const context = component.elementContexts[0];
-    expect(component.isGraphContext(context)).toBeTruthy();
-    expect(context instanceof GraphContext).toBeTruthy();
+    expect(component.isGraphContext(context)).toBeTrue();
+    expect(context instanceof GraphContext).toBeTrue();
   });
 
   it('#onFilterChanged should assign new query to each element context', () => {
@@ -447,10 +447,12 @@ describe('GridComponent', () => {
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
   }));
 
-  it('#saveAs should export image when chart context is provided', () => {
+  it('#saveAs should export image', () => {
 
     // given
     const chartContext = component.addChart();
+    chartContext.title = 'Test';
+    chartContext.chart = <any>{ toBase64Image: () => 'base64Image...' };
     spyOn(exportService, 'exportImage');
 
     // when
@@ -458,7 +460,7 @@ describe('GridComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(exportService.exportImage).toHaveBeenCalled();
+    expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
 
   /**

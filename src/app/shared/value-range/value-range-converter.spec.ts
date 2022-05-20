@@ -32,6 +32,13 @@ describe('ValueRangeConverter', () => {
       expect(ValueRangeConverter.toMinValue('1 - 2')).toBe(1);
    });
 
+   it('#toMinValue should return number when label starts with number having thousands separator', () => {
+      expect(ValueRangeConverter.toMinValue(toRange(-2_000_000, -1_000_000))).toBe(-2_000_000);
+      expect(ValueRangeConverter.toMinValue(toRange(-1_000, 0))).toBe(-1_000);
+      expect(ValueRangeConverter.toMinValue(toRange(0, -1_000))).toBe(0);
+      expect(ValueRangeConverter.toMinValue(toRange(1_000, -2_000))).toBe(1_000);
+   });
+
    it('#toMaxValue should return undefined when label is "empty"', () => {
       expect(ValueRangeConverter.toMaxValue('empty')).toBeUndefined();
    });
@@ -45,4 +52,16 @@ describe('ValueRangeConverter', () => {
       expect(ValueRangeConverter.toMaxValue('-1 - 0')).toBe(0);
       expect(ValueRangeConverter.toMaxValue('0 - 1')).toBe(1);
    });
+
+   it('#toMaxValue should return number when label ends with number having thousands separator', () => {
+      expect(ValueRangeConverter.toMaxValue(toRange(-2_000, -1_000))).toBe(-1_000);
+      expect(ValueRangeConverter.toMaxValue(toRange(-1_000, 0))).toBe(0);
+      expect(ValueRangeConverter.toMaxValue(toRange(0, 1_000))).toBe(1_000);
+      expect(ValueRangeConverter.toMaxValue(toRange(1_000_000, 2_000_000))).toBe(2_000_000);
+   });
+
+   function toRange(from: number, to: number): string {
+      return from.toLocaleString() + ' - ' + to.toLocaleString();
+   }
+
 });

@@ -33,6 +33,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
   entries: Object[];
   totalRowCount: number;
   pageSizeOptions: number[];
+  initialPageSize: number;
   loading: boolean;
   considerColumnWidths: boolean;
   showNestedObjects: boolean;
@@ -47,6 +48,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
     private exportService: ExportService, public snackBar: MatSnackBar) {
     super(bottomSheet, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
+    this.initialPageSize = this.pageSizeOptions[1];
     this.considerColumnWidths = true;
     this.showNestedObjects = false;
     this.highlight = true;
@@ -58,7 +60,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
       if (!this.query) {
         this.query = new Query();
       }
-      this.query.setPageDefinition(0, this.pageSizeOptions[0]);
+      this.query.setPageDefinition(0, this.initialPageSize);
       this.columns = scene.columns;
       this.hasObjectDataTypeColumns = this.columns.find(c => c.dataType === DataType.OBJECT) !== undefined;
       this.columnNames = this.columns.map(c => c.name);

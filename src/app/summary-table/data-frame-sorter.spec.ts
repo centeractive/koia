@@ -29,7 +29,7 @@ describe('DataFrameSorter', () => {
 
       // then
       expect(sortedDataFrame).toBe(dataFrame);
-   });      
+   });
 
    it('#sort should return original data frame when sort column is not contained in data frame', () => {
 
@@ -96,7 +96,7 @@ describe('DataFrameSorter', () => {
       expect(sortedDataFrame.getSeries('g').toArray())
          .toEqual(['min - 2', '2 - 4', '4 - 6', '6 - 8', '8 - 10', '10 - max']);
    });
-   
+
    it('#sort should ascending sort grouped column', () => {
 
       // given
@@ -122,14 +122,14 @@ describe('DataFrameSorter', () => {
       expect(sortedDataFrame.getSeries('g').toArray())
          .toEqual(['300 - max', '200 - 300', '100 - 200', '0 - 100', '-100 - 0', 'min - -100']);
    });
-   
+
    it('#sort should ascending sort grouped column having values with thousands separator', () => {
 
       // given
-      const range1 = format(-2_000_000) + ' - ' + format(-1_000_000);
-      const range2 = format(-1_000_000) + ' - ' + format(0);
-      const range3 = format(0) + ' - ' + format(1_000_000);
-      const range4 = format(1_000_000) + ' - ' + format(2_000_000);
+      const range1 = toRange(-2_000_000, -1_000_000);
+      const range2 = toRange(-1_000_000, 0);
+      const range3 = toRange(0, 1_000_000);
+      const range4 = toRange(1_000_000, 2_000_000);
       dataFrame = new DataFrame([{ g: range3 }, { g: range1 }, { g: range4 }, { g: range2 }]);
       spyOn(context, 'hasValueGrouping').and.returnValue(true);
 
@@ -143,10 +143,10 @@ describe('DataFrameSorter', () => {
    it('#sort should descending sort grouped column having values with thousands separator', () => {
 
       // given
-      const range1 = format(-2_000_000) + ' - ' + format(-1_000_000);
-      const range2 = format(-1_000_000) + ' - ' + format(0);
-      const range3 = format(0) + ' - ' + format(1_000_000);
-      const range4 = format(1_000_000) + ' - ' + format(2_000_000);
+      const range1 = toRange(-2_000_000, -1_000_000);
+      const range2 = toRange(-1_000_000, 0);
+      const range3 = toRange(0, 1_000_000);
+      const range4 = toRange(1_000_000, 2_000_000);
       dataFrame = new DataFrame([{ g: range3 }, { g: range1 }, { g: range4 }, { g: range2 }]);
       spyOn(context, 'hasValueGrouping').and.returnValue(true);
 
@@ -157,9 +157,10 @@ describe('DataFrameSorter', () => {
       expect(sortedDataFrame.getSeries('g').toArray()).toEqual([range4, range3, range2, range1]);
    });
 
-   function format(num: number): string {
-      return num.toLocaleString();
+   function toRange(from: number, to: number): string {
+      return from.toLocaleString() + ' - ' + to.toLocaleString();
    }
+
 });
 
 

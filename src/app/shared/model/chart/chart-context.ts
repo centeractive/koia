@@ -1,11 +1,11 @@
 import { ElementContext } from '../element-context';
-import { Margin } from 'nvd3';
 import { Column } from '../column.type';
 import { ExportFormat } from '../export-format.enum';
 import { ValueRange } from '../../value-range/model/value-range.type';
 import { ChartType } from './chart-type';
-import { GroupingType } from '../grouping-type.enum';
 import { SeriesNameConverter } from '../../services/chart/series-name-converter';
+import { Margin } from '.';
+import { Chart, ChartData } from 'chart.js';
 
 export class ChartContext extends ElementContext {
 
@@ -13,12 +13,13 @@ export class ChartContext extends ElementContext {
    private _margin: Margin;
    private _showLegend: boolean;
    private _legendPosition: string;
-   private _valueAsPercent: boolean; // for PIE and DONUT chart only
-   private _xLabelRoatation = -12;
+   private _valueAsPercent: boolean; // for PIE and DOUGHNUT chart only
+   private _xLabelRoatation: number;
    private _stacked: boolean;
 
    // transient
-   private _chart: any;
+   private _data: ChartData;
+   private _chart: Chart;
    private _legendItems: number;
    private showResizableMargin: boolean;
    private _valueRange: ValueRange;
@@ -36,7 +37,7 @@ export class ChartContext extends ElementContext {
 
    switchChartType(type: string, margin: Margin) {
       this._margin = margin;
-      this.chartType = type; // keep at end, those fireing change event once only
+      this.chartType = type; // keep at end, those fireing change event only once
    }
 
    get chartType(): string {
@@ -50,16 +51,12 @@ export class ChartContext extends ElementContext {
       }
    }
 
-   isNonGrouping() {
-      return ChartType.fromType(this._chartType).groupingType === GroupingType.NONE;
+   isCategoryChart(): boolean {
+      return ChartType.isCategoryChart(ChartType.fromType(this._chartType));
    }
 
-   isSingleGrouping() {
-      return ChartType.fromType(this._chartType).groupingType === GroupingType.SINGLE;
-   }
-
-   isMultipleGrouping() {
-      return ChartType.fromType(this._chartType).groupingType === GroupingType.MULTIPLE;
+   isCircularChart(): boolean {
+      return ChartType.isCircularChart(ChartType.fromType(this._chartType));
    }
 
    get margin(): Margin {
@@ -129,33 +126,30 @@ export class ChartContext extends ElementContext {
       }
    }
 
-   /**
-    * indicates if the chart values are stacked
-    *
-    * the returned value may be affected by one of the following ways:
-    * - by radio buttons on multibar charts that let you change between "Grouped" and "Stacked"
-    * - by [[ConfigToModelConverter#toChartContext]] when restoring a saved view
-    */
    get stacked(): boolean {
-      if (this._chart && this._chart.multibar) {
-         return this._chart.multibar.stacked();
-      }
       return this._stacked;
    }
 
    set stacked(stacked: boolean) {
-      this._stacked = stacked;
+      if (this._stacked !== stacked) {
+         this._stacked = stacked;
+         this.fireStructureChanged();
+      }
    }
 
-   getContainer(): SVGElement {
-      return this.chart ? <SVGElement>this.chart.container : null;
+   get data(): ChartData {
+      return this._data;
    }
 
-   get chart(): any {
+   set data(data: ChartData) {
+      this._data = data;
+   }
+
+   get chart(): Chart {
       return this._chart;
    }
 
-   set chart(chart: any) {
+   set chart(chart: Chart) {
       this._chart = chart;
    }
 
@@ -199,19 +193,19 @@ export class ChartContext extends ElementContext {
       }
       title = this.isAggregationCountSelected() ? 'Count distinct values of ' : '';
       title += this.dataColumns.map(c => c.name).join(', ');
-      if (this.groupByColumns.length > 0 && (!this.isNonGrouping() || !this.isAggregationCountSelected())) {
+      if (this.groupByColumns.length > 0 && (!this.isCategoryChart() || !this.isAggregationCountSelected())) {
          title += ' by ' + this.groupByColumns.map(c => c.name).join(', ');
       }
       if (this.dataSampledDown) {
          title += ' (Sample)';
       }
-      if (this.isSingleGrouping() && this.splitColumns.length > 0) {
+      if (!this.isCategoryChart() && this.splitColumns.length > 0) {
          title += '\nsplit by ' + this.splitColumns.map(c => c.name).join(SeriesNameConverter.SEPARATOR);
       }
       return title;
    }
 
    getSupportedExportFormats(): ExportFormat[] {
-      return [ ExportFormat.PNG ];
+      return [ExportFormat.PNG];
    }
 }

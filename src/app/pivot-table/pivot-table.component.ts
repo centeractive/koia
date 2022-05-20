@@ -125,9 +125,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     this.dataFrame = this.baseDataFrame;
     this.context.timeColumns
-      .forEach(
-        c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
+      .forEach(c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
     if (this.context.valueGroupings.length > 0) {
+      this.dataFrame.toArray(); // TODO: get rid of this -> solves TypeError: Cannot read properties of null (reading 'values')
       this.dataFrame = this.valueGroupingService.compute(this.dataFrame, this.context.valueGroupings);
     }
     this.renderPivotTable(config);
