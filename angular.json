@@ -70,20 +70,24 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ]
-            }
+            },
+            "development": {}
           },
-          "defaultConfiguration": ""
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "koia:build"
           },
           "configurations": {
             "production": {
               "browserTarget": "koia:build:production"
+            },
+            "development": {
+              "browserTarget": "koia:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -130,7 +134,8 @@
           "options": {
             "protractorConfig": "./e2e/protractor.conf.js",
             "devServerTarget": "koia:serve"
-          }
+          },
+          "configurations": {}
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
