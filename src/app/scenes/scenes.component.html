@@ -28,7 +28,7 @@
     </mat-menu>
 
     <button id="but_continue" mat-button mat-icon-button color="accent" matTooltip="Continue with active scene"
-      (click)="showRawData()">
+            (click)="showRawData()">
       <mat-icon>play_circle_outline</mat-icon>
     </button>
 
@@ -40,7 +40,7 @@
     </mat-form-field>
     <mat-form-field class="scene_creation_time">
       <input matInput type="text" placeholder="Creation Time" readonly
-        [value]="activeScene.creationTime | date:'medium'">
+             [value]="activeScene.creationTime | date:'medium'">
     </mat-form-field>
   </div>
 </mat-card>
@@ -48,23 +48,20 @@
 
   <mat-card-header>
     <div mat-card-avatar id="image-scenes"></div>
-    <mat-card-title>All Scenes
-    </mat-card-title>
-    <mat-card-subtitle>Manage your existing scenes. Activate one to start creating graphics.
-    </mat-card-subtitle>
+    <mat-card-title>All Scenes</mat-card-title>
+    <mat-card-subtitle>Manage your existing scenes. Activate one to start creating graphics.</mat-card-subtitle>
   </mat-card-header>
 
   <div id="div_filter">
     <mat-form-field id="filter_field">
-      <input matInput type="text" placeholder="Text Filter" [value]="filter"
-        (change)="onFilterChange($event.target.value)">
+      <input matInput type="text" placeholder="Text Filter" [value]="filter" (change)="onFilterChange($event.target.value)">
       <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button aria-label="Clear"
-        (click)="onFilterChange('')">
+              (click)="onFilterChange('')">
         <mat-icon>close</mat-icon>
       </button>
     </mat-form-field>
     <button id="but_delete_scenes" mat-stroked-button [disabled]="filteredSceneInfos.length === 0"
-      (click)="onDeleteScenesButtonPressed()">
+            (click)="onDeleteScenesButtonPressed()">
       <mat-icon>delete_forever</mat-icon>
       <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
     </button>
@@ -87,7 +84,7 @@
     </mat-menu>
 
     <button class="but_activate_scene" [disabled]="activeScene && sceneInfo._id === activeScene._id" mat-button
-      mat-icon-button matTooltip="Activate scene" (click)="activate(sceneInfo)">
+            mat-icon-button matTooltip="Activate scene" (click)="activate(sceneInfo)">
       <mat-icon>play_circle_outline</mat-icon>
     </button>
 

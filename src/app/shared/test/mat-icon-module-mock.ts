@@ -1,7 +1,7 @@
 import { Input, Component } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MetadataOverride } from '@angular/core/testing';
-import { NgModule } from '@angular/compiler/src/core';
+import { NgModule } from '@angular/core';
 
 /**
  * Use this to avoid "icon not found" errors during unit testing. Such icons are added to the MatIconRegistry 

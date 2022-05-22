@@ -32,7 +32,8 @@ describe('ErrorResultFactory', () => {
 
       // then
       expect(error.name).toBeUndefined();
-      expect(error.message).toBe(ChartType.BAR.name + ' chart: Maximum number of ' + ChartType.BAR.maxValues + ' values exceeded.' +
+      expect(error.message).toBe(ChartType.BAR.name + ' chart: Maximum number of ' +
+         ChartType.BAR.maxValues.toLocaleString() + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.');
    });
 });

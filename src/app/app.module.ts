@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
-import { RouteReuseStrategy } from '@angular/router/';
+import { RouteReuseStrategy } from '@angular/router';
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 
 import { AppComponent } from './app.component';
@@ -44,8 +44,8 @@ import 'd3';
 import 'nvd3';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import {
-  NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService,
-  RawDataRevealService
+    NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService,
+    RawDataRevealService
 } from './shared/services';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { ScenesComponent } from './scenes/scenes.component';
@@ -84,98 +84,89 @@ import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-va
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    MainToolbarComponent,
-    ScenesComponent,
-    SceneDetailsDialogComponent,
-    SceneComponent,
-    GridComponent,
-    FlexCanvasComponent,
-    RawDataComponent,
-    RawDataViewComponent,
-    RawDataDialogComponent,
-    ChartComponent,
-    ChartSideBarComponent,
-    GraphComponent,
-    GraphSideBarComponent,
-    SummaryTableComponent,
-    SummaryTableSideBarComponent,
-    PivotTableComponent,
-    PivotTableSideBarComponent,
-    StatusComponent,
-    MatIconModuleMock,
-    TextareaMaxRowsDirective,
-    FilterValueInputDirective,
-    ConnectionDialogComponent,
-    FrontComponent,
-    InputDialogComponent,
-    ConfirmDialogComponent,
-    ValueFilterComponent,
-    RangeFilterComponent,
-    ColumnMappingComponent,
-    ViewLauncherDialogComponent
-  ],
-  entryComponents: [
-    ConfirmDialogComponent,
-    InputDialogComponent,
-    ConnectionDialogComponent,
-    StatusComponent,
-    RawDataDialogComponent,
-    SceneDetailsDialogComponent,
-    ViewLauncherDialogComponent
-  ],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatBadgeModule,
-    MatCheckboxModule,
-    MatRadioModule,
-    MatExpansionModule,
-    MatCardModule,
-    MatSelectModule,
-    MatMenuModule,
-    MatIconModule,
-    MatInputModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatGridListModule,
-    MatSidenavModule,
-    MatTableModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSlideToggleModule,
-    MatSliderModule,
-    MatBottomSheetModule,
-    DragDropModule,
-    ResizableModule,
-    NvD3Module,
-    NgxSliderModule,
-    AppRoutingModule,
-    MatDialogModule,
-    MatStepperModule,
-    MatSnackBarModule,
-    ReactiveFormsModule
-  ],
-  providers: [
-    { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
-    { provide: STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
-    ReaderService,
-    CouchDBService,
-    DBService,
-    MatDialog,
-    RawDataRevealService,
-    ViewPersistenceService,
-    TimeGroupingService,
-    ValueRangeGroupingService,
-    AggregationService,
-    NotificationService,
-    DialogService
-  ],
-  bootstrap: [AppComponent]
+    declarations: [
+        AppComponent,
+        MainToolbarComponent,
+        ScenesComponent,
+        SceneDetailsDialogComponent,
+        SceneComponent,
+        GridComponent,
+        FlexCanvasComponent,
+        RawDataComponent,
+        RawDataViewComponent,
+        RawDataDialogComponent,
+        ChartComponent,
+        ChartSideBarComponent,
+        GraphComponent,
+        GraphSideBarComponent,
+        SummaryTableComponent,
+        SummaryTableSideBarComponent,
+        PivotTableComponent,
+        PivotTableSideBarComponent,
+        StatusComponent,
+        MatIconModuleMock,
+        TextareaMaxRowsDirective,
+        FilterValueInputDirective,
+        ConnectionDialogComponent,
+        FrontComponent,
+        InputDialogComponent,
+        ConfirmDialogComponent,
+        ValueFilterComponent,
+        RangeFilterComponent,
+        ColumnMappingComponent,
+        ViewLauncherDialogComponent
+    ],
+    imports: [
+        BrowserModule,
+        FormsModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+        MatToolbarModule,
+        MatButtonModule,
+        MatBadgeModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        MatExpansionModule,
+        MatCardModule,
+        MatSelectModule,
+        MatMenuModule,
+        MatIconModule,
+        MatInputModule,
+        MatTooltipModule,
+        MatProgressBarModule,
+        MatGridListModule,
+        MatSidenavModule,
+        MatTableModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatSlideToggleModule,
+        MatSliderModule,
+        MatBottomSheetModule,
+        DragDropModule,
+        ResizableModule,
+        NvD3Module,
+        NgxSliderModule,
+        AppRoutingModule,
+        MatDialogModule,
+        MatStepperModule,
+        MatSnackBarModule,
+        ReactiveFormsModule
+    ],
+    providers: [
+        { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
+        { provide: STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
+        ReaderService,
+        CouchDBService,
+        DBService,
+        MatDialog,
+        RawDataRevealService,
+        ViewPersistenceService,
+        TimeGroupingService,
+        ValueRangeGroupingService,
+        AggregationService,
+        NotificationService,
+        DialogService
+    ],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }

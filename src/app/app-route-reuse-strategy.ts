@@ -1,5 +1,4 @@
-import { RouteReuseStrategy } from '@angular/router/';
-import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
+import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 import { Route } from './shared/model';
 import { Injectable } from '@angular/core';
 

@@ -90,7 +90,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   private buildGraphData(): void {
     const graphData = this.graphDataService.createData(this.context);
     if (graphData['nodes'].length > GraphComponent.MAX_NODES) {
-      const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES + ' nodes exceeded.' +
+      const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES.toLocaleString() + ' nodes exceeded.' +
         '\n\nPlease choose chart instead or apply/refine data filtering.'
       this.onWarning.emit(msg);
     } else {

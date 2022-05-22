@@ -111,16 +111,6 @@
               "src/WEB-INF"
             ]
           }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "src/tsconfig.app.json",
-              "src/tsconfig.spec.json"
-            ],
-            "exclude": []
-          }
         }
       }
     },
@@ -136,15 +126,6 @@
             "devServerTarget": "koia:serve"
           },
           "configurations": {}
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "e2e/tsconfig.json"
-            ],
-            "exclude": []
-          }
         }
       }
     }

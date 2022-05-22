@@ -1,17 +1,20 @@
 <mat-sidenav-container fullscreen>
 
    <mat-sidenav #sidenav mode="push" class="sidenav" *ngIf="elementContexts">
-      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext"
-         [gridColumns]="gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-         (onElementPositionChange)="changeElementPosition($event)">
+      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [gridColumns]="gridColumns"
+                           [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+                           (onElementPositionChange)="changeElementPosition($event)">
       </koia-chart-side-bar>
       <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext"
-         [gridColumns]="gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-         (onElementPositionChange)="changeElementPosition($event)">
+                           [gridColumns]="gridColumns" [elementCount]="elementContexts.length"
+                           [elementPosition]="selectedContextPosition"
+                           (onElementPositionChange)="changeElementPosition($event)">
       </koia-graph-side-bar>
       <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext"
-         [gridColumns]="gridColumns" [entries$]="entries$" [elementCount]="elementContexts.length"
-         [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
+                                   [gridColumns]="gridColumns" [entries$]="entries$"
+                                   [elementCount]="elementContexts.length"
+                                   [elementPosition]="selectedContextPosition"
+                                   (onElementPositionChange)="changeElementPosition($event)">
       </koia-summary-table-side-bar>
    </mat-sidenav>
 
@@ -36,13 +39,13 @@
 
             <mat-menu #gridColumnsMenu="matMenu">
                <button mat-menu-item *ngFor="let columns of [ 1, 2, 3, 4, 5]" [value]="columns"
-                  [disabled]="columns === gridColumns" (click)="setGridColumns(columns)">{{ columns }}
+                       [disabled]="columns === gridColumns" (click)="setGridColumns(columns)">{{ columns }}
                   Column{{ columns === 1 ? '' : 's' }}</button>
             </mat-menu>
 
             <mat-menu #gridRatioMenu="matMenu">
                <button mat-menu-item *ngFor="let ratio of [ '1:1', '2:3', '3:2']" [value]="ratio"
-                  [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
+                       [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
             </mat-menu>
 
             <!--
@@ -52,18 +55,18 @@
          </button>
          -->
             <button mat-button mat-icon-button matTooltip="Save current view"
-               [disabled]="!elementContexts || elementContexts.length === 0" (click)="saveView()">
+                    [disabled]="!elementContexts || elementContexts.length === 0" (click)="saveView()">
                <mat-icon>save_alt</mat-icon>
             </button>
 
             <button class="but_more" mat-icon-button matTooltip="Restore saved view"
-               [disabled]="findViews().length === 0" [matMenuTriggerFor]="restoreViewMenu">
+                    [disabled]="findViews().length === 0" [matMenuTriggerFor]="restoreViewMenu">
                <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="findViews().length === 0"
-                  matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
+                         matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
             </button>
             <mat-menu #restoreViewMenu="matMenu">
                <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item
-                  (click)="loadView(view)">
+                       (click)="loadView(view)">
                   <mat-icon>open_in_browser</mat-icon>
                   <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
                </button>
@@ -85,39 +88,39 @@
       <div #content class="div_content">
          <mat-grid-list #content id="grid_list" [cols]="gridColumns" [rowHeight]="gridCellRatio" gutterSize="10">
             <mat-grid-tile class="mat-elevation-z8" *ngFor="let context of elementContexts"
-               [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan">
+                           [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan">
                <div #elementContainer class="div_element">
                   <div class="div_element_header">
                      <div style="display: flex">
                         <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
-                           *ngIf="context.getSupportedExportFormats().length > 0">
+                                *ngIf="context.getSupportedExportFormats().length > 0">
                            <mat-icon>more_vert</mat-icon>
                         </button>
                         <mat-menu #moreMenu="matMenu">
                            <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
-                              (click)="saveAs(context, exportFormat)">
+                                   (click)="saveAs(context, exportFormat)">
                               <mat-icon>insert_drive_file</mat-icon>
                               <span>Save As {{ exportFormat }}</span>
                            </button>
                         </mat-menu>
                         <button id="configButton" class="but_config" mat-button mat-icon-button
-                           matTooltip="Configure..." (click)="configure($event, context)">
+                                matTooltip="Configure..." (click)="configure($event, context)">
                            <mat-icon>settings</mat-icon>
                         </button>
                         <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
-                           *ngIf="isChartContext(context)" mat-button mat-icon-button
-                           [color]="isShowResizableMargin(context) ? 'primary' : null"
-                           matTooltip="Toggle resizable chart margin"
-                           (click)="asChartContext(context).toggleShowResizableMargin()">
+                                *ngIf="isChartContext(context)" mat-button mat-icon-button
+                                [color]="isShowResizableMargin(context) ? 'primary' : null"
+                                matTooltip="Toggle resizable chart margin"
+                                (click)="asChartContext(context).toggleShowResizableMargin()">
                            <mat-icon>crop_free</mat-icon>
                         </button>
                      </div>
                      <div class="div_title">
                         <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
-                           koiaTextareaMaxRows="2" (keyup)="context.title = $event.target.value"></textarea>
+                                  [koiaTextareaMaxRows]="2" (keyup)="context.title = $event.target.value"></textarea>
                      </div>
                      <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning"
-                        color="warn">
+                             color="warn">
                         <mat-icon>error</mat-icon>
                      </button>
                      <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
@@ -126,15 +129,15 @@
                   </div>
                   <div class="div_chart">
                      <koia-summary-table *ngIf="isSummaryContext(context)" [gridView]="true" [context]="context"
-                        [entries$]="entries$" (onRemove)="removeElement($event)">
+                                         [entries$]="entries$" (onRemove)="removeElement($event)">
                      </koia-summary-table>
                      <koia-chart *ngIf="isChartContext(context)" [context]="context" [entries$]="entries$"
-                        [parentConstraintSize]="true" (onRemove)="removeElement($event)"
-                        (onWarning)="notifyWarning($event)">
+                                 [parentConstraintSize]="true" (onRemove)="removeElement($event)"
+                                 (onWarning)="notifyWarning($event)">
                      </koia-chart>
                      <koia-graph *ngIf="isGraphContext(context)" [context]="context" [entries$]="entries$"
-                        [parentConstraintSize]="true" (onRemove)="removeElement($event)"
-                        (onWarning)="notifyWarning($event)">
+                                 [parentConstraintSize]="true" (onRemove)="removeElement($event)"
+                                 (onWarning)="notifyWarning($event)">
                      </koia-graph>
                   </div>
                </div>
