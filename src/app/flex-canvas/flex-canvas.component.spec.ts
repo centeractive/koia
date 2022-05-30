@@ -279,8 +279,8 @@ describe('FlexCanvasComponent', () => {
     component.addGraph();
     fixture.detectChanges();
     const headerHeight = 26;
-    component.elementHeaderDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementHeaderDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
+    component.elementContainerDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
+    spyOn(component.elementContainerDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
     const context = component.elementContexts[0];
     spyOn(context, 'setSize');
 
@@ -301,8 +301,8 @@ describe('FlexCanvasComponent', () => {
     component.addSummaryTable();
     fixture.detectChanges();
     const headerHeight = 26;
-    component.elementHeaderDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementHeaderDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
+    component.elementContainerDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
+    spyOn(component.elementContainerDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
     const context = <SummaryContext>component.elementContexts[0];
     spyOn(context, 'setSize');
     const resizeEvent: ResizeEvent = {

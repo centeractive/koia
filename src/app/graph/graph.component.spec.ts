@@ -3,13 +3,13 @@ import { of, Observable } from 'rxjs';
 import { GraphComponent } from './graph.component';
 import { GraphContext, Column, GraphNode, DataType, Scene } from 'app/shared/model';
 import { SimpleChange } from '@angular/core';
-import { GraphDataService, RawDataRevealService } from 'app/shared/services';
+import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SceneFactory } from 'app/shared/test';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 
-describe('GraphComponent', () => {
+fdescribe('GraphComponent', () => {
 
   let columns: Column[];
   let scene: Scene;
@@ -79,7 +79,7 @@ describe('GraphComponent', () => {
     expect(component.entries$.toPromise).not.toHaveBeenCalled();
   });
 
-  it('should compute graph data when structure changes', fakeAsync(() => {
+  fit('should compute graph data when structure changes', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('n1')];
@@ -94,17 +94,18 @@ describe('GraphComponent', () => {
     flush();
 
     // then
-    const root: GraphNode = { parent: null, group: 0, name: '', value: '', info: null };
-    const child1: GraphNode = { parent: root, group: 1, name: 't1', value: 'a', info: '1' };
-    const child2: GraphNode = { parent: root, group: 2, name: 't1', value: 'b', info: '3' };
-    const expected = {
+    const joc = jasmine.objectContaining;
+    const root: GraphNode = { index: 0, parent: null, group: 0, name: '', value: '', info: null };
+    const child1: GraphNode = { index: 1, parent: root, group: 1, name: 't1', value: 'a', info: '1' };
+    const child2: GraphNode = { index: 2, parent: root, group: 2, name: 't1', value: 'b', info: '3' };
+    const expected: GraphData = {
       nodes: [root, child1, child2],
       links: [
         { source: root, target: child1 },
         { source: root, target: child2 }
       ]
     };
-    expect(component.graphData).toEqual(expected);
+    expect(component.graphData).toEqual(joc(expected));
   }));
 
   it('should create graph options when size changes', fakeAsync(() => {
@@ -142,7 +143,7 @@ describe('GraphComponent', () => {
     flush();
 
     // then
-    const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES + ' nodes exceeded.' +
+    const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES.toLocaleString() + ' nodes exceeded.' +
       '\n\nPlease choose chart instead or apply/refine data filtering.';
     expect(component.onWarning.emit).toHaveBeenCalledWith(msg);
   }));

@@ -9,7 +9,7 @@ import { CommonUtils } from 'app/shared/utils';
 import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { ExportDataProvider } from 'app/shared/controller';
 import { NodeDoubleClickHandler } from './options/node-double-click-handler';
-import { select, forceSimulation, forceManyBody, forceCenter, forceLink, scaleOrdinal, schemeCategory10, forceX, forceY, ticks } from 'd3';
+import { select, forceSimulation, forceManyBody, forceCenter, forceLink, scaleOrdinal, schemeCategory10, forceX, forceY, ticks, drag, SimulationNodeDatum } from 'd3';
 import { GraphUtils } from './options/graph-utils';
 
 @Component({
@@ -98,9 +98,12 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   }
 
   private generateGraph(): void {
+    if (!this.parentConstraintSize) {
+      this.adjustCanvasContainerSize();
+    }
+
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
-    // const links = this.graphData['links'].map(l => ({ source: l.source.index, target: l.target.index }));
 
     const div: HTMLDivElement = document.querySelector('#div_svg');
     div.replaceChildren();
@@ -126,20 +129,23 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
       .attr('r', 10)
       .style('fill', n => color('' + n.group))
       .style('cursor', 'pointer')
-      .on('dblclick', e => this.nodeDoubleClickHandler.onNodeDoubleClicked(e.srcElement.__data__, this.context));
+      .on('dblclick', e => this.nodeDoubleClickHandler.onNodeDoubleClicked(e.srcElement.__data__, this.context))
+      .call(drag()
+        .on('start', (e, d) => dragstarted(e, d))
+        .on('drag', (e, d) => dragged(e, d))
+        .on('end', (e, d) => dragended(e, d)));
 
     var labels = node.append('text')
       .text(n => GraphUtils.createDisplayText(n, this.context))
       .attr('x', 12)
       .attr('y', 3)
-      //.style('font-family', 'sans-serif')
       .style('font-size', '12px')
       .style('color', n => color('' + n.group));
 
     node.append('title')
       .text(d => d.value);
 
-    forceSimulation(nodes)
+    const simulation = forceSimulation(nodes)
       .force('link', forceLink(this.graphData.links).id(d => d['id'])
         .distance(this.context.linkDist)
         .strength(this.context.linkStrength))
@@ -154,6 +160,37 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
           .attr('x2', l => l.target.x)
           .attr('y2', l => l.target.y);
       });
+
+    const dragstarted = (e: any, d: SimulationNodeDatum) => {
+      if (!e.active) {
+        simulation.alphaTarget(0.3).restart();
+      }
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    const dragged = (e: any, d: SimulationNodeDatum) => {
+      d.fx = e.x;
+      d.fy = e.y;
+    }
+
+    const dragended = (e: any, d: SimulationNodeDatum) => {
+      if (!e.active) {
+        simulation.alphaTarget(0);
+      }
+      d.fx = null;
+      d.fy = null;
+    }
+  }
+
+
+  /**
+   * TODO: get rid of this - graph should automatically adapt to the resized element in the flex-view
+   */
+  private adjustCanvasContainerSize(): void {
+    const chartContainer = this.cmpElementRef.nativeElement.parentElement;
+    chartContainer.style.width = this.context.width + 'px';
+    chartContainer.style.height = this.context.height + 'px';
   }
 
   createExportData(): Object[] {

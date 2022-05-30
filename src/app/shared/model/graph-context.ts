@@ -1,5 +1,4 @@
 import { ElementContext } from './element-context';
-import { ChangeEvent } from './change-event.enum';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
 

@@ -1,6 +1,6 @@
 import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { ResizeEvent, Edges } from 'angular-resizable-element';
+import { ResizeEvent, Edges, BoundingRectangle } from 'angular-resizable-element';
 import { ElementContext, Route } from '../shared/model';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
 import { ViewController } from 'app/shared/controller';
@@ -18,9 +18,9 @@ export class FlexCanvasComponent extends ViewController {
 
   static readonly MIN_DIM_PX = 200;
 
-  @ViewChildren('elementHeader') elementHeaderDivsRefs: QueryList<ElementRef<HTMLDivElement>>;
+  @ViewChildren('elementContainer') elementContainerDivsRefs: QueryList<ElementRef<HTMLDivElement>>;
 
-  private resizeStartWidth: number;
+  private resizeStartBounds: BoundingRectangle;
 
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
     viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
@@ -43,14 +43,14 @@ export class FlexCanvasComponent extends ViewController {
   }
 
   onResizeStart(resizeEvent: ResizeEvent): void {
-    this.resizeStartWidth = resizeEvent.rectangle.width;
+    this.resizeStartBounds = resizeEvent.rectangle;
   }
 
   onResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
     const rect = resizeEvent.rectangle;
-    const width = this.resizeStartWidth === rect.width ? context.width : rect.width;
-    const htmlDiv = this.elementHeaderDivsRefs.toArray()[0].nativeElement;
-    context.setSize(width, rect.height - htmlDiv.offsetHeight);
+    const width = this.resizeStartBounds.width === rect.width ? context.width : rect.width;
+    const height = this.resizeStartBounds.height === rect.height ? context.height : rect.height;
+    context.setSize(width, height);
   }
 
   protected onPreRestoreView(view: View): void {
