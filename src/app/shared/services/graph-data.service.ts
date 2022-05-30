@@ -1,9 +1,12 @@
 import { DataFrame, IDataFrame } from 'data-forge';
-import { GraphContext, Column, PropertyFilter, GraphNode, DataType } from '../model';
-import { DateTimeUtils, CommonUtils, ColumnNameConverter } from 'app/shared/utils';
+import { GraphContext, Column, PropertyFilter, GraphNode, GraphLink, DataType } from '../model';
+import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
 import { Injectable } from '@angular/core';
 
-declare var d3: any;
+export interface GraphData {
+   nodes: GraphNode[];
+   links: GraphLink[];
+}
 
 /**
  * d3-force graph data provider service
@@ -15,7 +18,7 @@ declare var d3: any;
 })
 export class GraphDataService {
 
-   createData(graphContext: GraphContext): Object {
+   createData(graphContext: GraphContext): GraphData {
       const providerContext = new ProviderContext(graphContext);
       let dataFrame: IDataFrame<number, any> = new DataFrame(providerContext.entries);
       graphContext.columns.filter(c => c.dataType === DataType.TIME).forEach(c => dataFrame = this.convertTime(dataFrame, c));
@@ -40,13 +43,28 @@ export class GraphDataService {
     * creates an object tree out of the specified data, grouped by the selected columns
     */
    private createTree(data: Object[], providerContext: ProviderContext): TreeNode {
-      let nest = d3.nest();
-      if (providerContext.groupByColumns) {
-         // !!! d3 nest always converts keys to string
-         providerContext.groupByColumns.forEach(c => nest.key(entry => entry[c.name] || PropertyFilter.EMPTY_VALUE));
+      if (!providerContext.groupByColumns) {
+         return { key: '', values: data.length };
       }
-      nest = nest.rollup(v => v.length); // count elements
-      return { key: '', values: nest.entries(data) }
+      const groupByColumns = providerContext.groupByColumns.map(c => c.name);
+      const rootValues: TreeNode[] = [];
+      data.forEach(entry => {
+         groupByColumns.reduce((nodes, column, i) => {
+            const lastGroupByColumns = i + 1 === groupByColumns.length;
+            const value = entry[column] || PropertyFilter.EMPTY_VALUE;
+            let node: TreeNode = nodes.find(n => n.key === value);
+            if (node) {
+               if (lastGroupByColumns) {
+                  node.values = (node.values as number) + 1;
+               }
+            } else {
+               node = { key: value, values: lastGroupByColumns ? 1 : [] };
+               nodes.push(node);
+            }
+            return node.values;
+         }, rootValues);
+      });
+      return { key: '', values: rootValues };
    }
 
    private buildGraphData(parent: GraphNode, treeNode: TreeNode, columnIndex: number, providerContext: ProviderContext): void {
@@ -67,13 +85,8 @@ export class GraphDataService {
 
    private createNode(parent: GraphNode, column: Column, value: string, info: string, providerContext: ProviderContext): GraphNode {
       const group = !parent || !parent.parent ? providerContext.group++ : parent.group;
-      let columnValue: any = value;
-      if (columnValue && columnValue !== PropertyFilter.EMPTY_VALUE &&
-         (column.dataType === DataType.NUMBER || column.dataType === DataType.TIME)) {
-         columnValue = Number(value); // conversion needed because d3 nest always converts keys to string
-      }
       const nodeName = this.nodeNameFrom(column);
-      return { parent: parent, group: group, name: nodeName, value: columnValue, info: info }
+      return { parent, group, name: nodeName, value, info }
    }
 
    private nodeNameFrom(column: Column): string {
@@ -90,7 +103,7 @@ class ProviderContext {
    entries: Object[];
    group = 0;
    nodes: GraphNode[] = [];
-   links: Link[] = [];
+   links: GraphLink[] = [];
 
    constructor(graphContext: GraphContext) {
       this.columns = graphContext.columns;
@@ -102,9 +115,4 @@ class ProviderContext {
 interface TreeNode {
    key: string;
    values: number | TreeNode[];
-}
-
-interface Link {
-   source: GraphNode;
-   target: GraphNode;
 }

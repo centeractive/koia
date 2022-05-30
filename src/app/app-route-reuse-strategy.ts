@@ -1,6 +1,7 @@
 import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 import { Route } from './shared/model';
 import { Injectable } from '@angular/core';
+import { selectAll } from 'd3';
 
 @Injectable()
 export class AppRouteReuseStrategy implements RouteReuseStrategy {
@@ -40,7 +41,7 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
       for (let i = 0; i < tooltips.length; i++) {
          tooltips[i].remove();
       }
-      d3.selectAll('.nvtooltip').style('opacity', '0');
+      selectAll('.nvtooltip').style('opacity', '0');
    }
 
    /**

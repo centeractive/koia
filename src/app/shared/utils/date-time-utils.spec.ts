@@ -2,8 +2,7 @@ import { DateTimeUtils } from './date-time-utils';
 import { DatePipe } from '@angular/common';
 import * as moment from 'moment';
 import { TimeUnit, Column, DataType } from '../model';
-
-declare var d3: any;
+import { timeFormat } from 'd3';
 
 describe('DateTimeUtils', () => {
 
@@ -504,7 +503,7 @@ describe('DateTimeUtils', () => {
 
   it('#momentFormatOf and #d3FormatOf should return compatible date/time format each', () => {
     const momentFormat = timeunit => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
-    const d3Format = timeunit => d3.time.format(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
+    const d3Format = timeunit => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
 
     expect(momentFormat(TimeUnit.MILLISECOND)).toEqual(d3Format(TimeUnit.MILLISECOND));
     expect(momentFormat(TimeUnit.SECOND)).toEqual(d3Format(TimeUnit.SECOND));
@@ -516,7 +515,7 @@ describe('DateTimeUtils', () => {
   });
 
   it('#d3FormatOf and #ngFormatOf should return compatible date/time format each', () => {
-    const d3Format = timeunit => d3.time.format(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
+    const d3Format = timeunit => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
     const ngFormat = timeunit => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
 
     expect(d3Format(TimeUnit.MILLISECOND)).toEqual(ngFormat(TimeUnit.MILLISECOND));

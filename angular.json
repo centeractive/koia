@@ -37,7 +37,6 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/jquery-ui-dist/jquery-ui.min.js",
-              "node_modules/d3/d3.min.js",
               "node_modules/c3/c3.min.js",
               "node_modules/pivottable/dist/pivot.min.js",
               "node_modules/pivottable/dist/c3_renderers.js"
@@ -77,8 +76,7 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-          },
+          "options": {},
           "configurations": {
             "production": {
               "browserTarget": "koia:build:production"

@@ -4,6 +4,7 @@ import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-co
 import { ValueRangeLabelComparator } from 'app/shared/value-range';
 import { CellClickHandler } from './cell-click-handler';
 import { PivotContext } from '../model';
+import { scaleLinear, ScaleLinear } from 'd3';
 declare var $: any;
 
 export class PivotOptionsProvider {
@@ -93,10 +94,10 @@ export class PivotOptionsProvider {
       this.cellClickHandler.onCellClicked(context.valueGroupings, mouseEvent, filters, exclusions, inclusions, pivotData);
    }
 
-   private generateColorScale(context: PivotContext, values: number[]): d3.scale.Linear<string, string> {
-      const min = d3.min(values.filter(v => v !== 0));
-      const max = d3.max(values.filter(v => v !== 0));
-      return d3.scale.linear<string>()
+   private generateColorScale(context: PivotContext, values: number[]): ScaleLinear<string, string> {
+      const min = Math.min(...values.filter(v => v !== 0));
+      const max = Math.max(...values.filter(v => v !== 0));
+      return scaleLinear<string>()
          .domain([min, 0, max])
          .range([context.negativeColor, 'white', context.positiveColor]);
    }

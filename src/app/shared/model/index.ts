@@ -12,6 +12,7 @@ export * from './graph-node.type';
 export * from './change-event.enum';
 export * from './element-context';
 export * from './graph-context';
+export * from './graph-link.type';
 export * from './summary-context';
 export * from './operator.enum';
 export * from './logical-operator.enum';

@@ -2,8 +2,7 @@ import { GraphContext } from '../../shared/model';
 import { GraphNode } from '../../shared/model/graph-node.type';
 import { GraphUtils } from './graph-utils';
 import { NodeDoubleClickHandler } from './node-double-click-handler';
-
-declare var d3: any;
+import { schemePaired } from 'd3';
 
 /**
  * Options provider for d3-force graph
@@ -12,10 +11,10 @@ declare var d3: any;
  */
 export class GraphOptionsProvider {
 
-   constructor(private nodeDoubleClickHandler: NodeDoubleClickHandler) {}
+   constructor(private nodeDoubleClickHandler: NodeDoubleClickHandler) { }
 
    createOptions(context: GraphContext, parentDiv: HTMLDivElement): Object {
-      const color = d3.scale.category20();
+      const color = schemePaired;
       return {
          chart: {
             type: 'forceDirectedGraph',
@@ -33,7 +32,7 @@ export class GraphOptionsProvider {
             tooltip: {
                contentGenerator: node => this.generateTooltip(node, context)
             },
-            color: node => color(node.group),
+            // color: node => color(node.group),
             nodeExtras: node => this.shapeNodes(node, context)
          }
       }

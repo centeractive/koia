@@ -2,33 +2,33 @@
   <span class="span_menu_trigger" [matMenuTriggerFor]="nameMenu">{{ filter.name }}</span>
   <mat-menu #nameMenu="matMenu">
     <button mat-menu-item *ngFor="let column of columns" [disabled]="column.name === filter.name"
-      (click)="onNameChanged(column)">
+            (click)="onNameChanged(column)">
       <span>&nbsp;{{ column.name }}</span>
     </button>
   </mat-menu>
 
   <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
-    [matTooltip]="valueFilterCustomizer.tooltipOf(filter)">{{ filter.operator }}</span>
+        [matTooltip]="valueFilterCustomizer.tooltipOf(filter)">{{ filter.operator }}</span>
   <mat-menu #operatorMenu="matMenu">
     <button mat-menu-item *ngFor="let operator of availableOperators()" [disabled]="operator === filter.operator"
-      (click)="filter.operator = operator; onChange.emit()">
+            (click)="filter.operator = operator; onChange.emit()">
       <span>{{ operator }}</span>
     </button>
   </mat-menu>
 
   <mat-form-field class="column_filter_value" *ngIf="!isEqualBoolean() && !filter.operator.endsWith('empty')">
     <input matInput type="text" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
-      [value]="valueFilterCustomizer.formattedValueOf(filter)" (input)="onValueChanged($event.target.value)"
-      (keyup)="onKeyUp($event)" [formControl]="valueControl" [koiaFilterValueInput]="filter">
+           (input)="onValueChanged($event.target.value)" (keyup)="onKeyUp($event)" [formControl]="valueControl"
+           [koiaFilterValueInput]="filter">
     <button mat-button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
-      (click)="reset()">
+            (click)="reset()">
       <mat-icon>close</mat-icon>
     </button>
     <mat-error *ngIf="valueControl.invalid">{{ valueControl.getError('error') }}</mat-error>
   </mat-form-field>
 
   <span class="span_menu_trigger" *ngIf="isEqualBoolean()"
-    [matMenuTriggerFor]="booleanMenu">{{ filter.value }}</span>
+        [matMenuTriggerFor]="booleanMenu">{{ filter.value }}</span>
   <mat-menu #booleanMenu="matMenu">
     <button mat-menu-item [disabled]="filter.value === true" (click)="filter.value = true; onChange.emit()">
       <span>true</span>

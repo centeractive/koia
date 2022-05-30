@@ -2,14 +2,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-
 import { AppRoutingModule } from './app-routing.module';
 import { RouteReuseStrategy } from '@angular/router';
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
-
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -35,18 +32,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
-
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ResizableModule } from 'angular-resizable-element';
-
-import { NvD3Module } from 'ng2-nvd3';
 import 'd3';
-import 'nvd3';
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-import {
-    NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService,
-    RawDataRevealService
-} from './shared/services';
+import { NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService, RawDataRevealService } from './shared/services';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { ScenesComponent } from './scenes/scenes.component';
 import { SceneComponent } from './scene/scene.component';
@@ -144,7 +134,6 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
         MatBottomSheetModule,
         DragDropModule,
         ResizableModule,
-        NvD3Module,
         NgxSliderModule,
         AppRoutingModule,
         MatDialogModule,

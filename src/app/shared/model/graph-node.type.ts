@@ -1,4 +1,6 @@
-export interface GraphNode {
+import { SimulationNodeDatum } from 'd3';
+
+export interface GraphNode extends SimulationNodeDatum {
    parent: GraphNode;
    group: number;
    name: string; // column name or time unit

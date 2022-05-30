@@ -2,11 +2,9 @@ import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testi
 import { of, Observable } from 'rxjs';
 import { GraphComponent } from './graph.component';
 import { GraphContext, Column, GraphNode, DataType, Scene } from 'app/shared/model';
-import { NvD3Module } from 'ng2-nvd3';
 import { SimpleChange } from '@angular/core';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
-import 'nvd3';
 import { SceneFactory } from 'app/shared/test';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -38,7 +36,7 @@ describe('GraphComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [MatProgressBarModule, NvD3Module, RouterTestingModule, MatDialogModule],
+      imports: [MatProgressBarModule, RouterTestingModule, MatDialogModule],
       declarations: [GraphComponent],
       providers: [
         { provide: GraphDataService, useValue: graphDataService },

@@ -33,6 +33,7 @@ export class ValueFilterComponent implements OnInit {
     this.columns = this.dbService.getActiveScene().columns;
     this.validator = new PropertyFilterValidator(this.columns);
     this.valueParser = new FilterValueParser(this.filter);
+    this.valueControl.setValue(this.valueFilterCustomizer.formattedValueOf(this.filter));
   }
 
   availableOperators(): Operator[] {

@@ -134,9 +134,9 @@ describe('GraphDataService', () => {
       // then
       const nodes: GraphNode[] = data['nodes'];
       expect(nodes.length).toEqual(4);
-      expect(nodes[1].value).toEqual(2);
-      expect(nodes[2].value).toEqual(3);
-      expect(nodes[3].value).toEqual(PropertyFilter.EMPTY_VALUE);
+      expect(nodes[1].value).toEqual(PropertyFilter.EMPTY_VALUE);
+      expect(nodes[2].value).toEqual(2);
+      expect(nodes[3].value).toEqual(3);
    });
 
    function findColumn(name: string): Column {
