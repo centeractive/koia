@@ -1,18 +1,17 @@
-import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, discardPeriodicTasks } from '@angular/core/testing';
 import { of, Observable } from 'rxjs';
 import { GraphComponent } from './graph.component';
-import { GraphContext, Column, GraphNode, DataType, Scene } from 'app/shared/model';
+import { GraphContext, Column, DataType } from 'app/shared/model';
 import { SimpleChange } from '@angular/core';
-import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
+import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SceneFactory } from 'app/shared/test';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialogModule } from '@angular/material/dialog';
 
-fdescribe('GraphComponent', () => {
+describe('GraphComponent', () => {
 
   let columns: Column[];
-  let scene: Scene;
   let context: GraphContext;
   let entries$: Observable<Object[]>;
   let component: GraphComponent;
@@ -25,7 +24,7 @@ fdescribe('GraphComponent', () => {
       { name: 'n1', dataType: DataType.NUMBER, width: 50 },
       { name: 't2', dataType: DataType.TEXT, width: 300 }
     ]
-    scene = SceneFactory.createScene('1', []);
+    SceneFactory.createScene('1', []);
     entries$ = of([
       { t1: 'a', n1: 1, t2: null },
       { t1: 'b', n1: 2, t2: 'x' },
@@ -79,7 +78,7 @@ fdescribe('GraphComponent', () => {
     expect(component.entries$.toPromise).not.toHaveBeenCalled();
   });
 
-  fit('should compute graph data when structure changes', fakeAsync(() => {
+  it('should compute graph data when structure changes', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('n1')];
@@ -95,17 +94,22 @@ fdescribe('GraphComponent', () => {
 
     // then
     const joc = jasmine.objectContaining;
-    const root: GraphNode = { index: 0, parent: null, group: 0, name: '', value: '', info: null };
-    const child1: GraphNode = { index: 1, parent: root, group: 1, name: 't1', value: 'a', info: '1' };
-    const child2: GraphNode = { index: 2, parent: root, group: 2, name: 't1', value: 'b', info: '3' };
-    const expected: GraphData = {
-      nodes: [root, child1, child2],
-      links: [
-        { source: root, target: child1 },
-        { source: root, target: child2 }
-      ]
-    };
-    expect(component.graphData).toEqual(joc(expected));
+    const root = { index: 0, parent: null, group: 0, name: '', value: '', info: null };
+    const child1 = { index: 1, parent: joc(root), group: 1, name: 't1', value: 'a', info: '1' };
+    const child2 = { index: 2, parent: joc(root), group: 2, name: 't1', value: 'b', info: '3' };
+
+    expect(component.graphData.nodes.length).toBe(3);
+    expect(component.graphData.nodes[0]).toEqual(joc(root));
+    expect(component.graphData.nodes[1]).toEqual(joc(child1));
+    expect(component.graphData.nodes[2]).toEqual(joc(child2));
+
+    expect(component.graphData.links.length).toBe(2);
+    expect(component.graphData.links[0].source.index).toBe(root.index);
+    expect(component.graphData.links[0].target.index).toBe(child1.index);
+    expect(component.graphData.links[1].source.index).toBe(root.index);
+    expect(component.graphData.links[1].target.index).toBe(child2.index);
+
+    discardPeriodicTasks();
   }));
 
   it('should create graph options when size changes', fakeAsync(() => {
@@ -125,6 +129,8 @@ fdescribe('GraphComponent', () => {
     // then
     expect(component.graphOptions['chart'].width).toEqual(120);
     expect(component.graphOptions['chart'].height).toEqual(500);
+
+    discardPeriodicTasks();
   }));
 
   it('should warn user when graph contains too many nodes', fakeAsync(() => {

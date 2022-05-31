@@ -228,15 +228,9 @@ describe('FlexCanvasComponent', () => {
 
   it('#validateElementResize should return false when width is to small', () => {
 
-    // given
-    const width = FlexCanvasComponent.MIN_DIM_PX - 1;
-    const resizeEvent = {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: 1000, width: width },
-      edges: null
-    }
-
     // when
-    const validation = component.validateElementResize(resizeEvent);
+    const event = resizeEvent({ width: FlexCanvasComponent.MIN_DIM_PX - 1, height: 1_000 });
+    const validation = component.validateElementResize(event);
 
     // then
     expect(validation).toBeFalse();
@@ -244,15 +238,9 @@ describe('FlexCanvasComponent', () => {
 
   it('#validateElementResize should return false when height is to small', () => {
 
-    // given
-    const height = FlexCanvasComponent.MIN_DIM_PX - 1;
-    const resizeEvent = {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: height, width: 1000 },
-      edges: null
-    }
-
     // when
-    const validation = component.validateElementResize(resizeEvent);
+    const event = resizeEvent({ width: 1_000, height: FlexCanvasComponent.MIN_DIM_PX - 1 });
+    const validation = component.validateElementResize(event);
 
     // then
     expect(validation).toBeFalse();
@@ -260,14 +248,9 @@ describe('FlexCanvasComponent', () => {
 
   it('#validateElementResize should return true when width and height are fine', () => {
 
-    // given
-    const resizeEvent = {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: 1000, width: 1000 },
-      edges: null
-    }
-
     // when
-    const validation = component.validateElementResize(resizeEvent);
+    const event = resizeEvent({ width: 1_000, height: 1_000 });
+    const validation = component.validateElementResize(event);
 
     // then
     expect(validation).toBeTrue();
@@ -283,16 +266,15 @@ describe('FlexCanvasComponent', () => {
     spyOn(component.elementContainerDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
     const context = component.elementContexts[0];
     spyOn(context, 'setSize');
+    let event = resizeEvent({ width: 300, height: 200 });
+    component.onResizeStart(event);
 
     // when
-    const resizeEvent: ResizeEvent = {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: 200, width: 300 },
-      edges: null
-    }
-    component.onResizeEnd(context, resizeEvent);
+    event = resizeEvent({ width: 333, height: 221 });
+    component.onResizeEnd(context, event);
 
     // then
-    expect(context.setSize).toHaveBeenCalledWith(300, 200 - headerHeight);
+    expect(context.setSize).toHaveBeenCalledWith(333, 221);
   });
 
   it('#onResizeEnd should keep summary table context unlimited width when not dragged horizontally', () => {
@@ -305,18 +287,15 @@ describe('FlexCanvasComponent', () => {
     spyOn(component.elementContainerDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
     const context = <SummaryContext>component.elementContexts[0];
     spyOn(context, 'setSize');
-    const resizeEvent: ResizeEvent = {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, height: 200, width: 300 },
-      edges: null
-    }
-    component.onResizeStart(resizeEvent);
+    let event = resizeEvent({ width: 300, height: 200 });
+    component.onResizeStart(event);
 
     // when
-    resizeEvent.rectangle.height = 199;
-    component.onResizeEnd(context, resizeEvent);
+    event = resizeEvent({ width: 300, height: 199 });
+    component.onResizeEnd(context, event);
 
     // then
-    expect(context.setSize).toHaveBeenCalledWith(SummaryContext.UNLIMITED_WITH, 199 - headerHeight);
+    expect(context.setSize).toHaveBeenCalledWith(SummaryContext.UNLIMITED_WITH, 199);
     expect(context.hasUnlimitedWidth()).toBeTrue();
   });
 
@@ -492,6 +471,13 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
+
+  function resizeEvent(bounds: { width: number, height: number }): ResizeEvent {
+    return {
+      rectangle: { top: 0, bottom: 0, left: 0, right: 0, width: bounds.width, height: bounds.height },
+      edges: null
+    }
+  }
 
   /**
    * TODO: fix me

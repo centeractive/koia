@@ -19,11 +19,11 @@ steps:
 
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '16.x'
   displayName: 'install Node.js'
 
 - script: |
-    npm ci -g @angular/cli@10.1.5
+    npm ci -g @angular/cli@13.3.7
     npm ci
   displayName: 'install npm packages'
 
@@ -49,7 +49,7 @@ steps:
     releaseType: stable
     
 - script: |
-    docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:2.3.1
+    docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.2.2
   displayName: 'run CouchDB in Docker container'
 
 # perform unit-tets and publish test and code coverage results
