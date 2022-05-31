@@ -54,7 +54,7 @@ export class GraphOptionsProvider {
             .attr('cursor', 'pointer');
    }
 
-   private generateTooltip(graphNode: GraphNode, context: GraphContext): string {
+   generateTooltip(graphNode: GraphNode, context: GraphContext): string {
       const series = graphNode['series'][0];
       let result = '<div class="div_tooltip">'
          + '<span class="tooltip_colored_box" style="background:' + series.color + ';margin-right:10px;"></span>';
