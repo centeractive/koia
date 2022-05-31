@@ -64,6 +64,9 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   onColumnChanged(column: Column): void {
     if (this.context.dataColumns.includes(column)) {
       this.context.removeDataColumn(column);
+      if (this.context.dataColumns.length == 1 && this.context.stacked) {
+        this.context.stacked = false;
+      }
     } else if (this.context.isAggregationCountSelected() ||
       DataTypeUtils.containsNonNumericColumns(this.context.dataColumns.concat(column))) {
       this.context.dataColumns = [column];

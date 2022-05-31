@@ -32,5 +32,4 @@ div.tooltip {
   position: absolute;
   width: 300px;
   pointer-events: none;
-  z-index: 9999 !important;
 }

@@ -2,15 +2,13 @@ import { GraphContext, GraphNode } from 'app/shared/model';
 import { GraphData, RawDataRevealService } from 'app/shared/services';
 import {
     select, forceSimulation, forceManyBody, forceCenter, forceLink,
-    scaleOrdinal, schemeCategory10, drag, SimulationNodeDatum, forceX, forceY
+    scaleOrdinal, schemeCategory10, drag, forceX, forceY
 } from 'd3';
-import { GraphOptionsProvider } from '../options/graph-options-provider';
 import { GraphUtils } from '../options/graph-utils';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
 
 export class D3ForceGraphGenerator {
 
-    private optionsProvider: GraphOptionsProvider;
     private nodeDoubleClickHandler: NodeDoubleClickHandler;
 
     constructor(private context: GraphContext, rawDataRevealService: RawDataRevealService) {
@@ -20,7 +18,7 @@ export class D3ForceGraphGenerator {
     generate(graphData: GraphData, div: HTMLDivElement): void {
         div.replaceChildren();
 
-        var tooltipDiv = select(div.parentElement).append('div')
+        var tooltipDiv = select(div).append('div')
             .attr('class', 'tooltip')
             .style('opacity', 0);
 
@@ -42,43 +40,41 @@ export class D3ForceGraphGenerator {
 
         var circles = node.append('circle')
             .attr('r', 10)
-            .style('fill', n => color('' + n.group))
+            .style('fill', node => color('' + node.group))
             .style('cursor', 'pointer')
-            .on('dblclick', e => this.nodeDoubleClickHandler.onNodeDoubleClicked(e.srcElement.__data__, this.context))
-            .on('mouseenter', (e, d) => mouseEnter(e, d))
-            .on('mouseleave', (e, d) => mouseLeave(d))
+            .on('dblclick', (e: any, node) => this.nodeDoubleClickHandler.onNodeDoubleClicked(node, this.context))
+            .on('mouseenter', (e: any, node) => mouseEnter(node))
+            .on('mouseleave', () => mouseLeave())
             .call(drag()
-                .on('start', (e, d) => dragstarted(e, d))
-                .on('drag', (e, d) => dragged(e, d))
-                .on('end', (e, d) => dragended(e, d)));
+                .on('start', (e: any, d: GraphNode) => dragstarted(e, d))
+                .on('drag', (e: any, d: GraphNode) => dragged(e, d))
+                .on('end', (e: any, d: GraphNode) => dragended(e, d)));
 
-        const mouseEnter = (e, d) => {
+        const mouseEnter = (node: GraphNode) => {
             tooltipDiv.transition()
                 .duration(200)
                 .style('opacity', 1);
-            tooltipDiv.html(generateTooltip(e.srcElement.__data__, this.context))
-                .style('left', (e.x + 10) + 'px')
-                .style('top', (e.y - 100) + 'px');
+            // TODO: tooltip is partially hidden when node is close to the border of the svg    
+            tooltipDiv.html(generateTooltip(node, this.context))
+                .style('left', (node.x + 15) + 'px')
+                .style('top', (node.y - 10) + 'px');
         };
 
-        const mouseLeave = (d) => {
+        const mouseLeave = () => {
             tooltipDiv.transition()
                 .duration(500)
                 .style('opacity', 0);
         }
 
         var labels = node.append('text')
-            .text(n => GraphUtils.createDisplayText(n, this.context))
+            .text(node => GraphUtils.createDisplayText(node, this.context))
             .attr('dx', 12)
             .attr('dy', '.35em')
             .style('font-size', '12px')
-            .style('color', n => color('' + n.group));
-
-        node.append('title')
-            .text(d => d.value);
+            .style('color', node => color('' + node.group));
 
         const simulation = forceSimulation(graphData.nodes)
-            .force('link', forceLink(graphData.links).id(d => d.index)
+            .force('link', forceLink(graphData.links).id(node => node.index)
                 .distance(this.context.linkDist)
                 .strength(this.context.linkStrength))
             .force('charge', forceManyBody().strength(this.context.charge))
@@ -95,30 +91,29 @@ export class D3ForceGraphGenerator {
                     .attr('y2', l => l.target.y);
             });
 
-        const dragstarted = (e: any, d: SimulationNodeDatum) => {
+        const dragstarted = (e: any, node: GraphNode) => {
             if (!e.active) {
                 simulation.alphaTarget(0.3).restart();
             }
-            d.fx = d.x;
-            d.fy = d.y;
+            node.fx = node.x;
+            node.fy = node.y;
         }
 
-        const dragged = (e: any, d: SimulationNodeDatum) => {
-            d.fx = e.x;
-            d.fy = e.y;
+        const dragged = (e: any, node: GraphNode) => {
+            node.fx = e.x;
+            node.fy = e.y;
         }
 
-        const dragended = (e: any, d: SimulationNodeDatum) => {
+        const dragended = (e: any, node: GraphNode) => {
             if (!e.active) {
                 simulation.alphaTarget(0);
             }
-            d.fx = null;
-            d.fy = null;
+            node.fx = null;
+            node.fy = null;
         }
 
 
         const generateTooltip = (graphNode: GraphNode, context: GraphContext): string => {
-            console.log('color' + color('' + graphNode.group))
             let result = '<div class="div_tooltip">'
                 + '<span class="tooltip_colored_box" style="background:' + color('' + graphNode.group) + ';margin-right:10px;"></span>';
             if (graphNode.parent) {

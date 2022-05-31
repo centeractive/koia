@@ -1,6 +1,6 @@
 import {
     ArcElement, BarController, BarElement, CategoryScale, Chart, ChartConfiguration,
-    ChartData, ChartType as ChartJsType, DoughnutController, Filler, Legend, LinearScale,
+    ChartType as ChartJsType, DoughnutController, Filler, Legend, LinearScale,
     LineController, LineElement, PieController, PointElement, PolarAreaController,
     RadarController, RadialLinearScale, ScatterController, TimeScale, Tooltip
 } from 'chart.js';
@@ -39,7 +39,7 @@ export class ChartJs {
 
         new BarLegendCustomizer().customize(context, config);
 
-        console.log(JSON.stringify(config, undefined, '  '));
+        console.log(config);
 
         context.chart = new Chart(canvas, config);
     }
