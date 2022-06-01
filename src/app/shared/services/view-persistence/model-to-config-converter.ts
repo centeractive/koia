@@ -47,15 +47,15 @@ export class ModelToConfigConverter {
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
          chartType: context.chartType,
+         colorScheme: {
+            type: context.colorProvider.schemeType,
+            scheme: context.colorProvider.scheme
+         },
          margin: context.margin,
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
          xLabelRotation: context.xLabelRotation,
-         stacked: context.stacked,
-         colorScheme: {
-            type: context.colorProvider.schemeType,
-            scheme: context.colorProvider.scheme
-         }
+         stacked: context.stacked
       }
    }
 
@@ -72,6 +72,10 @@ export class ModelToConfigConverter {
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
+         colorScheme: {
+            type: context.colorProvider.schemeType,
+            scheme: context.colorProvider.scheme
+         },
          linkStrength: context.linkStrength,
          friction: context.friction,
          linkDist: context.linkDist,

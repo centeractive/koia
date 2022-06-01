@@ -102,9 +102,9 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
     const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('#div_svg');
-    new D3ForceGraphGenerator(this.context, this.rawDataRevealService).generate(this.graphData, div);
+    new D3ForceGraphGenerator(this.context, this.rawDataRevealService)
+      .generate(this.graphData, div, this.context.colorProvider);
   }
-
 
   /**
    * TODO: get rid of this - graph should automatically adapt to the resized element in the flex-view

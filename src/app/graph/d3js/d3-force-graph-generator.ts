@@ -5,6 +5,7 @@ import {
     scaleOrdinal, schemeCategory10, drag, forceX, forceY
 } from 'd3';
 import { GraphUtils } from '../options/graph-utils';
+import { ColorProvider } from 'app/shared/color';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
 
 export class D3ForceGraphGenerator {
@@ -15,15 +16,15 @@ export class D3ForceGraphGenerator {
         this.nodeDoubleClickHandler = new NodeDoubleClickHandler(rawDataRevealService);
     }
 
-    generate(graphData: GraphData, div: HTMLDivElement): void {
+    generate(graphData: GraphData, div: HTMLDivElement, colorProvider: ColorProvider): void {
         div.replaceChildren();
+        const colors = colorProvider.rgbColors(this.countDistinctGroups(graphData.nodes));
 
         var tooltipDiv = select(div).append('div')
             .attr('class', 'tooltip')
             .style('opacity', 0);
 
         const svg = select(div).append('svg');
-        const color = scaleOrdinal(schemeCategory10);
 
         const link = svg.append('g')
             .attr('stroke', '#999')
@@ -36,11 +37,11 @@ export class D3ForceGraphGenerator {
             .attr('class', 'nodes')
             .selectAll('g')
             .data(graphData.nodes)
-            .enter().append('g')
+            .enter().append('g');
 
         var circles = node.append('circle')
             .attr('r', 10)
-            .style('fill', node => color('' + node.group))
+            .style('fill', node => colors[node.group])
             .style('cursor', 'pointer')
             .on('dblclick', (e: any, node) => this.nodeDoubleClickHandler.onNodeDoubleClicked(node, this.context))
             .on('mouseenter', (e: any, node) => mouseEnter(node))
@@ -71,7 +72,7 @@ export class D3ForceGraphGenerator {
             .attr('dx', 12)
             .attr('dy', '.35em')
             .style('font-size', '12px')
-            .style('color', node => color('' + node.group));
+            .style('color', node => colors[node.group]);
 
         const simulation = forceSimulation(graphData.nodes)
             .force('link', forceLink(graphData.links).id(node => node.index)
@@ -115,7 +116,7 @@ export class D3ForceGraphGenerator {
 
         const generateTooltip = (graphNode: GraphNode, context: GraphContext): string => {
             let result = '<div class="div_tooltip">'
-                + '<span class="tooltip_colored_box" style="background:' + color('' + graphNode.group) + ';margin-right:10px;"></span>';
+                + '<span class="tooltip_colored_box" style="background:' + colors[graphNode.group] + ';margin-right:10px;"></span>';
             if (graphNode.parent) {
                 result += graphNode.name + ': <b>' + GraphUtils.formattedValueOf(graphNode, context) + '</b>';
             } else {
@@ -128,5 +129,9 @@ export class D3ForceGraphGenerator {
             return result + '<br><br>Double-click to show data...</div>';
         }
 
+    }
+
+    private countDistinctGroups(nodes: GraphNode[]): number {
+        return new Set<number>(nodes.map(n => n.group)).size;
     }
 }

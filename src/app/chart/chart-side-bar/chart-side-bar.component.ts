@@ -27,20 +27,18 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   constructor(private chartMarginService: ChartMarginService) {
     super();
-    this.colorSchemes = [
-      ...ColorUtils.allCategoricalColorSchemes().map(scheme => ({ type: ColorSchemeType.CATEGORICAL, scheme })),
-      ...ColorUtils.allSequentialColorScheme().map(scheme => ({ type: ColorSchemeType.SEQUENTIAL, scheme })),
-    ];
+    this.colorSchemes = ColorUtils.collectAllColorSchemes();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     super.ngOnChanges(changes);
     this.selectedChartType = ChartType.fromType(this.context.chartType);
-    this.defineSelectedColorScheme(this.context.colorProvider);
+    this.defineSelectedColorScheme();
     this.defineSelectableItems();
   }
 
-  private defineSelectedColorScheme(colorProvider: ColorProvider): void {
+  private defineSelectedColorScheme(): void {
+    const colorProvider = this.context.colorProvider;
     this.selectedColorScheme = this.colorSchemes
       .find(s => s.type == colorProvider.schemeType && s.scheme == colorProvider.scheme);
   }

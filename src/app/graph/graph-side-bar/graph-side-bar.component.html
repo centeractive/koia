@@ -13,6 +13,13 @@
    </span>
 </div>
 <hr>
+<mat-form-field style="margin: 10px 0 0 20px">
+   <mat-select placeholder="Color Scheme" [(ngModel)]="selectedColorScheme" (ngModelChange)="colorSchemeSelectionChanged()">
+      <mat-option *ngFor="let colorScheme of colorSchemes" [value]="colorScheme">
+         {{ colorScheme.type + ': ' + colorScheme.scheme }}
+      </mat-option>
+   </mat-select>
+</mat-form-field>
 <mat-accordion *ngIf="context" [multi]="multiExpandable">
 
    <mat-expansion-panel [expanded]="true">

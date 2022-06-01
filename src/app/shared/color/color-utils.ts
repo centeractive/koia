@@ -2,13 +2,19 @@ import {
     interpolateCool, interpolatePlasma, interpolateRainbow, interpolateSinebow, interpolateSpectral,
     interpolateTurbo, interpolateWarm, schemeAccent, schemeCategory10, schemePaired, schemeSet1, schemeTableau10
 } from 'd3';
-import { CategoricalColorScheme, SequentialColorScheme } from '.';
-import { ColorSchemeType } from './color-scheme-type.enum';
+import { ColorScheme, ColorSchemeType, CategoricalColorScheme, SequentialColorScheme } from '.';
 
 /**
  * @see https://github.com/d3/d3-scale-chromatic
  */
 export class ColorUtils {
+
+    static collectAllColorSchemes(): ColorScheme[] {
+        return [
+            ...ColorUtils.allCategoricalColorSchemes().map(scheme => ({ type: ColorSchemeType.CATEGORICAL, scheme })),
+            ...ColorUtils.allSequentialColorScheme().map(scheme => ({ type: ColorSchemeType.SEQUENTIAL, scheme })),
+        ];
+    }
 
     /**
      * @returns an array of all [[ColorSchemeType]]s

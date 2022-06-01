@@ -43,6 +43,9 @@ export class ConfigToModelConverter {
    private toGraphContext(graph: Graph): GraphContext {
       const context = new GraphContext(this.clonedColumns());
       this.copy(graph, context);
+      if (graph.colorScheme) {
+         context.colorProvider = ColorProviderFactory.create(graph.colorScheme.type, graph.colorScheme.scheme);
+      }
       context.linkStrength = graph.linkStrength;
       context.friction = graph.friction;
       context.linkDist = graph.linkDist;

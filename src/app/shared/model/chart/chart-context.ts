@@ -14,13 +14,13 @@ export class ChartContext extends ElementContext {
    private static currColorProvider: ColorProvider = new CategoricalColorProvider(CategoricalColorScheme.TABLEAU);
 
    private _chartType: string;
+   private _colorProvider: ColorProvider;
    private _margin: Margin;
    private _showLegend: boolean;
    private _legendPosition: string;
    private _valueAsPercent: boolean; // for PIE and DOUGHNUT chart only
    private _xLabelRoatation: number;
    private _stacked: boolean;
-   private _colorProvider: ColorProvider;
 
    // transient
    private _data: ChartData;
@@ -32,13 +32,13 @@ export class ChartContext extends ElementContext {
 
    constructor(columns: Column[], chartType: string, margin: Margin) {
       super(columns);
+      this._colorProvider = ChartContext.currColorProvider;
       this._chartType = chartType;
       this._margin = margin;
       this._showLegend = true;
       this._valueAsPercent = true;
       this._legendPosition = 'top';
       this._stacked = false;
-      this._colorProvider = ChartContext.currColorProvider;
    }
 
    switchChartType(type: string, margin: Margin) {
@@ -63,6 +63,19 @@ export class ChartContext extends ElementContext {
 
    isCircularChart(): boolean {
       return ChartType.isCircularChart(ChartType.fromType(this._chartType));
+   }
+
+   get colorProvider(): ColorProvider {
+      return this._colorProvider;
+   }
+
+   set colorProvider(colorProvider: ColorProvider) {
+      ChartContext.currColorProvider = colorProvider;
+      if (this._colorProvider.schemeType !== colorProvider.schemeType ||
+         this._colorProvider.scheme !== colorProvider.scheme) {
+         this._colorProvider = colorProvider;
+         this.fireLookChanged();
+      }
    }
 
    get margin(): Margin {
@@ -140,19 +153,6 @@ export class ChartContext extends ElementContext {
       if (this._stacked !== stacked) {
          this._stacked = stacked;
          this.fireStructureChanged();
-      }
-   }
-
-   get colorProvider(): ColorProvider {
-      return this._colorProvider;
-   }
-
-   set colorProvider(colorProvider: ColorProvider) {
-      ChartContext.currColorProvider = colorProvider;
-      if (this._colorProvider.schemeType !== colorProvider.schemeType ||
-         this._colorProvider.scheme !== colorProvider.scheme) {
-         this._colorProvider = colorProvider;
-         this.fireLookChanged();
       }
    }
 
