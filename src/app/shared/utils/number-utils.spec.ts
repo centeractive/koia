@@ -199,6 +199,37 @@ describe('NumberUtils', () => {
     expect(NumberUtils.representsNumber('+1,000,000.123', 'en-US')).toBeTrue();
   });
 
+  it('#normalize when string does not represent a number', () => {
+    expect(NumberUtils.normalize(undefined, 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber(null, 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('  ', 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber('abc', 'en-US')).toBeUndefined();
+  });
+
+  it('#normalize when string represents an integer', () => {
+    expect(NumberUtils.normalize('-1', 'en-US')).toBe('-1');
+    expect(NumberUtils.normalize('0', 'en-US')).toBe('0');
+    expect(NumberUtils.normalize('1', 'en-US')).toBe('1');
+    expect(NumberUtils.normalize('+1', 'en-US')).toBe('+1');
+  });
+
+  it('#normalize when string represents a float', () => {
+    expect(NumberUtils.normalize('-1.1', 'en-US')).toBe('-1.1');
+    expect(NumberUtils.normalize('0.1', 'en-US')).toBe('0.1');
+    expect(NumberUtils.normalize('1.1', 'en-US')).toBe('1.1');
+    expect(NumberUtils.normalize('+1.1', 'en-US')).toBe('+1.1');
+  });
+
+  it('#normalize when string contains thousands separator(s)', () => {
+    expect(NumberUtils.normalize('-1,000,000.1', 'en-US')).toBe('-1000000.1');
+    expect(NumberUtils.normalize('-1,000.1', 'en-US')).toBe('-1000.1');
+    expect(NumberUtils.normalize('-1,000', 'en-US')).toBe('-1000');
+    expect(NumberUtils.normalize('1,000', 'en-US')).toBe('1000');
+    expect(NumberUtils.normalize('1,000.1', 'en-US')).toBe('1000.1');
+    expect(NumberUtils.normalize('1,000,000.1', 'en-US')).toBe('1000000.1');
+  });
+
   it('#asNumber should return undefined when value is undefined', () => {
     expect(NumberUtils.asNumber(undefined, 'en-US')).toBeUndefined();
     expect(NumberUtils.asNumber(null, 'en-US')).toBeUndefined();
@@ -571,6 +602,43 @@ describe('NumberUtils', () => {
     expect(NumberUtils.rangeClosedIntArray(1)).toEqual([1]);
     expect(NumberUtils.rangeClosedIntArray(3)).toEqual([1, 2, 3]);
     expect(NumberUtils.rangeClosedIntArray(10)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  });
+
+  it('#rangeFloatArray should throw error when <last> ist less than <first>', () => {
+    const errMsg = '<options.to> must not be less than <options.from>';
+    expect(() => NumberUtils.rangeFloatArray(5, { from: 1, to: 0.5 })).toThrowError(errMsg);
+  });
+
+  it('#rangeFloatArray should return empty array when <count> is zero or less', () => {
+    expect(NumberUtils.rangeFloatArray(-0)).toEqual([]);
+    expect(NumberUtils.rangeFloatArray(0)).toEqual([]);
+    expect(NumberUtils.rangeFloatArray(0, { from: 1.5, to: 4.5 })).toEqual([]);
+  });
+
+  it('#rangeFloatArray should return single value between <start> and <end> when <count> is 1', () => {
+    expect(NumberUtils.rangeFloatArray(1)).toEqual([0.5]);
+    expect(NumberUtils.rangeFloatArray(1, { from: 1.5, to: 4.5 })).toEqual([3]);
+  });
+
+  it('#rangeFloatArray should return 2 values', () => {
+    expect(NumberUtils.rangeFloatArray(2)).toEqual([0, 1]);
+    expect(NumberUtils.rangeFloatArray(2, { from: 1.12, to: 3.5 })).toEqual([1.12, 3.5]);
+  });
+
+  it('#rangeFloatArray should return multiple values', () => {
+    let result = NumberUtils.rangeFloatArray(5);
+    expect(result.map(n => Number(n.toFixed(2)))).toEqual([0, 0.25, 0.5, 0.75, 1]);
+
+    result = NumberUtils.rangeFloatArray(6, { from: 1.1, to: 1.6 });
+    expect(result.map(n => Number(n.toFixed(1)))).toEqual([1.1, 1.2, 1.3, 1.4, 1.5, 1.6]);
+  });
+
+  it('#intArray', () => {
+    expect(NumberUtils.intArray(-3, 0)).toEqual([-3, -2, -1, 0]);
+    expect(NumberUtils.intArray(-1, -1)).toEqual([-1]);
+    expect(NumberUtils.intArray(0, 0)).toEqual([0]);
+    expect(NumberUtils.intArray(1, 1)).toEqual([1]);
+    expect(NumberUtils.intArray(0, 3)).toEqual([0, 1, 2, 3]);
   });
 
   it('#generateEvenSpreadNumbers should return empty array when count is less than 2', () => {

@@ -10,7 +10,8 @@ import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { CouchDBConstants } from '../backend/couchdb';
 import { Column, DataType } from 'app/shared/model';
-import { ColorProvider } from './color-provider';
+import { CategoricalColorScheme } from '../../color';
+import { CategoricalColorProvider } from 'app/shared/color/categorical-color-provider';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +22,7 @@ export class ChartDataService {
 
   private dataNameConverter = new SeriesNameConverter();
   private errorResultFactory = new ErrorResultFactory();
-  private colorProvider = new ColorProvider();
+  private bgColorOpacity = 0.6;
 
   createData(context: ChartContext): ChartDataResult {
     context.dataSampledDown = false;
@@ -52,8 +53,8 @@ export class ChartDataService {
       datasets: [{
         label: context.dataColumns[0].name,
         data: dataPoints.map(p => p.y),
-        backgroundColor: this.colorProvider.bgColors(dataPoints.length),
-        borderColor: this.colorProvider.borderColors(dataPoints.length),
+        backgroundColor: context.colorProvider.rgbaColors(dataPoints.length, this.bgColorOpacity),
+        borderColor: context.colorProvider.rgbColors(dataPoints.length),
         hoverOffset: 10, // PIE & DOUGHNUT charts
         borderAlign: 'inner' // PIE & DOUGHNUT charts
       }]
@@ -82,15 +83,19 @@ export class ChartDataService {
     context.valueRange = ArrayUtils.categoryDataToValueRange(labeledData);
     return {
       labels: labels,
-      datasets: labeledData.dataSets.map((ds, i) => ({
-        label: ds.label,
-        data: ds.values,
-        backgroundColor: colorPerLabel ? this.colorProvider.bgColors(labels.length) : this.colorProvider.bgColorAt(i),
-        borderColor: colorPerLabel ? this.colorProvider.borderColors(labels.length) : this.colorProvider.borderColorAt(i),
-        fill: chartType == ChartType.AREA,
-        hoverOffset: 10, // PIE & DOUGHNUT charts
-        borderAlign: 'inner' // PIE & DOUGHNUT charts
-      }))
+      datasets: labeledData.dataSets.map((ds, i) => {
+        const bgColors = context.colorProvider.rgbaColors(labels.length, this.bgColorOpacity);
+        const borderColors = context.colorProvider.rgbColors(labels.length);
+        return {
+          label: ds.label,
+          data: ds.values,
+          backgroundColor: colorPerLabel ? bgColors : bgColors[i],
+          borderColor: colorPerLabel ? borderColors : borderColors[i],
+          fill: chartType == ChartType.AREA,
+          hoverOffset: 10, // PIE & DOUGHNUT charts
+          borderAlign: 'inner' // PIE & DOUGHNUT charts
+        }
+      })
     };
   }
 
@@ -110,12 +115,14 @@ export class ChartDataService {
 
   private valueCountData(chartType: ChartType, context: ChartContext): ChartData {
     const datasets = this.createValueCountData(chartType, context);
+    const bgColors = context.colorProvider.rgbaColors(datasets.length, this.bgColorOpacity);
+    const borderColors = context.colorProvider.rgbColors(datasets.length);
     return {
       datasets: datasets.map((ds, i) => ({
         label: ds.key,
         data: ds.values,
-        backgroundColor: this.colorProvider.bgColorAt(i),
-        borderColor: this.colorProvider.borderColorAt(i),
+        backgroundColor: bgColors[i],
+        borderColor: borderColors[i],
         fill: chartType == ChartType.AREA
       }))
     };
@@ -123,12 +130,14 @@ export class ChartDataService {
 
   private individualValuesData(chartType: ChartType, context: ChartContext): ChartData {
     const datasets = this.createIndividualValuesData(chartType, context);
+    const bgColors = context.colorProvider.rgbaColors(datasets.length, this.bgColorOpacity);
+    const borderColors = context.colorProvider.rgbColors(datasets.length);
     return {
       datasets: datasets.map((ds, i) => ({
         label: ds.key,
         data: ds.values,
-        backgroundColor: this.colorProvider.bgColorAt(i),
-        borderColor: this.colorProvider.borderColorAt(i),
+        backgroundColor: bgColors[i],
+        borderColor: borderColors[i],
         fill: chartType == ChartType.AREA
       }))
     };

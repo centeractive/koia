@@ -51,7 +51,11 @@ export class ModelToConfigConverter {
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
          xLabelRotation: context.xLabelRotation,
-         stacked: context.stacked
+         stacked: context.stacked,
+         colorScheme: {
+            type: context.colorProvider.schemeType,
+            scheme: context.colorProvider.scheme
+         }
       }
    }
 

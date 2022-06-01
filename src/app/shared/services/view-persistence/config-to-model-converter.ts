@@ -6,10 +6,11 @@ import { Graph } from './graph.type';
 import { Summary } from './summary.type';
 import { CommonUtils } from 'app/shared/utils';
 import { ElementType } from 'app/shared/model/view-config';
+import { ColorProviderFactory } from 'app/shared/color';
 
 export class ConfigToModelConverter {
 
-   constructor(private columns: Column[]) {}
+   constructor(private columns: Column[]) { }
 
    convert(configElements: ViewElement[]): ElementContext[] {
       return configElements.map(e => this.toElementContext(e));
@@ -17,11 +18,11 @@ export class ConfigToModelConverter {
 
    private toElementContext(viewElement: ViewElement): ElementContext {
       if (viewElement.elementType === ElementType.CHART) {
-         return this.toChartContext(<Chart> viewElement);
+         return this.toChartContext(<Chart>viewElement);
       } else if (viewElement.elementType === ElementType.GRAPH) {
-         return this.toGraphContext(<Graph> viewElement);
+         return this.toGraphContext(<Graph>viewElement);
       } else if (viewElement.elementType === ElementType.SUMMARY) {
-         return this.toSummaryContext(<Summary> viewElement);
+         return this.toSummaryContext(<Summary>viewElement);
       }
       throw new Error('view element of type ' + viewElement.elementType + ' not yet implemented');
    }
@@ -33,6 +34,9 @@ export class ConfigToModelConverter {
       context.legendPosition = chart.legendPosition;
       context.xLabelRotation = chart.xLabelRotation;
       context.stacked = chart.stacked;
+      if (chart.colorScheme) {
+         context.colorProvider = ColorProviderFactory.create(chart.colorScheme.type, chart.colorScheme.scheme);
+      }
       return context;
    }
 
@@ -63,7 +67,7 @@ export class ConfigToModelConverter {
       to.title = from.title;
       to.dataColumns = from.dataColumns.map(dc => to.columns.find(c => dc.name === c.name));
       to.splitColumns = from.splitColumns.map(sc => to.columns.find(c => sc.name === c.name));
-      to.groupByColumns =  from.groupByColumns.map(gbc => to.columns.find(c => gbc.name === c.name));
+      to.groupByColumns = from.groupByColumns.map(gbc => to.columns.find(c => gbc.name === c.name));
       to.gridColumnSpan = from.gridColumnSpan;
       to.gridRowSpan = from.gridRowSpan;
       to.setSize(from.width, from.height);

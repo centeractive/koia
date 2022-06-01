@@ -2,11 +2,11 @@ import { Route, Aggregation, StatusType, Scene, DataType, Column } from '../../m
 import { Chart } from '../view-persistence/chart.type';
 import { ViewPersistenceService } from './view-persistence.service';
 import { DBService } from '../backend';
-import { DocChangeResponse } from '../backend/doc-change-response.type';
 import { SceneFactory } from '../../test';
 import { Summary } from './summary.type';
 import { ConfigRecord } from '../../model/view-config/config-record.type';
 import { View, ElementType, ViewElement } from 'app/shared/model/view-config';
+import { CategoricalColorScheme, ColorSchemeType } from 'app/shared/color';
 
 describe('ViewPersistenceService', () => {
 
@@ -27,14 +27,18 @@ describe('ViewPersistenceService', () => {
     const timeColumn = createColumn('Time', DataType.TIME);
     summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
-      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], 
+      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
       valueGroupings: [], empty: ''
     };
     chart = {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
-      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT], 
+      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
       valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
-      legendPosition: 'top', xLabelRotation: -12, stacked: false
+      legendPosition: 'top', xLabelRotation: -12, stacked: false,
+      colorScheme: {
+        type: ColorSchemeType.CATEGORICAL,
+        scheme: CategoricalColorScheme.PAIRED
+      }
     };
   });
 

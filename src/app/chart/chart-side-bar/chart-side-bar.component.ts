@@ -4,6 +4,7 @@ import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { SideBarController } from 'app/shared/controller';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { DataTypeUtils, ChartUtils } from 'app/shared/utils';
+import { ColorScheme, ColorProvider, ColorProviderFactory, ColorSchemeType, ColorUtils } from 'app/shared/color';
 
 @Component({
   selector: 'koia-chart-side-bar',
@@ -15,6 +16,8 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   @Input() context: ChartContext;
 
   selectedChartType: ChartType;
+  colorSchemes: ColorScheme[];
+  selectedColorScheme: ColorScheme;
   selectableDataColumns: Column[];
   countDistinctValuesEnabled = true;
   individualValuesEnabled: boolean;
@@ -24,12 +27,26 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   constructor(private chartMarginService: ChartMarginService) {
     super();
+    this.colorSchemes = [
+      ...ColorUtils.allCategoricalColorSchemes().map(scheme => ({ type: ColorSchemeType.CATEGORICAL, scheme })),
+      ...ColorUtils.allSequentialColorScheme().map(scheme => ({ type: ColorSchemeType.SEQUENTIAL, scheme })),
+    ];
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     super.ngOnChanges(changes);
     this.selectedChartType = ChartType.fromType(this.context.chartType);
+    this.defineSelectedColorScheme(this.context.colorProvider);
     this.defineSelectableItems();
+  }
+
+  private defineSelectedColorScheme(colorProvider: ColorProvider): void {
+    this.selectedColorScheme = this.colorSchemes
+      .find(s => s.type == colorProvider.schemeType && s.scheme == colorProvider.scheme);
+  }
+
+  colorSchemeSelectionChanged(): void {
+    this.context.colorProvider = ColorProviderFactory.create(this.selectedColorScheme.type, this.selectedColorScheme.scheme);
   }
 
   protected defineSelectableItems() {

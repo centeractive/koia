@@ -102,7 +102,9 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
 
   private updateChart(changeEvent: ChangeEvent): void {
     this.marginDivStyle = this.marginToStyle(this.context.margin);
-    if (changeEvent === ChangeEvent.STRUCTURE) {
+
+    // TODO: ChangeEvent.LOOK should not create data (currently Chart.js defines colors etc. inside the dataset)
+    if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
       const chartDataResult = this.chartDataService.createData(this.context);
       if (chartDataResult.error) {
         this.onWarning.emit(chartDataResult.error);

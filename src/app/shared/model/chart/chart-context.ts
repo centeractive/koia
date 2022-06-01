@@ -6,8 +6,12 @@ import { ChartType } from './chart-type';
 import { SeriesNameConverter } from '../../services/chart/series-name-converter';
 import { Margin } from '.';
 import { Chart, ChartData } from 'chart.js';
+import { CategoricalColorScheme, ColorProvider } from 'app/shared/color';
+import { CategoricalColorProvider } from 'app/shared/color/categorical-color-provider';
 
 export class ChartContext extends ElementContext {
+
+   private static currColorProvider: ColorProvider = new CategoricalColorProvider(CategoricalColorScheme.TABLEAU);
 
    private _chartType: string;
    private _margin: Margin;
@@ -16,6 +20,7 @@ export class ChartContext extends ElementContext {
    private _valueAsPercent: boolean; // for PIE and DOUGHNUT chart only
    private _xLabelRoatation: number;
    private _stacked: boolean;
+   private _colorProvider: ColorProvider;
 
    // transient
    private _data: ChartData;
@@ -33,6 +38,7 @@ export class ChartContext extends ElementContext {
       this._valueAsPercent = true;
       this._legendPosition = 'top';
       this._stacked = false;
+      this._colorProvider = ChartContext.currColorProvider;
    }
 
    switchChartType(type: string, margin: Margin) {
@@ -134,6 +140,19 @@ export class ChartContext extends ElementContext {
       if (this._stacked !== stacked) {
          this._stacked = stacked;
          this.fireStructureChanged();
+      }
+   }
+
+   get colorProvider(): ColorProvider {
+      return this._colorProvider;
+   }
+
+   set colorProvider(colorProvider: ColorProvider) {
+      ChartContext.currColorProvider = colorProvider;
+      if (this._colorProvider.schemeType !== colorProvider.schemeType ||
+         this._colorProvider.scheme !== colorProvider.scheme) {
+         this._colorProvider = colorProvider;
+         this.fireLookChanged();
       }
    }
 

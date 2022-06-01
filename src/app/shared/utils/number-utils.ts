@@ -68,13 +68,13 @@ export class NumberUtils {
    }
 
    /**
-   * converts a string to a parsable number presentation, a number without thousands separator and with a
-   * dot as decimal separator.
+   * converts a string to a parsable number presentation, a number without thousands separator and with
+   * the locale-specific decimal separator.
    *
    * @param str  a number that may contain thousands separators of the specified locale
    * @returns normalized number or [[undefined]] if the specified string does not represent a number
    */
-   private static normalize(str: string, locale: string): string {
+   static normalize(str: string, locale: string): string {
       if (!str) {
          return undefined;
       }
@@ -254,7 +254,32 @@ export class NumberUtils {
     * @param endInclusive the inclusive upper bound
     */
    static rangeClosedIntArray(endInclusive: number): number[] {
-      return Array.from(new Array(endInclusive), (x, i) => i + 1);
+      return Array.from(new Array(endInclusive), (n, i) => i + 1);
+   }
+
+   /**
+    * returns a sequential ordered array of floats within a certain range
+    *
+    * @param count the number of floats to be contained in the resulting array
+    * @param range <first> and <last> float to be contained in the resulting array, 
+    *              if <count> is 1 however, the returned value will be inbetween <first> and <last>
+    */
+   static rangeFloatArray(count: number, range: { from: number, to: number } = { from: 0, to: 1 }): number[] {
+      if (range.to - range.from < 0) {
+         throw Error('<options.to> must not be less than <options.from>');
+      }
+      if (count <= 0) {
+         return [];
+      } else if (count === 1) {
+         return [(range.from + range.to) / 2];
+      }
+      const gap = (range.to - range.from) / (count - 1);
+      const result = [range.from];
+      for (let i = 0, v = range.from + gap; i < count - 2; i++, v += gap) {
+         result.push(v);
+      }
+      result.push(range.to);
+      return result;
    }
 
    /**
