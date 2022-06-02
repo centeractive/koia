@@ -4,7 +4,7 @@
   "description": "Koia Data Analysis",
   "author": {
     "name": "centeractive ag",
-    "email": "urs.minder@centeractive.com"
+    "email": "info@centeractive.com"
   },
   "license": "MIT",
   "scripts": {
@@ -22,18 +22,18 @@
   "private": true,
   "dependencies": {
     "@angular-slider/ngx-slider": "^2.0.4",
-    "@angular/animations": "^13.3.10",
+    "@angular/animations": "^13.3.11",
     "@angular/cdk": "^13.3.8",
-    "@angular/common": "^13.3.10",
-    "@angular/compiler": "^13.3.10",
-    "@angular/core": "^13.3.10",
+    "@angular/common": "^13.3.11",
+    "@angular/compiler": "^13.3.11",
+    "@angular/core": "^13.3.11",
     "@angular/flex-layout": "^13.0.0-beta.38",
-    "@angular/forms": "^13.3.10",
+    "@angular/forms": "^13.3.11",
     "@angular/material": "^13.3.8",
-    "@angular/platform-browser": "^13.3.10",
-    "@angular/platform-browser-dynamic": "^13.3.10",
+    "@angular/platform-browser": "^13.3.11",
+    "@angular/platform-browser-dynamic": "^13.3.11",
     "@angular/platform-server": "^13.3.10",
-    "@angular/router": "^13.3.10",
+    "@angular/router": "^13.3.11",
     "@types/d3": "^7.4.0",
     "@types/file-saver": "^2.0.5",
     "@types/pouchdb": "^6.4.0",
@@ -42,7 +42,7 @@
     "chart.js": "^3.8.0",
     "chartjs-adapter-moment": "^1.0.0",
     "chartjs-plugin-datalabels": "^2.0.0",
-    "core-js": "^3.22.7",
+    "core-js": "^3.22.8",
     "d3": "^7.4.4",
     "d3fc-sample": "^3.0.5",
     "data-forge": "^1.9.5",
@@ -66,11 +66,11 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^13.3.7",
     "@angular/cli": "^13.3.7",
-    "@angular/compiler-cli": "^13.3.10",
-    "@angular/localize": "^13.3.10",
+    "@angular/compiler-cli": "^13.3.11",
+    "@angular/localize": "^13.3.11",
     "@types/jasmine": "^4.0.3",
     "@types/jasminewd2": "^2.0.10",
-    "@types/node": "^14.18.18",
+    "@types/node": "^14.18.20",
     "codelyzer": "^6.0.2",
     "copyfiles": "^2.4.1",
     "cross-var": "^1.1.0",
@@ -91,6 +91,6 @@
     "puppeteer": "^3.3.0",
     "ts-node": "^9.1.1",
     "tslint": "^6.1.3",
-    "typescript": "^4.4.2"
+    "typescript": "4.4.4"
   }
 }
