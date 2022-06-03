@@ -50,8 +50,7 @@ export class ExportService {
 
   exportImage(base64Image: string, exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.PNG) {
-      const blob = new Blob([base64Image], { type: 'image/png' })
-      this.saveAs(blob, this.generateFileName(baseFileName, '.png'));
+      this.saveAs(base64Image, this.generateFileName(baseFileName, '.png'));
     } else {
       throw new Error('export format ' + exportFormat + ' is not supported');
     }
@@ -60,7 +59,7 @@ export class ExportService {
   private exportAsCSV(data: Object[], baseFileName: string): void {
     const csv = this.toCSV(data, ',');
     const blob: Blob = new Blob([csv], { type: ExportService.TYPE_CSV });
-    this.saveAs(blob, this.generateFileName(baseFileName, '.csv'));
+    this.saveAs(URL.createObjectURL(blob), this.generateFileName(baseFileName, '.csv'));
   }
 
   private toCSV(data: Object[], delimiter: string): string {
@@ -79,12 +78,12 @@ export class ExportService {
     const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob: Blob = new Blob([excelBuffer], { type: ExportService.TYPE_EXCEL });
-    this.saveAs(blob, this.generateFileName(baseFileName, '.xlsx'));
+    this.saveAs(URL.createObjectURL(blob), this.generateFileName(baseFileName, '.xlsx'));
   }
 
   private exportAsJSON(data: Object[], baseFileName: string): void {
     const blob: Blob = new Blob([JSON.stringify(data, undefined, '  ')], { type: ExportService.TYPE_JSON });
-    this.saveAs(blob, this.generateFileName(baseFileName, '.json'));
+    this.saveAs(URL.createObjectURL(blob), this.generateFileName(baseFileName, '.json'));
   }
 
   private generateFileName(baseFileName: string, extension: string): string {
@@ -92,11 +91,10 @@ export class ExportService {
     return baseFileName + '_' + formattedDate + extension;
   }
 
-  saveAs(blob: Blob, filename: string): void {
+  saveAs(url: string, filename: string): void {
     const a = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    a.setAttribute('href', url);
-    a.setAttribute('download', filename);
+    a.href = url;
+    a.download = filename;
     a.click();
   }
 

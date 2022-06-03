@@ -1,7 +1,10 @@
 <mat-progress-bar *ngIf="loading" mode="indeterminate" color="accent"></mat-progress-bar>
 <div id="div_margins" *ngIf="marginDivStyle && context.isShowResizableMargin()" mwlResizable [enableGhostResize]="true"
-   [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize"
-   [resizeEdges]="{ top: true, right: true, bottom: true, left: true }" (resizeEnd)="onMarginResizeEnd($event)">
+     [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize" (resizeEnd)="onMarginResizeEnd($event)">
+   <div class="resize-handle-top" mwlResizeHandle [resizeEdges]="{ top: true }"></div>
+   <div class="resize-handle-left" mwlResizeHandle [resizeEdges]="{ left: true }"></div>
+   <div class="resize-handle-right" mwlResizeHandle [resizeEdges]="{ right: true }"></div>
+   <div class="resize-handle-bottom" mwlResizeHandle [resizeEdges]="{ bottom: true }"></div>
 </div>
 <div id="div_chartjs">
    <canvas #canvas></canvas>
