@@ -6,7 +6,7 @@ import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import { Column, StatusType, SummaryContext, Route, DataType, Scene, ExportFormat } from 'app/shared/model';
+import { Column, StatusType, SummaryContext, Route, DataType, Scene, ExportFormat, ElementContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
@@ -351,14 +351,14 @@ describe('FlexCanvasComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Tet Chart';
-    chartContext.dataColumns = [findColumn('Amount')];
-    chartContext.splitColumns = [findColumn('Path')];
+    chartContext.dataColumns = [findColumn('Amount', chartContext)];
+    chartContext.splitColumns = [findColumn('Path', chartContext)];
     const graphContext = component.addGraph();
     graphContext.title = 'Tet Graph';
-    graphContext.groupByColumns = [findColumn('Level')];
+    graphContext.groupByColumns = [findColumn('Level', graphContext)];
     const summaryContext = component.addSummaryTable();
     summaryContext.title = 'Tet Summary';
-    summaryContext.dataColumns = [findColumn('Level')];
+    summaryContext.dataColumns = [findColumn('Level', graphContext)];
     const view = new ModelToConfigConverter().convert(Route.FLEX, 'test', component.elementContexts);
     const elementContexts = component.elementContexts;
     component.elementContexts = [];
@@ -374,8 +374,12 @@ describe('FlexCanvasComponent', () => {
 
     // given
     const summaryContext = component.addSummaryTable();
-    summaryContext.dataColumns = [findColumn('Level')];
-    summaryContext.groupByColumns = [findColumn('Path'), findColumn('Time'), findColumn('Amount')];
+    summaryContext.dataColumns = [findColumn('Level', summaryContext)];
+    summaryContext.groupByColumns = [
+      findColumn('Path', summaryContext),
+      findColumn('Time', summaryContext),
+      findColumn('Amount', summaryContext)
+    ];
     const view = new ModelToConfigConverter().convert(Route.FLEX, 'test', component.elementContexts);
     component.elementContexts = [];
 
@@ -507,8 +511,8 @@ describe('FlexCanvasComponent', () => {
   }));
   */
 
-  function findColumn(name: string): Column {
-    return scene.columns.find(c => c.name === name);
+  function findColumn(name: string, context: ElementContext): Column {
+    return context.columns.find(c => c.name === name);
   }
 
   function createInputDialogRef(): MatDialogRef<InputDialogComponent> {

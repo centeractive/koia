@@ -10,7 +10,7 @@ export class ModelToConfigConverter {
 
    convert(route: Route, viewName: string, elementContexts: ElementContext[]): View {
       const configElements: ViewElement[] = [];
-      elementContexts.forEach(c => configElements.push(this.toViewElement(c)))
+      elementContexts.forEach(c => configElements.push(this.toViewElement(c)));
       return {
          route: route,
          name: viewName,

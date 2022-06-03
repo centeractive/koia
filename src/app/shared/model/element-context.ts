@@ -145,15 +145,15 @@ export abstract class ElementContext {
       if (this._dataColumns.map(c => c.name).includes(columnName)) {
          return true;
       }
-      return this.groupByColumns.find(c => c.name === columnName) !== undefined;
+      return this._groupByColumns.find(c => c.name === columnName) !== undefined;
    }
 
    get groupByColumns(): Column[] {
       return this._groupByColumns.slice(0);
    }
 
-   set groupByColumns(groupByColumns: Column[]) {
-      this._groupByColumns = groupByColumns || [];
+   set groupByColumns(columns: Column[]) {
+      this._groupByColumns = columns || [];
       this.fireStructureChanged();
    }
 

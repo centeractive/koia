@@ -87,7 +87,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.configToModelConverter = new ConfigToModelConverter(this.columns);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
-      this.entriesSubscription = this.entries$.subscribe(entries => DateTimeUtils.defineTimeUnits(this.timeColumns, entries));
+      this.entriesSubscription = this.entries$
+         .subscribe(entries => DateTimeUtils.defineTimeUnits(this.timeColumns, entries));
    }
 
    addSummaryTable(): SummaryContext {

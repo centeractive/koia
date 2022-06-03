@@ -1,7 +1,7 @@
 #div_margins {
   position: absolute;
   border: 1px dashed green;
-  z-index: 1;
+  z-index: 9;
 }
 
 mwlResizable {

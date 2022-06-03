@@ -1,4 +1,4 @@
-import { ElementContext, SummaryContext, Column } from 'app/shared/model';
+import { ElementContext, SummaryContext, Column, DataType } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType, ViewElement } from 'app/shared/model/view-config';
@@ -13,6 +13,9 @@ export class ConfigToModelConverter {
    constructor(private columns: Column[]) { }
 
    convert(configElements: ViewElement[]): ElementContext[] {
+
+      // console.log('toModel', configElements.map(e => this.toElementContext(e)));
+
       return configElements.map(e => this.toElementContext(e));
    }
 
@@ -66,11 +69,21 @@ export class ConfigToModelConverter {
       to.title = from.title;
       to.dataColumns = from.dataColumns.map(dc => to.columns.find(c => dc.name === c.name));
       to.splitColumns = from.splitColumns.map(sc => to.columns.find(c => sc.name === c.name));
-      to.groupByColumns = from.groupByColumns.map(gbc => to.columns.find(c => gbc.name === c.name));
+      to.groupByColumns = from.groupByColumns.map(gbc => {
+         const groupByColumn = to.columns.find(c => gbc.name === c.name);
+         return this.furnishGropByColumn(gbc, groupByColumn);
+      });
       to.gridColumnSpan = from.gridColumnSpan;
       to.gridRowSpan = from.gridRowSpan;
       to.setSize(from.width, from.height);
       to.aggregations = from.aggregations;
       to.valueGroupings = from.valueGroupings;
+   }
+
+   private furnishGropByColumn(from: Column, to: Column) {
+      if (from.dataType === DataType.TIME) {
+         to.groupingTimeUnit = from.groupingTimeUnit;
+      }
+      return to;
    }
 }

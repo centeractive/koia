@@ -1,4 +1,4 @@
-import { Route, Aggregation, StatusType, Scene, DataType, Column } from '../../model';
+import { Route, Aggregation, StatusType, Scene, DataType, Column, TimeUnit } from '../../model';
 import { Chart } from '../view-persistence/chart.type';
 import { ViewPersistenceService } from './view-persistence.service';
 import { DBService } from '../backend';
@@ -148,7 +148,7 @@ describe('ViewPersistenceService', () => {
     expect(views).toEqual([gridView]);
   });
 
-  it('#saveView should add view when no one with same route exists', () => {
+  it('#saveView should add view when none with same route exists', () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
@@ -163,7 +163,7 @@ describe('ViewPersistenceService', () => {
     expect(service.findViews(scene, Route.GRID)).toEqual([gridView]);
   });
 
-  it('#saveView should add view when no one with same name exists', () => {
+  it('#saveView should add view when none with same name exists', () => {
 
     // given
     const newGridView = createGridView('new', NOW, summary);
@@ -222,6 +222,7 @@ describe('ViewPersistenceService', () => {
   function createGridView(name: string, modifiedTime: number, element: ViewElement): View {
     return { route: Route.GRID, name: name, modifiedTime: modifiedTime, gridColumns: 3, gridCellRatio: '1:1', elements: [element] };
   }
+
 });
 
 

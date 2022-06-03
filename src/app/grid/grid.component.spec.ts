@@ -5,7 +5,7 @@ import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, Observable, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import { Column, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat } from 'app/shared/model';
+import { Column, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat, TimeUnit, ElementContext } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { StatusComponent } from 'app/shared/component/status/status.component';
@@ -216,9 +216,9 @@ describe('GridComponent', () => {
 
     // given
     const graphContext = component.addGraph();
-    graphContext.groupByColumns = [findColumn('Level')];
+    graphContext.groupByColumns = [findColumn('Level', graphContext)];
     const chartContext = component.addChart();
-    chartContext.dataColumns = [findColumn('Level')];
+    chartContext.dataColumns = [findColumn('Level', chartContext)];
     const query = new Query();
     query.setFullTextFilter('abc');
 
@@ -305,9 +305,9 @@ describe('GridComponent', () => {
 
     // given
     const chartContext = component.addChart();
-    chartContext.dataColumns = [findColumn('Level')];
+    chartContext.dataColumns = [findColumn('Level', chartContext)];
     const graphContext = component.addGraph();
-    graphContext.groupByColumns = [findColumn('Level')];
+    graphContext.groupByColumns = [findColumn('Level', graphContext)];
     component.addSummaryTable();
     component.elementContexts.forEach(c => spyOn(c, 'fireSizeChanged'));
 
@@ -372,11 +372,13 @@ describe('GridComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Test Chart';
-    chartContext.dataColumns = [findColumn('Amount')];
-    chartContext.splitColumns = [findColumn('Path')];
+    chartContext.dataColumns = [findColumn('Amount', chartContext)];
+    chartContext.splitColumns = [findColumn('Path', chartContext)];
     const graphContext = component.addGraph();
     graphContext.title = 'Test Graph';
-    graphContext.groupByColumns = [findColumn('Level')];
+    const timeColumne = findColumn('Time', graphContext);
+    timeColumne.groupingTimeUnit = TimeUnit.HOUR;
+    graphContext.groupByColumns = [timeColumne, findColumn('Level', graphContext)];
     const view = new ModelToConfigConverter().convert(Route.GRID, 'test', component.elementContexts);
     view.gridColumns = 4;
     view.gridCellRatio = '4:3';
@@ -467,18 +469,18 @@ describe('GridComponent', () => {
   /**
    * TODO: fix me
    *
-  it('#saveAs should export data when summary context is provided', fakeAsync(() => {
-
+  it('#saveAs should export data when graph context is provided', fakeAsync(() => {
+  
     // given
     spyOn(component.sidenav, 'open').and.returnValue(Promise.resolve());
     const summaryContext = component.addSummaryTable();
     spyOn(exportService, 'exportData');
-
+  
     // when
     component.saveAs(summaryContext, ExportFormat.EXCEL);
     flush();
     fixture.detectChanges();
-
+  
     // then
     expect(exportService.exportData).toHaveBeenCalled();
   }));
@@ -490,8 +492,8 @@ describe('GridComponent', () => {
     }
   }
 
-  function findColumn(name: string): Column {
-    return scene.columns.find(c => c.name === name);
+  function findColumn(name: string, context: ElementContext): Column {
+    return context.columns.find(c => c.name === name);
   }
 
   function createInputDialogRef(): MatDialogRef<InputDialogComponent> {

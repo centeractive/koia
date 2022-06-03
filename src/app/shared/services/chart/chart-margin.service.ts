@@ -45,7 +45,7 @@ export class ChartMarginService {
          top: (margin.top + topOffset) + 'px',
          right: margin.right + 'px',
          bottom: margin.bottom + 'px',
-         left: margin.left + 'px',
+         left: margin.left + 'px'
       };
    }
 

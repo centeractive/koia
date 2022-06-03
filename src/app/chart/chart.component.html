@@ -1,4 +1,6 @@
 <mat-progress-bar *ngIf="loading" mode="indeterminate" color="accent"></mat-progress-bar>
+
+<!-- TODO: dashed border disappears during resize -->
 <div id="div_margins" *ngIf="marginDivStyle && context.isShowResizableMargin()" mwlResizable [enableGhostResize]="true"
      [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize" (resizeEnd)="onMarginResizeEnd($event)">
    <div class="resize-handle-top" mwlResizeHandle [resizeEdges]="{ top: true }"></div>
