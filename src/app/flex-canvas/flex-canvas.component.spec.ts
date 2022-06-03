@@ -6,8 +6,9 @@ import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import { Column, StatusType, SummaryContext, GraphContext, Route, DataType, Scene, ExportFormat } from 'app/shared/model';
+import { Column, StatusType, SummaryContext, Route, DataType, Scene, ExportFormat } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { GraphContext } from 'app/shared/model/graph';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';

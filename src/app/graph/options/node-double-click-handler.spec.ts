@@ -1,5 +1,6 @@
 import { NodeDoubleClickHandler } from './node-double-click-handler';
-import { Query, DataType, Column, TimeUnit, GraphNode, PropertyFilter, GraphContext, Operator } from 'app/shared/model';
+import { Query, DataType, Column, TimeUnit, PropertyFilter, Operator } from 'app/shared/model';
+import { GraphContext, GraphNode } from 'app/shared/model/graph';
 import { RawDataRevealService } from 'app/shared/services';
 
 describe('NodeDoubleClickHandler', () => {

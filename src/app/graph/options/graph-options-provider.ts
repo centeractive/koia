@@ -1,5 +1,4 @@
-import { GraphContext } from '../../shared/model';
-import { GraphNode } from '../../shared/model/graph-node.type';
+import { GraphContext, GraphNode } from 'app/shared/model/graph';
 import { GraphUtils } from './graph-utils';
 import { NodeDoubleClickHandler } from './node-double-click-handler';
 import { schemePaired } from 'd3';

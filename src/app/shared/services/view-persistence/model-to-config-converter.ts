@@ -1,11 +1,10 @@
-import { ElementContext, GraphContext, SummaryContext, Route } from '../../model';
+import { ElementContext, SummaryContext, Route } from 'app/shared/model/';
+import { GraphContext } from 'app/shared/model/graph';
 import { ChartContext } from 'app/shared/model/chart';
-import { ViewElement } from '../../model/view-config/view-element.type';
-import { View } from '../../model/view-config/view.type';
+import { ElementType, ViewElement, View } from 'app/shared/model/view-config';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
-import { ElementType } from 'app/shared/model/view-config';
 
 export class ModelToConfigConverter {
 

@@ -3,7 +3,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { GraphSideBarComponent } from './graph-side-bar.component';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Column, GraphContext, DataType, Scene, TimeUnit } from 'app/shared/model';
+import { Column, DataType, Scene, TimeUnit } from 'app/shared/model';
+import { GraphContext } from 'app/shared/model/graph';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
@@ -63,7 +64,7 @@ describe('GraphSideBarComponent', () => {
     component.gridColumns = 4;
     component.elementCount = 3;
     component.elementPosition = 2;
-    component.ngOnChanges({ context: new SimpleChange( undefined, context, true ) });
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
     fixture.detectChanges();
   });
 

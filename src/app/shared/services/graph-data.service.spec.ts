@@ -1,5 +1,6 @@
 import { GraphDataService } from './graph-data.service';
-import { Column, GraphContext, PropertyFilter, GraphNode, DataType, TimeUnit } from '../model';
+import { Column, PropertyFilter, DataType, TimeUnit } from 'app/shared/model';
+import { GraphContext, GraphNode } from 'app/shared/model/graph';
 
 describe('GraphDataService', () => {
 

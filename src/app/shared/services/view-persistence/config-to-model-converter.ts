@@ -1,11 +1,11 @@
-import { ElementContext, GraphContext, SummaryContext, Column } from '../../model';
+import { ElementContext, SummaryContext, Column } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
-import { ViewElement } from '../../model/view-config/view-element.type';
+import { GraphContext } from 'app/shared/model/graph';
+import { ElementType, ViewElement } from 'app/shared/model/view-config';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
 import { CommonUtils } from 'app/shared/utils';
-import { ElementType } from 'app/shared/model/view-config';
 import { ColorProviderFactory } from 'app/shared/color';
 
 export class ConfigToModelConverter {

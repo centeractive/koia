@@ -1,5 +1,6 @@
 import { DataFrame, IDataFrame } from 'data-forge';
-import { GraphContext, Column, PropertyFilter, GraphNode, GraphLink, DataType } from '../model';
+import { Column, PropertyFilter, DataType } from 'app/shared/model';
+import { GraphContext, GraphNode, GraphLink } from 'app/shared/model/graph';
 import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
 import { Injectable } from '@angular/core';
 

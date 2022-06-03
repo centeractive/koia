@@ -1,9 +1,6 @@
-import { GraphContext, GraphNode } from 'app/shared/model';
+import { select, forceSimulation, forceManyBody, forceCenter, forceLink, forceX, forceY, drag } from 'd3';
+import { GraphContext, GraphNode } from 'app/shared/model/graph';
 import { GraphData, RawDataRevealService } from 'app/shared/services';
-import {
-    select, forceSimulation, forceManyBody, forceCenter, forceLink,
-    scaleOrdinal, schemeCategory10, drag, forceX, forceY
-} from 'd3';
 import { GraphUtils } from '../options/graph-utils';
 import { ColorProvider } from 'app/shared/color';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';

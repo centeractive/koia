@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-
 import { DialogService } from './dialog.service';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogData, ConfirmDialogComponent } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
@@ -7,11 +6,11 @@ import { InputDialogComponent, InputDialogData } from '../component/input-dialog
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog.component';
 import { SceneFactory } from '../test';
-import { Protocol, GraphContext, SummaryContext } from '../model';
+import { Protocol, SummaryContext } from 'app/shared/model';
+import { GraphContext } from 'app/shared/model/graph';
 import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
-import { View } from '../model/view-config';
-import { ChartContext } from '../model/chart';
-
+import { View } from 'app/shared/model/view-config';
+import { ChartContext } from 'app/shared/model/chart';
 
 describe('DialogService', () => {
 
@@ -94,7 +93,7 @@ class ViewController implements ViewLauncherContext {
     return [];
   }
 
-  loadView(view: View): void {}
+  loadView(view: View): void { }
 
   addSummaryTable(): SummaryContext {
     return null;

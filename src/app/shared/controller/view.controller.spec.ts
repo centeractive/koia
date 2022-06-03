@@ -1,5 +1,5 @@
 import { ChartContext, ChartType } from '../model/chart';
-import { GraphContext } from '../model';
+import { GraphContext } from '../model/graph';
 import { MatSidenav } from '@angular/material/sidenav';
 import { View } from '../model/view-config';
 import { ViewController } from './view.controller';

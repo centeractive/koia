@@ -4,7 +4,8 @@ import { ViewLauncherDialogComponent } from './view-launcher-dialog.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ViewLauncherContext } from './view-launcher-context.type.';
 import { View } from 'app/shared/model/view-config';
-import { SummaryContext, GraphContext } from 'app/shared/model';
+import { SummaryContext } from 'app/shared/model';
+import { GraphContext } from 'app/shared/model/graph';
 import { ChartContext } from 'app/shared/model/chart';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
@@ -23,14 +24,14 @@ describe('ViewLauncherDialogComponent', () => {
     };
     dialogData = new ViewController();
     TestBed.configureTestingModule({
-      declarations: [ ViewLauncherDialogComponent ],
+      declarations: [ViewLauncherDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
@@ -49,7 +50,7 @@ class ViewController implements ViewLauncherContext {
     return [];
   }
 
-  loadView(view: View): void {}
+  loadView(view: View): void { }
 
   addSummaryTable(): SummaryContext {
     return null;

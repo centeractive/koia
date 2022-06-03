@@ -1,11 +1,12 @@
 import { RawDataRevealService } from 'app/shared/services';
-import { GraphNode, GraphContext, PropertyFilter, DataType, Operator, Query, Column } from 'app/shared/model';
+import { PropertyFilter, DataType, Operator, Query, Column } from 'app/shared/model';
+import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { GraphUtils } from './graph-utils';
 import { ColumnNameConverter } from 'app/shared/utils';
 
 export class NodeDoubleClickHandler {
 
-   constructor(private rawDataRevealService: RawDataRevealService) {}
+   constructor(private rawDataRevealService: RawDataRevealService) { }
 
    /**
     * displays raw data of the specified graph node

@@ -1,4 +1,5 @@
-import { GraphNode, GraphContext, Column, DataType } from 'app/shared/model';
+import { Column, DataType } from 'app/shared/model';
+import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { DateTimeUtils } from 'app/shared/utils/date-time-utils';
 import { ColumnNameConverter } from 'app/shared/utils';
 

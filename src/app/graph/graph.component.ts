@@ -3,7 +3,8 @@ import {
   ViewEncapsulation, Output, EventEmitter
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ChangeEvent, GraphContext } from '../shared/model';
+import { ChangeEvent } from 'app/shared/model';
+import { GraphContext } from 'app/shared/model/graph';
 import { GraphOptionsProvider } from './options/graph-options-provider';
 import { CommonUtils } from 'app/shared/utils';
 import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';

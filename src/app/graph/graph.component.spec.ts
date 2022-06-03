@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, discardPeriodicTasks } from '@angular/core/testing';
 import { of, Observable } from 'rxjs';
 import { GraphComponent } from './graph.component';
-import { GraphContext, Column, DataType } from 'app/shared/model';
+import { Column, DataType } from 'app/shared/model';
+import { GraphContext } from 'app/shared/model/graph';
 import { SimpleChange } from '@angular/core';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { RouterTestingModule } from '@angular/router/testing';

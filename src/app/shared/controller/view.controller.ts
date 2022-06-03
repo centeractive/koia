@@ -1,4 +1,5 @@
-import { ElementContext, Column, Query, SummaryContext, GraphContext, Route, Scene, DataType, ExportFormat } from '../model';
+import { ElementContext, Column, Query, SummaryContext, Route, Scene, DataType, ExportFormat } from '../model';
+import { GraphContext } from '../model/graph';
 import { Observable, Subscription } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit, Directive } from '@angular/core';

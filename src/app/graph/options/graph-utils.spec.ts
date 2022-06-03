@@ -1,4 +1,5 @@
-import { GraphNode, GraphContext, DataType, Column, TimeUnit } from 'app/shared/model';
+import { DataType, Column, TimeUnit } from 'app/shared/model';
+import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { GraphUtils } from './graph-utils';
 import { DatePipe } from '@angular/common';
 
@@ -112,7 +113,7 @@ describe('GraphUtils', () => {
       const columnNames = GraphUtils.collectNonTimeColumnNames(levelNode, graphContext);
 
       // then
-      expect(columnNames).toEqual(['Path', 'Level' ]);
+      expect(columnNames).toEqual(['Path', 'Level']);
    });
 
    it('#formattedValueOf should return formatted time', () => {

@@ -16,7 +16,10 @@ describe('DBService', () => {
   let dbService: DBService;
   let initialScene: Scene;
 
-  beforeAll(() => spyOn(console, 'log'));
+  beforeAll(() => {
+    spyOn(console, 'log');
+    spyOn(console, 'warn');
+  });
 
   beforeEach(async () => {
     new CouchDBConfig().reset();
@@ -41,8 +44,6 @@ describe('DBService', () => {
       providers: [CouchDBService, DBService]
     });
     couchDBService = TestBed.inject(CouchDBService);
-    spyOn(console, 'log');
-    spyOn(console, 'warn');
   });
 
   beforeEach((done) => {

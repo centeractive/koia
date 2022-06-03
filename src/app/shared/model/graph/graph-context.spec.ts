@@ -1,8 +1,8 @@
 import { fakeAsync, flush } from '@angular/core/testing';
 import { GraphContext } from './graph-context';
-import { ChangeEvent } from './change-event.enum';
-import { Column } from './column.type';
-import { DataType } from './data-type.enum';
+import { ChangeEvent } from '../change-event.enum';
+import { Column } from '../column.type';
+import { DataType } from '../data-type.enum';
 
 describe('GraphContext', () => {
 

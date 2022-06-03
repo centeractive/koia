@@ -1,7 +1,5 @@
-import { ElementContext } from './element-context';
-import { Column } from './column.type';
-import { ExportFormat } from './export-format.enum';
-import { ColorProviderFactory, ColorProvider } from '../color';
+import { ElementContext, Column, ExportFormat } from '..';
+import { ColorProviderFactory, ColorProvider } from 'app/shared/color';
 
 /**
  * Context for d3-force graph

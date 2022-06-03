@@ -1,5 +1,6 @@
 import { GraphOptionsProvider } from './graph-options-provider';
-import { GraphContext, GraphNode, DataType, Column, TimeUnit } from 'app/shared/model';
+import { DataType, Column, TimeUnit } from 'app/shared/model';
+import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { NodeDoubleClickHandler } from './node-double-click-handler';
 
 describe('GraphOptionsProvider', () => {
