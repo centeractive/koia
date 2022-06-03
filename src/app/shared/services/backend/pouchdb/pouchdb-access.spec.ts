@@ -8,7 +8,7 @@ describe('PouchDBAccess', () => {
    const dbAccess = new PouchDBAccess();
 
    beforeAll(() => {
-      spyOn(console, 'log').and.callFake(m => null);
+      spyOn(console, 'log');
    });
 
    beforeEach(async () => {

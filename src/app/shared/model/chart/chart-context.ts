@@ -6,12 +6,9 @@ import { ChartType } from './chart-type';
 import { SeriesNameConverter } from '../../services/chart/series-name-converter';
 import { Margin } from '.';
 import { Chart, ChartData } from 'chart.js';
-import { CategoricalColorScheme, ColorProvider } from 'app/shared/color';
-import { CategoricalColorProvider } from 'app/shared/color/categorical-color-provider';
+import { ColorProvider, ColorProviderFactory } from 'app/shared/color';
 
 export class ChartContext extends ElementContext {
-
-   private static currColorProvider: ColorProvider = new CategoricalColorProvider(CategoricalColorScheme.TABLEAU);
 
    private _chartType: string;
    private _colorProvider: ColorProvider;
@@ -32,7 +29,7 @@ export class ChartContext extends ElementContext {
 
    constructor(columns: Column[], chartType: string, margin: Margin) {
       super(columns);
-      this._colorProvider = ChartContext.currColorProvider;
+      this._colorProvider = ColorProviderFactory.create();
       this._chartType = chartType;
       this._margin = margin;
       this._showLegend = true;
@@ -70,9 +67,8 @@ export class ChartContext extends ElementContext {
    }
 
    set colorProvider(colorProvider: ColorProvider) {
-      ChartContext.currColorProvider = colorProvider;
-      if (this._colorProvider.schemeType !== colorProvider.schemeType ||
-         this._colorProvider.scheme !== colorProvider.scheme) {
+      if (this._colorProvider.colorScheme.type !== colorProvider.colorScheme.type ||
+         this._colorProvider.colorScheme.scheme !== colorProvider.colorScheme.scheme) {
          this._colorProvider = colorProvider;
          this.fireLookChanged();
       }

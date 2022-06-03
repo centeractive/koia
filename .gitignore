@@ -4,9 +4,12 @@
 /dist
 /tmp
 /out-tsc
+/bazel-out
 
 # dependencies
 /node_modules
+npm-debug.log
+yarn-error.log
 
 # IDEs and editors
 /.idea
@@ -23,6 +26,7 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.history/*
 
 # misc
 /.angular/cache

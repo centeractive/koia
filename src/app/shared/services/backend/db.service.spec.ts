@@ -16,6 +16,8 @@ describe('DBService', () => {
   let dbService: DBService;
   let initialScene: Scene;
 
+  beforeAll(() => spyOn(console, 'log'));
+
   beforeEach(async () => {
     new CouchDBConfig().reset();
     columns = [
@@ -39,8 +41,8 @@ describe('DBService', () => {
       providers: [CouchDBService, DBService]
     });
     couchDBService = TestBed.inject(CouchDBService);
-    spyOn(console, 'log').and.callFake(() => null);
-    spyOn(console, 'warn').and.callFake(() => null);
+    spyOn(console, 'log');
+    spyOn(console, 'warn');
   });
 
   beforeEach((done) => {

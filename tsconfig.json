@@ -12,11 +12,11 @@
     "typeRoots": [
       "node_modules/@types"
     ],
+    "module": "es2020",
     "lib": [
-      "es2018",
+      "es2020",
       "dom"
-    ],
-    "module": "es2020"
+    ]
   },
   "angularCompilerOptions": {
     "strictTemplates": false

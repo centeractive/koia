@@ -27,12 +27,12 @@ export class GraphSideBarComponent extends SideBarController implements OnChange
   }
 
   private defineSelectedColorScheme(): void {
-    const colorProvider = this.context.colorProvider;
+    const cs = this.context.colorProvider.colorScheme;
     this.selectedColorScheme = this.colorSchemes
-      .find(s => s.type == colorProvider.schemeType && s.scheme == colorProvider.scheme);
+      .find(s => s.type == cs.type && s.scheme == cs.scheme);
   }
 
   colorSchemeSelectionChanged(): void {
-    this.context.colorProvider = ColorProviderFactory.create(this.selectedColorScheme.type, this.selectedColorScheme.scheme);
+    this.context.colorProvider = ColorProviderFactory.create(this.selectedColorScheme);
   }
 }

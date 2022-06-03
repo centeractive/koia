@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
 
 import { GridComponent } from './grid.component';
-import { Component, NO_ERRORS_SCHEMA, ElementRef } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { of, Observable, throwError } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
@@ -9,7 +9,6 @@ import { Column, GraphContext, StatusType, Query, Route, SummaryContext, DataTyp
 import { ChartContext } from 'app/shared/model/chart';
 import { StatusComponent } from 'app/shared/component/status/status.component';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
-import { ViewController } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
@@ -24,6 +23,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogRef } from '@angular/material/dialog';
+import * as _ from 'lodash';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -389,7 +389,7 @@ describe('GridComponent', () => {
     // then
     expect(component.gridColumns).toBe(4);
     expect(component.gridCellRatio).toBe('4:3');
-    expect(component.elementContexts).toEqual(elementContexts);
+    expect(_.isEqualWith(component.elementContexts, elementContexts, ignoreFunctions)).toBeTrue();
   });
 
   it('#saveView should not save view when input dialog is canceld', () => {
@@ -482,6 +482,12 @@ describe('GridComponent', () => {
     expect(exportService.exportData).toHaveBeenCalled();
   }));
   */
+
+  function ignoreFunctions(objValue: any, otherValue: any): boolean {
+    if (_.isFunction(objValue) && _.isFunction(otherValue)) {
+      return true;
+    }
+  }
 
   function findColumn(name: string): Column {
     return scene.columns.find(c => c.name === name);

@@ -10,8 +10,6 @@ import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { CouchDBConstants } from '../backend/couchdb';
 import { Column, DataType } from 'app/shared/model';
-import { CategoricalColorScheme } from '../../color';
-import { CategoricalColorProvider } from 'app/shared/color/categorical-color-provider';
 
 @Injectable({
   providedIn: 'root'

@@ -1,21 +1,20 @@
 import { NumberUtils } from 'app/shared/utils';
-import { ColorProvider, ColorSchemeType, ColorConverter, SequentialColorScheme, ColorUtils } from '.';
+import { ColorProvider, ColorSchemeType, ColorScheme, ColorConverter, SequentialColorScheme, ColorUtils } from '.';
 
 export class SequentialColorProvider implements ColorProvider {
 
     private colorFunction: (n: number) => string;
 
     constructor(private _scheme: SequentialColorScheme) {
-        this.colorFunction = ColorUtils.sequentialColorFunctionOf(_scheme);
+        this.colorFunction = ColorUtils.colorFunctionOf(_scheme);
     }
 
-    get schemeType(): ColorSchemeType {
-        return ColorSchemeType.SEQUENTIAL;
+    get colorScheme(): ColorScheme {
+        return {
+            type: ColorSchemeType.SEQUENTIAL,
+            scheme: this._scheme
+        }
     }
-
-    get scheme(): SequentialColorScheme {
-        return this._scheme;
-    };
 
     rgbColors(count: number): string[] {
         return NumberUtils.rangeFloatArray(count)

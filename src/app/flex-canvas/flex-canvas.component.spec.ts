@@ -23,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogRef } from '@angular/material/dialog';
+import * as _ from 'lodash';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -365,7 +366,7 @@ describe('FlexCanvasComponent', () => {
     component.loadView(view);
 
     // then
-    expect(component.elementContexts).toEqual(elementContexts);
+    expect(_.isEqualWith(component.elementContexts, elementContexts, ignoreFunctions)).toBeTrue();
   });
 
   it('#loadView should restore summary context column hierarchy', () => {
@@ -471,6 +472,12 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
+
+  function ignoreFunctions(objValue: any, otherValue: any): boolean {
+    if (_.isFunction(objValue) && _.isFunction(otherValue)) {
+      return true;
+    }
+  }
 
   function resizeEvent(bounds: { width: number, height: number }): ResizeEvent {
     return {

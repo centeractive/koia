@@ -1,7 +1,7 @@
 import { ElementContext } from './element-context';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
-import { CategoricalColorProvider, CategoricalColorScheme, ColorProvider } from '../color';
+import { ColorProviderFactory, ColorProvider } from '../color';
 
 /**
  * Context for d3-force graph
@@ -10,9 +10,7 @@ import { CategoricalColorProvider, CategoricalColorScheme, ColorProvider } from 
  */
 export class GraphContext extends ElementContext {
 
-   private static currColorProvider: ColorProvider = new CategoricalColorProvider(CategoricalColorScheme.TABLEAU);
-
-   private _colorProvider: ColorProvider = GraphContext.currColorProvider;
+   private _colorProvider: ColorProvider;
    private _linkStrength = 0.3;
    private _friction = 0.9;
    private _linkDist = 20;
@@ -23,6 +21,7 @@ export class GraphContext extends ElementContext {
 
    constructor(columns: Column[],) {
       super(columns);
+      this._colorProvider = ColorProviderFactory.create();
    }
 
    get colorProvider(): ColorProvider {
@@ -30,9 +29,8 @@ export class GraphContext extends ElementContext {
    }
 
    set colorProvider(colorProvider: ColorProvider) {
-      GraphContext.currColorProvider = colorProvider;
-      if (this._colorProvider.schemeType !== colorProvider.schemeType ||
-         this._colorProvider.scheme !== colorProvider.scheme) {
+      if (this._colorProvider.colorScheme.type !== colorProvider.colorScheme.type ||
+         this._colorProvider.colorScheme.scheme !== colorProvider.colorScheme.scheme) {
          this._colorProvider = colorProvider;
          this.fireLookChanged();
       }

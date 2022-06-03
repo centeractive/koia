@@ -57,7 +57,7 @@ describe('SceneComponent', () => {
   });
 
   beforeEach(waitForAsync(() => {
-    spyOn(console, 'log').and.callFake(s => null);
+    spyOn(console, 'log');
     dbService = new DBService(null);
     TestBed.configureTestingModule({
       declarations: [SceneComponent, ColumnMappingComponent],

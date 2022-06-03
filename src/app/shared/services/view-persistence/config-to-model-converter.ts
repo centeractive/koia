@@ -30,22 +30,18 @@ export class ConfigToModelConverter {
    private toChartContext(chart: Chart): ChartContext {
       const context = new ChartContext(this.clonedColumns(), chart.chartType, chart.margin);
       this.copy(chart, context);
+      context.colorProvider = ColorProviderFactory.create(chart.colorScheme);
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
       context.xLabelRotation = chart.xLabelRotation;
       context.stacked = chart.stacked;
-      if (chart.colorScheme) {
-         context.colorProvider = ColorProviderFactory.create(chart.colorScheme.type, chart.colorScheme.scheme);
-      }
       return context;
    }
 
    private toGraphContext(graph: Graph): GraphContext {
       const context = new GraphContext(this.clonedColumns());
       this.copy(graph, context);
-      if (graph.colorScheme) {
-         context.colorProvider = ColorProviderFactory.create(graph.colorScheme.type, graph.colorScheme.scheme);
-      }
+      context.colorProvider = ColorProviderFactory.create(graph.colorScheme);
       context.linkStrength = graph.linkStrength;
       context.friction = graph.friction;
       context.linkDist = graph.linkDist;

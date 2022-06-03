@@ -11,13 +11,13 @@ describe('CouchDBService', () => {
    let couchDBService: CouchDBService;
 
    beforeAll(async () => {
+      spyOn(console, 'log');
       config.reset();
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
       });
       couchDBService = TestBed.inject(CouchDBService);
-      spyOn(console, 'log').and.callFake(() => null);
    });
 
    beforeEach(async () => {

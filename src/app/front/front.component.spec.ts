@@ -47,7 +47,7 @@ describe('FrontComponent', () => {
   let fixture: ComponentFixture<FrontComponent>;
 
   beforeEach(waitForAsync(() => {
-    spyOn(console, 'log').and.callFake(s => null);
+    spyOn(console, 'log');
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
@@ -383,7 +383,7 @@ describe('FrontComponent (external invocation)', () => {
   let router: Router;
 
   beforeEach(waitForAsync(() => {
-    spyOn(console, 'log').and.callFake(s => null);
+    spyOn(console, 'log');
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],

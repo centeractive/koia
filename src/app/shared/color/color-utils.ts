@@ -1,58 +1,60 @@
 import {
     interpolateCool, interpolatePlasma, interpolateRainbow, interpolateSinebow, interpolateSpectral,
-    interpolateTurbo, interpolateWarm, schemeAccent, schemeCategory10, schemePaired, schemeSet1, schemeTableau10
+    interpolateTurbo, interpolateWarm, schemeAccent, schemeCategory10, schemeDark2, schemePaired, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3, schemeTableau10
 } from 'd3';
 import { ColorScheme, ColorSchemeType, CategoricalColorScheme, SequentialColorScheme } from '.';
 
-/**
- * @see https://github.com/d3/d3-scale-chromatic
- */
 export class ColorUtils {
 
     static collectAllColorSchemes(): ColorScheme[] {
         return [
-            ...ColorUtils.allCategoricalColorSchemes().map(scheme => ({ type: ColorSchemeType.CATEGORICAL, scheme })),
-            ...ColorUtils.allSequentialColorScheme().map(scheme => ({ type: ColorSchemeType.SEQUENTIAL, scheme })),
+            ...this.allCategoricalColorSchemes().map(scheme => ({ type: ColorSchemeType.CATEGORICAL, scheme })),
+            ...this.allSequentialColorScheme().map(scheme => ({ type: ColorSchemeType.SEQUENTIAL, scheme })),
         ];
     }
 
-    /**
-     * @returns an array of all [[ColorSchemeType]]s
-     */
-    static allColorSchemeTypes(): ColorSchemeType[] {
-        return Object.keys(ColorSchemeType).map(key => ColorSchemeType[key]);
-    }
-
-    /**
-     * @returns an array of all [[CategoricalColorScheme]]s
-     */
     static allCategoricalColorSchemes(): CategoricalColorScheme[] {
         return Object.keys(CategoricalColorScheme).map(key => CategoricalColorScheme[key]);
     }
 
-    /**
-     * @returns an array of all [[SequentialColorScheme]]s
-     */
     static allSequentialColorScheme(): SequentialColorScheme[] {
         return Object.keys(SequentialColorScheme).map(key => SequentialColorScheme[key]);
     }
 
-    static categoricalColorsOf(scheme: CategoricalColorScheme): ReadonlyArray<string> {
+    /**
+     * @see https://github.com/d3/d3-scale-chromatic
+    */
+    static colorsOf(scheme: CategoricalColorScheme): ReadonlyArray<string> {
         switch (scheme) {
             case CategoricalColorScheme.ACCENT:
                 return schemeAccent;
-            case CategoricalColorScheme.DISTINCT:
+            case CategoricalColorScheme.CATEGORY_10:
                 return schemeCategory10;
+            case CategoricalColorScheme.DARK_2:
+                return schemeDark2;
             case CategoricalColorScheme.PAIRED:
                 return schemePaired;
-            case CategoricalColorScheme.TABLEAU:
+            case CategoricalColorScheme.PASTEL_1:
+                return schemePastel1;
+            case CategoricalColorScheme.PASTEL_2:
+                return schemePastel2;
+            case CategoricalColorScheme.SET_1:
+                return schemeSet1;
+            case CategoricalColorScheme.SET_2:
+                return schemeSet2;
+            case CategoricalColorScheme.SET_3:
+                return schemeSet3;
+            case CategoricalColorScheme.TABLEAU_10:
                 return schemeTableau10;
             default:
-                return schemeSet1;
+                throw new Error('no colors defined for scheme: ' + scheme);
         }
     }
 
-    static sequentialColorFunctionOf(scheme: SequentialColorScheme): (n: number) => string {
+    /**
+     * @see https://github.com/d3/d3-scale-chromatic
+     */
+    static colorFunctionOf(scheme: SequentialColorScheme): (n: number) => string {
         switch (scheme) {
             case SequentialColorScheme.COOL:
                 return interpolateCool;
@@ -69,7 +71,7 @@ export class ColorUtils {
             case SequentialColorScheme.WARM:
                 return interpolateWarm;
             default:
-                return interpolateTurbo;
+                throw new Error('no color function defined for scheme: ' + scheme);
         }
     }
 }

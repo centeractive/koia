@@ -92,7 +92,8 @@ describe('GraphComponent', () => {
     fixture.detectChanges();
     flush();
 
-    // then
+    // then    
+    discardPeriodicTasks();
     const joc = jasmine.objectContaining;
     const root = { index: 0, parent: null, group: 0, name: '', value: '', info: null };
     const child1 = { index: 1, parent: joc(root), group: 1, name: 't1', value: 'a', info: '1' };
@@ -108,8 +109,6 @@ describe('GraphComponent', () => {
     expect(component.graphData.links[0].target.index).toBe(child1.index);
     expect(component.graphData.links[1].source.index).toBe(root.index);
     expect(component.graphData.links[1].target.index).toBe(child2.index);
-
-    discardPeriodicTasks();
   }));
 
   it('should create graph options when size changes', fakeAsync(() => {
@@ -149,6 +148,7 @@ describe('GraphComponent', () => {
     flush();
 
     // then
+    discardPeriodicTasks();
     const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES.toLocaleString() + ' nodes exceeded.' +
       '\n\nPlease choose chart instead or apply/refine data filtering.';
     expect(component.onWarning.emit).toHaveBeenCalledWith(msg);

@@ -1,10 +1,8 @@
-import { ColorSchemeType, CategoricalColorScheme, SequentialColorScheme } from '.';
+import { ColorScheme } from 'app/shared/color';
 
 export interface ColorProvider {
 
-    get schemeType(): ColorSchemeType;
-
-    get scheme(): CategoricalColorScheme | SequentialColorScheme;
+    get colorScheme(): ColorScheme;
 
     rgbColors(count: number): string[];
 

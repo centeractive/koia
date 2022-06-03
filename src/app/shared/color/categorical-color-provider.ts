@@ -1,6 +1,6 @@
 import { NumberUtils } from 'app/shared/utils';
 import { scaleOrdinal } from 'd3';
-import { ColorProvider, ColorSchemeType, ColorConverter, CategoricalColorScheme, ColorUtils } from '.';
+import { ColorProvider, ColorSchemeType, ColorScheme, ColorConverter, CategoricalColorScheme, ColorUtils } from '.';
 
 export class CategoricalColorProvider implements ColorProvider {
 
@@ -8,17 +8,16 @@ export class CategoricalColorProvider implements ColorProvider {
     private colorScale: any;
 
     constructor(private _scheme: CategoricalColorScheme) {
-        this.colors = ColorUtils.categoricalColorsOf(_scheme);
+        this.colors = ColorUtils.colorsOf(_scheme);
         this.colorScale = scaleOrdinal(this.colors);
     }
 
-    get schemeType(): ColorSchemeType {
-        return ColorSchemeType.CATEGORICAL;
+    get colorScheme(): ColorScheme {
+        return {
+            type: ColorSchemeType.CATEGORICAL,
+            scheme: this._scheme
+        }
     }
-
-    get scheme(): CategoricalColorScheme {
-        return this._scheme;
-    };
 
     rgbColors(count: number): string[] {
         return NumberUtils.intArray(0, count - 1)

@@ -4,8 +4,7 @@ import { CategoricalColorProvider, CategoricalColorScheme } from '.';
 describe('CategoricalColorProvider', () => {
 
     const colorProvider = new CategoricalColorProvider(CategoricalColorScheme.ACCENT);
-
-    const colorsAccent = schemeAccent;
+    const baseColors = schemeAccent;
     const opacity = 0.6;
 
     it('#rgbColors', () => {
@@ -15,7 +14,7 @@ describe('CategoricalColorProvider', () => {
 
     it('#rgbColors when count exceeds number of available colors', () => {
         // given
-        const count = colorsAccent.length + 1;
+        const count = baseColors.length + 1;
 
         // when
         const colors = colorProvider.rgbColors(count);
@@ -27,14 +26,14 @@ describe('CategoricalColorProvider', () => {
     });
 
     it('#rgbaColors', () => {
-        expect(colorProvider.rgbaColors(1, opacity)).toEqual('rgba(127,201,127,0.6)');
+        expect(colorProvider.rgbaColors(1, opacity)).toEqual(['rgba(127,201,127,0.6)']);
         expect(colorProvider.rgbaColors(2, opacity)).toEqual(['rgba(127,201,127,0.6)', 'rgba(190,174,212,0.6)']);
     });
 
     it('#rgbaColors when count exceeds number of available colors', () => {
 
         // given
-        const count = colorsAccent.length + 1;
+        const count = baseColors.length + 1;
 
         // when
         const colors = colorProvider.rgbaColors(count, opacity);
