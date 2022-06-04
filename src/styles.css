@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
-html { 
-  background-color: #292626; 
+html {
+  background-color: #292626;
 }
 
 body {
@@ -11,7 +11,7 @@ body {
   background: #ECE9E9 -moz-linear-gradient(top, #fff, #ECE9E9);
   background-repeat: no-repeat;
   color: white;
-  -webkit-font-smoothing: antialiased;  
+  -webkit-font-smoothing: antialiased;
 }
 
 .koia-logo {
@@ -24,13 +24,13 @@ body {
   background-image: url('/assets/mat-icons/scenes.png');
   background-repeat: no-repeat;
   background-size: cover;
-} 
+}
 
 #image-scene {
   background-image: url('/assets/mat-icons/scene.png');
   background-repeat: no-repeat;
   background-size: cover;
-} 
+}
 
 .div_wrapper {
   height: 100%;
@@ -42,7 +42,7 @@ body {
   flex-shrink: 0;
 }
 
-.div_content {  
+.div_content {
   flex-grow: 1;
   overflow: auto;
 }
@@ -54,19 +54,24 @@ body {
 #view_toolbar {
   background-color: #CFD8DC;
   width: 100%;
-  border-top: 1px solid rgb(145, 144, 144);    
+  border-top: 1px solid rgb(145, 144, 144);
 }
 
 .sidenav {
-  width: 340px; /* keep in sync with ViewController#SIDENAV_WIDTH */
+  width: 340px;
+  /* keep in sync with ViewController#SIDENAV_WIDTH */
 }
 
 .div_accordion_options {
   width: 100%;
 }
 
+.mat-expansion-panel-header {
+  background: #CFD8DC !important;
+}
+
 .toggle_multi_expand {
-  padding: 10px 10px 12px 15px; 
+  padding: 10px 10px 12px 15px;
 }
 
 .span_exp_collapse_all {
@@ -85,7 +90,7 @@ mat-panel-description {
 
 .span_left_to_right {
   display: flex;
-  align-items: flex-end; 
+  align-items: flex-end;
   justify-content: space-between;
 }
 
@@ -107,7 +112,7 @@ mat-panel-description {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  cursor: move;  
+  cursor: move;
 }
 
 .mat-tooltip {
@@ -115,7 +120,8 @@ mat-panel-description {
 }
 
 .but_config {
-  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  z-index: 1;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
 }
 
 .accent {
@@ -141,12 +147,12 @@ mat-panel-description {
 /* the following CSS class names must match enum StatusType */
 .success {
   background-color: greenyellow;
-  white-space: pre-line;  
+  white-space: pre-line;
 }
 
 .warning {
   background-color: orange;
-  white-space: pre-line;  
+  white-space: pre-line;
   display: inline;
 }
 
@@ -161,37 +167,39 @@ var {
 }
 
 @media print {
-  
+
   body * {
     visibility: hidden;
   }
-    
+
   img {
-    display: none; 
+    display: none;
   }
 
-  .but_config, .but_close {
-    display: none !important; 
+  .but_config,
+  .but_close {
+    display: none !important;
   }
 
-  * { 
-    overflow: visible !important; 
+  * {
+    overflow: visible !important;
   }
-  
-  .printable, .printable * {
+
+  .printable,
+  .printable * {
     visibility: visible;
   }
 
   .div_content {
-    display: block !important; 
+    display: block !important;
     flex-grow: 1;
   }
 
   .div_element {
-    page-break-inside: avoid !important; 
+    page-break-inside: avoid !important;
   }
 
-  .div_chart {    
+  .div_chart {
     display: block;
     height: 100%;
   }

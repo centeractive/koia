@@ -22,7 +22,7 @@ export class PivotOptionsProvider {
       if (!pivotOptions) {
          pivotOptions = { rendererName: PivotOptionsProvider.DEFAULT_RENDERER };
       }
-      pivotOptions['renderers'] = $.extend($.pivotUtilities.renderers, $.pivotUtilities.c3_renderers);
+      pivotOptions['renderers'] = $.pivotUtilities.renderers;
       pivotOptions['hiddenAttributes'] = [CouchDBConstants._ID];
       pivotOptions['sorters'] = this.createSorters(context);
       pivotOptions['rendererOptions'] = this.createRendererOptions(context);

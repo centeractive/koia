@@ -37,7 +37,6 @@
     "@types/file-saver": "~2.0.5",
     "@types/pouchdb": "~6.4.0",
     "angular-resizable-element": "~5.0.0",
-    "c3": "~0.4.24",
     "chart.js": "~3.8.0",
     "chartjs-adapter-moment": "~1.0.0",
     "chartjs-plugin-datalabels": "~2.0.0",
