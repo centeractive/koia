@@ -13,9 +13,6 @@ export class ConfigToModelConverter {
    constructor(private columns: Column[]) { }
 
    convert(configElements: ViewElement[]): ElementContext[] {
-
-      // console.log('toModel', configElements.map(e => this.toElementContext(e)));
-
       return configElements.map(e => this.toElementContext(e));
    }
 

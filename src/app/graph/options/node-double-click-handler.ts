@@ -29,12 +29,22 @@ export class NodeDoubleClickHandler {
 
    private revealRawData(graphNode: GraphNode, query: Query, groupByColumns: Column[], columnNames: string[], columnValues: any[],
       context: GraphContext) {
-      if (groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
+      const level = this.hierarchyLevelOf(graphNode);
+      if (!!groupByColumns.slice(0, level).find(c => c.dataType === DataType.TIME)) {
          const timeColumns = groupByColumns.filter(c => c.dataType === DataType.TIME);
          const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
          this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues, context);
       } else {
          this.rawDataRevealService.ofQuery(query, columnNames, columnValues, context);
       }
+   }
+
+   private hierarchyLevelOf(graphNode: GraphNode): number {
+      let level = 0;
+      while (graphNode.parent) {
+         ++level;
+         graphNode = graphNode.parent;
+      }
+      return level;
    }
 }

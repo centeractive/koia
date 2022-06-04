@@ -37,8 +37,8 @@ export class D3ForceGraphGenerator {
             .enter().append('g');
 
         var circles = node.append('circle')
-            .attr('r', 10)
-            .style('fill', node => colors[node.group])
+            .attr('r', node => node.parent ? 10 : 12)
+            .style('fill', node => node.parent ? colors[node.group - 1] : 'black') // root node is black
             .style('cursor', 'pointer')
             .on('dblclick', (e: any, node) => this.nodeDoubleClickHandler.onNodeDoubleClicked(node, this.context))
             .on('mouseenter', (e: any, node) => mouseEnter(node))

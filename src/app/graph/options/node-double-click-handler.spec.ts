@@ -3,7 +3,7 @@ import { Query, DataType, Column, TimeUnit, PropertyFilter, Operator } from 'app
 import { GraphContext, GraphNode } from 'app/shared/model/graph';
 import { RawDataRevealService } from 'app/shared/services';
 
-describe('NodeDoubleClickHandler', () => {
+fdescribe('NodeDoubleClickHandler', () => {
 
    const now = new Date().getTime();
    const min = 60_000;
