@@ -24,7 +24,7 @@
     <mat-expansion-panel expanded="true">
       <mat-expansion-panel-header color="accent">
         <mat-panel-title>
-          <mat-icon color="primary">looks_one</mat-icon>&nbsp;Data Source
+          <mat-icon color="primary">looks_one</mat-icon>&nbsp;<h4>Data Source</h4>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field class="form_field_source_type">
@@ -51,7 +51,8 @@
     <mat-expansion-panel *ngIf="fileHeader" expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          <mat-icon color="primary">looks_two</mat-icon>&nbsp;{{ selectedReader.getSourceName() }} Source Attributes
+          <mat-icon color="primary">looks_two</mat-icon>
+          &nbsp;<h4>{{ selectedReader.getSourceName() }} Source Attributes</h4>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <mat-form-field class="form_field_language">
@@ -119,7 +120,8 @@
     <mat-expansion-panel *ngIf="columnMappings" expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          <mat-icon color="primary">looks_3</mat-icon>&nbsp;{{ columnDefinitions }}
+          <mat-icon color="primary">looks_3</mat-icon>
+          &nbsp;<h4>{{ columnDefinitions }}</h4>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div *ngFor="let columnPair of columnMappings">
@@ -131,7 +133,7 @@
     <mat-expansion-panel *ngIf="columnMappings" expanded="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          <mat-icon color="primary">looks_4</mat-icon>&nbsp;Preview
+          <mat-icon color="primary">looks_4</mat-icon>&nbsp;<h4>Preview</h4>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div #content id="div_preview_table">

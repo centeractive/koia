@@ -7,6 +7,7 @@ import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
 
 export class D3ForceGraphGenerator {
 
+    private rootColor = 'black';
     private nodeDoubleClickHandler: NodeDoubleClickHandler;
 
     constructor(private context: GraphContext, rawDataRevealService: RawDataRevealService) {
@@ -15,7 +16,7 @@ export class D3ForceGraphGenerator {
 
     generate(graphData: GraphData, div: HTMLDivElement, colorProvider: ColorProvider): void {
         div.replaceChildren();
-        const colors = colorProvider.rgbColors(this.countDistinctGroups(graphData.nodes));
+        const colors = colorProvider.rgbColors(this.countDistinctGroups(graphData.nodes) - 1);
 
         var tooltipDiv = select(div).append('div')
             .attr('class', 'tooltip')
@@ -38,7 +39,7 @@ export class D3ForceGraphGenerator {
 
         var circles = node.append('circle')
             .attr('r', node => node.parent ? 10 : 12)
-            .style('fill', node => node.parent ? colors[node.group - 1] : 'black') // root node is black
+            .style('fill', node => node.parent ? colors[node.group - 1] : this.rootColor)
             .style('cursor', 'pointer')
             .on('dblclick', (e: any, node) => this.nodeDoubleClickHandler.onNodeDoubleClicked(node, this.context))
             .on('mouseenter', (e: any, node) => mouseEnter(node))
@@ -68,8 +69,8 @@ export class D3ForceGraphGenerator {
             .text(node => GraphUtils.createDisplayText(node, this.context))
             .attr('dx', 12)
             .attr('dy', '.35em')
-            .style('font-size', '12px')
-            .style('color', node => colors[node.group]);
+            .style('font-size', '12px');
+        // .style('color', node => colors[node.group]);
 
         const simulation = forceSimulation(graphData.nodes)
             .force('link', forceLink(graphData.links).id(node => node.index)
@@ -110,10 +111,10 @@ export class D3ForceGraphGenerator {
             node.fy = null;
         }
 
-
         const generateTooltip = (graphNode: GraphNode, context: GraphContext): string => {
+            const color = graphNode.parent ? colors[graphNode.group - 1] : this.rootColor;
             let result = '<div class="div_tooltip">'
-                + '<span class="tooltip_colored_box" style="background:' + colors[graphNode.group] + ';margin-right:10px;"></span>';
+                + '<span class="tooltip_colored_box" style="background:' + color + ';margin-right:10px;"></span>';
             if (graphNode.parent) {
                 result += graphNode.name + ': <b>' + GraphUtils.formattedValueOf(graphNode, context) + '</b>';
             } else {

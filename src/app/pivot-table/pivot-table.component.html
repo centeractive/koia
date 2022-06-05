@@ -34,7 +34,7 @@
         </mat-menu>
 
         <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
-          matTooltip="Print current view" (click)="printView()">
+                matTooltip="Print current view" (click)="printView()">
           <mat-icon>print</mat-icon>
         </button>
         <button mat-button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
@@ -42,13 +42,13 @@
         </button>
 
         <button class="but_more" mat-icon-button matTooltip="Restore saved view"
-          [disabled]="findConfigRecords().length === 0" [matMenuTriggerFor]="restoreViewMenu">
+                [disabled]="findConfigRecords().length === 0" [matMenuTriggerFor]="restoreViewMenu">
           <mat-icon [matBadge]="findConfigRecords().length" [matBadgeHidden]="findConfigRecords().length === 0"
-            matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
+                    matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
         </button>
         <mat-menu #restoreViewMenu="matMenu">
           <button class="menu_item_details" *ngFor="let configRecord of findConfigRecords()" mat-menu-item
-            (click)="loadConfig(configRecord)">
+                  (click)="loadConfig(configRecord)">
             <mat-icon>open_in_browser</mat-icon>
             <span>{{ configRecord.name }} <var>{{ configRecord.modifiedTime | date:'short' }}</var></span>
           </button>
@@ -56,29 +56,29 @@
 
         &nbsp;&nbsp;&nbsp;
         <button class="but_config" *ngIf="allowsForValueGrouping" mat-button mat-icon-button
-          matTooltip="Define Value Grouping..." (click)="sidenav.open()">
+                matTooltip="Define Value Grouping..." (click)="sidenav.open()">
           <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
-            matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
+                    matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
           </mat-icon>
         </button>
 
         <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
-          matTooltip="Time Unit Grouping">
+                matTooltip="Time Unit Grouping">
           <mat-icon>timer</mat-icon>
         </button>
         <mat-menu #timeColumnMenu="matMenu">
           <button *ngFor="let column of context.timeColumns" mat-menu-item [matMenuTriggerFor]="timeUnitMenu"
-            [matMenuTriggerData]="{ column: column }">{{ column.name }}</button>
+                  [matMenuTriggerData]="{ column: column }">{{ column.name }}</button>
         </mat-menu>
         <mat-menu #timeUnitMenu="matMenu">
           <ng-template matMenuContent let-column="column">
             <button *ngFor="let timeUnit of timeUnits" mat-menu-item [disabled]="timeUnit === column.groupingTimeUnit"
-              (click)="onTimeUnitChanged(column, timeUnit)">{{ timeUnit }}</button>
+                    (click)="onTimeUnitChanged(column, timeUnit)">{{ timeUnit }}</button>
           </ng-template>
         </mat-menu>
 
         <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
-          matTooltip="Heatmap Colors">
+                matTooltip="Heatmap Colors">
           <mat-icon>color_lens</mat-icon>
         </button>
         <mat-menu #heatmapColorsMenu="matMenu">
@@ -87,16 +87,16 @@
         </mat-menu>
         <mat-menu #colorsNegativeValsMenu="matMenu">
           <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.negativeColor"
-            (click)="onNegativeColorChanged(color)">
+                  (click)="onNegativeColorChanged(color)">
             <span [class]="'span_color' + (color === context.negativeColor ? '_inactive' : '')"
-              [ngStyle]="{'background-color':color}"></span>
+                  [ngStyle]="{'background-color':color}"></span>
           </button>
         </mat-menu>
         <mat-menu #colorsPositiveValsMenu="matMenu">
           <button *ngFor="let color of contextFactory.colors" mat-menu-item [disabled]="color === context.positiveColor"
-            (click)="onPositiveColorChanged(color)">
+                  (click)="onPositiveColorChanged(color)">
             <span [class]="'span_color' + (color === context.positiveColor ? '_inactive' : '')"
-              [ngStyle]="{'background-color':color}"></span>
+                  [ngStyle]="{'background-color':color}"></span>
           </button>
         </mat-menu>
       </div>

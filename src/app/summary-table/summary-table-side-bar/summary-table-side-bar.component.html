@@ -1,6 +1,6 @@
 <div class="div_accordion_options">
    <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-      (change)="onMultiExpandableChanged($event.checked)">
+                     (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
@@ -13,155 +13,167 @@
    </span>
 </div>
 <hr>
-<mat-accordion *ngIf="context" [multi]="multiExpandable">
+<div style="padding: 0 5px 0 5px;">
+   <mat-accordion *ngIf="context" [multi]="multiExpandable">
 
-   <mat-expansion-panel [expanded]="true">
-      <mat-expansion-panel-header>Data</mat-expansion-panel-header>
-      <span *ngFor="let column of dataColumns">
-         <div *ngIf="!context.hasValueGrouping(column.name)">
-            <button class="but_column" mat-raised-button [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''"
-               (click)="onColumnChanged(column)">
+      <mat-expansion-panel [expanded]="true">
+         <mat-expansion-panel-header>
+            <h4>Data</h4>
+         </mat-expansion-panel-header>
+         <span *ngFor="let column of dataColumns">
+            <div *ngIf="!context.hasValueGrouping(column.name)">
+               <button class="but_column" mat-raised-button [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''"
+                       (click)="onColumnChanged(column)">
+                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                  {{ column.name }}
+               </button>
+               <button *ngIf="isNumericColumn(column)" mat-icon-button [matTooltip]="'Define value grouping'"
+                       (click)="addValueGroupingFor(column)">
+                  <mat-icon>group_work</mat-icon>
+               </button>
+            </div>
+            <button class="but_column" *ngIf="context.hasValueGrouping(column.name)" mat-raised-button
+                    [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small"
+                    matBadgeColor="primary" (click)="onColumnChanged(column)">
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                {{ column.name }}
             </button>
-            <button *ngIf="isNumericColumn(column)" mat-icon-button [matTooltip]="'Define value grouping'"
-               (click)="addValueGroupingFor(column)">
-               <mat-icon>group_work</mat-icon>
-            </button>
-         </div>
-         <button class="but_column" *ngIf="context.hasValueGrouping(column.name)" mat-raised-button
-            [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small"
-            matBadgeColor="primary" (click)="onColumnChanged(column)">
-            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-            {{ column.name }}
-         </button>
-      </span>
-      <div>
-         <br>
-         <mat-radio-group [value]="context.isAggregationCountSelected()">
-            <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">Count Distinct Values
-            </mat-radio-button>
-            <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()"
-               (change)="onAggregationTypeChanged(false)">Aggregate Values
-            </mat-radio-button>
-         </mat-radio-group>
-      </div>
-   </mat-expansion-panel>
-
-   <mat-expansion-panel *ngFor="let grouping of context.valueGroupings">
-      <mat-expansion-panel-header>
-         <mat-panel-title>{{ grouping.columnName + ' Grouping' }}</mat-panel-title>
-         <mat-panel-description>
-            <mat-icon class="icon_remove" (click)="removeValueGrouping(grouping)">delete_forever</mat-icon>
-         </mat-panel-description>
-      </mat-expansion-panel-header>
-      <span class="span_left_to_right">
-         <label>max. {{ grouping.minMaxValues.max }}</label>
-         <button mat-button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
-            <mat-icon>add_circle_outline</mat-icon>
-         </button>
-      </span>
-      <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
-         <div class="div_group_value" mat-stroked-button *ngFor="let range of grouping.ranges" cdkDrag>
-            <mat-checkbox class="example-margin" [checked]="range.active"
-               (change)="groupingRangeStateChanged(grouping, range, $event.checked)">
-            </mat-checkbox>
-            <label for="rangeMaxValue" matTooltip="Excluding upper value boundary">Up&nbsp;to:</label>
-            <input id="rangeMaxValue" matInput type="number" placeholder="Range max. Value" [(ngModel)]="range.max"
-               matTooltip="Excluding upper value boundary" (keypress)="isNumberKey($event)">
-            <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1"
-               (click)="removeGroupingRange(grouping, range)">
-               remove_circle_outline
-            </mat-icon>
-         </div>
-      </div>
-      <label>min. {{ grouping.minMaxValues.min }}</label>
-   </mat-expansion-panel>
-
-   <mat-expansion-panel>
-      <mat-expansion-panel-header>Hierarchy</mat-expansion-panel-header>
-      <span class="span_left_to_right">
-         <label>Selected Columns</label>
-         <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
-      </span>
-      <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-         [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList" class="div_column_list"
-         (cdkDropListDropped)="dropGroupByColumn($event)">
-         <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns" cdkDrag>
-            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-            <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-            <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-               [(ngModel)]="column.groupingTimeUnit">
-               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                  (click)="context.fireStructureChanged()">
-                  {{ timeUnit ? 'per ' +  timeUnit : '' }}</mat-option>
-            </mat-select>
-         </div>
-      </div>
-      <br>
-      <label>Available Columns</label>
-      <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
-         [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-         (cdkDropListDropped)="dropGroupByColumn($event)">
-         <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableGroupByColumns" cdkDrag>
-            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-            <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-            <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-               [(ngModel)]="column.groupingTimeUnit">
-               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit">
-                  {{ timeUnit ? 'per ' +  timeUnit : '' }}</mat-option>
-            </mat-select>
-         </div>
-      </div>
-   </mat-expansion-panel>
-
-   <mat-expansion-panel *ngIf="!context.isAggregationCountSelected()">
-      <mat-expansion-panel-header>Aggregation</mat-expansion-panel-header>
-      <div div_column_swap_list>
-         <span class="span_left_to_right">
-            <label>Selected Aggregations</label>
-            <mat-icon matTooltip="Drag & Drop available aggregations to make them selected">help</mat-icon>
          </span>
-         <div id="selectedAggregations" #selectedAggList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-            [cdkDropListData]="selectedAggregations" [cdkDropListConnectedTo]="availableAggList" class="div_column_list"
-            (cdkDropListDropped)="dropAggregation($event)">
-            <div class="div_column_item accent" mat-stroked-button *ngFor="let aggregation of selectedAggregations"
-               cdkDrag>{{ aggregation }}</div>
+         <div>
+            <br>
+            <mat-radio-group [value]="context.isAggregationCountSelected()">
+               <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">Count Distinct Values
+               </mat-radio-button>
+               <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()"
+                                 (change)="onAggregationTypeChanged(false)">Aggregate Values
+               </mat-radio-button>
+            </mat-radio-group>
+         </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel *ngFor="let grouping of context.valueGroupings">
+         <mat-expansion-panel-header>
+            <mat-panel-title>
+               <h4>{{ grouping.columnName + ' Grouping' }}</h4>
+            </mat-panel-title>
+            <mat-panel-description>
+               <mat-icon class="icon_remove" (click)="removeValueGrouping(grouping)">delete_forever</mat-icon>
+            </mat-panel-description>
+         </mat-expansion-panel-header>
+         <span class="span_left_to_right">
+            <label>max. {{ grouping.minMaxValues.max }}</label>
+            <button mat-button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
+               <mat-icon>add_circle_outline</mat-icon>
+            </button>
+         </span>
+         <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
+            <div class="div_group_value" mat-stroked-button *ngFor="let range of grouping.ranges" cdkDrag>
+               <mat-checkbox class="example-margin" [checked]="range.active"
+                             (change)="groupingRangeStateChanged(grouping, range, $event.checked)">
+               </mat-checkbox>
+               <label for="rangeMaxValue" matTooltip="Excluding upper value boundary">Up&nbsp;to:</label>
+               <input id="rangeMaxValue" matInput type="number" placeholder="Range max. Value" [(ngModel)]="range.max"
+                      matTooltip="Excluding upper value boundary" (keypress)="isNumberKey($event)">
+               <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1"
+                         (click)="removeGroupingRange(grouping, range)">
+                  remove_circle_outline
+               </mat-icon>
+            </div>
+         </div>
+         <label>min. {{ grouping.minMaxValues.min }}</label>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+         <mat-expansion-panel-header>
+            <h4>Hierarchy</h4>
+         </mat-expansion-panel-header>
+         <span class="span_left_to_right">
+            <h4>Selected Columns</h4>
+            <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
+         </span>
+         <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
+              [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList" class="div_column_list"
+              (cdkDropListDropped)="dropGroupByColumn($event)">
+            <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns" cdkDrag>
+               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
+               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
+                           [(ngModel)]="column.groupingTimeUnit">
+                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
+                              (click)="context.fireStructureChanged()">
+                     {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
+               </mat-select>
+            </div>
          </div>
          <br>
-         <label>Available Aggregations</label>
-         <div #availableAggList="cdkDropList" cdkDropList [cdkDropListData]="availableAggregations"
-            [cdkDropListConnectedTo]="selectedAggList" class="div_column_list"
-            (cdkDropListDropped)="dropAggregation($event)">
-            <div class="div_column_item white" mat-stroked-button *ngFor="let aggregation of availableAggregations"
-               cdkDrag>{{ aggregation }}</div>
+         <label>Available Columns</label>
+         <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
+              [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+              (cdkDropListDropped)="dropGroupByColumn($event)">
+            <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableGroupByColumns" cdkDrag>
+               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
+               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
+                           [(ngModel)]="column.groupingTimeUnit">
+                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit">
+                     {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
+               </mat-select>
+            </div>
          </div>
-      </div>
-   </mat-expansion-panel>
+      </mat-expansion-panel>
 
-   <mat-expansion-panel>
-      <mat-expansion-panel-header>Position {{ gridColumns ? ' & Size' : '' }}</mat-expansion-panel-header>
-      <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-         <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
-            <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
-               {{ span }}
-            </mat-option>
-         </mat-select>
-      </mat-form-field>
-      <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-         <mat-select placeholder="Rows" [value]="context.gridRowSpan">
-            <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
-               {{ span }}
-            </mat-option>
-         </mat-select>
-      </mat-form-field>
-      <mat-form-field class="field_small_integer">
-         <mat-select placeholder="Position" [value]="elementPosition">
-            <mat-option *ngFor="let position of elementPositions" [value]="position"
-               (click)="setElementPosition(position)">
-               {{ position }}
-            </mat-option>
-         </mat-select>
-      </mat-form-field>
-   </mat-expansion-panel>
-</mat-accordion>
+      <mat-expansion-panel *ngIf="!context.isAggregationCountSelected()">
+         <mat-expansion-panel-header>
+            <h4>Aggregation</h4>
+         </mat-expansion-panel-header>
+         <div div_column_swap_list>
+            <span class="span_left_to_right">
+               <label>Selected Aggregations</label>
+               <mat-icon matTooltip="Drag & Drop available aggregations to make them selected">help</mat-icon>
+            </span>
+            <div id="selectedAggregations" #selectedAggList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
+                 [cdkDropListData]="selectedAggregations" [cdkDropListConnectedTo]="availableAggList" class="div_column_list"
+                 (cdkDropListDropped)="dropAggregation($event)">
+               <div class="div_column_item accent" mat-stroked-button *ngFor="let aggregation of selectedAggregations"
+                    cdkDrag>{{ aggregation }}</div>
+            </div>
+            <br>
+            <label>Available Aggregations</label>
+            <div #availableAggList="cdkDropList" cdkDropList [cdkDropListData]="availableAggregations"
+                 [cdkDropListConnectedTo]="selectedAggList" class="div_column_list"
+                 (cdkDropListDropped)="dropAggregation($event)">
+               <div class="div_column_item white" mat-stroked-button *ngFor="let aggregation of availableAggregations"
+                    cdkDrag>{{ aggregation }}</div>
+            </div>
+         </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+         <mat-expansion-panel-header>
+            <h4>Position {{ gridColumns ? ' & Size' : '' }}</h4>
+         </mat-expansion-panel-header>
+         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
+            <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
+               <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
+                  {{ span }}
+               </mat-option>
+            </mat-select>
+         </mat-form-field>
+         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
+            <mat-select placeholder="Rows" [value]="context.gridRowSpan">
+               <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
+                  {{ span }}
+               </mat-option>
+            </mat-select>
+         </mat-form-field>
+         <mat-form-field class="field_small_integer">
+            <mat-select placeholder="Position" [value]="elementPosition">
+               <mat-option *ngFor="let position of elementPositions" [value]="position"
+                           (click)="setElementPosition(position)">
+                  {{ position }}
+               </mat-option>
+            </mat-select>
+         </mat-form-field>
+      </mat-expansion-panel>
+   </mat-accordion>
+</div>

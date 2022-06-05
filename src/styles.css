@@ -66,8 +66,8 @@ body {
   width: 100%;
 }
 
-.mat-expansion-panel-header {
-  background: #CFD8DC !important;
+.mat-expansion-panel {
+  background: #e8eced !important;
 }
 
 .toggle_multi_expand {

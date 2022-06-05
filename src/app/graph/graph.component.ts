@@ -51,7 +51,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
     }
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     window.onresize = () => this.updateGraphSize();
   }
 

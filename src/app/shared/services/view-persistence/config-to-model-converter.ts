@@ -64,12 +64,9 @@ export class ConfigToModelConverter {
 
    private copy(from: ViewElement, to: ElementContext): void {
       to.title = from.title;
-      to.dataColumns = from.dataColumns.map(dc => to.columns.find(c => dc.name === c.name));
-      to.splitColumns = from.splitColumns.map(sc => to.columns.find(c => sc.name === c.name));
-      to.groupByColumns = from.groupByColumns.map(gbc => {
-         const groupByColumn = to.columns.find(c => gbc.name === c.name);
-         return this.furnishGropByColumn(gbc, groupByColumn);
-      });
+      to.dataColumns = from.dataColumns.map(c => this.targetColumn(c, to));
+      to.splitColumns = from.splitColumns.map(c => this.targetColumn(c, to));
+      to.groupByColumns = from.groupByColumns.map(c => this.targetColumn(c, to));
       to.gridColumnSpan = from.gridColumnSpan;
       to.gridRowSpan = from.gridRowSpan;
       to.setSize(from.width, from.height);
@@ -77,10 +74,11 @@ export class ConfigToModelConverter {
       to.valueGroupings = from.valueGroupings;
    }
 
-   private furnishGropByColumn(from: Column, to: Column) {
-      if (from.dataType === DataType.TIME) {
-         to.groupingTimeUnit = from.groupingTimeUnit;
+   private targetColumn(sourceColumn: Column, targetContext: ElementContext) {
+      const targetColumn = targetContext.columns.find(c => sourceColumn.name === c.name);
+      if (sourceColumn.dataType === DataType.TIME) {
+         targetColumn.groupingTimeUnit = sourceColumn.groupingTimeUnit;
       }
-      return to;
+      return targetColumn;
    }
 }

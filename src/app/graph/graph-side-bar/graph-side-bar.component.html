@@ -20,99 +20,107 @@
       </mat-option>
    </mat-select>
 </mat-form-field>
-<mat-accordion *ngIf="context" [multi]="multiExpandable">
 
-   <mat-expansion-panel [expanded]="true">
-      <mat-expansion-panel-header>Data Hierarchy</mat-expansion-panel-header>
-      <div div_column_swap_list>
-         <span class="span_left_to_right">
-            <label>Selected Columns</label>
-            <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
-         </span>
-         <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-              [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList"
-              class="div_column_list" (cdkDropListDropped)="dropGroupByColumn($event)">
-            <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns"
-                 cdkDrag>
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                           [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                              (click)="context.fireStructureChanged()">
-                     {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
-               </mat-select>
+<div style="padding: 0 5px 0 5px;">
+   <mat-accordion *ngIf="context" [multi]="multiExpandable">
+
+      <mat-expansion-panel [expanded]="true">
+         <mat-expansion-panel-header>
+            <h4>Data Hierarchy</h4>
+         </mat-expansion-panel-header>
+         <div div_column_swap_list>
+            <span class="span_left_to_right">
+               <label>Selected Columns</label>
+               <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
+            </span>
+            <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
+                 [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList"
+                 class="div_column_list" (cdkDropListDropped)="dropGroupByColumn($event)">
+               <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns"
+                    cdkDrag>
+                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+                  <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
+                  <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
+                              [(ngModel)]="column.groupingTimeUnit">
+                     <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
+                                 (click)="context.fireStructureChanged()">
+                        {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
+                  </mat-select>
+               </div>
+            </div>
+            <br>
+            <label>Available Columns</label>
+            <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
+                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+                 (cdkDropListDropped)="dropGroupByColumn($event)">
+               <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableGroupByColumns"
+                    cdkDrag>
+                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+                  <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
+                  <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
+                              [(ngModel)]="column.groupingTimeUnit">
+                     <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit">
+                        {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
+                  </mat-select>
+               </div>
             </div>
          </div>
-         <br>
-         <label>Available Columns</label>
-         <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
-              [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-              (cdkDropListDropped)="dropGroupByColumn($event)">
-            <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableGroupByColumns"
-                 cdkDrag>
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                           [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit">
-                     {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
-               </mat-select>
-            </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+         <mat-expansion-panel-header>
+            <h4>Position {{ gridColumns ? ' & Size' : '' }}</h4>
+         </mat-expansion-panel-header>
+         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
+            <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
+               <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
+                  {{ span }}
+               </mat-option>
+            </mat-select>
+         </mat-form-field>
+         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
+            <mat-select placeholder="Rows" [value]="context.gridRowSpan">
+               <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
+                  {{ span }}
+               </mat-option>
+            </mat-select>
+         </mat-form-field>
+         <mat-form-field class="field_small_integer">
+            <mat-select placeholder="Position" [value]="elementPosition">
+               <mat-option *ngFor="let position of elementPositions" [value]="position"
+                           (click)="setElementPosition(position)">
+                  {{ position }}
+               </mat-option>
+            </mat-select>
+         </mat-form-field>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+         <mat-expansion-panel-header>
+            <h4>Other</h4>
+         </mat-expansion-panel-header>
+         <div class="div_label_rotation">
+            Link Distance
+            <mat-slider min="0" max="100" step="1" [(ngModel)]="context.linkDist"></mat-slider>
          </div>
-      </div>
-   </mat-expansion-panel>
-
-   <mat-expansion-panel>
-      <mat-expansion-panel-header>Position {{ gridColumns ? ' & Size' : '' }}</mat-expansion-panel-header>
-      <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-         <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
-            <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
-               {{ span }}
-            </mat-option>
-         </mat-select>
-      </mat-form-field>
-      <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-         <mat-select placeholder="Rows" [value]="context.gridRowSpan">
-            <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
-               {{ span }}
-            </mat-option>
-         </mat-select>
-      </mat-form-field>
-      <mat-form-field class="field_small_integer">
-         <mat-select placeholder="Position" [value]="elementPosition">
-            <mat-option *ngFor="let position of elementPositions" [value]="position"
-                        (click)="setElementPosition(position)">
-               {{ position }}
-            </mat-option>
-         </mat-select>
-      </mat-form-field>
-   </mat-expansion-panel>
-
-   <mat-expansion-panel>
-      <mat-expansion-panel-header>Other</mat-expansion-panel-header>
-      <div class="div_label_rotation">
-         Link Distance
-         <mat-slider min="0" max="100" step="1" [(ngModel)]="context.linkDist"></mat-slider>
-      </div>
-      <div class="div_label_rotation">
-         Link Strength
-         <mat-slider id="linkStrength" min="0" max="1" step="0.1" [(ngModel)]="context.linkStrength"></mat-slider>
-      </div>
-      <!--div class="div_label_rotation">
+         <div class="div_label_rotation">
+            Link Strength
+            <mat-slider id="linkStrength" min="0" max="1" step="0.1" [(ngModel)]="context.linkStrength"></mat-slider>
+         </div>
+         <!--div class="div_label_rotation">
          Friction
          <mat-slider min="0" max="1" step="0.1" [(ngModel)]="context.friction"></mat-slider>
       </div-->
-      <div class="div_label_rotation">
-         Charge
-         <mat-slider min="-1000" max="1000" step="1" [value]="- context.charge" (change)="context.charge = - $event.value">
-         </mat-slider>
-      </div>
-      <div class="div_label_rotation">
-         Gravity
-         <mat-slider min="0.1" max="1" step="0.1" [(ngModel)]="context.gravity"></mat-slider>
-      </div>
-      <!--div class="div_label_rotation">
+         <div class="div_label_rotation">
+            Charge
+            <mat-slider min="-1000" max="1000" step="1" [value]="- context.charge" (change)="context.charge = - $event.value">
+            </mat-slider>
+         </div>
+         <div class="div_label_rotation">
+            Gravity
+            <mat-slider min="0.1" max="1" step="0.1" [(ngModel)]="context.gravity"></mat-slider>
+         </div>
+         <!--div class="div_label_rotation">
          Theta
          <mat-slider min="0" max="1" step="0.1" [(ngModel)]="context.theta"></mat-slider>
       </div>
@@ -121,5 +129,6 @@
          <mat-slider min="0" max="1" step="0.1" [(ngModel)]="context.alpha"></mat-slider>
       </div-->
 
-   </mat-expansion-panel>
-</mat-accordion>
+      </mat-expansion-panel>
+   </mat-accordion>
+</div>

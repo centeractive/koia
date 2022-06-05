@@ -37,7 +37,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     super(bottomSheet, notificationService);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.stepVisibleControl = this.formBuilder.group({ firstCtrl: ['', Validators.required] });
     this.readers = this.readerService.getReaders();
 

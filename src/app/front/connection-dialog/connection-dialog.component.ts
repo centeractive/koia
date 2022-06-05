@@ -18,7 +18,7 @@ export class ConnectionDialogComponent {
 
   constructor(public dialogRef: MatDialogRef<ConnectionDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogData) {
-    this.originalConnInfo = <ConnectionInfo> CommonUtils.clone(data.connectionInfo);
+    this.originalConnInfo = <ConnectionInfo>CommonUtils.clone(data.connectionInfo);
     this.dialogRef.disableClose = true;
   }
 
@@ -26,13 +26,13 @@ export class ConnectionDialogComponent {
     this.data.connectionInfo.port = CouchDBConfig.defaultPortOf(protocol);
   }
 
-  onCancel() {
+  onCancel(): void {
     this.data.closedWithOK = false;
     this.data.connectionInfo = this.originalConnInfo;
     this.dialogRef.close();
   }
 
-  onOK() {
+  onOK(): void {
     this.data.closedWithOK = true;
     this.dialogRef.close();
   }
@@ -44,6 +44,6 @@ export class ConnectionDialogData {
   closedWithOK = false;
 
   constructor(connectionInfo: ConnectionInfo) {
-    this.connectionInfo = <ConnectionInfo> CommonUtils.clone(connectionInfo);
+    this.connectionInfo = <ConnectionInfo>CommonUtils.clone(connectionInfo);
   }
 }

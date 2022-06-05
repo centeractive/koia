@@ -1,6 +1,6 @@
 import { ValueGrouping } from 'app/shared/value-range/model';
 import { ArrayUtils, DateTimeUtils, QuerySanitizer, ColumnNameConverter } from 'app/shared/utils';
-import { Operator, PropertyFilter, Column, Query, DataType, TimeUnit } from 'app/shared/model';
+import { Operator, PropertyFilter, Column, Query, DataType } from 'app/shared/model';
 import { ValueRangeConverter } from 'app/shared/value-range';
 
 /**

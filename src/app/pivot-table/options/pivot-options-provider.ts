@@ -82,8 +82,6 @@ export class PivotOptionsProvider {
             clickCallback: (e, value, filters, pivotData) => this.onCellClicked(context, e, filters, pivotData),
             rowTotals: context.showRowTotals,
             colTotals: context.showColumnTotals
-         },
-         c3: {
          }
       };
    }

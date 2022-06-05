@@ -1,4 +1,4 @@
-import { Column, DataType, TimeUnit, Query } from 'app/shared/model';
+import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { PivotOptionsProvider } from './pivot-options-provider';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -6,7 +6,7 @@ import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type'
 import { CellClickHandler } from './cell-click-handler';
 import { PivotContext } from '../model';
 
-describe('PivotOptionsProvider', () => {
+fdescribe('PivotOptionsProvider', () => {
 
    const timeColumn: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
    let context: PivotContext;

@@ -5,7 +5,7 @@ import {
   DialogService, RawDataRevealService
 } from '../shared/services';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { PivotOptionsProvider } from './options/pivot-options-provider';
 import { DBService } from 'app/shared/services/backend';
 import { Router } from '@angular/router';
@@ -68,7 +68,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
         .filter(c => c.indexed)
         .map(c => <Column>CommonUtils.clone(c));
       const baseQueryProvider: QueryProvider = { provide: () => this.query };
-      const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService)
+      const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
       this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
       this.fetchData(new Query());
     }
@@ -79,7 +79,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
   }
 
-  private onSidenavClosing() {
+  private onSidenavClosing(): void {
     if (this.stringifiedValueGroupings !== JSON.stringify(this.context.valueGroupings)) {
       this.refreshOptions();
       this.refreshDataFrameAsync();
@@ -101,13 +101,24 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   private onData(entries: Document[]) {
     this.loading = false;
     this.computing = true;
-    DateTimeUtils.defineTimeUnits(this.context.timeColumns, entries);
+    this.defineGroupingTimeUnits(entries);
     const firstTimeInvoked = !this.baseDataFrame;
     this.baseDataFrame = new DataFrame(entries);
     if (firstTimeInvoked && this.allowsForValueGrouping) {
       this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, this.columns);
     }
     this.refreshDataFrameAsync();
+  }
+
+  private defineGroupingTimeUnits(entries: Document[]): void {
+    const options = this.getPivotOptions();
+    let nonSelectedTimeColumns = this.context.timeColumns;
+    if (options) {
+      const selColNames = [...options['cols'], ...options['rows']];
+      nonSelectedTimeColumns = this.context.timeColumns
+        .filter(c => !selColNames.includes(ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
+    }
+    DateTimeUtils.defineTimeUnits(nonSelectedTimeColumns, entries);
   }
 
   onTimeUnitChanged(column: Column, timeUnit: TimeUnit): void {
@@ -227,9 +238,9 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     this.observePivotTableRefreshStart();
   }
 
-  private observePivotTableRefreshStart() {
+  private observePivotTableRefreshStart(): void {
     const pivotRendererArea = <HTMLTableElement>this.divPivot.nativeElement.getElementsByClassName('pvtRendererArea')[0];
-    const mutationObserver = new MutationObserver((mutations) => {
+    const mutationObserver = new MutationObserver(() => {
       if (pivotRendererArea.style.opacity !== '1') {
         this.computing = true; // refresh started
       }
@@ -237,7 +248,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     mutationObserver.observe(pivotRendererArea, { attributeFilter: ['style'], attributes: true });
   }
 
-  exportToExcel() {
+  exportToExcel(): void {
     const table = <HTMLTableElement>this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0];
     this.exportService.exportTableAsExcel(table, 'PivotTable');
   }

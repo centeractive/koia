@@ -36,7 +36,7 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
    /**
     * workaround for problem https://github.com/angular/material2/issues/11478
     */
-   private removeStaleTooltips() {
+   private removeStaleTooltips(): void {
       const tooltips = document.getElementsByTagName('mat-tooltip-component');
       for (let i = 0; i < tooltips.length; i++) {
          tooltips[i].remove();
@@ -66,7 +66,7 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
       return '';
    }
 
-   clear() {
+   clear(): void {
       this.routeHandlesCache.clear();
    }
 }

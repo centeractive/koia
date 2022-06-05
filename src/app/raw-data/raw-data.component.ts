@@ -54,7 +54,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
     this.highlight = true;
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     const scene = this.dbService.getActiveScene();
     if (scene) {
       if (!this.query) {
