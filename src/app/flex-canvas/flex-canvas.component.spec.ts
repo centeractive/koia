@@ -6,7 +6,7 @@ import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-
 import { of, Observable } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import { Column, StatusType, SummaryContext, Route, DataType, Scene, ExportFormat, ElementContext } from 'app/shared/model';
+import { Column, StatusType, SummaryContext, Route, DataType, Scene, ExportFormat, ElementContext, Status } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
@@ -434,8 +434,8 @@ describe('FlexCanvasComponent', () => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    const status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
-    const status$ = of(status).toPromise();
+    const status: Status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
+    const status$ = new Promise<Status>(resolve => resolve(status));
     spyOn(viewPersistenceService, 'saveView').and.returnValue(status$);
 
     // when

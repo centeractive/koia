@@ -9,7 +9,7 @@ import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/util
 import { PivotOptionsProvider } from './options/pivot-options-provider';
 import { DBService } from 'app/shared/services/backend';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
@@ -162,7 +162,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   saveConfig(): void {
     const data = new InputDialogData('Save View', 'View Name', '', 20);
     const dialogRef = this.dialogService.showInputDialog(data);
-    dialogRef.afterClosed().toPromise().then(r => {
+    firstValueFrom(dialogRef.afterClosed()).then(r => {
       if (data.closedWithOK) {
         this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
         const context = <PivotContext>CommonUtils.clone(this.context);

@@ -4,7 +4,6 @@ import { ColorScheme } from 'app/shared/color';
 
 export interface Chart extends ViewElement {
    chartType: string;
-   colorScheme: ColorScheme;
    margin: Margin;
    showLegend: boolean;
    legendPosition: string;

@@ -1,0 +1,4 @@
+<div *ngFor="let s of colorSchemes">
+    <img [src]="imagesDir + s.scheme + '.png'" [title]="s.type + ': ' + s.scheme" (click)="selectionChanged(s)">
+    <span *ngIf="s == selectedColorScheme">✔</span>
+</div>

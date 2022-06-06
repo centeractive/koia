@@ -3,7 +3,7 @@ import { ColorUtils } from '.';
 
 describe('ColorUtils', () => {
 
-    it('#allCategoricalColorSchemes', () => {
+    it('#collectAllColorSchemes', () => {
         const cat = ColorSchemeType.CATEGORICAL;
         const seq = ColorSchemeType.SEQUENTIAL;
         expect(ColorUtils.collectAllColorSchemes()).toEqual([
@@ -18,11 +18,13 @@ describe('ColorUtils', () => {
             { type: cat, scheme: CategoricalColorScheme.SET_3 },
             { type: cat, scheme: CategoricalColorScheme.TABLEAU_10 },
             { type: seq, scheme: SequentialColorScheme.COOL },
+            { type: seq, scheme: SequentialColorScheme.INFERNO },
             { type: seq, scheme: SequentialColorScheme.PLASMA },
             { type: seq, scheme: SequentialColorScheme.RAINBOW },
             { type: seq, scheme: SequentialColorScheme.SINEBOW },
             { type: seq, scheme: SequentialColorScheme.SPECTRAL },
             { type: seq, scheme: SequentialColorScheme.TURBO },
+            { type: seq, scheme: SequentialColorScheme.VIRIDIS },
             { type: seq, scheme: SequentialColorScheme.WARM }
         ]);
     });
@@ -45,11 +47,13 @@ describe('ColorUtils', () => {
     it('#allSequentialColorScheme', () => {
         expect(ColorUtils.allSequentialColorScheme()).toEqual([
             SequentialColorScheme.COOL,
+            SequentialColorScheme.INFERNO,
             SequentialColorScheme.PLASMA,
             SequentialColorScheme.RAINBOW,
             SequentialColorScheme.SINEBOW,
             SequentialColorScheme.SPECTRAL,
             SequentialColorScheme.TURBO,
+            SequentialColorScheme.VIRIDIS,
             SequentialColorScheme.WARM
         ]);
     });

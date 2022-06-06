@@ -8,6 +8,7 @@ import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Location } from '@angular/common';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'koia-scenes',
@@ -74,7 +75,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     const text = '<p>Do you really want to delete ' + this.filteredSceneInfos.length + ' scene(s)?</p>';
     const data = new ConfirmDialogData(title, text, ConfirmDialogData.YES_NO);
     const dialogRef = this.dialogService.showConfirmDialog(data);
-    dialogRef.afterClosed().toPromise().then(r => {
+    firstValueFrom(dialogRef.afterClosed()).then(r => {
       if (data.closedWithButtonIndex === 0) {
         this.deleteScenes(this.filteredSceneInfos);
       }

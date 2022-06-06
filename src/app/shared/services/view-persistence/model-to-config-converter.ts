@@ -92,6 +92,7 @@ export class ModelToConfigConverter {
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
+         colorScheme: context.colorProvider.colorScheme,
          empty: ''
       }
    }

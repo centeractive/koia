@@ -1,6 +1,6 @@
 import { ElementContext, Column, Query, SummaryContext, Route, Scene, DataType, ExportFormat } from '../model';
 import { GraphContext } from '../model/graph';
-import { Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit, Directive } from '@angular/core';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../services';
@@ -134,7 +134,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.entriesSubscription.unsubscribe();
       }
       this.entries$ = this.dbService.findEntries(query, true);
-      this.entries$.toPromise()
+      firstValueFrom(this.entries$)
          .then(d => this.loading = false)
          .catch(err => {
             this.loading = false;

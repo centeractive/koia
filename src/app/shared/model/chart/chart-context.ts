@@ -6,12 +6,10 @@ import { ChartType } from './chart-type';
 import { SeriesNameConverter } from '../../services/chart/series-name-converter';
 import { Margin } from '.';
 import { Chart, ChartData } from 'chart.js';
-import { ColorProvider, ColorProviderFactory } from 'app/shared/color';
 
 export class ChartContext extends ElementContext {
 
    private _chartType: string;
-   private _colorProvider: ColorProvider;
    private _margin: Margin;
    private _showLegend: boolean;
    private _legendPosition: string;
@@ -29,7 +27,6 @@ export class ChartContext extends ElementContext {
 
    constructor(columns: Column[], chartType: string, margin: Margin) {
       super(columns);
-      this._colorProvider = ColorProviderFactory.create();
       this._chartType = chartType;
       this._margin = margin;
       this._showLegend = true;
@@ -60,18 +57,6 @@ export class ChartContext extends ElementContext {
 
    isCircularChart(): boolean {
       return ChartType.isCircularChart(ChartType.fromType(this._chartType));
-   }
-
-   get colorProvider(): ColorProvider {
-      return this._colorProvider;
-   }
-
-   set colorProvider(colorProvider: ColorProvider) {
-      if (this._colorProvider.colorScheme.type !== colorProvider.colorScheme.type ||
-         this._colorProvider.colorScheme.scheme !== colorProvider.colorScheme.scheme) {
-         this._colorProvider = colorProvider;
-         this.fireLookChanged();
-      }
    }
 
    get margin(): Margin {

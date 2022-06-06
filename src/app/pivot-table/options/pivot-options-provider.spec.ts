@@ -6,7 +6,7 @@ import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type'
 import { CellClickHandler } from './cell-click-handler';
 import { PivotContext } from '../model';
 
-fdescribe('PivotOptionsProvider', () => {
+describe('PivotOptionsProvider', () => {
 
    const timeColumn: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
    let context: PivotContext;

@@ -28,7 +28,7 @@ describe('ViewPersistenceService', () => {
     summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
-      valueGroupings: [], empty: ''
+      valueGroupings: [], empty: '', colorScheme: undefined
     };
     chart = {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,

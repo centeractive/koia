@@ -7,6 +7,7 @@ import { ArrayUtils } from '../utils/array-utils';
 import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
 import { DataType } from './data-type.enum';
+import { ColorProvider, ColorProviderFactory } from '../color';
 
 export abstract class ElementContext {
 
@@ -26,6 +27,8 @@ export abstract class ElementContext {
    private _aggregations: Aggregation[] = [];
    private _valueGroupings: ValueGrouping[] = [];
 
+   private _colorProvider: ColorProvider;
+
    // transient
    private _silent: boolean;
    private _columns: Column[];
@@ -41,6 +44,7 @@ export abstract class ElementContext {
       this._groupByColumns = [];
       this._aggregations = [Aggregation.COUNT];
       this._valueGroupings = [];
+      this._colorProvider = ColorProviderFactory.create();
    }
 
    public get title(): string {
@@ -209,6 +213,18 @@ export abstract class ElementContext {
       return this.valueGroupings
          .map(g => g.columnName)
          .includes(columnName);
+   }
+
+   get colorProvider(): ColorProvider {
+      return this._colorProvider;
+   }
+
+   set colorProvider(colorProvider: ColorProvider) {
+      if (this._colorProvider.colorScheme.type !== colorProvider.colorScheme.type ||
+         this._colorProvider.colorScheme.scheme !== colorProvider.colorScheme.scheme) {
+         this._colorProvider = colorProvider;
+         this.fireLookChanged();
+      }
    }
 
    get columns(): Column[] {

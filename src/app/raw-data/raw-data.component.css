@@ -1,9 +1,13 @@
+.div_wrapper {
+  overflow-x: hidden;
+}
+
 #div_table {
   margin: 10px;
   overflow-y: auto;
 }
 
-.table_layout_fixed {   
+.table_layout_fixed {
   width: 100%;
   table-layout: fixed;
 }
@@ -15,9 +19,9 @@ th {
 }
 
 td {
-   word-wrap: break-word;   
-   vertical-align: top;
-   padding: 5px;
+  word-wrap: break-word;
+  vertical-align: top;
+  padding: 5px;
 }
 
 .td_Text {
@@ -38,12 +42,12 @@ td {
   height: auto;
 }
 
-.mat-row:nth-child(even){
-  background-color:#fff;
+.mat-row:nth-child(even) {
+  background-color: #fff;
 }
 
-.mat-row:nth-child(odd){
-  background-color:#efefef;
+.mat-row:nth-child(odd) {
+  background-color: #efefef;
 }
 
 .mat-paginator-sticky {

@@ -1,6 +1,6 @@
 import {
-    interpolateCool, interpolatePlasma, interpolateRainbow, interpolateSinebow, interpolateSpectral,
-    interpolateTurbo, interpolateWarm, schemeAccent, schemeCategory10, schemeDark2, schemePaired, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3, schemeTableau10
+    interpolateCool, interpolateInferno, interpolatePlasma, interpolateRainbow, interpolateSinebow, interpolateSpectral,
+    interpolateTurbo, interpolateViridis, interpolateWarm, schemeAccent, schemeCategory10, schemeDark2, schemePaired, schemePastel1, schemePastel2, schemeSet1, schemeSet2, schemeSet3, schemeTableau10
 } from 'd3';
 import { ColorScheme, ColorSchemeType, CategoricalColorScheme, SequentialColorScheme } from '.';
 
@@ -58,6 +58,8 @@ export class ColorUtils {
         switch (scheme) {
             case SequentialColorScheme.COOL:
                 return interpolateCool;
+            case SequentialColorScheme.INFERNO:
+                return interpolateInferno;
             case SequentialColorScheme.PLASMA:
                 return interpolatePlasma;
             case SequentialColorScheme.RAINBOW:
@@ -68,6 +70,8 @@ export class ColorUtils {
                 return interpolateSpectral;
             case SequentialColorScheme.TURBO:
                 return interpolateTurbo;
+            case SequentialColorScheme.VIRIDIS:
+                return interpolateViridis;
             case SequentialColorScheme.WARM:
                 return interpolateWarm;
             default:

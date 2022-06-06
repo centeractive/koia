@@ -13,14 +13,6 @@
    </span>
 </div>
 <hr>
-<mat-form-field style="margin: 10px 0 0 20px">
-   <mat-select placeholder="Color Scheme" [(ngModel)]="selectedColorScheme" (ngModelChange)="colorSchemeSelectionChanged()">
-      <mat-option *ngFor="let colorScheme of colorSchemes" [value]="colorScheme">
-         {{ colorScheme.type + ': ' + colorScheme.scheme }}
-      </mat-option>
-   </mat-select>
-</mat-form-field>
-
 <div style="padding: 0 5px 0 5px;">
    <mat-accordion *ngIf="context" [multi]="multiExpandable">
 
@@ -65,6 +57,13 @@
                </div>
             </div>
          </div>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+         <mat-expansion-panel-header>
+            <h4>Color Scheme</h4>
+         </mat-expansion-panel-header>
+         <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
       </mat-expansion-panel>
 
       <mat-expansion-panel>

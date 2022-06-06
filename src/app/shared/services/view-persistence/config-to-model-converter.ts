@@ -30,7 +30,6 @@ export class ConfigToModelConverter {
    private toChartContext(chart: Chart): ChartContext {
       const context = new ChartContext(this.clonedColumns(), chart.chartType, chart.margin);
       this.copy(chart, context);
-      context.colorProvider = ColorProviderFactory.create(chart.colorScheme);
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
       context.xLabelRotation = chart.xLabelRotation;
@@ -41,7 +40,6 @@ export class ConfigToModelConverter {
    private toGraphContext(graph: Graph): GraphContext {
       const context = new GraphContext(this.clonedColumns());
       this.copy(graph, context);
-      context.colorProvider = ColorProviderFactory.create(graph.colorScheme);
       context.linkStrength = graph.linkStrength;
       context.friction = graph.friction;
       context.linkDist = graph.linkDist;
@@ -72,6 +70,7 @@ export class ConfigToModelConverter {
       to.setSize(from.width, from.height);
       to.aggregations = from.aggregations;
       to.valueGroupings = from.valueGroupings;
+      to.colorProvider = ColorProviderFactory.create(from.colorScheme);
    }
 
    private targetColumn(sourceColumn: Column, targetContext: ElementContext) {

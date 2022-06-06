@@ -2,7 +2,7 @@ import {
   Component, Input, OnInit, OnChanges, SimpleChanges, ViewEncapsulation, Inject, ElementRef,
   ViewChild, Output, EventEmitter, ChangeDetectorRef
 } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { CommonUtils } from 'app/shared/utils';
@@ -63,7 +63,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   private fetchEntries(): void {
-    this.entries$.toPromise().then(entries => this.onEntries(entries));
+    firstValueFrom(this.entries$).then(entries => this.onEntries(entries));
   }
 
   private onEntries(entries: Object[]): void {
@@ -103,7 +103,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   private updateChart(changeEvent: ChangeEvent): void {
     this.marginDivStyle = this.marginToStyle(this.context.margin);
 
-    // TODO: ChangeEvent.LOOK should not create data (currently Chart.js defines colors etc. inside the dataset)
+    // TODO: ChangeEvent.LOOK should not re-create data (currently ChartDataService defines colors etc. inside the dataset)
     if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
       const chartDataResult = this.chartDataService.createData(this.context);
       if (chartDataResult.error) {

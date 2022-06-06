@@ -1,12 +1,12 @@
 export enum CategoricalColorScheme {
     ACCENT = 'Accent',
-    CATEGORY_10 = 'Category 10',
-    DARK_2 = 'Dark 2',
+    CATEGORY_10 = 'Category10',
+    DARK_2 = 'Dark2',
     PAIRED = 'Paired',
-    PASTEL_1 = 'Pastel 1',
-    PASTEL_2 = 'Pastel 2',
-    SET_1 = 'Set 1',
-    SET_2 = 'Set 2',
-    SET_3 = 'Set 3',
-    TABLEAU_10 = 'Tableau 10'
+    PASTEL_1 = 'Pastel1',
+    PASTEL_2 = 'Pastel2',
+    SET_1 = 'Set1',
+    SET_2 = 'Set2',
+    SET_3 = 'Set3',
+    TABLEAU_10 = 'Tableau10'
 }

@@ -10,6 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { QueryParamExtractor, CommonUtils } from 'app/shared/utils';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'koia-front',
@@ -84,7 +85,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   showCouchDBConnectionDialog(): void {
     const data = new ConnectionDialogData(this.couchDBService.getConnectionInfo());
     const dialogRef = this.dialogService.showConnectionDialog(data);
-    dialogRef.afterClosed().toPromise().then(r => this.onCouchDBConnectionDialogClosed(data));
+    firstValueFrom(dialogRef.afterClosed()).then(r => this.onCouchDBConnectionDialogClosed(data));
   }
 
   private onCouchDBConnectionDialogClosed(data: ConnectionDialogData): void {

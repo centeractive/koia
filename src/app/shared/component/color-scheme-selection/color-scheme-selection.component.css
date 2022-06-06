@@ -1,0 +1,17 @@
+div {
+    display: flex;
+    align-items: center;
+}
+
+img {
+    height: 20px;
+    width: 200px;
+    padding: 5px 0 5px 0;
+    cursor: pointer;
+}
+
+span {
+    padding-left: 10px;
+    font-size: 1.5em;
+    color: darkgreen;
+}

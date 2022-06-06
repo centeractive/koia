@@ -8,7 +8,6 @@ import { ColorProviderFactory, ColorProvider } from 'app/shared/color';
  */
 export class GraphContext extends ElementContext {
 
-   private _colorProvider: ColorProvider;
    private _linkStrength = 0.3;
    private _friction = 0.9;
    private _linkDist = 20;
@@ -19,19 +18,6 @@ export class GraphContext extends ElementContext {
 
    constructor(columns: Column[],) {
       super(columns);
-      this._colorProvider = ColorProviderFactory.create();
-   }
-
-   get colorProvider(): ColorProvider {
-      return this._colorProvider;
-   }
-
-   set colorProvider(colorProvider: ColorProvider) {
-      if (this._colorProvider.colorScheme.type !== colorProvider.colorScheme.type ||
-         this._colorProvider.colorScheme.scheme !== colorProvider.colorScheme.scheme) {
-         this._colorProvider = colorProvider;
-         this.fireLookChanged();
-      }
    }
 
    get linkStrength(): number {
