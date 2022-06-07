@@ -9,8 +9,7 @@ import { Summary } from './summary.type';
 export class ModelToConfigConverter {
 
    convert(route: Route, viewName: string, elementContexts: ElementContext[]): View {
-      const configElements: ViewElement[] = [];
-      elementContexts.forEach(c => configElements.push(this.toViewElement(c)));
+      const configElements: ViewElement[] = elementContexts.map(c => this.toViewElement(c));
       return {
          route: route,
          name: viewName,
@@ -46,7 +45,7 @@ export class ModelToConfigConverter {
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
          chartType: context.chartType,
-         colorScheme: context.colorProvider.colorScheme,
+         colorOptions: context.colorProvider.options,
          margin: context.margin,
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
@@ -68,7 +67,7 @@ export class ModelToConfigConverter {
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
-         colorScheme: context.colorProvider.colorScheme,
+         colorOptions: context.colorProvider.options,
          linkStrength: context.linkStrength,
          friction: context.friction,
          linkDist: context.linkDist,
@@ -92,7 +91,7 @@ export class ModelToConfigConverter {
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
-         colorScheme: context.colorProvider.colorScheme,
+         colorOptions: context.colorProvider.options,
          empty: ''
       }
    }

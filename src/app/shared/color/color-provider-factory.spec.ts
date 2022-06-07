@@ -1,5 +1,6 @@
 import { ColorProviderFactory } from '.';
 import { ColorSchemeType, CategoricalColorScheme, SequentialColorScheme } from 'app/shared/color';
+import { ColorOptions } from './color-options.type';
 
 describe('ColorProviderFactory', () => {
 
@@ -15,10 +16,8 @@ describe('ColorProviderFactory', () => {
     it('#create should return current color provider', () => {
 
         // given
-        const currentColorProvider = ColorProviderFactory.create({
-            type: ColorSchemeType.SEQUENTIAL,
-            scheme: SequentialColorScheme.COOL
-        });
+        const options = colorOptions(ColorSchemeType.SEQUENTIAL, SequentialColorScheme.COOL);
+        const currentColorProvider = ColorProviderFactory.create(options);
 
         // when
         const colorProvider = ColorProviderFactory.create();
@@ -30,29 +29,34 @@ describe('ColorProviderFactory', () => {
     it('#create should return categorical color provider', () => {
 
         // when
-        const colorProvider = ColorProviderFactory.create({
-            type: ColorSchemeType.CATEGORICAL,
-            scheme: CategoricalColorScheme.ACCENT
-        });
+        const options = colorOptions(ColorSchemeType.CATEGORICAL, CategoricalColorScheme.ACCENT);
+        const colorProvider = ColorProviderFactory.create(options);
 
         // then
         expect(colorProvider).toBeDefined();
-        expect(colorProvider.colorScheme.type).toBe(ColorSchemeType.CATEGORICAL);
-        expect(colorProvider.colorScheme.scheme).toBe(CategoricalColorScheme.ACCENT);
+        expect(colorProvider.options.type).toBe(ColorSchemeType.CATEGORICAL);
+        expect(colorProvider.options.scheme).toBe(CategoricalColorScheme.ACCENT);
     });
 
     it('#create should return sequential color provider', () => {
 
         // when
-        const colorProvider = ColorProviderFactory.create({
-            type: ColorSchemeType.SEQUENTIAL,
-            scheme: SequentialColorScheme.RAINBOW
-        });
+        const options = colorOptions(ColorSchemeType.SEQUENTIAL, SequentialColorScheme.RAINBOW);
+        const colorProvider = ColorProviderFactory.create(options);
 
         // then
         expect(colorProvider).toBeDefined();
-        expect(colorProvider.colorScheme.type).toBe(ColorSchemeType.SEQUENTIAL);
-        expect(colorProvider.colorScheme.scheme).toBe(SequentialColorScheme.RAINBOW);
+        expect(colorProvider.options.type).toBe(ColorSchemeType.SEQUENTIAL);
+        expect(colorProvider.options.scheme).toBe(SequentialColorScheme.RAINBOW);
     });
+
+    function colorOptions(type: ColorSchemeType, scheme: CategoricalColorScheme | SequentialColorScheme): ColorOptions {
+        return {
+            type,
+            scheme,
+            bgColorOpacity: 0.7,
+            borderColorOpacity: 1
+        };
+    }
 
 });

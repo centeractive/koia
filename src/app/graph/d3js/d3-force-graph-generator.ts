@@ -14,9 +14,9 @@ export class D3ForceGraphGenerator {
         this.nodeDoubleClickHandler = new NodeDoubleClickHandler(rawDataRevealService);
     }
 
-    generate(graphData: GraphData, div: HTMLDivElement, colorProvider: ColorProvider): void {
+    generate(graphData: GraphData, div: HTMLDivElement, context: GraphContext): void {
         div.replaceChildren();
-        const colors = colorProvider.rgbColors(this.countDistinctGroups(graphData.nodes) - 1);
+        const bgColors = context.colorProvider.bgColors(this.countDistinctGroups(graphData.nodes) - 1);
 
         var tooltipDiv = select(div).append('div')
             .attr('class', 'tooltip')
@@ -39,7 +39,7 @@ export class D3ForceGraphGenerator {
 
         var circles = node.append('circle')
             .attr('r', node => node.parent ? 10 : 12)
-            .style('fill', node => node.parent ? colors[node.group - 1] : this.rootColor)
+            .style('fill', node => node.parent ? bgColors[node.group - 1] : this.rootColor)
             .style('cursor', 'pointer')
             .on('dblclick', (e: any, node) => this.nodeDoubleClickHandler.onNodeDoubleClicked(node, this.context))
             .on('mouseenter', (e: any, node) => mouseEnter(node))
@@ -112,7 +112,7 @@ export class D3ForceGraphGenerator {
         }
 
         const generateTooltip = (graphNode: GraphNode, context: GraphContext): string => {
-            const color = graphNode.parent ? colors[graphNode.group - 1] : this.rootColor;
+            const color = graphNode.parent ? bgColors[graphNode.group - 1] : this.rootColor;
             let result = '<div class="div_tooltip">'
                 + '<span class="tooltip_colored_box" style="background:' + color + ';margin-right:10px;"></span>';
             if (graphNode.parent) {

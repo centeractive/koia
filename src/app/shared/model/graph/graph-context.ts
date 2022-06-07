@@ -1,5 +1,4 @@
 import { ElementContext, Column, ExportFormat } from '..';
-import { ColorProviderFactory, ColorProvider } from 'app/shared/color';
 
 /**
  * Context for d3-force graph

@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { ColorProviderFactory, ColorScheme, ColorUtils } from 'app/shared/color';
+import { CategoricalColorScheme, ColorProviderFactory, ColorOptions, ColorSchemeType, SequentialColorScheme } from 'app/shared/color';
 import { ElementContext } from 'app/shared/model';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'koia-color-scheme-selection',
@@ -11,26 +12,48 @@ export class ColorSchemeSelectionComponent implements OnChanges {
 
   @Input() context: ElementContext;
 
-  colorSchemes: ColorScheme[];
-  selectedColorScheme: ColorScheme;
+  categoricalSchemes: CategoricalColorScheme[];
+  sequentialSchemes: SequentialColorScheme[];
+  colorOptions: ColorOptions;
   imagesDir = '/assets/d3-color-schemes/';
 
   constructor() {
-    this.colorSchemes = ColorUtils.collectAllColorSchemes();
+    this.categoricalSchemes = this.allCategoricalColorSchemes();
+    this.sequentialSchemes = this.allSequentialColorSchemes();
+  }
+
+  private allCategoricalColorSchemes(): CategoricalColorScheme[] {
+    return Object.keys(CategoricalColorScheme)
+      .map(key => CategoricalColorScheme[key]);;
+  }
+
+  private allSequentialColorSchemes(): SequentialColorScheme[] {
+    return Object.keys(SequentialColorScheme)
+      .map(key => SequentialColorScheme[key]);;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.defineSelectedColorScheme();
+    this.colorOptions = _.clone(this.context.colorProvider.options);
   }
 
-  private defineSelectedColorScheme(): void {
-    const cs = this.context.colorProvider.colorScheme;
-    this.selectedColorScheme = this.colorSchemes
-      .find(s => s.type == cs.type && s.scheme == cs.scheme);
+  selectCategoricalScheme(scheme: CategoricalColorScheme): void {
+    this.colorOptions.type = ColorSchemeType.CATEGORICAL;
+    this.colorOptions.scheme = scheme;
+    this.changeColorProvider();
   }
 
-  selectionChanged(colorScheme: ColorScheme): void {
-    this.selectedColorScheme = colorScheme;
-    this.context.colorProvider = ColorProviderFactory.create(this.selectedColorScheme);
+  selectSequentialScheme(scheme: SequentialColorScheme): void {
+    this.colorOptions.type = ColorSchemeType.SEQUENTIAL;
+    this.colorOptions.scheme = scheme;
+    this.changeColorProvider();
+  }
+
+  changeColorProvider(): void {
+    this.context.colorProvider = ColorProviderFactory.create({
+      type: this.colorOptions.type,
+      scheme: this.colorOptions.scheme,
+      bgColorOpacity: this.colorOptions.bgColorOpacity,
+      borderColorOpacity: this.colorOptions.borderColorOpacity
+    });
   }
 }

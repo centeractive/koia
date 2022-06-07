@@ -8,6 +8,7 @@ import { Column } from './column.type';
 import { ExportFormat } from './export-format.enum';
 import { DataType } from './data-type.enum';
 import { ColorProvider, ColorProviderFactory } from '../color';
+import * as _ from 'lodash';
 
 export abstract class ElementContext {
 
@@ -220,8 +221,7 @@ export abstract class ElementContext {
    }
 
    set colorProvider(colorProvider: ColorProvider) {
-      if (this._colorProvider.colorScheme.type !== colorProvider.colorScheme.type ||
-         this._colorProvider.colorScheme.scheme !== colorProvider.colorScheme.scheme) {
+      if (!_.isEqual(this._colorProvider.options, colorProvider.options)) {
          this._colorProvider = colorProvider;
          this.fireLookChanged();
       }

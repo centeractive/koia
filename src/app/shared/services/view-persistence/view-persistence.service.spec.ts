@@ -28,16 +28,18 @@ describe('ViewPersistenceService', () => {
     summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
-      valueGroupings: [], empty: '', colorScheme: undefined
+      valueGroupings: [], empty: '', colorOptions: undefined
     };
     chart = {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
       valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
       legendPosition: 'top', xLabelRotation: -12, stacked: false,
-      colorScheme: {
+      colorOptions: {
         type: ColorSchemeType.CATEGORICAL,
-        scheme: CategoricalColorScheme.PAIRED
+        scheme: CategoricalColorScheme.PAIRED,
+        bgColorOpacity: 0.7,
+        borderColorOpacity: 1
       }
     };
   });

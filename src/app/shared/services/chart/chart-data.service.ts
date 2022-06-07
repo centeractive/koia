@@ -20,7 +20,6 @@ export class ChartDataService {
 
   private dataNameConverter = new SeriesNameConverter();
   private errorResultFactory = new ErrorResultFactory();
-  private bgColorOpacity = 0.6;
 
   createData(context: ChartContext): ChartDataResult {
     context.dataSampledDown = false;
@@ -51,8 +50,8 @@ export class ChartDataService {
       datasets: [{
         label: context.dataColumns[0].name,
         data: dataPoints.map(p => p.y),
-        backgroundColor: context.colorProvider.rgbaColors(dataPoints.length, this.bgColorOpacity),
-        borderColor: context.colorProvider.rgbColors(dataPoints.length),
+        backgroundColor: context.colorProvider.bgColors(dataPoints.length),
+        borderColor: context.colorProvider.borderColors(dataPoints.length),
         hoverOffset: 10, // PIE & DOUGHNUT charts
         borderAlign: 'inner' // PIE & DOUGHNUT charts
       }]
@@ -82,8 +81,8 @@ export class ChartDataService {
     return {
       labels: labels,
       datasets: labeledData.dataSets.map((ds, i) => {
-        const bgColors = context.colorProvider.rgbaColors(labels.length, this.bgColorOpacity);
-        const borderColors = context.colorProvider.rgbColors(labels.length);
+        const bgColors = context.colorProvider.bgColors(labels.length);
+        const borderColors = context.colorProvider.borderColors(labels.length);
         return {
           label: ds.label,
           data: ds.values,
@@ -113,8 +112,8 @@ export class ChartDataService {
 
   private valueCountData(chartType: ChartType, context: ChartContext): ChartData {
     const datasets = this.createValueCountData(chartType, context);
-    const bgColors = context.colorProvider.rgbaColors(datasets.length, this.bgColorOpacity);
-    const borderColors = context.colorProvider.rgbColors(datasets.length);
+    const bgColors = context.colorProvider.bgColors(datasets.length);
+    const borderColors = context.colorProvider.borderColors(datasets.length);
     return {
       datasets: datasets.map((ds, i) => ({
         label: ds.key,
@@ -128,8 +127,8 @@ export class ChartDataService {
 
   private individualValuesData(chartType: ChartType, context: ChartContext): ChartData {
     const datasets = this.createIndividualValuesData(chartType, context);
-    const bgColors = context.colorProvider.rgbaColors(datasets.length, this.bgColorOpacity);
-    const borderColors = context.colorProvider.rgbColors(datasets.length);
+    const bgColors = context.colorProvider.bgColors(datasets.length);
+    const borderColors = context.colorProvider.borderColors(datasets.length);
     return {
       datasets: datasets.map((ds, i) => ({
         label: ds.key,

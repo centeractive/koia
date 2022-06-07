@@ -1,7 +1,7 @@
 import { Aggregation, Column } from '..';
 import { ElementType } from './element-type.enum';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
-import { ColorScheme } from 'app/shared/color';
+import { ColorOptions } from 'app/shared/color';
 
 export interface ViewElement {
    elementType: ElementType;
@@ -15,5 +15,5 @@ export interface ViewElement {
    groupByColumns: Column[];
    aggregations: Aggregation[];
    valueGroupings: ValueGrouping[];
-   colorScheme: ColorScheme;
+   colorOptions: ColorOptions;
 }

@@ -1,11 +1,17 @@
-import { ColorScheme } from 'app/shared/color';
+import { ColorOptions } from 'app/shared/color';
 
-export interface ColorProvider {
+export abstract class ColorProvider {
 
-    get colorScheme(): ColorScheme;
+    constructor(public options: ColorOptions) { }
 
-    rgbColors(count: number): string[];
+    bgColors(count: number): string[] {
+        return this.rgbaColors(count, this.options.bgColorOpacity);
+    }
 
-    rgbaColors(count: number, opacity: number): string[];
+    borderColors(count: number): string[] {
+        return this.rgbaColors(count, this.options.borderColorOpacity);
+    }
+
+    abstract rgbaColors(count: number, opacity: number): string[];
 
 }

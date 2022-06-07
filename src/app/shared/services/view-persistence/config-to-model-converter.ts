@@ -70,7 +70,7 @@ export class ConfigToModelConverter {
       to.setSize(from.width, from.height);
       to.aggregations = from.aggregations;
       to.valueGroupings = from.valueGroupings;
-      to.colorProvider = ColorProviderFactory.create(from.colorScheme);
+      to.colorProvider = ColorProviderFactory.create(from.colorOptions);
    }
 
    private targetColumn(sourceColumn: Column, targetContext: ElementContext) {

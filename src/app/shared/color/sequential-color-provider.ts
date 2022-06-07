@@ -1,18 +1,44 @@
 import { NumberUtils } from 'app/shared/utils';
-import { ColorProvider, ColorSchemeType, ColorScheme, ColorConverter, SequentialColorScheme, ColorUtils } from '.';
+import { ColorProvider, ColorOptions, ColorConverter, SequentialColorScheme } from '.';
+import {
+    interpolateCool, interpolateInferno, interpolatePlasma, interpolateRainbow, interpolateSinebow,
+    interpolateSpectral, interpolateTurbo, interpolateViridis, interpolateWarm,
+} from 'd3';
 
-export class SequentialColorProvider implements ColorProvider {
+export class SequentialColorProvider extends ColorProvider {
 
     private colorFunction: (n: number) => string;
 
-    constructor(private _scheme: SequentialColorScheme) {
-        this.colorFunction = ColorUtils.colorFunctionOf(_scheme);
+    constructor(options: ColorOptions) {
+        super(options);
+        this.colorFunction = this.colorFunctionOf(options.scheme as SequentialColorScheme);
     }
 
-    get colorScheme(): ColorScheme {
-        return {
-            type: ColorSchemeType.SEQUENTIAL,
-            scheme: this._scheme
+    /**
+     * @see https://github.com/d3/d3-scale-chromatic
+     */
+    private colorFunctionOf(scheme: SequentialColorScheme): (n: number) => string {
+        switch (scheme) {
+            case SequentialColorScheme.COOL:
+                return interpolateCool;
+            case SequentialColorScheme.INFERNO:
+                return interpolateInferno;
+            case SequentialColorScheme.PLASMA:
+                return interpolatePlasma;
+            case SequentialColorScheme.RAINBOW:
+                return interpolateRainbow;
+            case SequentialColorScheme.SINEBOW:
+                return interpolateSinebow;
+            case SequentialColorScheme.SPECTRAL:
+                return interpolateSpectral;
+            case SequentialColorScheme.TURBO:
+                return interpolateTurbo;
+            case SequentialColorScheme.VIRIDIS:
+                return interpolateViridis;
+            case SequentialColorScheme.WARM:
+                return interpolateWarm;
+            default:
+                throw new Error('no color function defined for scheme: ' + scheme);
         }
     }
 

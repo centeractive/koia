@@ -104,7 +104,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
     nodes.forEach((n, i) => n.index = i);
     const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('#div_svg');
     new D3ForceGraphGenerator(this.context, this.rawDataRevealService)
-      .generate(this.graphData, div, this.context.colorProvider);
+      .generate(this.graphData, div, this.context);
   }
 
   /**

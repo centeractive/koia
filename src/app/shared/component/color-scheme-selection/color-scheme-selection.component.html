@@ -1,4 +1,24 @@
-<div *ngFor="let s of colorSchemes">
-    <img [src]="imagesDir + s.scheme + '.png'" [title]="s.type + ': ' + s.scheme" (click)="selectionChanged(s)">
-    <span *ngIf="s == selectedColorScheme">✔</span>
+Categorical
+<div *ngFor="let s of categoricalSchemes">
+    <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
+         [title]="s" (click)="selectCategoricalScheme(s)">
+    <span *ngIf="s == colorOptions.scheme">✔</span>
+</div>
+<br>
+Sequential
+<div *ngFor="let s of sequentialSchemes">
+    <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
+         [title]="s" (click)="selectSequentialScheme(s)">
+    <span *ngIf="s == colorOptions.scheme">✔</span>
+</div>
+<br>
+<div class="div_opacity">
+    Background Color Opacity
+    <mat-slider min="0" max="1" step="0.05" [(ngModel)]="colorOptions.bgColorOpacity" (ngModelChange)="changeColorProvider()">
+    </mat-slider>
+</div>
+<div class="div_opacity">
+    Border Color Opacity
+    <mat-slider min="0" max="1" step="0.05" [(ngModel)]="colorOptions.borderColorOpacity" (ngModelChange)="changeColorProvider()">
+    </mat-slider>
 </div>
