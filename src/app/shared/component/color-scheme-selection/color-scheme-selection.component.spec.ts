@@ -1,19 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CategoricalColorScheme, SequentialColorScheme } from 'app/shared/color';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ColorSchemeSelectionComponent } from './color-scheme-selection.component';
 
-fdescribe('ColorSchemeSelectionComponent', () => {
+describe('ColorSchemeSelectionComponent', () => {
+
   let component: ColorSchemeSelectionComponent;
   let fixture: ComponentFixture<ColorSchemeSelectionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ColorSchemeSelectionComponent],
-      imports: [MatSlideToggleModule, MatFormFieldModule, BrowserAnimationsModule],
+      imports: [MatSliderModule, MatFormFieldModule, BrowserAnimationsModule],
     }).compileComponents();
   });
 

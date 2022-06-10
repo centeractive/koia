@@ -23,13 +23,13 @@ describe('CategoricalColorProvider', () => {
 
         // then
         expect(colors.length).toBe(count);
-        expect(colors[0]).toBe('rgb(127,201,127)');
+        expect(colors[0]).toBe('rgba(127,201,127,0.6)');
         expect(colors[count - 1]).toBe(colors[0]);
     });
 
     it('#borderColors', () => {
-        expect(colorProvider.borderColors(1)).toEqual(['rgba(127,201,127,0.6)']);
-        expect(colorProvider.borderColors(2)).toEqual(['rgba(127,201,127,0.6)', 'rgba(190,174,212,0.6)']);
+        expect(colorProvider.borderColors(1)).toEqual(['rgba(127,201,127,0.8)']);
+        expect(colorProvider.borderColors(2)).toEqual(['rgba(127,201,127,0.8)', 'rgba(190,174,212,0.8)']);
     });
 
     it('#borderColors when count exceeds number of available colors', () => {
@@ -42,7 +42,7 @@ describe('CategoricalColorProvider', () => {
 
         // then
         expect(colors.length).toBe(count);
-        expect(colors[0]).toBe('rgba(127,201,127,0.6)');
+        expect(colors[0]).toBe('rgba(127,201,127,0.8)');
         expect(colors[count - 1]).toBe(colors[0]);
     });
 
