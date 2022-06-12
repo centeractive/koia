@@ -16,10 +16,7 @@
 <div style="padding: 0 5px 0 5px;">
    <mat-accordion *ngIf="context" [multi]="multiExpandable">
 
-      <mat-expansion-panel [expanded]="true">
-         <mat-expansion-panel-header>
-            <h4>Data</h4>
-         </mat-expansion-panel-header>
+      <koia-expansion-panel title="Data" [expanded]="true">
          <span *ngFor="let column of dataColumns">
             <div *ngIf="!context.hasValueGrouping(column.name)">
                <button class="but_column" mat-raised-button [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''"
@@ -49,17 +46,12 @@
                </mat-radio-button>
             </mat-radio-group>
          </div>
-      </mat-expansion-panel>
+      </koia-expansion-panel>
 
-      <mat-expansion-panel *ngFor="let grouping of context.valueGroupings">
-         <mat-expansion-panel-header>
-            <mat-panel-title>
-               <h4>{{ grouping.columnName + ' Grouping' }}</h4>
-            </mat-panel-title>
-            <mat-panel-description>
-               <mat-icon class="icon_remove" (click)="removeValueGrouping(grouping)">delete_forever</mat-icon>
-            </mat-panel-description>
-         </mat-expansion-panel-header>
+      <koia-expansion-panel *ngFor="let grouping of context.valueGroupings" [title]="grouping.columnName + ' Grouping'">
+         <mat-panel-description>
+            <mat-icon class="icon_remove" (click)="removeValueGrouping(grouping)">delete_forever</mat-icon>
+         </mat-panel-description>
          <span class="span_left_to_right">
             <label>max. {{ grouping.minMaxValues.max }}</label>
             <button mat-button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
@@ -81,14 +73,11 @@
             </div>
          </div>
          <label>min. {{ grouping.minMaxValues.min }}</label>
-      </mat-expansion-panel>
+      </koia-expansion-panel>
 
-      <mat-expansion-panel>
-         <mat-expansion-panel-header>
-            <h4>Hierarchy</h4>
-         </mat-expansion-panel-header>
+      <koia-expansion-panel title="Hierarchy">
          <span class="span_left_to_right">
-            <h4>Selected Columns</h4>
+            <label>Selected Columns</label>
             <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
          </span>
          <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
@@ -120,12 +109,9 @@
                </mat-select>
             </div>
          </div>
-      </mat-expansion-panel>
+      </koia-expansion-panel>
 
-      <mat-expansion-panel *ngIf="!context.isAggregationCountSelected()">
-         <mat-expansion-panel-header>
-            <h4>Aggregation</h4>
-         </mat-expansion-panel-header>
+      <koia-expansion-panel *ngIf="!context.isAggregationCountSelected()" title="Aggregation">
          <div div_column_swap_list>
             <span class="span_left_to_right">
                <label>Selected Aggregations</label>
@@ -146,12 +132,9 @@
                     cdkDrag>{{ aggregation }}</div>
             </div>
          </div>
-      </mat-expansion-panel>
+      </koia-expansion-panel>
 
-      <mat-expansion-panel>
-         <mat-expansion-panel-header>
-            <h4>Position {{ gridColumns ? ' & Size' : '' }}</h4>
-         </mat-expansion-panel-header>
+      <koia-expansion-panel [title]="'Position ' + (gridColumns ? ' & Size' : '')">
          <mat-form-field class="field_small_integer" *ngIf="gridColumns">
             <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
                <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
@@ -174,6 +157,6 @@
                </mat-option>
             </mat-select>
          </mat-form-field>
-      </mat-expansion-panel>
+      </koia-expansion-panel>
    </mat-accordion>
 </div>

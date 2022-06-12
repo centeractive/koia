@@ -73,6 +73,7 @@ import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.co
 import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-value-input.directive';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-selection/color-scheme-selection.component';
+import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
 
 @NgModule({
     declarations: [
@@ -106,7 +107,8 @@ import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-s
         RangeFilterComponent,
         ColumnMappingComponent,
         ViewLauncherDialogComponent,
-        ColorSchemeSelectionComponent
+        ColorSchemeSelectionComponent,
+        ExpansionPanelComponent
     ],
     imports: [
         BrowserModule,

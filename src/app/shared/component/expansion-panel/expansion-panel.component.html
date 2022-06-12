@@ -1,0 +1,7 @@
+<!-- [@.disabled] see https://github.com/angular/components/issues/11765#issuecomment-696601006 -->
+<mat-expansion-panel [@.disabled]="true" [expanded]="expanded">
+    <mat-expansion-panel-header>
+        <h4>{{ title }}</h4>
+    </mat-expansion-panel-header>
+    <ng-content></ng-content>
+</mat-expansion-panel>
