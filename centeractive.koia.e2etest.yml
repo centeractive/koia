@@ -63,6 +63,12 @@ steps:
       errorActionPreference: "continue"
     displayName: "run Cypress tests"
 
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: "JUnit"
+      testResultsFiles: "**/TEST-*.xml"
+    displayName: "publish Cypress tests"
+
   # build product and publish artifact
   - script: |
       npx ng build --prod
