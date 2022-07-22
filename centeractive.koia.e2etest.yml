@@ -1,8 +1,3 @@
-# Node.js with Angular
-# Build a Node.js project that uses Angular.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger: none
 
 schedules:
@@ -32,6 +27,25 @@ steps:
     versionSpec: '16.x'
   displayName: 'install Node.js'
 
+- task: PowerShell@2
+  displayName: 'copy CouchDB local.ini to target directory'
+  inputs:
+    targetType: 'inline'
+    script: |
+      New-Item -Type Directory -Force "${HOME}/couchdb/etc/local.d"
+      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/etc/local.d/local.ini"    
+
+- task: DockerInstaller@0
+  displayName: install Docker
+  inputs:
+    dockerVersion: 17.09.0-ce
+    releaseType: stable
+    
+- script: |
+    docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.2.2
+  displayName: 'run CouchDB in Docker container'
+
+# perform unit-tets and publish test and code coverage results
 - script: |
     npm ci -g @angular/cli@13.3.7
     npm ci
