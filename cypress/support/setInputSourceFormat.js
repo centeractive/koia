@@ -1,9 +1,9 @@
 export function setInputSourceFormat(inputSourceFormat) {
   if (
-    Object.values(cy.get(".input_source_format").eq(0)).includes(
+    Object.values(cy.get(".input_source_format").includes(
       inputSourceFormat
     )
-  ) {
+  )
   } else {
     var flattened = flatval(cy.get(".input_source_format").eq(0));
     cy.log("flat : " + flattened); // ALL VALUES IN FLAT ARRAY
