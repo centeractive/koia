@@ -15,7 +15,6 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-
   - task: CacheBeta@0
     inputs:
       key: npm | $(Agent.OS) | package-lock.json
@@ -24,25 +23,25 @@ steps:
 
   - task: NodeTool@0
     inputs:
-    versionSpec: '16.x'
-  displayName: 'install Node.js'
+      versionSpec: "16.x"
+    displayName: "install Node.js"
 
   - script: |
       npm ci -g @angular/cli@13.3.7
       npm ci
-  displayName: 'install npm packages'
+    displayName: "install npm packages"
 
   # set-up and rund CouchDB in Docker container (used by unit tests)
   - task: DownloadSecureFile@1
-  displayName: 'download CouchDB local.ini file'
+    displayName: "download CouchDB local.ini file"
     name: couchdb_local_ini
     inputs:
-    secureFile: 'couchdb_local.ini'    
+      secureFile: "couchdb_local.ini"
 
   - task: PowerShell@2
-  displayName: 'copy CouchDB local.ini to target directory'
+    displayName: "copy CouchDB local.ini to target directory"
     inputs:
-    targetType: 'inline'
+      targetType: "inline"
       script: |
         New-Item -Type Directory -Force "${HOME}/couchdb/etc/local.d"
         Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/etc/local.d/local.ini"
@@ -55,22 +54,23 @@ steps:
 
   - script: |
       docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.2.2
-  displayName: 'run CouchDB in Docker container'
+    displayName: "run CouchDB in Docker container"
 
-  # perform unit-tets and publish test and code coverage results
-  - script: |
-      npx ng test --watch=false --karmaConfig karma.conf.ci.js --code-coverage
-  displayName: 'perform unit tests'    
+  - task: PowerShell@2
+    inputs:
+      targetType: "inline"
+      script: "./node_modules/cypress/bin/cypress run"
+      errorActionPreference: "continue"
 
   # build product and publish artifact
   - script: |
       npx ng build --prod
     failOnStderr: false
-  displayName: 'build koia product'
+    displayName: "build koia product"
 
   - task: PublishPipelineArtifact@0
     inputs:
-    artifactName: 'koiadist'
-    targetPath: 'dist/koia'
+      artifactName: "koiadist"
+      targetPath: "dist/koia"
     enabled: false
-  displayName: 'publish artifact'
+    displayName: "publish artifact"
