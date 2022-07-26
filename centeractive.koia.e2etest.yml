@@ -61,6 +61,7 @@ steps:
       targetType: "inline"
       script: "./node_modules/cypress/bin/cypress run"
       errorActionPreference: "continue"
+      continueOnError: true
     displayName: "run Cypress tests"
 
   - task: PublishTestResults@2
