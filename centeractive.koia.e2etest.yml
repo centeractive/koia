@@ -58,6 +58,12 @@ steps:
 
   - task: PowerShell@2
     inputs:
+      targetType: 'inline'
+      script: 'ng serve'
+    displayName: "run Cypress tests"
+
+  - task: PowerShell@2
+    inputs:
       targetType: "inline"
       script: "./node_modules/cypress/bin/cypress run"
       errorActionPreference: "continue"
@@ -79,7 +85,7 @@ steps:
         Write-Host "Show all folder content"
         Get-ChildItem -Name -Recurse -Force
     displayName: "Show all folder content"
-     
+    
   # build product and publish artifact
   - script: |
       npx ng build --prod
