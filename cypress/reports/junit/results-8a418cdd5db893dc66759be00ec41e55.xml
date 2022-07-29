@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="16.1000" tests="8" failures="0">
+  <testsuite name="Root Suite" timestamp="2022-07-29T11:58:07" tests="0" file="cypress\e2e\testing\fileUploadUS.cy.js" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="first example" timestamp="2022-07-29T11:58:07" tests="8" time="16.0850" failures="0">
+    <testcase name="first example check date preview initial" time="5.2320" classname="check date preview initial">
+    </testcase>
+    <testcase name="first example check date preview YYYY.MM.dd HH:mm:ss.SSS" time="1.8980" classname="check date preview YYYY.MM.dd HH:mm:ss.SSS">
+    </testcase>
+    <testcase name="first example check date preview  YYYY.MM.dd HH:mm:ss" time="1.2280" classname="check date preview  YYYY.MM.dd HH:mm:ss">
+    </testcase>
+    <testcase name="first example check date preview  YYYY.MM.dd HH:mm" time="1.2010" classname="check date preview  YYYY.MM.dd HH:mm">
+    </testcase>
+    <testcase name="first example check date preview YYYY.MM.dd HH" time="1.2120" classname="check date preview YYYY.MM.dd HH">
+    </testcase>
+    <testcase name="first example check date preview YYYY.MM.dd" time="1.1650" classname="check date preview YYYY.MM.dd">
+    </testcase>
+    <testcase name="first example check date preview YYYY.MM" time="1.2400" classname="check date preview YYYY.MM">
+    </testcase>
+    <testcase name="first example check date preview YYYY" time="1.1650" classname="check date preview YYYY">
+    </testcase>
+  </testsuite>
+</testsuites>

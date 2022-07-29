@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="5.3400" tests="1" failures="1">
+  <testsuite name="Root Suite" timestamp="2022-07-29T11:58:50" tests="0" file="cypress\e2e\testing\koia.cy.js" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="first example" timestamp="2022-07-29T11:58:50" tests="1" time="5.3250" failures="1">
+    <testcase name="first example check File-Upload" time="0.0000" classname="check File-Upload">
+      <failure message="A fixture file could not be found at any of the following paths:
+
+    &gt; cypress\fixtures\test.csv
+    &gt; cypress\fixtures\test.csv.[ext]
+
+Cypress looked for these file extensions at the provided path:
+
+    &gt; .json, .js, .coffee, .html, .txt, .csv, .png, .jpg, .jpeg, .gif, .tif, .tiff, .zip
+
+Provide a path to an existing fixture file." type="Error"><![CDATA[Error: A fixture file could not be found at any of the following paths:
+
+    > cypress\fixtures\test.csv
+    > cypress\fixtures\test.csv.[ext]
+
+Cypress looked for these file extensions at the provided path:
+
+    > .json, .js, .coffee, .html, .txt, .csv, .png, .jpg, .jpeg, .gif, .tif, .tiff, .zip
+
+Provide a path to an existing fixture file.
+    at Object.<anonymous> (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\lib\fixture.js:69:30)
+    at Object.tryCatcher (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\util.js:16:23)
+    at Promise._settlePromiseFromHandler (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\promise.js:547:31)
+    at Promise._settlePromise (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\promise.js:604:18)
+    at Promise._settlePromise0 (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\promise.js:649:10)
+    at Promise._settlePromises (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\promise.js:729:18)
+    at Promise._fulfill (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\promise.js:673:18)
+    at C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\bluebird\js\release\nodeback.js:42:21
+    at f (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\node_modules\once\once.js:25:25)
+    at Glob.<anonymous> (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:151:7)
+    at Glob.emit (node:events:390:28)
+    at Glob.emit (node:domain:475:12)
+    at Glob._finish (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:197:8)
+    at done (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:182:14)
+    at Glob._processSimple2 (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:688:12)
+    at C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:676:10
+    at Glob._stat2 (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:772:12)
+    at lstatcb_ (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\glob\glob.js:764:12)
+    at RES (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\node_modules\inflight\inflight.js:31:16)
+    at f (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\node_modules\once\once.js:25:25)
+    at callback (C:\Users\martin\AppData\Local\Cypress\Cache\10.3.0\Cypress\resources\app\packages\server\node_modules\graceful-fs\polyfills.js:299:20)
+    at FSReqCallback.oncomplete (node:fs:198:21)
+]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>
