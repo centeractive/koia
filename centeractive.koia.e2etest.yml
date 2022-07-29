@@ -72,7 +72,7 @@ steps:
     enabled: true
     displayName: "publish Cypress tests"
 
-  - task: PowerShell@3
+  - task: PowerShell@2
     inputs:
       targetType: 'inline'
       script: |
