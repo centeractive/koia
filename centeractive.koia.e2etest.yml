@@ -83,7 +83,7 @@ steps:
       targetType: 'inline'
       script: |
         Write-Host "Show all folder content"
-        Get-ChildItem -Path $(Agent.WorkFolder)\*.* -Recurse -Force
+        Get-ChildItem -Path -Name $(Agent.WorkFolder)\*.* -Recurse -Force
     displayName: "Show all folder content"
 
   - task: PublishPipelineArtifact@0
