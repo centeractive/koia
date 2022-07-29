@@ -59,7 +59,7 @@ steps:
   - task: PowerShell@2
     inputs:
       targetType: 'inline'
-      script: 'npm start'
+      script: 'npm start &'
     displayName: "start the Koia application"
 
   - task: PowerShell@2
@@ -85,16 +85,3 @@ steps:
         Write-Host "Show all folder content"
         Get-ChildItem -Name -Recurse -Force
     displayName: "Show all folder content"
-    
-  # build product and publish artifact
-  - script: |
-      npx ng build --prod
-    failOnStderr: false
-    displayName: "build koia product"
-
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: "koiadist"
-      targetPath: "dist/koia"
-    enabled: false
-    displayName: "publish artifact"
