@@ -71,12 +71,13 @@ steps:
       mergeTestResults: true
     enabled: true
     displayName: "publish Cypress tests"
-  - task: PowerShell@2
+
+  - task: PowerShell@3
     inputs:
       targetType: 'inline'
       script: |
         Write-Host "Show all folder content"
-        Get-ChildItem -Name $(Agent.WorkFolder)\*.* -Recurse -Force
+        Get-ChildItem -Path $(Agent.WorkFolder)\*.* -Name -Recurse -Force
     displayName: "Show all folder content"
      
   # build product and publish artifact
