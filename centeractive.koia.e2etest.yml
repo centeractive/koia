@@ -77,7 +77,7 @@ steps:
       targetType: 'inline'
       script: |
         Write-Host "Show all folder content"
-        Get-ChildItem -Path $(Agent.WorkFolder)\*.* -Name -Recurse -Force
+        Get-ChildItem -Name -Recurse -Force
     displayName: "Show all folder content"
      
   # build product and publish artifact
