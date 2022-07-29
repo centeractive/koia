@@ -67,7 +67,7 @@ steps:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: "JUnit"
-      testResultsFiles: "**/reports/junit/*.xml"
+      testResultsFiles: "**/reports/junit/*.*"
     enabled: true
     displayName: "publish Cypress tests"
 
