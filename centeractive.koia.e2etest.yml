@@ -68,6 +68,7 @@ steps:
     inputs:
       testResultsFormat: "JUnit"
       testResultsFiles: "**/reports/junit/*.*"
+      mergeTestResults: true
     enabled: true
     displayName: "publish Cypress tests"
 
