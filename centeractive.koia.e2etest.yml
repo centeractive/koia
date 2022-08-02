@@ -55,6 +55,12 @@ steps:
   - script: |
       docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.2.2
     displayName: "run CouchDB in Docker container"
+ 
+# build product and publish artifact
+  - script: |
+      npx ng build --prod
+    failOnStderr: false    
+    displayName: 'build koia product'
 
   - task: PowerShell@2
     inputs:
