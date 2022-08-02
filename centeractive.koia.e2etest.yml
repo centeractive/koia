@@ -55,23 +55,23 @@ steps:
   - script: |
       docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.2.2
     displayName: "run CouchDB in Docker container"
- 
-# build product and publish artifact
+
+  # build product and publish artifact
   - script: |
       npx ng build --prod
-    failOnStderr: false    
-    displayName: 'build koia product'
+    failOnStderr: false
+    displayName: "build koia product"
 
   - task: PowerShell@2
     inputs:
-      targetType: 'inline'
-      script: 'npm start &'
+      targetType: "inline"
+      script: "npm start &"
     displayName: "start the Koia application"
 
   - task: PowerShell@2
     inputs:
       targetType: "inline"
-      script: "./node_modules/cypress/bin/cypress run"
+      script: "./node_modules/cypress/bin/cypress run  --record --key fd9ecba7-bfba-430e-afda-d0b5d2f7e3d6"
       errorActionPreference: "continue"
     continueOnError: true
     displayName: "run Cypress tests"
@@ -86,7 +86,7 @@ steps:
 
   - task: PowerShell@2
     inputs:
-      targetType: 'inline'
+      targetType: "inline"
       script: |
         Write-Host "Show all folder content"
         Get-ChildItem -Name -Recurse -Force
