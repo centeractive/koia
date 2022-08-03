@@ -65,12 +65,7 @@ steps:
   - task: PowerShell@2
     inputs:
       targetType: "inline"
-      script: "npm start &" 
-    displayName: "start the Koia application"
-     
-  - task: Delay@1
-    inputs:
-      delayForMinutes: '4'
+      script: "npm start &"   
     displayName: "start the Koia application"
      
   - task: PowerShell@2
