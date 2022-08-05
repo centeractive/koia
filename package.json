@@ -18,7 +18,7 @@
     "test-headless": "ng test --watch=true --sourceMap=true --browsers=ChromeHeadless",
     "postinstall": "ngcc --properties es2015 browser module main --first-only --create-ivy-entry-points",
     "cypress": "npx cypress open --config-file cypress/config/local.json",
-    "cypress-run-report": "npx cypress run --record --key fd9ecba7-bfba-430e-afda-d0b5d2f7e3d6 --reporter cypress-multi-reporters",
+    "cypress-run-report": "node_modules\\.bin\\cypress run --record --key fd9ecba7-bfba-430e-afda-d0b5d2f7e3d6 --reporter cypress-multi-reporters --config-file cypress/config/local.json",
     "e2e": "start-server-and-test start http-get://localhost:4200 cypress-run-report"
   },
   "private": true,
