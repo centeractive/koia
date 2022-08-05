@@ -56,24 +56,28 @@ steps:
       docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.2.2
     displayName: "run CouchDB in Docker container"
 
-  # build product and publish artifact
+  # build product
   - script: |
       npx ng build
     failOnStderr: false
-    displayName: "build koia product"
+    displayName: "Build Koia productive version"
 
   - task: Npm@1
-    displayName: "E2E Test"
+    displayName: "Run E2E Tests"
     inputs:
       command: custom
       customCommand: run e2e
       workingDir: .
       verbose: true
 
-  # - script: |
-  #     npx e2e
-  #   failOnStderr: false
-  #   displayName: "build, start and test the Koia application"
+  - task: PublishTestResults@2
+    displayName: "Publish E2E test results"
+    condition: succeededOrFailed()
+    inputs:
+      searchFolder: $(System.DefaultWorkingDirectory)/cypress/
+      testRunTitle: Koia_E2E_Test
+      testResultsFormat: JUnit
+      testResultsFiles: "**/junit-result.xml"
 
   - task: PowerShell@2
     inputs:
