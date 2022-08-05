@@ -1,7 +1,8 @@
 export function navigateToStartPage() {
   //cy.visit("http://koia.io/intro/index.html");
-  cy.visit("http://localhost:8000/intro/index.html");
-  cy.get(".promo > .container > .intro").should(
+  //cy.visit("http://localhost:8000/intro/index.html");
+  cy.visit("/" + "/intro/index.html");
+  http: cy.get(".promo > .container > .intro").should(
     "have.text",
     "Create graphs and pivot tables online from CSV, Excel or JSON data."
   );
