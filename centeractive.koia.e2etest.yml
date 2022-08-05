@@ -57,15 +57,23 @@ steps:
     displayName: "run CouchDB in Docker container"
 
   # build product and publish artifact
-  # - script: |
-  #     npx ng build
-  #   failOnStderr: false
-  #   displayName: "build koia product"
-
   - script: |
-      npx e2e
+      npx ng build
     failOnStderr: false
-    displayName: "build, start and test the Koia application"
+    displayName: "build koia product"
+
+  - task: Npm@1
+    displayName: "E2E Test"
+    inputs:
+      command: custom
+      customCommand: run e2e
+      workingDir: .
+      verbose: true
+
+  # - script: |
+  #     npx e2e
+  #   failOnStderr: false
+  #   displayName: "build, start and test the Koia application"
 
   - task: PowerShell@2
     inputs:
