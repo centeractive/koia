@@ -78,7 +78,7 @@ steps:
       searchFolder: $(System.DefaultWorkingDirectory)/cypress/
       testRunTitle: Koia_E2E_Test
       testResultsFormat: JUnit
-      testResultsFiles: "**/junit-result*.xml"
+      testResultsFiles: "**/junit/results*.xml"
 
   - task: PowerShell@2
     inputs:
