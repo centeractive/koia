@@ -69,6 +69,7 @@ steps:
       customCommand: run e2e
       workingDir: .
       verbose: true
+    continueOnError: true  
 
   - task: PublishTestResults@2
     displayName: "Publish E2E test results"
