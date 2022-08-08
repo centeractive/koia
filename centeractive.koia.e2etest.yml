@@ -77,12 +77,11 @@ steps:
       searchFolder: $(System.DefaultWorkingDirectory)/cypress/
       testRunTitle: Koia_E2E_Test
       testResultsFormat: JUnit
-      testResultsFiles: "**/junit-result.xml"
+      testResultsFiles: "**/junit-result*.xml"
 
   - task: PowerShell@2
     inputs:
       targetType: "inline"
       script:
-        Write-Host "Show all folder content"
         Get-ChildItem -Name -Recurse -Force
     displayName: "Show all folder content"
