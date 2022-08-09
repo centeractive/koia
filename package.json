@@ -20,7 +20,8 @@
     "cypress": "npx cypress open --config-file cypress/config/local.json",
     "cypress-run-report": "npx cypress run --record --key fd9ecba7-bfba-430e-afda-d0b5d2f7e3d6 --reporter cypress-multi-reporters",
     "start-server": "angular-http-server --path ./dist/koia -p 4200",
-    "e2e": "start-server-and-test start-server http-get://localhost:4200 cypress-run-report"
+    "e2e": "start-server-and-test start-server http-get://localhost:4200 cypress-run-report report-merge",
+    "report-merge": "npx junit-merge -d cypress/reports/junit -o ./cypress/reports/junit/all.xml"
   },
   "private": true,
   "dependencies": {
@@ -87,6 +88,7 @@
     "jasmine-core": "~4.1.1",
     "jasmine-spec-reporter": "~7.0.0",
     "jasminewd2": "~2.2.0",
+    "junit-report-merger": "^4.0.0",
     "karma": "~6.3.20",
     "karma-chrome-launcher": "~3.1.1",
     "karma-cli": "~2.0.0",
