@@ -71,6 +71,15 @@ steps:
       verbose: true
     continueOnError: true  
 
+  - task: Npm@1
+    displayName: "merge results"
+    inputs:
+      command: custom
+      customCommand: run report-merge
+      workingDir: .
+      verbose: true
+    continueOnError: true  
+
   - task: PublishTestResults@2
     displayName: "Publish E2E test results"
     condition: succeededOrFailed()
@@ -78,7 +87,7 @@ steps:
       searchFolder: $(System.DefaultWorkingDirectory)/cypress/
       testRunTitle: Koia_E2E_Test
       testResultsFormat: JUnit
-      testResultsFiles: "**/junit/*.xml"
+      testResultsFiles: "**/junit/all.xml"
 
   - task: PowerShell@2
     inputs:
