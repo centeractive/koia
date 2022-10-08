@@ -71,7 +71,7 @@ describe('ViewPersistenceService', () => {
     expect(records).toEqual([pivotTableRecord]);
   });
 
-  it('#saveRecord should insert record when no one with same name exists', () => {
+  it('#saveRecord should insert record when no one with same name exists', async () => {
 
     // given
     const data = { x: 'one', y: 'two' };
@@ -81,12 +81,12 @@ describe('ViewPersistenceService', () => {
     const status$ = service.saveRecord(scene, Route.PIVOT, 'new', data);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
     const recordNames = service.findRecords(scene, Route.PIVOT).map(r => r.name);
     expect(recordNames).toEqual(['new', pivotTableRecord.name]);
   });
 
-  it('#saveRecord should update record when record with same name exists', () => {
+  it('#saveRecord should update record when record with same name exists', async () => {
 
     // given
     const data = { x: 'one', y: 'two' };
@@ -97,7 +97,7 @@ describe('ViewPersistenceService', () => {
 
     // then
     const expectedMsg = 'View "' + pivotTableRecord.name + '" has been saved';
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
     const records = service.findRecords(scene, Route.PIVOT);
     expect(records.length).toBe(1);
     expect(records[0].route).toBe(Route.PIVOT);
@@ -106,7 +106,7 @@ describe('ViewPersistenceService', () => {
     expect(records[0].modifiedTime).toBeGreaterThan(NOW);
   });
 
-  it('#saveRecord should return error status when server returns error message', () => {
+  it('#saveRecord should return error status when server returns error message', async () => {
 
     // given
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
@@ -116,10 +116,10 @@ describe('ViewPersistenceService', () => {
 
     // then
     const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
-    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
-  it('#saveRecord should return error status when server returns error object', () => {
+  it('#saveRecord should return error status when server returns error object', async () => {
 
     // given
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject({ message: 'Scene cannot be updated' }));
@@ -129,7 +129,7 @@ describe('ViewPersistenceService', () => {
 
     // then
     const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
-    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
   it('#findViews should return empty array when no matching view exists', () => {
@@ -150,7 +150,7 @@ describe('ViewPersistenceService', () => {
     expect(views).toEqual([gridView]);
   });
 
-  it('#saveView should add view when none with same route exists', () => {
+  it('#saveView should add view when none with same route exists', async () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
@@ -160,12 +160,12 @@ describe('ViewPersistenceService', () => {
     const status$ = service.saveView(scene, flexView);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "flex" has been saved' }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "flex" has been saved' }));
     expect(service.findViews(scene, Route.FLEX)).toEqual([flexView]);
     expect(service.findViews(scene, Route.GRID)).toEqual([gridView]);
   });
 
-  it('#saveView should add view when none with same name exists', () => {
+  it('#saveView should add view when none with same name exists', async () => {
 
     // given
     const newGridView = createGridView('new', NOW, summary);
@@ -175,12 +175,12 @@ describe('ViewPersistenceService', () => {
     const status$ = service.saveView(scene, newGridView);
 
     // then
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
     expect(service.findViews(scene, Route.GRID)).toEqual([newGridView, gridView]);
     expect(service.findViews(scene, Route.FLEX)).toEqual([]);
   });
 
-  it('#saveView should update view when view with same name exists', () => {
+  it('#saveView should update view when view with same name exists', async () => {
 
     // given
     const newGridView = createGridView(gridView.name, NOW, summary);
@@ -191,12 +191,12 @@ describe('ViewPersistenceService', () => {
 
     // then
     const expectedMsg = 'View "' + gridView.name + '" has been saved';
-    status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
     expect(service.findViews(scene, Route.GRID)).toEqual([newGridView]);
     expect(service.findViews(scene, Route.FLEX)).toEqual([]);
   });
 
-  it('#saveView should return error status when server returns error', () => {
+  it('#saveView should return error status when server returns error', async () => {
 
     // given
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
@@ -206,7 +206,7 @@ describe('ViewPersistenceService', () => {
 
     // then
     const expectedMsg = 'View "' + gridView.name + '" cannot be saved: Scene cannot be updated';
-    status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
+    await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
   function createColumn(name: string, dataType: DataType): Column {

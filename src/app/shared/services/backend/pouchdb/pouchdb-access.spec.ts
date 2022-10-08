@@ -45,7 +45,8 @@ describe('PouchDBAccess', () => {
       await dbAccess.createDatabase('db2');
 
       // when
-      await dbAccess.deleteDatabase('db1').then(() => null);
+      await dbAccess.deleteDatabase('db1')
+         .then(() => expect(true).toBeTrue()); // prevents 'has no expectations' warning
    });
 
    it('#createIndex should create design document', async () => {

@@ -91,16 +91,22 @@ describe('PivotTableSideBarComponent', () => {
   it('#ngOnChanges should work smoothly when context is null', () => {
     component.context = null;
     component.ngOnChanges(null);
+
+    expect('prevent "has no expectations" warning').toBeTruthy();
   });
 
   it('#ngOnChanges should work smoothly when columns are null', () => {
     component.columns = null;
     component.ngOnChanges(null);
+
+    expect('prevent "has no expectations" warning').toBeTruthy();
   });
 
   it('#ngOnChanges should work smoothly when data is null', () => {
     component.data = null;
     component.ngOnChanges(null);
+
+    expect('prevent "has no expectations" warning').toBeTruthy();
   });
 
   it('#click on multi expand toggle should close all expansion panels when unchecked', () => {
