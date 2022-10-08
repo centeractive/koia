@@ -47,7 +47,7 @@ steps:
 
 # perform unit-tets and publish test and code coverage results
 - script: |
-    npm ci -g @angular/cli@13.3.7
+    npm ci -g @angular/cli@14.2.5
     npm ci
   displayName: 'install npm packages'
 
