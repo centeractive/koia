@@ -58,7 +58,7 @@ steps:
 
   # perform unit-tets and publish test and code coverage results
   - script: |
-      npx ng test --watch=false --karmaConfig karma.conf.ci.js --code-coverage
+      npx ng test --watch=false --karma-config karma.conf.ci.js --code-coverage
     displayName: "perform unit tests"
 
   # build product and publish artifact
