@@ -1,16 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ExpansionPanelComponent } from './expansion-panel.component';
 
 describe('ExpansionPanelComponent', () => {
+
   let component: ExpansionPanelComponent;
   let fixture: ComponentFixture<ExpansionPanelComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ExpansionPanelComponent ]
-    })
-    .compileComponents();
+      declarations: [ExpansionPanelComponent],
+      imports: [BrowserAnimationsModule, MatExpansionModule],
+    }).compileComponents();
   });
 
   beforeEach(() => {

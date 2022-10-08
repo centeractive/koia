@@ -3,6 +3,7 @@ import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
 import { TimeUnitDetector } from './time-unit-detector';
 import { TimeGuesser } from './time-guesser';
 import { DatePipe } from '@angular/common';
+import { DateTimeColumnDetector } from './date-time-column-detector';
 
 export class ColumnMappingGenerator {
 
@@ -14,20 +15,8 @@ export class ColumnMappingGenerator {
    private static readonly MAX_TEXT_LENGTH_TO_BE_INDEXED = 100;
    private static readonly DATESTRING_MIN_EXPECTED_DIGITS = 2;
 
-   /**
-    * formats for date/time strings that cannot be parsed by default (keep [[undefined]] at first position)
-    */
-   private static readonly DATE_FORMATS_TO_TIMEUNITS: FormatToTimeUnit[] = [
-      { format: undefined, timeUnit: undefined },
-      { format: 'dd.MM.yyyy', timeUnit: TimeUnit.DAY },
-      { format: 'dd.MM.yyyy HH:mm:ss', timeUnit: TimeUnit.SECOND },
-      { format: 'dd.MM.yyyy HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND },
-      { format: 'yyyy-MM-dd HH:mm:ss,SSS', timeUnit: TimeUnit.MILLISECOND },
-      { format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND }
-   ];
-
-
    private datePipe = new DatePipe('en-US');
+   private dateTimeColumnDetector = new DateTimeColumnDetector();
    private timeUnitDetector = new TimeUnitDetector();
    private timeGuesser = new TimeGuesser();
 
@@ -79,7 +68,7 @@ export class ColumnMappingGenerator {
          }
          this.downgrade(columnPair, DataType.TEXT);
       } else if (columnPair.target.dataType === DataType.TIME && columnPair.source.format == undefined) {
-         this.refineDateTimeFormat(columnPair, value, locale);
+         this.dateTimeColumnDetector.refineDateTimeFormat(columnPair, value, locale);
       }
       columnPair.target.width = Math.max(columnPair.target.width, this.computeWidth(value, columnPair));
       if (columnPair.target.indexed && !this.shallBeIndexed(value)) {
@@ -105,26 +94,13 @@ export class ColumnMappingGenerator {
    private detectDateTime(columnPair: ColumnPair, value: string | number, locale: string): void {
       if (columnPair.source.dataType === DataType.TEXT &&
          NumberUtils.countDigits(<string>value) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
-         this.detectDateTimeFromString(columnPair, <string>value, locale);
+         this.dateTimeColumnDetector.detect(columnPair, <string>value, locale);
       } else if (columnPair.source.dataType === DataType.NUMBER) {
          this.detectDateTimeFromNumber(columnPair, <number>value, locale);
       }
    }
 
-   private detectDateTimeFromString(columnPair: ColumnPair, value: string, locale: string) {
-      for (const formatToTimeUnit of ColumnMappingGenerator.DATE_FORMATS_TO_TIMEUNITS) {
-         if (DateTimeUtils.parseDate(<string>value, formatToTimeUnit.format, locale)) {
-            columnPair.source.format = formatToTimeUnit.format;
-            columnPair.target.dataType = DataType.TIME;
-            const timeUnit = formatToTimeUnit.timeUnit ? formatToTimeUnit.timeUnit :
-               this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND, locale);
-            columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
-            return;
-         }
-      }
-   }
-
-   private detectDateTimeFromNumber(columnPair: ColumnPair, value: number, locale: string) {
+   private detectDateTimeFromNumber(columnPair: ColumnPair, value: number, locale: string): void {
       if (this.timeGuesser.isAssumedlyTime(columnPair, value, locale)) {
          columnPair.source.dataType = DataType.TIME;
          columnPair.target.dataType = DataType.TIME;
@@ -140,15 +116,6 @@ export class ColumnMappingGenerator {
 
    private guessDataTypeOf(value: any, locale: string): DataType {
       return value === '' ? undefined : DataTypeUtils.typeOf(value, locale);
-   }
-
-   private refineDateTimeFormat(columnPair: ColumnPair, value: any, locale: string): void {
-      for (const formatToTimeUnit of ColumnMappingGenerator.DATE_FORMATS_TO_TIMEUNITS) {
-         if (formatToTimeUnit.format && DateTimeUtils.parseDate(<string>value, formatToTimeUnit.format, locale)) {
-            columnPair.source.format = formatToTimeUnit.format;
-            break;
-         }
-      }
    }
 
    private shallBeIndexed(value: any): boolean {
@@ -177,7 +144,7 @@ export class ColumnMappingGenerator {
       return width;
    }
 
-   private extractColumnPairs(columnNamesToPair: Map<string, ColumnPair>) {
+   private extractColumnPairs(columnNamesToPair: Map<string, ColumnPair>): ColumnPair[] {
       const columnPairs = Array.from(columnNamesToPair.values());
       columnPairs.filter(cp => !cp.source.dataType).forEach(cp => {
          cp.source.dataType = DataType.TEXT;
@@ -185,9 +152,4 @@ export class ColumnMappingGenerator {
       });
       return columnPairs;
    }
-}
-
-interface FormatToTimeUnit {
-   format: string,
-   timeUnit: TimeUnit
 }

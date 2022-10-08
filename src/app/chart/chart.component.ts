@@ -51,7 +51,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
       this.validateMarginResize = (event: ResizeEvent) => {
         const margin = this.chartMarginService.computeMargin(this.context.margin, event);
         return margin.top >= 0 && margin.right >= 0 && margin.bottom >= 0 && margin.left >= 0;
-      }
+      };
     }
     if (changes['entries$']) {
       this.fetchEntries();

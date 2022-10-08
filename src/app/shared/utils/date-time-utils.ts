@@ -2,6 +2,7 @@ import * as moment from 'moment';
 import 'moment/min/locales';
 import { TimeUnit, Column, DataType } from '../model';
 import { ArrayUtils } from './array-utils';
+import { DateTime } from 'luxon';
 
 export class DateTimeUtils {
 
@@ -117,8 +118,8 @@ export class DateTimeUtils {
   static parseDate(value: string, ngFormat: string, locale?: string): Date {
     if (value) {
       if (ngFormat) {
-        const mnt = moment(value, this.ngToMomentFormat(ngFormat), locale ? locale : 'en', true);
-        return mnt.isValid() ? mnt.toDate() : undefined;
+        const dateTime = DateTime.fromFormat(value, ngFormat, { locale: locale ? locale : 'en' });
+        return dateTime.isValid ? dateTime.toJSDate() : undefined;
       }
       const date = new Date(value);
       return isNaN(date.getTime()) ? undefined : date;

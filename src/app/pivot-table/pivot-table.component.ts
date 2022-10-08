@@ -37,6 +37,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   readonly route = Route.PIVOT;
   readonly timeUnits = Object.keys(TimeUnit).map(key => TimeUnit[key]);
   columns: Column[];
+  timeColumns: Column[];
   contextFactory = new PivotContextFactory();
   context: PivotContext;
   loading: boolean;
@@ -67,6 +68,8 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
       this.columns = this.scene.columns
         .filter(c => c.indexed)
         .map(c => <Column>CommonUtils.clone(c));
+      this.timeColumns = this.columns
+        .filter(c => c.dataType == DataType.TIME);
       const baseQueryProvider: QueryProvider = { provide: () => this.query };
       const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
       this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);

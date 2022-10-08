@@ -355,7 +355,7 @@ describe('EntryMapper', () => {
    it('#mapObjects should return empty array when all value are null', () => {
 
       // when
-      const actual = mapper.mapObjects([{ Text: null, Number: null}]);
+      const actual = mapper.mapObjects([{ Text: null, Number: null }]);
 
       // then
       expect(actual.length).toBe(0);
@@ -364,7 +364,7 @@ describe('EntryMapper', () => {
    it('#mapObjects should return empty array when all values are undefined', () => {
 
       // when
-      const actual = mapper.mapObjects([{ Text: undefined, Number: undefined}]);
+      const actual = mapper.mapObjects([{ Text: undefined, Number: undefined }]);
 
       // then
       expect(actual.length).toBe(0);
@@ -547,7 +547,7 @@ describe('EntryMapper', () => {
 
       // then
       expect(actual.length).toBe(1);
-      expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "xy" to Time using format "yyyy.MM.dd HH:mm:ss SSS"' ]);
+      expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "xy" to Time using format "yyyy.MM.dd HH:mm:ss SSS"']);
    });
 
    it('#mapObjects NUMBER to TEXT', () => {
@@ -564,6 +564,21 @@ describe('EntryMapper', () => {
       expect(actual.length).toBe(1);
       expect(actual[0].entry['Code']).toBe('123');
       expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows undefined NUMBER to TIME', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.source.format = 'yyyy';
+      cp.target.name = 'Year';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapObjects([{ Number: undefined }]);
+
+      // then
+      expect(actual).toEqual([]);
    });
 
    it('#mapRows NUMBER to TIME', () => {

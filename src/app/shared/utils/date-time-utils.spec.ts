@@ -302,6 +302,15 @@ describe('DateTimeUtils', () => {
     expect(date.getTime()).toBe(0);
   });
 
+  it('#parseDate should return date when ISO-8601 compliant date and format', () => {
+
+    // when
+    const date = DateTimeUtils.parseDate('01 Jan 1970 00:00:00 GMT', 'd MMM yyyy HH:mm:ss z');
+
+    // then
+    expect(date.getTime()).toBe(0);
+  });
+
   it('#parseDate should return date when non ISO-8601 with format are provided', () => {
 
     // when
@@ -312,6 +321,18 @@ describe('DateTimeUtils', () => {
     expect(date.getFullYear()).toBe(2005);
     expect(date.getMonth()).toBe(6);
     expect(date.getDate()).toBe(23);
+  });
+
+  it('#parseDate should return date when year with format and locale are provided', () => {
+
+    // when
+    const date = DateTimeUtils.parseDate('2019', 'yyyy', 'en');
+
+    // then
+    expect(date).toBeDefined();
+    expect(date.getFullYear()).toBe(2019);
+    expect(date.getMonth()).toBe(0);
+    expect(date.getDate()).toBe(1);
   });
 
   it('#parseDate should return date when non ISO-8601 date with format and locale are provided', () => {

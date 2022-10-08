@@ -67,7 +67,7 @@
           <mat-icon>timer</mat-icon>
         </button>
         <mat-menu #timeColumnMenu="matMenu">
-          <button *ngFor="let column of context.timeColumns" mat-menu-item [matMenuTriggerFor]="timeUnitMenu"
+          <button *ngFor="let column of timeColumns" mat-menu-item [matMenuTriggerFor]="timeUnitMenu"
                   [matMenuTriggerData]="{ column: column }">{{ column.name }}</button>
         </mat-menu>
         <mat-menu #timeUnitMenu="matMenu">

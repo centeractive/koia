@@ -72,7 +72,7 @@ export class EntryMapper {
             this.mapDate(<Date>sourceValue, columnPair, mappingResult);
          } else if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)
             && columnPair.target.dataType === DataType.TIME) {
-            this.mapTextToTime(<string>sourceValue, columnPair, mappingResult);
+            this.mapTextToTime(sourceValue?.toString(), columnPair, mappingResult);
          } else {
             const value = DataTypeUtils.toTypedValue(sourceValue, columnPair.target.dataType, this.locale);
             if (value == undefined) {

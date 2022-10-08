@@ -307,7 +307,7 @@ describe('ValueFilterComponent', () => {
     expect(component.valueControl.hasError('error')).toBe(false);
   }));
 
-  it('pressing <enter> in column filter field should emit onFilterChange', fakeAsync(() => {
+  it('pressing <enter> in column filter field should emit onFilterChange', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
@@ -327,7 +327,7 @@ describe('ValueFilterComponent', () => {
 
     // then
     expect(component.onChange.emit).toHaveBeenCalled();
-  }));
+  });
 
   it('#click on <clear> button in value field field should emit change event', fakeAsync(() => {
 
