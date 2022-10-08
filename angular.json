@@ -110,7 +110,6 @@
       }
     }
   },
-  "defaultProject": "koia",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "koia",

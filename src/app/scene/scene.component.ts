@@ -11,7 +11,7 @@ import { Location } from '@angular/common';
 import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './column-mapping/mapper';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatAccordion } from '@angular/material/expansion';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ProgressBarMode } from '@angular/material/progress-bar';
@@ -55,7 +55,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   percentPersisted: number;
   entryPersister: EntryPersister;
   maxItemsPerScene: number;
-  maxItemsToLoadControl: FormControl;
+  maxItemsToLoadControl: UntypedFormControl;
   abortDataloadOnError = true;
   progressBarMode: ProgressBarMode;
   canceled = false;
@@ -114,7 +114,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       .then(db => {
         this.scene = SceneUtils.createScene(db);
         this.maxItemsPerScene = this.dbService.getMaxDataItemsPerScene();
-        this.maxItemsToLoadControl = new FormControl('', [Validators.min(1), Validators.max(this.maxItemsPerScene)]);
+        this.maxItemsToLoadControl = new UntypedFormControl('', [Validators.min(1), Validators.max(this.maxItemsPerScene)]);
         this.maxItemsToLoadControl.setValue(this.maxItemsPerScene);
         this.entryPersister = this.createEntryPersister();
       })

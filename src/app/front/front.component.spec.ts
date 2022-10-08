@@ -7,7 +7,7 @@ import { ReaderService } from 'app/shared/services/reader';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { HAMMER_LOADER } from '@angular/platform-browser';
-import { FormsModule, FormBuilder } from '@angular/forms';
+import { FormsModule, UntypedFormBuilder } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Component } from '@angular/core';
@@ -63,7 +63,7 @@ describe('FrontComponent', () => {
         { provide: ReaderService, useValue: readerService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
-        FormBuilder,
+        UntypedFormBuilder,
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })
@@ -399,7 +399,7 @@ describe('FrontComponent (external invocation)', () => {
         { provide: ReaderService, useValue: readerService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
-        FormBuilder,
+        UntypedFormBuilder,
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })

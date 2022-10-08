@@ -3,7 +3,7 @@ import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { ValueFilterCustomizer } from './value-filter-customizer';
 import { PropertyFilterValidator } from 'app/shared/validator';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FilterValueParser } from './filter-value-parser';
 import { ValueFilterUtils } from './value-filter-utils';
 
@@ -21,7 +21,7 @@ export class ValueFilterComponent implements OnInit {
   readonly operators: Operator[];
   valueFilterCustomizer = new ValueFilterCustomizer();
   columns: Column[];
-  valueControl = new FormControl();
+  valueControl = new UntypedFormControl();
   private validator: PropertyFilterValidator;
   private valueParser: FilterValueParser;
 

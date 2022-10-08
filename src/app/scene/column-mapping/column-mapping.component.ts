@@ -3,7 +3,7 @@ import { ColumnPair, DataType } from 'app/shared/model';
 import { ColumnDefinitionAssistant } from '../utils';
 import { DateTimeUtils } from 'app/shared/utils';
 import { DatePipe } from '@angular/common';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { ColumnMappingGenerator } from './mapper';
 
 @Component({
@@ -21,12 +21,12 @@ export class ColumnMappingComponent implements OnInit {
   readonly now = new Date();
   readonly datePipe = new DatePipe('en-US');
   dateFormats: string[];
-  columnNameControl: FormControl;
+  columnNameControl: UntypedFormControl;
 
   ngOnInit() {
     this.dateFormats = DateTimeUtils.allTimeUnits('desc')
       .map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
-    this.columnNameControl = new FormControl('', [
+    this.columnNameControl = new UntypedFormControl('', [
       Validators.required,
       Validators.pattern(/^(?!\$).*/), // see https://github.com/apache/couchdb/issues/2028
       Validators.maxLength(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH)

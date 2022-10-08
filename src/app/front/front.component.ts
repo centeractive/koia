@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { Route, ConnectionInfo } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
@@ -25,7 +25,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   readonly urlScenes = '/' + Route.SCENES;
 
   stepsVisible = true;
-  stepVisibleControl: FormGroup;
+  stepVisibleControl: UntypedFormGroup;
   dataStorages = [this.indexedDB, this.couchDB];
   selectedDataStorage: string;
   ready = false;
@@ -34,7 +34,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private readerService: ReaderService, private dialogService: DialogService,
-    notificationService: NotificationService, private formBuilder: FormBuilder) {
+    notificationService: NotificationService, private formBuilder: UntypedFormBuilder) {
     super(bottomSheet, notificationService);
   }
 
