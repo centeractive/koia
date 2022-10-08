@@ -15,7 +15,10 @@ describe('ExcelReader', () => {
       dataHandler = {
          onValues: () => null,
          onEntries: entries => console.log(entries),
-         onError: err => fail(err),
+         onError: err => {
+            console.error(err)
+            fail(err)
+         },
          onComplete: () => null,
          isCanceled: () => null
       };

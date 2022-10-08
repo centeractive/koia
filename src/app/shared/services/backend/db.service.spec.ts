@@ -1,5 +1,4 @@
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
-
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from 'app/shared/model';
 import { DBService } from './db.service';
@@ -16,12 +15,9 @@ describe('DBService', () => {
   let dbService: DBService;
   let initialScene: Scene;
 
-  beforeAll(() => {
+  beforeEach(async () => {
     spyOn(console, 'log');
     spyOn(console, 'warn');
-  });
-
-  beforeEach(async () => {
     new CouchDBConfig().reset();
     columns = [
       { name: 'ID', dataType: DataType.NUMBER, width: 10, indexed: true },
@@ -46,9 +42,9 @@ describe('DBService', () => {
     couchDBService = TestBed.inject(CouchDBService);
   });
 
-  beforeEach((done) => {
+  beforeEach(async () => {
     dbService = new DBService(couchDBService);
-    couchDBService.clear(testDBPrefix)
+    await couchDBService.clear(testDBPrefix)
       .then(() => {
         dbService = new DBService(couchDBService);
         dbService.setDbPrefix(testDBPrefix);
@@ -58,7 +54,7 @@ describe('DBService', () => {
         initialScene = SceneFactory.createScene('0', columns);
         return dbService.persistScene(initialScene, true);
       })
-      .then(() => done())
+      .then(() => null)
       .catch(e => fail(e));
   });
 
@@ -326,7 +322,9 @@ describe('DBService', () => {
     initialScene.name = 'updated';
 
     // when
-    await dbService.updateScene(initialScene).then(s => null).catch(e => fail(e));
+    await dbService.updateScene(initialScene)
+      .then(s => null)
+      .catch(e => fail(e));
 
     // then
     expect(initialScene._rev).not.toBe(sceneRev);
@@ -338,7 +336,9 @@ describe('DBService', () => {
   it('#deleteScene should delete active scene', async () => {
 
     // when
-    await dbService.deleteScene(initialScene).then(s => null).catch(e => fail(e));
+    await dbService.deleteScene(initialScene)
+      .then(s => null)
+      .catch(e => fail(e));
 
     // then
     expect(dbService.getActiveScene()).toBeUndefined();

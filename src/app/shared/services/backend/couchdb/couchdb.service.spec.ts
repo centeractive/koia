@@ -1,4 +1,4 @@
-import { TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { CouchDBService } from './couchdb.service';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Document, ConnectionInfo, Protocol } from 'app/shared/model';
@@ -10,16 +10,13 @@ describe('CouchDBService', () => {
    const config = new CouchDBConfig();
    let couchDBService: CouchDBService;
 
-   beforeAll(async () => {
+   beforeEach(async () => {
       spyOn(console, 'log');
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
       });
       couchDBService = TestBed.inject(CouchDBService);
-   });
-
-   beforeEach(async () => {
       await couchDBService.clear(testDBPrefix)
          .then(() => null)
          .catch(e => fail(e));
@@ -30,19 +27,18 @@ describe('CouchDBService', () => {
       await couchDBService.initConnection(config.readConnectionInfo()).then(r => null);
    });
 
-   it('#initConnection should store config', fakeAsync(() => {
+   it('#initConnection should store config', async () => {
 
       // given
       const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
       spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve([]));
 
       // when
-      couchDBService.initConnection(connInfo).then(dbs => null);
-      flush();
+      await couchDBService.initConnection(connInfo).then(() => null);
 
       // then
       expect(couchDBService.getConnectionInfo()).toEqual(connInfo);
-   }));
+   });
 
    it('#initConnection should be rejected when connection fails', async () => {
 
