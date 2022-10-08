@@ -12,7 +12,7 @@ describe('CouchDBService', () => {
 
    beforeAll(async () => {
       spyOn(console, 'log');
-      // config.reset(); TODO: remove when stable -> disabling this line fixed randomly failing tests 
+      config.reset(); // TODO: remove when stable -> this line fixed randomly failing tests 
       TestBed.configureTestingModule({
          imports: [HttpClientModule],
          providers: [CouchDBService]
