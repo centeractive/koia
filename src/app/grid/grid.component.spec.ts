@@ -438,7 +438,7 @@ describe('GridComponent', () => {
       return dialogRef;
     });
     const status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
-    const status$ = of(status).toPromise();
+    const status$ = Promise.resolve(status);
     spyOn(viewPersistenceService, 'saveView').and.returnValue(status$);
 
     // when

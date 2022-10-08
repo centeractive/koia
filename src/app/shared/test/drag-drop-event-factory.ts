@@ -28,7 +28,8 @@ export class DragDropEventFactory<T> {
          previousContainer: undefined,
          isPointerOverContainer: true,
          distance: { x: 0, y: 0 },
-         dropPoint: undefined
+         dropPoint: undefined,
+         event: new MouseEvent(null)
       };
    }
 

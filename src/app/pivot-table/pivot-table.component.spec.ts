@@ -26,14 +26,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogRef } from '@angular/material/dialog';
 
 @Injectable()
 export class MockElementRef {
   nativeElement: {}
 }
-
 describe('PivotTableComponent', () => {
 
   const NOW = new Date().getTime();
@@ -78,7 +77,7 @@ describe('PivotTableComponent', () => {
       declarations: [PivotTableComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
-        BrowserAnimationsModule, MatMenuModule, RouterTestingModule
+        BrowserAnimationsModule, MatMenuModule, RouterTestingModule, MatBottomSheetModule
       ],
       providers: [
         { provide: ElementRef, useClass: MockElementRef },
@@ -314,7 +313,7 @@ describe('PivotTableComponent', () => {
     });
     const saveRecordSpy = spyOn(viewPersistenceService, 'saveRecord');
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    const status$ = of(status).toPromise();
+    const status$ = Promise.resolve(status);
     saveRecordSpy.and.returnValue(status$);
 
     // when
@@ -346,12 +345,12 @@ describe('PivotTableComponent', () => {
       return dialogRef;
     });
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    const status$ = of(status).toPromise();
+    const status$ = Promise.resolve(status);
     spyOn(viewPersistenceService, 'saveRecord').and.returnValue(status$);
 
     // when
     component.saveConfig();
-    tick();
+    flush();
 
     // then
     const bootomSheet = TestBed.inject(MatBottomSheet);

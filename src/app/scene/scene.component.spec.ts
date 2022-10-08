@@ -7,7 +7,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DBService } from 'app/shared/services/backend';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
 import { DatePipe, Location } from '@angular/common';
 import { ReaderService, DataHandler } from 'app/shared/services/reader';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
@@ -80,7 +79,7 @@ describe('SceneComponent', () => {
     spyOn(notificationService, 'onWarning');
     spyOn(notificationService, 'onError');
     isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
-    spyOn(dbService, 'findFreeDatabaseName').and.returnValue(of('data_1').toPromise());
+    spyOn(dbService, 'findFreeDatabaseName').and.returnValue(Promise.resolve('data_1'));
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     findSceneInfos = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
     spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());

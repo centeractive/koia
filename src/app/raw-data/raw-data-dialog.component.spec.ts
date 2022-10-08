@@ -11,7 +11,6 @@ class RawDataComponent {
    @Input() query: Query;
    @Input() hideToolbar: boolean;
 }
-
 describe('RawDataDialogComponent', () => {
 
    const dialogRef = <MatDialogRef<RawDataDialogComponent>>{

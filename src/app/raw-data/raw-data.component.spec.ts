@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
-
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
 import { RawDataComponent } from './raw-data.component';
 import { Router } from '@angular/router';
@@ -20,7 +19,7 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -69,7 +68,8 @@ describe('RawDataComponent', () => {
       declarations: [RawDataComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatTableModule, MatSortModule, MatPaginatorModule, MatMenuModule,
-        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, RouterTestingModule
+        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, RouterTestingModule,
+        MatBottomSheetModule
       ],
       providers: [
         MatBottomSheet,
@@ -86,7 +86,7 @@ describe('RawDataComponent', () => {
     component = fixture.componentInstance;
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
-    requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(of(page).toPromise());
+    requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(Promise.resolve(page));
     spyOn(dialogService, 'showConfirmDialog').and.returnValue(null);
     exportService = TestBed.inject(ExportService);
     fixture.detectChanges();
@@ -109,7 +109,7 @@ describe('RawDataComponent', () => {
     expect(component.entries).toBe(entries);
   });
 
-  it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
+  it('#ngOnInit should navigate to scenes view when no scene is active', async () => {
 
     // given
     getActiveSceneSpy.and.returnValue(null);
@@ -118,11 +118,11 @@ describe('RawDataComponent', () => {
 
     // when
     component.ngOnInit();
-    flush();
+    await fixture.whenStable();
 
     // then
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
-  }));
+  });
 
   it('#ngOnInit should not define new query when query is definedactive', fakeAsync(() => {
 
@@ -169,7 +169,7 @@ describe('RawDataComponent', () => {
     expect(query.getRowsPerPage()).toBe(10);
   });
 
-  it('#sortEntries should show CouchDB limitation dialog when CouchDB is in use', fakeAsync(() => {
+  it('#sortEntries should show CouchDB limitation dialog when CouchDB is in use', async () => {
 
     // given
     SortLimitationWorkaround.couchDbSortLimitationDialogData.rememberChoice = false;
@@ -177,11 +177,11 @@ describe('RawDataComponent', () => {
 
     // when
     component.sortEntries({ active: 'Level', direction: 'asc' });
-    flush();
+    await fixture.whenStable();
 
     // then
     expect(dialogService.showConfirmDialog).toHaveBeenCalled();
-  }));
+  });
 
   it('#sortEntries should not show CouchDB limitation dialog when user suppressed it', fakeAsync(() => {
 
@@ -466,7 +466,7 @@ describe('RawDataComponent', () => {
     expect(notificationService.onError).toHaveBeenCalled();
   }));
 
-  it('#click on print button should print window', fakeAsync(() => {
+  it('#click on print button should print window', async () => {
 
     // given;
     const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
@@ -474,8 +474,9 @@ describe('RawDataComponent', () => {
 
     // when
     okButton.click();
+    fixture.whenStable();
 
     // then
     expect(window.print).toHaveBeenCalled();
-  }));
+  });
 });
