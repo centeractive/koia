@@ -1,7 +1,6 @@
 import { ProgressMonitor } from './progress-monitor.type';
 import { EntryPersister } from './entry-persister';
 import { DBService } from 'app/shared/services/backend';
-import { DocChangeResponse } from 'app/shared/services/backend/doc-change-response.type';
 import { flush, fakeAsync } from '@angular/core/testing';
 import { Document } from 'app/shared/model';
 
@@ -16,7 +15,7 @@ describe('EntryPersister', () => {
    let persister: EntryPersister;
 
    beforeEach(() => {
-      dbServiceWriteEtriesSpy = spyOn(dbService, 'writeEntries').and.callFake(arg => Promise.resolve());
+      dbServiceWriteEtriesSpy = spyOn(dbService, 'writeEntries').and.callFake(() => Promise.resolve());
       monitor = {
          onProgress: percent => console.log('progress ' + percent + '%'),
          onComplete: msg => console.log(msg),
@@ -29,7 +28,7 @@ describe('EntryPersister', () => {
       persister = new EntryPersister(dbService, database, batchSize, monitor);
    });
 
-   it('#post should not submit data when batch size is not reached', fakeAsync(() => {
+   it('#post should not submit data when batch size is not reached', () => {
 
       // when
       persister.post(entries(batchSize - 1));
@@ -40,7 +39,7 @@ describe('EntryPersister', () => {
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '3 items read');
       expect(monitor.onComplete).toHaveBeenCalledTimes(0);
-   }));
+   });
 
    it('#post should submit data when batch size is reached', fakeAsync(() => {
 
@@ -51,7 +50,7 @@ describe('EntryPersister', () => {
       // then
       expect(persister.isPostingComplete()).toBeFalsy();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
-      expect(dbService.writeEntries).toHaveBeenCalledWith(database, [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
+      expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([1, 2, 3, 4]));
       expect(monitor.onProgress).toHaveBeenCalledTimes(2);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '4 items read');
       expect(monitor.onProgress).toHaveBeenCalledWith(100, '4 items read / 4 persisted');
@@ -67,8 +66,8 @@ describe('EntryPersister', () => {
       // then
       expect(persister.isPostingComplete()).toBeFalsy();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(2);
-      expect(dbService.writeEntries).toHaveBeenCalledWith(database, [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]);
-      expect(dbService.writeEntries).toHaveBeenCalledWith(database, [{ id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }]);
+      expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([1, 2, 3, 4]));
+      expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([5, 6, 7, 8]));
       expect(monitor.onProgress).toHaveBeenCalledTimes(3);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '10 items read');
       expect(monitor.onProgress).toHaveBeenCalledWith(40, '10 items read / 4 persisted');
@@ -123,7 +122,7 @@ describe('EntryPersister', () => {
       // then
       expect(persister.isPostingComplete()).toBeTrue();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
-      expect(dbService.writeEntries).toHaveBeenCalledWith(database, [{ id: 5 }, { id: 6 }]);
+      expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([5, 6]));
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledWith(100, '6 of 6 items persisted (100%)');
       expect(monitor.onComplete).toHaveBeenCalledTimes(1);
@@ -167,13 +166,8 @@ describe('EntryPersister', () => {
       flush();
    }));
 
-   function docChangeResponses(objectCount: number): DocChangeResponse[] {
-      const docChangeResp: DocChangeResponse[] = new Array(objectCount);
-      for (let i = 0; i < docChangeResponses.length; i++) {
-         const id = '' + (i + 1);
-         docChangeResp[i] = { ok: true, id: id, rev: id };
-      }
-      return docChangeResp;
+   function documents(ids: number[]): Document[] {
+      return ids.map(id => ({ id }) as Document);
    }
 
    function entries(objectCount: number): Object[] {

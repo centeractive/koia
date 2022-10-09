@@ -64,22 +64,22 @@ describe('FrontComponent', () => {
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
         UntypedFormBuilder,
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: HAMMER_LOADER, useValue: () => Promise.resolve({}) }
       ]
     })
       .compileComponents();
-  }));
-
-  beforeEach(fakeAsync(() => {
-    fixture = TestBed.createComponent(FrontComponent);
-    component = fixture.componentInstance;
     initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
     isIndexedDbInUseSpy = spyOn(dbService, 'isIndexedDbInUse').and.returnValue(true);
     const sceneInfos = createSceneInfos(5);
     findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
-    fixture.detectChanges();
-    flush();
   }));
+
+  beforeEach(async () => {
+    fixture = TestBed.createComponent(FrontComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
