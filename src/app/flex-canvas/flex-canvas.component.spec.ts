@@ -265,7 +265,8 @@ describe('FlexCanvasComponent', () => {
     fixture.detectChanges();
     const headerHeight = 26;
     component.elementContainerDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementContainerDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
+    spyOn(component.elementContainerDivsRefs, 'toArray')
+      .and.returnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
     const context = component.elementContexts[0];
     spyOn(context, 'setSize');
     let event = resizeEvent({ width: 300, height: 200 });
@@ -286,8 +287,9 @@ describe('FlexCanvasComponent', () => {
     fixture.detectChanges();
     const headerHeight = 26;
     component.elementContainerDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementContainerDivsRefs, 'toArray').and.returnValue([new ElementRef(<HTMLDivElement>{ offsetHeight: headerHeight })]);
-    const context = <SummaryContext>component.elementContexts[0];
+    spyOn(component.elementContainerDivsRefs, 'toArray')
+      .and.returnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
+    const context = component.elementContexts[0] as SummaryContext;
     spyOn(context, 'setSize');
     let event = resizeEvent({ width: 300, height: 200 });
     component.onResizeStart(event);
@@ -467,7 +469,7 @@ describe('FlexCanvasComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Test';
-    chartContext.chart = <any>{ toBase64Image: () => 'base64Image...' };
+    chartContext.chart = { toBase64Image: () => 'base64Image...' } as any;
     spyOn(exportService, 'exportImage');
 
     // when

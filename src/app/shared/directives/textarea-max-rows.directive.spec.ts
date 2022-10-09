@@ -7,7 +7,7 @@ describe('TextareaMaxRowsDirective', () => {
   let directive: TextareaMaxRowsDirective;
 
   beforeEach(() => {
-    textArea = <HTMLTextAreaElement> document.createElement('TEXTAREA');
+    textArea = document.createElement('TEXTAREA') as HTMLTextAreaElement;
     directive = new TextareaMaxRowsDirective(new ElementRef(textArea));
     spyOn(textArea, 'blur');
   });

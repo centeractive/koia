@@ -164,7 +164,7 @@ describe('RawDataComponent', () => {
     // then
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
     const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
-    expect(query.getSort()).toEqual(<Sort>{ active: 'Path', direction: 'desc' });
+    expect(query.getSort()).toEqual({ active: 'Path', direction: 'desc' });
     expect(query.getPageIndex()).toBe(0);
     expect(query.getRowsPerPage()).toBe(10);
   });
@@ -324,7 +324,7 @@ describe('RawDataComponent', () => {
 
     // given
     const divContent = { style: { marginTop: '' } };
-    component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
+    component.divContentRef = new ElementRef(divContent as HTMLDivElement);
 
     // when
     component.adjustLayout();
@@ -338,7 +338,7 @@ describe('RawDataComponent', () => {
     // given
     component.dialogStyle = true;
     const divContent = { style: { marginTop: '' } };
-    component.divContentRef = new ElementRef(<HTMLDivElement>divContent);
+    component.divContentRef = new ElementRef(divContent as HTMLDivElement);
 
     // when
     component.adjustLayout();

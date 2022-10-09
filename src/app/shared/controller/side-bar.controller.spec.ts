@@ -231,7 +231,7 @@ describe('SummaryTableSideBarComponent', () => {
       const rangeSecond = amountValueGrouping.ranges[1];
 
       // when
-      const dropEvent = <CdkDragDrop<string[]>>{ previousIndex: 0, currentIndex: 1 }
+      const dropEvent = { previousIndex: 0, currentIndex: 1 } as CdkDragDrop<string[]>;
       controller.dropGroupingRange(amountValueGrouping, dropEvent);
 
       // then

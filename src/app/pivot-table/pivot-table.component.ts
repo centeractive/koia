@@ -168,7 +168,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     firstValueFrom(dialogRef.afterClosed()).then(r => {
       if (data.closedWithOK) {
         this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
-        const context = <PivotContext>CommonUtils.clone(this.context);
+        const context = CommonUtils.clone(this.context) as PivotContext;
         context.valueGroupings.forEach(vg => vg.minMaxValues = null);
         this.viewPersistenceService.saveRecord(this.scene, Route.PIVOT, data.input, context)
           .then(s => this.showStatus(s));
@@ -242,7 +242,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   }
 
   private observePivotTableRefreshStart(): void {
-    const pivotRendererArea = <HTMLTableElement>this.divPivot.nativeElement.getElementsByClassName('pvtRendererArea')[0];
+    const pivotRendererArea = this.divPivot.nativeElement.getElementsByClassName('pvtRendererArea')[0] as HTMLTableElement;
     const mutationObserver = new MutationObserver(() => {
       if (pivotRendererArea.style.opacity !== '1') {
         this.computing = true; // refresh started
@@ -252,7 +252,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   }
 
   exportToExcel(): void {
-    const table = <HTMLTableElement>this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0];
+    const table = this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0] as HTMLTableElement;;
     this.exportService.exportTableAsExcel(table, 'PivotTable');
   }
 }

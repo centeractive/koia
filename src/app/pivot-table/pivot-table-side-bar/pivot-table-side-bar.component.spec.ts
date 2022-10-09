@@ -235,7 +235,7 @@ describe('PivotTableSideBarComponent', () => {
     grouping.ranges = [range1, range2, range3];
 
     // when
-    component.dropGroupingRange(grouping, <CdkDragDrop<string[]>>{ previousIndex: 2, currentIndex: 0 });
+    component.dropGroupingRange(grouping, { previousIndex: 2, currentIndex: 0 } as CdkDragDrop<string[]>);
 
     // then
     expect(grouping.ranges).toEqual([range3, range1, range2]);

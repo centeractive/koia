@@ -52,7 +52,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     this.dbService.activateScene(sceneInfo._id)
       .then(s => {
         this.activeScene = s;
-        (<AppRouteReuseStrategy>this.router.routeReuseStrategy).clear();
+        (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
         this.router.navigateByUrl(Route.RAWDATA);
       })
       .catch(err => this.notifyError(err));

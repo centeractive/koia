@@ -27,7 +27,7 @@ describe('ViewController', () => {
          open: () => null
       };
       viewController = new ViewControllerTestable();
-      viewController.sidenav = <MatSidenav>sidenav;
+      viewController.sidenav = sidenav as MatSidenav;
    });
 
    it('#isShowResizableMargin should return false when not chart context', () => {
@@ -72,7 +72,7 @@ describe('ViewController', () => {
       spyOn(viewController.sidenav, 'open');
 
       // when
-      viewController.configure(<MouseEvent>{ clientX: ViewController.SIDENAV_WIDTH - 1 }, chartContext);
+      viewController.configure({ clientX: ViewController.SIDENAV_WIDTH - 1 } as MouseEvent, chartContext);
 
       // then
       expect(viewController.sidenav.mode).toBe('push');
@@ -87,7 +87,7 @@ describe('ViewController', () => {
       spyOn(viewController.sidenav, 'open');
 
       // when
-      viewController.configure(<MouseEvent>{ clientX: ViewController.SIDENAV_WIDTH + 1 }, chartContext);
+      viewController.configure({ clientX: ViewController.SIDENAV_WIDTH + 1 } as MouseEvent, chartContext);
 
       // then
       expect(viewController.sidenav.mode).toBe('over');
@@ -102,7 +102,7 @@ describe('ViewController', () => {
       spyOn(viewController.sidenav, 'open');
 
       // when
-      viewController.configure(<MouseEvent>{}, chartContext);
+      viewController.configure({} as MouseEvent, chartContext);
 
       // then
       expect(viewController.sidenav.mode).toBe('over');

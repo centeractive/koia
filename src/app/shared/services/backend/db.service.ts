@@ -152,7 +152,7 @@ export class DBService {
     }
     return this.db.findById(this.scenesDbName(), id)
       .then(s => {
-        this.activeScene = <Scene>s;
+        this.activeScene = s as Scene;
         return this.activeScene;
       });
   }

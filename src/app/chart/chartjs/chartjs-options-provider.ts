@@ -90,11 +90,11 @@ export class ChartJsOptionsProvider {
     }
 
     private radarScaleOptions(context: ChartContext): ScaleOptions {
-        const scaleOptions: RadialLinearScaleOptions = <any>{
+        const scaleOptions = {
             grid: {
                 circular: true
             }
-        };
+        } as RadialLinearScaleOptions;
         this.pointLabelFormatter.format(context.groupByColumns[0], scaleOptions);
         return scaleOptions;
     }

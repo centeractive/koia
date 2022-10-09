@@ -15,9 +15,9 @@ export class ValueFormatter {
       if (value == undefined) {
          return '';
       } else if (column.dataType === DataType.TIME && NumberUtils.isNumber(value, undefined)) {
-         return this.datePipe.transform(<string | number>value, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
+         return this.datePipe.transform(value as string | number, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
       } else if (column.dataType === DataType.NUMBER) {
-         return this.numberFormatter.format(<number>value);
+         return this.numberFormatter.format(value as number);
       } else if (column.dataType === DataType.BOOLEAN && typeof value === 'boolean') {
          return value ? 'true' : 'false';
       }

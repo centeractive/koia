@@ -236,7 +236,7 @@ describe('NumberUtils', () => {
   });
 
   it('#asNumber should return undefined when value is an object', () => {
-    expect(NumberUtils.asNumber(<number>{}, 'en-US')).toBeUndefined();
+    expect(NumberUtils.asNumber({} as number, 'en-US')).toBeUndefined();
   });
 
   it('#asNumber should return undefined when value is not a number', () => {
@@ -450,17 +450,17 @@ describe('NumberUtils', () => {
 
   it('#countDecimals should return zero when argument is string', () => {
     const s: any = '12';
-    expect(NumberUtils.countDecimals(<number>s, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(s, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is string', () => {
     const b: any = true;
-    expect(NumberUtils.countDecimals(<number>b, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(b, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is object', () => {
     const o: any = { num: 12 };
-    expect(NumberUtils.countDecimals(<number>o, 'en-US')).toBe(0);
+    expect(NumberUtils.countDecimals(o, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when number has no decimals', () => {

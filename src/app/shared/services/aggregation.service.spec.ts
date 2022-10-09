@@ -339,8 +339,9 @@ describe('AggregationService', () => {
   });
 
   it('#aggregateValue should throw exception when aggregation is undefined', () => {
-    const aggreation = <Aggregation>{};
-    expect(function () { aggregationService.aggregateValue(undefined, <Aggregation>{}) })
+    const aggreation = {} as Aggregation;
+
+    expect(function () { aggregationService.aggregateValue(undefined, {} as Aggregation) })
       .toThrow(new Error('aggregation of type ' + aggreation + ' is not yet implemented'));
   });
 

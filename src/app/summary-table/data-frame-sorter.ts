@@ -23,7 +23,7 @@ export class DataFrameSorter {
   private toSortableValue(columnName: string, entry: Object, context: ElementContext): any {
     let value = entry[columnName];
     if (context.hasValueGrouping(columnName)) {
-      const minValue = ValueRangeConverter.toMinValue(<string>value);
+      const minValue = ValueRangeConverter.toMinValue(value as string);
       value = minValue == undefined ? - Number.MAX_VALUE : minValue;
     }
     return value;

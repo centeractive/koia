@@ -67,7 +67,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
    */
   private listenOnNavigationEvents(): void {
     this.router.events.subscribe(e => {
-      if (e instanceof NavigationEnd && (<NavigationEnd>e).url === '/' + this.route) {
+      if (e instanceof NavigationEnd && e.url === '/' + this.route) {
         this.justNavigatedToParentView = true;
       }
     });

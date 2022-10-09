@@ -42,7 +42,7 @@ export class ValueFilterCustomizer {
             if (filter.value == undefined) {
                   return '';
             } else if (filter.dataType === DataType.NUMBER && NumberUtils.isNumber(filter.value, undefined)) {
-                  return this.numberFormatter.format(<number>filter.value);
+                  return this.numberFormatter.format(filter.value as number);
             } else {
                   return filter.value.toString();
             }

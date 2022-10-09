@@ -292,8 +292,8 @@ describe('ValueFilterComponent', () => {
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
-    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
+    const formField = fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
+    const htmlInput = formField.getElementsByTagName('INPUT')[0];
     spyOn(component.onChange, 'emit');
 
     // when
@@ -312,8 +312,8 @@ describe('ValueFilterComponent', () => {
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
-    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
+    const formField = fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
+    const htmlInput = formField.getElementsByTagName('INPUT')[0];
     htmlInput.value = 'ERR';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -334,12 +334,12 @@ describe('ValueFilterComponent', () => {
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
-    const formField = <HTMLElement>fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = <HTMLInputElement>formField.getElementsByTagName('INPUT')[0];
+    const formField = fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
+    const htmlInput = formField.getElementsByTagName('INPUT')[0];
     htmlInput.value = 'ERR';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    const clearButton = <HTMLButtonElement>formField.getElementsByTagName('BUTTON')[0];
+    const clearButton = formField.getElementsByTagName('BUTTON')[0];
     spyOn(component.onChange, 'emit');
 
     // when

@@ -142,7 +142,7 @@ export class MangoQueryBuilder {
          .filter(pf => pf.name === name)
          .filter(pf => pf.operator === Operator.CONTAINS)
       if (filters.length === 1) {
-         return this.toContainsSelectorValue(<string>filters[0].value, false);
+         return this.toContainsSelectorValue(filters[0].value as string, false);
       }
       const regex = filters
          .map(pf => '(?=.*' + pf.value + '.*)')
@@ -152,7 +152,7 @@ export class MangoQueryBuilder {
 
    private toSelectorValue(propertyFilter: PropertyFilter): any {
       if (propertyFilter.operator === Operator.CONTAINS) {
-         return this.toContainsSelectorValue(<string>propertyFilter.value, false);
+         return this.toContainsSelectorValue(propertyFilter.value as string, false);
       } else if (propertyFilter.operator === Operator.EMPTY) {
          return false;
       } else if (propertyFilter.operator === Operator.NOT_EMPTY) {
@@ -172,11 +172,11 @@ export class MangoQueryBuilder {
       switch (propertyFilter.dataType) {
          case DataType.NUMBER:
          case DataType.TIME:
-            return ArrayUtils.toNumberArray(<string>propertyFilter.value);
+            return ArrayUtils.toNumberArray(propertyFilter.value as string);
          case DataType.BOOLEAN:
-            return ArrayUtils.toBooleanArray(<string>propertyFilter.value);
+            return ArrayUtils.toBooleanArray(propertyFilter.value as string);
          default:
-            return ArrayUtils.toStringArray(<string>propertyFilter.value);
+            return ArrayUtils.toStringArray(propertyFilter.value as string);
       };
    }
 

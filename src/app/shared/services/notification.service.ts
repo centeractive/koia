@@ -28,7 +28,7 @@ export class NotificationService {
 
   private toMessage(value: string | Object): string {
     if (typeof value === 'string') {
-      return <string>value;
+      return value;
     } else if (value['name'] && value['message']) {
       return value['name'] + ': ' + value['message'];
     }

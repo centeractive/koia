@@ -18,11 +18,11 @@ export class ConfigToModelConverter {
 
    private toElementContext(viewElement: ViewElement): ElementContext {
       if (viewElement.elementType === ElementType.CHART) {
-         return this.toChartContext(<Chart>viewElement);
+         return this.toChartContext(viewElement as Chart);
       } else if (viewElement.elementType === ElementType.GRAPH) {
-         return this.toGraphContext(<Graph>viewElement);
+         return this.toGraphContext(viewElement as Graph);
       } else if (viewElement.elementType === ElementType.SUMMARY) {
-         return this.toSummaryContext(<Summary>viewElement);
+         return this.toSummaryContext(viewElement as Summary);
       }
       throw new Error('view element of type ' + viewElement.elementType + ' not yet implemented');
    }

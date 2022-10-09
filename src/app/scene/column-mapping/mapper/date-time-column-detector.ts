@@ -57,7 +57,7 @@ export class DateTimeColumnDetector {
 
     refineDateTimeFormat(columnPair: ColumnPair, value: any, locale: string): void {
         for (const formatToTimeUnit of DateTimeColumnDetector.TIME_FORMATS_TO_TIMEUNITS) {
-            if (formatToTimeUnit.format && DateTimeUtils.parseDate(<string>value, formatToTimeUnit.format, locale)) {
+            if (formatToTimeUnit.format && DateTimeUtils.parseDate(value, formatToTimeUnit.format, locale)) {
                 columnPair.source.format = formatToTimeUnit.format;
                 break;
             }

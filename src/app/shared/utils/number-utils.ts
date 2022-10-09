@@ -119,7 +119,7 @@ export class NumberUtils {
     * @returns the value as a number, 1 for boolean [[true]], 0 for boolean [[false]]
     */
    static asNumber(value: string | number | boolean, locale: string): number {
-      if (value === null || value === undefined || (typeof value === 'string' && (<string>value).trim() === '')) {
+      if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
          return undefined;
       }
       if (typeof value === 'number') {
@@ -127,7 +127,7 @@ export class NumberUtils {
       } else if (typeof value === 'boolean') {
          return value ? 1 : 0;
       } else if (typeof value === 'string') {
-         const result = this.parseNumber(<string>value, locale);
+         const result = this.parseNumber(value as string, locale);
          return isNaN(result) ? undefined : result;
       }
       return undefined;

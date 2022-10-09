@@ -69,7 +69,7 @@ export class EntryMapper {
    private mapValue(columnPair: ColumnPair, sourceValue: any, mappingResult: MappingResult): void {
       if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
          if (sourceValue instanceof Date) {
-            this.mapDate(<Date>sourceValue, columnPair, mappingResult);
+            this.mapDate(sourceValue, columnPair, mappingResult);
          } else if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)
             && columnPair.target.dataType === DataType.TIME) {
             this.mapTextToTime(sourceValue?.toString(), columnPair, mappingResult);

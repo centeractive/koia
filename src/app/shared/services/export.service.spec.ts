@@ -37,7 +37,7 @@ describe('ExportService', () => {
       { a: 'y', b: 2, c: object },
       { a: 'z', b: 3, d: array }
     ];
-    expect(<any>data).toEqual(expected);
+    expect(data as any).toEqual(expected);
   });
 
   it('#exportData should create CSV formatted data', () => {
@@ -98,7 +98,7 @@ describe('ExportService', () => {
     expect(exportService.saveBlobAs).toHaveBeenCalled();
     expect(blob).toBeTruthy();
     const reader = new FileReader();
-    reader.addEventListener('loadend', e => expect(JSON.parse(<string>reader.result)).toEqual(data));
+    reader.addEventListener('loadend', e => expect(JSON.parse(reader.result as string)).toEqual(data));
     reader.readAsText(blob);
   });
 
@@ -123,7 +123,7 @@ describe('ExportService', () => {
   it('#exportTableAsExcel should save .xlsx file', () => {
 
     // given
-    const table = <HTMLTableElement>document.createElement('table');
+    const table = document.createElement('table');
     const tbody = document.createElement('tbody');
     const tr = document.createElement('tr');
     const td = document.createElement('td');

@@ -18,15 +18,12 @@ describe('ConfirmDialogComponent', () => {
   let fixture: ComponentFixture<ConfirmDialogComponent>;
 
   beforeEach(waitForAsync(() => {
-    const dialogRef = <MatDialogRef<ConfirmDialogComponent, any>>{
-      close(): void { }
-    };
     dialogData = new ConfirmDialogData(title, textBlock, ConfirmDialogData.YES_NO);
     TestBed.configureTestingModule({
       declarations: [ConfirmDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
       providers: [
-        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
       ]
     })
@@ -67,15 +64,12 @@ describe('ConfirmDialogComponent', () => {
 
     // given
     TestBed.resetTestingModule();
-    const dialogRef = <MatDialogRef<ConfirmDialogComponent, any>>{
-      close(): void { }
-    };
     dialogData = new ConfirmDialogData(title, textBlock, ['OK']);
     TestBed.configureTestingModule({
       declarations: [ConfirmDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
       providers: [
-        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
       ]
     })

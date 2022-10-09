@@ -48,10 +48,10 @@ describe('GraphOptionsProvider', () => {
    it('#createOptions should adopt chart size from parent div when present', () => {
 
       // given
-      const div = { clientWidth: 111, clientHeight: 222 };
+      const div = { clientWidth: 111, clientHeight: 222 } as HTMLDivElement;
 
       // when
-      const options = optionsProvider.createOptions(context, <HTMLDivElement>div);
+      const options = optionsProvider.createOptions(context, div);
 
       // then
       const chart = options['chart'];

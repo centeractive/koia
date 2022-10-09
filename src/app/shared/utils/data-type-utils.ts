@@ -38,7 +38,7 @@ export class DataTypeUtils {
       }
       switch (dataType) {
          case DataType.BOOLEAN:
-            return DataTypeUtils.asBoolean(<string | number | boolean>value);
+            return DataTypeUtils.asBoolean(value as string | number | boolean);
          case DataType.NUMBER:
          case DataType.TIME:
             if (typeof value === 'string' || typeof value === 'number') {

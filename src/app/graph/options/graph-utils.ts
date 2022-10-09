@@ -50,7 +50,7 @@ export class GraphUtils {
       let value: any = graphNode.value;
       const timeColumn = this.findCorrespondingTimeColumn(graphNode.name, context);
       if (timeColumn) {
-         value = DateTimeUtils.formatTime(<number>value, timeColumn.groupingTimeUnit);
+         value = DateTimeUtils.formatTime(value, timeColumn.groupingTimeUnit);
       }
       return value;
    }

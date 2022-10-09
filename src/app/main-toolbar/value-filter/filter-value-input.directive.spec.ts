@@ -23,7 +23,7 @@ describe('FilterValueInputDirective', () => {
       fixture = TestBed.createComponent(TestComponent);
       fixture.detectChanges();
       component = fixture.componentInstance;
-      inputElement = <HTMLInputElement>fixture.debugElement.nativeElement.querySelector('INPUT');
+      inputElement = fixture.debugElement.nativeElement.querySelector('INPUT');
       spyOn(inputElement, 'setSelectionRange');
    });
 

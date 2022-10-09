@@ -64,8 +64,8 @@ export class EntryPersister {
   }
 
   /**
-   * optionally submits queued entries to be written to the database and lockes this [[EntryPersister]] from further posting new entries
-   * untile [[reset]] is invoked
+   * optionally submits queued entries to be written to the database and locks this [[EntryPersister]] 
+   * from further posting new entries untile [[reset]] is invoked
    */
   postingComplete(submitQueuedEntries: boolean): void {
     this.postLocked = true;

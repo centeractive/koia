@@ -245,7 +245,7 @@ describe('DataTypeUtils', () => {
    });
 
    it('#iconOf should return undefined when data types is unknown', () => {
-      expect(DataTypeUtils.iconOf(<DataType>{})).toBeUndefined();
+      expect(DataTypeUtils.iconOf({} as DataType)).toBeUndefined();
    });
 
    it('#iconOf should return icon name for all data types', () => {

@@ -39,7 +39,7 @@ export class ChartDataService {
         return { data: this.individualValuesData(chartType, context) };
       }
     } catch (err) {
-      return { error: (<Error>err).message };
+      return { error: err.message };
     }
   }
 

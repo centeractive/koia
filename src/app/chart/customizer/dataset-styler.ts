@@ -8,7 +8,7 @@ export class DatasetStyler {
             switch (chartType) {
                 case ChartType.LINE:
                 case ChartType.AREA:
-                    (<any>ds).pointRadius = this.pointRadiusOf(ds.data.length);
+                    (ds as any).pointRadius = this.pointRadiusOf(ds.data.length);
                     break;
                 default:
                     break;

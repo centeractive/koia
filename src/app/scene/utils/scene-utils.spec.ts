@@ -25,11 +25,11 @@ describe('SceneUtils', () => {
    it('#generateSceneName should return nane when file modification date is available', () => {
 
       // given
-      const dataReader = { getFileExtension: () => '.txt' };
+      const dataReader = { getFileExtension: () => '.txt' } as DataReader;
       const file = createFile();
 
       // when
-      const name = SceneUtils.generateSceneName(<DataReader>dataReader, file);
+      const name = SceneUtils.generateSceneName(dataReader, file);
 
       // then
       const formattedDate = datePipe.transform(file.lastModified, 'mediumDate');
@@ -39,11 +39,11 @@ describe('SceneUtils', () => {
    it('#generateSceneName should return nane when file modification date is not available', () => {
 
       // given
-      const dataReader = { getFileExtension: () => '.txt' };
-      const file = { name: 'test.txt' };
+      const dataReader = { getFileExtension: () => '.txt' } as DataReader;
+      const file = { name: 'test.txt' } as File;
 
       // when
-      const name = SceneUtils.generateSceneName(<DataReader>dataReader, <File>file);
+      const name = SceneUtils.generateSceneName(dataReader, file);
 
       // then
       expect(name).toBe('test');
@@ -52,11 +52,11 @@ describe('SceneUtils', () => {
    it('#generateSceneDescription should return description when file modification date is available', () => {
 
       // given
-      const dataReader = { getSourceName: () => 'Text' };
+      const dataReader = { getSourceName: () => 'Text' } as DataReader;
       const file = createFile();
 
       // when
-      const description = SceneUtils.generateSceneDescription(<DataReader>dataReader, file);
+      const description = SceneUtils.generateSceneDescription(dataReader, file);
 
       // then
       const formattedDate = datePipe.transform(file.lastModified, 'medium');
@@ -66,11 +66,11 @@ describe('SceneUtils', () => {
    it('#generateSceneDescription should return description when file modification date is not available', () => {
 
       // given
-      const dataReader = { getSourceName: () => 'Text' };
-      const file = { name: 'test.txt' };
+      const dataReader = { getSourceName: () => 'Text' } as DataReader;
+      const file = { name: 'test.txt' } as File;
 
       // when
-      const description = SceneUtils.generateSceneDescription(<DataReader>dataReader, <File>file);
+      const description = SceneUtils.generateSceneDescription(dataReader, file);
 
       // then
       expect(description).toBe('Text test.txt');

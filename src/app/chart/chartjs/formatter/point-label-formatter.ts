@@ -7,9 +7,9 @@ export class PointLabelFormatter extends TimeFormatter {
     format(column: Column, options: RadialLinearScaleOptions): void {
         if (column?.dataType === DataType.TIME) {
             const momentFormat = this.momentFormatOf(column);
-            options.pointLabels = <any>{
+            options.pointLabels = {
                 callback: (label: string) => this.formatTime(label, momentFormat)
-            };
+            } as any;
         }
     }
 }

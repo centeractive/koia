@@ -196,9 +196,8 @@ describe('CouchDBService', () => {
 
             // then
             expect(err instanceof HttpErrorResponse).toBeTrue();
-            const httpErrorResponse = <HttpErrorResponse>err;
-            expect(httpErrorResponse.ok).toBeFalse();
-            expect(httpErrorResponse.error).toEqual({ error: 'conflict', reason: 'Document update conflict.' });
+            expect(err.ok).toBeFalse();
+            expect(err.error).toEqual({ error: 'conflict', reason: 'Document update conflict.' });
          });
    });
 

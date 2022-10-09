@@ -13,10 +13,6 @@ class RawDataComponent {
 }
 describe('RawDataDialogComponent', () => {
 
-   const dialogRef = <MatDialogRef<RawDataDialogComponent>>{
-      close(): void { }
-   };
-
    it('should hide toolbar when data is specified by specific ID', () => {
 
       // given
@@ -47,7 +43,7 @@ describe('RawDataDialogComponent', () => {
       TestBed.configureTestingModule({
          declarations: [RawDataDialogComponent, RawDataComponent],
          providers: [
-            { provide: MatDialogRef, useValue: dialogRef },
+            { provide: MatDialogRef, useValue: { close(): void { } } },
             { provide: MAT_DIALOG_DATA, useValue: query },
          ]
       })

@@ -17,15 +17,12 @@ describe('InputDialogComponent', () => {
   let fixture: ComponentFixture<InputDialogComponent>;
 
   beforeEach(waitForAsync(() => {
-    const dialogRef = <MatDialogRef<InputDialogComponent>>{
-      close(): void { }
-    };
     dialogData = new InputDialogData('Save View', 'View Name', 'abc', 10);
     TestBed.configureTestingModule({
       declarations: [InputDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
       providers: [
-        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
       ]
     })

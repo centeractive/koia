@@ -16,13 +16,13 @@ export class BarLegendCustomizer {
         if ((chartType === ChartType.BAR || horizontalBar) && context.data.datasets.length === 1
             && context.data.labels.length <= BarLegendCustomizer.MAX_DATA_LENGTH) {
 
-            config.plugins = <any>[{
+            config.plugins = [{
                 beforeLayout: chart => {
                     chart.options.scales[horizontalBar ? 'y1' : 'x1'].labels = chart.data.datasets
                         .filter((ds, i) => !chart.getDatasetMeta(i).hidden)
                         .map(ds => ds.label);
                 }
-            }];
+            }] as any;
 
             config.options.scales[horizontalBar ? 'y' : 'x'].display = false;
             config.options.scales[horizontalBar ? 'y1' : 'x1'] = {
@@ -30,13 +30,13 @@ export class BarLegendCustomizer {
             }
 
             const dataset = config.data.datasets[0];
-            config.data.datasets = <any>config.data.labels.map((l, i) => ({
+            config.data.datasets = config.data.labels.map((l, i) => ({
                 label: l,
                 data: [{ x: i + 1, y: dataset.data[i] }],
                 backgroundColor: dataset.backgroundColor[i],
                 borderColor: dataset.borderColor[i],
                 categoryPercentage: 1
-            }));
+            })) as any;
             config.data.labels = undefined;
             this.adjustTooltips(config.options.plugins.tooltip, context);
         }

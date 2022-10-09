@@ -23,14 +23,11 @@ describe('SceneDetailsDialogComponent', () => {
    });
 
    beforeEach(waitForAsync(() => {
-      const dialogRef = <MatDialogRef<SceneDetailsDialogComponent>>{
-         close(): void { }
-      };
       TestBed.configureTestingModule({
          declarations: [SceneDetailsDialogComponent],
          imports: [MatCardModule],
          providers: [
-            { provide: MatDialogRef, useValue: dialogRef },
+            { provide: MatDialogRef, useValue: { close(): void { } } },
             { provide: MAT_DIALOG_DATA, useValue: scene },
          ]
       })
@@ -45,7 +42,7 @@ describe('SceneDetailsDialogComponent', () => {
    });
 
    it('#should set header', () => {
-      const headerElement = <HTMLHeadElement> fixture.debugElement.query(By.css('h2')).nativeElement;
+      const headerElement = fixture.debugElement.query(By.css('h2')).nativeElement;
       expect(headerElement.textContent).toBe(scene.name);
    });
 });

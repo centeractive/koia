@@ -80,7 +80,7 @@ export class ColumnMappingGenerator {
       if (dataType === DataType.TIME) {
          columnPair.target.format = DateTimeUtils.ngFormatOf(TimeUnit.SECOND);
       } else if (dataType === DataType.NUMBER || dataType === DataType.TEXT) {
-         this.detectDateTime(columnPair, <string | number>value, locale);
+         this.detectDateTime(columnPair, value, locale);
       }
    }
 
@@ -93,10 +93,10 @@ export class ColumnMappingGenerator {
 
    private detectDateTime(columnPair: ColumnPair, value: string | number, locale: string): void {
       if (columnPair.source.dataType === DataType.TEXT &&
-         NumberUtils.countDigits(<string>value) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
-         this.dateTimeColumnDetector.detect(columnPair, <string>value, locale);
+         NumberUtils.countDigits(value as string) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
+         this.dateTimeColumnDetector.detect(columnPair, value as string, locale);
       } else if (columnPair.source.dataType === DataType.NUMBER) {
-         this.detectDateTimeFromNumber(columnPair, <number>value, locale);
+         this.detectDateTimeFromNumber(columnPair, value as number, locale);
       }
    }
 
@@ -125,7 +125,7 @@ export class ColumnMappingGenerator {
       if (typeof value === 'object') {
          value = JSON.stringify(value, undefined, '  ');
       }
-      return typeof value !== 'string' || (<string>value).length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED;
+      return typeof value !== 'string' || value.length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED;
    }
 
    private computeWidth(value: any, columnPair: ColumnPair): number {
@@ -133,7 +133,7 @@ export class ColumnMappingGenerator {
       if (value) {
          let formattedValue: string = null;
          if (value instanceof Date && columnPair.target.format) {
-            formattedValue = this.datePipe.transform(<Date>value, columnPair.target.format);
+            formattedValue = this.datePipe.transform(value, columnPair.target.format);
          } else if (columnPair.target.dataType !== DataType.BOOLEAN && value.toString().length > width) {
             formattedValue = value.toString();
          }

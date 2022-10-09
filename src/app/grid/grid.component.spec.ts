@@ -455,7 +455,7 @@ describe('GridComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Test';
-    chartContext.chart = <any>{ toBase64Image: () => 'base64Image...' };
+    chartContext.chart = { toBase64Image: () => 'base64Image...' } as any;
     spyOn(exportService, 'exportImage');
 
     // when

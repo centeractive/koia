@@ -10,14 +10,14 @@ describe('AppComponent', () => {
   let app: AppComponent;
 
   beforeEach(waitForAsync(() => {
-    iconRegistrarService = <IconRegistrarService> {
-      registerSvgIcons(): void {}
-    }
+    iconRegistrarService = {
+      registerSvgIcons(): void { }
+    } as IconRegistrarService;
     spyOn(iconRegistrarService, 'registerSvgIcons').and.callFake(() => null);
     TestBed.configureTestingModule({
-      declarations: [ AppComponent ],
-      providers: [ { provide: IconRegistrarService, useValue: iconRegistrarService } ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      declarations: [AppComponent],
+      providers: [{ provide: IconRegistrarService, useValue: iconRegistrarService }],
+      schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
   }));
 

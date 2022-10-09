@@ -23,15 +23,12 @@ describe('ConnectionDialogComponent', () => {
   let fixture: ComponentFixture<ConnectionDialogComponent>;
 
   beforeEach(waitForAsync(() => {
-    const dialogRef = <MatDialogRef<ConnectionDialogComponent>>{
-      close(): void { }
-    };
     dialogData = new ConnectionDialogData(connectionInfo);
     TestBed.configureTestingModule({
       declarations: [ConnectionDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
       providers: [
-        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
       ]
     })
@@ -117,7 +114,7 @@ describe('ConnectionDialogComponent', () => {
 
   function getSelectedProtocol(): Protocol {
     const matSelect: MatSelect = fixture.debugElement.query(By.css('#protocol')).componentInstance;
-    const selectedOption = <MatOption>matSelect.selected;
+    const selectedOption = matSelect.selected as MatOption;
     return selectedOption.value;
   }
 

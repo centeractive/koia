@@ -22,11 +22,11 @@ export class ModelToConfigConverter {
 
    private toViewElement(context: ElementContext): ViewElement {
       if (context instanceof ChartContext) {
-         return this.toChart(<ChartContext>context);
+         return this.toChart(context);
       } else if (context instanceof GraphContext) {
-         return this.toGraph(<GraphContext>context);
+         return this.toGraph(context);
       } else if (context instanceof SummaryContext) {
-         return this.toSummary(<SummaryContext>context);
+         return this.toSummary(context);
       }
       throw new Error('unknown context ' + context);
    }

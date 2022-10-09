@@ -19,15 +19,12 @@ describe('ViewLauncherDialogComponent', () => {
   let fixture: ComponentFixture<ViewLauncherDialogComponent>;
 
   beforeEach(waitForAsync(() => {
-    const dialogRef = <MatDialogRef<ViewLauncherDialogComponent>>{
-      close(): void { }
-    };
     dialogData = new ViewController();
     TestBed.configureTestingModule({
       declarations: [ViewLauncherDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
       providers: [
-        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }
       ]
     })

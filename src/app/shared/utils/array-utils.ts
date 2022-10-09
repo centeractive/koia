@@ -252,7 +252,7 @@ export class ArrayUtils {
       array.forEach(e => {
         for (const key of Object.keys(e)) {
           if (e[key] instanceof Date) {
-            e[key] = (<Date>e[key]).getTime();
+            e[key] = e[key].getTime();
           }
         }
       });

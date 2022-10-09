@@ -146,7 +146,7 @@ describe('ChartComponent', () => {
   it('#onResizeEnd should define margin when resized at top left corner', () => {
 
     // given
-    context.margin = <Margin>{ top: 0, right: 0, bottom: 0, left: 0 };
+    context.margin = { top: 0, right: 0, bottom: 0, left: 0 };
     const resizeEvent = {
       rectangle: { top: 0, right: 0, bottom: 0, left: 0 },
       edges: { top: 1, left: 2 }
@@ -165,7 +165,7 @@ describe('ChartComponent', () => {
   it('#onResizeEnd should define margin when resized at bottom right corner', () => {
 
     // given
-    context.margin = <Margin>{ top: 0, right: 0, bottom: 0, left: 0 };
+    context.margin = { top: 0, right: 0, bottom: 0, left: 0 };
     const resizeEvent = {
       rectangle: { top: 0, right: 0, bottom: 0, left: 0 },
       edges: { right: -1, bottom: -2 }

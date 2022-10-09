@@ -173,7 +173,7 @@ describe('MainToolbarComponent', () => {
     // given
     component.route = Route.GRID;
     const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
-    component.router = <Router>{ events: of(event) };
+    component.router = { events: of(event) } as Router;
     const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null, false);
     const prevSliderOptions = timeRangeFilter.sliderOptions;
     component.rangeFilters = [timeRangeFilter];
@@ -432,7 +432,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = <Query>onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
     expect(query.hasFilter()).toBeFalsy();
   });
 
@@ -459,7 +459,7 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters.length).toBe(1);
     expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTrue();
-    const timeRangeFilter = <TimeRangeFilter>component.rangeFilters[0];
+    const timeRangeFilter = component.rangeFilters[0];
     expect(timeRangeFilter.start).toBe(valueRange.min);
     expect(timeRangeFilter.end).toBe(valueRange.max);
   }));
@@ -473,7 +473,7 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters.length).toBe(1);
     expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTrue();
-    const numberRangeFilter = <NumberRangeFilter>component.rangeFilters[0];
+    const numberRangeFilter = component.rangeFilters[0];
     expect(numberRangeFilter.start).toBe(valueRange.min);
     expect(numberRangeFilter.end).toBe(valueRange.max);
   }));

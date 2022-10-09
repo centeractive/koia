@@ -304,7 +304,7 @@ export class DateTimeUtils {
         .forEach(c => {
           const valueRange = ArrayUtils.numberValueRange(entries, c.name);
           if (valueRange.min !== undefined) {
-            c.groupingTimeUnit = <TimeUnit>DateTimeUtils.largestMatchingTimeUnit(valueRange.max - valueRange.min, minNumOfTimeUnits);
+            c.groupingTimeUnit = DateTimeUtils.largestMatchingTimeUnit(valueRange.max - valueRange.min, minNumOfTimeUnits);
           }
         });
     };
