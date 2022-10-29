@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import 'moment/min/locales';
 import { shuffle } from 'd3';
 
-fdescribe('ChartDataHelper', () => {
+describe('ChartDataHelper', () => {
 
    const dataPoints: DataPoint[] = [
       { x: 1, y: 5 },

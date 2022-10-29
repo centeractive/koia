@@ -3,7 +3,7 @@ import { Column, DataType, TimeUnit } from '../../model';
 import { TestUtils } from '../../test';
 import { ChartContext, ChartType } from '../../model/chart';
 
-fdescribe('ChartDataService', () => {
+describe('ChartDataService', () => {
 
    const sec = 1000;
    const min = 60 * sec;
