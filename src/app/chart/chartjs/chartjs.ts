@@ -1,9 +1,4 @@
-import {
-    ArcElement, BarController, BarElement, CategoryScale, Chart, ChartConfiguration,
-    ChartType as ChartJsType, DoughnutController, Filler, Legend, LinearScale,
-    LineController, LineElement, PieController, PointElement, PolarAreaController,
-    RadarController, RadialLinearScale, ScatterController, TimeScale, Tooltip
-} from 'chart.js';
+import { Chart, ChartType as ChartJsType, ChartConfiguration, registerables } from 'chart.js';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ChartJsOptionsProvider } from './chartjs-options-provider';
@@ -19,10 +14,7 @@ export class ChartJs {
 
     constructor(rawDataRevealService: RawDataRevealService) {
         this.optionsProvider = new ChartJsOptionsProvider(rawDataRevealService);
-        Chart.register(BarController, PieController, DoughnutController, RadarController, LineController, ScatterController,
-            RadarController, PolarAreaController, CategoryScale, TimeScale, RadialLinearScale,
-            BarElement, ArcElement, LineElement, PointElement, LinearScale, Legend, Tooltip, Filler,
-            ChartDataLabels);
+        Chart.register(...registerables, ChartDataLabels);
     }
 
     create(canvas: HTMLCanvasElement, context: ChartContext): void {

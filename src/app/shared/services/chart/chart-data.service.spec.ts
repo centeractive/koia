@@ -3,7 +3,7 @@ import { Column, DataType, TimeUnit } from '../../model';
 import { TestUtils } from '../../test';
 import { ChartContext, ChartType } from '../../model/chart';
 
-describe('ChartDataService', () => {
+fdescribe('ChartDataService', () => {
 
    const sec = 1000;
    const min = 60 * sec;
@@ -114,7 +114,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.error).toBe('Name \'a\' is not unique');
+      expect(result.error).toBe('Value \'a\' is not unique');
       expect(result.data).toBeUndefined();
       expect(context.valueRange).toBeUndefined();
    });
@@ -197,7 +197,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.error).toBe('Name \'a\' is not unique');
+      expect(result.error).toBe('Value \'a\' is not unique');
       expect(result.data).toBeUndefined();
       expect(context.valueRange).toBeUndefined();
    });

@@ -15,6 +15,7 @@ import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatAccordion } from '@angular/material/expansion';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ProgressBarMode } from '@angular/material/progress-bar';
+import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 
 @Component({
   selector: 'koia-front',
@@ -91,8 +92,18 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private defineLocales(): void {
-    this.locales = DateTimeUtils.listMomentLocals();
-    this.selectedLocale = this.locales.includes('en') ? 'en' : this.locales[0];
+    this.locales = LocaleUtils.supportedLocales();
+    if (this.locales.includes(LocaleUtils.osDefaultLocale())) {
+      this.selectedLocale = LocaleUtils.osDefaultLocale();
+    } else if (this.locales.includes(LocaleUtils.browserDefaultLocale())) {
+      this.selectedLocale = LocaleUtils.browserDefaultLocale();
+    } else if (this.locales.includes('en-US')) {
+      this.selectedLocale = 'en-US';
+    } else if (this.locales.includes('en')) {
+      this.selectedLocale = 'en';
+    } else {
+      this.selectedLocale = this.locales[0];
+    }
   }
 
   private detectIfScenesExist(): void {

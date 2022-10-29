@@ -259,10 +259,11 @@ describe('SceneComponent', () => {
     component.onDataTypeChanged(targetColumn);
     fixture.detectChanges();
     spyOn(window, 'open');
-    const matIconDebugElement = fixture.debugElement.query(By.css('.icon_link'));
+    const refreshPreviewButtons: HTMLButtonElement[] =
+      fixture.debugElement.queryAll(By.css('.but_date_formats')).map(de => de.nativeElement);
 
     // when
-    matIconDebugElement.nativeElement.click();
+    refreshPreviewButtons[0].click();
 
     // then
     expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options');
@@ -273,7 +274,7 @@ describe('SceneComponent', () => {
     // given
     initUpToDetectColumns();
     const delColMappingButtons: HTMLButtonElement[] =
-      fixture.debugElement.queryAll(By.css('.but_column_mapping')).map(de => de.nativeElement);
+      fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
 
     // when
     delColMappingButtons[1].click();

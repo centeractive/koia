@@ -35,6 +35,7 @@ export class BarLegendCustomizer {
                 data: [{ x: i + 1, y: dataset.data[i] }],
                 backgroundColor: dataset.backgroundColor[i],
                 borderColor: dataset.borderColor[i],
+                borderWidth: 1,
                 categoryPercentage: 1
             })) as any;
             config.data.labels = undefined;

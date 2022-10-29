@@ -1,6 +1,6 @@
 import {
   Component, Input, OnInit, OnChanges, SimpleChanges, ViewEncapsulation, Inject, ElementRef,
-  ViewChild, Output, EventEmitter, ChangeDetectorRef
+  ViewChild, Output, EventEmitter, ChangeDetectorRef, HostListener
 } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';

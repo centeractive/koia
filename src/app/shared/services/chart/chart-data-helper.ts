@@ -56,7 +56,7 @@ export class ChartDataHelper {
          const value = entry[dataColumn.name];
          if (!!name && !!value) {
             if (names.includes(name)) {
-               throw new Error('Name \'' + name + '\' is not unique');
+               this.throwNonUniqueValueError(nameColumn, name);
             }
             names.push(name);
             data.push({ x: name, y: value });
@@ -73,7 +73,7 @@ export class ChartDataHelper {
          const label = e[nameColumn.name];
          if (!!label) {
             if (labels.includes(label)) {
-               throw new Error('Name \'' + label + '\' is not unique');
+               this.throwNonUniqueValueError(nameColumn, label);
             }
             const someValueFound = context.dataColumns
                .map(c => e[c.name])
@@ -90,6 +90,13 @@ export class ChartDataHelper {
          }
       });
       return { labels: labels, dataSets: labeledValues };
+   }
+
+   private static throwNonUniqueValueError(column: Column, value: any): void {
+      if (column.dataType == DataType.TIME) {
+         value = DateTimeUtils.formatTime(value, column.groupingTimeUnit);
+      }
+      throw new Error('Value \'' + value + '\' is not unique');
    }
 
    static extractGroupingValue(entry: Object, groupByColumn: Column): number {

@@ -1,6 +1,6 @@
 import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
-import { DateFormatProvider } from './date-format-provider';
+import { DateFormatProvider } from 'app/shared/utils/i18n/date-format-provider';
 import { TimeUnitDetector } from './time-unit-detector';
 
 export class DateTimeColumnDetector {
@@ -10,6 +10,7 @@ export class DateTimeColumnDetector {
      */
     private static readonly TIME_FORMATS_TO_TIMEUNITS: FormatToTimeUnit[] = [
         { format: 'HH:mm:ss,SSS', timeUnit: TimeUnit.MILLISECOND },
+        { format: 'HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND },
         { format: 'HH:mm:ss', timeUnit: TimeUnit.SECOND },
         { format: 'HH:mm', timeUnit: TimeUnit.MINUTE },
         { format: 'HH', timeUnit: TimeUnit.HOUR },

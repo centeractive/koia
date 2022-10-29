@@ -4,8 +4,8 @@ import { Status } from '../../model';
 
 @Component({
   selector: 'koia-status',
-  template: '<div *ngIf="status" >{{ status.msg }}</div>',
-  styles: ['div { text-align: center; }']
+  template: '<div *ngIf="status">{{ status.msg }}</div>',
+  styleUrls: ['./status.component.css']
 })
 export class StatusComponent {
 

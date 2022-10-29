@@ -20,7 +20,7 @@ export abstract class SideBarController implements OnChanges {
 
    @ViewChild(MatAccordion) accordion: MatAccordion;
 
-   multiExpandable: boolean;
+   multiExpandable = true;
    readonly selectableTimeUnits = [undefined, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];
 
    availableSplitColumns: Column[];

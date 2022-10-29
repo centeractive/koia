@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import 'moment/min/locales';
 import { shuffle } from 'd3';
 
-describe('ChartDataHelper', () => {
+fdescribe('ChartDataHelper', () => {
 
    const dataPoints: DataPoint[] = [
       { x: 1, y: 5 },
@@ -119,7 +119,7 @@ describe('ChartDataHelper', () => {
       spyOn(ChartDataHelper, 'valuesOfDistinctNames').and.callThrough();
 
       // when -> then
-      expect(() => ChartDataHelper.valuesOfDistinctNames(context)).toThrowError('Name \'a\' is not unique');
+      expect(() => ChartDataHelper.valuesOfDistinctNames(context)).toThrowError('Value \'a\' is not unique');
    });
 
    it('#extractGroupingValue should return unchanged value when data type is NUMBER', () => {

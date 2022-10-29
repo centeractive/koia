@@ -52,6 +52,7 @@ export class ChartDataService {
         data: dataPoints.map(p => p.y),
         backgroundColor: context.colorProvider.bgColors(dataPoints.length),
         borderColor: context.colorProvider.borderColors(dataPoints.length),
+        borderWidth: 1,
         hoverOffset: 10, // PIE & DOUGHNUT charts
         borderAlign: 'inner' // PIE & DOUGHNUT charts
       }]
@@ -88,6 +89,7 @@ export class ChartDataService {
           data: ds.values,
           backgroundColor: colorPerLabel ? bgColors : bgColors[i],
           borderColor: colorPerLabel ? borderColors : borderColors[i],
+          borderWidth: 1,
           fill: chartType == ChartType.AREA,
           hoverOffset: 10, // PIE & DOUGHNUT charts
           borderAlign: 'inner' // PIE & DOUGHNUT charts
@@ -120,6 +122,7 @@ export class ChartDataService {
         data: ds.values,
         backgroundColor: bgColors[i],
         borderColor: borderColors[i],
+        borderWidth: 1,
         fill: chartType == ChartType.AREA
       }))
     };
@@ -135,6 +138,7 @@ export class ChartDataService {
         data: ds.values,
         backgroundColor: bgColors[i],
         borderColor: borderColors[i],
+        borderWidth: 1,
         fill: chartType == ChartType.AREA
       }))
     };

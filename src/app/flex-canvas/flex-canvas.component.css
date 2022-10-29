@@ -1,7 +1,7 @@
 .div_flex_content {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;  
+  flex-wrap: wrap;
   align-items: flex-start;
 }
 
@@ -11,7 +11,7 @@
   margin: 5px;
   float: left;
   min-width: 200px;
-  overflow: hidden;    
+  overflow: hidden;
 }
 
 .div_element_header {
@@ -21,13 +21,15 @@
 }
 
 .but_config {
-  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
-  opacity: 0.2;  
+  z-index: 1;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
+  opacity: 0.2;
 }
 
 .but_config_active {
-  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
-  opacity: 1;  
+  z-index: 1;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
+  opacity: 1;
 }
 
 .div_title {
@@ -40,6 +42,7 @@
   text-align: center;
   font-weight: bold;
   resize: none;
+  overflow-y: hidden;
 }
 
 .textarea_title:focus {
@@ -47,12 +50,14 @@
 }
 
 .but_warning {
-  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
+  z-index: 1;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
 }
 
 .but_close {
-  z-index: 1; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
-  opacity: 0.2;  
+  z-index: 1;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
+  opacity: 0.2;
 }
 
 button:hover {
@@ -71,7 +76,8 @@ mwlResizable {
   cursor: se-resize;
 }
 
-.fadein, .fadeout {
+.fadein,
+.fadeout {
   opacity: 0;
   -moz-transition: opacity 0.4s ease-in-out;
   -o-transition: opacity 0.4s ease-in-out;

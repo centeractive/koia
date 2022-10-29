@@ -163,6 +163,10 @@ export class DateFormatProvider {
         return this._default;
     }
 
+    localeKeys(): string[] {
+        return Array.from(new Set(Object.keys(this.formats)));
+    }
+
     distinct(): string[] {
         return Array.from(new Set(Object.values(this.formats)));
     }

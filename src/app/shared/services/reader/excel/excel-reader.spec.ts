@@ -3,7 +3,7 @@ import { DataHandler } from '../data-handler.type';
 import { DataType } from 'app/shared/model';
 import * as moment from 'moment';
 
-describe('ExcelReader', () => {
+fdescribe('ExcelReader', () => {
 
    const EXCEL_FILE_URL = '/base/src/app/shared/services/reader/excel/test.xlsx';
 

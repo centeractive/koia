@@ -3,7 +3,7 @@ h1 {
 }
 
 .mat-expansion-panel-header-title {
-  font-style: bold;  
+  font-style: bold;
   display: flex;
   align-items: center;
 }
@@ -32,10 +32,10 @@ p {
 }
 
 #textarea_data_sample {
-   display:block;
-   width: 100%;
-   height: 10em;
-   overflow-x: auto;
+  display: block;
+  width: 100%;
+  height: 10em;
+  overflow-x: auto;
 }
 
 mat-slide-toggle {
@@ -52,17 +52,13 @@ mat-slide-toggle {
 }
 
 #column_mapping_source {
-    width: 550px;
-    padding-left: 20px;
+  width: 550px;
+  padding-left: 20px;
 }
 
 .scene_info_creation_time {
   opacity: 0.75;
   font-size: 0.75em;
-}
-
-.icon_link {
-  cursor: pointer;
 }
 
 #div_preview_table {
@@ -76,16 +72,16 @@ table {
 }
 
 th {
-   text-align: left;
-   padding: 5px;   
-   background-color: white;
-   overflow: hidden;
+  text-align: left;
+  padding: 5px;
+  background-color: white;
+  overflow: hidden;
 }
 
 td {
-   word-wrap: break-word;
-   vertical-align: top;
-   padding: 5px;
+  word-wrap: break-word;
+  vertical-align: top;
+  padding: 5px;
 }
 
 .td_Text {
@@ -109,16 +105,17 @@ td {
   height: auto;
 }
 
-.mat-row:nth-child(even){
-  background-color:#fff;
+.mat-row:nth-child(even) {
+  background-color: #fff;
 }
 
-.mat-row:nth-child(odd){
-  background-color:#efefef;
+.mat-row:nth-child(odd) {
+  background-color: #efefef;
 }
 
-::ng-deep .tooltip_preview_warning {  
-  color: red !important;;
+::ng-deep .tooltip_preview_warning {
+  color: red !important;
+  ;
   background-color: rgb(218, 196, 74);
   white-space: pre-line;
   max-width: 800px !important;
@@ -136,4 +133,4 @@ td {
   background-image: url('/assets/mat-icons/new_scene.png');
   background-repeat: no-repeat;
   background-size: cover;
-} 
+}
