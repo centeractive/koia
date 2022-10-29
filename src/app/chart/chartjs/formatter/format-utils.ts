@@ -3,8 +3,13 @@ import { BubbleDataPoint, ScatterDataPoint } from 'chart.js';
 export class FormatUtils {
 
     static percentage(data: (number | ScatterDataPoint | BubbleDataPoint)[], value: number): string {
-        let total: number = data
+        if (value == null || value == undefined) {
+            return '';
+        }
+        let total = data
+            .filter(v => v != null && v != undefined)
             .map(v => v['y'] || v)
+            .filter(v => !isNaN(v))
             .reduce((a, b) => a + b, 0);
         return Math.round(1000 / total * value) / 10 + '%';
     }
