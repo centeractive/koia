@@ -73,9 +73,6 @@ export class ChartContext extends ElementContext {
    }
 
    toggleShowResizableMargin(): void {
-
-      console.log('toggleShowResizableMargin to ' + !this.showResizableMargin)
-
       this.showResizableMargin = !this.showResizableMargin;
    }
 

@@ -13,12 +13,9 @@ describe('DateTimeUtils', () => {
   const hour = 60 * min;
   const day = 24 * hour;
 
-  it('#maxTimeUnit should return first time unit when second time unit is missing', () => {
+  it('#maxTimeUnit should return existing time unit when any unit is missing', () => {
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, undefined)).toEqual(TimeUnit.SECOND);
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, null)).toEqual(TimeUnit.HOUR);
-  });
-
-  it('#maxTimeUnit should return second time unit when first time unit is missing', () => {
     expect(DateTimeUtils.maxTimeUnit(undefined, TimeUnit.SECOND)).toEqual(TimeUnit.SECOND);
     expect(DateTimeUtils.maxTimeUnit(null, TimeUnit.HOUR)).toEqual(TimeUnit.HOUR);
   });
@@ -39,6 +36,11 @@ describe('DateTimeUtils', () => {
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, TimeUnit.DAY)).toEqual(TimeUnit.DAY);
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.DAY, TimeUnit.MONTH)).toEqual(TimeUnit.MONTH);
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.MONTH, TimeUnit.YEAR)).toEqual(TimeUnit.YEAR);
+  });
+
+  it('#maxTimeUnit should return max time unit', () => {
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR, TimeUnit.DAY)).toEqual(TimeUnit.DAY);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MONTH)).toEqual(TimeUnit.YEAR);
   });
 
   it('#allTimeUnits should return ascending sorted time units', () => {
@@ -549,6 +551,8 @@ describe('DateTimeUtils', () => {
   });
 
   it('#sortTimeUnits should return same when array is missing', () => {
+    expect(DateTimeUtils.sortTimeUnits(null)).toBeNull();
+    expect(DateTimeUtils.sortTimeUnits(undefined)).toBeUndefined();
     expect(DateTimeUtils.sortTimeUnits(null, 'asc')).toBeNull();
     expect(DateTimeUtils.sortTimeUnits(undefined, 'asc')).toBeUndefined();
     expect(DateTimeUtils.sortTimeUnits(null, 'desc')).toBeNull();
@@ -557,22 +561,44 @@ describe('DateTimeUtils', () => {
 
   it('#sortTimeUnits should return unchanged array when it contains single entry', () => {
     const timeUnits: TimeUnit[] = [TimeUnit.YEAR];
+    expect(DateTimeUtils.sortTimeUnits(timeUnits)).toBe(timeUnits);
+    expect(DateTimeUtils.sortTimeUnits(timeUnits)).toEqual([TimeUnit.YEAR]);
     expect(DateTimeUtils.sortTimeUnits(timeUnits, 'asc')).toBe(timeUnits);
     expect(DateTimeUtils.sortTimeUnits(timeUnits, 'asc')).toEqual([TimeUnit.YEAR]);
     expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toBe(timeUnits);
     expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toEqual([TimeUnit.YEAR]);
   });
 
-  it('#sortTimeUnits should return same ascending sorted array', () => {
-    const timeUnits: TimeUnit[] = [TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY];
+  it('#sortTimeUnits should return the same array', () => {
+    let timeUnits = [TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY];
     expect(DateTimeUtils.sortTimeUnits(timeUnits, 'asc')).toBe(timeUnits);
-    expect(DateTimeUtils.sortTimeUnits(timeUnits, 'asc')).toEqual([TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY, TimeUnit.YEAR]);
+    timeUnits = [TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY];
+    expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toBe(timeUnits);
   });
 
-  it('#sortTimeUnits should return same descending sorted array', () => {
-    const timeUnits: TimeUnit[] = [TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY];
-    expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toBe(timeUnits);
-    expect(DateTimeUtils.sortTimeUnits(timeUnits, 'desc')).toEqual([TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MINUTE, TimeUnit.MILLISECOND]);
+  it('#sortTimeUnits should return ascending sorted time units', () => {
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY]))
+      .toEqual([TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY, TimeUnit.YEAR]);
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.SECOND, TimeUnit.MILLISECOND]))
+      .toEqual([TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR, TimeUnit.DAY]);
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.MILLISECOND, TimeUnit.HOUR, TimeUnit.SECOND, TimeUnit.MINUTE]))
+      .toEqual([TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR]);
+
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY], 'asc'))
+      .toEqual([TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY, TimeUnit.YEAR]);
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.SECOND, TimeUnit.MILLISECOND], 'asc'))
+      .toEqual([TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR, TimeUnit.DAY]);
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.MILLISECOND, TimeUnit.HOUR, TimeUnit.SECOND, TimeUnit.MINUTE], 'asc'))
+      .toEqual([TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR]);
+  });
+
+  it('#sortTimeUnits should return descending sorted time units', () => {
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.YEAR, TimeUnit.MILLISECOND, TimeUnit.MINUTE, TimeUnit.DAY], 'desc'))
+      .toEqual([TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MINUTE, TimeUnit.MILLISECOND]);
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MONTH, TimeUnit.MILLISECOND], 'desc'))
+      .toEqual([TimeUnit.MONTH, TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MILLISECOND]);
+    expect(DateTimeUtils.sortTimeUnits([TimeUnit.MINUTE, TimeUnit.MILLISECOND, TimeUnit.SECOND], 'desc'))
+      .toEqual([TimeUnit.MINUTE, TimeUnit.SECOND, TimeUnit.MILLISECOND]);
   });
 
   it('#defineTimeUnits should not set time unit when column is not time', () => {

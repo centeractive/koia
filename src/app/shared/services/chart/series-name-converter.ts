@@ -3,7 +3,7 @@ import { DataTypeUtils } from 'app/shared/utils/data-type-utils';
 
 export class SeriesNameConverter {
 
-   static SEPARATOR = '⯈';
+   static SEPARATOR = ' ⯈ ';
 
    /**
     * @returns the data group ID from the entry by considering data column and split column(s) value,

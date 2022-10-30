@@ -6,14 +6,12 @@ import { DateTime } from 'luxon';
 
 export class DateTimeUtils {
 
-  static maxTimeUnit(tu1: TimeUnit, tu2: TimeUnit): TimeUnit {
-    if (!tu1) {
-      return tu2;
-    } else if (!tu2) {
-      return tu1;
+  static maxTimeUnit(...timeUnits: TimeUnit[]): TimeUnit {
+    if (!timeUnits.length) {
+      return undefined;
     }
-    const allTimeUnits = DateTimeUtils.allTimeUnits('asc');
-    return allTimeUnits.indexOf(tu1) > allTimeUnits.indexOf(tu2) ? tu1 : tu2;
+    const sortedTimeUnits = DateTimeUtils.sortTimeUnits(timeUnits.filter(tu => tu), 'desc');
+    return sortedTimeUnits.length ? sortedTimeUnits[0] : undefined;
   }
 
   /**
@@ -273,19 +271,18 @@ export class DateTimeUtils {
   /**
    * @returns the same but sorted array
    */
-  static sortTimeUnits(timeUnits: TimeUnit[], direction: 'asc' | 'desc'): TimeUnit[] {
-    if (!timeUnits || timeUnits.length === 0) {
+  static sortTimeUnits(timeUnits: TimeUnit[], direction: ('asc' | 'desc') = 'asc'): TimeUnit[] {
+    if (!timeUnits?.length) {
       return timeUnits;
     }
-    timeUnits.sort((u1: TimeUnit, u2: TimeUnit) => {
+    return timeUnits.sort((u1: TimeUnit, u2: TimeUnit) => {
       const diff = DateTimeUtils.durationOf(u1) - DateTimeUtils.durationOf(u2);
       return direction === 'asc' ? diff : diff * -1;
     });
-    return timeUnits;
   }
 
   /**
-   * don't make this public as the duration in milliseconds for months and years is not determined
+   * don't make this public as the duration in milliseconds for months and years is undetermined
    *
    * @see [[#toMilliseconds]]
    */

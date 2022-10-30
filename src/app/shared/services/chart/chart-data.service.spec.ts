@@ -408,9 +408,9 @@ describe('ChartDataService', () => {
          { id: 2, x: entries[1]['Time'], y: 0 }
       ];
       expect(result.data.datasets.length).toBe(2);
-      expect(result.data.datasets[0].label).toBe('3⯈c3');
+      expect(result.data.datasets[0].label).toBe('3 ⯈ c3');
       expect(result.data.datasets[0].data).toEqual(expectedData0);
-      expect(result.data.datasets[1].label).toBe('2⯈c3');
+      expect(result.data.datasets[1].label).toBe('2 ⯈ c3');
       expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: -1, max: 4 });
       expect(result.error).toBeUndefined();
@@ -480,9 +480,9 @@ describe('ChartDataService', () => {
       const expectedData0: any = [{ x: now + min, y: 2 }];
       const expectedData1: any = [{ x: now, y: 1 }];
       expect(result.data.datasets.length).toBe(2);
-      expect(result.data.datasets[0].label).toBe('3⯈b');
+      expect(result.data.datasets[0].label).toBe('3 ⯈ b');
       expect(result.data.datasets[0].data).toEqual(expectedData0);
-      expect(result.data.datasets[1].label).toBe('2⯈b');
+      expect(result.data.datasets[1].label).toBe('2 ⯈ b');
       expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: 1, max: 2 });
       expect(result.error).toBeUndefined();

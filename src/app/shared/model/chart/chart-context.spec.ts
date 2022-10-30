@@ -238,7 +238,7 @@ describe('ChartContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Count distinct values of Percent by Time\nsplit by Name⯈Amount');
+      expect(title).toBe('Count distinct values of Percent by Time\nsplit by Name ⯈ Amount');
    });
 
    it('#getSupportedExportFormats should return PNG', () => {

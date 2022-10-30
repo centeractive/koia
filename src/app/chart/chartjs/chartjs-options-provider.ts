@@ -1,4 +1,4 @@
-import { Column, DataType } from 'app/shared/model';
+import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
@@ -6,7 +6,7 @@ import { RawDataRevealer } from './raw-data-revealer';
 import { FormatUtils } from './formatter/format-utils';
 import { TooltipCustomizer } from '../customizer/tooltip-customizer';
 import { LegendLabelFormatter } from './formatter/legend-label-formatter';
-import { DateTimeUtils } from 'app/shared/utils';
+import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
 import { TickLabelFormatter } from './formatter/tick-label-formatter';
 import { PointLabelFormatter } from './formatter/point-label-formatter';
 import { ChartJsUtils } from './chart-js-utils';
@@ -100,10 +100,25 @@ export class ChartJsOptionsProvider {
     }
 
     private yScaleOptions(chartType: ChartType, context: ChartContext): ScaleOptions {
+        const title = this.yScaleTitle(context);
         return {
             display: !this.chartTypesHiddenScales.includes(chartType),
-            stacked: context.stacked
+            stacked: context.stacked,
+            title: {
+                display: !!title,
+                text: title
+            }
         };
+    }
+
+    private yScaleTitle(context: ChartContext): string {
+        if (context.isAggregationCountSelected()) {
+            return 'Count';
+        } else if (context.dataColumns.length == 1) {
+            return context.dataColumns[0].name;
+        } else {
+            return null;
+        }
     }
 
     private xScaleOptions(chartType: ChartType, context: ChartContext): ScaleOptions {
@@ -121,6 +136,12 @@ export class ChartJsOptionsProvider {
             };
         }
         const column = context.groupByColumns[0];
+        if (column) {
+            scaleOptions.title = {
+                display: true,
+                text: column.name
+            }
+        }
 
         if (context.isCategoryChart()) {
             this.tickLabelFormatter.format(column, scaleOptions);
@@ -141,7 +162,7 @@ export class ChartJsOptionsProvider {
                     scaleOptions['suggestedMax'] = xRange.max;
                     break;
                 case DataType.TIME:
-                    this.addTimeOptions(scaleOptions, column);
+                    this.addTimeOptions(scaleOptions, column, context);
                     break;
                 default:
                     break;
@@ -150,21 +171,36 @@ export class ChartJsOptionsProvider {
         return scaleOptions;
     }
 
-    private addTimeOptions(scaleOptions: ScaleOptions, timeColumn: Column): void {
+    private addTimeOptions(scaleOptions: ScaleOptions, timeColumn: Column, context: ChartContext): void {
         scaleOptions.type = 'time';
         const timeScaleOptions: any = scaleOptions; // TODO: consider using TimeScaleOptions type
 
-        // TODO: use timeColumn.groupingTimeUnit when grouped
-        const timeUnit = DateTimeUtils.timeUnitFromNgFormat(timeColumn.format);
-        const timeFormat = DateTimeUtils.momentFormatOf(timeUnit);
-
+        const scaleTimeUnit = this.scaleTimeUnit(timeColumn, context);
         timeScaleOptions.time = {
-            unit: timeUnit,
+            unit: scaleTimeUnit,
             displayFormats: {
-                [timeUnit]: timeFormat,
+                [scaleTimeUnit]: DateTimeUtils.momentFormatOf(scaleTimeUnit),
             },
-            tooltipFormat: timeFormat
+            tooltipFormat: this.tooltipFormat(timeColumn)
         };
+    }
+
+    private scaleTimeUnit(timeColumn: Column, context: ChartContext): TimeUnit {
+        const columnTimeUnit = DateTimeUtils.timeUnitFromNgFormat(timeColumn.format);
+        const largestMatchingTimeUnit = DateTimeUtils.largestMatchingTimeUnit(this.duration(timeColumn, context), 20);
+        return DateTimeUtils.maxTimeUnit(columnTimeUnit, timeColumn.groupingTimeUnit, largestMatchingTimeUnit);
+    }
+
+    private duration(timeColumn: Column, context: ChartContext): number {
+        const timeRange = ArrayUtils.numberValueRange(context.entries, timeColumn.name);
+        return timeRange.max - timeRange.min;
+    }
+
+    private tooltipFormat(timeColumn: Column): string {
+        if (timeColumn.groupingTimeUnit) {
+            return DateTimeUtils.momentFormatOf(timeColumn.groupingTimeUnit);
+        }
+        return timeColumn.format;
     }
 
 }

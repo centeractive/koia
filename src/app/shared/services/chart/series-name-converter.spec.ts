@@ -29,7 +29,7 @@ describe('SeriesNameConverter', () => {
       const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(id).toEqual('a⯈1');
+      expect(id).toEqual('a ⯈ 1');
    });
 
    it('#toGroupKey should return key derived from split column values and data column value', () => {
@@ -43,7 +43,7 @@ describe('SeriesNameConverter', () => {
       const id = converter.toGroupKey(entry, dataColumn, splitColumns);
 
       // then
-      expect(id).toEqual('a⯈4⯈1');
+      expect(id).toEqual('a ⯈ 4 ⯈ 1');
    });
 
    it('#toGroupKey should return undefined when split column is null', () => {
@@ -126,7 +126,7 @@ describe('SeriesNameConverter', () => {
       const name = converter.toSeriesName(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toEqual('a⯈y');
+      expect(name).toEqual('a ⯈ y');
    });
 
    it('#toSeriesName should return name derived from split column values', () => {
@@ -140,7 +140,7 @@ describe('SeriesNameConverter', () => {
       const name = converter.toSeriesName(entry, dataColumn, splitColumns);
 
       // then
-      expect(name).toEqual('a⯈4⯈y');
+      expect(name).toEqual('a ⯈ 4 ⯈ y');
    });
 
    it('#toSeriesName should return undefined when split column is null', () => {
@@ -205,7 +205,7 @@ describe('SeriesNameConverter', () => {
       const dataColumn = createColumn('a', DataType.NUMBER);
 
       // when
-      const values = converter.toValues(1, dataColumn,  []);
+      const values = converter.toValues(1, dataColumn, []);
 
       // then
       expect(values).toEqual([1]);
@@ -217,7 +217,7 @@ describe('SeriesNameConverter', () => {
       const dataColumn = createColumn('a', DataType.TEXT);
 
       // when
-      const values = converter.toValues('1', dataColumn,  []);
+      const values = converter.toValues('1', dataColumn, []);
 
       // then
       expect(values).toEqual(['1']);
@@ -229,7 +229,7 @@ describe('SeriesNameConverter', () => {
       const dataColumn = createColumn('a', DataType.BOOLEAN);
 
       // when
-      const values = converter.toValues(true, dataColumn,  []);
+      const values = converter.toValues(true, dataColumn, []);
 
       // then
       expect(values).toEqual([true]);
@@ -242,7 +242,7 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT)];
 
       // when
-      const values = converter.toValues('a⯈1', dataColumn, splitColumns);
+      const values = converter.toValues('a ⯈ 1', dataColumn, splitColumns);
 
       // then
       expect(values).toEqual(['a', 1]);
@@ -255,7 +255,7 @@ describe('SeriesNameConverter', () => {
       const splitColumns = [createColumn('x', DataType.TEXT), createColumn('z', DataType.NUMBER)];
 
       // when
-      const values = converter.toValues('a⯈4⯈1', dataColumn, splitColumns);
+      const values = converter.toValues('a ⯈ 4 ⯈ 1', dataColumn, splitColumns);
 
       // then
       expect(values).toEqual(['a', 4, 1]);
@@ -263,9 +263,9 @@ describe('SeriesNameConverter', () => {
 
    function createColumn(name: string, dataType: DataType): Column {
       return {
-        name: name,
-        dataType: dataType,
-        width: 10
+         name: name,
+         dataType: dataType,
+         width: 10
       };
-    }
+   }
 });

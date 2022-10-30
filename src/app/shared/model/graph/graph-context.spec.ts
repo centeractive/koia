@@ -192,7 +192,7 @@ describe('GraphContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Relationship: Root⯈Name');
+      expect(title).toBe('Relationship: Root ⯈ Name');
    });
 
    it('#getTitle when multiple group-by column defined', () => {
@@ -204,7 +204,7 @@ describe('GraphContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Relationship: Root⯈Location⯈Name⯈Amount');
+      expect(title).toBe('Relationship: Root ⯈ Location ⯈ Name ⯈ Amount');
    });
 
    it('#getTitle when user-defined', () => {
