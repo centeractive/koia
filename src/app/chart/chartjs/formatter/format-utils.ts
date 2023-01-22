@@ -1,8 +1,8 @@
-import { BubbleDataPoint, ScatterDataPoint } from 'chart.js';
+import { BubbleDataPoint, Point, ScatterDataPoint } from 'chart.js';
 
 export class FormatUtils {
 
-    static percentage(data: (number | ScatterDataPoint | BubbleDataPoint)[], value: number): string {
+    static percentage(data: (number | [number, number] | Point | BubbleDataPoint)[], value: number): string {
         if (value == null || value == undefined) {
             return '';
         }

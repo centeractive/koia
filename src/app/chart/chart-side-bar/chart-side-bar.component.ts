@@ -96,7 +96,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     this.individualValuesEnabled = !DataTypeUtils.containsNonNumericColumns(this.context.dataColumns);
     this.countDistinctValuesEnabled = this.context.dataColumns.length <= 1;
     if (!this.individualValuesEnabled) {
-      this.onAggregationTypeChanged(true);
+      this.onAggregationTypeChanged(!this.individualValuesEnabled);
     }
   }
 
