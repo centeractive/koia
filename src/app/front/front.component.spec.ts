@@ -53,7 +53,7 @@ describe('FrontComponent', () => {
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
         MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }], { relativeLinkResolution: 'legacy' })
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
         { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
@@ -389,7 +389,7 @@ describe('FrontComponent (external invocation)', () => {
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
         MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }], { relativeLinkResolution: 'legacy' })
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
         { provide: ActivatedRoute, useValue: { queryParamMap: of(createQueryParams()) } },

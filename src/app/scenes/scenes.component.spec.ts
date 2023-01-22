@@ -53,7 +53,7 @@ describe('ScenesComponent', () => {
       declarations: [ScenesComponent, RawDataComponent],
       imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
         MatMenuModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
-        RouterModule.forRoot([{ path: '**', component: RawDataComponent }], { relativeLinkResolution: 'legacy' })],
+        RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
       providers: [Location, MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },

@@ -79,7 +79,7 @@ describe('MainToolbarComponent', () => {
       imports: [
         MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
         MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule,
-        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], { relativeLinkResolution: 'legacy' })
+        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
         { provide: DBService, useValue: dbService },
