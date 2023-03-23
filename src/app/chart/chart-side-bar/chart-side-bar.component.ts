@@ -43,7 +43,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   }
 
   chartTypeColor(chartType: ChartType): string {
-    return this.context.chartType === chartType.type ? 'accent' : '';
+    return this.context.chartType === chartType.type ? 'accent' : 'basic';
   }
 
   switchTo(chartType: ChartType): void {

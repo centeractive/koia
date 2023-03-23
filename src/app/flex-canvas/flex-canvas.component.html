@@ -18,11 +18,11 @@
          <koia-main-toolbar [route]="route" (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
          <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
          <div id="view_toolbar">
-            <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
+            <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint
                     matTooltip="Print current view" [disabled]="!elementContexts?.length" (click)="printView()">
                <mat-icon>print</mat-icon>
             </button>
-            <button mat-button mat-icon-button matTooltip="Save current view" [disabled]="!elementContexts?.length"
+            <button mat-icon-button matTooltip="Save current view" [disabled]="!elementContexts?.length"
                     (click)="saveView()">
                <mat-icon>save_alt</mat-icon>
             </button>
@@ -41,13 +41,13 @@
             </mat-menu>
 
             &nbsp;&nbsp;&nbsp;
-            <button mat-button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
+            <button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
                <mat-icon svgIcon="add_chart"></mat-icon>
             </button>
-            <button mat-button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
+            <button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
                <mat-icon svgIcon="add_graph"></mat-icon>
             </button>
-            <button mat-button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
+            <button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
                <mat-icon svgIcon="add_summary"></mat-icon>
             </button>
          </div>
@@ -72,12 +72,12 @@
                            <span>Save As {{ exportFormat }}</span>
                         </button>
                      </mat-menu>
-                     <button id="configButton" class="but_config" mat-button mat-icon-button matTooltip="Configure..."
+                     <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..."
                              (click)="configure($event, context)">
                         <mat-icon>settings</mat-icon>
                      </button>
                      <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
-                             *ngIf="isChartContext(context)" mat-button mat-icon-button
+                             *ngIf="isChartContext(context)" mat-icon-button
                              [color]="isShowResizableMargin(context) ? 'accent' : null"
                              matTooltip="Toggle resizable chart margin"
                              (click)="asChartContext(context).toggleShowResizableMargin()">

@@ -1,3 +1,14 @@
+#div_sel_data_columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+}
+
+.div_col_value_grouping {
+  display: flex;
+  align-items: center;
+}
+
 label {
   margin-left: 5px;
   margin-right: 5px;
@@ -21,8 +32,8 @@ input {
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-              0 8px 10px 1px rgba(0, 0, 0, 0.14),
-              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
 .cdk-drag-placeholder {
@@ -81,6 +92,7 @@ button {
   margin: 0px;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
 mat-radio-button {
   margin: 5px;
 }
@@ -110,7 +122,7 @@ mat-radio-button {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  cursor: move;  
+  cursor: move;
 }
 
 .mat-badge .mat-badge-content {
@@ -121,8 +133,8 @@ mat-radio-button {
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-              0 8px 10px 1px rgba(0, 0, 0, 0.14),
-              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
 .cdk-drag-placeholder {

@@ -19,7 +19,7 @@ h1 {
 }
 
 .form_field_source_type {
-  width: 80px;
+  width: 10em;
 }
 
 .file_name {
@@ -38,12 +38,17 @@ p {
   overflow-x: auto;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of slide-toggle that may no longer apply for the MDC version. */
 mat-slide-toggle {
   margin-bottom: 8px;
 }
 
 .form_field_language {
-  width: 80px;
+  width: 10em;
+}
+
+.form_field_separator {
+  width: 10em;
 }
 
 .but_value_choice {
@@ -97,19 +102,19 @@ td {
   text-align: right;
 }
 
-.mat-header-row {
+.mat-mdc-header-row {
   height: auto;
 }
 
-.mat-row {
+.mat-mdc-row {
   height: auto;
 }
 
-.mat-row:nth-child(even) {
+.mat-mdc-row:nth-child(even) {
   background-color: #fff;
 }
 
-.mat-row:nth-child(odd) {
+.mat-mdc-row:nth-child(odd) {
   background-color: #efefef;
 }
 
@@ -122,7 +127,7 @@ td {
 }
 
 .max_items {
-  width: 80px;
+  width: 8em;
 }
 
 #div_progress {

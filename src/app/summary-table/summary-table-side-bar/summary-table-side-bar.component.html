@@ -4,10 +4,10 @@
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
-      <button mat-button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
+      <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
          <mat-icon>expand_more</mat-icon>
       </button>
-      <button mat-button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
+      <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
          <mat-icon>expand_less</mat-icon>
       </button>
    </span>
@@ -17,25 +17,26 @@
    <mat-accordion *ngIf="context" [multi]="multiExpandable">
 
       <koia-expansion-panel title="Data" [expanded]="true">
-         <span *ngFor="let column of dataColumns">
-            <div *ngIf="!context.hasValueGrouping(column.name)">
-               <button class="but_column" mat-raised-button [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''"
+         <div id="div_sel_data_columns">
+            <span *ngFor="let column of dataColumns">
+               <div *ngIf="!context.hasValueGrouping(column.name)" class="div_col_value_grouping">
+                  <button class="but_column" mat-raised-button [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
+                     <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                     {{ column.name }}
+                  </button>
+                  <button *ngIf="isNumericColumn(column)" mat-icon-button [matTooltip]="'Define value grouping'"
+                          (click)="addValueGroupingFor(column)">
+                     <mat-icon>group_work</mat-icon>
+                  </button>
+               </div>
+               <button class="but_column" *ngIf="context.hasValueGrouping(column.name)" mat-raised-button
+                       [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small" matBadgeColor="primary"
                        (click)="onColumnChanged(column)">
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                   {{ column.name }}
                </button>
-               <button *ngIf="isNumericColumn(column)" mat-icon-button [matTooltip]="'Define value grouping'"
-                       (click)="addValueGroupingFor(column)">
-                  <mat-icon>group_work</mat-icon>
-               </button>
-            </div>
-            <button class="but_column" *ngIf="context.hasValueGrouping(column.name)" mat-raised-button
-                    [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small"
-                    matBadgeColor="primary" (click)="onColumnChanged(column)">
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-               {{ column.name }}
-            </button>
-         </span>
+            </span>
+         </div>
          <div>
             <br>
             <mat-radio-group [value]="context.isAggregationCountSelected()">
@@ -54,7 +55,7 @@
          </mat-panel-description>
          <span class="span_left_to_right">
             <label>max. {{ grouping.minMaxValues.max }}</label>
-            <button mat-button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
+            <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
                <mat-icon>add_circle_outline</mat-icon>
             </button>
          </span>

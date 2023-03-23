@@ -38,18 +38,19 @@ td {
   text-align: right;
 }
 
-.mat-row {
+.mat-mdc-row {
   height: auto;
 }
 
-.mat-row:nth-child(even) {
+.mat-mdc-row:nth-child(even) {
   background-color: #fff;
 }
 
-.mat-row:nth-child(odd) {
+.mat-mdc-row:nth-child(odd) {
   background-color: #efefef;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of paginator that may no longer apply for the MDC version. */
 .mat-paginator-sticky {
   position: sticky;
   bottom: 0px;

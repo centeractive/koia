@@ -1,8 +1,11 @@
-<mat-card>
-  <mat-card-subtitle>CouchDB Access</mat-card-subtitle>
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>CouchDB Access</mat-card-title>
+  </mat-card-header>
   <mat-card-content>
     <mat-form-field class="form_field_protocol">
-      <mat-select id="protocol" placeholder="Protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
+      <mat-label>Protocol</mat-label>
+      <mat-select id="protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
         <mat-option *ngFor="let protocol of protocols" [value]="protocol" (click)="onProtocolChanged(protocol)">
           {{ protocol }}
         </mat-option>
@@ -10,20 +13,24 @@
     </mat-form-field>
     <div>
       <mat-form-field class="form_field_default">
-        <input id="host" matInput type="text" placeholder="Host" [(ngModel)]="data.connectionInfo.host">
+        <mat-label>Host</mat-label>
+        <input id="host" matInput type="text" [(ngModel)]="data.connectionInfo.host">
       </mat-form-field>
       &nbsp;
       <mat-form-field class="form_field_port">
-        <input id="port" matInput type="number" placeholder="Port" [(ngModel)]="data.connectionInfo.port">
+        <mat-label>Port</mat-label>
+        <input id="port" matInput type="number" [(ngModel)]="data.connectionInfo.port">
       </mat-form-field>
     </div>
     <div>
       <mat-form-field class="form_field_default">
-        <input id="user" matInput type="text" placeholder="User" [(ngModel)]="data.connectionInfo.user">
+        <mat-label>User</mat-label>
+        <input id="user" matInput type="text" [(ngModel)]="data.connectionInfo.user">
       </mat-form-field>
       &nbsp;
       <mat-form-field class="form_field_default">
-        <input id="password" matInput type="password" placeholder="Password" [(ngModel)]="data.connectionInfo.password">
+        <mat-label>Password</mat-label>
+        <input id="password" matInput type="password" [(ngModel)]="data.connectionInfo.password">
       </mat-form-field>
     </div>
     <br>

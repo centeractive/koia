@@ -1,191 +1,200 @@
-<button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+<button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
   <mat-icon>home</mat-icon>
 </button>
 <button id="butScenes" *ngIf="scenesExist" mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
   <mat-icon>collections</mat-icon>
 </button>
-<mat-card>
+<mat-card appearance="outlined">
   <mat-card-header>
     <div mat-card-avatar id="newscene-image"></div>
     <mat-card-title>New Scene</mat-card-title>
     <mat-card-subtitle>Create a new scene of data from a file</mat-card-subtitle>
   </mat-card-header>
 
-  <div *ngIf="scene">
-    <mat-form-field class="scene_name">
-      <input matInput type="text" placeholder="Scene Name" required [(ngModel)]="scene.name">
-    </mat-form-field>
-    <mat-form-field class="scene_short_desc">
-      <input matInput type="text" placeholder="Short Description" required [(ngModel)]="scene.shortDescription">
-    </mat-form-field>
-  </div>
+  <mat-card-content>
 
-  <mat-accordion multi="true">
-    <mat-expansion-panel expanded="true">
-      <mat-expansion-panel-header color="accent">
-        <mat-panel-title>
-          <mat-icon color="primary">looks_one</mat-icon>&nbsp;<h4>Data Source</h4>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-form-field class="form_field_source_type">
-        <mat-select placeholder="Source Type" [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
-          <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
-        </mat-select>
-      </mat-form-field>&nbsp;
-      <button id="select_file_button" mat-raised-button color="primary" (click)="fileInput.click()">
-        <mat-icon>folder</mat-icon>
-        <span>&nbsp;Select File</span>
-      </button>
-      <input #fileInput id="fileInput" hidden type="file"
-             [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
-      <mat-form-field class="file_name" *ngIf="file">
-        <input matInput type="text" placeholder="File Name" readonly [value]="file.name">
+    <div *ngIf="scene">
+      <mat-form-field class="scene_name">
+        <mat-label>Scene Name</mat-label>
+        <input matInput required [(ngModel)]="scene.name">
       </mat-form-field>
-      <p *ngIf="selectedReader">{{ selectedReader.getDescription() }}</p>
-      <div *ngIf="fileHeader">
-        Data Sample
-        <textarea id="textarea_data_sample" readonly>{{ fileHeader }}</textarea>
-      </div>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel *ngIf="fileHeader" expanded="true">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon color="primary">looks_two</mat-icon>
-          &nbsp;<h4>{{ selectedReader.getSourceName() }} Source Attributes</h4>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-form-field class="form_field_language">
-        <mat-select placeholder="Language" [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
-                    matTooltip="Proper language is required when parsing date/time and number data">
-          <mat-option *ngFor="let locale of locales" [value]="locale">{{ locale }}</mat-option>
-        </mat-select>
+      <mat-form-field class="scene_short_desc">
+        <mat-label>Short Description</mat-label>
+        <input matInput required [(ngModel)]="scene.shortDescription">
       </mat-form-field>
-      <div *ngFor="let attr of readerAttributes">
-        <mat-slide-toggle class="reader_attribute" *ngIf="attr.isBoolean()" color="primary"
-                          (change)="columnMappings = null" [(ngModel)]="attr.value" [matTooltip]="attr.description">
-          {{ attr.name }}
-        </mat-slide-toggle>
+    </div>
 
-        <div *ngIf="!attr.isBoolean()">
-          <mat-form-field class="reader_attribute">
-            <input matInput [type]="attr.isNumber() ? 'number' : 'text'"
-                   *ngIf="!attr.hasValueChoice() || !attr.isValueChoiceBinding" [placeholder]="attr.name"
-                   [(ngModel)]="attr.value" [matTooltip]="attr.description" (change)="columnMappings = null">
-            <mat-select *ngIf="attr.hasValueChoice() && attr.isValueChoiceBinding" [placeholder]="attr.name"
-                        [(value)]="attr.value" [matTooltip]="attr.description"
-                        (selectionChange)="columnMappings = null">
-              <mat-option *ngFor="let choice of attr.valueChoice" [value]="choice">{{ choice }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <button class="but_value_choice" mat-icon-button *ngIf="attr.hasValueChoice() && !attr.isValueChoiceBinding"
-                  [matMenuTriggerFor]="valueChoiceMenu">
-            <mat-icon>expand_more</mat-icon>
-          </button>
-          <mat-menu #valueChoiceMenu="matMenu">
-            <button mat-menu-item *ngFor="let choice of attr.valueChoice" [disabled]="choice === attr.value"
-                    (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
-          </mat-menu>
+    <mat-accordion multi="true">
+      <mat-expansion-panel expanded="true">
+        <mat-expansion-panel-header color="accent">
+          <mat-panel-title>
+            <mat-icon color="primary">looks_one</mat-icon>&nbsp;<h4>Data Source</h4>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-form-field class="form_field_source_type">
+          <mat-label>Source Type</mat-label>
+          <mat-select [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
+            <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
+          </mat-select>
+        </mat-form-field>&nbsp;
+        <button id="select_file_button" mat-raised-button color="primary" (click)="fileInput.click()">
+          <mat-icon>folder</mat-icon>
+          <span>&nbsp;Select File</span>
+        </button>
+        <input #fileInput id="fileInput" hidden type="file"
+               [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
+        <mat-form-field class="file_name" *ngIf="file">
+          <mat-label>File Name</mat-label>
+          <input matInput readonly [value]="file.name">
+        </mat-form-field>
+        <p *ngIf="selectedReader">{{ selectedReader.getDescription() }}</p>
+        <div *ngIf="fileHeader">
+          Data Sample
+          <textarea id="textarea_data_sample" readonly>{{ fileHeader }}</textarea>
         </div>
-      </div>
-      <div>
-        <div *ngIf="columnMappingsSource">
-          <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">Adopt columns from
-            existing Scene&nbsp;
+      </mat-expansion-panel>
+
+      <mat-expansion-panel *ngIf="fileHeader" expanded="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon color="primary">looks_two</mat-icon>
+            &nbsp;<h4>{{ selectedReader.getSourceName() }} Source Attributes</h4>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-form-field class="form_field_language">
+          <mat-label>Language</mat-label>
+          <mat-select [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
+                      matTooltip="Proper language is required when parsing date/time and number data">
+            <mat-option *ngFor="let locale of locales" [value]="locale">{{ locale }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <div *ngFor="let attr of readerAttributes">
+          <mat-slide-toggle *ngIf="attr.isBoolean()" color="primary"
+                            (change)="columnMappings = null" [(ngModel)]="attr.value" [matTooltip]="attr.description">
+            {{ attr.name }}
           </mat-slide-toggle>
-          <mat-form-field id="column_mapping_source" *ngIf="columnMappingsSource && adoptColumnsFromExistingScene">
-            <mat-select placeholder="Scene" [(ngModel)]="columnMappingsSource">
-              <mat-select-trigger>
-                {{ columnMappingsSource.name }}
-                <var class="scene_info_creation_time">
-                  (created {{ columnMappingsSource.creationTime | date: 'medium' }})
-                </var>
-              </mat-select-trigger>
-              <mat-option *ngFor="let sceneInfo of columnMappingsSourceCandidates" [value]="sceneInfo">
-                {{ sceneInfo.name }}
-                <var class="scene_info_creation_time">
-                  (created {{ sceneInfo.creationTime | date: 'medium' }})
-                </var>
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+
+          <div *ngIf="!attr.isBoolean()">
+            <mat-form-field class="form_field_separator">
+              <mat-label>{{ attr.name }}</mat-label>
+              <input *ngIf="!attr.hasValueChoice() || !attr.isValueChoiceBinding" matInput [type]="attr.isNumber() ? 'number' : 'text'"
+                     [(ngModel)]="attr.value" [matTooltip]="attr.description" (change)="columnMappings = null">
+              <mat-select *ngIf="attr.hasValueChoice() && attr.isValueChoiceBinding" [(value)]="attr.value" [matTooltip]="attr.description"
+                          (selectionChange)="columnMappings = null">
+                <mat-option *ngFor="let choice of attr.valueChoice" [value]="choice">{{ choice }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button class="but_value_choice" mat-icon-button *ngIf="attr.hasValueChoice() && !attr.isValueChoiceBinding"
+                    [matMenuTriggerFor]="valueChoiceMenu">
+              <mat-icon>expand_more</mat-icon>
+            </button>
+            <mat-menu #valueChoiceMenu="matMenu">
+              <button mat-menu-item *ngFor="let choice of attr.valueChoice" [disabled]="choice === attr.value"
+                      (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
+            </mat-menu>
+          </div>
         </div>
-        <button id="but_detect_columns" mat-raised-button color="primary"
-                [matTooltip]="adoptColumnsFromExistingScene ? '' : 'Detect columns by considering defined attributes'"
-                (click)="readSample()">{{ adoptColumnsFromExistingScene ? 'Adopt' : 'Detect' }} Columns</button>
-      </div>
-    </mat-expansion-panel>
+        <div>
+          <div *ngIf="columnMappingsSource">
+            <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">Adopt columns from
+              existing Scene&nbsp;
+            </mat-slide-toggle>
+            <mat-form-field id="column_mapping_source" *ngIf="columnMappingsSource && adoptColumnsFromExistingScene">
+              <mat-label>Scene</mat-label>
+              <mat-select [(ngModel)]="columnMappingsSource">
+                <mat-select-trigger>
+                  {{ columnMappingsSource.name }}
+                  <var class="scene_info_creation_time">
+                    (created {{ columnMappingsSource.creationTime | date: 'medium' }})
+                  </var>
+                </mat-select-trigger>
+                <mat-option *ngFor="let sceneInfo of columnMappingsSourceCandidates" [value]="sceneInfo">
+                  {{ sceneInfo.name }}
+                  <var class="scene_info_creation_time">
+                    (created {{ sceneInfo.creationTime | date: 'medium' }})
+                  </var>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <button id="but_detect_columns" mat-raised-button color="primary"
+                  [matTooltip]="adoptColumnsFromExistingScene ? '' : 'Detect columns by considering defined attributes'"
+                  (click)="readSample()">{{ adoptColumnsFromExistingScene ? 'Adopt' : 'Detect' }} Columns</button>
+        </div>
+      </mat-expansion-panel>
 
-    <mat-expansion-panel *ngIf="columnMappings" expanded="true">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon color="primary">looks_3</mat-icon>
-          &nbsp;<h4>{{ columnDefinitions }}</h4>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <div *ngFor="let columnPair of columnMappings">
-        <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
-                             (onRemove)="deleteColumnMapping(columnPair)"></koia-column-mapping>
-      </div>
-    </mat-expansion-panel>
+      <mat-expansion-panel *ngIf="columnMappings" expanded="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon color="primary">looks_3</mat-icon>
+            &nbsp;<h4>{{ columnDefinitions }}</h4>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div *ngFor="let columnPair of columnMappings">
+          <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
+                               (onRemove)="deleteColumnMapping(columnPair)"></koia-column-mapping>
+        </div>
+      </mat-expansion-panel>
 
-    <mat-expansion-panel *ngIf="columnMappings" expanded="true">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon color="primary">looks_4</mat-icon>&nbsp;<h4>Preview</h4>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <div #content id="div_preview_table">
-        <table mat-table [dataSource]="previewData">
-          <ng-container *ngFor="let columnPair of columnMappings; let iCol = index"
-                        [matColumnDef]="columnPair.target.name">
-            <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'px'">
-              {{ columnPair.target.name }}</th>
-            <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
-              <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="/assets/warning.png"
-                   [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
-              {{ formatValue(columnPair.target, mappingResult.entry) }}
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="targetColumnNames, sticky: true"></tr>
-          <tr mat-row *matRowDef="let mappingResult; columns: targetColumnNames;"></tr>
-        </table>
-      </div>
-    </mat-expansion-panel>
-  </mat-accordion>
+      <mat-expansion-panel *ngIf="columnMappings" expanded="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon color="primary">looks_4</mat-icon>&nbsp;<h4>Preview</h4>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div #content id="div_preview_table">
+          <table mat-table [dataSource]="previewData">
+            <ng-container *ngFor="let columnPair of columnMappings; let iCol = index"
+                          [matColumnDef]="columnPair.target.name">
+              <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'px'">
+                {{ columnPair.target.name }}</th>
+              <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
+                <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="/assets/warning.png"
+                     [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
+                {{ formatValue(columnPair.target, mappingResult.entry) }}
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="targetColumnNames, sticky: true"></tr>
+            <tr mat-row *matRowDef="let mappingResult; columns: targetColumnNames;"></tr>
+          </table>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
 
-  <br>
-  <div *ngIf="scene">
-    <button id="but_cancel" *ngIf="!canceled" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
-    &nbsp;
-    <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappingsValid">
-      <img *ngIf="isPreviewDirty()" src="/assets/warning.png"
-           matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
-           matTooltipClass="tooltip_preview_warning" />
+    <br>
+    <div *ngIf="scene">
+      <button id="but_cancel" *ngIf="!canceled" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
       &nbsp;
-      <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
-              [disabled]="maxItemsToLoadControl.value < 1 || maxItemsToLoadControl.value > maxItemsPerScene"
-              (click)="persistScene()">
-        Load Data
-      </button>
-      &nbsp;
-      <mat-form-field class="max_items">
-        <input matInput type="number" placeholder="Max. items" required min="1"
-               [max]="maxItemsPerScene" step="1" [formControl]="maxItemsToLoadControl"
-               [matTooltip]="'Maximum number of items to be loaded\n(min: 1, max: ' + maxItemsPerScene.toLocaleString() + ')'"
-               matTooltipClass="multi-line-tooltip" onfocusout="this.value = Number(this.value)">
-        <mat-error *ngIf="maxItemsToLoadControl.invalid">{{ 'Exp. 1-' + maxItemsPerScene }}</mat-error>
-      </mat-form-field>
-      &nbsp;
-      <mat-slide-toggle [(ngModel)]="abortDataloadOnError"
-                        matTooltip="Abort loading data when inconsitent data is encountered">Abort on data error
-      </mat-slide-toggle>
-    </span>
-  </div>
-  <div id="div_progress" *ngIf="progressBarMode">
-    {{ feedback }}
-    <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
-                      [color]="progressBarMode === 'determinate' ? 'accent' : ''"></mat-progress-bar>
-  </div>
+      <span *ngIf="scene.name && scene.shortDescription && !scene.creationTime && columnMappingsValid">
+        <img *ngIf="isPreviewDirty()" src="/assets/warning.png"
+             matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
+             matTooltipClass="tooltip_preview_warning" />
+        &nbsp;
+        <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
+                [disabled]="maxItemsToLoadControl.value < 1 || maxItemsToLoadControl.value > maxItemsPerScene"
+                (click)="persistScene()">
+          Load Data
+        </button>
+        &nbsp;
+        <mat-form-field class="max_items">
+          <mat-label>Max. items</mat-label>
+          <input matInput type="number" required min="1"
+                 [max]="maxItemsPerScene" step="1" [formControl]="maxItemsToLoadControl"
+                 [matTooltip]="'Maximum number of items to be loaded\n(min: 1, max: ' + maxItemsPerScene.toLocaleString() + ')'"
+                 matTooltipClass="multi-line-tooltip" onfocusout="this.value = Number(this.value)">
+          <mat-error *ngIf="maxItemsToLoadControl.invalid">{{ 'Exp. 1-' + maxItemsPerScene }}</mat-error>
+        </mat-form-field>
+        &nbsp;
+        <mat-slide-toggle [(ngModel)]="abortDataloadOnError"
+                          matTooltip="Abort loading data when inconsitent data is encountered">Abort on data error
+        </mat-slide-toggle>
+      </span>
+    </div>
+    <div id="div_progress" *ngIf="progressBarMode">
+      {{ feedback }}
+      <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
+                        [color]="progressBarMode === 'determinate' ? 'accent' : ''"></mat-progress-bar>
+    </div>
+  </mat-card-content>
 </mat-card>

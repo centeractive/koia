@@ -3,8 +3,10 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'koia-input-dialog',
-  template: `<mat-card>
-                <mat-card-subtitle>{{ data.title }}</mat-card-subtitle>
+  template: `<mat-card appearance="outlined">
+                <mat-card-header>
+                  <mat-card-title>{{ data.title }}</mat-card-title>
+                </mat-card-header>
                 <mat-card-content>
                   <mat-form-field>
                     <input id="host" matInput type="text" [placeholder]="data.inputName" required
@@ -16,7 +18,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
                   </div>
                 </mat-card-content>
              </mat-card>`,
-  styles: [ `div {
+  styles: [`div {
                 width: 100%;
                 display: flex;
                 justify-content: center;

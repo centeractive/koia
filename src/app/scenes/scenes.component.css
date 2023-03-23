@@ -12,10 +12,13 @@
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  align-items: center;
 }
 
-#filter_field {  
+.mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+#filter_field {
   width: 300px;
 }
 
@@ -28,7 +31,7 @@
   flex-grow: 1;
   padding-right: 10px;
 }
- 
+
 .scene_short_desc {
   flex-grow: 3;
   padding-right: 10px;

@@ -1,50 +1,58 @@
-<button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+<button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
   <mat-icon>home</mat-icon>
 </button>
-<button id="butScene" mat-button mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+<button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
   <mat-icon>add_photo_alternate</mat-icon>
 </button>
-<mat-card id="mat_card_active_scene" *ngIf="activeScene">
+<mat-card appearance="outlined" id="mat_card_active_scene" *ngIf="activeScene">
 
   <mat-card-header>
     <div mat-card-avatar id="image-scene"></div>
     <mat-card-title>Active Scene</mat-card-title>
     <mat-card-subtitle>This is the scene you're currently working with</mat-card-subtitle>
   </mat-card-header>
-  <div class="div_scene">
 
-    <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #moreMenu="matMenu">
-      <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(activeScene._id)">
-        <mat-icon>pageview</mat-icon>
-        <span>Show details</span>
+  <mat-card-content>
+
+    <div class="div_scene">
+
+      <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
+        <mat-icon>more_vert</mat-icon>
       </button>
-      <button class="menu_item_delete" mat-menu-item (click)="delete(activeScene)">
-        <mat-icon>delete_forever</mat-icon>
-        <span>Delete</span>
+      <mat-menu #moreMenu="matMenu">
+        <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(activeScene._id)">
+          <mat-icon>pageview</mat-icon>
+          <span>Show details</span>
+        </button>
+        <button class="menu_item_delete" mat-menu-item (click)="delete(activeScene)">
+          <mat-icon>delete_forever</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
+
+      <button id="but_continue" mat-icon-button color="accent" matTooltip="Continue with active scene"
+              (click)="showRawData()">
+        <mat-icon>play_circle_outline</mat-icon>
       </button>
-    </mat-menu>
 
-    <button id="but_continue" mat-button mat-icon-button color="accent" matTooltip="Continue with active scene"
-            (click)="showRawData()">
-      <mat-icon>play_circle_outline</mat-icon>
-    </button>
+      <mat-form-field class="scene_name">
+        <mat-label>Scene Name</mat-label>
+        <input matInput readonly [(ngModel)]="activeScene.name">
+      </mat-form-field>
+      <mat-form-field class="scene_short_desc">
+        <mat-label>Short Description</mat-label>
+        <input matInput readonly [(ngModel)]="activeScene.shortDescription">
+      </mat-form-field>
+      <mat-form-field class="scene_creation_time">
+        <mat-label>Creation Time</mat-label>
+        <input matInput readonly [value]="activeScene.creationTime | date:'medium'">
+      </mat-form-field>
+    </div>
 
-    <mat-form-field class="scene_name">
-      <input matInput type="text" placeholder="Scene Name" readonly [(ngModel)]="activeScene.name">
-    </mat-form-field>
-    <mat-form-field class="scene_short_desc">
-      <input matInput type="text" placeholder="Short Description" readonly [(ngModel)]="activeScene.shortDescription">
-    </mat-form-field>
-    <mat-form-field class="scene_creation_time">
-      <input matInput type="text" placeholder="Creation Time" readonly
-             [value]="activeScene.creationTime | date:'medium'">
-    </mat-form-field>
-  </div>
+  </mat-card-content>
 </mat-card>
-<mat-card id="mat_card_all_scenes">
+
+<mat-card appearance="outlined" id="mat_card_all_scenes">
 
   <mat-card-header>
     <div mat-card-avatar id="image-scenes"></div>
@@ -52,52 +60,57 @@
     <mat-card-subtitle>Manage your existing scenes. Activate one to start creating graphics.</mat-card-subtitle>
   </mat-card-header>
 
-  <div id="div_filter">
-    <mat-form-field id="filter_field">
-      <input matInput type="text" placeholder="Text Filter" [value]="filter" (change)="onFilterChange($event.target.value)">
-      <button mat-button id="clearFilter" color="primary" *ngIf="filter" matSuffix mat-icon-button aria-label="Clear"
-              (click)="onFilterChange('')">
-        <mat-icon>close</mat-icon>
-      </button>
-    </mat-form-field>
-    <button id="but_delete_scenes" mat-stroked-button [disabled]="filteredSceneInfos.length === 0"
-            (click)="onDeleteScenesButtonPressed()">
-      <mat-icon>delete_forever</mat-icon>
-      <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
-    </button>
-  </div>
+  <mat-card-content>
 
-  <div class="div_scene" *ngFor="let sceneInfo of filteredSceneInfos">
-
-    <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #moreMenu="matMenu">
-      <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(sceneInfo._id)">
-        <mat-icon>pageview</mat-icon>
-        <span>Show details</span>
-      </button>
-      <button class="menu_item_delete" mat-menu-item (click)="delete(sceneInfo)">
+    <div id="div_filter">
+      <mat-form-field id="filter_field" subscriptSizing="false">
+        <mat-label>Text Filter</mat-label>
+        <input matInput [value]="filter" (change)="onFilterChange($event.target.value)">
+        <mat-icon *ngIf="filter" inline cursor="hand" (click)="onFilterChange('')" matSuffix aria-label="Clear">close</mat-icon>
+      </mat-form-field>
+      <button id="but_delete_scenes" mat-stroked-button [disabled]="filteredSceneInfos.length === 0" (click)="onDeleteScenesButtonPressed()">
         <mat-icon>delete_forever</mat-icon>
-        <span>Delete</span>
+        <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
       </button>
-    </mat-menu>
+    </div>
 
-    <button class="but_activate_scene" [disabled]="activeScene && sceneInfo._id === activeScene._id" mat-button
-            mat-icon-button matTooltip="Activate scene" (click)="activate(sceneInfo)">
-      <mat-icon>play_circle_outline</mat-icon>
-    </button>
+    <div class="div_scene" *ngFor="let sceneInfo of filteredSceneInfos">
 
-    <mat-form-field class="scene_name">
-      <input matInput type="text" placeholder="Scene Name" readonly [(ngModel)]="sceneInfo.name">
-    </mat-form-field>
-    <mat-form-field class="scene_short_desc">
-      <input matInput type="text" placeholder="Short Description" readonly [(ngModel)]="sceneInfo.shortDescription">
-    </mat-form-field>
-    <mat-form-field class="scene_creation_time">
-      <input matInput type="text" placeholder="Creation Time" readonly [value]="sceneInfo.creationTime | date:'medium'">
-    </mat-form-field>
-  </div>
-  <br>
-  <button id="but_cancel" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
+      <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu" matTooltip="more...">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #moreMenu="matMenu">
+        <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(sceneInfo._id)">
+          <mat-icon>pageview</mat-icon>
+          <span>Show details</span>
+        </button>
+        <button class="menu_item_delete" mat-menu-item (click)="delete(sceneInfo)">
+          <mat-icon>delete_forever</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
+
+      <button class="but_activate_scene" [disabled]="activeScene && sceneInfo._id === activeScene._id"
+              mat-icon-button matTooltip="Activate scene" (click)="activate(sceneInfo)">
+        <mat-icon>play_circle_outline</mat-icon>
+      </button>
+
+      <mat-form-field class="scene_name">
+        <mat-label>Scene Name</mat-label>
+        <input matInput readonly [(ngModel)]="sceneInfo.name">
+      </mat-form-field>
+      <mat-form-field class="scene_short_desc">
+        <mat-label>Short Description</mat-label>
+        <input matInput readonly [(ngModel)]="sceneInfo.shortDescription">
+      </mat-form-field>
+      <mat-form-field class="scene_creation_time">
+        <mat-label>Creation Time</mat-label>
+        <input matInput readonly [value]="sceneInfo.creationTime | date:'medium'">
+      </mat-form-field>
+    </div>
+
+  </mat-card-content>
+  <mat-card-actions>
+    <button id="but_cancel" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
+  </mat-card-actions>
 </mat-card>

@@ -15,7 +15,10 @@
             "index": "src/index.html",
             "main": "src/main.ts",
             "tsConfig": "src/tsconfig.app.json",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "src/window-global-fix.ts"
+            ],
             "assets": [
               "src/intro",
               "src/.htaccess",
@@ -36,7 +39,7 @@
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/jquery-ui-dist/jquery-ui.min.js",
-              "node_modules/pivottable/dist/pivot.min.js",
+              "node_modules/pivottable/dist/pivot.min.js"
             ],
             "vendorChunk": true,
             "extractLicenses": false,
@@ -93,9 +96,12 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
             "karmaConfig": "./karma.conf.js",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing",
+              "src/window-global-fix.ts"
+            ],
             "tsConfig": "src/tsconfig.spec.json",
             "scripts": [],
             "styles": [

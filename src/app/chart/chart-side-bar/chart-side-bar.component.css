@@ -1,7 +1,14 @@
 #div_charts {
-  padding-left: 20px;
-  padding-right: 60px;
-  padding-bottom: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  padding: 0.5em 2em 0.5em 2em;
+}
+
+#div_sel_data_columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
 }
 
 button {
@@ -35,6 +42,7 @@ button {
   margin: 0px;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
 mat-radio-button {
   margin: 5px;
 }

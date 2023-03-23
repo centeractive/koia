@@ -16,6 +16,7 @@ button {
 
 .span_buttons {
   display: flex;
+  align-items: center;
 }
 
 #div_filter {

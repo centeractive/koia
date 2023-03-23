@@ -1,11 +1,11 @@
-<mat-card>
+<mat-card appearance="outlined">
   <mat-card-content>
 
     <div id="header">
       <img id="img_koia" src="/assets/koialogo_textblack.png">
     </div>
 
-    <mat-card class="info-card">
+    <mat-card appearance="outlined" class="info-card">
       <mat-card-header>
         <div mat-card-avatar id="about-image"></div>
         <mat-card-title>About Koia</mat-card-title>
@@ -29,7 +29,7 @@
 
     <div id="div_action_cards">
 
-      <mat-card class="intro-card koia-color-left">
+      <mat-card appearance="outlined" class="intro-card koia-color-left">
         <mat-card-header>
           <div mat-card-avatar [id]="selectedDataStorage === couchDB ? 'couchdb-image' : 'monitor-image'"></div>
           <mat-card-title>Step 1: Choose data storage</mat-card-title>
@@ -52,7 +52,7 @@
         </mat-card-content>
 
         <mat-card-actions>
-          <div style="width: 100%; display: flex; justify-content: center;">
+          <div class="div_define_connection">
             <button mat-stroked-button [color]="colorOf(indexedDB)" (click)="onDataStorageChanged(indexedDB)">
               {{ indexedDB }}
             </button>
@@ -60,15 +60,15 @@
             <button mat-stroked-button [color]="colorOf(couchDB)" (click)="onDataStorageChanged(couchDB)">
               {{ couchDB }}
             </button>
-            <button id="but_define_connection" mat-icon-button *ngIf="selectedDataStorage === couchDB"
-              matTooltip="Configure access to CouchDB" color="accent" (click)="showCouchDBConnectionDialog()">
+            <button mat-icon-button *ngIf="selectedDataStorage === couchDB" matTooltip="Configure access to CouchDB" color="accent"
+                    (click)="showCouchDBConnectionDialog()">
               <mat-icon style="color: white">settings</mat-icon>
             </button>
           </div>
         </mat-card-actions>
       </mat-card>
 
-      <mat-card class="intro-card koia-color-center">
+      <mat-card appearance="outlined" class="intro-card koia-color-center">
         <mat-card-header>
           <div mat-card-avatar id="folder-document-image"></div>
           <mat-card-title>Step 2: Import data to scene</mat-card-title>
@@ -82,7 +82,7 @@
           </p>
           <p>
             It is possible to switch between scenes or to create new ones by pressing the <mat-icon
-              style="vertical-align: middle">collections
+                      style="vertical-align: middle">collections
             </mat-icon> or <mat-icon style="vertical-align: middle"> add_photo_alternate</mat-icon> button.
           </p>
           <p *ngIf="ready && scenesCount >= 0">
@@ -91,7 +91,7 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="intro-card koia-color-right">
+      <mat-card appearance="outlined" class="intro-card koia-color-right">
         <mat-card-header>
           <div mat-card-avatar id="line-chart-image"></div>
           <mat-card-title>Step 3: Visualize and analyze</mat-card-title>
@@ -113,7 +113,7 @@
 
     <div id="div_start">
       <mat-icon [id]="'start_button' + (ready ? '' : '_disabled')" [inline]="true" color="accent" matTooltip="Start"
-        [routerLink]="ready ? [urlScenes] : null">
+                [routerLink]="ready ? [urlScenes] : null">
         play_circle_outline</mat-icon>
     </div>
 
@@ -140,7 +140,7 @@
       </ng-template>
 
       <mat-step label="Trust" state="trust" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
+        <mat-card appearance="outlined" class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="shield-image"></div>
             <mat-card-title>Open-source / Closed-data</mat-card-title>
@@ -149,7 +149,7 @@
           <mat-card-content>
             <p>
               Koia is open-source software and will remain so forever. The source code is <a
-                href="https://github.com/centeractive/koia" target="_blank">
+                 href="https://github.com/centeractive/koia" target="_blank">
                 publically available</a> and can be inspected, modified and enhanced by anyone.
               Koia runs on public web servers but it can also easily be installed in your trusted environment.
             </p>
@@ -164,7 +164,7 @@
       </mat-step>
 
       <mat-step label="Features" state="features" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
+        <mat-card appearance="outlined" class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="features-image"></div>
             <mat-card-title>Features</mat-card-title>
@@ -196,7 +196,7 @@
       </mat-step>
 
       <mat-step label="Data" state="data" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
+        <mat-card appearance="outlined" class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="data-image"></div>
             <mat-card-title>Data Formats</mat-card-title>
@@ -229,7 +229,7 @@
       </mat-step>
 
       <mat-step label="Scenes" state="scenes" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
+        <mat-card appearance="outlined" class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="image-scenes"></div>
             <mat-card-title>What is a Scene?</mat-card-title>
@@ -254,7 +254,7 @@
       </mat-step>¨
 
       <mat-step label="Views" state="views" [stepControl]="stepVisibleControl">
-        <mat-card class="info-card" *ngIf="stepsVisible">
+        <mat-card appearance="outlined" class="info-card" *ngIf="stepsVisible">
           <mat-card-header>
             <div mat-card-avatar id="view-image"></div>
             <mat-card-title>Views</mat-card-title>
@@ -266,7 +266,7 @@
                 The table offers sorting and filtering of individual columns.</li>
               <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing
                 patterns and trends. It's based on amazing <a
-                  href="https://www.npmjs.com/package/pivottable#what-does-it-do" target="_blank">PivotTable.js</a> that
+                   href="https://www.npmjs.com/package/pivottable#what-does-it-do" target="_blank">PivotTable.js</a> that
                 offers many different views (e.g. heatmaps and table barcharts)
                 and lets you shape the pivot table through drag and drop of individual columns.</li>
               <li>The <b>Grid View</b> contains a variable number of elements that are held in a fixed grid of

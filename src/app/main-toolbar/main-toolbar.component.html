@@ -2,36 +2,36 @@
 
   <div id="div_toolbar">
     <span class="span_buttons" *ngIf="!dialogStyle">
-      <button id="butHome" mat-button mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+      <button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
         <mat-icon>home</mat-icon>
       </button>
-      <button id="butShowSceneDetails" mat-button mat-icon-button matTooltip="Show Scene Details"
-        (click)="showSceneDetails()">
+      <button id="butShowSceneDetails" mat-icon-button matTooltip="Show Scene Details"
+              (click)="showSceneDetails()">
         <mat-icon>info_outlined</mat-icon>
       </button>
-      <button id="butScenes" mat-button mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
+      <button id="butScenes" mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
         <mat-icon>collections</mat-icon>
       </button>
-      <button id="butScene" mat-button mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+      <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
         <mat-icon>add_photo_alternate</mat-icon>
       </button>
       <button id="butRawData" mat-stroked-button [color]="currURL === urlRawdata ? 'accent' : ''"
-        matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
+              matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
         <mat-icon svgIcon="raw_data_view"></mat-icon>
         <span>&nbsp;Raw Data</span>
       </button>
       <button id="butPivotView" mat-stroked-button [color]="currURL === urlPivot ? 'accent' : ''"
-        matTooltip="Pivot Table" [routerLink]="[urlPivot]">
+              matTooltip="Pivot Table" [routerLink]="[urlPivot]">
         <mat-icon svgIcon="pivot_table"></mat-icon>
         <span>&nbsp;Pivot Table</span>
       </button>
       <button id="butGridView" mat-stroked-button [color]="currURL === urlGrid ? 'accent' : ''" matTooltip="Grid View"
-        [routerLink]="[urlGrid]">
+              [routerLink]="[urlGrid]">
         <mat-icon svgIcon="grid_view"></mat-icon>
         <span>&nbsp;Grid View</span>
       </button>
       <button id="butFlexView" mat-stroked-button [color]="currURL === urlFlex ? 'accent' : ''" matTooltip="Flex View"
-        [routerLink]="[urlFlex]">
+              [routerLink]="[urlFlex]">
         <mat-icon svgIcon="flex_view"></mat-icon>
         <span>&nbsp;Flex View</span>
       </button>
@@ -40,23 +40,23 @@
     <div id="div_filter">
       <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
         <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"
-          [(ngModel)]="fullTextFilter" (keyup)="onFullTextFilterFieldKeyUp($event)">
-        <button mat-button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
-          mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
+               [(ngModel)]="fullTextFilter" (keyup)="onFullTextFilterFieldKeyUp($event)">
+        <button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
+                mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
 
       <span class="span_column_filter" *ngFor="let propertyFilter of propertyFilters">
         <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()"
-          (onRemove)="removePropertyFilter(propertyFilter)"></koia-value-filter>
+                           (onRemove)="removePropertyFilter(propertyFilter)"></koia-value-filter>
       </span>
     </div>
 
     <span class="span_buttons" *ngIf="scene">
 
       <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter"
-        [matMenuTriggerFor]="columnFilterMenu">
+              [matMenuTriggerFor]="columnFilterMenu">
         <mat-icon>add_circle_outline</mat-icon>
         <span>&nbsp;Add Filter</span>
       </button>
@@ -64,7 +64,7 @@
         <span *ngFor="let column of scene.columns">
 
           <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)" mat-menu-item
-            (click)="addValueFilter(column)">
+                  (click)="addValueFilter(column)">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
@@ -87,14 +87,14 @@
         </span>
       </mat-menu>
 
-      <button mat-button *ngIf="rangeFilters.length > 0" mat-icon-button
-        [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
-        (click)="showRangeFilters = !showRangeFilters">
+      <button *ngIf="rangeFilters.length > 0" mat-icon-button
+              [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
+              (click)="showRangeFilters = !showRangeFilters">
         <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
-          [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
+                  [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
       </button>
 
-      <button mat-button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
+      <button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
         <mat-icon>refresh</mat-icon>
       </button>
     </span>
@@ -103,7 +103,7 @@
   <div *ngIf="showRangeFilters">
     <div *ngFor="let rangeFilter of rangeFilters">
       <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()"
-        (onRemove)="removeRangeFilter(rangeFilter)"></koia-range-filter>
+                         (onRemove)="removeRangeFilter(rangeFilter)"></koia-range-filter>
     </div>
   </div>
 </div>

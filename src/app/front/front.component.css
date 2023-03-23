@@ -11,10 +11,10 @@
 p {
    text-align: justify;
 }
- 
+
 #div_action_cards {
    display: flex;
-   flex-wrap: wrap;  
+   flex-wrap: wrap;
    align-items: stretch;
    justify-content: space-around;
    padding-bottom: 20px;
@@ -33,6 +33,7 @@ p {
 
 .koia-color-center {
    background-color: #EA8315;
+   color: black;
 }
 
 .koia-color-right {
@@ -42,6 +43,13 @@ p {
 
 .intro-card-image {
    opacity: 0.9;
+}
+
+.div_define_connection {
+   width: 100%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
 }
 
 .div_actions {
@@ -68,7 +76,7 @@ p {
    display: flex;
    justify-content: center;
    margin: 30px 40px 30px 0px;
-   font-size: 80px;   
+   font-size: 80px;
 }
 
 #start_button {
@@ -83,25 +91,25 @@ p {
    background-image: url('/assets/monitor.png');
    background-repeat: no-repeat;
    background-size: cover;
-} 
+}
 
 #couchdb-image {
    background-image: url('/assets/couchdb.png');
    background-repeat: no-repeat;
    background-size: cover;
-} 
+}
 
 #folder-document-image {
    background-image: url('/assets/folder_document.png');
    background-repeat: no-repeat;
    background-size: cover;
-} 
+}
 
 #line-chart-image {
    background-image: url('/assets/line_chart.png');
    background-repeat: no-repeat;
    background-size: cover;
-} 
+}
 
 .but_arrow {
    position: absolute;
@@ -120,30 +128,30 @@ p {
 
 #about-image {
    background-image: url('/assets/mat-icons/about.png');
-   background-repeat:no-repeat;
+   background-repeat: no-repeat;
    background-size: cover;
 }
 
 #features-image {
    background-image: url('/assets/mat-icons/features.png');
-   background-repeat:no-repeat;
+   background-repeat: no-repeat;
    background-size: cover;
 }
 
 #shield-image {
    background-image: url('/assets/mat-icons/trust.png');
-   background-repeat:no-repeat;
+   background-repeat: no-repeat;
    background-size: cover;
 }
 
 #data-image {
    background-image: url('/assets/mat-icons/data_formats.png');
-   background-repeat:no-repeat;
+   background-repeat: no-repeat;
    background-size: cover;
-} 
+}
 
 #view-image {
    background-image: url('/assets/mat-icons/view_data.png');
-   background-repeat:no-repeat;
+   background-repeat: no-repeat;
    background-size: cover;
 }

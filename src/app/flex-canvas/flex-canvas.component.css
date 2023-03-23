@@ -43,6 +43,9 @@
   font-weight: bold;
   resize: none;
   overflow-y: hidden;
+  border: none;
+  background-color: transparent;
+  font-family: inherit;
 }
 
 .textarea_title:focus {

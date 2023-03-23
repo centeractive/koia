@@ -1,11 +1,12 @@
-@import '~@angular/material/theming';
+@use '@angular/material' as mat;
+@include mat.core();
 
-@include mat-core();
+$koia-primary: mat.define-palette(mat.$indigo-palette, 700, 300, 900);
+$koia-accent: mat.define-palette(mat.$green-palette, 700);
+$koia-warn: mat.define-palette(mat.$red-palette);
 
-$koia-primary: mat-palette($mat-indigo, 700, 300, 900);
-$koia-accent:  mat-palette($mat-green, 700);
-$koia-warn:    mat-palette($mat-red);
+$koia-theme: mat.define-light-theme(( //
+            color: (primary: $koia-primary, accent: $koia-accent, warn: $koia-warn ),
+            density: -1));
 
-$koia-theme: mat-light-theme($koia-primary, $koia-accent, $koia-warn);
-
-@include angular-material-theme($koia-theme);
+@include mat.all-component-themes($koia-theme);

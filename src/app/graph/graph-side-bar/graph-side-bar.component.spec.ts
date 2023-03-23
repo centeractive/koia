@@ -16,13 +16,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSliderModule } from '@angular/material/slider';
 
 describe('GraphSideBarComponent', () => {
 
+  const dbService = new DBService(null);
   let columns: Column[];
   let scene: Scene;
   let context: GraphContext;
-  const dbService = new DBService(null);
   let component: GraphSideBarComponent;
   let fixture: ComponentFixture<GraphSideBarComponent>;
 
@@ -43,7 +44,7 @@ describe('GraphSideBarComponent', () => {
       declarations: [GraphSideBarComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-        MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule
+        MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule, MatSliderModule
       ],
       providers: [
         { provide: DBService, useValue: dbService },

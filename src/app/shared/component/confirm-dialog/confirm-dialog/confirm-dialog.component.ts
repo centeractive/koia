@@ -3,8 +3,10 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'koia-confirm-dialog',
-  template: `<mat-card>
-                <mat-card-subtitle>{{ data.title }}</mat-card-subtitle>
+  template: `<mat-card appearance="outlined">
+                <mat-card-header>
+                  <mat-card-title>{{ data.title }}</mat-card-title>
+                </mat-card-header>
                 <mat-card-content>
                   <div [innerHTML]="data.htmlContent"></div>
                   <div id="div_buttons">

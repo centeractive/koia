@@ -1,13 +1,12 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-                     (change)="onMultiExpandableChanged($event.checked)">
+   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable" (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
-      <button mat-button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
+      <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
          <mat-icon>expand_more</mat-icon>
       </button>
-      <button mat-button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
+      <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
          <mat-icon>expand_less</mat-icon>
       </button>
    </span>
@@ -25,14 +24,11 @@
             <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
                  [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList"
                  class="div_column_list" (cdkDropListDropped)="dropGroupByColumn($event)">
-               <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns"
-                    cdkDrag>
+               <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns" cdkDrag>
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
                   <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-                  <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                              [(ngModel)]="column.groupingTimeUnit">
-                     <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                                 (click)="context.fireStructureChanged()">
+                  <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'" [(ngModel)]="column.groupingTimeUnit">
+                     <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">
                         {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
                   </mat-select>
                </div>
@@ -46,8 +42,7 @@
                     cdkDrag>
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
                   <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-                  <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                              [(ngModel)]="column.groupingTimeUnit">
+                  <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'" [(ngModel)]="column.groupingTimeUnit">
                      <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit">
                         {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
                   </mat-select>
@@ -77,8 +72,7 @@
          </mat-form-field>
          <mat-form-field class="field_small_integer">
             <mat-select placeholder="Position" [value]="elementPosition">
-               <mat-option *ngFor="let position of elementPositions" [value]="position"
-                           (click)="setElementPosition(position)">
+               <mat-option *ngFor="let position of elementPositions" [value]="position" (click)="setElementPosition(position)">
                   {{ position }}
                </mat-option>
             </mat-select>
@@ -88,33 +82,46 @@
       <koia-expansion-panel title="Other">
          <div class="div_label_rotation">
             Link Distance
-            <mat-slider min="0" max="100" step="1" [(ngModel)]="context.linkDist"></mat-slider>
+            <mat-slider min="0" max="100" step="1">
+               <input matSliderThumb [(ngModel)]="context.linkDist" />
+            </mat-slider>
          </div>
          <div class="div_label_rotation">
             Link Strength
-            <mat-slider id="linkStrength" min="0" max="1" step="0.1" [(ngModel)]="context.linkStrength"></mat-slider>
+            <mat-slider id="linkStrength" min="0" max="1" step="0.1">
+               <input matSliderThumb [(ngModel)]="context.linkStrength" />
+            </mat-slider>
          </div>
-         <!--div class="div_label_rotation">
-         Friction
-         <mat-slider min="0" max="1" step="0.1" [(ngModel)]="context.friction"></mat-slider>
-      </div-->
+         <div class="div_label_rotation">
+            Friction
+            <mat-slider min="0" max="1" step="0.1">
+               <input matSliderThumb [(ngModel)]="context.friction" />
+            </mat-slider>
+         </div>
          <div class="div_label_rotation">
             Charge
-            <mat-slider min="-1000" max="1000" step="1" [value]="- context.charge" (change)="context.charge = - $event.value">
+            <mat-slider min="-1000" max="1000" step="1" #ngSlider>
+               <input matSliderThumb [value]="- context.charge" (valueChange)="context.charge = - $event" #ngSliderThumb="matSliderThumb" />
             </mat-slider>
          </div>
          <div class="div_label_rotation">
             Gravity
-            <mat-slider min="0.1" max="1" step="0.1" [(ngModel)]="context.gravity"></mat-slider>
+            <mat-slider min="0.1" max="1" step="0.1">
+               <input matSliderThumb [(ngModel)]="context.gravity" />
+            </mat-slider>
          </div>
-         <!--div class="div_label_rotation">
-         Theta
-         <mat-slider min="0" max="1" step="0.1" [(ngModel)]="context.theta"></mat-slider>
-      </div>
-      <div class="div_label_rotation">
-         Alpha
-         <mat-slider min="0" max="1" step="0.1" [(ngModel)]="context.alpha"></mat-slider>
-      </div-->
+         <div class="div_label_rotation">
+            Theta
+            <mat-slider min="0" max="1" step="0.1">
+               <input matSliderThumb [(ngModel)]="context.theta" />
+            </mat-slider>
+         </div>
+         <div class="div_label_rotation">
+            Alpha
+            <mat-slider min="0" max="1" step="0.1">
+               <input matSliderThumb [(ngModel)]="context.gravity" />
+            </mat-slider>alpha
+         </div>
 
       </koia-expansion-panel>
    </mat-accordion>

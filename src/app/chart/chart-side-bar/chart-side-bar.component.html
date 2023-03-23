@@ -3,17 +3,17 @@
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
-      <button mat-button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
+      <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
          <mat-icon>expand_more</mat-icon>
       </button>
-      <button mat-button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
+      <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
          <mat-icon>expand_less</mat-icon>
       </button>
    </span>
 </div>
 
 <div id="div_charts">
-   <button class="but_chart_type" mat-raised-button mat-icon-button *ngFor="let chartType of chartTypes"
+   <button *ngFor="let chartType of chartTypes" class="but_chart_type" mat-mini-fab
            [color]="chartTypeColor(chartType)" [matTooltip]="chartType.name + ' Chart'" (click)="switchTo(chartType)">
       <mat-icon *ngIf="chartType.customIcon" [svgIcon]="chartType.icon"></mat-icon>
       <mat-icon *ngIf="!chartType.customIcon">{{ chartType.icon }}</mat-icon>
@@ -24,7 +24,7 @@
    <mat-accordion *ngIf="context" [multi]="multiExpandable">
 
       <koia-expansion-panel [title]="dataPanelName()" [expanded]="true">
-         <div>
+         <div id="div_sel_data_columns">
             <button class="but_column" mat-raised-button *ngFor="let column of selectableDataColumns"
                     [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
@@ -157,8 +157,9 @@
          </mat-slide-toggle>
          <div *ngIf="!isCircularChart()" class="div_label_rotation">
             X-Axis Label Rotation
-            <mat-slider min="0" max="90" step="1" [value]="- context.xLabelRotation"
-                        (change)="context.xLabelRotation = -$event.value"></mat-slider>
+            <mat-slider min="0" max="90" step="1" #ngSlider>
+               <input matSliderThumb [value]="- context.xLabelRotation" (valueChange)="context.xLabelRotation = -$event" #ngSliderThumb="matSliderThumb" />
+            </mat-slider>
          </div>
          <span class="span_row" *ngIf="context.chartType !== 'discreteBarChart'">
             <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>

@@ -1,7 +1,7 @@
 <div class="div_wrapper">
   <div #header class="div_header">
     <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query"
-      (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
+                       (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
     <div id="view_toolbar">
       <button mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -13,22 +13,22 @@
           <span>Save As {{ exportFormat }}</span>
         </button>
       </mat-menu>
-      <button id="but_print" mat-button mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint
-        matTooltip="Print current view" (click)="printView()">
+      <button id="but_print" mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint
+              matTooltip="Print current view" (click)="printView()">
         <mat-icon>print</mat-icon>
       </button>
-      <button mat-button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
-        [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
-        (click)="considerColumnWidths = !considerColumnWidths">
+      <button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
+              [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
+              (click)="considerColumnWidths = !considerColumnWidths">
         <mat-icon>wrap_text</mat-icon>
       </button>
-      <button mat-button *ngIf="hasObjectDataTypeColumns" [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
-        [matTooltip]="showNestedObjects ? 'Hide nested objects' : 'Show nested objects'"
-        (click)="showNestedObjects = !showNestedObjects">
+      <button *ngIf="hasObjectDataTypeColumns" [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
+              [matTooltip]="showNestedObjects ? 'Hide nested objects' : 'Show nested objects'"
+              (click)="showNestedObjects = !showNestedObjects">
         <mat-icon>code</mat-icon>
       </button>
-      <button mat-button [color]="highlight ? 'accent' : ''" mat-icon-button
-        [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
+      <button [color]="highlight ? 'accent' : ''" mat-icon-button
+              [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
         <mat-icon>highlight</mat-icon>
       </button>
     </div>
@@ -37,7 +37,7 @@
   <div #content id="div_table" class="div_content mat-elevation-z8 printable">
 
     <table [class]="considerColumnWidths ? 'table_layout_fixed' : 'table_layout_auto'" mat-table [dataSource]="entries"
-      matSort (matSortChange)="sortEntries($event)">
+           matSort (matSortChange)="sortEntries($event)">
 
       <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
         <span *ngIf="column.indexed">
@@ -53,12 +53,12 @@
 
       <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>
       <tr mat-row *matRowDef="let entry; columns: columnNames;" [style.background]="highlight ? entry['bgcolor'] : null"
-        [style.color]="highlight ? entry['fgcolor'] : null"></tr>
+          [style.color]="highlight ? entry['fgcolor'] : null"></tr>
 
     </table>
 
     <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize"
-      [pageSizeOptions]="pageSizeOptions" showFirstLastButtons="true" [length]="totalRowCount" (page)="onPageChanged()">
+                   [pageSizeOptions]="pageSizeOptions" showFirstLastButtons="true" [length]="totalRowCount" (page)="onPageChanged()">
     </mat-paginator>
   </div>
 </div>

@@ -41,7 +41,7 @@ describe('ConfirmDialogComponent', () => {
   });
 
   it('should create title from model', () => {
-    const titleElement = fixture.debugElement.query(By.css('mat-card-subtitle')).nativeElement;
+    const titleElement = fixture.debugElement.query(By.css('mat-card-title')).nativeElement;
 
     expect(titleElement.textContent).toBe(title);
   });

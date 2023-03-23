@@ -10,7 +10,6 @@ body {
   background: #ECE9E9 -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fff), to(#ECE9E9));
   background: #ECE9E9 -moz-linear-gradient(top, #fff, #ECE9E9);
   background-repeat: no-repeat;
-  color: white;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -115,9 +114,27 @@ mat-panel-description {
   cursor: move;
 }
 
-.mat-tooltip {
+.mat-mdc-tooltip {
   font-size: 12px;
 }
+
+.mat-mdc-card {
+  color: black;
+}
+
+.mat-mdc-card-title {
+  font-size: 20px;
+}
+
+/*
+.mat-mdc-form-field-infix {
+  min-height: 1em;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+*/
 
 .but_config {
   z-index: 1;
@@ -138,7 +155,7 @@ mat-panel-description {
   background-color: white;
 }
 
-.dialog-container .mat-dialog-container {
+.dialog-container .mat-mdc-dialog-container {
   padding: 0px 0px 0px 0px;
   max-width: calc(100vw - 40px);
   max-height: calc(100vh - 40px);

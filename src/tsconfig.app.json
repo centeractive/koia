@@ -7,6 +7,6 @@
   },
   "files": [
     "main.ts",
-    "polyfills.ts"
+    "window-global-fix.ts"
   ]
 }

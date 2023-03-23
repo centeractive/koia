@@ -4,10 +4,10 @@
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
-      <button mat-button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
+      <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
          <mat-icon>expand_more</mat-icon>
       </button>
-      <button mat-button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
+      <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
          <mat-icon>expand_less</mat-icon>
       </button>
    </span>
@@ -19,7 +19,7 @@
             </mat-option>
          </mat-select>
       </mat-form-field>
-      <button mat-button mat-icon-button matTooltip="Add Grouping Definition" [disabled]="!nonGroupedCols.value"
+      <button mat-icon-button matTooltip="Add Grouping Definition" [disabled]="!nonGroupedCols.value"
               (click)="addValueGrouping(nonGroupedCols.value)">
          <mat-icon>add_circle_outline</mat-icon>
       </button>
@@ -40,7 +40,7 @@
          </mat-expansion-panel-header>
          <span class="span_left_to_right">
             <label>max. {{ grouping.minMaxValues.max | number }}</label>
-            <button mat-button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
+            <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
                <mat-icon>add_circle_outline</mat-icon>
             </button>
          </span>

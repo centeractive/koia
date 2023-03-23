@@ -1,10 +1,15 @@
+#div_main {
+  display: flex;
+}
+
 #div_table {
-  overflow-y: auto;  
-  margin-right: 1px; /* to have resize-cursor displayed when vertical scrollbar is shown */ 
+  overflow-y: auto;
+  margin-right: 1px;
+  /* to have resize-cursor displayed when vertical scrollbar is shown */
 }
 
 #div_table_gridview {
-  overflow-y: auto;  
+  overflow-y: auto;
   height: calc(100% - 30px);
 }
 
@@ -13,18 +18,19 @@ table {
 }
 
 th {
-  z-index: 1 !important; /* otherwise, it doesn't stay behind sticky header when scrolling */ 
-  padding: 8px;  
+  z-index: 1 !important;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
+  padding: 8px;
 }
 
 td {
-  padding: 5px;   
+  padding: 5px;
   border-bottom: 1px solid #ddd;
   vertical-align: top;
 }
 
 .td_aggregation {
-  text-align: right;  
+  text-align: right;
 }
 
 a {
@@ -33,23 +39,23 @@ a {
   color: rgb(10, 10, 158);
 }
 
-.mat-header-row {  
+.mat-mdc-header-row {
   height: auto;
 }
 
-.mat-row {
+.mat-mdc-row {
   height: auto;
 }
 
-.mat-row:nth-child(even){
-  background-color:#fff;
+.mat-mdc-row:nth-child(even) {
+  background-color: #fff;
 }
 
-.mat-row:nth-child(odd){
-  background-color:#efefef;
+.mat-mdc-row:nth-child(odd) {
+  background-color: #efefef;
 }
 
-td.mat-footer-cell {
+td.mat-mdc-footer-cell {
   font-weight: bold;
   padding-left: 10px !important;
   padding-right: 5px !important;

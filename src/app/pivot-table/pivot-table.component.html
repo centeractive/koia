@@ -33,11 +33,11 @@
           </button>
         </mat-menu>
 
-        <button id="but_print" mat-button mat-icon-button printSectionId="print-section" ngxPrint
+        <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint
                 matTooltip="Print current view" (click)="printView()">
           <mat-icon>print</mat-icon>
         </button>
-        <button mat-button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
+        <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
           <mat-icon>save_alt</mat-icon>
         </button>
 
@@ -55,14 +55,14 @@
         </mat-menu>
 
         &nbsp;&nbsp;&nbsp;
-        <button class="but_config" *ngIf="allowsForValueGrouping" mat-button mat-icon-button
+        <button class="but_config" *ngIf="allowsForValueGrouping" mat-icon-button
                 matTooltip="Define Value Grouping..." (click)="sidenav.open()">
           <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
                     matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
           </mat-icon>
         </button>
 
-        <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
+        <button class="but_config" mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
                 matTooltip="Time Unit Grouping">
           <mat-icon>timer</mat-icon>
         </button>
@@ -77,7 +77,7 @@
           </ng-template>
         </mat-menu>
 
-        <button class="but_config" mat-button mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
+        <button class="but_config" mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
                 matTooltip="Heatmap Colors">
           <mat-icon>color_lens</mat-icon>
         </button>

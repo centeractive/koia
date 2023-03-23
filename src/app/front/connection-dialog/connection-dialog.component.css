@@ -1,12 +1,11 @@
-.form_field_default { 
-   width: 180px; 
+.form_field_default {
+   width: 14em;
 }
 
-.form_field_protocol { 
-   width: 80px; 
+.form_field_protocol {
+   width: 8em;
 }
 
-.form_field_port { 
-   width: 60px; 
+.form_field_port {
+   width: 6em;
 }
-

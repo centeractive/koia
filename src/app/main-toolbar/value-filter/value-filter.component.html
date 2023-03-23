@@ -20,7 +20,7 @@
     <input matInput type="text" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
            (input)="onValueChanged($event.target.value)" (keyup)="onKeyUp($event)" [formControl]="valueControl"
            [koiaFilterValueInput]="filter">
-    <button mat-button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
+    <button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
             (click)="reset()">
       <mat-icon>close</mat-icon>
     </button>

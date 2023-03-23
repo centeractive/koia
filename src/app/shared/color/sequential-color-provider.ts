@@ -2,7 +2,7 @@ import { NumberUtils } from 'app/shared/utils';
 import { ColorProvider, ColorOptions, ColorConverter, SequentialColorScheme } from '.';
 import {
     interpolateCool, interpolateInferno, interpolatePlasma, interpolateRainbow, interpolateSinebow,
-    interpolateSpectral, interpolateTurbo, interpolateViridis, interpolateWarm,
+    interpolateSpectral, interpolateTurbo, interpolateViridis, interpolateWarm
 } from 'd3';
 
 export class SequentialColorProvider extends ColorProvider {
