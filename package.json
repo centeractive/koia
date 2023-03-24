@@ -22,7 +22,7 @@
   "dependencies": {
     "@angular-slider/ngx-slider": "~2.0.4",
     "@angular/animations": "^15.1.1",
-    "@angular/cdk": "^15.2.3",
+    "@angular/cdk": "^15.2.4",
     "@angular/common": "^15.1.1",
     "@angular/compiler": "^15.1.1",
     "@angular/core": "^15.1.1",
