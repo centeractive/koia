@@ -12,6 +12,7 @@ import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-d
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { lastValueFrom } from 'rxjs';
+import { ExportDataConverter } from 'app/shared/utils/converter/export-data-converter';
 
 @Component({
   selector: 'koia-raw-data',
@@ -43,6 +44,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
 
   private page: Page;
   private valueFormatter = new ValueFormatter();
+  private dataConverter = new ExportDataConverter();
 
   constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService,
     private dialogService: DialogService, notificationService: NotificationService,
@@ -134,14 +136,18 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
 
   saveAs(exportFormat: ExportFormat): void {
     const query = this.query.clone();
-    const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' +
-      exportFormat + ' in the background';
+    const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' + exportFormat + ' in the background';
     this.snackBar.open(message, undefined, { duration: 4000 });
     query.clearPageDefinition();
     lastValueFrom(this.dbService.findEntries(query, false))
       .then(entries => {
         if (exportFormat === ExportFormat.JSON) {
-          this.exportService.restoreJSONObjects(entries, this.columns);
+          this.dataConverter.restoreJSONObjects(entries, this.columns);
+          this.dataConverter.timeToFormattedString(entries, this.columns);
+        } else if (exportFormat === ExportFormat.CSV) {
+          this.dataConverter.timeToFormattedString(entries, this.columns);
+        } else if (exportFormat === ExportFormat.EXCEL) {
+          this.dataConverter.timeToDate(entries, this.columns);
         }
         this.exportService.exportData(entries, exportFormat, 'Raw-Data');
       })

@@ -16,21 +16,6 @@ export class ExportService {
   private datePipe = new DatePipe('en-US');
   private timeFormat = 'yyyy-mm-dd_HHmmss';
 
-  /**
-   * converts the stringified values of all [[DataType.OBJECT]] columns back to JSON objects
-   */
-  restoreJSONObjects(data: Object[], columns: Column[]): void {
-    const objectTypeColumns = columns.filter(c => c.dataType === DataType.OBJECT);
-    for (const column of objectTypeColumns) {
-      for (const item of data) {
-        const value = item[column.name];
-        if (value) {
-          item[column.name] = JSON.parse(value);
-        }
-      }
-    }
-  }
-
   exportData(data: Object[], exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.CSV) {
       this.exportAsCSV(data, baseFileName);
