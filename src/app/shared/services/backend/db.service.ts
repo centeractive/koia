@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryUtils } from 'app/shared/utils';
 import { QueryConverter } from './mango/query-converter';
@@ -109,7 +109,7 @@ export class DBService {
       .includeFields([CouchDBConstants._ID, CouchDBConstants._REV,
         'creationTime', 'name', 'shortDescription', 'database', 'columnMappings'])
       .toQuery();
-    return this.db.find(this.scenesDbName(), query).toPromise()
+    return lastValueFrom(this.db.find(this.scenesDbName(), query))
       .then(docs => docs.map(d => <SceneInfo>d));
   }
 
@@ -168,7 +168,7 @@ export class DBService {
   async requestEntriesPage(query: Query, prevPage?: Page): Promise<Page> {
     if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query) &&
       !SortLimitationWorkaround.isCouchDbWithChangedSort(this, query, prevPage)) {
-      return this.findEntries(query, false).toPromise()
+      return lastValueFrom(this.findEntries(query, false))
         .then(entries => this.toPage(query, entries, prevPage.totalRowCount));
     } else {
       return this.countMatchingEntries(query)
@@ -176,7 +176,7 @@ export class DBService {
           if (cnt === 0) {
             return this.toPage(query, [], cnt);
           } else {
-            return this.findEntries(query, false).toPromise()
+            return lastValueFrom(this.findEntries(query, false))
               .then(entries => this.toPage(query, entries, cnt));
           }
         });
@@ -194,7 +194,7 @@ export class DBService {
   private async countMatchingEntries(query: Query): Promise<number> {
     if (query.hasFilter() || SortLimitationWorkaround.isCouchDbWithSort(this, query)) {
       const mangoQuery = this.queryConverter.queryForAllMatchingIds(this.activeScene.columns, query);
-      const objects = await this.db.find(this.activeScene.database, mangoQuery).toPromise();
+      const objects = await lastValueFrom(this.db.find(this.activeScene.database, mangoQuery));
       return objects.length;
     } else {
       return this.countEntriesOfActiveScene();
@@ -242,7 +242,7 @@ export class DBService {
       .numberOfRows(1)
       .includeFields([timeColumn.name])
       .toQuery();
-    const docs = await this.db.find(this.activeScene.database, mangoQuery).toPromise();
+    const docs = await lastValueFrom(this.db.find(this.activeScene.database, mangoQuery));
     return docs.length === 0 ? undefined : docs[0][timeColumn.name];
   }
 }

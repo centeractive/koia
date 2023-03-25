@@ -11,6 +11,7 @@ import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'koia-raw-data',
@@ -135,9 +136,9 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
     const query = this.query.clone();
     const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' +
       exportFormat + ' in the background';
-    this.snackBar.open(message, undefined, { duration: 3000 });
+    this.snackBar.open(message, undefined, { duration: 4000 });
     query.clearPageDefinition();
-    this.dbService.findEntries(query, false).toPromise()
+    lastValueFrom(this.dbService.findEntries(query, false))
       .then(entries => {
         if (exportFormat === ExportFormat.JSON) {
           this.exportService.restoreJSONObjects(entries, this.columns);

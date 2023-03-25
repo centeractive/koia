@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatBottomSheet, MatBottomSheetConfig } from '@angular/material/bottom-sheet';
 import { Status, StatusType } from '../model';
 import { StatusComponent } from 'app/shared/component/status/status.component';
 
@@ -19,7 +19,8 @@ export class NotificationService {
   }
 
   showStatus(bottomSheet: MatBottomSheet, status: Status): void {
-    bottomSheet.open(StatusComponent, { data: { status }, panelClass: status.type });
+    const config: MatBottomSheetConfig = { data: { status }, panelClass: status.type };
+    bottomSheet.open(StatusComponent, config);
   }
 
   private createStatus(statusType: StatusType, value: string | Object): Status {

@@ -6,10 +6,10 @@
 
   <mat-card-content>
     <span *ngIf="views.length > 0">
-      <h5>Restore saved view</h5>
+      <h4>Restore saved view</h4>
       <p>Load a view that has previously been saved.</p>
       <div id="div_views">
-        <div *ngFor="let view of views">
+        <div class="div_row" *ngFor="let view of views">
           <button mat-icon-button (click)="context.loadView(view); dialogRef.close()">
             <mat-icon>open_in_browser</mat-icon>
           </button>
@@ -17,21 +17,21 @@
         </div>
       </div>
     </span>
-    <h5 *ngIf="views.length > 0">Create new view</h5>
+    <h4 *ngIf="views.length > 0">Create new view</h4>
     <p>Choose the initial element to be added to the new view.</p>
-    <div>
+    <div class="div_row">
       <button mat-icon-button (click)="context.addChart(); dialogRef.close()">
         <mat-icon svgIcon="add_chart"></mat-icon>
       </button>
       &nbsp;Chart
     </div>
-    <div>
+    <div class="div_row">
       <button mat-icon-button (click)="context.addGraph(); dialogRef.close()">
         <mat-icon svgIcon="add_graph"></mat-icon>
       </button>
       &nbsp;Relationship Graph
     </div>
-    <div>
+    <div class="div_row">
       <button mat-icon-button (click)="context.addSummaryTable(); dialogRef.close()">
         <mat-icon svgIcon="add_summary"></mat-icon>
       </button>

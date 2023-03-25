@@ -1,6 +1,6 @@
 import { ElementContext, Column, Query, SummaryContext, Route, Scene, DataType, ExportFormat } from '../model';
 import { GraphContext } from '../model/graph';
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription, lastValueFrom } from 'rxjs';
 import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
 import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit, Directive } from '@angular/core';
 import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../services';
@@ -202,14 +202,15 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       }
       const data = new InputDialogData('Save View', 'View Name', '', 20);
       const dialogRef = this.dialogService.showInputDialog(data);
-      dialogRef.afterClosed().toPromise().then(r => {
-         if (data.closedWithOK) {
-            const view = this.modelToConfigConverter.convert(this.route, data.input, this.elementContexts);
-            this.onPreSaveView(view);
-            this.viewPersistenceService.saveView(this.scene, view)
-               .then(s => this.showStatus(s));
-         }
-      });
+      lastValueFrom(dialogRef.afterClosed())
+         .then(r => {
+            if (data.closedWithOK) {
+               const view = this.modelToConfigConverter.convert(this.route, data.input, this.elementContexts);
+               this.onPreSaveView(view);
+               this.viewPersistenceService.saveView(this.scene, view)
+                  .then(s => this.showStatus(s));
+            }
+         });
    }
 
    protected abstract onPreSaveView(view: View): void;

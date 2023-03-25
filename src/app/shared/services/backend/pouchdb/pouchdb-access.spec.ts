@@ -1,6 +1,7 @@
 import { PouchDBAccess } from './pouchdb-access';
 import { Document } from 'app/shared/model';
 import PouchDB from 'pouchdb';
+import { lastValueFrom } from 'rxjs';
 
 describe('PouchDBAccess', () => {
 
@@ -87,7 +88,7 @@ describe('PouchDBAccess', () => {
          },
          fields: ['_id', '_rev', 'name']
       };
-      await dbAccess.find(DB, query).toPromise()
+      await lastValueFrom(dbAccess.find(DB, query))
          .then(docs => {
 
             // then
@@ -118,7 +119,7 @@ describe('PouchDBAccess', () => {
          },
          fields: ['_id', '_rev', 'name']
       };
-      await dbAccess.find(DB, query).toPromise()
+      await lastValueFrom(dbAccess.find(DB, query))
          .then(docs => {
 
             // then
@@ -186,7 +187,7 @@ describe('PouchDBAccess', () => {
 
       // then
       const query = { selector: { _id: { $gt: null } }, fields: ['_id', '_rev', 'name'] };
-      await dbAccess.find(DB, query).toPromise()
+      await lastValueFrom(dbAccess.find(DB, query))
          .then(docs => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(3);
@@ -240,7 +241,7 @@ describe('PouchDBAccess', () => {
 
       // then
       const query = { selector: { _id: '1' }, fields: ['_id', '_rev', 'name'] };
-      await dbAccess.find(DB, query).toPromise()
+      await lastValueFrom(dbAccess.find(DB, query))
          .then(docs => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(1);

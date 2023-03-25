@@ -3,6 +3,7 @@ import { CouchDBService } from './couchdb.service';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { Document, ConnectionInfo, Protocol } from 'app/shared/model';
 import { CouchDBConfig } from './couchdb-config';
+import { lastValueFrom } from 'rxjs';
 
 describe('CouchDBService', () => {
 
@@ -217,7 +218,7 @@ describe('CouchDBService', () => {
 
       // then
       const query = { selector: { _id: { $gt: null } }, fields: ['_id', '_rev', 'name'] };
-      await couchDBService.find(database, query).toPromise()
+      await lastValueFrom(couchDBService.find(database, query))
          .then(docs => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(3);
@@ -273,7 +274,7 @@ describe('CouchDBService', () => {
 
       // then
       const query = { selector: { _id: '1' }, fields: ['_id', '_rev', 'name'] };
-      await couchDBService.find(database, query).toPromise()
+      await lastValueFrom(couchDBService.find(database, query))
          .then(docs => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(1);

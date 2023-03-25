@@ -2,7 +2,7 @@ import {
   Component, Input, Inject, ElementRef, OnInit, OnChanges, SimpleChanges, AfterViewInit,
   ViewEncapsulation, Output, EventEmitter
 } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { ChangeEvent } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphOptionsProvider } from './options/graph-options-provider';
@@ -60,7 +60,8 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   }
 
   private fetchEntries(): void {
-    this.entries$.toPromise().then(entries => this.onEntries(entries));
+    lastValueFrom(this.entries$)
+      .then(entries => this.onEntries(entries));
   }
 
   private onEntries(entries: Object[]): void {

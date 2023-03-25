@@ -1,6 +1,12 @@
 #div_views {
    max-height: 200px;
-   overflow: auto;   
+   overflow: auto;
+}
+
+.div_row {
+   display: flex;
+   align-items: center;
+   overflow-y: hidden;
 }
 
 #div_close_button {

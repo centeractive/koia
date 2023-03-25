@@ -5,6 +5,7 @@ import { DBService } from './db.service';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
 import { SceneFactory } from 'app/shared/test';
+import { lastValueFrom } from 'rxjs';
 
 describe('DBService', () => {
 
@@ -392,7 +393,7 @@ describe('DBService', () => {
     await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
 
     // then
-    await dbService.findEntries(new Query(), false).toPromise()
+    await lastValueFrom(dbService.findEntries(new Query(), false))
       .then(data => expect(data.length).toBe(5))
       .catch(err => fail(err));
   });
@@ -510,8 +511,8 @@ describe('DBService', () => {
     const query = new Query();
     query.setFullTextFilter('warn');
 
-    // when
-    await dbService.findEntries(query, true).toPromise()
+    // when8
+    await lastValueFrom(dbService.findEntries(query, true))
       .then(docs => {
 
         // then
@@ -530,7 +531,7 @@ describe('DBService', () => {
     query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'o'));
 
     // when
-    await dbService.findEntries(query, false).toPromise()
+    await lastValueFrom(dbService.findEntries(query, false))
       .then(docs => {
 
         // then

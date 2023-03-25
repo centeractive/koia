@@ -360,7 +360,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as CSV in the background',
-      undefined, { duration: 3000 });
+      undefined, { duration: 4000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
   }));
 
@@ -378,7 +378,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as CSV in the background',
-      undefined, { duration: 3000 });
+      undefined, { duration: 4000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
   }));
 
@@ -395,7 +395,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as Excel in the background',
-      undefined, { duration: 3000 });
+      undefined, { duration: 4000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
   }));
 
@@ -413,7 +413,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as Excel in the background',
-      undefined, { duration: 3000 });
+      undefined, { duration: 4000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
   }));
 
@@ -430,7 +430,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as JSON in the background',
-      undefined, { duration: 3000 });
+      undefined, { duration: 4000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
   }));
 
@@ -448,7 +448,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as JSON in the background',
-      undefined, { duration: 3000 });
+      undefined, { duration: 4000 });
     expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
   }));
 

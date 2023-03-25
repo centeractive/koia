@@ -55,28 +55,34 @@ describe('GraphComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('ngOnChanges should fetch entries when entries$ change', () => {
+  it('ngOnChanges should fetch entries when entries$ change', async () => {
 
     // given
-    spyOn(component.entries$, 'toPromise').and.returnValue(Promise.resolve(null));
+    const entries = ([
+      { t1: 'b', n1: 3, t2: 'y' },
+      { t1: 'b', n1: 2, t2: 'x' }
+    ]);
 
     // when
+    component.entries$ = of(entries);
     component.ngOnChanges({ entries$: new SimpleChange(undefined, entries$, true) });
 
     // then
-    expect(component.entries$.toPromise).toHaveBeenCalled();
+    await fixture.whenStable();
+    expect(context.entries).toEqual(entries);
   });
 
   it('ngOnChanges should not fetch entries when entries$ does not change', () => {
 
     // given
-    spyOn(component.entries$, 'toPromise').and.returnValue(Promise.resolve(null));
+    const entries = context.entries;
 
     // when
+    component.context = new GraphContext(columns);
     component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
 
     // then
-    expect(component.entries$.toPromise).not.toHaveBeenCalled();
+    expect(context.entries).toBe(entries);
   });
 
   it('should compute graph data when structure changes', fakeAsync(() => {

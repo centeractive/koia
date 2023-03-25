@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { DocChangeResponse } from '../doc-change-response.type';
 import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
@@ -61,16 +61,17 @@ export class CouchDBService implements DB {
   listDatabases(): Promise<string[]> {
     const url = this.baseURL + '_all_dbs';
     LogUtils.logHttpRequest(HTTPMethod.GET, url);
-    return this.http.get<string[]>(url, this.httpOptions)
+    const observable = this.http.get<string[]>(url, this.httpOptions)
       .pipe(
         map(dbs => dbs.filter(db => !db.startsWith('_')))
-      ).toPromise();
+      );
+    return lastValueFrom(observable);
   }
 
   createDatabase(database: string): Promise<any> {
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.PUT, url);
-    return this.http.put<string>(url, '', this.httpOptions).toPromise();
+    return lastValueFrom(this.http.put<string>(url, '', this.httpOptions));
   }
 
   getMaxDataItemsPerScene(): number {
@@ -86,7 +87,7 @@ export class CouchDBService implements DB {
     };
     const url = this.url(database, '_index');
     LogUtils.logHttpRequest(HTTPMethod.POST, url, index);
-    return this.http.post<any>(url, index, this.httpOptions).toPromise();
+    return lastValueFrom(this.http.post<any>(url, index, this.httpOptions));
   }
 
   deleteDatabase(database: string): Promise<any> {
@@ -95,13 +96,13 @@ export class CouchDBService implements DB {
     }
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
-    return this.http.delete<any>(url, this.httpOptions).toPromise();
+    return lastValueFrom(this.http.delete<any>(url, this.httpOptions));
   }
 
   findById(database: string, id: string): Promise<Document> {
     const url = this.url(database, id);
     LogUtils.logHttpRequest(HTTPMethod.GET, url);
-    return this.http.get<Scene>(url, this.httpOptions).toPromise();
+    return lastValueFrom(this.http.get<Scene>(url, this.httpOptions));
   }
 
   find(database: string, mangoQuery: any): Observable<Document[]> {
@@ -115,7 +116,7 @@ export class CouchDBService implements DB {
   async insert(database: string, document: Document): Promise<Document> {
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.POST, url, document);
-    return this.http.post<DocChangeResponse>(url, document, this.httpOptions).toPromise()
+    return lastValueFrom(this.http.post<DocChangeResponse>(url, document, this.httpOptions))
       .then(dcr => {
         document._id = dcr.id;
         document._rev = dcr.rev;
@@ -126,7 +127,7 @@ export class CouchDBService implements DB {
   async insertBulk(database: string, documents: Document[]): Promise<void> {
     const url = this.url(database, '_bulk_docs');
     LogUtils.logHttpRequest(HTTPMethod.POST, url, { docs: documents });
-    return this.http.post<DocChangeResponse[]>(url, { docs: documents }, this.httpOptions).toPromise()
+    return lastValueFrom(this.http.post<DocChangeResponse[]>(url, { docs: documents }, this.httpOptions))
       .then(r => {
         const errors = r.filter(dcr => dcr.error).map(dcr => 'id: ' + dcr.id + ', error: ' + dcr.error + ', reason: ' + dcr.reason);
         if (errors.length > 0) {
@@ -138,7 +139,7 @@ export class CouchDBService implements DB {
   async update(database: string, document: Document): Promise<Document> {
     const url = this.url(database, document._id);
     LogUtils.logHttpRequest(HTTPMethod.PUT, url, document);
-    return this.http.put<DocChangeResponse>(url, document, this.httpOptions).toPromise()
+    return lastValueFrom(this.http.put<DocChangeResponse>(url, document, this.httpOptions))
       .then(r => {
         document._rev = r.rev;
       })
@@ -148,13 +149,13 @@ export class CouchDBService implements DB {
   delete(database: string, document: Document): Promise<any> {
     const url = this.url(database, document._id + '?rev=' + document._rev);
     LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
-    return this.http.delete<any>(url, this.httpOptions).toPromise();
+    return lastValueFrom(this.http.delete<any>(url, this.httpOptions));
   }
 
   async countDocuments(database: string): Promise<number> {
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.GET, url);
-    return this.http.get<any>(url, this.httpOptions).toPromise()
+    return lastValueFrom(this.http.get<any>(url, this.httpOptions))
       .then(info => info['doc_count']);
   }
 

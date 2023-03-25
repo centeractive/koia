@@ -161,6 +161,10 @@ mat-panel-description {
   max-height: calc(100vh - 40px);
 }
 
+.mat-bottom-sheet-container {
+  background: transparent;
+}
+
 /* the following CSS class names must match enum StatusType */
 .success {
   background-color: greenyellow;
