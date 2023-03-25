@@ -76,10 +76,6 @@ export class ValueFilterComponent implements OnInit {
     this.validate();
   }
 
-  search(value: string): void {
-    console.log('search', value);
-  }
-
   private validate(): void {
     const error = this.validator.validate(this.filter);
     this.valueControl.setErrors(error ? { error: error } : null);

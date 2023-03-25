@@ -4,7 +4,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogData, ConfirmDialogComponent } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
-import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog.component';
+import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
 import { SceneFactory } from '../test';
 import { Protocol, SummaryContext } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';

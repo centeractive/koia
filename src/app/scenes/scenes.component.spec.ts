@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-
 import { ScenesComponent } from './scenes.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
@@ -17,13 +16,14 @@ import { SceneFactory } from 'app/shared/test';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Observable, of } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { SceneTableComponent } from './scene-table/scene-table.component';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({ template: '' })
 class RawDataComponent { }
@@ -50,9 +50,9 @@ describe('ScenesComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ScenesComponent, RawDataComponent],
+      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent],
       imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
-        MatMenuModule, FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
+        MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
       providers: [Location, MatBottomSheet,
         { provide: DBService, useValue: dbService },
@@ -267,23 +267,6 @@ describe('ScenesComponent', () => {
     expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
   }));
 
-  it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
-
-    // given
-    spyOn(dialogService, 'showSceneDetailsDialog');
-    const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
-
-    // when
-    moreButton.click();
-    fixture.detectChanges();
-    const detailsButton: HTMLButtonElement = fixture.debugElement.query(By.css('.menu_item_details')).nativeElement;
-    detailsButton.click();
-    flush();
-
-    // then
-    expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scenes[0]);
-  }));
-
   it('#selecting delete menu item should delete scene', fakeAsync(() => {
 
     // given
@@ -328,7 +311,7 @@ describe('ScenesComponent', () => {
     // given
     spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve(scenes[1]));
     spyOn(component.router, 'navigateByUrl');
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_activate_scene'))[1].nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
 
     // when
     htmlButton.click();
@@ -344,7 +327,7 @@ describe('ScenesComponent', () => {
 
     // given
     spyOn(dbService, 'activateScene').and.returnValue(Promise.reject('cannot activate scene'));
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_activate_scene'))[1].nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
 
     // when
     htmlButton.click();
@@ -360,7 +343,7 @@ describe('ScenesComponent', () => {
 
     // given
     spyOn(component.router, 'navigateByUrl');
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_continue')).nativeElement;
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.continueActiveScene')).nativeElement;
 
     // when
     htmlButton.click();

@@ -14,7 +14,7 @@
     <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let sceneInfo">
-            <button mat-icon-button [matMenuTriggerFor]="moreMenu" matTooltip="more...">
+            <button class="but_more" mat-icon-button [matMenuTriggerFor]="moreMenu" matTooltip="more...">
                 <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #moreMenu="matMenu">
@@ -27,11 +27,13 @@
                     <span>Delete</span>
                 </button>
             </mat-menu>
-            <button *ngIf="!!sceneInfos" [disabled]="activeScene && sceneInfo._id === activeScene._id" mat-icon-button matTooltip="Activate scene"
+            <button *ngIf="!!sceneInfos" class="activateScene" [disabled]="activeScene && sceneInfo._id === activeScene._id" mat-icon-button
+                    matTooltip="Activate scene"
                     (click)="onActivate.emit(sceneInfo)">
                 <mat-icon>play_circle_outline</mat-icon>
             </button>
-            <button *ngIf="!sceneInfos" mat-icon-button color="accent" matTooltip="Continue with active scene" (click)="onActivate.emit(sceneInfo)">
+            <button *ngIf="!sceneInfos" class="continueActiveScene" mat-icon-button color="accent" matTooltip="Continue with active scene"
+                    (click)="onActivate.emit(sceneInfo)">
                 <mat-icon>play_circle_outline</mat-icon>
             </button>
         </td>

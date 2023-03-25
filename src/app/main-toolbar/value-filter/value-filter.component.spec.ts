@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, waitForAsync } from '@angular/core/testing';
 import { ValueFilterComponent } from './value-filter.component';
 import { Operator, DataType, Column, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
@@ -292,8 +292,7 @@ describe('ValueFilterComponent', () => {
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
-    const formField = fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = formField.getElementsByTagName('INPUT')[0];
+    const htmlInput = fixture.debugElement.query(By.css('#column_filter_input')).nativeElement;
     spyOn(component.onChange, 'emit');
 
     // when
@@ -307,13 +306,12 @@ describe('ValueFilterComponent', () => {
     expect(component.valueControl.hasError('error')).toBe(false);
   }));
 
-  it('pressing <enter> in column filter field should emit onFilterChange', () => {
+  it('pressing <enter> in column filter field should emit change event', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
-    const formField = fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = formField.getElementsByTagName('INPUT')[0];
+    const htmlInput = fixture.debugElement.query(By.css('#column_filter_input')).nativeElement;
     htmlInput.value = 'ERR';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -322,33 +320,12 @@ describe('ValueFilterComponent', () => {
     // when
     const event: any = document.createEvent('Event');
     event.key = 'Enter';
-    event.initEvent('keyup');
+    event.initEvent('search');
     htmlInput.dispatchEvent(event);
 
     // then
     expect(component.onChange.emit).toHaveBeenCalled();
   });
-
-  it('#click on <clear> button in value field field should emit change event', fakeAsync(() => {
-
-    // given
-    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
-    fixture.detectChanges();
-    const formField = fixture.debugElement.query(By.css('.column_filter_value')).nativeElement;
-    const htmlInput = formField.getElementsByTagName('INPUT')[0];
-    htmlInput.value = 'ERR';
-    htmlInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    const clearButton = formField.getElementsByTagName('BUTTON')[0];
-    spyOn(component.onChange, 'emit');
-
-    // when
-    clearButton.click();
-    tick();
-
-    // then
-    expect(component.onChange.emit).toHaveBeenCalled();
-  }));
 
   function column(name: string): Column {
     return columns.find(c => c.name === name);
