@@ -1,4 +1,3 @@
-
 .div_range_filter {
    display: flex;
    flex-wrap: nowrap;
@@ -8,21 +7,21 @@
 button {
    z-index: 999;
 }
- 
+
 .ngx-slider {
    margin-top: 0px;
 }
- 
+
 .ngx-slider-pointer {
    background-color: rgb(3, 204, 3) !important;
    width: 16px !important;
    height: 16px !important;
    top: -6px !important;
    -webkit-border-radius: 8px !important;
-      -moz-border-radius: 8px !important;
-           border-radius: 8px !important;
+   -moz-border-radius: 8px !important;
+   border-radius: 8px !important;
 }
- 
+
 .ngx-slider .ngx-slider-pointer:after {
    position: absolute !important;
    top: 6px !important;
@@ -31,77 +30,75 @@ button {
    height: 4px !important;
    background: rgb(3, 204, 3) !important;
    -webkit-border-radius: 2px !important;
-      -moz-border-radius: 2px !important;
-           border-radius: 2px !important;
+   -moz-border-radius: 2px !important;
+   border-radius: 2px !important;
    content: '' !important;
 }
- 
+
 .ngx-slider .ngx-slider-pointer:hover:after {
    background-color: #ffffff !important;
 }
- 
+
 .ngx-slider .ngx-slider-pointer.ngx-slider-active:after {
    background-color: #ffffff !important;
 }
- 
+
 .ngx-slider-bubble {
    background-color: rgb(238, 250, 237) !important;
-   border: 1px solid rgb(212, 209, 209); 
+   border: 1px solid rgb(212, 209, 209);
    border-radius: 4px;
    font-size: 12px !important;
 }
- 
+
 .div_range_filter .ngx-slider-bubble.ngx-slider-selection {
    background-color: rgb(3, 204, 3) !important;
 }
- 
+
 .div_range_filter .ngx-slider-bubble.ngx-slider-limit {
    background-color: white !important;
    border-style: dashed !important;
 }
- 
+
 .div_range_filter .ngx-slider-selection {
    background: rgb(3, 204, 3) !important;
 }
- 
+
 .but_reset_range_filter {
-  vertical-align: bottom;
+   vertical-align: bottom;
 }
- 
+
 .but_remove_range_filter {
-  vertical-align: bottom;
+   vertical-align: bottom;
 }
- 
+
 .but_add_range_filter {
    vertical-align: bottom;
 }
- 
-.div_range_column_name {  
+
+.div_range_column_name {
    position: relative;
    top: -4px;
-   left: 66px;  
+   left: 66px;
    margin-bottom: 3px;
 }
- 
+
 .span_menu_trigger {
    padding: 3px;
    margin-right: 4px;
-   margin-bottom: 5px;
    border: 1px;
    border-style: solid;
-   border-radius: 5px;  
+   border-radius: 5px;
    border-color: lightgray;
    cursor: pointer;
 }
- 
+
 .span_outside_range_menu_trigger {
    padding: 3px;
    margin-right: 4px;
-   margin-bottom: 5px;
    border: 1px;
    border-style: solid;
-   border-radius: 5px;  
+   border-radius: 5px;
    border-color: lightgray;
    cursor: pointer;
-   background-color: rgb(250, 218, 162);  
+   background-color: rgb(250, 218, 162);
 }

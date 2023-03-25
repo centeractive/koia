@@ -15,7 +15,8 @@
 }
 
 .div_summary_table {
-  flex: 0 3 auto;
+  flex: 1 1 auto;
+  height: calc(100% - 48px);
 }
 
 .div_chart {

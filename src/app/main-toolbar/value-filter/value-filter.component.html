@@ -16,16 +16,11 @@
     </button>
   </mat-menu>
 
-  <mat-form-field class="column_filter_value" *ngIf="!isEqualBoolean() && !filter.operator.endsWith('empty')">
-    <input matInput type="text" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
-           (input)="onValueChanged($event.target.value)" (keyup)="onKeyUp($event)" [formControl]="valueControl"
-           [koiaFilterValueInput]="filter">
-    <button color="primary" *ngIf="filter.value" matSuffix mat-icon-button aria-label="Clear"
-            (click)="reset()">
-      <mat-icon>close</mat-icon>
-    </button>
+  <div class="column_filter_value" *ngIf="!isEqualBoolean() && !filter.operator.endsWith('empty')">
+    <input matInput type="search" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
+           (input)="onValueChanged($event.target.value)" [formControl]="valueControl" [koiaFilterValueInput]="filter" (search)="onChange.emit()">
     <mat-error *ngIf="valueControl.invalid">{{ valueControl.getError('error') }}</mat-error>
-  </mat-form-field>
+  </div>
 
   <span class="span_menu_trigger" *ngIf="isEqualBoolean()"
         [matMenuTriggerFor]="booleanMenu">{{ filter.value }}</span>
@@ -39,5 +34,6 @@
   </mat-menu>
 
   <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter" (click)="onRemove.emit()">
-    remove_circle_outline</mat-icon>
+    remove_circle_outline
+  </mat-icon>
 </div>

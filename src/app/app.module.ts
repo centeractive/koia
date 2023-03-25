@@ -59,7 +59,7 @@ import { MatIconModuleMock } from './shared/test';
 import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.directive';
 import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
 import { RawDataViewComponent } from './raw-data/raw-data-view.component';
-import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog.component';
+import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog/scene-details-dialog.component';
 import { DialogService } from './shared/services/dialog.service';
 import { FrontComponent } from './front/front.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
@@ -74,6 +74,7 @@ import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-va
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-selection/color-scheme-selection.component';
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
+import { SceneTableComponent } from './scenes/scene-table/scene-table.component';
 
 @NgModule({
     declarations: [
@@ -108,7 +109,8 @@ import { ExpansionPanelComponent } from './shared/component/expansion-panel/expa
         ColumnMappingComponent,
         ViewLauncherDialogComponent,
         ColorSchemeSelectionComponent,
-        ExpansionPanelComponent
+        ExpansionPanelComponent,
+        SceneTableComponent
     ],
     imports: [
         BrowserModule,

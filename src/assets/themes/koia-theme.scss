@@ -7,6 +7,7 @@ $koia-warn: mat.define-palette(mat.$red-palette);
 
 $koia-theme: mat.define-light-theme(( //
             color: (primary: $koia-primary, accent: $koia-accent, warn: $koia-warn ),
+            typography: mat.define-typography-config(),
             density: -1));
 
 @include mat.all-component-themes($koia-theme);

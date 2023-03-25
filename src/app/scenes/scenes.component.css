@@ -3,40 +3,11 @@
   border: solid 2px rgba(10, 218, 20, 0.856);
 }
 
-.div_scene {
-  width: 100%;
-  display: flex;
-}
-
 #div_filter {
-  width: 100%;
+  margin-left: 1em;
   display: flex;
-  justify-content: flex-end;
-}
-
-.mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-
-#filter_field {
-  width: 300px;
 }
 
 #but_delete_scenes {
   margin-left: 10px;
-}
-
-.scene_name {
-  min-width: 200px;
-  flex-grow: 1;
-  padding-right: 10px;
-}
-
-.scene_short_desc {
-  flex-grow: 3;
-  padding-right: 10px;
-}
-
-.scene_creation_time {
-  width: 160px;
 }

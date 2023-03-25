@@ -54,19 +54,16 @@
             <mat-icon>print</mat-icon>
          </button>
          -->
-            <button mat-icon-button matTooltip="Save current view"
-                    [disabled]="!elementContexts || elementContexts.length === 0" (click)="saveView()">
+            <button mat-icon-button matTooltip="Save current view" [disabled]="!elementContexts || !elementContexts.length" (click)="saveView()">
                <mat-icon>save_alt</mat-icon>
             </button>
-
-            <button class="but_more" mat-icon-button matTooltip="Restore saved view"
-                    [disabled]="findViews().length === 0" [matMenuTriggerFor]="restoreViewMenu">
-               <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="findViews().length === 0"
-                         matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
+            <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!findViews().length" [matMenuTriggerFor]="restoreViewMenu">
+               <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="!findViews().length" matBadgeSize="small" matBadgeColor="accent">
+                  open_in_browser
+               </mat-icon>
             </button>
             <mat-menu #restoreViewMenu="matMenu">
-               <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item
-                       (click)="loadView(view)">
+               <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item (click)="loadView(view)">
                   <mat-icon>open_in_browser</mat-icon>
                   <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
                </button>
@@ -91,7 +88,7 @@
                <div #elementContainer class="div_element">
                   <div class="div_element_header">
                      <div style="display: flex">
-                        <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu" *ngIf="context.getSupportedExportFormats().length > 0">
+                        <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu" *ngIf="!!context.getSupportedExportFormats().length">
                            <mat-icon>more_vert</mat-icon>
                         </button>
                         <mat-menu #moreMenu="matMenu">

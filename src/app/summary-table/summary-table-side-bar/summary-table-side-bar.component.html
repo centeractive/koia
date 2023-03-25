@@ -87,11 +87,10 @@
             <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns" cdkDrag>
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
                <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                           [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                              (click)="context.fireStructureChanged()">
-                     {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
+               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'" [(ngModel)]="column.groupingTimeUnit">
+                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">
+                     {{ timeUnit ? 'per ' + timeUnit : '' }}
+                  </mat-option>
                </mat-select>
             </div>
          </div>

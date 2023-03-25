@@ -129,10 +129,11 @@ describe('ScenesComponent', () => {
     expect(link).toEqual('/' + Route.SCENE);
   });
 
-  it('#onFilterChange should not filter scene infos when filter is null', () => {
+  it('#onFilterChange should not filter scene infos when filter is blank', () => {
 
     // when
-    component.onFilterChange(null);
+    component.filter = '';
+    component.onFilterChange();
 
     // then
     expect(component.filteredSceneInfos.length).toBe(scenes.length);
@@ -141,7 +142,8 @@ describe('ScenesComponent', () => {
   it('#onFilterChange should filter scene infos when filter matches name', () => {
 
     // when
-    component.onFilterChange('e 1');
+    component.filter = 'e 1';
+    component.onFilterChange();
 
     // then
     expect(component.filteredSceneInfos.length).toBe(1);
@@ -150,7 +152,8 @@ describe('ScenesComponent', () => {
   it('#onFilterChange should filter scene infos when filter matches short description', () => {
 
     // when
-    component.onFilterChange('2 s');
+    component.filter = '2 s';
+    component.onFilterChange();
 
     // then
     expect(component.filteredSceneInfos.length).toBe(1);
@@ -228,7 +231,8 @@ describe('ScenesComponent', () => {
   it('#click on "Delete filtered" button should delete filtered scenes', fakeAsync(() => {
 
     // given
-    component.onFilterChange('1');
+    component.filter = '1';
+    component.onFilterChange();
     spyOnConfirmDialogAndPressYes();
     spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
@@ -249,7 +253,8 @@ describe('ScenesComponent', () => {
     spyOn(dbService, 'deleteScene').and.returnValue(Promise.resolve(null));
     getActiveSceneSpy.calls.reset();
     findSceneInfosSpy.calls.reset();
-    component.onFilterChange('1');
+    component.filter = '1';
+    component.onFilterChange();
     spyOnConfirmDialogAndPressYes();
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 

@@ -27,7 +27,7 @@
     "@angular/compiler": "^15.2.4",
     "@angular/core": "^15.2.4",
     "@angular/forms": "^15.2.4",
-    "@angular/material": "^15.2.3",
+    "@angular/material": "^15.2.4",
     "@angular/platform-browser": "^15.2.4",
     "@angular/platform-browser-dynamic": "^15.2.4",
     "@angular/platform-server": "^15.2.4",
@@ -37,7 +37,7 @@
     "@types/luxon": "^3.0.1",
     "@types/pouchdb": "~6.4.0",
     "angular-resizable-element": "~7.0.2",
-    "chart.js": "~4.2.0",
+    "chart.js": "~4.2.1",
     "chartjs-adapter-moment": "~1.0.1",
     "chartjs-plugin-datalabels": "~2.2.0",
     "core-js": "~3.29.1",
@@ -52,7 +52,7 @@
     "luxon": "^3.2.1",
     "moment": "~2.29.3",
     "oboe": "~2.1.5",
-    "papaparse": "~5.4.0",
+    "papaparse": "~5.4.1",
     "pivottable": "~2.23.0",
     "pouchdb": "~8.0.1",
     "pouchdb-find": "~8.0.1",
@@ -61,7 +61,7 @@
     "save-svg-as-png": "~1.4.17",
     "tslib": "~2.3.0",
     "xlsx": "~0.18.5",
-    "zone.js": "~0.12.0"
+    "zone.js": "~0.13.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.1.2",

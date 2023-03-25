@@ -22,6 +22,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   activeScene: Scene;
   filter = '';
   filteredSceneInfos: SceneInfo[] = [];
+  columns = ['actions', 'name', 'shortDescription', 'creationTime'];
 
   private sceneInfos: SceneInfo[] = [];
 
@@ -38,8 +39,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     }
   }
 
-  onFilterChange(filter: string): void {
-    this.filter = filter;
+  onFilterChange(): void {
     this.filteredSceneInfos = this.filterSceneInfos();
   }
 
@@ -53,7 +53,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
       .then(s => {
         this.activeScene = s;
         (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
-        this.router.navigateByUrl(Route.RAWDATA);
+        this.showRawData();
       })
       .catch(err => this.notifyError(err));
   }

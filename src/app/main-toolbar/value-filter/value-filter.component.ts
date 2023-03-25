@@ -3,7 +3,7 @@ import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { ValueFilterCustomizer } from './value-filter-customizer';
 import { PropertyFilterValidator } from 'app/shared/validator';
-import { UntypedFormControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { FilterValueParser } from './filter-value-parser';
 import { ValueFilterUtils } from './value-filter-utils';
 
@@ -21,7 +21,7 @@ export class ValueFilterComponent implements OnInit {
   readonly operators: Operator[];
   valueFilterCustomizer = new ValueFilterCustomizer();
   columns: Column[];
-  valueControl = new UntypedFormControl();
+  valueControl = new FormControl();
   private validator: PropertyFilterValidator;
   private valueParser: FilterValueParser;
 
@@ -76,20 +76,13 @@ export class ValueFilterComponent implements OnInit {
     this.validate();
   }
 
+  search(value: string): void {
+    console.log('search', value);
+  }
+
   private validate(): void {
     const error = this.validator.validate(this.filter);
     this.valueControl.setErrors(error ? { error: error } : null);
     this.valueControl.markAsTouched();
-  }
-
-  onKeyUp(event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      this.onChange.emit();
-    }
-  }
-
-  reset() {
-    this.filter.clearFilterValue();
-    this.onChange.emit();
   }
 }
