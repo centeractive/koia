@@ -149,7 +149,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
         } else if (exportFormat === ExportFormat.EXCEL) {
           this.dataConverter.timeToDate(entries, this.columns);
         }
-        this.exportService.exportData(entries, exportFormat, 'Raw-Data');
+        this.exportService.exportData(entries, this.columns, exportFormat, 'Raw-Data');
       })
       .catch(error => this.notifyError(error));
   }

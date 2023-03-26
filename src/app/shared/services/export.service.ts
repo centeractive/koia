@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ExportFormat, Column, DataType } from '../model';
+import { ExportFormat, Column } from '../model';
 import * as XLSX from 'xlsx';
+import { ExportDataConverter } from '../utils/converter/export-data-converter';
 
 @Injectable({
   providedIn: 'root'
@@ -15,14 +16,15 @@ export class ExportService {
   private newline = '\n';
   private datePipe = new DatePipe('en-US');
   private timeFormat = 'yyyy-mm-dd_HHmmss';
+  private dataConverter = new ExportDataConverter();
 
-  exportData(data: Object[], exportFormat: ExportFormat, baseFileName: string): void {
+  exportData(data: Object[], columns: Column[], exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.CSV) {
       this.exportAsCSV(data, baseFileName);
     } else if (exportFormat === ExportFormat.JSON) {
       this.exportAsJSON(data, baseFileName);
     } else if (exportFormat === ExportFormat.EXCEL) {
-      this.saveExcelFile(XLSX.utils.json_to_sheet(data), baseFileName);
+      this.saveExcelFile(this.dataConverter.toExcelWorksheet(data, columns), baseFileName);
     } else {
       throw new Error('export format ' + exportFormat + ' is not supported');
     }

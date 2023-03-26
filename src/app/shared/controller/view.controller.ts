@@ -225,7 +225,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.exportService.exportImage(base64Image, exportFormat, context.getTitle());
       } else if (this.isSummaryContext(context)) {
          const sumTableComponent = this.sumTableComponents.find(cmp => cmp.context === context);
-         this.exportService.exportData(sumTableComponent.createExportData(), exportFormat, context.getTitle());
+         this.exportService.exportData(sumTableComponent.createExportData(), this.columns, exportFormat, context.getTitle());
       }
    }
 }

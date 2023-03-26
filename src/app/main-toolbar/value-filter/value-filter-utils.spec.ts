@@ -30,13 +30,13 @@ describe('ValueFilterUtils', () => {
       expect(operator).toBe(Operator.CONTAINS);
    });
 
-   it('#defaultOperatorOf should return EQUAL operator for TEXT', () => {
+   it('#defaultOperatorOf should return CONTAINS operator for TEXT', () => {
 
       // when
       const operator = ValueFilterUtils.defaultOperatorOf(DataType.TEXT);
 
       // then
-      expect(operator).toBe(Operator.EQUAL);
+      expect(operator).toBe(Operator.CONTAINS);
    });
 
    it('#defaultOperatorOf should return NOT_EMPTY operator for TIME', () => {
