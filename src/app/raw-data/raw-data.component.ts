@@ -12,7 +12,7 @@ import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-d
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { lastValueFrom } from 'rxjs';
-import { ExportDataConverter } from 'app/shared/utils/converter/export-data-converter';
+import { ExportDataConverter } from 'app/shared/services/export/data-converter/export-data-converter';
 
 @Component({
   selector: 'koia-raw-data',
@@ -140,17 +140,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
     this.snackBar.open(message, undefined, { duration: 4000 });
     query.clearPageDefinition();
     lastValueFrom(this.dbService.findEntries(query, false))
-      .then(entries => {
-        if (exportFormat === ExportFormat.JSON) {
-          this.dataConverter.restoreJSONObjects(entries, this.columns);
-          this.dataConverter.timeToFormattedString(entries, this.columns);
-        } else if (exportFormat === ExportFormat.CSV) {
-          this.dataConverter.timeToFormattedString(entries, this.columns);
-        } else if (exportFormat === ExportFormat.EXCEL) {
-          this.dataConverter.timeToDate(entries, this.columns);
-        }
-        this.exportService.exportData(entries, this.columns, exportFormat, 'Raw-Data');
-      })
+      .then(entries => this.exportService.exportData(entries, this.columns, exportFormat, 'Raw-Data'))
       .catch(error => this.notifyError(error));
   }
 

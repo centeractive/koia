@@ -36,34 +36,6 @@ describe('ExportDataConverter', () => {
         expect(data as any).toEqual(expected);
     });
 
-    it('#timeToDate', () => {
-        // given        
-        const data: Object[] = [
-            { Position: 1, Name: 'A', Amount: 100.5, Time: 1547809200000 },
-            { Position: 2, Name: 'B', Amount: 15, Time: 1547812800000 },
-            { Position: 3, Name: 'C', Amount: 78.6, Time: 1547816400000 },
-            { Position: 4, Name: 'D', Amount: 45.2, Time: 1547820000000 }
-        ];
-        const columns: Column[] = [
-            { name: 'Position', dataType: DataType.NUMBER, width: 10 },
-            { name: 'Name', dataType: DataType.NUMBER, width: 40 },
-            { name: 'Amount', dataType: DataType.NUMBER, width: 8 },
-            { name: 'Time', dataType: DataType.TIME, width: 16, format: 'd MMM yyyy HH:mm:ss' },
-        ];
-
-        // when
-        converter.timeToDate(data, columns);
-
-        // then
-        const expected = [
-            { Position: 1, Name: 'A', Amount: 100.5, Time: new Date(1547809200000) },
-            { Position: 2, Name: 'B', Amount: 15, Time: new Date(1547812800000) },
-            { Position: 3, Name: 'C', Amount: 78.6, Time: new Date(1547816400000) },
-            { Position: 4, Name: 'D', Amount: 45.2, Time: new Date(1547820000000) }
-        ];
-        expect(data as any).toEqual(expected);
-    });
-
     it('#timeToFormattedString', () => {
         // given        
         const data: Object[] = [

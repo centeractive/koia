@@ -6,4 +6,4 @@ export * from './graph-data.service';
 export * from './time-grouping.service';
 export * from './aggregation.service';
 export * from './notification.service';
-export * from './export.service';
+export * from './export/export.service';

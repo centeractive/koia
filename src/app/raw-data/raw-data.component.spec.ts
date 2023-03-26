@@ -28,6 +28,7 @@ describe('RawDataComponent', () => {
 
   let now: number;
   let scene: Scene;
+  let columns: Column[];
   let entries: Object[];
   let component: RawDataComponent;
   let fixture: ComponentFixture<RawDataComponent>;
@@ -40,7 +41,7 @@ describe('RawDataComponent', () => {
 
   beforeAll(() => {
     now = new Date().getTime();
-    const columns = [
+    columns = [
       { name: 'Time', dataType: DataType.TIME, width: 100, format: 'yyyy-MM-dd HH:mm:ss SSS' },
       { name: 'Level', dataType: DataType.TEXT, width: 60 },
       { name: 'Data', dataType: DataType.TEXT, width: 500 },
@@ -361,7 +362,7 @@ describe('RawDataComponent', () => {
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as CSV in the background',
       undefined, { duration: 4000 });
-    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, columns, ExportFormat.CSV, 'Raw-Data');
   }));
 
   it('#saveAs should save filtered data as CSV file', fakeAsync(() => {
@@ -379,7 +380,7 @@ describe('RawDataComponent', () => {
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as CSV in the background',
       undefined, { duration: 4000 });
-    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.CSV, 'Raw-Data');
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, columns, ExportFormat.CSV, 'Raw-Data');
   }));
 
   it('#saveAs should save complete data as Excel file', fakeAsync(() => {
@@ -396,7 +397,7 @@ describe('RawDataComponent', () => {
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as Excel in the background',
       undefined, { duration: 4000 });
-    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, columns, ExportFormat.EXCEL, 'Raw-Data');
   }));
 
   it('#saveAs should save filtered data as Excel file', fakeAsync(() => {
@@ -414,7 +415,7 @@ describe('RawDataComponent', () => {
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as Excel in the background',
       undefined, { duration: 4000 });
-    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.EXCEL, 'Raw-Data');
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, columns, ExportFormat.EXCEL, 'Raw-Data');
   }));
 
   it('#saveAs should save complete data as JSON file', fakeAsync(() => {
@@ -431,7 +432,7 @@ describe('RawDataComponent', () => {
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as JSON in the background',
       undefined, { duration: 4000 });
-    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, columns, ExportFormat.JSON, 'Raw-Data');
   }));
 
   it('#saveAs should save filtered data as JSON file', fakeAsync(() => {
@@ -449,7 +450,7 @@ describe('RawDataComponent', () => {
     // then
     expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as JSON in the background',
       undefined, { duration: 4000 });
-    expect(exportService.exportData).toHaveBeenCalledWith(entries, ExportFormat.JSON, 'Raw-Data');
+    expect(exportService.exportData).toHaveBeenCalledWith(entries, columns, ExportFormat.JSON, 'Raw-Data');
   }));
 
   it('#saveAs should notify error', fakeAsync(() => {

@@ -1,58 +1,33 @@
 import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
 import * as XLSX from 'xlsx';
-import { DateTimeUtils } from '../date-time-utils';
 
-export class ExportDataConverter {
+export class ExcelDataConverter {
 
     private valueFormatter = new ValueFormatter();
 
     /**
-     * converts the stringified values of all [[DataType.OBJECT]] columns back to JSON objects
+     * converts the number values of all [[DataType.TIME]] columns 
+     * - to Date if the date format does not contain a milliseconds letter pattern
+     * - to formatted string if the format contains a milliseconds letter pattern (because Excel does not know about such pattern)
      */
-    restoreJSONObjects(data: Object[], columns: Column[]): void {
-        const objectTypeColumns = columns.filter(c => c.dataType === DataType.OBJECT);
-        for (const column of objectTypeColumns) {
-            for (const item of data) {
-                const value = item[column.name];
-                if (value) {
-                    item[column.name] = JSON.parse(value);
-                }
-            }
-        }
-    }
-
-    /**
-     * converts the number values of all [[DataType.TIME]] columns to Date
-     */
-    timeToDate(data: Object[], columns: Column[]): void {
+    convertTime(data: Object[], columns: Column[]): void {
         const timeColumns = columns.filter(c => c.dataType === DataType.TIME);
         for (const column of timeColumns) {
             for (const item of data) {
                 const value = item[column.name];
                 if (value) {
-                    item[column.name] = new Date(value);
+                    if (column.format.includes('S')) {
+                        item[column.name] = this.valueFormatter.formatValue(column, value);
+                    } else {
+                        item[column.name] = new Date(value);
+                    }
                 }
             }
         }
     }
 
-    /**
-     * converts the number values of all [[DataType.TIME]] columns to formatted strings
-     */
-    timeToFormattedString(data: Object[], columns: Column[]): void {
-        const timeColumns = columns.filter(c => c.dataType === DataType.TIME);
-        for (const column of timeColumns) {
-            for (const item of data) {
-                const value = item[column.name];
-                if (value) {
-                    item[column.name] = this.valueFormatter.formatValue(column, value);
-                }
-            }
-        }
-    }
-
-    toExcelWorksheet(data: Object[], columns: Column[]): XLSX.WorkSheet {
+    toWorksheet(data: Object[], columns: Column[]): XLSX.WorkSheet {
         const ws = XLSX.utils.json_to_sheet(data);
         const colNames = Object.keys(data[0]);
         ws['!cols'] = this.colInfos(colNames, columns);

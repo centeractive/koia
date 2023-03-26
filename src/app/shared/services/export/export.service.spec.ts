@@ -1,5 +1,5 @@
 import { ExportService } from './export.service';
-import { ExportFormat, DataType, Column } from '../model';
+import { ExportFormat, DataType, Column } from '../../model';
 
 describe('ExportService', () => {
 
@@ -13,11 +13,15 @@ describe('ExportService', () => {
 
     // given
     let blob: Blob;
-    spyOn(exportService, 'saveBlobAs').and.callFake(b => blob = b); // capture argument
+    spyOn(exportService, 'saveBlobAs').and.callFake(b => blob = b); // capture argument    
     const data = [{ a: 'x', b: 1 }, { a: 'y', b: 2 }]
+    const columns: Column[] = [
+      { name: 'a', dataType: DataType.TEXT, width: 10 },
+      { name: 'b', dataType: DataType.NUMBER, width: 10 }
+    ];
 
     // when
-    exportService.exportData(data, ExportFormat.CSV, 'testfile');
+    exportService.exportData(data, columns, ExportFormat.CSV, 'testfile');
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
@@ -31,9 +35,10 @@ describe('ExportService', () => {
 
     // given
     const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
     // when
-    exportService.exportData([{ a: 1 }], ExportFormat.CSV, 'testfile');
+    exportService.exportData([{ a: 1 }], [column], ExportFormat.CSV, 'testfile');
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
@@ -44,9 +49,10 @@ describe('ExportService', () => {
 
     // given
     const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
     // when
-    exportService.exportData([{ a: 1 }], ExportFormat.EXCEL, 'testfile');
+    exportService.exportData([{ a: 1 }], [column], ExportFormat.EXCEL, 'testfile');
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
@@ -59,9 +65,13 @@ describe('ExportService', () => {
     let blob: Blob;
     spyOn(exportService, 'saveBlobAs').and.callFake(b => blob = b); // capture argument
     const data = [{ a: 'x', b: 1 }, { a: 'y', b: 2 }]
+    const columns: Column[] = [
+      { name: 'a', dataType: DataType.TEXT, width: 10 },
+      { name: 'b', dataType: DataType.NUMBER, width: 10 }
+    ];
 
     // when
-    exportService.exportData(data, ExportFormat.JSON, 'testfile');
+    exportService.exportData(data, columns, ExportFormat.JSON, 'testfile');
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
@@ -75,9 +85,10 @@ describe('ExportService', () => {
 
     // given
     const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
     // when
-    exportService.exportData([{ a: 1 }], ExportFormat.JSON, 'testfile');
+    exportService.exportData([{ a: 1 }], [column], ExportFormat.JSON, 'testfile');
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
@@ -85,7 +96,9 @@ describe('ExportService', () => {
   });
 
   it('#exportData should throw error when format is not supported', () => {
-    expect(() => exportService.exportData([{ a: 1 }], ExportFormat.PNG, 'testfile'))
+    const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
+
+    expect(() => exportService.exportData([{ a: 1 }], [column], ExportFormat.PNG, 'testfile'))
       .toThrowError('export format PNG is not supported');
   });
 
