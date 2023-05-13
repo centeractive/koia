@@ -50,10 +50,12 @@
 
       <koia-expansion-panel title="Names" *ngIf="context.isCircularChart() && !context.isAggregationCountSelected()">
          <mat-form-field>
-            <mat-select placeholder="Name Column" [value]="getSingleGroupByColumn()">
+            <mat-label>Name Column</mat-label>
+            <mat-select [value]="getSingleGroupByColumn()">
                <mat-select-trigger>
                   <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
-                     {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
+                     {{ iconOf(getSingleGroupByColumn().dataType) }}
+                  </mat-icon>
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
                </mat-select-trigger>
                <mat-option *ngFor="let column of context.columns" [value]="column"
@@ -100,8 +102,8 @@
                             *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())"
                             [title]="groupingPanelName()">
          <mat-form-field>
-            <mat-select [placeholder]="context.isCategoryChart() ? 'Column Name' : 'Group by'"
-                        [value]="getSingleGroupByColumn()">
+            <mat-label>{{ context.isCategoryChart() ? 'Column Name' : 'Group by' }}</mat-label>
+            <mat-select [value]="getSingleGroupByColumn()">
                <mat-select-trigger>
                   <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
                      {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
@@ -116,9 +118,10 @@
          </mat-form-field>
 
          <mat-form-field *ngIf="context.isAggregationCountSelected() && groupByTimeColumn">
-            <mat-select placeholder="Time Unit Grouping" [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
-               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                           (click)="context.fireStructureChanged()">{{ timeUnit }}</mat-option>
+            <mat-label>Time Unit Grouping</mat-label>
+            <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
+               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">{{ timeUnit }}
+               </mat-option>
             </mat-select>
          </mat-form-field>
       </koia-expansion-panel>
@@ -129,21 +132,24 @@
 
       <koia-expansion-panel [title]="'Position ' + (gridColumns ? ' & Size' : '')">
          <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
+            <mat-label>Columns</mat-label>
+            <mat-select [value]="context.gridColumnSpan">
                <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
                   {{ span }}
                </mat-option>
             </mat-select>
          </mat-form-field>
          <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-select placeholder="Rows" [value]="context.gridRowSpan">
+            <mat-label>Rows</mat-label>
+            <mat-select [value]="context.gridRowSpan">
                <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
                   {{ span }}
                </mat-option>
             </mat-select>
          </mat-form-field>
          <mat-form-field class="field_small_integer">
-            <mat-select placeholder="Position" [value]="elementPosition">
+            <mat-label>Position</mat-label>
+            <mat-select [value]="elementPosition">
                <mat-option *ngFor="let position of elementPositions" [value]="position"
                            (click)="setElementPosition(position)">
                   {{ position }}

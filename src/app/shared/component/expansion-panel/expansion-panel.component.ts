@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'koia-expansion-panel',
@@ -9,5 +9,8 @@ export class ExpansionPanelComponent {
 
   @Input() title: string;
   @Input() expanded = false;
+  @Input() deletable = false;
+
+  @Output() delete = new EventEmitter<void>();
 
 }

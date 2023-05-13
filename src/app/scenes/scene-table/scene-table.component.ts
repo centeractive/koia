@@ -17,7 +17,7 @@ export class SceneTableComponent implements OnChanges {
   @Output() onDelete = new EventEmitter<SceneInfo>();
 
   tableData: SceneInfo[] = []
-  columns = ['name', 'shortDescription', 'creationTime', 'actions'];
+  columns = ['actions', 'name', 'shortDescription', 'creationTime'];
 
   constructor(private dbService: DBService, private dialogService: DialogService) { }
 

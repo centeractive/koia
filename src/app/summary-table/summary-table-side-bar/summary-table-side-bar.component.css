@@ -9,19 +9,28 @@
   align-items: center;
 }
 
+.icon_define_value_grouping {
+  cursor: pointer;
+}
+
 label {
   margin-left: 5px;
   margin-right: 5px;
 }
 
+mat-form-field {
+  min-width: 7em;
+}
+
 input {
   text-align: right;
+  width: 50%;
 }
 
 .icon_remove {
   margin-left: 5px;
   cursor: pointer;
-  opacity: 0.2;
+  opacity: 0.8;
 }
 
 .icon_remove:hover {
@@ -90,11 +99,6 @@ button {
 .menu_item_legend_position {
   padding: 0 3 0 3;
   margin: 0px;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
-mat-radio-button {
-  margin: 5px;
 }
 
 .div_column_swap_list {

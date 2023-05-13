@@ -24,10 +24,10 @@
                      <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                      {{ column.name }}
                   </button>
-                  <button *ngIf="isNumericColumn(column)" mat-icon-button [matTooltip]="'Define value grouping'"
-                          (click)="addValueGroupingFor(column)">
-                     <mat-icon>group_work</mat-icon>
-                  </button>
+                  <mat-icon class="icon_define_value_grouping" *ngIf="isNumericColumn(column)" [matTooltip]="'Define value grouping'"
+                            (click)="addValueGroupingFor(column)">
+                     group_work
+                  </mat-icon>
                </div>
                <button class="but_column" *ngIf="context.hasValueGrouping(column.name)" mat-raised-button
                        [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small" matBadgeColor="primary"
@@ -42,17 +42,14 @@
             <mat-radio-group [value]="context.isAggregationCountSelected()">
                <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">Count Distinct Values
                </mat-radio-button>
-               <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()"
-                                 (change)="onAggregationTypeChanged(false)">Aggregate Values
+               <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()" (change)="onAggregationTypeChanged(false)">Aggregate Values
                </mat-radio-button>
             </mat-radio-group>
          </div>
       </koia-expansion-panel>
 
-      <koia-expansion-panel *ngFor="let grouping of context.valueGroupings" [title]="grouping.columnName + ' Grouping'">
-         <mat-panel-description>
-            <mat-icon class="icon_remove" (click)="removeValueGrouping(grouping)">delete_forever</mat-icon>
-         </mat-panel-description>
+      <koia-expansion-panel *ngFor="let grouping of context.valueGroupings" [title]="grouping.columnName + ' Grouping'"
+                            [deletable]="true" (delete)="removeValueGrouping(grouping)">
          <span class="span_left_to_right">
             <label>max. {{ grouping.minMaxValues.max }}</label>
             <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
@@ -61,14 +58,12 @@
          </span>
          <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
             <div class="div_group_value" mat-stroked-button *ngFor="let range of grouping.ranges" cdkDrag>
-               <mat-checkbox class="example-margin" [checked]="range.active"
-                             (change)="groupingRangeStateChanged(grouping, range, $event.checked)">
+               <mat-checkbox class="example-margin" [checked]="range.active" (change)="groupingRangeStateChanged(grouping, range, $event.checked)">
                </mat-checkbox>
-               <label for="rangeMaxValue" matTooltip="Excluding upper value boundary">Up&nbsp;to:</label>
-               <input id="rangeMaxValue" matInput type="number" placeholder="Range max. Value" [(ngModel)]="range.max"
-                      matTooltip="Excluding upper value boundary" (keypress)="isNumberKey($event)">
-               <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1"
-                         (click)="removeGroupingRange(grouping, range)">
+               <label>Up&nbsp;to:</label>
+               <input matInput type="number" [(ngModel)]="range.max" matTooltip="Range max. value, excluding upper value boundary"
+                      (keypress)="isNumberKey($event)">
+               <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1" (click)="removeGroupingRange(grouping, range)">
                   remove_circle_outline
                </mat-icon>
             </div>
@@ -136,23 +131,25 @@
 
       <koia-expansion-panel [title]="'Position ' + (gridColumns ? ' & Size' : '')">
          <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-select placeholder="Columns" [value]="context.gridColumnSpan">
+            <mat-label>Columns</mat-label>
+            <mat-select [value]="context.gridColumnSpan">
                <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
                   {{ span }}
                </mat-option>
             </mat-select>
          </mat-form-field>
          <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-select placeholder="Rows" [value]="context.gridRowSpan">
+            <mat-label>Rows</mat-label>
+            <mat-select [value]="context.gridRowSpan">
                <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
                   {{ span }}
                </mat-option>
             </mat-select>
          </mat-form-field>
          <mat-form-field class="field_small_integer">
-            <mat-select placeholder="Position" [value]="elementPosition">
-               <mat-option *ngFor="let position of elementPositions" [value]="position"
-                           (click)="setElementPosition(position)">
+            <mat-label>Position</mat-label>
+            <mat-select [value]="elementPosition">
+               <mat-option *ngFor="let position of elementPositions" [value]="position" (click)="setElementPosition(position)">
                   {{ position }}
                </mat-option>
             </mat-select>

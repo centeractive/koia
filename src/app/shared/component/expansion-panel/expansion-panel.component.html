@@ -1,7 +1,10 @@
 <!-- [@.disabled] see https://github.com/angular/components/issues/11765#issuecomment-696601006 -->
 <mat-expansion-panel [@.disabled]="true" [expanded]="expanded">
     <mat-expansion-panel-header>
-        <h4>{{ title }}</h4>
+        <mat-panel-title>{{ title }}</mat-panel-title>
+        <mat-panel-description *ngIf="deletable">
+            <mat-icon (click)="delete.emit()">delete_forever</mat-icon>
+        </mat-panel-description>
     </mat-expansion-panel-header>
     <ng-content></ng-content>
 </mat-expansion-panel>

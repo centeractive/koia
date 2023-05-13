@@ -7,6 +7,10 @@ button {
   float: right;
 }
 
+mat-form-field {
+  min-width: 7em;
+}
+
 .field_small_integer {
   width: 80px;
   margin-right: 20px;
@@ -27,11 +31,6 @@ button {
 .menu_item_legend_position {
   padding: 0 3 0 3;
   margin: 0px;
-}
-
-/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
-mat-radio-button {
-  margin: 5px;
 }
 
 .div_column_swap_list {
@@ -59,7 +58,7 @@ mat-radio-button {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  cursor: move;  
+  cursor: move;
 }
 
 .select_time_unit {
@@ -71,8 +70,8 @@ mat-radio-button {
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-              0 8px 10px 1px rgba(0, 0, 0, 0.14),
-              0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
 
 .cdk-drag-placeholder {

@@ -30,8 +30,7 @@ export class AggregationService {
     }
   }
 
-  private countDistinctValues(data: IDataFrame<number, any>, pivotColumns: string[], aggregation: Aggregation):
-    IDataFrame<number, any> {
+  private countDistinctValues(data: IDataFrame<number, any>, pivotColumns: string[], aggregation: Aggregation): IDataFrame<number, any> {
     return data.pivot(pivotColumns, aggregation, v => this.aggregateValue(v, aggregation));
   }
 

@@ -27,7 +27,7 @@
 .but_config {
   z-index: 1;
   /* otherwise, it doesn't stay behind sticky header when scrolling */
-  opacity: 0.2;
+  opacity: 0.8;
 }
 
 .but_config_active {
@@ -68,7 +68,7 @@
 .but_close {
   z-index: 1;
   /* otherwise, it doesn't stay behind sticky header when scrolling */
-  opacity: 0.2;
+  opacity: 0.8;
 }
 
 button:hover {

@@ -20,7 +20,7 @@ button {
 
 .icon_remove_column_filter {
    cursor: pointer;
-   opacity: 0.2;
+   opacity: 0.8;
 }
 
 .icon_remove_column_filter:hover {

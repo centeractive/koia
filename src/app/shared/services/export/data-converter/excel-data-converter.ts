@@ -34,7 +34,7 @@ export class ExcelDataConverter {
         colNames.forEach((colName, i) => {
             const column = this.column(colName, columns);
             if (column && column.dataType === DataType.TIME) {
-                this.formatCells(ws, i, column.format);
+                this.formatTimeCells(ws, i, column.format);
             }
         });
         return ws;
@@ -57,7 +57,7 @@ export class ExcelDataConverter {
         };
     }
 
-    private formatCells(ws: XLSX.WorkSheet, colIndex: number, format: string): void {
+    private formatTimeCells(ws: XLSX.WorkSheet, colIndex: number, format: string): void {
         const range = XLSX.utils.decode_range(ws['!ref']);
         const iFirstDataRow = range.s.r + 1;
         for (let iRow = iFirstDataRow; iRow <= range.e.r; iRow++) {

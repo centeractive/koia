@@ -106,6 +106,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     const data = this.valueRangeGroupingService.compute(this.baseDataFrame, this.context.valueGroupings);
+    data.bake();
     this.dataFrame = this.aggregationService.compute(data, this.context);
     this.frameColumns = this.dataFrame.getColumnNames();
     this.sortDataFrame();

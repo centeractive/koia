@@ -29,15 +29,8 @@
 
 <div style="padding: 0 5px 0 5px;">
    <mat-accordion [multi]="multiExpandable" *ngIf="context">
-      <mat-expansion-panel *ngFor="let grouping of context.valueGroupings">
-         <mat-expansion-panel-header>
-            <mat-panel-title>
-               <h4>{{ grouping.columnName + ' Grouping' }}</h4>
-            </mat-panel-title>
-            <mat-panel-description>
-               <mat-icon class="icon_remove" (click)="removeValueGrouping(grouping)">delete_forever</mat-icon>
-            </mat-panel-description>
-         </mat-expansion-panel-header>
+      <koia-expansion-panel *ngFor="let grouping of context.valueGroupings" [title]="grouping.columnName + ' Grouping'"
+                            [deletable]="true" (delete)="removeValueGrouping(grouping)">
          <span class="span_left_to_right">
             <label>max. {{ grouping.minMaxValues.max | number }}</label>
             <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
@@ -47,9 +40,9 @@
          <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
             <div class="div_group_value" mat-stroked-button *ngFor="let range of grouping.ranges" cdkDrag>
                <mat-checkbox class="example-margin" [(ngModel)]="range.active"></mat-checkbox>
-               <label for="rangeMaxValue" matTooltip="Excluding upper value boundary">Up&nbsp;to:</label>
-               <input id="rangeMaxValue" matInput type="number" placeholder="Range max. Value" [(ngModel)]="range.max"
-                      matTooltip="Excluding upper value boundary" (keypress)="isNumberKey($event)">
+               <label>Up&nbsp;to:</label>
+               <input matInput type="number" [(ngModel)]="range.max" matTooltip="Range max. value, excluding upper value boundary"
+                      (keypress)="isNumberKey($event)">
                <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1"
                          (click)="removeGroupingRange(grouping, range)">
                   remove_circle_outline
@@ -57,6 +50,6 @@
             </div>
          </div>
          <label>min. {{ grouping.minMaxValues.min | number }}</label>
-      </mat-expansion-panel>
+      </koia-expansion-panel>
    </mat-accordion>
 </div>
