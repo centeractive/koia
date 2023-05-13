@@ -60,10 +60,9 @@ It is recommended to use [CouchDB 3.2.2](http://couchdb.apache.org/) as describe
 
 
 ## Building
-Koia is built on Azure DevOps. We set the Koia DevOps project to public, but viewing is pretty limited: [**https://dev.azure.com/centeractive/koia/_dashboards/dashboard/9c75542e-dbe6-43a6-a10c-f9158a7a7b3f**](https://dev.azure.com/centeractive/koia/_dashboards/dashboard/9c75542e-dbe6-43a6-a10c-f9158a7a7b3f).
 
-Building locally is a straightforward **npx ng build --prod** followed by **ng serve**.
+Building and serving locally is a straightforward **npx ng build --prod** followed by **ng serve**.
 
 ## License
 
-Koia is [MIT licensed](LICENSE). Copyright (c) 2022 centeractive ag.
+Koia is [MIT licensed](LICENSE). Copyright (c) 2023 centeractive ag.
