@@ -30,9 +30,6 @@ export class ChartJs {
         };
 
         new BarLegendCustomizer().customize(context, config);
-
-        console.log(config);
-
         context.chart = new Chart(canvas, config);
     }
 

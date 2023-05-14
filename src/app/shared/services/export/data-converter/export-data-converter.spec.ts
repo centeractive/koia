@@ -39,10 +39,10 @@ describe('ExportDataConverter', () => {
     it('#timeToFormattedString', () => {
         // given        
         const data: Object[] = [
-            { Position: 1, Name: 'A', Amount: 100.5, Time: 1547809200000 },
-            { Position: 2, Name: 'B', Amount: 15, Time: 1547812800000 },
-            { Position: 3, Name: 'C', Amount: 78.6, Time: 1547816400000 },
-            { Position: 4, Name: 'D', Amount: 45.2, Time: 1547820000000 }
+            { Position: 1, Name: 'A', Amount: 100.5, Time: time('2019-01-18 12:00:00') },
+            { Position: 2, Name: 'B', Amount: 15, Time: time('2019-01-18 13:00:00') },
+            { Position: 3, Name: 'C', Amount: 78.6, Time: time('2019-01-18 14:00:00') },
+            { Position: 4, Name: 'D', Amount: 45.2, Time: time('2019-01-18 15:00:00') }
         ];
         const columns: Column[] = [
             { name: 'Position', dataType: DataType.NUMBER, width: 10 },
@@ -63,4 +63,8 @@ describe('ExportDataConverter', () => {
         ];
         expect(data as any).toEqual(expected);
     });
+
+    function time(date: string): number {
+        return new Date(date).getTime();
+    }
 });
