@@ -28,7 +28,7 @@ export class CouchDBService implements DB {
   private config = new CouchDBConfig();
   private connectionInfo: ConnectionInfo;
   private baseURL: string;
-  private httpOptions: {};
+  private httpOptions: object;
 
   constructor(private http: HttpClient) {
     this.initConnection(this.config.readConnectionInfo());

@@ -35,7 +35,6 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ResizableModule } from 'angular-resizable-element';
 import 'd3';
-import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { NotificationService, AggregationService, TimeGroupingService, ViewPersistenceService, RawDataRevealService } from './shared/services';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { ScenesComponent } from './scenes/scenes.component';
@@ -75,6 +74,8 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
 import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-selection/color-scheme-selection.component';
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
 import { SceneTableComponent } from './scenes/scene-table/scene-table.component';
+import { SliderComponent } from './ngx-slider/slider.component';
+import { NgxSliderModule } from './ngx-slider/slider.module';
 
 @NgModule({
     declarations: [
@@ -110,7 +111,7 @@ import { SceneTableComponent } from './scenes/scene-table/scene-table.component'
         ViewLauncherDialogComponent,
         ColorSchemeSelectionComponent,
         ExpansionPanelComponent,
-        SceneTableComponent
+        SceneTableComponent,
     ],
     imports: [
         BrowserModule,
@@ -140,12 +141,12 @@ import { SceneTableComponent } from './scenes/scene-table/scene-table.component'
         MatBottomSheetModule,
         DragDropModule,
         ResizableModule,
-        NgxSliderModule,
         AppRoutingModule,
         MatDialogModule,
         MatStepperModule,
         MatSnackBarModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NgxSliderModule
     ],
     providers: [
         { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },

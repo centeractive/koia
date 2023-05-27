@@ -8,8 +8,8 @@ export class ChartDataHelper {
     * @returns an array of entries where the specified time column value is formatted if it contains a valid time.
     * entries that have no valid time are omitted, hence not contained in the result.
     */
-   static convertTime(entries: Object[], timeColumn: Column): Object[] {
-      const result: Object[] = [];
+   static convertTime(entries: object[], timeColumn: Column): object[] {
+      const result: object[] = [];
       entries.forEach(entry => {
          const date = DateTimeUtils.toBaseDate(entry[timeColumn.name], timeColumn.groupingTimeUnit);
          if (date) {
@@ -71,7 +71,7 @@ export class ChartDataHelper {
       const labeledValues: LabeledValues[] = [];
       context.entries.forEach(e => {
          const label = e[nameColumn.name];
-         if (!!label) {
+         if (label) {
             if (labels.includes(label)) {
                this.throwNonUniqueValueError(nameColumn, label);
             }
@@ -99,7 +99,7 @@ export class ChartDataHelper {
       throw new Error('Value \'' + value + '\' is not unique');
    }
 
-   static extractGroupingValue(entry: Object, groupByColumn: Column): number {
+   static extractGroupingValue(entry: object, groupByColumn: Column): number {
       let value = entry[groupByColumn.name];
       if (groupByColumn.dataType === DataType.TIME && groupByColumn.groupingTimeUnit) {
          const date = DateTimeUtils.toBaseDate(value, groupByColumn.groupingTimeUnit);

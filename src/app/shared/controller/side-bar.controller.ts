@@ -12,7 +12,7 @@ import { ValueRange } from '../value-range/model/value-range.type';
 @Directive()
 export abstract class SideBarController implements OnChanges {
 
-   @Input() entries$: Observable<Object[]>;
+   @Input() entries$: Observable<object[]>;
    @Input() gridColumns: number;
    @Input() elementCount: number;
    @Input() elementPosition: number;

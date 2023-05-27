@@ -29,7 +29,7 @@ describe('RawDataComponent', () => {
   let now: number;
   let scene: Scene;
   let columns: Column[];
-  let entries: Object[];
+  let entries: object[];
   let component: RawDataComponent;
   let fixture: ComponentFixture<RawDataComponent>;
   const dbService: DBService = new DBService(null);

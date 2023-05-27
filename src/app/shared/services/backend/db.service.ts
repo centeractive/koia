@@ -183,7 +183,7 @@ export class DBService {
     }
   }
 
-  private toPage(query: Query, entries: Object[], totalRowCount: number): Page {
+  private toPage(query: Query, entries: object[], totalRowCount: number): Page {
     return {
       query: query.clone(),
       entries: entries,

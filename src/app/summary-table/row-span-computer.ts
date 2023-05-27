@@ -7,7 +7,7 @@ export class RowSpanComputer {
     * @param data table data
     * @param columns names of left-to-right located columns, row spans must be computed for
     */
-   compute(data: Object[], columns: string[]): Array<Span[]> {
+   compute(data: object[], columns: string[]): Array<Span[]> {
       const spans: Array<Span[]> = this.initSpans(columns);
       const spanColumnContexts: SpanColumnContext[] = new Array(columns.length);
       for (const row of data) {
@@ -20,7 +20,7 @@ export class RowSpanComputer {
             } else {
                const span = { span: 1 };
                spanColumnContexts[iCol] = { span: span, spannedRow: row };
-               spans[iCol].push( span );
+               spans[iCol].push(span);
                spanColumnContexts.slice(iCol + 1).forEach(c => c.spannedRow = {});
             }
          }
@@ -32,14 +32,14 @@ export class RowSpanComputer {
       const spans: Array<Span[]> = [];
       columns.forEach(p => spans.push([]));
       return spans;
-    }
+   }
 }
 
 export interface Span {
-  span: number;
+   span: number;
 }
 
 interface SpanColumnContext {
    span: Span;
-   spannedRow: Object;
+   spannedRow: object;
 }

@@ -195,7 +195,7 @@ describe('CellClickHandler', () => {
       return { columnName: columnName, ranges: ranges };
    }
 
-   function createMouseEvent(cssClass: string): Object {
+   function createMouseEvent(cssClass: string): object {
       const classList = document.createElement('TD').classList;
       classList.add(cssClass);
       return { srcElement: { classList: classList } };

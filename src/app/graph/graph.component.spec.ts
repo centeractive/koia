@@ -14,7 +14,7 @@ describe('GraphComponent', () => {
 
   let columns: Column[];
   let context: GraphContext;
-  let entries$: Observable<Object[]>;
+  let entries$: Observable<object[]>;
   let component: GraphComponent;
   let fixture: ComponentFixture<GraphComponent>;
   const graphDataService = new GraphDataService();

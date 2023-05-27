@@ -1,6 +1,5 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-                     (change)="onMultiExpandableChanged($event.checked)">
+   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable" (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">

@@ -11,7 +11,7 @@ describe('AppComponent', () => {
 
   beforeEach(waitForAsync(() => {
     iconRegistrarService = {
-      registerSvgIcons(): void { }
+      registerSvgIcons(): void { null }
     } as IconRegistrarService;
     spyOn(iconRegistrarService, 'registerSvgIcons').and.callFake(() => null);
     TestBed.configureTestingModule({

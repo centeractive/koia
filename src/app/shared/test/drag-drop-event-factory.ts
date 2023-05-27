@@ -7,7 +7,7 @@ export class DragDropEventFactory<T> {
       const container: any = { id: containerId, data: data };
       event.container = container;
       event.previousContainer = event.container;
-      event.item = { data: data[fromIndex] } as CdkDrag<T>;;
+      event.item = { data: data[fromIndex] } as CdkDrag<T>;
       return event;
    }
 

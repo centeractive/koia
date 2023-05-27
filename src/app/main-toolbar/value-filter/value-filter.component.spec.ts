@@ -45,7 +45,7 @@ describe('ValueFilterComponent', () => {
       ],
       providers: [
         { provide: DBService, useValue: dbService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
       ]
     })
       .compileComponents();
@@ -235,7 +235,7 @@ describe('ValueFilterComponent', () => {
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, (2.000).toLocaleString(), DataType.NUMBER);
     const ts = (1_000).toLocaleString().charAt(1);
-    let wronglyFormatted = '2' + ts + '0000';
+    const wronglyFormatted = '2' + ts + '0000';
 
     // when
     component.onValueChanged(wronglyFormatted);

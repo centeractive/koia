@@ -53,7 +53,7 @@ export class QuerySanitizer {
          if (this.valueRangeFilterMerger.merge(matchingFilter, filter)) {
             return true;
          }
-      };
+      }
       return false;
    }
 }

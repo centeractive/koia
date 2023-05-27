@@ -32,7 +32,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
   columns: Column[];
   columnNames: string[];
   hasObjectDataTypeColumns: boolean;
-  entries: Object[];
+  entries: object[];
   totalRowCount: number;
   pageSizeOptions: number[];
   initialPageSize: number;
@@ -111,14 +111,14 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
       });
   }
 
-  formattedValueOf(column: Column, entry: Object): any {
+  formattedValueOf(column: Column, entry: object): any {
     if (!this.showNestedObjects && column.dataType === DataType.OBJECT) {
       return entry[column.name] ? '...' : '';
     }
     return this.valueFormatter.formatValue(column, entry[column.name]);
   }
 
-  displayValue(column: Column, entry: Object): void {
+  displayValue(column: Column, entry: object): void {
     if (column.dataType === DataType.OBJECT) {
       const data = new ConfirmDialogData('Column ' + column.name, '<pre>' + entry[column.name] + '</pre>', ['CLose']);
       this.dialogService.showConfirmDialog(data);

@@ -18,7 +18,7 @@ describe('ChartComponent', () => {
 
   let scene: Scene;
   let context: ChartContext;
-  let entries$: Observable<Object[]>;
+  let entries$: Observable<object[]>;
   const dbService = new DBService(null);
   let component: ChartComponent;
   let fixture: ComponentFixture<ChartComponent>;

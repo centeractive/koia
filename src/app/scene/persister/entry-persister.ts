@@ -9,7 +9,7 @@ import { Document } from 'app/shared/model';
  */
 export class EntryPersister {
 
-  private data: Object[] = []
+  private data: object[] = []
   private postLocked = false
   private posted = 0;
   private submitted = 0;

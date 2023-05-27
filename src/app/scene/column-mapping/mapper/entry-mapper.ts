@@ -22,7 +22,7 @@ export class EntryMapper {
       return this.sanitize(rows.map(row => this.mapRow(row, ++id)));
    }
 
-   mapObjects(sourceEntries: Object[]): MappingResult[] {
+   mapObjects(sourceEntries: object[]): MappingResult[] {
       let id = this.reserveIDs(sourceEntries.length);
       return this.sanitize(sourceEntries.map(entry => this.mapObject(entry, ++id)));
    }
@@ -41,7 +41,7 @@ export class EntryMapper {
       return currId;
    }
 
-   private mapObject(sourceEntry: Object, id: number): MappingResult {
+   private mapObject(sourceEntry: object, id: number): MappingResult {
       const mappingResult = this.newMappingResult(id);
       this.columnMapping.forEach(cp => {
          const sourceValue = sourceEntry[cp.source.name];
@@ -132,6 +132,6 @@ export class EntryMapper {
 }
 
 export interface MappingResult {
-   entry: Object;
+   entry: object;
    errors: string[];
 }

@@ -9,7 +9,7 @@ describe('GraphOptionsProvider', () => {
    const min = 60 * sec;
 
    let now: number;
-   let entries: Object[];
+   let entries: object[];
    let context: GraphContext;
    let optionsProvider: GraphOptionsProvider;
 

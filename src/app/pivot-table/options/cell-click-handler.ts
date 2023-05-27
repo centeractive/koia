@@ -13,8 +13,8 @@ export class CellClickHandler {
   /**
    * reveals the raw data represented by the pivot table cell, a mouse click was made on
    */
-  onCellClicked(valueGroupings: ValueGrouping[], mouseEvent: any, filters: Object, exclusions: Object, inclusions: Object,
-    pivotData: Object): void {
+  onCellClicked(valueGroupings: ValueGrouping[], mouseEvent: any, filters: object, exclusions: object, inclusions: object,
+    pivotData: object): void {
     this.revealRawData(filters, exclusions, inclusions, pivotData, valueGroupings, this.isTotalCell(mouseEvent));
   }
 
@@ -27,7 +27,7 @@ export class CellClickHandler {
     return false;
   }
 
-  private revealRawData(filters: Object, exclusions: Object, inclusions: Object, pivotData: Object, valueGroupings: ValueGrouping[],
+  private revealRawData(filters: object, exclusions: object, inclusions: object, pivotData: object, valueGroupings: ValueGrouping[],
     totalColumn: boolean): void {
     const queryEnhancer = new QueryEnhancer(this.baseQueryProvider.provide().clone(), this.columns, valueGroupings, filters);
     queryEnhancer.addBasicFilters();

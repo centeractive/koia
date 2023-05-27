@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angu
 import { MainToolbarComponent } from './main-toolbar.component';
 import { NO_ERRORS_SCHEMA, Component } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxSliderModule } from '@angular-slider/ngx-slider';
+import { NgxSliderModule } from 'app/ngx-slider/slider.module';
 import { RouterModule, Router, NavigationEnd, Event } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -32,7 +32,7 @@ describe('MainToolbarComponent', () => {
 
   let now: number;
   let scene: Scene;
-  let entries: Object[];
+  let entries: object[];
   let valueRange: ValueRange;
   let component: MainToolbarComponent;
   let fixture: ComponentFixture<MainToolbarComponent>;
@@ -84,7 +84,7 @@ describe('MainToolbarComponent', () => {
       providers: [
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
       ]
     })
       .overrideModule(MatIconModule, MatIconModuleMock.override())

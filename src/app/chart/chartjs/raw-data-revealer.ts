@@ -23,7 +23,7 @@ export class RawDataRevealer {
       if (context.isCircularChart() || element.element instanceof BarElement || context.groupByColumns[0]?.dataType === DataType.TEXT) {
          this.fromFlatData(elements, chart, context);
       } else if (element.element instanceof PointElement) {
-         let point = this.findDataPoint(chart.data.datasets, element.datasetIndex, element.index);
+         const point = this.findDataPoint(chart.data.datasets, element.datasetIndex, element.index);
          // console.log('point', point)
          if (point['id'] != undefined) {
             // console.log('point with id', point)

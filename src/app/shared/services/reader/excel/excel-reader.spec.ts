@@ -177,7 +177,7 @@ describe('ExcelReader', () => {
       request.open('GET', EXCEL_FILE_URL, true);
       request.responseType = 'arraybuffer';
       return request;
-   };
+   }
 
    function formatTime(time: number): string {
       return moment(time).format('DD.MM.YYYY');

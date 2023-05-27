@@ -4,5 +4,5 @@ export interface ProgressMonitor {
 
    onComplete(message: string): void;
 
-   onError(error: string | Object): void;
+   onError(error: string | object): void;
 }

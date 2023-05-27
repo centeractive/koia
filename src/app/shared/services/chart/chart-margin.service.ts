@@ -40,7 +40,7 @@ export class ChartMarginService {
       };
    }
 
-   marginToStyle(margin: Margin, topOffset: number): Object {
+   marginToStyle(margin: Margin, topOffset: number): object {
       return {
          top: (margin.top + topOffset) + 'px',
          right: margin.right + 'px',

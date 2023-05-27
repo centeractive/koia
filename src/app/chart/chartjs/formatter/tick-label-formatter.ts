@@ -21,6 +21,6 @@ export class TickLabelFormatter extends TimeFormatter {
             options.ticks.callback = v => {
                 return this.formatTime(v, momentFormat);
             };
-        };
+        }
     }
 }

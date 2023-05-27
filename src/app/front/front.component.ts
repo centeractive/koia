@@ -114,7 +114,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     this.init();
   }
 
-  private couchDBConnectionFailed(error: string | Object): void {
+  private couchDBConnectionFailed(error: string | object): void {
     this.ready = false;
     this.notifyError(error);
   }

@@ -6,7 +6,7 @@ export class FormatUtils {
         if (value == null || value == undefined) {
             return '';
         }
-        let total = data
+        const total = data
             .filter(v => v != null && v != undefined)
             .map(v => v['y'] || v)
             .filter(v => !isNaN(v))

@@ -742,7 +742,7 @@ describe('EntryMapper', () => {
       };
    }
 
-   function entries(objectCount: number, attributeName: string): Object[] {
+   function entries(objectCount: number, attributeName: string): object[] {
       const array = [];
       for (let i = 1; i <= objectCount; i++) {
          const obj = {};

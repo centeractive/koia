@@ -63,7 +63,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   private generatedSceneName: string;
   private generatedSceneShortDesc: string;
-  private sampleEntries: Object[];
+  private sampleEntries: object[];
   private columnFactory = new ColumnMappingGenerator();
   private mappingErrors = new ConfinedStringSet(10);
   private valueFormatter = new ValueFormatter();
@@ -220,7 +220,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.onColumnChanged();
   }
 
-  formatValue(column: Column, entry: Object): any {
+  formatValue(column: Column, entry: object): any {
     if (column.dataType === DataType.OBJECT) {
       return entry[column.name] ? '...' : '';
     }

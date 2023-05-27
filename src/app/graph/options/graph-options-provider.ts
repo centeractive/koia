@@ -12,7 +12,7 @@ export class GraphOptionsProvider {
 
    constructor(private nodeDoubleClickHandler: NodeDoubleClickHandler) { }
 
-   createOptions(context: GraphContext, parentDiv: HTMLDivElement): Object {
+   createOptions(context: GraphContext, parentDiv: HTMLDivElement): object {
       const color = schemePaired;
       return {
          chart: {

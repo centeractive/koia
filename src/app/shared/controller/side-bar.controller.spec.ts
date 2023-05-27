@@ -357,8 +357,8 @@ describe('SummaryTableSideBarComponent', () => {
       return columns.find(c => c.name === name);
    }
 
-   function generateEntries(columnName: string, count: number, minValue: number, maxValue: number): Object[] {
-      const entries: Object[] = new Array(count);
+   function generateEntries(columnName: string, count: number, minValue: number, maxValue: number): object[] {
+      const entries: object[] = new Array(count);
       const diffPerEntry = (maxValue - minValue) / (count - 1);
       let value = minValue;
       for (let i = 0; i < count - 1; i++) {

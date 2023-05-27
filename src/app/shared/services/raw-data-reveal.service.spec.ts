@@ -8,7 +8,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ValueRangeFilter } from '../value-range/model';
 
 class MatDialogMock {
-  open() { }
+  open() {
+    // ignore
+  }
 }
 
 describe('RawDataRevealService', () => {

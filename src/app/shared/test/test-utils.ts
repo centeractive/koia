@@ -1,10 +1,10 @@
 export class TestUtils {
 
-   static generateEntries(columnName: string, count: number, minValue: number, maxValue: number): Object[] {
+   static generateEntries(columnName: string, count: number, minValue: number, maxValue: number): object[] {
       return TestUtils.expandEntries(new Array(count), columnName, minValue, maxValue);
    }
 
-   static expandEntries(entries: Object[], columnName: string, minValue: number, maxValue: number): Object[] {
+   static expandEntries(entries: object[], columnName: string, minValue: number, maxValue: number): object[] {
       const diffPerEntry = (maxValue - minValue) / (entries.length - 1);
       let value = minValue;
       for (let i = 0; i < entries.length - 1; i++) {

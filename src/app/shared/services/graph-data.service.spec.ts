@@ -8,7 +8,7 @@ describe('GraphDataService', () => {
    const min = 60 * sec;
 
    let now: number;
-   let entries: Object[];
+   let entries: object[];
    let columns: Column[];
    let dataService: GraphDataService;
    let context: GraphContext;

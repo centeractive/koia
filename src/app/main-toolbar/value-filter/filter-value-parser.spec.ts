@@ -48,7 +48,7 @@ describe('FilterValueParser', () => {
 
       // given
       const ts = (1_000).toLocaleString().charAt(1);
-      let wronglyFormatted = '1' + ts + '23' + ts + (4.56).toLocaleString();
+      const wronglyFormatted = '1' + ts + '23' + ts + (4.56).toLocaleString();
 
       // when
       const value = parser.parse(wronglyFormatted);

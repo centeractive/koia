@@ -23,7 +23,7 @@ describe('SummaryTableComponent', () => {
 
   let context: SummaryContext;
   let columns: Column[];
-  let entries: Object[];
+  let entries: object[];
 
   let component: SummaryTableComponent;
   let fixture: ComponentFixture<SummaryTableComponent>;

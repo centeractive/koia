@@ -7,7 +7,7 @@ import { DataTypeUtils } from 'app/shared/utils';
 
 export class CSVReader implements DataReader {
 
-   private static readonly SEPARATORS = [',', ';', ':', '\|'];
+   private static readonly SEPARATORS = [',', ';', ':', '|'];
    private attrHasHeaderColumn = new Attribute('First row contains column names', undefined, DataType.BOOLEAN, false);
    private attrSeparator = new Attribute('Separator', undefined, DataType.TEXT, undefined);
 

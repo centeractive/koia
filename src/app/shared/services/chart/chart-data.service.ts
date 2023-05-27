@@ -209,7 +209,7 @@ export class ChartDataService {
     return data;
   }
 
-  protected createIndividualValuesSeries(entries: Object[], dataColumn: Column, context: ChartContext):
+  protected createIndividualValuesSeries(entries: object[], dataColumn: Column, context: ChartContext):
     Map<string, DataPoint[]> {
     const namedSeries = new Map<string, DataPoint[]>();
     entries.map(entry => {

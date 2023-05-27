@@ -14,7 +14,7 @@ export class QueryConverter {
    * to find out the total number of rows that match the selector of the base query.
    * Apparently there's no better way to find the total number of rows matching a certain selector.
    */
-   queryForAllMatchingIds(columns: Column[], query: Query): Object {
+   queryForAllMatchingIds(columns: Column[], query: Query): object {
       const builder = new MangoQueryBuilder(this.forPouchDB, columns)
          .includeFields([CouchDBConstants._ID]);
       this.defineFilters(builder, query);
@@ -22,7 +22,7 @@ export class QueryConverter {
       return builder.toQuery();
    }
 
-   toMango(columns: Column[], query: Query): Object {
+   toMango(columns: Column[], query: Query): object {
       const builder = new MangoQueryBuilder(this.forPouchDB, columns)
          .includeFields(this.defineFields(columns, query));
       this.defineFilters(builder, query);

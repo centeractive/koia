@@ -11,7 +11,7 @@ describe('DBService', () => {
 
   const testDBPrefix = 'test_';
   let columns: Column[];
-  let entries: Object[];
+  let entries: object[];
   let couchDBService: CouchDBService;
   let dbService: DBService;
   let initialScene: Scene;

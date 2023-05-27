@@ -293,7 +293,7 @@ export class DateTimeUtils {
   /**
    * defines the [[TimeUnit]] of given time columns depending on the time span found in the specified entries
    */
-  static defineTimeUnits(timeColumns: Column[], entries: Object[]): void {
+  static defineTimeUnits(timeColumns: Column[], entries: object[]): void {
     if (timeColumns && entries && entries.length > 0) {
       const minNumOfTimeUnits = 10;
       timeColumns
@@ -304,6 +304,6 @@ export class DateTimeUtils {
             c.groupingTimeUnit = DateTimeUtils.largestMatchingTimeUnit(valueRange.max - valueRange.min, minNumOfTimeUnits);
           }
         });
-    };
+    }
   }
 }

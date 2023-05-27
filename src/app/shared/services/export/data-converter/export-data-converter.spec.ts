@@ -38,7 +38,7 @@ describe('ExportDataConverter', () => {
 
     it('#timeToFormattedString', () => {
         // given        
-        const data: Object[] = [
+        const data: object[] = [
             { Position: 1, Name: 'A', Amount: 100.5, Time: time('2019-01-18 12:00:00') },
             { Position: 2, Name: 'B', Amount: 15, Time: time('2019-01-18 13:00:00') },
             { Position: 3, Name: 'C', Amount: 78.6, Time: time('2019-01-18 14:00:00') },

@@ -2,6 +2,6 @@ import { Query } from './query';
 
 export interface Page {
    query: Query,
-   entries: Object[];
+   entries: object[];
    totalRowCount: number;
 }

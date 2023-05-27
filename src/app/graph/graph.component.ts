@@ -24,11 +24,11 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
 
   @Input() parentConstraintSize: boolean;
   @Input() context: GraphContext;
-  @Input() entries$: Observable<Object[]>;
+  @Input() entries$: Observable<object[]>;
 
   @Output() onWarning: EventEmitter<string> = new EventEmitter();
 
-  graphOptions: Object;
+  graphOptions: object;
   title: string;
   graphData: GraphData;
   loading: boolean;
@@ -64,7 +64,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
       .then(entries => this.onEntries(entries));
   }
 
-  private onEntries(entries: Object[]): void {
+  private onEntries(entries: object[]): void {
     this.context.entries = entries;
   }
 
@@ -117,7 +117,7 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
     chartContainer.style.height = this.context.height + 'px';
   }
 
-  createExportData(): Object[] {
+  createExportData(): object[] {
     throw new Error('Method not implemented.');
   }
 }

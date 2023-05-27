@@ -1,5 +1,4 @@
 import { CommonUtils } from './common-utils';
-import { DataType, Column, TimeUnit } from '../model';
 
 describe('CommonUtils', () => {
 
@@ -99,10 +98,10 @@ describe('CommonUtils', () => {
   });
 
   it('#clone should return value when value is string', () => {
-    const string = 'text';
-    const clone = CommonUtils.clone(string);
+    const s = 'text';
+    const clone = CommonUtils.clone(s);
 
-    expect(clone).toBe(string);
+    expect(clone).toBe(s);
   });
 
   it('#clone should return clone when value is object', () => {

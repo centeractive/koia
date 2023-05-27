@@ -45,7 +45,7 @@ describe('GridComponent', () => {
 
   let now: number;
   let scene: Scene;
-  let entries: Object[];
+  let entries: object[];
   let fixture: ComponentFixture<GridComponent>;
   let component: GridComponent;
   const dbService = new DBService(null);

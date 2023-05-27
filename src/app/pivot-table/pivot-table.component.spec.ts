@@ -41,7 +41,7 @@ describe('PivotTableComponent', () => {
   let now: number;
   let columns: Column[];
   let scene: Scene;
-  let entries: Object[];
+  let entries: object[];
   let component: PivotTableComponent;
   let fixture: ComponentFixture<PivotTableComponent>;
   const dbService = new DBService(null);

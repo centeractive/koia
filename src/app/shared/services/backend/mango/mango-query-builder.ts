@@ -66,7 +66,7 @@ export class MangoQueryBuilder {
       return this.fullTextFilter || this.propertyFilters.length > 0 || this.invertedRangeFilters.length > 0;
    }
 
-   toQuery(): Object {
+   toQuery(): object {
       const query = {};
       this.appendSelector(query);
       this.appendFields(query);
@@ -76,7 +76,7 @@ export class MangoQueryBuilder {
       return query;
    }
 
-   private appendSelector(query: {}): void {
+   private appendSelector(query: object): void {
       const selectors = this.propertyFilterSelectors();
       this.appendInvertedRangeFilterSelector(selectors);
       const fullTextFilterSelectors = this.fullTextFilterSelectors();
@@ -100,7 +100,7 @@ export class MangoQueryBuilder {
       }
    }
 
-   private appendInvertedRangeFilterSelector(selectors: Object[]): void {
+   private appendInvertedRangeFilterSelector(selectors: object[]): void {
       for (const filter of this.invertedRangeFilters) {
          const rangeSelectors = filter.toPropertyFilters()
             .map(pf => ({ [pf.name]: { [this.operatorConverter.toMangoOperator(pf.operator)]: this.toSelectorValue(pf) } }));
@@ -108,7 +108,7 @@ export class MangoQueryBuilder {
       }
    }
 
-   private propertyFilterSelectors(): Object[] {
+   private propertyFilterSelectors(): object[] {
       const selectors = [];
       this.propertyFilters.forEach(pf => {
          const name = pf.name;
@@ -177,10 +177,10 @@ export class MangoQueryBuilder {
             return ArrayUtils.toBooleanArray(propertyFilter.value as string);
          default:
             return ArrayUtils.toStringArray(propertyFilter.value as string);
-      };
+      }
    }
 
-   private fullTextFilterSelectors(): Object {
+   private fullTextFilterSelectors(): object {
       if (this.fullTextFilter && this.fullTextFilter !== '') {
          const selectors = [];
          this.columns
@@ -203,7 +203,7 @@ export class MangoQueryBuilder {
     * adds the sorted column to the selector (as match any) in case it's not contained already
     * (PouchDB requires the sorted field be part of the selector)
     */
-   private pouchDBSortSelector(): Object {
+   private pouchDBSortSelector(): object {
       if (this.forPouchDB && this.sort && !this.propertyFilters.find(f => f.name === this.sort.active)) {
          return {
             [this.sort.active]: { $gte: null }
@@ -212,25 +212,25 @@ export class MangoQueryBuilder {
       return null;
    }
 
-   private appendFields(query: {}): void {
+   private appendFields(query: object): void {
       if (this.fields) {
          query['fields'] = this.fields;
       }
    }
 
-   private appendSort(query: {}): void {
+   private appendSort(query: object): void {
       if (this.sort && this.sort.direction !== '') {
          query['sort'] = [{ [this.sort.active]: this.sort.direction }];
-      };
+      }
    }
 
-   private appendPaging(query: {}): void {
+   private appendPaging(query: object): void {
       if (this.pageIndex > 0) {
          query['skip'] = this.pageIndex * this.rowCount;
       }
    }
 
-   private appendRowCount(query: {}): void {
+   private appendRowCount(query: object): void {
       query['limit'] = this.rowCount > 0 ? this.rowCount : MangoQueryBuilder.LIMIT;
    }
 }

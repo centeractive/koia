@@ -1,5 +1,5 @@
 import { RangeSliderCustomizer } from './range-slider-customizer';
-import { LabelType } from '@angular-slider/ngx-slider';
+import { LabelType } from 'app/ngx-slider/options';
 
 describe('RangeSliderCustomizer', () => {
 

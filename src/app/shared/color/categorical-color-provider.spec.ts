@@ -60,11 +60,11 @@ describe('CategoricalColorProvider', () => {
             bgColorOpacity: 0.6,
             borderColorOpacity: 0.8
         }
-    };
+    }
 
     function allCategoricalColorSchemes(): CategoricalColorScheme[] {
         return Object.keys(CategoricalColorScheme)
-            .map(key => CategoricalColorScheme[key]);;
+            .map(key => CategoricalColorScheme[key]);
     }
 
 });

@@ -20,7 +20,7 @@ export class DataFrameSorter {
     }
   }
 
-  private toSortableValue(columnName: string, entry: Object, context: ElementContext): any {
+  private toSortableValue(columnName: string, entry: object, context: ElementContext): any {
     let value = entry[columnName];
     if (context.hasValueGrouping(columnName)) {
       const minValue = ValueRangeConverter.toMinValue(value as string);

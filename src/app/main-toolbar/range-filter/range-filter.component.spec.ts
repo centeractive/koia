@@ -3,7 +3,7 @@ import { RangeFilterComponent } from './range-filter.component';
 import { NumberRangeFilter } from './model/number-range-filter';
 import { Column, DataType } from 'app/shared/model';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxSliderModule } from '@angular-slider/ngx-slider';
+import { NgxSliderModule } from 'app/ngx-slider/slider.module';
 import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,7 +25,7 @@ describe('RangeFilterComponent', () => {
         MatButtonModule, MatIconModule, MatBadgeModule, MatTooltipModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule
       ],
       providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
       ]
     })
       .compileComponents();

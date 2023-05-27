@@ -23,7 +23,7 @@ export class DateTimeColumnDetector {
     private timeUnitDetector = new TimeUnitDetector();
 
     detect(columnPair: ColumnPair, value: string, locale: string): void {
-        let dateFormat = this.dateFormatProvider.provide(locale);
+        const dateFormat = this.dateFormatProvider.provide(locale);
         if (this.detectByDateFormat(columnPair, value, dateFormat, locale)) {
             return;
         }
@@ -40,7 +40,7 @@ export class DateTimeColumnDetector {
     private detectByDateFormat(columnPair: ColumnPair, value: string, dateFormat: string, locale?: string): boolean {
         for (const formatToTimeUnit of DateTimeColumnDetector.TIME_FORMATS_TO_TIMEUNITS) {
             const baseFormat = (dateFormat + ' ' + formatToTimeUnit.format).trim();
-            for (let zone of DateTimeColumnDetector.ZONES) {
+            for (const zone of DateTimeColumnDetector.ZONES) {
                 const format = (baseFormat + ' ' + zone).trim();
                 if (DateTimeUtils.parseDate(value, format, locale == '?' ? null : locale)) {
                     columnPair.source.format = format;

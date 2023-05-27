@@ -24,12 +24,12 @@ export class ColorSchemeSelectionComponent implements OnChanges {
 
   private allCategoricalColorSchemes(): CategoricalColorScheme[] {
     return Object.keys(CategoricalColorScheme)
-      .map(key => CategoricalColorScheme[key]);;
+      .map(key => CategoricalColorScheme[key]);
   }
 
   private allSequentialColorSchemes(): SequentialColorScheme[] {
     return Object.keys(SequentialColorScheme)
-      .map(key => SequentialColorScheme[key]);;
+      .map(key => SequentialColorScheme[key]);
   }
 
   ngOnChanges(changes: SimpleChanges): void {

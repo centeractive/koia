@@ -1,4 +1,4 @@
-import { Options, LabelType } from '@angular-slider/ngx-slider';
+import { Options, LabelType } from 'app/ngx-slider/options';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';

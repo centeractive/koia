@@ -20,7 +20,7 @@ export class ColumnMappingGenerator {
    private timeUnitDetector = new TimeUnitDetector();
    private timeGuesser = new TimeGuesser();
 
-   generate(entries: Object[], locale: string): ColumnPair[] {
+   generate(entries: object[], locale: string): ColumnPair[] {
       if (!entries || entries.length === 0) {
          return [];
       }

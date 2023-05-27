@@ -54,11 +54,11 @@ describe('SequentialColorProvider', () => {
             bgColorOpacity: 0.6,
             borderColorOpacity: 0.8
         }
-    };
+    }
 
     function allSequentialColorSchemes(): SequentialColorScheme[] {
         return Object.keys(SequentialColorScheme)
-            .map(key => SequentialColorScheme[key]);;
+            .map(key => SequentialColorScheme[key]);
     }
 
 

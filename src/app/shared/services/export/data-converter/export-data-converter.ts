@@ -8,7 +8,7 @@ export class ExportDataConverter {
     /**
      * converts the stringified values of all [[DataType.OBJECT]] columns back to JSON objects
      */
-    restoreJSONObjects(data: Object[], columns: Column[]): void {
+    restoreJSONObjects(data: object[], columns: Column[]): void {
         const objectTypeColumns = columns.filter(c => c.dataType === DataType.OBJECT);
         for (const column of objectTypeColumns) {
             for (const item of data) {
@@ -23,7 +23,7 @@ export class ExportDataConverter {
     /**
      * converts the number values of all [[DataType.TIME]] columns to formatted strings
      */
-    timeToFormattedString(data: Object[], columns: Column[]): void {
+    timeToFormattedString(data: object[], columns: Column[]): void {
         const timeColumns = columns.filter(c => c.dataType === DataType.TIME);
         for (const column of timeColumns) {
             for (const item of data) {

@@ -4,7 +4,7 @@ import { Status } from '../model';
 
 export abstract class AbstractComponent {
 
-  constructor(private bottomSheet: MatBottomSheet, private notificationService: NotificationService) { };
+  constructor(private bottomSheet: MatBottomSheet, private notificationService: NotificationService) { }
 
   notifySuccess(message: string) {
     this.notificationService.onSuccess(this.bottomSheet, message);
@@ -14,7 +14,7 @@ export abstract class AbstractComponent {
     this.notificationService.onWarning(this.bottomSheet, message);
   }
 
-  notifyError(error: string | Object) {
+  notifyError(error: string | object) {
     this.notificationService.onError(this.bottomSheet, error);
   }
 

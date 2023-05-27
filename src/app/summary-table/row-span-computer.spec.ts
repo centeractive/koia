@@ -2,7 +2,7 @@ import { RowSpanComputer, Span } from './row-span-computer';
 
 describe('RowSpanComputer', () => {
 
-   let data: Object[];
+   let data: object[];
    let rowSpanComputer: RowSpanComputer;
 
    beforeAll(() => {

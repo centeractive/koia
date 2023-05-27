@@ -23,13 +23,13 @@ import { NumberFormatter } from 'app/shared/format';
 export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, ExportDataProvider {
 
   @Input() context: SummaryContext;
-  @Input() entries$: Observable<Object[]>;
+  @Input() entries$: Observable<object[]>;
   @Input() gridView: boolean;
 
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
 
   frameColumns: string[];
-  frameData: Object[];
+  frameData: object[];
   overalls: number[];
   currentSort: Sort;
   rowSpans: Array<Span[]>;
@@ -67,14 +67,14 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     }
   }
 
-  private createBaseDataFrame(entries: Object[]): void {
+  private createBaseDataFrame(entries: object[]): void {
     this.baseDataFrame = new DataFrame(entries);
     if (this.context.hasDataColumn()) {
       this.refreshDataFrame(ChangeEvent.STRUCTURE);
     }
   }
 
-  onAggregationCellClick(entry: Object): void {
+  onAggregationCellClick(entry: object): void {
     const columns = this.context.groupByColumns //
       .filter(c => c.dataType !== DataType.TIME) //
       .concat(this.context.dataColumns[0])
@@ -173,7 +173,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     }
   }
 
-  createExportData(): Object[] {
+  createExportData(): object[] {
     return this.exportDataGenerator.generate(this.context, this.dataFrame, this.overalls);
   }
 }

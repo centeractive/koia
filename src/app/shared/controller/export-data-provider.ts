@@ -1,4 +1,4 @@
 export interface ExportDataProvider {
 
-   createExportData(): Object[];
+   createExportData(): object[];
 }

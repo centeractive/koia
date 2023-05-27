@@ -309,7 +309,7 @@ describe('PivotOptionsProvider', () => {
    });
 })
 
-function createOptions(): Object {
+function createOptions(): object {
    return {
       'rendererOptions': {
          'localeStrings': {

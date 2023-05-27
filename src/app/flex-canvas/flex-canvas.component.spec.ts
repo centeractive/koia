@@ -52,7 +52,7 @@ describe('FlexCanvasComponent', () => {
 
   let now: number;
   let scene: Scene;
-  let entries: Object[];
+  let entries: object[];
   let fixture: ComponentFixture<FlexCanvasComponent>;
   let component: FlexCanvasComponent;
   const dbService = new DBService(null);

@@ -93,7 +93,9 @@ class ViewController implements ViewLauncherContext {
     return [];
   }
 
-  loadView(view: View): void { }
+  loadView(view: View): void {
+    // ignore
+  }
 
   addSummaryTable(): SummaryContext {
     return null;

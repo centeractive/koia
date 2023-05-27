@@ -20,7 +20,7 @@ export class ExportService {
   private exportDataConverter = new ExportDataConverter();
   private excelDataConverter = new ExcelDataConverter();
 
-  exportData(data: Object[], columns: Column[], exportFormat: ExportFormat, baseFileName: string): void {
+  exportData(data: object[], columns: Column[], exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.CSV) {
       this.exportAsCSV(data, columns, baseFileName);
     } else if (exportFormat === ExportFormat.JSON) {
@@ -45,26 +45,26 @@ export class ExportService {
     }
   }
 
-  private exportAsCSV(data: Object[], columns: Column[], baseFileName: string): void {
+  private exportAsCSV(data: object[], columns: Column[], baseFileName: string): void {
     this.exportDataConverter.timeToFormattedString(data, columns);
     const csv = this.toCSV(data, ',');
     const blob: Blob = new Blob([csv], { type: ExportService.TYPE_CSV });
     this.saveBlobAs(blob, this.generateFileName(baseFileName, '.csv'));
   }
 
-  private toCSV(data: Object[], delimiter: string): string {
+  private toCSV(data: object[], delimiter: string): string {
     const keys = Object.keys(data[0]);
     return keys.join(delimiter) + this.newline +
       data.map(e => this.toCSVLine(e, keys, delimiter))
         .join(this.newline);
   }
 
-  private toCSVLine(element: Object, keys: string[], delimiter: string) {
+  private toCSVLine(element: object, keys: string[], delimiter: string) {
     return keys.map(k => element[k])
       .join(delimiter);
   }
 
-  private exportAsExcel(data: Object[], columns: Column[], baseFileName: string): void {
+  private exportAsExcel(data: object[], columns: Column[], baseFileName: string): void {
     this.excelDataConverter.convertTime(data, columns);
     const worksheet = this.excelDataConverter.toWorksheet(data, columns);
     this.saveExcelFile(worksheet, baseFileName);
@@ -77,7 +77,7 @@ export class ExportService {
     this.saveBlobAs(blob, this.generateFileName(baseFileName, '.xlsx'));
   }
 
-  private exportAsJSON(data: Object[], columns: Column[], baseFileName: string): void {
+  private exportAsJSON(data: object[], columns: Column[], baseFileName: string): void {
     this.exportDataConverter.restoreJSONObjects(data, columns);
     this.exportDataConverter.timeToFormattedString(data, columns);
     const blob: Blob = new Blob([JSON.stringify(data, undefined, '  ')], { type: ExportService.TYPE_JSON });

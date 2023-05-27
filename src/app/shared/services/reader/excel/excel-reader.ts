@@ -46,8 +46,8 @@ export class ExcelReader implements DataReader {
          .catch(err => dataHandler.onError(err));
    }
 
-   readEntries(url: string, rowCount: number): Promise<Object[]> {
-      return new Promise<Object[]>((resolve, reject) => {
+   readEntries(url: string, rowCount: number): Promise<object[]> {
+      return new Promise<object[]>((resolve, reject) => {
          return fetch(url)
             .then(r => r.blob())
             .then(b => this.read(b))

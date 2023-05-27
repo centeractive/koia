@@ -122,7 +122,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     return true;
   }
 
-  addRangeFilter(column: Column, selValueRange: ValueRange, inverted: boolean = false): void {
+  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false): void {
     this.dbService.numberRangeOf(column)
       .then(vr => {
         if (column.dataType === DataType.TIME) {

@@ -6,15 +6,15 @@ import { StatusComponent } from 'app/shared/component/status/status.component';
 @Injectable()
 export class NotificationService {
 
-  onSuccess(bottomSheet: MatBottomSheet, message: string | Object): void {
+  onSuccess(bottomSheet: MatBottomSheet, message: string | object): void {
     this.showStatus(bottomSheet, this.createStatus(StatusType.SUCCESS, message));
   }
 
-  onWarning(bottomSheet: MatBottomSheet, warning: string | Object): void {
+  onWarning(bottomSheet: MatBottomSheet, warning: string | object): void {
     this.showStatus(bottomSheet, this.createStatus(StatusType.WARNING, warning));
   }
 
-  onError(bottomSheet: MatBottomSheet, error: string | Object): void {
+  onError(bottomSheet: MatBottomSheet, error: string | object): void {
     this.showStatus(bottomSheet, this.createStatus(StatusType.ERROR, error));
   }
 
@@ -23,11 +23,11 @@ export class NotificationService {
     bottomSheet.open(StatusComponent, config);
   }
 
-  private createStatus(statusType: StatusType, value: string | Object): Status {
+  private createStatus(statusType: StatusType, value: string | object): Status {
     return { type: statusType, msg: this.toMessage(value) };
   }
 
-  private toMessage(value: string | Object): string {
+  private toMessage(value: string | object): string {
     if (typeof value === 'string') {
       return value;
     } else if (value['name'] && value['message']) {

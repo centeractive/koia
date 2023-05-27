@@ -24,7 +24,7 @@ export class SceneUtils {
    static generateSceneName(reader: DataReader, file: File) {
       let name = file.name.replace(reader.getFileExtension(), '');
       if (file.lastModified) {
-        name += ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate');
+         name += ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate');
       }
       return name;
    }
@@ -37,7 +37,7 @@ export class SceneUtils {
       return name;
    }
 
-   static entriesFromTableData(sample: Sample): Object[] {
+   static entriesFromTableData(sample: Sample): object[] {
       const columnNames = SceneUtils.columnNamesFrom(sample);
       return sample.tableData.map(row => SceneUtils.rowToEntry(columnNames, row));
    }

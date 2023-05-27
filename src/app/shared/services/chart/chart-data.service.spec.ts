@@ -9,7 +9,7 @@ describe('ChartDataService', () => {
    const min = 60 * sec;
 
    let now: number;
-   let entries: Object[];
+   let entries: object[];
    let chartDataService: ChartDataService;
    let context: ChartContext;
 

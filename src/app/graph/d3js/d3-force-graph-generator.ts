@@ -18,7 +18,7 @@ export class D3ForceGraphGenerator {
         div.replaceChildren();
         const bgColors = context.colorProvider.bgColors(this.countDistinctGroups(graphData.nodes) - 1);
 
-        var tooltipDiv = select(div).append('div')
+        const tooltipDiv = select(div).append('div')
             .attr('class', 'tooltip')
             .style('opacity', 0);
 
@@ -31,13 +31,13 @@ export class D3ForceGraphGenerator {
             .data(graphData.links)
             .join('line');
 
-        var node = svg.append('g')
+        const node = svg.append('g')
             .attr('class', 'nodes')
             .selectAll('g')
             .data(graphData.nodes)
             .enter().append('g');
 
-        var circles = node.append('circle')
+        const circles = node.append('circle')
             .attr('r', node => node.parent ? 10 : 12)
             .style('fill', node => node.parent ? bgColors[node.group - 1] : this.rootColor)
             .style('cursor', 'pointer')
@@ -65,7 +65,7 @@ export class D3ForceGraphGenerator {
                 .style('opacity', 0);
         }
 
-        var labels = node.append('text')
+        const labels = node.append('text')
             .text(node => GraphUtils.createDisplayText(node, this.context))
             .attr('dx', 12)
             .attr('dy', '.35em')

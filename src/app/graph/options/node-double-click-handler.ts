@@ -30,7 +30,7 @@ export class NodeDoubleClickHandler {
    private revealRawData(graphNode: GraphNode, query: Query, groupByColumns: Column[], columnNames: string[], columnValues: any[],
       context: GraphContext) {
       const level = this.hierarchyLevelOf(graphNode);
-      if (!!groupByColumns.slice(0, level).find(c => c.dataType === DataType.TIME)) {
+      if (groupByColumns.slice(0, level).find(c => c.dataType === DataType.TIME)) {
          const timeColumns = groupByColumns.filter(c => c.dataType === DataType.TIME);
          const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
          this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues, context);

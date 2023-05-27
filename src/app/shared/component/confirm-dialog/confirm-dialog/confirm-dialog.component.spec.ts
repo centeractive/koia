@@ -24,10 +24,9 @@ describe('ConfirmDialogComponent', () => {
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
-        { provide: MAT_DIALOG_DATA, useValue: dialogData },
+        { provide: MAT_DIALOG_DATA, useValue: dialogData }
       ]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(async () => {

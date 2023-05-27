@@ -146,12 +146,12 @@ export class ArrayUtils {
     }
     array.splice(newIndex, 0, element);
     return array;
-  };
+  }
 
   /**
    * @returns the first object where given key exists, [[null]] if no object is found
    */
-  static findObjectByKey(array: Object[], key: string): Object {
+  static findObjectByKey(array: object[], key: string): object {
     for (const obj of array) {
       if (obj[key]) {
         return obj;
@@ -163,7 +163,7 @@ export class ArrayUtils {
   /**
    * @returns the first object where given key has the specified value, [[null]] if no object is found
    */
-  static findObjectByKeyValue(array: Object[], key: string, value: any): Object {
+  static findObjectByKeyValue(array: object[], key: string, value: any): object {
     for (const obj of array) {
       const elementValue = obj[key];
       if (value instanceof Date) {
@@ -182,11 +182,11 @@ export class ArrayUtils {
    *
    * @returns the specified, sorted array
    */
-  static sortObjects(array: Object[], sort: Sort): Object[] {
+  static sortObjects(array: object[], sort: Sort): object[] {
     if (!array || array.length === 0) {
       return array;
     }
-    const comparator = (o1: Object, o2: Object) => {
+    const comparator = (o1: object, o2: object) => {
       const v1 = o1[sort.active];
       const v2 = o2[sort.active];
       if (v1 === v2) {
@@ -208,7 +208,7 @@ export class ArrayUtils {
   /**
    * @returns the value range of the specified number attribute
    */
-  static numberValueRange(array: Object[], attributeName: string): ValueRange {
+  static numberValueRange(array: any[], attributeName: string): ValueRange {
     if (!array || array.length === 0) {
       return ArrayUtils.UNDEFINED_VALUE_RANGE;
     }
@@ -247,7 +247,7 @@ export class ArrayUtils {
    *
    * @returns the provided array
    */
-  static convertAllDateToTime(array: Object[]): Object[] {
+  static convertAllDateToTime(array: object[]): object[] {
     if (array) {
       array.forEach(e => {
         for (const key of Object.keys(e)) {

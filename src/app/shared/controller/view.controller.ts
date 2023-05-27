@@ -36,7 +36,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    elementContexts: ElementContext[];
    selectedContext: ElementContext;
    selectedContextPosition: number;
-   entries$: Observable<Object[]>;
+   entries$: Observable<object[]>;
    loading: boolean;
 
    private timeColumns: Column[];
@@ -51,7 +51,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
       private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService) {
       super(bottomSheet, notificationService);
-   };
+   }
 
    ngOnInit(): void {
       this.scene = this.dbService.getActiveScene();

@@ -29,7 +29,7 @@ export class CommonUtils {
   /**
    * @returns <true> if the specified objects are equal, <false> otherwise
    */
-  static compare(o1: Object, o2: Object): boolean {
+  static compare(o1: object, o2: object): boolean {
     if (o1 === o2 || (!o1 && !o2)) {
       return true;
     } else if (!o1 || !o2) {
@@ -41,7 +41,7 @@ export class CommonUtils {
   /**
    * @returns a clone (copy) of the specified object or array, the value itself if it's a primitive
    */
-  static clone(value: {} | []): {} | [] {
+  static clone(value: any): any {
     if (value) {
       return JSON.parse(JSON.stringify(value));
     }

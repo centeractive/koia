@@ -33,7 +33,7 @@ export abstract class ElementContext {
    // transient
    private _silent: boolean;
    private _columns: Column[];
-   private _entries: Object[];
+   private _entries: object[];
    private _warning: string;
 
    constructor(columns: Column[]) {
@@ -239,11 +239,11 @@ export abstract class ElementContext {
       return this._columns.filter(c => c.dataType === DataType.TEXT);
    }
 
-   get entries(): Object[] {
+   get entries(): object[] {
       return this._entries;
    }
 
-   set entries(entries: Object[]) {
+   set entries(entries: object[]) {
       this._entries = entries;
       this.fireStructureChanged();
    }

@@ -9,7 +9,7 @@ export class SeriesNameConverter {
     * @returns the data group ID from the entry by considering data column and split column(s) value,
     * [[undefined]] if the data column value or any split column value is empty
     */
-   toGroupKey(entry: Object, dataColumn: Column, splitColumns: Column[]): any | undefined {
+   toGroupKey(entry: object, dataColumn: Column, splitColumns: Column[]): any | undefined {
       if (splitColumns.length === 0) {
          return entry[dataColumn.name];
       }
@@ -24,7 +24,7 @@ export class SeriesNameConverter {
     * @returns the data series name from the entry by considering data column name and split column(s) value,
     * [[undefined]] if any split column value is empty
     */
-   toSeriesName(entry: Object, dataColumn: Column, splitColumns: Column[]): string | undefined {
+   toSeriesName(entry: object, dataColumn: Column, splitColumns: Column[]): string | undefined {
       if (splitColumns.length === 0) {
          return dataColumn.name;
       }
@@ -35,7 +35,7 @@ export class SeriesNameConverter {
       return name + SeriesNameConverter.SEPARATOR + dataColumn.name;
    }
 
-   private fromSplitColumns(entry: Object, splitColumns: Column[]): string | undefined {
+   private fromSplitColumns(entry: object, splitColumns: Column[]): string | undefined {
       const splitColumnValues = [];
       for (const splitColumn of splitColumns) {
          const splitColumnValue = entry[splitColumn.name];

@@ -21,7 +21,7 @@ describe('SummaryTableSideBarComponent', () => {
 
   const dragDropEventFactory = new DragDropEventFactory<Aggregation>();
   let columns: Column[];
-  let entries: Object[];
+  let entries: object[];
   let context: SummaryContext;
   let component: SummaryTableSideBarComponent;
   let fixture: ComponentFixture<SummaryTableSideBarComponent>;
@@ -52,7 +52,7 @@ describe('SummaryTableSideBarComponent', () => {
         MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule, MatRadioModule
       ],
       providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
       ]
     }).compileComponents();
   }));

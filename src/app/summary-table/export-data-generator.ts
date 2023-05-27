@@ -7,7 +7,7 @@ export class ExportDataGenerator {
 
    private datePipe = new DatePipe('en-US');
 
-   generate(context: SummaryContext, dataFrame: IDataFrame<number, any>, overalls: number[]): Object[] {
+   generate(context: SummaryContext, dataFrame: IDataFrame<number, any>, overalls: number[]): object[] {
       const data = this.formatTimeColumns(context, dataFrame).toArray();
       data.push(this.createOverallRow(dataFrame.getColumnNames(), overalls));
       return data;
@@ -26,7 +26,7 @@ export class ExportDataGenerator {
       return dataFrame;
    }
 
-   private createOverallRow(columnNames: string[], overalls: number[]): {} {
+   private createOverallRow(columnNames: string[], overalls: number[]): object {
       const overallRow = {};
       for (let iCol = 0; iCol < columnNames.length; iCol++) {
          const iOverall = overalls.length - columnNames.length + iCol;

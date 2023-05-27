@@ -11,7 +11,7 @@ export class ExcelDataConverter {
      * - to Date if the date format does not contain a milliseconds letter pattern
      * - to formatted string if the format contains a milliseconds letter pattern (because Excel does not know about such pattern)
      */
-    convertTime(data: Object[], columns: Column[]): void {
+    convertTime(data: object[], columns: Column[]): void {
         const timeColumns = columns.filter(c => c.dataType === DataType.TIME);
         for (const column of timeColumns) {
             for (const item of data) {
@@ -27,7 +27,7 @@ export class ExcelDataConverter {
         }
     }
 
-    toWorksheet(data: Object[], columns: Column[]): XLSX.WorkSheet {
+    toWorksheet(data: object[], columns: Column[]): XLSX.WorkSheet {
         const ws = XLSX.utils.json_to_sheet(data);
         const colNames = Object.keys(data[0]);
         ws['!cols'] = this.colInfos(colNames, columns);

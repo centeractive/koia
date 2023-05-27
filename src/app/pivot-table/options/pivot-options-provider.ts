@@ -5,20 +5,20 @@ import { ValueRangeLabelComparator } from 'app/shared/value-range';
 import { CellClickHandler } from './cell-click-handler';
 import { PivotContext } from '../model';
 import { scaleLinear, ScaleLinear } from 'd3';
-declare var $: any;
+declare let $: any;
 
 export class PivotOptionsProvider {
 
    private static readonly DEFAULT_RENDERER = 'Heatmap';
 
-   private currConfig: Object = { exclusions: [], inclusions: [] };
+   private currConfig: object = { exclusions: [], inclusions: [] };
 
    constructor(private cellClickHandler: CellClickHandler) { }
 
    /**
     * enriches the specified pivot options with relevant elements or cretes new options if the specified [[pivotOptions]] is undefined
     */
-   enrichPivotOptions(pivotOptions: Object, context: PivotContext, onPivotTableRefreshEnd: (config: Object) => any): Object {
+   enrichPivotOptions(pivotOptions: object, context: PivotContext, onPivotTableRefreshEnd: (config: object) => any): object {
       if (!pivotOptions) {
          pivotOptions = { rendererName: PivotOptionsProvider.DEFAULT_RENDERER };
       }
@@ -26,7 +26,7 @@ export class PivotOptionsProvider {
       pivotOptions['hiddenAttributes'] = [CouchDBConstants._ID];
       pivotOptions['sorters'] = this.createSorters(context);
       pivotOptions['rendererOptions'] = this.createRendererOptions(context);
-      pivotOptions['onRefresh'] = (config: Object) => {
+      pivotOptions['onRefresh'] = (config: object) => {
          this.currConfig = config;
          onPivotTableRefreshEnd(config);
       };
@@ -36,7 +36,7 @@ export class PivotOptionsProvider {
    /**
     * @returns cloned and purged pivot options
     */
-   clonedPurgedPivotOptions(pivotOptions: Object): Object {
+   clonedPurgedPivotOptions(pivotOptions: object): object {
       const optionsClone = CommonUtils.clone(pivotOptions);
 
       // remove values that are functions or bulky default values
@@ -51,21 +51,21 @@ export class PivotOptionsProvider {
    /**
     * indicates if one of the heatmap renderers is currently selected
     */
-   isHeatmapRendererSelected(pivotOptions: Object): boolean {
+   isHeatmapRendererSelected(pivotOptions: object): boolean {
       return pivotOptions['rendererName'].includes('Heatmap');
    }
 
    /**
     * replaces the time columns in case they're currently in use
     */
-   replaceTimeColumnsInUse(pivotOptions: Object, timeColumn: Column, oldTimeUnit: TimeUnit, newTimeUnit: TimeUnit): void {
+   replaceTimeColumnsInUse(pivotOptions: object, timeColumn: Column, oldTimeUnit: TimeUnit, newTimeUnit: TimeUnit): void {
       const oldLabel = ColumnNameConverter.toLabel(timeColumn, oldTimeUnit);
       const newLabel = ColumnNameConverter.toLabel(timeColumn, newTimeUnit);
       ArrayUtils.replaceElement(pivotOptions['cols'], oldLabel, newLabel);
       ArrayUtils.replaceElement(pivotOptions['rows'], oldLabel, newLabel);
    }
 
-   private createSorters(context: PivotContext): Object {
+   private createSorters(context: PivotContext): object {
       const sorters = {};
       for (const valueGrouping of context.valueGroupings) {
          sorters[valueGrouping.columnName] = (v1: string, v2: string) => new ValueRangeLabelComparator().compare(v1, v2);
@@ -73,7 +73,7 @@ export class PivotOptionsProvider {
       return sorters;
    }
 
-   private createRendererOptions(context: PivotContext): Object {
+   private createRendererOptions(context: PivotContext): object {
       return {
          heatmap: {
             colorScaleGenerator: values => this.generateColorScale(context, values)
@@ -86,7 +86,7 @@ export class PivotOptionsProvider {
       };
    }
 
-   private onCellClicked(context: PivotContext, mouseEvent: any, filters: Object, pivotData: Object): void {
+   private onCellClicked(context: PivotContext, mouseEvent: any, filters: object, pivotData: object): void {
       const exclusions = this.currConfig['exclusions'];
       const inclusions = this.currConfig['inclusions'];
       this.cellClickHandler.onCellClicked(context.valueGroupings, mouseEvent, filters, exclusions, inclusions, pivotData);

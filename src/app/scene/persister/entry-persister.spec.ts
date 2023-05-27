@@ -170,8 +170,8 @@ describe('EntryPersister', () => {
       return ids.map(id => ({ id }) as Document);
    }
 
-   function entries(objectCount: number): Object[] {
-      const data: Object[] = new Array(objectCount);
+   function entries(objectCount: number): object[] {
+      const data: object[] = new Array(objectCount);
       for (let i = 0; i < objectCount; i++) {
          data[i] = { id: i + 1 };
       }

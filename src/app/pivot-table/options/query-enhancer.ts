@@ -10,7 +10,7 @@ export class QueryEnhancer {
 
    private filterLabels: string[];
 
-   constructor(private query: Query, private columns: Column[], private valueGroupings: ValueGrouping[], private filters: Object) {
+   constructor(private query: Query, private columns: Column[], private valueGroupings: ValueGrouping[], private filters: object) {
       this.filterLabels = Object.keys(filters);
    }
 
@@ -43,7 +43,7 @@ export class QueryEnhancer {
     *
     * @TODO consider inclusions instead of exclusions in cases the latter have more values
     */
-   addFiltersForValueChoices(exclusions: Object, inclusions: Object, pivotData: Object) {
+   addFiltersForValueChoices(exclusions: object, inclusions: object, pivotData: object) {
       if (exclusions) {
          const labelsInUse = pivotData['colAttrs'].concat(pivotData['rowAttrs']);
          for (const label of labelsInUse) {

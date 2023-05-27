@@ -24,13 +24,13 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
 
   @Input() parentConstraintSize: boolean;
   @Input() context: ChartContext;
-  @Input() entries$: Observable<Object[]>;
+  @Input() entries$: Observable<object[]>;
   @Output() onWarning: EventEmitter<string> = new EventEmitter();
 
   @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement>;
 
   loading: boolean;
-  marginDivStyle: Object;
+  marginDivStyle: object;
   validateMarginResize: (resizeEvent: ResizeEvent) => boolean;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
@@ -66,7 +66,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     firstValueFrom(this.entries$).then(entries => this.onEntries(entries));
   }
 
-  private onEntries(entries: Object[]): void {
+  private onEntries(entries: object[]): void {
     this.context.entries = entries;
   }
 
@@ -126,13 +126,13 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     this.context.margin = margin;
   }
 
-  private marginToStyle(margin: Margin): Object {
+  private marginToStyle(margin: Margin): object {
     const cmpElement = this.cmpElementRef.nativeElement;
     const headerHeight = cmpElement.getBoundingClientRect().top - cmpElement.parentElement.parentElement.getBoundingClientRect().top;
     return this.chartMarginService.marginToStyle(margin, headerHeight);
   }
 
-  createExportData(): Object[] {
+  createExportData(): object[] {
     throw new Error('Method not implemented.');
   }
 }

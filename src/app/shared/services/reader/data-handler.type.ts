@@ -5,7 +5,7 @@ export interface DataHandler {
    /**
     * @param entries flat (non-nested) objects that each contain attributes of JSON simple data types (string, number or boolean) only
     */
-   onEntries(entries: Object[]): void;
+   onEntries(entries: object[]): void;
 
    onError(error: any): void;
 

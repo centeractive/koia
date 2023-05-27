@@ -43,7 +43,7 @@ export class GraphDataService {
    /**
     * creates an object tree out of the specified data, grouped by the selected columns
     */
-   private createTree(data: Object[], providerContext: ProviderContext): TreeNode {
+   private createTree(data: object[], providerContext: ProviderContext): TreeNode {
       if (!providerContext.groupByColumns) {
          return { key: '', values: data.length };
       }
@@ -101,7 +101,7 @@ export class GraphDataService {
 class ProviderContext {
    columns: Column[];
    groupByColumns: Column[];
-   entries: Object[];
+   entries: object[];
    group = 0;
    nodes: GraphNode[] = [];
    links: GraphLink[] = [];

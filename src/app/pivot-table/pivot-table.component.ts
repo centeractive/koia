@@ -20,7 +20,7 @@ import { QueryProvider } from './options/query-provider';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
-declare var jQuery: any;
+declare let jQuery: any;
 
 @Component({
   selector: 'koia-pivot-table',
@@ -134,7 +134,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     Promise.resolve().then(() => this.refreshDataFrame());
   }
 
-  private async refreshDataFrame(config?: Object): Promise<void> {
+  private async refreshDataFrame(config?: object): Promise<void> {
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     this.dataFrame = this.baseDataFrame;
@@ -209,7 +209,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     this.pivotOptionsProvider.enrichPivotOptions(this.getPivotOptions(), this.context, () => this.onPivotTableRefreshEnd());
   }
 
-  getPivotOptions(): Object {
+  getPivotOptions(): object {
     return this.getTargetElement().data('pivotUIOptions');
   }
 
@@ -218,7 +218,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     Promise.resolve().then(() => this.renderPivotTable());
   }
 
-  private async renderPivotTable(pivotOptions?: Object): Promise<void> {
+  private async renderPivotTable(pivotOptions?: object): Promise<void> {
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     const targetElement = this.getTargetElement();
     while (targetElement.firstChild) {
@@ -252,7 +252,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   }
 
   exportToExcel(): void {
-    const table = this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0] as HTMLTableElement;;
+    const table = this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0] as HTMLTableElement;
     this.exportService.exportTableAsExcel(table, 'PivotTable');
   }
 }

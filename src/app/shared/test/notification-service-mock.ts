@@ -9,5 +9,6 @@ export class NotificationServiceMock extends NotificationService {
    }
 
    showStatus(bottomSheet: MatBottomSheet, status: Status): void {
+      // ignore
    }
 }
