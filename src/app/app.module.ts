@@ -74,8 +74,8 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
 import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-selection/color-scheme-selection.component';
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
 import { SceneTableComponent } from './scenes/scene-table/scene-table.component';
-import { SliderComponent } from './ngx-slider/slider.component';
 import { NgxSliderModule } from './ngx-slider/slider.module';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @NgModule({
     declarations: [
@@ -138,6 +138,7 @@ import { NgxSliderModule } from './ngx-slider/slider.module';
         MatPaginatorModule,
         MatSlideToggleModule,
         MatSliderModule,
+        MatTabsModule,
         MatBottomSheetModule,
         DragDropModule,
         ResizableModule,

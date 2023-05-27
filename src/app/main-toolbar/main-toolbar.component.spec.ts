@@ -257,49 +257,49 @@ describe('MainToolbarComponent', () => {
     expect(valueRangeFilter.valueRange.max).toBe(valueRange.max - 1000);
   });
 
-  it('raw data button should point to raw data view', () => {
+  it('raw data tab should point to raw data view', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butRawData')).nativeElement;
+    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabRawData')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('ng-reflect-router-link');
 
     // then
     expect(link).toEqual('/' + Route.RAWDATA);
   });
 
-  it('pivot view button should point to pivot view', () => {
+  it('pivot view tab should point to pivot view', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butPivotView')).nativeElement;
+    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabPivotTable')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('ng-reflect-router-link');
 
     // then
     expect(link).toEqual('/' + Route.PIVOT);
   });
 
-  it('grid view button should point to grid view', () => {
+  it('grid view tab should point to grid view', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butGridView')).nativeElement;
+    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabGridView')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('ng-reflect-router-link');
 
     // then
     expect(link).toEqual('/' + Route.GRID);
   });
 
-  it('flex view button should point to flex view', () => {
+  it('flex view tab should point to flex view', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butFlexView')).nativeElement;
+    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabFlexView')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('ng-reflect-router-link');
 
     // then
     expect(link).toEqual('/' + Route.FLEX);

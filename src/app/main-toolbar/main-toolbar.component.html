@@ -15,26 +15,24 @@
       <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
         <mat-icon>add_photo_alternate</mat-icon>
       </button>
-      <button id="butRawData" mat-stroked-button [color]="currURL === urlRawdata ? 'accent' : ''"
-              matTooltip="Raw Data Table" [routerLink]="[urlRawdata]">
-        <mat-icon svgIcon="raw_data_view"></mat-icon>
-        <span>&nbsp;Raw Data</span>
-      </button>
-      <button id="butPivotView" mat-stroked-button [color]="currURL === urlPivot ? 'accent' : ''"
-              matTooltip="Pivot Table" [routerLink]="[urlPivot]">
-        <mat-icon svgIcon="pivot_table"></mat-icon>
-        <span>&nbsp;Pivot Table</span>
-      </button>
-      <button id="butGridView" mat-stroked-button [color]="currURL === urlGrid ? 'accent' : ''" matTooltip="Grid View"
-              [routerLink]="[urlGrid]">
-        <mat-icon svgIcon="grid_view"></mat-icon>
-        <span>&nbsp;Grid View</span>
-      </button>
-      <button id="butFlexView" mat-stroked-button [color]="currURL === urlFlex ? 'accent' : ''" matTooltip="Flex View"
-              [routerLink]="[urlFlex]">
-        <mat-icon svgIcon="flex_view"></mat-icon>
-        <span>&nbsp;Flex View</span>
-      </button>
+      <nav mat-tab-nav-bar mat-stretch-tabs="false" mat-align-tabs="start">
+        <a id="tabRawData" mat-tab-link [routerLink]="[urlRawdata]" [active]="currURL == urlRawdata">
+          <mat-icon svgIcon="raw_data_view"></mat-icon>
+          <span>&nbsp;Raw Data</span>
+        </a>
+        <a id="tabPivotTable" mat-tab-link [routerLink]="[urlPivot]" [active]="currURL == urlPivot">
+          <mat-icon svgIcon="pivot_table"></mat-icon>
+          <span>&nbsp;Pivot Table</span>
+        </a>
+        <a id="tabGridView" mat-tab-link [routerLink]="[urlGrid]" [active]="currURL == urlGrid">
+          <mat-icon svgIcon="grid_view"></mat-icon>
+          <span>&nbsp;Grid View</span>
+        </a>
+        <a id="tabFlexView" mat-tab-link [routerLink]="[urlFlex]" [active]="currURL == urlFlex">
+          <mat-icon svgIcon="flex_view"></mat-icon>
+          <span>&nbsp;Flex View</span>
+        </a>
+      </nav>
     </span>
 
     <div id="div_filter">
@@ -48,8 +46,8 @@
       </mat-form-field>
 
       <span class="span_column_filter" *ngFor="let propertyFilter of propertyFilters">
-        <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()"
-                           (onRemove)="removePropertyFilter(propertyFilter)"></koia-value-filter>
+        <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()" (onRemove)="removePropertyFilter(propertyFilter)">
+        </koia-value-filter>
       </span>
     </div>
 
