@@ -22,6 +22,8 @@ export class ValueFilterComponent implements OnInit {
   valueFilterCustomizer = new ValueFilterCustomizer();
   columns: Column[];
   valueControl = new FormControl();
+  numberDataType: boolean;
+
   private validator: PropertyFilterValidator;
   private valueParser: FilterValueParser;
 
@@ -34,6 +36,7 @@ export class ValueFilterComponent implements OnInit {
     this.validator = new PropertyFilterValidator(this.columns);
     this.valueParser = new FilterValueParser(this.filter);
     this.valueControl.setValue(this.valueFilterCustomizer.formattedValueOf(this.filter));
+    this.numberDataType = this.filter.dataType === DataType.NUMBER;
   }
 
   availableOperators(): Operator[] {

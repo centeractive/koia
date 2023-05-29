@@ -72,6 +72,20 @@ describe('FilterValueInputDirective', () => {
       expect(inputElement.setSelectionRange).not.toHaveBeenCalled();
    });
 
+   it('#keydown should set caret position at end when decimal separator was added', async () => {
+
+      // given
+      inputElement.value = '123';
+      const event = new KeyboardEvent('keydown', { key: decimalSeparator() });
+
+      // when
+      inputElement.dispatchEvent(event);
+      await fixture.whenStable();
+
+      // then
+      expect(inputElement.setSelectionRange).toHaveBeenCalledWith(4, 4);
+   });
+
    it('#keydown should set caret position at end when thousands separator was added', async () => {
 
       // given
@@ -130,4 +144,9 @@ describe('FilterValueInputDirective', () => {
       // then
       expect(inputElement.setSelectionRange).toHaveBeenCalledWith(2, 2);
    });
+
+   function decimalSeparator(): string {
+      const num = 0.1;
+      return num.toLocaleString().substring(1, 2);
+   }
 });

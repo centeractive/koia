@@ -1,4 +1,4 @@
-import { Column, Operator, DataType } from 'app/shared/model';
+import { Operator, DataType } from 'app/shared/model';
 
 export class ValueFilterUtils {
 

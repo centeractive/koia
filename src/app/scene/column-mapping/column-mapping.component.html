@@ -37,7 +37,8 @@
   <mat-form-field class="column_format" *ngIf="columnDefAssistant.canHaveDisplayFormat(mapping)">
     <mat-label>Display Format</mat-label>
     <mat-select class="select_display_format" [(value)]="mapping.target.format">
-      <mat-option *ngFor="let format of dateFormats" [value]="format">{{ formattedNow(format) }}
+      <mat-option *ngFor="let format of dateFormats" [value]="format">
+        {{ formattedNow(format) }}
       </mat-option>
     </mat-select>
   </mat-form-field>

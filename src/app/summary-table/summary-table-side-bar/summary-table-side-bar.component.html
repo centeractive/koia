@@ -78,30 +78,16 @@
          <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
               [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList" class="div_column_list"
               (cdkDropListDropped)="dropGroupByColumn($event)">
-            <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedGroupByColumns" cdkDrag>
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'" [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">
-                     {{ timeUnit ? 'per ' + timeUnit : '' }}
-                  </mat-option>
-               </mat-select>
-            </div>
+            <koia-draggable-column *ngFor="let column of selectedGroupByColumns" [context]="context" [column]="column" cssClass="accent">
+            </koia-draggable-column>
          </div>
          <br>
          <label>Available Columns</label>
          <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
               [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
               (cdkDropListDropped)="dropGroupByColumn($event)">
-            <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableGroupByColumns" cdkDrag>
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
-               <div class="select_time_unit" *ngIf="column.dataType !== 'Time'"></div>
-               <mat-select class="select_time_unit" *ngIf="column.dataType === 'Time'"
-                           [(ngModel)]="column.groupingTimeUnit">
-                  <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit">
-                     {{ timeUnit ? 'per ' + timeUnit : '' }}</mat-option>
-               </mat-select>
-            </div>
+            <koia-draggable-column *ngFor="let column of availableGroupByColumns" [context]="context" [column]="column" cssClass="white">
+            </koia-draggable-column>
          </div>
       </koia-expansion-panel>
 
@@ -114,16 +100,17 @@
             <div id="selectedAggregations" #selectedAggList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
                  [cdkDropListData]="selectedAggregations" [cdkDropListConnectedTo]="availableAggList" class="div_column_list"
                  (cdkDropListDropped)="dropAggregation($event)">
-               <div class="div_column_item accent" mat-stroked-button *ngFor="let aggregation of selectedAggregations"
-                    cdkDrag>{{ aggregation }}</div>
+               <div class="div_column_item accent" mat-stroked-button *ngFor="let aggregation of selectedAggregations" cdkDrag>
+                  <span class="accent">{{ aggregation }}</span>
+               </div>
             </div>
             <br>
             <label>Available Aggregations</label>
             <div #availableAggList="cdkDropList" cdkDropList [cdkDropListData]="availableAggregations"
-                 [cdkDropListConnectedTo]="selectedAggList" class="div_column_list"
-                 (cdkDropListDropped)="dropAggregation($event)">
-               <div class="div_column_item white" mat-stroked-button *ngFor="let aggregation of availableAggregations"
-                    cdkDrag>{{ aggregation }}</div>
+                 [cdkDropListConnectedTo]="selectedAggList" class="div_column_list" (cdkDropListDropped)="dropAggregation($event)">
+               <div class="div_column_item white" mat-stroked-button *ngFor="let aggregation of availableAggregations" cdkDrag>
+                  {{ aggregation }}
+               </div>
             </div>
          </div>
       </koia-expansion-panel>

@@ -11,10 +11,6 @@ export class GraphSideBarComponent extends SideBarController implements OnChange
 
   @Input() context: GraphContext;
 
-  constructor() {
-    super();
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
     super.ngOnChanges(changes);
     this.defineSelectableItems();

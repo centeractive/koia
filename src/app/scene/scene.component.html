@@ -34,7 +34,9 @@
         <mat-form-field class="form_field_source_type">
           <mat-label>Source Type</mat-label>
           <mat-select [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
-            <mat-option *ngFor="let reader of readers" [value]="reader">{{ reader.getSourceName() }}</mat-option>
+            <mat-option *ngFor="let reader of readers" [value]="reader">
+              {{ reader.getSourceName() }}
+            </mat-option>
           </mat-select>
         </mat-form-field>&nbsp;
         <button id="select_file_button" mat-raised-button color="primary" (click)="fileInput.click()">
@@ -65,7 +67,9 @@
           <mat-label>Language</mat-label>
           <mat-select [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
                       matTooltip="Proper language is required when parsing date/time and number data">
-            <mat-option *ngFor="let locale of locales" [value]="locale">{{ locale }}</mat-option>
+            <mat-option *ngFor="let locale of locales" [value]="locale">
+              {{ locale }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
         <div *ngFor="let attr of readerAttributes">
@@ -81,7 +85,9 @@
                      [(ngModel)]="attr.value" [matTooltip]="attr.description" (change)="columnMappings = null">
               <mat-select *ngIf="attr.hasValueChoice() && attr.isValueChoiceBinding" [(value)]="attr.value" [matTooltip]="attr.description"
                           (selectionChange)="columnMappings = null">
-                <mat-option *ngFor="let choice of attr.valueChoice" [value]="choice">{{ choice }}</mat-option>
+                <mat-option *ngFor="let choice of attr.valueChoice" [value]="choice">
+                  {{ choice }}
+                </mat-option>
               </mat-select>
             </mat-form-field>
 

@@ -107,7 +107,6 @@ mat-panel-description {
   border-bottom: solid 1px #ccc;
   color: rgba(0, 0, 0, 0.87);
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
@@ -143,7 +142,7 @@ mat-panel-description {
 
 .accent {
   color: white;
-  background-color: #ff4081;
+  background-color: #38983b;
 }
 
 .primary {

@@ -320,7 +320,7 @@ describe('ValueFilterComponent', () => {
     // when
     const event: any = document.createEvent('Event');
     event.key = 'Enter';
-    event.initEvent('search');
+    event.initEvent('keydown');
     htmlInput.dispatchEvent(event);
 
     // then

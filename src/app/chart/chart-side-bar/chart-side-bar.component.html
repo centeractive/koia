@@ -34,8 +34,7 @@
          <br>
          <div>
             <mat-radio-group [value]="context.isAggregationCountSelected()">
-               <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
-                                 (change)="onAggregationTypeChanged(true)">
+               <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled" (change)="onAggregationTypeChanged(true)">
                   Count Distinct Values
                </mat-radio-button>
                <mat-radio-button [value]="false" [disabled]="!individualValuesEnabled"
@@ -80,26 +79,23 @@
             </span>
             <div id="selectedSplitColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
                  [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList"
-                 class="div_column_list"
-                 (cdkDropListDropped)="dropSplitColumn($event)">
+                 class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
                <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns" cdkDrag>
-                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+                  <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon><span class="accent">{{ column.name }}</span>
                </div>
             </div>
             <br>
             <label>Available Columns</label>
             <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableSplitColumns"
-                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-                 (cdkDropListDropped)="dropSplitColumn($event)">
+                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
                <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableSplitColumns" cdkDrag>
-                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>&nbsp;{{ column.name }}
+                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>{{ column.name }}
                </div>
             </div>
          </div>
       </koia-expansion-panel>
 
-      <koia-expansion-panel
-                            *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())"
+      <koia-expansion-panel *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())"
                             [title]="groupingPanelName()">
          <mat-form-field>
             <mat-label>{{ context.isCategoryChart() ? 'Column Name' : 'Group by' }}</mat-label>
@@ -120,7 +116,8 @@
          <mat-form-field *ngIf="context.isAggregationCountSelected() && groupByTimeColumn">
             <mat-label>Time Unit Grouping</mat-label>
             <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
-               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">{{ timeUnit }}
+               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">
+                  {{ timeUnit }}
                </mat-option>
             </mat-select>
          </mat-form-field>
@@ -150,8 +147,7 @@
          <mat-form-field class="field_small_integer">
             <mat-label>Position</mat-label>
             <mat-select [value]="elementPosition">
-               <mat-option *ngFor="let position of elementPositions" [value]="position"
-                           (click)="setElementPosition(position)">
+               <mat-option *ngFor="let position of elementPositions" [value]="position" (click)="setElementPosition(position)">
                   {{ position }}
                </mat-option>
             </mat-select>
@@ -170,8 +166,7 @@
          <span class="span_row" *ngIf="context.chartType !== 'discreteBarChart'">
             <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>
             <button mat-button *ngIf="context.showLegend && context.chartType !== 'scatterChart'"
-                    [matMenuTriggerFor]="menu" color="accent">{{
-               context.legendPosition }}</button>
+                    [matMenuTriggerFor]="menu" color="accent">{{ context.legendPosition }}</button>
             <mat-menu #menu="matMenu">
                <button mat-menu-item class="menu_item_legend_position" *ngFor="let position of legendPositions"
                        (click)="context.legendPosition = position"

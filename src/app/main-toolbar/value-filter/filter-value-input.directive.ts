@@ -5,8 +5,12 @@ import { ValueFilterCustomizer } from './value-filter-customizer';
 import { FilterValueParser } from './filter-value-parser';
 
 /**
- * Responsible for keeping the caret position in place upon insertion and deletion of digits in a value <input> field of a number filter.
- * This is needed because we automatically format numbers by adding and removing thousands separators.
+ * TODO: this dirctive is currently not used. In value-filter.component.html, we currently use a different <input> element 
+ * for number data type. The problem however is that <input> of type number has no clear button. This class should be 
+ * improved and may then be employed again with a single <input> element.
+ * 
+ * Responsible for keeping the caret position in place upon insertion and deletion of digits in a value <input> field of a number 
+ * filter. This is needed because we automatically format numbers by adding and removing thousands separators.
  */
 @Directive({
   selector: '[koiaFilterValueInput]'
@@ -36,6 +40,8 @@ export class FilterValueInputDirective implements OnChanges {
         this.onDeleteKey();
       } else if (event.key === 'Backspace') {
         this.onBackspaceKey();
+      } else {
+        event.preventDefault();
       }
     }
   }
@@ -44,8 +50,12 @@ export class FilterValueInputDirective implements OnChanges {
     const selStart = this.inputElement.selectionStart;
     const selEnd = this.inputElement.selectionEnd;
     if (selStart === selEnd) {
-      const valueLengthChange = this.onNumberKeyFormattedValue(event).length - this.inputElement.value.length;
-      this.setCursorPosition(selStart + valueLengthChange);
+      if (NumberUtils.isLocaleDecimalSeparator(event.key)) {
+        this.setCursorPosition(selStart + 1);
+      } else {
+        const valueLengthChange = this.onNumberKeyFormattedValue(event).length - this.inputElement.value.length;
+        this.setCursorPosition(selStart + valueLengthChange);
+      }
     }
   }
 

@@ -76,6 +76,7 @@ import { ExpansionPanelComponent } from './shared/component/expansion-panel/expa
 import { SceneTableComponent } from './scenes/scene-table/scene-table.component';
 import { NgxSliderModule } from './ngx-slider/slider.module';
 import { MatTabsModule } from '@angular/material/tabs';
+import { DraggableColumnComponent } from './shared/component/draggable-column/draggable-column.component';
 
 @NgModule({
     declarations: [
@@ -112,6 +113,7 @@ import { MatTabsModule } from '@angular/material/tabs';
         ColorSchemeSelectionComponent,
         ExpansionPanelComponent,
         SceneTableComponent,
+        DraggableColumnComponent,
     ],
     imports: [
         BrowserModule,
