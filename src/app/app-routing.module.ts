@@ -18,9 +18,11 @@ const routes: Routes = [
   { path: Route.GRID, component: GridComponent },
   { path: Route.FLEX, component: FlexCanvasComponent },
   { path: Route.PIVOT, component: PivotTableComponent },
-  { path: Route.TRIAL, component: TrialComponent },
+  { path: Route.FRONT, component: TrialComponent },
   { path: '', redirectTo: '/' + Route.FRONT, pathMatch: 'full' },
-  { path: '**', redirectTo: '/' + Route.TRIAL }
+  { path: '**', redirectTo: '/' + Route.FRONT }
+  // { path: Route.TRIAL, component: TrialComponent },
+  // { path: '', redirectTo: '/' + Route.FRONT, pathMatch: 'full' },
 ];
 
 @NgModule({
