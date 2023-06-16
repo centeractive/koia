@@ -17,12 +17,9 @@
   </mat-menu>
 
   <div class="div_column_filter_value" *ngIf="!isEqualBoolean() && !filter.operator.endsWith('empty')">
-    <!-- input id="column_filter_input" matInput type="search" placeholder="Filter Value" [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
-    (input)="onValueChanged($event.target.value)" [formControl]="valueControl" [koiaFilterValueInput]="filter" (search)="onChange.emit()" -->
-
-    <input *ngIf="numberDataType" id="column_filter_input" matInput type="number" placeholder="Filter Value"
+    <input *ngIf="numberDataType" id="column_filter_input" matInput type="search" placeholder="Filter Value"
            [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
-           (input)="onValueChanged($event.target.value)" [formControl]="valueControl" (keydown.enter)="onChange.emit()">
+           (input)="onValueChanged($event.target.value)" [formControl]="valueControl" formattedFloat (search)="onChange.emit()">
     <input *ngIf="!numberDataType" id="column_filter_input" matInput type="search" placeholder="Filter Value"
            [matTooltip]="valueFilterCustomizer.tooltipOf(filter)"
            (input)="onValueChanged($event.target.value)" [formControl]="valueControl" (search)="onChange.emit()">
