@@ -196,6 +196,13 @@ export class DateTimeUtils {
   }
 
   /**
+   * @returns the luxon date/time format for the specified time unit
+   */
+  static luxonFormatOf(timeUnit: TimeUnit): string {
+    return this.ngFormatOf(timeUnit);
+  }
+
+  /**
    * @returns the Angular date/time format for the specified time unit
    */
   static ngFormatOf(timeUnit: TimeUnit): string {

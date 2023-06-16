@@ -3,7 +3,7 @@ import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ChartJsOptionsProvider } from './chartjs-options-provider';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import 'chartjs-adapter-moment';
+import 'chartjs-adapter-luxon';
 import { DatasetStyler } from '../customizer/dataset-styler';
 import { BarLegendCustomizer } from '../customizer/bar-legend-customizer';
 
@@ -28,6 +28,8 @@ export class ChartJs {
             data: context.data,
             options: this.optionsProvider.createOptions(context)
         };
+
+        console.error('options', config.options)
 
         new BarLegendCustomizer().customize(context, config);
         context.chart = new Chart(canvas, config);

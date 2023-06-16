@@ -414,9 +414,8 @@ export class NumberUtils {
       return event.key !== ' ' && !isNaN(Number(event.key));
    }
 
-   static isLocaleDecimalSeparator(key: string): boolean {
-      const num = 0.1;
-      return key === num.toLocaleString().substring(1, 2);
+   static isLocaleDecimalSeparator(char: string): boolean {
+      return char === (0.1).toLocaleString().substring(1, 2);
    }
 
 }

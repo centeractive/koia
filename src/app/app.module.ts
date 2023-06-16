@@ -69,7 +69,6 @@ import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confir
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.component';
-import { FilterValueInputDirective } from './main-toolbar/value-filter/filter-value-input.directive';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-selection/color-scheme-selection.component';
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
@@ -77,6 +76,9 @@ import { SceneTableComponent } from './scenes/scene-table/scene-table.component'
 import { NgxSliderModule } from './ngx-slider/slider.module';
 import { MatTabsModule } from '@angular/material/tabs';
 import { DraggableColumnComponent } from './shared/component/draggable-column/draggable-column.component';
+import { FormattedFloatDirective as FormattedFloatDirective } from './shared/directives/formatted-float.directive';
+import { FormattedIntegerDirective } from './shared/directives/formatted-integer.directive';
+import { TrialComponent } from './testing/trial/trial.component';
 
 @NgModule({
     declarations: [
@@ -101,7 +103,8 @@ import { DraggableColumnComponent } from './shared/component/draggable-column/dr
         StatusComponent,
         MatIconModuleMock,
         TextareaMaxRowsDirective,
-        FilterValueInputDirective,
+        FormattedFloatDirective,
+        FormattedIntegerDirective,
         ConnectionDialogComponent,
         FrontComponent,
         InputDialogComponent,
@@ -114,6 +117,7 @@ import { DraggableColumnComponent } from './shared/component/draggable-column/dr
         ExpansionPanelComponent,
         SceneTableComponent,
         DraggableColumnComponent,
+        TrialComponent
     ],
     imports: [
         BrowserModule,

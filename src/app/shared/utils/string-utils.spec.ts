@@ -67,4 +67,53 @@ describe('StringUtils', () => {
       expect(StringUtils.occurrences('abcabc', 'bc')).toBe(2);
       expect(StringUtils.occurrences('abcabc', 'ab')).toBe(2);
    });
+
+   it('#replace when text is missing', () => {
+      expect(StringUtils.replace(null, 0, 0, null)).toEqual({ text: null, caret: 0 });
+      expect(StringUtils.replace(null, 0, 0, '')).toEqual({ text: '', caret: 0 });
+      expect(StringUtils.replace(null, 0, 0, 'xyz')).toEqual({ text: 'xyz', caret: 3 });
+
+      expect(StringUtils.replace(undefined, 0, 0, undefined)).toEqual({ text: undefined, caret: 0 });
+      expect(StringUtils.replace(undefined, 0, 0, '')).toEqual({ text: '', caret: 0 });
+      expect(StringUtils.replace(undefined, 0, 0, 'xyz')).toEqual({ text: 'xyz', caret: 3 });
+   });
+
+   it('#replace when replacement is missing', () => {
+      expect(StringUtils.replace('', 0, 0, null)).toEqual({ text: '', caret: 0 });
+      expect(StringUtils.replace('abc', 1, 1, null)).toEqual({ text: 'abc', caret: 1 });
+      expect(StringUtils.replace('abc', 0, 1, null)).toEqual({ text: 'bc', caret: 0 });
+      expect(StringUtils.replace('abc', 1, 2, null)).toEqual({ text: 'ac', caret: 1 });
+      expect(StringUtils.replace('abc', 2, 3, null)).toEqual({ text: 'ab', caret: 2 });
+   });
+
+   it('#replace when text and replacement are provided', () => {
+      expect(StringUtils.replace('', 0, 0, '')).toEqual({ text: '', caret: 0 });
+      expect(StringUtils.replace('abc', 1, 1, 'x')).toEqual({ text: 'axbc', caret: 2 });
+      expect(StringUtils.replace('abc', 0, 1, 'x')).toEqual({ text: 'xbc', caret: 1 });
+      expect(StringUtils.replace('abc', 1, 2, 'x')).toEqual({ text: 'axc', caret: 2 });
+      expect(StringUtils.replace('abc', 2, 3, 'x')).toEqual({ text: 'abx', caret: 3 });
+      expect(StringUtils.replace('abc', 3, 3, 'x')).toEqual({ text: 'abcx', caret: 4 });
+   });
+
+   it('#nonSelected when text is missing', () => {
+      expect(StringUtils.nonSelected(null, 0, 0)).toBeNull();
+      expect(StringUtils.nonSelected(undefined, 0, 0)).toBeUndefined();
+   });
+
+   it('#nonSelected when no text is selected', () => {
+      expect(StringUtils.nonSelected('', 0, 0)).toBe('');
+      expect(StringUtils.nonSelected('abc', 0, 0)).toBe('abc');
+      expect(StringUtils.nonSelected('abc', 1, 1)).toBe('abc');
+      expect(StringUtils.nonSelected('abc', 2, 2)).toBe('abc');
+      expect(StringUtils.nonSelected('abc', 3, 3)).toBe('abc');
+   });
+
+   it('#nonSelected when text is selected', () => {
+      expect(StringUtils.nonSelected('abc', 0, 1)).toBe('bc');
+      expect(StringUtils.nonSelected('abc', 0, 2)).toBe('c');
+      expect(StringUtils.nonSelected('abc', 0, 3)).toBe('');
+      expect(StringUtils.nonSelected('abc', 1, 2)).toBe('ac');
+      expect(StringUtils.nonSelected('abc', 1, 3)).toBe('a');
+      expect(StringUtils.nonSelected('abc', 2, 3)).toBe('ab');
+   });
 });

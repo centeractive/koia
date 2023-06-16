@@ -11,11 +11,12 @@ import { Location } from '@angular/common';
 import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './column-mapping/mapper';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { MatAccordion } from '@angular/material/expansion';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ProgressBarMode } from '@angular/material/progress-bar';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
+import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 
 @Component({
   selector: 'koia-front',
@@ -55,8 +56,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   feedback: string;
   percentPersisted: number;
   entryPersister: EntryPersister;
-  maxItemsPerScene: number;
-  maxItemsToLoadControl: UntypedFormControl;
+  maxItemsToLoadControl: FormControl<number>;
   abortDataloadOnError = true;
   progressBarMode: ProgressBarMode;
   canceled = false;
@@ -65,6 +65,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private generatedSceneShortDesc: string;
   private sampleEntries: object[];
   private columnFactory = new ColumnMappingGenerator();
+  private maxItemsPerScene: number;
   private mappingErrors = new ConfinedStringSet(10);
   private valueFormatter = new ValueFormatter();
 
@@ -125,8 +126,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       .then(db => {
         this.scene = SceneUtils.createScene(db);
         this.maxItemsPerScene = this.dbService.getMaxDataItemsPerScene();
-        this.maxItemsToLoadControl = new UntypedFormControl('', [Validators.min(1), Validators.max(this.maxItemsPerScene)]);
-        this.maxItemsToLoadControl.setValue(this.maxItemsPerScene);
+        this.maxItemsToLoadControl = new FormControl<number>(this.maxItemsPerScene, [Validators.required, formattedNumberValidator(1, this.maxItemsPerScene)]);
         this.entryPersister = this.createEntryPersister();
       })
       .catch(err => this.notifyError(err));

@@ -8,6 +8,7 @@ import { RawDataViewComponent } from './raw-data/raw-data-view.component';
 import { GridComponent } from './grid/grid.component';
 import { FlexCanvasComponent } from './flex-canvas/flex-canvas.component';
 import { PivotTableComponent } from './pivot-table/pivot-table.component';
+import { TrialComponent } from './testing/trial/trial.component';
 
 const routes: Routes = [
   { path: Route.FRONT, component: FrontComponent },
@@ -17,12 +18,13 @@ const routes: Routes = [
   { path: Route.GRID, component: GridComponent },
   { path: Route.FLEX, component: FlexCanvasComponent },
   { path: Route.PIVOT, component: PivotTableComponent },
+  { path: Route.TRIAL, component: TrialComponent },
   { path: '', redirectTo: '/' + Route.FRONT, pathMatch: 'full' },
-  { path: '**', redirectTo: '/' + Route.FRONT }
+  { path: '**', redirectTo: '/' + Route.TRIAL }
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { enableTracing: false } )],
+  imports: [RouterModule.forRoot(routes, { enableTracing: false })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

@@ -15,7 +15,9 @@
       <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
         <mat-icon>add_photo_alternate</mat-icon>
       </button>
-      <nav mat-tab-nav-bar mat-stretch-tabs="false" mat-align-tabs="start">
+
+      <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+      <nav mat-tab-nav-bar [tabPanel]="tabPanel">
         <a id="tabRawData" mat-tab-link [routerLink]="[urlRawdata]" [active]="currURL == urlRawdata">
           <mat-icon svgIcon="raw_data_view"></mat-icon>
           <span>&nbsp;Raw Data</span>
@@ -33,12 +35,13 @@
           <span>&nbsp;Flex View</span>
         </a>
       </nav>
+
     </span>
 
     <div id="div_filter">
       <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
-        <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)"
-               [(ngModel)]="fullTextFilter" (keyup)="onFullTextFilterFieldKeyUp($event)">
+        <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)" [(ngModel)]="fullTextFilter"
+               (keyup)="onFullTextFilterFieldKeyUp($event)">
         <button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
                 mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
           <mat-icon>close</mat-icon>
@@ -53,16 +56,14 @@
 
     <span class="span_buttons" *ngIf="scene">
 
-      <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter"
-              [matMenuTriggerFor]="columnFilterMenu">
+      <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter" [matMenuTriggerFor]="columnFilterMenu">
         <mat-icon>add_circle_outline</mat-icon>
-        <span>&nbsp;Add Filter</span>
+        <span>&nbsp;Add&nbsp;Filter</span>
       </button>
       <mat-menu #columnFilterMenu="matMenu">
         <span *ngFor="let column of scene.columns">
 
-          <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)" mat-menu-item
-                  (click)="addValueFilter(column)">
+          <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)" mat-menu-item (click)="addValueFilter(column)">
             <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
             <span>{{ column.name }}</span>
           </button>
@@ -92,7 +93,7 @@
                   [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
       </button>
 
-      <button (click)="refreshEntries()" mat-icon-button matTooltip="Refresh data">
+      <button (click)="refreshEntries()" color="accent" mat-icon-button matTooltip="Refresh data">
         <mat-icon>refresh</mat-icon>
       </button>
     </span>

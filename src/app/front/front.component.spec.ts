@@ -28,7 +28,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 
 @Component({ template: '' })
-
 class DummyComponent { }
 
 const couchDBService = new CouchDBServiceMock();

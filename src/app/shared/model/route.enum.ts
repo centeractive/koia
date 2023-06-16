@@ -5,5 +5,6 @@ export enum Route {
    RAWDATA = 'rawdata',
    PIVOT = 'pivot',
    GRID = 'grid',
-   FLEX = 'flex'
+   FLEX = 'flex',
+   TRIAL = 'trial'
 }

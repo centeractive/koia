@@ -37,3 +37,8 @@ button {
 .full_text_filter {
   width: 460px;
 }
+
+#butAddColFilter {
+  color: white;
+  background-color: #38983b;
+}

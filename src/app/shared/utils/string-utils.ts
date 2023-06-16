@@ -51,4 +51,37 @@ export class StringUtils {
    static occurrences(baseString: string, word: string): number {
       return baseString.split(word).length - 1;
    }
+
+   /** 
+    * removes the selected text and inserts the replacement text instead 
+    * 
+    * @returns an object containing the following attributes
+    *          - text: the new text
+    *          - caret: index at the end of the inserted text
+    */
+   static replace(text: string, selStart: number, selEnd: number, replacement: string): { text: string, caret: number } {
+      if (text === null || text === undefined) {
+         return {
+            text: replacement,
+            caret: replacement?.length || 0
+         }
+      }
+      replacement = replacement || '';
+      text = text.substring(0, selStart) + replacement + text.substring(selEnd);
+      return {
+         text,
+         caret: selStart + replacement.length
+      };
+   }
+
+   /** 
+    * @returns the non-selected text of the specified string
+    */
+   static nonSelected(text: string, selStart: number, selEnd: number): string {
+      if (!text || selStart === selEnd) {
+         return text;
+      }
+      return text.substring(0, selStart) + text.substring(selEnd);
+   }
+
 }

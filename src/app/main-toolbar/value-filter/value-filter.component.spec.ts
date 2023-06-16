@@ -6,13 +6,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SceneFactory } from 'app/shared/test';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { FilterValueInputDirective } from './filter-value-input.directive';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { FormattedFloatDirective } from 'app/shared/directives/formatted-float.directive';
 
 describe('ValueFilterComponent', () => {
 
@@ -38,7 +38,7 @@ describe('ValueFilterComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ValueFilterComponent, FilterValueInputDirective],
+      declarations: [ValueFilterComponent, FormattedFloatDirective],
       imports: [
         MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
         MatMenuModule, BrowserAnimationsModule
@@ -287,7 +287,7 @@ describe('ValueFilterComponent', () => {
     expect(component.valueControl.getError('error')).toBe('Invalid number');
   });
 
-  it('pressing character key in value field should not emit change event', fakeAsync(() => {
+  it('pressing digit key in number column filter field should not emit change event', fakeAsync(() => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
@@ -306,21 +306,21 @@ describe('ValueFilterComponent', () => {
     expect(component.valueControl.hasError('error')).toBe(false);
   }));
 
-  it('pressing <enter> in column filter field should emit change event', () => {
+  it('pressing <enter> in number column filter field should emit change event', () => {
 
     // given
-    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
+    const ds = (0.1).toLocaleString().charAt(1);
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200' + ds + '7', DataType.NUMBER);
     fixture.detectChanges();
     const htmlInput = fixture.debugElement.query(By.css('#column_filter_input')).nativeElement;
-    htmlInput.value = 'ERR';
+    htmlInput.value = '1';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     spyOn(component.onChange, 'emit');
 
     // when
     const event: any = document.createEvent('Event');
-    event.key = 'Enter';
-    event.initEvent('keydown');
+    event.initEvent('search');
     htmlInput.dispatchEvent(event);
 
     // then

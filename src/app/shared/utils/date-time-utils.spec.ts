@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import * as moment from 'moment';
 import { TimeUnit, Column, DataType } from '../model';
 import { timeFormat } from 'd3';
+import { DateTime } from 'luxon';
 
 describe('DateTimeUtils', () => {
 
@@ -390,7 +391,7 @@ describe('DateTimeUtils', () => {
   });
 
   it('#toBaseDate should return time specific down-rounded date', () => {
-    const roundNowDown = f => new Date(Math.floor(now / f) * f);
+    const roundNowDown = (f: number) => new Date(Math.floor(now / f) * f);
 
     expect(DateTimeUtils.toBaseDate(now, TimeUnit.MILLISECOND)).toEqual(new Date(now));
     expect(DateTimeUtils.toBaseDate(now, TimeUnit.SECOND)).toEqual(roundNowDown(1_000));
@@ -456,7 +457,7 @@ describe('DateTimeUtils', () => {
   });
 
   it('#formatTime should return formatted date/time (verified with angular DatePipe)', () => {
-    const ngFormat = timeunit => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
+    const ngFormat = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
 
     expect(DateTimeUtils.formatTime(now, TimeUnit.MILLISECOND)).toEqual(ngFormat(TimeUnit.MILLISECOND));
     expect(DateTimeUtils.formatTime(now, TimeUnit.SECOND)).toEqual(ngFormat(TimeUnit.SECOND));
@@ -492,26 +493,39 @@ describe('DateTimeUtils', () => {
     expect(DateTimeUtils.timeUnitFromNgFormat('d MMM yyyy HH:mm:ss SSS')).toBe(TimeUnit.MILLISECOND);
   });
 
-  it('#ngFormatOf should return moment format', () => {
+  it('#ngToMomentFormat should return moment format', () => {
     expect(DateTimeUtils.ngToMomentFormat('dd.MM.yyyy HH:mm:ss SSS')).toBe('DD.MM.YYYY HH:mm:ss SSS');
   });
 
-  it('#ngFormatOf should undefined when ngFormat is missing', () => {
+  it('#ngToMomentFormat should undefined when ngFormat is missing', () => {
     expect(DateTimeUtils.ngToMomentFormat(undefined)).toBeUndefined();
     expect(DateTimeUtils.ngToMomentFormat(null)).toBeUndefined();
   });
 
-  it('#ngFormatOf and #momentFormatOf should return compatible date/time format each', () => {
-    const ngFormat = timeunit => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
-    const momentFormat = timeunit => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
+  it('#ngFormatOf and #luxonFormatOf should return compatible date/time format each', () => {
+    const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
+    const luxonFormatter = (timeunit: TimeUnit) => DateTime.fromMillis(now).toFormat(DateTimeUtils.luxonFormatOf(timeunit));
 
-    expect(ngFormat(TimeUnit.MILLISECOND)).toEqual(momentFormat(TimeUnit.MILLISECOND));
-    expect(ngFormat(TimeUnit.SECOND)).toEqual(momentFormat(TimeUnit.SECOND));
-    expect(ngFormat(TimeUnit.MINUTE)).toEqual(momentFormat(TimeUnit.MINUTE));
-    expect(ngFormat(TimeUnit.HOUR)).toEqual(momentFormat(TimeUnit.HOUR));
-    expect(ngFormat(TimeUnit.DAY)).toEqual(momentFormat(TimeUnit.DAY));
-    expect(ngFormat(TimeUnit.MONTH)).toEqual(momentFormat(TimeUnit.MONTH));
-    expect(ngFormat(TimeUnit.YEAR)).toEqual(momentFormat(TimeUnit.YEAR));
+    expect(ngFormatter(TimeUnit.MILLISECOND)).toEqual(luxonFormatter(TimeUnit.MILLISECOND));
+    expect(ngFormatter(TimeUnit.SECOND)).toEqual(luxonFormatter(TimeUnit.SECOND));
+    expect(ngFormatter(TimeUnit.MINUTE)).toEqual(luxonFormatter(TimeUnit.MINUTE));
+    expect(ngFormatter(TimeUnit.HOUR)).toEqual(luxonFormatter(TimeUnit.HOUR));
+    expect(ngFormatter(TimeUnit.DAY)).toEqual(luxonFormatter(TimeUnit.DAY));
+    expect(ngFormatter(TimeUnit.MONTH)).toEqual(luxonFormatter(TimeUnit.MONTH));
+    expect(ngFormatter(TimeUnit.YEAR)).toEqual(luxonFormatter(TimeUnit.YEAR));
+  });
+
+  it('#ngFormatOf and #momentFormatOf should return compatible date/time format each', () => {
+    const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
+    const momentFormatter = (timeunit: TimeUnit) => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
+
+    expect(ngFormatter(TimeUnit.MILLISECOND)).toEqual(momentFormatter(TimeUnit.MILLISECOND));
+    expect(ngFormatter(TimeUnit.SECOND)).toEqual(momentFormatter(TimeUnit.SECOND));
+    expect(ngFormatter(TimeUnit.MINUTE)).toEqual(momentFormatter(TimeUnit.MINUTE));
+    expect(ngFormatter(TimeUnit.HOUR)).toEqual(momentFormatter(TimeUnit.HOUR));
+    expect(ngFormatter(TimeUnit.DAY)).toEqual(momentFormatter(TimeUnit.DAY));
+    expect(ngFormatter(TimeUnit.MONTH)).toEqual(momentFormatter(TimeUnit.MONTH));
+    expect(ngFormatter(TimeUnit.YEAR)).toEqual(momentFormatter(TimeUnit.YEAR));
   });
 
   it('#listMomentLocals should return locals', () => {
@@ -525,29 +539,29 @@ describe('DateTimeUtils', () => {
   });
 
   it('#momentFormatOf and #d3FormatOf should return compatible date/time format each', () => {
-    const momentFormat = timeunit => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
-    const d3Format = timeunit => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
+    const momentFormatter = (timeunit: TimeUnit) => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
+    const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
 
-    expect(momentFormat(TimeUnit.MILLISECOND)).toEqual(d3Format(TimeUnit.MILLISECOND));
-    expect(momentFormat(TimeUnit.SECOND)).toEqual(d3Format(TimeUnit.SECOND));
-    expect(momentFormat(TimeUnit.MINUTE)).toEqual(d3Format(TimeUnit.MINUTE));
-    expect(momentFormat(TimeUnit.HOUR)).toEqual(d3Format(TimeUnit.HOUR));
-    expect(momentFormat(TimeUnit.DAY)).toEqual(d3Format(TimeUnit.DAY));
-    expect(momentFormat(TimeUnit.MONTH)).toEqual(d3Format(TimeUnit.MONTH));
-    expect(momentFormat(TimeUnit.YEAR)).toEqual(d3Format(TimeUnit.YEAR));
+    expect(momentFormatter(TimeUnit.MILLISECOND)).toEqual(d3Formatter(TimeUnit.MILLISECOND));
+    expect(momentFormatter(TimeUnit.SECOND)).toEqual(d3Formatter(TimeUnit.SECOND));
+    expect(momentFormatter(TimeUnit.MINUTE)).toEqual(d3Formatter(TimeUnit.MINUTE));
+    expect(momentFormatter(TimeUnit.HOUR)).toEqual(d3Formatter(TimeUnit.HOUR));
+    expect(momentFormatter(TimeUnit.DAY)).toEqual(d3Formatter(TimeUnit.DAY));
+    expect(momentFormatter(TimeUnit.MONTH)).toEqual(d3Formatter(TimeUnit.MONTH));
+    expect(momentFormatter(TimeUnit.YEAR)).toEqual(d3Formatter(TimeUnit.YEAR));
   });
 
   it('#d3FormatOf and #ngFormatOf should return compatible date/time format each', () => {
-    const d3Format = timeunit => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
-    const ngFormat = timeunit => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
+    const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
+    const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
 
-    expect(d3Format(TimeUnit.MILLISECOND)).toEqual(ngFormat(TimeUnit.MILLISECOND));
-    expect(d3Format(TimeUnit.SECOND)).toEqual(ngFormat(TimeUnit.SECOND));
-    expect(d3Format(TimeUnit.MINUTE)).toEqual(ngFormat(TimeUnit.MINUTE));
-    expect(d3Format(TimeUnit.HOUR)).toEqual(ngFormat(TimeUnit.HOUR));
-    expect(d3Format(TimeUnit.DAY)).toEqual(ngFormat(TimeUnit.DAY));
-    expect(d3Format(TimeUnit.MONTH)).toEqual(ngFormat(TimeUnit.MONTH));
-    expect(d3Format(TimeUnit.YEAR)).toEqual(ngFormat(TimeUnit.YEAR));
+    expect(d3Formatter(TimeUnit.MILLISECOND)).toEqual(ngFormatter(TimeUnit.MILLISECOND));
+    expect(d3Formatter(TimeUnit.SECOND)).toEqual(ngFormatter(TimeUnit.SECOND));
+    expect(d3Formatter(TimeUnit.MINUTE)).toEqual(ngFormatter(TimeUnit.MINUTE));
+    expect(d3Formatter(TimeUnit.HOUR)).toEqual(ngFormatter(TimeUnit.HOUR));
+    expect(d3Formatter(TimeUnit.DAY)).toEqual(ngFormatter(TimeUnit.DAY));
+    expect(d3Formatter(TimeUnit.MONTH)).toEqual(ngFormatter(TimeUnit.MONTH));
+    expect(d3Formatter(TimeUnit.YEAR)).toEqual(ngFormatter(TimeUnit.YEAR));
   });
 
   it('#sortTimeUnits should return same when array is missing', () => {

@@ -153,7 +153,7 @@ export class ChartJsOptionsProvider {
             }
         } else {
             switch (column.dataType) {
-                case DataType.NUMBER:
+                case DataType.NUMBER: {
                     scaleOptions.type = 'linear';
                     const xRange = ChartJsUtils.overallXRangeOf(context.data);
 
@@ -161,6 +161,7 @@ export class ChartJsOptionsProvider {
                     scaleOptions['suggestedMin'] = xRange.min;
                     scaleOptions['suggestedMax'] = xRange.max;
                     break;
+                }
                 case DataType.TIME:
                     this.addTimeOptions(scaleOptions, column, context);
                     break;
@@ -179,7 +180,7 @@ export class ChartJsOptionsProvider {
         timeScaleOptions.time = {
             unit: scaleTimeUnit,
             displayFormats: {
-                [scaleTimeUnit]: DateTimeUtils.momentFormatOf(scaleTimeUnit),
+                [scaleTimeUnit]: DateTimeUtils.luxonFormatOf(scaleTimeUnit),
             },
             tooltipFormat: this.tooltipFormat(timeColumn)
         };
@@ -198,7 +199,7 @@ export class ChartJsOptionsProvider {
 
     private tooltipFormat(timeColumn: Column): string {
         if (timeColumn.groupingTimeUnit) {
-            return DateTimeUtils.momentFormatOf(timeColumn.groupingTimeUnit);
+            return DateTimeUtils.luxonFormatOf(timeColumn.groupingTimeUnit);
         }
         return timeColumn.format;
     }

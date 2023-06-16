@@ -109,7 +109,7 @@
                         </button>
                      </div>
                      <div class="div_title">
-                        <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()" [koiaTextareaMaxRows]="2"
+                        <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()" [textareaMaxRows]="2"
                                   (keyup)="context.title = $event.target.value"></textarea>
                      </div>
                      <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning" color="warn">
