@@ -49,7 +49,7 @@ steps:
     releaseType: stable
     
 - script: |
-    docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:3.3.2
+    docker run -p 5984:5984 --name couchdb -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:latest
   displayName: 'run CouchDB in Docker container'
 
 # perform unit-tets and publish test and code coverage results
