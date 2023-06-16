@@ -49,13 +49,6 @@ export class CouchDBService implements DB {
 
   private createHttpOptions(): any {
     let httpHeaders = new HttpHeaders();
-
-    // trying to fix failing tests on Azure >>
-
-    httpHeaders = httpHeaders.set('Access-Control-Allow-Origin', 'localhost:5984');
-
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 
-
     httpHeaders = httpHeaders.set('Accept', 'application/json');
     httpHeaders = httpHeaders.set('Content-type', 'application/json');
     httpHeaders = httpHeaders.set('Authorization', 'Basic ' + btoa(this.connectionInfo.user + ':' + this.connectionInfo.password));
