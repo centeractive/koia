@@ -1,24 +1,23 @@
+import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
-import { of, Observable } from 'rxjs';
-import { ChartComponent } from './chart.component';
-import { DataType, Column, Scene, Route } from 'app/shared/model';
-import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
-import { SimpleChange } from '@angular/core';
-import { RawDataRevealService } from 'app/shared/services';
-import { ResizableDirective } from 'angular-resizable-element';
-import { RouterTestingModule } from '@angular/router/testing';
-import { DBService } from 'app/shared/services/backend';
-import { SceneFactory } from 'app/shared/test';
-import { Router } from '@angular/router';
-import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ResizableDirective } from 'angular-resizable-element';
+import { Column, DataType, Route, Scene } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { RawDataRevealService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { SceneFactory } from 'app/shared/test';
+import { ChartComponent } from './chart.component';
 
 describe('ChartComponent', () => {
 
   let scene: Scene;
   let context: ChartContext;
-  let entries$: Observable<object[]>;
+  let entries: object[];
   const dbService = new DBService(null);
   let component: ChartComponent;
   let fixture: ComponentFixture<ChartComponent>;
@@ -26,12 +25,12 @@ describe('ChartComponent', () => {
 
   beforeAll(() => {
     scene = SceneFactory.createScene('1', []);
-    entries$ = of([
+    entries = [
       { t1: 'a', n1: 1, t2: null },
       { t1: 'b', n1: 2, t2: 'x' },
       { t1: 'b', n1: 3, t2: 'y' },
       { t1: 'b', n1: 2, t2: 'x' }
-    ]);
+    ];
   });
 
   beforeEach(() => {
@@ -48,8 +47,8 @@ describe('ChartComponent', () => {
     fixture = TestBed.createComponent(ChartComponent);
     component = fixture.componentInstance;
     context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+    context.entries = entries;
     component.context = context;
-    component.entries$ = entries$;
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
   });
 
@@ -77,7 +76,7 @@ describe('ChartComponent', () => {
     // given
     context.dataColumns = [createColumn('n1', DataType.NUMBER)];
     fixture.detectChanges();
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
+    component.ngOnChanges({ 'entries': new SimpleChange(null, null, true) });
     flush();
 
     // when
@@ -99,7 +98,7 @@ describe('ChartComponent', () => {
     spyOn(component.onWarning, 'emit');
     context.dataColumns = [createColumn('n1', DataType.NUMBER)];
     fixture.detectChanges();
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
+    component.ngOnChanges({ 'entries': new SimpleChange(null, null, true) });
     flush();
 
     // when

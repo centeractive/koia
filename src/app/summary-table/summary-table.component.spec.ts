@@ -1,20 +1,18 @@
-import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule } from '@angular/material/sort';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatDialogModule } from '@angular/material/dialog';
-import { of } from 'rxjs';
-import { SummaryTableComponent } from './summary-table.component';
-import { SummaryContext, Query, Route, Column, DataType, TimeUnit, Aggregation, PropertyFilter, Operator } from 'app/shared/model';
-import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DatePipe } from '@angular/common';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
 import { Router } from '@angular/router';
-import { SimpleChange } from '@angular/core';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Aggregation, Column, DataType, Operator, PropertyFilter, Query, Route, SummaryContext, TimeUnit } from 'app/shared/model';
+import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
+import { SummaryTableComponent } from './summary-table.component';
 
 describe('SummaryTableComponent', () => {
 
@@ -68,9 +66,9 @@ describe('SummaryTableComponent', () => {
     fixture = TestBed.createComponent(SummaryTableComponent);
     component = fixture.componentInstance;
     context = new SummaryContext(columns);
+    context.entries = entries.slice(0);
     context.dataColumns = [findColumn('t2')];
     component.context = context;
-    component.entries$ = of(entries.slice(0));
     showRawDataSpy = spyOn(TestBed.inject(RawDataRevealService), 'show').and.callFake(query => null);
   });
 
@@ -155,38 +153,21 @@ describe('SummaryTableComponent', () => {
     expect(divContent.style.maxWidth).toBe('');
   }));
 
-  it('#ngOnChanges should refresh frame data when entries$ changed', fakeAsync(() => {
+  it('context entries change should refresh frame data', fakeAsync(() => {
 
     // given
     fixture.detectChanges();
     flush();
     const prevFrameData = component.frameData;
-    const entries$ = of(entries.slice(0, 1));
-    component.entries$ = entries$;
 
     // when
-    component.ngOnChanges({ entries$: new SimpleChange(null, entries$, false) });
+    context.entries = entries.slice(0, 1);
     flush();
 
     // then
     expect(component.frameData).toBeTruthy();
     expect(component.frameData.length).toBe(1);
     expect(component.frameData).not.toBe(prevFrameData);
-  }));
-
-  it('#ngOnChanges should not refresh frame data when entries$ do not changed', fakeAsync(() => {
-
-    // given
-    fixture.detectChanges();
-    flush();
-    const prevFrameData = component.frameData;
-
-    // when
-    component.ngOnChanges({ unknown$: new SimpleChange(null, {}, false) });
-    flush();
-
-    // then
-    expect(component.frameData).toBe(prevFrameData);
   }));
 
   it('should create summary data', fakeAsync(() => {

@@ -1,30 +1,29 @@
+import { Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
-
-import { FlexCanvasComponent } from './flex-canvas.component';
-import { Component, NO_ERRORS_SCHEMA, ElementRef, QueryList } from '@angular/core';
-import { ResizableDirective, ResizeHandleDirective, ResizeEvent } from 'angular-resizable-element';
-import { of, Observable } from 'rxjs';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogRef } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import { Column, StatusType, SummaryContext, Route, DataType, Scene, ExportFormat, ElementContext, Status } from 'app/shared/model';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
+import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { Column, DataType, ElementContext, ExportFormat, Route, Scene, Status, StatusType, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
-import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
+import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { RouterTestingModule } from '@angular/router/testing';
-import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
-import { By } from '@angular/platform-browser';
-import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { Router } from '@angular/router';
-import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { ChartMarginService } from 'app/shared/services/chart';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatDialogRef } from '@angular/material/dialog';
+import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
+import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import * as _ from 'lodash';
+import { Observable, of } from 'rxjs';
+import { FlexCanvasComponent } from './flex-canvas.component';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -143,9 +142,7 @@ describe('FlexCanvasComponent', () => {
 
   it('should load initial entries', () => {
     expect(dbService.findEntries).toHaveBeenCalled();
-    component.entries$.subscribe(e => {
-      expect(e).toEqual(entries);
-    })
+    expect(component.entries).toEqual(entries);
   });
 
   it('#resizableEdgesOf should return bottom/right-resizable when summary context', () => {

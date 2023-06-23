@@ -1,17 +1,26 @@
 import {
-  Component, Input, OnInit, OnChanges, SimpleChanges, ViewEncapsulation, Inject, ElementRef,
-  ViewChild, Output, EventEmitter, ChangeDetectorRef, HostListener
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Inject,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  ViewEncapsulation
 } from '@angular/core';
-import { firstValueFrom, Observable } from 'rxjs';
-import { ChangeEvent, Route } from '../shared/model';
-import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
-import { CommonUtils } from 'app/shared/utils';
-import { ResizeEvent } from 'angular-resizable-element';
-import { RawDataRevealService } from 'app/shared/services';
 import { Router } from '@angular/router';
-import { DBService } from 'app/shared/services/backend';
+import { ResizeEvent } from 'angular-resizable-element';
 import { ExportDataProvider } from 'app/shared/controller';
+import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
+import { RawDataRevealService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { CommonUtils } from 'app/shared/utils';
+import { ChangeEvent, Route } from '../shared/model';
 import { ChartJs } from './chartjs/chartjs';
 
 @Component({
@@ -24,7 +33,6 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
 
   @Input() parentConstraintSize: boolean;
   @Input() context: ChartContext;
-  @Input() entries$: Observable<object[]>;
   @Output() onWarning: EventEmitter<string> = new EventEmitter();
 
   @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement>;
@@ -42,8 +50,9 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
-      this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
+      this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
     }
+    this.prepareChartAsync(ChangeEvent.STRUCTURE);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -53,21 +62,6 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
         return margin.top >= 0 && margin.right >= 0 && margin.bottom >= 0 && margin.left >= 0;
       };
     }
-    if (changes['entries$']) {
-      this.fetchEntries();
-    }
-  }
-
-  private contextChanged(changeEvent: ChangeEvent): void {
-    this.prepareChartAsync(changeEvent);
-  }
-
-  private fetchEntries(): void {
-    firstValueFrom(this.entries$).then(entries => this.onEntries(entries));
-  }
-
-  private onEntries(entries: object[]): void {
-    this.context.entries = entries;
   }
 
   private prepareChartAsync(changeEvent: ChangeEvent): void {

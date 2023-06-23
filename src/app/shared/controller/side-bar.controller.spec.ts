@@ -1,13 +1,11 @@
-import { fakeAsync, flush } from '@angular/core/testing';
-
-import { Column, ElementContext, Aggregation, DataType, TimeUnit, ExportFormat } from '../model';
-import { SimpleChange, Directive } from '@angular/core';
-import { SideBarController } from './side-bar.controller';
-import { of } from 'rxjs';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { Directive, SimpleChange } from '@angular/core';
+import { fakeAsync, flush } from '@angular/core/testing';
+import { Aggregation, Column, DataType, ElementContext, ExportFormat, TimeUnit } from '../model';
+import { ContainerModel, DragDropEventFactory } from '../test';
 import { NumberUtils } from '../utils';
 import { ValueRange } from '../value-range/model/value-range.type';
-import { DragDropEventFactory, ContainerModel } from '../test';
+import { SideBarController } from './side-bar.controller';
 
 @Directive()
 class SideBarControllerTestable extends SideBarController { }
@@ -170,7 +168,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // given
       const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries$ = of(entries);
+      controller.entries = entries;
 
       // when
       controller.addValueGrouping('Amount');
@@ -187,7 +185,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // given
       const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries$ = of(entries);
+      controller.entries = entries;
       controller.addValueGrouping('Amount');
       const amountValueGrouping = context.valueGroupings[0];
 
@@ -204,7 +202,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // given
       const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries$ = of(entries);
+      controller.entries = entries;
       controller.addValueGrouping('Amount');
       const amountValueGrouping = context.valueGroupings[0];
       const rangesCount = amountValueGrouping.ranges.length;
@@ -223,7 +221,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // given
       const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries$ = of(entries);
+      controller.entries = entries;
       controller.addValueGrouping('Amount');
       const amountValueGrouping = context.valueGroupings[0];
       const rangesCount = amountValueGrouping.ranges.length;
@@ -245,7 +243,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // given
       const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries$ = of(entries);
+      controller.entries = entries;
       controller.addValueGrouping('Amount');
       const amountValueGrouping = context.valueGroupings[0];
       const rangesCount = amountValueGrouping.ranges.length;

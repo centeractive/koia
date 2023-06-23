@@ -1,19 +1,16 @@
 <mat-sidenav-container fullscreen>
 
    <mat-sidenav #sidenav mode="push" class="sidenav" *ngIf="elementContexts">
-      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [gridColumns]="gridColumns"
+      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [entries]="entries" [gridColumns]="gridColumns"
                            [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
                            (onElementPositionChange)="changeElementPosition($event)">
       </koia-chart-side-bar>
-      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext"
-                           [gridColumns]="gridColumns" [elementCount]="elementContexts.length"
-                           [elementPosition]="selectedContextPosition"
+      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext" [entries]="entries" [gridColumns]="gridColumns"
+                           [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
                            (onElementPositionChange)="changeElementPosition($event)">
       </koia-graph-side-bar>
-      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext"
-                                   [gridColumns]="gridColumns" [entries$]="entries$"
-                                   [elementCount]="elementContexts.length"
-                                   [elementPosition]="selectedContextPosition"
+      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext" [entries]="entries" [gridColumns]="gridColumns"
+                                   [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
                                    (onElementPositionChange)="changeElementPosition($event)">
       </koia-summary-table-side-bar>
    </mat-sidenav>
@@ -120,17 +117,15 @@
                      </button>
                   </div>
                   <div *ngIf="isSummaryContext(context)" class="div_summary_table">
-                     <koia-summary-table [gridView]="true" [context]="context" [entries$]="entries$" (onRemove)="removeElement($event)">
+                     <koia-summary-table [gridView]="true" [context]="context" (onRemove)="removeElement($event)">
                      </koia-summary-table>
                   </div>
                   <div *ngIf="isChartContext(context)" class="div_chart">
-                     <koia-chart [context]="context" [entries$]="entries$" [parentConstraintSize]="true" (onRemove)="removeElement($event)"
-                                 (onWarning)="notifyWarning($event)">
+                     <koia-chart [context]="context" [parentConstraintSize]="true" (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
                      </koia-chart>
                   </div>
                   <div *ngIf="isGraphContext(context)" class="div_chart">
-                     <koia-graph [context]="context" [entries$]="entries$" [parentConstraintSize]="true" (onRemove)="removeElement($event)"
-                                 (onWarning)="notifyWarning($event)">
+                     <koia-graph [context]="context" [parentConstraintSize]="true" (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
                      </koia-graph>
                   </div>
                </div>

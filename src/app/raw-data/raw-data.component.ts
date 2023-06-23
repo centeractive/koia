@@ -1,18 +1,17 @@
-import { Component, ViewChild, OnInit, ElementRef, Input, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { Sort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
-import { Column, Query, Route, Page, ExportFormat, DataType } from '../shared/model';
-import { DBService } from '../shared/services/backend';
-import { NotificationService, DialogService, ExportService } from 'app/shared/services';
-import { AbstractComponent } from 'app/shared/component/abstract.component';
-import { ValueFormatter } from 'app/shared/format';
-import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
-import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Sort } from '@angular/material/sort';
+import { Router } from '@angular/router';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { ValueFormatter } from 'app/shared/format';
+import { DialogService, ExportService, NotificationService } from 'app/shared/services';
+import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { lastValueFrom } from 'rxjs';
-import { ExportDataConverter } from 'app/shared/services/export/data-converter/export-data-converter';
+import { Column, DataType, ExportFormat, Page, Query, Route } from '../shared/model';
+import { DBService } from '../shared/services/backend';
 
 @Component({
   selector: 'koia-raw-data',
@@ -44,7 +43,6 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
 
   private page: Page;
   private valueFormatter = new ValueFormatter();
-  private dataConverter = new ExportDataConverter();
 
   constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService,
     private dialogService: DialogService, notificationService: NotificationService,
@@ -125,7 +123,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
     }
   }
 
-  adjustLayout() {
+  adjustLayout(): void {
     let maxHeight = window.innerHeight;
     if (this.dialogStyle) {
       maxHeight -= 200; // TODO: compute dependent on dialog height and toolbar

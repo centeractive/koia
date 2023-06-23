@@ -1,10 +1,9 @@
-import { Output, EventEmitter, Input, ViewChild, SimpleChanges, OnChanges, Directive } from '@angular/core';
-import { MatAccordion } from '@angular/material/expansion';
-import { Column, ElementContext, DataType, TimeUnit } from '../model';
-import { NumberUtils, ArrayUtils, DataTypeUtils } from '../utils';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { Directive, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { MatAccordion } from '@angular/material/expansion';
 import { DataFrame } from 'data-forge';
-import { Observable } from 'rxjs';
+import { Column, DataType, ElementContext, TimeUnit } from '../model';
+import { ArrayUtils, DataTypeUtils, NumberUtils } from '../utils';
 import { ValueGroupingGenerator } from '../value-range';
 import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { ValueRange } from '../value-range/model/value-range.type';
@@ -12,7 +11,7 @@ import { ValueRange } from '../value-range/model/value-range.type';
 @Directive()
 export abstract class SideBarController implements OnChanges {
 
-   @Input() entries$: Observable<object[]>;
+   @Input() entries: object[];
    @Input() gridColumns: number;
    @Input() elementCount: number;
    @Input() elementPosition: number;
@@ -55,7 +54,7 @@ export abstract class SideBarController implements OnChanges {
       }
    }
 
-   protected defineSelectableItems() {
+   protected defineSelectableItems(): void {
       if (this.gridColumns) {
          this.gridColumnSpans = NumberUtils.rangeClosedIntArray(this.gridColumns);
       }
@@ -110,12 +109,10 @@ export abstract class SideBarController implements OnChanges {
    }
 
    addValueGrouping(columnName: string): void {
-      this.entries$.subscribe(entries => {
-         const data = new DataFrame(entries);
-         const grouping = this.valueGroupingGenerator.createGrouping(data, columnName);
-         this.elementContext.addValueGrouping(grouping);
-         this.identifyNonGroupedColumns();
-      });
+      const data = new DataFrame(this.entries);
+      const grouping = this.valueGroupingGenerator.createGrouping(data, columnName);
+      this.elementContext.addValueGrouping(grouping);
+      this.identifyNonGroupedColumns();
    }
 
    removeValueGrouping(valueGrouping: ValueGrouping): void {

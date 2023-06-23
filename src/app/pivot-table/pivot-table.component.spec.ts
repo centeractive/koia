@@ -1,33 +1,31 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
-
-import { PivotTableComponent } from './pivot-table.component';
-import { ElementRef, Injectable, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { NotificationService, ExportService, TimeGroupingService, DialogService, RawDataRevealService } from 'app/shared/services';
-import { of, Observable } from 'rxjs';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { StatusType, Column, DataType, Scene, TimeUnit, Route, Query } from 'app/shared/model';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
-import { DBService } from 'app/shared/services/backend';
-import { ViewPersistenceService } from 'app/shared/services';
-import { RouterTestingModule } from '@angular/router/testing';
-import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
-import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { SceneFactory } from 'app/shared/test';
-import { ConfigRecord } from 'app/shared/model/view-config';
-import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { Router } from '@angular/router';
-import { ValueRangeGroupingService } from 'app/shared/value-range';
-import { PivotContext } from './model';
-import { ValueGrouping } from 'app/shared/value-range/model';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
+import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injectable } from '@angular/core';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { Column, DataType, Query, Route, Scene, StatusType, TimeUnit } from 'app/shared/model';
+import { ConfigRecord } from 'app/shared/model/view-config';
+import { DialogService, ExportService, NotificationService, RawDataRevealService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
+import { SceneFactory } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { ValueGrouping } from 'app/shared/value-range/model';
+import { Observable, of } from 'rxjs';
+import { PivotContext } from './model';
+import { PivotTableComponent } from './pivot-table.component';
 
 @Injectable()
 export class MockElementRef {
@@ -140,7 +138,7 @@ describe('PivotTableComponent', () => {
       { ID: 2, Level: 'INFO', Data: 'two', Amount: 20, Time: datePipe.transform(now - 2000, format) },
       { ID: 3, Level: 'INFO', Data: 'three', Amount: 30, Time: datePipe.transform(now - 3000, format) },
       { ID: 4, Level: 'WARN', Data: 'four', Amount: 40, Time: datePipe.transform(now - 4000, format) },
-    ]
+    ];
     expect(dbService.findEntries).toHaveBeenCalled();
     expect(component.dataFrame.toArray()).toEqual(expectedData);
   });

@@ -1,22 +1,22 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { NotificationService } from 'app/shared/services';
-import { Route, Scene, Attribute, DataType, Column, ColumnPair, SceneInfo } from 'app/shared/model';
-import { Router } from '@angular/router';
-import { DBService } from 'app/shared/services/backend';
-import { DataReader, DataHandler, ReaderService } from '../shared/services/reader';
-import { SceneUtils } from './utils';
-import { ProgressMonitor, EntryPersister } from './persister';
-import { DateTimeUtils, ArrayUtils } from 'app/shared/utils';
 import { Location } from '@angular/common';
-import { ConfinedStringSet, MappingResult, ColumnMappingGenerator, EntryMapper } from './column-mapping/mapper';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatAccordion } from '@angular/material/expansion';
+import { ProgressBarMode } from '@angular/material/progress-bar';
+import { Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ValueFormatter } from 'app/shared/format';
-import { FormControl, Validators } from '@angular/forms';
-import { MatAccordion } from '@angular/material/expansion';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { ProgressBarMode } from '@angular/material/progress-bar';
+import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
+import { NotificationService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
+import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
+import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
+import { EntryPersister, ProgressMonitor } from './persister';
+import { SceneUtils } from './utils';
 
 @Component({
   selector: 'koia-front',
@@ -161,7 +161,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.router.navigateByUrl(Route.SCENES);
   }
 
-  onSourceTypeChange() {
+  onSourceTypeChange(): void {
     this.fileInputRef.nativeElement.value = '';
     this.initContext();
   }
@@ -249,7 +249,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     return this.previewData && this.previewData.find(mr => mr.errors.length > 0) !== undefined;
   }
 
-  persistScene() {
+  persistScene(): void {
     this.scene.creationTime = new Date().getTime();
     this.scene.columnMappings = this.columnMappings;
     this.scene.columns = this.columnMappings.map(cp => cp.target);
@@ -320,7 +320,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  cancel() {
+  cancel(): void {
     if (this.scene.creationTime && !this.entryPersister.isPostingComplete()) {
       this.canceled = true;
       this.entryPersister.postingComplete(false);

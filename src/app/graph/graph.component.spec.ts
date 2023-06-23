@@ -1,20 +1,18 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, discardPeriodicTasks } from '@angular/core/testing';
-import { of, Observable } from 'rxjs';
-import { GraphComponent } from './graph.component';
+import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, flush } from '@angular/core/testing';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { RouterTestingModule } from '@angular/router/testing';
 import { Column, DataType } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
-import { SimpleChange } from '@angular/core';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
-import { RouterTestingModule } from '@angular/router/testing';
 import { SceneFactory } from 'app/shared/test';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatDialogModule } from '@angular/material/dialog';
+import { GraphComponent } from './graph.component';
 
 describe('GraphComponent', () => {
 
   let columns: Column[];
   let context: GraphContext;
-  let entries$: Observable<object[]>;
+  let entries: object[];
   let component: GraphComponent;
   let fixture: ComponentFixture<GraphComponent>;
   const graphDataService = new GraphDataService();
@@ -26,15 +24,15 @@ describe('GraphComponent', () => {
       { name: 't2', dataType: DataType.TEXT, width: 300 }
     ]
     SceneFactory.createScene('1', []);
-    entries$ = of([
+    entries = [
       { t1: 'a', n1: 1, t2: null },
       { t1: 'b', n1: 2, t2: 'x' },
       { t1: 'b', n1: 3, t2: 'y' },
       { t1: 'b', n1: 2, t2: 'x' }
-    ]);
+    ];
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       imports: [MatProgressBarModule, RouterTestingModule, MatDialogModule],
       declarations: [GraphComponent],
@@ -46,8 +44,10 @@ describe('GraphComponent', () => {
     fixture = TestBed.createComponent(GraphComponent);
     component = fixture.componentInstance;
     context = new GraphContext(columns);
+    context.entries = entries;
     component.context = context;
-    component.entries$ = entries$;
+    await fixture.whenStable();
+    fixture.detectChanges();
     spyOn(component.onWarning, 'emit');
   });
 
@@ -55,35 +55,23 @@ describe('GraphComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('ngOnChanges should fetch entries when entries$ change', async () => {
+  it('context entries change should refresh graph data', fakeAsync(() => {
 
     // given
-    const entries = ([
+    const graphData = component.graphData;
+    const entries = [
       { t1: 'b', n1: 3, t2: 'y' },
       { t1: 'b', n1: 2, t2: 'x' }
-    ]);
+    ];
 
     // when
-    component.entries$ = of(entries);
-    component.ngOnChanges({ entries$: new SimpleChange(undefined, entries$, true) });
+    context.entries = entries;
 
     // then
-    await fixture.whenStable();
-    expect(context.entries).toEqual(entries);
-  });
-
-  it('ngOnChanges should not fetch entries when entries$ does not change', () => {
-
-    // given
-    const entries = context.entries;
-
-    // when
-    component.context = new GraphContext(columns);
-    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
-
-    // then
-    expect(context.entries).toBe(entries);
-  });
+    flush();
+    discardPeriodicTasks()
+    expect(component.graphData).not.toBe(graphData);
+  }));
 
   it('should compute graph data when structure changes', fakeAsync(() => {
 
@@ -91,7 +79,6 @@ describe('GraphComponent', () => {
     context.dataColumns = [findColumn('n1')];
     fixture.detectChanges();
     component.ngOnInit();
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
     flush();
 
     // when
@@ -124,7 +111,6 @@ describe('GraphComponent', () => {
     context.dataColumns = [findColumn('n1')];
     fixture.detectChanges();
     component.ngOnInit();
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
     flush();
 
     // when
@@ -145,7 +131,6 @@ describe('GraphComponent', () => {
     context.dataColumns = [findColumn('n1')];
     fixture.detectChanges();
     component.ngOnInit();
-    component.ngOnChanges({ 'entries$': new SimpleChange(null, null, true) });
     flush();
     spyOn(graphDataService, 'createData').and.returnValue({ nodes: new Array(GraphComponent.MAX_NODES + 1), links: [] });
 

@@ -1,21 +1,19 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-
-import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
-import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Column, SummaryContext, Aggregation, DataType, TimeUnit, ChangeEvent } from 'app/shared/model';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
-import { of } from 'rxjs';
-import { DragDropEventFactory, ContainerModel } from 'app/shared/test';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
+import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Aggregation, ChangeEvent, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
+import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
+import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
 
 describe('SummaryTableSideBarComponent', () => {
 
@@ -60,7 +58,7 @@ describe('SummaryTableSideBarComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SummaryTableSideBarComponent);
     component = fixture.componentInstance;
-    component.entries$ = of(entries.slice(0));
+    component.entries = entries.slice(0);
 
     context = new SummaryContext(columns.slice(0));
     context.dataColumns = [findColumn('Amount')];

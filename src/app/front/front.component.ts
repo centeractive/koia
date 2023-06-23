@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
-import { DialogService, NotificationService } from 'app/shared/services';
-import { Route, ConnectionInfo } from 'app/shared/model';
-import { DBService } from 'app/shared/services/backend';
-import { ReaderService, DataReader } from 'app/shared/services/reader';
-import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { Router, ActivatedRoute } from '@angular/router';
-import { QueryParamExtractor, CommonUtils } from 'app/shared/utils';
-import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { ConnectionInfo, Route } from 'app/shared/model';
+import { DialogService, NotificationService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { DataReader, ReaderService } from 'app/shared/services/reader';
+import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
 import { firstValueFrom } from 'rxjs';
+import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 
 @Component({
   selector: 'koia-front',
@@ -59,9 +59,9 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    */
   private handleExternalInvocation(queryParamExtractor: QueryParamExtractor) {
     this.couchDBService.initConnection(queryParamExtractor.getCouchDBConnectionInfo())
-      .then(msg => this.dbService.initBackend(true)
-        .then(r => this.dbService.activateScene(queryParamExtractor.getSceneID())
-          .then(scene => this.router.navigateByUrl(Route.RAWDATA)))
+      .then(() => this.dbService.initBackend(true)
+        .then(() => this.dbService.activateScene(queryParamExtractor.getSceneID())
+          .then(() => this.router.navigateByUrl(Route.RAWDATA)))
         .catch(err => this.notifyError('cannot show raw data of scene with _id ' + queryParamExtractor.getSceneID() + ':\n\n' + err)));
   }
 

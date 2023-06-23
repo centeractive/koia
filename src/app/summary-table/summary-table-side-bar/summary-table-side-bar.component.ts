@@ -1,7 +1,7 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { SummaryContext, Aggregation, DataType, Column } from '../../shared/model';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { SideBarController } from 'app/shared/controller';
+import { Aggregation, Column, DataType, SummaryContext } from '../../shared/model';
 
 @Component({
   selector: 'koia-summary-table-side-bar',

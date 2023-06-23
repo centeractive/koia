@@ -1,30 +1,29 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
-
-import { GridComponent } from './grid.component';
 import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
-import { of, Observable, throwError } from 'rxjs';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogRef } from '@angular/material/dialog';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NotificationService, ViewPersistenceService, DialogService, ExportService } from 'app/shared/services';
-import { Column, StatusType, Query, Route, SummaryContext, DataType, Scene, ExportFormat, TimeUnit, ElementContext } from 'app/shared/model';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
+import { StatusComponent } from 'app/shared/component/status/status.component';
+import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, StatusType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
-import { StatusComponent } from 'app/shared/component/status/status.component';
-import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
+import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ChartMarginService } from 'app/shared/services/chart';
+import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { Router } from '@angular/router';
-import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { ChartMarginService } from 'app/shared/services/chart';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatGridListModule } from '@angular/material/grid-list';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDialogRef } from '@angular/material/dialog';
 import * as _ from 'lodash';
+import { Observable, of, throwError } from 'rxjs';
+import { GridComponent } from './grid.component';
 
 @Component({ selector: 'koia-main-toolbar', template: '' })
 class MainToolbarComponent { }
@@ -136,9 +135,7 @@ describe('GridComponent', () => {
 
   it('should load initial entries', () => {
     expect(dbService.findEntries).toHaveBeenCalled();
-    component.entries$.subscribe(e => {
-      expect(e).toEqual(entries);
-    })
+    expect(component.entries).toEqual(entries);
   });
 
   it('#ngAfterViewChecked should fire size changed on each chart when window was resized while component was hidden', () => {

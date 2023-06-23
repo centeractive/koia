@@ -20,7 +20,7 @@ export class EntryPersister {
   /**
    * resets this [[EntryPersister]] to be ready from having new entries posted
    */
-  reset() {
+  reset(): void {
     this.data = [];
     this.postLocked = false;
     this.posted = 0;
@@ -57,7 +57,7 @@ export class EntryPersister {
       .catch(e => this.onError(e));
   }
 
-  private onError(error: any) {
+  private onError(error: any): void {
     this.monitor.onError(error);
     this.monitor.onComplete('data persisting aborted due to error: ' + error);
     this.postingComplete(false);
@@ -77,7 +77,7 @@ export class EntryPersister {
     }
   }
 
-  isPostingComplete() {
+  isPostingComplete(): boolean {
     return this.postLocked;
   }
 

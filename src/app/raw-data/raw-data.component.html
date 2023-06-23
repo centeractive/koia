@@ -57,7 +57,7 @@
 
     </table>
 
-    <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize"
+    <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize" [disabled]="loading"
                    [pageSizeOptions]="pageSizeOptions" showFirstLastButtons="true" [length]="totalRowCount" (page)="onPageChanged()">
     </mat-paginator>
   </div>

@@ -1,23 +1,23 @@
-import { ElementContext, Column, Query, SummaryContext, Route, Scene, DataType, ExportFormat } from '../model';
-import { GraphContext } from '../model/graph';
-import { firstValueFrom, Observable, Subscription, lastValueFrom } from 'rxjs';
-import { DateTimeUtils, ArrayUtils, CommonUtils, ChartUtils } from '../utils';
-import { ViewChild, OnInit, ElementRef, QueryList, ViewChildren, AfterViewInit, Directive } from '@angular/core';
-import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../services';
+import { AfterViewInit, Directive, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
+import { ChartComponent } from 'app/chart/chart.component';
+import { SummaryTableComponent } from 'app/summary-table/summary-table.component';
+import { Subscription, lastValueFrom } from 'rxjs';
+import { AbstractComponent } from '../component/abstract.component';
+import { InputDialogData } from '../component/input-dialog/input-dialog.component';
+import { ViewLauncherContext } from '../component/view-launcher-dialog';
+import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext } from '../model';
+import { ChartContext, ChartType } from '../model/chart';
+import { GraphContext } from '../model/graph';
+import { View } from '../model/view-config';
+import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../services';
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
-import { SummaryTableComponent } from 'app/summary-table/summary-table.component';
-import { AbstractComponent } from '../component/abstract.component';
-import { ChartComponent } from 'app/chart/chart.component';
-import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
-import { View } from '../model/view-config';
-import { InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ChartMarginService } from '../services/chart';
-import { ChartContext, ChartType } from '../model/chart';
-import { ViewLauncherContext } from '../component/view-launcher-dialog';
-import { MatSidenav } from '@angular/material/sidenav';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
+import { ArrayUtils, ChartUtils, CommonUtils, DateTimeUtils } from '../utils';
 
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext {
@@ -36,7 +36,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    elementContexts: ElementContext[];
    selectedContext: ElementContext;
    selectedContextPosition: number;
-   entries$: Observable<object[]>;
+   entries: object[];
    loading: boolean;
 
    private timeColumns: Column[];
@@ -87,13 +87,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.configToModelConverter = new ConfigToModelConverter(this.columns);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
-      this.entriesSubscription = this.entries$
-         .subscribe(entries => DateTimeUtils.defineTimeUnits(this.timeColumns, entries));
+      DateTimeUtils.defineTimeUnits(this.timeColumns, this.entries);
    }
 
    addSummaryTable(): SummaryContext {
       const context = new SummaryContext(this.clonedColumns());
       context.query = this.query;
+      context.entries = this.entries;
       this.elementContexts = this.elementContexts.concat([context]);
       this.configure(null, context);
       return context;
@@ -105,6 +105,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       const context = new ChartContext(this.clonedColumns(), chartType.type, chartMargin);
       context.groupByColumns = ChartUtils.identifyGroupByColumns(context);
       context.query = this.query;
+      context.entries = this.entries;
       this.elementContexts = this.elementContexts.concat([context]);
       this.configure(null, context);
       return context;
@@ -113,6 +114,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    addGraph(): GraphContext {
       const context = new GraphContext(this.clonedColumns());
       context.query = this.query;
+      context.entries = this.entries;
       this.elementContexts = this.elementContexts.concat([context]);
       this.configure(null, context);
       return context;
@@ -133,13 +135,14 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       if (this.entriesSubscription) {
          this.entriesSubscription.unsubscribe();
       }
-      this.entries$ = this.dbService.findEntries(query, true);
-      firstValueFrom(this.entries$)
-         .then(d => this.loading = false)
-         .catch(err => {
-            this.loading = false;
-            this.notifyError(err);
-         });
+      this.entriesSubscription = this.dbService.findEntries(query, true).subscribe({
+         next: (data) => {
+            this.entries = data;
+            this.elementContexts.forEach(c => c.entries = data);
+         },
+         error: (err) => this.notifyError(err),
+         complete: () => this.loading = false
+      });
    }
 
    isSummaryContext(context: ElementContext): boolean {
@@ -189,7 +192,10 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    loadView(view: View): void {
       this.onPreRestoreView(view);
       const elementContexts = this.configToModelConverter.convert(view.elements);
-      elementContexts.forEach(c => c.query = this.query);
+      elementContexts.forEach(c => {
+         c.query = this.query;
+         c.entries = this.entries;
+      });
       this.elementContexts = elementContexts;
    }
 

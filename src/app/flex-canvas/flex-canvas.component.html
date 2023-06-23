@@ -1,14 +1,14 @@
 <mat-sidenav-container fullscreen>
 
    <mat-sidenav mode="push" class="sidenav" *ngIf="elementContexts">
-      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [entries$]="entries$"
-                           [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-                           (onElementPositionChange)="changeElementPosition($event)"></koia-chart-side-bar>
-      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext" [entries$]="entries$"
-                           [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-                           (onElementPositionChange)="changeElementPosition($event)"></koia-graph-side-bar>
-      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext"
-                                   [entries$]="entries$" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [entries]="entries" [elementCount]="elementContexts.length"
+                           [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
+      </koia-chart-side-bar>
+      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext" [entries]="entries" [elementCount]="elementContexts.length"
+                           [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
+      </koia-graph-side-bar>
+      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext" [entries]="entries"
+                                   [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
                                    (onElementPositionChange)="changeElementPosition($event)">
       </koia-summary-table-side-bar>
    </mat-sidenav>
@@ -98,13 +98,10 @@
                </div>
 
                <div #element>
-                  <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context" [entries$]="entries$"
-                                      (onRemove)="removeElement($event)"></koia-summary-table>
-                  <koia-chart *ngIf="isChartContext(context)" [context]="context" [entries$]="entries$"
-                              (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
+                  <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context" (onRemove)="removeElement($event)"></koia-summary-table>
+                  <koia-chart *ngIf="isChartContext(context)" [context]="context" (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
                   </koia-chart>
-                  <koia-graph *ngIf="isGraphContext(context)" [context]="context" [entries$]="entries$"
-                              (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
+                  <koia-graph *ngIf="isGraphContext(context)" [context]="context" (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
                   </koia-graph>
                </div>
                <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="{ bottom: true, right: true }">

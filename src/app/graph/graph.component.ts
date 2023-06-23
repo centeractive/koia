@@ -1,16 +1,21 @@
 import {
-  Component, Input, Inject, ElementRef, OnInit, OnChanges, SimpleChanges, AfterViewInit,
-  ViewEncapsulation, Output, EventEmitter
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Inject,
+  Input,
+  OnInit,
+  Output,
+  ViewEncapsulation
 } from '@angular/core';
-import { Observable, lastValueFrom } from 'rxjs';
-import { ChangeEvent } from 'app/shared/model';
-import { GraphContext } from 'app/shared/model/graph';
-import { GraphOptionsProvider } from './options/graph-options-provider';
-import { CommonUtils } from 'app/shared/utils';
-import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { ExportDataProvider } from 'app/shared/controller';
-import { NodeDoubleClickHandler } from './options/node-double-click-handler';
+import { GraphContext } from 'app/shared/model/graph';
+import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
+import { CommonUtils } from 'app/shared/utils';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
+import { GraphOptionsProvider } from './options/graph-options-provider';
+import { NodeDoubleClickHandler } from './options/node-double-click-handler';
 
 @Component({
   selector: 'koia-graph',
@@ -18,13 +23,12 @@ import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
   styleUrls: ['./graph.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportDataProvider {
+export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider {
 
   static readonly MAX_NODES = 1_000;
 
   @Input() parentConstraintSize: boolean;
   @Input() context: GraphContext;
-  @Input() entries$: Observable<object[]>;
 
   @Output() onWarning: EventEmitter<string> = new EventEmitter();
 
@@ -42,41 +46,19 @@ export class GraphComponent implements OnInit, OnChanges, AfterViewInit, ExportD
   }
 
   ngOnInit(): void {
-    this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['entries$']) {
-      this.fetchEntries();
-    }
+    this.context.subscribeToChanges(() => this.prepareGraphAsync());
+    this.prepareGraphAsync()
   }
 
   ngAfterViewInit(): void {
-    window.onresize = () => this.updateGraphSize();
+    window.onresize = () => this.prepareGraphAsync();
   }
 
-  private contextChanged(changeEvent: ChangeEvent): void {
-    this.prepareGraphAsync(changeEvent);
+  private prepareGraphAsync(): void {
+    Promise.resolve().then(() => this.prepareGraph());
   }
 
-  private fetchEntries(): void {
-    lastValueFrom(this.entries$)
-      .then(entries => this.onEntries(entries));
-  }
-
-  private onEntries(entries: object[]): void {
-    this.context.entries = entries;
-  }
-
-  private updateGraphSize() {
-    this.prepareGraphAsync(ChangeEvent.SIZE);
-  }
-
-  private prepareGraphAsync(changeEvent: ChangeEvent): void {
-    Promise.resolve().then(() => this.prepareGraph(changeEvent));
-  }
-
-  private async prepareGraph(changeEvent: ChangeEvent): Promise<void> {
+  private async prepareGraph(): Promise<void> {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     const parentDiv: HTMLDivElement = this.parentConstraintSize ? this.cmpElementRef.nativeElement.parentElement : null;

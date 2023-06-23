@@ -1,5 +1,5 @@
-import { Observable } from 'rxjs';
 import { Document } from 'app/shared/model';
+import { Observable } from 'rxjs';
 
 export interface DB {
 
@@ -16,7 +16,7 @@ export interface DB {
 
    findById(database: string, id: string): Promise<Document>;
 
-   find(database: string, mangoQuery: any): Observable<Document[]>;
+   find(database: string, mangoQuery: object): Observable<Document[]>;
 
    insert(database: string, document: Document): Promise<Document>;
 

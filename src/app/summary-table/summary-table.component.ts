@@ -1,29 +1,27 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { Sort } from '@angular/material/sort';
-import { Observable } from 'rxjs';
-import { AggregationService, RawDataRevealService } from '../shared/services';
-import { ChangeEvent, Aggregation, SummaryContext, Column, Route, DataType } from '../shared/model';
-import { IDataFrame, DataFrame } from 'data-forge';
-import { DateTimeUtils, CommonUtils, ColumnNameConverter } from 'app/shared/utils';
-import { RowSpanComputer, Span } from './row-span-computer';
 import { DatePipe } from '@angular/common';
-import { DataFrameSorter } from './data-frame-sorter';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
-import { DBService } from 'app/shared/services/backend';
 import { ExportDataProvider } from 'app/shared/controller';
-import { ExportDataGenerator } from './export-data-generator';
-import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { NumberFormatter } from 'app/shared/format';
+import { DBService } from 'app/shared/services/backend';
+import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { DataFrame, IDataFrame } from 'data-forge';
+import { Aggregation, ChangeEvent, Column, DataType, Route, SummaryContext } from '../shared/model';
+import { AggregationService, RawDataRevealService } from '../shared/services';
+import { DataFrameSorter } from './data-frame-sorter';
+import { ExportDataGenerator } from './export-data-generator';
+import { RowSpanComputer, Span } from './row-span-computer';
 
 @Component({
   selector: 'koia-summary-table',
   templateUrl: './summary-table.component.html',
   styleUrls: ['./summary-table.component.css']
 })
-export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, ExportDataProvider {
+export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataProvider {
 
   @Input() context: SummaryContext;
-  @Input() entries$: Observable<object[]>;
   @Input() gridView: boolean;
 
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
@@ -52,8 +50,8 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     } else {
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
-      this.context.subscribeToChanges((e: ChangeEvent) => this.refreshDataFrameAsync(e));
-      this.entries$.subscribe(entries => this.createBaseDataFrame(entries));
+      this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
+      this.createBaseDataFrame();
     }
   }
 
@@ -61,16 +59,18 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     this.adjustSize();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['entries$']) {
-      this.entries$.subscribe(entries => this.createBaseDataFrame(entries));
+  private createBaseDataFrame(): void {
+    this.baseDataFrame = new DataFrame(this.context.entries || []);
+    if (this.context.hasDataColumn()) {
+      this.refreshDataFrameAsync(ChangeEvent.STRUCTURE);
     }
   }
 
-  private createBaseDataFrame(entries: object[]): void {
-    this.baseDataFrame = new DataFrame(entries);
-    if (this.context.hasDataColumn()) {
-      this.refreshDataFrame(ChangeEvent.STRUCTURE);
+  private contextChanged(e: ChangeEvent): void {
+    if (e === ChangeEvent.STRUCTURE) {
+      this.createBaseDataFrame()
+    } else {
+      this.refreshDataFrameAsync(e)
     }
   }
 
@@ -122,7 +122,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     this.computing = false;
   }
 
-  private sortDataFrame() {
+  private sortDataFrame(): void {
     this.dataFrame = this.dataFrameSorter.sort(this.dataFrame, this.currentSort, this.context);
     this.frameData = this.dataFrame.toArray();
     if (this.frameData.length > 0) {
@@ -147,7 +147,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     });
   }
 
-  formattedValueOf(columnIndex: number, value: any): any {
+  formattedValueOf(columnIndex: number, value: any): string | boolean {
     if (this.computing) {
       return '';
     } else if (value == undefined || typeof value === 'string' || typeof value === 'boolean') {
@@ -163,7 +163,7 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, OnChanges, 
     return this.numberFormatter.format(value);
   }
 
-  private adjustSize() {
+  private adjustSize(): void {
     if (!this.gridView) {
       const style = this.divContentRef.nativeElement.style;
       if (!this.context.hasUnlimitedWidth()) {

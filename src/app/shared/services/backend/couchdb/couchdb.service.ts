@@ -1,13 +1,12 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, lastValueFrom } from 'rxjs';
-import { DocChangeResponse } from '../doc-change-response.type';
-import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { DB } from '../db.type';
-import { ConnectionInfo } from '../../../model/connection-info.type';
+import { ConnectionInfo, Document, HTTPMethod, Scene } from 'app/shared/model';
 import { CommonUtils, LogUtils } from 'app/shared/utils';
+import { Observable, lastValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { DB } from '../db.type';
+import { DocChangeResponse } from '../doc-change-response.type';
 import { CouchDBConfig } from './couchdb-config';
-import { Scene, Document, HTTPMethod } from 'app/shared/model';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
@@ -28,7 +27,7 @@ export class CouchDBService implements DB {
   private config = new CouchDBConfig();
   private connectionInfo: ConnectionInfo;
   private baseURL: string;
-  private httpOptions: object;
+  private httpOptions: HttpOptions;
 
   constructor(private http: HttpClient) {
     this.initConnection(this.config.readConnectionInfo());
@@ -47,7 +46,7 @@ export class CouchDBService implements DB {
     return <ConnectionInfo>CommonUtils.clone(this.connectionInfo);
   }
 
-  private createHttpOptions(): any {
+  private createHttpOptions(): HttpOptions {
     let httpHeaders = new HttpHeaders();
     httpHeaders = httpHeaders.set('Accept', 'application/json');
     httpHeaders = httpHeaders.set('Content-type', 'application/json');
@@ -171,4 +170,9 @@ export class CouchDBService implements DB {
     return this.baseURL + database + (properties ? '/' + properties : '');
   }
 
+}
+
+export interface HttpOptions {
+  headers: HttpHeaders,
+  withCredentials: boolean
 }

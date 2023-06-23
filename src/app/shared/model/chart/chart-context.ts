@@ -1,11 +1,11 @@
-import { ElementContext } from '../element-context';
-import { Column } from '../column.type';
-import { ExportFormat } from '../export-format.enum';
-import { ValueRange } from '../../value-range/model/value-range.type';
-import { ChartType } from './chart-type';
-import { SeriesNameConverter } from '../../services/chart/series-name-converter';
-import { Margin } from '.';
 import { Chart, ChartData } from 'chart.js';
+import { Margin } from '.';
+import { SeriesNameConverter } from '../../services/chart/series-name-converter';
+import { ValueRange } from '../../value-range/model/value-range.type';
+import { Column } from '../column.type';
+import { ElementContext } from '../element-context';
+import { ExportFormat } from '../export-format.enum';
+import { ChartType } from './chart-type';
 
 export class ChartContext extends ElementContext {
 
@@ -91,10 +91,6 @@ export class ChartContext extends ElementContext {
       return this._legendPosition;
    }
 
-   isCurrentLegendPosition(legendPosition: string): boolean {
-      return this._legendPosition === legendPosition;
-   }
-
    set legendPosition(legendPosition: string) {
       if (this._legendPosition !== legendPosition) {
          this._legendPosition = legendPosition;
@@ -102,6 +98,10 @@ export class ChartContext extends ElementContext {
             this.fireLookChanged();
          }
       }
+   }
+
+   isCurrentLegendPosition(legendPosition: string): boolean {
+      return this._legendPosition === legendPosition;
    }
 
    get valueAsPercent(): boolean {
