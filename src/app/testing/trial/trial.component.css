@@ -1,9 +1,13 @@
+.row {
+    display: flex;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+}
+
 .label {
     width: 0.1%;
     white-space: nowrap;
-}
-
-div {
-    display: flex;
-    flex-direction: column;
 }

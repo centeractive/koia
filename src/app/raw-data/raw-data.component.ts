@@ -9,6 +9,8 @@ import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-d
 import { ValueFormatter } from 'app/shared/format';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
+import { colWidthMeasurementOf } from 'app/shared/utils/source-system';
+import * as _ from 'lodash';
 import { lastValueFrom } from 'rxjs';
 import { Column, DataType, ExportFormat, Page, Query, Route } from '../shared/model';
 import { DBService } from '../shared/services/backend';
@@ -41,6 +43,9 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
   highlight: boolean;
   exportFormats: ExportFormat[] = [ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON];
 
+  colWidthMeasurement: 'em' | 'px';
+  tableStyleWidth: number;
+
   private page: Page;
   private valueFormatter = new ValueFormatter();
 
@@ -63,6 +68,8 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
       }
       this.query.setPageDefinition(0, this.initialPageSize);
       this.columns = scene.columns;
+      this.colWidthMeasurement = colWidthMeasurementOf(scene);
+      this.tableStyleWidth = _.sum(this.columns.map(c => c.width));
       this.hasObjectDataTypeColumns = this.columns.find(c => c.dataType === DataType.OBJECT) !== undefined;
       this.columnNames = this.columns.map(c => c.name);
       this.fetchEntriesPage();

@@ -36,29 +36,33 @@
 
   <div #content id="div_table" class="div_content mat-elevation-z8 printable">
 
-    <table [class]="considerColumnWidths ? 'table_layout_fixed' : 'table_layout_auto'" mat-table [dataSource]="entries"
-           matSort (matSortChange)="sortEntries($event)">
+    <div [style.width]="considerColumnWidths ? tableStyleWidth + colWidthMeasurement : null">
+      <table [class]="considerColumnWidths ? 'table_layout_fixed' : ''" mat-table [dataSource]="entries" matSort (matSortChange)="sortEntries($event)">
 
-      <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
-        <span *ngIf="column.indexed">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="column.width + 'px'">
-            {{ column.name }}</th>
-        </span>
-        <span *ngIf="!column.indexed">
-          <th mat-header-cell *matHeaderCellDef [style.width]="column.width + 'px'">{{ column.name }}</th>
-        </span>
-        <td [class]="'td_' + column.dataType" *matCellDef="let entry" (click)="displayValue(column, entry)">
-          {{ formattedValueOf(column, entry) }}</td>
-      </ng-container>
+        <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
+          <span *ngIf="column.indexed">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">
+              {{ column.name }}</th>
+          </span>
+          <span *ngIf="!column.indexed">
+            <th mat-header-cell *matHeaderCellDef [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">{{ column.name }}</th>
+          </span>
+          <td [class]="'td_' + column.dataType" *matCellDef="let entry" (click)="displayValue(column, entry)">
+            {{ formattedValueOf(column, entry) }}</td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>
-      <tr mat-row *matRowDef="let entry; columns: columnNames;" [style.background]="highlight ? entry['bgcolor'] : null"
-          [style.color]="highlight ? entry['fgcolor'] : null"></tr>
+        <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>
+        <tr mat-row *matRowDef="let entry; columns: columnNames;" [style.background]="highlight ? entry['bgcolor'] : null"
+            [style.color]="highlight ? entry['fgcolor'] : null">
+        </tr>
 
-    </table>
+      </table>
+
+    </div>
 
     <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize" [disabled]="loading"
                    [pageSizeOptions]="pageSizeOptions" showFirstLastButtons="true" [length]="totalRowCount" (page)="onPageChanged()">
     </mat-paginator>
+
   </div>
 </div>

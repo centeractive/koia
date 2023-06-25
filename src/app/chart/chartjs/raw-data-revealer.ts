@@ -2,7 +2,6 @@ import { DataType } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { SeriesNameConverter } from 'app/shared/services/chart';
-import { NumberUtils } from 'app/shared/utils';
 import { ActiveElement, BarElement, Chart, ChartDataset, Point, PointElement } from 'chart.js';
 
 /**

@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { Route } from './shared/model/route.enum';
-import { FrontComponent } from './front/front.component';
-import { ScenesComponent } from './scenes/scenes.component';
-import { SceneComponent } from './scene/scene.component';
-import { RawDataViewComponent } from './raw-data/raw-data-view.component';
-import { GridComponent } from './grid/grid.component';
+import { RouterModule, Routes } from '@angular/router';
 import { FlexCanvasComponent } from './flex-canvas/flex-canvas.component';
+import { FrontComponent } from './front/front.component';
+import { GridComponent } from './grid/grid.component';
 import { PivotTableComponent } from './pivot-table/pivot-table.component';
+import { RawDataViewComponent } from './raw-data/raw-data-view.component';
+import { SceneComponent } from './scene/scene.component';
+import { ScenesComponent } from './scenes/scenes.component';
+import { Route } from './shared/model/route.enum';
 import { TrialComponent } from './testing/trial/trial.component';
 
 const routes: Routes = [
@@ -18,11 +18,9 @@ const routes: Routes = [
   { path: Route.GRID, component: GridComponent },
   { path: Route.FLEX, component: FlexCanvasComponent },
   { path: Route.PIVOT, component: PivotTableComponent },
-  { path: Route.FRONT, component: TrialComponent },
+  { path: Route.TRIAL, component: TrialComponent },
   { path: '', redirectTo: '/' + Route.FRONT, pathMatch: 'full' },
   { path: '**', redirectTo: '/' + Route.FRONT }
-  // { path: Route.TRIAL, component: TrialComponent },
-  // { path: '', redirectTo: '/' + Route.FRONT, pathMatch: 'full' },
 ];
 
 @NgModule({

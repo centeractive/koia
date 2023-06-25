@@ -43,8 +43,7 @@
           <mat-icon>folder</mat-icon>
           <span>&nbsp;Select File</span>
         </button>
-        <input #fileInput id="fileInput" hidden type="file"
-               [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
+        <input #fileInput id="fileInput" hidden type="file" [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
         <mat-form-field class="file_name" *ngIf="file">
           <mat-label>File Name</mat-label>
           <input matInput readonly [value]="file.name">
@@ -149,21 +148,23 @@
             <mat-icon color="primary">looks_4</mat-icon>&nbsp;<h4>Preview</h4>
           </mat-panel-title>
         </mat-expansion-panel-header>
-        <div #content id="div_preview_table">
-          <table mat-table [dataSource]="previewData">
-            <ng-container *ngFor="let columnPair of columnMappings; let iCol = index"
-                          [matColumnDef]="columnPair.target.name">
-              <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'px'">
-                {{ columnPair.target.name }}</th>
-              <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
-                <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="/assets/warning.png"
-                     [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
-                {{ formatValue(columnPair.target, mappingResult.entry) }}
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="targetColumnNames, sticky: true"></tr>
-            <tr mat-row *matRowDef="let mappingResult; columns: targetColumnNames;"></tr>
-          </table>
+        <div id="div_preview_table">
+          <div #content [style.width]="previewTableStyleWidth()">
+            <table mat-table [dataSource]="previewData">
+              <ng-container *ngFor="let columnPair of columnMappings; let iCol = index" [matColumnDef]="columnPair.target.name">
+                <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'em'">
+                  {{ columnPair.target.name }}
+                </th>
+                <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
+                  <img *ngIf="iCol === 0 && mappingResult.errors.length > 0" src="/assets/warning.png"
+                       [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
+                  {{ formatValue(columnPair.target, mappingResult.entry) }}
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="targetColumnNames, sticky: true"></tr>
+              <tr mat-row *matRowDef="let mappingResult; columns: targetColumnNames;"></tr>
+            </table>
+          </div>
         </div>
       </mat-expansion-panel>
     </mat-accordion>
@@ -197,8 +198,8 @@
     </div>
     <div id="div_progress" *ngIf="progressBarMode">
       {{ feedback }}
-      <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
-                        [color]="progressBarMode === 'determinate' ? 'accent' : ''"></mat-progress-bar>
+      <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted" [color]="progressBarMode === 'determinate' ? 'accent' : ''">
+      </mat-progress-bar>
     </div>
   </mat-card-content>
 </mat-card>

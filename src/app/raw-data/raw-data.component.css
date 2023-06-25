@@ -5,11 +5,7 @@
 #div_table {
   margin: 10px;
   overflow-y: auto;
-}
-
-.table_layout_fixed {
-  width: 100%;
-  table-layout: fixed;
+  position: relative;
 }
 
 th {
@@ -52,6 +48,7 @@ td {
 
 .mat-paginator-sticky {
   position: sticky;
+  left: 0px;
   bottom: 0px;
   z-index: 10;
 }

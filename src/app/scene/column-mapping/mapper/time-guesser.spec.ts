@@ -1,5 +1,5 @@
-import { TimeGuesser } from './time-guesser';
 import { ColumnPair, DataType } from 'app/shared/model';
+import { TimeGuesser } from './time-guesser';
 
 describe('TimeGuesser', () => {
 

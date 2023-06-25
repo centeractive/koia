@@ -3,7 +3,7 @@ import { ProgressMonitor } from './progress-monitor.type';
 import { Document } from 'app/shared/model';
 
 /**
- * Queues posted entries and delivers them as batches to the [[DbService]] in order to be written to the CouchDB.
+ * Queues posted entries and delivers them as batches to the [[DbService]] in order to be written to the database.
  * Batches of equal size are delivered as soon - and as long - as the number of queued entries reaches the specified batch size.
  * To have remaining data delivered (which is smaller than the batch size), the [[postingComplete]] method needs to be invoked.
  */
@@ -65,7 +65,7 @@ export class EntryPersister {
 
   /**
    * optionally submits queued entries to be written to the database and locks this [[EntryPersister]] 
-   * from further posting new entries untile [[reset]] is invoked
+   * from further posting new entries until [[reset]] is invoked
    */
   postingComplete(submitQueuedEntries: boolean): void {
     this.postLocked = true;

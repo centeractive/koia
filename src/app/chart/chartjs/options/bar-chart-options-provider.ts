@@ -1,4 +1,4 @@
-import { ChartOptions, ChartType } from 'chart.js';
+import { ChartOptions } from 'chart.js';
 
 export class BarChartOptionsProvider {
 

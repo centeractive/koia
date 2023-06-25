@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Query, Operator, PropertyFilter, Column, DataType, ElementContext } from '../model';
+import { Column, DataType, ElementContext, Operator, PropertyFilter, Query } from '../model';
 import { DateTimeUtils, QuerySanitizer } from '../utils';
 import { CouchDBConstants } from './backend/couchdb';
 
@@ -62,6 +62,11 @@ export class RawDataRevealService {
   }
 
   show(query: Query): void {
-    this.dialogService.open(RawDataDialogComponent, { data: new QuerySanitizer(query).sanitize(), panelClass: 'dialog-container' });
+    this.dialogService.open(RawDataDialogComponent, {
+      data: new QuerySanitizer(query).sanitize(),
+      panelClass: 'dialog-container',
+      enterAnimationDuration: 1,
+      exitAnimationDuration: 1
+    });
   }
 }

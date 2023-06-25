@@ -13,6 +13,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
+import * as _ from 'lodash';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
@@ -57,7 +58,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   percentPersisted: number;
   entryPersister: EntryPersister;
   maxItemsToLoadControl: FormControl<number>;
-  abortDataloadOnError = true;
+  abortDataloadOnError = false;
   progressBarMode: ProgressBarMode;
   canceled = false;
 
@@ -89,7 +90,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   ngAfterViewInit(): void {
-    this.fileInputRef.nativeElement.addEventListener('change', c => this.onFileSelChange(this.fileInputRef.nativeElement.files));
+    this.fileInputRef.nativeElement.addEventListener('change', () => this.onFileSelChange(this.fileInputRef.nativeElement.files));
   }
 
   private defineLocales(): void {
@@ -119,6 +120,10 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         this.columnMappingsSource = this.columnMappingsSourceCandidates[0];
       }
     });
+  }
+
+  previewTableStyleWidth(): string {
+    return _.sum(this.columnMappings.map(m => m.target.width)) + 'em';
   }
 
   private initScene(): void {
@@ -161,7 +166,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.router.navigateByUrl(Route.SCENES);
   }
 
-  onSourceTypeChange(): void {
+  onSourceTypeChange() {
     this.fileInputRef.nativeElement.value = '';
     this.initContext();
   }
@@ -249,7 +254,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     return this.previewData && this.previewData.find(mr => mr.errors.length > 0) !== undefined;
   }
 
-  persistScene(): void {
+  persistScene() {
     this.scene.creationTime = new Date().getTime();
     this.scene.columnMappings = this.columnMappings;
     this.scene.columns = this.columnMappings.map(cp => cp.target);
@@ -320,7 +325,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  cancel(): void {
+  cancel() {
     if (this.scene.creationTime && !this.entryPersister.isPostingComplete()) {
       this.canceled = true;
       this.entryPersister.postingComplete(false);

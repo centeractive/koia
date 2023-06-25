@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Scene } from 'app/shared/model';
+import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 
 @Component({
   selector: 'koia-scene-details-dialog',
@@ -21,7 +22,7 @@ import { Scene } from 'app/shared/model';
                       <th class="column-header">Type</th>
                       <th class="column-header">Format</th>                     
                       <th class="column-header">Group By</th>
-                      <th class="column-header">Width</th>
+                      <th class="column-header">Width ({{ colWidthMeasurement }})</th>
                     </tr>
                     <tr *ngFor="let column of scene.columns">
                       <th class="row-header">{{ column.name }}</th>
@@ -55,5 +56,10 @@ import { Scene } from 'app/shared/model';
 })
 export class SceneDetailsDialogComponent {
 
-  constructor(public dialogRef: MatDialogRef<SceneDetailsDialogComponent>, @Inject(MAT_DIALOG_DATA) public scene: Scene) { }
+  colWidthMeasurement: string;
+
+  constructor(public dialogRef: MatDialogRef<SceneDetailsDialogComponent>, @Inject(MAT_DIALOG_DATA) public scene: Scene) {
+    this.colWidthMeasurement = colWidthMeasurementToDisplay(scene);
+  }
+
 }

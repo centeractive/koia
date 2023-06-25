@@ -1,11 +1,11 @@
-import { RawDataRevealService } from './raw-data-reveal.service';
-import { Query, ElementContext, SummaryContext, PropertyFilter, DataType, TimeUnit, Operator, Column } from '../model';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { CouchDBConstants } from './backend/couchdb';
-import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { TestBed } from '@angular/core/testing';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
+import { Column, DataType, ElementContext, Operator, PropertyFilter, Query, SummaryContext, TimeUnit } from '../model';
 import { ValueRangeFilter } from '../value-range/model';
+import { CouchDBConstants } from './backend/couchdb';
+import { RawDataRevealService } from './raw-data-reveal.service';
 
 class MatDialogMock {
   open() {
@@ -60,7 +60,12 @@ describe('RawDataRevealService', () => {
 
     // then
     const expectedQuery = new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, '100', DataType.TEXT));
-    expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, { data: expectedQuery, panelClass: 'dialog-container' });
+    expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, {
+      data: expectedQuery,
+      panelClass: 'dialog-container',
+      enterAnimationDuration: 1,
+      exitAnimationDuration: 1
+    });
   });
 
   it('#ofID should navigate to raw data view with ID', () => {
