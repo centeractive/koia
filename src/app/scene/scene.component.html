@@ -137,8 +137,8 @@
           </mat-panel-title>
         </mat-expansion-panel-header>
         <div *ngFor="let columnPair of columnMappings">
-          <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
-                               (onRemove)="deleteColumnMapping(columnPair)"></koia-column-mapping>
+          <koia-column-mapping *ngIf="!columnPair.skip" [mapping]="columnPair" (onChange)="onColumnChanged()" (onRemove)="deleteColumnMapping(columnPair)">
+          </koia-column-mapping>
         </div>
       </mat-expansion-panel>
 

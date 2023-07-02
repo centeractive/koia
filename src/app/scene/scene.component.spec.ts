@@ -1,31 +1,30 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-
-import { SceneComponent } from './scene.component';
-import { NotificationService } from 'app/shared/services';
-import { Route, Scene, DataType, ColumnPair, SceneInfo, Column, Document } from 'app/shared/model';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DBService } from 'app/shared/services/backend';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
 import { DatePipe, Location } from '@angular/common';
-import { ReaderService, DataHandler } from 'app/shared/services/reader';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
-import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { SceneFactory } from 'app/shared/test';
-import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
-import { MatBottomSheetModule, MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule, MatSelect } from '@angular/material/select';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
+import { NotificationService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { DataHandler, ReaderService } from 'app/shared/services/reader';
+import { SceneFactory } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
+import { SceneComponent } from './scene.component';
 
 describe('SceneComponent', () => {
 
@@ -45,13 +44,7 @@ describe('SceneComponent', () => {
     tableData = [
       ['A', '1'],
       ['B', '2'],
-      ['C', '3'],
-      ['D', '4'],
-      ['E', '5'],
-      ['F', '6'],
-      ['G', '7'],
-      ['H', '8'],
-      ['I', '9']
+      ['C', '3']
     ];
   });
 
@@ -67,7 +60,7 @@ describe('SceneComponent', () => {
         { provide: ReaderService, useValue: readerService },
         { provide: DBService, useValue: dbService },
         { provide: NotificationService, useValue: notificationService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
       ]
     }).compileComponents();
   }));
@@ -82,7 +75,7 @@ describe('SceneComponent', () => {
     spyOn(dbService, 'findFreeDatabaseName').and.returnValue(Promise.resolve('data_1'));
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     findSceneInfos = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
-    spyOn(dbService, 'writeEntries').and.callFake((database: string, entries: Document[]) => Promise.resolve());
+    spyOn(dbService, 'writeEntries').and.callFake(() => Promise.resolve());
     fixture.detectChanges();
     flush();
     fixture.detectChanges();
@@ -269,20 +262,19 @@ describe('SceneComponent', () => {
     expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options');
   }));
 
-  it('#click on "Delete column mapping" should remove column mapping', fakeAsync(() => {
+  it('#click on "Delete column mapping" should mark column mapping to be skipped', fakeAsync(() => {
 
     // given
     initUpToDetectColumns();
-    const delColMappingButtons: HTMLButtonElement[] =
-      fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
+    const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
 
     // when
     delColMappingButtons[1].click();
 
     // then
     flush();
-    expect(component.columnMappings.length).toBe(1);
-    expect(component.columnMappings[0].source.name).toBe('Column 1');
+    expect(component.columnMappings.length).toBe(2);
+    expect(component.columnMappings.map(cp => cp.skip)).toEqual([undefined, true]);
   }));
 
   it('#formatValue should return empty string when object value is null', () => {
@@ -387,7 +379,7 @@ describe('SceneComponent', () => {
     // given
     initUpToDetectColumns();
     spyOn(component.selectedReader, 'readData').and.callFake((url: string, chunkSize: number, dataHandler: DataHandler) => {
-      dataHandler.onValues(tableData.slice(1));
+      dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });
     spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
@@ -399,9 +391,74 @@ describe('SceneComponent', () => {
 
     // then
     flush();
+    expect(component.targetColumnNames).toEqual(['Column 1', 'Column 2']);
     expect(component.scene.creationTime).toBeDefined();
     expect(dbService.persistScene).toHaveBeenCalled();
-    expect(dbService.writeEntries).toHaveBeenCalled();
+    expect(dbService.writeEntries).toHaveBeenCalledWith('data_1', [
+      { _id: '1000001', 'Column 1': 'A', 'Column 2': 1 },
+      { _id: '1000002', 'Column 1': 'B', 'Column 2': 2 },
+      { _id: '1000003', 'Column 1': 'C', 'Column 2': 3 }
+    ] as any);
+    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on "Load Data" should persist scene and import partial data when first column was deleted', fakeAsync(() => {
+    // given
+    initUpToDetectColumns();
+    const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
+    delColMappingButtons[0].click();
+
+    spyOn(component.selectedReader, 'readData').and.callFake((url: string, chunkSize: number, dataHandler: DataHandler) => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
+    spyOn(component.router, 'navigateByUrl');
+    const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
+
+    // when
+    loadDataButton.click();
+
+    // then
+    flush();
+    expect(component.targetColumnNames).toEqual(['Column 2']);
+    expect(component.scene.creationTime).toBeDefined();
+    expect(dbService.persistScene).toHaveBeenCalled();
+    expect(dbService.writeEntries).toHaveBeenCalledWith('data_1', [
+      { _id: '1000001', 'Column 2': 1 },
+      { _id: '1000002', 'Column 2': 2 },
+      { _id: '1000003', 'Column 2': 3 }
+    ] as any);
+    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on "Load Data" should persist scene and import partial data when last column was deleted', fakeAsync(() => {
+    // given
+    initUpToDetectColumns();
+    const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
+    delColMappingButtons[1].click();
+
+    spyOn(component.selectedReader, 'readData').and.callFake((url: string, chunkSize: number, dataHandler: DataHandler) => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
+    spyOn(component.router, 'navigateByUrl');
+    const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
+
+    // when
+    loadDataButton.click();
+
+    // then
+    flush();
+    expect(component.targetColumnNames).toEqual(['Column 1']);
+    expect(component.scene.creationTime).toBeDefined();
+    expect(dbService.persistScene).toHaveBeenCalled();
+    expect(dbService.writeEntries).toHaveBeenCalledWith('data_1', [
+      { _id: '1000001', 'Column 1': 'A' },
+      { _id: '1000002', 'Column 1': 'B' },
+      { _id: '1000003', 'Column 1': 'C' }
+    ] as any);
     expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
   }));
 
@@ -463,15 +520,6 @@ describe('SceneComponent', () => {
     return sceneInfos;
   }
 
-  function createFileList(data: string) {
-    const file = new File([data], 'Test.csv');
-    return {
-      0: file,
-      length: 1,
-      item: (index: number) => file
-    };
-  }
-
   function initUpToDetectColumns(): void {
     const fileList = createFileList('dummy data');
     spyOn(readerService, 'readHeader').and.returnValue(Promise.resolve('dummy'));
@@ -482,6 +530,15 @@ describe('SceneComponent', () => {
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();
+  }
+
+  function createFileList(data: string) {
+    const file = new File([data], 'Test.csv');
+    return {
+      0: file,
+      length: 1,
+      item: () => file
+    };
   }
 
   function createColumnPair(name: string): ColumnPair {

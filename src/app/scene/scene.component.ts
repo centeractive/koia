@@ -10,7 +10,7 @@ import { ValueFormatter } from 'app/shared/format';
 import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
+import { DateTimeUtils } from 'app/shared/utils';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import * as _ from 'lodash';
@@ -221,7 +221,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   deleteColumnMapping(columnPair: ColumnPair): void {
-    ArrayUtils.removeElement(this.columnMappings, columnPair);
+    columnPair.skip = true;
     this.onColumnChanged();
   }
 
@@ -240,7 +240,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   onColumnChanged(): void {
-    this.targetColumnNames = this.columnMappings.map(cp => cp.target.name);
+    this.targetColumnNames = this.columnMappings.filter(cp => !cp.skip).map(cp => cp.target.name);
     this.validateColumnMappings();
     this.previewData = new EntryMapper(this.columnMappings, this.selectedLocale).mapObjects(this.sampleEntries);
   }
@@ -256,8 +256,9 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   persistScene() {
     this.scene.creationTime = new Date().getTime();
-    this.scene.columnMappings = this.columnMappings;
-    this.scene.columns = this.columnMappings.map(cp => cp.target);
+    const colMappings = this.columnMappings.filter(cp => !cp.skip);
+    this.scene.columnMappings = colMappings;
+    this.scene.columns = colMappings.map(cp => cp.target);
     this.accordion.closeAll();
     this.progressBarMode = 'query';
     this.feedback = 'initializing data load...';
@@ -302,8 +303,9 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         const entries = mappingResults
           .filter(mr => mr.entry)
           .map(mr => mr.entry);
-        if (this.entryPersister.getPosted() + entries.length > this.maxItemsToLoadControl.value) {
-          this.entryPersister.post(entries.slice(0, this.maxItemsToLoadControl.value - this.entryPersister.getPosted()));
+        const maxItemsToLoad = this.maxItemsToLoadControl.value;
+        if (this.entryPersister.getPosted() + entries.length > maxItemsToLoad) {
+          this.entryPersister.post(entries.slice(0, maxItemsToLoad - this.entryPersister.getPosted()));
           this.entryPersister.postingComplete(true);
         } else {
           this.entryPersister.post(entries);

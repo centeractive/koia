@@ -1,4 +1,4 @@
-import { DataType, ColumnPair } from 'app/shared/model';
+import { ColumnPair, DataType } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 
 /**
@@ -8,7 +8,7 @@ import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
  * - values are NOT written to target entries...
  *   - when they're [[null]] or [[undefined]]
  *   - when they're empty
- *   - when the target value of specified data type cannot be created (parsed)
+ *   - when the target value of the specified data type cannot be created (parsed)
  * - the "_id" attribute starts at 1 and is incremented for each mapped target entry
  */
 export class EntryMapper {
@@ -43,7 +43,7 @@ export class EntryMapper {
 
    private mapObject(sourceEntry: object, id: number): MappingResult {
       const mappingResult = this.newMappingResult(id);
-      this.columnMapping.forEach(cp => {
+      this.columnMapping.filter(cp => !cp.skip).forEach(cp => {
          const sourceValue = sourceEntry[cp.source.name];
          this.mapValue(cp, sourceValue, mappingResult);
       });
@@ -54,7 +54,9 @@ export class EntryMapper {
       const mappingResult = this.newMappingResult(id);
       for (let i = 0; i < this.columnMapping.length; i++) {
          const columnPair = this.columnMapping[i];
-         this.mapValue(columnPair, values[i], mappingResult);
+         if (!columnPair.skip) {
+            this.mapValue(columnPair, values[i], mappingResult);
+         }
       }
       return mappingResult;
    }
