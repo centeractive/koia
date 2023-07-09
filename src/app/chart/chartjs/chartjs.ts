@@ -1,11 +1,11 @@
-import { Chart, ChartType as ChartJsType, ChartConfiguration, registerables } from 'chart.js';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
-import { ChartJsOptionsProvider } from './chartjs-options-provider';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { Chart, ChartConfiguration, ChartType as ChartJsType, registerables } from 'chart.js';
 import 'chartjs-adapter-luxon';
-import { DatasetStyler } from '../customizer/dataset-styler';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { BarLegendCustomizer } from '../customizer/bar-legend-customizer';
+import { DatasetStyler } from '../customizer/dataset-styler';
+import { ChartJsOptionsProvider } from './options/chartjs-options-provider';
 
 export class ChartJs {
 
@@ -29,7 +29,7 @@ export class ChartJs {
             options: this.optionsProvider.createOptions(context)
         };
 
-        console.error('options', config.options)
+        console.log('chart config', config);
 
         new BarLegendCustomizer().customize(context, config);
         context.chart = new Chart(canvas, config);
@@ -39,10 +39,12 @@ export class ChartJs {
         switch (chartType) {
             case ChartType.AREA:
                 return 'line';
+            case ChartType.LINEAR_BAR:
             case ChartType.HORIZONTAL_BAR:
+            case ChartType.LINEAR_HORIZONTAL_BAR:
                 return 'bar';
             default:
-                return <ChartJsType>chartType.type;
+                return chartType.type as ChartJsType;
         }
     }
 

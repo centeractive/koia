@@ -14,18 +14,16 @@ export class RawDataRevealer {
    constructor(private rawDataRevealService: RawDataRevealService) { }
 
    reveal(elements: ActiveElement[], chart: Chart, context: ChartContext): void {
-      // console.log('elements', elements);
       if (!elements.length) {
          return;
       }
       const element = elements[0];
-      if (context.isCircularChart() || element.element instanceof BarElement || context.groupByColumns[0]?.dataType === DataType.TEXT) {
+      const groupByColumnDataType = context.groupByColumns[0]?.dataType;
+      if (context.isCircularChart() || (element.element instanceof BarElement) || groupByColumnDataType === DataType.TEXT) {
          this.fromFlatData(elements, chart, context);
-      } else if (element.element instanceof PointElement) {
+      } else if (element.element instanceof PointElement || element.element instanceof BarElement) {
          const point = this.findDataPoint(chart.data.datasets, element.datasetIndex, element.index);
-         // console.log('point', point)
          if (point['id'] != undefined) {
-            // console.log('point with id', point)
             this.rawDataRevealService.ofID(point['id']);
          } else {
             this.fromDataPoint(point, chart.data.datasets, element.datasetIndex, context);
@@ -36,7 +34,7 @@ export class RawDataRevealer {
    }
 
    private findDataPoint(datasets: ChartDataset[], datasetIndex: number, index: number): Point {
-      return <Point>datasets[datasetIndex].data[index];
+      return datasets[datasetIndex].data[index] as Point;
    }
 
    private fromDataPoint(point: Point, datasets: ChartDataset[], datasetIndex: number, context: ChartContext): void {
@@ -65,7 +63,8 @@ export class RawDataRevealer {
       } else {
          const dsIndex = elements[0].datasetIndex;
          const column = context.isAggregationCountSelected() ? context.dataColumns[0] : context.groupByColumns[0];
-         const label = chart.data.datasets[dsIndex].label;
+         const ds = chart.data.datasets[dsIndex];
+         const label = ds['originalLabel'] || ds.label;
          this.rawDataRevealService.ofQuery(context.query, [column.name], [label], context);
       }
    }

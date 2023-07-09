@@ -35,6 +35,6 @@ describe('ChartType', () => {
 
    it('#fromType should throw error when type is no longer supported', () => {
       expect(() => ChartType.fromType('sunburstChart'))
-         .toThrowError('Sunburst chart does no longer exist in the current Koia version');
+         .toThrowError('Sunburst chart does no longer exist in this Koia version');
    });
 });

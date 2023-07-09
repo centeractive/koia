@@ -150,10 +150,10 @@ describe('AppRouteReuseStrategy', () => {
    });
 
    function createActivatedRouteSnapshot(route: Route): ActivatedRouteSnapshot {
-      return <ActivatedRouteSnapshot>{
+      return {
          routeConfig: {
             path: route
          }
-      };
+      } as ActivatedRouteSnapshot;
    }
 });

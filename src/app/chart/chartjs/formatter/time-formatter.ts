@@ -9,7 +9,7 @@ export abstract class TimeFormatter {
         return DateTimeUtils.momentFormatOf(timeUnit);
     }
 
-    formatTime(time: any, momentFormat: string): string {
+    formatTime(time: moment.MomentInput, momentFormat: string): string {
         return moment(time).format(momentFormat)
     }
 }

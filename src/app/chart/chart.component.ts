@@ -69,19 +69,17 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   }
 
   private async prepareChart(changeEvent: ChangeEvent): Promise<void> {
-    if (!!this.context.dataColumns.length && !!this.context.entries) {
-      this.loading = true;
-      await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
-      try {
-        if (!this.parentConstraintSize) {
-          this.adjustCanvasContainerSize();
-        }
-        if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
-          this.updateChart(changeEvent);
-        }
-      } finally {
-        this.loading = false;
+    this.loading = true;
+    await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
+    try {
+      if (!this.parentConstraintSize) {
+        this.adjustCanvasContainerSize();
       }
+      if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
+        this.updateChart(changeEvent);
+      }
+    } finally {
+      this.loading = false;
     }
   }
 
@@ -109,8 +107,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     this.cdr.detectChanges();
 
     // TODO: don't re-create chart each time but try to update existing one
-    new ChartJs(this.rawDataRevealService)
-      .create(this.canvasRef.nativeElement, this.context);
+    new ChartJs(this.rawDataRevealService).create(this.canvasRef.nativeElement, this.context);
   }
 
   onMarginResizeEnd(event: ResizeEvent): void {

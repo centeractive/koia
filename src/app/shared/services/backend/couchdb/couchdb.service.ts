@@ -43,7 +43,7 @@ export class CouchDBService implements DB {
   }
 
   getConnectionInfo(): ConnectionInfo {
-    return <ConnectionInfo>CommonUtils.clone(this.connectionInfo);
+    return CommonUtils.clone(this.connectionInfo);
   }
 
   private createHttpOptions(): HttpOptions {

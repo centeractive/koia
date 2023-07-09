@@ -1,9 +1,9 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Aggregation, DataType, Column } from '../../shared/model';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { SideBarController } from 'app/shared/controller';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
-import { DataTypeUtils, ChartUtils } from 'app/shared/utils';
+import { ChartUtils, DataTypeUtils } from 'app/shared/utils';
+import { Aggregation, Column, DataType } from '../../shared/model';
 
 @Component({
   selector: 'koia-chart-side-bar',
@@ -126,15 +126,14 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     if (this.context.isCircularChart()) {
       return 'Values';
     }
-    const chartType = ChartType.fromType(this.context.chartType);
-    return 'Values (' + (chartType === ChartType.HORIZONTAL_BAR ? 'X-Axis' : 'Y-Axis') + ')';
+    return 'Values (' + (this.context.isHorizontalChart() ? 'X-Axis' : 'Y-Axis') + ')';
   }
 
   groupingPanelName(): string {
     if (this.context.isCircularChart()) {
       return 'Name';
     } else {
-      return ChartType.fromType(this.context.chartType) === ChartType.HORIZONTAL_BAR ? 'Y-Axis' : 'X-Axis';
+      return this.context.isHorizontalChart() ? 'Y-Axis' : 'X-Axis';
     }
   }
 

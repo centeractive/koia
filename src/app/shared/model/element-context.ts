@@ -1,14 +1,14 @@
 import { EventEmitter } from '@angular/core';
-import { Aggregation } from './aggregation.enum';
-import { Query } from './query';
-import { ChangeEvent } from './change-event.enum';
-import { ValueGrouping } from '../value-range/model/value-grouping.type';
-import { ArrayUtils } from '../utils/array-utils';
-import { Column } from './column.type';
-import { ExportFormat } from './export-format.enum';
-import { DataType } from './data-type.enum';
-import { ColorProvider, ColorProviderFactory } from '../color';
 import * as _ from 'lodash';
+import { ColorProvider, ColorProviderFactory } from '../color';
+import { ArrayUtils } from '../utils/array-utils';
+import { ValueGrouping } from '../value-range/model/value-grouping.type';
+import { Aggregation } from './aggregation.enum';
+import { ChangeEvent } from './change-event.enum';
+import { Column } from './column.type';
+import { DataType } from './data-type.enum';
+import { ExportFormat } from './export-format.enum';
+import { Query } from './query';
 
 export abstract class ElementContext {
 
@@ -24,8 +24,8 @@ export abstract class ElementContext {
    private _query: Query;
    private _dataColumns: Column[] = [];
    private _splitColumns: Column[] = [];
-   private _groupByColumns: Column[] = [];
-   private _aggregations: Aggregation[] = [];
+   protected _groupByColumns: Column[] = [];
+   protected _aggregations: Aggregation[] = [];
    private _valueGroupings: ValueGrouping[] = [];
 
    private _colorProvider: ColorProvider;
@@ -122,8 +122,8 @@ export abstract class ElementContext {
       return this._splitColumns.slice(0);
    }
 
-   set splitColumns(splitColumns: Column[]) {
-      this._splitColumns = splitColumns || [];
+   set splitColumns(splitColumn: Column[]) {
+      this._splitColumns = splitColumn || [];
       this._groupByColumns = this._groupByColumns.filter(c => !this._splitColumns.includes(c));
       this.fireStructureChanged();
    }
@@ -176,7 +176,7 @@ export abstract class ElementContext {
    }
 
    set aggregations(aggregations: Aggregation[]) {
-      if (aggregations && aggregations.length > 1 && aggregations.find(a => a === Aggregation.COUNT)) {
+      if (aggregations?.length > 1 && aggregations.find(a => a === Aggregation.COUNT)) {
          throw new Error(Aggregation.COUNT + ' must not be combined with other aggregations');
       }
       this._aggregations = aggregations || [];

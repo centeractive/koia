@@ -1,9 +1,9 @@
 import { Attribute, DataType } from 'app/shared/model';
-import * as Papa from 'papaparse';
-import { DataReader } from '../data-reader.type';
-import { DataHandler } from '../data-handler.type';
-import { Sample } from '../sample.type';
 import { DataTypeUtils } from 'app/shared/utils';
+import * as Papa from 'papaparse';
+import { DataHandler } from '../data-handler.type';
+import { DataReader } from '../data-reader.type';
+import { Sample } from '../sample.type';
 
 export class CSVReader implements DataReader {
 
@@ -121,10 +121,10 @@ export class CSVReader implements DataReader {
    }
 
    private hasHeaderColumn(): boolean {
-      return <boolean>this.attrHasHeaderColumn.value;
+      return this.attrHasHeaderColumn.value;
    }
 
    private separator(): string {
-      return <string>this.attrSeparator.value;
+      return this.attrSeparator.value;
    }
 }

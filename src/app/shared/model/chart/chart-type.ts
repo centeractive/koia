@@ -3,7 +3,9 @@ export class ChartType {
    static readonly PIE = new ChartType('Pie', 'pie', 'pie_chart', false, 1000);
    static readonly DOUGHNUT = new ChartType('Doughnut', 'doughnut', 'donut_small', false, 1000);
    static readonly BAR = new ChartType('Bar', 'bar', 'bar_chart', false, 5000);
+   static readonly LINEAR_BAR = new ChartType('Linear Bar', 'linearBar', 'linear_bar_chart', true);
    static readonly HORIZONTAL_BAR = new ChartType('Horizontal Bar', 'horizontalBar', 'horizontal_bar_chart', true, 5000);
+   static readonly LINEAR_HORIZONTAL_BAR = new ChartType('Linear Horizontal Bar', 'linearHorizontalBar', 'linear_horizontal_bar_chart', true);
    static readonly RADAR = new ChartType('Radar', 'radar', 'radar_chart', false, 1000);
    static readonly POLAR_AREA = new ChartType('Polar Area', 'polarArea', 'polar_area_chart', true, 1000);
    static readonly LINE = new ChartType('Line', 'line', 'timeline', false);
@@ -14,7 +16,9 @@ export class ChartType {
       ChartType.PIE,
       ChartType.DOUGHNUT,
       ChartType.BAR,
+      ChartType.LINEAR_BAR,
       ChartType.HORIZONTAL_BAR,
+      ChartType.LINEAR_HORIZONTAL_BAR,
       ChartType.RADAR,
       ChartType.POLAR_AREA,
       ChartType.LINE,
@@ -41,10 +45,11 @@ export class ChartType {
          case ('donutChart'):
             return ChartType.DOUGHNUT;
          case ('discreteBarChart'):
-         case ('multiBarChart'):
             return ChartType.BAR;
+         case ('multiBarChart'):
+            return ChartType.LINEAR_BAR;
          case ('multiBarHorizontalChart'):
-            return ChartType.HORIZONTAL_BAR;
+            return ChartType.LINEAR_HORIZONTAL_BAR;
          case ('lineChart'):
          case ('lineWithFocusChart'):
             return ChartType.LINE;
@@ -53,7 +58,7 @@ export class ChartType {
          case ('scatterChart'):
             return ChartType.SCATTER;
          case ('sunburstChart'):
-            throw new Error('Sunburst chart does no longer exist in the current Koia version');
+            throw new Error('Sunburst chart does no longer exist in this Koia version');
          default:
             throw new Error('unknown chart type ' + type);
       }
@@ -63,13 +68,14 @@ export class ChartType {
       readonly customIcon: boolean, readonly maxValues?: number) { }
 
    static isCircularChart(chartType: ChartType): boolean {
-      return chartType === ChartType.PIE || chartType === ChartType.DOUGHNUT ||
-         chartType === ChartType.RADAR || chartType === ChartType.POLAR_AREA;
+      return [ChartType.PIE, ChartType.DOUGHNUT, ChartType.RADAR, ChartType.POLAR_AREA].includes(chartType);
    }
 
    static isCategoryChart(chartType: ChartType): boolean {
-      return chartType === ChartType.PIE || chartType === ChartType.DOUGHNUT ||
-         chartType === ChartType.BAR || chartType === ChartType.HORIZONTAL_BAR ||
-         chartType === ChartType.RADAR || chartType === ChartType.POLAR_AREA;
+      return [ChartType.PIE, ChartType.DOUGHNUT, ChartType.BAR, ChartType.HORIZONTAL_BAR, ChartType.RADAR, ChartType.POLAR_AREA].includes(chartType);
+   }
+
+   static isHorizontalChart(chartType: ChartType): boolean {
+      return [ChartType.HORIZONTAL_BAR, ChartType.LINEAR_HORIZONTAL_BAR].includes(chartType);
    }
 }

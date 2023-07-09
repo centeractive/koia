@@ -1,11 +1,11 @@
 import { fakeAsync, flush } from '@angular/core/testing';
+import { Aggregation } from '../aggregation.enum';
 import { ChangeEvent } from '../change-event.enum';
 import { Column } from '../column.type';
 import { DataType } from '../data-type.enum';
+import { ExportFormat } from '../export-format.enum';
 import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
-import { ExportFormat } from '../export-format.enum';
-import { Aggregation } from '../aggregation.enum';
 
 describe('ChartContext', () => {
 
@@ -31,8 +31,13 @@ describe('ChartContext', () => {
 
    it('#legendPosition should not fire look change event when legendPosition is not changed', fakeAsync(() => {
 
+      // given
+      context.legendPosition = 'right';
+      flush();
+      eventHandlerSpy.calls.reset();
+
       // when
-      context.legendPosition = context.legendPosition;
+      context.legendPosition = 'right';
       flush();
 
       // then
@@ -43,9 +48,9 @@ describe('ChartContext', () => {
 
       // when
       context.legendPosition = 'left';
-      flush();
 
       // then
+      flush();
       expect(context.legendPosition).toBe('left');
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
@@ -53,24 +58,31 @@ describe('ChartContext', () => {
 
    it('#legendPosition should not fire look change event when legendPosition is changed but legend is not shown', fakeAsync(() => {
 
-      // when
+      // given
       context.showLegend = false;
       flush();
       eventHandlerSpy.calls.reset();
+
+      // when      
       context.legendPosition = 'left';
-      flush();
 
       // then
+      flush();
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
    it('#showLegend should not fire look change event when value is not changed', fakeAsync(() => {
 
-      // when
-      context.showLegend = context.showLegend;
+      // given
+      context.showLegend = false;
       flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.showLegend = false;
 
       // then
+      flush();
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
@@ -89,22 +101,29 @@ describe('ChartContext', () => {
 
    it('#valueAsPercent should not fire look change event when value is not changed', fakeAsync(() => {
 
-      // when
-      context.valueAsPercent = context.valueAsPercent;
+      // given
+      context.valueAsPercent = false;
       flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.valueAsPercent = false;
 
       // then
+      flush();
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
    it('#valueAsPercent should fire look change event when value is changed', fakeAsync(() => {
 
-      // when
+      // given
       const initialValue = context.valueAsPercent;
+
+      // when
       context.valueAsPercent = !initialValue;
-      flush();
 
       // then
+      flush();
       expect(context.valueAsPercent).toBe(!initialValue);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
@@ -112,11 +131,16 @@ describe('ChartContext', () => {
 
    it('#xLabelRotation should not fire look change event when xLabelRotation is not changed', fakeAsync(() => {
 
-      // when
-      context.xLabelRotation = context.xLabelRotation;
+      // given
+      context.xLabelRotation = 45;
       flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.xLabelRotation = 45;
 
       // then
+      flush();
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
@@ -124,9 +148,9 @@ describe('ChartContext', () => {
 
       // when
       context.xLabelRotation = 99;
-      flush();
 
       // then
+      flush();
       expect(context.xLabelRotation).toBe(99);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
@@ -155,7 +179,7 @@ describe('ChartContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Amount');
+      expect(title).toBe('Amount by Location');
    });
 
    it('#getTitle when count distinct values of single data column', () => {
@@ -183,7 +207,7 @@ describe('ChartContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Count distinct values of Amount, Percent by Time');
+      expect(title).toBe('Count distinct values of Amount, Percent');
    });
 
    it('#getTitle when individual values of two columns grouped by time', () => {
@@ -211,7 +235,7 @@ describe('ChartContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Count distinct values of Amount (Sample)');
+      expect(title).toBe('Amount by Time (Sample)');
    });
 
    it('#getTitle when user-defined', () => {
@@ -238,7 +262,7 @@ describe('ChartContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Count distinct values of Percent by Time\nsplit by Name ⯈ Amount');
+      expect(title).toBe('Percent by Time\nsplit by Name ⯈ Amount');
    });
 
    it('#getSupportedExportFormats should return PNG', () => {

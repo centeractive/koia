@@ -10,7 +10,7 @@ export class ErrorResultFactory {
    }
 
    groupByColumnNotDefined(chartType: ChartType): Error {
-      const axisType = chartType === ChartType.HORIZONTAL_BAR ? 'Y' : 'X';
+      const axisType = ChartType.isHorizontalChart(chartType) ? 'Y' : 'X';
       return {
          name: undefined,
          message: axisType + '-Axis is not defined'

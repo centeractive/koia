@@ -9,7 +9,7 @@ import { Column, DataType, Route, Scene } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { ChartDataService, ChartMarginService, defaultMargin } from 'app/shared/services/chart';
 import { SceneFactory } from 'app/shared/test';
 import { ChartComponent } from './chart.component';
 
@@ -33,7 +33,7 @@ describe('ChartComponent', () => {
     ];
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
       declarations: [ChartComponent, ResizableDirective],
       imports: [MatProgressBarModule, RouterTestingModule, MatDialogModule],
@@ -46,10 +46,12 @@ describe('ChartComponent', () => {
     })
     fixture = TestBed.createComponent(ChartComponent);
     component = fixture.componentInstance;
-    context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+    context = new ChartContext([], ChartType.PIE.type, defaultMargin());
     context.entries = entries;
     component.context = context;
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {
@@ -142,10 +144,11 @@ describe('ChartComponent', () => {
     expect(validation).toBeFalse();
   });
 
-  it('#onResizeEnd should define margin when resized at top left corner', () => {
+  it('#onResizeEnd should define margin when resized at top left corner', fakeAsync(() => {
 
     // given
     context.margin = { top: 0, right: 0, bottom: 0, left: 0 };
+    flush();
     const resizeEvent = {
       rectangle: { top: 0, right: 0, bottom: 0, left: 0 },
       edges: { top: 1, left: 2 }
@@ -155,30 +158,33 @@ describe('ChartComponent', () => {
     component.onMarginResizeEnd(resizeEvent);
 
     // then
+    flush();
     expect(context.margin).toEqual({ top: 1, bottom: 0, left: 2, right: 0 });
     const cmpElement = component.cmpElementRef.nativeElement;
     const top = 1 + cmpElement.getBoundingClientRect().top - cmpElement.parentElement.parentElement.getBoundingClientRect().top;
     expect(component.marginDivStyle).toEqual({ top: top + 'px', right: '0px', bottom: '0px', left: '2px' });
-  });
+  }));
 
-  it('#onResizeEnd should define margin when resized at bottom right corner', () => {
+  it('#onResizeEnd should define margin when resized at bottom right corner', fakeAsync(() => {
 
     // given
     context.margin = { top: 0, right: 0, bottom: 0, left: 0 };
+    flush();
     const resizeEvent = {
       rectangle: { top: 0, right: 0, bottom: 0, left: 0 },
       edges: { right: -1, bottom: -2 }
-    }
+    };
 
     // when
     component.onMarginResizeEnd(resizeEvent);
 
     // then
+    flush();
     expect(context.margin).toEqual({ top: 0, right: 1, bottom: 2, left: 0 });
     const cmpElement = component.cmpElementRef.nativeElement;
     const top = cmpElement.getBoundingClientRect().top - cmpElement.parentElement.parentElement.getBoundingClientRect().top;
     expect(component.marginDivStyle).toEqual({ top: top + 'px', right: '1px', bottom: '2px', left: '0px' });
-  });
+  }));
 
   it('#createExportData should throw error', () => {
     expect(() => component.createExportData()).toThrowError('Method not implemented.');

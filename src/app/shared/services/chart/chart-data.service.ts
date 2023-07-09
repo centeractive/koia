@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
+import { Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType, DataPoint, DataSet } from 'app/shared/model/chart';
 import { ChartDataResult } from 'app/shared/model/chart/chart-data-result.type';
-import { ChartData } from 'chart.js';
-import { SeriesNameConverter } from './series-name-converter';
-import { ErrorResultFactory } from './error-result-factory';
-import { largestTriangleThreeBucket } from 'd3fc-sample';
-import { ChartDataHelper } from './chart-data-helper';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model';
+import { ChartData } from 'chart.js';
+import { largestTriangleThreeBucket } from 'd3fc-sample';
 import { CouchDBConstants } from '../backend/couchdb';
-import { Column, DataType } from 'app/shared/model';
+import { ChartDataHelper } from './chart-data-helper';
+import { ErrorResultFactory } from './error-result-factory';
+import { SeriesNameConverter } from './series-name-converter';
 
 @Injectable({
   providedIn: 'root'
@@ -25,15 +25,19 @@ export class ChartDataService {
     context.dataSampledDown = false;
     context.valueRange = undefined;
     context.warning = undefined;
-    const chartType = ChartType.fromType(context.chartType);
+    if (!context.dataColumns.length) {
+      return this.emptyResult();
+    }
     try {
+      const chartType = ChartType.fromType(context.chartType);
+      const groupByColDataType = context.groupByColumns[0]?.dataType;
       if (context.isAggregationCountSelected()) {
         if (context.isCategoryChart()) {
           return { data: this.countDistinctValuesData(chartType, context) };
         } else {
           return { data: this.valueCountData(chartType, context) };
         }
-      } else if (context.isCategoryChart() || context.groupByColumns[0]?.dataType === DataType.TEXT) {
+      } else if (context.isCategoryChart() || groupByColDataType === DataType.TEXT) {
         return { data: this.categoryData(chartType, context) };
       } else {
         return { data: this.individualValuesData(chartType, context) };
@@ -41,6 +45,15 @@ export class ChartDataService {
     } catch (err) {
       return { error: err.message };
     }
+  }
+
+  private emptyResult(): ChartDataResult {
+    return {
+      data: {
+        labels: [],
+        datasets: []
+      }
+    };
   }
 
   private countDistinctValuesData(chartType: ChartType, context: ChartContext): ChartData {

@@ -1,7 +1,10 @@
+import { ChartUtils } from 'app/shared/utils';
+import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
 import { Chart, ChartData } from 'chart.js';
 import { Margin } from '.';
 import { SeriesNameConverter } from '../../services/chart/series-name-converter';
 import { ValueRange } from '../../value-range/model/value-range.type';
+import { Aggregation } from '../aggregation.enum';
 import { Column } from '../column.type';
 import { ElementContext } from '../element-context';
 import { ExportFormat } from '../export-format.enum';
@@ -57,6 +60,10 @@ export class ChartContext extends ElementContext {
 
    isCircularChart(): boolean {
       return ChartType.isCircularChart(ChartType.fromType(this._chartType));
+   }
+
+   isHorizontalChart(): boolean {
+      return ChartType.isHorizontalChart(ChartType.fromType(this._chartType));
    }
 
    get margin(): Margin {
@@ -207,5 +214,44 @@ export class ChartContext extends ElementContext {
 
    getSupportedExportFormats(): ExportFormat[] {
       return [ExportFormat.PNG];
+   }
+
+   // overwritten /////////////
+   //
+
+   /**
+    * @see https://stackoverflow.com/a/28951055/2358409
+    */
+   get dataColumns(): Column[] {
+      return super.dataColumns;
+   }
+
+   set dataColumns(columns: Column[]) {
+      if (isAnyNonNumeric(columns)) {
+         this._aggregations = [Aggregation.COUNT];
+         this._groupByColumns = [];
+      } else if (containsNumberOnly(columns)) {
+         this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
+         if (this._groupByColumns?.length) {
+            this._aggregations = [];
+         }
+      }
+      super.dataColumns = columns;
+   }
+
+   /**
+    * @see https://stackoverflow.com/a/28951055/2358409
+    */
+   get aggregations(): Aggregation[] {
+      return super.aggregations;
+   }
+
+   set aggregations(aggregations: Aggregation[]) {
+      if (aggregations?.length) {
+         this._groupByColumns = [];
+      } else {
+         this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
+      }
+      super.aggregations = aggregations;
    }
 }

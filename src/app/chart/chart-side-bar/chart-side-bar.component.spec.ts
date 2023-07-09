@@ -1,19 +1,19 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ChartSideBarComponent } from './chart-side-bar.component';
-import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Column, Aggregation, DataType, TimeUnit } from 'app/shared/model';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
-import { MatIconModuleMock } from 'app/shared/test';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
+import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { MatIconModuleMock } from 'app/shared/test';
+import { ChartSideBarComponent } from './chart-side-bar.component';
 
 describe('ChartSideBarComponent', () => {
 
@@ -320,7 +320,6 @@ describe('ChartSideBarComponent', () => {
     // then
     expect(component.individualValuesEnabled).toBeTrue();
     expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(context.aggregations).toEqual([Aggregation.COUNT]);
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
   });
 

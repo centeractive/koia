@@ -1,5 +1,5 @@
-import { ChartMarginService } from './chart-margin.service';
 import { ChartType, Margin } from '../../model/chart';
+import { ChartMarginService, defaultMargin } from './chart-margin.service';
 
 describe('ChartMarginService', () => {
 
@@ -15,7 +15,7 @@ describe('ChartMarginService', () => {
       const margin = chartMarginService.marginOf(null);
 
       // then
-      expect(margin).toEqual(ChartMarginService.DEFAULT_MARGINS);
+      expect(margin).toEqual(defaultMargin());
    });
 
    it('#marginOf should return default margin when chart type is undefined', () => {
@@ -24,7 +24,7 @@ describe('ChartMarginService', () => {
       const margin = chartMarginService.marginOf(undefined);
 
       // then
-      expect(margin).toEqual(ChartMarginService.DEFAULT_MARGINS);
+      expect(margin).toEqual(defaultMargin());
    });
 
    it('#marginOf should return default margin when no other margin was remembered', () => {
@@ -56,7 +56,7 @@ describe('ChartMarginService', () => {
       const margin = chartMarginService.marginOf(ChartType.PIE);
 
       // then
-      expect(margin).toEqual(ChartMarginService.DEFAULT_MARGINS);
+      expect(margin).toEqual(defaultMargin());
    });
 
    it('#computeMargin should return computed margin when top-left corner was reiszed', () => {

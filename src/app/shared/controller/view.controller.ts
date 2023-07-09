@@ -17,13 +17,13 @@ import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { ChartMarginService } from '../services/chart';
 import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
-import { ArrayUtils, ChartUtils, CommonUtils, DateTimeUtils } from '../utils';
+import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
 
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext {
 
    static readonly MARGIN_TOP = 10;
-   static readonly SIDENAV_WIDTH = 340; // keep in sync with .sidenav in styles.css
+   static readonly SIDENAV_WIDTH = 380; // keep in sync with .sidenav in styles.css
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
 
    @ViewChild(MatSidenav) sidenav: MatSidenav;
@@ -103,7 +103,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       const chartType = ChartType.BAR;
       const chartMargin = this.chartMarginService.marginOf(chartType);
       const context = new ChartContext(this.clonedColumns(), chartType.type, chartMargin);
-      context.groupByColumns = ChartUtils.identifyGroupByColumns(context);
       context.query = this.query;
       context.entries = this.entries;
       this.elementContexts = this.elementContexts.concat([context]);
@@ -158,7 +157,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    asChartContext(context: ElementContext): ChartContext {
-      return <ChartContext>context;
+      return context as ChartContext;
    }
 
    isGraphContext(context: ElementContext): boolean {

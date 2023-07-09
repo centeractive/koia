@@ -3,12 +3,15 @@ import { ResizeEvent } from 'angular-resizable-element';
 import { ChartType, Margin } from '../../model/chart';
 import { CommonUtils } from '../../utils';
 
+
+export function defaultMargin(): Margin {
+   return { top: 0, right: 20, bottom: 20, left: 20 };
+}
+
 @Injectable({
    providedIn: 'root'
 })
 export class ChartMarginService {
-
-   static readonly DEFAULT_MARGINS = { top: 0, right: 20, bottom: 20, left: 20 };
 
    private margins: Map<ChartType, Margin>;
 
@@ -16,17 +19,17 @@ export class ChartMarginService {
       this.init();
    }
 
-   private init() {
+   private init(): void {
       this.margins = new Map();
-      ChartType.ALL.forEach(t => this.margins.set(t, ChartMarginService.DEFAULT_MARGINS));
+      ChartType.ALL.forEach(t => this.margins.set(t, defaultMargin()));
    }
 
    marginOf(chartType: ChartType): Margin {
-      const margin = this.margins.get(chartType) || ChartMarginService.DEFAULT_MARGINS;
-      return <Margin>CommonUtils.clone(margin);
+      const margin = this.margins.get(chartType) || defaultMargin();
+      return CommonUtils.clone(margin);
    }
 
-   remember(chartType: ChartType, margin: Margin) {
+   remember(chartType: ChartType, margin: Margin): void {
       this.margins.set(chartType, margin);
    }
 
@@ -49,7 +52,7 @@ export class ChartMarginService {
       };
    }
 
-   reset() {
+   reset(): void {
       this.init();
    }
 }

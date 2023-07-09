@@ -1,15 +1,15 @@
 import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
-import { ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
-import { RawDataRevealer } from './raw-data-revealer';
-import { FormatUtils } from './formatter/format-utils';
-import { TooltipCustomizer } from '../customizer/tooltip-customizer';
-import { LegendLabelFormatter } from './formatter/legend-label-formatter';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
-import { TickLabelFormatter } from './formatter/tick-label-formatter';
-import { PointLabelFormatter } from './formatter/point-label-formatter';
-import { ChartJsUtils } from './chart-js-utils';
+import { ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
+import { TooltipCustomizer } from '../../customizer/tooltip-customizer';
+import { ChartJsUtils } from '../chart-js-utils';
+import { FormatUtils } from '../formatter/format-utils';
+import { LegendLabelFormatter } from '../formatter/legend-label-formatter';
+import { PointLabelFormatter } from '../formatter/point-label-formatter';
+import { TickLabelFormatter } from '../formatter/tick-label-formatter';
+import { RawDataRevealer } from '../raw-data-revealer';
 
 export class ChartJsOptionsProvider {
 
@@ -34,6 +34,7 @@ export class ChartJsOptionsProvider {
                 };
                 break;
             case ChartType.HORIZONTAL_BAR:
+            case ChartType.LINEAR_HORIZONTAL_BAR:
                 options.indexAxis = 'y';
                 options.parsing = { yAxisKey: 'x', xAxisKey: 'y' };
                 options.scales = {
@@ -144,13 +145,7 @@ export class ChartJsOptionsProvider {
         }
 
         if (context.isCategoryChart()) {
-            this.tickLabelFormatter.format(column, scaleOptions);
-
-            // TODO: consider using time-axis instead (see TickLabelFormatter#format)
-            if (column?.dataType === DataType.TIME) {
-                scaleOptions.type = 'linear';
-                scaleOptions.offset = false;
-            }
+            this.tickLabelFormatter.format(context, column, scaleOptions);
         } else {
             switch (column.dataType) {
                 case DataType.NUMBER: {

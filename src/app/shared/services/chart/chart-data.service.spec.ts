@@ -1,7 +1,7 @@
+import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { TestUtils } from 'app/shared/test';
 import { ChartDataService } from './chart-data.service';
-import { Column, DataType, TimeUnit } from '../../model';
-import { TestUtils } from '../../test';
-import { ChartContext, ChartType } from '../../model/chart';
 
 describe('ChartDataService', () => {
 
@@ -237,7 +237,7 @@ describe('ChartDataService', () => {
       expect(result.error).toBeUndefined();
    });
 
-   it('#createData should return error when max. number of values for MULTI_BAR chart is exceeded (count distinct values)', () => {
+   it('#createData should return error when max. number of values for BAR chart is exceeded (count distinct values)', () => {
 
       // given
       context.chartType = ChartType.BAR.type;
@@ -310,7 +310,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData: any = [
+      const expectedData = [
          { id: 2, x: entries[1]['Time'], y: 2 },
          { id: 3, x: entries[0]['Time'], y: 3 },
          { id: 4, x: entries[2]['Time'], y: 3 }
@@ -336,12 +336,12 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData0: any = [
+      const expectedData0 = [
          { id: 2, x: entries[1]['Time'], y: 2 },
          { id: 3, x: entries[0]['Time'], y: 3 },
          { id: 4, x: entries[2]['Time'], y: 3 }
       ];
-      const expectedData1: any = [
+      const expectedData1 = [
          { id: 1, x: entries[3]['Time'], y: -2 },
          { id: 2, x: entries[1]['Time'], y: 0 },
          { id: 3, x: entries[0]['Time'], y: -1 },
@@ -373,7 +373,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData: any = [
+      const expectedData = [
          { id: 2, x: entries[1]['Time'], y: 2 },
          { id: 3, x: entries[0]['Time'], y: 3 },
          { id: 4, x: entries[2]['Time'], y: 3 }
@@ -400,11 +400,11 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData0: any = [
+      const expectedData0 = [
          { id: 3, x: entries[0]['Time'], y: -1 },
          { id: 4, x: entries[2]['Time'], y: 4 }
       ];
-      const expectedData1: any = [
+      const expectedData1 = [
          { id: 2, x: entries[1]['Time'], y: 0 }
       ];
       expect(result.data.datasets.length).toBe(2);
@@ -453,8 +453,8 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData0: any = [{ x: now, y: 1 }, { x: now + min, y: 2 }];
-      const expectedData1: any = [{ x: now, y: 1 }];
+      const expectedData0 = [{ x: now, y: 1 }, { x: now + min, y: 2 }];
+      const expectedData1 = [{ x: now, y: 1 }];
       expect(result.data.datasets.length).toBe(2);
       expect(result.data.datasets[0].label).toBe('b');
       expect(result.data.datasets[0].data).toEqual(expectedData0);
@@ -477,8 +477,8 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      const expectedData0: any = [{ x: now + min, y: 2 }];
-      const expectedData1: any = [{ x: now, y: 1 }];
+      const expectedData0 = [{ x: now + min, y: 2 }];
+      const expectedData1 = [{ x: now, y: 1 }];
       expect(result.data.datasets.length).toBe(2);
       expect(result.data.datasets[0].label).toBe('3 ⯈ b');
       expect(result.data.datasets[0].data).toEqual(expectedData0);

@@ -1,5 +1,5 @@
+import { Column, DataType, Operator, PropertyFilter } from '../model';
 import { PropertyFilterValidator } from './property-filter-validator';
-import { Column, DataType, PropertyFilter, Operator } from '../model';
 
 describe('PropertyFilterValidator', () => {
 
