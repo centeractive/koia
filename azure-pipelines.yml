@@ -40,7 +40,10 @@ steps:
     targetType: 'inline'
     script: |
       New-Item -Type Directory -Force "${HOME}/couchdb/etc/local.d"
-      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/etc/local.d/local.ini"    
+      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/etc/local.d/local.ini"
+      Write-Output "----start local.ini--------------------"
+      Get-Content "${HOME}/couchdb/etc/local.d/local.ini"
+      Write-Output "----end   local.ini--------------------"
 
 - task: DockerInstaller@0
   displayName: install Docker
