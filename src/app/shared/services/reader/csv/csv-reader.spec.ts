@@ -1,6 +1,6 @@
-import { CSVReader } from './csv-reader';
-import { DataHandler } from '../data-handler.type';
 import { DataType } from 'app/shared/model';
+import { DataHandler } from '../data-handler.type';
+import { CSVReader } from './csv-reader';
 
 describe('CSVReader', () => {
 
@@ -163,12 +163,12 @@ describe('CSVReader', () => {
    it('#readSample should return sample data only when file has no header', (done) => {
 
       // given
-      const url = createURL(content);
+      const file = new File([content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = false;
 
       // when/then
       const expectedData = expectedValues.slice(0, 3);
-      reader.readSample(url, 3)
+      reader.readSample(file, 3)
          .then(sample => {
             expect(sample.columnNames).toBeUndefined();
             expect(sample.tableData).toEqual(expectedData);
@@ -181,11 +181,11 @@ describe('CSVReader', () => {
    it('#readSample should return all data when requested sample exceeds file size', (done) => {
 
       // given
-      const url = createURL(content);
+      const file = new File([content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = false;
 
       // when/then
-      reader.readSample(url, 100)
+      reader.readSample(file, 100)
          .then(sample => {
             expect(sample.columnNames).toBeUndefined();
             expect(sample.tableData).toEqual(expectedValues);
@@ -198,12 +198,12 @@ describe('CSVReader', () => {
    it('#readSample should return column names and sample data when file has header', (done) => {
 
       // given
-      const url = createURL(header + '\n' + content);
+      const file = new File([header + '\n' + content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = true;
 
       // when/then
       const expectedData = expectedValues.slice(0, 3);
-      reader.readSample(url, 3)
+      reader.readSample(file, 3)
          .then(sample => {
             expect(sample.columnNames).toEqual(['A', 'B', 'C']);
             expect(sample.tableData).toEqual(expectedData);
@@ -216,14 +216,14 @@ describe('CSVReader', () => {
    it('#readData should return values when file has no header', (done) => {
 
       // given
-      const url = createURL(content);
+      const file = new File([content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = false;
 
       // when/then
       let values: string[][];
       const dataHandler: DataHandler = {
          onValues: rows => values = values ? values.concat(rows) : rows,
-         onEntries: data => fail('no entries expected'),
+         onEntries: () => fail('no entries expected'),
          onError: err => fail(err),
          onComplete: () => {
             expect(values).toEqual(expectedValues);
@@ -231,20 +231,20 @@ describe('CSVReader', () => {
          },
          isCanceled: () => false
       }
-      reader.readData(url, 100, dataHandler);
+      reader.readData(file, 100, dataHandler);
    });
 
    it('#readValues should return values when file has header', (done) => {
 
       // given
-      const url = createURL(header + '\n' + content);
+      const file = new File([header + '\n' + content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = true;
 
       // when/then
       let values: string[][];
       const dataHandler: DataHandler = {
          onValues: rows => values = values ? values.concat(rows) : rows,
-         onEntries: data => fail('no entries expected'),
+         onEntries: () => fail('no entries expected'),
          onError: err => fail(err),
          onComplete: () => {
             expect(values).toEqual(expectedValues);
@@ -252,10 +252,6 @@ describe('CSVReader', () => {
          },
          isCanceled: () => false
       }
-      reader.readData(url, 100, dataHandler);
+      reader.readData(file, 100, dataHandler);
    });
-
-   function createURL(text: string): string {
-      return URL.createObjectURL(new Blob([text]));
-   }
 });

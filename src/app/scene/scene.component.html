@@ -49,6 +49,15 @@
           <input matInput readonly [value]="file.name">
         </mat-form-field>
         <p *ngIf="selectedReader">{{ selectedReader.getDescription() }}</p>
+        <mat-form-field *ngIf="currSourceName === 'CSV'" class="form_field_encoding">
+          <mat-label>Character Encoding</mat-label>
+          <mat-select [(value)]="encoding" (selectionChange)="onCharacterEncodingChange()"
+                      matTooltip="Character set that was used to encode the file content">
+            <mat-option *ngFor="let charSet of characterSets" [value]="charSet">
+              {{ charSet }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
         <div *ngIf="fileHeader">
           Data Sample
           <textarea id="textarea_data_sample" readonly>{{ fileHeader }}</textarea>

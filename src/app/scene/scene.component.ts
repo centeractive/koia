@@ -11,6 +11,7 @@ import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { DateTimeUtils } from 'app/shared/utils';
+import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import * as _ from 'lodash';
@@ -39,7 +40,10 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   readers: DataReader[];
   selectedReader: DataReader;
+  currSourceName: string;
   file: File;
+  characterSets = CHARACTER_SETS;
+  encoding = CHARACTER_SETS[0];
   fileHeader: string;
   readerAttributes: Attribute[];
   locales: string[];
@@ -82,6 +86,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       this.dateFormats = DateTimeUtils.allTimeUnits('desc').map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
       this.readers = this.readerService.getReaders();
       this.selectedReader = this.readers[0];
+      this.currSourceName = this.selectedReader.getSourceName();
       this.defineLocales();
       this.collectColumnMappingSources();
       this.initScene();
@@ -152,7 +157,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     return new EntryPersister(this.dbService, this.scene.database, SceneComponent.BATCH_SIZE, progressMonitor);
   }
 
-  private entryPersisterCompleted(msg: string) {
+  private entryPersisterCompleted(msg: string): void {
     const canceledHint = this.canceled ? 'Loading canceled: ' : '';
     if (this.mappingErrors.size() > 0) {
       this.notifyWarning(canceledHint + msg + ', ' + this.mappingErrors.size() + ' mapping errors did occur...\n\n' +
@@ -166,20 +171,32 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.router.navigateByUrl(Route.SCENES);
   }
 
-  onSourceTypeChange() {
+  onSourceTypeChange(): void {
+    this.currSourceName = this.selectedReader.getSourceName();
     this.fileInputRef.nativeElement.value = '';
     this.initContext();
   }
 
   onFileSelChange(files: FileList): void {
     this.initContext();
-    if (files.length > 0) {
+    if (files.length) {
       this.file = files[0];
       this.scene.context = SceneUtils.fileContextInfo(this.file);
-      this.readerService.readHeader(this.file, SceneComponent.HEADER_SIZE)
-        .then(data => this.onDataSample(data))
-        .catch(err => this.notifyError(err));
+      this.readDataSample();
     }
+  }
+
+  onCharacterEncodingChange(): void {
+    if (this.file) {
+      this.initContext(true);
+      this.readDataSample();
+    }
+  }
+
+  private readDataSample(): void {
+    this.readerService.readHeader(this.file, SceneComponent.HEADER_SIZE, this.encoding)
+      .then(data => this.onDataSample(data))
+      .catch(err => this.notifyError(err));
   }
 
   private onDataSample(data: string): void {
@@ -199,8 +216,10 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.readerAttributes = this.selectedReader.furnishAttributes(this.fileHeader, this.selectedLocale);
   }
 
-  initContext(): void {
-    this.file = undefined;
+  initContext(keepFile = false): void {
+    if (!keepFile) {
+      this.file = undefined;
+    }
     this.fileHeader = undefined;
     this.sampleEntries = undefined;
     this.columnMappings = undefined;
@@ -208,8 +227,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   readSample(): void {
-    const url = URL.createObjectURL(this.file);
-    this.selectedReader.readSample(url, SceneComponent.SAMPLE_SIZE)
+    this.selectedReader.readSample(this.file as any, SceneComponent.SAMPLE_SIZE, this.encoding)
       .then(sample => {
         this.closeExpPanelsAbove(this.columnDefinitions);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
@@ -254,7 +272,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     return this.previewData && this.previewData.find(mr => mr.errors.length > 0) !== undefined;
   }
 
-  persistScene() {
+  persistScene(): void {
     this.scene.creationTime = new Date().getTime();
     const colMappings = this.columnMappings.filter(cp => !cp.skip);
     this.scene.columnMappings = colMappings;
@@ -263,7 +281,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.progressBarMode = 'query';
     this.feedback = 'initializing data load...';
     this.dbService.persistScene(this.scene, false)
-      .then(r => this.loadData())
+      .then(() => this.loadData())
       .catch(err => this.notifyError(err));
   }
 
@@ -274,8 +292,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     const entryMapper = new EntryMapper(this.columnMappings, this.selectedLocale);
     const dataHandler = this.createDataHandler(entryMapper);
     console.log('start loading file ' + this.file.name + ' of type ' + this.file.type);
-    const url = URL.createObjectURL(this.file);
-    setTimeout(() => this.selectedReader.readData(url, SceneComponent.BATCH_SIZE, dataHandler), 500); // let UI update itself
+    setTimeout(() => this.selectedReader.readData(this.file, SceneComponent.BATCH_SIZE * 160, dataHandler, this.encoding), 500); // let UI update itself
   }
 
   private createDataHandler(entryMapper: EntryMapper): DataHandler {
@@ -327,7 +344,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  cancel() {
+  cancel(): void {
     if (this.scene.creationTime && !this.entryPersister.isPostingComplete()) {
       this.canceled = true;
       this.entryPersister.postingComplete(false);

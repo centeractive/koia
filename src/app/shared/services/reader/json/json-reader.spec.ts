@@ -1,6 +1,6 @@
-import { JSONReader } from './json-reader';
-import { DataHandler } from '../data-handler.type';
 import { DataType } from 'app/shared/model';
+import { DataHandler } from '../data-handler.type';
+import { JSONReader } from './json-reader';
 
 describe('JSONReader', () => {
 
@@ -94,11 +94,12 @@ describe('JSONReader', () => {
    it('#readSample should return entries sample', (done) => {
 
       // given
-      const url = createURL(JSON.stringify({ entries: entries }));
+      const json = JSON.stringify({ entries: entries });
+      const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$.entries';
 
       // when/then
-      reader.readSample(url, 3)
+      reader.readSample(file, 3)
          .then(sample => {
             const expected = entries.slice(0, 3);
             expect(sample.entries).toEqual(expected);
@@ -112,11 +113,12 @@ describe('JSONReader', () => {
    it('#readSample should return all entries when when requested sample exceeds file size', (done) => {
 
       // given
-      const url = createURL(JSON.stringify({ entries: entries }));
+      const json = JSON.stringify({ entries: entries });
+      const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$.entries';
 
       // when/then
-      reader.readSample(url, 100)
+      reader.readSample(file, 100)
          .then(sample => {
             expect(sample.entries).toEqual(entries);
             expect(sample.columnNames).toBeUndefined();
@@ -129,13 +131,14 @@ describe('JSONReader', () => {
    it('#readData should provide entries when array path is root', (done) => {
 
       // given
-      const url = createURL(JSON.stringify(entries));
+      const json = JSON.stringify(entries);
+      const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$';
 
       // when/then
       let actual = [];
       const dataHandler: DataHandler = {
-         onValues: rows => fail('no values expected'),
+         onValues: () => fail('no values expected'),
          onEntries: data => actual = actual.concat(data),
          onError: err => fail(err),
          onComplete: () => {
@@ -144,19 +147,20 @@ describe('JSONReader', () => {
          },
          isCanceled: () => false
       }
-      reader.readData(url, 2, dataHandler);
+      reader.readData(file, 2, dataHandler);
    });
 
    it('#readData should return provide entries when array path is not root', (done) => {
 
       // given
-      const url = createURL(JSON.stringify({ entries: entries }));
+      const json = JSON.stringify({ entries: entries });
+      const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$.entries';
 
       // when/then
       let actual = [];
       const dataHandler: DataHandler = {
-         onValues: rows => fail('no values expected'),
+         onValues: () => fail('no values expected'),
          onEntries: data => actual = actual.concat(data),
          onError: err => fail(err),
          onComplete: () => {
@@ -165,10 +169,7 @@ describe('JSONReader', () => {
          },
          isCanceled: () => false
       }
-      reader.readData(url, 2, dataHandler);
+      reader.readData(file, 2, dataHandler);
    });
 
-   function createURL(s: string): string {
-      return URL.createObjectURL(new Blob([s]));
-   }
 });

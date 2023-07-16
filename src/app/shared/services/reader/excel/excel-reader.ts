@@ -1,8 +1,8 @@
 import { Attribute, DataType } from 'app/shared/model';
-import { DataReader } from '../data-reader.type';
-import { DataHandler } from '../data-handler.type';
-import { Sample } from '../sample.type';
 import * as XLSX from 'xlsx';
+import { DataHandler } from '../data-handler.type';
+import { DataReader } from '../data-reader.type';
+import { Sample } from '../sample.type';
 
 export class ExcelReader implements DataReader {
 
@@ -21,7 +21,7 @@ export class ExcelReader implements DataReader {
       return '.xlsx';
    }
 
-   expectsPlainTextData() {
+   expectsPlainTextData(): boolean {
       return false;
    }
 
@@ -29,16 +29,16 @@ export class ExcelReader implements DataReader {
       return [this.attrSheetName];
    }
 
-   readSample(url: string, entriesCount: number): Promise<Sample> {
+   readSample(file: File, entriesCount: number): Promise<Sample> {
       return new Promise<Sample>((resolve, reject) => {
-         this.readEntries(url, entriesCount + 1)
+         this.readEntries(file, entriesCount + 1)
             .then(entries => resolve({ entries: entries }))
             .catch(err => reject(err));
       });
    }
 
-   readData(url: string, chunkSize: number, dataHandler: DataHandler): void {
-      this.readEntries(url, Number.MAX_SAFE_INTEGER)
+   readData(file: File, chunkSize: number, dataHandler: DataHandler): void {
+      this.readEntries(file, Number.MAX_SAFE_INTEGER)
          .then(entries => {
             dataHandler.onEntries(entries);
             dataHandler.onComplete();
@@ -46,7 +46,8 @@ export class ExcelReader implements DataReader {
          .catch(err => dataHandler.onError(err));
    }
 
-   readEntries(url: string, rowCount: number): Promise<object[]> {
+   readEntries(file: File, rowCount: number): Promise<object[]> {
+      const url = URL.createObjectURL(file);
       return new Promise<object[]>((resolve, reject) => {
          return fetch(url)
             .then(r => r.blob())

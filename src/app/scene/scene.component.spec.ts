@@ -378,7 +378,7 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
-    spyOn(component.selectedReader, 'readData').and.callFake((url: string, chunkSize: number, dataHandler: DataHandler) => {
+    spyOn(component.selectedReader, 'readData').and.callFake((file: File, chunkSize: number, dataHandler: DataHandler) => {
       dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });
@@ -408,7 +408,7 @@ describe('SceneComponent', () => {
     const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
     delColMappingButtons[0].click();
 
-    spyOn(component.selectedReader, 'readData').and.callFake((url: string, chunkSize: number, dataHandler: DataHandler) => {
+    spyOn(component.selectedReader, 'readData').and.callFake((file: File, chunkSize: number, dataHandler: DataHandler) => {
       dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });
@@ -438,7 +438,7 @@ describe('SceneComponent', () => {
     const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
     delColMappingButtons[1].click();
 
-    spyOn(component.selectedReader, 'readData').and.callFake((url: string, chunkSize: number, dataHandler: DataHandler) => {
+    spyOn(component.selectedReader, 'readData').and.callFake((file: File, chunkSize: number, dataHandler: DataHandler) => {
       dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });

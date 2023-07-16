@@ -1,5 +1,5 @@
-import * as oboe from 'oboe';
 import { Attribute, DataType } from 'app/shared/model';
+import * as oboe from 'oboe';
 import { DataHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
@@ -23,7 +23,7 @@ export class JSONReader implements DataReader {
     return '.json';
   }
 
-  expectsPlainTextData() {
+  expectsPlainTextData(): boolean {
     return true;
   }
 
@@ -44,7 +44,7 @@ export class JSONReader implements DataReader {
           }
         }
       })
-      .fail(err => this.defineArrayJSONPathAttribute(paths))
+      .fail(() => this.defineArrayJSONPathAttribute(paths))
       .done(() => this.defineArrayJSONPathAttribute(paths));
   }
 
@@ -55,11 +55,11 @@ export class JSONReader implements DataReader {
     }
   }
 
-  readSample(url: string, entriesCount: number): Promise<Sample> {
+  readSample(file: File, entriesCount: number): Promise<Sample> {
     return new Promise<Sample>((resolve, reject) => {
       let canceled = false;
       const dataHandler: DataHandler = {
-        onValues: rows => null,
+        onValues: () => null,
         onEntries: entries => {
           if (!canceled) {
             canceled = true;
@@ -70,11 +70,12 @@ export class JSONReader implements DataReader {
         onComplete: () => null,
         isCanceled: () => canceled
       }
-      this.readData(url, entriesCount, dataHandler);
+      this.readData(file, entriesCount, dataHandler);
     });
   }
 
-  readData(url: string, chunkSize: number, dataHandler: DataHandler): void {
+  readData(file: File, chunkSize: number, dataHandler: DataHandler): void {
+    const url = URL.createObjectURL(file);
     let entries = [];
     const parser = oboe(url)
       .node(this.pathConverter.toOboeMatchPattern(this.attrArrayJSONPath.value), entry => {
@@ -91,7 +92,7 @@ export class JSONReader implements DataReader {
         }
       })
       .fail(err => dataHandler.onError(err))
-      .done(data => {
+      .done(() => {
         if (entries.length > 0) {
           dataHandler.onEntries(entries)
         }

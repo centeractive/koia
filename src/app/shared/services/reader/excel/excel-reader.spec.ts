@@ -1,7 +1,7 @@
-import { ExcelReader } from './excel-reader';
-import { DataHandler } from '../data-handler.type';
 import { DataType } from 'app/shared/model';
 import * as moment from 'moment';
+import { DataHandler } from '../data-handler.type';
+import { ExcelReader } from './excel-reader';
 
 describe('ExcelReader', () => {
 
@@ -14,11 +14,8 @@ describe('ExcelReader', () => {
       reader = new ExcelReader();
       dataHandler = {
          onValues: () => null,
-         onEntries: entries => console.log(entries),
-         onError: err => {
-            console.error(err)
-            fail(err)
-         },
+         onEntries: () => null,
+         onError: err => fail(err),
          onComplete: () => null,
          isCanceled: () => null
       };
@@ -55,63 +52,77 @@ describe('ExcelReader', () => {
       expect(attributes[0].hasValueChoice()).toBeFalsy();
    });
 
-   it('#readSample should return sample data', (done) => {
+   it('#readSample should return sample data', async () => {
 
       // given
-      const request: XMLHttpRequest = createRequest();
+      const file = await loadExcelFile();
 
-      request.onload = r => {
-         const url = URL.createObjectURL(new Blob([request.response]));
+      // when
+      await reader.readSample(file, 2).then(sample => {
 
-         // when
-         reader.readSample(url, 2).then(sample => {
-
-            // then
-            const entries = sample.entries;
-            expect(entries.length).toBe(2);
-            expect(entries[0]['c1']).toBe('a');
-            expect(entries[1]['c1']).toBe('b');
-            expect(entries[0]['c2']).toBe(1);
-            expect(entries[1]['c2']).toBe(2);
-            expect(entries[0]['c3']).toBeTruthy();
-            expect(entries[1]['c3']).toBeFalsy();
-            expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
-            expect(formatTime(entries[1]['c4'])).toBe('05.06.2019');
-            done();
-         });
-      };
-
-      // trigger
-      request.send(null);
+         // then
+         const entries = sample.entries;
+         expect(entries.length).toBe(2);
+         expect(entries[0]['c1']).toBe('a');
+         expect(entries[1]['c1']).toBe('b');
+         expect(entries[0]['c2']).toBe(1);
+         expect(entries[1]['c2']).toBe(2);
+         expect(entries[0]['c3']).toBeTruthy();
+         expect(entries[1]['c3']).toBeFalsy();
+         expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
+         expect(formatTime(entries[1]['c4'])).toBe('06.06.2019');
+      });
    });
 
-   it('#readSample should be rejected when data is invalid', (done) => {
+   it('#readSample should be rejected when data is invalid', async () => {
 
       // given
+      const file = new File([''], 'test.xlsx');
       spyOn(reader, 'readEntries').and.returnValue(Promise.reject('invalid data'));
 
       // when
-      reader.readSample(EXCEL_FILE_URL, 2)
-         .then(sample => fail('expected to be rejected'))
+      await reader.readSample(file, 2)
+         .then(() => fail('expected to be rejected'))
          .catch(err => {
 
             // then
             expect(err).toBe('invalid data');
-            done()
          });
    });
 
-   it('#readData should return entries', (done) => {
+   it('#readSample should return first two entries', async () => {
+
+      // given
+      const file = await loadExcelFile();
+
+      // when
+      await reader.readSample(file, 2)
+         .then((sample) => {
+
+            // then
+            expect(sample).toEqual({
+               entries: [
+                  { c1: 'a', c2: 1, c3: true, c4: jasmine.anything() },
+                  { c1: 'b', c2: 2, c3: false, c4: jasmine.anything() }
+               ]
+            });
+            expect(formatTime(sample.entries[0]['c4'])).toBe('05.06.2019');
+            expect(formatTime(sample.entries[1]['c4'])).toBe('06.06.2019');
+         })
+         .catch(() => fail('should not produce error'));
+   });
+
+   it('#readData should return all entries', (done) => {
 
       // given
       const request: XMLHttpRequest = createRequest();
       dataHandler.onComplete = () => done();
 
       request.onload = r => {
-         const url = URL.createObjectURL(new Blob([request.response]));
+         const file = new File([request.response], 'test.xlsx');
 
          // when
-         reader.readData(url, 100, dataHandler);
+         reader.readData(file, 100, dataHandler);
       };
 
       dataHandler.onEntries = entries => {
@@ -128,7 +139,7 @@ describe('ExcelReader', () => {
          expect(entries[1]['c3']).toBeFalsy();
          expect(entries[2]['c3']).toBeTruthy();
          expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
-         expect(formatTime(entries[1]['c4'])).toBe('05.06.2019');
+         expect(formatTime(entries[1]['c4'])).toBe('06.06.2019');
          expect(formatTime(entries[2]['c4'])).toBe('07.06.2019');
       };
 
@@ -140,7 +151,7 @@ describe('ExcelReader', () => {
 
       // given
       const request: XMLHttpRequest = createRequest();
-      const url = URL.createObjectURL(new Blob([request.response]));
+      const file = new File([request.response], 'test.xlsx');
       reader.furnishAttributes('')[0].value = 'XYZ Sheet';
 
       dataHandler.onError = err => {
@@ -151,7 +162,7 @@ describe('ExcelReader', () => {
       };
 
       // when
-      reader.readData(url, 100, dataHandler);
+      reader.readData(file, 100, dataHandler);
    });
 
    it('#readData should return error when data is invalid', (done) => {
@@ -159,7 +170,7 @@ describe('ExcelReader', () => {
       // given
       const request: XMLHttpRequest = createRequest();
       spyOn(reader, 'readEntries').and.returnValue(Promise.reject('invalid data'));
-      const url = URL.createObjectURL(new Blob([request.response]));
+      const file = new File([request.response], 'test.xlsx');
 
       dataHandler.onError = err => {
 
@@ -169,8 +180,14 @@ describe('ExcelReader', () => {
       };
 
       // when
-      reader.readData(url, 100, dataHandler);
+      reader.readData(file, 100, dataHandler);
    });
+
+   async function loadExcelFile(): Promise<File> {
+      const response = await fetch(EXCEL_FILE_URL);
+      const blob = await response.blob();
+      return new File([blob], 'test.xlsx');
+   }
 
    function createRequest(): XMLHttpRequest {
       const request = new XMLHttpRequest();

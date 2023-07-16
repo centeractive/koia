@@ -57,7 +57,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   /**
    * web-app was invoked externally with a query string that carries CouchDB connection information and a [[Scene]] _id
    */
-  private handleExternalInvocation(queryParamExtractor: QueryParamExtractor) {
+  private handleExternalInvocation(queryParamExtractor: QueryParamExtractor): void {
     this.couchDBService.initConnection(queryParamExtractor.getCouchDBConnectionInfo())
       .then(() => this.dbService.initBackend(true)
         .then(() => this.dbService.activateScene(queryParamExtractor.getSceneID())
@@ -73,7 +73,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
         this.showCouchDBConnectionDialog();
       } else {
         this.dbService.useIndexedDb()
-          .then(r => {
+          .then(() => {
             this.init();
             this.notifySuccess('Successfully switched to ' + this.indexedDB);
             this.ready = true;
@@ -102,7 +102,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     this.couchDBService.initConnection(connectionInfo)
       .then(msg => {
         this.dbService.initBackend(true)
-          .then(r => this.couchDBConnectionSucceeded(msg))
+          .then(() => this.couchDBConnectionSucceeded(msg))
           .catch(err => this.couchDBConnectionFailed(err));
       })
       .catch(couchDBErr => this.couchDBConnectionFailed(couchDBErr));

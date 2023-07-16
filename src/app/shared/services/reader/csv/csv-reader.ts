@@ -70,13 +70,15 @@ export class CSVReader implements DataReader {
          .find(t => t !== DataType.TEXT) === undefined;
    }
 
-   readSample(url: string, entriesCount: number): Promise<Sample> {
+   readSample(file: File, entriesCount: number, encoding?: string): Promise<Sample> {
       return new Promise<Sample>((resolve, reject) => {
          const sample: Sample = { tableData: [] };
-         Papa.parse(url, {
+         Papa.parse(file, {
+            encoding,
             header: false,
             download: true,
             delimiter: this.separator(),
+            skipEmptyLines: true,
             step: (result, parser) => {
                if (this.hasHeaderColumn() && !sample.columnNames) {
                   sample.columnNames = result.data;
@@ -88,22 +90,23 @@ export class CSVReader implements DataReader {
                }
             },
             error: e => reject(e),
-            complete: () => {
-               resolve(sample);
-            }
+            complete: () => resolve(sample)
          });
       });
    }
 
-   /**
-    * TODO: should consider chunkSize
+   /** 
+    * @param chunkSize this parameter is meant to be the number of entries but Papa seems to interpret is as number of bytes,
+    * therefore we ignore it and let Papa use its default Papa.LocalChunkSize instead 
     */
-   readData(url: string, chunkSize: number, dataHandler: DataHandler): void {
+   readData(file: File, chunkSize: number, dataHandler: DataHandler, encoding?: string): void {
       let headerToBeRemoved = this.hasHeaderColumn();
-      Papa.parse(url, {
+      Papa.parse(file, {
+         encoding,
          header: false,
          download: true,
          delimiter: this.separator(),
+         skipEmptyLines: true,
          chunk: (result, parser) => {
             if (dataHandler.isCanceled()) {
                parser.abort();
