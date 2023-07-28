@@ -201,7 +201,7 @@ describe('SummaryTableSideBarComponent', () => {
     const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBeTruthy();
+    expect(countDistinctValuesEnabled).toBeTrue();
   });
 
   it('#isCountDistinctValuesEnabled should return true if context has non-value-grouped numeric data column', () => {
@@ -213,7 +213,7 @@ describe('SummaryTableSideBarComponent', () => {
     const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBeTruthy();
+    expect(countDistinctValuesEnabled).toBeTrue();
   });
 
   it('#isCountDistinctValuesEnabled should return false if context has value-grouped numeric data column', () => {
@@ -226,7 +226,7 @@ describe('SummaryTableSideBarComponent', () => {
     const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBeFalsy();
+    expect(countDistinctValuesEnabled).toBeFalse();
   });
 
   it('#click on data column button should invoke #onColumnNameChanged', () => {
@@ -245,10 +245,10 @@ describe('SummaryTableSideBarComponent', () => {
   it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
     const decimalSeparator = (0.1).toLocaleString().charAt(1);
 
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBeTruthy();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBeFalsy();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBeTrue();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBeTrue();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBeTrue();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBeFalse();
   });
 
   it('#dropAggregation should re-position context aggregations when moved inside selected aggregations', () => {

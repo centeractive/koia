@@ -52,14 +52,14 @@ describe('CSVReader', () => {
       expect(attributes[0].name).toBe('First row contains column names');
       expect(attributes[0].description).toBeUndefined();
       expect(attributes[0].dataType).toBe(DataType.BOOLEAN);
-      expect(attributes[0].value).toBeFalsy();
-      expect(attributes[0].hasValueChoice()).toBeFalsy();
+      expect(attributes[0].value).toBeFalse();
+      expect(attributes[0].hasValueChoice()).toBeFalse();
 
       expect(attributes[1].name).toBe('Separator');
       expect(attributes[1].description).toBeUndefined();
       expect(attributes[1].dataType).toBe(DataType.TEXT);
       expect(attributes[1].value).toBeUndefined();
-      expect(attributes[0].hasValueChoice()).toBeFalsy();
+      expect(attributes[0].hasValueChoice()).toBeFalse();
    });
 
    it('#furnishAttributes should return has-no-header attribute when file header is single line', () => {
@@ -71,7 +71,7 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
-      expect(attributes[0].value).toBeFalsy();
+      expect(attributes[0].value).toBeFalse();
    });
 
    it('#furnishAttributes should return has-no-header attribute when first line contains number', () => {
@@ -85,7 +85,7 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
-      expect(attributes[0].value).toBeFalsy();
+      expect(attributes[0].value).toBeFalse();
    });
 
    it('#furnishAttributes should return has-no-header attribute when first line contains boolean', () => {
@@ -99,7 +99,7 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
-      expect(attributes[0].value).toBeFalsy();
+      expect(attributes[0].value).toBeFalse();
    });
 
    it('#furnishAttributes should return has-header attribute when first line contains text only', () => {

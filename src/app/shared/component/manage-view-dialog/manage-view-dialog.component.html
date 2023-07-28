@@ -1,0 +1,27 @@
+<mat-card appearance="outlined">
+
+  <mat-card-header>
+    <mat-card-title>Manage Views</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <h4>Manage saved views</h4>
+    <p>Delete or rename views that have previously been saved.</p>
+    <div id="div_config_records">
+      <ng-container *ngFor="let item of items">
+        <div class="div_row" *ngIf="!item.deleted">
+          <button mat-icon-button (click)="deleteItem(item)">
+            <mat-icon>delete_forever</mat-icon>
+          </button>
+          <mat-icon>monitor</mat-icon>&nbsp;
+          <input [(ngModel)]="item.view.name" (ngModelChange)="onChange()" />
+          <var>{{ item.view.modifiedTime | date:'short' }}</var>
+        </div>
+      </ng-container>
+    </div>
+    <div id="div_buttons">
+      <button id="but_cancel" mat-raised-button [color]="changed ? null : 'primary'" (click)="dialogRef.close()">Cancel</button>
+      <button id="but_ok" mat-raised-button [color]="changed ? 'primary' : null" [disabled]="!changed" (click)="butOkPressed()">OK</button>
+    </div>
+  </mat-card-content>
+</mat-card>

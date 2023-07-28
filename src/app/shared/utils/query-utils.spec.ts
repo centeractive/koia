@@ -1,41 +1,41 @@
-import { QueryUtils } from './query-utils';
-import { PropertyFilter, Operator, Query } from '../model';
 import { shuffle } from 'd3';
+import { Operator, PropertyFilter, Query } from '../model';
+import { QueryUtils } from './query-utils';
 
 describe('QueryUtils', () => {
 
   it('#areFiltersEqual should return true when queries are same', () => {
     const query = createQuery(true, true, true);
 
-    expect(QueryUtils.areFiltersEqual(query, query)).toBeTruthy();
+    expect(QueryUtils.areFiltersEqual(query, query)).toBeTrue();
   });
 
   it('#areFiltersEqual should return true when full text filters are are same', () => {
     const query1 = createQuery(true, false, false);
     const query2 = createQuery(true, false, false);
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTrue();
   });
 
   it('#areFiltersEqual should return true when property filters are are same', () => {
     const query1 = createQuery(false, true, false);
     const query2 = createQuery(false, true, false);
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTrue();
   });
 
   it('#areFiltersEqual should return true when value range filters are are same', () => {
     const query1 = createQuery(false, false, true);
     const query2 = createQuery(false, false, true);
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTrue();
   });
 
   it('#areFiltersEqual should return true when all filters are are same', () => {
     const query1 = createQuery(true, true, true);
     const query2 = createQuery(true, true, true);
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTruthy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeTrue();
   });
 
   it('#areFiltersEqual should return false when full text filters differ', () => {
@@ -44,7 +44,7 @@ describe('QueryUtils', () => {
     const query2 = new Query();
     query1.setFullTextFilter('b');
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalsy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalse();
   });
 
   it('#areFiltersEqual should return false when property filters differ', () => {
@@ -52,7 +52,7 @@ describe('QueryUtils', () => {
     const query2 = createQuery(false, true, false);
     query2.addPropertyFilter(new PropertyFilter('x', Operator.EMPTY, ''));
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalsy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalse();
   });
 
   it('#areFiltersEqual should return false when value range filters differ', () => {
@@ -60,7 +60,7 @@ describe('QueryUtils', () => {
     const query2 = createQuery(false, false, true);
     query2.addValueRangeFilter('x', 10, 20);
 
-    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalsy();
+    expect(QueryUtils.areFiltersEqual(query1, query2)).toBeFalse();
   });
 
   function createQuery(fullTextFilter: boolean, propertyFilters: boolean, valueRangeFilters: boolean) {

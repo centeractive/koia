@@ -1,8 +1,8 @@
 import { Column } from 'app/shared/model';
 import { RawDataRevealService } from 'app/shared/services';
 import { ValueGrouping } from 'app/shared/value-range/model';
-import { QueryProvider } from './query-provider';
 import { QueryEnhancer } from './query-enhancer';
+import { QueryProvider } from './query-provider';
 
 export class CellClickHandler {
 

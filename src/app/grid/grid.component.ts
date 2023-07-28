@@ -1,12 +1,12 @@
-import { Component, ElementRef, Inject, AfterViewChecked } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, Inject } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { Route } from '../shared/model';
-import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
-import { ViewController } from 'app/shared/controller';
 import { Router } from '@angular/router';
-import { DBService } from 'app/shared/services/backend';
+import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
+import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { Route } from '../shared/model';
+import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 
 @Component({
   selector: 'koia-grid',
@@ -24,7 +24,7 @@ export class GridComponent extends ViewController implements AfterViewChecked {
     notificationService: NotificationService, exportService: ExportService) {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
       exportService);
-    window.addEventListener('resize', e => this.windowResizedWhileHidden = !this.cmpElementRef.nativeElement.parentElement);
+    window.addEventListener('resize', () => this.windowResizedWhileHidden = !this.cmpElementRef.nativeElement.parentElement);
   }
 
   ngAfterViewChecked() {

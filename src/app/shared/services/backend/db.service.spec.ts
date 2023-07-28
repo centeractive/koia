@@ -1,11 +1,11 @@
-import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
-import { Scene, Query, Column, DataType, Operator, PropertyFilter, Page } from 'app/shared/model';
-import { DBService } from './db.service';
-import { CouchDBService } from './couchdb';
-import { CouchDBConfig } from './couchdb/couchdb-config';
+import { TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { Column, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneFactory } from 'app/shared/test';
 import { lastValueFrom } from 'rxjs';
+import { CouchDBService } from './couchdb';
+import { CouchDBConfig } from './couchdb/couchdb-config';
+import { DBService } from './db.service';
 
 describe('DBService', () => {
 
@@ -346,7 +346,7 @@ describe('DBService', () => {
     await dbService.findScene(initialScene._id)
       .then(s => fail('scene should not exist anymore: ' + JSON.stringify(s)))
       .catch((e: HttpErrorResponse) => {
-        expect(e.ok).toBeFalsy();
+        expect(e.ok).toBeFalse();
         expect(e.status).toBe(404);
         expect(e.statusText).toBe('Object Not Found');
       });
@@ -366,7 +366,7 @@ describe('DBService', () => {
     await dbService.findScene(scene2._id)
       .then(s => fail('scene should not exist anymore: ' + JSON.stringify(s)))
       .catch((e: HttpErrorResponse) => {
-        expect(e.ok).toBeFalsy();
+        expect(e.ok).toBeFalse();
         expect(e.status).toBe(404);
         expect(e.statusText).toBe('Object Not Found');
       });

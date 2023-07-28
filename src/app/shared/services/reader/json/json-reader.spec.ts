@@ -26,7 +26,7 @@ describe('JSONReader', () => {
    });
 
    it('#expectsPlainTextData should return true', () => {
-      expect(reader.expectsPlainTextData()).toBeTruthy();
+      expect(reader.expectsPlainTextData()).toBeTrue();
    });
 
    it('#furnishAttributes should return attributes', () => {
@@ -54,7 +54,7 @@ describe('JSONReader', () => {
          expect(attributes.length).toBe(1);
          expect(attributes[0].value).toBe('$');
          expect(attributes[0].valueChoice).toEqual(['$']);
-         expect(attributes[0].isValueChoiceBinding).toBeFalsy();
+         expect(attributes[0].isValueChoiceBinding).toBeUndefined();
          done();
       }, 200);
    });
@@ -84,9 +84,9 @@ describe('JSONReader', () => {
          expect(attributes[0].description).toBe('JSONPath to the object array that contains the data');
          expect(attributes[0].dataType).toBe(DataType.TEXT);
          expect(attributes[0].value).toBe('$.objArr1');
-         expect(attributes[0].hasValueChoice()).toBeTruthy();
+         expect(attributes[0].hasValueChoice()).toBeTrue();
          expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);
-         expect(attributes[0].isValueChoiceBinding).toBeFalsy();
+         expect(attributes[0].isValueChoiceBinding).toBeUndefined();
          done();
       }, 200);
    });

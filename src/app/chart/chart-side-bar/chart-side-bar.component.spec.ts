@@ -161,7 +161,7 @@ describe('ChartSideBarComponent', () => {
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
     expect(component.countDistinctValuesEnabled).toBeTrue();
     expect(component.individualValuesEnabled).toBeTrue();
-    expect(context.isAggregationCountSelected()).toBeFalsy();
+    expect(context.isAggregationCountSelected()).toBeFalse();
   });
 
   it('side bar should contain button for each non-time column', () => {
@@ -405,7 +405,7 @@ describe('ChartSideBarComponent', () => {
     const actual = component.isCircularChart();
 
     // then
-    expect(actual).toBeFalsy();
+    expect(actual).toBeFalse();
   });
 
   it('#isCircularChart should return true when PIE chart', () => {

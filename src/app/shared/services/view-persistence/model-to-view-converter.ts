@@ -1,19 +1,21 @@
-import { ElementContext, SummaryContext, Route } from 'app/shared/model/';
-import { GraphContext } from 'app/shared/model/graph';
+import { ElementContext, Query, Route, SummaryContext } from 'app/shared/model/';
 import { ChartContext } from 'app/shared/model/chart';
-import { ElementType, ViewElement, View } from 'app/shared/model/view-config';
+import { GraphContext } from 'app/shared/model/graph';
+import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
 import { Chart } from './chart.type';
+import { queryToQueryDef } from './filter/query-to-filter-converter';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
 
-export class ModelToConfigConverter {
+export class ModelToViewConverter {
 
-   convert(route: Route, viewName: string, elementContexts: ElementContext[]): View {
+   convert(route: Route, viewName: string, query: Query, elementContexts: ElementContext[]): View {
       const configElements: ViewElement[] = elementContexts.map(c => this.toViewElement(c));
       return {
-         route: route,
+         route,
          name: viewName,
          modifiedTime: new Date().getTime(),
+         query: queryToQueryDef(query),
          gridColumns: null,
          gridCellRatio: null,
          elements: configElements

@@ -1,6 +1,6 @@
-import { MangoQueryBuilder, CombineOperator } from './mango-query-builder';
-import { Operator, Column, DataType } from 'app/shared/model';
+import { Column, DataType, Operator } from 'app/shared/model';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
+import { CombineOperator, MangoQueryBuilder } from './mango-query-builder';
 
 describe('MangoQueryBuilder', () => {
 
@@ -27,7 +27,7 @@ describe('MangoQueryBuilder', () => {
       const result = queryBuilder.containsFilter();
 
       // then
-      expect(result).toBeFalsy();
+      expect(result).toBeFalse();
    });
 
    it('#containsFilter should return true when full text filter was added', () => {
@@ -284,7 +284,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            a: { $nin: [a_minute_ago, now]}
+            a: { $nin: [a_minute_ago, now] }
          },
          limit: MangoQueryBuilder.LIMIT
       };

@@ -1,0 +1,16 @@
+#div_config_records {
+   overflow: auto;
+}
+
+.div_row {
+   display: flex;
+   align-items: center;
+   overflow-y: hidden;
+}
+
+#div_close_button {
+   width: 100%;
+   display: flex;
+   justify-content: center;
+   margin-top: 20px;
+}

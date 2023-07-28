@@ -239,7 +239,7 @@ describe('PivotTableComponent', () => {
       valueGroupings: [],
       pivotOptions: { a: 1, b: 2 }
     };
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
 
     // when
     component.loadConfig(configRecord);
@@ -262,7 +262,7 @@ describe('PivotTableComponent', () => {
       valueGroupings: [],
       pivotOptions: { a: 1, b: 2 }
     };
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, data: context };
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
 
     // when
     component.loadConfig(configRecord);
@@ -320,7 +320,7 @@ describe('PivotTableComponent', () => {
 
     // then
     expect(viewPersistenceService.saveRecord).toHaveBeenCalled();
-    const context = saveRecordSpy.calls.mostRecent().args[3];
+    const context = saveRecordSpy.calls.mostRecent().args[4];
     const expectedValueGroupings = [
       {
         columnName: 'Amount',
@@ -425,7 +425,7 @@ describe('PivotTableComponent', () => {
     flush();
 
     // then
-    expect(component.context.showRowTotals).toBeFalsy();
+    expect(component.context.showRowTotals).toBeFalse();
     expect(locatePivotTable()).not.toBe(pivotTable);
   }));
 
@@ -439,7 +439,7 @@ describe('PivotTableComponent', () => {
     flush();
 
     // then
-    expect(component.context.showColumnTotals).toBeFalsy();
+    expect(component.context.showColumnTotals).toBeFalse();
     expect(locatePivotTable()).not.toBe(pivotTable);
   }));
 

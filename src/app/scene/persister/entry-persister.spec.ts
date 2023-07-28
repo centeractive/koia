@@ -1,8 +1,8 @@
-import { ProgressMonitor } from './progress-monitor.type';
-import { EntryPersister } from './entry-persister';
-import { DBService } from 'app/shared/services/backend';
-import { flush, fakeAsync } from '@angular/core/testing';
+import { fakeAsync, flush } from '@angular/core/testing';
 import { Document } from 'app/shared/model';
+import { DBService } from 'app/shared/services/backend';
+import { EntryPersister } from './entry-persister';
+import { ProgressMonitor } from './progress-monitor.type';
 
 describe('EntryPersister', () => {
 
@@ -34,7 +34,7 @@ describe('EntryPersister', () => {
       persister.post(entries(batchSize - 1));
 
       // then
-      expect(persister.isPostingComplete()).toBeFalsy();
+      expect(persister.isPostingComplete()).toBeFalse();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(0);
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '3 items read');
@@ -48,7 +48,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeFalsy();
+      expect(persister.isPostingComplete()).toBeFalse();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([1, 2, 3, 4]));
       expect(monitor.onProgress).toHaveBeenCalledTimes(2);
@@ -64,7 +64,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeFalsy();
+      expect(persister.isPostingComplete()).toBeFalse();
       expect(dbService.writeEntries).toHaveBeenCalledTimes(2);
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([1, 2, 3, 4]));
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([5, 6, 7, 8]));
@@ -160,7 +160,7 @@ describe('EntryPersister', () => {
       persister.reset();
 
       // then
-      expect(persister.isPostingComplete()).toBeFalsy();
+      expect(persister.isPostingComplete()).toBeFalse();
       expect(() => persister.post(entries(batchSize)))
          .not.toThrow(new Error('Posting was completed and is now locked'));
       flush();

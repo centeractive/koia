@@ -53,7 +53,7 @@ export class Attribute {
    }
 
    hasValueChoice(): boolean {
-      return this._valueChoice && this._valueChoice.length > 0;
+      return !!this._valueChoice && this._valueChoice.length > 0;
    }
 
    get isValueChoiceBinding(): boolean {

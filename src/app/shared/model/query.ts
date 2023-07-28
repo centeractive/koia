@@ -1,7 +1,7 @@
 import { Sort } from '@angular/material/sort';
-import { PropertyFilter } from './property-filter';
-import { Operator } from './operator.enum';
 import { ValueRangeFilter } from '../value-range/model/value-range-filter';
+import { Operator } from './operator.enum';
+import { PropertyFilter } from './property-filter';
 
 export class Query {
 
@@ -27,7 +27,7 @@ export class Query {
    }
 
    hasFullTextFilter(): boolean {
-      return this.fullTextFilter && this.fullTextFilter.length > 0;
+      return !!this.fullTextFilter && this.fullTextFilter.length > 0;
    }
 
    addPropertyFilter(propertyfilter: PropertyFilter): void {
@@ -36,6 +36,10 @@ export class Query {
 
    findPropertyFilter(name: string, operator: Operator): PropertyFilter | undefined {
       return this.propertyFilters.find(pf => pf.name === name && pf.operator === operator);
+   }
+
+   setPropertyFilters(propertyfilters: PropertyFilter[]): void {
+      this.propertyFilters = propertyfilters;
    }
 
    getPropertyFilters(): PropertyFilter[] {
@@ -50,6 +54,10 @@ export class Query {
    findValueRangeFilter(name: string): ValueRangeFilter | undefined {
       return this.valueRangeFilters
          .find(pf => pf.name === name);
+   }
+
+   setValueRangeFilter(valueRangeFilters: ValueRangeFilter[]): void {
+      this.valueRangeFilters = valueRangeFilters;
    }
 
    getValueRangeFilters(): ValueRangeFilter[] {

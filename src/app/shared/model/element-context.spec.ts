@@ -1,12 +1,12 @@
+import { fakeAsync, flush } from '@angular/core/testing';
+import { ValueGrouping } from '../value-range/model/value-grouping.type';
+import { ValueRange } from '../value-range/model/value-range.type';
+import { Aggregation } from './aggregation.enum';
+import { ChangeEvent } from './change-event.enum';
 import { Column } from './column.type';
 import { DataType } from './data-type.enum';
 import { ElementContext } from './element-context';
 import { ExportFormat } from './export-format.enum';
-import { ValueGrouping } from '../value-range/model/value-grouping.type';
-import { ValueRange } from '../value-range/model/value-range.type';
-import { fakeAsync, flush } from '@angular/core/testing';
-import { ChangeEvent } from './change-event.enum';
-import { Aggregation } from './aggregation.enum';
 
 class TestContext extends ElementContext {
 
@@ -121,13 +121,13 @@ describe('ElementContext', () => {
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return false when no value grouping exists', () => {
-      expect(context.isAnyColumnWithValueGroupingInUse()).toBeFalsy();
+      expect(context.isAnyColumnWithValueGroupingInUse()).toBeFalse();
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return false when column with value grouping is not in use', () => {
       context.valueGroupings = [valueGrouping('Percent')];
 
-      expect(context.isAnyColumnWithValueGroupingInUse()).toBeFalsy();
+      expect(context.isAnyColumnWithValueGroupingInUse()).toBeFalse();
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return true when column with value grouping is in use', () => {
@@ -179,7 +179,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).not.toHaveBeenCalled();
-      expect(context.hasValueGrouping('Amount')).toBeFalsy();
+      expect(context.hasValueGrouping('Amount')).toBeFalse();
    }));
 
    it('#removeValueGrouping should fire structure change when column is in use', fakeAsync(() => {
@@ -197,7 +197,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
-      expect(context.hasValueGrouping('Amount')).toBeFalsy();
+      expect(context.hasValueGrouping('Amount')).toBeFalse();
    }));
 
    function column(name: string): Column {

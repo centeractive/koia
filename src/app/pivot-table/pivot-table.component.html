@@ -7,7 +7,7 @@
 
   <div class="div_wrapper">
     <div #header class="div_header">
-      <koia-main-toolbar [route]="route" (onFilterChange)="fetchData($event)"></koia-main-toolbar>
+      <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery" (onFilterChange)="fetchData($event)"></koia-main-toolbar>
       <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
       <div id="view_toolbar">
 
@@ -19,6 +19,10 @@
           <button mat-menu-item (click)="exportToExcel()">
             <mat-icon>insert_drive_file</mat-icon>
             <span>Save As Excel</span>
+          </button>
+          <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
+            <mat-icon>monitor</mat-icon>
+            <span>Manage Views</span>
           </button>
         </mat-menu>
 
@@ -37,20 +41,20 @@
                 matTooltip="Print current view" (click)="printView()">
           <mat-icon>print</mat-icon>
         </button>
+
         <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
           <mat-icon>save_alt</mat-icon>
         </button>
 
-        <button class="but_more" mat-icon-button matTooltip="Restore saved view"
-                [disabled]="findConfigRecords().length === 0" [matMenuTriggerFor]="restoreViewMenu">
-          <mat-icon [matBadge]="findConfigRecords().length" [matBadgeHidden]="findConfigRecords().length === 0"
-                    matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
+        <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!configRecords.length" [matMenuTriggerFor]="restoreViewMenu">
+          <mat-icon [matBadge]="configRecords.length" [matBadgeHidden]="!configRecords.length" matBadgeSize="small" matBadgeColor="accent">
+            open_in_browser
+          </mat-icon>
         </button>
         <mat-menu #restoreViewMenu="matMenu">
-          <button class="menu_item_details" *ngFor="let configRecord of findConfigRecords()" mat-menu-item
-                  (click)="loadConfig(configRecord)">
-            <mat-icon>open_in_browser</mat-icon>
-            <span>{{ configRecord.name }} <var>{{ configRecord.modifiedTime | date:'short' }}</var></span>
+          <button class="menu_item_details" *ngFor="let record of configRecords" mat-menu-item (click)="loadConfig(record)">
+            <mat-icon>monitor</mat-icon>
+            <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
           </button>
         </mat-menu>
 

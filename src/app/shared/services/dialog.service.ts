@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
-import { Scene } from '../model';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
+import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
+import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
-import { ConfirmDialogData, ConfirmDialogComponent } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
-import { ViewLauncherDialogComponent, ViewLauncherContext } from '../component/view-launcher-dialog';
+import { ManageConfigContext, ManageConfigDialogComponent } from '../component/manage-config-dialog';
+import { ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
+import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
+import { Scene } from '../model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,5 +35,17 @@ export class DialogService {
 
   showViewLauncherDialog(context: ViewLauncherContext): MatDialogRef<ViewLauncherDialogComponent> {
     return this.dialogService.open(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  }
+
+  showConfigLauncherDialog(context: ConfigLauncherContext): MatDialogRef<ConfigLauncherDialogComponent> {
+    return this.dialogService.open(ConfigLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  }
+
+  showManageConfigDialog(context: ManageConfigContext): MatDialogRef<ManageConfigDialogComponent> {
+    return this.dialogService.open(ManageConfigDialogComponent, { data: context, panelClass: 'dialog-container' });
+  }
+
+  showManageViewDialog(context: ManageViewContext): MatDialogRef<ManageViewDialogComponent> {
+    return this.dialogService.open(ManageViewDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 }

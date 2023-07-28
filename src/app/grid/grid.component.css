@@ -41,6 +41,10 @@
   flex-grow: 99;
 }
 
+span {
+  white-space: nowrap;
+}
+
 .textarea_title {
   width: 99%;
   text-align: center;

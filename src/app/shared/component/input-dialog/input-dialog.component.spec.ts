@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { InputDialogComponent, InputDialogData } from './input-dialog.component';
 import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { By } from '@angular/platform-browser';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { InputDialogComponent, InputDialogData } from './input-dialog.component';
 
 describe('InputDialogComponent', () => {
 
@@ -53,7 +53,7 @@ describe('InputDialogComponent', () => {
     cancelButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeFalsy();
+    expect(component.data.closedWithOK).toBeFalse();
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
 

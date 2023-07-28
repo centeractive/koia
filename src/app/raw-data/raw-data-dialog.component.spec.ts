@@ -1,9 +1,9 @@
-import { TestBed } from '@angular/core/testing';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { RawDataDialogComponent } from './raw-data-dialog.component';
-import { Query, PropertyFilter, Operator } from 'app/shared/model';
 import { Component, Input } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Operator, PropertyFilter, Query } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
+import { RawDataDialogComponent } from './raw-data-dialog.component';
 
 @Component({ selector: 'koia-raw-data', template: '' })
 class RawDataComponent {
@@ -36,7 +36,7 @@ describe('RawDataDialogComponent', () => {
       const component = createComponent(query);
 
       // then
-      expect(component.hideToolbar).toBeFalsy();
+      expect(component.hideToolbar).toBeFalse();
    });
 
    function createComponent(query: Query): RawDataDialogComponent {

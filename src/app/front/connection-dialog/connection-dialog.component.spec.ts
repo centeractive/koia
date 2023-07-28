@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
 import { FormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { By } from '@angular/platform-browser';
-import { Protocol, ConnectionInfo } from 'app/shared/model';
-import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule, MatSelect } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';
 import { MatOption } from '@angular/material/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
+import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ConnectionInfo, Protocol } from 'app/shared/model';
+import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
+import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
 
 describe('ConnectionDialogComponent', () => {
 
@@ -85,7 +85,7 @@ describe('ConnectionDialogComponent', () => {
     cancelButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeFalsy();
+    expect(component.data.closedWithOK).toBeFalse();
     expect(component.data.connectionInfo).toEqual(connectionInfo);
     expect(component.dialogRef.close).toHaveBeenCalled();
   });

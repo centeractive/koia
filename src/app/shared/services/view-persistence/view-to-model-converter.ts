@@ -1,14 +1,14 @@
-import { ElementContext, SummaryContext, Column, DataType } from 'app/shared/model';
+import { ColorProviderFactory } from 'app/shared/color';
+import { Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType, ViewElement } from 'app/shared/model/view-config';
+import { CommonUtils } from 'app/shared/utils';
 import { Chart } from './chart.type';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
-import { CommonUtils } from 'app/shared/utils';
-import { ColorProviderFactory } from 'app/shared/color';
 
-export class ConfigToModelConverter {
+export class ViewToModelConverter {
 
    constructor(private columns: Column[]) { }
 

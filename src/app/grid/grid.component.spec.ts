@@ -18,10 +18,9 @@ import { GraphContext } from 'app/shared/model/graph';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
-import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
+import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import * as _ from 'lodash';
 import { Observable, of, throwError } from 'rxjs';
 import { GridComponent } from './grid.component';
 
@@ -376,7 +375,7 @@ describe('GridComponent', () => {
     const timeColumne = findColumn('Time', graphContext);
     timeColumne.groupingTimeUnit = TimeUnit.HOUR;
     graphContext.groupByColumns = [timeColumne, findColumn('Level', graphContext)];
-    const view = new ModelToConfigConverter().convert(Route.GRID, 'test', component.elementContexts);
+    const view = new ModelToViewConverter().convert(Route.GRID, 'test', new Query(), component.elementContexts);
     view.gridColumns = 4;
     view.gridCellRatio = '4:3';
     const elementContexts = component.elementContexts;
@@ -389,7 +388,7 @@ describe('GridComponent', () => {
     // then
     expect(component.gridColumns).toBe(4);
     expect(component.gridCellRatio).toBe('4:3');
-    expect(_.isEqualWith(component.elementContexts, elementContexts, ignoreFunctions)).toBeTrue();
+    expect(sanitize(component.elementContexts)).toEqual(sanitize(elementContexts));
   });
 
   it('#saveView should not save view when input dialog is canceld', () => {
@@ -483,10 +482,8 @@ describe('GridComponent', () => {
   }));
   */
 
-  function ignoreFunctions(objValue: any, otherValue: any): boolean {
-    if (_.isFunction(objValue) && _.isFunction(otherValue)) {
-      return true;
-    }
+  function sanitize(v: any): any {
+    return JSON.parse(JSON.stringify(v));
   }
 
   function findColumn(name: string, context: ElementContext): Column {

@@ -4,11 +4,15 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
-import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
+import { ConfigController } from 'app/shared/controller/config.controller';
 import { ValueFormatter } from 'app/shared/format';
-import { DialogService, ExportService, NotificationService } from 'app/shared/services';
+import { ConfigRecord } from 'app/shared/model/view-config';
+import { QueryDef } from 'app/shared/model/view-config/query/query-def.type';
+import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
+import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
+import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { colWidthMeasurementOf } from 'app/shared/utils/source-system';
 import * as _ from 'lodash';
 import { lastValueFrom } from 'rxjs';
@@ -20,7 +24,7 @@ import { DBService } from '../shared/services/backend';
   templateUrl: './raw-data.component.html',
   styleUrls: ['./raw-data.component.css']
 })
-export class RawDataComponent extends AbstractComponent implements OnInit, AfterViewInit {
+export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit {
 
   @Input() dialogStyle: boolean;
   @Input() query: Query;
@@ -30,6 +34,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   readonly route = Route.RAWDATA;
+
   columns: Column[];
   columnNames: string[];
   hasObjectDataTypeColumns: boolean;
@@ -45,14 +50,14 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
 
   colWidthMeasurement: 'em' | 'px';
   tableStyleWidth: number;
+  restoredQuery: Query;
 
   private page: Page;
   private valueFormatter = new ValueFormatter();
 
-  constructor(bottomSheet: MatBottomSheet, private router: Router, private dbService: DBService,
-    private dialogService: DialogService, notificationService: NotificationService,
-    private exportService: ExportService, public snackBar: MatSnackBar) {
-    super(bottomSheet, notificationService);
+  constructor(bottomSheet: MatBottomSheet, router: Router, public dbService: DBService, public viewPersistenceService: ViewPersistenceService,
+    public dialogService: DialogService, notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar) {
+    super(Route.RAWDATA, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.initialPageSize = this.pageSizeOptions[1];
     this.considerColumnWidths = true;
@@ -60,26 +65,25 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
     this.highlight = true;
   }
 
-  ngOnInit(): void {
-    const scene = this.dbService.getActiveScene();
-    if (scene) {
-      if (!this.query) {
-        this.query = new Query();
-      }
-      this.query.setPageDefinition(0, this.initialPageSize);
-      this.columns = scene.columns;
-      this.colWidthMeasurement = colWidthMeasurementOf(scene);
-      this.tableStyleWidth = _.sum(this.columns.map(c => c.width));
-      this.hasObjectDataTypeColumns = this.columns.find(c => c.dataType === DataType.OBJECT) !== undefined;
-      this.columnNames = this.columns.map(c => c.name);
-      this.fetchEntriesPage();
-    } else {
-      this.router.navigateByUrl(Route.SCENES);
+  init(): void {
+    if (!this.query) {
+      this.query = new Query();
     }
+    this.query.setPageDefinition(0, this.initialPageSize);
+    this.columns = this.scene.columns;
+    this.colWidthMeasurement = colWidthMeasurementOf(this.scene);
+    this.tableStyleWidth = _.sum(this.columns.map(c => c.width));
+    this.hasObjectDataTypeColumns = this.columns.find(c => c.dataType === DataType.OBJECT) !== undefined;
+    this.columnNames = this.columns.map(c => c.name);
+    this.fetchEntriesPage();
   }
 
   ngAfterViewInit(): void {
     this.adjustLayout();
+
+    if (!this.dialogStyle && this.scene.config.records.length) {
+      this.selectConfig();
+    }
   }
 
   onFilterChanged(query: Query): void {
@@ -116,6 +120,7 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
       });
   }
 
+  // eslint-disable-next-line
   formattedValueOf(column: Column, entry: object): any {
     if (!this.showNestedObjects && column.dataType === DataType.OBJECT) {
       return entry[column.name] ? '...' : '';
@@ -152,4 +157,39 @@ export class RawDataComponent extends AbstractComponent implements OnInit, After
   printView(): void {
     window.print();
   }
+
+  configToBeSaved(): { query: Query, data: ConfigRecordData } {
+    return {
+      query: this.query,
+      data: {
+        pageDef: {
+          queryDef: queryToQueryDef(this.page.query),
+          totalRowCount: this.page.totalRowCount
+        },
+        considerColumnWidths: this.considerColumnWidths,
+        highlight: this.highlight
+      }
+    };
+  }
+
+  loadConfig(config: ConfigRecord): void {
+    this.query = queryDefToQuery(config.query);
+    this.restoredQuery = this.query;
+    const configRecordData: ConfigRecordData = config.data;
+    this.page.query = queryDefToQuery(configRecordData.pageDef.queryDef);
+    this.page.totalRowCount = configRecordData.pageDef.totalRowCount;
+    this.initialPageSize = this.query.getRowsPerPage();
+    this.considerColumnWidths = configRecordData.considerColumnWidths;
+    this.highlight = configRecordData.highlight;
+    this.fetchEntriesPage();
+  }
+}
+
+interface ConfigRecordData {
+  pageDef: {
+    queryDef: QueryDef;
+    totalRowCount: number;
+  },
+  considerColumnWidths: boolean,
+  highlight: boolean
 }

@@ -1,9 +1,9 @@
+import { Directive } from '@angular/core';
+import { MatSidenav } from '@angular/material/sidenav';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
-import { MatSidenav } from '@angular/material/sidenav';
 import { View } from '../model/view-config';
 import { ViewController } from './view.controller';
-import { Directive } from '@angular/core';
 
 @Directive()
 class ViewControllerTestable extends ViewController {
@@ -30,16 +30,20 @@ describe('ViewController', () => {
       viewController.sidenav = sidenav as MatSidenav;
    });
 
+   it('#views should be empty when scene is undefined', () => {
+      expect(viewController.views).toEqual([]);
+   });
+
    it('#isShowResizableMargin should return false when not chart context', () => {
 
       // when
       const result = viewController.isShowResizableMargin(new GraphContext([]));
 
       // then
-      expect(result).toBeFalsy();
+      expect(result).toBeFalse();
    });
 
-   it('#isShowResizableMargin should return false when chart context but not showing margin', () => {
+   it('#isShowResizableMargin should return <undefined> when chart context but not showing margin', () => {
 
       // given
       const chartContext = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
@@ -48,7 +52,7 @@ describe('ViewController', () => {
       const result = viewController.isShowResizableMargin(chartContext);
 
       // then
-      expect(result).toBeFalsy();
+      expect(result).toBeUndefined();
    });
 
    it('#isShowResizableMargin should return true when chart context and showing margin', () => {
@@ -61,7 +65,7 @@ describe('ViewController', () => {
       const result = viewController.isShowResizableMargin(chartContext);
 
       // then
-      expect(result).toBeTruthy();
+      expect(result).toBeTrue();
    });
 
    it('#configure should open sidenav in "push" mode when element is far left', () => {
@@ -109,7 +113,4 @@ describe('ViewController', () => {
       expect(viewController.sidenav.open).toHaveBeenCalled();
    });
 
-   it('#findViews should return empty array when scene is undefined', () => {
-      expect(viewController.findViews()).toEqual([]);
-   });
 });

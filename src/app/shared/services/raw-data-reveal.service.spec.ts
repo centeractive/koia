@@ -156,7 +156,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = dialogServiceOpenSpy.calls.argsFor(0)[1].data;
-    expect(actualQuery.hasFilter()).toBeFalsy();
+    expect(actualQuery.hasFilter()).toBeFalse();
   });
 
   it('#ofQuery should should navigate to raw data dialog with full text filter', () => {
@@ -204,7 +204,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = dialogServiceOpenSpy.calls.argsFor(0)[1].data;
-    expect(actualQuery.hasFullTextFilter()).toBeFalsy();
+    expect(actualQuery.hasFullTextFilter()).toBeFalse();
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
     expect(actualQuery.getValueRangeFilters()).toEqual([]);
   });
@@ -217,7 +217,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = dialogServiceOpenSpy.calls.argsFor(0)[1].data;
-    expect(actualQuery.hasFullTextFilter()).toBeFalsy();
+    expect(actualQuery.hasFullTextFilter()).toBeFalse();
     expect(actualQuery.getPropertyFilters()).toEqual([]);
     expect(actualQuery.getValueRangeFilters()).toEqual([new ValueRangeFilter('Time', { min: now, max: now, maxExcluding: undefined })]);
   });
@@ -234,7 +234,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = dialogServiceOpenSpy.calls.argsFor(0)[1].data;
-    expect(actualQuery.hasFullTextFilter()).toBeFalsy();
+    expect(actualQuery.hasFullTextFilter()).toBeFalse();
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Host', Operator.EQUAL, 'Server'),
       new PropertyFilter('Path', Operator.EQUAL, '/opt/tomcat/log/catalina.log'),
@@ -254,7 +254,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = dialogServiceOpenSpy.calls.argsFor(0)[1].data;
-    expect(actualQuery.hasFullTextFilter()).toBeFalsy();
+    expect(actualQuery.hasFullTextFilter()).toBeFalse();
     expect(actualQuery.getPropertyFilters()).toEqual([]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: now, maxExcluding: undefined })

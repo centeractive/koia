@@ -1,16 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { ViewLauncherDialogComponent } from './view-launcher-dialog.component';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ViewLauncherContext } from './view-launcher-context.type.';
-import { View } from 'app/shared/model/view-config';
-import { SummaryContext } from 'app/shared/model';
-import { GraphContext } from 'app/shared/model/graph';
-import { ChartContext } from 'app/shared/model/chart';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { ViewLauncherDialogComponent } from './view-launcher-dialog.component';
 
 describe('ViewLauncherDialogComponent', () => {
 
@@ -19,7 +15,7 @@ describe('ViewLauncherDialogComponent', () => {
   let fixture: ComponentFixture<ViewLauncherDialogComponent>;
 
   beforeEach(waitForAsync(() => {
-    dialogData = new ViewController();
+    dialogData = {} as ViewLauncherContext;
     TestBed.configureTestingModule({
       declarations: [ViewLauncherDialogComponent],
       imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
@@ -41,23 +37,3 @@ describe('ViewLauncherDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-
-class ViewController implements ViewLauncherContext {
-  findViews(): View[] {
-    return [];
-  }
-
-  loadView(view: View): void { }
-
-  addSummaryTable(): SummaryContext {
-    return null;
-  }
-
-  addChart(): ChartContext {
-    return null;
-  }
-
-  addGraph(): GraphContext {
-    return null;
-  }
-}

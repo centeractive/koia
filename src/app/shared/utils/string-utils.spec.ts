@@ -21,7 +21,7 @@ describe('StringUtils', () => {
    });
 
    it('#capitalize should return string when EMPTY', () => {
-      expect(StringUtils.capitalize('')).toEqual('');
+      expect(StringUtils.capitalize('')).toBe('');
    });
 
    it('#capitalize should return null when null', () => {
@@ -29,13 +29,19 @@ describe('StringUtils', () => {
    });
 
    it('#capitalize should return capitalized string', () => {
-      expect(StringUtils.capitalize('x')).toEqual('X');
-      expect(StringUtils.capitalize('test')).toEqual('Test');
+      expect(StringUtils.capitalize('x')).toBe('X');
+      expect(StringUtils.capitalize('test')).toBe('Test');
    });
 
    it('#capitalize should return unchanged string when starting with uppercase', () => {
-      expect(StringUtils.capitalize('X')).toEqual('X');
-      expect(StringUtils.capitalize('Test')).toEqual('Test');
+      expect(StringUtils.capitalize('X')).toBe('X');
+      expect(StringUtils.capitalize('Test')).toBe('Test');
+   });
+
+   it('#pluralize', () => {
+      expect(StringUtils.pluralize('test', 0)).toBe('test');
+      expect(StringUtils.pluralize('test', 1)).toBe('test');
+      expect(StringUtils.pluralize('test', 2)).toBe('tests');
    });
 
    it('#quote should return quoted empty string when input is missing or empty', () => {

@@ -1,29 +1,29 @@
-import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 
-import { MainToolbarComponent } from './main-toolbar.component';
-import { NO_ERRORS_SCHEMA, Component } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxSliderModule } from 'app/ngx-slider/slider.module';
-import { RouterModule, Router, NavigationEnd, Event } from '@angular/router';
+import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { ContextInfo, Column, Route, PropertyFilter, Operator, Query, DataType, Scene, TimeUnit } from 'app/shared/model';
-import { of } from 'rxjs';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Event, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { NgxSliderModule } from 'app/ngx-slider/slider.module';
+import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
+import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { MatIconModuleMock } from 'app/shared/test';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { DialogService } from 'app/shared/services';
+import { of } from 'rxjs';
+import { MainToolbarComponent } from './main-toolbar.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { MatMenuModule } from '@angular/material/menu';
 
 @Component({ template: '' })
 class DummyComponent { }
@@ -433,7 +433,7 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
     const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.hasFilter()).toBeFalsy();
+    expect(query.hasFilter()).toBeFalse();
   });
 
   it('#removeColumnFilter should not emit onFilterChange when removed filter was not effective', () => {

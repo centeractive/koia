@@ -1,28 +1,28 @@
-import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
-import { RawDataComponent } from './raw-data.component';
-import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Column, Query, DataType, Scene, Route, ExportFormat } from 'app/shared/model';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
-import { DBService } from 'app/shared/services/backend';
+import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { NotificationService, DialogService, ExportService } from 'app/shared/services';
+import { Column, DataType, ExportFormat, Query, Route, Scene } from 'app/shared/model';
+import { DialogService, ExportService, NotificationService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { of, throwError } from 'rxjs';
+import { RawDataComponent } from './raw-data.component';
 
 describe('RawDataComponent', () => {
 
@@ -150,7 +150,7 @@ describe('RawDataComponent', () => {
     flush();
 
     // then
-    expect(component.loading).toBeFalsy();
+    expect(component.loading).toBeFalse();
     expect(component.notifyError).toHaveBeenCalledWith('server error');
   }));
 

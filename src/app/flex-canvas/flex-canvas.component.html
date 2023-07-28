@@ -15,9 +15,19 @@
 
    <div class="div_wrapper">
       <div #header class="div_header">
-         <koia-main-toolbar [route]="route" (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
+         <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery" (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
          <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
          <div id="view_toolbar">
+            <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+               <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #moreMenu="matMenu">
+               <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
+                  <mat-icon>monitor</mat-icon>
+                  <span>Manage Views</span>
+               </button>
+            </mat-menu>
+
             <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint
                     matTooltip="Print current view" [disabled]="!elementContexts?.length" (click)="printView()">
                <mat-icon>print</mat-icon>
@@ -27,15 +37,14 @@
                <mat-icon>save_alt</mat-icon>
             </button>
 
-            <button class="but_more" mat-icon-button matTooltip="Restore saved view"
-                    [disabled]="findViews().length === 0" [matMenuTriggerFor]="restoreViewMenu">
-               <mat-icon [matBadge]="findViews().length" [matBadgeHidden]="findViews().length === 0"
-                         matBadgeSize="small" matBadgeColor="accent">open_in_browser</mat-icon>
+            <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!views.length" [matMenuTriggerFor]="restoreViewMenu">
+               <mat-icon [matBadge]="views.length" [matBadgeHidden]="!views.length" matBadgeSize="small" matBadgeColor="accent">
+                  open_in_browser
+               </mat-icon>
             </button>
             <mat-menu #restoreViewMenu="matMenu">
-               <button class="menu_item_details" *ngFor="let view of findViews()" mat-menu-item
-                       (click)="loadView(view)">
-                  <mat-icon>open_in_browser</mat-icon>
+               <button class="menu_item_details" *ngFor="let view of views" mat-menu-item (click)="loadView(view)">
+                  <mat-icon>monitor</mat-icon>
                   <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
                </button>
             </mat-menu>

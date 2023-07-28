@@ -1,12 +1,12 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
-import { Column, DataType } from '../../shared/model';
-import { IDataFrame, ISeries } from 'data-forge';
-import { NumberUtils, ArrayUtils } from 'app/shared/utils';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
+import { ArrayUtils, NumberUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { IDataFrame, ISeries } from 'data-forge';
+import { Column, DataType } from '../../shared/model';
 import { PivotContext } from '../model';
 
 @Component({
@@ -91,7 +91,7 @@ export class PivotTableSideBarComponent implements OnChanges {
     return NumberUtils.isNumberKey(event);
   }
 
-  removeGroupingRange(grouping: ValueGrouping, range: ValueRange) {
+  removeGroupingRange(grouping: ValueGrouping, range: ValueRange): void {
     ArrayUtils.removeElement(grouping.ranges, range);
   }
 }

@@ -14,7 +14,7 @@ export class QueryEnhancer {
       this.filterLabels = Object.keys(filters);
    }
 
-   addBasicFilters() {
+   addBasicFilters(): void {
       for (const filterLabel of this.filterLabels) {
          const columnName = ColumnNameConverter.toColumnName(filterLabel);
          const column = this.columns.find(c => c.name === columnName);
@@ -43,7 +43,7 @@ export class QueryEnhancer {
     *
     * @TODO consider inclusions instead of exclusions in cases the latter have more values
     */
-   addFiltersForValueChoices(exclusions: object, inclusions: object, pivotData: object) {
+   addFiltersForValueChoices(exclusions: object, inclusions: object, pivotData: object): void {
       if (exclusions) {
          const labelsInUse = pivotData['colAttrs'].concat(pivotData['rowAttrs']);
          for (const label of labelsInUse) {

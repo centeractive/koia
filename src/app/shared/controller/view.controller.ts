@@ -7,6 +7,7 @@ import { SummaryTableComponent } from 'app/summary-table/summary-table.component
 import { Subscription, lastValueFrom } from 'rxjs';
 import { AbstractComponent } from '../component/abstract.component';
 import { InputDialogData } from '../component/input-dialog/input-dialog.component';
+import { ManageViewContext } from '../component/manage-view-dialog';
 import { ViewLauncherContext } from '../component/view-launcher-dialog';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext } from '../model';
 import { ChartContext, ChartType } from '../model/chart';
@@ -16,11 +17,12 @@ import { DialogService, ExportService, NotificationService, ViewPersistenceServi
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { ChartMarginService } from '../services/chart';
-import { ConfigToModelConverter, ModelToConfigConverter } from '../services/view-persistence';
-import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
+import { ModelToViewConverter, ViewToModelConverter } from '../services/view-persistence';
+import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
+import { ArrayUtils, CommonUtils, DateTimeUtils, StringUtils } from '../utils';
 
 @Directive()
-export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext {
+export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext, ManageViewContext {
 
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 380; // keep in sync with .sidenav in styles.css
@@ -38,13 +40,16 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    selectedContextPosition: number;
    entries: object[];
    loading: boolean;
+   restoredQuery: Query;
+   views: View[] = [];
+
+   protected scene: Scene;
 
    private timeColumns: Column[];
-   private configToModelConverter: ConfigToModelConverter;
-   private modelToConfigConverter = new ModelToConfigConverter();
-   private query: Query;
-   private scene: Scene;
+   private viewToModelConverter: ViewToModelConverter;
+   private modelToViewConverter = new ModelToViewConverter();
    private columns: Column[];
+   private query: Query;
    private entriesSubscription: Subscription;
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
@@ -58,19 +63,23 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       if (!this.scene) {
          this.router.navigateByUrl(Route.SCENES);
       } else {
+         this.refreshViews();
          this.elementContexts = [];
-         this.query = new Query();
-         this.queryData(this.query);
+         this.queryData(new Query());
          this.identifyColumns();
       }
+   }
+
+   private refreshViews(): void {
+      this.views = this.viewPersistenceService.findViews(this.scene, this.route);
    }
 
    ngAfterViewInit(): void {
       if (this.scene) {
          if (this.elementContainerDivRefs.length === 0) {
-            this.dialogService.showViewLauncherDialog(this);
+            this.selectView();
          } else {
-            this.elementContainerDivRefs.changes.subscribe(c => {
+            this.elementContainerDivRefs.changes.subscribe(() => {
                if (this.elementContainerDivRefs.last) {
                   const htmlDiv = this.elementContainerDivRefs.last.nativeElement;
                   htmlDiv.scrollIntoView();
@@ -84,7 +93,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.columns = this.scene.columns
          .filter(c => c.indexed)
          .filter(c => c.name !== CouchDBConstants._ID);
-      this.configToModelConverter = new ConfigToModelConverter(this.columns);
+      this.viewToModelConverter = new ViewToModelConverter(this.columns);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
       DateTimeUtils.defineTimeUnits(this.timeColumns, this.entries);
@@ -124,13 +133,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    onFilterChanged(query: Query): void {
-      this.query = query;
       this.elementContexts.forEach(c => c.query = query)
       this.queryData(query);
    }
 
    private queryData(query: Query): void {
       this.loading = true;
+      this.query = query;
       if (this.entriesSubscription) {
          this.entriesSubscription.unsubscribe();
       }
@@ -184,13 +193,17 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.elementContexts = this.elementContexts.filter(c => c !== context);
    }
 
-   findViews(): View[] {
-      return this.scene ? this.viewPersistenceService.findViews(this.scene, this.route) : [];
+   selectView(): void {
+      this.dialogService.showViewLauncherDialog(this);
    }
 
    loadView(view: View): void {
       this.onPreRestoreView(view);
-      const elementContexts = this.configToModelConverter.convert(view.elements);
+      const elementContexts = this.viewToModelConverter.convert(view.elements);
+      if (view.query) {
+         this.restoredQuery = queryDefToQuery(view.query);
+         this.queryData(this.restoredQuery);
+      }
       elementContexts.forEach(c => {
          c.query = this.query;
          c.entries = this.entries;
@@ -208,12 +221,15 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       const data = new InputDialogData('Save View', 'View Name', '', 20);
       const dialogRef = this.dialogService.showInputDialog(data);
       lastValueFrom(dialogRef.afterClosed())
-         .then(r => {
+         .then(() => {
             if (data.closedWithOK) {
-               const view = this.modelToConfigConverter.convert(this.route, data.input, this.elementContexts);
+               const view = this.modelToViewConverter.convert(this.route, data.input, this.query, this.elementContexts);
                this.onPreSaveView(view);
                this.viewPersistenceService.saveView(this.scene, view)
-                  .then(s => this.showStatus(s));
+                  .then(s => {
+                     this.showStatus(s);
+                     this.refreshViews();
+                  });
             }
          });
    }
@@ -232,5 +248,29 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          const sumTableComponent = this.sumTableComponents.find(cmp => cmp.context === context);
          this.exportService.exportData(sumTableComponent.createExportData(), this.columns, exportFormat, context.getTitle());
       }
+   }
+
+   manageViews(): void {
+      this.dialogService.showManageViewDialog(this);
+   }
+
+   // TODO: move most of this code to the ViewPersistenceService
+   updateViews(deletedViews: View[], renamedViews: View[]): void {
+      const deltedViewNames = deletedViews.map(v => v.name);
+      this.scene.config.views = this.scene.config.views.filter(v => !deltedViewNames.includes(v.name));
+      this.refreshViews();
+      this.dbService.persistScene(this.scene, false);
+      this.notifyUpdatedViews(deletedViews, renamedViews);
+   }
+
+   private notifyUpdatedViews(deletedViews: View[], renamedViews: View[]): void {
+      const message: string[] = [];
+      if (deletedViews.length) {
+         message.push('Deleted ' + deletedViews.length + StringUtils.pluralize(' view', deletedViews.length));
+      }
+      if (renamedViews.length) {
+         message.push('Renamed ' + renamedViews.length + StringUtils.pluralize(' view', renamedViews.length));
+      }
+      this.notifySuccess(message.join('\n'));
    }
 }

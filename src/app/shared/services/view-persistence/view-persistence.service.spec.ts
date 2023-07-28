@@ -1,12 +1,12 @@
-import { Route, Aggregation, StatusType, Scene, DataType, Column, TimeUnit } from '../../model';
-import { Chart } from '../view-persistence/chart.type';
-import { ViewPersistenceService } from './view-persistence.service';
-import { DBService } from '../backend';
-import { SceneFactory } from '../../test';
-import { Summary } from './summary.type';
-import { ConfigRecord } from '../../model/view-config/config-record.type';
-import { View, ElementType, ViewElement } from 'app/shared/model/view-config';
 import { CategoricalColorScheme, ColorSchemeType } from 'app/shared/color';
+import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
+import { Aggregation, Column, DataType, Query, Route, Scene, StatusType } from '../../model';
+import { ConfigRecord } from '../../model/view-config/config-record.type';
+import { SceneFactory } from '../../test';
+import { DBService } from '../backend';
+import { Chart } from '../view-persistence/chart.type';
+import { Summary } from './summary.type';
+import { ViewPersistenceService } from './view-persistence.service';
 
 describe('ViewPersistenceService', () => {
 
@@ -46,9 +46,18 @@ describe('ViewPersistenceService', () => {
 
   beforeEach(() => {
     scene = SceneFactory.createScene('1', []);
-    pivotTableRecord = { route: Route.PIVOT, name: 'pivot', modifiedTime: NOW, data: { a: 1, b: 2, c: 3 } };
+    pivotTableRecord = {
+      route: Route.PIVOT,
+      name: 'pivot',
+      modifiedTime: NOW,
+      query: null,
+      data: { a: 1, b: 2, c: 3 }
+    };
     gridView = createGridView('grid', A_MINUTE_AGO, chart);
-    scene.config = { records: [pivotTableRecord], views: [gridView] };
+    scene.config = {
+      records: [pivotTableRecord],
+      views: [gridView]
+    };
     dbService = new DBService(null);
     service = new ViewPersistenceService(dbService);
   });
@@ -78,7 +87,7 @@ describe('ViewPersistenceService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, 'new', data);
+    const status$ = service.saveRecord(scene, Route.PIVOT, 'new', new Query(), data);
 
     // then
     await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
@@ -93,7 +102,7 @@ describe('ViewPersistenceService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.resolve(scene));
 
     // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, pivotTableRecord.name, data);
+    const status$ = service.saveRecord(scene, Route.PIVOT, pivotTableRecord.name, new Query(), data);
 
     // then
     const expectedMsg = 'View "' + pivotTableRecord.name + '" has been saved';
@@ -112,7 +121,7 @@ describe('ViewPersistenceService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject('Scene cannot be updated'));
 
     // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', {});
+    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', new Query(), {});
 
     // then
     const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
@@ -125,7 +134,7 @@ describe('ViewPersistenceService', () => {
     spyOn(dbService, 'updateScene').and.returnValue(Promise.reject({ message: 'Scene cannot be updated' }));
 
     // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', {});
+    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', new Query(), {});
 
     // then
     const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
@@ -218,11 +227,27 @@ describe('ViewPersistenceService', () => {
   }
 
   function createFlexView(name: string, modifiedTime: number, element: ViewElement): View {
-    return { route: Route.FLEX, name: name, modifiedTime: modifiedTime, gridColumns: null, gridCellRatio: null, elements: [element] };
+    return {
+      route: Route.FLEX,
+      name,
+      modifiedTime,
+      query: null,
+      gridColumns: null,
+      gridCellRatio: null,
+      elements: [element]
+    };
   }
 
   function createGridView(name: string, modifiedTime: number, element: ViewElement): View {
-    return { route: Route.GRID, name: name, modifiedTime: modifiedTime, gridColumns: 3, gridCellRatio: '1:1', elements: [element] };
+    return {
+      route: Route.GRID,
+      name,
+      modifiedTime,
+      query: null,
+      gridColumns: 3,
+      gridCellRatio: '1:1',
+      elements: [element]
+    };
   }
 
 });

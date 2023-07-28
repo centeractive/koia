@@ -29,8 +29,8 @@
         <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
       </button>
     </div>
-    <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)"
-                      (onDelete)="delete($event)"></koia-scene-table>
+    <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)" (onDelete)="delete($event)">
+    </koia-scene-table>
   </mat-card-content>
   <mat-card-actions>
     <button id="but_cancel" mat-raised-button color="primary" (click)="cancel()">Cancel</button>

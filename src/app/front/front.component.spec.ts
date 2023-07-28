@@ -1,31 +1,31 @@
-import { ComponentFixture, TestBed, flush, fakeAsync, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 
-import { FrontComponent } from './front.component';
-import { NotificationService, DialogService } from 'app/shared/services';
-import { SceneInfo, Route, Protocol, ConnectionInfo } from 'app/shared/model';
-import { ReaderService } from 'app/shared/services/reader';
-import { DBService } from 'app/shared/services/backend';
-import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { HAMMER_LOADER } from '@angular/platform-browser';
-import { FormsModule, UntypedFormBuilder } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Component } from '@angular/core';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
-import { Observable, of } from 'rxjs';
-import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { CouchDBServiceMock, QueryParams, SceneFactory } from 'app/shared/test';
-import { QueryParamExtractor } from 'app/shared/utils';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule, UntypedFormBuilder } from '@angular/forms';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
+import { DialogService, NotificationService } from 'app/shared/services';
+import { DBService } from 'app/shared/services/backend';
+import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { ReaderService } from 'app/shared/services/reader';
+import { CouchDBServiceMock, QueryParams, SceneFactory } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { QueryParamExtractor } from 'app/shared/utils';
+import { Observable, of } from 'rxjs';
+import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
+import { FrontComponent } from './front.component';
 
 @Component({ template: '' })
 class DummyComponent { }
@@ -116,7 +116,7 @@ describe('FrontComponent', () => {
     // then
     expect(dbService.useIndexedDb).not.toHaveBeenCalled();
     expect(component.selectedDataStorage).toBe(component.indexedDB);
-    expect(component.ready).toBeTruthy();
+    expect(component.ready).toBeTrue();
   }));
 
   it('#onDataStorageChanged should switch to IndexedDB', fakeAsync(() => {

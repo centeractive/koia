@@ -1,3 +1,12 @@
+div {
+    overflow-x: auto;
+}
+
 .mat-mdc-table {
     min-width: 1%;
+    max-width: 100%;
+}
+
+.nowrap {
+    white-space: nowrap
 }

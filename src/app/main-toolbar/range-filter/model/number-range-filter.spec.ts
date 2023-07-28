@@ -1,5 +1,5 @@
-import { DataType, TimeUnit, Query } from 'app/shared/model';
 import { LabelType } from 'app/ngx-slider/options';
+import { DataType, Query, TimeUnit } from 'app/shared/model';
 import { NumberRangeFilter } from './number-range-filter';
 
 describe('NumberRangeFilter', () => {
@@ -37,7 +37,7 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(end);
       expect(filter.selValueRange.min).toBe(start);
       expect(filter.selValueRange.max).toBe(end);
-      expect(filter.isFiltered()).toBeFalsy();
+      expect(filter.isFiltered()).toBeFalse();
    });
 
    it('#constructor should create active filter when selected start time is defined', () => {
@@ -187,7 +187,7 @@ describe('NumberRangeFilter', () => {
       expect(options.floor).toBe(start);
       expect(options.ceil).toBe(end);
       expect(options.step).toBe(0.1);
-      expect(options.enforceStep).toBeFalsy();
+      expect(options.enforceStep).toBeFalse();
       expect(options.draggableRange).toBeTrue();
       expect(options.translate(start, LabelType.Ceil)).toBe('-10');
       expect(options.combineLabels('-5', '8')).toBe('-5 - 8');
@@ -272,6 +272,6 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(end);
       expect(filter.selValueRange.min).toBe(start);
       expect(filter.selValueRange.max).toBe(end);
-      expect(filter.isFiltered()).toBeFalsy();
+      expect(filter.isFiltered()).toBeFalse();
    });
 });

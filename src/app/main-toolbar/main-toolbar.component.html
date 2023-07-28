@@ -101,8 +101,8 @@
 
   <div *ngIf="showRangeFilters">
     <div *ngFor="let rangeFilter of rangeFilters">
-      <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()"
-                         (onRemove)="removeRangeFilter(rangeFilter)"></koia-range-filter>
+      <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">
+      </koia-range-filter>
     </div>
   </div>
 </div>

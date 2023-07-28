@@ -1,5 +1,5 @@
+import { Column, ColumnPair, DataType } from 'app/shared/model';
 import { EntryMapper } from './entry-mapper';
-import { Column, DataType, ColumnPair } from 'app/shared/model';
 
 describe('EntryMapper', () => {
 
@@ -527,8 +527,8 @@ describe('EntryMapper', () => {
       expect(actual.length).toBe(2);
       const d1 = new Date(actual[0].entry['Date/Time']);
       const d2 = new Date(actual[1].entry['Date/Time']);
-      expect(isNaN(d1.getTime())).toBeFalsy();
-      expect(isNaN(d2.getTime())).toBeFalsy();
+      expect(isNaN(d1.getTime())).toBeFalse();
+      expect(isNaN(d2.getTime())).toBeFalse();
       expect(d1.toDateString()).toBe(d2.toDateString());
       expect(actual[0].errors).toEqual([]);
       expect(actual[1].errors).toEqual([]);

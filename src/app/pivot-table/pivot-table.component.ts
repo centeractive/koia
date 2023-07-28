@@ -1,25 +1,29 @@
-import { Component, OnInit, Inject, ElementRef, ViewChild, ViewEncapsulation, AfterViewInit } from '@angular/core';
-import { Query, Route, Column, Scene, DataType, TimeUnit, Document } from '../shared/model';
-import {
-  NotificationService, ExportService, TimeGroupingService, ViewPersistenceService,
-  DialogService, RawDataRevealService
-} from '../shared/services';
-import { IDataFrame, DataFrame } from 'data-forge';
-import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
-import { PivotOptionsProvider } from './options/pivot-options-provider';
-import { DBService } from 'app/shared/services/backend';
-import { Router } from '@angular/router';
-import { firstValueFrom, Subscription } from 'rxjs';
-import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { ConfigRecord } from 'app/shared/model/view-config';
-import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
-import { AbstractComponent } from 'app/shared/component/abstract.component';
-import { CellClickHandler } from './options/cell-click-handler';
-import { PivotContextFactory, PivotContext } from './model';
-import { QueryProvider } from './options/query-provider';
-import { MatSidenav } from '@angular/material/sidenav';
+import { AfterViewInit, Component, ElementRef, Inject, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatSidenav } from '@angular/material/sidenav';
+import { Router } from '@angular/router';
+import { ConfigController } from 'app/shared/controller/config.controller';
+import { ConfigRecord } from 'app/shared/model/view-config';
+import { DBService } from 'app/shared/services/backend';
+import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
+import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
+import { DataFrame, IDataFrame } from 'data-forge';
+import { Subscription } from 'rxjs';
+import { Column, DataType, Document, Query, Route, TimeUnit } from '../shared/model';
+import {
+  DialogService,
+  ExportService,
+  NotificationService,
+  RawDataRevealService,
+  TimeGroupingService, ViewPersistenceService
+} from '../shared/services';
+import { PivotContext, PivotContextFactory } from './model';
+import { CellClickHandler } from './options/cell-click-handler';
+import { PivotOptionsProvider } from './options/pivot-options-provider';
+import { QueryProvider } from './options/query-provider';
 
+// eslint-disable-next-line
 declare let jQuery: any;
 
 @Component({
@@ -28,7 +32,7 @@ declare let jQuery: any;
   styleUrls: ['./pivot-table.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class PivotTableComponent extends AbstractComponent implements OnInit, AfterViewInit {
+export class PivotTableComponent extends ConfigController implements AfterViewInit {
 
   @ViewChild(MatSidenav) sidenav: MatSidenav;
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
@@ -42,44 +46,46 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
   context: PivotContext;
   loading: boolean;
   computing: boolean;
+  // eslint-disable-next-line
   baseDataFrame: IDataFrame<number, any>;
+  // eslint-disable-next-line
   dataFrame: IDataFrame<number, any>;
   allowsForValueGrouping: boolean;
-  private scene: Scene;
-  private entriesSubscription: Subscription;
+  restoredQuery: Query;
+
   private query: Query;
+  private entriesSubscription: Subscription;
   private valueGroupingGenerator = new ValueGroupingGenerator();
   private pivotOptionsProvider: PivotOptionsProvider;
   private stringifiedValueGroupings: string;
 
-  constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, private router: Router,
-    private dbService: DBService, private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
+  constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
+    public dbService: DBService, public dialogService: DialogService, public viewPersistenceService: ViewPersistenceService,
     private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
     notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService) {
-    super(bottomSheet, notificationService);
+    super(Route.PIVOT, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
   }
 
-  ngOnInit(): void {
+  init(): void {
     this.context = this.contextFactory.create();
-    this.scene = this.dbService.getActiveScene();
-    if (!this.scene) {
-      this.router.navigateByUrl(Route.SCENES);
-    } else {
-      this.columns = this.scene.columns
-        .filter(c => c.indexed)
-        .map(c => <Column>CommonUtils.clone(c));
-      this.timeColumns = this.columns
-        .filter(c => c.dataType == DataType.TIME);
-      const baseQueryProvider: QueryProvider = { provide: () => this.query };
-      const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
-      this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
-      this.fetchData(new Query());
-    }
+    this.columns = this.scene.columns
+      .filter(c => c.indexed)
+      .map(c => <Column>CommonUtils.clone(c));
+    this.timeColumns = this.columns
+      .filter(c => c.dataType == DataType.TIME);
+    const baseQueryProvider: QueryProvider = { provide: () => this.query };
+    const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
+    this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
+    this.fetchData(new Query());
   }
 
   ngAfterViewInit(): void {
     this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
     this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
+
+    if (this.scene.config.records.length) {
+      this.selectConfig();
+    }
   }
 
   private onSidenavClosing(): void {
@@ -101,7 +107,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
       .subscribe(entries => this.onData(entries));
   }
 
-  private onData(entries: Document[]) {
+  private onData(entries: Document[]): void {
     this.loading = false;
     this.computing = true;
     this.defineGroupingTimeUnits(entries);
@@ -141,7 +147,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     this.context.timeColumns
       .forEach(c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
     if (this.context.valueGroupings.length > 0) {
-      this.dataFrame.toArray(); // TODO: get rid of this -> solves TypeError: Cannot read properties of null (reading 'values')
+      this.dataFrame.bake();
       this.dataFrame = this.valueGroupingService.compute(this.dataFrame, this.context.valueGroupings);
     }
     this.renderPivotTable(config);
@@ -151,29 +157,22 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     window.print();
   }
 
-  findConfigRecords(): ConfigRecord[] {
-    return this.viewPersistenceService.findRecords(this.scene, this.route);
+  configToBeSaved(): { query: Query, data: PivotContext } {
+    this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
+    const context = CommonUtils.clone(this.context) as PivotContext;
+    context.valueGroupings.forEach(vg => vg.minMaxValues = null);
+    return { query: this.query, data: context };
   }
 
   loadConfig(configRecord: ConfigRecord): void {
     this.context = configRecord.data;
+    if (configRecord.query) {
+      this.restoredQuery = queryDefToQuery(configRecord.query);
+      this.query = this.restoredQuery;
+    }
     const pivotOptions = this.pivotOptionsProvider
       .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
     this.refreshDataFrame(pivotOptions);
-  }
-
-  saveConfig(): void {
-    const data = new InputDialogData('Save View', 'View Name', '', 20);
-    const dialogRef = this.dialogService.showInputDialog(data);
-    firstValueFrom(dialogRef.afterClosed()).then(r => {
-      if (data.closedWithOK) {
-        this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
-        const context = CommonUtils.clone(this.context) as PivotContext;
-        context.valueGroupings.forEach(vg => vg.minMaxValues = null);
-        this.viewPersistenceService.saveRecord(this.scene, Route.PIVOT, data.input, context)
-          .then(s => this.showStatus(s));
-      }
-    });
   }
 
   onNegativeColorChanged(color: string): void {
@@ -232,6 +231,7 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     }
   }
 
+  // eslint-disable-next-line
   private getTargetElement(): any {
     return jQuery(this.cmpElementRef.nativeElement).find('#pivot');
   }
@@ -255,4 +255,5 @@ export class PivotTableComponent extends AbstractComponent implements OnInit, Af
     const table = this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0] as HTMLTableElement;
     this.exportService.exportTableAsExcel(table, 'PivotTable');
   }
+
 }

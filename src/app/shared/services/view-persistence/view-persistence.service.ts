@@ -1,9 +1,10 @@
-import { Scene, Status, StatusType, Route } from '../../model';
-import { ArrayUtils } from '../../utils';
 import { Injectable } from '@angular/core';
-import { DBService } from '../backend';
-import { View } from '../../model/view-config/view.type';
 import { ConfigRecord } from 'app/shared/model/view-config';
+import { Query, Route, Scene, Status, StatusType } from '../../model';
+import { View } from '../../model/view-config/view.type';
+import { ArrayUtils } from '../../utils';
+import { DBService } from '../backend';
+import { queryToQueryDef } from './filter/query-to-filter-converter';
 
 @Injectable({
    providedIn: 'root'
@@ -27,9 +28,15 @@ export class ViewPersistenceService {
     * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
     * invoking part to catch errors
     */
-   saveRecord(scene: Scene, route: Route, viewName: string, data: any): Promise<Status> {
+   saveRecord(scene: Scene, route: Route, viewName: string, query: Query, data: any): Promise<Status> {
       const prevRecord = this.findRecord(scene, route, viewName);
-      const newRecord: ConfigRecord = { route: route, name: viewName, modifiedTime: new Date().getTime(), data: data };
+      const newRecord: ConfigRecord = {
+         route,
+         name: viewName,
+         modifiedTime: new Date().getTime(),
+         query: queryToQueryDef(query),
+         data
+      };
       if (prevRecord) {
          ArrayUtils.replaceElement(scene.config.records, prevRecord, newRecord);
       } else {
@@ -78,7 +85,7 @@ export class ViewPersistenceService {
    private updateScene(scene: Scene, viewName: string): Promise<Status> {
       return new Promise<Status>(resolve => {
          this.dbService.updateScene(scene)
-            .then(s => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
+            .then(() => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
             .catch(e => {
                const message = typeof e === 'string' ? e : e.message;
                resolve({ type: StatusType.ERROR, msg: 'View "' + viewName + '" cannot be saved: ' + message })

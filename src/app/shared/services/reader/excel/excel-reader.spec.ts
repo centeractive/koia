@@ -34,7 +34,7 @@ describe('ExcelReader', () => {
    });
 
    it('#expectsPlainTextData should return false', () => {
-      expect(reader.expectsPlainTextData()).toBeFalsy();
+      expect(reader.expectsPlainTextData()).toBeFalse();
    });
 
    it('#furnishAttributes should return attributes', () => {
@@ -49,7 +49,7 @@ describe('ExcelReader', () => {
       expect(attributes[0].description).toBe('Name of Excel sheet that contains the data');
       expect(attributes[0].dataType).toBe(DataType.TEXT);
       expect(attributes[0].value).toBe('');
-      expect(attributes[0].hasValueChoice()).toBeFalsy();
+      expect(attributes[0].hasValueChoice()).toBeFalse();
    });
 
    it('#readSample should return sample data', async () => {
@@ -68,7 +68,7 @@ describe('ExcelReader', () => {
          expect(entries[0]['c2']).toBe(1);
          expect(entries[1]['c2']).toBe(2);
          expect(entries[0]['c3']).toBeTruthy();
-         expect(entries[1]['c3']).toBeFalsy();
+         expect(entries[1]['c3']).toBeFalse();
          expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
          expect(formatTime(entries[1]['c4'])).toBe('06.06.2019');
       });
@@ -136,7 +136,7 @@ describe('ExcelReader', () => {
          expect(entries[1]['c2']).toBe(2);
          expect(entries[2]['c2']).toBe(3);
          expect(entries[0]['c3']).toBeTruthy();
-         expect(entries[1]['c3']).toBeFalsy();
+         expect(entries[1]['c3']).toBeFalse();
          expect(entries[2]['c3']).toBeTruthy();
          expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
          expect(formatTime(entries[1]['c4'])).toBe('06.06.2019');

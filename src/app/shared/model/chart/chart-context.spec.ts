@@ -162,7 +162,7 @@ describe('ChartContext', () => {
       context.chart = undefined;
 
       // when/then
-      expect(context.stacked).toBeFalsy();
+      expect(context.stacked).toBeFalse();
    });
 
    it('#getTitle when no data column defined', () => {

@@ -153,7 +153,7 @@ export abstract class SideBarController implements OnChanges {
    }
 
    isNumericColumn(column: Column): boolean {
-      return column && DataTypeUtils.isNumeric(column.dataType);
+      return !!column && DataTypeUtils.isNumeric(column.dataType);
    }
 
    setElementPosition(elementPosition: number): void {

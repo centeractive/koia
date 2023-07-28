@@ -26,13 +26,13 @@ describe('QueryParams', () => {
    });
 
    it('#has should return false when parameter does not exist', () => {
-      expect(queryParams.get('4')).toBeFalsy();
+      expect(queryParams.has('4')).toBeFalse();
    });
 
    it('#has should return true when parameter exists', () => {
-      expect(queryParams.get('1')).toBeTruthy();
-      expect(queryParams.get('2')).toBeTruthy();
-      expect(queryParams.get('3')).toBeTruthy();
+      expect(queryParams.has('1')).toBeTrue();
+      expect(queryParams.has('2')).toBeTrue();
+      expect(queryParams.has('3')).toBeTrue();
    });
 
    it('#getAll should return empty array when parameter does not exist', () => {

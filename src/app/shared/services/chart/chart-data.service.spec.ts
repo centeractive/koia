@@ -321,7 +321,7 @@ describe('ChartDataService', () => {
       expect(context.valueRange).toEqual({ min: 2, max: 3 });
       expect(result.error).toBeUndefined();
       expect(context.dataSampledDown).toBeFalse();
-      expect(context.warning).toBeFalsy();
+      expect(context.warning).toBeUndefined();
    });
 
    it('#createData should create chronologically sorted individual values data of two columns', () => {
@@ -355,7 +355,7 @@ describe('ChartDataService', () => {
       expect(context.valueRange).toEqual({ min: -2, max: 4 });
       expect(result.error).toBeUndefined();
       expect(context.dataSampledDown).toBeFalse();
-      expect(context.warning).toBeFalsy();
+      expect(context.warning).toBeUndefined();
    });
 
    it('#createData should create chronologically sorted individual values data when some time values are missing', () => {
@@ -383,8 +383,8 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[0].data).toEqual(expectedData);
       expect(context.valueRange).toEqual({ min: 2, max: 3 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalsy();
-      expect(context.warning).toBeFalsy();
+      expect(context.dataSampledDown).toBeFalse();
+      expect(context.warning).toBeUndefined();
    });
 
    it('#createData should create chronologically sorted and splitted individual values data', () => {
@@ -414,8 +414,8 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: -1, max: 4 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalsy();
-      expect(context.warning).toBeFalsy();
+      expect(context.dataSampledDown).toBeFalse();
+      expect(context.warning).toBeUndefined();
    });
 
    it('#createData should create down-sampled data when max number of entries is exceeded', () => {
@@ -438,7 +438,7 @@ describe('ChartDataService', () => {
       expect(context.valueRange).toEqual({ min: 0, max: 1_000 });
       expect(result.error).toBeUndefined();
       expect(context.dataSampledDown).toBeTrue();
-      expect(context.warning).toBeTruthy();
+      expect(context.warning).toBeDefined();
    });
 
    it('#createData should create chronologically sorted timeline data (count distinct values)', () => {

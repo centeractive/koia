@@ -1,14 +1,14 @@
-import { Component, OnInit, Input, Output, EventEmitter, AfterViewChecked } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { Route, Column, Query, PropertyFilter, DataType, Scene } from '../shared/model';
-import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
-import { DBService } from 'app/shared/services/backend';
-import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { DialogService } from 'app/shared/services';
-import { TimeRangeFilter } from './range-filter/model/time-range-filter';
-import { NumberRangeFilter } from './range-filter/model/number-range-filter';
-import { QueryBuilder } from './query-builder';
+import { DBService } from 'app/shared/services/backend';
+import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { PropertyFilterValidator } from 'app/shared/validator';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { Column, DataType, PropertyFilter, Query, Route, Scene } from '../shared/model';
+import { QueryBuilder } from './query-builder';
+import { NumberRangeFilter } from './range-filter/model/number-range-filter';
+import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 import { ValueFilterUtils } from './value-filter/value-filter-utils';
 
 @Component({
@@ -16,11 +16,12 @@ import { ValueFilterUtils } from './value-filter/value-filter-utils';
   templateUrl: './main-toolbar.component.html',
   styleUrls: ['./main-toolbar.component.css']
 })
-export class MainToolbarComponent implements OnInit, AfterViewChecked {
+export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked {
 
   @Input() dialogStyle: boolean;
   @Input() route: Route;
   @Input() query: Query;
+  @Input() restoredQuery: Query;
   @Output() onFilterChange: EventEmitter<Query> = new EventEmitter();
 
   readonly urlFront = '/' + Route.FRONT;
@@ -51,6 +52,13 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     if (this.scene) {
       this.propertyFilterValidator = new PropertyFilterValidator(this.scene.columns);
       this.listenOnNavigationEvents();
+      this.retainInitialFilters();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.restoredQuery && !!this.restoredQuery) {
+      this.query = this.restoredQuery;
       this.retainInitialFilters();
     }
   }
@@ -87,6 +95,7 @@ export class MainToolbarComponent implements OnInit, AfterViewChecked {
     if (this.query) {
       this.fullTextFilter = this.query.getFullTextFilter();
       this.propertyFilters = this.query.getPropertyFilters();
+      this.rangeFilters = [];
       this.query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
         this.addRangeFilter(column, f.valueRange, f.inverted);

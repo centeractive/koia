@@ -1,22 +1,22 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { GraphSideBarComponent } from './graph-side-bar.component';
-import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Column, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSliderModule } from '@angular/material/slider';
+import { GraphSideBarComponent } from './graph-side-bar.component';
 
 describe('GraphSideBarComponent', () => {
 

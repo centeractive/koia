@@ -1,23 +1,24 @@
 <mat-card appearance="outlined">
 
   <mat-card-header>
-    <mat-card-title>Create View</mat-card-title>
+    <mat-card-title>{{ title }}</mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
-    <span *ngIf="views.length > 0">
+    <span *ngIf="context.views?.length > 0">
       <h4>Restore saved view</h4>
       <p>Load a view that has previously been saved.</p>
       <div id="div_views">
-        <div class="div_row" *ngFor="let view of views">
+        <div class="div_row" *ngFor="let view of context.views">
           <button mat-icon-button (click)="context.loadView(view); dialogRef.close()">
-            <mat-icon>open_in_browser</mat-icon>
+            <mat-icon>monitor</mat-icon>
           </button>
           <span>&nbsp;{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
         </div>
       </div>
     </span>
-    <h4 *ngIf="views.length > 0">Create new view</h4>
+
+    <h4 *ngIf="context.views?.length > 0">Create new view</h4>
     <p>Choose the initial element to be added to the new view.</p>
     <div class="div_row">
       <button mat-icon-button (click)="context.addChart(); dialogRef.close()">
@@ -37,8 +38,10 @@
       </button>
       &nbsp;Summary Table
     </div>
+
     <div id="div_close_button">
       <button id="but_cancel" mat-raised-button color="primary" (click)="dialogRef.close()">Cancel</button>
     </div>
+
   </mat-card-content>
 </mat-card>

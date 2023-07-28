@@ -1,7 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ViewLauncherContext } from './view-launcher-context.type.';
-import { View } from 'app/shared/model/view-config';
 
 @Component({
   selector: 'koia-view-launcher-dialog',
@@ -10,10 +9,10 @@ import { View } from 'app/shared/model/view-config';
 })
 export class ViewLauncherDialogComponent {
 
-  views: View[];
+  title: string;
 
   constructor(public dialogRef: MatDialogRef<ViewLauncherDialogComponent>, @Inject(MAT_DIALOG_DATA) public context: ViewLauncherContext) {
     this.dialogRef.disableClose = true;
-    this.views = context.findViews();
+    this.title = 'Create View';
   }
 }

@@ -1,0 +1,17 @@
+#div_config_records {
+   overflow: auto;
+}
+
+.div_row {
+   display: flex;
+   align-items: center;
+   overflow-y: hidden;
+}
+
+#div_buttons {
+   width: 100%;
+   display: flex;
+   justify-content: center;
+   margin-top: 20px;
+   gap: 0.5em;
+}

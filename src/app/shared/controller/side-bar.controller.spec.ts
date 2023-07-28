@@ -193,7 +193,7 @@ describe('SummaryTableSideBarComponent', () => {
       controller.removeValueGrouping(amountValueGrouping);
 
       // then
-      expect(context.hasValueGrouping('Amount')).toBeFalsy();
+      expect(context.hasValueGrouping('Amount')).toBeFalse();
       const expectedNonGroupedColumns = columns.filter(c => c.name === 'Amount' || c.name === 'Percent');
       expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
    });
@@ -254,7 +254,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // then
       expect(context.valueGroupings[0]).toBe(amountValueGrouping);
-      expect(amountValueGrouping.ranges.includes(rangeToRemove)).toBeFalsy();
+      expect(amountValueGrouping.ranges.includes(rangeToRemove)).toBeFalse();
       expect(amountValueGrouping.ranges.length).toEqual(rangesCount - 1);
    });
 
@@ -334,8 +334,8 @@ describe('SummaryTableSideBarComponent', () => {
    });
 
    it('#isNumericColumn should return false when column is missing', () => {
-      expect(controller.isNumericColumn(findColumn(undefined))).toBeFalsy();
-      expect(controller.isNumericColumn(findColumn(null))).toBeFalsy();
+      expect(controller.isNumericColumn(findColumn(undefined))).toBeFalse();
+      expect(controller.isNumericColumn(findColumn(null))).toBeFalse();
    });
 
    it('#isNumberKey should invoke NumberUtils#isNumberKey', () => {

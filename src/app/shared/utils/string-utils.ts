@@ -22,6 +22,10 @@ export class StringUtils {
       return s;
    }
 
+   static pluralize(s: string, count: number): string {
+      return s + (count <= 1 ? '' : 's');
+   }
+
    /**
     * quote the given string with single quotes
     *

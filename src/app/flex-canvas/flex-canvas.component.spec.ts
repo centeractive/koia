@@ -12,16 +12,16 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { Column, DataType, ElementContext, ExportFormat, Route, Scene, Status, StatusType, SummaryContext } from 'app/shared/model';
+import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
-import { ModelToConfigConverter } from 'app/shared/services/view-persistence';
+import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import * as _ from 'lodash';
+import { Chart } from 'chart.js';
 import { Observable, of } from 'rxjs';
 import { FlexCanvasComponent } from './flex-canvas.component';
 
@@ -349,16 +349,16 @@ describe('FlexCanvasComponent', () => {
 
     // given
     const chartContext = component.addChart();
-    chartContext.title = 'Tet Chart';
+    chartContext.title = 'Test Chart';
     chartContext.dataColumns = [findColumn('Amount', chartContext)];
     chartContext.splitColumns = [findColumn('Path', chartContext)];
     const graphContext = component.addGraph();
-    graphContext.title = 'Tet Graph';
+    graphContext.title = 'Test Graph';
     graphContext.groupByColumns = [findColumn('Level', graphContext)];
     const summaryContext = component.addSummaryTable();
-    summaryContext.title = 'Tet Summary';
-    summaryContext.dataColumns = [findColumn('Level', graphContext)];
-    const view = new ModelToConfigConverter().convert(Route.FLEX, 'test', component.elementContexts);
+    summaryContext.title = 'Test Summary';
+    summaryContext.dataColumns = [findColumn('Level', summaryContext)];
+    const view = new ModelToViewConverter().convert(Route.FLEX, 'test', new Query(), component.elementContexts);
     const elementContexts = component.elementContexts;
     component.elementContexts = [];
 
@@ -366,7 +366,7 @@ describe('FlexCanvasComponent', () => {
     component.loadView(view);
 
     // then
-    expect(_.isEqualWith(component.elementContexts, elementContexts, ignoreFunctions)).toBeTrue();
+    expect(sanitize(component.elementContexts)).toEqual(sanitize(elementContexts));
   });
 
   it('#loadView should restore summary context column hierarchy', () => {
@@ -379,7 +379,7 @@ describe('FlexCanvasComponent', () => {
       findColumn('Time', summaryContext),
       findColumn('Amount', summaryContext)
     ];
-    const view = new ModelToConfigConverter().convert(Route.FLEX, 'test', component.elementContexts);
+    const view = new ModelToViewConverter().convert(Route.FLEX, 'test', new Query(), component.elementContexts);
     component.elementContexts = [];
 
     // when
@@ -466,7 +466,7 @@ describe('FlexCanvasComponent', () => {
     // given
     const chartContext = component.addChart();
     chartContext.title = 'Test';
-    chartContext.chart = { toBase64Image: () => 'base64Image...' } as any;
+    chartContext.chart = { toBase64Image: () => 'base64Image...' } as Chart;
     spyOn(exportService, 'exportImage');
 
     // when
@@ -477,10 +477,8 @@ describe('FlexCanvasComponent', () => {
     expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
 
-  function ignoreFunctions(objValue: any, otherValue: any): boolean {
-    if (_.isFunction(objValue) && _.isFunction(otherValue)) {
-      return true;
-    }
+  function sanitize(v: any): any {
+    return JSON.parse(JSON.stringify(v));
   }
 
   function resizeEvent(bounds: { width: number, height: number }): ResizeEvent {

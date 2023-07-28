@@ -1,9 +1,9 @@
-import { DateTimeUtils } from './date-time-utils';
 import { DatePipe } from '@angular/common';
-import * as moment from 'moment';
-import { TimeUnit, Column, DataType } from '../model';
 import { timeFormat } from 'd3';
 import { DateTime } from 'luxon';
+import * as moment from 'moment';
+import { Column, DataType, TimeUnit } from '../model';
+import { DateTimeUtils } from './date-time-utils';
 
 describe('DateTimeUtils', () => {
 
@@ -104,16 +104,16 @@ describe('DateTimeUtils', () => {
   });
 
   it('#isOfFixedDuration should return true', () => {
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MILLISECOND)).toBeTruthy();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.SECOND)).toBeTruthy();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MINUTE)).toBeTruthy();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.HOUR)).toBeTruthy();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.DAY)).toBeTruthy();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MILLISECOND)).toBeTrue();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.SECOND)).toBeTrue();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MINUTE)).toBeTrue();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.HOUR)).toBeTrue();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.DAY)).toBeTrue();
   });
 
   it('#isOfFixedDuration should return false', () => {
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MONTH)).toBeFalsy();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.YEAR)).toBeFalsy();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MONTH)).toBeFalse();
+    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.YEAR)).toBeFalse();
   });
 
   it('#largestMatchingTimeUnit should return time unit', () => {

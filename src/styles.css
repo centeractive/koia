@@ -126,6 +126,11 @@ mat-panel-description {
   font-size: 20px;
 }
 
+.mat-mdc-menu-panel.mat-mdc-menu-panel {
+  min-width: unset !important;
+  max-width: unset !important;
+}
+
 /*
 .mat-mdc-form-field-infix {
   min-height: 1em;
@@ -224,4 +229,5 @@ var {
     display: block;
     height: 100%;
   }
+
 }

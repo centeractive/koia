@@ -1,13 +1,13 @@
 import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { ResizeEvent, Edges, BoundingRectangle } from 'angular-resizable-element';
-import { ElementContext, Route } from '../shared/model';
-import { NotificationService, ViewPersistenceService, ExportService, DialogService } from '../shared/services';
-import { ViewController } from 'app/shared/controller';
 import { Router } from '@angular/router';
-import { DBService } from 'app/shared/services/backend';
+import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
+import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
+import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { ElementContext, Route } from '../shared/model';
+import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 
 @Component({
   selector: 'koia-flex-canvas',
@@ -53,10 +53,12 @@ export class FlexCanvasComponent extends ViewController {
     context.setSize(width, height);
   }
 
+  // eslint-disable-next-line
   protected onPreRestoreView(view: View): void {
     // nothing to do
   }
 
+  // eslint-disable-next-line
   protected onPreSaveView(view: View): void {
     // nothing to do
   }

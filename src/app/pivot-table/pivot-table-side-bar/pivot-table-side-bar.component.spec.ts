@@ -1,21 +1,21 @@
-import { TestBed, ComponentFixture, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
-import { PivotTableSideBarComponent } from './pivot-table-side-bar.component';
-import { IDataFrame, DataFrame } from 'data-forge';
-import { Column, DataType, TimeUnit } from '../../shared/model';
-import { ValueRange } from '../../shared/value-range/model/value-range.type';
-import { ValueGrouping } from '../../shared/value-range/model/value-grouping.type';
-import { PivotContext } from '../model';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatSlideToggleModule, MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DataFrame, IDataFrame } from 'data-forge';
+import { Column, DataType, TimeUnit } from '../../shared/model';
+import { ValueGrouping } from '../../shared/value-range/model/value-grouping.type';
+import { ValueRange } from '../../shared/value-range/model/value-range.type';
+import { PivotContext } from '../model';
+import { PivotTableSideBarComponent } from './pivot-table-side-bar.component';
 
 describe('PivotTableSideBarComponent', () => {
 
@@ -189,7 +189,7 @@ describe('PivotTableSideBarComponent', () => {
     component.removeValueGrouping(grouping);
 
     // then
-    expect(component.context.valueGroupings.includes(grouping)).toBeFalsy();
+    expect(component.context.valueGroupings.includes(grouping)).toBeFalse();
     expect(component.nonGroupedColumns[0].name).toEqual('Amount', 'Percent');
   });
 

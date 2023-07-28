@@ -1,5 +1,5 @@
-import { ValueRangeFilterMerger } from './value-range-filter-merger';
 import { ValueRangeFilter } from './model';
+import { ValueRangeFilterMerger } from './value-range-filter-merger';
 
 describe('ValueFilterRangeMerger', () => {
 
@@ -15,7 +15,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeFalsy();
+      expect(merged).toBeFalse();
    });
 
    it('#merge should not merge when both value ranges are same', () => {
@@ -27,7 +27,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f, f);
 
       // then
-      expect(merged).toBeFalsy();
+      expect(merged).toBeFalse();
       expect(f.valueRange).toEqual({ min: 1, max: 2 });
    });
 
@@ -40,7 +40,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f, f);
 
       // then
-      expect(merged).toBeFalsy();
+      expect(merged).toBeFalse();
       expect(f.valueRange).toEqual({ min: 1, max: 2, maxExcluding: true });
    });
 
@@ -54,7 +54,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 0, max: 2, maxExcluding: undefined });
    });
 
@@ -68,7 +68,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 0, max: 2, maxExcluding: undefined });
    });
 
@@ -82,7 +82,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 3, max: 10, maxExcluding: undefined });
    });
 
@@ -96,7 +96,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 5, max: 10, maxExcluding: undefined });
    });
 
@@ -110,7 +110,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 3, max: 10, maxExcluding: undefined });
    });
 
@@ -124,7 +124,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 3, max: 5, maxExcluding: undefined });
    });
 
@@ -138,7 +138,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 3, max: undefined, maxExcluding: undefined });
    });
 
@@ -152,7 +152,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 0, max: 2, maxExcluding: undefined });
    });
 
@@ -166,7 +166,7 @@ describe('ValueFilterRangeMerger', () => {
       const merged = merger.merge(f1, f2);
 
       // then
-      expect(merged).toBeTruthy();
+      expect(merged).toBeTrue();
       expect(f1.valueRange).toEqual({ min: 0, max: 2, maxExcluding: true });
    });
 });

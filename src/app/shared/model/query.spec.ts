@@ -1,7 +1,7 @@
-import { Query } from './query';
-import { PropertyFilter } from './property-filter';
-import { Operator } from './operator.enum';
 import { ValueRangeFilter } from '../value-range/model';
+import { Operator } from './operator.enum';
+import { PropertyFilter } from './property-filter';
+import { Query } from './query';
 
 describe('Query', () => {
 
@@ -25,8 +25,8 @@ describe('Query', () => {
     const query = new Query();
 
     // when/then
-    expect(query.hasFilter()).toBeFalsy();
-    expect(query.hasFullTextFilter()).toBeFalsy();
+    expect(query.hasFilter()).toBeFalse();
+    expect(query.hasFullTextFilter()).toBeFalse();
   });
 
   it('#hasFilter should return true when text filter exist', () => {
@@ -61,7 +61,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeFalsy();
+    expect(hasFilter).toBeFalse();
   });
 
   it('#hasFilter should return true when applicable value range filter exists', () => {
@@ -87,7 +87,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeFalsy();
+    expect(hasFilter).toBeFalse();
   });
 
   it('#hasFilter should return false when all filter are non-applicable', () => {
@@ -101,7 +101,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeFalsy();
+    expect(hasFilter).toBeFalse();
   });
 
   it('#clearSort should clear sort', () => {
@@ -114,7 +114,7 @@ describe('Query', () => {
     query.clearSort();
 
     // then
-    expect(query.hasSort()).toBeFalsy();
+    expect(query.hasSort()).toBeFalse();
     expect(query.getSort()).toBeUndefined();
   });
 
@@ -142,7 +142,7 @@ describe('Query', () => {
     query.clearPageDefinition();
 
     // then
-    expect(query.hasPageDefinition()).toBeFalsy();
+    expect(query.hasPageDefinition()).toBeFalse();
     expect(query.getPageIndex()).toBeUndefined();
     expect(query.getRowsPerPage()).toBeUndefined();
   });

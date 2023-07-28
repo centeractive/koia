@@ -1,7 +1,8 @@
 <div class="div_wrapper">
   <div #header class="div_header">
-    <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query"
-                       (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
+    <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query" [restoredQuery]="restoredQuery"
+                       (onFilterChange)="onFilterChanged($event)">
+    </koia-main-toolbar>
     <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
     <div id="view_toolbar">
       <button mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -12,11 +13,32 @@
           <mat-icon>insert_drive_file</mat-icon>
           <span>Save As {{ exportFormat }}</span>
         </button>
+        <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
+          <mat-icon>monitor</mat-icon>
+          <span>Manage Views</span>
+        </button>
       </mat-menu>
       <button id="but_print" mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint
               matTooltip="Print current view" (click)="printView()">
         <mat-icon>print</mat-icon>
       </button>
+
+      <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
+        <mat-icon>save_alt</mat-icon>
+      </button>
+
+      <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!configRecords.length" [matMenuTriggerFor]="restoreViewMenu">
+        <mat-icon [matBadge]="configRecords.length" [matBadgeHidden]="!configRecords.length" matBadgeSize="small" matBadgeColor="accent">
+          open_in_browser
+        </mat-icon>
+      </button>
+      <mat-menu #restoreViewMenu="matMenu">
+        <button class="menu_item_details" *ngFor="let record of configRecords" mat-menu-item (click)="loadConfig(record)">
+          <mat-icon>monitor</mat-icon>
+          <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
+        </button>
+      </mat-menu>
+
       <button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
               [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
               (click)="considerColumnWidths = !considerColumnWidths">
@@ -57,11 +79,11 @@
         </tr>
 
       </table>
-
     </div>
 
     <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize" [disabled]="loading"
-                   [pageSizeOptions]="pageSizeOptions" showFirstLastButtons="true" [length]="totalRowCount" (page)="onPageChanged()">
+                   [pageSizeOptions]="pageSizeOptions" [pageIndex]="query.getPageIndex()" [length]="totalRowCount" (page)="onPageChanged()"
+                   [showFirstLastButtons]="true">
     </mat-paginator>
 
   </div>

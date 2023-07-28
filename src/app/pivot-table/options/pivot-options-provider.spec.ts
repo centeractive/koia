@@ -1,10 +1,10 @@
 import { Column, DataType, TimeUnit } from 'app/shared/model';
-import { PivotOptionsProvider } from './pivot-options-provider';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
-import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
-import { CellClickHandler } from './cell-click-handler';
+import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { PivotContext } from '../model';
+import { CellClickHandler } from './cell-click-handler';
+import { PivotOptionsProvider } from './pivot-options-provider';
 
 describe('PivotOptionsProvider', () => {
 
@@ -215,7 +215,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeFalsy();
+      expect(isHeatmapSelected).toBeFalse();
    });
 
    it('#isHeatmapRendererSelected should return true when heatmap is selected', () => {
