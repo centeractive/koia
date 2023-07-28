@@ -1,5 +1,5 @@
-import { ColumnMappingGenerator as ColumnMappingGenerator } from './column-mapping-generator';
 import { DataType } from 'app/shared/model';
+import { ColumnMappingGenerator } from './column-mapping-generator';
 
 describe('ColumnMappingGenerator', () => {
 
@@ -510,7 +510,7 @@ describe('ColumnMappingGenerator', () => {
    });
 
    /**
-    * Test for issue: "Date column is not recognized when importing Excel data"
+    * test for Redmine Bug #4192: "Date column is not recognized when importing Excel data"
     */
    it('#generate should return mapping with two time columns among others', () => {
 
@@ -552,4 +552,5 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[2].target).toEqual({ name: 'Created', dataType: DataType.TIME, width: 13, indexed: true });
       expect(mapping[3].target).toEqual({ name: 'Updated', dataType: DataType.TIME, width: 13, indexed: true });
    });
+
 });

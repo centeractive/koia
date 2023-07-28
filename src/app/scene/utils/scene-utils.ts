@@ -1,6 +1,6 @@
-import { ContextInfo, Scene } from 'app/shared/model';
-import { Sample, DataReader } from '../../shared/services/reader';
 import { DatePipe } from '@angular/common';
+import { ContextInfo, Scene } from 'app/shared/model';
+import { DataReader, Sample } from 'app/shared/services/reader';
 
 export class SceneUtils {
 

@@ -6,7 +6,7 @@ describe('DateTimeColumnDetector', () => {
     const detector = new DateTimeColumnDetector();
 
     // TODO: verify if columnPair.target.format should not also include the time-zone?
-    it('#generate should return empty array when entries are missing', () => {
+    it('#generate should detect date/time when value contains time zone', () => {
 
         // given
         const columnPair: ColumnPair = {
@@ -26,5 +26,28 @@ describe('DateTimeColumnDetector', () => {
         });
         expect(columnPair.warning).toBeUndefined();
     });
+
+    /**
+    * test for GitHub Issue #19: "Datetime is not right in the preview after file open"
+    */
+    it('#generate should detect date/time when value contains milliseconds', () => {
+        // given
+        const columnPair: ColumnPair = {
+            source: { name: 'Date', dataType: DataType.TEXT, width: undefined },
+            target: { name: 'Date', dataType: DataType.TEXT, width: 23, indexed: true }
+        };
+
+        // when
+        detector.detect(columnPair, '2022.06.17 14:26:22.123', 'en-US');
+
+        // then
+        expect(columnPair.source).toEqual({
+            name: 'Date', dataType: DataType.TEXT, width: undefined, format: 'yyyy.MM.dd HH:mm:ss.SSS'
+        });
+        expect(columnPair.target).toEqual({
+            name: 'Date', dataType: DataType.TIME, width: 23, indexed: true, format: 'd MMM yyyy HH:mm:ss SSS'
+        });
+        expect(columnPair.warning).toBeUndefined();
+    })
 
 });

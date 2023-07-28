@@ -11,6 +11,7 @@ export class DateTimeColumnDetector {
     private static readonly TIME_FORMATS_TO_TIMEUNITS: FormatToTimeUnit[] = [
         { format: 'HH:mm:ss,SSS', timeUnit: TimeUnit.MILLISECOND },
         { format: 'HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND },
+        { format: 'HH:mm:ss.SSS', timeUnit: TimeUnit.MILLISECOND },
         { format: 'HH:mm:ss', timeUnit: TimeUnit.SECOND },
         { format: 'HH:mm', timeUnit: TimeUnit.MINUTE },
         { format: 'HH', timeUnit: TimeUnit.HOUR },
@@ -23,6 +24,9 @@ export class DateTimeColumnDetector {
     private timeUnitDetector = new TimeUnitDetector();
 
     detect(columnPair: ColumnPair, value: string, locale: string): void {
+
+        console.log(columnPair, value, locale)
+
         const dateFormat = this.dateFormatProvider.provide(locale);
         if (this.detectByDateFormat(columnPair, value, dateFormat, locale)) {
             return;
