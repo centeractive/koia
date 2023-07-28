@@ -172,10 +172,11 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     };
   }
 
-  loadConfig(config: ConfigRecord): void {
-    this.query = queryDefToQuery(config.query);
+  loadConfig(configRecord: ConfigRecord): void {
+    this.currentViewName = configRecord.name;
+    this.query = queryDefToQuery(configRecord.query);
     this.restoredQuery = this.query;
-    const configRecordData: ConfigRecordData = config.data;
+    const configRecordData: ConfigRecordData = configRecord.data;
     this.page.query = queryDefToQuery(configRecordData.pageDef.queryDef);
     this.page.totalRowCount = configRecordData.pageDef.totalRowCount;
     this.initialPageSize = this.query.getRowsPerPage();

@@ -51,6 +51,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private columns: Column[];
    private query: Query;
    private entriesSubscription: Subscription;
+   private currentViewName = '';
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
       private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
@@ -198,6 +199,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    loadView(view: View): void {
+      this.currentViewName = view.name;
       this.onPreRestoreView(view);
       const elementContexts = this.viewToModelConverter.convert(view.elements);
       if (view.query) {
@@ -218,12 +220,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.notifyWarning('View contains no elements');
          return;
       }
-      const data = new InputDialogData('Save View', 'View Name', '', 20);
-      const dialogRef = this.dialogService.showInputDialog(data);
+      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, 20);
+      const dialogRef = this.dialogService.showInputDialog(dialogData);
       lastValueFrom(dialogRef.afterClosed())
          .then(() => {
-            if (data.closedWithOK) {
-               const view = this.modelToViewConverter.convert(this.route, data.input, this.query, this.elementContexts);
+            if (dialogData.closedWithOK) {
+               this.currentViewName = dialogData.input;
+               const view = this.modelToViewConverter.convert(this.route, dialogData.input, this.query, this.elementContexts);
                this.onPreSaveView(view);
                this.viewPersistenceService.saveView(this.scene, view)
                   .then(s => {

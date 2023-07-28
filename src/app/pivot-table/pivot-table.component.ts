@@ -165,6 +165,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   }
 
   loadConfig(configRecord: ConfigRecord): void {
+    this.currentViewName = configRecord.name;
     this.context = configRecord.data;
     if (configRecord.query) {
       this.restoredQuery = queryDefToQuery(configRecord.query);

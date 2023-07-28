@@ -19,7 +19,7 @@ export class RawDataRevealer {
       }
       const element = elements[0];
       const groupByColumnDataType = context.groupByColumns[0]?.dataType;
-      if (context.isCircularChart() || (element.element instanceof BarElement) || groupByColumnDataType === DataType.TEXT) {
+      if (context.isCategoryChart() || groupByColumnDataType === DataType.TEXT) {
          this.fromFlatData(elements, chart, context);
       } else if (element.element instanceof PointElement || element.element instanceof BarElement) {
          const point = this.findDataPoint(chart.data.datasets, element.datasetIndex, element.index);

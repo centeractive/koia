@@ -18,6 +18,7 @@ export abstract class ConfigController extends AbstractComponent implements OnIn
    configRecords: ConfigRecord[] = [];
 
    protected scene: Scene;
+   protected currentViewName = '';
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, public dbService: DBService, public dialogService: DialogService,
       public viewPersistenceService: ViewPersistenceService, notificationService: NotificationService) {
@@ -43,11 +44,12 @@ export abstract class ConfigController extends AbstractComponent implements OnIn
    }
 
    saveConfig(): void {
-      const dialogData = new InputDialogData('Save View', 'View Name', '', 20);
+      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, 20);
       const dialogRef = this.dialogService.showInputDialog(dialogData);
       firstValueFrom(dialogRef.afterClosed()).then(() => {
          if (dialogData.closedWithOK) {
             const config = this.configToBeSaved();
+            this.currentViewName = dialogData.input;
             this.viewPersistenceService.saveRecord(this.scene, this.route, dialogData.input, config.query, config.data)
                .then(s => {
                   this.showStatus(s);
