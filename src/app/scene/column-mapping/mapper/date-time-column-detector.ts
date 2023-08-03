@@ -6,7 +6,7 @@ import { TimeUnitDetector } from './time-unit-detector';
 export class DateTimeColumnDetector {
 
     /**
-     * formats for date/time strings that cannot be parsed by default (keep [[undefined]] at first position)
+     * formats for date/time strings that cannot be parsed by default
      */
     private static readonly TIME_FORMATS_TO_TIMEUNITS: FormatToTimeUnit[] = [
         { format: 'HH:mm:ss,SSS', timeUnit: TimeUnit.MILLISECOND },

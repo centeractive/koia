@@ -507,7 +507,6 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.SECOND);
     expect(component.rangeFilters[0].selectedStepAbbrev).toBe('s');
-    expect(component.rangeFilters[0].sliderOptions.step).toBe(1_000);
   }));
 
   it('#onStepChanged should change time step when minute is selected', fakeAsync(() => {
@@ -522,7 +521,6 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.MINUTE);
     expect(component.rangeFilters[0].selectedStepAbbrev).toBe('m');
-    expect(component.rangeFilters[0].sliderOptions.step).toBe(60_000);
   }));
 
   it('#onStepChanged should change time step when hour is selected', fakeAsync(() => {
@@ -537,7 +535,6 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.rangeFilters[0].selectedStep).toBe(TimeUnit.HOUR);
     expect(component.rangeFilters[0].selectedStepAbbrev).toBe('h');
-    expect(component.rangeFilters[0].sliderOptions.step).toBe(3_600_000);
   }));
 
   it('#removeRangeFilter should refresh entries when range filter was filtered', () => {

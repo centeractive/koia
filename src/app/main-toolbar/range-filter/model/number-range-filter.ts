@@ -1,8 +1,10 @@
-import { Options, LabelType } from 'app/ngx-slider/options';
+import { EventEmitter } from '@angular/core';
+import { LabelType, Options } from 'app/ngx-slider/options';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { RangeSliderCustomizer } from '../range-slider-customizer';
+import { Observable } from 'rxjs';
+import { RangeSliderCustomizer } from './slider/range-slider-customizer';
 
 export class NumberRangeFilter {
 
@@ -12,16 +14,18 @@ export class NumberRangeFilter {
    start: number;
    end: number;
    inverted: boolean;
-   selValueRange: ValueRange;
    availableSteps: any[];
    selectedStep: any;
    selectedStepAbbrev: string;
    sliderOptions: Options;
+   selValueRange: ValueRange;
+   sliderValueRange: ValueRange;
 
    protected sliderCustomizer = new RangeSliderCustomizer();
+   protected adjustedValueRangeEmitter = new EventEmitter<void>();
 
    /**
-    * @param selValueRange if [[ValueRange#maxExcluding]] is true, it is automatically set to false
+    * @param selValueRange if [[ValueRange#maxExcluding]] is <true>, it is automatically set to <false>
     * as soon as the slider high value is changed by the user
     */
    constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
@@ -34,8 +38,12 @@ export class NumberRangeFilter {
       this.defineSliderOptions();
    }
 
+   onAdjustedValueRange(): Observable<void> {
+      return this.adjustedValueRangeEmitter.asObservable();
+   }
+
    private initSelectedRange(selValueRange: ValueRange): void {
-      this.selValueRange = selValueRange || { min: this.start, max: this.end }
+      this.selValueRange = selValueRange || { min: this.start, max: this.end };
       if (selValueRange) {
          if (selValueRange.min == undefined) {
             this.selValueRange.min = this.start;
@@ -45,6 +53,11 @@ export class NumberRangeFilter {
             this.selValueRange.maxExcluding = false;
          }
       }
+      this.defineSliderValueRange();
+   }
+
+   protected defineSliderValueRange(): void {
+      this.sliderValueRange = this.selValueRange;
    }
 
    protected initSliderSteps(): void {
@@ -81,7 +94,7 @@ export class NumberRangeFilter {
          draggableRange: true,
          translate: (v: number, t: LabelType) => this.sliderCustomizer.labelOf(v, t, this.selValueRange),
          combineLabels: (l1: string, l2: string) => this.sliderCustomizer.combineLabels(l1, l2)
-      }
+      };
    }
 
    isFiltered(): boolean {

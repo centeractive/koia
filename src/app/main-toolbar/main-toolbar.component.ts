@@ -22,7 +22,7 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
   @Input() route: Route;
   @Input() query: Query;
   @Input() restoredQuery: Query;
-  @Output() onFilterChange: EventEmitter<Query> = new EventEmitter();
+  @Output() onFilterChange = new EventEmitter<Query>();
 
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;

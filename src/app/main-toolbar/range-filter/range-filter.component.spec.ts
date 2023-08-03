@@ -1,15 +1,15 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-import { RangeFilterComponent } from './range-filter.component';
-import { NumberRangeFilter } from './model/number-range-filter';
-import { Column, DataType } from 'app/shared/model';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxSliderModule } from 'app/ngx-slider/slider.module';
-import { HAMMER_LOADER, By } from '@angular/platform-browser';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatBadgeModule } from '@angular/material/badge';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { By, HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgxSliderModule } from 'app/ngx-slider/slider.module';
+import { Column, DataType } from 'app/shared/model';
+import { NumberRangeFilter } from './model/number-range-filter';
+import { RangeFilterComponent } from './range-filter.component';
 
 describe('RangeFilterComponent', () => {
 
@@ -35,6 +35,7 @@ describe('RangeFilterComponent', () => {
     fixture = TestBed.createComponent(RangeFilterComponent);
     component = fixture.componentInstance;
     component.filter = new NumberRangeFilter(amountColumn, 1, 10, { min: 2, max: 5 }, false);
+    component.ngOnChanges(null);
     fixture.detectChanges();
   });
 

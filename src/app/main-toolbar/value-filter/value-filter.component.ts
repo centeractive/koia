@@ -1,10 +1,10 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
-import { DBService } from 'app/shared/services/backend';
-import { ValueFilterCustomizer } from './value-filter-customizer';
-import { PropertyFilterValidator } from 'app/shared/validator';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Column, DataType, Operator, PropertyFilter } from 'app/shared/model';
+import { DBService } from 'app/shared/services/backend';
+import { PropertyFilterValidator } from 'app/shared/validator';
 import { FilterValueParser } from './filter-value-parser';
+import { ValueFilterCustomizer } from './value-filter-customizer';
 import { ValueFilterUtils } from './value-filter-utils';
 
 @Component({
@@ -15,8 +15,8 @@ import { ValueFilterUtils } from './value-filter-utils';
 export class ValueFilterComponent implements OnInit {
 
   @Input() filter: PropertyFilter;
-  @Output() onChange: EventEmitter<void> = new EventEmitter();
-  @Output() onRemove: EventEmitter<void> = new EventEmitter();
+  @Output() onChange = new EventEmitter<void>();
+  @Output() onRemove = new EventEmitter<void>();
 
   readonly operators: Operator[];
   valueFilterCustomizer = new ValueFilterCustomizer();

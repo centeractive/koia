@@ -1,9 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { ColumnPair, DataType } from 'app/shared/model';
-import { ColumnDefinitionAssistant } from '../utils';
-import { DateTimeUtils } from 'app/shared/utils';
 import { DatePipe } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
+import { ColumnPair, DataType } from 'app/shared/model';
+import { DateTimeUtils } from 'app/shared/utils';
+import { ColumnDefinitionAssistant } from '../utils';
 import { ColumnMappingGenerator } from './mapper';
 
 @Component({
@@ -14,8 +14,8 @@ import { ColumnMappingGenerator } from './mapper';
 export class ColumnMappingComponent implements OnInit {
 
   @Input() mapping: ColumnPair;
-  @Output() onChange: EventEmitter<void> = new EventEmitter();
-  @Output() onRemove: EventEmitter<void> = new EventEmitter();
+  @Output() onChange = new EventEmitter<void>();
+  @Output() onRemove = new EventEmitter<void>();
 
   readonly columnDefAssistant = new ColumnDefinitionAssistant();
   readonly now = new Date();

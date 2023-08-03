@@ -15,19 +15,19 @@ describe('DateTimeUtils', () => {
   const day = 24 * hour;
 
   it('#maxTimeUnit should return existing time unit when any unit is missing', () => {
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, undefined)).toEqual(TimeUnit.SECOND);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, null)).toEqual(TimeUnit.HOUR);
-    expect(DateTimeUtils.maxTimeUnit(undefined, TimeUnit.SECOND)).toEqual(TimeUnit.SECOND);
-    expect(DateTimeUtils.maxTimeUnit(null, TimeUnit.HOUR)).toEqual(TimeUnit.HOUR);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, undefined)).toBe(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, null)).toBe(TimeUnit.HOUR);
+    expect(DateTimeUtils.maxTimeUnit(undefined, TimeUnit.SECOND)).toBe(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(null, TimeUnit.HOUR)).toBe(TimeUnit.HOUR);
   });
 
   it('#maxTimeUnit should return first time unit when first time unit is bigger', () => {
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.MILLISECOND)).toEqual(TimeUnit.SECOND);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MINUTE, TimeUnit.SECOND)).toEqual(TimeUnit.MINUTE);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, TimeUnit.MINUTE)).toEqual(TimeUnit.HOUR);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.DAY, TimeUnit.HOUR)).toEqual(TimeUnit.DAY);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MONTH, TimeUnit.DAY)).toEqual(TimeUnit.MONTH);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.YEAR, TimeUnit.MONTH)).toEqual(TimeUnit.YEAR);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.MILLISECOND)).toBe(TimeUnit.SECOND);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MINUTE, TimeUnit.SECOND)).toBe(TimeUnit.MINUTE);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.HOUR, TimeUnit.MINUTE)).toBe(TimeUnit.HOUR);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.DAY, TimeUnit.HOUR)).toBe(TimeUnit.DAY);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MONTH, TimeUnit.DAY)).toBe(TimeUnit.MONTH);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.YEAR, TimeUnit.MONTH)).toBe(TimeUnit.YEAR);
   });
 
   it('#maxTimeUnit should return second time unit when second time unit is bigger', () => {
@@ -40,8 +40,8 @@ describe('DateTimeUtils', () => {
   });
 
   it('#maxTimeUnit should return max time unit', () => {
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR, TimeUnit.DAY)).toEqual(TimeUnit.DAY);
-    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MONTH)).toEqual(TimeUnit.YEAR);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.HOUR, TimeUnit.DAY)).toBe(TimeUnit.DAY);
+    expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, TimeUnit.YEAR, TimeUnit.DAY, TimeUnit.MONTH)).toBe(TimeUnit.YEAR);
   });
 
   it('#allTimeUnits should return ascending sorted time units', () => {
@@ -80,40 +80,24 @@ describe('DateTimeUtils', () => {
     expect(timeUnits).toEqual(expected);
   });
 
-  it('#toMilliseconds should return milliseconds for single fixed timeunit', () => {
-    expect(DateTimeUtils.toMilliseconds(1, TimeUnit.MILLISECOND)).toEqual(1);
-    expect(DateTimeUtils.toMilliseconds(1, TimeUnit.SECOND)).toEqual(1_000);
-    expect(DateTimeUtils.toMilliseconds(1, TimeUnit.MINUTE)).toEqual(60_000);
-    expect(DateTimeUtils.toMilliseconds(1, TimeUnit.HOUR)).toEqual(3_600_000);
-    expect(DateTimeUtils.toMilliseconds(1, TimeUnit.DAY)).toEqual(86_400_000);
-  });
+  it('#timeUnitsAbove', () => {
+    const timeUnits = [
+      TimeUnit.MILLISECOND,
+      TimeUnit.SECOND,
+      TimeUnit.MINUTE,
+      TimeUnit.HOUR,
+      TimeUnit.DAY,
+      TimeUnit.MONTH,
+      TimeUnit.YEAR
+    ];
 
-  it('#toMilliseconds should return milliseconds for multiple fixed timeunit', () => {
-    expect(DateTimeUtils.toMilliseconds(3, TimeUnit.MILLISECOND)).toEqual(3);
-    expect(DateTimeUtils.toMilliseconds(4, TimeUnit.SECOND)).toEqual(4 * 1_000);
-    expect(DateTimeUtils.toMilliseconds(5, TimeUnit.MINUTE)).toEqual(5 * 60_000);
-    expect(DateTimeUtils.toMilliseconds(6, TimeUnit.HOUR)).toEqual(6 * 3_600_000);
-    expect(DateTimeUtils.toMilliseconds(7, TimeUnit.DAY)).toEqual(7 * 86_400_000);
-  });
-
-  it('#toMilliseconds should throw exception for variable timeunit', () => {
-    expect(() => DateTimeUtils.toMilliseconds(1, TimeUnit.MONTH))
-      .toThrow(new Error('month of variable duration cannot be converted to milliseconds'));
-    expect(() => DateTimeUtils.toMilliseconds(1, TimeUnit.YEAR))
-      .toThrow(new Error('year of variable duration cannot be converted to milliseconds'));
-  });
-
-  it('#isOfFixedDuration should return true', () => {
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MILLISECOND)).toBeTrue();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.SECOND)).toBeTrue();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MINUTE)).toBeTrue();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.HOUR)).toBeTrue();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.DAY)).toBeTrue();
-  });
-
-  it('#isOfFixedDuration should return false', () => {
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.MONTH)).toBeFalse();
-    expect(DateTimeUtils.isOfFixedDuration(TimeUnit.YEAR)).toBeFalse();
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.MILLISECOND)).toEqual(timeUnits.slice(1));
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.SECOND)).toEqual(timeUnits.slice(2));
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.MINUTE)).toEqual(timeUnits.slice(3));
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.HOUR)).toEqual(timeUnits.slice(4));
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.DAY)).toEqual(timeUnits.slice(5));
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.MONTH)).toEqual([TimeUnit.YEAR]);
+    expect(DateTimeUtils.timeUnitsAbove(TimeUnit.YEAR)).toEqual([]);
   });
 
   it('#largestMatchingTimeUnit should return time unit', () => {
@@ -125,46 +109,39 @@ describe('DateTimeUtils', () => {
   });
 
   it('#countTimeUnits should return one fixed timeunit', () => {
-    expect(DateTimeUtils.countTimeUnits(1, TimeUnit.MILLISECOND)).toEqual(1);
-    expect(DateTimeUtils.countTimeUnits(1_000, TimeUnit.SECOND)).toEqual(1);
-    expect(DateTimeUtils.countTimeUnits(60_000, TimeUnit.MINUTE)).toEqual(1);
-    expect(DateTimeUtils.countTimeUnits(3_600_000, TimeUnit.HOUR)).toEqual(1);
-    expect(DateTimeUtils.countTimeUnits(86_400_000, TimeUnit.DAY)).toEqual(1);
+    expect(DateTimeUtils.countTimeUnits(1, TimeUnit.MILLISECOND)).toBe(1);
+    expect(DateTimeUtils.countTimeUnits(1_000, TimeUnit.SECOND)).toBe(1);
+    expect(DateTimeUtils.countTimeUnits(60_000, TimeUnit.MINUTE)).toBe(1);
+    expect(DateTimeUtils.countTimeUnits(3_600_000, TimeUnit.HOUR)).toBe(1);
+    expect(DateTimeUtils.countTimeUnits(86_400_000, TimeUnit.DAY)).toBe(1);
   });
 
   it('#countTimeUnits should return many fixed timeunit', () => {
-    expect(DateTimeUtils.countTimeUnits(3, TimeUnit.MILLISECOND)).toEqual(3);
-    expect(DateTimeUtils.countTimeUnits(4 * 1_000, TimeUnit.SECOND)).toEqual(4);
-    expect(DateTimeUtils.countTimeUnits(5 * 60_000, TimeUnit.MINUTE)).toEqual(5);
-    expect(DateTimeUtils.countTimeUnits(6 * 3_600_000, TimeUnit.HOUR)).toEqual(6);
-    expect(DateTimeUtils.countTimeUnits(7 * 86_400_000, TimeUnit.DAY)).toEqual(7);
-  });
-
-  it('#countTimeUnits should throw exception for variable timeunit', () => {
-    expect(() => DateTimeUtils.countTimeUnits(100_000_000, TimeUnit.MONTH))
-      .toThrow(new Error('cannot count number of months with variable duration'));
-    expect(() => DateTimeUtils.countTimeUnits(1_000_000_000, TimeUnit.YEAR))
-      .toThrow(new Error('cannot count number of years with variable duration'));
+    expect(DateTimeUtils.countTimeUnits(3, TimeUnit.MILLISECOND)).toBe(3);
+    expect(DateTimeUtils.countTimeUnits(4 * 1_000, TimeUnit.SECOND)).toBe(4);
+    expect(DateTimeUtils.countTimeUnits(5 * 60_000, TimeUnit.MINUTE)).toBe(5);
+    expect(DateTimeUtils.countTimeUnits(6 * 3_600_000, TimeUnit.HOUR)).toBe(6);
+    expect(DateTimeUtils.countTimeUnits(7 * 86_400_000, TimeUnit.DAY)).toBe(7);
   });
 
   it('#addTimeUnits should add single timeunit to given time', () => {
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MILLISECOND)).toEqual(now + 1);
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.SECOND)).toEqual(now + 1_000);
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MINUTE)).toEqual(now + 60_000);
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.HOUR)).toEqual(fromNow(1, TimeUnit.HOUR));
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.DAY)).toEqual(fromNow(1, TimeUnit.DAY));
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MONTH)).toEqual(fromNow(1, TimeUnit.MONTH));
-    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.YEAR)).toEqual(fromNow(1, TimeUnit.YEAR));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MILLISECOND)).toBe(now + 1);
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.SECOND)).toBe(now + 1_000);
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MINUTE)).toBe(now + 60_000);
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.HOUR)).toBe(fromNow(1, TimeUnit.HOUR));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.DAY)).toBe(fromNow(1, TimeUnit.DAY));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.MONTH)).toBe(fromNow(1, TimeUnit.MONTH));
+    expect(DateTimeUtils.addTimeUnits(now, 1, TimeUnit.YEAR)).toBe(fromNow(1, TimeUnit.YEAR));
   });
 
   it('#addTimeUnits should add many timeunit to given time', () => {
-    expect(DateTimeUtils.addTimeUnits(now, 3, TimeUnit.MILLISECOND)).toEqual(now + 3);
-    expect(DateTimeUtils.addTimeUnits(now, 4, TimeUnit.SECOND)).toEqual(now + 4 * 1_000);
-    expect(DateTimeUtils.addTimeUnits(now, 5, TimeUnit.MINUTE)).toEqual(now + 5 * 60_000);
-    expect(DateTimeUtils.addTimeUnits(now, 6, TimeUnit.HOUR)).toEqual(fromNow(6, TimeUnit.HOUR));
-    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.DAY)).toEqual(fromNow(7, TimeUnit.DAY));
-    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.MONTH)).toEqual(fromNow(7, TimeUnit.MONTH));
-    expect(DateTimeUtils.addTimeUnits(now, 12, TimeUnit.YEAR)).toEqual(fromNow(12, TimeUnit.YEAR));
+    expect(DateTimeUtils.addTimeUnits(now, 3, TimeUnit.MILLISECOND)).toBe(now + 3);
+    expect(DateTimeUtils.addTimeUnits(now, 4, TimeUnit.SECOND)).toBe(now + 4 * 1_000);
+    expect(DateTimeUtils.addTimeUnits(now, 5, TimeUnit.MINUTE)).toBe(now + 5 * 60_000);
+    expect(DateTimeUtils.addTimeUnits(now, 6, TimeUnit.HOUR)).toBe(fromNow(6, TimeUnit.HOUR));
+    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.DAY)).toBe(fromNow(7, TimeUnit.DAY));
+    expect(DateTimeUtils.addTimeUnits(now, 7, TimeUnit.MONTH)).toBe(fromNow(7, TimeUnit.MONTH));
+    expect(DateTimeUtils.addTimeUnits(now, 12, TimeUnit.YEAR)).toBe(fromNow(12, TimeUnit.YEAR));
   });
 
   it('#addTimeUnits should add single month to given time', () => {
@@ -177,13 +154,13 @@ describe('DateTimeUtils', () => {
 
     // then
     const date = new Date(time);
-    expect(date.getFullYear()).toEqual(2019);
-    expect(date.getMonth()).toEqual(1);
-    expect(date.getDate()).toEqual(1);
-    expect(date.getHours()).toEqual(0);
-    expect(date.getMinutes()).toEqual(0);
-    expect(date.getSeconds()).toEqual(0);
-    expect(date.getMilliseconds()).toEqual(0);
+    expect(date.getFullYear()).toBe(2019);
+    expect(date.getMonth()).toBe(1);
+    expect(date.getDate()).toBe(1);
+    expect(date.getHours()).toBe(0);
+    expect(date.getMinutes()).toBe(0);
+    expect(date.getSeconds()).toBe(0);
+    expect(date.getMilliseconds()).toBe(0);
   });
 
   it('#addTimeUnits should add many months to given time', () => {
@@ -196,13 +173,13 @@ describe('DateTimeUtils', () => {
 
     // then
     const date = new Date(time);
-    expect(date.getFullYear()).toEqual(2007);
-    expect(date.getMonth()).toEqual(11);
-    expect(date.getDate()).toEqual(1);
-    expect(date.getHours()).toEqual(0);
-    expect(date.getMinutes()).toEqual(0);
-    expect(date.getSeconds()).toEqual(0);
-    expect(date.getMilliseconds()).toEqual(0);
+    expect(date.getFullYear()).toBe(2007);
+    expect(date.getMonth()).toBe(11);
+    expect(date.getDate()).toBe(1);
+    expect(date.getHours()).toBe(0);
+    expect(date.getMinutes()).toBe(0);
+    expect(date.getSeconds()).toBe(0);
+    expect(date.getMilliseconds()).toBe(0);
   });
 
   it('#addTimeUnits should add single year to given time', () => {
@@ -215,13 +192,13 @@ describe('DateTimeUtils', () => {
 
     // then
     const date = new Date(time);
-    expect(date.getFullYear()).toEqual(2020);
-    expect(date.getMonth()).toEqual(4);
-    expect(date.getDate()).toEqual(1);
-    expect(date.getHours()).toEqual(0);
-    expect(date.getMinutes()).toEqual(0);
-    expect(date.getSeconds()).toEqual(0);
-    expect(date.getMilliseconds()).toEqual(0);
+    expect(date.getFullYear()).toBe(2020);
+    expect(date.getMonth()).toBe(4);
+    expect(date.getDate()).toBe(1);
+    expect(date.getHours()).toBe(0);
+    expect(date.getMinutes()).toBe(0);
+    expect(date.getSeconds()).toBe(0);
+    expect(date.getMilliseconds()).toBe(0);
   });
 
   it('#addTimeUnits should add many years to given time', () => {
@@ -234,23 +211,23 @@ describe('DateTimeUtils', () => {
 
     // then
     const date = new Date(time);
-    expect(date.getFullYear()).toEqual(2021);
-    expect(date.getMonth()).toEqual(0);
-    expect(date.getDate()).toEqual(1);
-    expect(date.getHours()).toEqual(0);
-    expect(date.getMinutes()).toEqual(0);
-    expect(date.getSeconds()).toEqual(0);
-    expect(date.getMilliseconds()).toEqual(0);
+    expect(date.getFullYear()).toBe(2021);
+    expect(date.getMonth()).toBe(0);
+    expect(date.getDate()).toBe(1);
+    expect(date.getHours()).toBe(0);
+    expect(date.getMinutes()).toBe(0);
+    expect(date.getSeconds()).toBe(0);
+    expect(date.getMilliseconds()).toBe(0);
   });
 
   it('#abbreviationOf should return abbreviation of timeunit', () => {
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.MILLISECOND)).toEqual('ms');
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.SECOND)).toEqual('s');
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.MINUTE)).toEqual('m');
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.HOUR)).toEqual('h');
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.DAY)).toEqual('d');
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.MONTH)).toEqual('mo');
-    expect(DateTimeUtils.abbreviationOf(TimeUnit.YEAR)).toEqual('y');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.MILLISECOND)).toBe('ms');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.SECOND)).toBe('s');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.MINUTE)).toBe('m');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.HOUR)).toBe('h');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.DAY)).toBe('d');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.MONTH)).toBe('mo');
+    expect(DateTimeUtils.abbreviationOf(TimeUnit.YEAR)).toBe('y');
   });
 
   it('#parseDate should return undefined when date is not present', () => {
@@ -447,25 +424,25 @@ describe('DateTimeUtils', () => {
   it('#formatTime should return formatted date/time', () => {
     const time = new Date('2019-01-29T18:24:17').getTime() + 557;
 
-    expect(DateTimeUtils.formatTime(time, TimeUnit.MILLISECOND)).toEqual('29 Jan 2019 18:24:17 557');
-    expect(DateTimeUtils.formatTime(time, TimeUnit.SECOND)).toEqual('29 Jan 2019 18:24:17');
-    expect(DateTimeUtils.formatTime(time, TimeUnit.MINUTE)).toEqual('29 Jan 2019 18:24');
-    expect(DateTimeUtils.formatTime(time, TimeUnit.HOUR)).toEqual('29 Jan 2019 18');
-    expect(DateTimeUtils.formatTime(time, TimeUnit.DAY)).toEqual('29 Jan 2019');
-    expect(DateTimeUtils.formatTime(time, TimeUnit.MONTH)).toEqual('Jan 2019');
-    expect(DateTimeUtils.formatTime(time, TimeUnit.YEAR)).toEqual('2019');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.MILLISECOND)).toBe('29 Jan 2019 18:24:17 557');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.SECOND)).toBe('29 Jan 2019 18:24:17');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.MINUTE)).toBe('29 Jan 2019 18:24');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.HOUR)).toBe('29 Jan 2019 18');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.DAY)).toBe('29 Jan 2019');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.MONTH)).toBe('Jan 2019');
+    expect(DateTimeUtils.formatTime(time, TimeUnit.YEAR)).toBe('2019');
   });
 
   it('#formatTime should return formatted date/time (verified with angular DatePipe)', () => {
     const ngFormat = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
 
-    expect(DateTimeUtils.formatTime(now, TimeUnit.MILLISECOND)).toEqual(ngFormat(TimeUnit.MILLISECOND));
-    expect(DateTimeUtils.formatTime(now, TimeUnit.SECOND)).toEqual(ngFormat(TimeUnit.SECOND));
-    expect(DateTimeUtils.formatTime(now, TimeUnit.MINUTE)).toEqual(ngFormat(TimeUnit.MINUTE));
-    expect(DateTimeUtils.formatTime(now, TimeUnit.HOUR)).toEqual(ngFormat(TimeUnit.HOUR));
-    expect(DateTimeUtils.formatTime(now, TimeUnit.DAY)).toEqual(ngFormat(TimeUnit.DAY));
-    expect(DateTimeUtils.formatTime(now, TimeUnit.MONTH)).toEqual(ngFormat(TimeUnit.MONTH));
-    expect(DateTimeUtils.formatTime(now, TimeUnit.YEAR)).toEqual(ngFormat(TimeUnit.YEAR));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.MILLISECOND)).toBe(ngFormat(TimeUnit.MILLISECOND));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.SECOND)).toBe(ngFormat(TimeUnit.SECOND));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.MINUTE)).toBe(ngFormat(TimeUnit.MINUTE));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.HOUR)).toBe(ngFormat(TimeUnit.HOUR));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.DAY)).toBe(ngFormat(TimeUnit.DAY));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.MONTH)).toBe(ngFormat(TimeUnit.MONTH));
+    expect(DateTimeUtils.formatTime(now, TimeUnit.YEAR)).toBe(ngFormat(TimeUnit.YEAR));
   });
 
   it('#timeUnitFromNgFormat should return MILLISECOND when ngFormat is missing', () => {
@@ -493,75 +470,56 @@ describe('DateTimeUtils', () => {
     expect(DateTimeUtils.timeUnitFromNgFormat('d MMM yyyy HH:mm:ss SSS')).toBe(TimeUnit.MILLISECOND);
   });
 
-  it('#ngToMomentFormat should return moment format', () => {
-    expect(DateTimeUtils.ngToMomentFormat('dd.MM.yyyy HH:mm:ss SSS')).toBe('DD.MM.YYYY HH:mm:ss SSS');
-  });
-
-  it('#ngToMomentFormat should undefined when ngFormat is missing', () => {
-    expect(DateTimeUtils.ngToMomentFormat(undefined)).toBeUndefined();
-    expect(DateTimeUtils.ngToMomentFormat(null)).toBeUndefined();
-  });
-
   it('#ngFormatOf and #luxonFormatOf should return compatible date/time format each', () => {
     const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
     const luxonFormatter = (timeunit: TimeUnit) => DateTime.fromMillis(now).toFormat(DateTimeUtils.luxonFormatOf(timeunit));
 
-    expect(ngFormatter(TimeUnit.MILLISECOND)).toEqual(luxonFormatter(TimeUnit.MILLISECOND));
-    expect(ngFormatter(TimeUnit.SECOND)).toEqual(luxonFormatter(TimeUnit.SECOND));
-    expect(ngFormatter(TimeUnit.MINUTE)).toEqual(luxonFormatter(TimeUnit.MINUTE));
-    expect(ngFormatter(TimeUnit.HOUR)).toEqual(luxonFormatter(TimeUnit.HOUR));
-    expect(ngFormatter(TimeUnit.DAY)).toEqual(luxonFormatter(TimeUnit.DAY));
-    expect(ngFormatter(TimeUnit.MONTH)).toEqual(luxonFormatter(TimeUnit.MONTH));
-    expect(ngFormatter(TimeUnit.YEAR)).toEqual(luxonFormatter(TimeUnit.YEAR));
+    expect(ngFormatter(TimeUnit.MILLISECOND)).toBe(luxonFormatter(TimeUnit.MILLISECOND));
+    expect(ngFormatter(TimeUnit.SECOND)).toBe(luxonFormatter(TimeUnit.SECOND));
+    expect(ngFormatter(TimeUnit.MINUTE)).toBe(luxonFormatter(TimeUnit.MINUTE));
+    expect(ngFormatter(TimeUnit.HOUR)).toBe(luxonFormatter(TimeUnit.HOUR));
+    expect(ngFormatter(TimeUnit.DAY)).toBe(luxonFormatter(TimeUnit.DAY));
+    expect(ngFormatter(TimeUnit.MONTH)).toBe(luxonFormatter(TimeUnit.MONTH));
+    expect(ngFormatter(TimeUnit.YEAR)).toBe(luxonFormatter(TimeUnit.YEAR));
   });
 
   it('#ngFormatOf and #momentFormatOf should return compatible date/time format each', () => {
     const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
     const momentFormatter = (timeunit: TimeUnit) => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
 
-    expect(ngFormatter(TimeUnit.MILLISECOND)).toEqual(momentFormatter(TimeUnit.MILLISECOND));
-    expect(ngFormatter(TimeUnit.SECOND)).toEqual(momentFormatter(TimeUnit.SECOND));
-    expect(ngFormatter(TimeUnit.MINUTE)).toEqual(momentFormatter(TimeUnit.MINUTE));
-    expect(ngFormatter(TimeUnit.HOUR)).toEqual(momentFormatter(TimeUnit.HOUR));
-    expect(ngFormatter(TimeUnit.DAY)).toEqual(momentFormatter(TimeUnit.DAY));
-    expect(ngFormatter(TimeUnit.MONTH)).toEqual(momentFormatter(TimeUnit.MONTH));
-    expect(ngFormatter(TimeUnit.YEAR)).toEqual(momentFormatter(TimeUnit.YEAR));
-  });
-
-  it('#listMomentLocals should return locals', () => {
-
-    // when
-    const locals = DateTimeUtils.listMomentLocals();
-
-    // then
-    expect(locals).toBeDefined();
-    expect(locals.length).toBeGreaterThan(0);
+    expect(ngFormatter(TimeUnit.MILLISECOND)).toBe(momentFormatter(TimeUnit.MILLISECOND));
+    expect(ngFormatter(TimeUnit.SECOND)).toBe(momentFormatter(TimeUnit.SECOND));
+    expect(ngFormatter(TimeUnit.MINUTE)).toBe(momentFormatter(TimeUnit.MINUTE));
+    expect(ngFormatter(TimeUnit.HOUR)).toBe(momentFormatter(TimeUnit.HOUR));
+    expect(ngFormatter(TimeUnit.DAY)).toBe(momentFormatter(TimeUnit.DAY));
+    expect(ngFormatter(TimeUnit.MONTH)).toBe(momentFormatter(TimeUnit.MONTH));
+    expect(ngFormatter(TimeUnit.YEAR)).toBe(momentFormatter(TimeUnit.YEAR));
   });
 
   it('#momentFormatOf and #d3FormatOf should return compatible date/time format each', () => {
     const momentFormatter = (timeunit: TimeUnit) => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
     const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
 
-    expect(momentFormatter(TimeUnit.MILLISECOND)).toEqual(d3Formatter(TimeUnit.MILLISECOND));
-    expect(momentFormatter(TimeUnit.SECOND)).toEqual(d3Formatter(TimeUnit.SECOND));
-    expect(momentFormatter(TimeUnit.MINUTE)).toEqual(d3Formatter(TimeUnit.MINUTE));
-    expect(momentFormatter(TimeUnit.HOUR)).toEqual(d3Formatter(TimeUnit.HOUR));
-    expect(momentFormatter(TimeUnit.DAY)).toEqual(d3Formatter(TimeUnit.DAY));
-    expect(momentFormatter(TimeUnit.MONTH)).toEqual(d3Formatter(TimeUnit.MONTH));
-    expect(momentFormatter(TimeUnit.YEAR)).toEqual(d3Formatter(TimeUnit.YEAR));
+    expect(momentFormatter(TimeUnit.MILLISECOND)).toBe(d3Formatter(TimeUnit.MILLISECOND));
+    expect(momentFormatter(TimeUnit.SECOND)).toBe(d3Formatter(TimeUnit.SECOND));
+    expect(momentFormatter(TimeUnit.MINUTE)).toBe(d3Formatter(TimeUnit.MINUTE));
+    expect(momentFormatter(TimeUnit.HOUR)).toBe(d3Formatter(TimeUnit.HOUR));
+    expect(momentFormatter(TimeUnit.DAY)).toBe(d3Formatter(TimeUnit.DAY));
+    expect(momentFormatter(TimeUnit.MONTH)).toBe(d3Formatter(TimeUnit.MONTH));
+    expect(momentFormatter(TimeUnit.YEAR)).toBe(d3Formatter(TimeUnit.YEAR));
   });
 
   it('#d3FormatOf and #ngFormatOf should return compatible date/time format each', () => {
     const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
     const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
 
-    expect(d3Formatter(TimeUnit.MILLISECOND)).toEqual(ngFormatter(TimeUnit.MILLISECOND));
-    expect(d3Formatter(TimeUnit.SECOND)).toEqual(ngFormatter(TimeUnit.SECOND));
-    expect(d3Formatter(TimeUnit.MINUTE)).toEqual(ngFormatter(TimeUnit.MINUTE));
-    expect(d3Formatter(TimeUnit.HOUR)).toEqual(ngFormatter(TimeUnit.HOUR));
-    expect(d3Formatter(TimeUnit.DAY)).toEqual(ngFormatter(TimeUnit.DAY));
-    expect(d3Formatter(TimeUnit.MONTH)).toEqual(ngFormatter(TimeUnit.MONTH));
-    expect(d3Formatter(TimeUnit.YEAR)).toEqual(ngFormatter(TimeUnit.YEAR));
+    expect(d3Formatter(TimeUnit.MILLISECOND)).toBe(ngFormatter(TimeUnit.MILLISECOND));
+    expect(d3Formatter(TimeUnit.SECOND)).toBe(ngFormatter(TimeUnit.SECOND));
+    expect(d3Formatter(TimeUnit.MINUTE)).toBe(ngFormatter(TimeUnit.MINUTE));
+    expect(d3Formatter(TimeUnit.HOUR)).toBe(ngFormatter(TimeUnit.HOUR));
+    expect(d3Formatter(TimeUnit.DAY)).toBe(ngFormatter(TimeUnit.DAY));
+    expect(d3Formatter(TimeUnit.MONTH)).toBe(ngFormatter(TimeUnit.MONTH));
+    expect(d3Formatter(TimeUnit.YEAR)).toBe(ngFormatter(TimeUnit.YEAR));
   });
 
   it('#sortTimeUnits should return same when array is missing', () => {
@@ -809,8 +767,131 @@ describe('DateTimeUtils', () => {
     expect(timeColumns[2].groupingTimeUnit).toBe(TimeUnit.MINUTE);
   });
 
+  it('#diff when time unit has fixed length', () => {
+    expect(DateTimeUtils.diff(now, now + 12, TimeUnit.MILLISECOND)).toBe(12);
+    expect(DateTimeUtils.diff(now, now + (sec * 12), TimeUnit.SECOND)).toBe(12);
+    expect(DateTimeUtils.diff(now, now + (min * 12), TimeUnit.MINUTE)).toBe(12);
+    expect(DateTimeUtils.diff(now, now + (hour * 12), TimeUnit.HOUR)).toBe(12);
+  });
+
+  it('#diff when clock change between start and end time', () => {
+    // given
+    const format = 'dd.MM.yyyy';
+    const start = toDateTime('25.03.2023', format).toMillis();
+    const end = toDateTime('27.03.2023', format).toMillis();
+
+    expect(DateTimeUtils.diff(start, end, TimeUnit.HOUR)).toBe(47);
+    expect(DateTimeUtils.diff(start, end, TimeUnit.DAY)).toBe(2);
+  });
+
+  it('#add when time unit has fixed length', () => {
+    expect(DateTimeUtils.add(now, TimeUnit.MILLISECOND, 3)).toBe(now + 3);
+    expect(DateTimeUtils.add(now, TimeUnit.SECOND, 3)).toBe(now + (3 * sec));
+    expect(DateTimeUtils.add(now, TimeUnit.MINUTE, 3)).toBe(now + (3 * min));
+    expect(DateTimeUtils.add(now, TimeUnit.HOUR, 3)).toBe(now + (3 * hour));
+  });
+
+  it('#add when clock change is involved', () => {
+    // given
+    const format = 'dd.MM.yyyy HH';
+    const start = toDateTime('25.03.2023 12', format).toMillis();
+
+    // when
+    const time = DateTimeUtils.add(start, TimeUnit.HOUR, 47);
+
+    // then
+    expect(DateTime.fromMillis(time).toFormat(format)).toBe('27.03.2023 12');
+  });
+
+  it('#startOf MILLISECOND', () => {
+    expect(DateTimeUtils.startOf(now, TimeUnit.MILLISECOND)).toBe(now);
+  });
+
+  it('#startOf SECOND', () => {
+    // given
+    const format = 'dd.MM.yyyy HH:mm:ss SSS';
+    const time = toTime('02.05.2023 06:15:23 153', format);
+
+    // when
+    const result = DateTimeUtils.startOf(time, TimeUnit.SECOND);
+
+    // then
+    expect(toFormat(result, format)).toBe('02.05.2023 06:15:23 000');
+  });
+
+  it('#startOf MINUTE', () => {
+    // given
+    const format = 'dd.MM.yyyy HH:mm:ss SSS';
+    const time = toTime('02.05.2023 06:15:23 153', format);
+
+    // when
+    const result = DateTimeUtils.startOf(time, TimeUnit.MINUTE);
+
+    // then
+    expect(toFormat(result, format)).toBe('02.05.2023 06:15:00 000');
+  });
+
+  it('#startOf HOUR', () => {
+    // given
+    const format = 'dd.MM.yyyy HH:mm:ss SSS';
+    const time = toTime('02.05.2023 06:15:23 153', format);
+
+    // when
+    const result = DateTimeUtils.startOf(time, TimeUnit.HOUR);
+
+    // then
+    expect(toFormat(result, format)).toBe('02.05.2023 06:00:00 000');
+  });
+
+  it('#startOf DAY', () => {
+    // given
+    const format = 'dd.MM.yyyy HH:mm:ss SSS';
+    const time = toTime('02.05.2023 06:15:23 153', format);
+
+    // when
+    const result = DateTimeUtils.startOf(time, TimeUnit.DAY);
+
+    // then
+    expect(toFormat(result, format)).toBe('02.05.2023 00:00:00 000');
+  });
+
+  it('#startOf MONTH', () => {
+    // given
+    const format = 'dd.MM.yyyy HH:mm:ss SSS';
+    const time = toTime('02.05.2023 06:15:23 153', format);
+
+    // when
+    const result = DateTimeUtils.startOf(time, TimeUnit.MONTH);
+
+    // then
+    expect(toFormat(result, format)).toBe('01.05.2023 00:00:00 000');
+  });
+
+  it('#startOf YEAR', () => {
+    // given
+    const format = 'dd.MM.yyyy HH:mm:ss SSS';
+    const time = toTime('02.05.2023 06:15:23 153', format);
+
+    // when
+    const result = DateTimeUtils.startOf(time, TimeUnit.YEAR);
+
+    // then
+    expect(toFormat(result, format)).toBe('01.01.2023 00:00:00 000');
+  });
+
+  function toFormat(time: number, format): string {
+    return DateTime.fromMillis(time).toFormat(format);
+  }
+
   function fromNow(numberOfTimeUnit: number, timeUnit: TimeUnit): number {
     return moment(now).add(numberOfTimeUnit, timeUnit).toDate().getTime();
   }
 
+  function toTime(value: string, format: string): number {
+    return toDateTime(value, format).toMillis();
+  }
+
+  function toDateTime(value: string, format: string): DateTime {
+    return DateTime.fromFormat(value, format)
+  }
 });

@@ -1,7 +1,6 @@
-import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { ActivatedRouteSnapshot, DetachedRouteHandle } from '@angular/router';
+import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { Route } from './shared/model';
-import { DebugElement } from '@angular/core';
 
 describe('AppRouteReuseStrategy', () => {
 

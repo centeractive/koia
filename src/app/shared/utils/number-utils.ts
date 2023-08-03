@@ -332,7 +332,7 @@ export class NumberUtils {
     *
     * @returns positive base power of ten or the specified number when undefined or zero
     */
-   static basePowerOfTen(num: number) {
+   static basePowerOfTen(num: number): number {
       if (!num || num === 0) {
          return num;
       }
@@ -396,7 +396,7 @@ export class NumberUtils {
     *    0.02   -> 1
     *    0.004  -> 2
     */
-   static startIndexAfterDecimalPoint(num: number) {
+   static startIndexAfterDecimalPoint(num: number): number {
       const abs = Math.abs(num);
       if (abs >= 0.1 || abs <= -0.1) {
          return 0;

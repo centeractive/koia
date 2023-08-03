@@ -33,7 +33,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
 
   @Input() parentConstraintSize: boolean;
   @Input() context: ChartContext;
-  @Output() onWarning: EventEmitter<string> = new EventEmitter();
+  @Output() onWarning = new EventEmitter<string>();
 
   @ViewChild('canvas') canvasRef: ElementRef<HTMLCanvasElement>;
 

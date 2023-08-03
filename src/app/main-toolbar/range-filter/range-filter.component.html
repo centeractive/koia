@@ -11,8 +11,8 @@
     </button>
   </mat-menu>
   &nbsp;&nbsp;
-  <ngx-slider [value]="filter.selValueRange.min" [highValue]="filter.selValueRange.max" [options]="filter.sliderOptions"
-              (highValueChange)="filter.selValueRange.maxExcluding = false" (userChangeEnd)="onChanged($event)">
+  <ngx-slider [value]="valueRange.min" [highValue]="valueRange.max" [options]="filter.sliderOptions"
+              (highValueChange)="valueRange.maxExcluding = false" (userChangeEnd)="onChanged($event)">
   </ngx-slider>
   <button class="but_reset_range_filter" color="accent" mat-icon-button matTooltip="Reset value range filter"
           [disabled]="!filter.isFiltered()" (click)="reset()">

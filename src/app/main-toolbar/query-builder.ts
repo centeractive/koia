@@ -1,4 +1,4 @@
-import { Query, PropertyFilter, Operator } from 'app/shared/model';
+import { Operator, PropertyFilter, Query } from 'app/shared/model';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 
 export class QueryBuilder {

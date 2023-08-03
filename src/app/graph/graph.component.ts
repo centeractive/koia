@@ -30,7 +30,7 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
   @Input() parentConstraintSize: boolean;
   @Input() context: GraphContext;
 
-  @Output() onWarning: EventEmitter<string> = new EventEmitter();
+  @Output() onWarning = new EventEmitter<string>();
 
   graphOptions: object;
   title: string;

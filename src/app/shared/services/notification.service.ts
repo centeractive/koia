@@ -15,6 +15,7 @@ export class NotificationService {
   }
 
   onError(bottomSheet: MatBottomSheet, error: string | object): void {
+    console.error(error);
     this.showStatus(bottomSheet, this.createStatus(StatusType.ERROR, error));
   }
 

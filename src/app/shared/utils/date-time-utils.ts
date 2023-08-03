@@ -1,8 +1,6 @@
-import * as moment from 'moment';
-import 'moment/min/locales';
-import { TimeUnit, Column, DataType } from '../model';
+import { DateTime, Duration, DurationLikeObject } from 'luxon';
+import { Column, DataType, TimeUnit } from '../model';
 import { ArrayUtils } from './array-utils';
-import { DateTime } from 'luxon';
 
 export class DateTimeUtils {
 
@@ -23,38 +21,21 @@ export class DateTimeUtils {
   }
 
   /**
+   * @returns a sorted array of [[TimeUnit]]s of higher weight than the specified timeUnit
+   */
+  static timeUnitsAbove(timeUnit: TimeUnit): TimeUnit[] {
+    const timeUnits = DateTimeUtils.allTimeUnits('asc');
+    const i = timeUnits.indexOf(timeUnit);
+    return timeUnits.slice(i + 1);
+  }
+
+  /**
    * adds the specified number of time units to given time
    *
    * @returns computed new time
    */
   static addTimeUnits(time: number, numberOfTimeUnit: number, timeUnit: TimeUnit): number {
-    return moment(time).add(numberOfTimeUnit, <moment.unitOfTime.DurationConstructor>timeUnit.toString()).valueOf();
-  }
-
-  /**
-   * computes the number of milliseconds included in the specified number of fixed time units
-   *
-   * @param numberOfTimeUnit number of time units
-   * @param timeUnit TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND or TimeUnit.MILLISECOND
-   * @returns number of milliseconds
-   */
-  static toMilliseconds(numberOfTimeUnit: number, timeUnit: TimeUnit): number {
-    switch (timeUnit) {
-      case TimeUnit.MILLISECOND:
-        return numberOfTimeUnit;
-      case TimeUnit.SECOND:
-      case TimeUnit.MINUTE:
-      case TimeUnit.HOUR:
-      case TimeUnit.DAY:
-        return moment.duration(numberOfTimeUnit, <moment.unitOfTime.DurationConstructor>timeUnit.toString())
-          .asMilliseconds();
-      default:
-        throw new Error(timeUnit + ' of variable duration cannot be converted to milliseconds');
-    }
-  }
-
-  static isOfFixedDuration(timeUnit: TimeUnit) {
-    return [TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND, TimeUnit.MILLISECOND].includes(timeUnit);
+    return this.add(time, timeUnit, numberOfTimeUnit);
   }
 
   /**
@@ -72,28 +53,16 @@ export class DateTimeUtils {
   }
 
   /**
-   * computes the number of fixed timeunits (up to [[TimeUnit#DAY]]) contained in the specified duration
+   * computes the number of timeunits contained in the specified duration,
+   * note that the the result for TimeUnit.DAY, TimeUnit.MONTH and TimeUnit.YEAR is approximative
+   * since it varies depending on the point in time (for example, when the time change takes place 
+   * on a certain day)
    *
    * @param msDuraton duration in milliseconds
-   * @param timeUnit TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND or TimeUnit.MILLISECOND
    * @returns the number of the specified timeunit included in given duration
    */
   static countTimeUnits(msDuraton: number, timeUnit: TimeUnit): number {
-    const duration = moment.duration(msDuraton);
-    switch (timeUnit) {
-      case TimeUnit.MILLISECOND:
-        return duration.asMilliseconds();
-      case TimeUnit.SECOND:
-        return duration.asSeconds();
-      case TimeUnit.MINUTE:
-        return duration.asMinutes();
-      case TimeUnit.HOUR:
-        return duration.asHours();
-      case TimeUnit.DAY:
-        return duration.asDays();
-      default:
-        throw new Error('cannot count number of ' + timeUnit + 's with variable duration');
-    }
+    return msDuraton / this.durationOf(timeUnit);
   }
 
   static abbreviationOf(timeUnit: TimeUnit): string {
@@ -161,14 +130,7 @@ export class DateTimeUtils {
   }
 
   static formatTime(time: number, timeUnit: TimeUnit): string {
-    return moment(time).format(this.momentFormatOf(timeUnit));
-  }
-
-  static ngToMomentFormat(ngFormat: string): string {
-    if (ngFormat) {
-      return ngFormat.replace(/d/g, 'D').replace(/y/g, 'Y');
-    }
-    return undefined;
+    return DateTime.fromMillis(time).toFormat(this.luxonFormatOf(timeUnit));
   }
 
   /**
@@ -222,13 +184,6 @@ export class DateTimeUtils {
       default:
         return 'd MMM yyyy HH:mm:ss SSS';
     }
-  }
-
-  /**
-   * @returns all available moment.js locals
-   */
-  static listMomentLocals(): string[] {
-    return moment.locales();
   }
 
   /**
@@ -289,12 +244,11 @@ export class DateTimeUtils {
   }
 
   /**
-   * don't make this public as the duration in milliseconds for months and years is undetermined
-   *
-   * @see [[#toMilliseconds]]
+   * don't make this public as the duration in milliseconds for days, months and years is undetermined
+   * (due to daylight saving, two days per year have different length than others)
    */
   private static durationOf(timeUnit: TimeUnit): number {
-    return moment.duration(1, <moment.unitOfTime.DurationConstructor>timeUnit.toString()).asMilliseconds();
+    return Duration.fromDurationLike(this.duration(timeUnit, 1)).toMillis();
   }
 
   /**
@@ -313,4 +267,43 @@ export class DateTimeUtils {
         });
     }
   }
+
+  static diff(timeStart: number, timeEnd: number, timeUnit: TimeUnit): number {
+    const start = DateTime.fromMillis(timeStart);
+    const end = DateTime.fromMillis(timeEnd);
+    return end.diff(start, timeUnit).get(timeUnit);
+  }
+
+  static add(timeStart: number, timeUnit: TimeUnit, count: number): number {
+    if (!count) {
+      return timeStart;
+    }
+    const start = DateTime.fromMillis(timeStart);
+    const duration = this.duration(timeUnit, count);
+    return start.plus(duration).toMillis();
+  }
+
+  static duration(timeUnit: TimeUnit, count: number): DurationLikeObject {
+    switch (timeUnit) {
+      case TimeUnit.MILLISECOND:
+        return { milliseconds: count };
+      case TimeUnit.SECOND:
+        return { seconds: count };
+      case TimeUnit.MINUTE:
+        return { minutes: count };
+      case TimeUnit.HOUR:
+        return { hours: count };
+      case TimeUnit.DAY:
+        return { days: count };
+      case TimeUnit.MONTH:
+        return { months: count };
+      case TimeUnit.YEAR:
+        return { years: count };
+    }
+  }
+
+  static startOf(time: number, timeUnit: TimeUnit): number {
+    return DateTime.fromMillis(time).startOf(timeUnit).toMillis();
+  }
+
 }
