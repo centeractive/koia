@@ -11,7 +11,11 @@ export class DateTimeColumnDetector {
     private static readonly TIME_FORMATS_TO_TIMEUNITS: FormatToTimeUnit[] = [
         { format: 'HH:mm:ss,SSS', timeUnit: TimeUnit.MILLISECOND },
         { format: 'HH:mm:ss SSS', timeUnit: TimeUnit.MILLISECOND },
+        { format: 'HH:mm:ss SS', timeUnit: TimeUnit.MILLISECOND },
+        { format: 'HH:mm:ss S', timeUnit: TimeUnit.MILLISECOND },
         { format: 'HH:mm:ss.SSS', timeUnit: TimeUnit.MILLISECOND },
+        { format: 'HH:mm:ss.SS', timeUnit: TimeUnit.MILLISECOND },
+        { format: 'HH:mm:ss.S', timeUnit: TimeUnit.MILLISECOND },
         { format: 'HH:mm:ss', timeUnit: TimeUnit.SECOND },
         { format: 'HH:mm', timeUnit: TimeUnit.MINUTE },
         { format: 'HH', timeUnit: TimeUnit.HOUR },
