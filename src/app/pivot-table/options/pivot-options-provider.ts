@@ -1,10 +1,11 @@
 import { Column, TimeUnit } from 'app/shared/model';
-import { CommonUtils, ArrayUtils, ColumnNameConverter } from 'app/shared/utils';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
+import { ArrayUtils, ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { ValueRangeLabelComparator } from 'app/shared/value-range';
-import { CellClickHandler } from './cell-click-handler';
+import { ScaleLinear, scaleLinear } from 'd3';
 import { PivotContext } from '../model';
-import { scaleLinear, ScaleLinear } from 'd3';
+import { CellClickHandler } from './cell-click-handler';
+import { compareFormattedTime } from 'app/shared/utils/comparator/formatted-time-comparator';
 declare let $: any;
 
 export class PivotOptionsProvider {
@@ -69,6 +70,11 @@ export class PivotOptionsProvider {
       const sorters = {};
       for (const valueGrouping of context.valueGroupings) {
          sorters[valueGrouping.columnName] = (v1: string, v2: string) => new ValueRangeLabelComparator().compare(v1, v2);
+      }
+      for (const timeColumn of context.timeColumns) {
+         DateTimeUtils.allTimeUnits('asc').forEach(timeUnit => {
+            sorters[ColumnNameConverter.toLabel(timeColumn, timeUnit)] = (v1: string, v2: string) => compareFormattedTime(v1, v2, timeUnit);
+         });
       }
       return sorters;
    }

@@ -39,7 +39,15 @@ describe('PivotOptionsProvider', () => {
       expect(pivotOptions).toBeTruthy();
       expect(pivotOptions['renderers']).toBeDefined();
       expect(pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
-      expect(pivotOptions['sorters']).toEqual({});
+      expect(Object.keys(pivotOptions['sorters'])).toEqual([
+         'Date/Time',
+         'Date/Time (per second)',
+         'Date/Time (per minute)',
+         'Date/Time (per hour)',
+         'Date/Time (per day)',
+         'Date/Time (per month)',
+         'Date/Time (per year)'
+      ]);
       expect(pivotOptions['rendererOptions']).toBeDefined();
       expect(pivotOptions['onRefresh']).toBeDefined();
    });
@@ -60,7 +68,15 @@ describe('PivotOptionsProvider', () => {
       expect(pivotOptions).toBeTruthy();
       expect(pivotOptions['renderers']).toBeDefined();
       expect(pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
-      expect(pivotOptions['sorters']).toEqual({});
+      expect(Object.keys(pivotOptions['sorters'])).toEqual([
+         'Date/Time',
+         'Date/Time (per second)',
+         'Date/Time (per minute)',
+         'Date/Time (per hour)',
+         'Date/Time (per day)',
+         'Date/Time (per month)',
+         'Date/Time (per year)'
+      ]);
       expect(pivotOptions['rendererOptions']).toBeDefined();
       expect(pivotOptions['onRefresh']).toBeDefined();
    });
