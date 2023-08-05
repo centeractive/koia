@@ -892,6 +892,6 @@ describe('DateTimeUtils', () => {
   }
 
   function toDateTime(value: string, format: string): DateTime {
-    return DateTime.fromFormat(value, format, { zone: 'CET' });
+    return DateTime.fromFormat(value, format, { zone: 'Europe/Paris' });
   }
 });
