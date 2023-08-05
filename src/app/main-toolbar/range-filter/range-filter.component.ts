@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { ChangeContext } from 'app/ngx-slider/change-context';
+import { DataType } from 'app/shared/model';
 import { ValueRange } from 'app/shared/value-range/model';
 import { Subscription } from 'rxjs';
 import { NumberRangeFilter } from './model/number-range-filter';
@@ -17,6 +18,7 @@ export class RangeFilterComponent implements OnChanges, OnDestroy {
   @Output() onRemove = new EventEmitter<void>();
 
   valueRange: ValueRange;
+  refreshSlider = new EventEmitter<void>();
 
   private subscription: Subscription;
 
@@ -37,9 +39,16 @@ export class RangeFilterComponent implements OnChanges, OnDestroy {
     this.onChange.emit();
   }
 
+  onHighValueChanged(): void {
+    if (this.filter.column.dataType !== DataType.TIME) {
+      this.valueRange.maxExcluding = false;
+    }
+  }
+
   reset(): void {
     this.filter.reset();
-    setTimeout(() => this.onChange.emit(), 500); // let slider properly reset itself
+    this.onChange.emit();
+    this.refreshSlider.emit();
   }
 
   ngOnDestroy(): void {

@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Observable, lastValueFrom } from 'rxjs';
-import { MangoQueryBuilder } from './mango/mango-query-builder';
-import { QueryUtils } from 'app/shared/utils';
-import { QueryConverter } from './mango/query-converter';
-import { CouchDBConstants } from './couchdb/couchdb-constants';
 import { SortDirection } from '@angular/material/sort';
-import { CouchDBService, SortLimitationWorkaround } from './couchdb';
-import { DB } from './db.type';
-import { PouchDBAccess } from './pouchdb';
-import { Scene, SceneInfo, DataType, Operator, Query, Page, Column, Document } from 'app/shared/model';
+import { Column, DataType, Document, Operator, Page, Query, Scene, SceneInfo } from 'app/shared/model';
+import { QueryUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { Observable, lastValueFrom } from 'rxjs';
+import { CouchDBService, SortLimitationWorkaround } from './couchdb';
+import { CouchDBConstants } from './couchdb/couchdb-constants';
+import { DB } from './db.type';
+import { MangoQueryBuilder } from './mango/mango-query-builder';
+import { QueryConverter } from './mango/query-converter';
+import { PouchDBAccess } from './pouchdb';
 
 @Injectable()
 export class DBService {

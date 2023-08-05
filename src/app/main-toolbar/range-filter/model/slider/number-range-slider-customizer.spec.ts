@@ -1,11 +1,11 @@
-import { RangeSliderCustomizer } from './range-slider-customizer';
 import { LabelType } from 'app/ngx-slider/options';
+import { NumberRangeSliderCustomizer } from './number-range-slider-customizer';
 
-describe('RangeSliderCustomizer', () => {
+describe('NumberRangeSliderCustomizer', () => {
 
-   const customizer = new RangeSliderCustomizer();
+   const customizer = new NumberRangeSliderCustomizer();
 
-   it('#labelOf should return number as string when value of type low', () => {
+   it('#labelOf should return number as string when label type low', () => {
 
       // when
       const label = customizer.labelOf(1, LabelType.Low, { min: 0, max: 10 });
@@ -14,7 +14,7 @@ describe('RangeSliderCustomizer', () => {
       expect(label).toBe('1');
    });
 
-   it('#labelOf should return number as string when value of type low and max excluding', () => {
+   it('#labelOf should return number as string when label type low and max excluding', () => {
 
       // when
       const label = customizer.labelOf(1, LabelType.Low, { min: 0, max: 10, maxExcluding: true });
@@ -23,7 +23,7 @@ describe('RangeSliderCustomizer', () => {
       expect(label).toBe('1');
    });
 
-   it('#labelOf should return number as string when value of type high and max none excluding', () => {
+   it('#labelOf should return number as string when label type high and max non-excluding', () => {
 
       // when
       const label = customizer.labelOf(9, LabelType.Low, { min: 0, max: 10 });
@@ -32,7 +32,7 @@ describe('RangeSliderCustomizer', () => {
       expect(label).toBe('9');
    });
 
-   it('#labelOf should return annoted string when value of type high and max excluding', () => {
+   it('#labelOf should return annoted string when label type high and max excluding', () => {
 
       // when
       const label = customizer.labelOf(9, LabelType.High, { min: 0, max: 10, maxExcluding: true });
@@ -41,7 +41,7 @@ describe('RangeSliderCustomizer', () => {
       expect(label).toBe('9 excl.');
    });
 
-   it('#combineLabels should return single label when both labels are equal', () => {
+   it('#combineLabels should return single label when labels are equal', () => {
 
       // when
       const label = customizer.combineLabels('123', '123');
@@ -50,7 +50,7 @@ describe('RangeSliderCustomizer', () => {
       expect(label).toBe('123');
    });
 
-   it('#combineLabels should return combined label when both labels are different', () => {
+   it('#combineLabels should return combined label when labels are different', () => {
 
       // when
       const label = customizer.combineLabels('123', '456');

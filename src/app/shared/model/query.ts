@@ -1,4 +1,5 @@
 import { Sort } from '@angular/material/sort';
+import { ValueRange } from '../value-range/model';
 import { ValueRangeFilter } from '../value-range/model/value-range-filter';
 import { Operator } from './operator.enum';
 import { PropertyFilter } from './property-filter';
@@ -47,8 +48,12 @@ export class Query {
    }
 
    addValueRangeFilter(name: string, minValue: number, maxValue: number, maxExcluding?: boolean, inverted?: boolean): void {
-      this.valueRangeFilters.push(
-         new ValueRangeFilter(name, { min: minValue, max: maxValue, maxExcluding: maxExcluding }, inverted));
+      const valueRange: ValueRange = {
+         min: minValue,
+         max: maxValue,
+         maxExcluding
+      };
+      this.valueRangeFilters.push(new ValueRangeFilter(name, valueRange, inverted));
    }
 
    findValueRangeFilter(name: string): ValueRangeFilter | undefined {

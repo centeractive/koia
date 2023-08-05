@@ -4,7 +4,7 @@ import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Observable } from 'rxjs';
-import { RangeSliderCustomizer } from './slider/range-slider-customizer';
+import { NumberRangeSliderCustomizer } from './slider/number-range-slider-customizer';
 
 export class NumberRangeFilter {
 
@@ -21,12 +21,12 @@ export class NumberRangeFilter {
    selValueRange: ValueRange;
    sliderValueRange: ValueRange;
 
-   protected sliderCustomizer = new RangeSliderCustomizer();
    protected adjustedValueRangeEmitter = new EventEmitter<void>();
 
    /**
     * @param selValueRange if [[ValueRange#maxExcluding]] is <true>, it is automatically set to <false>
     * as soon as the slider high value is changed by the user
+    * @see RangeFilterComponent#onHighValueChanged
     */
    constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
       this.column = column;
@@ -85,6 +85,7 @@ export class NumberRangeFilter {
    }
 
    defineSliderOptions(): void {
+      const customizer = new NumberRangeSliderCustomizer();
       this.sliderOptions = {
          floor: this.start,
          ceil: this.end,
@@ -92,8 +93,8 @@ export class NumberRangeFilter {
          animate: true,
          enforceStep: false,
          draggableRange: true,
-         translate: (v: number, t: LabelType) => this.sliderCustomizer.labelOf(v, t, this.selValueRange),
-         combineLabels: (l1: string, l2: string) => this.sliderCustomizer.combineLabels(l1, l2)
+         translate: (v: number, t: LabelType) => customizer.labelOf(v, t, this.selValueRange),
+         combineLabels: (l1: string, l2: string) => customizer.combineLabels(l1, l2)
       };
    }
 

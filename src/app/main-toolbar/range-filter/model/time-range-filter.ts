@@ -1,9 +1,11 @@
+import { LabelType } from 'app/ngx-slider/options';
 import { Column, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { NumberRangeFilter } from './number-range-filter';
 import { adjustTimeValueRange } from './slider/adjust-time-value-range';
 import { SliderTimeValueRange } from './slider/slider-time-value-range';
+import { TimeRangeSliderCustomizer } from './slider/time-range-slider-customizer';
 
 /**
  * Filtering with time units greater than milliseconds works fine only when individual times are down-rounded
@@ -61,20 +63,17 @@ export class TimeRangeFilter extends NumberRangeFilter {
    }
 
    defineSliderOptions(): void {
+      const ceil = Math.ceil(DateTimeUtils.diff(this.start, this.end, this.selectedStep));
+      const customizer = new TimeRangeSliderCustomizer(this.start, this.selectedStep, ceil);
       this.sliderOptions = {
          floor: 0,
-         ceil: Math.ceil(DateTimeUtils.diff(this.start, this.end, this.selectedStep)),
+         ceil,
          step: 1,
          enforceStep: false,
          draggableRange: true,
-         translate: n => this.translate(n),
-         combineLabels: (l1: string, l2: string) => this.sliderCustomizer.combineLabels(l1, l2)
+         translate: (v: number, t: LabelType) => customizer.labelOf(v, t),
+         combineLabels: (l1: string, l2: string) => customizer.combineLabels(l1, l2)
       };
-   }
-
-   private translate(n: number): string {
-      const time = DateTimeUtils.add(this.start, this.selectedStep, n);
-      return DateTimeUtils.formatTime(time, this.selectedStep);
    }
 
 }

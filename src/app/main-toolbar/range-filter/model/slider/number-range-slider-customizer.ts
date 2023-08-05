@@ -2,13 +2,13 @@ import { LabelType } from 'app/ngx-slider/options';
 import { NumberFormatter } from 'app/shared/format';
 import { ValueRange } from 'app/shared/value-range/model';
 
-export class RangeSliderCustomizer {
+export class NumberRangeSliderCustomizer {
 
    private numberFormatter = new NumberFormatter();
 
-   labelOf(value: number, labelType: LabelType, selValueRange: ValueRange): string {
+   labelOf(value: number, labelType: LabelType, range: ValueRange): string {
       let label = this.numberFormatter.format(value);
-      if (selValueRange && selValueRange.maxExcluding && labelType === LabelType.High) {
+      if (labelType === LabelType.High && !!range?.maxExcluding) {
          label += ' excl.';
       }
       return label;

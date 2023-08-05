@@ -24,9 +24,6 @@ export class DateTimeColumnDetector {
     private timeUnitDetector = new TimeUnitDetector();
 
     detect(columnPair: ColumnPair, value: string, locale: string): void {
-
-        console.log(columnPair, value, locale)
-
         const dateFormat = this.dateFormatProvider.provide(locale);
         if (this.detectByDateFormat(columnPair, value, dateFormat, locale)) {
             return;

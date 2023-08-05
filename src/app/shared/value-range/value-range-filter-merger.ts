@@ -1,6 +1,6 @@
 import { CommonUtils } from '../utils/common-utils';
 import { NumberUtils } from '../utils/number-utils';
-import { ValueRangeFilter, ValueRange } from './model';
+import { ValueRange, ValueRangeFilter } from './model';
 import { ValueRangeUtils } from './value-range-utils';
 
 export class ValueRangeFilterMerger {

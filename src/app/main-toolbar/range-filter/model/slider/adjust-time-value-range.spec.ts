@@ -33,7 +33,7 @@ describe('adjust-time-value-range', () => {
         expect(adjusted).toBeTrue();
         const expectedMin = toTime('01.01.2023 06:01:10 000');
         const expectedMax = toTime('01.01.2023 12:18:11 000');
-        expect(valueRange).toEqual({ min: expectedMin, max: expectedMax });
+        expect(valueRange).toEqual({ min: expectedMin, max: expectedMax, maxExcluding: true });
     });
 
     it('#adjustTimeValueRange when adjusted min is before start', () => {
@@ -47,7 +47,7 @@ describe('adjust-time-value-range', () => {
 
         // then
         expect(adjusted).toBeTrue();
-        expect(valueRange).toEqual({ min: start, max: end });
+        expect(valueRange).toEqual({ min: start, max: end, maxExcluding: false });
     });
 
     function toTime(s: string): number {

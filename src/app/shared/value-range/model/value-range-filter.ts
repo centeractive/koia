@@ -1,6 +1,6 @@
-import { ValueRange } from './value-range.type';
-import { PropertyFilter } from '../../model/property-filter';
 import { Operator } from '../../model/operator.enum';
+import { PropertyFilter } from '../../model/property-filter';
+import { ValueRange } from './value-range.type';
 
 export class ValueRangeFilter {
 
@@ -77,7 +77,11 @@ export class ValueRangeFilter {
    }
 
    clone(): ValueRangeFilter {
-      return new ValueRangeFilter(this._name,
-         { min: this._valueRange.min, max: this._valueRange.max, maxExcluding: this._valueRange.maxExcluding }, this._inverted);
+      const valueRange: ValueRange = {
+         min: this._valueRange.min,
+         max: this._valueRange.max,
+         maxExcluding: this._valueRange.maxExcluding
+      };
+      return new ValueRangeFilter(this._name, valueRange, this._inverted);
    }
 }
