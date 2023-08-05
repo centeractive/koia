@@ -70,7 +70,7 @@ export class ChartJsOptionsProvider {
                     }
                 },
                 tooltip: {
-                    mode: context.data.datasets.length === 1 || !ChartType.isCategoryChart(chartType) ? 'nearest' : 'index',
+                    mode: context.data.datasets.length === 1 ? 'nearest' : 'index',
                     intersect: true
                 },
                 datalabels: {
