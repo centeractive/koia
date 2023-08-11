@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { timeFormat } from 'd3';
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import * as moment from 'moment';
 import { Column, DataType, TimeUnit } from '../model';
 import { DateTimeUtils } from './date-time-utils';
@@ -13,6 +13,10 @@ fdescribe('DateTimeUtils', () => {
   const min = 60 * sec;
   const hour = 60 * min;
   const day = 24 * hour;
+
+  beforeAll(() => {
+    Settings.defaultZone = 'Europe/Paris';
+  });
 
   it('#maxTimeUnit should return existing time unit when any unit is missing', () => {
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, undefined)).toBe(TimeUnit.SECOND);
