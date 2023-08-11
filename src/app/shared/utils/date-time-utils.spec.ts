@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import { Column, DataType, TimeUnit } from '../model';
 import { DateTimeUtils } from './date-time-utils';
 
-fdescribe('DateTimeUtils', () => {
+describe('DateTimeUtils', () => {
 
   const datePipe = new DatePipe('en-US');
   const now = new Date().getTime();
@@ -749,15 +749,18 @@ fdescribe('DateTimeUtils', () => {
   });
 
   it('#diff when clock change between start and end time', () => {
-    // given
-    Settings.defaultZone = 'Europe/Paris';
-    const format = 'dd.MM.yyyy';
-    const start = toDateTime('25.03.2023', format).toMillis();
-    const end = toDateTime('27.03.2023', format).toMillis();
+    try {
+      // given
+      Settings.defaultZone = 'Europe/Paris';
+      const format = 'dd.MM.yyyy';
+      const start = toDateTime('25.03.2023', format).toMillis();
+      const end = toDateTime('27.03.2023', format).toMillis();
 
-    expect(DateTimeUtils.diff(start, end, TimeUnit.HOUR)).toBe(47);
-    expect(DateTimeUtils.diff(start, end, TimeUnit.DAY)).toBe(2);
-    Settings.defaultZone = null;
+      expect(DateTimeUtils.diff(start, end, TimeUnit.HOUR)).toBe(47);
+      expect(DateTimeUtils.diff(start, end, TimeUnit.DAY)).toBe(2);
+    } finally {
+      Settings.defaultZone = null;
+    }
   });
 
   it('#add when time unit has fixed length', () => {
@@ -768,17 +771,20 @@ fdescribe('DateTimeUtils', () => {
   });
 
   it('#add when clock change is involved', () => {
-    // given
-    Settings.defaultZone = 'Europe/Paris';
-    const format = 'dd.MM.yyyy HH';
-    const start = toDateTime('25.03.2023 12', format).toMillis();
+    try {
+      // given
+      Settings.defaultZone = 'Europe/Paris';
+      const format = 'dd.MM.yyyy HH';
+      const start = toDateTime('25.03.2023 12', format).toMillis();
 
-    // when
-    const time = DateTimeUtils.add(start, TimeUnit.HOUR, 47);
+      // when
+      const time = DateTimeUtils.add(start, TimeUnit.HOUR, 47);
 
-    // then
-    expect(DateTime.fromMillis(time).toFormat(format)).toBe('27.03.2023 12');
-    Settings.defaultZone = null;
+      // then
+      expect(DateTime.fromMillis(time).toFormat(format)).toBe('27.03.2023 12');
+    } finally {
+      Settings.defaultZone = null;
+    }
   });
 
   it('#startOf MILLISECOND', () => {
