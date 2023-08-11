@@ -44,7 +44,7 @@ export class DateTimeUtils {
    * @returns TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND or TimeUnit.MILLISECOND
    */
   static largestMatchingTimeUnit(msDuraton: number, minNumberOfUnits: number): TimeUnit {
-    for (const timeUnit of [TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND]) {
+    for (const timeUnit of [TimeUnit.YEAR, TimeUnit.MONTH, TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND]) {
       if (this.countTimeUnits(msDuraton, timeUnit) >= minNumberOfUnits) {
         return timeUnit;
       }
@@ -53,8 +53,8 @@ export class DateTimeUtils {
   }
 
   /**
-   * computes the number of timeunits contained in the specified duration,
-   * note that the the result for TimeUnit.DAY, TimeUnit.MONTH and TimeUnit.YEAR is approximative
+   * computes the number of time units contained in the specified duration,
+   * note that the result for TimeUnit.DAY, TimeUnit.MONTH and TimeUnit.YEAR is approximative
    * since it varies depending on the point in time (for example, when the time change takes place 
    * on a certain day)
    *

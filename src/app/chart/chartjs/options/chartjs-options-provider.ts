@@ -183,12 +183,16 @@ export class ChartJsOptionsProvider {
 
     private scaleTimeUnit(timeColumn: Column, context: ChartContext): TimeUnit {
         const columnTimeUnit = DateTimeUtils.timeUnitFromNgFormat(timeColumn.format);
-        const largestMatchingTimeUnit = DateTimeUtils.largestMatchingTimeUnit(this.duration(timeColumn, context), 20);
+        const largestMatchingTimeUnit = DateTimeUtils.largestMatchingTimeUnit(this.duration(timeColumn, context), 10);
         return DateTimeUtils.maxTimeUnit(columnTimeUnit, timeColumn.groupingTimeUnit, largestMatchingTimeUnit);
     }
 
     private duration(timeColumn: Column, context: ChartContext): number {
         const timeRange = ArrayUtils.numberValueRange(context.entries, timeColumn.name);
+
+        const monthCount = DateTimeUtils.countTimeUnits(timeRange.max - timeRange.min, TimeUnit.MONTH);
+        console.log(monthCount);
+
         return timeRange.max - timeRange.min;
     }
 
