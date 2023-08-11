@@ -14,13 +14,12 @@ export class TickLabelFormatter extends TimeFormatter {
             if (!options.ticks) {
                 options.ticks = {};
             }
-            const momentFormat = this.momentFormatOf(column);
             options.ticks.callback = (v, i) => {
                 const chartType = ChartType.fromType(context.chartType);
                 if ([ChartType.BAR, ChartType.HORIZONTAL_BAR].includes(chartType)) {
-                    return this.formatTime(context.data.labels[i], momentFormat);
+                    return this.formatTime(context.data.labels[i] as any, column.format);
                 }
-                return this.formatTime(v, momentFormat);
+                return this.formatTime(v, column.format);
             };
         }
     }

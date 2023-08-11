@@ -45,8 +45,7 @@ export class BarLegendCustomizer extends TimeFormatter {
 
     private formatDatasetLabel(grouByColumn: Column, label: any): any {
         if (grouByColumn?.dataType === DataType.TIME) {
-            const format = this.momentFormatOf(grouByColumn);
-            return this.formatTime(label, format);
+            return this.formatTime(label, grouByColumn.format);
         }
         return label;
     }

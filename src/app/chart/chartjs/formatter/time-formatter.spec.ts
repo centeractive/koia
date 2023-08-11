@@ -1,27 +1,15 @@
-import { Column, DataType } from 'app/shared/model';
 import { TimeFormatter } from './time-formatter';
 
-describe('FormatUtils', () => {
+describe('TimeFormatter', () => {
 
     const formatter = new class extends TimeFormatter { };
 
-    it('#momentFormatOf', () => {
-        expect(formatter.momentFormatOf(timeColumn('d MMM yyyy HH:mm:ss SSS'))).toBe('D MMM YYYY HH:mm:ss SSS');
-        expect(formatter.momentFormatOf(timeColumn('d MMM yyyy HH:mm:ss'))).toBe('D MMM YYYY HH:mm:ss');
-        expect(formatter.momentFormatOf(timeColumn('d MMM yyyy HH:mm'))).toBe('D MMM YYYY HH:mm');
-        expect(formatter.momentFormatOf(timeColumn('d MMM yyyy HH'))).toBe('D MMM YYYY HH');
-        expect(formatter.momentFormatOf(timeColumn('d MMM yyyy'))).toBe('D MMM YYYY');
-        expect(formatter.momentFormatOf(timeColumn('MMM yyyy'))).toBe('MMM YYYY');
-        expect(formatter.momentFormatOf(timeColumn('yyyy'))).toBe('YYYY');
-    });
+    it('#formatTime', () => {
+        const time = 1672583035123;
 
-    function timeColumn(format: string): Column {
-        return {
-            name: 'Time',
-            dataType: DataType.TIME,
-            width: 10,
-            format
-        };
-    }
+        expect(formatter.formatTime(time, 'MMM yyyy')).toBe('Jan 2023');
+        expect(formatter.formatTime(time, 'd.M.yyyy HH:mm')).toBe('1.1.2023 15:23');
+        expect(formatter.formatTime(time, 'd MMM yyyy HH:mm:ss SSS')).toBe('1 Jan 2023 15:23:55 123');
+    });
 
 });

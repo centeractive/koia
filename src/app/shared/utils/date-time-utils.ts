@@ -187,28 +187,6 @@ export class DateTimeUtils {
   }
 
   /**
-   * @returns the moment.js date/time format for the specified time unit
-   */
-  static momentFormatOf(timeUnit: TimeUnit): string {
-    switch (timeUnit) {
-      case (TimeUnit.SECOND):
-        return 'D MMM YYYY HH:mm:ss';
-      case (TimeUnit.MINUTE):
-        return 'D MMM YYYY HH:mm';
-      case (TimeUnit.HOUR):
-        return 'D MMM YYYY HH';
-      case (TimeUnit.DAY):
-        return 'D MMM YYYY';
-      case (TimeUnit.MONTH):
-        return 'MMM YYYY';
-      case (TimeUnit.YEAR):
-        return 'YYYY';
-      default:
-        return 'D MMM YYYY HH:mm:ss SSS';
-    }
-  }
-
-  /**
    * @returns the D3.js date/time format for the specified time unit
    */
   static d3FormatOf(timeUnit: TimeUnit): string {

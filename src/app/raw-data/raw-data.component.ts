@@ -80,8 +80,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
 
   ngAfterViewInit(): void {
     this.adjustLayout();
-
-    if (!this.dialogStyle && this.scene.config.records.length) {
+    if (!this.dialogStyle && this.scene.config.records.filter(r => r.route === this.route).length) {
       this.selectConfig();
     }
   }

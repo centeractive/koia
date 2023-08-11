@@ -1,6 +1,6 @@
 import { DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
-import { ChartOptions } from 'chart.js';
+import { ChartOptions, LegendItem } from 'chart.js';
 import { TimeFormatter } from './time-formatter';
 
 export class LegendLabelFormatter extends TimeFormatter {
@@ -13,9 +13,8 @@ export class LegendLabelFormatter extends TimeFormatter {
         const chartType = ChartType.fromType(context.chartType);
         const nameColumn = context.groupByColumns[0];
         if (context.isCircularChart() && chartType !== ChartType.RADAR && nameColumn?.dataType === DataType.TIME) {
-            const momentFormat = this.momentFormatOf(nameColumn);
-            options.plugins.legend.labels.filter = legendItem => {
-                legendItem.text = this.formatTime(legendItem.text, momentFormat);
+            options.plugins.legend.labels.filter = (item: LegendItem) => {
+                item.text = this.formatTime(item.text, nameColumn.format);
                 return true;
             };
         }

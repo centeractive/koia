@@ -12,10 +12,9 @@ export class TooltipCustomizer extends TimeFormatter {
             const nameColumn = context.groupByColumns[0];
             options.plugins.tooltip.callbacks = {};
             if (nameColumn?.dataType === DataType.TIME) {
-                const momentFormat = this.momentFormatOf(nameColumn);
                 options.plugins.tooltip.callbacks.title = ctx => {
                     const label = ctx[0].chart.data.labels[ctx[0].dataIndex];
-                    return this.formatTime(label, momentFormat);
+                    return this.formatTime(label as any, nameColumn.format);
                 };
             } else if (context.isAggregationCountSelected()) {
                 options.plugins.tooltip.callbacks.title = ctx => {

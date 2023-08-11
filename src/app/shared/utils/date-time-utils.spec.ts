@@ -483,32 +483,6 @@ describe('DateTimeUtils', () => {
     expect(ngFormatter(TimeUnit.YEAR)).toBe(luxonFormatter(TimeUnit.YEAR));
   });
 
-  it('#ngFormatOf and #momentFormatOf should return compatible date/time format each', () => {
-    const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
-    const momentFormatter = (timeunit: TimeUnit) => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
-
-    expect(ngFormatter(TimeUnit.MILLISECOND)).toBe(momentFormatter(TimeUnit.MILLISECOND));
-    expect(ngFormatter(TimeUnit.SECOND)).toBe(momentFormatter(TimeUnit.SECOND));
-    expect(ngFormatter(TimeUnit.MINUTE)).toBe(momentFormatter(TimeUnit.MINUTE));
-    expect(ngFormatter(TimeUnit.HOUR)).toBe(momentFormatter(TimeUnit.HOUR));
-    expect(ngFormatter(TimeUnit.DAY)).toBe(momentFormatter(TimeUnit.DAY));
-    expect(ngFormatter(TimeUnit.MONTH)).toBe(momentFormatter(TimeUnit.MONTH));
-    expect(ngFormatter(TimeUnit.YEAR)).toBe(momentFormatter(TimeUnit.YEAR));
-  });
-
-  it('#momentFormatOf and #d3FormatOf should return compatible date/time format each', () => {
-    const momentFormatter = (timeunit: TimeUnit) => moment(now).format(DateTimeUtils.momentFormatOf(timeunit));
-    const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
-
-    expect(momentFormatter(TimeUnit.MILLISECOND)).toBe(d3Formatter(TimeUnit.MILLISECOND));
-    expect(momentFormatter(TimeUnit.SECOND)).toBe(d3Formatter(TimeUnit.SECOND));
-    expect(momentFormatter(TimeUnit.MINUTE)).toBe(d3Formatter(TimeUnit.MINUTE));
-    expect(momentFormatter(TimeUnit.HOUR)).toBe(d3Formatter(TimeUnit.HOUR));
-    expect(momentFormatter(TimeUnit.DAY)).toBe(d3Formatter(TimeUnit.DAY));
-    expect(momentFormatter(TimeUnit.MONTH)).toBe(d3Formatter(TimeUnit.MONTH));
-    expect(momentFormatter(TimeUnit.YEAR)).toBe(d3Formatter(TimeUnit.YEAR));
-  });
-
   it('#d3FormatOf and #ngFormatOf should return compatible date/time format each', () => {
     const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
     const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
