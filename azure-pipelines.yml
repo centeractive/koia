@@ -85,5 +85,5 @@ steps:
   inputs:
     artifactName: 'koiadist'
     targetPath: 'dist/koia'
-  enabled: false
+  enabled: true
   displayName: 'publish artifact'

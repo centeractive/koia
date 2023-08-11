@@ -13,7 +13,7 @@
           <mat-icon>insert_drive_file</mat-icon>
           <span>Save As {{ exportFormat }}</span>
         </button>
-        <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
+        <button *ngIf="!dialogStyle" mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
           <mat-icon>monitor</mat-icon>
           <span>Manage Views</span>
         </button>
@@ -23,21 +23,23 @@
         <mat-icon>print</mat-icon>
       </button>
 
-      <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
-        <mat-icon>save_alt</mat-icon>
-      </button>
-
-      <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!configRecords.length" [matMenuTriggerFor]="restoreViewMenu">
-        <mat-icon [matBadge]="configRecords.length" [matBadgeHidden]="!configRecords.length" matBadgeSize="small" matBadgeColor="accent">
-          open_in_browser
-        </mat-icon>
-      </button>
-      <mat-menu #restoreViewMenu="matMenu">
-        <button class="menu_item_details" *ngFor="let record of configRecords" mat-menu-item (click)="loadConfig(record)">
-          <mat-icon>monitor</mat-icon>
-          <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
+      <ng-container *ngIf="!dialogStyle">
+        <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
+          <mat-icon>save_alt</mat-icon>
         </button>
-      </mat-menu>
+
+        <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!configRecords.length" [matMenuTriggerFor]="restoreViewMenu">
+          <mat-icon [matBadge]="configRecords.length" [matBadgeHidden]="!configRecords.length" matBadgeSize="small" matBadgeColor="accent">
+            open_in_browser
+          </mat-icon>
+        </button>
+        <mat-menu #restoreViewMenu="matMenu">
+          <button class="menu_item_details" *ngFor="let record of configRecords" mat-menu-item (click)="loadConfig(record)">
+            <mat-icon>monitor</mat-icon>
+            <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
+          </button>
+        </mat-menu>
+      </ng-container>
 
       <button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
               [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
