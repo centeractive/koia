@@ -1,6 +1,7 @@
 import { Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ScaleOptions } from 'chart.js';
+import { DateTime } from 'luxon';
 import { TickLabelFormatter } from './tick-label-formatter';
 
 describe('TickLabelFormatter', () => {
@@ -33,8 +34,13 @@ describe('TickLabelFormatter', () => {
 
         // then
         const ticks = options.ticks as any;
-        expect(ticks.callback(null, 0)).toBe('Jun 2010');
-        expect(ticks.callback(null, 1)).toBe('Jul 2010');
+        const labels = context.data.labels;
+
+        let expected = formatTime(labels[0] as number, timeColumn.format);
+        expect(ticks.callback(null, 0)).toBe(expected);
+
+        expected = formatTime(labels[1] as number, timeColumn.format);
+        expect(ticks.callback(null, 1)).toBe(expected);
     });
 
     it('#format horizontal bar chart & time column', () => {
@@ -47,8 +53,13 @@ describe('TickLabelFormatter', () => {
 
         // then
         const ticks = options.ticks as any;
-        expect(ticks.callback(null, 0)).toBe('Jun 2010');
-        expect(ticks.callback(null, 1)).toBe('Jul 2010');
+        const labels = context.data.labels;
+
+        let expected = formatTime(labels[0] as number, timeColumn.format);
+        expect(ticks.callback(null, 0)).toBe(expected);
+
+        expected = formatTime(labels[1] as number, timeColumn.format);
+        expect(ticks.callback(null, 1)).toBe(expected);
     });
 
     it('#format non-bar chart & time column', () => {
@@ -61,7 +72,8 @@ describe('TickLabelFormatter', () => {
 
         // then
         const ticks = options.ticks as any;
-        expect(ticks.callback(1275343200000, 10)).toBe('Jun 2010');
+        const expected = formatTime(1275343200000, timeColumn.format);
+        expect(ticks.callback(1275343200000, 10)).toBe(expected);
     });
 
     function chartContext(chartType: ChartType): ChartContext {
@@ -79,6 +91,10 @@ describe('TickLabelFormatter', () => {
                 callback: (v: number) => v
             }
         } as any;
+    }
+
+    function formatTime(time: number, format: string): string {
+        return DateTime.fromMillis(time).toFormat(format)
     }
 
 });

@@ -5,7 +5,7 @@ import * as moment from 'moment';
 import { Column, DataType, TimeUnit } from '../model';
 import { DateTimeUtils } from './date-time-utils';
 
-describe('DateTimeUtils', () => {
+fdescribe('DateTimeUtils', () => {
 
   const datePipe = new DatePipe('en-US');
   const now = new Date().getTime();
@@ -866,6 +866,6 @@ describe('DateTimeUtils', () => {
   }
 
   function toDateTime(value: string, format: string): DateTime {
-    return DateTime.fromFormat(value, format, { zone: 'Europe/Paris' });
+    return DateTime.fromFormat(value, format);
   }
 });

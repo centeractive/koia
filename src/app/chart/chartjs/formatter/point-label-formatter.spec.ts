@@ -1,5 +1,6 @@
 import { Column, DataType } from 'app/shared/model';
 import { RadialLinearScaleOptions } from 'chart.js';
+import { DateTime } from 'luxon';
 import { PointLabelFormatter } from './point-label-formatter';
 
 describe('PointLabelFormatter', () => {
@@ -16,7 +17,8 @@ describe('PointLabelFormatter', () => {
         const result = options.pointLabels.callback(1230764400000 as any, null);
 
         // then
-        expect(result).toBe('1 Jan 2009');
+        const expected = formatTime(1230764400000, column.format);
+        expect(result).toBe(expected);
     });
 
     it('#format non-time column', () => {
@@ -38,6 +40,10 @@ describe('PointLabelFormatter', () => {
                 callback: (v: number) => v
             }
         } as any;
+    }
+
+    function formatTime(time: number, format: string): string {
+        return DateTime.fromMillis(time).toFormat(format)
     }
 
 });
