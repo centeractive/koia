@@ -18,8 +18,8 @@ export function colWidthMeasurementOf(scene: Scene): 'em' | 'px' {
 }
 
 /**
- * indicates if the specified scene was issued by the Retrospective Log analyzer
+ * indicates if the specified scene was issued by the Retrospective Log Analyzer
  */
 export function isSourceRetrospective(scene: Scene): boolean {
-    return !!scene.context?.find(o => o.name === 'Profile');
+    return !!scene.context?.find(o => o.name === 'Profile' || o.name === 'Data Sources');
 }
