@@ -1,9 +1,9 @@
-import { DataType, TimeUnit, ColumnPair } from 'app/shared/model';
-import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
-import { TimeUnitDetector } from './time-unit-detector';
-import { TimeGuesser } from './time-guesser';
 import { DatePipe } from '@angular/common';
+import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
+import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
 import { DateTimeColumnDetector } from './date-time-column-detector';
+import { TimeGuesser } from './time-guesser';
+import { TimeUnitDetector } from './time-unit-detector';
 
 export class ColumnMappingGenerator {
 
@@ -67,7 +67,7 @@ export class ColumnMappingGenerator {
             columnPair.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
          }
          this.downgrade(columnPair, DataType.TEXT);
-      } else if (columnPair.target.dataType === DataType.TIME && columnPair.source.format == undefined) {
+      } else if (typeof value === 'string' && columnPair.target.dataType === DataType.TIME && columnPair.source.format == undefined) {
          this.dateTimeColumnDetector.refineDateTimeFormat(columnPair, value, locale);
       }
       columnPair.target.width = Math.max(columnPair.target.width, this.computeWidth(value, columnPair));

@@ -60,8 +60,7 @@ export class DateTimeColumnDetector {
         return false;
     }
 
-
-    refineDateTimeFormat(columnPair: ColumnPair, value: any, locale: string): void {
+    refineDateTimeFormat(columnPair: ColumnPair, value: string, locale: string): void {
         for (const formatToTimeUnit of DateTimeColumnDetector.TIME_FORMATS_TO_TIMEUNITS) {
             if (formatToTimeUnit.format && DateTimeUtils.parseDate(value, formatToTimeUnit.format, locale)) {
                 columnPair.source.format = formatToTimeUnit.format;
