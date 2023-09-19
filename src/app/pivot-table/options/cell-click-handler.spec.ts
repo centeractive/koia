@@ -23,7 +23,7 @@ describe('CellClickHandler', () => {
          { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
          { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true }
       ];
-      rawDataRevealService = new RawDataRevealService(null);
+      rawDataRevealService = new RawDataRevealService(null, null);
       baseQueryProvider = { provide: () => new Query() };
       cellClickHandler = new CellClickHandler(columns, baseQueryProvider, rawDataRevealService);
       showSpy = spyOn(rawDataRevealService, 'show').and.callFake(q => null);

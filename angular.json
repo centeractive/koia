@@ -124,5 +124,8 @@
     "@schematics/angular:directive": {
       "prefix": "koia"
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

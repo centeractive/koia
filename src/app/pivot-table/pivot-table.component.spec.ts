@@ -47,7 +47,7 @@ describe('PivotTableComponent', () => {
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
-  const rawDataRevealService = new RawDataRevealService(null);
+  const rawDataRevealService = new RawDataRevealService(null, null);
   let locatePivotTable: Function;
   let getActiveSceneSpy: jasmine.Spy;
 

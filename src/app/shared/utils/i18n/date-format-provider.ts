@@ -28,6 +28,7 @@ export class DateFormatProvider {
         'el': 'd/M/yyyy',
         'en-029': 'MM/dd/yyyy',
         'en-au': 'd/MM/yyyy',
+        'en-gb': 'dd/MM/yy',
         'en-my': 'd/M/yyyy',
         'en-nz': 'd/MM/yyyy',
         'en-ph': 'M/d/yyyy',

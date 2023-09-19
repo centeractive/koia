@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { Column, DataType, ElementContext, Operator, PropertyFilter, Query } from '../model';
@@ -10,7 +10,7 @@ import { CouchDBConstants } from './backend/couchdb';
 })
 export class RawDataRevealService {
 
-  constructor(private dialogService: MatDialog) { }
+  constructor(private dialogService: MatDialog, private zone: NgZone) { }
 
   /**
    * displays raw data of a single entry identified by its ID
@@ -61,12 +61,17 @@ export class RawDataRevealService {
     this.show(query);
   }
 
-  show(query: Query): void {
-    this.dialogService.open(RawDataDialogComponent, {
-      data: new QuerySanitizer(query).sanitize(),
-      panelClass: 'dialog-container',
-      enterAnimationDuration: 1,
-      exitAnimationDuration: 1
+  /**
+   * @see https://stackoverflow.com/a/56508410/2358409
+   */ 
+  show(query: Query): void {    
+    this.zone.run(() => {
+      this.dialogService.open(RawDataDialogComponent, {
+        data: new QuerySanitizer(query).sanitize(),
+        panelClass: 'dialog-container',
+        enterAnimationDuration: 1,
+        exitAnimationDuration: 1
+      });
     });
   }
 }
