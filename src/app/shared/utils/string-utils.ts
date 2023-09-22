@@ -9,7 +9,7 @@ export class StringUtils {
       if (!str || str.length <= maxWidth) {
          return str;
       }
-      return str.substr(0, maxWidth - 3) + '...';
+      return str.substring(0, maxWidth - 3) + '...';
    }
 
    /**
@@ -88,4 +88,14 @@ export class StringUtils {
       return text.substring(0, selStart) + text.substring(selEnd);
    }
 
+   static escape(s: string, charsToEscape: string, escaper = '\\'): string {
+      if (!s || !charsToEscape) {
+         return s;
+      }
+      for (let i = 0; i < charsToEscape.length; i++) {
+         const c = charsToEscape.charAt(i);
+         s = s.split(c).join(escaper + c);
+      }
+      return s;
+   }
 }

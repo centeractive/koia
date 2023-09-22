@@ -114,6 +114,21 @@ describe('EntryMapper', () => {
       expect(actual[0].entry['Valid']).toBe(true);
       expect(actual[0].errors).toEqual([]);
    });
+   
+   it('#mapRows when target column name ends with a dot', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.target.name = 'Pct.';
+
+      // when
+      const actual = mapper.mapRows([[undefined, '12.5']]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry['Pct.']).toBe(12.5);
+      expect(actual[0].errors).toEqual([]);
+   });
 
    it('#mapRows TEXT to TIME with valid date/time', () => {
 

@@ -3,6 +3,7 @@ import { ArrayUtils } from 'app/shared/utils';
 import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
 import { OperatorConverter } from './operator-converter';
+import { sanitizeFindQuery } from './mango-query-sanitizer';
 
 export class MangoQueryBuilder {
 
@@ -31,7 +32,7 @@ export class MangoQueryBuilder {
       return this;
    }
 
-   where(name: string, operator: Operator, filterValue: any, dataType?: DataType): MangoQueryBuilder {
+   where(name: string, operator: Operator, filterValue: string | number | boolean, dataType?: DataType): MangoQueryBuilder {
       this.propertyFilters.push(new PropertyFilter(name, operator, filterValue, dataType));
       return this;
    }
@@ -62,8 +63,8 @@ export class MangoQueryBuilder {
       return this;
    }
 
-   containsFilter() {
-      return this.fullTextFilter || this.propertyFilters.length > 0 || this.invertedRangeFilters.length > 0;
+   containsFilter(): boolean {
+      return !!this.fullTextFilter || this.propertyFilters.length > 0 || this.invertedRangeFilters.length > 0;
    }
 
    toQuery(): object {
@@ -73,7 +74,7 @@ export class MangoQueryBuilder {
       this.appendSort(query);
       this.appendPaging(query);
       this.appendRowCount(query);
-      return query;
+      return sanitizeFindQuery(query);
    }
 
    private appendSelector(query: object): void {
@@ -121,7 +122,7 @@ export class MangoQueryBuilder {
                selector[name][operator] = this.toCombinedContainsRegExp(pf.name);
             }
          } else {
-            if (!selector || selector[name][operator]) {
+            if (!selector || !!selector[name][operator]) {
                selector = { [name]: {} };
                selectors.push(selector);
             }
@@ -181,7 +182,7 @@ export class MangoQueryBuilder {
    }
 
    private fullTextFilterSelectors(): object {
-      if (this.fullTextFilter && this.fullTextFilter !== '') {
+      if (!!this.fullTextFilter && this.fullTextFilter !== '') {
          const selectors = [];
          this.columns
             .filter(c => c.dataType === DataType.TEXT)
@@ -204,7 +205,7 @@ export class MangoQueryBuilder {
     * (PouchDB requires the sorted field be part of the selector)
     */
    private pouchDBSortSelector(): object {
-      if (this.forPouchDB && this.sort && !this.propertyFilters.find(f => f.name === this.sort.active)) {
+      if (this.forPouchDB && !!this.sort && !this.propertyFilters.find(f => f.name === this.sort.active)) {
          return {
             [this.sort.active]: { $gte: null }
          };
@@ -219,7 +220,7 @@ export class MangoQueryBuilder {
    }
 
    private appendSort(query: object): void {
-      if (this.sort && this.sort.direction !== '') {
+      if (!!this.sort && this.sort.direction !== '') {
          query['sort'] = [{ [this.sort.active]: this.sort.direction }];
       }
    }

@@ -227,7 +227,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   readSample(): void {
-    this.selectedReader.readSample(this.file as any, SceneComponent.SAMPLE_SIZE, this.encoding)
+    this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
       .then(sample => {
         this.closeExpPanelsAbove(this.columnDefinitions);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
@@ -309,7 +309,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     };
   }
 
-  private persistEntries(mappingResults: MappingResult[]) {
+  private persistEntries(mappingResults: MappingResult[]): void {
     if (!this.entryPersister.isPostingComplete()) {
       mappingResults
         .filter(mr => mr.errors.length > 0)

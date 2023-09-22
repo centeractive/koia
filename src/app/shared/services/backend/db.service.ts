@@ -25,7 +25,7 @@ export class DBService {
 
   constructor(private couchDBService: CouchDBService) { }
 
-  setDbPrefix(prefix: string) {
+  setDbPrefix(prefix: string): void {
     this.dbPrefix = prefix;
   }
 
@@ -127,7 +127,7 @@ export class DBService {
         }
         return this.db.createDatabase(scene.database);
       })
-      .then(r => Promise.all(scene.columns
+      .then(() => Promise.all(scene.columns
         .filter(c => c.indexed)
         .map(c => this.db.createIndex(scene.database, c.name))))
       .then(() => scene);

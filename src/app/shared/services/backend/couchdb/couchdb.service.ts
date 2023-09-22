@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { DB } from '../db.type';
 import { DocChangeResponse } from '../doc-change-response.type';
 import { CouchDBConfig } from './couchdb-config';
+import { sanitizeIndexQuery } from '../mango';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
@@ -78,15 +79,15 @@ export class CouchDBService implements DB {
   }
 
   createIndex(database: string, columnName: string): Promise<any> {
-    const index = {
+    const query = sanitizeIndexQuery({
       index: {
         fields: [columnName]
       },
       ddoc: 'index_' + columnName
-    };
+    });
     const url = this.url(database, '_index');
-    LogUtils.logHttpRequest(HTTPMethod.POST, url, index);
-    return lastValueFrom(this.http.post<any>(url, index, this.httpOptions));
+    LogUtils.logHttpRequest(HTTPMethod.POST, url, query);
+    return lastValueFrom(this.http.post<any>(url, query, this.httpOptions));
   }
 
   deleteDatabase(database: string): Promise<any> {

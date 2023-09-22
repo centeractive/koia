@@ -122,4 +122,31 @@ describe('StringUtils', () => {
       expect(StringUtils.nonSelected('abc', 1, 3)).toBe('a');
       expect(StringUtils.nonSelected('abc', 2, 3)).toBe('ab');
    });
+
+   it('#escape when argument is missing', () => {
+      expect(StringUtils.escape(undefined, '.')).toBeUndefined();
+      expect(StringUtils.escape(null, '.')).toBeNull();
+      expect(StringUtils.escape('abc', undefined)).toBe('abc');
+      expect(StringUtils.escape('abc', null)).toBe('abc');
+   });
+
+   it('#escape with default escaper', () => {
+      expect(StringUtils.escape('', '.')).toBe('');
+      expect(StringUtils.escape('  ', '.')).toBe('  ');
+      expect(StringUtils.escape('abc.', '.')).toBe('abc\\.');
+      expect(StringUtils.escape('abc$', '$')).toBe('abc\\$');
+      expect(StringUtils.escape('[abc]', '[]')).toBe('\\[abc\\]');
+      expect(StringUtils.escape('.abc.', '.')).toBe('\\.abc\\.');
+      expect(StringUtils.escape('abc', 'abc')).toBe('\\a\\b\\c');
+   });
+
+   it('#escape with custom escaper', () => {
+      expect(StringUtils.escape('', '', '_')).toBe('');
+      expect(StringUtils.escape('  ', '.', '_')).toBe('  ');
+      expect(StringUtils.escape('abc.', '.', '_')).toBe('abc_.');
+      expect(StringUtils.escape('abc$', '$', '_')).toBe('abc_$');
+      expect(StringUtils.escape('[abc]', '[]', '_')).toBe('_[abc_]');
+      expect(StringUtils.escape('.abc.', '.', '_')).toBe('_.abc_.');
+      expect(StringUtils.escape('abc', 'abc', '_')).toBe('_a_b_c');
+   });
 });

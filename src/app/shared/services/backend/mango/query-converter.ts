@@ -2,6 +2,7 @@ import { MangoQueryBuilder } from './mango-query-builder';
 import { CouchDBConstants } from '../couchdb/couchdb-constants';
 import { Column, Query, Operator } from 'app/shared/model';
 import { SortLimitationWorkaround } from '../couchdb';
+import { sanitizeFindQuery } from './mango-query-sanitizer';
 
 export class QueryConverter {
 
@@ -28,7 +29,7 @@ export class QueryConverter {
       this.defineFilters(builder, query);
       builder.sortBy(query.getSort());
       if (query.getPageIndex() >= 0 && query.getRowsPerPage() > 0) {
-         builder.page(query.getPageIndex(), query.getRowsPerPage())
+         builder.page(query.getPageIndex(), query.getRowsPerPage());
       }
       return builder.toQuery();
    }
