@@ -157,7 +157,7 @@ describe('ExcelReader', () => {
       dataHandler.onError = err => {
 
          // then
-         expect(err).toBe('Worksheet "XYZ Sheet" does not exist');
+         expect(err).toBe('Worksheet "XYZ Sheet" does not exist or cannot be parsed');
          done();
       };
 

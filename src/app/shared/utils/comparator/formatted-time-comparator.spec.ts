@@ -1,6 +1,6 @@
 import { TimeUnit } from 'app/shared/model';
 import { compareFormattedTime } from './formatted-time-comparator';
-import { ValueRangeConverter } from 'app/shared/value-range';
+import { TimeGroupingService } from 'app/shared/services';
 
 describe('formatted-time-comparator', () => {
 
@@ -15,7 +15,7 @@ describe('formatted-time-comparator', () => {
 
     it('#compareFormattedTime when any time is EMTPY', () => {
         const time = '1 Jan 2023 06:55:10 873';
-        const empty = ValueRangeConverter.EMPTY;
+        const empty = TimeGroupingService.EMPTY;
         const timeUnit = TimeUnit.MILLISECOND;
 
         expect(compareFormattedTime(empty, time, timeUnit)).toBe(-1);
