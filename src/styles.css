@@ -167,7 +167,7 @@ mat-panel-description {
 }
 
 .mat-bottom-sheet-container {
-  background: transparent;
+  padding: 0 !important;
 }
 
 /* the following CSS class names must match enum StatusType */
