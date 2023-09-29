@@ -172,18 +172,17 @@ mat-panel-description {
 
 /* the following CSS class names must match enum StatusType */
 .success {
-  background-color: greenyellow;
+  background: greenyellow;
   white-space: pre-line;
 }
 
 .warning {
-  background-color: orange;
+  background: orange;
   white-space: pre-line;
-  display: inline;
 }
 
 .error {
-  background-color: rgb(245, 102, 102);
+  background: rgb(245, 102, 102);
   white-space: pre-line;
 }
 

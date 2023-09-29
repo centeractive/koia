@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatAccordion } from '@angular/material/expansion';
@@ -55,6 +55,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   columnMappingsValid: boolean;
   targetColumnNames: string[];
   dateFormats: string[];
+  readingSample: boolean;
   previewData: MappingResult[];
   scenesExist: boolean;
   scene: Scene;
@@ -75,7 +76,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private valueFormatter = new ValueFormatter();
 
   constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
-    private dbService: DBService, notificationService: NotificationService) {
+    private dbService: DBService, private cdRef: ChangeDetectorRef, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
@@ -194,9 +195,13 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private readDataSample(): void {
-    this.readerService.readHeader(this.file, SceneComponent.HEADER_SIZE, this.encoding)
-      .then(data => this.onDataSample(data))
-      .catch(err => this.notifyError(err));
+    this.readingSample = true;
+    this.cdRef.detectChanges();
+    setTimeout(() =>
+      this.readerService.readHeader(this.file, SceneComponent.HEADER_SIZE, this.encoding)
+        .then(data => this.onDataSample(data))
+        .catch(err => this.notifyError(err))
+        .finally(() => this.readingSample = false), 500); // let UI update iself and show progressbar
   }
 
   private onDataSample(data: string): void {
@@ -227,15 +232,19 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   readSample(): void {
-    this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
-      .then(sample => {
-        this.closeExpPanelsAbove(this.columnDefinitions);
-        this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
-        this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
-          this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
-        this.onColumnChanged();
-      })
-      .catch(err => this.notifyError(err));
+    this.readingSample = true;
+    this.cdRef.detectChanges();
+    setTimeout(() =>
+      this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
+        .then(sample => {
+          this.closeExpPanelsAbove(this.columnDefinitions);
+          this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
+          this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
+            this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
+          this.onColumnChanged();
+        })
+        .catch(err => this.notifyError(err))
+        .finally(() => this.readingSample = false), 500); // let UI update iself and show progressbar
   }
 
   deleteColumnMapping(columnPair: ColumnPair): void {
