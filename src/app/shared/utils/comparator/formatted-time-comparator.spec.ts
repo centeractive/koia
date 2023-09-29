@@ -1,7 +1,27 @@
 import { TimeUnit } from 'app/shared/model';
 import { compareFormattedTime } from './formatted-time-comparator';
+import { ValueRangeConverter } from 'app/shared/value-range';
 
 describe('formatted-time-comparator', () => {
+
+    it('#compareFormattedTime when any time is undefined', () => {
+        const time = '1 Jan 2023 06:55:10 873';
+        const timeUnit = TimeUnit.MILLISECOND;
+
+        expect(compareFormattedTime(undefined, time, timeUnit)).toBe(-1);
+        expect(compareFormattedTime(undefined, undefined, timeUnit)).toBe(0);
+        expect(compareFormattedTime(time, undefined, timeUnit)).toBe(1);
+    });
+
+    it('#compareFormattedTime when any time is EMTPY', () => {
+        const time = '1 Jan 2023 06:55:10 873';
+        const empty = ValueRangeConverter.EMPTY;
+        const timeUnit = TimeUnit.MILLISECOND;
+
+        expect(compareFormattedTime(empty, time, timeUnit)).toBe(-1);
+        expect(compareFormattedTime(empty, empty, timeUnit)).toBe(0);
+        expect(compareFormattedTime(time, empty, timeUnit)).toBe(1);
+    });
 
     it('#compareFormattedTime MILLISECOND', () => {
         const before = '1 Jan 2023 06:55:10 123';

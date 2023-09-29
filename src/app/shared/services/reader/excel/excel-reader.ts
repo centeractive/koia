@@ -53,15 +53,25 @@ export class ExcelReader implements DataReader {
             .then(r => r.blob())
             .then(b => this.read(b))
             .then(data => {
-               const workbook = XLSX.read(data, { type: 'binary', sheetRows: rowCount, cellDates: true, cellText: false });
+               const workbook = XLSX.read(data, this.parsingOptions(rowCount));
                const sheetName = this.identifySheetName(workbook);
                const sheet = workbook.Sheets[sheetName];
                if (!sheet) {
-                  reject('Worksheet "' + sheetName + '" does not exist');
+                  reject('Worksheet "' + sheetName + '" does not exist or cannot be parsed');
                }
                resolve(XLSX.utils.sheet_to_json(sheet));
             });
       });
+   }
+
+   private parsingOptions(rowCount: number): XLSX.ParsingOptions {
+      return {
+         type: 'binary',
+         sheetRows: rowCount,
+         cellDates: true,
+         cellText: false,
+         sheets: this.attrSheetName.value === '' ? 0 : this.attrSheetName.value
+      };
    }
 
    private identifySheetName(workbook: XLSX.WorkBook): string {

@@ -124,7 +124,7 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
     return DataTypeUtils.iconOf(dataType);
   }
 
-  canAddValueFilter(column: Column) {
+  canAddValueFilter(column: Column): boolean {
     if (column.dataType === DataType.TIME) {
       return this.propertyFilters.find(f => f.name === column.name) == undefined;
     }
