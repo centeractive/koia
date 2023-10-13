@@ -44,7 +44,7 @@
           <span>&nbsp;Select File</span>
         </button>
         <input #fileInput id="fileInput" hidden type="file"
-          [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
+          [accept]="selectedReader ? selectedReader.getFileExtension() : ''" (change)="readingSample = true">
         <mat-form-field class="file_name" *ngIf="file">
           <mat-label>File Name</mat-label>
           <input matInput readonly [value]="file.name">

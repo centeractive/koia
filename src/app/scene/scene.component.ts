@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatAccordion } from '@angular/material/expansion';
@@ -10,7 +10,7 @@ import { ValueFormatter } from 'app/shared/format';
 import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { DateTimeUtils } from 'app/shared/utils';
+import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
@@ -76,7 +76,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private valueFormatter = new ValueFormatter();
 
   constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
-    private dbService: DBService, private cdRef: ChangeDetectorRef, notificationService: NotificationService) {
+    private dbService: DBService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
@@ -178,7 +178,9 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.initContext();
   }
 
-  onFileSelChange(files: FileList): void {
+  async onFileSelChange(files: FileList): Promise<void> {
+    this.readingSample = true;
+    await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     this.initContext();
     if (files.length) {
       this.file = files[0];
@@ -194,14 +196,13 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  private readDataSample(): void {
+  private async readDataSample(): Promise<void> {
     this.readingSample = true;
-    this.cdRef.detectChanges();
-    setTimeout(() =>
-      this.readerService.readHeader(this.file, SceneComponent.HEADER_SIZE, this.encoding)
-        .then(data => this.onDataSample(data))
-        .catch(err => this.notifyError(err))
-        .finally(() => this.readingSample = false), 500); // let UI update iself and show progressbar
+    await CommonUtils.sleep(100); // releases UI thread for showing progress bar
+    this.readerService.readHeader(this.file, SceneComponent.HEADER_SIZE, this.encoding)
+      .then(data => this.onDataSample(data))
+      .catch(err => this.notifyError(err))
+      .finally(() => this.readingSample = false);
   }
 
   private onDataSample(data: string): void {
@@ -231,20 +232,19 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.feedback = undefined;
   }
 
-  readSample(): void {
+  async readSample(): Promise<void> {
     this.readingSample = true;
-    this.cdRef.detectChanges();
-    setTimeout(() =>
-      this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
-        .then(sample => {
-          this.closeExpPanelsAbove(this.columnDefinitions);
-          this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
-          this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
-            this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
-          this.onColumnChanged();
-        })
-        .catch(err => this.notifyError(err))
-        .finally(() => this.readingSample = false), 500); // let UI update iself and show progressbar
+    await CommonUtils.sleep(100); // releases UI thread for showing progress bar
+    this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
+      .then(sample => {
+        this.closeExpPanelsAbove(this.columnDefinitions);
+        this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
+        this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
+          this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
+        this.onColumnChanged();
+      })
+      .catch(err => this.notifyError(err))
+      .finally(() => this.readingSample = false);
   }
 
   deleteColumnMapping(columnPair: ColumnPair): void {
