@@ -1,7 +1,7 @@
-import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
-import { Route } from './shared/model';
 import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 import { selectAll } from 'd3';
+import { Route } from './shared/model';
 
 @Injectable()
 export class AppRouteReuseStrategy implements RouteReuseStrategy {

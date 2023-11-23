@@ -46,8 +46,7 @@ describe('RawDataDialogComponent', () => {
             { provide: MatDialogRef, useValue: { close(): void { } } },
             { provide: MAT_DIALOG_DATA, useValue: query },
          ]
-      })
-         .compileComponents();
+      }).compileComponents();
       const fixture = TestBed.createComponent(RawDataDialogComponent);
       fixture.detectChanges();
       return fixture.componentInstance;
