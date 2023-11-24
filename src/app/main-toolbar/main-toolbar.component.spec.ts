@@ -95,7 +95,7 @@ describe('MainToolbarComponent', () => {
     fixture = TestBed.createComponent(MainToolbarComponent);
     component = fixture.componentInstance;
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    spyOn(dbService, 'numberRangeOf').and.returnValue(Promise.resolve(valueRange));
+    spyOn(dbService, 'numberRangeOf').and.resolveTo(valueRange);
     spyOn(dbService, 'findEntries').and.returnValue(of(entries));
     fixture.detectChanges();
     flush();

@@ -434,8 +434,7 @@ describe('GridComponent', () => {
       return dialogRef;
     });
     const status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
-    const status$ = Promise.resolve(status);
-    spyOn(viewPersistenceService, 'saveView').and.returnValue(status$);
+    spyOn(viewPersistenceService, 'saveView').and.resolveTo(status);
 
     // when
     component.saveView();
@@ -468,7 +467,7 @@ describe('GridComponent', () => {
   it('#saveAs should export data when graph context is provided', fakeAsync(() => {
   
     // given
-    spyOn(component.sidenav, 'open').and.returnValue(Promise.resolve());
+    spyOn(component.sidenav, 'open').and.resolveTo());
     const summaryContext = component.addSummaryTable();
     spyOn(exportService, 'exportData');
   

@@ -24,16 +24,14 @@ module.exports = function (config) {
       { pattern: 'src/assets/mat-icons/*.png', included: false, watched: false, served: true },
       { pattern: 'src/assets/svg-icons/*.svg', included: false, watched: false, served: true },
       { pattern: 'src/app/shared/services/reader/excel/test.xlsx', included: false, watched: false, served: true },
-      
+
       // following links are required for PivotTableComponent
       'node_modules/jquery/dist/jquery.min.js',
       'node_modules/jquery-ui-dist/jquery-ui.min.js',
       'node_modules/pivottable/dist/pivot.min.js'
     ],
     proxies: {
-      '/assets/': '/assets/'
-    },
-    preprocessors: {
+      '/assets/': '/base/src/assets/'
     },
     mime: {
       'text/x-typescript': ['ts', 'tsx']

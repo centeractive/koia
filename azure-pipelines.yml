@@ -19,11 +19,11 @@ steps:
 
 - task: NodeTool@0
   inputs:
-    versionSpec: '16.x'
+    versionSpec: '20.x'
   displayName: 'install Node.js'
 
 - script: |
-    npm ci -g @angular/cli@16.0.3
+    npm ci -g @angular/cli@17.0.3
     npm ci
   displayName: 'install npm packages'
 

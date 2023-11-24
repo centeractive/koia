@@ -92,7 +92,7 @@ describe('DBService', () => {
   it('#initBackend should switch to IndexedDB when CouchDB access fails', fakeAsync(() => {
 
     // given
-    spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.reject('error'));
+    spyOn(couchDBService, 'listDatabases').and.rejectWith('error');
 
     // when
     dbService.initBackend(true).then(r => null);
@@ -139,11 +139,11 @@ describe('DBService', () => {
     for (let i = 1; i <= DBService.MAX_DB_COUNT; i++) {
       databases.push(testDBPrefix + DBService.DATA + '_' + i);
     }
-    spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve(databases));
+    spyOn(couchDBService, 'listDatabases').and.resolveTo(databases);
 
     // when
     await dbService.findFreeDatabaseName()
-      .then(db => fail(' should have been rejected'))
+      .then(() => fail(' should have been rejected'))
       .catch(e => {
 
         // then

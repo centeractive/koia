@@ -1,9 +1,8 @@
-import { DataType, TimeUnit, Column } from 'app/shared/model';
-import { DataPoint, ChartContext, ChartType } from 'app/shared/model/chart';
-import { ChartDataHelper } from './chart-data-helper';
-import * as moment from 'moment';
-import 'moment/min/locales';
+import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { ChartContext, ChartType, DataPoint } from 'app/shared/model/chart';
 import { shuffle } from 'd3';
+import { DateTime } from 'luxon';
+import { ChartDataHelper } from './chart-data-helper';
 
 describe('ChartDataHelper', () => {
 
@@ -196,7 +195,7 @@ describe('ChartDataHelper', () => {
    });
 
    function formatTime(time: number): string {
-      return moment(time).format('D MMM YYYY HH:mm:ss');
+      return DateTime.fromMillis(time).toFormat('d MMM yyyy HH:mm:ss');
    }
 
    function createColumn(name: string, dataType: DataType, groupingTimeUnit?: TimeUnit): Column {

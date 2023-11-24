@@ -1,9 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-
-import { ReaderService } from './reader.service';
 import { CSVReader } from './csv/csv-reader';
-import { JSONReader } from './json/json-reader';
 import { ExcelReader } from './excel/excel-reader';
+import { JSONReader } from './json/json-reader';
+import { ReaderService } from './reader.service';
 
 describe('ReaderService', () => {
 

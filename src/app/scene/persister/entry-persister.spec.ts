@@ -15,7 +15,7 @@ describe('EntryPersister', () => {
    let persister: EntryPersister;
 
    beforeEach(() => {
-      dbServiceWriteEtriesSpy = spyOn(dbService, 'writeEntries').and.callFake(() => Promise.resolve());
+      dbServiceWriteEtriesSpy = spyOn(dbService, 'writeEntries').and.resolveTo();
       monitor = {
          onProgress: percent => console.log('progress ' + percent + '%'),
          onComplete: msg => console.log(msg),
@@ -78,7 +78,7 @@ describe('EntryPersister', () => {
    it('#post should complete posting and report error when error occurs in DB service', fakeAsync(() => {
 
       // given
-      dbServiceWriteEtriesSpy.and.returnValue(Promise.reject('DB error'));
+      dbServiceWriteEtriesSpy.and.rejectWith('DB error');
 
       // when
       persister.post(entries(batchSize));

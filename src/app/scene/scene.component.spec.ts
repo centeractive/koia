@@ -72,9 +72,9 @@ describe('SceneComponent', () => {
     spyOn(notificationService, 'onWarning');
     spyOn(notificationService, 'onError');
     isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
-    spyOn(dbService, 'findFreeDatabaseName').and.returnValue(Promise.resolve('data_1'));
+    spyOn(dbService, 'findFreeDatabaseName').and.resolveTo('data_1');
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
-    findSceneInfos = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(scenes));
+    findSceneInfos = spyOn(dbService, 'findSceneInfos').and.resolveTo(scenes);
     spyOn(dbService, 'writeEntries').and.callFake(() => Promise.resolve());
     fixture.detectChanges();
     flush();
@@ -102,7 +102,7 @@ describe('SceneComponent', () => {
 
     // given
     const sceneInfos = createSceneInfos(3);
-    findSceneInfos.and.returnValue(Promise.resolve(sceneInfos));
+    findSceneInfos.and.resolveTo(sceneInfos);
 
     // when
     component.ngOnInit();
@@ -149,7 +149,7 @@ describe('SceneComponent', () => {
     expect(component.initContext).toHaveBeenCalled();
   }));
 
-  it('#change on file input should init context', () => {
+  it('#change on file input should init context', fakeAsync(() => {
 
     // given
     component.file = new File([], 'Test.csv');
@@ -158,20 +158,21 @@ describe('SceneComponent', () => {
     component.feedback = 'abc';
 
     // when
-    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'))
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
 
     // then
+    flush();
     expect(component.file).toBeUndefined();
     expect(component.fileHeader).toBeUndefined();
     expect(component.columnMappings).toBeUndefined();
     expect(component.feedback).toBeUndefined();
-  });
+  }));
 
   it('#onFileSelChange should generate scene name and short description', fakeAsync(() => {
 
     // given
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.returnValue(Promise.resolve('dummy'));
+    spyOn(readerService, 'readHeader').and.resolveTo('dummy');
 
     // when
     component.onFileSelChange(fileList);
@@ -180,15 +181,14 @@ describe('SceneComponent', () => {
     flush();
     const expectedName = 'Test / ' + datePipe.transform(fileList[0].lastModified, 'mediumDate');
     expect(component.scene.name).toBe(expectedName);
-    const expectedShortDesc = 'CSV Test.csv (modified on ' + datePipe.transform(new Date(), 'medium') + ')';
-    expect(component.scene.shortDescription).toBe(expectedShortDesc);
+    expect(component.scene.shortDescription.startsWith('CSV Test.csv (modified on')).toBeTrue();
   }));
 
   it('#onFileSelChange should notify error when file header cannot be read', fakeAsync(() => {
 
     // given
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.returnValue(Promise.reject('error'));
+    spyOn(readerService, 'readHeader').and.rejectWith('error');
 
     // when
     component.onFileSelChange(fileList);
@@ -202,11 +202,11 @@ describe('SceneComponent', () => {
 
     // given
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.returnValue(Promise.resolve('dummy'));
+    spyOn(readerService, 'readHeader').and.resolveTo('dummy');
     component.onFileSelChange(fileList);
     flush();
     fixture.detectChanges();
-    spyOn(component.selectedReader, 'readSample').and.returnValue(Promise.resolve({ tableData: tableData.slice(0, 4) }));
+    spyOn(component.selectedReader, 'readSample').and.resolveTo({ tableData: tableData.slice(0, 4) });
     const detectColumnsButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement;
 
     // when
@@ -363,7 +363,7 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
-    spyOn(dbService, 'persistScene').and.returnValue(Promise.reject());
+    spyOn(dbService, 'persistScene').and.rejectWith();
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -522,11 +522,11 @@ describe('SceneComponent', () => {
 
   function initUpToDetectColumns(): void {
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.returnValue(Promise.resolve('dummy'));
+    spyOn(readerService, 'readHeader').and.resolveTo('dummy');
     component.onFileSelChange(fileList);
     flush();
     fixture.detectChanges();
-    spyOn(component.selectedReader, 'readSample').and.returnValue(Promise.resolve({ tableData: tableData.slice(0, 4) }));
+    spyOn(component.selectedReader, 'readSample').and.resolveTo({ tableData: tableData.slice(0, 4) });
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();

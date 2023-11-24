@@ -1,5 +1,5 @@
 import { DataType } from 'app/shared/model';
-import * as moment from 'moment';
+import { DateTime } from 'luxon';
 import { DataHandler } from '../data-handler.type';
 import { ExcelReader } from './excel-reader';
 
@@ -69,8 +69,8 @@ describe('ExcelReader', () => {
          expect(entries[1]['c2']).toBe(2);
          expect(entries[0]['c3']).toBeTruthy();
          expect(entries[1]['c3']).toBeFalse();
-         expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
-         expect(formatTime(entries[1]['c4'])).toBe('06.06.2019');
+         expect(formatDate(entries[0]['c4'])).toBe('05.06.2019');
+         expect(formatDate(entries[1]['c4'])).toBe('06.06.2019');
       });
    });
 
@@ -78,7 +78,7 @@ describe('ExcelReader', () => {
 
       // given
       const file = new File([''], 'test.xlsx');
-      spyOn(reader, 'readEntries').and.returnValue(Promise.reject('invalid data'));
+      spyOn(reader, 'readEntries').and.rejectWith('invalid data');
 
       // when
       await reader.readSample(file, 2)
@@ -106,8 +106,8 @@ describe('ExcelReader', () => {
                   { c1: 'b', c2: 2, c3: false, c4: jasmine.anything() }
                ]
             });
-            expect(formatTime(sample.entries[0]['c4'])).toBe('05.06.2019');
-            expect(formatTime(sample.entries[1]['c4'])).toBe('06.06.2019');
+            expect(formatDate(sample.entries[0]['c4'])).toBe('05.06.2019');
+            expect(formatDate(sample.entries[1]['c4'])).toBe('06.06.2019');
          })
          .catch(() => fail('should not produce error'));
    });
@@ -118,7 +118,7 @@ describe('ExcelReader', () => {
       const request: XMLHttpRequest = createRequest();
       dataHandler.onComplete = () => done();
 
-      request.onload = r => {
+      request.onload = () => {
          const file = new File([request.response], 'test.xlsx');
 
          // when
@@ -138,9 +138,9 @@ describe('ExcelReader', () => {
          expect(entries[0]['c3']).toBeTruthy();
          expect(entries[1]['c3']).toBeFalse();
          expect(entries[2]['c3']).toBeTruthy();
-         expect(formatTime(entries[0]['c4'])).toBe('05.06.2019');
-         expect(formatTime(entries[1]['c4'])).toBe('06.06.2019');
-         expect(formatTime(entries[2]['c4'])).toBe('07.06.2019');
+         expect(formatDate(entries[0]['c4'])).toBe('05.06.2019');
+         expect(formatDate(entries[1]['c4'])).toBe('06.06.2019');
+         expect(formatDate(entries[2]['c4'])).toBe('07.06.2019');
       };
 
       // trigger
@@ -169,7 +169,7 @@ describe('ExcelReader', () => {
 
       // given
       const request: XMLHttpRequest = createRequest();
-      spyOn(reader, 'readEntries').and.returnValue(Promise.reject('invalid data'));
+      spyOn(reader, 'readEntries').and.rejectWith('invalid data');
       const file = new File([request.response], 'test.xlsx');
 
       dataHandler.onError = err => {
@@ -196,7 +196,7 @@ describe('ExcelReader', () => {
       return request;
    }
 
-   function formatTime(time: number): string {
-      return moment(time).format('DD.MM.YYYY');
+   function formatDate(date: Date): string {
+      return DateTime.fromJSDate(date).toFormat('dd.MM.yyyy');
    }
 });

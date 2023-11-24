@@ -494,7 +494,7 @@ describe('FlexCanvasComponent', () => {
   it('#saveAs should export data when summary context is provided', fakeAsync(() => {
 
     // given
-    spyOn(component.sidenav, 'open').and.returnValue(Promise.resolve());
+    spyOn(component.sidenav, 'open').and.resolveTo();
     const summaryContext = component.addSummaryTable();
     spyOn(exportService, 'exportData');
 

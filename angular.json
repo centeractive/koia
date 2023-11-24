@@ -79,10 +79,10 @@
           "options": {},
           "configurations": {
             "production": {
-              "browserTarget": "koia:build:production"
+              "buildTarget": "koia:build:production"
             },
             "development": {
-              "browserTarget": "koia:build:development"
+              "buildTarget": "koia:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -90,7 +90,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "koia:build"
+            "buildTarget": "koia:build"
           }
         },
         "test": {

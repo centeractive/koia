@@ -262,22 +262,7 @@ export class DateTimeUtils {
   }
 
   static duration(timeUnit: TimeUnit, count: number): DurationLikeObject {
-    switch (timeUnit) {
-      case TimeUnit.MILLISECOND:
-        return { milliseconds: count };
-      case TimeUnit.SECOND:
-        return { seconds: count };
-      case TimeUnit.MINUTE:
-        return { minutes: count };
-      case TimeUnit.HOUR:
-        return { hours: count };
-      case TimeUnit.DAY:
-        return { days: count };
-      case TimeUnit.MONTH:
-        return { months: count };
-      case TimeUnit.YEAR:
-        return { years: count };
-    }
+    return { [timeUnit]: count };
   }
 
   static startOf(time: number, timeUnit: TimeUnit): number {

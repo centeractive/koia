@@ -67,10 +67,10 @@ describe('FrontComponent', () => {
       ]
     })
       .compileComponents();
-    initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
+    initBackendSpy = spyOn(dbService, 'initBackend').and.resolveTo();
     isIndexedDbInUseSpy = spyOn(dbService, 'isIndexedDbInUse').and.returnValue(true);
     const sceneInfos = createSceneInfos(5);
-    findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.returnValue(Promise.resolve(sceneInfos));
+    findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.resolveTo(sceneInfos);
   }));
 
   beforeEach(async () => {
@@ -92,7 +92,7 @@ describe('FrontComponent', () => {
   it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
 
     // given
-    initBackendSpy.and.returnValue(Promise.reject());
+    initBackendSpy.and.rejectWith();
     spyOn(notificationService, 'onError');
 
     // when
@@ -107,7 +107,7 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    spyOn(dbService, 'useIndexedDb').and.returnValue(Promise.resolve());
+    spyOn(dbService, 'useIndexedDb').and.resolveTo();
 
     // when
     component.onDataStorageChanged(component.indexedDB);
@@ -123,7 +123,7 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.couchDB;
-    spyOn(dbService, 'useIndexedDb').and.returnValue(Promise.resolve());
+    spyOn(dbService, 'useIndexedDb').and.resolveTo();
     spyOn(notificationService, 'onSuccess');
 
     // when
@@ -170,7 +170,7 @@ describe('FrontComponent', () => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
+    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
     initBackendSpy.calls.reset();
     spyOn(notificationService, 'onSuccess');
 
@@ -197,7 +197,7 @@ describe('FrontComponent', () => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
+    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
     initBackendSpy.calls.reset();
     spyOn(notificationService, 'onSuccess');
 
@@ -224,7 +224,7 @@ describe('FrontComponent', () => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.reject('connection failed'));
+    spyOn(couchDBService, 'initConnection').and.rejectWith('connection failed');
     initBackendSpy.calls.reset();
     spyOn(notificationService, 'onError');
 
@@ -250,8 +250,8 @@ describe('FrontComponent', () => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
-    initBackendSpy.and.returnValue(Promise.reject('cannot initialize backend'));
+    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
+    initBackendSpy.and.rejectWith('cannot initialize backend');
     spyOn(notificationService, 'onError');
 
     // when
@@ -277,9 +277,9 @@ describe('FrontComponent', () => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection establihed'));
+    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
     initBackendSpy.calls.reset();
-    findSceneInfosSpy.and.returnValue(Promise.reject('backend not available'));
+    findSceneInfosSpy.and.rejectWith('backend not available');
     spyOn(notificationService, 'onError');
 
     // when
@@ -409,9 +409,9 @@ describe('FrontComponent (external invocation)', () => {
     const fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
-    spyOn(couchDBService, 'initConnection').and.returnValue(Promise.resolve('connection established'));
-    initBackendSpy = spyOn(dbService, 'initBackend').and.returnValue(Promise.resolve());
-    spyOn(dbService, 'activateScene').and.returnValue(Promise.resolve(SceneFactory.createScene('1', [])));
+    spyOn(couchDBService, 'initConnection').and.resolveTo('connection established');
+    initBackendSpy = spyOn(dbService, 'initBackend').and.resolveTo();
+    spyOn(dbService, 'activateScene').and.resolveTo(SceneFactory.createScene('1', []));
     spyOn(router, 'navigateByUrl');
     fixture.detectChanges();
     flush();
@@ -432,7 +432,7 @@ describe('FrontComponent (external invocation)', () => {
   it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
 
     // given
-    initBackendSpy.and.returnValue(Promise.reject());
+    initBackendSpy.and.rejectWith();
     spyOn(notificationService, 'onError');
 
     // when

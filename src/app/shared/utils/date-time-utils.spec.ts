@@ -1,7 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { timeFormat } from 'd3';
 import { DateTime, Settings } from 'luxon';
-import * as moment from 'moment';
 import { Column, DataType, TimeUnit } from '../model';
 import { DateTimeUtils } from './date-time-utils';
 
@@ -13,6 +12,12 @@ describe('DateTimeUtils', () => {
   const min = 60 * sec;
   const hour = 60 * min;
   const day = 24 * hour;
+
+  it('#maxTimeUnit should return undefined when no time unit is provided', () => {
+    expect(DateTimeUtils.maxTimeUnit()).toBeUndefined();
+    expect(DateTimeUtils.maxTimeUnit(undefined)).toBeUndefined();
+    expect(DateTimeUtils.maxTimeUnit(null)).toBeUndefined();
+  });
 
   it('#maxTimeUnit should return existing time unit when any unit is missing', () => {
     expect(DateTimeUtils.maxTimeUnit(TimeUnit.SECOND, undefined)).toBe(TimeUnit.SECOND);
@@ -763,6 +768,12 @@ describe('DateTimeUtils', () => {
     }
   });
 
+  it('#add should return start time when count is missing or zero', () => {
+    expect(DateTimeUtils.add(now, TimeUnit.MILLISECOND, null)).toBe(now);
+    expect(DateTimeUtils.add(now, TimeUnit.MILLISECOND, undefined)).toBe(now);
+    expect(DateTimeUtils.add(now, TimeUnit.MILLISECOND, 0)).toBe(now);
+  });
+
   it('#add when time unit has fixed length', () => {
     expect(DateTimeUtils.add(now, TimeUnit.MILLISECOND, 3)).toBe(now + 3);
     expect(DateTimeUtils.add(now, TimeUnit.SECOND, 3)).toBe(now + (3 * sec));
@@ -868,7 +879,7 @@ describe('DateTimeUtils', () => {
   }
 
   function fromNow(numberOfTimeUnit: number, timeUnit: TimeUnit): number {
-    return moment(now).add(numberOfTimeUnit, timeUnit).toDate().getTime();
+    return DateTime.fromMillis(now).plus({ [timeUnit]: numberOfTimeUnit }).toMillis();
   }
 
   function toTime(value: string, format: string): number {

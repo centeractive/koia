@@ -311,8 +311,7 @@ describe('PivotTableComponent', () => {
     });
     const saveRecordSpy = spyOn(viewPersistenceService, 'saveRecord');
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    const status$ = Promise.resolve(status);
-    saveRecordSpy.and.returnValue(status$);
+    saveRecordSpy.and.resolveTo(status);
 
     // when
     component.saveConfig();
@@ -343,8 +342,7 @@ describe('PivotTableComponent', () => {
       return dialogRef;
     });
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    const status$ = Promise.resolve(status);
-    spyOn(viewPersistenceService, 'saveRecord').and.returnValue(status$);
+    spyOn(viewPersistenceService, 'saveRecord').and.resolveTo(status);
 
     // when
     component.saveConfig();

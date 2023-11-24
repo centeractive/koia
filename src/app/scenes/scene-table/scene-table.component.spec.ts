@@ -33,7 +33,7 @@ describe('SceneTableComponent (all scenes)', () => {
 
   beforeEach(async () => {
     await setup();
-    spyOn(dbService, 'findScene').and.returnValue(Promise.resolve(scenes[0]));
+    spyOn(dbService, 'findScene').and.resolveTo(scenes[0]);
     component.sceneInfos = scenes;
     component.ngOnChanges(null);
     fixture.detectChanges();

@@ -87,7 +87,7 @@ describe('RawDataComponent', () => {
     component = fixture.componentInstance;
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
-    requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.returnValue(Promise.resolve(page));
+    requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.resolveTo(page);
     spyOn(dialogService, 'showConfirmDialog').and.returnValue(null);
     exportService = TestBed.inject(ExportService);
     fixture.detectChanges();
@@ -142,7 +142,7 @@ describe('RawDataComponent', () => {
   it('#onFilterChanged should notify error when entries page request fails', fakeAsync(() => {
 
     // given
-    requestEntriesPageSpy.and.returnValue(Promise.reject('server error'));
+    requestEntriesPageSpy.and.rejectWith('server error');
     spyOn(component, 'notifyError').and.callFake(err => null);
 
     // when

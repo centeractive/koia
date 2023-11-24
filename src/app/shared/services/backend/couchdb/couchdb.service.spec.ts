@@ -1,9 +1,9 @@
-import { TestBed } from '@angular/core/testing';
-import { CouchDBService } from './couchdb.service';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
-import { Document, ConnectionInfo, Protocol } from 'app/shared/model';
-import { CouchDBConfig } from './couchdb-config';
+import { TestBed } from '@angular/core/testing';
+import { ConnectionInfo, Document, Protocol } from 'app/shared/model';
 import { lastValueFrom } from 'rxjs';
+import { CouchDBConfig } from './couchdb-config';
+import { CouchDBService } from './couchdb.service';
 
 describe('CouchDBService', () => {
 
@@ -32,7 +32,7 @@ describe('CouchDBService', () => {
 
       // given
       const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
-      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve([]));
+      spyOn(couchDBService, 'listDatabases').and.resolveTo([]);
 
       // when
       await couchDBService.initConnection(connInfo).then(() => null);
@@ -333,8 +333,8 @@ describe('CouchDBService', () => {
 
       // given
       const databases = ['scenes', 'data_1', testDBPrefix + 'scenes', testDBPrefix + 'data_1', testDBPrefix + 'data_2'];
-      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve(databases));
-      spyOn(couchDBService, 'deleteDatabase').and.returnValue(Promise.resolve());
+      spyOn(couchDBService, 'listDatabases').and.resolveTo(databases);
+      spyOn(couchDBService, 'deleteDatabase').and.resolveTo();
 
       // when
       await couchDBService.clear(testDBPrefix);
@@ -350,8 +350,8 @@ describe('CouchDBService', () => {
 
       // given
       const databases = ['scenes', 'data_1', 'data_2'];
-      spyOn(couchDBService, 'listDatabases').and.returnValue(Promise.resolve(databases));
-      spyOn(couchDBService, 'deleteDatabase').and.callFake(db => Promise.resolve());
+      spyOn(couchDBService, 'listDatabases').and.resolveTo(databases);
+      spyOn(couchDBService, 'deleteDatabase').and.callFake(() => Promise.resolve());
 
       // when
       await couchDBService.clear();
