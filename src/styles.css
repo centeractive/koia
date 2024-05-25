@@ -59,6 +59,7 @@ body {
 
 .sidenav {
   width: 380px;
+  max-width: 380px;
   /* keep in sync with ViewController#SIDENAV_WIDTH */
 }
 
