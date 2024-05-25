@@ -1,4 +1,4 @@
-import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { Column, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneFactory } from 'app/shared/test';
@@ -37,8 +37,7 @@ describe('DBService', () => {
       { _id: '5', ID: 5, Time: 1420053120000, Level: 'ERROR', Data: 'ERROR line three', Host: 'local drive', Path: '/error.log', Amount: 55 }
     ];
     TestBed.configureTestingModule({
-      imports: [HttpClientModule],
-      providers: [CouchDBService, DBService]
+      providers: [CouchDBService, DBService, provideHttpClient(withInterceptorsFromDi())]
     });
     couchDBService = TestBed.inject(CouchDBService);
   });

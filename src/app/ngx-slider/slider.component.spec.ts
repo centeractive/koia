@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SliderComponent } from './slider.component';
 import { SliderElementDirective } from './slider-element.directive';
@@ -10,7 +10,7 @@ describe('SliderComponent', () => {
   let component: SliderComponent;
   let fixture: ComponentFixture<SliderComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [
         SliderComponent,
@@ -19,11 +19,7 @@ describe('SliderComponent', () => {
         SliderLabelDirective,
         TooltipWrapperComponent
       ]
-    })
-    .compileComponents();
-  }));
-
-  beforeEach(() => {
+    }).compileComponents();
     fixture = TestBed.createComponent(SliderComponent);
     component = fixture.componentInstance;
     component.options = {

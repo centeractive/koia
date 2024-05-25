@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -82,8 +82,7 @@ import { SummaryTableSideBarComponent } from './summary-table/summary-table-side
 import { SummaryTableComponent } from './summary-table/summary-table.component';
 import { TrialComponent } from './testing/trial/trial.component';
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         AppComponent,
         MainToolbarComponent,
         ScenesComponent,
@@ -124,10 +123,8 @@ import { TrialComponent } from './testing/trial/trial.component';
         DraggableColumnComponent,
         TrialComponent
     ],
-    imports: [
-        BrowserModule,
+    bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,
-        HttpClientModule,
         BrowserAnimationsModule,
         MatToolbarModule,
         MatButtonModule,
@@ -158,9 +155,7 @@ import { TrialComponent } from './testing/trial/trial.component';
         MatStepperModule,
         MatSnackBarModule,
         ReactiveFormsModule,
-        NgxSliderModule
-    ],
-    providers: [
+        NgxSliderModule], providers: [
         { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
         { provide: STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
         ReaderService,
@@ -173,8 +168,7 @@ import { TrialComponent } from './testing/trial/trial.component';
         ValueRangeGroupingService,
         AggregationService,
         NotificationService,
-        DialogService
-    ],
-    bootstrap: [AppComponent]
-})
+        DialogService,
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule { }
