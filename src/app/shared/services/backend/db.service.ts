@@ -10,6 +10,7 @@ import { DB } from './db.type';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryConverter } from './mango/query-converter';
 import { PouchDBAccess } from './pouchdb';
+import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 
 @Injectable()
 export class DBService {
@@ -118,19 +119,21 @@ export class DBService {
       .then(s => <Scene>s);
   }
 
-  async persistScene(scene: Scene, activate: boolean): Promise<Scene> {
-    return this.db.insert(this.scenesDbName(), scene)
-      .then(() => {
+  async persistScene(scene: Scene, activate: boolean, promiseMonitor? : PromiseProgressMonitor): Promise<Scene> {
+    promiseMonitor = promiseMonitor ?? new PromiseProgressMonitor();
+    return promiseMonitor.add("insert scene", this.db.insert(this.scenesDbName(), scene))
+      .then("create database", () => {
         if (activate) {
           this.activeScene = scene;
           console.log('scene activated (id: ' + scene._id + ', rev: ' + scene._rev + ')');
         }
         return this.db.createDatabase(scene.database);
       })
-      .then(() => Promise.all(scene.columns
+      .then("indexed columns", () => Promise.all(scene.columns
         .filter(c => c.indexed)
-        .map(c => this.db.createIndex(scene.database, c.name))))
-      .then(() => scene);
+        .map(c => promiseMonitor.addUnchained("index column " + c.name, this.db.createIndex(scene.database, c.name)))))
+      .unwrap()
+      .then(() => scene)
   }
 
   async updateScene(scene: Scene): Promise<Scene> {
