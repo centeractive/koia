@@ -19,6 +19,7 @@ import { DataHandler, DataReader, ReaderService } from '../shared/services/reade
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { SceneUtils } from './utils';
+import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 
 @Component({
   selector: 'koia-front',
@@ -289,13 +290,26 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.accordion.closeAll();
     this.progressBarMode = 'query';
     this.feedback = 'initializing data load...';
-    this.dbService.persistScene(this.scene, false)
+    const progressMonitor = new PromiseProgressMonitor();
+
+    progressMonitor.onProgressChange(() => {
+      this.progressBarMode = 'determinate';
+      this.percentPersisted = progressMonitor.settledPercent;
+      if (progressMonitor.settled == 0) {
+        this.feedback = `Tasks (${progressMonitor.settled}/${progressMonitor.count}) - initializing data load...`;
+      } else {
+        this.feedback = `Tasks (${progressMonitor.settled}/${progressMonitor.count}) - ${progressMonitor.lastSettledTask} completed`;
+      }
+    });
+
+    this.dbService.persistScene(this.scene, false, progressMonitor)
       .then(() => this.loadData())
       .catch(err => this.notifyError(err));
   }
 
   private loadData(): void {
     this.feedback = 'reading data...';
+    this.progressBarMode = 'query';
     this.mappingErrors.clear();
     this.entryPersister.reset();
     const entryMapper = new EntryMapper(this.columnMappings, this.selectedLocale);
