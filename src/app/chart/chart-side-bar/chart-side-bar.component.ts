@@ -6,9 +6,10 @@ import { ChartUtils, DataTypeUtils } from 'app/shared/utils';
 import { Aggregation, Column, DataType } from '../../shared/model';
 
 @Component({
-  selector: 'koia-chart-side-bar',
-  templateUrl: './chart-side-bar.component.html',
-  styleUrls: ['./chart-side-bar.component.css']
+    selector: 'koia-chart-side-bar',
+    templateUrl: './chart-side-bar.component.html',
+    styleUrls: ['./chart-side-bar.component.css'],
+    standalone: false
 })
 export class ChartSideBarComponent extends SideBarController implements OnChanges {
 

@@ -22,9 +22,10 @@ import { SceneUtils } from './utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 
 @Component({
-  selector: 'koia-front',
-  templateUrl: './scene.component.html',
-  styleUrls: ['./scene.component.css']
+    selector: 'koia-front',
+    templateUrl: './scene.component.html',
+    styleUrls: ['./scene.component.css'],
+    standalone: false
 })
 export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit {
 

@@ -3,9 +3,10 @@ import { Column, ElementContext, TimeUnit } from 'app/shared/model';
 import { DataTypeUtils } from 'app/shared/utils';
 
 @Component({
-  selector: 'koia-draggable-column',
-  templateUrl: './draggable-column.component.html',
-  styleUrls: ['./draggable-column.component.css']
+    selector: 'koia-draggable-column',
+    templateUrl: './draggable-column.component.html',
+    styleUrls: ['./draggable-column.component.css'],
+    standalone: false
 })
 export class DraggableColumnComponent implements OnInit {
   @Input() context: ElementContext;

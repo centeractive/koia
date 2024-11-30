@@ -9,9 +9,10 @@ import { Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 
 @Component({
-  selector: 'koia-grid',
-  templateUrl: './grid.component.html',
-  styleUrls: ['./grid.component.css']
+    selector: 'koia-grid',
+    templateUrl: './grid.component.html',
+    styleUrls: ['./grid.component.css'],
+    standalone: false
 })
 export class GridComponent extends ViewController implements AfterViewChecked {
 

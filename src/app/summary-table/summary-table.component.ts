@@ -15,9 +15,10 @@ import { ExportDataGenerator } from './export-data-generator';
 import { RowSpanComputer, Span } from './row-span-computer';
 
 @Component({
-  selector: 'koia-summary-table',
-  templateUrl: './summary-table.component.html',
-  styleUrls: ['./summary-table.component.css']
+    selector: 'koia-summary-table',
+    templateUrl: './summary-table.component.html',
+    styleUrls: ['./summary-table.component.css'],
+    standalone: false
 })
 export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataProvider {
 

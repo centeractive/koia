@@ -3,7 +3,8 @@ import { SliderElementDirective } from './slider-element.directive';
 import { ValueHelper } from './value-helper';
 
 @Directive({
-  selector: '[ngxSliderLabel]'
+    selector: '[ngxSliderLabel]',
+    standalone: false
 })
 export class SliderLabelDirective extends SliderElementDirective {
   private _value: string = null;

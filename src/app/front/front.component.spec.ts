@@ -27,7 +27,10 @@ import { Observable, of } from 'rxjs';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { FrontComponent } from './front.component';
 
-@Component({ template: '' })
+@Component({
+    template: '',
+    standalone: false
+})
 class DummyComponent { }
 
 const couchDBService = new CouchDBServiceMock();

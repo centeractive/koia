@@ -3,9 +3,10 @@ import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { Status } from '../../model';
 
 @Component({
-  selector: 'koia-status',
-  template: '<div *ngIf="status" [class]="status.type">{{ status.msg }}</div>',
-  styleUrls: ['./status.component.css']
+    selector: 'koia-status',
+    template: '<div *ngIf="status" [class]="status.type">{{ status.msg }}</div>',
+    styleUrls: ['./status.component.css'],
+    standalone: false
 })
 export class StatusComponent {
 

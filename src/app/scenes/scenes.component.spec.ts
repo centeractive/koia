@@ -25,7 +25,10 @@ import { Observable, of } from 'rxjs';
 import { SceneTableComponent } from './scene-table/scene-table.component';
 import { ScenesComponent } from './scenes.component';
 
-@Component({ template: '' })
+@Component({
+    template: '',
+    standalone: false
+})
 class RawDataComponent { }
 
 describe('ScenesComponent', () => {

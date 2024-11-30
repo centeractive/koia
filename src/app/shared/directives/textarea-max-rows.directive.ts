@@ -2,7 +2,8 @@ import { Directive, Input, ElementRef, HostListener } from '@angular/core';
 import { StringUtils } from '../utils';
 
 @Directive({
-  selector: 'textarea[textareaMaxRows]'
+    selector: 'textarea[textareaMaxRows]',
+    standalone: false
 })
 export class TextareaMaxRowsDirective {
 

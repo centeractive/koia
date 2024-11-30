@@ -5,10 +5,11 @@ import { Protocol, ConnectionInfo } from 'app/shared/model';
 import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 
 @Component({
-  selector: 'koia-connection-dialog',
-  templateUrl: './connection-dialog.component.html',
-  styleUrls: ['./connection-dialog.component.css'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'koia-connection-dialog',
+    templateUrl: './connection-dialog.component.html',
+    styleUrls: ['./connection-dialog.component.css'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class ConnectionDialogComponent {
 

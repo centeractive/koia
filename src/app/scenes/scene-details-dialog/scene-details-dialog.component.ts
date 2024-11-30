@@ -4,8 +4,8 @@ import { Scene } from 'app/shared/model';
 import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 
 @Component({
-  selector: 'koia-scene-details-dialog',
-  template: `<mat-card appearance="outlined">
+    selector: 'koia-scene-details-dialog',
+    template: `<mat-card appearance="outlined">
                 <mat-card-content>
                   <h2>{{ scene.name }}</h2>
                   <h3>Source Context</h3>
@@ -34,7 +34,7 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
                   </table>
                 </mat-card-content>
               </mat-card>`,
-  styles: [`table {
+    styles: [`table {
                font-size: 12px;
             }
             .column-header {
@@ -52,7 +52,8 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
             td {
               padding-right: 10px;
               white-space: pre-wrap;
-            }`]
+            }`],
+    standalone: false
 })
 export class SceneDetailsDialogComponent {
 

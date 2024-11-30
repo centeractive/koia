@@ -27,10 +27,11 @@ import { QueryProvider } from './options/query-provider';
 declare let jQuery: any;
 
 @Component({
-  selector: 'koia-pivot-table',
-  templateUrl: './pivot-table.component.html',
-  styleUrls: ['./pivot-table.component.css'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'koia-pivot-table',
+    templateUrl: './pivot-table.component.html',
+    styleUrls: ['./pivot-table.component.css'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class PivotTableComponent extends ConfigController implements AfterViewInit {
 

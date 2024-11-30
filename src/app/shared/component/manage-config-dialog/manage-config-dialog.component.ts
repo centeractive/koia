@@ -5,9 +5,10 @@ import * as _ from 'lodash';
 import { ManageConfigContext } from './manage-config-context.type.';
 
 @Component({
-  selector: 'koia-manage-config-dialog',
-  templateUrl: './manage-config-dialog.component.html',
-  styleUrls: ['./manage-config-dialog.component.css']
+    selector: 'koia-manage-config-dialog',
+    templateUrl: './manage-config-dialog.component.html',
+    styleUrls: ['./manage-config-dialog.component.css'],
+    standalone: false
 })
 export class ManageConfigDialogComponent {
 

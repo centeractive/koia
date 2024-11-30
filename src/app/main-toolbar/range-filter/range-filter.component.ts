@@ -6,10 +6,11 @@ import { Subscription } from 'rxjs';
 import { NumberRangeFilter } from './model/number-range-filter';
 
 @Component({
-  selector: 'koia-range-filter',
-  templateUrl: './range-filter.component.html',
-  styleUrls: ['./range-filter.component.css'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'koia-range-filter',
+    templateUrl: './range-filter.component.html',
+    styleUrls: ['./range-filter.component.css'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class RangeFilterComponent implements OnChanges, OnDestroy {
 

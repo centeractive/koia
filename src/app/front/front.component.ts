@@ -13,9 +13,10 @@ import { firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 
 @Component({
-  selector: 'koia-front',
-  templateUrl: './front.component.html',
-  styleUrls: ['./front.component.css']
+    selector: 'koia-front',
+    templateUrl: './front.component.html',
+    styleUrls: ['./front.component.css'],
+    standalone: false
 })
 export class FrontComponent extends AbstractComponent implements OnInit {
 

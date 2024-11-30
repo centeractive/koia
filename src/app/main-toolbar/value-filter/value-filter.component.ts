@@ -8,9 +8,10 @@ import { ValueFilterCustomizer } from './value-filter-customizer';
 import { ValueFilterUtils } from './value-filter-utils';
 
 @Component({
-  selector: 'koia-value-filter',
-  templateUrl: './value-filter.component.html',
-  styleUrls: ['./value-filter.component.css']
+    selector: 'koia-value-filter',
+    templateUrl: './value-filter.component.html',
+    styleUrls: ['./value-filter.component.css'],
+    standalone: false
 })
 export class ValueFilterComponent implements OnInit {
 

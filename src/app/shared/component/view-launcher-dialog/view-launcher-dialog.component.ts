@@ -3,9 +3,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ViewLauncherContext } from './view-launcher-context.type.';
 
 @Component({
-  selector: 'koia-view-launcher-dialog',
-  templateUrl: './view-launcher-dialog.component.html',
-  styleUrls: ['./view-launcher-dialog.component.css']
+    selector: 'koia-view-launcher-dialog',
+    templateUrl: './view-launcher-dialog.component.html',
+    styleUrls: ['./view-launcher-dialog.component.css'],
+    standalone: false
 })
 export class ViewLauncherDialogComponent {
 

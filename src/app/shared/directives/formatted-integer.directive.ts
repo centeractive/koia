@@ -3,7 +3,8 @@ import { NumberFormatter } from '../format';
 import { NumberUtils, StringUtils } from '../utils';
 
 @Directive({
-    selector: 'input[formattedInteger]'
+    selector: 'input[formattedInteger]',
+    standalone: false
 })
 export class FormattedIntegerDirective {
 

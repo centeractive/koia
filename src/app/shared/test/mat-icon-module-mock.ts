@@ -12,8 +12,9 @@ import { NgModule } from '@angular/core';
  * @see https://stackoverflow.com/a/55528306/2358409
  */
 @Component({
-   selector: 'koia-mat-icon-module-mock',
-   template: '<span></span>'
+    selector: 'koia-mat-icon-module-mock',
+    template: '<span></span>',
+    standalone: false
 })
 // tslint:disable-next-line:component-class-suffix
 export class MatIconModuleMock {

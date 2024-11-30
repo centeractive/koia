@@ -24,10 +24,11 @@ import { ChangeEvent, Route } from '../shared/model';
 import { ChartJs } from './chartjs/chartjs';
 
 @Component({
-  selector: 'koia-chart',
-  templateUrl: './chart.component.html',
-  styleUrls: ['./chart.component.css'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'koia-chart',
+    templateUrl: './chart.component.html',
+    styleUrls: ['./chart.component.css'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
 

@@ -18,10 +18,11 @@ import { GraphOptionsProvider } from './options/graph-options-provider';
 import { NodeDoubleClickHandler } from './options/node-double-click-handler';
 
 @Component({
-  selector: 'koia-graph',
-  templateUrl: './graph.component.html',
-  styleUrls: ['./graph.component.css'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'koia-graph',
+    templateUrl: './graph.component.html',
+    styleUrls: ['./graph.component.css'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider {
 

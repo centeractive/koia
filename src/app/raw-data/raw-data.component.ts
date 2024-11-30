@@ -20,9 +20,10 @@ import { Column, DataType, ExportFormat, Page, Query, Route } from '../shared/mo
 import { DBService } from '../shared/services/backend';
 
 @Component({
-  selector: 'koia-raw-data',
-  templateUrl: './raw-data.component.html',
-  styleUrls: ['./raw-data.component.css']
+    selector: 'koia-raw-data',
+    templateUrl: './raw-data.component.html',
+    styleUrls: ['./raw-data.component.css'],
+    standalone: false
 })
 export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit {
 

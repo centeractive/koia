@@ -25,7 +25,10 @@ import { MainToolbarComponent } from './main-toolbar.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 
-@Component({ template: '' })
+@Component({
+    template: '',
+    standalone: false
+})
 class DummyComponent { }
 
 describe('MainToolbarComponent', () => {

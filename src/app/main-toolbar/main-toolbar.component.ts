@@ -12,9 +12,10 @@ import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 import { ValueFilterUtils } from './value-filter/value-filter-utils';
 
 @Component({
-  selector: 'koia-main-toolbar',
-  templateUrl: './main-toolbar.component.html',
-  styleUrls: ['./main-toolbar.component.css']
+    selector: 'koia-main-toolbar',
+    templateUrl: './main-toolbar.component.html',
+    styleUrls: ['./main-toolbar.component.css'],
+    standalone: false
 })
 export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked {
 

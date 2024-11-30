@@ -4,7 +4,8 @@ import { By } from '@angular/platform-browser';
 import { TextareaMaxRowsDirective } from './textarea-max-rows.directive';
 
 @Component({
-  template: '<textarea type="text" [textareaMaxRows]="2"></textarea>'
+    template: '<textarea type="text" [textareaMaxRows]="2"></textarea>',
+    standalone: false
 })
 class TextareaMaxRowsComponent {
 }

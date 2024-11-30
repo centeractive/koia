@@ -2,8 +2,8 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
-  selector: 'koia-input-dialog',
-  template: `<mat-card appearance="outlined">
+    selector: 'koia-input-dialog',
+    template: `<mat-card appearance="outlined">
                 <mat-card-header>
                   <mat-card-title>{{ data.title }}</mat-card-title>
                 </mat-card-header>
@@ -18,7 +18,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
                   </div>
                 </mat-card-content>
              </mat-card>`,
-  styles: [`div {
+    styles: [`div {
                 width: 100%;
                 display: flex;
                 justify-content: center;
@@ -27,7 +27,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
              button {
                 margin-right: 3px;
                 margin-left: 3px;
-             }`]
+             }`],
+    standalone: false
 })
 export class InputDialogComponent {
 

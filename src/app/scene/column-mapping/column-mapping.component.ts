@@ -7,9 +7,10 @@ import { ColumnDefinitionAssistant } from '../utils';
 import { ColumnMappingGenerator } from './mapper';
 
 @Component({
-  selector: 'koia-column-mapping',
-  templateUrl: './column-mapping.component.html',
-  styleUrls: ['./column-mapping.component.css']
+    selector: 'koia-column-mapping',
+    templateUrl: './column-mapping.component.html',
+    styleUrls: ['./column-mapping.component.css'],
+    standalone: false
 })
 export class ColumnMappingComponent implements OnInit {
 

@@ -4,9 +4,10 @@ import { ElementContext } from 'app/shared/model';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'koia-color-scheme-selection',
-  templateUrl: './color-scheme-selection.component.html',
-  styleUrls: ['./color-scheme-selection.component.css']
+    selector: 'koia-color-scheme-selection',
+    templateUrl: './color-scheme-selection.component.html',
+    styleUrls: ['./color-scheme-selection.component.css'],
+    standalone: false
 })
 export class ColorSchemeSelectionComponent implements OnChanges {
 

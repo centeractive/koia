@@ -5,7 +5,10 @@ import { Operator, PropertyFilter, Query } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
 import { RawDataDialogComponent } from './raw-data-dialog.component';
 
-@Component({ selector: 'koia-raw-data', template: '' })
+@Component({
+    selector: 'koia-raw-data', template: '',
+    standalone: false
+})
 class RawDataComponent {
    @Input() dialogStyle: boolean;
    @Input() query: Query;

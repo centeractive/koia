@@ -10,9 +10,10 @@ import { Column, DataType } from '../../shared/model';
 import { PivotContext } from '../model';
 
 @Component({
-  selector: 'koia-pivot-table-side-bar',
-  templateUrl: './pivot-table-side-bar.component.html',
-  styleUrls: ['./pivot-table-side-bar.component.css']
+    selector: 'koia-pivot-table-side-bar',
+    templateUrl: './pivot-table-side-bar.component.html',
+    styleUrls: ['./pivot-table-side-bar.component.css'],
+    standalone: false
 })
 export class PivotTableSideBarComponent implements OnChanges {
 

@@ -16,9 +16,10 @@ const ELEMENT_DATA: PeriodicElement[] = [
 ];
 
 @Component({
-  selector: 'koia-trial',
-  templateUrl: './trial.component.html',
-  styleUrls: ['./trial.component.css']
+    selector: 'koia-trial',
+    templateUrl: './trial.component.html',
+    styleUrls: ['./trial.component.css'],
+    standalone: false
 })
 export class TrialComponent {
 

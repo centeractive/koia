@@ -25,25 +25,46 @@ import { Chart } from 'chart.js';
 import { Observable, of } from 'rxjs';
 import { FlexCanvasComponent } from './flex-canvas.component';
 
-@Component({ selector: 'koia-main-toolbar', template: '' })
+@Component({
+    selector: 'koia-main-toolbar', template: '',
+    standalone: false
+})
 class MainToolbarComponent { }
 
-@Component({ selector: 'koia-chart-side-bar', template: '' })
+@Component({
+    selector: 'koia-chart-side-bar', template: '',
+    standalone: false
+})
 class ChartSideBarComponent { }
 
-@Component({ selector: 'koia-graph-side-bar', template: '' })
+@Component({
+    selector: 'koia-graph-side-bar', template: '',
+    standalone: false
+})
 class GraphSideBarComponent { }
 
-@Component({ selector: 'koia-summary-table-side-bar', template: '' })
+@Component({
+    selector: 'koia-summary-table-side-bar', template: '',
+    standalone: false
+})
 class SummaryTableSideBarComponent { }
 
-@Component({ selector: 'koia-summary-table', template: '' })
+@Component({
+    selector: 'koia-summary-table', template: '',
+    standalone: false
+})
 class SummaryTableComponent { }
 
-@Component({ selector: 'koia-chart', template: '' })
+@Component({
+    selector: 'koia-chart', template: '',
+    standalone: false
+})
 class ChartComponent { }
 
-@Component({ selector: 'koia-graph', template: '' })
+@Component({
+    selector: 'koia-graph', template: '',
+    standalone: false
+})
 
 class GraphComponent { }
 

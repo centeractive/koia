@@ -4,9 +4,10 @@ import { SideBarController } from 'app/shared/controller';
 import { Aggregation, Column, DataType, SummaryContext } from '../../shared/model';
 
 @Component({
-  selector: 'koia-summary-table-side-bar',
-  templateUrl: './summary-table-side-bar.component.html',
-  styleUrls: ['./summary-table-side-bar.component.css']
+    selector: 'koia-summary-table-side-bar',
+    templateUrl: './summary-table-side-bar.component.html',
+    styleUrls: ['./summary-table-side-bar.component.css'],
+    standalone: false
 })
 export class SummaryTableSideBarComponent extends SideBarController implements OnChanges {
 

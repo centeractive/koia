@@ -5,9 +5,10 @@ import * as _ from 'lodash';
 import { ManageViewContext } from './manage-view-context.type.';
 
 @Component({
-  selector: 'koia-manageView-dialog',
-  templateUrl: './manage-view-dialog.component.html',
-  styleUrls: ['./manage-view-dialog.component.css']
+    selector: 'koia-manageView-dialog',
+    templateUrl: './manage-view-dialog.component.html',
+    styleUrls: ['./manage-view-dialog.component.css'],
+    standalone: false
 })
 export class ManageViewDialogComponent {
 

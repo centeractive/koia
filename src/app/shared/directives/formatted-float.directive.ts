@@ -4,7 +4,8 @@ import { NumberUtils, StringUtils } from '../utils';
 import { isCopyEvent, isCutEvent, isDigitKey, isPasteEvent, isSelectAllEvent } from '../utils/keyboard-events';
 
 @Directive({
-    selector: 'input[formattedFloat]'
+    selector: 'input[formattedFloat]',
+    standalone: false
 })
 export class FormattedFloatDirective {
 

@@ -4,9 +4,10 @@ import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 
 @Component({
-  selector: 'koia-scene-table',
-  templateUrl: './scene-table.component.html',
-  styleUrls: ['./scene-table.component.css']
+    selector: 'koia-scene-table',
+    templateUrl: './scene-table.component.html',
+    styleUrls: ['./scene-table.component.css'],
+    standalone: false
 })
 export class SceneTableComponent implements OnChanges {
 

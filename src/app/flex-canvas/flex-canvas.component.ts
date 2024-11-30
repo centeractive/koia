@@ -10,9 +10,10 @@ import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 
 @Component({
-  selector: 'koia-flex-canvas',
-  templateUrl: './flex-canvas.component.html',
-  styleUrls: ['./flex-canvas.component.css']
+    selector: 'koia-flex-canvas',
+    templateUrl: './flex-canvas.component.html',
+    styleUrls: ['./flex-canvas.component.css'],
+    standalone: false
 })
 export class FlexCanvasComponent extends ViewController {
 
