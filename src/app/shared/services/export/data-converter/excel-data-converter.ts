@@ -1,6 +1,6 @@
 import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 
 export class ExcelDataConverter {
 

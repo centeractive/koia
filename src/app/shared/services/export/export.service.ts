@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import { ExportDataConverter } from './data-converter/export-data-converter';
 import { Column, ExportFormat } from 'app/shared/model';
 import { ExcelDataConverter } from './data-converter/excel-data-converter';
