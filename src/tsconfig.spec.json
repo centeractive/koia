@@ -9,8 +9,5 @@
   "include": [
     "**/*.spec.ts",
     "**/*.d.ts"
-  ],
-  "files": [
-    "window-global-fix.ts"
   ]
 }

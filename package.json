@@ -16,17 +16,18 @@
     "test": "ng test --watch=true --source-map=true --browsers=ChromeHeadless --code-coverage=true",
     "test-debug": "ng test --browsers=ChromeDebug",
     "test-headless": "ng test --watch=true --source-map=true --browsers=ChromeHeadless",
-    "lint": "eslint --fix -c .eslintrc.js --ext .ts src/app"
+    "lint": "eslint src/app --fix -c .eslintrc.js"
   },
   "private": true,
   "dependencies": {
+    "@angular-slider/ngx-slider": "^18.0.0",
     "@angular/animations": "^19.0.1",
-    "@angular/cdk": "^18.2.14",
+    "@angular/cdk": "^19.0.1",
     "@angular/common": "^19.0.1",
     "@angular/compiler": "^19.0.1",
     "@angular/core": "^19.0.1",
     "@angular/forms": "^19.0.1",
-    "@angular/material": "^18.2.14",
+    "@angular/material": "^19.0.1",
     "@angular/platform-browser": "^19.0.1",
     "@angular/platform-browser-dynamic": "^19.0.1",
     "@angular/platform-server": "^19.0.1",
@@ -43,14 +44,13 @@
     "d3": "~7.9.0",
     "d3fc-sample": "~3.0.5",
     "data-forge": "~1.10.2",
-    "detect-passive-events": "^2.0.3",
     "extract-zip": "~2.0.1",
     "file-saver": "~2.0.5",
     "jquery": "~3.7.1",
     "jquery-ui-dist": "~1.13.3",
     "lodash": "^4.17.21",
     "luxon": "^3.4.4",
-    "oboe": "~2.1.5",
+    "oboe": "~2.1.7",
     "papaparse": "~5.4.1",
     "pivottable": "~2.23.0",
     "pouchdb": "~9.0.0",
@@ -71,7 +71,6 @@
     "@types/node": "~20.14.15",
     "@typescript-eslint/eslint-plugin": "^8.16.0",
     "@typescript-eslint/parser": "^8.16.0",
-    "codelyzer": "^0.0.28",
     "copyfiles": "~2.4.1",
     "cross-var": "~1.1.0",
     "eslint": "^9.16.0",
@@ -90,6 +89,6 @@
     "ng-packagr": "^19.0.1",
     "puppeteer": "~23.9.0",
     "ts-node": "~10.9.2",
-    "typescript": "~5.5.4"
+    "typescript": "~5.6.3"
   }
 }

@@ -1,4 +1,4 @@
-import { LabelType } from 'app/ngx-slider/options';
+import { LabelType } from '@angular-slider/ngx-slider';
 import { NumberRangeSliderCustomizer } from './number-range-slider-customizer';
 
 describe('NumberRangeSliderCustomizer', () => {

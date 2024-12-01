@@ -216,17 +216,14 @@ export class ChartContext extends ElementContext {
       return [ExportFormat.PNG];
    }
 
-   // overwritten /////////////
-   //
-
    /**
     * @see https://stackoverflow.com/a/28951055/2358409
     */
-   get dataColumns(): Column[] {
+   override get dataColumns(): Column[] {
       return super.dataColumns;
    }
 
-   set dataColumns(columns: Column[]) {
+   override set dataColumns(columns: Column[]) {
       if (isAnyNonNumeric(columns)) {
          this._aggregations = [Aggregation.COUNT];
          this._groupByColumns = [];
@@ -242,11 +239,11 @@ export class ChartContext extends ElementContext {
    /**
     * @see https://stackoverflow.com/a/28951055/2358409
     */
-   get aggregations(): Aggregation[] {
+   override get aggregations(): Aggregation[] {
       return super.aggregations;
    }
 
-   set aggregations(aggregations: Aggregation[]) {
+   override set aggregations(aggregations: Aggregation[]) {
       if (aggregations?.length) {
          this._groupByColumns = [];
       } else {

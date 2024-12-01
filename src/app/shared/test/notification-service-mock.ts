@@ -8,7 +8,7 @@ export class NotificationServiceMock extends NotificationService {
       super();
    }
 
-   showStatus(bottomSheet: MatBottomSheet, status: Status): void {
+   override showStatus(bottomSheet: MatBottomSheet, status: Status): void {
       // ignore
    }
 }

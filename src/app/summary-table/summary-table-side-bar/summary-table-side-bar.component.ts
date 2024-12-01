@@ -4,10 +4,10 @@ import { SideBarController } from 'app/shared/controller';
 import { Aggregation, Column, DataType, SummaryContext } from '../../shared/model';
 
 @Component({
-    selector: 'koia-summary-table-side-bar',
-    templateUrl: './summary-table-side-bar.component.html',
-    styleUrls: ['./summary-table-side-bar.component.css'],
-    standalone: false
+  selector: 'koia-summary-table-side-bar',
+  templateUrl: './summary-table-side-bar.component.html',
+  styleUrls: ['./summary-table-side-bar.component.css'],
+  standalone: false
 })
 export class SummaryTableSideBarComponent extends SideBarController implements OnChanges {
 
@@ -19,7 +19,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
   availableAggregations: Aggregation[];
   selectedAggregations: Aggregation[];
 
-  ngOnChanges(changes: SimpleChanges): void {
+  override ngOnChanges(changes: SimpleChanges): void {
     super.ngOnChanges(changes);
     this.defineSelectableItems();
   }
@@ -63,7 +63,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
     }
   }
 
-  protected defineSelectableItems() {
+  protected override defineSelectableItems() {
     this.dataColumns = this.context.columns
       .filter(c => c.dataType !== DataType.TIME);
     this.initSelectedAndAvailableAggregations();

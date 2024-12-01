@@ -1,5 +1,5 @@
 import { Attribute, DataType } from 'app/shared/model';
-import * as oboe from 'oboe';
+import oboe from 'oboe';
 import { DataHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';

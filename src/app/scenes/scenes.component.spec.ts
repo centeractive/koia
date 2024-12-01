@@ -13,7 +13,6 @@ import { MatTableModule } from '@angular/material/table';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy, RouterModule } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Route, Scene } from 'app/shared/model';
@@ -26,8 +25,8 @@ import { SceneTableComponent } from './scene-table/scene-table.component';
 import { ScenesComponent } from './scenes.component';
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
+  standalone: false
 })
 class RawDataComponent { }
 
@@ -54,7 +53,7 @@ describe('ScenesComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ScenesComponent, RawDataComponent, SceneTableComponent],
-      imports: [BrowserAnimationsModule, RouterTestingModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
+      imports: [BrowserAnimationsModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
       providers: [Location, MatBottomSheet,

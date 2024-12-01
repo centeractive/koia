@@ -1,6 +1,6 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -12,9 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Event, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
-import { NgxSliderModule } from 'app/ngx-slider/slider.module';
+import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -26,8 +24,8 @@ import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
+  standalone: false
 })
 class DummyComponent { }
 
@@ -82,7 +80,7 @@ describe('MainToolbarComponent', () => {
       imports: [
         MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
         MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule,
-        RouterTestingModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
+        RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
         { provide: DBService, useValue: dbService },
@@ -175,7 +173,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.route = Route.GRID;
-    const event: Event = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
+    const event: RouterEvent = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
     component.router = { events: of(event) } as Router;
     const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null, false);
     const prevSliderOptions = timeRangeFilter.sliderOptions;

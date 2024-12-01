@@ -17,8 +17,7 @@
             "index": "src/index.html",
             "tsConfig": "src/tsconfig.app.json",
             "polyfills": [
-              "zone.js",
-              "src/window-global-fix.ts"
+              "zone.js"
             ],
             "assets": [
               "src/intro",
@@ -97,8 +96,7 @@
             "karmaConfig": "./karma.conf.js",
             "polyfills": [
               "zone.js",
-              "zone.js/testing",
-              "src/window-global-fix.ts"
+              "zone.js/testing"
             ],
             "tsConfig": "src/tsconfig.spec.json",
             "scripts": [],

@@ -1,5 +1,5 @@
 import { Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -8,8 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter, Router } from '@angular/router';
 import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext } from 'app/shared/model';
@@ -26,44 +25,44 @@ import { Observable, of } from 'rxjs';
 import { FlexCanvasComponent } from './flex-canvas.component';
 
 @Component({
-    selector: 'koia-main-toolbar', template: '',
-    standalone: false
+  selector: 'koia-main-toolbar', template: '',
+  standalone: false
 })
 class MainToolbarComponent { }
 
 @Component({
-    selector: 'koia-chart-side-bar', template: '',
-    standalone: false
+  selector: 'koia-chart-side-bar', template: '',
+  standalone: false
 })
 class ChartSideBarComponent { }
 
 @Component({
-    selector: 'koia-graph-side-bar', template: '',
-    standalone: false
+  selector: 'koia-graph-side-bar', template: '',
+  standalone: false
 })
 class GraphSideBarComponent { }
 
 @Component({
-    selector: 'koia-summary-table-side-bar', template: '',
-    standalone: false
+  selector: 'koia-summary-table-side-bar', template: '',
+  standalone: false
 })
 class SummaryTableSideBarComponent { }
 
 @Component({
-    selector: 'koia-summary-table', template: '',
-    standalone: false
+  selector: 'koia-summary-table', template: '',
+  standalone: false
 })
 class SummaryTableComponent { }
 
 @Component({
-    selector: 'koia-chart', template: '',
-    standalone: false
+  selector: 'koia-chart', template: '',
+  standalone: false
 })
 class ChartComponent { }
 
 @Component({
-    selector: 'koia-graph', template: '',
-    standalone: false
+  selector: 'koia-graph', template: '',
+  standalone: false
 })
 
 class GraphComponent { }
@@ -114,10 +113,10 @@ describe('FlexCanvasComponent', () => {
         SummaryTableComponent, ChartComponent, GraphComponent, ResizableDirective, ResizeHandleDirective
       ],
       imports: [
-        MatSidenavModule, MatButtonModule, MatIconModule, BrowserAnimationsModule, MatBottomSheetModule, RouterTestingModule,
-        MatMenuModule
+        MatSidenavModule, MatButtonModule, MatIconModule, BrowserAnimationsModule, MatBottomSheetModule, MatMenuModule
       ],
       providers: [
+        provideRouter([]),
         MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },

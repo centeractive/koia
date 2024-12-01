@@ -1,11 +1,10 @@
 import { DatePipe } from '@angular/common';
-import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter, Router } from '@angular/router';
 import { Aggregation, Column, DataType, Operator, PropertyFilter, Query, Route, SummaryContext, TimeUnit } from 'app/shared/model';
 import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -54,9 +53,10 @@ describe('SummaryTableComponent', () => {
   beforeEach(() => {
     getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(SceneFactory.createScene('1', columns));
     TestBed.configureTestingModule({
-      imports: [MatTableModule, MatSortModule, MatProgressBarModule, RouterTestingModule, MatDialogModule],
+      imports: [MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule],
       declarations: [SummaryTableComponent],
       providers: [
+        provideRouter([]),
         { provide: DBService, useValue: dbService },
         { provide: AggregationService, useClass: AggregationService },
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
@@ -69,7 +69,7 @@ describe('SummaryTableComponent', () => {
     context.entries = entries.slice(0);
     context.dataColumns = [findColumn('t2')];
     component.context = context;
-    showRawDataSpy = spyOn(TestBed.inject(RawDataRevealService), 'show').and.callFake(query => null);
+    showRawDataSpy = spyOn(TestBed.inject(RawDataRevealService), 'show').and.callFake(() => null);
   });
 
   it('should create', () => {

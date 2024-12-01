@@ -1,4 +1,4 @@
-import { LabelType } from 'app/ngx-slider/options';
+import { LabelType } from '@angular-slider/ngx-slider';
 import { TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { TimeRangeSliderCustomizer } from './time-range-slider-customizer';

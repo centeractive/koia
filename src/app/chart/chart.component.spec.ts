@@ -1,9 +1,8 @@
 import { SimpleChange } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter, Router } from '@angular/router';
 import { ResizableDirective } from 'angular-resizable-element';
 import { Column, DataType, Route, Scene } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
@@ -36,8 +35,9 @@ describe('ChartComponent', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       declarations: [ChartComponent, ResizableDirective],
-      imports: [MatProgressBarModule, RouterTestingModule, MatDialogModule],
+      imports: [MatProgressBarModule, MatDialogModule],
       providers: [
+        provideRouter([]),
         { provide: DBService, useValue: dbService },
         { provide: ChartDataService, useClass: ChartDataService },
         { provide: ChartMarginService, useClass: ChartMarginService },

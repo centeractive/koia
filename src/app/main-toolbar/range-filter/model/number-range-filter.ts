@@ -1,10 +1,10 @@
 import { EventEmitter } from '@angular/core';
-import { LabelType, Options } from 'app/ngx-slider/options';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Observable } from 'rxjs';
 import { NumberRangeSliderCustomizer } from './slider/number-range-slider-customizer';
+import { LabelType, Options } from '@angular-slider/ngx-slider';
 
 export class NumberRangeFilter {
 

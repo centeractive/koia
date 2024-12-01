@@ -1,6 +1,6 @@
-import { LabelType } from 'app/ngx-slider/options';
 import { DataType, Query, TimeUnit } from 'app/shared/model';
 import { NumberRangeFilter } from './number-range-filter';
+import { LabelType } from '@angular-slider/ngx-slider';
 
 describe('NumberRangeFilter', () => {
 

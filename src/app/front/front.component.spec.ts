@@ -1,6 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
-
 import { Component } from '@angular/core';
+import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, UntypedFormBuilder } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,8 +12,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { ActivatedRoute, provideRouter, Router, RouterModule } from '@angular/router';
 import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -28,8 +26,8 @@ import { ConnectionDialogComponent, ConnectionDialogData } from './connection-di
 import { FrontComponent } from './front.component';
 
 @Component({
-    template: '',
-    standalone: false
+  template: '',
+  standalone: false
 })
 class DummyComponent { }
 
@@ -54,10 +52,10 @@ describe('FrontComponent', () => {
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
-        MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
+        MatDialogModule, MatStepperModule, MatTooltipModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
+        provideRouter([]),
         { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
         MatBottomSheet,
         { provide: DBService, useValue: dbService },
@@ -390,8 +388,7 @@ describe('FrontComponent (external invocation)', () => {
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
       imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
-        MatDialogModule, MatStepperModule, MatTooltipModule, RouterTestingModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
+        MatDialogModule, MatStepperModule, MatTooltipModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
         { provide: ActivatedRoute, useValue: { queryParamMap: of(createQueryParams()) } },

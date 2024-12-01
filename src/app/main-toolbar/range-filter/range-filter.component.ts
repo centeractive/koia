@@ -1,16 +1,16 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { ChangeContext } from 'app/ngx-slider/change-context';
+import { ChangeContext } from '@angular-slider/ngx-slider';
 import { DataType } from 'app/shared/model';
 import { ValueRange } from 'app/shared/value-range/model';
 import { Subscription } from 'rxjs';
 import { NumberRangeFilter } from './model/number-range-filter';
 
 @Component({
-    selector: 'koia-range-filter',
-    templateUrl: './range-filter.component.html',
-    styleUrls: ['./range-filter.component.css'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'koia-range-filter',
+  templateUrl: './range-filter.component.html',
+  styleUrls: ['./range-filter.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: false
 })
 export class RangeFilterComponent implements OnChanges, OnDestroy {
 

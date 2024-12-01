@@ -47,7 +47,6 @@ import { GridComponent } from './grid/grid.component';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
-import { NgxSliderModule } from './ngx-slider/slider.module';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
 import { PivotTableComponent } from './pivot-table/pivot-table.component';
 import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
@@ -81,8 +80,10 @@ import { ValueRangeGroupingService } from './shared/value-range';
 import { SummaryTableSideBarComponent } from './summary-table/summary-table-side-bar/summary-table-side-bar.component';
 import { SummaryTableComponent } from './summary-table/summary-table.component';
 import { TrialComponent } from './testing/trial/trial.component';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
-@NgModule({ declarations: [
+@NgModule({
+    declarations: [
         AppComponent,
         MainToolbarComponent,
         ScenesComponent,
@@ -155,7 +156,8 @@ import { TrialComponent } from './testing/trial/trial.component';
         MatStepperModule,
         MatSnackBarModule,
         ReactiveFormsModule,
-        NgxSliderModule], providers: [
+        NgxSliderModule],
+    providers: [
         { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
         { provide: STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
         ReaderService,
@@ -170,5 +172,6 @@ import { TrialComponent } from './testing/trial/trial.component';
         NotificationService,
         DialogService,
         provideHttpClient(withInterceptorsFromDi())
-    ] })
+    ]
+})
 export class AppModule { }

@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injectable } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -11,8 +11,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter, Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Column, DataType, Query, Route, Scene, StatusType, TimeUnit } from 'app/shared/model';
 import { ConfigRecord } from 'app/shared/model/view-config';
@@ -75,9 +74,10 @@ describe('PivotTableComponent', () => {
       declarations: [PivotTableComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
-        BrowserAnimationsModule, MatMenuModule, RouterTestingModule, MatBottomSheetModule
+        BrowserAnimationsModule, MatMenuModule, MatBottomSheetModule
       ],
       providers: [
+        provideRouter([]),
         { provide: ElementRef, useClass: MockElementRef },
         { provide: MatBottomSheet, useClass: MatBottomSheet },
         { provide: DBService, useValue: dbService },

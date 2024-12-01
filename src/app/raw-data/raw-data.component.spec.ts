@@ -1,5 +1,5 @@
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,8 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter, Router } from '@angular/router';
 import { Column, DataType, ExportFormat, Query, Route, Scene } from 'app/shared/model';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -69,10 +68,10 @@ describe('RawDataComponent', () => {
       declarations: [RawDataComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatTableModule, MatSortModule, MatPaginatorModule, MatMenuModule,
-        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, RouterTestingModule,
-        MatBottomSheetModule
+        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, MatBottomSheetModule
       ],
       providers: [
+        provideRouter([]),
         MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },

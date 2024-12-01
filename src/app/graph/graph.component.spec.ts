@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { Column, DataType } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
@@ -34,9 +34,10 @@ describe('GraphComponent', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      imports: [MatProgressBarModule, RouterTestingModule, MatDialogModule],
+      imports: [MatProgressBarModule, MatDialogModule],
       declarations: [GraphComponent],
       providers: [
+        provideRouter([]),
         { provide: GraphDataService, useValue: graphDataService },
         { provide: RawDataRevealService, useClass: RawDataRevealService }
       ]

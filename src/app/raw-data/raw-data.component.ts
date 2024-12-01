@@ -20,10 +20,10 @@ import { Column, DataType, ExportFormat, Page, Query, Route } from '../shared/mo
 import { DBService } from '../shared/services/backend';
 
 @Component({
-    selector: 'koia-raw-data',
-    templateUrl: './raw-data.component.html',
-    styleUrls: ['./raw-data.component.css'],
-    standalone: false
+  selector: 'koia-raw-data',
+  templateUrl: './raw-data.component.html',
+  styleUrls: ['./raw-data.component.css'],
+  standalone: false
 })
 export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit {
 
@@ -34,7 +34,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  readonly route = Route.RAWDATA;
+  override readonly route = Route.RAWDATA;
 
   columns: Column[];
   columnNames: string[];
@@ -56,8 +56,8 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
   private page: Page;
   private valueFormatter = new ValueFormatter();
 
-  constructor(bottomSheet: MatBottomSheet, router: Router, public dbService: DBService, public viewPersistenceService: ViewPersistenceService,
-    public dialogService: DialogService, notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar) {
+  constructor(bottomSheet: MatBottomSheet, router: Router, public override dbService: DBService, public override viewPersistenceService: ViewPersistenceService,
+    public override dialogService: DialogService, notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar) {
     super(Route.RAWDATA, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
     this.pageSizeOptions = [5, 10, 25, 50, 100, 500];
     this.initialPageSize = this.pageSizeOptions[1];

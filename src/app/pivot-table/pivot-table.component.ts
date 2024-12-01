@@ -27,11 +27,11 @@ import { QueryProvider } from './options/query-provider';
 declare let jQuery: any;
 
 @Component({
-    selector: 'koia-pivot-table',
-    templateUrl: './pivot-table.component.html',
-    styleUrls: ['./pivot-table.component.css'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'koia-pivot-table',
+  templateUrl: './pivot-table.component.html',
+  styleUrls: ['./pivot-table.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: false
 })
 export class PivotTableComponent extends ConfigController implements AfterViewInit {
 
@@ -39,7 +39,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild('pivot') divPivot: ElementRef<HTMLDivElement>;
 
-  readonly route = Route.PIVOT;
+  override  readonly route = Route.PIVOT;
   readonly timeUnits = Object.keys(TimeUnit).map(key => TimeUnit[key]);
   columns: Column[];
   timeColumns: Column[];
@@ -61,7 +61,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   private stringifiedValueGroupings: string;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
-    public dbService: DBService, public dialogService: DialogService, public viewPersistenceService: ViewPersistenceService,
+    public override dbService: DBService, public override dialogService: DialogService, public override viewPersistenceService: ViewPersistenceService,
     private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
     notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService) {
     super(Route.PIVOT, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);

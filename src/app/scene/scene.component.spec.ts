@@ -1,5 +1,5 @@
 import { DatePipe, Location } from '@angular/common';
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,7 +16,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterTestingModule } from '@angular/router/testing';
+import { RouterModule } from '@angular/router';
+import { RawDataComponent } from 'app/raw-data/raw-data.component';
 import { Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -53,10 +54,13 @@ describe('SceneComponent', () => {
     dbService = new DBService(null);
     TestBed.configureTestingModule({
       declarations: [SceneComponent, ColumnMappingComponent],
-      imports: [RouterTestingModule, MatBottomSheetModule, MatExpansionModule, MatCardModule, FormsModule, MatFormFieldModule,
-        ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule, MatSlideToggleModule, MatTableModule,
-        MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, BrowserAnimationsModule],
-      providers: [Location, MatBottomSheet,
+      imports: [RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {}), MatBottomSheetModule, MatExpansionModule,
+        MatCardModule, FormsModule, MatFormFieldModule, ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule,
+        MatSlideToggleModule, MatTableModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, BrowserAnimationsModule
+      ],
+      providers: [
+        Location,
+        MatBottomSheet,
         { provide: ReaderService, useValue: readerService },
         { provide: DBService, useValue: dbService },
         { provide: NotificationService, useValue: notificationService },
@@ -532,13 +536,13 @@ describe('SceneComponent', () => {
     fixture.detectChanges();
   }
 
-  function createFileList(data: string) {
+  function createFileList(data: string): FileList {
     const file = new File([data], 'Test.csv');
     return {
       0: file,
       length: 1,
       item: () => file
-    };
+    } as any as FileList;
   }
 
   function createColumnPair(name: string): ColumnPair {

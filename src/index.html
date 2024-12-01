@@ -1,66 +1,67 @@
 <!doctype html>
 <html>
-<style>
-  #container {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    bottom: 0px;
-    left: 0px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #292626;
-  }
-
-  #loader {
-    border: 16px solid #ea8315;
-    border-radius: 50%;
-    border-top: 16px solid #ad1f1f;
-    width: 40px;
-    height: 40px;
-    -webkit-animation: spin 2s linear infinite;
-    /* Safari */
-    animation: spin 2s linear infinite;
-    margin-bottom: 10px;
-  }
-
-  /* Safari */
-  @-webkit-keyframes spin {
-    0% {
-      -webkit-transform: rotate(0deg);
-    }
-
-    100% {
-      -webkit-transform: rotate(360deg);
-    }
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-</style>
-
-<script>
-  if (location.pathname === '/') {
-    location.href = '/intro/index.html';
-  }
-</script>
 
 <head>
+  <style>
+    #container {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      bottom: 0px;
+      left: 0px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #292626;
+    }
+
+    #loader {
+      border: 16px solid #ea8315;
+      border-radius: 50%;
+      border-top: 16px solid #ad1f1f;
+      width: 40px;
+      height: 40px;
+      -webkit-animation: spin 2s linear infinite;
+      /* Safari */
+      animation: spin 2s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+      0% {
+        -webkit-transform: rotate(0deg);
+      }
+
+      100% {
+        -webkit-transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <script>
+    if (location.pathname === '/') {
+      location.href = '/intro/index.html';
+    }
+  </script>
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-66X1MBQRD9"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-  
+
     gtag('config', 'G-66X1MBQRD9');
   </script>
 
@@ -70,7 +71,7 @@
   <meta charset="utf-8">
   <title>Koia Data Analysis</title>
   <meta name="description"
-        content="Create graphs online with CSV, Excel or JSON data. Choose from different chart types, pivot tables and relationship graphs. Easy, user-friendly, open- source.">
+    content="Create graphs online with CSV, Excel or JSON data. Choose from different chart types, pivot tables and relationship graphs. Easy, user-friendly, open- source.">
   <base href="/">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">

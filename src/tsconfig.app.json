@@ -6,7 +6,9 @@
     "types": []
   },
   "files": [
-    "main.ts",
-    "window-global-fix.ts"
+    "main.ts"
+  ],
+  "include": [
+    "**/*.d.ts"
   ]
 }

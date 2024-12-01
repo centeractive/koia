@@ -6,10 +6,10 @@ import { ChartUtils, DataTypeUtils } from 'app/shared/utils';
 import { Aggregation, Column, DataType } from '../../shared/model';
 
 @Component({
-    selector: 'koia-chart-side-bar',
-    templateUrl: './chart-side-bar.component.html',
-    styleUrls: ['./chart-side-bar.component.css'],
-    standalone: false
+  selector: 'koia-chart-side-bar',
+  templateUrl: './chart-side-bar.component.html',
+  styleUrls: ['./chart-side-bar.component.css'],
+  standalone: false
 })
 export class ChartSideBarComponent extends SideBarController implements OnChanges {
 
@@ -27,13 +27,13 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     super();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  override ngOnChanges(changes: SimpleChanges): void {
     super.ngOnChanges(changes);
     this.selectedChartType = ChartType.fromType(this.context.chartType);
     this.defineSelectableItems();
   }
 
-  protected defineSelectableItems() {
+  protected override defineSelectableItems() {
     this.selectableDataColumns = this.context.columns
       .filter(c => c.indexed)
       .filter(c => c.dataType !== DataType.TIME);

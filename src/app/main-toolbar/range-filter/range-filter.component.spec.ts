@@ -6,7 +6,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxSliderModule } from 'app/ngx-slider/slider.module';
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { Column, DataType } from 'app/shared/model';
 import { NumberRangeFilter } from './model/number-range-filter';
 import { RangeFilterComponent } from './range-filter.component';

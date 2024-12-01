@@ -6,7 +6,7 @@ export class CouchDBServiceMock extends CouchDBService {
       super(null);
    }
 
-   listDatabases(): Promise<string[]> {
+   override listDatabases(): Promise<string[]> {
       return Promise.resolve(['data_1']);
    }
 }

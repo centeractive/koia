@@ -1,4 +1,4 @@
-import { LabelType } from 'app/ngx-slider/options';
+import { LabelType } from '@angular-slider/ngx-slider';
 import { Column, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -18,11 +18,11 @@ export class TimeRangeFilter extends NumberRangeFilter {
       super(column, start, end, selValueRange, inverted);
    }
 
-   protected defineSliderValueRange(): void {
+   protected override defineSliderValueRange(): void {
       this.sliderValueRange = new SliderTimeValueRange(this.start, this.end, this.selValueRange, () => this.selectedStep);
    }
 
-   protected initSliderSteps(): void {
+   protected override initSliderSteps(): void {
       this.selectedStep = DateTimeUtils.timeUnitFromNgFormat(this.column.format);
       if (this.selectedStep === TimeUnit.MONTH || this.selectedStep === TimeUnit.YEAR) {
          this.selectedStep = TimeUnit.DAY;
@@ -45,7 +45,7 @@ export class TimeRangeFilter extends NumberRangeFilter {
       return timeUnits;
    }
 
-   onStepChanged(timeStep: any): void {
+   override onStepChanged(timeStep: any): void {
       this.selectedStep = timeStep;
       this.adjustValueRange();
       this.defineSelectedStepAbbreviation();
@@ -62,7 +62,7 @@ export class TimeRangeFilter extends NumberRangeFilter {
       this.selectedStepAbbrev = DateTimeUtils.abbreviationOf(this.selectedStep);
    }
 
-   defineSliderOptions(): void {
+   override defineSliderOptions(): void {
       const ceil = Math.ceil(DateTimeUtils.diff(this.start, this.end, this.selectedStep));
       const customizer = new TimeRangeSliderCustomizer(this.start, this.selectedStep, ceil);
       this.sliderOptions = {
