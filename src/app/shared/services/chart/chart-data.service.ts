@@ -158,7 +158,7 @@ export class ChartDataService {
   }
 
   protected createValueCountData(chartType: ChartType, context: ChartContext): DataSet[] {
-    if (context.groupByColumns.length === 0) {
+    if (!context.groupByColumns.length) {
       throw this.errorResultFactory.groupByColumnNotDefined(chartType);
     }
     const distinctGroupingValues = new Set<any>();

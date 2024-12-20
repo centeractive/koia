@@ -29,7 +29,7 @@ export class ViewToModelConverter {
 
    private toChartContext(chart: Chart): ChartContext {
       const context = new ChartContext(this.clonedColumns(), chart.chartType, chart.margin);
-      this.copy(chart, context);
+      context.copyAttributes(chart);
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
       context.xLabelRotation = chart.xLabelRotation;
@@ -39,7 +39,7 @@ export class ViewToModelConverter {
 
    private toGraphContext(graph: Graph): GraphContext {
       const context = new GraphContext(this.clonedColumns());
-      this.copy(graph, context);
+      context.copyAttributes(graph);
       context.linkStrength = graph.linkStrength;
       context.friction = graph.friction;
       context.linkDist = graph.linkDist;
@@ -52,7 +52,7 @@ export class ViewToModelConverter {
 
    private toSummaryContext(summary: Summary): SummaryContext {
       const context = new SummaryContext(this.clonedColumns());
-      this.copy(summary, context);
+      context.copyAttributes(summary);
       return context;
    }
 
@@ -60,24 +60,4 @@ export class ViewToModelConverter {
       return this.columns.map(c => <Column>CommonUtils.clone(c));
    }
 
-   private copy(from: ViewElement, to: ElementContext): void {
-      to.title = from.title;
-      to.dataColumns = from.dataColumns.map(c => this.targetColumn(c, to));
-      to.splitColumns = from.splitColumns.map(c => this.targetColumn(c, to));
-      to.groupByColumns = from.groupByColumns.map(c => this.targetColumn(c, to));
-      to.gridColumnSpan = from.gridColumnSpan;
-      to.gridRowSpan = from.gridRowSpan;
-      to.setSize(from.width, from.height);
-      to.aggregations = from.aggregations;
-      to.valueGroupings = from.valueGroupings;
-      to.colorProvider = ColorProviderFactory.create(from.colorOptions);
-   }
-
-   private targetColumn(sourceColumn: Column, targetContext: ElementContext) {
-      const targetColumn = targetContext.columns.find(c => sourceColumn.name === c.name);
-      if (sourceColumn.dataType === DataType.TIME) {
-         targetColumn.groupingTimeUnit = sourceColumn.groupingTimeUnit;
-      }
-      return targetColumn;
-   }
 }

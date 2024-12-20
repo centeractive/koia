@@ -70,7 +70,7 @@ export class ChartJsOptionsProvider {
                     }
                 },
                 tooltip: {
-                    mode: context.data.datasets.length === 1 ? 'nearest' : 'index',
+                    mode: [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR].includes(chartType) || context.data.datasets.length === 1 ? 'nearest' : 'index',
                     intersect: true
                 },
                 datalabels: {

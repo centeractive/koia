@@ -33,5 +33,4 @@ export class TooltipCustomizer extends TimeFormatter {
         }
     }
 
-
 }

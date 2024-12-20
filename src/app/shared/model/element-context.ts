@@ -9,6 +9,7 @@ import { Column } from './column.type';
 import { DataType } from './data-type.enum';
 import { ExportFormat } from './export-format.enum';
 import { Query } from './query';
+import { ViewElement } from './view-config';
 
 export abstract class ElementContext {
 
@@ -46,6 +47,28 @@ export abstract class ElementContext {
       this._aggregations = [Aggregation.COUNT];
       this._valueGroupings = [];
       this._colorProvider = ColorProviderFactory.create();
+   }
+
+   copyAttributes(from: ViewElement): void {
+      this._title = from.title;
+      this._dataColumns = from.dataColumns.map(c => this.targetColumn(c));
+      this._splitColumns = from.splitColumns.map(c => this.targetColumn(c));
+      this._groupByColumns = from.groupByColumns.map(c => this.targetColumn(c));
+      this._gridColumnSpan = from.gridColumnSpan;
+      this._gridRowSpan = from.gridRowSpan;
+      this._width = from.width;
+      this._height = from.height;
+      this._aggregations = from.aggregations;
+      this._valueGroupings = from.valueGroupings;
+      this._colorProvider = ColorProviderFactory.create(from.colorOptions);
+   }
+
+   private targetColumn(sourceColumn: Column): Column {
+      const targetColumn = this.columns.find(c => sourceColumn.name === c.name);
+      if (sourceColumn.dataType === DataType.TIME) {
+         targetColumn.groupingTimeUnit = sourceColumn.groupingTimeUnit;
+      }
+      return targetColumn;
    }
 
    public get title(): string {

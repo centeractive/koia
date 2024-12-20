@@ -5,7 +5,7 @@ import { SeriesNameConverter } from 'app/shared/services/chart';
 import { ActiveElement, BarElement, Chart, ChartDataset, Point, PointElement } from 'chart.js';
 
 /**
- * Reveals (displays) raw data corresponding for a Chart.js element selected by the user
+ * Reveals (displays) raw data corresponding to a Chart.js element selected by the user
  */
 export class RawDataRevealer {
 

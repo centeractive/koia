@@ -56,9 +56,11 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     }
 
     this.adjustInitialChartWidth(chartType);
-    this.selectedChartType = chartType;
     this.context.switchChartType(chartType.type, this.chartMarginService.marginOf(chartType));
-    this.adjustAggregation();
+    if (!ChartType.isSameCategory(this.selectedChartType, chartType)) {
+      this.adjustAggregation();
+    }
+    this.selectedChartType = chartType;
     this.defineSelectableItems();
   }
 
@@ -103,7 +105,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   onAggregationTypeChanged(countDistinctValues: boolean): void {
     this.context.aggregations = countDistinctValues ? [Aggregation.COUNT] : [];
-    if (countDistinctValues) {
+    if (countDistinctValues && this.context.isCategoryChart()) {
       this.context.groupByColumns = []; // TODO: is this correct?
     }
   }
