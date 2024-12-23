@@ -10,6 +10,7 @@ import { LegendLabelFormatter } from '../formatter/legend-label-formatter';
 import { PointLabelFormatter } from '../formatter/point-label-formatter';
 import { TickLabelFormatter } from '../formatter/tick-label-formatter';
 import { RawDataRevealer } from '../raw-data-revealer';
+import { tooltipMode } from './tooltip-mode';
 
 export class ChartJsOptionsProvider {
 
@@ -70,7 +71,7 @@ export class ChartJsOptionsProvider {
                     }
                 },
                 tooltip: {
-                    mode: [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR].includes(chartType) || context.data.datasets.length === 1 ? 'nearest' : 'index',
+                    mode: tooltipMode(context.data),
                     intersect: true
                 },
                 datalabels: {
@@ -146,7 +147,7 @@ export class ChartJsOptionsProvider {
 
         if (context.isCategoryChart()) {
             this.tickLabelFormatter.format(context, column, scaleOptions);
-        } else {
+        } else if (column.dataType) {
             switch (column.dataType) {
                 case DataType.NUMBER: {
                     scaleOptions.type = 'linear';
