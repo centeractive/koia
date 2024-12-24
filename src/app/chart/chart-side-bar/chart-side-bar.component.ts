@@ -38,7 +38,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
       .filter(c => c.indexed)
       .filter(c => c.dataType !== DataType.TIME);
     super.defineSelectableItems();
-    if (this.selectedGroupByColumns.length > 0 && this.selectedGroupByColumns[0].dataType === DataType.TIME) {
+    if (!!this.selectedGroupByColumns.length && this.selectedGroupByColumns[0].dataType === DataType.TIME) {
       this.groupByTimeColumn = this.selectedGroupByColumns[0];
     }
   }

@@ -130,10 +130,11 @@ describe('ChartSideBarComponent', () => {
     expect(context.width).toBe(initialWidth * 2);
   });
 
-  it('#click on PIE chart button should keep previous selected data column', () => {
+  it('#click on PIE chart button should keep previous selected data columns', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.aggregations = [];
     context.dataColumns = [findColumn('Amount'), findColumn('Percent')];
     const butChart = findChartButton(ChartType.PIE);
@@ -151,6 +152,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.PIE.type;
+    component.selectedChartType = ChartType.PIE;
     context.dataColumns = [findColumn('Amount')];
     const butChart = findChartButton(ChartType.LINE);
 
@@ -188,6 +190,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.PIE.type;
+    component.selectedChartType = ChartType.PIE;
     context.dataColumns = [findColumn('Amount')];
     const butPathColumn = findDataColumnButton('Path');
 
@@ -203,6 +206,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.dataColumns = [findColumn('Level'), findColumn('Amount')];
     const butLevelColumn = findDataColumnButton('Level');
 
@@ -231,6 +235,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.dataColumns = [findColumn('Amount')];
     const butDataColumn = findDataColumnButton('Host');
 
@@ -247,6 +252,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.dataColumns = [findColumn('Amount')];
     context.aggregations = [Aggregation.COUNT];
     const butPercentColumn = findDataColumnButton('Percent');
@@ -264,6 +270,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.dataColumns = [findColumn('Amount')];
     context.aggregations = [];
     const butPercentColumn = findDataColumnButton('Percent');
@@ -281,6 +288,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.dataColumns = [findColumn('Amount')];
     context.groupByColumns = [findColumn('Percent')];
     const butPercentColumn = findDataColumnButton('Percent');
@@ -296,6 +304,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.aggregations = [];
 
     // when
@@ -312,6 +321,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
     context.aggregations = [Aggregation.COUNT];
 
     // when
@@ -327,6 +337,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.DOUGHNUT.type;
+    component.selectedChartType = ChartType.DOUGHNUT;
 
     // when
     const panelName = component.dataPanelName();
@@ -339,6 +350,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.AREA.type;
+    component.selectedChartType = ChartType.AREA;
 
     // when
     const panelName = component.dataPanelName();
@@ -351,6 +363,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.HORIZONTAL_BAR.type;
+    component.selectedChartType = ChartType.HORIZONTAL_BAR;
 
     // when
     const panelName = component.dataPanelName();
@@ -363,6 +376,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.DOUGHNUT.type;
+    component.selectedChartType = ChartType.DOUGHNUT;
 
     // when
     const panelName = component.groupingPanelName();
@@ -376,6 +390,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.BAR.type;
+    component.selectedChartType = ChartType.BAR;
 
     // when
     const panelName = component.groupingPanelName();
@@ -388,6 +403,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.HORIZONTAL_BAR.type;
+    component.selectedChartType = ChartType.HORIZONTAL_BAR;
 
     // when
     const panelName = component.groupingPanelName();
@@ -400,6 +416,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
 
     // when
     const actual = component.isCircularChart();
@@ -412,6 +429,7 @@ describe('ChartSideBarComponent', () => {
 
     // given
     context.chartType = ChartType.PIE.type;
+    component.selectedChartType = ChartType.PIE;
 
     // when
     const actual = component.isCircularChart();

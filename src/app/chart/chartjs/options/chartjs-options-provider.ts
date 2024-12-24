@@ -87,7 +87,7 @@ export class ChartJsOptionsProvider {
                 intersect: true
             },
             onHover: (e, elements, chart) => chart.canvas.style.cursor = elements.length ? 'pointer' : 'default',
-            onClick: (e, elements, chart) => this.rawDataRevealer.reveal(elements, chart, context)
+            onClick: (e, elements, chart) => this.rawDataRevealer.reveal(elements, chart.data, context)
         };
     }
 

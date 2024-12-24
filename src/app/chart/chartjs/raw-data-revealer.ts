@@ -1,8 +1,8 @@
 import { DataType } from 'app/shared/model';
-import { ChartContext } from 'app/shared/model/chart';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { SeriesNameConverter } from 'app/shared/services/chart';
-import { ActiveElement, BarElement, Chart, ChartDataset, Point, PointElement } from 'chart.js';
+import { ActiveElement, BarElement, ChartData, ChartDataset, Point, PointElement } from 'chart.js';
 
 /**
  * Reveals (displays) raw data corresponding to a Chart.js element selected by the user
@@ -13,23 +13,29 @@ export class RawDataRevealer {
 
    constructor(private rawDataRevealService: RawDataRevealService) { }
 
-   reveal(elements: ActiveElement[], chart: Chart, context: ChartContext): void {
+   reveal(elements: ActiveElement[], data: ChartData, context: ChartContext): void {
+      console.log('elements', elements)
+      console.log('data', data)
+      console.log('context', context)
+
+
       if (!elements.length) {
          return;
       }
       const element = elements[0];
       const groupByColumnDataType = context.groupByColumns[0]?.dataType;
-      if (context.isCategoryChart() || groupByColumnDataType === DataType.TEXT) {
-         this.fromFlatData(elements, chart, context);
+      const linearBarChart = [ChartType.LINEAR_BAR.type, ChartType.LINEAR_HORIZONTAL_BAR.type].includes(context.chartType);
+      if (context.isCategoryChart() || (groupByColumnDataType === DataType.TEXT && !linearBarChart)) {
+         this.fromFlatData(elements, data, context);
       } else if (element.element instanceof PointElement || element.element instanceof BarElement) {
-         const point = this.findDataPoint(chart.data.datasets, element.datasetIndex, element.index);
-         if (point['id'] != undefined) {
+         const point = this.findDataPoint(data.datasets, element.datasetIndex, element.index);
+         if (point['id']) {
             this.rawDataRevealService.ofID(point['id']);
          } else {
-            this.fromDataPoint(point, chart.data.datasets, element.datasetIndex, context);
+            this.fromDataPoint(point, data.datasets, element.datasetIndex, context);
          }
       } else {
-         this.fromGroupedData(chart.data.datasets, element.datasetIndex, context);
+         this.fromGroupedData(data.datasets, element.datasetIndex, context);
       }
    }
 
@@ -53,17 +59,17 @@ export class RawDataRevealer {
       }
    }
 
-   private fromFlatData(elements: ActiveElement[], chart: Chart, context: ChartContext): void {
-      if (chart.data.labels?.length) {
+   private fromFlatData(elements: ActiveElement[], data: ChartData, context: ChartContext): void {
+      if (!!data.labels?.length) {
          const dsIndex = elements[0].datasetIndex;
          const index = elements[0].index;
          const column = context.isAggregationCountSelected() ? context.dataColumns[dsIndex] : context.groupByColumns[0];
-         const label = chart.data.labels[index];
+         const label = data.labels[index];
          this.rawDataRevealService.ofQuery(context.query, [column.name], [label], context);
       } else {
          const dsIndex = elements[0].datasetIndex;
          const column = context.isAggregationCountSelected() ? context.dataColumns[0] : context.groupByColumns[0];
-         const ds = chart.data.datasets[dsIndex];
+         const ds = data.datasets[dsIndex];
          const label = ds['originalLabel'] || ds.label;
          this.rawDataRevealService.ofQuery(context.query, [column.name], [label], context);
       }

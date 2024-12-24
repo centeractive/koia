@@ -7,8 +7,6 @@ html {
 body {
   padding: 30px 40px;
   font: 13px "Helvetica Neue", "Lucida Grande", "Arial";
-  background: #ECE9E9 -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fff), to(#ECE9E9));
-  background: #ECE9E9 -moz-linear-gradient(top, #fff, #ECE9E9);
   background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
 }
