@@ -129,6 +129,33 @@ describe('ChartContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
+   it('#xLabelStepSize should not fire look change event when xLabelStepSize is not changed', fakeAsync(() => {
+
+      // given
+      context.xLabelStepSize = 10;
+      flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.xLabelStepSize = 10;
+
+      // then
+      flush();
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#xLabelStepSize should fire look change event when xLabelStepSize is changed', fakeAsync(() => {
+
+      // when
+      context.xLabelStepSize = 5;
+
+      // then
+      flush();
+      expect(context.xLabelStepSize).toBe(5);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
    it('#xLabelRotation should not fire look change event when xLabelRotation is not changed', fakeAsync(() => {
 
       // given
@@ -147,11 +174,65 @@ describe('ChartContext', () => {
    it('#xLabelRotation should fire look change event when xLabelRotation is changed', fakeAsync(() => {
 
       // when
-      context.xLabelRotation = 99;
+      context.xLabelRotation = 20;
 
       // then
       flush();
-      expect(context.xLabelRotation).toBe(99);
+      expect(context.xLabelRotation).toBe(20);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
+   it('#yLabelStepSize should not fire look change event when yLabelStepSize is not changed', fakeAsync(() => {
+
+      // given
+      context.yLabelStepSize = 10;
+      flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.yLabelStepSize = 10;
+
+      // then
+      flush();
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#yLabelStepSize should fire look change event when yLabelStepSize is changed', fakeAsync(() => {
+
+      // when
+      context.yLabelStepSize = 5;
+
+      // then
+      flush();
+      expect(context.yLabelStepSize).toBe(5);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
+   it('#yLabelRotation should not fire look change event when yLabelRotation is not changed', fakeAsync(() => {
+
+      // given
+      context.yLabelRotation = 45;
+      flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.yLabelRotation = 45;
+
+      // then
+      flush();
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#yLabelRotation should fire look change event when yLabelRotation is changed', fakeAsync(() => {
+
+      // when
+      context.yLabelRotation = 20;
+
+      // then
+      flush();
+      expect(context.yLabelRotation).toBe(20);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));

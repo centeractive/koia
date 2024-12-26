@@ -19,6 +19,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   selectableDataColumns: Column[];
   countDistinctValuesEnabled = true;
   individualValuesEnabled: boolean;
+  groupByNumberColumn: Column;
   groupByTimeColumn: Column;
   readonly chartTypes = ChartType.ALL;
   readonly legendPositions = ['top', 'right', 'bottom', 'left'];
@@ -38,8 +39,12 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
       .filter(c => c.indexed)
       .filter(c => c.dataType !== DataType.TIME);
     super.defineSelectableItems();
-    if (!!this.selectedGroupByColumns.length && this.selectedGroupByColumns[0].dataType === DataType.TIME) {
-      this.groupByTimeColumn = this.selectedGroupByColumns[0];
+    if (!!this.selectedGroupByColumns.length) {
+      if (this.selectedGroupByColumns[0].dataType === DataType.NUMBER) {
+        this.groupByNumberColumn = this.selectedGroupByColumns[0];
+      } else if (this.selectedGroupByColumns[0].dataType === DataType.TIME) {
+        this.groupByTimeColumn = this.selectedGroupByColumns[0];
+      }
     }
   }
 

@@ -1,9 +1,9 @@
+import { SeriesNameConverter } from 'app/shared/services/chart';
 import { ChartUtils } from 'app/shared/utils';
 import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
+import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
 import { Margin } from '.';
-import { SeriesNameConverter } from '../../services/chart/series-name-converter';
-import { ValueRange } from '../../value-range/model/value-range.type';
 import { Aggregation } from '../aggregation.enum';
 import { Column } from '../column.type';
 import { ElementContext } from '../element-context';
@@ -17,7 +17,10 @@ export class ChartContext extends ElementContext {
    private _showLegend: boolean;
    private _legendPosition: string;
    private _valueAsPercent: boolean; // for PIE and DOUGHNUT chart only
-   private _xLabelRoatation: number;
+   private _xLabelStepSize: number;
+   private _xLabelRotation: number;
+   private _yLabelStepSize: number;
+   private _yLabelRotation: number;
    private _stacked: boolean;
 
    // transient
@@ -122,13 +125,46 @@ export class ChartContext extends ElementContext {
       }
    }
 
+   get xLabelStepSize(): number {
+      return this._xLabelStepSize;
+   }
+
+   set xLabelStepSize(stepSize: number) {
+      if (this._xLabelStepSize !== stepSize) {
+         this._xLabelStepSize = stepSize;
+         this.fireLookChanged();
+      }
+   }
+
    get xLabelRotation(): number {
-      return this._xLabelRoatation;
+      return this._xLabelRotation;
    }
 
    set xLabelRotation(rotation: number) {
-      if (this._xLabelRoatation !== rotation) {
-         this._xLabelRoatation = rotation;
+      if (this._xLabelRotation !== rotation) {
+         this._xLabelRotation = rotation;
+         this.fireLookChanged();
+      }
+   }
+
+   get yLabelStepSize(): number {
+      return this._yLabelStepSize;
+   }
+
+   set yLabelStepSize(stepSize: number) {
+      if (this._yLabelStepSize !== stepSize) {
+         this._yLabelStepSize = stepSize;
+         this.fireLookChanged();
+      }
+   }
+
+   get yLabelRotation(): number {
+      return this._yLabelRotation;
+   }
+
+   set yLabelRotation(rotation: number) {
+      if (this._yLabelRotation !== rotation) {
+         this._yLabelRotation = rotation;
          this.fireLookChanged();
       }
    }

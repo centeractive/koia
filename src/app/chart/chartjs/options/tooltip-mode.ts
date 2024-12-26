@@ -1,7 +1,10 @@
 import { ChartData, InteractionMode, Point } from "chart.js";
 
+const MAX_DATASETS_FOR_INDEX = 10;
+
 export function tooltipMode(data: ChartData): InteractionMode {
-    if (data.datasets.length > 1 && indexable(data)) {
+    const dsCount = data.datasets.length;
+    if (dsCount > 1 && dsCount <= MAX_DATASETS_FOR_INDEX && indexable(data)) {
         return 'index';
     }
     return 'nearest';

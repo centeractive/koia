@@ -1,5 +1,6 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable" (change)="onMultiExpandableChanged($event.checked)">
+   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
+      (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
@@ -13,8 +14,8 @@
 </div>
 
 <div id="div_charts">
-   <button *ngFor="let chartType of chartTypes" class="but_chart_type" mat-mini-fab
-           [color]="chartTypeColor(chartType)" [matTooltip]="chartType.name + ' Chart'" (click)="switchTo(chartType)">
+   <button *ngFor="let chartType of chartTypes" class="but_chart_type" mat-mini-fab [color]="chartTypeColor(chartType)"
+      [matTooltip]="chartType.name + ' Chart'" (click)="switchTo(chartType)">
       <mat-icon *ngIf="chartType.customIcon" [svgIcon]="chartType.icon"></mat-icon>
       <mat-icon *ngIf="!chartType.customIcon">{{ chartType.icon }}</mat-icon>
    </button>
@@ -26,7 +27,7 @@
       <koia-expansion-panel [title]="dataPanelName()" [expanded]="true">
          <div id="div_sel_data_columns">
             <button class="but_column" mat-raised-button *ngFor="let column of selectableDataColumns"
-                    [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
+               [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
                <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                {{ column.name }}
             </button>
@@ -34,15 +35,17 @@
          <br>
          <div>
             <mat-radio-group [value]="context.isAggregationCountSelected()">
-               <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled" (change)="onAggregationTypeChanged(true)">
+               <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
+                  (change)="onAggregationTypeChanged(true)">
                   Count Distinct Values
                </mat-radio-button>
                <mat-radio-button [value]="false" [disabled]="!individualValuesEnabled"
-                                 (change)="onAggregationTypeChanged(false)">
+                  (change)="onAggregationTypeChanged(false)">
                   {{ context.isCircularChart() ? 'Unique Named' : 'Individual' }} Values
                </mat-radio-button>
             </mat-radio-group>&nbsp;&nbsp;&nbsp;
-            <mat-checkbox *ngIf="!context.isCircularChart()" class="example-margin" [(ngModel)]="context.stacked"> Stacked
+            <mat-checkbox *ngIf="!context.isCircularChart()" class="example-margin" [(ngModel)]="context.stacked">
+               Stacked
             </mat-checkbox>
          </div>
       </koia-expansion-panel>
@@ -58,7 +61,7 @@
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
                </mat-select-trigger>
                <mat-option *ngFor="let column of context.columns" [value]="column"
-                           (click)="context.groupByColumns = [column]">
+                  (click)="context.groupByColumns = [column]">
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                   {{ column.name }}
                </mat-option>
@@ -71,32 +74,37 @@
             <span class="span_left_to_right">
                <label>Selected Columns</label>
                <mat-icon matTooltipClass="multi-line-tooltip"
-                         matTooltip="Drag & Drop available columns to make them selected
+                  matTooltip="Drag & Drop available columns to make them selected
 
             Values are shown separately for distinct content of the selected split columns. If any split column cell is empty, the value is ignored">
                   help
                </mat-icon>
             </span>
             <div id="selectedSplitColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-                 [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList"
-                 class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
-               <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns" cdkDrag>
-                  <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon><span class="accent">{{ column.name }}</span>
+               [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList"
+               class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
+               <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns"
+                  cdkDrag>
+                  <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon><span class="accent">{{ column.name
+                     }}</span>
                </div>
             </div>
             <br>
             <label>Available Columns</label>
             <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableSplitColumns"
-                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
-               <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableSplitColumns" cdkDrag>
+               [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+               (cdkDropListDropped)="dropSplitColumn($event)">
+               <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableSplitColumns"
+                  cdkDrag>
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>{{ column.name }}
                </div>
             </div>
          </div>
       </koia-expansion-panel>
 
-      <koia-expansion-panel *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())"
-                            [title]="groupingPanelName()">
+      <koia-expansion-panel
+         *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())"
+         [title]="groupingPanelName()">
          <mat-form-field>
             <mat-label>{{ context.isCategoryChart() ? 'Column Name' : 'Group by' }}</mat-label>
             <mat-select [value]="getSingleGroupByColumn()">
@@ -106,17 +114,17 @@
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
                </mat-select-trigger>
                <mat-option *ngFor="let column of selectableGroupByColumns()" [value]="column"
-                           (click)="onGroupByColumnChanged(column)">
+                  (click)="onGroupByColumnChanged(column)">
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                   {{ column.name }}
                </mat-option>
             </mat-select>
          </mat-form-field>
-
          <mat-form-field *ngIf="context.isAggregationCountSelected() && groupByTimeColumn">
             <mat-label>Time Unit Grouping</mat-label>
             <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
-               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit" (click)="context.fireStructureChanged()">
+               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
+                  (click)="context.fireStructureChanged()">
                   {{ timeUnit }}
                </mat-option>
             </mat-select>
@@ -147,33 +155,59 @@
          <mat-form-field class="field_small_integer">
             <mat-label>Position</mat-label>
             <mat-select [value]="elementPosition">
-               <mat-option *ngFor="let position of elementPositions" [value]="position" (click)="setElementPosition(position)">
+               <mat-option *ngFor="let position of elementPositions" [value]="position"
+                  (click)="setElementPosition(position)">
                   {{ position }}
                </mat-option>
             </mat-select>
          </mat-form-field>
       </koia-expansion-panel>
 
-      <koia-expansion-panel title="Labels & Legend">
-         <mat-slide-toggle *ngIf="isCircularChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels
-         </mat-slide-toggle>
-         <div *ngIf="!isCircularChart()" class="div_label_rotation">
-            X-Axis Label Rotation
-            <mat-slider min="0" max="90" step="1" #ngSlider>
-               <input matSliderThumb [value]="- context.xLabelRotation" (valueChange)="context.xLabelRotation = -$event" #ngSliderThumb="matSliderThumb" />
-            </mat-slider>
-         </div>
-         <span class="span_row" *ngIf="context.chartType !== 'discreteBarChart'">
+      <koia-expansion-panel title="Legend & Labels">
+         <span class="span_legend">
             <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>
             <button mat-button *ngIf="context.showLegend && context.chartType !== 'scatterChart'"
-                    [matMenuTriggerFor]="menu" color="accent">{{ context.legendPosition }}</button>
+               [matMenuTriggerFor]="menu" color="accent">{{ context.legendPosition }}</button>
             <mat-menu #menu="matMenu">
                <button mat-menu-item class="menu_item_legend_position" *ngFor="let position of legendPositions"
-                       (click)="context.legendPosition = position"
-                       [disabled]="context.isCurrentLegendPosition(position)">{{
+                  (click)="context.legendPosition = position" [disabled]="context.isCurrentLegendPosition(position)">{{
                   position }}</button>
             </mat-menu>
          </span>
+
+         <mat-slide-toggle *ngIf="isCircularChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels
+         </mat-slide-toggle>
+
+         <div *ngIf="!isCircularChart()">
+            Base Labels...
+            <div class="div_labels">
+               <mat-form-field>
+                  <mat-label>Step Size</mat-label>
+                  <input matInput type="number" placeholder="Automatic" [(ngModel)]="context.xLabelStepSize">
+               </mat-form-field>
+               <div class="div_label_rotation">
+                  Rotation
+                  <mat-slider min="0" max="90" step="1" #ngSlider>
+                     <input matSliderThumb [value]="- context.xLabelRotation"
+                        (valueChange)="context.xLabelRotation = -$event" #ngSliderThumb="matSliderThumb" />
+                  </mat-slider>
+               </div>
+            </div>
+            Value Labels...
+            <div class="div_labels">
+               <mat-form-field>
+                  <mat-label>Step Size</mat-label>
+                  <input matInput type="number" placeholder="Automatic" [(ngModel)]="context.yLabelStepSize">
+               </mat-form-field>
+               <div class="div_label_rotation">
+                  Rotation
+                  <mat-slider min="0" max="90" step="1" #ngSlider>
+                     <input matSliderThumb [value]="- context.yLabelRotation"
+                        (valueChange)="context.yLabelRotation = -$event" #ngSliderThumb="matSliderThumb" />
+                  </mat-slider>
+               </div>
+            </div>
+         </div>
       </koia-expansion-panel>
    </mat-accordion>
 </div>

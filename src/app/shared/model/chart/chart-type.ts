@@ -37,36 +37,7 @@ export class ChartType {
             return chartType;
          }
       }
-      return this.fromOldType(type);
-   }
-
-   /**
-    * tries to deduct the chart type from the former nvd3 type for backward compatibility
-    */
-   private static fromOldType(type: string): ChartType {
-      switch (type) {
-         case ('pieChart'):
-            return ChartType.PIE;
-         case ('donutChart'):
-            return ChartType.DOUGHNUT;
-         case ('discreteBarChart'):
-            return ChartType.BAR;
-         case ('multiBarChart'):
-            return ChartType.LINEAR_BAR;
-         case ('multiBarHorizontalChart'):
-            return ChartType.LINEAR_HORIZONTAL_BAR;
-         case ('lineChart'):
-         case ('lineWithFocusChart'):
-            return ChartType.LINE;
-         case ('areaChart'):
-            return ChartType.AREA;
-         case ('scatterChart'):
-            return ChartType.SCATTER;
-         case ('sunburstChart'):
-            throw new Error('Sunburst chart does no longer exist in this Koia version');
-         default:
-            throw new Error('unknown chart type ' + type);
-      }
+      throw new Error('unknown chart type ' + type);
    }
 
    constructor(readonly name: string, readonly type: string, readonly icon: string,

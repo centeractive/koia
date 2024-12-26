@@ -25,16 +25,23 @@ button {
   margin-right: 20px;
 }
 
-.span_row {
+.span_legend {
   display: flex;
   flex-wrap: nowrap;
   flex-flow: row;
   align-items: center;
+  margin-bottom: 1em;
+}
+
+.div_labels {
+  display: flex;
+  align-items: center;
+  gap: 1em;
 }
 
 .div_label_rotation {
   display: flex;
-  flex-flow: column;
+  flex-direction: column;
 }
 
 .menu_item_legend_position {

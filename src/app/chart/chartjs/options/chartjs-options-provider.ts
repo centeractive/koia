@@ -103,7 +103,7 @@ export class ChartJsOptionsProvider {
 
     private yScaleOptions(chartType: ChartType, context: ChartContext): ScaleOptions {
         const title = this.yScaleTitle(context);
-        return {
+        const scaleOptions: ScaleOptions = {
             display: !this.chartTypesHiddenScales.includes(chartType),
             stacked: context.stacked,
             title: {
@@ -111,6 +111,19 @@ export class ChartJsOptionsProvider {
                 text: title
             }
         };
+        if (context.yLabelStepSize) {
+            scaleOptions.ticks = {
+                stepSize: context.yLabelStepSize
+            };
+        }
+        if (context.yLabelRotation) {
+            scaleOptions.ticks = {
+                ...scaleOptions.ticks || {},
+                maxRotation: -context.yLabelRotation,
+                minRotation: -context.yLabelRotation
+            };
+        }
+        return scaleOptions;
     }
 
     private yScaleTitle(context: ChartContext): string {
@@ -131,8 +144,14 @@ export class ChartJsOptionsProvider {
             display: !this.chartTypesHiddenScales.includes(chartType),
             stacked: context.stacked
         };
-        if (context.xLabelRotation != undefined) {
+        if (context.xLabelStepSize) {
             scaleOptions.ticks = {
+                stepSize: context.xLabelStepSize
+            };
+        }
+        if (context.xLabelRotation) {
+            scaleOptions.ticks = {
+                ...scaleOptions.ticks || {},
                 maxRotation: -context.xLabelRotation,
                 minRotation: -context.xLabelRotation
             };

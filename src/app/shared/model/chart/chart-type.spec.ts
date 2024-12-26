@@ -22,19 +22,8 @@ describe('ChartType', () => {
          });
    });
 
-   it('#fromType should return chart type derived from old nvd3 type', () => {
-      const oldNvd3Types = ['pieChart', 'donutChart', 'discreteBarChart', 'multiBarChart',
-         'multiBarHorizontalChart', 'lineChart', 'lineWithFocusChart', 'areaChart']
-
-      oldNvd3Types.forEach(t => expect(ChartType.fromType(t)).toBeDefined());
-   });
-
    it('#fromType should throw error when type is unknown', () => {
       expect(() => ChartType.fromType('x')).toThrowError('unknown chart type x');
    });
 
-   it('#fromType should throw error when type is no longer supported', () => {
-      expect(() => ChartType.fromType('sunburstChart'))
-         .toThrowError('Sunburst chart does no longer exist in this Koia version');
-   });
 });

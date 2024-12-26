@@ -1,5 +1,4 @@
-import { ColorProviderFactory } from 'app/shared/color';
-import { Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
+import { Column, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType, ViewElement } from 'app/shared/model/view-config';
@@ -32,7 +31,10 @@ export class ViewToModelConverter {
       context.copyAttributes(chart);
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
+      context.xLabelStepSize = chart.xLabelStepSize;
       context.xLabelRotation = chart.xLabelRotation;
+      context.yLabelStepSize = chart.yLabelStepSize;
+      context.yLabelRotation = chart.yLabelRotation;
       context.stacked = chart.stacked;
       return context;
    }
