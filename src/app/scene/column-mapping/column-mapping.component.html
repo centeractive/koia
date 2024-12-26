@@ -6,31 +6,35 @@
   </span>
   <mat-form-field class="column_name">
     <mat-label>Column Name</mat-label>
-    <input matInput [value]="mapping.target.name" (change)="onColumnNameChanged($event.target.value)" [formControl]="columnNameControl">
+    <input matInput [value]="mapping.target.name" (change)="onColumnNameChanged($event.target.value)"
+      [formControl]="columnNameControl">
     <mat-error *ngIf="columnNameControl.invalid">{{ getColumnNameErrorMessage() }}</mat-error>
   </mat-form-field>
   <mat-form-field class="column_data_type">
     <mat-label>Data Type</mat-label>
     <mat-select class="select_data_type" [(value)]="mapping.target.dataType" (selectionChange)="onDataTypeChanged()">
-      <mat-option class="option_data_type" *ngFor="let dataType of columnDefAssistant.selectableDataTypeOf(mapping)" [value]="dataType">
+      <mat-option class="option_data_type" *ngFor="let dataType of columnDefAssistant.selectableDataTypeOf(mapping)"
+        [value]="dataType">
         {{ dataType }}
       </mat-option>
     </mat-select>
   </mat-form-field>
   <mat-form-field class="column_width">
     <mat-label>Width</mat-label>
-    <input matInput type="number" required min="1" max="9999" step="1" oninput="validity.valid||(value='')" [(ngModel)]="mapping.target.width">
+    <input matInput type="number" required min="1" max="9999" step="1" oninput="validity.valid||(value='')"
+      [(ngModel)]="mapping.target.width">
   </mat-form-field>
   <span class="span_source_format" *ngIf="columnDefAssistant.canHaveSourceFormat(mapping)">
     <mat-form-field class="column_format">
       <mat-label>Source Format</mat-label>
-      <input class="input_source_format" matInput [(ngModel)]="mapping.source.format" (keyup.enter)="onChange.emit()" (blur)="onChange.emit()">
+      <input class="input_source_format" matInput [(ngModel)]="mapping.source.format" (keyup.enter)="onChange.emit()"
+        (blur)="onChange.emit()">
     </mat-form-field>
     <button class="but_refresh_preview" mat-icon-button matTooltip="Refresh Preview" (click)="onChange.emit()">
       <mat-icon>refresh</mat-icon>
     </button>
     <button class="but_date_formats" mat-icon-button matTooltip="Show custom format opitons"
-            (click)="openDatePipeFormatPage()">
+      (click)="openDatePipeFormatPage()">
       <mat-icon>help</mat-icon>
     </button>
   </span>
@@ -42,5 +46,6 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <img *ngIf="mapping.warning" src="/assets/warning.png" [matTooltip]="mapping.warning" matTooltipClass="tooltip_warning" />
+  <img *ngIf="mapping.warning" src="/assets/warning.png" [matTooltip]="mapping.warning"
+    matTooltipClass="tooltip_warning" />
 </div>

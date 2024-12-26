@@ -1,7 +1,6 @@
 import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { DateFormatProvider } from 'app/shared/utils/i18n/date-format-provider';
-import { TimeUnitDetector } from './time-unit-detector';
 
 export class DateTimeColumnDetector {
 
@@ -25,7 +24,6 @@ export class DateTimeColumnDetector {
     private static readonly ZONES = ['', 'Z', 'ZZ', 'ZZZ', 'ZZZZ', 'ZZZZZ', 'O', 'OO', 'OOO', 'OOOO', 'zzzz', 'zzz', 'zz', 'z'];
 
     private dateFormatProvider = new DateFormatProvider();
-    private timeUnitDetector = new TimeUnitDetector();
 
     detect(columnPair: ColumnPair, value: string, locale: string): void {
         const dateFormat = this.dateFormatProvider.provide(locale);
@@ -50,9 +48,9 @@ export class DateTimeColumnDetector {
                 if (DateTimeUtils.parseDate(value, format, locale == '?' ? null : locale)) {
                     columnPair.source.format = format;
                     columnPair.target.dataType = DataType.TIME;
-                    const timeUnit = formatToTimeUnit.timeUnit ? formatToTimeUnit.timeUnit :
-                        this.timeUnitDetector.fromColumnName(columnPair, 1, TimeUnit.MILLISECOND, locale);
-                    columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
+                    if (formatToTimeUnit.timeUnit) {
+                        columnPair.target.format = DateTimeUtils.ngFormatOf(formatToTimeUnit.timeUnit);
+                    }
                     return true;
                 }
             }

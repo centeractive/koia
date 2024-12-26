@@ -1,18 +1,17 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-
-import { ColumnMappingComponent } from './column-mapping.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HAMMER_LOADER } from '@angular/platform-browser';
-import { DataType, ColumnPair } from 'app/shared/model';
 import { DatePipe } from '@angular/common';
-import { ColumnMappingGenerator } from './mapper';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { HAMMER_LOADER } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ColumnPair, DataType } from 'app/shared/model';
+import { ColumnMappingComponent } from './column-mapping.component';
+import { ColumnMappingGenerator } from './mapper';
 
 describe('ColumnMappingComponent', () => {
   let component: ColumnMappingComponent;
@@ -20,7 +19,7 @@ describe('ColumnMappingComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ColumnMappingComponent ],
+      declarations: [ColumnMappingComponent],
       imports: [
         MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
         MatSelectModule, BrowserAnimationsModule
@@ -29,7 +28,7 @@ describe('ColumnMappingComponent', () => {
         { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

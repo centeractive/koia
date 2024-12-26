@@ -3,7 +3,6 @@ import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 import { TimeGuesser } from './time-guesser';
-import { TimeUnitDetector } from './time-unit-detector';
 
 export class ColumnMappingGenerator {
 
@@ -17,7 +16,6 @@ export class ColumnMappingGenerator {
 
    private datePipe = new DatePipe('en-US');
    private dateTimeColumnDetector = new DateTimeColumnDetector();
-   private timeUnitDetector = new TimeUnitDetector();
    private timeGuesser = new TimeGuesser();
 
    generate(entries: object[], locale: string): ColumnPair[] {
@@ -104,13 +102,6 @@ export class ColumnMappingGenerator {
       if (this.timeGuesser.isAssumedlyTime(columnPair, value, locale)) {
          columnPair.source.dataType = DataType.TIME;
          columnPair.target.dataType = DataType.TIME;
-      } else {
-         const timeUnit = this.timeUnitDetector.fromColumnName(columnPair, value, undefined, locale);
-         if (timeUnit) {
-            columnPair.source.dataType = DataType.TIME;
-            columnPair.target.dataType = DataType.TIME;
-            columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
-         }
       }
    }
 

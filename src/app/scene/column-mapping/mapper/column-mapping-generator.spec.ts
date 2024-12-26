@@ -301,50 +301,6 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
    });
 
-   it('#generate should return number to date mapping when column name ends with date and values are integers', () => {
-
-      // when
-      const mapping = generator.generate([{ 'start-date': 0 }, { 'start-date': 0 }], 'en');
-
-      // then
-      expect(mapping.length).toBe(1);
-      expect(mapping[0].source).toEqual({ name: 'start-date', dataType: DataType.TIME, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'start-date', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy', indexed: true });
-   });
-
-   it('#generate should return number mapping when column name ends with date but any value is not integer', () => {
-
-      // when
-      const mapping = generator.generate([{ 'start-date': 0 }, { 'start-date': 0.1 }], 'en');
-
-      // then
-      expect(mapping.length).toBe(1);
-      expect(mapping[0].source).toEqual({ name: 'start-date', dataType: DataType.NUMBER, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'start-date', dataType: DataType.NUMBER, width: 10, indexed: true });
-   });
-
-   it('#generate should return time to time mapping when column name ends with time and values are integers', () => {
-
-      // when
-      const mapping = generator.generate([{ 'creation-time': 0 }, { 'creation-time': 0 }], 'en');
-
-      // then
-      expect(mapping.length).toBe(1);
-      expect(mapping[0].source).toEqual({ name: 'creation-time', dataType: DataType.TIME, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'creation-time', dataType: DataType.TIME, width: 10, indexed: true });
-   });
-
-   it('#generate should return number mapping when column name ends with time but any value is not integer', () => {
-
-      // when
-      const mapping = generator.generate([{ 'start-time': 0 }, { 'start-time': 0.1 }], 'en');
-
-      // then
-      expect(mapping.length).toBe(1);
-      expect(mapping[0].source).toEqual({ name: 'start-time', dataType: DataType.NUMBER, width: undefined });
-      expect(mapping[0].target).toEqual({ name: 'start-time', dataType: DataType.NUMBER, width: 10, indexed: true });
-   });
-
    it('#generate should return text to number mapping when first value is null', () => {
 
       // when
