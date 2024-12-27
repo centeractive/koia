@@ -1,21 +1,24 @@
 <mat-sidenav-container fullscreen>
 
    <mat-sidenav mode="push" class="sidenav" *ngIf="elementContexts">
-      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [entries]="entries" [elementCount]="elementContexts.length"
-                           [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
+      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [entries]="entries"
+         [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+         (onElementPositionChange)="changeElementPosition($event)">
       </koia-chart-side-bar>
-      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext" [entries]="entries" [elementCount]="elementContexts.length"
-                           [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
+      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext" [entries]="entries"
+         [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+         (onElementPositionChange)="changeElementPosition($event)">
       </koia-graph-side-bar>
-      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext" [entries]="entries"
-                                   [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-                                   (onElementPositionChange)="changeElementPosition($event)">
+      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext"
+         [entries]="entries" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+         (onElementPositionChange)="changeElementPosition($event)">
       </koia-summary-table-side-bar>
    </mat-sidenav>
 
    <div class="div_wrapper">
       <div #header class="div_header">
-         <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery" (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
+         <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery"
+            (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
          <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
          <div id="view_toolbar">
             <button mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -29,16 +32,18 @@
             </mat-menu>
 
             <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint
-                    matTooltip="Print current view" [disabled]="!elementContexts?.length" (click)="printView()">
+               matTooltip="Print current view" [disabled]="!elementContexts?.length" (click)="printView()">
                <mat-icon>print</mat-icon>
             </button>
             <button mat-icon-button matTooltip="Save current view" [disabled]="!elementContexts?.length"
-                    (click)="saveView()">
+               (click)="saveView()">
                <mat-icon>save_alt</mat-icon>
             </button>
 
-            <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!views.length" [matMenuTriggerFor]="restoreViewMenu">
-               <mat-icon [matBadge]="views.length" [matBadgeHidden]="!views.length" matBadgeSize="small" matBadgeColor="accent">
+            <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!views.length"
+               [matMenuTriggerFor]="restoreViewMenu">
+               <mat-icon [matBadge]="views.length" [matBadgeHidden]="!views.length" matBadgeSize="small"
+                  matBadgeColor="accent">
                   open_in_browser
                </mat-icon>
             </button>
@@ -63,42 +68,42 @@
       </div>
 
       <div class="div_content">
-         <div #content class="div_flex_content" class="printable">
+         <div #content class="div_flex_content printable">
             <div #elementContainer class="div_element mat-elevation-z8" *ngFor="let context of elementContexts"
-                 mwlResizable [enableGhostResize]="true" [resizeEdges]="resizableEdgesOf(context)"
-                 [resizeSnapGrid]="{right: 20, bottom: 20}" [validateResize]="validateElementResize"
-                 (resizeStart)="onResizeStart($event)" (resizeEnd)="onResizeEnd(context, $event)">
+               mwlResizable [enableGhostResize]="true" [resizeEdges]="resizableEdgesOf(context)"
+               [resizeSnapGrid]="{right: 20, bottom: 20}" [validateResize]="validateElementResize"
+               (resizeStart)="onResizeStart($event)" (resizeEnd)="onResizeEnd(context, $event)">
                <div #elementHeader class="div_element_header">
                   <div style="display: flex">
                      <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
-                             *ngIf="context.getSupportedExportFormats().length > 0">
+                        *ngIf="!!context.getSupportedExportFormats().length">
                         <mat-icon>more_vert</mat-icon>
                      </button>
                      <mat-menu #moreMenu="matMenu">
                         <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
-                                (click)="saveAs(context, exportFormat)">
+                           (click)="saveAs(context, exportFormat)">
                            <mat-icon>insert_drive_file</mat-icon>
                            <span>Save As {{ exportFormat }}</span>
                         </button>
                      </mat-menu>
                      <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..."
-                             (click)="configure($event, context)">
+                        (click)="configure($event, context)">
                         <mat-icon>settings</mat-icon>
                      </button>
                      <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
-                             *ngIf="isChartContext(context)" mat-icon-button
-                             [color]="isShowResizableMargin(context) ? 'accent' : null"
-                             matTooltip="Toggle resizable chart margin"
-                             (click)="asChartContext(context).toggleShowResizableMargin()">
+                        *ngIf="isChartContext(context)" mat-icon-button
+                        [color]="isShowResizableMargin(context) ? 'accent' : null"
+                        matTooltip="Toggle resizable chart margin"
+                        (click)="asChartContext(context).toggleShowResizableMargin()">
                         <mat-icon>crop_free</mat-icon>
                      </button>
                   </div>
                   <div class="div_title">
                      <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
-                               [textareaMaxRows]="2" (keyup)="context.title = $event.target.value"></textarea>
+                        [textareaMaxRows]="2" (keyup)="context.title = $event.target.value"></textarea>
                   </div>
                   <button mat-icon-button class="but_warning" *ngIf="context.warning" [matTooltip]="context.warning"
-                          color="warn">
+                     color="warn">
                      <mat-icon>error</mat-icon>
                   </button>
                   <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
@@ -107,13 +112,17 @@
                </div>
 
                <div #element>
-                  <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context" (onRemove)="removeElement($event)"></koia-summary-table>
-                  <koia-chart *ngIf="isChartContext(context)" [context]="context" (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
+                  <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context"
+                     (onRemove)="removeElement($event)"></koia-summary-table>
+                  <koia-chart *ngIf="isChartContext(context)" [context]="context" (onRemove)="removeElement($event)"
+                     (onWarning)="notifyWarning($event)">
                   </koia-chart>
-                  <koia-graph *ngIf="isGraphContext(context)" [context]="context" (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
+                  <koia-graph *ngIf="isGraphContext(context)" [context]="context" (onRemove)="removeElement($event)"
+                     (onWarning)="notifyWarning($event)">
                   </koia-graph>
                </div>
-               <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="{ bottom: true, right: true }">
+               <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle
+                  [resizeEdges]="{ bottom: true, right: true }">
             </div>
          </div>
       </div>

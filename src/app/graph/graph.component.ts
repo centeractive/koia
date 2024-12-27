@@ -18,17 +18,17 @@ import { GraphOptionsProvider } from './options/graph-options-provider';
 import { NodeDoubleClickHandler } from './options/node-double-click-handler';
 
 @Component({
-    selector: 'koia-graph',
-    templateUrl: './graph.component.html',
-    styleUrls: ['./graph.component.css'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'koia-graph',
+  templateUrl: './graph.component.html',
+  styleUrls: ['./graph.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: false
 })
 export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider {
 
   static readonly MAX_NODES = 1_000;
 
-  @Input() parentConstraintSize: boolean;
+  @Input() gridView: boolean;
   @Input() context: GraphContext;
 
   @Output() onWarning = new EventEmitter<string>();
@@ -62,7 +62,7 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
   private async prepareGraph(): Promise<void> {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
-    const parentDiv: HTMLDivElement = this.parentConstraintSize ? this.cmpElementRef.nativeElement.parentElement : null;
+    const parentDiv: HTMLDivElement = this.gridView ? this.cmpElementRef.nativeElement.parentElement : null;
     this.graphOptions = this.optionsProvider.createOptions(this.context, parentDiv);
     this.buildGraphData();
     this.loading = false;
@@ -81,7 +81,7 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
   }
 
   private generateGraph(): void {
-    if (!this.parentConstraintSize) {
+    if (!this.gridView) {
       this.adjustCanvasContainerSize();
     }
     const nodes = this.graphData.nodes;
@@ -95,9 +95,12 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
    * TODO: get rid of this - graph should automatically adapt to the resized element in the flex-view
    */
   private adjustCanvasContainerSize(): void {
-    const chartContainer = this.cmpElementRef.nativeElement.parentElement;
-    chartContainer.style.width = this.context.width + 'px';
-    chartContainer.style.height = this.context.height + 'px';
+    if (!this.gridView) {
+      const chartContainer = this.cmpElementRef.nativeElement.parentElement;
+      chartContainer.style.width = this.context.width + 'px';
+      const headerHeight = this.cmpElementRef.nativeElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
+      chartContainer.style.height = (this.context.height - headerHeight) + 'px';
+    }
   }
 
   createExportData(): object[] {

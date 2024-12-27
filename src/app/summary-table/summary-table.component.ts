@@ -15,15 +15,15 @@ import { ExportDataGenerator } from './export-data-generator';
 import { RowSpanComputer, Span } from './row-span-computer';
 
 @Component({
-    selector: 'koia-summary-table',
-    templateUrl: './summary-table.component.html',
-    styleUrls: ['./summary-table.component.css'],
-    standalone: false
+  selector: 'koia-summary-table',
+  templateUrl: './summary-table.component.html',
+  styleUrls: ['./summary-table.component.css'],
+  standalone: false
 })
 export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataProvider {
 
-  @Input() context: SummaryContext;
   @Input() gridView: boolean;
+  @Input() context: SummaryContext;
 
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
 
@@ -170,7 +170,8 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataP
       if (!this.context.hasUnlimitedWidth()) {
         style.maxWidth = this.context.width + 'px';
       }
-      style.maxHeight = this.context.height + 'px';
+      const headerHeight = this.divContentRef.nativeElement.parentElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
+      style.maxHeight = (this.context.height - headerHeight) + 'px';
     }
   }
 

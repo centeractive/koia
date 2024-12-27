@@ -24,15 +24,15 @@ import { ChangeEvent, Route } from '../shared/model';
 import { ChartJs } from './chartjs/chartjs';
 
 @Component({
-    selector: 'koia-chart',
-    templateUrl: './chart.component.html',
-    styleUrls: ['./chart.component.css'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'koia-chart',
+  templateUrl: './chart.component.html',
+  styleUrls: ['./chart.component.css'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: false
 })
 export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
 
-  @Input() parentConstraintSize: boolean;
+  @Input() gridView: boolean;
   @Input() context: ChartContext;
   @Output() onWarning = new EventEmitter<string>();
 
@@ -73,7 +73,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     try {
-      if (!this.parentConstraintSize) {
+      if (!this.gridView) {
         this.adjustCanvasContainerSize();
       }
       if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
@@ -88,9 +88,13 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
    * TODO: get rid of this - canvas should automatically adapt to the resized element in the flex-view
    */
   private adjustCanvasContainerSize(): void {
-    const chartContainer = this.canvasRef.nativeElement.parentElement;
-    chartContainer.style.width = this.context.width + 'px';
-    chartContainer.style.height = this.context.height + 'px';
+    if (!this.gridView) {
+      const chartContainer = this.canvasRef.nativeElement.parentElement;
+      chartContainer.style.width = this.context.width + 'px';
+      const headerHeight = this.cmpElementRef.nativeElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
+      console.log(headerHeight)
+      chartContainer.style.height = (this.context.height - headerHeight) + 'px';
+    }
   }
 
   private updateChart(changeEvent: ChangeEvent): void {

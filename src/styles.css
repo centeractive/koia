@@ -130,16 +130,6 @@ mat-panel-description {
   max-width: unset !important;
 }
 
-/*
-.mat-mdc-form-field-infix {
-  min-height: 1em;
-}
-
-.mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-*/
-
 .but_config {
   z-index: 1;
   /* otherwise, it doesn't stay behind sticky header when scrolling */
@@ -200,6 +190,11 @@ var {
     display: none;
   }
 
+  koia-main-toolbar,
+  koia-range-filter {
+    display: none;
+  }
+
   .but_config,
   .but_close {
     display: none !important;
@@ -221,11 +216,6 @@ var {
 
   .div_element {
     page-break-inside: avoid !important;
-  }
-
-  .div_chart {
-    display: block;
-    height: 100%;
   }
 
 }
