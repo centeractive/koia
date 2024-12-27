@@ -56,10 +56,17 @@
   /* otherwise, it doesn't stay behind sticky header when scrolling */
 }
 
+.but_move {
+  z-index: 1;
+  /* otherwise, it doesn't stay behind sticky header when scrolling */
+  opacity: 0.5;
+  cursor: move;
+}
+
 .but_close {
   z-index: 1;
   /* otherwise, it doesn't stay behind sticky header when scrolling */
-  opacity: 0.8;
+  opacity: 0.5;
 }
 
 button:hover {

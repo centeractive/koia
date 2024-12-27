@@ -87,10 +87,11 @@
          </div>
       </div>
 
-      <div #content class="div_content printable" style="padding: 5px;">
+      <div #content class="div_content printable" style="padding: 5px;" cdkDropList cdkDropListOrientation="mixed"
+         (cdkDropListDropped)="drop($event)">
          <mat-grid-list #content [cols]="gridColumns" [rowHeight]="gridCellRatio" gutterSize="10">
             <mat-grid-tile class="mat-elevation-z8" *ngFor="let context of elementContexts"
-               [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan">
+               [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan" cdkDrag>
                <div #elementContainer class="div_element">
                   <div class="div_element_header">
                      <div style="display: flex">
@@ -124,6 +125,9 @@
                      <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning"
                         color="warn">
                         <mat-icon>error</mat-icon>
+                     </button>
+                     <button class="but_move" mat-icon-button matTooltip="Move" cdkDragHandle>
+                        <mat-icon svgIcon="move"></mat-icon>
                      </button>
                      <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
                         <mat-icon>delete_forever</mat-icon>

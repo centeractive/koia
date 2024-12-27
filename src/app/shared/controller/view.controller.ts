@@ -1,3 +1,4 @@
+import { CdkDragDrop, CdkDragSortEvent, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AfterViewInit, Directive, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -88,6 +89,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
             });
          }
       }
+   }
+
+   drop(event: CdkDragDrop<object>): void {
+      console.log('drop', event.previousIndex, event.currentIndex)
+      moveItemInArray(this.elementContexts, event.previousIndex, event.currentIndex);
    }
 
    private identifyColumns(): void {

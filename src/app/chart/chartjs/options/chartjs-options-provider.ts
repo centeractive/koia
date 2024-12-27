@@ -209,10 +209,6 @@ export class ChartJsOptionsProvider {
 
     private duration(timeColumn: Column, context: ChartContext): number {
         const timeRange = ArrayUtils.numberValueRange(context.entries, timeColumn.name);
-
-        const monthCount = DateTimeUtils.countTimeUnits(timeRange.max - timeRange.min, TimeUnit.MONTH);
-        console.log(monthCount);
-
         return timeRange.max - timeRange.min;
     }
 

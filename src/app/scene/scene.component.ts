@@ -13,19 +13,19 @@ import { DBService } from 'app/shared/services/backend';
 import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
+import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import * as _ from 'lodash';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { SceneUtils } from './utils';
-import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 
 @Component({
-    selector: 'koia-front',
-    templateUrl: './scene.component.html',
-    styleUrls: ['./scene.component.css'],
-    standalone: false
+  selector: 'koia-front',
+  templateUrl: './scene.component.html',
+  styleUrls: ['./scene.component.css'],
+  standalone: false
 })
 export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit {
 

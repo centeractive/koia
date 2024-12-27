@@ -51,6 +51,10 @@ export class FlexCanvasComponent extends ViewController {
     const rect = resizeEvent.rectangle;
     const width = this.resizeStartBounds.width === rect.width ? context.width : rect.width;
     const height = this.resizeStartBounds.height === rect.height ? context.height : rect.height;
+
+
+    console.log('context.setSize', width, height);
+
     context.setSize(width, height);
   }
 

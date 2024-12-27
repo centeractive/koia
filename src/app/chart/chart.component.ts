@@ -92,7 +92,6 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
       const chartContainer = this.canvasRef.nativeElement.parentElement;
       chartContainer.style.width = this.context.width + 'px';
       const headerHeight = this.cmpElementRef.nativeElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
-      console.log(headerHeight)
       chartContainer.style.height = (this.context.height - headerHeight) + 'px';
     }
   }
