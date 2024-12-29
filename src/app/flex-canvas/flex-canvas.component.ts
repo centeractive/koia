@@ -6,7 +6,7 @@ import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
-import { ElementContext, Route } from '../shared/model';
+import { ElementContext, Route, SummaryContext } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 
 @Component({
@@ -52,9 +52,15 @@ export class FlexCanvasComponent extends ViewController {
     const width = this.resizeStartBounds.width === rect.width ? context.width : rect.width;
     const height = this.resizeStartBounds.height === rect.height ? context.height : rect.height;
 
-
-    console.log('context.setSize', width, height);
-
+    if (!(context instanceof SummaryContext)) {
+      const iCtx = this.elementContexts.indexOf(context);
+      const containerDivRef = this.elementContainerDivsRefs.get(iCtx);
+      if (containerDivRef) {
+        const style = containerDivRef.nativeElement.style;
+        style.width = width + 'px';
+        style.height = height + 'px';
+      }
+    }
     context.setSize(width, height);
   }
 

@@ -90,8 +90,9 @@
       <div #content class="div_content printable" style="padding: 5px;" cdkDropList cdkDropListOrientation="mixed"
          (cdkDropListDropped)="drop($event)">
          <mat-grid-list #content [cols]="gridColumns" [rowHeight]="gridCellRatio" gutterSize="10">
-            <mat-grid-tile class="mat-elevation-z8" *ngFor="let context of elementContexts"
-               [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan" cdkDrag>
+            @for (context of elementContexts; track context) {
+            <mat-grid-tile class="mat-elevation-z8" [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan"
+               cdkDrag>
                <div #elementContainer class="div_element">
                   <div class="div_element_header">
                      <div style="display: flex">
@@ -149,6 +150,7 @@
                   </div>
                </div>
             </mat-grid-tile>
+            }
          </mat-grid-list>
       </div>
    </div>

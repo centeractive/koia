@@ -70,11 +70,12 @@
       <div class="div_content">
          <div #content class="div_flex_content printable" cdkDropList cdkDropListOrientation="mixed"
             (cdkDropListDropped)="drop($event)">
-            <div #elementContainer class="div_element mat-elevation-z8" *ngFor="let context of elementContexts"
-               mwlResizable [enableGhostResize]="true" [resizeEdges]="resizableEdgesOf(context)"
-               [resizeSnapGrid]="{right: 20, bottom: 20}" [validateResize]="validateElementResize"
-               (resizeStart)="onResizeStart($event)" (resizeEnd)="onResizeEnd(context, $event)" cdkDrag>
-               <div #elementHeader class="div_element_header">
+            @for (context of elementContexts; track context) {
+            <div #elementContainer class="div_element mat-elevation-z8" mwlResizable [enableGhostResize]="true"
+               [resizeEdges]="resizableEdgesOf(context)" [resizeSnapGrid]="{right: 20, bottom: 20}"
+               [validateResize]="validateElementResize" (resizeStart)="onResizeStart($event)"
+               (resizeEnd)="onResizeEnd(context, $event)" cdkDrag>
+               <div class="div_element_header">
                   <div style="display: flex">
                      <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
                         *ngIf="!!context.getSupportedExportFormats().length">
@@ -114,20 +115,19 @@
                      <mat-icon>delete_forever</mat-icon>
                   </button>
                </div>
-
-               <div #element>
-                  <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context"
-                     (onRemove)="removeElement($event)"></koia-summary-table>
-                  <koia-chart *ngIf="isChartContext(context)" [context]="context" (onRemove)="removeElement($event)"
-                     (onWarning)="notifyWarning($event)">
-                  </koia-chart>
-                  <koia-graph *ngIf="isGraphContext(context)" [context]="context" (onRemove)="removeElement($event)"
-                     (onWarning)="notifyWarning($event)">
-                  </koia-graph>
-               </div>
+               <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context"
+                  (onRemove)="removeElement($event)"></koia-summary-table>
+               <koia-chart *ngIf="isChartContext(context)" [context]="context" (onRemove)="removeElement($event)"
+                  (onWarning)="notifyWarning($event)">
+               </koia-chart>
+               <koia-graph *ngIf="isGraphContext(context)" [context]="context" (onRemove)="removeElement($event)"
+                  (onWarning)="notifyWarning($event)">
+               </koia-graph>
                <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle
                   [resizeEdges]="{ bottom: true, right: true }">
+
             </div>
+            }
          </div>
       </div>
    </div>

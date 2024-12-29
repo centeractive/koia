@@ -48,7 +48,16 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
 
   ngOnInit(): void {
     this.context.subscribeToChanges(() => this.prepareGraphAsync());
+    this.initSize();
     this.prepareGraphAsync()
+  }
+
+  private initSize(): void {
+    if (!this.gridView) {
+      const parentDivStyle = this.cmpElementRef.nativeElement.parentElement.style;
+      parentDivStyle.width = this.context.width + 'px';
+      parentDivStyle.height = this.context.height + 'px';
+    }
   }
 
   ngAfterViewInit(): void {
@@ -81,26 +90,11 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
   }
 
   private generateGraph(): void {
-    if (!this.gridView) {
-      this.adjustCanvasContainerSize();
-    }
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
     const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('#div_svg');
     new D3ForceGraphGenerator(this.context, this.rawDataRevealService)
       .generate(this.graphData, div, this.context);
-  }
-
-  /**
-   * TODO: get rid of this - graph should automatically adapt to the resized element in the flex-view
-   */
-  private adjustCanvasContainerSize(): void {
-    if (!this.gridView) {
-      const chartContainer = this.cmpElementRef.nativeElement.parentElement;
-      chartContainer.style.width = this.context.width + 'px';
-      const headerHeight = this.cmpElementRef.nativeElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
-      chartContainer.style.height = (this.context.height - headerHeight) + 'px';
-    }
   }
 
   createExportData(): object[] {

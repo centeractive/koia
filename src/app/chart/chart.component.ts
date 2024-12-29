@@ -53,7 +53,16 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     } else {
       this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
     }
+    this.initSize();
     this.prepareChartAsync(ChangeEvent.STRUCTURE);
+  }
+
+  private initSize(): void {
+    if (!this.gridView) {
+      const parentDivStyle = this.cmpElementRef.nativeElement.parentElement.style;
+      parentDivStyle.width = this.context.width + 'px';
+      parentDivStyle.height = this.context.height + 'px';
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -73,26 +82,11 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     try {
-      if (!this.gridView) {
-        this.adjustCanvasContainerSize();
-      }
       if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
         this.updateChart(changeEvent);
       }
     } finally {
       this.loading = false;
-    }
-  }
-
-  /**
-   * TODO: get rid of this - canvas should automatically adapt to the resized element in the flex-view
-   */
-  private adjustCanvasContainerSize(): void {
-    if (!this.gridView) {
-      const chartContainer = this.canvasRef.nativeElement.parentElement;
-      chartContainer.style.width = this.context.width + 'px';
-      const headerHeight = this.cmpElementRef.nativeElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
-      chartContainer.style.height = (this.context.height - headerHeight) + 'px';
     }
   }
 
