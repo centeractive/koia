@@ -5,13 +5,8 @@ import { ExportFormat } from './export-format.enum';
 
 export class SummaryContext extends ElementContext {
 
-   static readonly UNLIMITED_WITH = Number.MAX_SAFE_INTEGER;
-
-   constructor(columns: Column[], gridView = false) {
+   constructor(columns: Column[]) {
       super(columns);
-      if (gridView) {
-         this.setSize(SummaryContext.UNLIMITED_WITH, this.height);
-      }
    }
 
    getTitle(): string {

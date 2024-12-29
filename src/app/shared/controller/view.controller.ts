@@ -1,4 +1,4 @@
-import { CdkDragDrop, CdkDragSortEvent, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AfterViewInit, Directive, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -92,7 +92,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    drop(event: CdkDragDrop<object>): void {
-      console.log('drop', event.previousIndex, event.currentIndex)
       moveItemInArray(this.elementContexts, event.previousIndex, event.currentIndex);
    }
 
@@ -106,8 +105,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       DateTimeUtils.defineTimeUnits(this.timeColumns, this.entries);
    }
 
-   addSummaryTable(gridView = false): SummaryContext {
-      const context = new SummaryContext(this.clonedColumns(), gridView);
+   addSummaryTable(): SummaryContext {
+      const context = new SummaryContext(this.clonedColumns());
       context.query = this.query;
       context.entries = this.entries;
       this.elementContexts = this.elementContexts.concat([context]);

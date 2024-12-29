@@ -41,7 +41,7 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
 
   private optionsProvider: GraphOptionsProvider;
 
-  constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, private graphDataService: GraphDataService,
+  constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private graphDataService: GraphDataService,
     private rawDataRevealService: RawDataRevealService) {
     this.optionsProvider = new GraphOptionsProvider(new NodeDoubleClickHandler(rawDataRevealService));
   }
