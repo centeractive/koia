@@ -1,23 +1,17 @@
-import { ElementContext } from './element-context';
-import { Column } from './column.type';
-import { ExportFormat } from './export-format.enum';
 import { StringUtils } from '../utils/string-utils';
+import { Column } from './column.type';
+import { ElementContext } from './element-context';
+import { ExportFormat } from './export-format.enum';
 
 export class SummaryContext extends ElementContext {
 
    static readonly UNLIMITED_WITH = Number.MAX_SAFE_INTEGER;
 
-   constructor(columns: Column[], ) {
+   constructor(columns: Column[], gridView = false) {
       super(columns);
-      this.setUnlimitedWidth();
-   }
-
-   hasUnlimitedWidth(): boolean {
-      return this.width === SummaryContext.UNLIMITED_WITH;
-   }
-
-   setUnlimitedWidth() {
-      this.setSize(SummaryContext.UNLIMITED_WITH, this.height);
+      if (gridView) {
+         this.setSize(SummaryContext.UNLIMITED_WITH, this.height);
+      }
    }
 
    getTitle(): string {

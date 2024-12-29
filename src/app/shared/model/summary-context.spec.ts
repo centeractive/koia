@@ -1,12 +1,9 @@
-import { fakeAsync, flush } from '@angular/core/testing';
-import { ChangeEvent } from './change-event.enum';
+import { StringUtils } from '../utils/string-utils';
+import { Aggregation } from './aggregation.enum';
 import { Column } from './column.type';
 import { DataType } from './data-type.enum';
-import { ChartType } from './chart/chart-type';
 import { ExportFormat } from './export-format.enum';
-import { Aggregation } from './aggregation.enum';
 import { SummaryContext } from './summary-context';
-import { StringUtils } from '../utils/string-utils';
 
 describe('SummaryContext', () => {
 
@@ -29,34 +26,6 @@ describe('SummaryContext', () => {
       eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
       context.subscribeToChanges(eventHandlerSpy);
    });
-
-   it('#setUnlimitedWidth should not fire structure change event when width was unlimited', fakeAsync(() => {
-
-      // when
-      context.setUnlimitedWidth();
-      flush();
-
-      // then
-      expect(context.hasUnlimitedWidth()).toBeTrue();
-      expect(eventHandlerSpy).not.toHaveBeenCalled();
-   }));
-
-   it('#setUnlimitedWidth should fire structure change event when width was no limited', fakeAsync(() => {
-
-      // context
-      context.setSize(1_000, 600);
-      flush();
-      eventHandlerSpy.calls.reset();
-
-      // when
-      context.setUnlimitedWidth();
-      flush();
-
-      // then
-      expect(context.hasUnlimitedWidth()).toBeTrue();
-      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
-      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.SIZE);
-   }));
 
    it('#getTitle when no data column defined', () => {
       expect(context.getTitle()).toBe('Data: to be defined');

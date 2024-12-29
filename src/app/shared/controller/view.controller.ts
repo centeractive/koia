@@ -106,8 +106,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       DateTimeUtils.defineTimeUnits(this.timeColumns, this.entries);
    }
 
-   addSummaryTable(): SummaryContext {
-      const context = new SummaryContext(this.clonedColumns());
+   addSummaryTable(gridView = false): SummaryContext {
+      const context = new SummaryContext(this.clonedColumns(), gridView);
       context.query = this.query;
       context.entries = this.entries;
       this.elementContexts = this.elementContexts.concat([context]);

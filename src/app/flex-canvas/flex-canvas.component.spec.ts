@@ -286,18 +286,16 @@ describe('FlexCanvasComponent', () => {
       .and.returnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
     const context = component.elementContexts[0];
     spyOn(context, 'setSize');
-    let event = resizeEvent({ width: 300, height: 200 });
-    component.onResizeStart(event);
 
     // when
-    event = resizeEvent({ width: 333, height: 221 });
+    const event = resizeEvent({ width: 333, height: 221 });
     component.onResizeEnd(context, event);
 
     // then
     expect(context.setSize).toHaveBeenCalledWith(333, 221);
   });
 
-  it('#onResizeEnd should keep summary table context unlimited width when not dragged horizontally', () => {
+  it('#onResizeEnd should set summary table context size', () => {
 
     // given
     component.addSummaryTable();
@@ -308,16 +306,13 @@ describe('FlexCanvasComponent', () => {
       .and.returnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
     const context = component.elementContexts[0] as SummaryContext;
     spyOn(context, 'setSize');
-    let event = resizeEvent({ width: 300, height: 200 });
-    component.onResizeStart(event);
 
     // when
-    event = resizeEvent({ width: 300, height: 199 });
+    const event = resizeEvent({ width: 300, height: 199 });
     component.onResizeEnd(context, event);
 
     // then
-    expect(context.setSize).toHaveBeenCalledWith(SummaryContext.UNLIMITED_WITH, 199);
-    expect(context.hasUnlimitedWidth()).toBeTrue();
+    expect(context.setSize).toHaveBeenCalledWith(300, 199);
   });
 
   it('#click on config button should open side bar', () => {

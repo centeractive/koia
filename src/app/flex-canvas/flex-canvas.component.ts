@@ -1,7 +1,7 @@
 import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
-import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
+import { Edges, ResizeEvent } from 'angular-resizable-element';
 import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
@@ -20,8 +20,6 @@ export class FlexCanvasComponent extends ViewController {
   static readonly MIN_DIM_PX = 200;
 
   @ViewChildren('elementContainer') elementContainerDivsRefs: QueryList<ElementRef<HTMLDivElement>>;
-
-  private resizeStartBounds: BoundingRectangle;
 
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
     viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
@@ -43,15 +41,7 @@ export class FlexCanvasComponent extends ViewController {
     return true;
   }
 
-  onResizeStart(resizeEvent: ResizeEvent): void {
-    this.resizeStartBounds = resizeEvent.rectangle;
-    console.log('resizeStartBounds', resizeEvent.rectangle.width, resizeEvent.rectangle.height);
-  }
-
   onResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
-
-    console.log('resizeEvent', resizeEvent.rectangle.width, resizeEvent.rectangle.height);
-
     const rect = resizeEvent.rectangle;
     const width = rect.width;
     const height = rect.height;
@@ -61,8 +51,6 @@ export class FlexCanvasComponent extends ViewController {
       const style = containerDivRef.nativeElement.style;
       style.width = width + 'px';
       style.height = height + 'px';
-
-      console.log('onResizeEnd', style.width, style.height);
     }
     context.setSize(width, height);
   }

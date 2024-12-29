@@ -107,52 +107,6 @@ describe('SummaryTableComponent', () => {
     expect(component.refreshDataFrameAsync).toHaveBeenCalledTimes(2);
   }));
 
-  it('#ngOnInit should not adjust size when inside grid view and context size changes', fakeAsync(() => {
-
-    // given
-    component.gridView = true;
-    context.setSize(500, 400);
-
-    // when
-    fixture.detectChanges();
-    flush();
-
-    // then
-    const divContent = component.divContentRef.nativeElement;
-    expect(divContent.style.maxWidth).toBe('');
-    expect(divContent.style.maxHeight).toBe('');
-  }));
-
-  it('#ngOnInit should adjust size when not inside grid view and context size changes', fakeAsync(() => {
-
-    // given
-    component.gridView = false;
-    context.setSize(500, 400);
-
-    // when
-    fixture.detectChanges();
-    flush();
-
-    // then
-    const divContent = component.divContentRef.nativeElement;
-    expect(divContent.style.maxWidth).toBe('500px');
-    expect(divContent.style.maxHeight).toBe('400px');
-  }));
-
-  it('#ngOnInit should not adjust width when inside grid view and context has unlimited width', fakeAsync(() => {
-
-    // given
-    component.gridView = false;
-
-    // when
-    fixture.detectChanges();
-    flush();
-
-    // then
-    const divContent = component.divContentRef.nativeElement;
-    expect(divContent.style.maxWidth).toBe('');
-  }));
-
   it('context entries change should refresh frame data', fakeAsync(() => {
 
     // given

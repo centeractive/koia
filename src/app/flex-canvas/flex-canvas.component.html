@@ -73,8 +73,7 @@
             @for (context of elementContexts; track context) {
             <div #elementContainer class="div_element mat-elevation-z8" mwlResizable [enableGhostResize]="true"
                [resizeEdges]="resizableEdgesOf(context)" [resizeSnapGrid]="{right: 20, bottom: 20}"
-               [validateResize]="validateElementResize" (resizeStart)="onResizeStart($event)"
-               (resizeEnd)="onResizeEnd(context, $event)" cdkDrag>
+               [validateResize]="validateElementResize" (resizeEnd)="onResizeEnd(context, $event)" cdkDrag>
                <div class="div_element_header">
                   <div style="display: flex">
                      <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
