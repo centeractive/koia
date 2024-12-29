@@ -1,12 +1,8 @@
 #div_table {
-  overflow-y: auto;
+  overflow: auto;
   margin-right: 1px;
   /* to have resize-cursor displayed when vertical scrollbar is shown */
-}
-
-#div_table_gridview {
-  overflow-y: auto;
-  height: 100%;
+  height: calc(100% - 48px);
 }
 
 .mat-mdc-table {

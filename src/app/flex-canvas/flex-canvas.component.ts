@@ -6,7 +6,7 @@ import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
-import { ElementContext, Route, SummaryContext } from '../shared/model';
+import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 
 @Component({
@@ -45,21 +45,24 @@ export class FlexCanvasComponent extends ViewController {
 
   onResizeStart(resizeEvent: ResizeEvent): void {
     this.resizeStartBounds = resizeEvent.rectangle;
+    console.log('resizeStartBounds', resizeEvent.rectangle.width, resizeEvent.rectangle.height);
   }
 
   onResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
-    const rect = resizeEvent.rectangle;
-    const width = this.resizeStartBounds.width === rect.width ? context.width : rect.width;
-    const height = this.resizeStartBounds.height === rect.height ? context.height : rect.height;
 
-    if (!(context instanceof SummaryContext)) {
-      const iCtx = this.elementContexts.indexOf(context);
-      const containerDivRef = this.elementContainerDivsRefs.get(iCtx);
-      if (containerDivRef) {
-        const style = containerDivRef.nativeElement.style;
-        style.width = width + 'px';
-        style.height = height + 'px';
-      }
+    console.log('resizeEvent', resizeEvent.rectangle.width, resizeEvent.rectangle.height);
+
+    const rect = resizeEvent.rectangle;
+    const width = rect.width;
+    const height = rect.height;
+    const iCtx = this.elementContexts.indexOf(context);
+    const containerDivRef = this.elementContainerDivsRefs.get(iCtx);
+    if (containerDivRef) {
+      const style = containerDivRef.nativeElement.style;
+      style.width = width + 'px';
+      style.height = height + 'px';
+
+      console.log('onResizeEnd', style.width, style.height);
     }
     context.setSize(width, height);
   }

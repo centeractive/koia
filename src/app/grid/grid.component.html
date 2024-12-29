@@ -134,10 +134,9 @@
                         <mat-icon>delete_forever</mat-icon>
                      </button>
                   </div>
-                  <div *ngIf="isSummaryContext(context)" class="div_summary_table">
-                     <koia-summary-table [gridView]="true" [context]="context" (onRemove)="removeElement($event)">
-                     </koia-summary-table>
-                  </div>
+                  <koia-summary-table *ngIf="isSummaryContext(context)" [gridView]="true" [context]="context"
+                     (onRemove)="removeElement($event)">
+                  </koia-summary-table>
                   <div *ngIf="isChartContext(context)" class="div_chart">
                      <koia-chart [gridView]="true" [context]="context" (onRemove)="removeElement($event)"
                         (onWarning)="notifyWarning($event)">

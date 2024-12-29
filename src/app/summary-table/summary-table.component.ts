@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { ExportDataProvider } from 'app/shared/controller';
@@ -20,12 +20,10 @@ import { RowSpanComputer, Span } from './row-span-computer';
   styleUrls: ['./summary-table.component.css'],
   standalone: false
 })
-export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataProvider {
+export class SummaryTableComponent implements OnInit, ExportDataProvider {
 
   @Input() gridView: boolean;
   @Input() context: SummaryContext;
-
-  @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
 
   frameColumns: string[];
   frameData: object[];
@@ -42,13 +40,16 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataP
   private datePipe = new DatePipe('en-US');
   private exportDataGenerator = new ExportDataGenerator();
 
-  constructor(private router: Router, private dbService: DBService, private aggregationService: AggregationService,
-    private valueRangeGroupingService: ValueRangeGroupingService, private rawDataRevealService: RawDataRevealService) { }
+  constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
+    private aggregationService: AggregationService, private valueRangeGroupingService: ValueRangeGroupingService,
+    private rawDataRevealService: RawDataRevealService) {
+  }
 
   ngOnInit(): void {
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
+      this.initSize();
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
       this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
@@ -56,8 +57,12 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataP
     }
   }
 
-  ngAfterViewInit(): void {
-    this.adjustSize();
+  private initSize(): void {
+    if (!this.gridView) {
+      const parentDivStyle = this.cmpElementRef.nativeElement.parentElement.style;
+      parentDivStyle.width = this.context.width + 'px';
+      parentDivStyle.height = this.context.height + 'px';
+    }
   }
 
   private createBaseDataFrame(): void {
@@ -101,7 +106,6 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataP
 
   private async refreshDataFrame(changeEvent: ChangeEvent): Promise<void> {
     if (changeEvent === ChangeEvent.SIZE) {
-      this.adjustSize();
       return;
     }
     this.computing = true;
@@ -162,17 +166,6 @@ export class SummaryTableComponent implements OnInit, AfterViewInit, ExportDataP
       }
     }
     return this.numberFormatter.format(value);
-  }
-
-  private adjustSize(): void {
-    if (!this.gridView) {
-      const style = this.divContentRef.nativeElement.style;
-      if (!this.context.hasUnlimitedWidth()) {
-        style.maxWidth = this.context.width + 'px';
-      }
-      const headerHeight = this.divContentRef.nativeElement.parentElement.parentElement.parentElement.querySelector('.div_element_header')?.clientHeight || 0;
-      style.maxHeight = (this.context.height - headerHeight) + 'px';
-    }
   }
 
   createExportData(): object[] {

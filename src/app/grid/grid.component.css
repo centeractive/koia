@@ -10,11 +10,6 @@
   justify-content: space-between;
 }
 
-.div_summary_table {
-  flex: 1 1 auto;
-  height: calc(100% - 48px);
-}
-
 .div_chart {
   flex: 1 1 auto;
   height: 100%;
