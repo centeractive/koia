@@ -28,9 +28,6 @@ export abstract class SideBarController implements OnChanges {
    nonGroupedColumns: Column[];
    availableGroupByColumns: Column[];
    selectedGroupByColumns: Column[];
-   gridColumnSpans: number[];
-   readonly gridRowSpans: number[] = [1, 2, 3, 4];
-   elementPositions: number[];
    elementContext: ElementContext;
    private valueGroupingGenerator = new ValueGroupingGenerator();
 
@@ -55,12 +52,6 @@ export abstract class SideBarController implements OnChanges {
    }
 
    protected defineSelectableItems(): void {
-      if (this.gridColumns) {
-         this.gridColumnSpans = NumberUtils.rangeClosedIntArray(this.gridColumns);
-      }
-      if (this.elementCount) {
-         this.elementPositions = NumberUtils.rangeClosedIntArray(this.elementCount);
-      }
       this.selectedSplitColumns = this.elementContext.splitColumns;
       this.availableSplitColumns = this.determineAvailableSplitColumns();
       this.selectedGroupByColumns = this.elementContext.groupByColumns;

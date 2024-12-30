@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import { ViewController } from 'app/shared/controller';
@@ -8,6 +8,7 @@ import { ChartMarginService } from 'app/shared/services/chart';
 import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 import { computeAspectRatio } from './aspect-ratio';
+import { NumberUtils } from 'app/shared/utils';
 
 @Component({
   selector: 'koia-grid',
@@ -15,27 +16,24 @@ import { computeAspectRatio } from './aspect-ratio';
   styleUrls: ['./grid.component.css'],
   standalone: false
 })
-export class GridComponent extends ViewController implements AfterViewChecked {
+export class GridComponent extends ViewController {
 
   gridColumns = 3;
   gridCellRatio = '1:1';
-  private windowResizedWhileHidden: boolean;
 
-  constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, router: Router, bottomSheet: MatBottomSheet,
-    dbService: DBService, dialogService: DialogService, viewPersistenceService: ViewPersistenceService,
-    chartMarginService: ChartMarginService, notificationService: NotificationService, exportService: ExportService) {
+  constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
+    viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
+    exportService: ExportService) {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
       exportService);
-    window.addEventListener('resize', () => this.windowResizedWhileHidden = !this.cmpElementRef.nativeElement.parentElement);
   }
 
-  ngAfterViewChecked() {
-    if (this.windowResizedWhileHidden) {
-      this.windowResizedWhileHidden = false;
-      this.elementContexts
-        .filter(c => this.isChartContext(c))
-        .forEach(c => c.fireSizeChanged());
-    }
+  columnSpans(): number[] {
+    return NumberUtils.rangeClosedIntArray(this.gridColumns);
+  }
+
+  rowSpans(): number[] {
+    return NumberUtils.rangeClosedIntArray(this.gridColumns);
   }
 
   gridStyle(): object {

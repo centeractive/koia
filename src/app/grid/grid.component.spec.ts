@@ -151,41 +151,6 @@ describe('GridComponent', () => {
     expect(component.entries).toEqual(entries);
   });
 
-  it('#ngAfterViewChecked should fire size changed on each chart when window was resized while component was hidden', () => {
-
-    // given
-    const pieChartContext = component.addChart();
-    spyOn(pieChartContext, 'fireSizeChanged');
-    const barChartContext = component.addChart();
-    spyOn(barChartContext, 'fireSizeChanged');
-    component.cmpElementRef.nativeElement.remove();
-    window.dispatchEvent(new Event('resize'));
-
-    // when
-    component.ngAfterViewChecked();
-
-    // then
-    expect(pieChartContext.fireSizeChanged).toHaveBeenCalled();
-    expect(barChartContext.fireSizeChanged).toHaveBeenCalled();
-  });
-
-  it('#ngAfterViewChecked should not fire size changed when window was resized while visible', () => {
-
-    // given
-    const pieChartContext = component.addChart();
-    spyOn(pieChartContext, 'fireSizeChanged');
-    const barChartContext = component.addChart();
-    spyOn(barChartContext, 'fireSizeChanged');
-    window.dispatchEvent(new Event('resize'));
-
-    // when
-    component.ngAfterViewChecked();
-
-    // then
-    expect(pieChartContext.fireSizeChanged).not.toHaveBeenCalled();
-    expect(barChartContext.fireSizeChanged).not.toHaveBeenCalled();
-  });
-
   it('#addSummaryTable should add summary context', () => {
 
     // when

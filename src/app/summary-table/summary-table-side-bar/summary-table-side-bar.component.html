@@ -114,32 +114,6 @@
             </div>
          </div>
       </koia-expansion-panel>
-
-      <koia-expansion-panel [title]="'Position ' + (gridColumns ? ' & Size' : '')">
-         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-label>Columns</mat-label>
-            <mat-select [value]="context.gridColumnSpan">
-               <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
-                  {{ span }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-label>Rows</mat-label>
-            <mat-select [value]="context.gridRowSpan">
-               <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
-                  {{ span }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-         <mat-form-field class="field_small_integer">
-            <mat-label>Position</mat-label>
-            <mat-select [value]="elementPosition">
-               <mat-option *ngFor="let position of elementPositions" [value]="position" (click)="setElementPosition(position)">
-                  {{ position }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-      </koia-expansion-panel>
+      
    </mat-accordion>
 </div>

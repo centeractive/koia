@@ -46,7 +46,7 @@
             </mat-menu>
 
             <mat-menu #gridRatioMenu="matMenu">
-               <button mat-menu-item *ngFor="let ratio of [ '1:1', '2:3', '3:2']" [value]="ratio"
+               <button mat-menu-item *ngFor="let ratio of [ '1:1', '3:2', '2:1', '2:3', '1:2']" [value]="ratio"
                   [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
             </mat-menu>
 
@@ -95,17 +95,41 @@
                <div #elementContainer class="div_element">
                   <div class="div_element_header">
                      <div style="display: flex">
-                        <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
-                           *ngIf="!!context.getSupportedExportFormats().length">
+                        <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu">
                            <mat-icon>more_vert</mat-icon>
                         </button>
                         <mat-menu #moreMenu="matMenu">
-                           <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
-                              (click)="saveAs(context, exportFormat)">
-                              <mat-icon>insert_drive_file</mat-icon>
-                              <span>Save As {{ exportFormat }}</span>
+                           <button mat-menu-item [matMenuTriggerFor]="columnSpanMenu">
+                              <mat-icon>view_column</mat-icon>
+                              <span>Column Span</span>
+                           </button>
+                           <button mat-menu-item [matMenuTriggerFor]="rowSpanMenu">
+                              <mat-icon>table_rows</mat-icon>
+                              <span>Row Span</span>
+                           </button>
+                           <ng-container *ngIf="!!context.getSupportedExportFormats().length">
+                              <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
+                                 (click)="saveAs(context, exportFormat)">
+                                 <mat-icon>insert_drive_file</mat-icon>
+                                 <span>Save As {{ exportFormat }}</span>
+                              </button>
+                           </ng-container>
+                        </mat-menu>
+
+                        <mat-menu #columnSpanMenu="matMenu">
+                           <button mat-menu-item *ngFor="let span of columnSpans()" [value]="span"
+                              [disabled]="span === context.gridColumnSpan" (click)="context.gridColumnSpan = span">
+                              {{ span }} Column{{ span === 1 ? '' : 's' }}
                            </button>
                         </mat-menu>
+
+                        <mat-menu #rowSpanMenu="matMenu">
+                           <button mat-menu-item *ngFor="let span of [1, 2, 3, 4]" [value]="span"
+                              [disabled]="span === context.gridRowSpan" (click)="context.gridRowSpan = span">
+                              {{ span }} Row{{ span === 1 ? '' : 's' }}
+                           </button>
+                        </mat-menu>
+
                         <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..."
                            (click)="configure($event, context)">
                            <mat-icon>settings</mat-icon>

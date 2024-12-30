@@ -1,5 +1,6 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable" (change)="onMultiExpandableChanged($event.checked)">
+   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
+      (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
@@ -21,18 +22,21 @@
                <label>Selected Columns</label>
                <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
             </span>
-            <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-                 [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList"
-                 class="div_column_list" (cdkDropListDropped)="dropGroupByColumn($event)">
-               <koia-draggable-column *ngFor="let column of selectedGroupByColumns" [context]="context" [column]="column" cssClass="accent">
+            <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList
+               #selectedColumnsList="cdkDropList" [cdkDropListData]="selectedGroupByColumns"
+               [cdkDropListConnectedTo]="availableColList" class="div_column_list"
+               (cdkDropListDropped)="dropGroupByColumn($event)">
+               <koia-draggable-column *ngFor="let column of selectedGroupByColumns" [context]="context"
+                  [column]="column" cssClass="accent">
                </koia-draggable-column>
             </div>
             <br>
             <label>Available Columns</label>
             <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
-                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-                 (cdkDropListDropped)="dropGroupByColumn($event)">
-               <koia-draggable-column *ngFor="let column of availableGroupByColumns" [context]="context" [column]="column" cssClass="white">
+               [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+               (cdkDropListDropped)="dropGroupByColumn($event)">
+               <koia-draggable-column *ngFor="let column of availableGroupByColumns" [context]="context"
+                  [column]="column" cssClass="white">
                </koia-draggable-column>
             </div>
          </div>
@@ -40,33 +44,6 @@
 
       <koia-expansion-panel title="Color Scheme">
          <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel [title]="'Position ' + (gridColumns ? ' & Size' : '')">
-         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-label>Columns</mat-label>
-            <mat-select [value]="context.gridColumnSpan">
-               <mat-option *ngFor="let span of gridColumnSpans" [value]="span" (click)="context.gridColumnSpan = span">
-                  {{ span }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-         <mat-form-field class="field_small_integer" *ngIf="gridColumns">
-            <mat-label>Rows</mat-label>
-            <mat-select [value]="context.gridRowSpan">
-               <mat-option *ngFor="let span of gridRowSpans" [value]="span" (click)="context.gridRowSpan = span">
-                  {{ span }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-         <mat-form-field class="field_small_integer">
-            <mat-label>Position</mat-label>
-            <mat-select [value]="elementPosition">
-               <mat-option *ngFor="let position of elementPositions" [value]="position" (click)="setElementPosition(position)">
-                  {{ position }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
       </koia-expansion-panel>
 
       <koia-expansion-panel title="Other">
@@ -91,7 +68,8 @@
          <div class="div_label_rotation">
             Charge
             <mat-slider min="-1000" max="1000" step="1" #ngSlider>
-               <input matSliderThumb [value]="- context.charge" (valueChange)="context.charge = - $event" #ngSliderThumb="matSliderThumb" />
+               <input matSliderThumb [value]="- context.charge" (valueChange)="context.charge = - $event"
+                  #ngSliderThumb="matSliderThumb" />
             </mat-slider>
          </div>
          <div class="div_label_rotation">
