@@ -24,8 +24,12 @@ export class BarLegendCustomizer extends TimeFormatter {
                 }
             }] as any;
 
-            config.options.scales[horizontalBar ? 'y' : 'x'].display = false;
-            config.options.scales[horizontalBar ? 'y1' : 'x1'] = { offset: true };
+            const hiddenScale = config.options.scales[horizontalBar ? 'y' : 'x'];
+            hiddenScale.display = false;
+            config.options.scales[horizontalBar ? 'y1' : 'x1'] = {
+                offset: true,
+                ticks: hiddenScale.ticks || {} // without {}, tick index instead of name appears
+            }
 
             const dataset = config.data.datasets[0];
             const grouByColumn = context.groupByColumns[0];
@@ -41,6 +45,20 @@ export class BarLegendCustomizer extends TimeFormatter {
             config.data.labels = undefined;
             this.adjustTooltips(config.options.plugins.tooltip, context);
         }
+    }
+
+    private visibleScaleOptions(horizontalBar: boolean, context: ChartContext): any {
+        const ticksRotation = horizontalBar ? context.yLabelRotation : context.xLabelRotation;
+        if (ticksRotation) {
+            return {
+                offset: true,
+                ticks: {
+                    maxRotation: -ticksRotation,
+                    minRotation: -ticksRotation
+                }
+            };
+        }
+        return { offset: true };
     }
 
     private formatDatasetLabel(grouByColumn: Column, label: any): any {
