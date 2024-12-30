@@ -5,10 +5,10 @@ import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { NumberUtils } from 'app/shared/utils';
 import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 import { computeAspectRatio } from './aspect-ratio';
-import { NumberUtils } from 'app/shared/utils';
 
 @Component({
   selector: 'koia-grid',
@@ -29,10 +29,6 @@ export class GridComponent extends ViewController {
   }
 
   columnSpans(): number[] {
-    return NumberUtils.rangeClosedIntArray(this.gridColumns);
-  }
-
-  rowSpans(): number[] {
     return NumberUtils.rangeClosedIntArray(this.gridColumns);
   }
 

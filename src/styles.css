@@ -182,16 +182,17 @@ var {
 
 @media print {
 
+  @page {
+    size: A4 landscape;
+  }
+
   body * {
     visibility: hidden;
   }
 
-  img {
-    display: none;
-  }
-
   koia-main-toolbar,
-  koia-range-filter {
+  koia-range-filter,
+  img {
     display: none;
   }
 
@@ -217,6 +218,7 @@ var {
 
   .div_element {
     page-break-inside: avoid !important;
+    overflow: hidden !important;
   }
 
 }
