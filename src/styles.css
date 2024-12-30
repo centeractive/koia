@@ -182,10 +182,6 @@ var {
 
 @media print {
 
-  @page {
-    size: A4 landscape;
-  }
-
   body * {
     visibility: hidden;
   }
@@ -204,11 +200,16 @@ var {
 
   * {
     overflow: visible !important;
+    zoom: 0.95;
   }
 
   .printable,
   .printable * {
     visibility: visible;
+  }
+
+  #div_table {
+    overflow: hidden !important;
   }
 
   .div_content {
