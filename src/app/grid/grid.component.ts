@@ -5,8 +5,9 @@ import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
-import { Route } from '../shared/model';
+import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
+import { computeAspectRatio } from './aspect-ratio';
 
 @Component({
   selector: 'koia-grid',
@@ -20,9 +21,9 @@ export class GridComponent extends ViewController implements AfterViewChecked {
   gridCellRatio = '1:1';
   private windowResizedWhileHidden: boolean;
 
-  constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, router: Router, bottomSheet: MatBottomSheet, dbService: DBService,
-    dialogService: DialogService, viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService,
-    notificationService: NotificationService, exportService: ExportService) {
+  constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, router: Router, bottomSheet: MatBottomSheet,
+    dbService: DBService, dialogService: DialogService, viewPersistenceService: ViewPersistenceService,
+    chartMarginService: ChartMarginService, notificationService: NotificationService, exportService: ExportService) {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
       exportService);
     window.addEventListener('resize', () => this.windowResizedWhileHidden = !this.cmpElementRef.nativeElement.parentElement);
@@ -35,6 +36,22 @@ export class GridComponent extends ViewController implements AfterViewChecked {
         .filter(c => this.isChartContext(c))
         .forEach(c => c.fireSizeChanged());
     }
+  }
+
+  gridStyle(): object {
+    return {
+      display: 'grid',
+      'grid-template-columns': 'repeat(' + this.gridColumns + ', minmax(0, 1fr))',
+      'gap': '10px'
+    };
+  }
+
+  cellStyle(context: ElementContext): object {
+    return {
+      'aspect-ratio': computeAspectRatio(this.gridCellRatio, context),
+      'grid-column': 'auto / span ' + context.gridColumnSpan,
+      'grid-row': 'auto / span ' + context.gridRowSpan
+    };
   }
 
   setGridColumns(gridColumns: number): void {

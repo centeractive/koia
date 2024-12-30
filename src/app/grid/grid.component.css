@@ -10,7 +10,7 @@
   justify-content: space-between;
 }
 
-.div_chart {
+.div_graph {
   flex: 1 1 auto;
   height: 100%;
 }
@@ -79,6 +79,7 @@ button:hover {
 
 .cdk-drag-preview {
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .cdk-drag-placeholder {

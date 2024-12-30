@@ -81,7 +81,7 @@
             <button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
                <mat-icon svgIcon="add_graph"></mat-icon>
             </button>
-            <button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable(true)">
+            <button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
                <mat-icon svgIcon="add_summary"></mat-icon>
             </button>
          </div>
@@ -89,10 +89,9 @@
 
       <div #content class="div_content printable" style="padding: 5px;" cdkDropList cdkDropListOrientation="mixed"
          (cdkDropListDropped)="drop($event)">
-         <mat-grid-list #content [cols]="gridColumns" [rowHeight]="gridCellRatio" gutterSize="10">
+         <div #content [ngStyle]="gridStyle()">
             @for (context of elementContexts; track context) {
-            <mat-grid-tile class="mat-elevation-z8" [colspan]="context.gridColumnSpan" [rowspan]="context.gridRowSpan"
-               cdkDrag>
+            <div class="mat-elevation-z8" [ngStyle]="cellStyle(context)" cdkDrag>
                <div #elementContainer class="div_element">
                   <div class="div_element_header">
                      <div style="display: flex">
@@ -137,20 +136,18 @@
                   <koia-summary-table *ngIf="isSummaryContext(context)" [gridView]="true" [context]="context"
                      (onRemove)="removeElement($event)">
                   </koia-summary-table>
-                  <div *ngIf="isChartContext(context)" class="div_chart">
-                     <koia-chart [gridView]="true" [context]="context" (onRemove)="removeElement($event)"
-                        (onWarning)="notifyWarning($event)">
-                     </koia-chart>
-                  </div>
-                  <div *ngIf="isGraphContext(context)" class="div_chart">
+                  <koia-chart *ngIf="isChartContext(context)" [gridView]="true" [context]="context"
+                     (onRemove)="removeElement($event)" (onWarning)="notifyWarning($event)">
+                  </koia-chart>
+                  <div *ngIf="isGraphContext(context)" class="div_graph">
                      <koia-graph [gridView]="true" [context]="context" (onRemove)="removeElement($event)"
                         (onWarning)="notifyWarning($event)">
                      </koia-graph>
                   </div>
                </div>
-            </mat-grid-tile>
+            </div>
             }
-         </mat-grid-list>
+         </div>
       </div>
    </div>
 </mat-sidenav-container>
