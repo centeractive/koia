@@ -51,10 +51,8 @@ export class ModelToViewConverter {
          margin: context.margin,
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
-         xLabelStepSize: context.xLabelStepSize,
-         xLabelRotation: context.xLabelRotation,
-         yLabelStepSize: context.yLabelStepSize,
-         yLabelRotation: context.yLabelRotation,
+         baseTicks: context.baseTicks.toTicks(),
+         valueTicks: context.valueTicks.toTicks(),
          stacked: context.stacked
       }
    }

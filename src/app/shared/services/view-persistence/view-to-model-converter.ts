@@ -1,5 +1,5 @@
 import { Column, ElementContext, SummaryContext } from 'app/shared/model';
-import { ChartContext } from 'app/shared/model/chart';
+import { ChartContext, TicksConfig } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType, ViewElement } from 'app/shared/model/view-config';
 import { CommonUtils } from 'app/shared/utils';
@@ -31,10 +31,8 @@ export class ViewToModelConverter {
       context.copyAttributes(chart);
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
-      context.xLabelStepSize = chart.xLabelStepSize;
-      context.xLabelRotation = chart.xLabelRotation;
-      context.yLabelStepSize = chart.yLabelStepSize;
-      context.yLabelRotation = chart.yLabelRotation;
+      context.baseTicks = new TicksConfig(() => context.fireLookChanged(), chart.baseTicks);
+      context.valueTicks = new TicksConfig(() => context.fireLookChanged(), chart.valueTicks);
       context.stacked = chart.stacked;
       return context;
    }

@@ -3,12 +3,12 @@ import { ChartUtils } from 'app/shared/utils';
 import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
-import { Margin } from '.';
+import * as _ from 'lodash';
+import { ChartType, Margin, TicksConfig } from '.';
 import { Aggregation } from '../aggregation.enum';
 import { Column } from '../column.type';
 import { ElementContext } from '../element-context';
 import { ExportFormat } from '../export-format.enum';
-import { ChartType } from './chart-type';
 
 export class ChartContext extends ElementContext {
 
@@ -17,10 +17,8 @@ export class ChartContext extends ElementContext {
    private _showLegend: boolean;
    private _legendPosition: string;
    private _valueAsPercent: boolean; // for PIE and DOUGHNUT chart only
-   private _xLabelStepSize: number;
-   private _xLabelRotation: number;
-   private _yLabelStepSize: number;
-   private _yLabelRotation: number;
+   private _baseTicks: TicksConfig;
+   private _valueTicks: TicksConfig;
    private _stacked: boolean;
 
    // transient
@@ -38,6 +36,8 @@ export class ChartContext extends ElementContext {
       this._showLegend = true;
       this._valueAsPercent = true;
       this._legendPosition = 'top';
+      this._baseTicks = new TicksConfig(() => this.fireLookChanged());
+      this._valueTicks = new TicksConfig(() => this.fireLookChanged());
       this._stacked = false;
    }
 
@@ -125,46 +125,24 @@ export class ChartContext extends ElementContext {
       }
    }
 
-   get xLabelStepSize(): number {
-      return this._xLabelStepSize;
+   get baseTicks(): TicksConfig {
+      return this._baseTicks;
    }
 
-   set xLabelStepSize(stepSize: number) {
-      if (this._xLabelStepSize !== stepSize) {
-         this._xLabelStepSize = stepSize;
+   set baseTicks(ticks: TicksConfig) {
+      if (!_.isEqual(this._baseTicks.toTicks(), ticks.toTicks())) {
+         this._baseTicks = ticks;
          this.fireLookChanged();
       }
    }
 
-   get xLabelRotation(): number {
-      return this._xLabelRotation;
+   get valueTicks(): TicksConfig {
+      return this._valueTicks;
    }
 
-   set xLabelRotation(rotation: number) {
-      if (this._xLabelRotation !== rotation) {
-         this._xLabelRotation = rotation;
-         this.fireLookChanged();
-      }
-   }
-
-   get yLabelStepSize(): number {
-      return this._yLabelStepSize;
-   }
-
-   set yLabelStepSize(stepSize: number) {
-      if (this._yLabelStepSize !== stepSize) {
-         this._yLabelStepSize = stepSize;
-         this.fireLookChanged();
-      }
-   }
-
-   get yLabelRotation(): number {
-      return this._yLabelRotation;
-   }
-
-   set yLabelRotation(rotation: number) {
-      if (this._yLabelRotation !== rotation) {
-         this._yLabelRotation = rotation;
+   set valueTicks(ticks: TicksConfig) {
+      if (!_.isEqual(this._valueTicks.toTicks(), ticks.toTicks())) {
+         this._valueTicks = ticks;
          this.fireLookChanged();
       }
    }

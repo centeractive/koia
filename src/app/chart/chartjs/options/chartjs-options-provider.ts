@@ -111,16 +111,17 @@ export class ChartJsOptionsProvider {
                 text: title
             }
         };
-        if (context.yLabelStepSize) {
+        const ticks = context.valueTicks;
+        if (ticks.stepSize) {
             scaleOptions.ticks = {
-                stepSize: context.yLabelStepSize
+                stepSize: ticks.stepSize
             };
         }
-        if (context.yLabelRotation) {
+        if (ticks.rotation) {
             scaleOptions.ticks = {
                 ...scaleOptions.ticks || {},
-                maxRotation: -context.yLabelRotation,
-                minRotation: -context.yLabelRotation
+                maxRotation: -ticks.rotation,
+                minRotation: -ticks.rotation
             };
         }
         return scaleOptions;
@@ -144,16 +145,17 @@ export class ChartJsOptionsProvider {
             display: !this.chartTypesHiddenScales.includes(chartType),
             stacked: context.stacked
         };
-        if (context.xLabelStepSize) {
+        const ticks = context.baseTicks;
+        if (ticks.stepSize) {
             scaleOptions.ticks = {
-                stepSize: context.xLabelStepSize
+                stepSize: ticks.stepSize
             };
         }
-        if (context.xLabelRotation) {
+        if (ticks.rotation) {
             scaleOptions.ticks = {
                 ...scaleOptions.ticks || {},
-                maxRotation: -context.xLabelRotation,
-                minRotation: -context.xLabelRotation
+                maxRotation: -ticks.rotation,
+                minRotation: -ticks.rotation
             };
         }
         const column = context.groupByColumns[0];

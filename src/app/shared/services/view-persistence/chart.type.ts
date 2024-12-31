@@ -1,4 +1,4 @@
-import { Margin } from 'app/shared/model/chart';
+import { Margin, Ticks } from 'app/shared/model/chart';
 import { ViewElement } from 'app/shared/model/view-config';
 
 export interface Chart extends ViewElement {
@@ -6,9 +6,7 @@ export interface Chart extends ViewElement {
    margin: Margin;
    showLegend: boolean;
    legendPosition: string;
-   xLabelStepSize: number;
-   xLabelRotation: number;
-   yLabelStepSize: number;
-   yLabelRotation: number;
+   baseTicks: Ticks;
+   valueTicks: Ticks;
    stacked: boolean;
 }

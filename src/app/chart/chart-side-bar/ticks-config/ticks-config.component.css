@@ -1,0 +1,10 @@
+.div_labels {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.div_label_rotation {
+    display: flex;
+    flex-direction: column;
+}

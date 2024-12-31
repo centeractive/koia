@@ -1,4 +1,5 @@
 import { CategoricalColorScheme, ColorSchemeType } from 'app/shared/color';
+import { TicksConfig } from 'app/shared/model/chart';
 import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
 import { Aggregation, Column, DataType, Query, Route, Scene, StatusType } from '../../model';
 import { ConfigRecord } from '../../model/view-config/config-record.type';
@@ -25,6 +26,8 @@ describe('ViewPersistenceService', () => {
     const amountColum = createColumn('Amount', DataType.NUMBER);
     const levelColumn = createColumn('Level', DataType.TEXT);
     const timeColumn = createColumn('Time', DataType.TIME);
+    const baseTicks = new TicksConfig(() => null, { stepSize: undefined, rotation: -12 });
+    const valueTicks = new TicksConfig(() => null, { stepSize: 1, rotation: -90 });
     summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
@@ -34,7 +37,7 @@ describe('ViewPersistenceService', () => {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
       valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
-      legendPosition: 'top', xLabelStepSize: undefined, xLabelRotation: -12, yLabelStepSize: 1, yLabelRotation: -90, stacked: false,
+      legendPosition: 'top', baseTicks, valueTicks, stacked: false,
       colorOptions: {
         type: ColorSchemeType.CATEGORICAL,
         scheme: CategoricalColorScheme.PAIRED,

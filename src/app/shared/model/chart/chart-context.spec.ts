@@ -6,6 +6,7 @@ import { DataType } from '../data-type.enum';
 import { ExportFormat } from '../export-format.enum';
 import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
+import { TicksConfig } from './ticks-config';
 
 describe('ChartContext', () => {
 
@@ -129,110 +130,72 @@ describe('ChartContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#xLabelStepSize should not fire look change event when xLabelStepSize is not changed', fakeAsync(() => {
-
-      // given
-      context.xLabelStepSize = 10;
-      flush();
-      eventHandlerSpy.calls.reset();
+   it('#baseTicks should not fire look change event when base ticks did not change', fakeAsync(() => {
 
       // when
-      context.xLabelStepSize = 10;
+      context.baseTicks = new TicksConfig(() => context.fireLookChanged(), {});
 
       // then
       flush();
+      expect(context.baseTicks.toTicks()).toEqual({ stepSize: undefined, rotation: undefined });
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
-   it('#xLabelStepSize should fire look change event when xLabelStepSize is changed', fakeAsync(() => {
+   it('#baseTicks should fire look change event when base ticks changed', fakeAsync(() => {
 
       // when
-      context.xLabelStepSize = 5;
+      context.baseTicks = new TicksConfig(() => context.fireLookChanged(), { stepSize: 2 });
 
       // then
       flush();
-      expect(context.xLabelStepSize).toBe(5);
+      expect(context.baseTicks.toTicks()).toEqual({ stepSize: 2, rotation: undefined });
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#xLabelRotation should not fire look change event when xLabelRotation is not changed', fakeAsync(() => {
-
-      // given
-      context.xLabelRotation = 45;
-      flush();
-      eventHandlerSpy.calls.reset();
+   it('#baseTicks#stepSize should fire look change event', fakeAsync(() => {
 
       // when
-      context.xLabelRotation = 45;
+      context.baseTicks.stepSize = 10;
 
       // then
       flush();
-      expect(eventHandlerSpy).not.toHaveBeenCalled();
-   }));
-
-   it('#xLabelRotation should fire look change event when xLabelRotation is changed', fakeAsync(() => {
-
-      // when
-      context.xLabelRotation = 20;
-
-      // then
-      flush();
-      expect(context.xLabelRotation).toBe(20);
+      expect(context.baseTicks.toTicks()).toEqual({ stepSize: 10, rotation: undefined });
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#yLabelStepSize should not fire look change event when yLabelStepSize is not changed', fakeAsync(() => {
-
-      // given
-      context.yLabelStepSize = 10;
-      flush();
-      eventHandlerSpy.calls.reset();
+   it('#valueTicks should not fire look change event when value ticks did not change', fakeAsync(() => {
 
       // when
-      context.yLabelStepSize = 10;
+      context.valueTicks = new TicksConfig(() => context.fireLookChanged(), {});
 
       // then
       flush();
+      expect(context.valueTicks.toTicks()).toEqual({ stepSize: undefined, rotation: undefined });
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
-   it('#yLabelStepSize should fire look change event when yLabelStepSize is changed', fakeAsync(() => {
+   it('#valueTicks should fire look change event when value ticks changed', fakeAsync(() => {
 
       // when
-      context.yLabelStepSize = 5;
+      context.valueTicks = new TicksConfig(() => context.fireLookChanged(), { stepSize: 2 });
 
       // then
       flush();
-      expect(context.yLabelStepSize).toBe(5);
+      expect(context.valueTicks.toTicks()).toEqual({ stepSize: 2, rotation: undefined });
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#yLabelRotation should not fire look change event when yLabelRotation is not changed', fakeAsync(() => {
-
-      // given
-      context.yLabelRotation = 45;
-      flush();
-      eventHandlerSpy.calls.reset();
+   it('#valueTicks#stepSize should fire look change event', fakeAsync(() => {
 
       // when
-      context.yLabelRotation = 45;
+      context.valueTicks.stepSize = 10;
 
       // then
       flush();
-      expect(eventHandlerSpy).not.toHaveBeenCalled();
-   }));
-
-   it('#yLabelRotation should fire look change event when yLabelRotation is changed', fakeAsync(() => {
-
-      // when
-      context.yLabelRotation = 20;
-
-      // then
-      flush();
-      expect(context.yLabelRotation).toBe(20);
+      expect(context.valueTicks.toTicks()).toEqual({ stepSize: 10, rotation: undefined });
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));

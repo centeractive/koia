@@ -33,17 +33,6 @@ button {
   margin-bottom: 1em;
 }
 
-.div_labels {
-  display: flex;
-  align-items: center;
-  gap: 1em;
-}
-
-.div_label_rotation {
-  display: flex;
-  flex-direction: column;
-}
-
 .menu_item_legend_position {
   padding: 0 3 0 3;
   margin: 0px;

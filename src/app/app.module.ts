@@ -1,3 +1,4 @@
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -66,6 +67,7 @@ import { InputDialogComponent } from './shared/component/input-dialog/input-dial
 import { ManageConfigDialogComponent } from './shared/component/manage-config-dialog';
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
 import { StatusComponent } from './shared/component/status/status.component';
+import { TicksConfigComponent } from './chart/chart-side-bar/ticks-config/ticks-config.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { FormattedFloatDirective } from './shared/directives/formatted-float.directive';
 import { FormattedIntegerDirective } from './shared/directives/formatted-integer.directive';
@@ -80,7 +82,6 @@ import { ValueRangeGroupingService } from './shared/value-range';
 import { SummaryTableSideBarComponent } from './summary-table/summary-table-side-bar/summary-table-side-bar.component';
 import { SummaryTableComponent } from './summary-table/summary-table.component';
 import { TrialComponent } from './testing/trial/trial.component';
-import { NgxSliderModule } from '@angular-slider/ngx-slider';
 
 @NgModule({
     declarations: [
@@ -122,7 +123,8 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
         ExpansionPanelComponent,
         SceneTableComponent,
         DraggableColumnComponent,
-        TrialComponent
+        TrialComponent,
+        TicksConfigComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,

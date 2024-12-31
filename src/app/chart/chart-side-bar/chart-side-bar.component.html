@@ -151,34 +151,8 @@
          </mat-slide-toggle>
 
          <div *ngIf="!isCircularChart()">
-            Base Labels...
-            <div class="div_labels">
-               <mat-form-field>
-                  <mat-label>Step Size</mat-label>
-                  <input matInput type="number" placeholder="Automatic" [(ngModel)]="context.xLabelStepSize">
-               </mat-form-field>
-               <div class="div_label_rotation">
-                  Rotation
-                  <mat-slider min="0" max="90" step="1" #ngSlider>
-                     <input matSliderThumb [value]="- context.xLabelRotation"
-                        (valueChange)="context.xLabelRotation = -$event" #ngSliderThumb="matSliderThumb" />
-                  </mat-slider>
-               </div>
-            </div>
-            Value Labels...
-            <div class="div_labels">
-               <mat-form-field>
-                  <mat-label>Step Size</mat-label>
-                  <input matInput type="number" placeholder="Automatic" [(ngModel)]="context.yLabelStepSize">
-               </mat-form-field>
-               <div class="div_label_rotation">
-                  Rotation
-                  <mat-slider min="0" max="90" step="1" #ngSlider>
-                     <input matSliderThumb [value]="- context.yLabelRotation"
-                        (valueChange)="context.yLabelRotation = -$event" #ngSliderThumb="matSliderThumb" />
-                  </mat-slider>
-               </div>
-            </div>
+            <koia-ticks-config title="Base Labels..." [ticksConfig]="context.baseTicks"></koia-ticks-config>
+            <koia-ticks-config title="Value Labels..." [ticksConfig]="context.valueTicks"></koia-ticks-config>
          </div>
       </koia-expansion-panel>
    </mat-accordion>
