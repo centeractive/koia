@@ -74,6 +74,7 @@ export class ChartDataService {
 
   protected createDistinctValuesData(chartType: ChartType, context: ChartContext): DataPoint[] {
     const data = ChartDataHelper.countDistinctValues(context);
+    ChartDataHelper.sortAscending(data);
     if (data.length > chartType.maxValues) {
       throw this.errorResultFactory.exceedingValues(chartType);
     }

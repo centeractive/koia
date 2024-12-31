@@ -6,7 +6,7 @@ import { View } from 'app/shared/model/view-config';
 export interface ViewLauncherContext {
    views: View[];
    loadView(view: View): void;
-   addSummaryTable(gridVeiw: boolean): SummaryContext;
+   addSummaryTable(): SummaryContext;
    addChart(): ChartContext;
    addGraph(): GraphContext;
 }

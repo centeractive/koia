@@ -9,27 +9,18 @@ import { TimeFormatter } from '../chartjs/formatter/time-formatter';
  */
 export class BarLegendCustomizer extends TimeFormatter {
 
-    private static MAX_DATA_LENGTH = 25;
+    private static DEFAULT_MAX_DATA_LENGTH = 25;
+
+    constructor(private maxDataLength = BarLegendCustomizer.DEFAULT_MAX_DATA_LENGTH) {
+        super();
+    }
 
     customize(context: ChartContext, config: ChartConfiguration): void {
         const chartType = ChartType.fromType(context.chartType);
         const horizontalBar = chartType === ChartType.HORIZONTAL_BAR;
-        if ((chartType === ChartType.BAR || horizontalBar) && context.data.datasets.length === 1 && context.data.labels.length <= BarLegendCustomizer.MAX_DATA_LENGTH) {
+        if ((chartType === ChartType.BAR || horizontalBar) && context.data.datasets.length === 1 && context.data.labels.length <= this.maxDataLength) {
 
-            config.plugins = [{
-                beforeLayout: chart => {
-                    chart.options.scales[horizontalBar ? 'y1' : 'x1'].labels = chart.data.datasets
-                        .filter((ds, i) => !chart.getDatasetMeta(i).hidden)
-                        .map(ds => ds.label);
-                }
-            }] as any;
-
-            const hiddenScale = config.options.scales[horizontalBar ? 'y' : 'x'];
-            hiddenScale.display = false;
-            config.options.scales[horizontalBar ? 'y1' : 'x1'] = {
-                offset: true,
-                ticks: hiddenScale.ticks || {} // without {}, tick index instead of name appears
-            }
+            this.adjustBaseScale(horizontalBar, config);
 
             const dataset = config.data.datasets[0];
             const grouByColumn = context.groupByColumns[0];
@@ -47,18 +38,21 @@ export class BarLegendCustomizer extends TimeFormatter {
         }
     }
 
-    private visibleScaleOptions(horizontalBar: boolean, context: ChartContext): any {
-        const ticksRotation = horizontalBar ? context.yLabelRotation : context.xLabelRotation;
-        if (ticksRotation) {
-            return {
-                offset: true,
-                ticks: {
-                    maxRotation: -ticksRotation,
-                    minRotation: -ticksRotation
-                }
-            };
+    private adjustBaseScale(horizontalBar: boolean, config: ChartConfiguration): void {
+        config.plugins = [{
+            beforeLayout: chart => {
+                chart.options.scales[horizontalBar ? 'y1' : 'x1'].labels = chart.data.datasets
+                    .filter((ds, i) => !chart.getDatasetMeta(i).hidden)
+                    .map(ds => ds.label);
+            }
+        }] as any;
+
+        const hiddenScale = config.options.scales[horizontalBar ? 'y' : 'x'];
+        hiddenScale.display = false;
+        config.options.scales[horizontalBar ? 'y1' : 'x1'] = {
+            offset: true,
+            ticks: hiddenScale.ticks || {} // without {}, tick index instead of name is shown
         }
-        return { offset: true };
     }
 
     private formatDatasetLabel(grouByColumn: Column, label: any): any {

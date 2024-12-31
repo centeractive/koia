@@ -62,9 +62,9 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.data.labels).toEqual(['b', 'a']);
+      expect(result.data.labels).toEqual(['a', 'b']);
       expect(result.data.datasets.length).toBe(1);
-      expect(result.data.datasets[0].data).toEqual([3, 1]);
+      expect(result.data.datasets[0].data).toEqual([1, 3]);
       expect(context.valueRange).toEqual({ min: 1, max: 3 });
       expect(result.error).toBeUndefined();
    });
@@ -135,7 +135,7 @@ describe('ChartDataService', () => {
       expect(context.valueRange).toBeUndefined();
    });
 
-   it('#createData should create BAR chart data (count distinct values)', () => {
+   it('#createData should create BAR chart data (count distinct text values)', () => {
 
       // given
       context.chartType = ChartType.BAR.type;
@@ -145,10 +145,27 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.data.labels).toEqual(['b', 'a']);
+      expect(result.data.labels).toEqual(['a', 'b']);
       expect(result.data.datasets.length).toBe(1);
-      expect(result.data.datasets[0].data).toEqual([3, 1]);
+      expect(result.data.datasets[0].data).toEqual([1, 3]);
       expect(context.valueRange).toEqual({ min: 1, max: 3 });
+      expect(result.error).toBeUndefined();
+   });
+
+   it('#createData should create BAR chart data (count distinct number values)', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.labels).toEqual([2, 3]);
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].data).toEqual([1, 2]);
+      expect(context.valueRange).toEqual({ min: 1, max: 2 });
       expect(result.error).toBeUndefined();
    });
 
