@@ -1,6 +1,6 @@
 import { Column, DataType } from 'app/shared/model';
-import { DataPoint, ChartContext, CategoryData, LabeledValues } from 'app/shared/model/chart';
-import { DateTimeUtils, ArrayUtils } from 'app/shared/utils';
+import { CategoryData, ChartContext, DataPoint, LabeledValues } from 'app/shared/model/chart';
+import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
 
 export class ChartDataHelper {
 

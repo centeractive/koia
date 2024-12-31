@@ -59,7 +59,7 @@ export class ChartDataService {
   private countDistinctValuesData(chartType: ChartType, context: ChartContext): ChartData {
     const dataPoints = this.createDistinctValuesData(chartType, context);
     return {
-      labels: dataPoints.map(p => p.x),
+      labels: dataPoints.map(p => '' + p.x),
       datasets: [{
         label: context.dataColumns[0].name,
         data: dataPoints.map(p => p.y),

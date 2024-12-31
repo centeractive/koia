@@ -162,7 +162,7 @@ describe('ChartDataService', () => {
       const result = chartDataService.createData(context);
 
       // then
-      expect(result.data.labels).toEqual([2, 3]);
+      expect(result.data.labels).toEqual(['2', '3']);
       expect(result.data.datasets.length).toBe(1);
       expect(result.data.datasets[0].data).toEqual([1, 2]);
       expect(context.valueRange).toEqual({ min: 1, max: 2 });

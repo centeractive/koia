@@ -87,7 +87,7 @@ describe('ChartComponent', () => {
     flush();
 
     // then
-    expect(context.data.labels).toEqual([1, 2, 3]);
+    expect(context.data.labels).toEqual(['1', '2', '3']);
     expect(context.data.datasets.length).toBe(1);
     expect(context.data.datasets[0].data).toEqual([1, 2, 1]);
     expect(context.chart).toBeTruthy();
