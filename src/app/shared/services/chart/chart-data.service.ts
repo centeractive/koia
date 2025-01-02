@@ -4,7 +4,7 @@ import { ChartContext, ChartType, DataPoint, DataSet } from 'app/shared/model/ch
 import { ChartDataResult } from 'app/shared/model/chart/chart-data-result.type';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model';
-import { ChartData } from 'chart.js';
+import { ChartData, ChartDataset } from 'chart.js';
 import { largestTriangleThreeBucket } from 'd3fc-sample';
 import { CouchDBConstants } from '../backend/couchdb';
 import { ChartDataHelper } from './chart-data-helper';
@@ -98,7 +98,7 @@ export class ChartDataService {
       datasets: labeledData.dataSets.map((ds, i) => {
         const bgColors = context.colorProvider.bgColors(labels.length);
         const borderColors = context.colorProvider.borderColors(labels.length);
-        return {
+        const dataset: ChartDataset = {
           label: ds.label,
           data: ds.values,
           backgroundColor: colorPerLabel ? bgColors : bgColors[i],
@@ -107,7 +107,12 @@ export class ChartDataService {
           fill: chartType == ChartType.AREA,
           hoverOffset: 10, // PIE & DOUGHNUT charts
           borderAlign: 'inner' // PIE & DOUGHNUT charts
+        };
+        if (!!i && context.multiValueAxes && context.dataColumns.length > 1) {
+          const axis = context.isHorizontalChart() ? 'x' : 'y';
+          dataset[axis + 'AxisID'] = axis + (i + 1);
         }
+        return dataset;
       })
     };
   }
@@ -147,14 +152,21 @@ export class ChartDataService {
     const bgColors = context.colorProvider.bgColors(datasets.length);
     const borderColors = context.colorProvider.borderColors(datasets.length);
     return {
-      datasets: datasets.map((ds, i) => ({
-        label: ds.key,
-        data: ds.values,
-        backgroundColor: bgColors[i],
-        borderColor: borderColors[i],
-        borderWidth: 1,
-        fill: chartType == ChartType.AREA
-      }))
+      datasets: datasets.map((ds, i) => {
+        const dataset: ChartDataset = {
+          label: ds.key,
+          data: ds.values,
+          backgroundColor: bgColors[i],
+          borderColor: borderColors[i],
+          borderWidth: 1,
+          fill: chartType == ChartType.AREA
+        };
+        if (!!i && context.multiValueAxes && context.dataColumns.length > 1) {
+          const axis = context.isHorizontalChart() ? 'x' : 'y';
+          dataset[axis + 'AxisID'] = axis + (i + 1);
+        }
+        return dataset;
+      })
     };
   }
 
@@ -256,8 +268,8 @@ export class ChartDataService {
     const bucketSize = Math.ceil(values.length / ChartDataService.MAX_DATA_POINTS);
     sampler.bucketSize(bucketSize);
     context.dataSampledDown = true;
-    context.warning = 'Data has been down-sampled and the chart contains part of available values only,' +
-      ' apply filters to limit the data and see all values of the chosen context.'
+    context.warning = 'Data has been down-sampled and the chart contains part of available values only.' +
+      ' Apply filters to limit the data and see all values of the chosen context.'
     return sampler(values);
   }
 

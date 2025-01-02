@@ -209,6 +209,85 @@ describe('ChartContext', () => {
       expect(context.stacked).toBeFalse();
    });
 
+   it('#stacked should fire structure change event', fakeAsync(() => {
+
+      // when
+      context.stacked = true;
+
+      // then
+      flush();
+      expect(context.stacked).toBeTrue();
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
+
+   it('#stacked(true) should unset multiValueAxes option', fakeAsync(() => {
+
+      // given
+      context.multiValueAxes = true;
+
+      // when
+      context.stacked = true;
+
+      // then
+      flush();
+      expect(context.multiValueAxes).toBeFalse();
+   }));
+
+   it('#multiValueAxes should fire structure change event', fakeAsync(() => {
+
+      // when
+      context.multiValueAxes = true;
+
+      // then
+      flush();
+      expect(context.multiValueAxes).toBeTrue();
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
+
+   it('#multiValueAxes(true) should unset stacked option', fakeAsync(() => {
+
+      // given
+      context.stacked = true;
+
+      // when
+      context.multiValueAxes = true;
+
+      // then
+      flush();
+      expect(context.stacked).toBeFalse();
+   }));
+
+   it('#multiValueAxes should not fire change event when value did not change', fakeAsync(() => {
+
+      // when
+      context.multiValueAxes = false;
+
+      // then
+      flush();
+      expect(context.multiValueAxes).toBeFalse();
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#set splitColumns should unset multiValueAxes option', fakeAsync(() => {
+
+      // given
+      context.multiValueAxes = true;
+      flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.splitColumns = [columns[1]];
+
+      // then
+      flush();
+      expect(context.multiValueAxes).toBeFalse();
+      expect(context.splitColumns).toEqual([columns[1]]);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
+
    it('#getTitle when no data column defined', () => {
       expect(context.getTitle()).toBe('Data: to be defined');
    });

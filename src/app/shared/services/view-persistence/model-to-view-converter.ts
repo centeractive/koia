@@ -53,7 +53,8 @@ export class ModelToViewConverter {
          legendPosition: context.legendPosition,
          baseTicks: context.baseTicks.toTicks(),
          valueTicks: context.valueTicks.toTicks(),
-         stacked: context.stacked
+         stacked: context.stacked,
+         multiValueAxes: context.multiValueAxes
       }
    }
 

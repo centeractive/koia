@@ -44,10 +44,15 @@
                   {{ context.isCircularChart() ? 'Unique Named' : 'Individual' }} Values
                </mat-radio-button>
             </mat-radio-group>&nbsp;&nbsp;&nbsp;
-            <mat-checkbox *ngIf="!context.isCircularChart()" class="example-margin" [(ngModel)]="context.stacked">
+            <mat-checkbox *ngIf="!context.isCircularChart()" [(ngModel)]="context.stacked">
                Stacked
             </mat-checkbox>
          </div>
+         <mat-checkbox
+            *ngIf="!context.isCircularChart() && context.dataColumns.length > 1 && !context.splitColumns.length"
+            [(ngModel)]="context.multiValueAxes">
+            Distinct Scales
+         </mat-checkbox>
       </koia-expansion-panel>
 
       <koia-expansion-panel title="Names" *ngIf="context.isCircularChart() && !context.isAggregationCountSelected()">
@@ -85,8 +90,8 @@
                class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
                <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns"
                   cdkDrag>
-                  <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon><span class="accent">{{ column.name
-                     }}</span>
+                  <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon>
+                  <span class="accent"> {{ column.name }}</span>
                </div>
             </div>
             <br>

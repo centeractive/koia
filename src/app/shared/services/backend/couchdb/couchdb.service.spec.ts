@@ -72,8 +72,8 @@ describe('CouchDBService', () => {
    it('#listDatabases should return databases', async () => {
 
       // given
-      await couchDBService.createDatabase(testDBPrefix + 'db1');
-      await couchDBService.createDatabase(testDBPrefix + 'db2');
+      await couchDBService.createDatabase(testDBPrefix + 'db10');
+      await couchDBService.createDatabase(testDBPrefix + 'db20');
 
       // when
       await couchDBService.listDatabases()
@@ -82,8 +82,8 @@ describe('CouchDBService', () => {
             // then
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(2);
-            expect(dbs.includes(testDBPrefix + 'db1')).toBeTrue();
-            expect(dbs.includes(testDBPrefix + 'db2')).toBeTrue();
+            expect(dbs.includes(testDBPrefix + 'db10')).toBeTrue();
+            expect(dbs.includes(testDBPrefix + 'db20')).toBeTrue();
          })
          .catch(e => fail(e));
    });
@@ -119,18 +119,18 @@ describe('CouchDBService', () => {
    it('#deleteDatabase should delete database', async () => {
 
       // given
-      await couchDBService.createDatabase(testDBPrefix + 'db1');
-      await couchDBService.createDatabase(testDBPrefix + 'db2');
+      await couchDBService.createDatabase(testDBPrefix + 'db100');
+      await couchDBService.createDatabase(testDBPrefix + 'db200');
 
       // when
-      await couchDBService.deleteDatabase(testDBPrefix + 'db1').then(() => null)
+      await couchDBService.deleteDatabase(testDBPrefix + 'db100').then(() => null)
 
       // then
       await couchDBService.listDatabases()
          .then(dbs => {
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(1);
-            expect(dbs.includes(testDBPrefix + 'db2')).toBeTrue();
+            expect(dbs.includes(testDBPrefix + 'db200')).toBeTrue();
          })
          .catch(e => fail(e));
    });

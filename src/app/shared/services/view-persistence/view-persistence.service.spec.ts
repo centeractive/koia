@@ -37,7 +37,7 @@ describe('ViewPersistenceService', () => {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
       valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
-      legendPosition: 'top', baseTicks, valueTicks, stacked: false,
+      legendPosition: 'top', baseTicks, valueTicks, stacked: false, multiValueAxes: false,
       colorOptions: {
         type: ColorSchemeType.CATEGORICAL,
         scheme: CategoricalColorScheme.PAIRED,

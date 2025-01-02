@@ -9,4 +9,5 @@ export interface Chart extends ViewElement {
    baseTicks: Ticks;
    valueTicks: Ticks;
    stacked: boolean;
+   multiValueAxes: boolean;
 }

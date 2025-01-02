@@ -20,6 +20,7 @@ export class ChartContext extends ElementContext {
    private _baseTicks: TicksConfig;
    private _valueTicks: TicksConfig;
    private _stacked: boolean;
+   private _multiValueAxes: boolean;
 
    // transient
    private _data: ChartData;
@@ -39,6 +40,7 @@ export class ChartContext extends ElementContext {
       this._baseTicks = new TicksConfig(() => this.fireLookChanged());
       this._valueTicks = new TicksConfig(() => this.fireLookChanged());
       this._stacked = false;
+      this._multiValueAxes = false;
    }
 
    switchChartType(type: string, margin: Margin) {
@@ -84,6 +86,20 @@ export class ChartContext extends ElementContext {
 
    toggleShowResizableMargin(): void {
       this.showResizableMargin = !this.showResizableMargin;
+   }
+
+   /**
+    * @see https://stackoverflow.com/questions/28950760/override-a-setter-and-the-getter-must-also-be-overridden 
+    */
+   override get splitColumns(): Column[] {
+      return super.splitColumns;
+   }
+
+   override set splitColumns(splitColumns: Column[]) {
+      if (!!splitColumns.length) {
+         this._multiValueAxes = false;
+      }
+      super.splitColumns = splitColumns;
    }
 
    get showLegend(): boolean {
@@ -154,6 +170,23 @@ export class ChartContext extends ElementContext {
    set stacked(stacked: boolean) {
       if (this._stacked !== stacked) {
          this._stacked = stacked;
+         if (stacked) {
+            this._multiValueAxes = false;
+         }
+         this.fireStructureChanged();
+      }
+   }
+
+   get multiValueAxes(): boolean {
+      return this._multiValueAxes;
+   }
+
+   set multiValueAxes(multiValueAxes: boolean) {
+      if (this._multiValueAxes !== multiValueAxes) {
+         this._multiValueAxes = multiValueAxes;
+         if (multiValueAxes) {
+            this._stacked = false;
+         }
          this.fireStructureChanged();
       }
    }

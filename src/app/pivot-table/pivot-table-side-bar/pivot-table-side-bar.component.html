@@ -1,6 +1,6 @@
 <div class="div_accordion_options">
    <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-                     (change)="onMultiExpandableChanged($event.checked)">
+      (change)="onMultiExpandableChanged($event.checked)">
       Multi Expansion
    </mat-slide-toggle>
    <span class="span_exp_collapse_all" *ngIf="multiExpandable">
@@ -20,7 +20,7 @@
          </mat-select>
       </mat-form-field>
       <button mat-icon-button matTooltip="Add Grouping Definition" [disabled]="!nonGroupedCols.value"
-              (click)="addValueGrouping(nonGroupedCols.value)">
+         (click)="addValueGrouping(nonGroupedCols.value)">
          <mat-icon>add_circle_outline</mat-icon>
       </button>
    </span>
@@ -30,7 +30,7 @@
 <div style="padding: 0 5px 0 5px;">
    <mat-accordion [multi]="multiExpandable" *ngIf="context">
       <koia-expansion-panel *ngFor="let grouping of context.valueGroupings" [title]="grouping.columnName + ' Grouping'"
-                            [deletable]="true" (delete)="removeValueGrouping(grouping)">
+         [deletable]="true" (delete)="removeValueGrouping(grouping)">
          <span class="span_left_to_right">
             <label>max. {{ grouping.minMaxValues.max | number }}</label>
             <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
@@ -39,12 +39,12 @@
          </span>
          <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
             <div class="div_group_value" mat-stroked-button *ngFor="let range of grouping.ranges" cdkDrag>
-               <mat-checkbox class="example-margin" [(ngModel)]="range.active"></mat-checkbox>
+               <mat-checkbox [(ngModel)]="range.active"></mat-checkbox>
                <label>Up&nbsp;to:</label>
-               <input matInput type="number" [(ngModel)]="range.max" matTooltip="Range max. value, excluding upper value boundary"
-                      (keypress)="isNumberKey($event)">
+               <input matInput type="number" [(ngModel)]="range.max"
+                  matTooltip="Range max. value, excluding upper value boundary" (keypress)="isNumberKey($event)">
                <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1"
-                         (click)="removeGroupingRange(grouping, range)">
+                  (click)="removeGroupingRange(grouping, range)">
                   remove_circle_outline
                </mat-icon>
             </div>

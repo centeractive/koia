@@ -34,6 +34,7 @@ export class ViewToModelConverter {
       context.baseTicks = new TicksConfig(() => context.fireLookChanged(), chart.baseTicks);
       context.valueTicks = new TicksConfig(() => context.fireLookChanged(), chart.valueTicks);
       context.stacked = chart.stacked;
+      context.multiValueAxes = chart.multiValueAxes;
       return context;
    }
 

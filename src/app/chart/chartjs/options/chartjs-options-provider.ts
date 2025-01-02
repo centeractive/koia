@@ -42,6 +42,7 @@ export class ChartJsOptionsProvider {
                     y: this.xScaleOptions(chartType, context),
                     x: this.yScaleOptions(chartType, context)
                 };
+                this.addAdditionalValueAxes(context, options.scales);
                 break;
             default:
                 if (!context.isCircularChart()) {
@@ -49,12 +50,34 @@ export class ChartJsOptionsProvider {
                         y: this.yScaleOptions(chartType, context),
                         x: this.xScaleOptions(chartType, context)
                     };
+                    this.addAdditionalValueAxes(context, options.scales);
                 }
                 break;
         }
         this.legendLabelFormatter.format(context, options);
         this.tooltipCustomizer.customize(context, options);
         return options;
+    }
+
+    private addAdditionalValueAxes(context: ChartContext, scaleOptions: ScaleOptions): void {
+        if (context.dataColumns.length > 1 && context.multiValueAxes) {
+            const chartType = ChartType.fromType(context.chartType);
+            for (let i = 1; i < context.dataColumns.length; i++) {
+                if (context.isHorizontalChart()) {
+                    const id = 'x' + (i + 1);
+                    scaleOptions[id] = this.yScaleOptions(chartType, context, i);
+                    if (i % 2) {
+                        scaleOptions[id].position = 'top';
+                    }
+                } else {
+                    const id = 'y' + (i + 1);
+                    scaleOptions[id] = this.yScaleOptions(chartType, context, i);
+                    if (i % 2) {
+                        scaleOptions[id].position = 'right';
+                    }
+                }
+            }
+        }
     }
 
     private createCommonOptions(chartType: ChartType, context: ChartContext): ChartOptions {
@@ -101,8 +124,8 @@ export class ChartJsOptionsProvider {
         return scaleOptions;
     }
 
-    private yScaleOptions(chartType: ChartType, context: ChartContext): ScaleOptions {
-        const title = this.yScaleTitle(context);
+    private yScaleOptions(chartType: ChartType, context: ChartContext, columnIdx = 0): ScaleOptions {
+        const title = this.yScaleTitle(context, columnIdx);
         const scaleOptions: ScaleOptions = {
             display: !this.chartTypesHiddenScales.includes(chartType),
             stacked: context.stacked,
@@ -127,11 +150,11 @@ export class ChartJsOptionsProvider {
         return scaleOptions;
     }
 
-    private yScaleTitle(context: ChartContext): string {
+    private yScaleTitle(context: ChartContext, columnIdx: number): string {
         if (context.isAggregationCountSelected()) {
             return 'Count';
-        } else if (context.dataColumns.length == 1) {
-            return context.dataColumns[0].name;
+        } else if (context.dataColumns.length == 1 || context.multiValueAxes) {
+            return context.dataColumns[columnIdx].name;
         } else {
             return null;
         }

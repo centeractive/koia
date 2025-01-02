@@ -145,8 +145,8 @@ export abstract class ElementContext {
       return this._splitColumns.slice(0);
    }
 
-   set splitColumns(splitColumn: Column[]) {
-      this._splitColumns = splitColumn || [];
+   set splitColumns(splitColumns: Column[]) {
+      this._splitColumns = splitColumns || [];
       this._groupByColumns = this._groupByColumns.filter(c => !this._splitColumns.includes(c));
       this.fireStructureChanged();
    }
