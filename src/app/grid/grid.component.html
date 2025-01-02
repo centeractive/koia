@@ -150,7 +150,8 @@
                         color="warn">
                         <mat-icon>error</mat-icon>
                      </button>
-                     <button class="but_move" mat-icon-button matTooltip="Move" cdkDragHandle>
+                     <button *ngIf="elementContexts.length > 1" class="but_move" mat-icon-button matTooltip="Move"
+                        cdkDragHandle>
                         <mat-icon svgIcon="move"></mat-icon>
                      </button>
                      <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">

@@ -25,6 +25,7 @@ import { ArrayUtils, CommonUtils, DateTimeUtils, StringUtils } from '../utils';
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext, ManageViewContext {
 
+   static readonly VIEW_NAME_MAX_LENGTH = 40;
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 380; // keep in sync with .sidenav in styles.css
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
@@ -225,7 +226,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.notifyWarning('View contains no elements');
          return;
       }
-      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, 20);
+      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
       const dialogRef = this.dialogService.showInputDialog(dialogData);
       lastValueFrom(dialogRef.afterClosed())
          .then(() => {

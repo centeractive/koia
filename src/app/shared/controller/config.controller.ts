@@ -11,6 +11,7 @@ import { ConfigRecord } from '../model/view-config';
 import { DialogService, NotificationService, ViewPersistenceService } from '../services';
 import { DBService } from '../services/backend';
 import { StringUtils } from '../utils';
+import { ViewController } from './view.controller';
 
 @Directive()
 export abstract class ConfigController extends AbstractComponent implements OnInit, ConfigLauncherContext, ManageConfigContext {
@@ -44,7 +45,7 @@ export abstract class ConfigController extends AbstractComponent implements OnIn
    }
 
    saveConfig(): void {
-      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, 20);
+      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
       const dialogRef = this.dialogService.showInputDialog(dialogData);
       firstValueFrom(dialogRef.afterClosed()).then(() => {
          if (dialogData.closedWithOK) {

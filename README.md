@@ -65,4 +65,4 @@ Building and serving locally is a straightforward **npx ng build --prod** follow
 
 ## License
 
-Koia is [MIT licensed](LICENSE). Copyright (c) 2024 centeractive ag.
+Koia is [MIT licensed](LICENSE). Copyright (c) 2025 centeractive ag.

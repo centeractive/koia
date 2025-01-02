@@ -3,14 +3,17 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { View } from 'app/shared/model/view-config';
 import * as _ from 'lodash';
 import { ManageViewContext } from './manage-view-context.type.';
+import { ViewController } from 'app/shared/controller';
 
 @Component({
-    selector: 'koia-manageView-dialog',
-    templateUrl: './manage-view-dialog.component.html',
-    styleUrls: ['./manage-view-dialog.component.css'],
-    standalone: false
+  selector: 'koia-manageView-dialog',
+  templateUrl: './manage-view-dialog.component.html',
+  styleUrls: ['./manage-view-dialog.component.css'],
+  standalone: false
 })
 export class ManageViewDialogComponent {
+
+  readonly viewNameMaxLength = ViewController.VIEW_NAME_MAX_LENGTH;
 
   items: ViewItem[] = [];
   changed: boolean;

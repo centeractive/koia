@@ -14,14 +14,16 @@
             <mat-icon>delete_forever</mat-icon>
           </button>
           <mat-icon>monitor</mat-icon>&nbsp;
-          <input [(ngModel)]="item.view.name" (ngModelChange)="onChange()" />
+          <input [(ngModel)]="item.view.name" (ngModelChange)="onChange()" required [maxlength]="viewNameMaxLength" />
           <var>{{ item.view.modifiedTime | date:'short' }}</var>
         </div>
       </ng-container>
     </div>
     <div id="div_buttons">
-      <button id="but_cancel" mat-raised-button [color]="changed ? null : 'primary'" (click)="dialogRef.close()">Cancel</button>
-      <button id="but_ok" mat-raised-button [color]="changed ? 'primary' : null" [disabled]="!changed" (click)="butOkPressed()">OK</button>
+      <button id="but_cancel" mat-raised-button [color]="changed ? null : 'primary'"
+        (click)="dialogRef.close()">Cancel</button>
+      <button id="but_ok" mat-raised-button [color]="changed ? 'primary' : null" [disabled]="!changed"
+        (click)="butOkPressed()">OK</button>
     </div>
   </mat-card-content>
 </mat-card>

@@ -1,16 +1,19 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ViewController } from 'app/shared/controller';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import * as _ from 'lodash';
 import { ManageConfigContext } from './manage-config-context.type.';
 
 @Component({
-    selector: 'koia-manage-config-dialog',
-    templateUrl: './manage-config-dialog.component.html',
-    styleUrls: ['./manage-config-dialog.component.css'],
-    standalone: false
+  selector: 'koia-manage-config-dialog',
+  templateUrl: './manage-config-dialog.component.html',
+  styleUrls: ['./manage-config-dialog.component.css'],
+  standalone: false
 })
 export class ManageConfigDialogComponent {
+
+  readonly viewNameMaxLength = ViewController.VIEW_NAME_MAX_LENGTH;
 
   items: ConfigRecordItem[];
   changed: boolean;
