@@ -144,11 +144,10 @@ export class ChartContext extends ElementContext {
 
    override removeDataColumn(dataColumn: Column): void {
       if (this._multiValueAxes) {
-
-
-         this._valueScales.find(s => s.columnName != dataColumn.name);
-
-
+         const scaleConfig = this._valueScales.find(s => s.columnName != dataColumn.name);
+         if (scaleConfig) {
+            this._valueScaleStore.set(scaleConfig.toScale());
+         }
          this._valueScales = this._valueScales.filter(s => s.columnName != dataColumn.name);
          if (this.dataColumns.length <= 2) {
             this._multiValueAxes = false;
