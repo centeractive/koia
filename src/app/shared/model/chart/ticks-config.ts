@@ -1,9 +1,9 @@
-import { Ticks } from "./ticks.type";
+import { Ticks } from 'app/shared/services/view-persistence';
 
 export class TicksConfig {
 
-    _stepSize: number; // linear axes specific tick option
-    _rotation: number; // cartesian axes specific tick option
+    private _stepSize: number; // linear axes specific tick option
+    private _rotation: number; // cartesian axes specific tick option
 
     constructor(private onChange: () => void, ticks: Ticks = {}) {
         this._stepSize = ticks.stepSize;

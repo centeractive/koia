@@ -1,5 +1,5 @@
-import { ChartData } from "chart.js";
-import { tooltipMode } from "./tooltip-mode";
+import { ChartData } from 'chart.js';
+import { tooltipMode } from './tooltip-mode';
 
 describe('tooltip-mode', () => {
 

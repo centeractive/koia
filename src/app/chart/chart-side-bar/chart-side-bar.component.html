@@ -48,11 +48,10 @@
                Stacked
             </mat-checkbox>
          </div>
-         <mat-checkbox
+         <mat-slide-toggle
             *ngIf="!context.isCircularChart() && context.dataColumns.length > 1 && !context.splitColumns.length"
-            [(ngModel)]="context.multiValueAxes">
-            Distinct Scales
-         </mat-checkbox>
+            style="margin-top: 1em;" [(ngModel)]="context.multiValueAxes">Show Distinct Scales
+         </mat-slide-toggle>
       </koia-expansion-panel>
 
       <koia-expansion-panel title="Names" *ngIf="context.isCircularChart() && !context.isAggregationCountSelected()">
@@ -140,7 +139,7 @@
          <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
       </koia-expansion-panel>
 
-      <koia-expansion-panel title="Legend & Labels">
+      <koia-expansion-panel [title]="isCircularChart() ? 'Legend & Labels' : 'Legend & Scales'">
          <span class="span_legend">
             <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>
             <button mat-button *ngIf="context.showLegend && context.chartType !== 'scatterChart'"
@@ -156,8 +155,11 @@
          </mat-slide-toggle>
 
          <div *ngIf="!isCircularChart()">
-            <koia-ticks-config title="Base Labels..." [ticksConfig]="context.baseTicks"></koia-ticks-config>
-            <koia-ticks-config title="Value Labels..." [ticksConfig]="context.valueTicks"></koia-ticks-config>
+            <koia-scale title="Base Scale" [scale]="context.baseScale"></koia-scale>
+            @for (scale of context.valueScales; track scale; let i = $index) {
+            <koia-scale title="{{ 'Value Scale ' + (context.valueScales.length > 1 ?  i + 1 : '') }}"
+               [scale]="scale"></koia-scale>
+            }
          </div>
       </koia-expansion-panel>
    </mat-accordion>

@@ -1,7 +1,7 @@
-import { Column, DataType } from "app/shared/model";
-import { ChartContext, ChartType } from "app/shared/model/chart";
-import { ChartConfiguration, ChartData } from "chart.js";
-import { BarLegendCustomizer } from "./bar-legend-customizer";
+import { Column, DataType } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { ChartConfiguration, ChartData } from 'chart.js';
+import { BarLegendCustomizer } from './bar-legend-customizer';
 
 describe('BarLegendCustomizer', () => {
 

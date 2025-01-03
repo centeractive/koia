@@ -6,6 +6,7 @@ import { DataType } from '../data-type.enum';
 import { ExportFormat } from '../export-format.enum';
 import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
+import { ScaleConfig } from './scale-config';
 import { TicksConfig } from './ticks-config';
 
 describe('ChartContext', () => {
@@ -29,6 +30,33 @@ describe('ChartContext', () => {
       eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
       context.subscribeToChanges(eventHandlerSpy);
    });
+
+   it('#dataColumns should change valueScales', fakeAsync(() => {
+
+      // when
+      context.dataColumns = [columns[3], columns[4]];
+
+      // then
+      flush();
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         },
+         {
+            columnName: 'Percent',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
 
    it('#legendPosition should not fire look change event when legendPosition is not changed', fakeAsync(() => {
 
@@ -130,72 +158,123 @@ describe('ChartContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#baseTicks should not fire look change event when base ticks did not change', fakeAsync(() => {
+   it('#baseScale should not fire look change event when scale did not change', fakeAsync(() => {
 
       // when
-      context.baseTicks = new TicksConfig(() => context.fireLookChanged(), {});
+      context.baseScale = scaleConfig();
 
       // then
       flush();
-      expect(context.baseTicks.toTicks()).toEqual({ stepSize: undefined, rotation: undefined });
+      expect(context.baseScale.toScale()).toEqual({
+         columnName: undefined,
+         ticks: {
+            stepSize: undefined,
+            rotation: undefined
+         }
+      });
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
-   it('#baseTicks should fire look change event when base ticks changed', fakeAsync(() => {
+   it('#baseScale should fire look change event when scale changed', fakeAsync(() => {
 
       // when
-      context.baseTicks = new TicksConfig(() => context.fireLookChanged(), { stepSize: 2 });
+      context.baseScale = scaleConfig(undefined, 2);
 
       // then
       flush();
-      expect(context.baseTicks.toTicks()).toEqual({ stepSize: 2, rotation: undefined });
+      expect(context.baseScale.toScale()).toEqual({
+         columnName: undefined,
+         ticks: {
+            stepSize: 2,
+            rotation: undefined
+         }
+      });
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#baseTicks#stepSize should fire look change event', fakeAsync(() => {
+   it('#baseScale#ticks should fire look change event', fakeAsync(() => {
 
       // when
-      context.baseTicks.stepSize = 10;
+      context.baseScale.ticks = new TicksConfig(() => context.fireLookChanged(), { rotation: 45 });
 
       // then
       flush();
-      expect(context.baseTicks.toTicks()).toEqual({ stepSize: 10, rotation: undefined });
+      expect(context.baseScale.toScale()).toEqual({
+         columnName: undefined,
+         ticks: {
+            stepSize: undefined,
+            rotation: 45
+         }
+      });
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#valueTicks should not fire look change event when value ticks did not change', fakeAsync(() => {
+   it('#valueScales should not fire look change event when scales did not change', fakeAsync(() => {
+
+      // given
+      context.dataColumns = [columns[3]];
+      flush();
+      eventHandlerSpy.calls.reset();
 
       // when
-      context.valueTicks = new TicksConfig(() => context.fireLookChanged(), {});
+      context.valueScales = [scaleConfig('Amount')];
 
       // then
       flush();
-      expect(context.valueTicks.toTicks()).toEqual({ stepSize: undefined, rotation: undefined });
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([{
+         columnName: 'Amount',
+         ticks: {
+            stepSize: undefined,
+            rotation: undefined
+         }
+      }]);
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
-   it('#valueTicks should fire look change event when value ticks changed', fakeAsync(() => {
+   it('#valueScales should fire look change event when value scales changed', fakeAsync(() => {
+
+      // given
+      context.dataColumns = [columns[3]];
+      flush();
+      eventHandlerSpy.calls.reset();
 
       // when
-      context.valueTicks = new TicksConfig(() => context.fireLookChanged(), { stepSize: 2 });
+      context.valueScales = [scaleConfig('X', 2)];
 
       // then
       flush();
-      expect(context.valueTicks.toTicks()).toEqual({ stepSize: 2, rotation: undefined });
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([{
+         columnName: 'X',
+         ticks: {
+            stepSize: 2,
+            rotation: undefined
+         }
+      }]);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#valueTicks#stepSize should fire look change event', fakeAsync(() => {
+   it('#valueScales#ticks should fire look change event', fakeAsync(() => {
+
+      // given
+      context.dataColumns = [columns[3]];
+      flush();
+      eventHandlerSpy.calls.reset();
 
       // when
-      context.valueTicks.stepSize = 10;
+      context.valueScales[0].ticks = new TicksConfig(() => context.fireLookChanged(), { rotation: 45 });
 
       // then
       flush();
-      expect(context.valueTicks.toTicks()).toEqual({ stepSize: 10, rotation: undefined });
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([{
+         columnName: 'Amount',
+         ticks: {
+            stepSize: undefined,
+            rotation: 45
+         }
+      }]);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
@@ -391,6 +470,13 @@ describe('ChartContext', () => {
    it('#getSupportedExportFormats should return PNG', () => {
       expect(context.getSupportedExportFormats()).toEqual([ExportFormat.PNG]);
    });
+
+   function scaleConfig(columnName?: string, stepSize?: number, rotation?: number): ScaleConfig {
+      return new ScaleConfig(() => null, {
+         columnName,
+         ticks: { stepSize, rotation }
+      });
+   }
 
    function column(name: string): Column {
       return columns.find(c => c.name === name);

@@ -1,4 +1,4 @@
-import { ChartData, InteractionMode, Point } from "chart.js";
+import { ChartData, InteractionMode, Point } from 'chart.js';
 
 const MAX_DATASETS_FOR_INDEX = 10;
 

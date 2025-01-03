@@ -61,6 +61,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   previewData: MappingResult[];
   scenesExist: boolean;
   scene: Scene;
+  maxItemsPerScene: number;
   feedback: string;
   percentPersisted: number;
   entryPersister: EntryPersister;
@@ -73,7 +74,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private generatedSceneShortDesc: string;
   private sampleEntries: object[];
   private columnFactory = new ColumnMappingGenerator();
-  private maxItemsPerScene: number;
   private mappingErrors = new ConfinedStringSet(10);
   private valueFormatter = new ValueFormatter();
 

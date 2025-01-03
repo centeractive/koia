@@ -14,7 +14,8 @@ import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { MatIconModuleMock } from 'app/shared/test';
 import { ChartSideBarComponent } from './chart-side-bar.component';
-import { TicksConfigComponent } from './ticks-config/ticks-config.component';
+import { ScaleComponent } from './scale/scale.component';
+import { TicksComponent } from './scale/ticks/ticks.component';
 
 describe('ChartSideBarComponent', () => {
 
@@ -37,7 +38,7 @@ describe('ChartSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [ChartSideBarComponent, TicksConfigComponent],
+      declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule

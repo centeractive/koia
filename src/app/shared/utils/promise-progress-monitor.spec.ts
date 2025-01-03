@@ -1,4 +1,4 @@
-import { PromiseProgressMonitor } from "./promise-progress-monitor";
+import { PromiseProgressMonitor } from './promise-progress-monitor';
 
 describe('PromiseProgressMonitor', () => {
   it('#initialize', () => {
@@ -27,7 +27,7 @@ describe('PromiseProgressMonitor', () => {
       .then("task1", () => new Promise(() => { }))
       .then("task2", () => new Promise(() => { }));
 
-      expect(promiseProgressMonitor.count).toEqual(3);
+    expect(promiseProgressMonitor.count).toEqual(3);
   });
 
   it('#add should raise onProgressChange event', () => {
@@ -53,31 +53,31 @@ describe('PromiseProgressMonitor', () => {
     let deferredTask2;
 
     promiseProgressMonitor
-      .add("task0", new Promise((resolve) => { deferredTask0 = resolve}))
-      .then("task1", () => new Promise((resolve) => { deferredTask1 = resolve}))
-      .then("task2", () => new Promise((resolve) => { deferredTask2 = resolve}));
+      .add("task0", new Promise((resolve) => { deferredTask0 = resolve }))
+      .then("task1", () => new Promise((resolve) => { deferredTask1 = resolve }))
+      .then("task2", () => new Promise((resolve) => { deferredTask2 = resolve }));
 
-      expect(promiseProgressMonitor.settled).toEqual(0);
-      expect(promiseProgressMonitor.settledPercent).toEqual(0);
-      expect(promiseProgressMonitor.lastSettledTask).toBeUndefined();
+    expect(promiseProgressMonitor.settled).toEqual(0);
+    expect(promiseProgressMonitor.settledPercent).toEqual(0);
+    expect(promiseProgressMonitor.lastSettledTask).toBeUndefined();
 
-      deferredTask0();
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(promiseProgressMonitor.settled).toEqual(1);
-      expect(promiseProgressMonitor.settledPercent).toEqual(100 / 3);
-      expect(promiseProgressMonitor.lastSettledTask).toEqual("task0");
+    deferredTask0();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(promiseProgressMonitor.settled).toEqual(1);
+    expect(promiseProgressMonitor.settledPercent).toEqual(100 / 3);
+    expect(promiseProgressMonitor.lastSettledTask).toEqual("task0");
 
-      deferredTask1();
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(promiseProgressMonitor.settled).toEqual(2);
-      expect(promiseProgressMonitor.settledPercent).toEqual(2 * 100 / 3);
-      expect(promiseProgressMonitor.lastSettledTask).toEqual("task1");
+    deferredTask1();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(promiseProgressMonitor.settled).toEqual(2);
+    expect(promiseProgressMonitor.settledPercent).toEqual(2 * 100 / 3);
+    expect(promiseProgressMonitor.lastSettledTask).toEqual("task1");
 
-      deferredTask2();
-      await new Promise(resolve => setTimeout(resolve, 0));
-      expect(promiseProgressMonitor.settled).toEqual(3);
-      expect(promiseProgressMonitor.settledPercent).toEqual(100);
-      expect(promiseProgressMonitor.lastSettledTask).toEqual("task2");
+    deferredTask2();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(promiseProgressMonitor.settled).toEqual(3);
+    expect(promiseProgressMonitor.settledPercent).toEqual(100);
+    expect(promiseProgressMonitor.lastSettledTask).toEqual("task2");
   });
 
   it('completed promises should raise onProgressChange event', async () => {
@@ -88,9 +88,9 @@ describe('PromiseProgressMonitor', () => {
     let deferredTask2;
 
     promiseProgressMonitor
-      .add("task0", new Promise((resolve) => { deferredTask0 = resolve}))
-      .then("task1", () => new Promise((resolve) => { deferredTask1 = resolve}))
-      .then("task2", () => new Promise((resolve) => { deferredTask2 = resolve}));
+      .add("task0", new Promise((resolve) => { deferredTask0 = resolve }))
+      .then("task1", () => new Promise((resolve) => { deferredTask1 = resolve }))
+      .then("task2", () => new Promise((resolve) => { deferredTask2 = resolve }));
 
     let expectedSettled = 1;
     let expectedPercent = 100 / 3;

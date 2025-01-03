@@ -1,5 +1,5 @@
 import { CategoricalColorScheme, ColorSchemeType } from 'app/shared/color';
-import { TicksConfig } from 'app/shared/model/chart';
+import { ScaleConfig } from 'app/shared/model/chart';
 import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
 import { Aggregation, Column, DataType, Query, Route, Scene, StatusType } from '../../model';
 import { ConfigRecord } from '../../model/view-config/config-record.type';
@@ -26,8 +26,8 @@ describe('ViewPersistenceService', () => {
     const amountColum = createColumn('Amount', DataType.NUMBER);
     const levelColumn = createColumn('Level', DataType.TEXT);
     const timeColumn = createColumn('Time', DataType.TIME);
-    const baseTicks = new TicksConfig(() => null, { stepSize: undefined, rotation: -12 });
-    const valueTicks = new TicksConfig(() => null, { stepSize: 1, rotation: -90 });
+    const baseScale = scaleConfig('X', undefined, -12);
+    const valueScales = [scaleConfig('Y', 1, -90)];
     summary = {
       elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
@@ -37,7 +37,7 @@ describe('ViewPersistenceService', () => {
       elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
       dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
       valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
-      legendPosition: 'top', baseTicks, valueTicks, stacked: false, multiValueAxes: false,
+      legendPosition: 'top', baseScale, valueScales, stacked: false, multiValueAxes: false,
       colorOptions: {
         type: ColorSchemeType.CATEGORICAL,
         scheme: CategoricalColorScheme.PAIRED,
@@ -220,6 +220,16 @@ describe('ViewPersistenceService', () => {
     const expectedMsg = 'View "' + gridView.name + '" cannot be saved: Scene cannot be updated';
     await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
+
+  function scaleConfig(columnName: string, stepSize?: number, rotation?: number): ScaleConfig {
+    return new ScaleConfig(() => null, {
+      columnName,
+      ticks: {
+        stepSize,
+        rotation
+      }
+    });
+  }
 
   function createColumn(name: string, dataType: DataType): Column {
     return {

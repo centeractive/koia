@@ -155,13 +155,13 @@ export abstract class ElementContext {
       return this._dataColumns.find(c => c === column) !== undefined;
    }
 
-   addDataColumn(dataColumn: Column) {
+   addDataColumn(dataColumn: Column): void {
       this._dataColumns.push(dataColumn);
       this._groupByColumns = this._groupByColumns.filter(c => c !== dataColumn);
       this.fireStructureChanged();
    }
 
-   removeDataColumn(dataColumn: Column) {
+   removeDataColumn(dataColumn: Column): void {
       this._dataColumns = this._dataColumns.filter(c => c !== dataColumn);
       this.fireStructureChanged();
    }

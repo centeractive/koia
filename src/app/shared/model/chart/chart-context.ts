@@ -1,10 +1,11 @@
 import { SeriesNameConverter } from 'app/shared/services/chart';
+import { Scale } from 'app/shared/services/view-persistence';
 import { ChartUtils } from 'app/shared/utils';
 import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
 import * as _ from 'lodash';
-import { ChartType, Margin, TicksConfig } from '.';
+import { ChartType, Margin, ScaleCache, ScaleConfig } from '.';
 import { Aggregation } from '../aggregation.enum';
 import { Column } from '../column.type';
 import { ElementContext } from '../element-context';
@@ -17,12 +18,13 @@ export class ChartContext extends ElementContext {
    private _showLegend: boolean;
    private _legendPosition: string;
    private _valueAsPercent: boolean; // for PIE and DOUGHNUT chart only
-   private _baseTicks: TicksConfig;
-   private _valueTicks: TicksConfig;
+   private _baseScale: ScaleConfig;
+   private _valueScales: ScaleConfig[];
    private _stacked: boolean;
    private _multiValueAxes: boolean;
 
-   // transient
+   // transient   
+   private scaleCache = new ScaleCache();
    private _data: ChartData;
    private _chart: Chart;
    private _legendItems: number;
@@ -37,8 +39,7 @@ export class ChartContext extends ElementContext {
       this._showLegend = true;
       this._valueAsPercent = true;
       this._legendPosition = 'top';
-      this._baseTicks = new TicksConfig(() => this.fireLookChanged());
-      this._valueTicks = new TicksConfig(() => this.fireLookChanged());
+      this._baseScale = this.scaleConfig();
       this._stacked = false;
       this._multiValueAxes = false;
    }
@@ -89,7 +90,45 @@ export class ChartContext extends ElementContext {
    }
 
    /**
-    * @see https://stackoverflow.com/questions/28950760/override-a-setter-and-the-getter-must-also-be-overridden 
+    * @see https://stackoverflow.com/a/28951055/2358409
+    */
+   override get dataColumns(): Column[] {
+      return super.dataColumns;
+   }
+
+   override set dataColumns(columns: Column[]) {
+      if (isAnyNonNumeric(columns)) {
+         this._aggregations = [Aggregation.COUNT];
+         this._groupByColumns = [];
+      } else if (containsNumberOnly(columns)) {
+         this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
+         if (this._groupByColumns?.length) {
+            this._aggregations = [];
+         }
+      }
+      this._valueScales = columns.map(c => this.scaleConfig(c));
+      super.dataColumns = columns;
+   }
+
+   override addDataColumn(dataColumn: Column): void {
+      if (this.multiValueAxes) {
+         this._valueScales.push(this.scaleConfig(dataColumn));
+      }
+      super.addDataColumn(dataColumn);
+   }
+
+   override removeDataColumn(dataColumn: Column): void {
+      if (this._multiValueAxes) {
+         this._valueScales = this._valueScales.filter(s => s.columnName != dataColumn.name);
+         if (this.dataColumns.length <= 2) {
+            this._multiValueAxes = false;
+         }
+      }
+      super.removeDataColumn(dataColumn);
+   }
+
+   /**
+    * @see https://stackoverflow.com/a/28951055/2358409
     */
    override get splitColumns(): Column[] {
       return super.splitColumns;
@@ -100,6 +139,22 @@ export class ChartContext extends ElementContext {
          this._multiValueAxes = false;
       }
       super.splitColumns = splitColumns;
+   }
+
+   /**
+    * @see https://stackoverflow.com/a/28951055/2358409
+    */
+   override get aggregations(): Aggregation[] {
+      return super.aggregations;
+   }
+
+   override set aggregations(aggregations: Aggregation[]) {
+      if (aggregations?.length) {
+         this._groupByColumns = [];
+      } else {
+         this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
+      }
+      super.aggregations = aggregations;
    }
 
    get showLegend(): boolean {
@@ -141,24 +196,26 @@ export class ChartContext extends ElementContext {
       }
    }
 
-   get baseTicks(): TicksConfig {
-      return this._baseTicks;
+   get baseScale(): ScaleConfig {
+      return this._baseScale;
    }
 
-   set baseTicks(ticks: TicksConfig) {
-      if (!_.isEqual(this._baseTicks.toTicks(), ticks.toTicks())) {
-         this._baseTicks = ticks;
+   set baseScale(baseScale: ScaleConfig) {
+      if (!_.isEqual(this._baseScale.toScale(), baseScale.toScale())) {
+         this._baseScale = baseScale;
          this.fireLookChanged();
       }
    }
 
-   get valueTicks(): TicksConfig {
-      return this._valueTicks;
+   get valueScales(): ScaleConfig[] {
+      return this._valueScales;
    }
 
-   set valueTicks(ticks: TicksConfig) {
-      if (!_.isEqual(this._valueTicks.toTicks(), ticks.toTicks())) {
-         this._valueTicks = ticks;
+   set valueScales(scales: ScaleConfig[]) {
+      if (!_.isEqual(ScaleConfig.toScales(this._valueScales), ScaleConfig.toScales(scales))) {
+         this._valueScales = scales;
+         this.scaleCache.update(ScaleConfig.toScales(scales), this.dataColumns);
+         this.scaleCache
          this.fireLookChanged();
       }
    }
@@ -186,6 +243,9 @@ export class ChartContext extends ElementContext {
          this._multiValueAxes = multiValueAxes;
          if (multiValueAxes) {
             this._stacked = false;
+            this._valueScales = this.dataColumns.map(c => this.scaleConfig(c));
+         } else {
+            this._valueScales = [this.scaleConfig()];
          }
          this.fireStructureChanged();
       }
@@ -263,39 +323,16 @@ export class ChartContext extends ElementContext {
       return [ExportFormat.PNG];
    }
 
-   /**
-    * @see https://stackoverflow.com/a/28951055/2358409
-    */
-   override get dataColumns(): Column[] {
-      return super.dataColumns;
-   }
-
-   override set dataColumns(columns: Column[]) {
-      if (isAnyNonNumeric(columns)) {
-         this._aggregations = [Aggregation.COUNT];
-         this._groupByColumns = [];
-      } else if (containsNumberOnly(columns)) {
-         this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
-         if (this._groupByColumns?.length) {
-            this._aggregations = [];
-         }
-      }
-      super.dataColumns = columns;
-   }
-
-   /**
-    * @see https://stackoverflow.com/a/28951055/2358409
-    */
-   override get aggregations(): Aggregation[] {
-      return super.aggregations;
-   }
-
-   override set aggregations(aggregations: Aggregation[]) {
-      if (aggregations?.length) {
-         this._groupByColumns = [];
+   scaleConfig(column?: Column): ScaleConfig {
+      if (column) {
+         return new ScaleConfig(() => this.fireLookChanged(), this.scaleCache.get(column.name));
       } else {
-         this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
+         return new ScaleConfig(() => this.fireLookChanged());
       }
-      super.aggregations = aggregations;
    }
+
+   scaleConfigByScale(scale: Scale): ScaleConfig {
+      return new ScaleConfig(() => this.fireLookChanged(), scale);
+   }
+
 }

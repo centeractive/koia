@@ -1,5 +1,5 @@
 import { ElementContext, Query, Route, SummaryContext } from 'app/shared/model/';
-import { ChartContext } from 'app/shared/model/chart';
+import { ChartContext, ScaleConfig } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
 import { Chart } from './chart.type';
@@ -51,8 +51,8 @@ export class ModelToViewConverter {
          margin: context.margin,
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
-         baseTicks: context.baseTicks.toTicks(),
-         valueTicks: context.valueTicks.toTicks(),
+         baseScale: context.baseScale.toScale(),
+         valueScales: ScaleConfig.toScales(context.valueScales),
          stacked: context.stacked,
          multiValueAxes: context.multiValueAxes
       }

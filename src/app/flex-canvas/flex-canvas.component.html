@@ -1,11 +1,11 @@
 <mat-sidenav-container fullscreen>
 
    <mat-sidenav mode="push" class="sidenav" *ngIf="elementContexts">
-      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="selectedContext" [entries]="entries"
+      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="$any(selectedContext)" [entries]="entries"
          [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
          (onElementPositionChange)="changeElementPosition($event)">
       </koia-chart-side-bar>
-      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="selectedContext" [entries]="entries"
+      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="$any(selectedContext)" [entries]="entries"
          [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
          (onElementPositionChange)="changeElementPosition($event)">
       </koia-graph-side-bar>
@@ -72,8 +72,8 @@
             (cdkDropListDropped)="drop($event)">
             @for (context of elementContexts; track context) {
             <div #elementContainer class="div_element mat-elevation-z8" mwlResizable [enableGhostResize]="true"
-               [resizeEdges]="resizableEdgesOf(context)" [resizeSnapGrid]="{right: 20, bottom: 20}"
-               [validateResize]="validateElementResize" (resizeEnd)="onResizeEnd(context, $event)" cdkDrag>
+               [resizeSnapGrid]="{right: 20, bottom: 20}" [validateResize]="validateElementResize"
+               (resizeEnd)="onResizeEnd(context, $event)" cdkDrag>
                <div class="div_element_header">
                   <div style="display: flex">
                      <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu"
@@ -101,7 +101,7 @@
                   </div>
                   <div class="div_title">
                      <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
-                        [textareaMaxRows]="2" (keyup)="context.title = $event.target.value"></textarea>
+                        [textareaMaxRows]="2" (keyup)="context.title = $any($event.target).value"></textarea>
                   </div>
                   <button mat-icon-button class="but_warning" *ngIf="context.warning" [matTooltip]="context.warning"
                      color="warn">
@@ -116,17 +116,16 @@
                   </button>
                </div>
                <koia-summary-table *ngIf="isSummaryContext(context)" [context]="context"
-                  (onRemove)="removeElement($event)">
+                  (onRemove)="removeElement($any($event))">
                </koia-summary-table>
-               <koia-chart *ngIf="isChartContext(context)" [context]="context" (onRemove)="removeElement($event)"
-                  (onWarning)="notifyWarning($event)">
+               <koia-chart *ngIf="isChartContext(context)" [context]="$any(context)"
+                  (onRemove)="removeElement($any($event))" (onWarning)="notifyWarning($event)">
                </koia-chart>
-               <koia-graph *ngIf="isGraphContext(context)" [context]="context" (onRemove)="removeElement($event)"
-                  (onWarning)="notifyWarning($event)">
+               <koia-graph *ngIf="isGraphContext(context)" [context]="$any(context)"
+                  (onRemove)="removeElement($any($event))" (onWarning)="notifyWarning($event)">
                </koia-graph>
                <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle
-                  [resizeEdges]="{ bottom: true, right: true }">
-
+                  [resizeEdges]="resizableEdgesOf(context)">
             </div>
             }
          </div>

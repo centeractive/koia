@@ -1,4 +1,4 @@
-import { TicksConfig } from "./ticks-config";
+import { TicksConfig } from './ticks-config';
 
 describe('TicksConfig', () => {
 
@@ -10,7 +10,7 @@ describe('TicksConfig', () => {
         ticksConfig = new TicksConfig(onChangeSpy);
     });
 
-    it('#stepSize should not fire look change event when stepSize is not changed', () => {
+    it('#stepSize should not fire change event when stepSize is not changed', () => {
 
         // given
         ticksConfig.stepSize = 10;
@@ -20,10 +20,11 @@ describe('TicksConfig', () => {
         ticksConfig.stepSize = 10;
 
         // then
+        expect(ticksConfig.stepSize).toBe(10);
         expect(onChangeSpy).not.toHaveBeenCalled();
     });
 
-    it('#stepSize should fire look change event when stepSize is changed', () => {
+    it('#stepSize should fire change event when stepSize is changed', () => {
 
         // when
         ticksConfig.stepSize = 5;
@@ -33,7 +34,7 @@ describe('TicksConfig', () => {
         expect(onChangeSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('#rotation should not fire look change event when rotation is not changed', () => {
+    it('#rotation should not fire change event when rotation is not changed', () => {
 
         // given
         ticksConfig.rotation = 45;
@@ -46,7 +47,7 @@ describe('TicksConfig', () => {
         expect(onChangeSpy).not.toHaveBeenCalled();
     });
 
-    it('#rotation should fire look change event when rotation is changed', () => {
+    it('#rotation should fire change event when rotation is changed', () => {
 
         // when
         ticksConfig.rotation = 20;

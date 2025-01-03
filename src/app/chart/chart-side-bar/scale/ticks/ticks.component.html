@@ -1,13 +1,12 @@
-{{ title }}
 <div class="div_labels">
     <mat-form-field>
         <mat-label>Step Size</mat-label>
-        <input matInput type="number" placeholder="Automatic" [(ngModel)]="ticksConfig.stepSize">
+        <input matInput type="number" placeholder="Automatic" [(ngModel)]="ticks.stepSize">
     </mat-form-field>
     <div class="div_label_rotation">
-        Rotation
+        Label Rotation
         <mat-slider min="0" max="90" step="1" #ngSlider>
-            <input matSliderThumb [value]="- ticksConfig.rotation" (valueChange)="ticksConfig.rotation = -$event"
+            <input matSliderThumb [value]="- ticks.rotation" (valueChange)="ticks.rotation = -$event"
                 #ngSliderThumb="matSliderThumb" />
         </mat-slider>
     </div>

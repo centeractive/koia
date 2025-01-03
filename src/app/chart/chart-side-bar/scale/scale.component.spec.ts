@@ -4,24 +4,24 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSliderModule } from '@angular/material/slider';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { TicksConfig } from 'app/shared/model/chart';
-import { TicksConfigComponent } from './ticks-config.component';
+import { ScaleConfig } from 'app/shared/model/chart';
+import { ScaleComponent } from './scale.component';
+import { TicksComponent } from './ticks/ticks.component';
 
-describe('TicksConfigComponent', () => {
-
-  let component: TicksConfigComponent;
-  let fixture: ComponentFixture<TicksConfigComponent>;
+describe('ScaleComponent', () => {
+  let component: ScaleComponent;
+  let fixture: ComponentFixture<ScaleComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TicksConfigComponent],
+      declarations: [ScaleComponent, TicksComponent],
       imports: [BrowserAnimationsModule, FormsModule, MatSliderModule, MatFormFieldModule, MatInputModule]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TicksConfigComponent);
+    fixture = TestBed.createComponent(ScaleComponent);
     component = fixture.componentInstance;
-    component.title = 'Base Labels...';
-    component.ticksConfig = new TicksConfig(() => null);
+    component.title = 'Base Scale Labels...';
+    component.scale = new ScaleConfig(() => null);
     fixture.detectChanges();
   });
 

@@ -6,7 +6,7 @@
   </span>
   <mat-form-field class="column_name">
     <mat-label>Column Name</mat-label>
-    <input matInput [value]="mapping.target.name" (change)="onColumnNameChanged($event.target.value)"
+    <input matInput [value]="mapping.target.name" (change)="onColumnNameChanged($any($event.target ).value)"
       [formControl]="columnNameControl">
     <mat-error *ngIf="columnNameControl.invalid">{{ getColumnNameErrorMessage() }}</mat-error>
   </mat-form-field>

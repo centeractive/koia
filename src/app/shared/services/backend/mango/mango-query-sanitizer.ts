@@ -1,4 +1,5 @@
-import { StringUtils } from "app/shared/utils";
+import { StringUtils } from 'app/shared/utils';
+
 
 const CHARS_TO_ESCAPE = '.';
 

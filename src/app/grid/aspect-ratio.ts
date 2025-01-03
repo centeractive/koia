@@ -1,4 +1,4 @@
-import { ElementContext } from "app/shared/model";
+import { ElementContext } from 'app/shared/model';
 
 /** 
  * @param gridCellRatio aspect ratio of format 'width:height' (for example '3:1')

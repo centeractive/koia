@@ -38,6 +38,8 @@ import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ChartSideBarComponent } from './chart/chart-side-bar/chart-side-bar.component';
+import { ScaleComponent } from './chart/chart-side-bar/scale/scale.component';
+import { TicksComponent } from './chart/chart-side-bar/scale/ticks/ticks.component';
 import { ChartComponent } from './chart/chart.component';
 import { FlexCanvasComponent } from './flex-canvas/flex-canvas.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
@@ -67,7 +69,6 @@ import { InputDialogComponent } from './shared/component/input-dialog/input-dial
 import { ManageConfigDialogComponent } from './shared/component/manage-config-dialog';
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
 import { StatusComponent } from './shared/component/status/status.component';
-import { TicksConfigComponent } from './chart/chart-side-bar/ticks-config/ticks-config.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { FormattedFloatDirective } from './shared/directives/formatted-float.directive';
 import { FormattedIntegerDirective } from './shared/directives/formatted-integer.directive';
@@ -97,6 +98,8 @@ import { TrialComponent } from './testing/trial/trial.component';
         RawDataDialogComponent,
         ChartComponent,
         ChartSideBarComponent,
+        ScaleComponent,
+        TicksComponent,
         GraphComponent,
         GraphSideBarComponent,
         SummaryTableComponent,
@@ -123,8 +126,7 @@ import { TrialComponent } from './testing/trial/trial.component';
         ExpansionPanelComponent,
         SceneTableComponent,
         DraggableColumnComponent,
-        TrialComponent,
-        TicksConfigComponent
+        TrialComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,

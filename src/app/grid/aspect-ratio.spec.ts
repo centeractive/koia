@@ -1,5 +1,5 @@
-import { ElementContext, SummaryContext } from "app/shared/model";
-import { computeAspectRatio } from "./aspect-ratio";
+import { ElementContext, SummaryContext } from 'app/shared/model';
+import { computeAspectRatio } from './aspect-ratio';
 
 describe('aspect-ratio', () => {
 
