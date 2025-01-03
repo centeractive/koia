@@ -32,10 +32,10 @@ export class ViewToModelConverter {
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
       if (chart.baseScale) {
-         context.baseScale = context.scaleConfigByScale(chart.baseScale);
+         context.baseScale = context.baseScaleStore.toScaleConfig(chart.baseScale);
       }
       if (chart.valueScales) {
-         context.valueScales = chart.valueScales.map(s => context.scaleConfigByScale(s));
+         context.valueScales = chart.valueScales.map(s => context.valueScaleStore.toScaleConfig(s));
       }
       context.stacked = chart.stacked;
       context.multiValueAxes = chart.multiValueAxes;

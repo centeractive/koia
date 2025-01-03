@@ -54,7 +54,6 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
       this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
     }
     this.initSize();
-    this.prepareChartAsync(ChangeEvent.STRUCTURE);
   }
 
   private initSize(): void {

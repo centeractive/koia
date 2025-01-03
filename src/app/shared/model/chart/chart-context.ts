@@ -1,11 +1,10 @@
 import { SeriesNameConverter } from 'app/shared/services/chart';
-import { Scale } from 'app/shared/services/view-persistence';
 import { ChartUtils } from 'app/shared/utils';
 import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
 import * as _ from 'lodash';
-import { ChartType, Margin, ScaleCache, ScaleConfig } from '.';
+import { ChartType, Margin, ScaleConfig, ScaleStore } from '.';
 import { Aggregation } from '../aggregation.enum';
 import { Column } from '../column.type';
 import { ElementContext } from '../element-context';
@@ -24,7 +23,8 @@ export class ChartContext extends ElementContext {
    private _multiValueAxes: boolean;
 
    // transient   
-   private scaleCache = new ScaleCache();
+   private readonly _baseScaleStore: ScaleStore;
+   private readonly _valueScaleStore: ScaleStore;
    private _data: ChartData;
    private _chart: Chart;
    private _legendItems: number;
@@ -34,14 +34,24 @@ export class ChartContext extends ElementContext {
 
    constructor(columns: Column[], chartType: string, margin: Margin) {
       super(columns);
+      this._baseScaleStore = new ScaleStore(() => this.fireLookChanged());
+      this._valueScaleStore = new ScaleStore(() => this.fireLookChanged());
       this._chartType = chartType;
       this._margin = margin;
       this._showLegend = true;
       this._valueAsPercent = true;
       this._legendPosition = 'top';
-      this._baseScale = this.scaleConfig();
+      this._baseScale = this._baseScaleStore.scaleConfig();
       this._stacked = false;
       this._multiValueAxes = false;
+   }
+
+   get baseScaleStore(): ScaleStore {
+      return this._baseScaleStore;
+   }
+
+   get valueScaleStore(): ScaleStore {
+      return this._valueScaleStore;
    }
 
    switchChartType(type: string, margin: Margin) {
@@ -106,19 +116,39 @@ export class ChartContext extends ElementContext {
             this._aggregations = [];
          }
       }
-      this._valueScales = columns.map(c => this.scaleConfig(c));
+      this._valueScales = columns.map(c => this._valueScaleStore.scaleConfig(c));
       super.dataColumns = columns;
+   }
+
+   /**
+    * @see https://stackoverflow.com/a/28951055/2358409
+    */
+   override get groupByColumns(): Column[] {
+      return super.groupByColumns;
+   }
+
+   override set groupByColumns(columns: Column[]) {
+      if (this._groupByColumns.length) {
+         this._baseScaleStore.set(this.baseScale.toScale());
+         this.baseScale = this._baseScaleStore.scaleConfig(this._groupByColumns[0]);
+      }
+      super.groupByColumns = columns;
    }
 
    override addDataColumn(dataColumn: Column): void {
       if (this.multiValueAxes) {
-         this._valueScales.push(this.scaleConfig(dataColumn));
+         this._valueScales.push(this._valueScaleStore.scaleConfig(dataColumn));
       }
       super.addDataColumn(dataColumn);
    }
 
    override removeDataColumn(dataColumn: Column): void {
       if (this._multiValueAxes) {
+
+
+         this._valueScales.find(s => s.columnName != dataColumn.name);
+
+
          this._valueScales = this._valueScales.filter(s => s.columnName != dataColumn.name);
          if (this.dataColumns.length <= 2) {
             this._multiValueAxes = false;
@@ -214,8 +244,6 @@ export class ChartContext extends ElementContext {
    set valueScales(scales: ScaleConfig[]) {
       if (!_.isEqual(ScaleConfig.toScales(this._valueScales), ScaleConfig.toScales(scales))) {
          this._valueScales = scales;
-         this.scaleCache.update(ScaleConfig.toScales(scales), this.dataColumns);
-         this.scaleCache
          this.fireLookChanged();
       }
    }
@@ -241,11 +269,12 @@ export class ChartContext extends ElementContext {
    set multiValueAxes(multiValueAxes: boolean) {
       if (this._multiValueAxes !== multiValueAxes) {
          this._multiValueAxes = multiValueAxes;
+         this._valueScaleStore.store(this._valueScales);
          if (multiValueAxes) {
             this._stacked = false;
-            this._valueScales = this.dataColumns.map(c => this.scaleConfig(c));
+            this._valueScales = this._valueScaleStore.scaleConfigs(this.dataColumns);
          } else {
-            this._valueScales = [this.scaleConfig()];
+            this._valueScales = [this._valueScaleStore.scaleConfig()];
          }
          this.fireStructureChanged();
       }
@@ -321,18 +350,6 @@ export class ChartContext extends ElementContext {
 
    getSupportedExportFormats(): ExportFormat[] {
       return [ExportFormat.PNG];
-   }
-
-   scaleConfig(column?: Column): ScaleConfig {
-      if (column) {
-         return new ScaleConfig(() => this.fireLookChanged(), this.scaleCache.get(column.name));
-      } else {
-         return new ScaleConfig(() => this.fireLookChanged());
-      }
-   }
-
-   scaleConfigByScale(scale: Scale): ScaleConfig {
-      return new ScaleConfig(() => this.fireLookChanged(), scale);
    }
 
 }
