@@ -14,12 +14,10 @@ const COLUMNS: Column[] = [
 
 let provider = new ChartJsOptionsProvider(new RawDataRevealService(null, null));
 
-fdescribe('ChartJsOptionsProvider - PIE', () => {
+describe('ChartJsOptionsProvider - PIE', () => {
   it('#provide', () => {
     // when
     const options = provider.provide(context());
-
-    console.error(JSON.stringify(options, null, 2));
 
     // then
     expect(options).toEqual({

@@ -1,9 +1,9 @@
+import { TooltipCustomizer } from 'app/chart/customizer/tooltip-customizer';
 import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
 import { Chart, ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
-import { TooltipCustomizer } from '../../customizer/tooltip-customizer';
 import { ChartJsUtils } from '../chart-js-utils';
 import { FormatUtils } from '../formatter/format-utils';
 import { LegendLabelFormatter } from '../formatter/legend-label-formatter';
@@ -99,7 +99,7 @@ export class ChartJsOptionsProvider {
             plugins: {
                 legend: {
                     display: context.showLegend,
-                    position: <LayoutPosition>context.legendPosition,
+                    position: context.legendPosition as LayoutPosition,
                     labels: {
                         usePointStyle: true,
                         pointStyle: 'circle'
@@ -218,6 +218,7 @@ export class ChartJsOptionsProvider {
                     this.addTimeOptions(scaleOptions, column, context);
                     break;
                 default:
+                    scaleOptions.type = 'category';
                     break;
             }
         }

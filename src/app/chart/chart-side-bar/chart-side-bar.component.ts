@@ -39,7 +39,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
       .filter(c => c.indexed)
       .filter(c => c.dataType !== DataType.TIME);
     super.defineSelectableItems();
-    if (!!this.selectedGroupByColumns.length) {
+    if (this.selectedGroupByColumns.length) {
       if (this.selectedGroupByColumns[0].dataType === DataType.NUMBER) {
         this.groupByNumberColumn = this.selectedGroupByColumns[0];
       } else if (this.selectedGroupByColumns[0].dataType === DataType.TIME) {
@@ -85,13 +85,6 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     this.defineGroupByColumns();
     this.adjustAggregation();
     this.defineSelectableItems();
-  }
-
-  selectableGroupByColumns(): Column[] {
-    if (this.selectedChartType === ChartType.SCATTER) {
-      return this.context.getNumericColumns();
-    }
-    return this.context.columns;
   }
 
   private defineGroupByColumns(): void {

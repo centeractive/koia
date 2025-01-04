@@ -50,7 +50,7 @@
          </div>
          <mat-slide-toggle
             *ngIf="!context.isCircularChart() && context.dataColumns.length > 1 && !context.splitColumns.length"
-            style="margin-top: 1em;" [(ngModel)]="context.multiValueAxes">Apply Distinct Scales
+            style="margin-top: 1em;" [(ngModel)]="context.multiValueAxes">Show Distinct Scales
          </mat-slide-toggle>
       </koia-expansion-panel>
 
@@ -117,7 +117,7 @@
                      {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
                </mat-select-trigger>
-               <mat-option *ngFor="let column of selectableGroupByColumns()" [value]="column"
+               <mat-option *ngFor="let column of context.columns" [value]="column"
                   (click)="onGroupByColumnChanged(column)">
                   <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
                   {{ column.name }}

@@ -17,61 +17,66 @@ import { ChartSideBarComponent } from './chart-side-bar.component';
 import { ScaleComponent } from './scale/scale.component';
 import { TicksComponent } from './scale/ticks/ticks.component';
 
+let context: ChartContext;
+let component: ChartSideBarComponent;
+let fixture: ComponentFixture<ChartSideBarComponent>;
+
 describe('ChartSideBarComponent', () => {
 
-  let columns: Column[];
-  let context: ChartContext;
-  let component: ChartSideBarComponent;
-  let fixture: ComponentFixture<ChartSideBarComponent>;
-
-  beforeAll(() => {
-    columns = [
-      { name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.MINUTE, indexed: true },
-      { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
-      { name: 'Host', dataType: DataType.TEXT, width: 80, indexed: true },
-      { name: 'Path', dataType: DataType.TEXT, width: 200, indexed: true },
-      { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
-      { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true }
-    ];
-  });
+  const COLUMNS: Column[] = [
+    { name: 'Name', dataType: DataType.TEXT, width: 60, indexed: true },
+    { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
+    { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true }
+  ];
 
   beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      schemas: [NO_ERRORS_SCHEMA],
-      declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent],
-      imports: [
-        MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-        MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule
-      ],
-      providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
-      ]
-    })
-      .overrideModule(MatIconModule, MatIconModuleMock.override())
-      .compileComponents();
+    setup(COLUMNS, COLUMNS[0], COLUMNS[1]);
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ChartSideBarComponent);
-    component = fixture.componentInstance;
-    context = new ChartContext(columns, ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
-    context.dataColumns = [findColumn('Level')];
-    context.groupByColumns = [findColumn('Time')];
-    component.context = context;
-    component.gridColumns = 4;
-    component.elementCount = 3;
-    component.elementPosition = 2;
-    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
-    fixture.detectChanges();
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
+
+  it('#click on SCATTER chart button should switch to individual values when number data column is selected', () => {
+
+    // given
+    const butChart = findChartButton(ChartType.SCATTER);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeTrue();
+    expect(context.groupByColumns).toEqual([findColumn('Name')]);
+    expect(context.isAggregationCountSelected()).toBeFalse();
+  });
+
+});
+
+describe('ChartSideBarComponent - data includes time column', () => {
+
+  const COLUMNS: Column[] = [
+    { name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.MINUTE, indexed: true },
+    { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
+    { name: 'Host', dataType: DataType.TEXT, width: 80, indexed: true },
+    { name: 'Path', dataType: DataType.TEXT, width: 200, indexed: true },
+    { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
+    { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true }
+  ];
+
+  beforeEach(waitForAsync(() => {
+    setup(COLUMNS, COLUMNS[0], COLUMNS[1]);
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
   it('should initialize fields', () => {
-    expect(component.selectableDataColumns).toEqual(columns.filter(c => c.name !== 'Time'));
-    const currentNonGroupByColumns = columns.filter(n => !context.groupByColumns.includes(n));
+    expect(component.selectableDataColumns).toEqual(COLUMNS.filter(c => c.name !== 'Time'));
+    const currentNonGroupByColumns = COLUMNS.filter(n => !context.groupByColumns.includes(n));
     expect(component.availableGroupByColumns).toEqual(currentNonGroupByColumns.filter(c => !context.dataColumns.includes(c)));
     expect(component.selectedGroupByColumns).toEqual(context.groupByColumns);
     expect(component.selectedChartType).toEqual(ChartType.fromType(context.chartType));
@@ -165,12 +170,32 @@ describe('ChartSideBarComponent', () => {
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
     expect(component.countDistinctValuesEnabled).toBeTrue();
     expect(component.individualValuesEnabled).toBeTrue();
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
+    expect(context.isAggregationCountSelected()).toBeFalse();
+  });
+
+  it('#click on SCATTER chart button should switch to individual values when number data column is selected', () => {
+
+    // given
+    context.chartType = ChartType.PIE.type;
+    component.selectedChartType = ChartType.PIE;
+    context.dataColumns = [findColumn('Amount')];
+    const butChart = findChartButton(ChartType.SCATTER);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBeTrue();
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
     expect(context.isAggregationCountSelected()).toBeFalse();
   });
 
   it('side bar should contain button for each non-time column', () => {
     const butColumnDebugElements = fixture.debugElement.queryAll(By.css('.but_column'));
-    const nonTimeColumns = columns.filter(c => c.name !== 'Time');
+    const nonTimeColumns = COLUMNS.filter(c => c.name !== 'Time');
 
     expect(butColumnDebugElements.length).toBe(nonTimeColumns.length);
   });
@@ -490,17 +515,46 @@ describe('ChartSideBarComponent', () => {
     expect(component.groupByTimeColumn).toBe(column);
   });
 
-  function findColumn(name: string): Column {
-    return columns.find(c => c.name === name);
-  }
-
-  function findChartButton(chartType: ChartType): HTMLButtonElement {
-    const iChart = component.chartTypes.indexOf(chartType);
-    return fixture.debugElement.queryAll(By.css('.but_chart_type'))[iChart].nativeElement;
-  }
-
-  function findDataColumnButton(columnName: string): HTMLButtonElement {
-    const iColumn = component.selectableDataColumns.map(c => c.name).indexOf(columnName);
-    return fixture.debugElement.queryAll(By.css('.but_column'))[iColumn].nativeElement;
-  }
 });
+
+function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void {
+  TestBed.configureTestingModule({
+    schemas: [NO_ERRORS_SCHEMA],
+    declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent],
+    imports: [
+      MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
+      MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule
+    ],
+    providers: [
+      { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+    ]
+  })
+    .overrideModule(MatIconModule, MatIconModuleMock.override())
+    .compileComponents();
+
+  fixture = TestBed.createComponent(ChartSideBarComponent);
+  component = fixture.componentInstance;
+  context = new ChartContext(columns, ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+  context.dataColumns = [valueColumn];
+  context.groupByColumns = [baseColumn];
+  component.context = context;
+  component.gridColumns = 4;
+  component.elementCount = 3;
+  component.elementPosition = 2;
+  component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+  fixture.detectChanges();
+}
+
+function findColumn(name: string): Column {
+  return context.columns.find(c => c.name === name);
+}
+
+function findChartButton(chartType: ChartType): HTMLButtonElement {
+  const iChart = component.chartTypes.indexOf(chartType);
+  return fixture.debugElement.queryAll(By.css('.but_chart_type'))[iChart].nativeElement;
+}
+
+function findDataColumnButton(columnName: string): HTMLButtonElement {
+  const iColumn = component.selectableDataColumns.map(c => c.name).indexOf(columnName);
+  return fixture.debugElement.queryAll(By.css('.but_column'))[iColumn].nativeElement;
+}
