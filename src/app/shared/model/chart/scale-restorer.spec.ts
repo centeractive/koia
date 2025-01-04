@@ -2,9 +2,9 @@ import { Scale } from 'app/shared/services/view-persistence';
 import { Column } from '../column.type';
 import { DataType } from '../data-type.enum';
 import { ScaleConfig } from './scale-config';
-import { ScaleStore } from './scale-store';
+import { ScaleRestorer } from './scale-restorer';
 
-describe('ScaleStore', () => {
+describe('ScaleRestorer', () => {
 
     const nameCol: Column = { name: 'Name', dataType: DataType.TEXT, width: 10 };
     const amountCol: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };
@@ -14,13 +14,27 @@ describe('ScaleStore', () => {
     let scaleConfigAmount: ScaleConfig;
     let scaleConfigPercent: ScaleConfig;
 
-    let store: ScaleStore;
+    let restorer: ScaleRestorer;
 
     beforeEach(() => {
         onChangeSpy = jasmine.createSpy('onChange');
         scaleConfigAmount = scaleConfig(amountCol.name, 10);
         scaleConfigPercent = scaleConfig(percentCol.name, 20);
-        store = new ScaleStore(onChangeSpy);
+        restorer = new ScaleRestorer(onChangeSpy);
+    });
+
+    it('#toScaleConfig - undefined scale', () => {
+        // when
+        const scaleConfigs = restorer.toScaleConfig(undefined);
+
+        // then
+        expect(scaleConfigs.toScale()).toEqual({
+            columnName: undefined,
+            ticks: {
+                stepSize: undefined,
+                rotation: undefined
+            }
+        });
     });
 
     it('#toScaleConfig', () => {
@@ -28,7 +42,7 @@ describe('ScaleStore', () => {
         const scaleIn = scale('X', 10);
 
         // when
-        const scaleConfigs = store.toScaleConfig(scaleIn);
+        const scaleConfigs = restorer.toScaleConfig(scaleIn);
 
         // then
         expect(scaleConfigs.toScale()).toEqual({
@@ -42,15 +56,15 @@ describe('ScaleStore', () => {
 
     it('#store', () => {
         // when
-        store.store([scaleConfigAmount, scaleConfigPercent]);
+        restorer.store([scaleConfigAmount, scaleConfigPercent]);
 
         // then
-        expect(store.size).toBe(2);
+        expect(restorer.size).toBe(2);
     });
 
     it('#scaleConfigs - undefined columns', () => {
         // when
-        const scaleConfigs = store.scaleConfigs(undefined);
+        const scaleConfigs = restorer.scaleConfigs(undefined);
 
         // then
         expect(scaleConfigs).toEqual([]);
@@ -58,7 +72,7 @@ describe('ScaleStore', () => {
 
     it('#scaleConfigs - non-cached scale', () => {
         // when
-        const scaleConfigs = store.scaleConfigs([nameCol]);
+        const scaleConfigs = restorer.scaleConfigs([nameCol]);
 
         // then
         expect(ScaleConfig.toScales(scaleConfigs)).toEqual([{
@@ -72,10 +86,10 @@ describe('ScaleStore', () => {
 
     it('#scaleConfigs - cached scales', () => {
         // given
-        store.store([scaleConfigAmount, scaleConfigPercent]);
+        restorer.store([scaleConfigAmount, scaleConfigPercent]);
 
         // when
-        const scaleConfigs = store.scaleConfigs([amountCol, percentCol]);
+        const scaleConfigs = restorer.scaleConfigs([amountCol, percentCol]);
 
         // then
         expect(ScaleConfig.toScales(scaleConfigs)).toEqual([
@@ -99,7 +113,7 @@ describe('ScaleStore', () => {
     it('#scaleConfig - undefined column', () => {
 
         // when
-        const scaleConfig = store.scaleConfig();
+        const scaleConfig = restorer.scaleConfig();
 
         // then
         expect(scaleConfig.toScale()).toEqual({
@@ -116,10 +130,10 @@ describe('ScaleStore', () => {
         const scaleIn = scale(nameCol.name, 10);
 
         // when
-        store.set(scaleIn);
+        restorer.set(scaleIn);
 
         // then
-        const scaelConfig = store.scaleConfig(nameCol);
+        const scaelConfig = restorer.scaleConfig(nameCol);
         expect(scaelConfig).toBeDefined();
         expect(scaelConfig.toScale()).toEqual({
             columnName: nameCol.name,
@@ -128,6 +142,17 @@ describe('ScaleStore', () => {
                 rotation: undefined
             }
         });
+    });
+
+    it('#set - undefined column name', () => {
+        // given
+        const scaleIn = scale(undefined, 10);
+
+        // when
+        restorer.set(scaleIn);
+
+        // then
+        expect(restorer.size).toBe(0);
     });
 
     function scaleConfig(columnName: string, stepSize?: number): ScaleConfig {

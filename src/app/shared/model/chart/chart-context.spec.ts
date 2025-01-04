@@ -21,7 +21,8 @@ describe('ChartContext', () => {
          { name: 'Location', dataType: DataType.TEXT, width: 1 },
          { name: 'Name', dataType: DataType.TEXT, width: 1 },
          { name: 'Amount', dataType: DataType.NUMBER, width: 1 },
-         { name: 'Percent', dataType: DataType.NUMBER, width: 1 }
+         { name: 'Percent', dataType: DataType.NUMBER, width: 1 },
+         { name: 'Discount', dataType: DataType.NUMBER, width: 1 }
       ];
    });
 
@@ -32,6 +33,30 @@ describe('ChartContext', () => {
    });
 
    it('#dataColumns should change valueScales', fakeAsync(() => {
+
+      // when
+      context.dataColumns = [columns[3], columns[4]];
+
+      // then
+      flush();
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: undefined,
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
+
+   it('#dataColumns should change valueScales when multi axes selected', fakeAsync(() => {
+      // given
+      context.multiValueAxes = true;
+      flush();
+      eventHandlerSpy.calls.reset();
 
       // when
       context.dataColumns = [columns[3], columns[4]];
@@ -56,6 +81,137 @@ describe('ChartContext', () => {
       ]);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
+
+   it('#addDataColumn first column', fakeAsync(() => {
+
+      // when
+      context.addDataColumn(columns[3]);
+
+      // then
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#addDataColumn should buffer scale form previous single selected column', fakeAsync(() => {
+      // given
+      context.dataColumns = [columns[3]]
+
+      // when
+      context.addDataColumn(columns[4]);
+
+      // then
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: undefined,
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#addDataColumn should change valueScales when multi axes selected', fakeAsync(() => {
+      // given
+      context.multiValueAxes = true;
+      context.dataColumns = [columns[3], columns[4]]
+
+      // when
+      context.addDataColumn(columns[5]);
+
+      // then
+      expect(context.multiValueAxes).toBeTrue();
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         },
+         {
+            columnName: 'Percent',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         },
+         {
+            columnName: 'Discount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#removeDataColumn should restore valueScales for now single selected column', fakeAsync(() => {
+      // given
+      context.dataColumns = [columns[3], columns[4]]
+
+      // when
+      context.removeDataColumn(columns[4]);
+
+      // then
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#removeDataColumn should change valueScales when multi axes selected', fakeAsync(() => {
+      // given
+      context.multiValueAxes = true;
+      context.dataColumns = [columns[3], columns[4]]
+
+      // when
+      context.removeDataColumn(columns[4]);
+
+      // then
+      expect(context.multiValueAxes).toBeFalse();
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#groupByColumns should restore base scale of selected column', fakeAsync(() => {
+
+      // given
+      context.groupByColumns = [columns[1]];
+      context.baseScale.ticks.rotation = 45;
+      context.groupByColumns = [columns[0]];
+
+      // when
+      context.groupByColumns = [columns[1]];
+
+      // then
+      expect(context.baseScale.toScale()).toEqual({
+         columnName: 'Location',
+         ticks: {
+            stepSize: undefined,
+            rotation: 45
+         }
+      });
    }));
 
    it('#legendPosition should not fire look change event when legendPosition is not changed', fakeAsync(() => {
@@ -259,7 +415,8 @@ describe('ChartContext', () => {
    it('#valueScales#ticks should fire look change event', fakeAsync(() => {
 
       // given
-      context.dataColumns = [columns[3]];
+      context.multiValueAxes = true;
+      context.dataColumns = [columns[3], columns[4]];
       flush();
       eventHandlerSpy.calls.reset();
 
@@ -268,13 +425,22 @@ describe('ChartContext', () => {
 
       // then
       flush();
-      expect(ScaleConfig.toScales(context.valueScales)).toEqual([{
-         columnName: 'Amount',
-         ticks: {
-            stepSize: undefined,
-            rotation: 45
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: 45
+            }
+         },
+         {
+            columnName: 'Percent',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
          }
-      }]);
+      ]);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
@@ -313,7 +479,7 @@ describe('ChartContext', () => {
       expect(context.multiValueAxes).toBeFalse();
    }));
 
-   it('#multiValueAxes should fire structure change event', fakeAsync(() => {
+   it('#multiValueAxes(true) should fire structure change event', fakeAsync(() => {
 
       // when
       context.multiValueAxes = true;
@@ -321,6 +487,22 @@ describe('ChartContext', () => {
       // then
       flush();
       expect(context.multiValueAxes).toBeTrue();
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+   }));
+
+   it('#multiValueAxes(false) should fire structure change event', fakeAsync(() => {
+      // given
+      context.multiValueAxes = true;
+      flush();
+      eventHandlerSpy.calls.reset();
+
+      // when
+      context.multiValueAxes = false;
+
+      // then
+      flush();
+      expect(context.multiValueAxes).toBeFalse();
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
    }));
@@ -338,7 +520,7 @@ describe('ChartContext', () => {
       expect(context.stacked).toBeFalse();
    }));
 
-   it('#multiValueAxes should not fire change event when value did not change', fakeAsync(() => {
+   it('#multiValueAxes(false) should not fire change event when value did not change', fakeAsync(() => {
 
       // when
       context.multiValueAxes = false;

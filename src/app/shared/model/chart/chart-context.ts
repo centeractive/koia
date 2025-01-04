@@ -4,7 +4,7 @@ import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-uti
 import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
 import * as _ from 'lodash';
-import { ChartType, Margin, ScaleConfig, ScaleStore } from '.';
+import { ChartType, Margin, ScaleConfig, ScaleRestorer } from '.';
 import { Aggregation } from '../aggregation.enum';
 import { Column } from '../column.type';
 import { ElementContext } from '../element-context';
@@ -23,35 +23,34 @@ export class ChartContext extends ElementContext {
    private _multiValueAxes: boolean;
 
    // transient   
-   private readonly _baseScaleStore: ScaleStore;
-   private readonly _valueScaleStore: ScaleStore;
+   private readonly _baseScaleRestorer: ScaleRestorer;
+   private readonly _valueScaleRestorer: ScaleRestorer;
    private _data: ChartData;
    private _chart: Chart;
-   private _legendItems: number;
    private showResizableMargin: boolean;
    private _valueRange: ValueRange;
    private _dataSampledDown: boolean;
 
    constructor(columns: Column[], chartType: string, margin: Margin) {
       super(columns);
-      this._baseScaleStore = new ScaleStore(() => this.fireLookChanged());
-      this._valueScaleStore = new ScaleStore(() => this.fireLookChanged());
+      this._baseScaleRestorer = new ScaleRestorer(() => this.fireLookChanged());
+      this._valueScaleRestorer = new ScaleRestorer(() => this.fireLookChanged());
       this._chartType = chartType;
       this._margin = margin;
       this._showLegend = true;
       this._valueAsPercent = true;
       this._legendPosition = 'top';
-      this._baseScale = this._baseScaleStore.scaleConfig();
+      this._baseScale = this._baseScaleRestorer.scaleConfig();
       this._stacked = false;
       this._multiValueAxes = false;
    }
 
-   get baseScaleStore(): ScaleStore {
-      return this._baseScaleStore;
+   get baseScaleStore(): ScaleRestorer {
+      return this._baseScaleRestorer;
    }
 
-   get valueScaleStore(): ScaleStore {
-      return this._valueScaleStore;
+   get valueScaleStore(): ScaleRestorer {
+      return this._valueScaleRestorer;
    }
 
    switchChartType(type: string, margin: Margin) {
@@ -116,8 +115,42 @@ export class ChartContext extends ElementContext {
             this._aggregations = [];
          }
       }
-      this._valueScales = columns.map(c => this._valueScaleStore.scaleConfig(c));
+      this._valueScaleRestorer.store(this._valueScales);
+      if (this._multiValueAxes || columns.length == 1) {
+         this._valueScales = columns.map(c => this._valueScaleRestorer.scaleConfig(c));
+      } else {
+         this._valueScales = [this._valueScaleRestorer.scaleConfig()];
+      }
       super.dataColumns = columns;
+   }
+
+   override addDataColumn(dataColumn: Column): void {
+      if (this.multiValueAxes) {
+         this._valueScales.push(this._valueScaleRestorer.scaleConfig(dataColumn));
+      } else if (this.dataColumns.length == 1) {
+         this._valueScaleRestorer.set(this._valueScales[0]);
+         this._valueScales = [this._valueScaleRestorer.scaleConfig()];
+      } else {
+         this._valueScales = [this._valueScaleRestorer.scaleConfig(dataColumn)];
+      }
+      super.addDataColumn(dataColumn);
+   }
+
+   override removeDataColumn(dataColumn: Column): void {
+      if (this._multiValueAxes) {
+         const scaleConfig = this._valueScales.find(s => s.columnName != dataColumn.name);
+         if (scaleConfig) {
+            this._valueScaleRestorer.set(scaleConfig.toScale());
+         }
+         this._valueScales = this._valueScales.filter(s => s.columnName != dataColumn.name);
+         if (this.dataColumns.length <= 2) {
+            this._multiValueAxes = false;
+         }
+      }
+      super.removeDataColumn(dataColumn);
+      if (!this._multiValueAxes && this.dataColumns.length == 1) {
+         this._valueScales = this._valueScaleRestorer.scaleConfigs(this.dataColumns);
+      }
    }
 
    /**
@@ -128,32 +161,11 @@ export class ChartContext extends ElementContext {
    }
 
    override set groupByColumns(columns: Column[]) {
-      if (this._groupByColumns.length) {
-         this._baseScaleStore.set(this.baseScale.toScale());
-         this.baseScale = this._baseScaleStore.scaleConfig(this._groupByColumns[0]);
+      this._baseScaleRestorer.set(this.baseScale);
+      if (columns.length) {
+         this.baseScale = this._baseScaleRestorer.scaleConfig(columns[0]);
       }
       super.groupByColumns = columns;
-   }
-
-   override addDataColumn(dataColumn: Column): void {
-      if (this.multiValueAxes) {
-         this._valueScales.push(this._valueScaleStore.scaleConfig(dataColumn));
-      }
-      super.addDataColumn(dataColumn);
-   }
-
-   override removeDataColumn(dataColumn: Column): void {
-      if (this._multiValueAxes) {
-         const scaleConfig = this._valueScales.find(s => s.columnName != dataColumn.name);
-         if (scaleConfig) {
-            this._valueScaleStore.set(scaleConfig.toScale());
-         }
-         this._valueScales = this._valueScales.filter(s => s.columnName != dataColumn.name);
-         if (this.dataColumns.length <= 2) {
-            this._multiValueAxes = false;
-         }
-      }
-      super.removeDataColumn(dataColumn);
    }
 
    /**
@@ -268,12 +280,12 @@ export class ChartContext extends ElementContext {
    set multiValueAxes(multiValueAxes: boolean) {
       if (this._multiValueAxes !== multiValueAxes) {
          this._multiValueAxes = multiValueAxes;
-         this._valueScaleStore.store(this._valueScales);
-         if (multiValueAxes) {
+         this._valueScaleRestorer.store(this._valueScales);
+         if (this._multiValueAxes) {
             this._stacked = false;
-            this._valueScales = this._valueScaleStore.scaleConfigs(this.dataColumns);
+            this._valueScales = this._valueScaleRestorer.scaleConfigs(this.dataColumns);
          } else {
-            this._valueScales = [this._valueScaleStore.scaleConfig()];
+            this._valueScales = [this._valueScaleRestorer.scaleConfig()];
          }
          this.fireStructureChanged();
       }
@@ -293,14 +305,6 @@ export class ChartContext extends ElementContext {
 
    set chart(chart: Chart) {
       this._chart = chart;
-   }
-
-   get legendItems(): number {
-      return this._legendItems;
-   }
-
-   set legendItems(legendItems: number) {
-      this._legendItems = legendItems;
    }
 
    get dataSampledDown(): boolean {

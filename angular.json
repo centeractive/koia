@@ -94,6 +94,9 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "karmaConfig": "./karma.conf.js",
+            "codeCoverageExclude": [
+              "src/app/testing/**"
+            ],
             "polyfills": [
               "zone.js",
               "zone.js/testing"

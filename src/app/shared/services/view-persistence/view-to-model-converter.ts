@@ -31,9 +31,7 @@ export class ViewToModelConverter {
       context.copyAttributes(chart);
       context.showLegend = chart.showLegend;
       context.legendPosition = chart.legendPosition;
-      if (chart.baseScale) {
-         context.baseScale = context.baseScaleStore.toScaleConfig(chart.baseScale);
-      }
+      context.baseScale = context.baseScaleStore.toScaleConfig(chart.baseScale);
       if (chart.valueScales) {
          context.valueScales = chart.valueScales.map(s => context.valueScaleStore.toScaleConfig(s));
       }

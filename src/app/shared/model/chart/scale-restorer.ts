@@ -3,15 +3,18 @@ import * as _ from 'lodash';
 import { Column } from '..';
 import { ScaleConfig } from './scale-config';
 
-export class ScaleStore {
+export class ScaleRestorer {
 
     private colNamesToScale = new Map<string, Scale>();
 
     constructor(private onChange: () => void) { }
 
     toScaleConfig(scale: Scale): ScaleConfig {
-        this.set(scale);
-        return new ScaleConfig(this.onChange, scale);
+        if (scale) {
+            this.set(scale);
+            return new ScaleConfig(this.onChange, scale);
+        }
+        return new ScaleConfig(this.onChange)
     }
 
     store(scales: ScaleConfig[]): void {
@@ -37,9 +40,10 @@ export class ScaleStore {
 
     private getOrDefault(columnName: string): Scale {
         let scale = this.colNamesToScale.get(columnName);
-        if (scale) {
-            return _.cloneDeep(scale);
-        }
+        return scale ? _.cloneDeep(scale) : this.defaultScale(columnName);
+    }
+
+    private defaultScale(columnName?: string): Scale {
         return {
             columnName,
             ticks: {}
@@ -47,7 +51,9 @@ export class ScaleStore {
     }
 
     set(scale: Scale): void {
-        this.colNamesToScale.set(scale.columnName, scale);
+        if (scale.columnName) {
+            this.colNamesToScale.set(scale.columnName, scale);
+        }
     }
 
     get size(): number {
