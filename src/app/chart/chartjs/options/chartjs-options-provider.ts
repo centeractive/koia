@@ -2,7 +2,7 @@ import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
-import { ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
+import { Chart, ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
 import { TooltipCustomizer } from '../../customizer/tooltip-customizer';
 import { ChartJsUtils } from '../chart-js-utils';
 import { FormatUtils } from '../formatter/format-utils';
@@ -25,7 +25,7 @@ export class ChartJsOptionsProvider {
         this.rawDataRevealer = new RawDataRevealer(rawDataRevealService);
     }
 
-    createOptions(context: ChartContext): ChartOptions {
+    provide(context: ChartContext): ChartOptions {
         const chartType = ChartType.fromType(context.chartType);
         const options = this.createCommonOptions(chartType, context);
         switch (chartType) {
@@ -42,7 +42,7 @@ export class ChartJsOptionsProvider {
                     y: this.baseScaleOptions(chartType, context),
                     x: this.valueScaleOptions(chartType, context)
                 };
-                this.addAdditionalValueAxes(context, options.scales);
+                this.addAdditionalValueAxes(context, options);
                 break;
             default:
                 if (!context.isCircularChart()) {
@@ -50,7 +50,7 @@ export class ChartJsOptionsProvider {
                         y: this.valueScaleOptions(chartType, context),
                         x: this.baseScaleOptions(chartType, context)
                     };
-                    this.addAdditionalValueAxes(context, options.scales);
+                    this.addAdditionalValueAxes(context, options);
                 }
                 break;
         }
@@ -59,8 +59,9 @@ export class ChartJsOptionsProvider {
         return options;
     }
 
-    private addAdditionalValueAxes(context: ChartContext, scaleOptions: ScaleOptions): void {
+    private addAdditionalValueAxes(context: ChartContext, options: ChartOptions): void {
         if (context.dataColumns.length > 1 && context.multiValueAxes) {
+            const scaleOptions = options.scales as ScaleOptions;
             const chartType = ChartType.fromType(context.chartType);
             for (let i = 1; i < context.dataColumns.length; i++) {
                 if (context.isHorizontalChart()) {
@@ -77,7 +78,18 @@ export class ChartJsOptionsProvider {
                     }
                 }
             }
+            this.toggleScalesVisibility(options, context.isHorizontalChart() ? 'x' : 'y');
         }
+    }
+
+    private toggleScalesVisibility(options: ChartOptions, baseScaleID: string): void {
+        options.plugins.legend.onClick = (event, legendItem, legend) => {
+            Chart.defaults.plugins.legend.onClick.call(this, event, legendItem, legend);
+            const dsIdx = legendItem.datasetIndex;
+            const scaleID = baseScaleID + (dsIdx ? (dsIdx + 1) : '');
+            options.scales[scaleID].display = legend.chart.isDatasetVisible(dsIdx);
+            legend.chart.update();
+        };
     }
 
     private createCommonOptions(chartType: ChartType, context: ChartContext): ChartOptions {

@@ -26,7 +26,7 @@ export class ChartJs {
         const config: ChartConfiguration = {
             type: this.toChartJsType(chartType),
             data: context.data,
-            options: this.optionsProvider.createOptions(context)
+            options: this.optionsProvider.provide(context)
         };
 
         console.log('chart config', config);

@@ -256,7 +256,7 @@ describe('RawDataRevealer - LINE', () => {
                     data: [8, 5, 0]
                 }
             ]
-        } as any as ChartData;
+        };
         const colAmount = numberColumn('City');
         const colDiscount = numberColumn('Discount');
         const colName = textColumn('Name');
