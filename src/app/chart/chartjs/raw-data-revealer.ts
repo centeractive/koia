@@ -1,5 +1,5 @@
 import { DataType } from 'app/shared/model';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { ChartContext } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { SeriesNameConverter } from 'app/shared/services/chart';
 import { ActiveElement, BarElement, ChartData, ChartDataset, Point, PointElement } from 'chart.js';
@@ -18,14 +18,12 @@ export class RawDataRevealer {
       console.log('data', data)
       console.log('context', context)
 
-
       if (!elements.length) {
          return;
       }
       const element = elements[0];
       const groupByColumnDataType = context.groupByColumns[0]?.dataType;
-      const linearBarChart = [ChartType.LINEAR_BAR.type, ChartType.LINEAR_HORIZONTAL_BAR.type].includes(context.chartType);
-      if (context.isCategoryChart() || (groupByColumnDataType === DataType.TEXT && !linearBarChart)) {
+      if (context.isCategoryChart() || (groupByColumnDataType === DataType.TEXT && !context.isAggregationCountSelected())) {
          this.fromFlatData(elements, data, context);
       } else if (element.element instanceof PointElement || element.element instanceof BarElement) {
          const point = this.findDataPoint(data.datasets, element.datasetIndex, element.index);
@@ -46,7 +44,8 @@ export class RawDataRevealer {
    private fromDataPoint(point: Point, datasets: ChartDataset[], datasetIndex: number, context: ChartContext): void {
       const dataColumnName = context.isAggregationCountSelected() ? context.dataColumns[0].name : datasets[datasetIndex].label;
       const columnNames = context.splitColumns.map(c => c.name).concat(dataColumnName);
-      const seriesName = context.isAggregationCountSelected() ? datasets[datasetIndex].label : point.y;
+      const dsLabel = datasets[datasetIndex].label;
+      const seriesName = context.isAggregationCountSelected() ? dsLabel : point.y;
       const values = this.seriesNameConverter.toValues(seriesName, context.dataColumns[0], context.splitColumns);
       const groupByColumn = context.groupByColumns[0];
       if (groupByColumn.dataType === DataType.TIME) {

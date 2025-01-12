@@ -56,7 +56,9 @@ export abstract class ElementContext {
       this._groupByColumns = from.groupByColumns.map(c => this.targetColumn(c));
       this._gridColumnSpan = from.gridColumnSpan;
       this._gridRowSpan = from.gridRowSpan;
-      this._width = from.width;
+      if (from.width < Number.MAX_SAFE_INTEGER) { // requred for backward compatibility
+         this._width = from.width;
+      }
       this._height = from.height;
       this._aggregations = from.aggregations;
       this._valueGroupings = from.valueGroupings;

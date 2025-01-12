@@ -233,6 +233,36 @@ describe('RawDataRevealer - LINEAR_HORIZONTAL_BAR', () => {
         expect(ofIDSpy).toHaveBeenCalledWith('1000002');
     });
 
+    it('#reveal - individual multiple values of unique named column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: barElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            labels: ['A', 'B', 'C'],
+            datasets: [
+                {
+                    label: 'Amount',
+                    data: [900, 550, 470]
+                },
+                {
+                    label: 'Discount',
+                    data: [90, 50, 0]
+                }
+            ]
+        } as any as ChartData;
+        const colName = textColumn('Name');
+        const colAmount = numberColumn('Amount');
+        const colDiscount = numberColumn('Discount');
+        const context = new ChartContext([colName, colAmount, colDiscount], ChartType.LINEAR_HORIZONTAL_BAR.type, null);
+        context.dataColumns = [colAmount, colDiscount];
+        context.groupByColumns = [colName];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['B'], jasmine.anything());
+    });
+
 });
 
 describe('RawDataRevealer - LINE', () => {

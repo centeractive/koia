@@ -29,6 +29,11 @@ body {
   background-size: cover;
 }
 
+mat-sidenav-content {
+  background-color: white;
+  overflow-x: hidden;
+}
+
 .div_wrapper {
   height: 100%;
   display: flex;
