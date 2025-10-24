@@ -7,8 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ColumnPair, DataType } from 'app/shared/model';
 import { ColumnMappingComponent } from './column-mapping.component';
 import { ColumnMappingGenerator } from './mapper';
@@ -22,13 +20,9 @@ describe('ColumnMappingComponent', () => {
       declarations: [ColumnMappingComponent],
       imports: [
         MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-        MatSelectModule, BrowserAnimationsModule
-      ],
-      providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        MatSelectModule
       ]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {

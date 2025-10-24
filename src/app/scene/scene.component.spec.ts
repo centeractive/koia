@@ -14,9 +14,8 @@ import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { Router, RouterModule, UrlTree } from '@angular/router';
 import { RawDataComponent } from 'app/raw-data/raw-data.component';
 import { Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
@@ -32,6 +31,7 @@ describe('SceneComponent', () => {
   const datePipe = new DatePipe('en-US');
   const readerService = new ReaderService();
   const notificationService = new NotificationServiceMock();
+  let navigateByUrlSpy: jasmine.Spy;
   let isBackendInitializedSpy: jasmine.Spy;
   let dbService: DBService;
   let scenes: Scene[];
@@ -49,27 +49,27 @@ describe('SceneComponent', () => {
     ];
   });
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(waitForAsync(async () => {
     spyOn(console, 'log');
     dbService = new DBService(null);
     TestBed.configureTestingModule({
       declarations: [SceneComponent, ColumnMappingComponent],
       imports: [RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {}), MatBottomSheetModule, MatExpansionModule,
         MatCardModule, FormsModule, MatFormFieldModule, ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule,
-        MatSlideToggleModule, MatTableModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, BrowserAnimationsModule
+        MatSlideToggleModule, MatTableModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule
       ],
       providers: [
         Location,
         MatBottomSheet,
         { provide: ReaderService, useValue: readerService },
         { provide: DBService, useValue: dbService },
-        { provide: NotificationService, useValue: notificationService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
+        { provide: NotificationService, useValue: notificationService }
       ]
     }).compileComponents();
-  }));
 
-  beforeEach(fakeAsync(() => {
+    const router = TestBed.inject(Router);
+    navigateByUrlSpy = spyOn(router, 'navigateByUrl');
+
     fixture = TestBed.createComponent(SceneComponent);
     component = fixture.componentInstance;
     spyOn(notificationService, 'onSuccess');
@@ -80,8 +80,9 @@ describe('SceneComponent', () => {
     spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
     findSceneInfos = spyOn(dbService, 'findSceneInfos').and.resolveTo(scenes);
     spyOn(dbService, 'writeEntries').and.callFake(() => Promise.resolve());
+    await fixture.whenStable();
     fixture.detectChanges();
-    flush();
+    await fixture.whenStable();
     fixture.detectChanges();
   }));
 
@@ -93,13 +94,12 @@ describe('SceneComponent', () => {
 
     // given
     isBackendInitializedSpy.and.returnValue(false);
-    spyOn(component.router, 'navigateByUrl');
 
     // when
     component.ngOnInit();
 
     // then
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.FRONT);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.FRONT);
   });
 
   it('#ngOnInit should predefine column mapping source', fakeAsync(() => {
@@ -117,28 +117,30 @@ describe('SceneComponent', () => {
     expect(component.columnMappingsSource).toBe(sceneInfos[0]);
   }));
 
-  it('home button should point to front component', () => {
+  it('butHome#click should navigate to front component', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
+    const butHome: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    butHome.click();
 
     // then
-    expect(link).toEqual('/' + Route.FRONT);
+    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    expect(urlTree.toString()).toBe('/' + Route.FRONT);
   });
 
-  it('scenes button should point to scenes component', () => {
+  it('butScenes#click should navigate to scenes component', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butScenes')).nativeElement;
+    const butScenes: HTMLButtonElement = fixture.debugElement.query(By.css('#butScenes')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    butScenes.click();
 
-    // then
-    expect(link).toEqual('/' + Route.SCENES);
+    // then    
+    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    expect(urlTree.toString()).toBe('/' + Route.SCENES);
   });
 
   it('#onSourceTypeChange should init context', fakeAsync(() => {
@@ -387,7 +389,6 @@ describe('SceneComponent', () => {
       dataHandler.onComplete();
     });
     spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
-    spyOn(component.router, 'navigateByUrl');
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -403,7 +404,7 @@ describe('SceneComponent', () => {
       { _id: '1000002', 'Column 1': 'B', 'Column 2': 2 },
       { _id: '1000003', 'Column 1': 'C', 'Column 2': 3 }
     ] as any);
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
   }));
 
   it('#click on "Load Data" should persist scene and import partial data when first column was deleted', fakeAsync(() => {
@@ -417,7 +418,6 @@ describe('SceneComponent', () => {
       dataHandler.onComplete();
     });
     spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
-    spyOn(component.router, 'navigateByUrl');
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -433,7 +433,7 @@ describe('SceneComponent', () => {
       { _id: '1000002', 'Column 2': 2 },
       { _id: '1000003', 'Column 2': 3 }
     ] as any);
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
   }));
 
   it('#click on "Load Data" should persist scene and import partial data when last column was deleted', fakeAsync(() => {
@@ -447,7 +447,6 @@ describe('SceneComponent', () => {
       dataHandler.onComplete();
     });
     spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
-    spyOn(component.router, 'navigateByUrl');
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -463,7 +462,7 @@ describe('SceneComponent', () => {
       { _id: '1000002', 'Column 1': 'B' },
       { _id: '1000003', 'Column 1': 'C' }
     ] as any);
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
   }));
 
   it('#click on cancel button should cancel ongoing data load and not submit pending items', () => {

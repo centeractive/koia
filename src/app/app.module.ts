@@ -29,9 +29,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouteReuseStrategy } from '@angular/router';
-import { ResizableModule } from 'angular-resizable-element';
+import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
 import 'd3';
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { AppRoutingModule } from './app-routing.module';
@@ -129,7 +128,6 @@ import { TrialComponent } from './testing/trial/trial.component';
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,
-        BrowserAnimationsModule,
         MatToolbarModule,
         MatButtonModule,
         MatBadgeModule,
@@ -152,7 +150,8 @@ import { TrialComponent } from './testing/trial/trial.component';
         MatTabsModule,
         MatBottomSheetModule,
         DragDropModule,
-        ResizableModule,
+        ResizableDirective,
+        ResizeHandleDirective,
         AppRoutingModule,
         MatDialogModule,
         MatStepperModule,

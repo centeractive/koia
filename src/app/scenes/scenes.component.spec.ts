@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,8 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { By } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouteReuseStrategy, RouterModule } from '@angular/router';
+import { Router, RouteReuseStrategy, RouterModule, UrlTree } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Route, Scene } from 'app/shared/model';
@@ -37,6 +36,7 @@ describe('ScenesComponent', () => {
   const dbService = new DBService(null);
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
+  let navigateByUrlSpy: jasmine.Spy;
   let isBackendInitializedSpy: jasmine.Spy;
   let getActiveSceneSpy: jasmine.Spy;
   let findSceneInfosSpy: jasmine.Spy;
@@ -53,7 +53,7 @@ describe('ScenesComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ScenesComponent, RawDataComponent, SceneTableComponent],
-      imports: [BrowserAnimationsModule, MatBottomSheetModule, MatDialogModule, MatCardModule,
+      imports: [MatBottomSheetModule, MatDialogModule, MatCardModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
       providers: [Location, MatBottomSheet,
@@ -63,6 +63,10 @@ describe('ScenesComponent', () => {
         { provide: RouteReuseStrategy, useValue: appRouteReuseStrategy },
       ]
     }).compileComponents();
+
+    const router = TestBed.inject(Router);
+    navigateByUrlSpy = spyOn(router, 'navigateByUrl');
+
     spyOn(appRouteReuseStrategy, 'clear');
     spyOn(notificationService, 'onSuccess');
     spyOn(notificationService, 'onError');
@@ -98,37 +102,40 @@ describe('ScenesComponent', () => {
 
     // given
     isBackendInitializedSpy.and.returnValue(false);
-    spyOn(component.router, 'navigateByUrl');
 
     // when
     component.ngOnInit();
 
     // then
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.FRONT);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.FRONT);
   });
 
-  it('home button should point to front component', () => {
+
+  it('butHome#click should navigate to front component', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
+    const butHome: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    butHome.click();
 
     // then
-    expect(link).toEqual('/' + Route.FRONT);
+    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    expect(urlTree.toString()).toBe('/' + Route.FRONT);
   });
 
-  it('"Add Scene" button should point to scene component', () => {
+
+  it('butScene#click should navigate to scene component', () => {
 
     // given
-    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#butScene')).nativeElement;
+    const butScene: HTMLButtonElement = fixture.debugElement.query(By.css('#butScene')).nativeElement;
 
     // when
-    const link = htmlButton.getAttribute('ng-reflect-router-link');
+    butScene.click();
 
     // then
-    expect(link).toEqual('/' + Route.SCENE);
+    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    expect(urlTree.toString()).toBe('/' + Route.SCENE);
   });
 
   it('#onFilterChange should not filter scene infos when filter is blank', () => {
@@ -202,7 +209,6 @@ describe('ScenesComponent', () => {
     // given
     getActiveSceneSpy.and.returnValue(null);
     findSceneInfosSpy.and.resolveTo(null);
-    spyOn(component.router, 'navigateByUrl');
     spyOnConfirmDialogAndPressYes();
     spyOn(dbService, 'deleteScene').and.resolveTo(null);
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
@@ -212,7 +218,7 @@ describe('ScenesComponent', () => {
     flush();
 
     // then
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.SCENE);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENE);
   }));
 
   it('#click on "Delete all" button should notify error when error occurs', fakeAsync(() => {
@@ -312,7 +318,6 @@ describe('ScenesComponent', () => {
 
     // given
     spyOn(dbService, 'activateScene').and.resolveTo(scenes[1]);
-    spyOn(component.router, 'navigateByUrl');
     const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
 
     // when
@@ -322,7 +327,7 @@ describe('ScenesComponent', () => {
     // then
     expect(dbService.activateScene).toHaveBeenCalledWith(scenes[1]._id);
     expect(appRouteReuseStrategy.clear).toHaveBeenCalledTimes(1);
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.RAWDATA);
   }));
 
   it('#click on activate scene button should notify error when error occurs', fakeAsync(() => {
@@ -344,7 +349,6 @@ describe('ScenesComponent', () => {
   it('#click on continue button should switch to raw data component', () => {
 
     // given
-    spyOn(component.router, 'navigateByUrl');
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.continueActiveScene')).nativeElement;
 
     // when
@@ -352,7 +356,7 @@ describe('ScenesComponent', () => {
 
     // then
     expect(appRouteReuseStrategy.clear).toHaveBeenCalledTimes(0);
-    expect(component.router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.RAWDATA);
   });
 
   it('#click on cancel button should navigate to previous page', () => {

@@ -5,7 +5,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { By } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Scene } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -124,7 +123,7 @@ describe('SceneTableComponent (active scene)', () => {
 async function setup(): Promise<void> {
   await TestBed.configureTestingModule({
     declarations: [SceneTableComponent],
-    imports: [BrowserAnimationsModule, MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule],
+    imports: [MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule],
     providers: [Location,
       { provide: DBService, useValue: dbService },
       { provide: DialogService, useValue: dialogService }

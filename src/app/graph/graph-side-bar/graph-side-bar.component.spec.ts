@@ -10,8 +10,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { Column, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { DBService } from 'app/shared/services/backend';
@@ -44,11 +43,10 @@ describe('GraphSideBarComponent', () => {
       declarations: [GraphSideBarComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-        MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule, MatSliderModule
+        MatMenuModule, DragDropModule, MatSelectModule, MatSliderModule
       ],
       providers: [
-        { provide: DBService, useValue: dbService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: DBService, useValue: dbService }
       ]
     }).compileComponents();
     spyOn(dbService, 'getActiveScene').and.returnValue(scene);

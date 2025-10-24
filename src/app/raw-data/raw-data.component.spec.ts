@@ -11,8 +11,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { Column, DataType, ExportFormat, Query, Route, Scene } from 'app/shared/model';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
@@ -68,15 +67,14 @@ describe('RawDataComponent', () => {
       declarations: [RawDataComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatTableModule, MatSortModule, MatPaginatorModule, MatMenuModule,
-        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, BrowserAnimationsModule, MatBottomSheetModule
+        MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule
       ],
       providers: [
         provideRouter([]),
         MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
-        { provide: NotificationService, useValue: notificationService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        { provide: NotificationService, useValue: notificationService }
       ]
     }).compileComponents();
   }));

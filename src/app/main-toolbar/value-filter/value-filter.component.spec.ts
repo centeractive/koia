@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed, fakeAsync, waitForAsync } from '@angular/core/testing';
-import { ValueFilterComponent } from './value-filter.component';
-import { Operator, DataType, Column, PropertyFilter } from 'app/shared/model';
-import { DBService } from 'app/shared/services/backend';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { SceneFactory } from 'app/shared/test';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
 import { FormattedFloatDirective } from 'app/shared/directives/formatted-float.directive';
+import { Column, DataType, Operator, PropertyFilter } from 'app/shared/model';
+import { DBService } from 'app/shared/services/backend';
+import { SceneFactory } from 'app/shared/test';
+import { ValueFilterComponent } from './value-filter.component';
 
 describe('ValueFilterComponent', () => {
 
@@ -41,14 +40,12 @@ describe('ValueFilterComponent', () => {
       declarations: [ValueFilterComponent, FormattedFloatDirective],
       imports: [
         MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-        MatMenuModule, BrowserAnimationsModule
+        MatMenuModule
       ],
       providers: [
-        { provide: DBService, useValue: dbService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
+        { provide: DBService, useValue: dbService }
       ]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(() => {

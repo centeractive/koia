@@ -77,7 +77,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private mappingErrors = new ConfinedStringSet(10);
   private valueFormatter = new ValueFormatter();
 
-  constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
+  constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }

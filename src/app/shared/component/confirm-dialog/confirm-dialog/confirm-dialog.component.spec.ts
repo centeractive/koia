@@ -1,12 +1,11 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { By } from '@angular/platform-browser';
-import { ConfirmDialogData, ConfirmDialogComponent } from './confirm-dialog.component';
 import { FormsModule } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
+import { ConfirmDialogComponent, ConfirmDialogData } from './confirm-dialog.component';
 
 describe('ConfirmDialogComponent', () => {
 
@@ -21,7 +20,7 @@ describe('ConfirmDialogComponent', () => {
     dialogData = new ConfirmDialogData(title, textBlock, ConfirmDialogData.YES_NO);
     TestBed.configureTestingModule({
       declarations: [ConfirmDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
+      imports: [MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }
@@ -66,7 +65,7 @@ describe('ConfirmDialogComponent', () => {
     dialogData = new ConfirmDialogData(title, textBlock, ['OK']);
     TestBed.configureTestingModule({
       declarations: [ConfirmDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
+      imports: [MatCardModule, FormsModule, MatButtonModule, MatCheckboxModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },

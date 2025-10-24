@@ -13,7 +13,7 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { ResizeEvent } from 'angular-resizable-element';
+import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
 import { ExportDataProvider } from 'app/shared/controller';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';

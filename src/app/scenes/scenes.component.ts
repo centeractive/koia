@@ -11,10 +11,10 @@ import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-d
 import { firstValueFrom } from 'rxjs';
 
 @Component({
-    selector: 'koia-scenes',
-    templateUrl: './scenes.component.html',
-    styleUrls: ['./scenes.component.css'],
-    standalone: false
+  selector: 'koia-scenes',
+  templateUrl: './scenes.component.html',
+  styleUrls: ['./scenes.component.css'],
+  standalone: false
 })
 export class ScenesComponent extends AbstractComponent implements OnInit {
 
@@ -27,7 +27,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
 
   private sceneInfos: SceneInfo[] = [];
 
-  constructor(public router: Router, private location: Location, bottomSheet: MatBottomSheet, private dbService: DBService,
+  constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private dbService: DBService,
     private dialogService: DialogService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }

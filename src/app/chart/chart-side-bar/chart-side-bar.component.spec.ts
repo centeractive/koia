@@ -8,8 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { MatIconModuleMock } from 'app/shared/test';
@@ -523,10 +522,7 @@ function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void
     declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent],
     imports: [
       MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-      MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule
-    ],
-    providers: [
-      { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+      MatMenuModule, DragDropModule, MatSelectModule
     ]
   })
     .overrideModule(MatIconModule, MatIconModuleMock.override())

@@ -7,7 +7,6 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { StatusComponent } from 'app/shared/component/status/status.component';
@@ -99,7 +98,7 @@ describe('GridComponent', () => {
         GridComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, ChartComponent, GraphComponent, StatusComponent
       ],
       imports: [
-        MatSidenavModule, MatMenuModule, MatGridListModule, MatButtonModule, MatIconModule, BrowserAnimationsModule, MatBottomSheetModule
+        MatSidenavModule, MatMenuModule, MatGridListModule, MatButtonModule, MatIconModule, MatBottomSheetModule
       ],
       providers: [
         provideRouter([]),

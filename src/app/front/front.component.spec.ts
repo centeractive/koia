@@ -10,8 +10,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, provideRouter, Router, RouterModule } from '@angular/router';
 import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
@@ -51,7 +49,7 @@ describe('FrontComponent', () => {
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
+      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
         MatDialogModule, MatStepperModule, MatTooltipModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
@@ -63,8 +61,7 @@ describe('FrontComponent', () => {
         { provide: ReaderService, useValue: readerService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
-        UntypedFormBuilder,
-        { provide: HAMMER_LOADER, useValue: () => Promise.resolve({}) }
+        UntypedFormBuilder
       ]
     })
       .compileComponents();
@@ -387,7 +384,7 @@ describe('FrontComponent (external invocation)', () => {
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
+      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
         MatDialogModule, MatStepperModule, MatTooltipModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
@@ -398,11 +395,9 @@ describe('FrontComponent (external invocation)', () => {
         { provide: ReaderService, useValue: readerService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
-        UntypedFormBuilder,
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        UntypedFormBuilder
       ]
-    })
-      .compileComponents();
+    }).compileComponents();
   }));
 
   beforeEach(fakeAsync(() => {

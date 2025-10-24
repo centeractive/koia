@@ -1,12 +1,11 @@
+import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgxSliderModule } from '@angular-slider/ngx-slider';
+import { By } from '@angular/platform-browser';
 import { Column, DataType } from 'app/shared/model';
 import { NumberRangeFilter } from './model/number-range-filter';
 import { RangeFilterComponent } from './range-filter.component';
@@ -21,14 +20,8 @@ describe('RangeFilterComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [RangeFilterComponent],
-      imports: [
-        MatButtonModule, MatIconModule, MatBadgeModule, MatTooltipModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule
-      ],
-      providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
-      ]
-    })
-      .compileComponents();
+      imports: [MatButtonModule, MatIconModule, MatBadgeModule, MatTooltipModule, MatMenuModule, NgxSliderModule]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

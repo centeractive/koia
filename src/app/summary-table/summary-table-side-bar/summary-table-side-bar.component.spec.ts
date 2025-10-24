@@ -9,8 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { Aggregation, ChangeEvent, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
@@ -47,10 +46,7 @@ describe('SummaryTableSideBarComponent', () => {
       declarations: [SummaryTableSideBarComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-        MatMenuModule, DragDropModule, BrowserAnimationsModule, MatSelectModule, MatRadioModule
-      ],
-      providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
+        MatMenuModule, DragDropModule, MatSelectModule, MatRadioModule
       ]
     }).compileComponents();
   }));

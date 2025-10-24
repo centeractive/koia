@@ -8,8 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Column, DataType, TimeUnit } from '../../shared/model';
 import { ValueGrouping } from '../../shared/value-range/model/value-grouping.type';
@@ -51,10 +50,7 @@ describe('PivotTableSideBarComponent', () => {
       declarations: [PivotTableSideBarComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-        DragDropModule, BrowserAnimationsModule, MatSelectModule
-      ],
-      providers: [
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => { }) }
+        DragDropModule, MatSelectModule
       ]
     }).compileComponents();
   }));

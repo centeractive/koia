@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ChartDataService } from 'app/shared/services/chart';
@@ -15,7 +14,7 @@ export interface TestHarness {
 
 export function chartJs(chartType: ChartType): TestHarness {
     TestBed.configureTestingModule({
-        imports: [MatDialogModule, BrowserAnimationsModule],
+        imports: [MatDialogModule],
         providers: [ChartDataService, RawDataRevealService]
     });
     const rawDataRevealService = TestBed.inject(RawDataRevealService);

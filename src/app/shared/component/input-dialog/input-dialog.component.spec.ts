@@ -7,7 +7,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { InputDialogComponent, InputDialogData } from './input-dialog.component';
 
 describe('InputDialogComponent', () => {
@@ -20,7 +19,7 @@ describe('InputDialogComponent', () => {
     dialogData = new InputDialogData('Save View', 'View Name', 'abc', 10);
     TestBed.configureTestingModule({
       declarations: [InputDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
+      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },

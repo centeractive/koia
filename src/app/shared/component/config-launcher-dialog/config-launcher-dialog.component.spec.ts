@@ -3,7 +3,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { ConfigLauncherContext } from './config-launcher-context.type.';
 import { ConfigLauncherDialogComponent } from './config-launcher-dialog.component';
@@ -18,7 +17,7 @@ describe('ConfigLauncherDialogComponent', () => {
     dialogData = new ConfigController();
     TestBed.configureTestingModule({
       declarations: [ConfigLauncherDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
+      imports: [MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }

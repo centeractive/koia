@@ -4,7 +4,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ViewLauncherContext } from './view-launcher-context.type.';
 import { ViewLauncherDialogComponent } from './view-launcher-dialog.component';
 
@@ -18,7 +17,7 @@ describe('ViewLauncherDialogComponent', () => {
     dialogData = {} as ViewLauncherContext;
     TestBed.configureTestingModule({
       declarations: [ViewLauncherDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
+      imports: [MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }

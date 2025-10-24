@@ -3,7 +3,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ManageConfigContext } from './manage-config-context.type.';
 import { ManageConfigDialogComponent } from './manage-config-dialog.component';
 
@@ -20,7 +19,7 @@ describe('ManageConfigDialogComponent', () => {
     };
     TestBed.configureTestingModule({
       declarations: [ManageConfigDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
+      imports: [MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }

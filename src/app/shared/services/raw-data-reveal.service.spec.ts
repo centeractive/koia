@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { Column, DataType, ElementContext, Operator, PropertyFilter, Query, SummaryContext, TimeUnit } from '../model';
 import { ValueRangeFilter } from '../value-range/model';
@@ -37,7 +36,7 @@ describe('RawDataRevealService', () => {
     context = new SummaryContext([timeColumn, levelColumn, hostColumn, pathColumn, amountColumn]);
     context.query = query;
     TestBed.configureTestingModule({
-      imports: [MatDialogModule, BrowserAnimationsModule],
+      imports: [MatDialogModule],
       providers: [RawDataRevealService]
     });
     service = TestBed.inject(RawDataRevealService);

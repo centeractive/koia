@@ -8,7 +8,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { By } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConnectionInfo, Protocol } from 'app/shared/model';
 import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
@@ -25,7 +24,7 @@ describe('ConnectionDialogComponent', () => {
     dialogData = new ConnectionDialogData(connectionInfo);
     TestBed.configureTestingModule({
       declarations: [ConnectionDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
+      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },

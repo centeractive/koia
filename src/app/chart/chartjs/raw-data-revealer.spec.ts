@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Aggregation, Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
@@ -306,7 +305,7 @@ describe('RawDataRevealer - LINE', () => {
 
 function setup(): void {
     TestBed.configureTestingModule({
-        imports: [MatDialogModule, BrowserAnimationsModule],
+        imports: [MatDialogModule],
         providers: [RawDataRevealService]
     });
     const rawDataRevealService = TestBed.inject(RawDataRevealService);

@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSliderModule } from '@angular/material/slider';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CategoricalColorScheme, SequentialColorScheme } from 'app/shared/color';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ColorSchemeSelectionComponent } from './color-scheme-selection.component';
@@ -14,7 +13,7 @@ describe('ColorSchemeSelectionComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ColorSchemeSelectionComponent],
-      imports: [MatSliderModule, MatFormFieldModule, BrowserAnimationsModule],
+      imports: [MatSliderModule, MatFormFieldModule],
     }).compileComponents();
   });
 

@@ -3,7 +3,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ManageViewContext } from './manage-view-context.type.';
 import { ManageViewDialogComponent } from './manage-view-dialog.component';
 
@@ -17,7 +16,7 @@ describe('ManageViewDialogComponent', () => {
     dialogData = {} as ManageViewContext;
     TestBed.configureTestingModule({
       declarations: [ManageViewDialogComponent],
-      imports: [BrowserAnimationsModule, MatCardModule, MatButtonModule, MatIconModule],
+      imports: [MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData }

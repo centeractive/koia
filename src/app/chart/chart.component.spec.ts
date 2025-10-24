@@ -3,7 +3,6 @@ import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testi
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideRouter, Router } from '@angular/router';
-import { ResizableDirective } from 'angular-resizable-element';
 import { Column, DataType, Route, Scene } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
@@ -34,7 +33,7 @@ describe('ChartComponent', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      declarations: [ChartComponent, ResizableDirective],
+      declarations: [ChartComponent],
       imports: [MatProgressBarModule, MatDialogModule],
       providers: [
         provideRouter([]),

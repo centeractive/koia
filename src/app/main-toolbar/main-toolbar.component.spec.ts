@@ -10,8 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { By, HAMMER_LOADER } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
@@ -79,13 +78,12 @@ describe('MainToolbarComponent', () => {
       declarations: [MainToolbarComponent, DummyComponent],
       imports: [
         MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
-        MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, BrowserAnimationsModule,
+        MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule,
         RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
       ],
       providers: [
         { provide: DBService, useValue: dbService },
-        { provide: DialogService, useValue: dialogService },
-        { provide: HAMMER_LOADER, useValue: () => new Promise(() => null) }
+        { provide: DialogService, useValue: dialogService }
       ]
     })
       .overrideModule(MatIconModule, MatIconModuleMock.override())
@@ -264,7 +262,7 @@ describe('MainToolbarComponent', () => {
     const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabRawData')).nativeElement;
 
     // when
-    const link = tab.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('href');
 
     // then
     expect(link).toEqual('/' + Route.RAWDATA);
@@ -276,7 +274,7 @@ describe('MainToolbarComponent', () => {
     const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabPivotTable')).nativeElement;
 
     // when
-    const link = tab.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('href');
 
     // then
     expect(link).toEqual('/' + Route.PIVOT);
@@ -288,7 +286,7 @@ describe('MainToolbarComponent', () => {
     const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabGridView')).nativeElement;
 
     // when
-    const link = tab.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('href');
 
     // then
     expect(link).toEqual('/' + Route.GRID);
@@ -300,7 +298,7 @@ describe('MainToolbarComponent', () => {
     const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabFlexView')).nativeElement;
 
     // when
-    const link = tab.getAttribute('ng-reflect-router-link');
+    const link = tab.getAttribute('href');
 
     // then
     expect(link).toEqual('/' + Route.FLEX);

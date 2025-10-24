@@ -7,9 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
-import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
+import { ResizeEvent } from 'angular-resizable-element';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
@@ -110,10 +109,10 @@ describe('FlexCanvasComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         FlexCanvasComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
-        SummaryTableComponent, ChartComponent, GraphComponent, ResizableDirective, ResizeHandleDirective
+        SummaryTableComponent, ChartComponent, GraphComponent
       ],
       imports: [
-        MatSidenavModule, MatButtonModule, MatIconModule, BrowserAnimationsModule, MatBottomSheetModule, MatMenuModule
+        MatSidenavModule, MatButtonModule, MatIconModule, MatBottomSheetModule, MatMenuModule
       ],
       providers: [
         provideRouter([]),

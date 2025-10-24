@@ -1,5 +1,5 @@
+import { DataType, Operator, PropertyFilter } from 'app/shared/model';
 import { FilterValueParser } from './filter-value-parser';
-import { PropertyFilter, Operator, DataType } from 'app/shared/model';
 
 describe('FilterValueParser', () => {
 
