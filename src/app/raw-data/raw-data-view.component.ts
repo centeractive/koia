@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 
 @Component({
-    selector: 'koia-raw-data-view',
-    template: `<mat-drawer-container fullscreen>
-                <koia-raw-data [dialogStyle]="false"></koia-raw-data>
+  selector: 'koia-raw-data-view',
+  template: `<mat-drawer-container fullscreen>
+                <koia-raw-data [dialogStyle]="false" />
               </mat-drawer-container>`,
-    standalone: false
+  standalone: false
 })
 export class RawDataViewComponent {
 }

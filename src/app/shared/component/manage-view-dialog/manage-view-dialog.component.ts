@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
 import * as _ from 'lodash';
 import { ManageViewContext } from './manage-view-context.type.';
-import { ViewController } from 'app/shared/controller';
 
 @Component({
   selector: 'koia-manageView-dialog',
@@ -26,7 +26,8 @@ export class ManageViewDialogComponent {
     this.dialogRef.disableClose = true;
     if (context.views) {
       this.clonedViews = _.cloneDeep(context.views);
-      this.items = context.views.map(view => ({ view })) || [];
+      this.items = context.views
+        .map(view => ({ view }));
     }
   }
 

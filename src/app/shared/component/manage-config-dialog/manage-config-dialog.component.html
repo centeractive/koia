@@ -8,9 +8,9 @@
     <h4>Manage saved views</h4>
     <p>Delete or rename views that have previously been saved.</p>
     <div id="div_config_records">
-      <ng-container *ngFor="let item of items">
+      <ng-container *ngFor="let item of items; let i = index">
         <div class="div_row" *ngIf="!item.deleted">
-          <button mat-icon-button (click)="deleteItem(item)">
+          <button [id]="'butDelete-' + i" mat-icon-button (click)="deleteItem(item)">
             <mat-icon>delete_forever</mat-icon>
           </button>
           <mat-icon>monitor</mat-icon>&nbsp;

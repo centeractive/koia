@@ -1,12 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Query, Operator } from 'app/shared/model';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Operator, Query } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
 
 @Component({
-    selector: 'koia-raw-data-dialog',
-    template: '<koia-raw-data [dialogStyle]="true" [hideToolbar]="hideToolbar" [query]="query"></koia-raw-data>',
-    standalone: false
+   selector: 'koia-raw-data-dialog',
+   template: '<koia-raw-data [dialogStyle]="true" [hideToolbar]="hideToolbar" [query]="query" />',
+   standalone: false
 })
 export class RawDataDialogComponent {
 
