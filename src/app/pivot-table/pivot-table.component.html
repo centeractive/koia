@@ -1,14 +1,13 @@
 <mat-sidenav-container fullscreen>
 
-  <mat-sidenav mode="side" class="sidenav">
-    <koia-pivot-table-side-bar [columns]="columns" [context]="context" [data]="baseDataFrame">
-    </koia-pivot-table-side-bar>
+  <mat-sidenav mode="push" class="sidenav" (openedStart)="onSidenavOpening()" (closedStart)="onSidenavClosing()">
+    <koia-pivot-table-side-bar [columns]="columns" [context]="context" [data]="baseDataFrame" />
   </mat-sidenav>
-
-  <div class="div_wrapper">
+  
+  <mat-sidenav-content>
     <div #header class="div_header">
-      <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery" (onFilterChange)="fetchData($event)"></koia-main-toolbar>
-      <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
+      <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery" (onFilterChange)="fetchData($event)" />
+      <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..." />
       <div id="view_toolbar">
 
         <button mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -110,5 +109,6 @@
       <mat-progress-bar *ngIf="computing" mode="indeterminate" color="accent"></mat-progress-bar>
       <div class="printable" #pivot id="pivot"></div>
     </div>
-  </div>
+  
+</mat-sidenav-content>
 </mat-sidenav-container>

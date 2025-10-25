@@ -29,7 +29,7 @@ import { PivotTableComponent } from './pivot-table.component';
 export class MockElementRef {
   nativeElement: {}
 }
-fdescribe('PivotTableComponent', () => {
+describe('PivotTableComponent', () => {
 
   const NOW = new Date().getTime();
   const datePipe = new DatePipe('en-US');
@@ -162,30 +162,30 @@ fdescribe('PivotTableComponent', () => {
     expect(component.context.valueGroupings).toBe(valueGroupings);
   }));
 
-  xit('sidenav#close should leave data frame unchanged when value groupings did not change', fakeAsync(() => {
+  it('sidenav#close should leave data frame unchnged when value groupings do not changed', async () => {
 
     // given
     const dataFrame = component.dataFrame;
-    component.sidenav.open();
+    await component.sidenav.open();
+    await fixture.whenStable();
     fixture.detectChanges();
-    flush();
 
     // when
-    component.sidenav.close();
-    fixture.detectChanges();
+    await component.sidenav.close();
 
     // then
-    flush();
+    await sleep(500);
+    await fixture.whenStable();
     expect(component.dataFrame).toBe(dataFrame);
-  }));
+  });
 
-  xit('sidenav#close should recreate data frame when value groupings changed', fakeAsync(() => {
+  it('sidenav#close should recreate data frame when value groupings changed', async () => {
 
     // given
     const dataFrame = component.dataFrame;
-    component.sidenav.open();
+    await component.sidenav.open();
+    await fixture.whenStable();
     fixture.detectChanges();
-    flush();
     component.context.valueGroupings = [
       {
         columnName: 'Amount',
@@ -196,12 +196,13 @@ fdescribe('PivotTableComponent', () => {
       }];
 
     // when
-    component.sidenav.close();
+    await component.sidenav.close();
 
     // then
-    flush();
+    await sleep(500);
+    await fixture.whenStable();
     expect(component.dataFrame).not.toBe(dataFrame);
-  }));
+  });
 
   it('#onTimeUnitChanged should change selected time unit and refresh data', fakeAsync(() => {
 
@@ -469,5 +470,9 @@ fdescribe('PivotTableComponent', () => {
         return of(true);
       }
     };
+  }
+
+  function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 });

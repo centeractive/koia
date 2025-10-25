@@ -81,14 +81,16 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   }
 
   ngAfterViewInit(): void {
-    this.sidenav.openedStart.subscribe(() => this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings));
-    this.sidenav.closedStart.subscribe(() => this.onSidenavClosing());
     if (this.scene.config.records.filter(r => r.route === this.route).length) {
       this.selectConfig();
     }
   }
 
-  private onSidenavClosing(): void {
+  onSidenavOpening(): void {
+    this.stringifiedValueGroupings = JSON.stringify(this.context.valueGroupings);
+  }
+
+  onSidenavClosing(): void {
     if (this.stringifiedValueGroupings !== JSON.stringify(this.context.valueGroupings)) {
       this.refreshOptions();
       this.refreshDataFrameAsync();
