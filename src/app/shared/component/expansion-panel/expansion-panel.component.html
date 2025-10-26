@@ -1,9 +1,11 @@
 <mat-expansion-panel [expanded]="expanded">
-    <mat-expansion-panel-header>
-        <mat-panel-title>{{ title }}</mat-panel-title>
-        <mat-panel-description *ngIf="deletable">
-            <mat-icon (click)="delete.emit()">delete_forever</mat-icon>
-        </mat-panel-description>
-    </mat-expansion-panel-header>
-    <ng-content></ng-content>
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{ title }}</mat-panel-title>
+    @if (deletable) {
+      <mat-panel-description>
+        <mat-icon (click)="delete.emit()">delete_forever</mat-icon>
+      </mat-panel-description>
+    }
+  </mat-expansion-panel-header>
+  <ng-content></ng-content>
 </mat-expansion-panel>

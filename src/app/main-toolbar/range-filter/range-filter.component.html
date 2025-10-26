@@ -1,31 +1,35 @@
-<div class="div_range_filter" *ngIf="filter">
-  <button color="accent" mat-icon-button matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
-    <mat-icon [matBadge]="filter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="accent">
-      linear_scale
-    </mat-icon>
-  </button>
-  <mat-menu #stepmenu="matMenu">
-    <button mat-menu-item *ngFor="let step of filter.availableSteps" [disabled]="step === filter.selectedStep"
-            (click)="filter.onStepChanged(step)">
-      <span>Step by {{ filter.formatStep(step) }}</span>
+@if (filter) {
+  <div class="div_range_filter">
+    <button color="accent" mat-icon-button matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
+      <mat-icon [matBadge]="filter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="accent">
+        linear_scale
+      </mat-icon>
     </button>
-  </mat-menu>
-  &nbsp;&nbsp;
-  <ngx-slider [value]="valueRange.min" [highValue]="valueRange.max" [options]="filter.sliderOptions" [manualRefresh]="refreshSlider"
-              (highValueChange)="onHighValueChanged()" (userChangeEnd)="onChanged($event)">
-  </ngx-slider>
-  <button class="but_reset_range_filter" color="accent" mat-icon-button matTooltip="Reset value range filter"
-          [disabled]="!filter.isFiltered()" (click)="reset()">
-    <mat-icon>undo</mat-icon>
-  </button>
-  <button class="but_remove_range_filter" mat-icon-button matTooltip="Remove value range filter"
-          (click)="onRemove.emit()">
-    <mat-icon>remove_circle_outline</mat-icon>
-  </button>
-</div>
+    <mat-menu #stepmenu="matMenu">
+      @for (step of filter.availableSteps; track step) {
+        <button mat-menu-item [disabled]="step === filter.selectedStep"
+          (click)="filter.onStepChanged(step)">
+          <span>Step by {{ filter.formatStep(step) }}</span>
+        </button>
+      }
+    </mat-menu>
+    &nbsp;&nbsp;
+    <ngx-slider [value]="valueRange.min" [highValue]="valueRange.max" [options]="filter.sliderOptions" [manualRefresh]="refreshSlider"
+      (highValueChange)="onHighValueChanged()" (userChangeEnd)="onChanged($event)">
+    </ngx-slider>
+    <button class="but_reset_range_filter" color="accent" mat-icon-button matTooltip="Reset value range filter"
+      [disabled]="!filter.isFiltered()" (click)="reset()">
+      <mat-icon>undo</mat-icon>
+    </button>
+    <button class="but_remove_range_filter" mat-icon-button matTooltip="Remove value range filter"
+      (click)="onRemove.emit()">
+      <mat-icon>remove_circle_outline</mat-icon>
+    </button>
+  </div>
+}
 <div class="div_range_column_name">{{ filter.column.name }}
   <span [class]="filter.inverted ? 'span_outside_range_menu_trigger' : 'span_menu_trigger'"
-        [matMenuTriggerFor]="rangeTypeMenu">{{ filter.inverted ? 'is outside range' : 'is inside range' }}</span>
+  [matMenuTriggerFor]="rangeTypeMenu">{{ filter.inverted ? 'is outside range' : 'is inside range' }}</span>
   <mat-menu #rangeTypeMenu="matMenu">
     <button mat-menu-item [disabled]="!filter.inverted" (click)="onInvertedChanged(false)">
       <span>is inside range</span>

@@ -1,42 +1,54 @@
-<div class="div_property_filter" *ngIf="filter">
-  <span class="span_menu_trigger" [matMenuTriggerFor]="nameMenu">{{ filter.name }}</span>
-  <mat-menu #nameMenu="matMenu">
-    <button mat-menu-item *ngFor="let column of columns" [disabled]="column.name === filter.name"
-      (click)="onNameChanged(column)">
-      <span>&nbsp;{{ column.name }}</span>
-    </button>
-  </mat-menu>
-
-  <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
+@if (filter) {
+  <div class="div_property_filter">
+    <span class="span_menu_trigger" [matMenuTriggerFor]="nameMenu">{{ filter.name }}</span>
+    <mat-menu #nameMenu="matMenu">
+      @for (column of columns; track column) {
+        <button mat-menu-item [disabled]="column.name === filter.name"
+          (click)="onNameChanged(column)">
+          <span>&nbsp;{{ column.name }}</span>
+        </button>
+      }
+    </mat-menu>
+    <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
     [matTooltip]="valueFilterCustomizer.tooltipOf(filter)">{{ filter.operator }}</span>
-  <mat-menu #operatorMenu="matMenu">
-    <button mat-menu-item *ngFor="let operator of availableOperators()" [disabled]="operator === filter.operator"
-      (click)="filter.operator = operator; onChange.emit()">
-      <span>{{ operator }}</span>
-    </button>
-  </mat-menu>
-
-  <div class="div_column_filter_value" *ngIf="!isEqualBoolean() && !filter.operator.endsWith('empty')">
-    <input *ngIf="numberDataType" id="column_filter_input" matInput type="search" placeholder="Filter Value"
-      [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
-      [formControl]="valueControl" formattedFloat (search)="onChange.emit()">
-    <input *ngIf="!numberDataType" id="column_filter_input" matInput type="search" placeholder="Filter Value"
-      [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
-      [formControl]="valueControl" (search)="onChange.emit()">
-    <mat-error *ngIf="valueControl.invalid">{{ valueControl.getError('error') }}</mat-error>
+    <mat-menu #operatorMenu="matMenu">
+      @for (operator of availableOperators(); track operator) {
+        <button mat-menu-item [disabled]="operator === filter.operator"
+          (click)="filter.operator = operator; onChange.emit()">
+          <span>{{ operator }}</span>
+        </button>
+      }
+    </mat-menu>
+    @if (!isEqualBoolean() && !filter.operator.endsWith('empty')) {
+      <div class="div_column_filter_value">
+        @if (numberDataType) {
+          <input id="column_filter_input" matInput type="search" placeholder="Filter Value"
+            [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
+            [formControl]="valueControl" formattedFloat (search)="onChange.emit()">
+        }
+        @if (!numberDataType) {
+          <input id="column_filter_input" matInput type="search" placeholder="Filter Value"
+            [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
+            [formControl]="valueControl" (search)="onChange.emit()">
+        }
+        @if (valueControl.invalid) {
+          <mat-error>{{ valueControl.getError('error') }}</mat-error>
+        }
+      </div>
+    }
+    @if (isEqualBoolean()) {
+      <span class="span_menu_trigger" [matMenuTriggerFor]="booleanMenu">{{ filter.value }}</span>
+    }
+    <mat-menu #booleanMenu="matMenu">
+      <button mat-menu-item [disabled]="filter.value === true" (click)="filter.value = true; onChange.emit()">
+        <span>true</span>
+      </button>
+      <button mat-menu-item [disabled]="filter.value === false" (click)="filter.value = false; onChange.emit()">
+        <span>false</span>
+      </button>
+    </mat-menu>
+    <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter" (click)="onRemove.emit()">
+      remove_circle_outline
+    </mat-icon>
   </div>
-
-  <span class="span_menu_trigger" *ngIf="isEqualBoolean()" [matMenuTriggerFor]="booleanMenu">{{ filter.value }}</span>
-  <mat-menu #booleanMenu="matMenu">
-    <button mat-menu-item [disabled]="filter.value === true" (click)="filter.value = true; onChange.emit()">
-      <span>true</span>
-    </button>
-    <button mat-menu-item [disabled]="filter.value === false" (click)="filter.value = false; onChange.emit()">
-      <span>false</span>
-    </button>
-  </mat-menu>
-
-  <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter" (click)="onRemove.emit()">
-    remove_circle_outline
-  </mat-icon>
-</div>
+}

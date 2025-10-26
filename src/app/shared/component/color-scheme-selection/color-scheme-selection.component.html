@@ -1,28 +1,36 @@
-<ng-container *ngIf="colorOptions">
-    Categorical
-    <div *ngFor="let s of categoricalSchemes">
-        <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
-             [title]="s" (click)="selectCategoricalScheme(s)">
-        <span *ngIf="s == colorOptions.scheme">✔</span>
-    </div>
+@if (colorOptions) {
+  Categorical
+  @for (s of categoricalSchemes; track s) {
+    <div>
+      <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
+        [title]="s" (click)="selectCategoricalScheme(s)">
+        @if (s == colorOptions.scheme) {
+          <span>✔</span>
+        }
+      </div>
+    }
     <br>
-    Sequential
-    <div *ngFor="let s of sequentialSchemes">
-        <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
-             [title]="s" (click)="selectSequentialScheme(s)">
-        <span *ngIf="s == colorOptions.scheme">✔</span>
-    </div>
-    <br>
-    <div class="div_opacity">
-        Background Color Opacity
-        <mat-slider min="0" max="1" step="0.05">
-            <input matSliderThumb [(ngModel)]="colorOptions.bgColorOpacity" (dragEnd)="changeColorProvider()" />
-        </mat-slider>
-    </div>
-    <div class="div_opacity">
-        Border Color Opacity
-        <mat-slider min="0" max="1" step="0.05">
-            <input matSliderThumb [(ngModel)]="colorOptions.borderColorOpacity" (dragEnd)="changeColorProvider()" />
-        </mat-slider>
-    </div>
-</ng-container>
+      Sequential
+      @for (s of sequentialSchemes; track s) {
+        <div>
+          <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
+            [title]="s" (click)="selectSequentialScheme(s)">
+            @if (s == colorOptions.scheme) {
+              <span>✔</span>
+            }
+          </div>
+        }
+        <br>
+          <div class="div_opacity">
+            Background Color Opacity
+            <mat-slider min="0" max="1" step="0.05">
+              <input matSliderThumb [(ngModel)]="colorOptions.bgColorOpacity" (dragEnd)="changeColorProvider()" />
+            </mat-slider>
+          </div>
+          <div class="div_opacity">
+            Border Color Opacity
+            <mat-slider min="0" max="1" step="0.05">
+              <input matSliderThumb [(ngModel)]="colorOptions.borderColorOpacity" (dragEnd)="changeColorProvider()" />
+            </mat-slider>
+          </div>
+        }

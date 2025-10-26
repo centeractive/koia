@@ -1,108 +1,122 @@
 <div id="div_main">
 
   <div id="div_toolbar">
-    <span class="span_buttons" *ngIf="!dialogStyle">
-      <button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
-        <mat-icon>home</mat-icon>
-      </button>
-      <button id="butShowSceneDetails" mat-icon-button matTooltip="Show Scene Details"
-              (click)="showSceneDetails()">
-        <mat-icon>info_outlined</mat-icon>
-      </button>
-      <button id="butScenes" mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
-        <mat-icon>collections</mat-icon>
-      </button>
-      <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
-        <mat-icon>add_photo_alternate</mat-icon>
-      </button>
-
-      <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
-      <nav mat-tab-nav-bar [tabPanel]="tabPanel">
-        <a id="tabRawData" mat-tab-link [routerLink]="[urlRawdata]" [active]="currURL == urlRawdata">
-          <mat-icon svgIcon="raw_data_view"></mat-icon>
-          <span>&nbsp;Raw Data</span>
-        </a>
-        <a id="tabPivotTable" mat-tab-link [routerLink]="[urlPivot]" [active]="currURL == urlPivot">
-          <mat-icon svgIcon="pivot_table"></mat-icon>
-          <span>&nbsp;Pivot Table</span>
-        </a>
-        <a id="tabGridView" mat-tab-link [routerLink]="[urlGrid]" [active]="currURL == urlGrid">
-          <mat-icon svgIcon="grid_view"></mat-icon>
-          <span>&nbsp;Grid View</span>
-        </a>
-        <a id="tabFlexView" mat-tab-link [routerLink]="[urlFlex]" [active]="currURL == urlFlex">
-          <mat-icon svgIcon="flex_view"></mat-icon>
-          <span>&nbsp;Flex View</span>
-        </a>
-      </nav>
-
-    </span>
+    @if (!dialogStyle) {
+      <span class="span_buttons">
+        <button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+          <mat-icon>home</mat-icon>
+        </button>
+        <button id="butShowSceneDetails" mat-icon-button matTooltip="Show Scene Details"
+          (click)="showSceneDetails()">
+          <mat-icon>info_outlined</mat-icon>
+        </button>
+        <button id="butScenes" mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
+          <mat-icon>collections</mat-icon>
+        </button>
+        <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+          <mat-icon>add_photo_alternate</mat-icon>
+        </button>
+        <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+        <nav mat-tab-nav-bar [tabPanel]="tabPanel">
+          <a id="tabRawData" mat-tab-link [routerLink]="[urlRawdata]" [active]="currURL == urlRawdata">
+            <mat-icon svgIcon="raw_data_view"></mat-icon>
+            <span>&nbsp;Raw Data</span>
+          </a>
+          <a id="tabPivotTable" mat-tab-link [routerLink]="[urlPivot]" [active]="currURL == urlPivot">
+            <mat-icon svgIcon="pivot_table"></mat-icon>
+            <span>&nbsp;Pivot Table</span>
+          </a>
+          <a id="tabGridView" mat-tab-link [routerLink]="[urlGrid]" [active]="currURL == urlGrid">
+            <mat-icon svgIcon="grid_view"></mat-icon>
+            <span>&nbsp;Grid View</span>
+          </a>
+          <a id="tabFlexView" mat-tab-link [routerLink]="[urlFlex]" [active]="currURL == urlFlex">
+            <mat-icon svgIcon="flex_view"></mat-icon>
+            <span>&nbsp;Flex View</span>
+          </a>
+        </nav>
+      </span>
+    }
 
     <div id="div_filter">
-      <mat-form-field class="full_text_filter" *ngIf="showFullTextFilter">
-        <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)" [(ngModel)]="fullTextFilter"
-               (keyup)="onFullTextFilterFieldKeyUp($event)">
-        <button id="clearFullTextFilterButton" color="primary" *ngIf="fullTextFilter" matSuffix
+      @if (showFullTextFilter) {
+        <mat-form-field class="full_text_filter">
+          <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)" [(ngModel)]="fullTextFilter"
+            (keyup)="onFullTextFilterFieldKeyUp($event)">
+            @if (fullTextFilter) {
+              <button id="clearFullTextFilterButton" color="primary" matSuffix
                 mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+        }
 
-      <span class="span_column_filter" *ngFor="let propertyFilter of propertyFilters">
-        <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()" (onRemove)="removePropertyFilter(propertyFilter)">
-        </koia-value-filter>
-      </span>
-    </div>
+        @for (propertyFilter of propertyFilters; track propertyFilter) {
+          <span class="span_column_filter">
+            <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()" (onRemove)="removePropertyFilter(propertyFilter)">
+            </koia-value-filter>
+          </span>
+        }
+      </div>
 
-    <span class="span_buttons" *ngIf="scene">
-
-      <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter" [matMenuTriggerFor]="columnFilterMenu">
-        <mat-icon>add_circle_outline</mat-icon>
-        <span>&nbsp;Add&nbsp;Filter</span>
-      </button>
-      <mat-menu #columnFilterMenu="matMenu">
-        <span *ngFor="let column of scene.columns">
-
-          <button class="menu_item_add_text_filter" *ngIf="!isNumericColumn(column)" mat-menu-item (click)="addValueFilter(column)">
-            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-            <span>{{ column.name }}</span>
+      @if (scene) {
+        <span class="span_buttons">
+          <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter" [matMenuTriggerFor]="columnFilterMenu">
+            <mat-icon>add_circle_outline</mat-icon>
+            <span>&nbsp;Add&nbsp;Filter</span>
           </button>
-
-          <button *ngIf="isNumericColumn(column)" mat-menu-item [matMenuTriggerFor]="numericColumnFilterMenu">
-            <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-            <span>{{ column.name }}</span>
-          </button>
-          <mat-menu #numericColumnFilterMenu="matMenu">
-            <button mat-menu-item (click)="addValueFilter(column)" [disabled]="!canAddValueFilter(column)">
-              <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-              <span>Value</span>
-            </button>
-            <button mat-menu-item (click)="addRangeFilter(column, null)">
-              <mat-icon>swap_horiz</mat-icon>
-              <span>Value Range</span>
-            </button>
+          <mat-menu #columnFilterMenu="matMenu">
+            @for (column of scene.columns; track column) {
+              <span>
+                @if (!isNumericColumn(column)) {
+                  <button class="menu_item_add_text_filter" mat-menu-item (click)="addValueFilter(column)">
+                    <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                    <span>{{ column.name }}</span>
+                  </button>
+                }
+                @if (isNumericColumn(column)) {
+                  <button mat-menu-item [matMenuTriggerFor]="numericColumnFilterMenu">
+                    <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                    <span>{{ column.name }}</span>
+                  </button>
+                }
+                <mat-menu #numericColumnFilterMenu="matMenu">
+                  <button mat-menu-item (click)="addValueFilter(column)" [disabled]="!canAddValueFilter(column)">
+                    <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                    <span>Value</span>
+                  </button>
+                  <button mat-menu-item (click)="addRangeFilter(column, null)">
+                    <mat-icon>swap_horiz</mat-icon>
+                    <span>Value Range</span>
+                  </button>
+                </mat-menu>
+              </span>
+            }
           </mat-menu>
-
-        </span>
-      </mat-menu>
-
-      <button *ngIf="rangeFilters.length > 0" mat-icon-button
+          @if (rangeFilters.length > 0) {
+            <button mat-icon-button
               [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
               (click)="showRangeFilters = !showRangeFilters">
-        <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
-                  [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
-      </button>
-
-      <button (click)="refreshEntries()" color="accent" mat-icon-button matTooltip="Refresh data">
-        <mat-icon>refresh</mat-icon>
-      </button>
-    </span>
-  </div>
-
-  <div *ngIf="showRangeFilters">
-    <div *ngFor="let rangeFilter of rangeFilters">
-      <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">
-      </koia-range-filter>
+              <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
+              [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
+            </button>
+          }
+          <button (click)="refreshEntries()" color="accent" mat-icon-button matTooltip="Refresh data">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </span>
+      }
     </div>
+
+    @if (showRangeFilters) {
+      <div>
+        @for (rangeFilter of rangeFilters; track rangeFilter) {
+          <div>
+            <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">
+            </koia-range-filter>
+          </div>
+        }
+      </div>
+    }
   </div>
-</div>

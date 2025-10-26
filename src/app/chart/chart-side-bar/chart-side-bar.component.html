@@ -1,166 +1,202 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-      (change)="onMultiExpandableChanged($event.checked)">
-      Multi Expansion
-   </mat-slide-toggle>
-   <span class="span_exp_collapse_all" *ngIf="multiExpandable">
+  <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
+    (change)="onMultiExpandableChanged($event.checked)">
+    Multi Expansion
+  </mat-slide-toggle>
+  @if (multiExpandable) {
+    <span class="span_exp_collapse_all">
       <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
-         <mat-icon>expand_more</mat-icon>
+        <mat-icon>expand_more</mat-icon>
       </button>
       <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
-         <mat-icon>expand_less</mat-icon>
+        <mat-icon>expand_less</mat-icon>
       </button>
-   </span>
+    </span>
+  }
 </div>
 
 <div id="div_charts">
-   <button *ngFor="let chartType of chartTypes" class="but_chart_type" mat-mini-fab [color]="chartTypeColor(chartType)"
+  @for (chartType of chartTypes; track chartType) {
+    <button class="but_chart_type" mat-mini-fab [color]="chartTypeColor(chartType)"
       [matTooltip]="chartType.name + ' Chart'" (click)="switchTo(chartType)">
-      <mat-icon *ngIf="chartType.customIcon" [svgIcon]="chartType.icon"></mat-icon>
-      <mat-icon *ngIf="!chartType.customIcon">{{ chartType.icon }}</mat-icon>
-   </button>
+      @if (chartType.customIcon) {
+        <mat-icon [svgIcon]="chartType.icon"></mat-icon>
+      }
+      @if (!chartType.customIcon) {
+        <mat-icon>{{ chartType.icon }}</mat-icon>
+      }
+    </button>
+  }
 </div>
 
 <div style="padding: 0 5px 0 5px;">
-   <mat-accordion *ngIf="context" [multi]="multiExpandable">
-
+  @if (context) {
+    <mat-accordion [multi]="multiExpandable">
       <koia-expansion-panel [title]="dataPanelName()" [expanded]="true">
-         <div id="div_sel_data_columns">
-            <button class="but_column" mat-raised-button *ngFor="let column of selectableDataColumns"
-               [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
-               <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-               {{ column.name }}
+        <div id="div_sel_data_columns">
+          @for (column of selectableDataColumns; track column) {
+            <button class="but_column" mat-raised-button
+              [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
+              <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+              {{ column.name }}
             </button>
-         </div>
-         <br>
-         <div>
+          }
+        </div>
+        <br>
+          <div>
             <mat-radio-group [value]="context.isAggregationCountSelected()">
-               <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
-                  (change)="onAggregationTypeChanged(true)">
-                  Count Distinct Values
-               </mat-radio-button>
-               <mat-radio-button [value]="false" [disabled]="!individualValuesEnabled"
-                  (change)="onAggregationTypeChanged(false)">
-                  {{ context.isCircularChart() ? 'Unique Named' : 'Individual' }} Values
-               </mat-radio-button>
+              <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
+                (change)="onAggregationTypeChanged(true)">
+                Count Distinct Values
+              </mat-radio-button>
+              <mat-radio-button [value]="false" [disabled]="!individualValuesEnabled"
+                (change)="onAggregationTypeChanged(false)">
+                {{ context.isCircularChart() ? 'Unique Named' : 'Individual' }} Values
+              </mat-radio-button>
             </mat-radio-group>&nbsp;&nbsp;&nbsp;
-            <mat-checkbox *ngIf="!context.isCircularChart()" [(ngModel)]="context.stacked">
-               Stacked
-            </mat-checkbox>
-         </div>
-         <mat-slide-toggle
-            *ngIf="!context.isCircularChart() && context.dataColumns.length > 1 && !context.splitColumns.length"
-            style="margin-top: 1em;" [(ngModel)]="context.multiValueAxes">Show Distinct Scales
-         </mat-slide-toggle>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel title="Names" *ngIf="context.isCircularChart() && !context.isAggregationCountSelected()">
-         <mat-form-field>
-            <mat-label>Name Column</mat-label>
-            <mat-select [value]="getSingleGroupByColumn()">
-               <mat-select-trigger>
-                  <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
-                     {{ iconOf(getSingleGroupByColumn().dataType) }}
-                  </mat-icon>
+            @if (!context.isCircularChart()) {
+              <mat-checkbox [(ngModel)]="context.stacked">
+                Stacked
+              </mat-checkbox>
+            }
+          </div>
+          @if (!context.isCircularChart() && context.dataColumns.length > 1 && !context.splitColumns.length) {
+            <mat-slide-toggle
+              style="margin-top: 1em;" [(ngModel)]="context.multiValueAxes">Show Distinct Scales
+            </mat-slide-toggle>
+          }
+        </koia-expansion-panel>
+        @if (context.isCircularChart() && !context.isAggregationCountSelected()) {
+          <koia-expansion-panel title="Names">
+            <mat-form-field>
+              <mat-label>Name Column</mat-label>
+              <mat-select [value]="getSingleGroupByColumn()">
+                <mat-select-trigger>
+                  @if (getSingleGroupByColumn()) {
+                    <mat-icon style="vertical-align: middle">
+                      {{ iconOf(getSingleGroupByColumn().dataType) }}
+                    </mat-icon>
+                  }
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
-               </mat-select-trigger>
-               <mat-option *ngFor="let column of context.columns" [value]="column"
-                  (click)="context.groupByColumns = [column]">
-                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-                  {{ column.name }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel title="Value Splitting" *ngIf="!context.isCategoryChart()">
-         <div div_column_swap_list>
-            <span class="span_left_to_right">
-               <label>Selected Columns</label>
-               <mat-icon matTooltipClass="multi-line-tooltip"
+                </mat-select-trigger>
+                @for (column of context.columns; track column) {
+                  <mat-option [value]="column"
+                    (click)="context.groupByColumns = [column]">
+                    <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                    {{ column.name }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </koia-expansion-panel>
+        }
+        @if (!context.isCategoryChart()) {
+          <koia-expansion-panel title="Value Splitting">
+            <div div_column_swap_list>
+              <span class="span_left_to_right">
+                <label>Selected Columns</label>
+                <mat-icon matTooltipClass="multi-line-tooltip"
                   matTooltip="Drag & Drop available columns to make them selected
 
             Values are shown separately for distinct content of the selected split columns. If any split column cell is empty, the value is ignored">
                   help
-               </mat-icon>
-            </span>
-            <div id="selectedSplitColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
-               [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList"
-               class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
-               <div class="div_column_item accent" mat-stroked-button *ngFor="let column of selectedSplitColumns"
-                  cdkDrag>
-                  <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon>
-                  <span class="accent"> {{ column.name }}</span>
-               </div>
-            </div>
-            <br>
-            <label>Available Columns</label>
-            <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableSplitColumns"
-               [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-               (cdkDropListDropped)="dropSplitColumn($event)">
-               <div class="div_column_item white" mat-stroked-button *ngFor="let column of availableSplitColumns"
-                  cdkDrag>
-                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>{{ column.name }}
-               </div>
-            </div>
-         </div>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel
-         *ngIf="!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())"
-         [title]="groupingPanelName()">
-         <mat-form-field>
-            <mat-label>{{ context.isCategoryChart() ? 'Column Name' : 'Group by' }}</mat-label>
-            <mat-select [value]="getSingleGroupByColumn()">
-               <mat-select-trigger>
-                  <mat-icon style="vertical-align: middle" *ngIf="getSingleGroupByColumn()">
-                     {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
-                  {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
-               </mat-select-trigger>
-               <mat-option *ngFor="let column of context.columns" [value]="column"
-                  (click)="onGroupByColumnChanged(column)">
-                  <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-                  {{ column.name }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-         <mat-form-field *ngIf="context.isAggregationCountSelected() && groupByTimeColumn">
-            <mat-label>Time Unit Grouping</mat-label>
-            <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
-               <mat-option *ngFor="let timeUnit of selectableTimeUnits" [value]="timeUnit"
-                  (click)="context.fireStructureChanged()">
-                  {{ timeUnit }}
-               </mat-option>
-            </mat-select>
-         </mat-form-field>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel title="Color Scheme">
-         <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel [title]="isCircularChart() ? 'Legend & Labels' : 'Legend & Scales'">
-         <span class="span_legend">
-            <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>
-            <button mat-button *ngIf="context.showLegend && context.chartType !== 'scatterChart'"
-               [matMenuTriggerFor]="menu" color="accent">{{ context.legendPosition }}</button>
-            <mat-menu #menu="matMenu">
-               <button mat-menu-item class="menu_item_legend_position" *ngFor="let position of legendPositions"
-                  (click)="context.legendPosition = position" [disabled]="context.isCurrentLegendPosition(position)">{{
+                </mat-icon>
+              </span>
+              <div id="selectedSplitColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
+                [cdkDropListData]="selectedSplitColumns" [cdkDropListConnectedTo]="availableColList"
+                class="div_column_list" (cdkDropListDropped)="dropSplitColumn($event)">
+                @for (column of selectedSplitColumns; track column) {
+                  <div class="div_column_item accent" mat-stroked-button
+                    cdkDrag>
+                    <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon>
+                    <span class="accent"> {{ column.name }}</span>
+                  </div>
+                }
+              </div>
+              <br>
+                <label>Available Columns</label>
+                <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableSplitColumns"
+                  [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+                  (cdkDropListDropped)="dropSplitColumn($event)">
+                  @for (column of availableSplitColumns; track column) {
+                    <div class="div_column_item white" mat-stroked-button
+                      cdkDrag>
+                      <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>{{ column.name }}
+                    </div>
+                  }
+                </div>
+              </div>
+            </koia-expansion-panel>
+          }
+          @if (!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())) {
+            <koia-expansion-panel
+              [title]="groupingPanelName()">
+              <mat-form-field>
+                <mat-label>{{ context.isCategoryChart() ? 'Column Name' : 'Group by' }}</mat-label>
+                <mat-select [value]="getSingleGroupByColumn()">
+                  <mat-select-trigger>
+                    @if (getSingleGroupByColumn()) {
+                      <mat-icon style="vertical-align: middle">
+                      {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
+                    }
+                    {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
+                  </mat-select-trigger>
+                  @for (column of context.columns; track column) {
+                    <mat-option [value]="column"
+                      (click)="onGroupByColumnChanged(column)">
+                      <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                      {{ column.name }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              @if (context.isAggregationCountSelected() && groupByTimeColumn) {
+                <mat-form-field>
+                  <mat-label>Time Unit Grouping</mat-label>
+                  <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
+                    @for (timeUnit of selectableTimeUnits; track timeUnit) {
+                      <mat-option [value]="timeUnit"
+                        (click)="context.fireStructureChanged()">
+                        {{ timeUnit }}
+                      </mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              }
+            </koia-expansion-panel>
+          }
+          <koia-expansion-panel title="Color Scheme">
+            <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
+          </koia-expansion-panel>
+          <koia-expansion-panel [title]="isCircularChart() ? 'Legend & Labels' : 'Legend & Scales'">
+            <span class="span_legend">
+              <mat-slide-toggle [(ngModel)]="context.showLegend">Show Legend</mat-slide-toggle>
+              @if (context.showLegend && context.chartType !== 'scatterChart') {
+                <button mat-button
+                [matMenuTriggerFor]="menu" color="accent">{{ context.legendPosition }}</button>
+              }
+              <mat-menu #menu="matMenu">
+                @for (position of legendPositions; track position) {
+                  <button mat-menu-item class="menu_item_legend_position"
+                    (click)="context.legendPosition = position" [disabled]="context.isCurrentLegendPosition(position)">{{
                   position }}</button>
-            </mat-menu>
-         </span>
-
-         <mat-slide-toggle *ngIf="isCircularChart()" [(ngModel)]="context.valueAsPercent">Percent Value Labels
-         </mat-slide-toggle>
-
-         <div *ngIf="!isCircularChart()">
-            <koia-scale title="Base Scale" [scale]="context.baseScale"></koia-scale>
-            @for (scale of context.valueScales; track scale; let i = $index) {
-            <koia-scale title="{{ 'Value Scale ' + (context.valueScales.length > 1 ?  i + 1 : '') }}"
-               [scale]="scale"></koia-scale>
+                }
+              </mat-menu>
+            </span>
+            @if (isCircularChart()) {
+              <mat-slide-toggle [(ngModel)]="context.valueAsPercent">Percent Value Labels
+              </mat-slide-toggle>
             }
-         </div>
-      </koia-expansion-panel>
-   </mat-accordion>
-</div>
+            @if (!isCircularChart()) {
+              <div>
+                <koia-scale title="Base Scale" [scale]="context.baseScale"></koia-scale>
+                @for (scale of context.valueScales; track scale; let i = $index) {
+                  <koia-scale title="{{ 'Value Scale ' + (context.valueScales.length > 1 ?  i + 1 : '') }}"
+                  [scale]="scale"></koia-scale>
+                }
+              </div>
+            }
+          </koia-expansion-panel>
+        </mat-accordion>
+      }
+    </div>

@@ -1,96 +1,100 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-      (change)="onMultiExpandableChanged($event.checked)">
-      Multi Expansion
-   </mat-slide-toggle>
-   <span class="span_exp_collapse_all" *ngIf="multiExpandable">
+  <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
+    (change)="onMultiExpandableChanged($event.checked)">
+    Multi Expansion
+  </mat-slide-toggle>
+  @if (multiExpandable) {
+    <span class="span_exp_collapse_all">
       <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
-         <mat-icon>expand_more</mat-icon>
+        <mat-icon>expand_more</mat-icon>
       </button>
       <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
-         <mat-icon>expand_less</mat-icon>
+        <mat-icon>expand_less</mat-icon>
       </button>
-   </span>
+    </span>
+  }
 </div>
 <hr>
-<div style="padding: 0 5px 0 5px;">
-   <mat-accordion *ngIf="context" [multi]="multiExpandable">
-
-      <koia-expansion-panel title="Data Hierarchy" [expanded]="true">
-         <div div_column_swap_list>
+  <div style="padding: 0 5px 0 5px;">
+    @if (context) {
+      <mat-accordion [multi]="multiExpandable">
+        <koia-expansion-panel title="Data Hierarchy" [expanded]="true">
+          <div div_column_swap_list>
             <span class="span_left_to_right">
-               <label>Selected Columns</label>
-               <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
+              <label>Selected Columns</label>
+              <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
             </span>
             <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList
-               #selectedColumnsList="cdkDropList" [cdkDropListData]="selectedGroupByColumns"
-               [cdkDropListConnectedTo]="availableColList" class="div_column_list"
-               (cdkDropListDropped)="dropGroupByColumn($event)">
-               <koia-draggable-column *ngFor="let column of selectedGroupByColumns" [context]="context"
+              #selectedColumnsList="cdkDropList" [cdkDropListData]="selectedGroupByColumns"
+              [cdkDropListConnectedTo]="availableColList" class="div_column_list"
+              (cdkDropListDropped)="dropGroupByColumn($event)">
+              @for (column of selectedGroupByColumns; track column) {
+                <koia-draggable-column [context]="context"
                   [column]="column" cssClass="accent">
-               </koia-draggable-column>
+                </koia-draggable-column>
+              }
             </div>
             <br>
-            <label>Available Columns</label>
-            <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
-               [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
-               (cdkDropListDropped)="dropGroupByColumn($event)">
-               <koia-draggable-column *ngFor="let column of availableGroupByColumns" [context]="context"
-                  [column]="column" cssClass="white">
-               </koia-draggable-column>
+              <label>Available Columns</label>
+              <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
+                [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
+                (cdkDropListDropped)="dropGroupByColumn($event)">
+                @for (column of availableGroupByColumns; track column) {
+                  <koia-draggable-column [context]="context"
+                    [column]="column" cssClass="white">
+                  </koia-draggable-column>
+                }
+              </div>
             </div>
-         </div>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel title="Color Scheme">
-         <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
-      </koia-expansion-panel>
-
-      <koia-expansion-panel title="Other">
-         <div class="div_label_rotation">
-            Link Distance
-            <mat-slider min="0" max="100" step="1">
-               <input matSliderThumb [(ngModel)]="context.linkDist" />
-            </mat-slider>
-         </div>
-         <div class="div_label_rotation">
-            Link Strength
-            <mat-slider id="linkStrength" min="0" max="1" step="0.1">
-               <input matSliderThumb [(ngModel)]="context.linkStrength" />
-            </mat-slider>
-         </div>
-         <div class="div_label_rotation">
-            Friction
-            <mat-slider min="0" max="1" step="0.1">
-               <input matSliderThumb [(ngModel)]="context.friction" />
-            </mat-slider>
-         </div>
-         <div class="div_label_rotation">
-            Charge
-            <mat-slider min="-1000" max="1000" step="1" #ngSlider>
-               <input matSliderThumb [value]="- context.charge" (valueChange)="context.charge = - $event"
+          </koia-expansion-panel>
+          <koia-expansion-panel title="Color Scheme">
+            <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
+          </koia-expansion-panel>
+          <koia-expansion-panel title="Other">
+            <div class="div_label_rotation">
+              Link Distance
+              <mat-slider min="0" max="100" step="1">
+                <input matSliderThumb [(ngModel)]="context.linkDist" />
+              </mat-slider>
+            </div>
+            <div class="div_label_rotation">
+              Link Strength
+              <mat-slider id="linkStrength" min="0" max="1" step="0.1">
+                <input matSliderThumb [(ngModel)]="context.linkStrength" />
+              </mat-slider>
+            </div>
+            <div class="div_label_rotation">
+              Friction
+              <mat-slider min="0" max="1" step="0.1">
+                <input matSliderThumb [(ngModel)]="context.friction" />
+              </mat-slider>
+            </div>
+            <div class="div_label_rotation">
+              Charge
+              <mat-slider min="-1000" max="1000" step="1" #ngSlider>
+                <input matSliderThumb [value]="- context.charge" (valueChange)="context.charge = - $event"
                   #ngSliderThumb="matSliderThumb" />
-            </mat-slider>
-         </div>
-         <div class="div_label_rotation">
-            Gravity
-            <mat-slider min="0.1" max="1" step="0.1">
-               <input matSliderThumb [(ngModel)]="context.gravity" />
-            </mat-slider>
-         </div>
-         <div class="div_label_rotation">
-            Theta
-            <mat-slider min="0" max="1" step="0.1">
-               <input matSliderThumb [(ngModel)]="context.theta" />
-            </mat-slider>
-         </div>
-         <div class="div_label_rotation">
-            Alpha
-            <mat-slider min="0" max="1" step="0.1">
-               <input matSliderThumb [(ngModel)]="context.gravity" />
-            </mat-slider>alpha
-         </div>
-
-      </koia-expansion-panel>
-   </mat-accordion>
-</div>
+                </mat-slider>
+              </div>
+              <div class="div_label_rotation">
+                Gravity
+                <mat-slider min="0.1" max="1" step="0.1">
+                  <input matSliderThumb [(ngModel)]="context.gravity" />
+                </mat-slider>
+              </div>
+              <div class="div_label_rotation">
+                Theta
+                <mat-slider min="0" max="1" step="0.1">
+                  <input matSliderThumb [(ngModel)]="context.theta" />
+                </mat-slider>
+              </div>
+              <div class="div_label_rotation">
+                Alpha
+                <mat-slider min="0" max="1" step="0.1">
+                  <input matSliderThumb [(ngModel)]="context.gravity" />
+                </mat-slider>alpha
+              </div>
+            </koia-expansion-panel>
+          </mat-accordion>
+        }
+      </div>

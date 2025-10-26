@@ -1,18 +1,26 @@
 <div [class]="'div_column_item ' + cssClass" mat-stroked-button cdkDrag>
-    <span>
-        <mat-icon [class]="cssClass">{{ icon }}</mat-icon>
-        <span [class]="cssClass">{{ column.name }}</span>
+  <span>
+    <mat-icon [class]="cssClass">{{ icon }}</mat-icon>
+    <span [class]="cssClass">{{ column.name }}</span>
+  </span>
+  @if (column.dataType === 'Time') {
+    <span class="select_time_unit">
+      <span [matMenuTriggerFor]="groupingTimeUnitMenu">
+        @if (!column.groupingTimeUnit) {
+          <span [class]="cssClass">not grouped</span>
+        }
+        @if (column.groupingTimeUnit) {
+          <span [class]="cssClass">per {{ column.groupingTimeUnit }}</span>
+        }
+        <mat-icon [class]="cssClass">more_vert</mat-icon>
+      </span>
+      <mat-menu #groupingTimeUnitMenu="matMenu">
+        @for (timeUnit of selectableTimeUnits; track timeUnit) {
+          <button mat-menu-item (click)="groupingTimeUnitChanged(timeUnit)">
+            {{ timeUnit ? 'per ' + timeUnit : '' }}
+          </button>
+        }
+      </mat-menu>
     </span>
-    <span class="select_time_unit" *ngIf="column.dataType === 'Time'">
-        <span [matMenuTriggerFor]="groupingTimeUnitMenu">
-            <span *ngIf="!column.groupingTimeUnit" [class]="cssClass">not grouped</span>
-            <span *ngIf="column.groupingTimeUnit" [class]="cssClass">per {{ column.groupingTimeUnit }}</span>
-            <mat-icon [class]="cssClass">more_vert</mat-icon>
-        </span>
-        <mat-menu #groupingTimeUnitMenu="matMenu">
-            <button mat-menu-item *ngFor="let timeUnit of selectableTimeUnits" (click)="groupingTimeUnitChanged(timeUnit)">
-                {{ timeUnit ? 'per ' + timeUnit : '' }}
-            </button>
-        </mat-menu>
-    </span>
+  }
 </div>

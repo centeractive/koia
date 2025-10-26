@@ -4,20 +4,24 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
     selector: 'koia-confirm-dialog',
     template: `<mat-card appearance="outlined">
-                <mat-card-header>
-                  <mat-card-title>{{ data.title }}</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <div [innerHTML]="data.htmlContent"></div>
-                  <div id="div_buttons">
-                    <button *ngFor="let button of data.buttonNames" mat-raised-button color="primary"
-                            (click)="onButtonPressed(button)">{{ button }}</button>
-                  </div>
-                  <div id="div_remember" *ngIf="data.letRememberChoice">
-                    <mat-checkbox [(ngModel)]="data.rememberChoice">{{ rememberChoiceLabel }}</mat-checkbox>
-                  </div>
-                </mat-card-content>
-             </mat-card>`,
+                  <mat-card-header>
+                    <mat-card-title>{{ data.title }}</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div [innerHTML]="data.htmlContent"></div>
+                    <div id="div_buttons">
+                      @for (button of data.buttonNames; track button) {
+                        <button mat-raised-button color="primary"
+                        (click)="onButtonPressed(button)">{{ button }}</button>
+                      }
+                    </div>
+                    @if (data.letRememberChoice) {
+                      <div id="div_remember">
+                        <mat-checkbox [(ngModel)]="data.rememberChoice">{{ rememberChoiceLabel }}</mat-checkbox>
+                      </div>
+                    }
+                  </mat-card-content>
+                </mat-card>`,
     styles: [`div {
               width: 100%;
             }

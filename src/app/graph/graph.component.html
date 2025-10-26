@@ -1,2 +1,4 @@
-<mat-progress-bar *ngIf="loading" mode="indeterminate" color="accent"></mat-progress-bar>
+@if (loading) {
+  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+}
 <div id="div_svg"></div>

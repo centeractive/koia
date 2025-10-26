@@ -1,13 +1,17 @@
-<mat-progress-bar *ngIf="loading" mode="indeterminate" color="accent"></mat-progress-bar>
+@if (loading) {
+  <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+}
 
 <!-- TODO: dashed border disappears during resize -->
-<div id="div_margins" *ngIf="marginDivStyle && context.isShowResizableMargin()" mwlResizable [enableGhostResize]="true"
-   [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize" (resizeEnd)="onMarginResizeEnd($event)">
-   <div class="resize-handle-top" mwlResizeHandle [resizeEdges]="{ top: true }"></div>
-   <div class="resize-handle-left" mwlResizeHandle [resizeEdges]="{ left: true }"></div>
-   <div class="resize-handle-right" mwlResizeHandle [resizeEdges]="{ right: true }"></div>
-   <div class="resize-handle-bottom" mwlResizeHandle [resizeEdges]="{ bottom: true }"></div>
-</div>
+@if (marginDivStyle && context.isShowResizableMargin()) {
+  <div id="div_margins" mwlResizable [enableGhostResize]="true"
+    [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize" (resizeEnd)="onMarginResizeEnd($event)">
+    <div class="resize-handle-top" mwlResizeHandle [resizeEdges]="{ top: true }"></div>
+    <div class="resize-handle-left" mwlResizeHandle [resizeEdges]="{ left: true }"></div>
+    <div class="resize-handle-right" mwlResizeHandle [resizeEdges]="{ right: true }"></div>
+    <div class="resize-handle-bottom" mwlResizeHandle [resizeEdges]="{ bottom: true }"></div>
+  </div>
+}
 <div id="div_chartjs">
-   <canvas #canvas></canvas>
+  <canvas #canvas></canvas>
 </div>

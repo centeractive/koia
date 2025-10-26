@@ -6,9 +6,11 @@
     <mat-form-field class="form_field_protocol">
       <mat-label>Protocol</mat-label>
       <mat-select id="protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
-        <mat-option *ngFor="let protocol of protocols" [value]="protocol" (click)="onProtocolChanged(protocol)">
-          {{ protocol }}
-        </mat-option>
+        @for (protocol of protocols; track protocol) {
+          <mat-option [value]="protocol" (click)="onProtocolChanged(protocol)">
+            {{ protocol }}
+          </mat-option>
+        }
       </mat-select>
     </mat-form-field>
     <div>
@@ -34,10 +36,10 @@
       </mat-form-field>
     </div>
     <br>
-    <div>
-      <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
-      &nbsp;
-      <button id="but_ok" mat-raised-button color="primary" (click)="onOK()">OK</button>
-    </div>
-  </mat-card-content>
-</mat-card>
+      <div>
+        <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
+        &nbsp;
+        <button id="but_ok" mat-raised-button color="primary" (click)="onOK()">OK</button>
+      </div>
+    </mat-card-content>
+  </mat-card>

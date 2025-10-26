@@ -1,55 +1,69 @@
 <div class="div_accordion_options">
-   <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-      (change)="onMultiExpandableChanged($event.checked)">
-      Multi Expansion
-   </mat-slide-toggle>
-   <span class="span_exp_collapse_all" *ngIf="multiExpandable">
+  <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
+    (change)="onMultiExpandableChanged($event.checked)">
+    Multi Expansion
+  </mat-slide-toggle>
+  @if (multiExpandable) {
+    <span class="span_exp_collapse_all">
       <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
-         <mat-icon>expand_more</mat-icon>
+        <mat-icon>expand_more</mat-icon>
       </button>
       <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
-         <mat-icon>expand_less</mat-icon>
+        <mat-icon>expand_less</mat-icon>
       </button>
-   </span>
-   <span class="span_add_group" *ngIf="nonGroupedColumns && nonGroupedColumns.length > 0">
+    </span>
+  }
+  @if (nonGroupedColumns && nonGroupedColumns.length > 0) {
+    <span class="span_add_group">
       <mat-form-field>
-         <mat-select #nonGroupedCols placeholder="Non Grouped Columns" [value]="nonGroupedColumns[0]">
-            <mat-option *ngFor="let column of nonGroupedColumns" [value]="column">
-               {{ column.name }}
+        <mat-select #nonGroupedCols placeholder="Non Grouped Columns" [value]="nonGroupedColumns[0]">
+          @for (column of nonGroupedColumns; track column) {
+            <mat-option [value]="column">
+              {{ column.name }}
             </mat-option>
-         </mat-select>
+          }
+        </mat-select>
       </mat-form-field>
       <button mat-icon-button matTooltip="Add Grouping Definition" [disabled]="!nonGroupedCols.value"
-         (click)="addValueGrouping(nonGroupedCols.value)">
-         <mat-icon>add_circle_outline</mat-icon>
+        (click)="addValueGrouping(nonGroupedCols.value)">
+        <mat-icon>add_circle_outline</mat-icon>
       </button>
-   </span>
+    </span>
+  }
 </div>
 <hr>
 
-<div style="padding: 0 5px 0 5px;">
-   <mat-accordion [multi]="multiExpandable" *ngIf="context">
-      <koia-expansion-panel *ngFor="let grouping of context.valueGroupings" [title]="grouping.columnName + ' Grouping'"
-         [deletable]="true" (delete)="removeValueGrouping(grouping)">
-         <span class="span_left_to_right">
-            <label>max. {{ grouping.minMaxValues.max | number }}</label>
-            <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
-               <mat-icon>add_circle_outline</mat-icon>
-            </button>
-         </span>
-         <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
-            <div class="div_group_value" mat-stroked-button *ngFor="let range of grouping.ranges" cdkDrag>
-               <mat-checkbox [(ngModel)]="range.active"></mat-checkbox>
-               <label>Up&nbsp;to:</label>
-               <input matInput type="number" [(ngModel)]="range.max"
-                  matTooltip="Range max. value, excluding upper value boundary" (keypress)="isNumberKey($event)">
-               <mat-icon class="icon_remove" *ngIf="grouping.ranges.length > 1"
-                  (click)="removeGroupingRange(grouping, range)">
-                  remove_circle_outline
-               </mat-icon>
-            </div>
-         </div>
-         <label>min. {{ grouping.minMaxValues.min | number }}</label>
-      </koia-expansion-panel>
-   </mat-accordion>
-</div>
+  <div style="padding: 0 5px 0 5px;">
+    @if (context) {
+      <mat-accordion [multi]="multiExpandable">
+        @for (grouping of context.valueGroupings; track grouping) {
+          <koia-expansion-panel [title]="grouping.columnName + ' Grouping'"
+            [deletable]="true" (delete)="removeValueGrouping(grouping)">
+            <span class="span_left_to_right">
+              <label>max. {{ grouping.minMaxValues.max | number }}</label>
+              <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
+                <mat-icon>add_circle_outline</mat-icon>
+              </button>
+            </span>
+            <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
+              @for (range of grouping.ranges; track range) {
+                <div class="div_group_value" mat-stroked-button cdkDrag>
+                  <mat-checkbox [(ngModel)]="range.active"></mat-checkbox>
+                  <label>Up&nbsp;to:</label>
+                  <input matInput type="number" [(ngModel)]="range.max"
+                    matTooltip="Range max. value, excluding upper value boundary" (keypress)="isNumberKey($event)">
+                    @if (grouping.ranges.length > 1) {
+                      <mat-icon class="icon_remove"
+                        (click)="removeGroupingRange(grouping, range)">
+                        remove_circle_outline
+                      </mat-icon>
+                    }
+                  </div>
+                }
+              </div>
+              <label>min. {{ grouping.minMaxValues.min | number }}</label>
+            </koia-expansion-panel>
+          }
+        </mat-accordion>
+      }
+    </div>

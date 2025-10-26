@@ -8,12 +8,14 @@
     <h4>Restore saved view</h4>
     <p>Load a view that has previously been saved.</p>
     <div id="div_config_records">
-      <div class="div_row" *ngFor="let cfgRecord of context.configRecords">
-        <button mat-icon-button (click)="context.loadConfig(cfgRecord); dialogRef.close()">
-          <mat-icon>monitor</mat-icon>
-        </button>
-        <span>&nbsp;{{ cfgRecord.name }} <var>{{ cfgRecord.modifiedTime | date:'short' }}</var></span>
-      </div>
+      @for (cfgRecord of context.configRecords; track cfgRecord) {
+        <div class="div_row">
+          <button mat-icon-button (click)="context.loadConfig(cfgRecord); dialogRef.close()">
+            <mat-icon>monitor</mat-icon>
+          </button>
+          <span>&nbsp;{{ cfgRecord.name }} <var>{{ cfgRecord.modifiedTime | date:'short' }}</var></span>
+        </div>
+      }
     </div>
     <div id="div_close_button">
       <button id="but_cancel" mat-raised-button color="primary" (click)="dialogRef.close()">Cancel</button>

@@ -1,57 +1,70 @@
 <div class="div_wrapper">
   <div #header class="div_header">
-    <koia-main-toolbar [dialogStyle]="dialogStyle" *ngIf="!hideToolbar" [route]="route" [query]="query" [restoredQuery]="restoredQuery"
-                       (onFilterChange)="onFilterChanged($event)" />
-    <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..." />
+    @if (!hideToolbar) {
+      <koia-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" [restoredQuery]="restoredQuery"
+        (onFilterChange)="onFilterChanged($event)" />
+    }
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..." />
+    }
     <div id="view_toolbar">
       <button mat-icon-button [matMenuTriggerFor]="moreMenu">
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #moreMenu="matMenu">
-        <button mat-menu-item *ngFor="let exportFormat of exportFormats" (click)="saveAs(exportFormat)">
-          <mat-icon>insert_drive_file</mat-icon>
-          <span>Save As {{ exportFormat }}</span>
-        </button>
-        <button *ngIf="!dialogStyle" mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
-          <mat-icon>monitor</mat-icon>
-          <span>Manage Views</span>
-        </button>
+        @for (exportFormat of exportFormats; track exportFormat) {
+          <button mat-menu-item (click)="saveAs(exportFormat)">
+            <mat-icon>insert_drive_file</mat-icon>
+            <span>Save As {{ exportFormat }}</span>
+          </button>
+        }
+        @if (!dialogStyle) {
+          <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
+            <mat-icon>monitor</mat-icon>
+            <span>Manage Views</span>
+          </button>
+        }
       </mat-menu>
-      <button id="but_print" mat-icon-button *ngIf="!dialogStyle" printSectionId="print-section" ngxPrint
-              matTooltip="Print current view" (click)="printView()">
-        <mat-icon>print</mat-icon>
-      </button>
+      @if (!dialogStyle) {
+        <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint
+          matTooltip="Print current view" (click)="printView()">
+          <mat-icon>print</mat-icon>
+        </button>
+      }
 
-      <ng-container *ngIf="!dialogStyle">
+      @if (!dialogStyle) {
         <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
           <mat-icon>save_alt</mat-icon>
         </button>
-
         <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!configRecords.length" [matMenuTriggerFor]="restoreViewMenu">
           <mat-icon [matBadge]="configRecords.length" [matBadgeHidden]="!configRecords.length" matBadgeSize="small" matBadgeColor="accent">
             open_in_browser
           </mat-icon>
         </button>
         <mat-menu #restoreViewMenu="matMenu">
-          <button class="menu_item_details" *ngFor="let record of configRecords" mat-menu-item (click)="loadConfig(record)">
-            <mat-icon>monitor</mat-icon>
-            <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
-          </button>
+          @for (record of configRecords; track record) {
+            <button class="menu_item_details" mat-menu-item (click)="loadConfig(record)">
+              <mat-icon>monitor</mat-icon>
+              <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
+            </button>
+          }
         </mat-menu>
-      </ng-container>
+      }
 
       <button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
-              [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
-              (click)="considerColumnWidths = !considerColumnWidths">
+        [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
+        (click)="considerColumnWidths = !considerColumnWidths">
         <mat-icon>wrap_text</mat-icon>
       </button>
-      <button *ngIf="hasObjectDataTypeColumns" [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
-              [matTooltip]="showNestedObjects ? 'Hide nested objects' : 'Show nested objects'"
-              (click)="showNestedObjects = !showNestedObjects">
-        <mat-icon>code</mat-icon>
-      </button>
+      @if (hasObjectDataTypeColumns) {
+        <button [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
+          [matTooltip]="showNestedObjects ? 'Hide nested objects' : 'Show nested objects'"
+          (click)="showNestedObjects = !showNestedObjects">
+          <mat-icon>code</mat-icon>
+        </button>
+      }
       <button [color]="highlight ? 'accent' : ''" mat-icon-button
-              [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
+        [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
         <mat-icon>highlight</mat-icon>
       </button>
     </div>
@@ -61,27 +74,33 @@
     <div [style.width]="considerColumnWidths ? tableStyleWidth + colWidthMeasurement : null">
       <table [class]="considerColumnWidths ? 'table_layout_fixed' : ''" mat-table [dataSource]="entries" matSort (matSortChange)="sortEntries($event)">
 
-        <ng-container *ngFor="let column of columns" [matColumnDef]="column.name">
-          <span *ngIf="column.indexed">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">
-              {{ column.name }}</th>
-          </span>
-          <span *ngIf="!column.indexed">
-            <th mat-header-cell *matHeaderCellDef [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">{{ column.name }}</th>
-          </span>
-          <td [class]="'td_' + column.dataType" *matCellDef="let entry" (click)="displayValue(column, entry)">
+        @for (column of columns; track column) {
+          <ng-container [matColumnDef]="column.name">
+            @if (column.indexed) {
+              <span>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">
+                {{ column.name }}</th>
+              </span>
+            }
+            @if (!column.indexed) {
+              <span>
+                <th mat-header-cell *matHeaderCellDef [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">{{ column.name }}</th>
+              </span>
+            }
+            <td [class]="'td_' + column.dataType" *matCellDef="let entry" (click)="displayValue(column, entry)">
             {{ formattedValueOf(column, entry) }}</td>
-        </ng-container>
+          </ng-container>
+        }
 
         <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>
         <tr mat-row *matRowDef="let entry; columns: columnNames;" [style.background]="highlight ? entry['bgcolor'] : null"
-            [style.color]="highlight ? entry['fgcolor'] : null">
+          [style.color]="highlight ? entry['fgcolor'] : null">
         </tr>
-      </table>      
+      </table>
       <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize" [disabled]="loading"
-                   [pageSizeOptions]="pageSizeOptions" [pageIndex]="query.getPageIndex()" [length]="totalRowCount" (page)="onPageChanged()"
-                   [showFirstLastButtons]="true" />
-    </div>        
+        [pageSizeOptions]="pageSizeOptions" [pageIndex]="query.getPageIndex()" [length]="totalRowCount" (page)="onPageChanged()"
+        [showFirstLastButtons]="true" />
+      </div>
 
+    </div>
   </div>
-</div>

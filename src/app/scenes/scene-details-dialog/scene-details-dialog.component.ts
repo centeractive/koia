@@ -6,34 +6,38 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 @Component({
     selector: 'koia-scene-details-dialog',
     template: `<mat-card appearance="outlined">
-                <mat-card-content>
-                  <h2>{{ scene.name }}</h2>
-                  <h3>Source Context</h3>
-                  <table>
-                    <tr *ngFor="let contextInfo of scene.context">
-                      <th class="row-header">{{ contextInfo.name }}</th>
-                      <td>{{ contextInfo.value }}</td>
-                    </tr>
-                  </table>
-                  <h3>Columns</h3>
-                  <table>
-                    <tr>
-                      <th class="column-header">Name</th>
-                      <th class="column-header">Type</th>
-                      <th class="column-header">Format</th>                     
-                      <th class="column-header">Group By</th>
-                      <th class="column-header">Width ({{ colWidthMeasurement }})</th>
-                    </tr>
-                    <tr *ngFor="let column of scene.columns">
-                      <th class="row-header">{{ column.name }}</th>
-                      <td>{{ column.dataType }}</td>
-                      <td>{{ column.format }}</td>
-                      <td>{{ column.groupingTimeUnit }}</td>
-                      <td style="text-align: right">{{ column.width }}</td>
-                    </tr>
-                  </table>
-                </mat-card-content>
-              </mat-card>`,
+                  <mat-card-content>
+                    <h2>{{ scene.name }}</h2>
+                    <h3>Source Context</h3>
+                    <table>
+                      @for (contextInfo of scene.context; track contextInfo) {
+                        <tr>
+                          <th class="row-header">{{ contextInfo.name }}</th>
+                          <td>{{ contextInfo.value }}</td>
+                        </tr>
+                      }
+                    </table>
+                    <h3>Columns</h3>
+                    <table>
+                      <tr>
+                        <th class="column-header">Name</th>
+                        <th class="column-header">Type</th>
+                        <th class="column-header">Format</th>
+                        <th class="column-header">Group By</th>
+                        <th class="column-header">Width ({{ colWidthMeasurement }})</th>
+                      </tr>
+                      @for (column of scene.columns; track column) {
+                        <tr>
+                          <th class="row-header">{{ column.name }}</th>
+                          <td>{{ column.dataType }}</td>
+                          <td>{{ column.format }}</td>
+                          <td>{{ column.groupingTimeUnit }}</td>
+                          <td style="text-align: right">{{ column.width }}</td>
+                        </tr>
+                      }
+                    </table>
+                  </mat-card-content>
+                </mat-card>`,
     styles: [`table {
                font-size: 12px;
             }

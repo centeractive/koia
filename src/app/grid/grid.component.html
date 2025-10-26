@@ -1,178 +1,212 @@
 <mat-sidenav-container fullscreen>
 
-   <mat-sidenav #sidenav mode="side" class="sidenav" *ngIf="elementContexts">
-      <koia-chart-side-bar *ngIf="isChartContext(selectedContext)" [context]="$any(selectedContext)" [entries]="entries"
-         [gridColumns]="gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-         (onElementPositionChange)="changeElementPosition($event)">
-      </koia-chart-side-bar>
-      <koia-graph-side-bar *ngIf="isGraphContext(selectedContext)" [context]="$any(selectedContext)" [entries]="entries"
-         [gridColumns]="gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
-         (onElementPositionChange)="changeElementPosition($event)">
-      </koia-graph-side-bar>
-      <koia-summary-table-side-bar *ngIf="isSummaryContext(selectedContext)" [context]="selectedContext"
-         [entries]="entries" [gridColumns]="gridColumns" [elementCount]="elementContexts.length"
-         [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
-      </koia-summary-table-side-bar>
-   </mat-sidenav>  
+  @if (elementContexts) {
+    <mat-sidenav #sidenav mode="side" class="sidenav">
+      @if (isChartContext(selectedContext)) {
+        <koia-chart-side-bar [context]="$any(selectedContext)" [entries]="entries"
+          [gridColumns]="gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+          (onElementPositionChange)="changeElementPosition($event)">
+        </koia-chart-side-bar>
+      }
+      @if (isGraphContext(selectedContext)) {
+        <koia-graph-side-bar [context]="$any(selectedContext)" [entries]="entries"
+          [gridColumns]="gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+          (onElementPositionChange)="changeElementPosition($event)">
+        </koia-graph-side-bar>
+      }
+      @if (isSummaryContext(selectedContext)) {
+        <koia-summary-table-side-bar [context]="selectedContext"
+          [entries]="entries" [gridColumns]="gridColumns" [elementCount]="elementContexts.length"
+          [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
+        </koia-summary-table-side-bar>
+      }
+    </mat-sidenav>
+  }
 
-   <mat-sidenav-content>
-      <div #header class="div_header">
-         <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery"
-            (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
-         <mat-progress-bar *ngIf="loading" mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
-         <div id="view_toolbar">
-            <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-               <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #moreMenu="matMenu">
-               <button mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
-                  <mat-icon>view_column</mat-icon>
-                  <span>Grid Columns</span>
-               </button>
-               <button mat-menu-item [matMenuTriggerFor]="gridRatioMenu">
-                  <mat-icon>aspect_ratio</mat-icon>
-                  <span>Grid Cell Ratio (width:height)</span>
-               </button>
-               <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
-                  <mat-icon>monitor</mat-icon>
-                  <span>Manage Views</span>
-               </button>
-            </mat-menu>
+  <mat-sidenav-content>
+    <div #header class="div_header">
+      <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery"
+      (onFilterChange)="onFilterChanged($event)"></koia-main-toolbar>
+      @if (loading) {
+        <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
+      }
+      <div id="view_toolbar">
+        <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #moreMenu="matMenu">
+          <button mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
+            <mat-icon>view_column</mat-icon>
+            <span>Grid Columns</span>
+          </button>
+          <button mat-menu-item [matMenuTriggerFor]="gridRatioMenu">
+            <mat-icon>aspect_ratio</mat-icon>
+            <span>Grid Cell Ratio (width:height)</span>
+          </button>
+          <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
+            <mat-icon>monitor</mat-icon>
+            <span>Manage Views</span>
+          </button>
+        </mat-menu>
 
-            <mat-menu #gridColumnsMenu="matMenu">
-               <button mat-menu-item *ngFor="let columns of [ 1, 2, 3, 4, 5]" [value]="columns"
-                  [disabled]="columns === gridColumns" (click)="setGridColumns(columns)">{{ columns }}
-                  Column{{ columns === 1 ? '' : 's' }}</button>
-            </mat-menu>
+        <mat-menu #gridColumnsMenu="matMenu">
+          @for (columns of [ 1, 2, 3, 4, 5]; track columns) {
+            <button mat-menu-item [value]="columns"
+              [disabled]="columns === gridColumns" (click)="setGridColumns(columns)">{{ columns }}
+            Column{{ columns === 1 ? '' : 's' }}</button>
+          }
+        </mat-menu>
 
-            <mat-menu #gridRatioMenu="matMenu">
-               <button mat-menu-item *ngFor="let ratio of [ '1:1', '3:2', '2:1', '2:3', '1:2']" [value]="ratio"
-                  [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
-            </mat-menu>
+        <mat-menu #gridRatioMenu="matMenu">
+          @for (ratio of [ '1:1', '3:2', '2:1', '2:3', '1:2']; track ratio) {
+            <button mat-menu-item [value]="ratio"
+            [disabled]="ratio === gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
+          }
+        </mat-menu>
 
-            <button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
-               [disabled]="elementContexts.length === 0" (click)="printView()">
-               <mat-icon>print</mat-icon>
-            </button>
+        <button mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
+          [disabled]="elementContexts.length === 0" (click)="printView()">
+          <mat-icon>print</mat-icon>
+        </button>
 
-            <button mat-icon-button matTooltip="Save current view"
-               [disabled]="!elementContexts || !elementContexts.length" (click)="saveView()">
-               <mat-icon>save_alt</mat-icon>
-            </button>
+        <button mat-icon-button matTooltip="Save current view"
+          [disabled]="!elementContexts || !elementContexts.length" (click)="saveView()">
+          <mat-icon>save_alt</mat-icon>
+        </button>
 
-            <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!views.length"
-               [matMenuTriggerFor]="restoreViewMenu">
-               <mat-icon [matBadge]="views.length" [matBadgeHidden]="!views.length" matBadgeSize="small"
-                  matBadgeColor="accent">
-                  open_in_browser
-               </mat-icon>
+        <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!views.length"
+          [matMenuTriggerFor]="restoreViewMenu">
+          <mat-icon [matBadge]="views.length" [matBadgeHidden]="!views.length" matBadgeSize="small"
+            matBadgeColor="accent">
+            open_in_browser
+          </mat-icon>
+        </button>
+        <mat-menu #restoreViewMenu="matMenu">
+          @for (view of views; track view) {
+            <button class="menu_item_details" mat-menu-item (click)="loadView(view)">
+              <mat-icon>monitor</mat-icon>
+              <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
             </button>
-            <mat-menu #restoreViewMenu="matMenu">
-               <button class="menu_item_details" *ngFor="let view of views" mat-menu-item (click)="loadView(view)">
-                  <mat-icon>monitor</mat-icon>
-                  <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
-               </button>
-            </mat-menu>
+          }
+        </mat-menu>
 
-            &nbsp;&nbsp;&nbsp;
-            <button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
-               <mat-icon svgIcon="add_chart"></mat-icon>
-            </button>
-            <button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
-               <mat-icon svgIcon="add_graph"></mat-icon>
-            </button>
-            <button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
-               <mat-icon svgIcon="add_summary"></mat-icon>
-            </button>
-         </div>
+        &nbsp;&nbsp;&nbsp;
+        <button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
+          <mat-icon svgIcon="add_chart"></mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Add Relationship Graph" (click)="addGraph()">
+          <mat-icon svgIcon="add_graph"></mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
+          <mat-icon svgIcon="add_summary"></mat-icon>
+        </button>
       </div>
+    </div>
 
-      <div #content class="div_content printable" style="padding: 5px;" cdkDropList cdkDropListOrientation="mixed"
-         (cdkDropListDropped)="drop($event)">
-         <div #content [ngStyle]="gridStyle()">
-            @for (context of elementContexts; track context) {
-            <div class="mat-elevation-z8" [ngStyle]="cellStyle(context)" cdkDrag>
-               <div #elementContainer class="div_element">
-                  <div class="div_element_header">
-                     <div style="display: flex">
-                        <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu">
-                           <mat-icon>more_vert</mat-icon>
+    <div #content class="div_content printable" style="padding: 5px;" cdkDropList cdkDropListOrientation="mixed"
+      (cdkDropListDropped)="drop($event)">
+      <div #content [ngStyle]="gridStyle()">
+        @for (context of elementContexts; track context) {
+          <div class="mat-elevation-z8" [ngStyle]="cellStyle(context)" cdkDrag>
+            <div #elementContainer class="div_element">
+              <div class="div_element_header">
+                <div style="display: flex">
+                  <button class="but_config" mat-icon-button [matMenuTriggerFor]="moreMenu">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #moreMenu="matMenu">
+                    <button mat-menu-item [matMenuTriggerFor]="columnSpanMenu">
+                      <mat-icon>view_column</mat-icon>
+                      <span>Column Span</span>
+                    </button>
+                    <button mat-menu-item [matMenuTriggerFor]="rowSpanMenu">
+                      <mat-icon>table_rows</mat-icon>
+                      <span>Row Span</span>
+                    </button>
+                    @if (!!context.getSupportedExportFormats().length) {
+                      @for (exportFormat of context.getSupportedExportFormats(); track exportFormat) {
+                        <button mat-menu-item
+                          (click)="saveAs(context, exportFormat)">
+                          <mat-icon>insert_drive_file</mat-icon>
+                          <span>Save As {{ exportFormat }}</span>
                         </button>
-                        <mat-menu #moreMenu="matMenu">
-                           <button mat-menu-item [matMenuTriggerFor]="columnSpanMenu">
-                              <mat-icon>view_column</mat-icon>
-                              <span>Column Span</span>
-                           </button>
-                           <button mat-menu-item [matMenuTriggerFor]="rowSpanMenu">
-                              <mat-icon>table_rows</mat-icon>
-                              <span>Row Span</span>
-                           </button>
-                           <ng-container *ngIf="!!context.getSupportedExportFormats().length">
-                              <button mat-menu-item *ngFor="let exportFormat of context.getSupportedExportFormats()"
-                                 (click)="saveAs(context, exportFormat)">
-                                 <mat-icon>insert_drive_file</mat-icon>
-                                 <span>Save As {{ exportFormat }}</span>
-                              </button>
-                           </ng-container>
-                        </mat-menu>
+                      }
+                    }
+                  </mat-menu>
 
-                        <mat-menu #columnSpanMenu="matMenu">
-                           <button mat-menu-item *ngFor="let span of columnSpans()" [value]="span"
-                              [disabled]="span === context.gridColumnSpan" (click)="context.gridColumnSpan = span">
-                              {{ span }} Column{{ span === 1 ? '' : 's' }}
-                           </button>
-                        </mat-menu>
+                  <mat-menu #columnSpanMenu="matMenu">
+                    @for (span of columnSpans(); track span) {
+                      <button mat-menu-item [value]="span"
+                        [disabled]="span === context.gridColumnSpan" (click)="context.gridColumnSpan = span">
+                        {{ span }} Column{{ span === 1 ? '' : 's' }}
+                      </button>
+                    }
+                  </mat-menu>
 
-                        <mat-menu #rowSpanMenu="matMenu">
-                           <button mat-menu-item *ngFor="let span of [1, 2, 3, 4]" [value]="span"
-                              [disabled]="span === context.gridRowSpan" (click)="context.gridRowSpan = span">
-                              {{ span }} Row{{ span === 1 ? '' : 's' }}
-                           </button>
-                        </mat-menu>
+                  <mat-menu #rowSpanMenu="matMenu">
+                    @for (span of [1, 2, 3, 4]; track span) {
+                      <button mat-menu-item [value]="span"
+                        [disabled]="span === context.gridRowSpan" (click)="context.gridRowSpan = span">
+                        {{ span }} Row{{ span === 1 ? '' : 's' }}
+                      </button>
+                    }
+                  </mat-menu>
 
-                        <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..."
-                           (click)="configure($event, context)">
-                           <mat-icon>settings</mat-icon>
-                        </button>
-                        <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
-                           *ngIf="isChartContext(context)" mat-icon-button
-                           [color]="isShowResizableMargin(context) ? 'primary' : null"
-                           matTooltip="Toggle resizable chart margin"
-                           (click)="asChartContext(context).toggleShowResizableMargin()">
-                           <mat-icon>crop_free</mat-icon>
-                        </button>
-                     </div>
-                     <div class="div_title">
-                        <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
-                           [textareaMaxRows]="2" (keyup)="context.title = $any($event.target).value"></textarea>
-                     </div>
-                     <button class="but_warning" mat-icon-button *ngIf="context.warning" [matTooltip]="context.warning"
-                        color="warn">
-                        <mat-icon>error</mat-icon>
-                     </button>
-                     <button *ngIf="elementContexts.length > 1" class="but_move" mat-icon-button matTooltip="Move"
-                        cdkDragHandle>
-                        <mat-icon svgIcon="move"></mat-icon>
-                     </button>
-                     <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
-                        <mat-icon>delete_forever</mat-icon>
-                     </button>
-                  </div>
-                  <koia-summary-table *ngIf="isSummaryContext(context)" [gridView]="true" [context]="context"
-                     (onRemove)="removeElement($any($event))">
-                  </koia-summary-table>
-                  <koia-chart *ngIf="isChartContext(context)" [gridView]="true" [context]="$any(context)"
-                     (onRemove)="removeElement($any($event))" (onWarning)="notifyWarning($event)">
-                  </koia-chart>
-                  <div *ngIf="isGraphContext(context)" class="div_graph">
-                     <koia-graph [gridView]="true" [context]="$any(context)" (onRemove)="removeElement($any($event))"
-                        (onWarning)="notifyWarning($event)">
-                     </koia-graph>
-                  </div>
-               </div>
+                  <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..."
+                    (click)="configure($event, context)">
+                    <mat-icon>settings</mat-icon>
+                  </button>
+                  @if (isChartContext(context)) {
+                    <button [ngClass]="isShowResizableMargin(context) ? 'but_config_active' : 'but_config'"
+                      mat-icon-button
+                      [color]="isShowResizableMargin(context) ? 'primary' : null"
+                      matTooltip="Toggle resizable chart margin"
+                      (click)="asChartContext(context).toggleShowResizableMargin()">
+                      <mat-icon>crop_free</mat-icon>
+                    </button>
+                  }
+                </div>
+                <div class="div_title">
+                  <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()"
+                  [textareaMaxRows]="2" (keyup)="context.title = $any($event.target).value"></textarea>
+                </div>
+                @if (context.warning) {
+                  <button class="but_warning" mat-icon-button [matTooltip]="context.warning"
+                    color="warn">
+                    <mat-icon>error</mat-icon>
+                  </button>
+                }
+                @if (elementContexts.length > 1) {
+                  <button class="but_move" mat-icon-button matTooltip="Move"
+                    cdkDragHandle>
+                    <mat-icon svgIcon="move"></mat-icon>
+                  </button>
+                }
+                <button class="but_close" mat-icon-button matTooltip="Delete" (click)="removeElement(context)">
+                  <mat-icon>delete_forever</mat-icon>
+                </button>
+              </div>
+              @if (isSummaryContext(context)) {
+                <koia-summary-table [gridView]="true" [context]="context"
+                  (onRemove)="removeElement($any($event))">
+                </koia-summary-table>
+              }
+              @if (isChartContext(context)) {
+                <koia-chart [gridView]="true" [context]="$any(context)"
+                  (onRemove)="removeElement($any($event))" (onWarning)="notifyWarning($event)">
+                </koia-chart>
+              }
+              @if (isGraphContext(context)) {
+                <div class="div_graph">
+                  <koia-graph [gridView]="true" [context]="$any(context)" (onRemove)="removeElement($any($event))"
+                    (onWarning)="notifyWarning($event)">
+                  </koia-graph>
+                </div>
+              }
             </div>
-            }
-         </div>
+          </div>
+        }
       </div>
-   </mat-sidenav-content>
+    </div>
+  </mat-sidenav-content>
 </mat-sidenav-container>

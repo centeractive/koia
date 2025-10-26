@@ -4,16 +4,18 @@
 <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
   <mat-icon style="color: white;">add_photo_alternate</mat-icon>
 </button>
-<mat-card appearance="outlined" id="mat_card_active_scene" *ngIf="activeScene">
-  <mat-card-header>
-    <div mat-card-avatar id="image-scene"></div>
-    <mat-card-title>Active Scene</mat-card-title>
-    <mat-card-subtitle>This is the scene you're currently working with</mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
-    <koia-scene-table [activeScene]="activeScene" (onActivate)="showRawData()" (onDelete)="delete($event)"></koia-scene-table>
-  </mat-card-content>
-</mat-card>
+@if (activeScene) {
+  <mat-card appearance="outlined" id="mat_card_active_scene">
+    <mat-card-header>
+      <div mat-card-avatar id="image-scene"></div>
+      <mat-card-title>Active Scene</mat-card-title>
+      <mat-card-subtitle>This is the scene you're currently working with</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <koia-scene-table [activeScene]="activeScene" (onActivate)="showRawData()" (onDelete)="delete($event)"></koia-scene-table>
+    </mat-card-content>
+  </mat-card>
+}
 
 <mat-card appearance="outlined" id="mat_card_all_scenes">
   <mat-card-header>
