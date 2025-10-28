@@ -8,6 +8,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
+import { DateTime } from 'luxon';
 import { Aggregation, ChangeEvent, Column, DataType, Route, SummaryContext } from '../shared/model';
 import { AggregationService, RawDataRevealService } from '../shared/services';
 import { DataFrameSorter } from './data-frame-sorter';
@@ -161,8 +162,12 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
     let column: Column;
     if (this.context.groupByColumns.length > 0 && columnIndex < this.context.groupByColumns.length) {
       column = this.context.groupByColumns[columnIndex];
-      if (column.dataType === DataType.TIME && column.groupingTimeUnit) {
-        return this.datePipe.transform(value, DateTimeUtils.ngFormatOf(column.groupingTimeUnit));
+      if (column.dataType === DataType.TIME) {
+        if (column.groupingTimeUnit) {
+          return this.datePipe.transform(value, DateTimeUtils.ngFormatOf(column.groupingTimeUnit));
+        } else if (column.format) {
+          return DateTime.fromMillis(value).toFormat(column.format);
+        }
       }
     }
     return this.numberFormatter.format(value);
