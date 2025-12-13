@@ -11,7 +11,7 @@ pool:
 steps:
 
 # install Node.js and npm packages
-- task: CacheBeta@0
+- task: Cache@2
   inputs:
     key: npm | $(Agent.OS) | package-lock.json
     path: $(npm_config_cache)
@@ -23,7 +23,7 @@ steps:
   displayName: 'install Node.js'
 
 - script: |
-    npm i -g @angular/cli@20 --ignore-scripts
+    npm i -g @angular/cli@21 --ignore-scripts
     npm ci --ignore-scriptsnp
   displayName: 'install npm packages'
 
@@ -67,7 +67,7 @@ steps:
     testResultsFiles: '**/TESTS-*.xml'
   displayName: 'publish unit test results'
 
-- task: PublishCodeCoverageResults@1
+- task: PublishCodeCoverageResults@2
   displayName: 'publish code coverage report'
   condition: succeededOrFailed()
   inputs:
