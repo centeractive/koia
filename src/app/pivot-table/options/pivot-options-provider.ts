@@ -1,11 +1,12 @@
 import { Column, TimeUnit } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { ArrayUtils, ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { compareFormattedTime } from 'app/shared/utils/comparator/formatted-time-comparator';
 import { ValueRangeLabelComparator } from 'app/shared/value-range';
 import { ScaleLinear, scaleLinear } from 'd3';
 import { PivotContext } from '../model';
 import { CellClickHandler } from './cell-click-handler';
-import { compareFormattedTime } from 'app/shared/utils/comparator/formatted-time-comparator';
+
 declare let $: any;
 
 export class PivotOptionsProvider {

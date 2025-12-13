@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
 import { Column, DataType, Document, Operator, Page, Query, Scene, SceneInfo } from 'app/shared/model';
 import { QueryUtils } from 'app/shared/utils';
+import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Observable, lastValueFrom } from 'rxjs';
 import { CouchDBService, SortLimitationWorkaround } from './couchdb';
@@ -10,7 +11,6 @@ import { DB } from './db.type';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryConverter } from './mango/query-converter';
 import { PouchDBAccess } from './pouchdb';
-import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 
 @Injectable()
 export class DBService {
@@ -119,7 +119,7 @@ export class DBService {
       .then(s => <Scene>s);
   }
 
-  async persistScene(scene: Scene, activate: boolean, promiseMonitor? : PromiseProgressMonitor): Promise<Scene> {
+  async persistScene(scene: Scene, activate: boolean, promiseMonitor?: PromiseProgressMonitor): Promise<Scene> {
     promiseMonitor = promiseMonitor ?? new PromiseProgressMonitor();
     return promiseMonitor.add("insert scene", this.db.insert(this.scenesDbName(), scene))
       .then("create database", () => {
@@ -133,7 +133,7 @@ export class DBService {
         .filter(c => c.indexed)
         .map(c => promiseMonitor.addUnchained("index column " + c.name, this.db.createIndex(scene.database, c.name)))))
       .unwrap()
-      .then(() => scene)
+      .then(() => scene);
   }
 
   async updateScene(scene: Scene): Promise<Scene> {

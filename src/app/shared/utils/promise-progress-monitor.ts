@@ -12,7 +12,7 @@ export class PromiseProgressMonitor {
       this.addUnchained(taskName, promise));
   }
 
-  addUnchained<T>(taskName: string, promise: Promise<T>): Promise<T> {
+  async addUnchained<T>(taskName: string, promise: Promise<T>): Promise<T> {
     this._tasksCount++;
     this._eventEmitter.emit('progressChange', this);
     return promise.finally(() => {
@@ -23,7 +23,7 @@ export class PromiseProgressMonitor {
   }
 
   onProgressChange(listener: ((value: PromiseProgressMonitor) => void)) {
-    this._eventEmitter.on("progressChange", listener);
+    this._eventEmitter.on('progressChange', listener);
   }
 
   get settled(): number {
