@@ -3,13 +3,9 @@ import { DateTime } from 'luxon';
 import { DataHandler } from '../data-handler.type';
 import { ExcelReader } from './excel-reader';
 
-/**
- * TODO: after updating Angular to v21, the Excel file cannot be loaded anymore
- *       fix the issue and re-enable the test suite
- */
-xdescribe('ExcelReader', () => {
+describe('ExcelReader', () => {
 
-   const EXCEL_FILE_URL = '/base/src/app/shared/services/reader/excel/test.xlsx';
+   const EXCEL_FILE_URL = '/src/app/shared/services/reader/excel/test.xlsx';
 
    let reader: ExcelReader;
    let dataHandler: DataHandler;

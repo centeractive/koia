@@ -112,7 +112,12 @@
             ],
             "assets": [
               "src/assets",
-              "src/WEB-INF"
+              "src/WEB-INF",
+              {
+                "glob": "**/*",
+                "input": "src/app/shared/services/reader/excel",
+                "output": "src/app/shared/services/reader/excel"
+              }
             ]            
           }
         }
