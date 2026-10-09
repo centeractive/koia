@@ -347,6 +347,43 @@ describe('RawDataComponent', () => {
     expect(divContent.style['maxHeight']).toBe((window.innerHeight - 160) + 'px');
   });
 
+  it('#ngAfterViewInit should adjust content max height when dialog header is resized', async () => {
+
+    // given
+    component.dialogStyle = true;
+    component.ngAfterViewInit();
+
+    // when
+    component.divHeaderRef.nativeElement.style.height = '200px';
+    await nextFrame();
+
+    // then
+    expect(component.divContentRef.nativeElement.style.maxHeight).toBe((window.innerHeight - 260) + 'px');
+  });
+
+  it('#ngOnDestroy should stop adjusting content max height when dialog header is resized', async () => {
+
+    // given
+    component.dialogStyle = true;
+    component.ngAfterViewInit();
+    await nextFrame();
+    const maxHeight = component.divContentRef.nativeElement.style.maxHeight;
+    component.ngOnDestroy();
+
+    // when
+    component.divHeaderRef.nativeElement.style.height = '200px';
+    await nextFrame();
+
+    // then
+    expect(component.divContentRef.nativeElement.style.maxHeight).toBe(maxHeight);
+  });
+
+  it('should clip paginator touch targets', () => {
+
+    // then
+    expect(getComputedStyle(fixture.nativeElement.querySelector('mat-paginator')).overflow).toBe('hidden');
+  });
+
   it('#saveAs should save complete data as CSV file', fakeAsync(() => {
 
     // given
@@ -479,4 +516,8 @@ describe('RawDataComponent', () => {
     // then
     expect(window.print).toHaveBeenCalled();
   });
+
+  function nextFrame(): Promise<void> {
+    return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)));
+  }
 });

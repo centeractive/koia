@@ -51,6 +51,7 @@ td {
   left: 0px;
   bottom: 0px;
   z-index: 10;
+  overflow: hidden;
 }
 
 /* inspired by https://stackoverflow.com/a/75258592/2358409 */

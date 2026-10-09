@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -26,7 +26,7 @@ import { DBService } from '../shared/services/backend';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit {
+export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit, OnDestroy {
 
   static readonly DIALOG_VIEWPORT_MARGIN = 40;
   static readonly CONTENT_VERTICAL_MARGIN = 20;
@@ -60,6 +60,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
 
   private page: Page;
   private valueFormatter = new ValueFormatter();
+  private headerResizeObserver: ResizeObserver;
 
   constructor(bottomSheet: MatBottomSheet, router: Router, public override dbService: DBService, public override viewPersistenceService: ViewPersistenceService,
     public override dialogService: DialogService, notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar) {
@@ -86,9 +87,17 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
 
   ngAfterViewInit(): void {
     this.adjustLayout();
+    if (this.dialogStyle) {
+      this.headerResizeObserver = new ResizeObserver(() => this.adjustLayout());
+      this.headerResizeObserver.observe(this.divHeaderRef.nativeElement);
+    }
     if (!this.dialogStyle && this.scene.config.records.filter(r => r.route === this.route).length) {
       this.selectConfig();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.headerResizeObserver?.disconnect();
   }
 
   onFilterChanged(query: Query): void {
