@@ -140,6 +140,29 @@ describe('GraphDataService', () => {
       expect(nodes[3].value).toEqual(3);
    });
 
+   it('#createData should group by time unit when time is missing in first entry', () => {
+
+      // given
+      context.groupByColumns = [findColumn('Time')];
+      context.entries = [
+         { c1: 'a' },
+         { Time: now + 30 * sec, c1: 'b' },
+         { Time: now + 40 * sec, c1: 'b' }
+      ];
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      const nodes: GraphNode[] = data['nodes'];
+      expect(nodes.length).toEqual(3);
+      expect(nodes[1].name).toEqual('Time (per minute)');
+      expect(nodes[1].value).toEqual(PropertyFilter.EMPTY_VALUE);
+      expect(nodes[1].info).toEqual('1');
+      expect(nodes[2].value).toEqual(now);
+      expect(nodes[2].info).toEqual('2');
+   });
+
    function findColumn(name: string): Column {
       return columns.find(c => c.name === name);
    }

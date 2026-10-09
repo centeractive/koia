@@ -426,6 +426,24 @@ describe('DateTimeUtils', () => {
     expect(year).toEqual(today);
   });
 
+  it('#toBaseTime should return undefined when time is undefined', () => {
+
+    // when
+    const time = DateTimeUtils.toBaseTime(undefined, TimeUnit.MINUTE);
+
+    // then
+    expect(time).toBeUndefined();
+  });
+
+  it('#toBaseTime should return time rounded down to time unit', () => {
+
+    // when
+    const time = DateTimeUtils.toBaseTime(new Date(2020, 1, 3, 10, 25, 33, 456).getTime(), TimeUnit.MINUTE);
+
+    // then
+    expect(time).toBe(new Date(2020, 1, 3, 10, 25).getTime());
+  });
+
   it('#formatTime should return formatted date/time', () => {
     const time = new Date('2019-01-29T18:24:17').getTime() + 557;
 

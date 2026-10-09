@@ -1,7 +1,7 @@
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Column, PropertyFilter, DataType } from 'app/shared/model';
 import { GraphContext, GraphNode, GraphLink } from 'app/shared/model/graph';
-import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
+import { DateTimeUtils, ColumnNameConverter, DataFrameUtils } from 'app/shared/utils';
 import { Injectable } from '@angular/core';
 
 export interface GraphData {
@@ -28,16 +28,8 @@ export class GraphDataService {
       return { nodes: providerContext.nodes, links: providerContext.links };
    }
 
-   /**
-    * TODO: transformSeries may not work when undefined values are present (see solution at ValueRangeGroupingService#groupByValueRanges)
-    */
    private convertTime(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
-      return dataFrame.transformSeries({
-         [timeColumn.name]: ts => {
-            const date = DateTimeUtils.toBaseDate(ts, timeColumn.groupingTimeUnit);
-            return date ? date.getTime() : undefined;
-         }
-      });
+      return DataFrameUtils.transformColumn(dataFrame, timeColumn.name, (time: number) => DateTimeUtils.toBaseTime(time, timeColumn.groupingTimeUnit));
    }
 
    /**

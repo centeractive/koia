@@ -129,6 +129,11 @@ export class DateTimeUtils {
     return date;
   }
 
+  static toBaseTime(time: number, timeUnit: TimeUnit): number {
+    const date = DateTimeUtils.toBaseDate(time, timeUnit);
+    return date ? date.getTime() : undefined;
+  }
+
   static formatTime(time: number, timeUnit: TimeUnit): string {
     return DateTime.fromMillis(time).toFormat(this.luxonFormatOf(timeUnit));
   }

@@ -132,6 +132,23 @@ describe('TimeGroupingService', () => {
       expect(dataFrame.toArray()).toEqual(expectedData);
    });
 
+   it('#groupByTimeUnit should group date/time when time column is missing in first row', () => {
+
+      // given
+      timeColumn.groupingTimeUnit = TimeUnit.YEAR;
+      const firstRowWithoutTimeDataFrame = new DataFrame([
+         { ID: 6, Level: 'ERROR' },
+         { ID: 1, 'Date/Time': now - 5000, Level: 'INFO' }
+      ]);
+
+      // when
+      const dataFrame = service.groupByTimeUnit(firstRowWithoutTimeDataFrame, timeColumn);
+
+      // then
+      expect(dataFrame.toArray()[1]).toEqual({ ID: 1, Level: 'INFO', 'Date/Time (per year)': yearStartMs() });
+      expect(dataFrame.getColumnNames()).toEqual(['ID', 'Level', 'Date/Time (per year)']);
+   });
+
    it('#groupByFormattedTimeUnit should return base dataframe when date/time column does not exist', () => {
 
       // given
@@ -241,6 +258,24 @@ describe('TimeGroupingService', () => {
          { ID: 6, Level: 'ERROR', Data: 'six', Amount: 33, 'Date/Time (per day)': 'empty' }
       ]
       expect(dataFrame.toArray()).toEqual(expectedData);
+   });
+
+   it('#groupByFormattedTimeUnit should group date/time when time column is missing in first row', () => {
+
+      // given
+      timeColumn.groupingTimeUnit = TimeUnit.YEAR;
+      const firstRowWithoutTimeDataFrame = new DataFrame([
+         { ID: 6, Level: 'ERROR' },
+         { ID: 1, 'Date/Time': now - 5000, Level: 'INFO' }
+      ]);
+
+      // when
+      const dataFrame = service.groupByFormattedTimeUnit(firstRowWithoutTimeDataFrame, timeColumn);
+
+      // then
+      const rows = dataFrame.toArray();
+      expect(rows[0]['Date/Time (per year)']).toBe('empty');
+      expect(rows[1]['Date/Time (per year)']).toBe(datePipe.transform(now, 'yyyy'));
    });
 
    function yearStartMs(): number {

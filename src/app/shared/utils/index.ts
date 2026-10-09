@@ -2,6 +2,7 @@ export * from './array-utils';
 export * from './chart-utils';
 export * from './column-name-converter';
 export * from './common-utils';
+export * from './data-frame-utils';
 export * from './data-type-utils';
 export * from './date-time-utils';
 export * from './keyboard-events';

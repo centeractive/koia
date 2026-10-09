@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { IDataFrame } from 'data-forge';
 import { SummaryContext, DataType } from 'app/shared/model';
-import { DateTimeUtils, ColumnNameConverter } from 'app/shared/utils';
+import { DateTimeUtils, ColumnNameConverter, DataFrameUtils } from 'app/shared/utils';
 
 export class ExportDataGenerator {
 
@@ -13,15 +13,9 @@ export class ExportDataGenerator {
       return data;
    }
 
-   /**
-   * TODO: transformSeries may not work when undefined values are present (see solution at ValueRangeGroupingService#groupByValueRanges)
-   */
    private formatTimeColumns(context: SummaryContext, dataFrame: IDataFrame<number, any>) {
       context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c => {
-         dataFrame = dataFrame.transformSeries({
-            [ColumnNameConverter.toLabel(c, c.groupingTimeUnit)]: t => isNaN(t) ? '' :
-               this.datePipe.transform(t, DateTimeUtils.ngFormatOf(c.groupingTimeUnit))
-         });
+         dataFrame = DataFrameUtils.transformColumn(dataFrame, ColumnNameConverter.toLabel(c, c.groupingTimeUnit), (time: number) => isNaN(time) ? '' : this.datePipe.transform(time, DateTimeUtils.ngFormatOf(c.groupingTimeUnit)));
       });
       return dataFrame;
    }

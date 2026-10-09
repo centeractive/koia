@@ -5,7 +5,6 @@ describe('DateTimeColumnDetector', () => {
 
     const detector = new DateTimeColumnDetector();
 
-    // TODO: verify if columnPair.target.format should not also include the time-zone?
     it('#generate should detect date/time when value contains time zone', () => {
 
         // given
