@@ -1,6 +1,6 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,7 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
-import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
+import { Aggregation, ChangeEvent, Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { MatIconModuleMock } from 'app/shared/test';
 import { ChartSideBarComponent } from './chart-side-bar.component';
@@ -512,6 +512,52 @@ describe('ChartSideBarComponent - data includes time column', () => {
     // then
     expect(context.groupByColumns).toEqual([column]);
     expect(component.groupByTimeColumn).toBe(column);
+  });
+
+  it('#onAggregationTypeChanged should remove group-by columns when count distinct values is selected on category chart', () => {
+
+    // given
+    context.chartType = ChartType.BAR.type;
+    context.dataColumns = [findColumn('Amount')];
+
+    // when
+    component.onAggregationTypeChanged(true);
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.COUNT]);
+    expect(context.groupByColumns).toEqual([]);
+  });
+
+  it('#onAggregationTypeChanged should fire single structure change event', fakeAsync(() => {
+
+    // given
+    context.chartType = ChartType.BAR.type;
+    context.dataColumns = [findColumn('Amount')];
+    const changeListener = vi.fn();
+    context.subscribeToChanges(changeListener);
+
+    // when
+    component.onAggregationTypeChanged(true);
+
+    // then
+    flush();
+    expect(changeListener).toHaveBeenCalledTimes(1);
+    expect(changeListener).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+  }));
+
+  it('#onAggregationTypeChanged should identify group-by column when individual values are selected', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    context.dataColumns = [findColumn('Amount')];
+    context.aggregations = [Aggregation.COUNT];
+
+    // when
+    component.onAggregationTypeChanged(false);
+
+    // then
+    expect(context.aggregations).toEqual([]);
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
   });
 
 });

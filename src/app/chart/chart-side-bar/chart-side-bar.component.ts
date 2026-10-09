@@ -104,9 +104,6 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   onAggregationTypeChanged(countDistinctValues: boolean): void {
     this.context.aggregations = countDistinctValues ? [Aggregation.COUNT] : [];
-    if (countDistinctValues && this.context.isCategoryChart()) {
-      this.context.groupByColumns = []; // TODO: is this correct?
-    }
   }
 
   private adjustInitialChartWidth(newChartType: ChartType): void {

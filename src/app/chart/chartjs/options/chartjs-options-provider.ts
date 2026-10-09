@@ -227,7 +227,7 @@ export class ChartJsOptionsProvider {
 
     private addTimeOptions(scaleOptions: ScaleOptions, timeColumn: Column, context: ChartContext): void {
         scaleOptions.type = 'time';
-        const timeScaleOptions: any = scaleOptions; // TODO: consider using TimeScaleOptions type
+        const timeScaleOptions = scaleOptions as ScaleOptions<'time'>;
 
         const scaleTimeUnit = this.scaleTimeUnit(timeColumn, context);
         timeScaleOptions.time = {

@@ -1,4 +1,4 @@
-import { Column, DataType } from 'app/shared/model';
+import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ChartData } from 'chart.js';
@@ -59,23 +59,46 @@ describe('ChartJsOptionsProvider - PIE', () => {
     context.data = data();
     return context;
   }
-
-  function data(): ChartData {
-    return {
-      labels: ['A', 'B', 'C'],
-      datasets: [
-        {
-          label: 'Amount',
-          data: [90, 55, 47],
-        },
-        {
-          label: 'Discount',
-          data: [8, 5, 0],
-        },
-      ],
-    };
-  }
 });
+
+describe('ChartJsOptionsProvider - LINE', () => {
+  it('#provide should define time scale options when grouped by time column', () => {
+
+    // given
+    const timeColumn = { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE };
+    const context = new ChartContext(COLUMNS, ChartType.LINE.type, margin());
+    context.dataColumns = [COLUMNS[3]];
+    context.groupByColumns = [timeColumn];
+    context.data = data();
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['x'].type).toBe('time');
+    expect(options.scales['x']['time']).toEqual({
+      unit: TimeUnit.MINUTE,
+      displayFormats: { minute: 'd MMM yyyy HH:mm' },
+      tooltipFormat: 'd MMM yyyy HH:mm'
+    });
+  });
+});
+
+function data(): ChartData {
+  return {
+    labels: ['A', 'B', 'C'],
+    datasets: [
+      {
+        label: 'Amount',
+        data: [90, 55, 47],
+      },
+      {
+        label: 'Discount',
+        data: [8, 5, 0],
+      },
+    ],
+  };
+}
 
 function margin(): Margin {
   return { top: 0, right: 0, bottom: 0, left: 0 };
