@@ -117,7 +117,7 @@
             "buildTarget": "koia:build:test",
             "tsConfig": "src/tsconfig.spec.json",
             "runner": "vitest",
-            "runnerConfig": "vitest.config.ts",
+            "runnerConfig": "vitest.config.mts",
             "browsers": [
               "chromiumHeadless"
             ],
