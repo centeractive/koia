@@ -190,9 +190,7 @@ describe('ChartComponent', () => {
   it('should show dashed border of ghost element when resizing margin', () => {
 
     // given
-    component.marginDivStyle = {};
-    context.toggleShowResizableMargin();
-    fixture.detectChanges();
+    showResizableMargin();
     const handle = fixture.nativeElement.querySelector('.resize-handle-top');
 
     // when
@@ -203,9 +201,45 @@ describe('ChartComponent', () => {
     expect(getComputedStyle(ghost).borderTopStyle).toBe('dashed');
   });
 
+  it('should not propagate mousedown from margin resize handle to host', () => {
+
+    // given
+    showResizableMargin();
+    const hostListener = vi.fn();
+    fixture.nativeElement.addEventListener('mousedown', hostListener);
+    const handle = fixture.nativeElement.querySelector('.resize-handle-top');
+
+    // when
+    handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 10 }));
+
+    // then
+    expect(hostListener).not.toHaveBeenCalled();
+  });
+
+  it('should not propagate touchstart from resizable margin to host', () => {
+
+    // given
+    showResizableMargin();
+    const hostListener = vi.fn();
+    fixture.nativeElement.addEventListener('touchstart', hostListener);
+    const marginDiv = fixture.nativeElement.querySelector('.div_margins');
+
+    // when
+    marginDiv.dispatchEvent(new TouchEvent('touchstart', { bubbles: true }));
+
+    // then
+    expect(hostListener).not.toHaveBeenCalled();
+  });
+
   it('#createExportData should throw error', () => {
     expect(() => component.createExportData()).toThrow(expect.objectContaining({ message: 'Method not implemented.' }));
   });
+
+  function showResizableMargin(): void {
+    component.marginDivStyle = {};
+    context.toggleShowResizableMargin();
+    fixture.detectChanges();
+  }
 
   function createColumn(name: string, dataType: DataType): Column {
     return {

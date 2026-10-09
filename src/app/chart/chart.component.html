@@ -4,7 +4,8 @@
 
 @if (marginDivStyle && context.isShowResizableMargin()) {
   <div class="div_margins" mwlResizable [enableGhostResize]="true"
-    [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize" (resizeEnd)="onMarginResizeEnd($event)">
+    [ngStyle]="marginDivStyle" [validateResize]="validateMarginResize" (resizeEnd)="onMarginResizeEnd($event)"
+    (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
     <div class="resize-handle-top" mwlResizeHandle [resizeEdges]="{ top: true }"></div>
     <div class="resize-handle-left" mwlResizeHandle [resizeEdges]="{ left: true }"></div>
     <div class="resize-handle-right" mwlResizeHandle [resizeEdges]="{ right: true }"></div>
