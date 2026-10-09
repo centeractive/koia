@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { Query, Route, Scene, Status, StatusType } from '../../model';
 import { View } from '../../model/view-config/view.type';
-import { ArrayUtils } from '../../utils';
+import { ArrayUtils, StringUtils } from '../../utils';
 import { DBService } from '../backend';
 import { queryToQueryDef } from './filter/query-to-filter-converter';
 
@@ -80,6 +80,39 @@ export class ViewPersistenceService {
       return scene.config.views
          .filter(v => v.route === route)
          .find(v => v.name === name);
+   }
+
+   /**
+    * removes the deleted [[ConfigRecord]]s from the [[Scene]] and persists it, renamed records are expected to be renamed in place
+    */
+   updateRecords(scene: Scene, deletedRecords: ConfigRecord[], renamedRecords: ConfigRecord[]): Status {
+      scene.config.records = this.withoutNamesOf(scene.config.records, deletedRecords);
+      return this.persistUpdate(scene, deletedRecords.length, renamedRecords.length);
+   }
+
+   /**
+    * removes the deleted [[View]]s from the [[Scene]] and persists it, renamed views are expected to be renamed in place
+    */
+   updateViews(scene: Scene, deletedViews: View[], renamedViews: View[]): Status {
+      scene.config.views = this.withoutNamesOf(scene.config.views, deletedViews);
+      return this.persistUpdate(scene, deletedViews.length, renamedViews.length);
+   }
+
+   private withoutNamesOf<T extends { name: string }>(items: T[], removedItems: T[]): T[] {
+      const removedNames = removedItems.map(i => i.name);
+      return items.filter(i => !removedNames.includes(i.name));
+   }
+
+   private persistUpdate(scene: Scene, deletedCount: number, renamedCount: number): Status {
+      this.dbService.persistScene(scene, false);
+      const message: string[] = [];
+      if (deletedCount) {
+         message.push('Deleted ' + deletedCount + StringUtils.pluralize(' view', deletedCount));
+      }
+      if (renamedCount) {
+         message.push('Renamed ' + renamedCount + StringUtils.pluralize(' view', renamedCount));
+      }
+      return { type: StatusType.SUCCESS, msg: message.join('\n') };
    }
 
    private updateScene(scene: Scene, viewName: string): Promise<Status> {

@@ -221,6 +221,92 @@ describe('ViewPersistenceService', () => {
     await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
+  it('#updateRecords should remove deleted records and persist scene', () => {
+
+    // given
+    const rawDataRecord = createRawDataRecord('raw');
+    scene.config.records.push(rawDataRecord);
+    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+
+    // when
+    const status = service.updateRecords(scene, [pivotTableRecord], []);
+
+    // then
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view' });
+    expect(scene.config.records).toEqual([rawDataRecord]);
+    expect(dbService.persistScene).toHaveBeenCalledWith(scene, false);
+  });
+
+  it('#updateRecords should report deleted and renamed records', () => {
+
+    // given
+    const rawDataRecords = [createRawDataRecord('raw1'), createRawDataRecord('raw2')];
+    scene.config.records.push(...rawDataRecords);
+    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+
+    // when
+    const status = service.updateRecords(scene, rawDataRecords, [pivotTableRecord, pivotTableRecord]);
+
+    // then
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 2 views\nRenamed 2 views' });
+    expect(scene.config.records).toEqual([pivotTableRecord]);
+  });
+
+  it('#updateRecords should report renamed records only', () => {
+
+    // given
+    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+
+    // when
+    const status = service.updateRecords(scene, [], [pivotTableRecord]);
+
+    // then
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Renamed 1 view' });
+    expect(scene.config.records).toEqual([pivotTableRecord]);
+    expect(dbService.persistScene).toHaveBeenCalledWith(scene, false);
+  });
+
+  it('#updateViews should remove deleted views and persist scene', () => {
+
+    // given
+    const flexView = createFlexView('flex', NOW, summary);
+    scene.config.views.push(flexView);
+    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+
+    // when
+    const status = service.updateViews(scene, [gridView], []);
+
+    // then
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view' });
+    expect(scene.config.views).toEqual([flexView]);
+    expect(dbService.persistScene).toHaveBeenCalledWith(scene, false);
+  });
+
+  it('#updateViews should report deleted and renamed views', () => {
+
+    // given
+    const flexView = createFlexView('flex', NOW, summary);
+    scene.config.views.push(flexView);
+    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+
+    // when
+    const status = service.updateViews(scene, [flexView], [gridView]);
+
+    // then
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' });
+    expect(scene.config.views).toEqual([gridView]);
+  });
+
+  function createRawDataRecord(name: string): ConfigRecord {
+    return {
+      route: Route.RAWDATA,
+      name,
+      modifiedTime: NOW,
+      query: null,
+      data: {}
+    };
+  }
+
   function scaleConfig(columnName: string, stepSize?: number, rotation?: number): ScaleConfig {
     return new ScaleConfig(() => null, {
       columnName,

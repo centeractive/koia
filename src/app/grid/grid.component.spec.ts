@@ -464,6 +464,25 @@ describe('GridComponent', () => {
     expect(exportService.exportData).toHaveBeenCalledWith(exportData, indexedColumns, ExportFormat.EXCEL, 'Test');
   });
 
+  it('#updateViews should update views and notify user', () => {
+
+    // given
+    const converter = new ModelToViewConverter();
+    const deleted = converter.convert(Route.GRID, 'deleted', new Query(), []);
+    const renamed = converter.convert(Route.GRID, 'renamed', new Query(), []);
+    const status = { type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' };
+    vi.spyOn(viewPersistenceService, 'updateViews').mockReturnValue(status);
+    vi.spyOn(viewPersistenceService, 'findViews').mockReturnValue([renamed]);
+
+    // when
+    component.updateViews([deleted], [renamed]);
+
+    // then
+    expect(viewPersistenceService.updateViews).toHaveBeenCalledWith(scene, [deleted], [renamed]);
+    expect(component.views).toEqual([renamed]);
+    expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), status);
+  });
+
   function sanitize(v: any): any {
     return JSON.parse(JSON.stringify(v));
   }

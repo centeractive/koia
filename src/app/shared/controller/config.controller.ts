@@ -10,7 +10,6 @@ import { Query, Route, Scene } from '../model';
 import { ConfigRecord } from '../model/view-config';
 import { DialogService, NotificationService, ViewPersistenceService } from '../services';
 import { DBService } from '../services/backend';
-import { StringUtils } from '../utils';
 import { ViewController } from './view.controller';
 
 @Directive()
@@ -70,24 +69,9 @@ export abstract class ConfigController extends AbstractComponent implements OnIn
       this.dialogService.showManageConfigDialog(this);
    }
 
-   // TODO: move most of this code to the ViewPersistenceService
    updateConfigRecords(deletedRecords: ConfigRecord[], renamedRecords: ConfigRecord[]): void {
-      const deltedRecordsNames = deletedRecords.map(v => v.name);
-      this.scene.config.records = this.scene.config.records
-         .filter(v => !deltedRecordsNames.includes(v.name));
+      const status = this.viewPersistenceService.updateRecords(this.scene, deletedRecords, renamedRecords);
       this.refreshRecords();
-      this.dbService.persistScene(this.scene, false);
-      this.notifyUpdatedRecords(deletedRecords, renamedRecords);
-   }
-
-   private notifyUpdatedRecords(deletedRecords: ConfigRecord[], renamedRecords: ConfigRecord[]): void {
-      const message: string[] = [];
-      if (deletedRecords.length) {
-         message.push('Deleted ' + deletedRecords.length + StringUtils.pluralize(' view', deletedRecords.length));
-      }
-      if (renamedRecords.length) {
-         message.push('Renamed ' + renamedRecords.length + StringUtils.pluralize(' view', renamedRecords.length));
-      }
-      this.notifySuccess(message.join('\n'));
+      this.showStatus(status);
    }
 }

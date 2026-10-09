@@ -352,6 +352,24 @@ describe('PivotTableComponent', () => {
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
   }));
 
+  it('#updateConfigRecords should update records and notify user', () => {
+
+    // given
+    const deleted: ConfigRecord = { route: Route.PIVOT, name: 'deleted', modifiedTime: NOW, query: null, data: {} };
+    const renamed: ConfigRecord = { route: Route.PIVOT, name: 'renamed', modifiedTime: NOW, query: null, data: {} };
+    const status = { type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' };
+    vi.spyOn(viewPersistenceService, 'updateRecords').mockReturnValue(status);
+    vi.spyOn(viewPersistenceService, 'findRecords').mockReturnValue([renamed]);
+
+    // when
+    component.updateConfigRecords([deleted], [renamed]);
+
+    // then
+    expect(viewPersistenceService.updateRecords).toHaveBeenCalledWith(scene, [deleted], [renamed]);
+    expect(component.configRecords).toEqual([renamed]);
+    expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), status);
+  });
+
   it('#onNegativeColorChanged should not refresh pivot table when no heatmap', fakeAsync(() => {
 
     // given

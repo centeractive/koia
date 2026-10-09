@@ -20,7 +20,7 @@ import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants'
 import { ChartMarginService } from '../services/chart';
 import { ModelToViewConverter, ViewToModelConverter } from '../services/view-persistence';
 import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
-import { ArrayUtils, CommonUtils, DateTimeUtils, StringUtils } from '../utils';
+import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
 
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext, ManageViewContext {
@@ -263,23 +263,9 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.dialogService.showManageViewDialog(this);
    }
 
-   // TODO: move most of this code to the ViewPersistenceService
    updateViews(deletedViews: View[], renamedViews: View[]): void {
-      const deltedViewNames = deletedViews.map(v => v.name);
-      this.scene.config.views = this.scene.config.views.filter(v => !deltedViewNames.includes(v.name));
+      const status = this.viewPersistenceService.updateViews(this.scene, deletedViews, renamedViews);
       this.refreshViews();
-      this.dbService.persistScene(this.scene, false);
-      this.notifyUpdatedViews(deletedViews, renamedViews);
-   }
-
-   private notifyUpdatedViews(deletedViews: View[], renamedViews: View[]): void {
-      const message: string[] = [];
-      if (deletedViews.length) {
-         message.push('Deleted ' + deletedViews.length + StringUtils.pluralize(' view', deletedViews.length));
-      }
-      if (renamedViews.length) {
-         message.push('Renamed ' + renamedViews.length + StringUtils.pluralize(' view', renamedViews.length));
-      }
-      this.notifySuccess(message.join('\n'));
+      this.showStatus(status);
    }
 }
