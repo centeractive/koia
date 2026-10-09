@@ -38,21 +38,20 @@ export class CSVReader implements DataReader {
       return [this.attrHasHeaderColumn, this.attrSeparator];
    }
 
-   /**
-    * TODO: Retain separator that occurs same number of time in each line
-    */
    private detectSeparator(text: string): string {
-      const lines = text.split('\n');
-      let detected = undefined;
-      let detectedCount = 0;
-      for (const separator of CSVReader.SEPARATORS) {
-         const count = lines[0].split(separator).length;
-         if (count > detectedCount) {
-            detected = separator;
-            detectedCount = count;
-         }
-      }
-      return detected;
+      return Papa.parse(this.withoutLastLine(text), {
+         delimitersToGuess: CSVReader.SEPARATORS,
+         skipEmptyLines: true,
+         preview: 1
+      }).meta.delimiter;
+   }
+
+   /**
+    * the last line may be incomplete because only the head of the file is provided
+    */
+   private withoutLastLine(text: string): string {
+      const lastLineBreak = text.lastIndexOf('\n');
+      return lastLineBreak === -1 ? text : text.substring(0, lastLineBreak);
    }
 
    private detectHeaderColumn(text: string, locale: string): boolean {

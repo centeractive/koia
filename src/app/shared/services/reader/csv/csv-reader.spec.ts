@@ -160,6 +160,51 @@ describe('CSVReader', () => {
       expect(attributes[1].value).toBe('|');
    });
 
+   it('#furnishAttributes should return separator that occurs same number of times in each line', () => {
+
+      // when
+      const attributes = reader.furnishAttributes('A,B;C,D;E\n1;2;3\n4;5;6\n', 'en-US');
+
+      // then
+      expect(attributes[1].value).toBe(';');
+   });
+
+   it('#furnishAttributes should ignore separators within quoted values', () => {
+
+      // when
+      const attributes = reader.furnishAttributes('"A;B;C",D\n"E;F;G",H\n', 'en-US');
+
+      // then
+      expect(attributes[1].value).toBe(',');
+   });
+
+   it('#furnishAttributes should ignore last line because it may be truncated', () => {
+
+      // when
+      const attributes = reader.furnishAttributes('A,B;C;D\n1,2;3;4\n5,6;7', 'en-US');
+
+      // then
+      expect(attributes[1].value).toBe(';');
+   });
+
+   it('#furnishAttributes should return comma separator attribute when no separator is present', () => {
+
+      // when
+      const attributes = reader.furnishAttributes('ABC\nDEF\n', 'en-US');
+
+      // then
+      expect(attributes[1].value).toBe(',');
+   });
+
+   it('#furnishAttributes should return separator when lines end with carriage return and line feed', () => {
+
+      // when
+      const attributes = reader.furnishAttributes('A;B\r\n1;2\r\n3;4\r\n', 'en-US');
+
+      // then
+      expect(attributes[1].value).toBe(';');
+   });
+
    it('#readSample should return sample data only when file has no header', async () => {
 
       // given
