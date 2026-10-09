@@ -84,28 +84,25 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     try {
       if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
-        this.updateChart(changeEvent);
+        this.updateChart();
       }
     } finally {
       this.loading = false;
     }
   }
 
-  private updateChart(changeEvent: ChangeEvent): void {
+  private updateChart(): void {
     this.marginDivStyle = this.marginToStyle(this.context.margin);
 
-    // TODO: ChangeEvent.LOOK should not re-create data (currently ChartDataService defines colors etc. inside the dataset)
-    if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
-      const chartDataResult = this.chartDataService.createData(this.context);
-      if (chartDataResult.error) {
-        this.onWarning.emit(chartDataResult.error);
-        return;
-      }
-      this.context.data = chartDataResult.data;
+    // data is re-created on LOOK changes too: ChartDataService embeds colors into the datasets and ChartJs#create modifies context.data in place
+    const chartDataResult = this.chartDataService.createData(this.context);
+    if (chartDataResult.error) {
+      this.onWarning.emit(chartDataResult.error);
+      return;
     }
+    this.context.data = chartDataResult.data;
     this.cdr.detectChanges();
 
-    // TODO: don't re-create chart each time but try to update existing one
     new ChartJs(this.rawDataRevealService).create(this.canvasRef.nativeElement, this.context);
   }
 

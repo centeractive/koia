@@ -6,14 +6,13 @@ import { DialogService } from '../../dialog.service';
 import { CommonUtils } from 'app/shared/utils';
 
 /**
- * CouchDB (v. 2.3.1) doesn't include documents in the _find result if they don't contain the field (attribute) specified in sort
- * (see https://stackoverflow.com/a/58351340/2358409). Therefore, we...
+ * CouchDB's _find doesn't include documents lacking the sort field: sorting requires an index containing the sort field
+ * and a JSON index only contains documents having all indexed fields present
+ * (see https://docs.couchdb.org/en/stable/api/database/find.html). Therefore, we...
  * - cannot simply count all entries from the active scene if the query has filters
  * - need to count matching entries each time the sort condition changes
  * - need to query all matching IDs using the sort conditions
  * - have to inform the user about the limitation
- *
- * TODO: check in future versions of CouchDB if this limitation (bug) still exists and possibly get rid of this class
  */
 export class SortLimitationWorkaround {
 

@@ -41,7 +41,7 @@ export class QueryEnhancer {
     * @param inclusions included values (see https://github.com/nicolaskruchten/pivottable/wiki/Parameters)
     * @param pivotData PivotTable.js data model (see https://github.com/nicolaskruchten/pivottable/wiki/Renderers#the-pivotdata-object)
     *
-    * @TODO consider inclusions instead of exclusions in cases the latter have more values
+    * Exclusions (not inclusions) are translated into filters because PivotTable.js filters records by exclusions only, and inclusions of time columns and value groupings would require OR-combined value ranges, which a [[Query]] cannot express.
     */
    addFiltersForValueChoices(exclusions: object, inclusions: object, pivotData: object): void {
       if (exclusions) {
