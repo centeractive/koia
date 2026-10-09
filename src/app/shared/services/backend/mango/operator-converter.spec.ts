@@ -26,8 +26,10 @@ describe('OperatorConverter', () => {
       const op: any = 'xyz';
       const operator: Operator = op;
 
-      // when/then
-      expect(() => operatorConverter.toMangoOperator(operator))
-         .toThrowError('operator ' + operator + ' is not yet supported');
+      // when
+      const conversion = () => operatorConverter.toMangoOperator(operator);
+
+      // then
+      expect(conversion).toThrow(expect.objectContaining({ message: 'operator ' + operator + ' is not yet supported' }));
    });
 });

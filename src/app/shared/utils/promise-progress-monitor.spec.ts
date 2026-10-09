@@ -33,7 +33,7 @@ describe('PromiseProgressMonitor', () => {
   it('#add should raise onProgressChange event', () => {
     const promiseProgressMonitor = new PromiseProgressMonitor();
 
-    const onProgressEventListener = jasmine.createSpy();
+    const onProgressEventListener = vi.fn();
 
     promiseProgressMonitor.onProgressChange(onProgressEventListener);
     expect(onProgressEventListener).not.toHaveBeenCalled();

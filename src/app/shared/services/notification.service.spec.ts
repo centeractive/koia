@@ -15,8 +15,8 @@ describe('NotificationService', () => {
       });
       notificationService = new NotificationService();
       bottomSheet = TestBed.inject(MatBottomSheet);
-      spyOn(bottomSheet, 'open');
-      spyOn(console, 'error');
+      vi.spyOn(bottomSheet, 'open').mockReturnValue(undefined);
+      vi.spyOn(console, 'error').mockReturnValue(undefined);
    });
 
    it('#onSuccess should show success', () => {

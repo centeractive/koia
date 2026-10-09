@@ -25,20 +25,21 @@ import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
 import { SceneComponent } from './scene.component';
+import type { Mock } from 'vitest';
 
 describe('SceneComponent', () => {
 
   const datePipe = new DatePipe('en-US');
   const readerService = new ReaderService();
   const notificationService = new NotificationServiceMock();
-  let navigateByUrlSpy: jasmine.Spy;
-  let isBackendInitializedSpy: jasmine.Spy;
+  let navigateByUrlSpy: Mock;
+  let isBackendInitializedSpy: Mock;
   let dbService: DBService;
   let scenes: Scene[];
   let tableData: string[][];
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
-  let findSceneInfos: jasmine.Spy;
+  let findSceneInfos: Mock;
 
   beforeAll(() => {
     scenes = [SceneFactory.createScene('1', []), SceneFactory.createScene('2', []), SceneFactory.createScene('3', [])];
@@ -50,7 +51,7 @@ describe('SceneComponent', () => {
   });
 
   beforeEach(waitForAsync(async () => {
-    spyOn(console, 'log');
+    vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(null);
     TestBed.configureTestingModule({
       declarations: [SceneComponent, ColumnMappingComponent],
@@ -68,18 +69,18 @@ describe('SceneComponent', () => {
     }).compileComponents();
 
     const router = TestBed.inject(Router);
-    navigateByUrlSpy = spyOn(router, 'navigateByUrl');
+    navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
     fixture = TestBed.createComponent(SceneComponent);
     component = fixture.componentInstance;
-    spyOn(notificationService, 'onSuccess');
-    spyOn(notificationService, 'onWarning');
-    spyOn(notificationService, 'onError');
-    isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
-    spyOn(dbService, 'findFreeDatabaseName').and.resolveTo('data_1');
-    spyOn(dbService, 'getMaxDataItemsPerScene').and.returnValue(1_000);
-    findSceneInfos = spyOn(dbService, 'findSceneInfos').and.resolveTo(scenes);
-    spyOn(dbService, 'writeEntries').and.callFake(() => Promise.resolve());
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onWarning').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+    isBackendInitializedSpy = vi.spyOn(dbService, 'isBackendInitialized').mockReturnValue(true);
+    vi.spyOn(dbService, 'findFreeDatabaseName').mockResolvedValue('data_1');
+    vi.spyOn(dbService, 'getMaxDataItemsPerScene').mockReturnValue(1_000);
+    findSceneInfos = vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue(scenes);
+    vi.spyOn(dbService, 'writeEntries').mockImplementation(() => Promise.resolve());
     await fixture.whenStable();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -93,7 +94,7 @@ describe('SceneComponent', () => {
   it('#ngOnInit should navigate to front page when backend is not initialized', () => {
 
     // given
-    isBackendInitializedSpy.and.returnValue(false);
+    isBackendInitializedSpy.mockReturnValue(false);
 
     // when
     component.ngOnInit();
@@ -106,7 +107,7 @@ describe('SceneComponent', () => {
 
     // given
     const sceneInfos = createSceneInfos(3);
-    findSceneInfos.and.resolveTo(sceneInfos);
+    findSceneInfos.mockResolvedValue(sceneInfos);
 
     // when
     component.ngOnInit();
@@ -126,7 +127,7 @@ describe('SceneComponent', () => {
     butHome.click();
 
     // then
-    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
     expect(urlTree.toString()).toBe('/' + Route.FRONT);
   });
 
@@ -139,14 +140,14 @@ describe('SceneComponent', () => {
     butScenes.click();
 
     // then    
-    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
     expect(urlTree.toString()).toBe('/' + Route.SCENES);
   });
 
   it('#onSourceTypeChange should init context', fakeAsync(() => {
 
     // given
-    spyOn(component, 'initContext');
+    vi.spyOn(component, 'initContext').mockReturnValue(undefined);
 
     // when
     component.onSourceTypeChange();
@@ -178,7 +179,7 @@ describe('SceneComponent', () => {
 
     // given
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.resolveTo('dummy');
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
 
     // when
     component.onFileSelChange(fileList);
@@ -187,14 +188,14 @@ describe('SceneComponent', () => {
     flush();
     const expectedName = 'Test / ' + datePipe.transform(fileList[0].lastModified, 'mediumDate');
     expect(component.scene.name).toBe(expectedName);
-    expect(component.scene.shortDescription.startsWith('CSV Test.csv (modified on')).toBeTrue();
+    expect(component.scene.shortDescription.startsWith('CSV Test.csv (modified on')).toBe(true);
   }));
 
   it('#onFileSelChange should notify error when file header cannot be read', fakeAsync(() => {
 
     // given
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.rejectWith('error');
+    vi.spyOn(readerService, 'readHeader').mockRejectedValue('error');
 
     // when
     component.onFileSelChange(fileList);
@@ -208,11 +209,11 @@ describe('SceneComponent', () => {
 
     // given
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.resolveTo('dummy');
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
     component.onFileSelChange(fileList);
     flush();
     fixture.detectChanges();
-    spyOn(component.selectedReader, 'readSample').and.resolveTo({ tableData: tableData.slice(0, 4) });
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
     const detectColumnsButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement;
 
     // when
@@ -257,7 +258,7 @@ describe('SceneComponent', () => {
     targetColumn.dataType = DataType.TIME;
     component.onDataTypeChanged(targetColumn);
     fixture.detectChanges();
-    spyOn(window, 'open');
+    vi.spyOn(window, 'open').mockReturnValue(undefined);
     const refreshPreviewButtons: HTMLButtonElement[] =
       fixture.debugElement.queryAll(By.css('.but_date_formats')).map(de => de.nativeElement);
 
@@ -369,7 +370,7 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
-    spyOn(dbService, 'persistScene').and.rejectWith();
+    vi.spyOn(dbService, 'persistScene').mockRejectedValue(undefined);
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -384,11 +385,11 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
-    spyOn(component.selectedReader, 'readData').and.callFake((file: File, chunkSize: number, dataHandler: DataHandler) => {
+    vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) => {
       dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });
-    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -413,11 +414,11 @@ describe('SceneComponent', () => {
     const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
     delColMappingButtons[0].click();
 
-    spyOn(component.selectedReader, 'readData').and.callFake((file: File, chunkSize: number, dataHandler: DataHandler) => {
+    vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) => {
       dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });
-    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -442,11 +443,11 @@ describe('SceneComponent', () => {
     const delColMappingButtons: HTMLButtonElement[] = fixture.debugElement.queryAll(By.css('.but_delete')).map(de => de.nativeElement);
     delColMappingButtons[1].click();
 
-    spyOn(component.selectedReader, 'readData').and.callFake((file: File, chunkSize: number, dataHandler: DataHandler) => {
+    vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) => {
       dataHandler.onValues(tableData);
       dataHandler.onComplete();
     });
-    spyOn(dbService, 'persistScene').and.callFake((scene: Scene) => Promise.resolve(scene));
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
     const loadDataButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_load_data')).nativeElement;
 
     // when
@@ -470,7 +471,7 @@ describe('SceneComponent', () => {
     // given
     component.scene.creationTime = new Date().getTime();
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
-    spyOn(component.entryPersister, 'postingComplete').and.callFake(() => null);
+    vi.spyOn(component.entryPersister, 'postingComplete').mockImplementation(() => null);
 
     // when
     htmlButton.click();
@@ -498,7 +499,7 @@ describe('SceneComponent', () => {
 
     // given
     const location = TestBed.inject(Location);
-    spyOn(location, 'back');
+    vi.spyOn(location, 'back').mockReturnValue(undefined);
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
 
     // when
@@ -525,11 +526,11 @@ describe('SceneComponent', () => {
 
   function initUpToDetectColumns(): void {
     const fileList = createFileList('dummy data');
-    spyOn(readerService, 'readHeader').and.resolveTo('dummy');
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
     component.onFileSelChange(fileList);
     flush();
     fixture.detectChanges();
-    spyOn(component.selectedReader, 'readSample').and.resolveTo({ tableData: tableData.slice(0, 4) });
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();

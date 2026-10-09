@@ -57,14 +57,18 @@ steps:
 
 # perform unit-tets and publish test and code coverage results
 - script: |
-    npx ng test --watch=false --karma-config karma.conf.ci.js --code-coverage
+    npx playwright install --with-deps chromium
+  displayName: 'install Playwright Chromium'
+
+- script: |
+    CHROME_BIN= npx ng test --configuration=ci
   displayName: 'perform unit tests'    
 
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: '**/TESTS-*.xml'
+    testResultsFiles: 'test-results/junit.xml'
   displayName: 'publish unit test results'
 
 - task: PublishCodeCoverageResults@2
@@ -72,7 +76,7 @@ steps:
   condition: succeededOrFailed()
   inputs:
     codeCoverageTool: Cobertura
-    summaryFileLocation: '$(Build.SourcesDirectory)/coverage/cobertura-coverage.xml'
+    summaryFileLocation: '$(Build.SourcesDirectory)/coverage/koia/cobertura-coverage.xml'
     failIfCoverageEmpty: false  
 
 # build product and publish artifact

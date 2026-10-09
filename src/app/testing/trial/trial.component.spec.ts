@@ -5,7 +5,7 @@ import { FormattedIntegerDirective } from 'app/shared/directives/formatted-integ
 import { TextareaMaxRowsDirective } from 'app/shared/directives/textarea-max-rows.directive';
 import { TrialComponent } from './trial.component';
 
-xdescribe('TrialComponent', () => {
+describe.skip('TrialComponent', () => {
   let component: TrialComponent;
   let fixture: ComponentFixture<TrialComponent>;
 

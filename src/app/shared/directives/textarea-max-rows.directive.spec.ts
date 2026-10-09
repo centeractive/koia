@@ -28,14 +28,14 @@ describe('TextareaMaxRowsDirective', () => {
 
     taDebugElement = fixture.debugElement.query(By.css('textarea'));
     textArea = taDebugElement.nativeElement;
-    spyOn(textArea, 'blur');
+    vi.spyOn(textArea, 'blur').mockReturnValue(undefined);
   });
 
   it('#press character key should be accepted on first line', () => {
 
     // given
     const event = new KeyboardEvent('keypress', { key: 'c' });
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when
     textArea.dispatchEvent(event);
@@ -51,7 +51,7 @@ describe('TextareaMaxRowsDirective', () => {
     textArea.value = 'a\nb\nc';
     // directive.maxLines = 3;
     const event = new KeyboardEvent('keypress', { key: 'd' });
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when
     textArea.dispatchEvent(event);
@@ -66,7 +66,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a';
     const event = new KeyboardEvent('keypress', { key: 'Enter' });
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when
     textArea.dispatchEvent(event);
@@ -81,7 +81,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a\nb';
     const event = new KeyboardEvent('keypress', { key: 'Enter' });
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when
     textArea.dispatchEvent(event);
@@ -95,7 +95,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a\nb';
     const event = clipboardEvent('\nc', 3);
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when        
     taDebugElement.triggerEventHandler('paste', event);
@@ -108,7 +108,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a';
     const event = clipboardEvent('\nb', 1);
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when        
     taDebugElement.triggerEventHandler('paste', event);
@@ -121,7 +121,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a\nb';
     const event = clipboardEvent('\nc', 0, 2);
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when        
     taDebugElement.triggerEventHandler('paste', event);
@@ -134,7 +134,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a\nb';
     const event = clipboardEvent('\nc', 1, 2);
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when        
     taDebugElement.triggerEventHandler('paste', event);
@@ -147,7 +147,7 @@ describe('TextareaMaxRowsDirective', () => {
     // given
     textArea.value = 'a\nb';
     const event = clipboardEvent('\nc', 1, 3);
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
     // when        
     taDebugElement.triggerEventHandler('paste', event);

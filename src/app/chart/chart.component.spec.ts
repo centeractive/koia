@@ -10,6 +10,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService, defaultMargin } from 'app/shared/services/chart';
 import { SceneFactory } from 'app/shared/test';
 import { ChartComponent } from './chart.component';
+import type { Mock } from 'vitest';
 
 describe('ChartComponent', () => {
 
@@ -19,7 +20,7 @@ describe('ChartComponent', () => {
   const dbService = new DBService(null);
   let component: ChartComponent;
   let fixture: ComponentFixture<ChartComponent>;
-  let getActiveSceneSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
 
   beforeAll(() => {
     scene = SceneFactory.createScene('1', []);
@@ -48,7 +49,7 @@ describe('ChartComponent', () => {
     context = new ChartContext([], ChartType.PIE.type, defaultMargin());
     context.entries = entries;
     component.context = context;
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
     fixture.detectChanges();
     await fixture.whenStable();
   });
@@ -60,9 +61,9 @@ describe('ChartComponent', () => {
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
+    getActiveSceneSpy.mockReturnValue(null);
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigateByUrl');
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -95,8 +96,8 @@ describe('ChartComponent', () => {
   it('should emit warning when context changes but new chart data cannot be obtained', fakeAsync(() => {
 
     // given
-    spyOn(TestBed.inject(ChartDataService), 'createData').and.returnValue({ error: 'server not available' });
-    spyOn(component.onWarning, 'emit');
+    vi.spyOn(TestBed.inject(ChartDataService), 'createData').mockReturnValue({ error: 'server not available' });
+    vi.spyOn(component.onWarning, 'emit').mockReturnValue(undefined);
     context.dataColumns = [createColumn('n1', DataType.NUMBER)];
     fixture.detectChanges();
     component.ngOnChanges({ 'entries': new SimpleChange(null, null, true) });
@@ -124,7 +125,7 @@ describe('ChartComponent', () => {
     const validation = component.validateMarginResize(resizeEvent);
 
     // then
-    expect(validation).toBeTrue();
+    expect(validation).toBe(true);
   });
 
   it('#validateElementResize should return false when margin is invalid', () => {
@@ -140,7 +141,7 @@ describe('ChartComponent', () => {
     const validation = component.validateMarginResize(resizeEvent);
 
     // then
-    expect(validation).toBeFalse();
+    expect(validation).toBe(false);
   });
 
   it('#onResizeEnd should define margin when resized at top left corner', fakeAsync(() => {
@@ -186,7 +187,7 @@ describe('ChartComponent', () => {
   }));
 
   it('#createExportData should throw error', () => {
-    expect(() => component.createExportData()).toThrowError('Method not implemented.');
+    expect(() => component.createExportData()).toThrow(expect.objectContaining({ message: 'Method not implemented.' }));
   });
 
   function createColumn(name: string, dataType: DataType): Column {

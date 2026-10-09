@@ -87,7 +87,7 @@ describe('DataFrameSorter', () => {
          { g: '4 - 6' },
          { g: 'min - 2' }
       ]);
-      spyOn(context, 'hasValueGrouping').and.returnValue(true);
+      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
 
       // when
       const sortedDataFrame = sorter.sort(data, { active: 'g', direction: 'asc' }, context);
@@ -100,7 +100,7 @@ describe('DataFrameSorter', () => {
    it('#sort should ascending sort grouped column', () => {
 
       // given
-      spyOn(context, 'hasValueGrouping').and.returnValue(true);
+      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'asc' }, context);
@@ -113,7 +113,7 @@ describe('DataFrameSorter', () => {
    it('#sort should descending sort grouped column', () => {
 
       // given
-      spyOn(context, 'hasValueGrouping').and.returnValue(true);
+      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'desc' }, context);
@@ -131,7 +131,7 @@ describe('DataFrameSorter', () => {
       const range3 = toRange(0, 1_000_000);
       const range4 = toRange(1_000_000, 2_000_000);
       dataFrame = new DataFrame([{ g: range3 }, { g: range1 }, { g: range4 }, { g: range2 }]);
-      spyOn(context, 'hasValueGrouping').and.returnValue(true);
+      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'asc' }, context);
@@ -148,7 +148,7 @@ describe('DataFrameSorter', () => {
       const range3 = toRange(0, 1_000_000);
       const range4 = toRange(1_000_000, 2_000_000);
       dataFrame = new DataFrame([{ g: range3 }, { g: range1 }, { g: range4 }, { g: range2 }]);
-      spyOn(context, 'hasValueGrouping').and.returnValue(true);
+      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'desc' }, context);

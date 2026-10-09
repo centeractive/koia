@@ -21,6 +21,7 @@ import { of } from 'rxjs';
 import { MainToolbarComponent } from './main-toolbar.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
+import type { Mock } from 'vitest';
 
 @Component({
   template: '',
@@ -39,7 +40,7 @@ describe('MainToolbarComponent', () => {
   let fixture: ComponentFixture<MainToolbarComponent>;
   const dbService = new DBService(null);
   const dialogService = new DialogService(null);
-  let getActiveSceneSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -94,12 +95,12 @@ describe('MainToolbarComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(MainToolbarComponent);
     component = fixture.componentInstance;
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    spyOn(dbService, 'numberRangeOf').and.resolveTo(valueRange);
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
+    vi.spyOn(dbService, 'numberRangeOf').mockResolvedValue(valueRange);
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
     fixture.detectChanges();
     flush();
-    spyOn(component.router, 'navigate');
+    vi.spyOn(component.router, 'navigate').mockReturnValue(undefined);
   }));
 
   it('should create', () => {
@@ -113,8 +114,8 @@ describe('MainToolbarComponent', () => {
   it('#ngOnInit should not retain initial filters when active scene is not defeined', () => {
 
     // given
-    getActiveSceneSpy.and.returnValue(undefined);
-    spyOn(component, 'retainInitialFilters');
+    getActiveSceneSpy.mockReturnValue(undefined);
+    vi.spyOn(component, 'retainInitialFilters').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -179,7 +180,7 @@ describe('MainToolbarComponent', () => {
     component.rangeFilters = [timeRangeFilter];
     expect(prevSliderOptions).toBeTruthy();
     component.ngOnInit();
-    spyOn(component.rangeFilters[0], 'defineSliderOptions');
+    vi.spyOn(component.rangeFilters[0], 'defineSliderOptions').mockReturnValue(undefined);
 
     // when
     component.ngAfterViewChecked();
@@ -194,7 +195,7 @@ describe('MainToolbarComponent', () => {
   it('#click on "Show Scene Details" button should show scene details', fakeAsync(() => {
 
     // given
-    spyOn(dialogService, 'showSceneDetailsDialog');
+    vi.spyOn(dialogService, 'showSceneDetailsDialog').mockReturnValue(undefined);
     const button: HTMLButtonElement = fixture.debugElement.query(By.css('#butShowSceneDetails')).nativeElement;
 
     // when
@@ -210,7 +211,7 @@ describe('MainToolbarComponent', () => {
     // given
     component.addValueFilter(column('Amount'));
     component.propertyFilters[0].value = 'x';
-    spyOn(component.onFilterChange, 'emit');
+    vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.refreshEntries();
@@ -224,14 +225,14 @@ describe('MainToolbarComponent', () => {
     // given
     component.query = new Query();
     component.query.addValueRangeFilter('Time', now - 1_000, now);
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.refreshEntries();
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query: Query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
     expect(query.findValueRangeFilter('Time')).toBeUndefined();
   });
 
@@ -243,14 +244,14 @@ describe('MainToolbarComponent', () => {
     timeRangeFilter.selValueRange.min = valueRange.min + 1000;
     timeRangeFilter.selValueRange.max = valueRange.max - 1000;
     component.rangeFilters = [timeRangeFilter];
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.refreshEntries();
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query: Query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
     const valueRangeFilter = query.findValueRangeFilter('Time');
     expect(valueRangeFilter).toBeDefined();
     expect(valueRangeFilter.valueRange.min).toBe(valueRange.min + 1000);
@@ -314,7 +315,7 @@ describe('MainToolbarComponent', () => {
     htmlInput.value = 'abc';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    spyOn(component.onFilterChange, 'emit');
+    vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     const event: any = document.createEvent('Event');
@@ -335,7 +336,7 @@ describe('MainToolbarComponent', () => {
     htmlInput.value = 'abc';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     const event: any = document.createEvent('Event');
@@ -345,7 +346,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query: Query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
+    const query: Query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
     expect(query.getFullTextFilter()).toBe('abc');
     expect(query.getPropertyFilters().length).toBe(0);
     expect(query.getValueRangeFilters().length).toBe(0);
@@ -360,7 +361,7 @@ describe('MainToolbarComponent', () => {
     htmlInput.value = 'abc';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
     const clearButton: HTMLButtonElement = fixture.debugElement.query(By.css('#clearFullTextFilterButton')).nativeElement;
 
     // when
@@ -368,8 +369,8 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.hasFilter()).toBeFalse();
+    const query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
+    expect(query.hasFilter()).toBe(false);
   });
 
   it('#addValueFilter should add EQUAL filter for boolean column', fakeAsync(() => {
@@ -425,15 +426,15 @@ describe('MainToolbarComponent', () => {
     // given
     const columnFilter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR');
     component.propertyFilters = [columnFilter];
-    const onFilterChangeEmitSpy = spyOn(component.onFilterChange, 'emit');
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.removePropertyFilter(columnFilter);
 
     // then
     expect(component.onFilterChange.emit).toHaveBeenCalled();
-    const query = onFilterChangeEmitSpy.calls.mostRecent().args[0];
-    expect(query.hasFilter()).toBeFalse();
+    const query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
+    expect(query.hasFilter()).toBe(false);
   });
 
   it('#removeColumnFilter should not emit onFilterChange when removed filter was not effective', () => {
@@ -441,7 +442,7 @@ describe('MainToolbarComponent', () => {
     // given
     const columnFilter = new PropertyFilter('Level', Operator.EQUAL, '');
     component.propertyFilters = [columnFilter];
-    spyOn(component.onFilterChange, 'emit');
+    vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.removePropertyFilter(columnFilter);
@@ -458,7 +459,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters.length).toBe(1);
-    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBeTrue();
+    expect(component.rangeFilters[0] instanceof TimeRangeFilter).toBe(true);
     const timeRangeFilter = component.rangeFilters[0];
     expect(timeRangeFilter.start).toBe(valueRange.min);
     expect(timeRangeFilter.end).toBe(valueRange.max);
@@ -472,7 +473,7 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters.length).toBe(1);
-    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBeTrue();
+    expect(component.rangeFilters[0] instanceof NumberRangeFilter).toBe(true);
     const numberRangeFilter = component.rangeFilters[0];
     expect(numberRangeFilter.start).toBe(valueRange.min);
     expect(numberRangeFilter.end).toBe(valueRange.max);
@@ -542,7 +543,7 @@ describe('MainToolbarComponent', () => {
     // given
     const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
     component.rangeFilters = [rangeFilter];
-    spyOn(component, 'refreshEntries');
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
 
     // when
     component.removeRangeFilter(rangeFilter);
@@ -556,7 +557,7 @@ describe('MainToolbarComponent', () => {
     // given
     const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 1, max: 10 }, false);
     component.rangeFilters = [rangeFilter];
-    spyOn(component, 'refreshEntries');
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
 
     // when
     component.removeRangeFilter(rangeFilter);

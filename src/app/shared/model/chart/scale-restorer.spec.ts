@@ -3,6 +3,7 @@ import { Column } from '../column.type';
 import { DataType } from '../data-type.enum';
 import { ScaleConfig } from './scale-config';
 import { ScaleRestorer } from './scale-restorer';
+import type { Mock } from 'vitest';
 
 describe('ScaleRestorer', () => {
 
@@ -10,14 +11,14 @@ describe('ScaleRestorer', () => {
     const amountCol: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };
     const percentCol: Column = { name: 'Percent', dataType: DataType.NUMBER, width: 10 };
 
-    let onChangeSpy: jasmine.Spy;
+    let onChangeSpy: Mock;
     let scaleConfigAmount: ScaleConfig;
     let scaleConfigPercent: ScaleConfig;
 
     let restorer: ScaleRestorer;
 
     beforeEach(() => {
-        onChangeSpy = jasmine.createSpy('onChange');
+        onChangeSpy = vi.fn();
         scaleConfigAmount = scaleConfig(amountCol.name, 10);
         scaleConfigPercent = scaleConfig(percentCol.name, 20);
         restorer = new ScaleRestorer(onChangeSpy);

@@ -1,5 +1,5 @@
 import { DataType } from 'app/shared/model';
-import { DataHandler } from '../data-handler.type';
+import { DataHandlerRecorder } from 'app/shared/test';
 import { JSONReader } from './json-reader';
 
 describe('JSONReader', () => {
@@ -26,7 +26,7 @@ describe('JSONReader', () => {
    });
 
    it('#expectsPlainTextData should return true', () => {
-      expect(reader.expectsPlainTextData()).toBeTrue();
+      expect(reader.expectsPlainTextData()).toBe(true);
    });
 
    it('#furnishAttributes should return attributes', () => {
@@ -39,7 +39,7 @@ describe('JSONReader', () => {
       expect(attributes.length).toBe(1);
    });
 
-   it('#furnishAttributes should set path of root object array', (done) => {
+   it('#furnishAttributes should set path of root object array', async () => {
 
       // given
       const data = JSON.stringify([{ x: 1, y: 'l' }, { x: 2, y: 'm' }, { x: 3, y: 'n' }, { x: 4, y: 'o' }]);
@@ -49,17 +49,13 @@ describe('JSONReader', () => {
       const attributes = reader.furnishAttributes(dataHeader);
 
       // then
-      setTimeout(() => {
-         expect(attributes).toBeDefined();
-         expect(attributes.length).toBe(1);
-         expect(attributes[0].value).toBe('$');
-         expect(attributes[0].valueChoice).toEqual(['$']);
-         expect(attributes[0].isValueChoiceBinding).toBeUndefined();
-         done();
-      }, 200);
+      await vi.waitFor(() => expect(attributes[0].value).toBe('$'));
+      expect(attributes.length).toBe(1);
+      expect(attributes[0].valueChoice).toEqual(['$']);
+      expect(attributes[0].isValueChoiceBinding).toBeUndefined();
    });
 
-   it('#furnishAttributes should set paths of detected non-root object arrays', (done) => {
+   it('#furnishAttributes should set paths of detected non-root object arrays', async () => {
 
       // given
       const objArray = [{ x: 1, y: 'l' }, { x: 2, y: 'm' }, { x: 3, y: 'n' }];
@@ -77,99 +73,82 @@ describe('JSONReader', () => {
       const attributes = reader.furnishAttributes(dataHeader);
 
       // then
-      setTimeout(() => {
-         expect(attributes).toBeDefined();
-         expect(attributes.length).toBe(1);
-         expect(attributes[0].name).toBe('Array JSONPath');
-         expect(attributes[0].description).toBe('JSONPath to the object array that contains the data');
-         expect(attributes[0].dataType).toBe(DataType.TEXT);
-         expect(attributes[0].value).toBe('$.objArr1');
-         expect(attributes[0].hasValueChoice()).toBeTrue();
-         expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);
-         expect(attributes[0].isValueChoiceBinding).toBeUndefined();
-         done();
-      }, 200);
+      await vi.waitFor(() => expect(attributes[0].value).toBe('$.objArr1'));
+      expect(attributes.length).toBe(1);
+      expect(attributes[0].name).toBe('Array JSONPath');
+      expect(attributes[0].description).toBe('JSONPath to the object array that contains the data');
+      expect(attributes[0].dataType).toBe(DataType.TEXT);
+      expect(attributes[0].hasValueChoice()).toBe(true);
+      expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);
+      expect(attributes[0].isValueChoiceBinding).toBeUndefined();
    });
 
-   it('#readSample should return entries sample', (done) => {
+   it('#readSample should return entries sample', async () => {
 
       // given
       const json = JSON.stringify({ entries: entries });
       const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$.entries';
 
-      // when/then
-      reader.readSample(file, 3)
-         .then(sample => {
-            const expected = entries.slice(0, 3);
-            expect(sample.entries).toEqual(expected);
-            expect(sample.columnNames).toBeUndefined();
-            expect(sample.tableData).toBeUndefined();
-            done();
-         })
-         .catch(err => fail(err));
+      // when
+      const sample = await reader.readSample(file, 3);
+
+      // then
+      expect(sample.entries).toEqual(entries.slice(0, 3));
+      expect(sample.columnNames).toBeUndefined();
+      expect(sample.tableData).toBeUndefined();
    });
 
-   it('#readSample should return all entries when when requested sample exceeds file size', (done) => {
+   it('#readSample should return all entries when when requested sample exceeds file size', async () => {
 
       // given
       const json = JSON.stringify({ entries: entries });
       const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$.entries';
 
-      // when/then
-      reader.readSample(file, 100)
-         .then(sample => {
-            expect(sample.entries).toEqual(entries);
-            expect(sample.columnNames).toBeUndefined();
-            expect(sample.tableData).toBeUndefined();
-            done();
-         })
-         .catch(err => fail(err));
+      // when
+      const sample = await reader.readSample(file, 100);
+
+      // then
+      expect(sample.entries).toEqual(entries);
+      expect(sample.columnNames).toBeUndefined();
+      expect(sample.tableData).toBeUndefined();
    });
 
-   it('#readData should provide entries when array path is root', (done) => {
+   it('#readData should provide entries when array path is root', async () => {
 
       // given
       const json = JSON.stringify(entries);
       const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$';
 
-      // when/then
-      let actual = [];
-      const dataHandler: DataHandler = {
-         onValues: () => fail('no values expected'),
-         onEntries: data => actual = actual.concat(data),
-         onError: err => fail(err),
-         onComplete: () => {
-            expect(actual).toEqual(entries);
-            done();
-         },
-         isCanceled: () => false
-      }
-      reader.readData(file, 2, dataHandler);
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 2, recorder);
+      await recorder.completion;
+
+      // then
+      expect(recorder.entries).toEqual(entries);
+      expect(recorder.values).toEqual([]);
    });
 
-   it('#readData should return provide entries when array path is not root', (done) => {
+   it('#readData should return provide entries when array path is not root', async () => {
 
       // given
       const json = JSON.stringify({ entries: entries });
       const file = new File([json], 'Test.json');
       reader.furnishAttributes('')[0].value = '$.entries';
 
-      // when/then
-      let actual = [];
-      const dataHandler: DataHandler = {
-         onValues: () => fail('no values expected'),
-         onEntries: data => actual = actual.concat(data),
-         onError: err => fail(err),
-         onComplete: () => {
-            expect(actual).toEqual(entries);
-            done();
-         },
-         isCanceled: () => false
-      }
-      reader.readData(file, 2, dataHandler);
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 2, recorder);
+      await recorder.completion;
+
+      // then
+      expect(recorder.entries).toEqual(entries);
+      expect(recorder.values).toEqual([]);
    });
 
 });

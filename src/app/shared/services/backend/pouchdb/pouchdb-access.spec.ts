@@ -8,19 +8,14 @@ describe('PouchDBAccess', () => {
    const DB = 'db';
    const dbAccess = new PouchDBAccess();
 
-   beforeAll(() => {
-      spyOn(console, 'log');
-   });
-
    beforeEach(async () => {
+      vi.spyOn(console, 'log').mockReturnValue(undefined);
       await dbAccess.clear()
-         .then(r => null)
-         .catch(e => fail(e));
+         .then(r => null);
 
       // Also destroy DB cached in the IndexedDB
       await new PouchDB(DB).destroy()
-         .then(r => null)
-         .catch(e => fail(e));
+         .then(r => null);
    });
 
    it('#getMaxDataItemsPerScene', async () => {
@@ -30,13 +25,10 @@ describe('PouchDBAccess', () => {
    it('#deleteDatabase should be rejected when system database', async () => {
 
       // when
-      await dbAccess.deleteDatabase('_users')
-         .then(() => fail('should have been rejected'))
-         .catch(e => {
+      const deletion = dbAccess.deleteDatabase('_users');
 
-            // then
-            expect(e).toBe('You have no permission to delete the system database _users');
-         });
+      // then
+      await expect(deletion).rejects.toBe('You have no permission to delete the system database _users');
    });
 
    it('#deleteDatabase should be accepted when non-system database', async () => {
@@ -47,7 +39,7 @@ describe('PouchDBAccess', () => {
 
       // when
       await dbAccess.deleteDatabase('db1')
-         .then(() => expect(true).toBeTrue()); // prevents 'has no expectations' warning
+         .then(() => expect(true).toBe(true)); // prevents 'has no expectations' warning
    });
 
    it('#createIndex should create design document', async () => {
@@ -64,8 +56,7 @@ describe('PouchDBAccess', () => {
 
             // then
             expect(n).toBe(1);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#find should return single document when two contains filter on same field match', async () => {
@@ -95,8 +86,7 @@ describe('PouchDBAccess', () => {
             expect(docs).toBeDefined();
             expect(docs.length).toBe(1);
             checkDocument(docs[0], '1', 'ab');
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#find should return matching documents when two contains filter on same field match', async () => {
@@ -127,8 +117,7 @@ describe('PouchDBAccess', () => {
             expect(docs.length).toBe(2);
             checkDocument(docs[0], '1', 'abc');
             checkDocument(docs[1], '2', 'bcd');
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#insert should insert document', async () => {
@@ -147,8 +136,7 @@ describe('PouchDBAccess', () => {
 
       // then
       await dbAccess.findById(DB, '1')
-         .then(d => checkDocument(d, '1', 'a'))
-         .catch(e => fail(e));
+         .then(d => checkDocument(d, '1', 'a'));
    });
 
    it('#insert should throw error when document already exists', async () => {
@@ -163,13 +151,10 @@ describe('PouchDBAccess', () => {
       await dbAccess.insertBulk(DB, documents).then(() => null);
 
       // when
-      await dbAccess.insert(DB, documents[0])
-         .then(() => fail('should have thrown error'))
-         .catch(err => {
+      const insertion = dbAccess.insert(DB, documents[0]);
 
-            // then
-            expect(err.message).toEqual('Document update conflict');
-         });
+      // then
+      await expect(insertion).rejects.toMatchObject({ message: 'Document update conflict' });
    });
 
    it('#insertBulk should insert many documents', async () => {
@@ -194,8 +179,7 @@ describe('PouchDBAccess', () => {
             checkDocument(docs[0], '1', 'a');
             checkDocument(docs[1], '2', 'b');
             checkDocument(docs[2], '3', 'c');
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#insertBulk should throw error when documents already exists', async () => {
@@ -210,15 +194,12 @@ describe('PouchDBAccess', () => {
       await dbAccess.insertBulk(DB, documents.slice(1)).then(() => null);
 
       // when
-      await dbAccess.insertBulk(DB, documents)
-         .then(() => fail('should have thrown error'))
-         .catch(err => {
+      const insertion = dbAccess.insertBulk(DB, documents);
 
-            // then
-            expect(err).toBe(
-               'id: 2, error: conflict, reason: Document update conflict\n' +
-               'id: 3, error: conflict, reason: Document update conflict');
-         });
+      // then
+      await expect(insertion).rejects.toBe(
+         'id: 2, error: conflict, reason: Document update conflict\n' +
+         'id: 3, error: conflict, reason: Document update conflict');
    });
 
    it('#update should create document with new revision', async () => {
@@ -247,8 +228,7 @@ describe('PouchDBAccess', () => {
             expect(docs.length).toBe(1);
             checkDocument(docs[0], '1', 'x');
             expect(docs[0]._rev).not.toBe(initialDocRev);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#delete should delete document', async () => {
@@ -269,8 +249,7 @@ describe('PouchDBAccess', () => {
 
       // then
       await dbAccess.countDocuments(DB)
-         .then(n => expect(n).toBe(2))
-         .catch(e => fail(e));
+         .then(n => expect(n).toBe(2));
    });
 
    it('#countDocuments should return number of documents', async () => {
@@ -291,8 +270,7 @@ describe('PouchDBAccess', () => {
 
             // then
             expect(n).toBe(3);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    function checkDocument(doc: Document, expID: string, expName: string): void {

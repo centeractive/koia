@@ -12,14 +12,13 @@ describe('CouchDBService', () => {
    let couchDBService: CouchDBService;
 
    beforeEach(async () => {
-      spyOn(console, 'log');
+      vi.spyOn(console, 'log').mockReturnValue(undefined);
       TestBed.configureTestingModule({
          providers: [CouchDBService, provideHttpClient(withXhr(), withInterceptorsFromDi())]
       });
       couchDBService = TestBed.inject(CouchDBService);
       await couchDBService.clear(testDBPrefix)
-         .then(() => null)
-         .catch(e => fail(e));
+         .then(() => null);
    });
 
    afterEach(async () => {
@@ -31,7 +30,7 @@ describe('CouchDBService', () => {
 
       // given
       const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
-      spyOn(couchDBService, 'listDatabases').and.resolveTo([]);
+      vi.spyOn(couchDBService, 'listDatabases').mockResolvedValue([]);
 
       // when
       await couchDBService.initConnection(connInfo).then(() => null);
@@ -46,14 +45,11 @@ describe('CouchDBService', () => {
       const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'server1', port: 9999, user: 'test', password: 'secret' };
 
       // when
-      await couchDBService.initConnection(connInfo)
-         .then(() => fail('should have been rejected'))
-         .catch(err => {
+      const connection = couchDBService.initConnection(connInfo);
 
-            // then
-            expect(couchDBService.getConnectionInfo()).toEqual(connInfo);
-            expect(err).toBeDefined();
-         });
+      // then
+      await expect(connection).rejects.toBeDefined();
+      expect(couchDBService.getConnectionInfo()).toEqual(connInfo);
    });
 
    it('#listDatabases should return empty array when no database exists', async () => {
@@ -65,8 +61,7 @@ describe('CouchDBService', () => {
             // then
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(0);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#listDatabases should return databases', async () => {
@@ -82,10 +77,9 @@ describe('CouchDBService', () => {
             // then
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(2);
-            expect(dbs.includes(testDBPrefix + 'db10')).toBeTrue();
-            expect(dbs.includes(testDBPrefix + 'db20')).toBeTrue();
-         })
-         .catch(e => fail(e));
+            expect(dbs.includes(testDBPrefix + 'db10')).toBe(true);
+            expect(dbs.includes(testDBPrefix + 'db20')).toBe(true);
+         });
    });
 
    it('#createDatabase should create database', async () => {
@@ -96,8 +90,7 @@ describe('CouchDBService', () => {
 
       // then
       await couchDBService.listDatabases()
-         .then(dbs => expect(dbs.includes(dbName)).toBeTruthy())
-         .catch(e => fail(e));
+         .then(dbs => expect(dbs.includes(dbName)).toBeTruthy());
    });
 
    it('#getMaxDataItemsPerScene should return max items', async () => {
@@ -107,13 +100,10 @@ describe('CouchDBService', () => {
    it('#deleteDatabase should be rejected when database is system database', async () => {
 
       // when
-      await couchDBService.deleteDatabase('_users')
-         .then(() => fail('should have been rejected'))
-         .catch(e => {
+      const deletion = couchDBService.deleteDatabase('_users');
 
-            // then
-            expect(e).toBe('You have no permission to delete the system database _users');
-         });
+      // then
+      await expect(deletion).rejects.toBe('You have no permission to delete the system database _users');
    });
 
    it('#deleteDatabase should delete database', async () => {
@@ -130,9 +120,8 @@ describe('CouchDBService', () => {
          .then(dbs => {
             const testDBs = dbs.filter(db => db.startsWith(testDBPrefix));
             expect(testDBs.length).toBe(1);
-            expect(dbs.includes(testDBPrefix + 'db200')).toBeTrue();
-         })
-         .catch(e => fail(e));
+            expect(dbs.includes(testDBPrefix + 'db200')).toBe(true);
+         });
    });
 
    it('#createIndex should create design document', async () => {
@@ -150,8 +139,7 @@ describe('CouchDBService', () => {
 
             // then
             expect(n).toBe(1);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#insert should insert document', async () => {
@@ -173,8 +161,7 @@ describe('CouchDBService', () => {
 
       // then
       await couchDBService.findById(database, '4')
-         .then(d => checkDocument(d, '4', 'd'))
-         .catch(e => fail(e));
+         .then(d => checkDocument(d, '4', 'd'));
    });
 
    it('#insert should throw error when document already exists', async () => {
@@ -190,15 +177,11 @@ describe('CouchDBService', () => {
       await couchDBService.insertBulk(database, documents).then(() => null);
 
       // when
-      await couchDBService.insert(database, documents[0])
-         .then(() => fail('should have thrown error'))
-         .catch(err => {
+      const insertion = couchDBService.insert(database, documents[0]);
 
-            // then
-            expect(err instanceof HttpErrorResponse).toBeTrue();
-            expect(err.ok).toBeFalse();
-            expect(err.error).toEqual({ error: 'conflict', reason: 'Document update conflict.' });
-         });
+      // then
+      await expect(insertion).rejects.toBeInstanceOf(HttpErrorResponse);
+      await expect(insertion).rejects.toMatchObject({ ok: false, error: { error: 'conflict', reason: 'Document update conflict.' } });
    });
 
    it('#insertBulk should insert many documents', async () => {
@@ -224,8 +207,7 @@ describe('CouchDBService', () => {
             checkDocument(docs[0], '1', 'a');
             checkDocument(docs[1], '2', 'b');
             checkDocument(docs[2], '3', 'c');
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#insertBulk should throw error when documents already exists', async () => {
@@ -241,15 +223,12 @@ describe('CouchDBService', () => {
       await couchDBService.insertBulk(database, documents.slice(1)).then(() => null);
 
       // when
-      await couchDBService.insertBulk(database, documents)
-         .then(() => fail('should have thrown error'))
-         .catch(err => {
+      const insertion = couchDBService.insertBulk(database, documents);
 
-            // then
-            expect(err).toBe(
-               'id: 2, error: conflict, reason: Document update conflict.\n' +
-               'id: 3, error: conflict, reason: Document update conflict.');
-         });
+      // then
+      await expect(insertion).rejects.toBe(
+         'id: 2, error: conflict, reason: Document update conflict.\n' +
+         'id: 3, error: conflict, reason: Document update conflict.');
    });
 
    it('#update should create document with new revision', async () => {
@@ -279,8 +258,7 @@ describe('CouchDBService', () => {
             expect(docs.length).toBe(1);
             checkDocument(docs[0], '1', 'x');
             expect(docs[0]._rev).not.toBe(initialDocRev);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#delete should delete document', async () => {
@@ -302,8 +280,7 @@ describe('CouchDBService', () => {
 
       // then
       await couchDBService.countDocuments(database)
-         .then(n => expect(n).toBe(2))
-         .catch(e => fail(e));
+         .then(n => expect(n).toBe(2));
    });
 
    it('#countDocuments should return number of documents', async () => {
@@ -324,16 +301,15 @@ describe('CouchDBService', () => {
 
             // then
             expect(n).toBe(3);
-         })
-         .catch(e => fail(e));
+         });
    });
 
    it('#clear should delete matching databases when prefix is provided', async () => {
 
       // given
       const databases = ['scenes', 'data_1', testDBPrefix + 'scenes', testDBPrefix + 'data_1', testDBPrefix + 'data_2'];
-      spyOn(couchDBService, 'listDatabases').and.resolveTo(databases);
-      spyOn(couchDBService, 'deleteDatabase').and.resolveTo();
+      vi.spyOn(couchDBService, 'listDatabases').mockResolvedValue(databases);
+      vi.spyOn(couchDBService, 'deleteDatabase').mockResolvedValue(undefined);
 
       // when
       await couchDBService.clear(testDBPrefix);
@@ -349,8 +325,8 @@ describe('CouchDBService', () => {
 
       // given
       const databases = ['scenes', 'data_1', 'data_2'];
-      spyOn(couchDBService, 'listDatabases').and.resolveTo(databases);
-      spyOn(couchDBService, 'deleteDatabase').and.callFake(() => Promise.resolve());
+      vi.spyOn(couchDBService, 'listDatabases').mockResolvedValue(databases);
+      vi.spyOn(couchDBService, 'deleteDatabase').mockImplementation(() => Promise.resolve());
 
       // when
       await couchDBService.clear();

@@ -35,11 +35,11 @@ describe('ChartJsOptionsProvider - PIE', () => {
         tooltip: {
           mode: 'index',
           intersect: true,
-          callbacks: jasmine.anything()
+          callbacks: expect.anything()
         },
         datalabels: {
           display: true,
-          formatter: jasmine.anything()
+          formatter: expect.anything()
         }
       },
       layout: {
@@ -49,8 +49,8 @@ describe('ChartJsOptionsProvider - PIE', () => {
         mode: 'nearest',
         intersect: true,
       },
-      onHover: jasmine.anything(),
-      onClick: jasmine.anything()
+      onHover: expect.anything(),
+      onClick: expect.anything()
     });
   });
 

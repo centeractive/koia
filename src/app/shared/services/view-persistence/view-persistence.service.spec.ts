@@ -87,7 +87,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const data = { x: 'one', y: 'two' };
-    spyOn(dbService, 'updateScene').and.resolveTo(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
     const status$ = service.saveRecord(scene, Route.PIVOT, 'new', new Query(), data);
@@ -102,7 +102,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const data = { x: 'one', y: 'two' };
-    spyOn(dbService, 'updateScene').and.resolveTo(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
     const status$ = service.saveRecord(scene, Route.PIVOT, pivotTableRecord.name, new Query(), data);
@@ -121,7 +121,7 @@ describe('ViewPersistenceService', () => {
   it('#saveRecord should return error status when server returns error message', async () => {
 
     // given
-    spyOn(dbService, 'updateScene').and.rejectWith('Scene cannot be updated');
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue('Scene cannot be updated');
 
     // when
     const status$ = service.saveRecord(scene, Route.PIVOT, 'test', new Query(), {});
@@ -134,7 +134,7 @@ describe('ViewPersistenceService', () => {
   it('#saveRecord should return error status when server returns error object', async () => {
 
     // given
-    spyOn(dbService, 'updateScene').and.rejectWith({ message: 'Scene cannot be updated' });
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue({ message: 'Scene cannot be updated' });
 
     // when
     const status$ = service.saveRecord(scene, Route.PIVOT, 'test', new Query(), {});
@@ -166,7 +166,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
-    spyOn(dbService, 'updateScene').and.resolveTo(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
     const status$ = service.saveView(scene, flexView);
@@ -181,7 +181,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const newGridView = createGridView('new', NOW, summary);
-    spyOn(dbService, 'updateScene').and.resolveTo(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
     const status$ = service.saveView(scene, newGridView);
@@ -196,7 +196,7 @@ describe('ViewPersistenceService', () => {
 
     // given
     const newGridView = createGridView(gridView.name, NOW, summary);
-    spyOn(dbService, 'updateScene').and.resolveTo(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
     const status$ = service.saveView(scene, newGridView);
@@ -211,7 +211,7 @@ describe('ViewPersistenceService', () => {
   it('#saveView should return error status when server returns error', async () => {
 
     // given
-    spyOn(dbService, 'updateScene').and.rejectWith('Scene cannot be updated');
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue('Scene cannot be updated');
 
     // when
     const status$ = service.saveView(scene, gridView);

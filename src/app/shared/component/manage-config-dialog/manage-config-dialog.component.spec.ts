@@ -9,17 +9,18 @@ import { Route } from 'app/shared/model';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { ManageConfigContext } from './manage-config-context.type.';
 import { ManageConfigDialogComponent } from './manage-config-dialog.component';
+import type { Mock } from 'vitest';
 
 describe('ManageConfigDialogComponent', () => {
 
   let ctx: ManageConfigContext;
   let component: ManageConfigDialogComponent;
   let fixture: ComponentFixture<ManageConfigDialogComponent>;
-  let updateConfigRecordsSpy: jasmine.Spy;
+  let updateConfigRecordsSpy: Mock;
 
   beforeEach(waitForAsync(() => {
     ctx = context();
-    updateConfigRecordsSpy = spyOn(ctx, 'updateConfigRecords');
+    updateConfigRecordsSpy = vi.spyOn(ctx, 'updateConfigRecords').mockReturnValue(undefined);
     TestBed.configureTestingModule({
       declarations: [ManageConfigDialogComponent],
       imports: [FormsModule, MatCardModule, MatButtonModule, MatIconModule],
@@ -56,7 +57,7 @@ describe('ManageConfigDialogComponent', () => {
         deleted: undefined
       }
     ]);
-    expect(button('but_ok').disabled).toBeTrue();
+    expect(button('but_ok').disabled).toBe(true);
   });
 
   it('butDelete#click', () => {
@@ -80,7 +81,7 @@ describe('ManageConfigDialogComponent', () => {
       }
     ]);
     fixture.detectChanges();
-    expect(button('but_ok').disabled).toBeFalse();
+    expect(button('but_ok').disabled).toBe(false);
   });
 
   it('butOK#click when config record was deleted', () => {

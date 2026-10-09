@@ -15,7 +15,7 @@ describe('ChartType', () => {
             expect(chartType).toBeDefined();
             expect(chartType.type).toBe(t);
             if (chartTypes.includes(chartType)) {
-               fail(t + ' returns same chart type as other type');
+               throw new Error(t + ' returns same chart type as other type');
             } else {
                chartTypes.push(chartType);
             }
@@ -23,7 +23,7 @@ describe('ChartType', () => {
    });
 
    it('#fromType should throw error when type is unknown', () => {
-      expect(() => ChartType.fromType('x')).toThrowError('unknown chart type x');
+      expect(() => ChartType.fromType('x')).toThrow(expect.objectContaining({ message: 'unknown chart type x' }));
    });
 
 });

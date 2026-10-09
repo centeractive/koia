@@ -78,7 +78,11 @@ steps:
 
 # perform unit-tets and publish test and code coverage results
 - script: |
-    npx ng test --watch=false --karma-config karma.conf.ci.js --code-coverage
+    npx playwright install --with-deps chromium
+  displayName: 'install Playwright Chromium'
+
+- script: |
+    CHROME_BIN= npx ng test --configuration=ci
   displayName: 'perform unit tests'    
 
 # build product and publish artifact

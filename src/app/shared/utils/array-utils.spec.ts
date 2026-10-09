@@ -60,11 +60,11 @@ describe('ArrayUtils', () => {
   });
 
   it('#toNumberArray should return array when string contain multiple values separated by default separator', () => {
-    expect(() => ArrayUtils.toNumberArray('1;x')).toThrowError('\'x\' is not a number');
+    expect(() => ArrayUtils.toNumberArray('1;x')).toThrow(expect.objectContaining({ message: '\'x\' is not a number' }));
   });
 
   it('#toNumberArray should return array when string contain multiple values separated by specific separator', () => {
-    expect(() => ArrayUtils.toNumberArray('1*x', '*')).toThrowError('\'x\' is not a number');
+    expect(() => ArrayUtils.toNumberArray('1*x', '*')).toThrow(expect.objectContaining({ message: '\'x\' is not a number' }));
   });
 
   it('#toBooleanArray should return empty array when string is missing', () => {
@@ -121,68 +121,68 @@ describe('ArrayUtils', () => {
   });
 
   it('#compare should return false when arrays are different', () => {
-    expect(ArrayUtils.compare([], [''])).toBeFalse();
-    expect(ArrayUtils.compare([1, 5], ['1', 5])).toBeFalse();
-    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b', 'c'])).toBeFalse();
+    expect(ArrayUtils.compare([], [''])).toBe(false);
+    expect(ArrayUtils.compare([1, 5], ['1', 5])).toBe(false);
+    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b', 'c'])).toBe(false);
   });
 
   it('#compare should return false when one array is null or undefined', () => {
-    expect(ArrayUtils.compare(null, [])).toBeFalse();
-    expect(ArrayUtils.compare([], undefined)).toBeFalse();
-    expect(ArrayUtils.compare(null, [1])).toBeFalse();
-    expect(ArrayUtils.compare([1], undefined)).toBeFalse();
+    expect(ArrayUtils.compare(null, [])).toBe(false);
+    expect(ArrayUtils.compare([], undefined)).toBe(false);
+    expect(ArrayUtils.compare(null, [1])).toBe(false);
+    expect(ArrayUtils.compare([1], undefined)).toBe(false);
   });
 
   it('#compare should return false when arrays are different', () => {
-    expect(ArrayUtils.compare([], [''])).toBeFalse();
-    expect(ArrayUtils.compare([1, 5], ['1', 5])).toBeFalse();
-    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b', 'c'])).toBeFalse();
+    expect(ArrayUtils.compare([], [''])).toBe(false);
+    expect(ArrayUtils.compare([1, 5], ['1', 5])).toBe(false);
+    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b', 'c'])).toBe(false);
   });
 
   it('#compare should return true when arrays are both null or undefined', () => {
-    expect(ArrayUtils.compare(null, null)).toBeTrue();
-    expect(ArrayUtils.compare(undefined, undefined)).toBeTrue();
-    expect(ArrayUtils.compare(undefined, null)).toBeTrue();
-    expect(ArrayUtils.compare(null, undefined)).toBeTrue();
+    expect(ArrayUtils.compare(null, null)).toBe(true);
+    expect(ArrayUtils.compare(undefined, undefined)).toBe(true);
+    expect(ArrayUtils.compare(undefined, null)).toBe(true);
+    expect(ArrayUtils.compare(null, undefined)).toBe(true);
   });
 
   it('#compare should return true when arrays are identical', () => {
-    expect(ArrayUtils.compare([], [])).toBeTrue();
-    expect(ArrayUtils.compare([1, 5], [1, 5])).toBeTrue();
-    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b'])).toBeTrue();
-    expect(ArrayUtils.compare([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ a: 1, b: 2 }, { c: 3, d: 4 }])).toBeTrue();
+    expect(ArrayUtils.compare([], [])).toBe(true);
+    expect(ArrayUtils.compare([1, 5], [1, 5])).toBe(true);
+    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b'])).toBe(true);
+    expect(ArrayUtils.compare([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ a: 1, b: 2 }, { c: 3, d: 4 }])).toBe(true);
   });
 
   it('#compareLoose should return false when one array is null or undefined', () => {
-    expect(ArrayUtils.compareLoose(null, [])).toBeFalse();
-    expect(ArrayUtils.compareLoose([], undefined)).toBeFalse();
-    expect(ArrayUtils.compareLoose(null, [1])).toBeFalse();
-    expect(ArrayUtils.compareLoose([1], undefined)).toBeFalse();
+    expect(ArrayUtils.compareLoose(null, [])).toBe(false);
+    expect(ArrayUtils.compareLoose([], undefined)).toBe(false);
+    expect(ArrayUtils.compareLoose(null, [1])).toBe(false);
+    expect(ArrayUtils.compareLoose([1], undefined)).toBe(false);
   });
 
   it('#compareLoose should return true when arrays are both null or undefined', () => {
-    expect(ArrayUtils.compareLoose(null, null)).toBeTrue();
-    expect(ArrayUtils.compareLoose(undefined, undefined)).toBeTrue();
-    expect(ArrayUtils.compareLoose(undefined, null)).toBeTrue();
-    expect(ArrayUtils.compareLoose(null, undefined)).toBeTrue();
+    expect(ArrayUtils.compareLoose(null, null)).toBe(true);
+    expect(ArrayUtils.compareLoose(undefined, undefined)).toBe(true);
+    expect(ArrayUtils.compareLoose(undefined, null)).toBe(true);
+    expect(ArrayUtils.compareLoose(null, undefined)).toBe(true);
   });
 
   it('#compareLoose should return false when arrays do not contain equal elements', () => {
-    expect(ArrayUtils.compareLoose([1, 2, 5], [5, 1])).toBeFalse();
-    expect(ArrayUtils.compareLoose(['b', 'a'], ['a', 'b', 'x'])).toBeFalse();
-    expect(ArrayUtils.compareLoose([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ e: 5 }, { c: 3, d: 4 }, { a: 1, b: 2 }])).toBeFalse();
+    expect(ArrayUtils.compareLoose([1, 2, 5], [5, 1])).toBe(false);
+    expect(ArrayUtils.compareLoose(['b', 'a'], ['a', 'b', 'x'])).toBe(false);
+    expect(ArrayUtils.compareLoose([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ e: 5 }, { c: 3, d: 4 }, { a: 1, b: 2 }])).toBe(false);
   });
 
   it('#compareLoose should return true when arrays are identical', () => {
-    expect(ArrayUtils.compareLoose([], [])).toBeTrue();
-    expect(ArrayUtils.compareLoose([1, 5], [1, 5])).toBeTrue();
-    expect(ArrayUtils.compareLoose(['a', 'b'], ['a', 'b'])).toBeTrue();
+    expect(ArrayUtils.compareLoose([], [])).toBe(true);
+    expect(ArrayUtils.compareLoose([1, 5], [1, 5])).toBe(true);
+    expect(ArrayUtils.compareLoose(['a', 'b'], ['a', 'b'])).toBe(true);
   });
 
   it('#compareLoose should return true when arrays contain equal elements', () => {
-    expect(ArrayUtils.compareLoose([1, 5], [5, 1])).toBeTrue();
-    expect(ArrayUtils.compareLoose(['b', 'a'], ['a', 'b'])).toBeTrue();
-    expect(ArrayUtils.compareLoose([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ c: 3, d: 4 }, { a: 1, b: 2 }])).toBeTrue();
+    expect(ArrayUtils.compareLoose([1, 5], [5, 1])).toBe(true);
+    expect(ArrayUtils.compareLoose(['b', 'a'], ['a', 'b'])).toBe(true);
+    expect(ArrayUtils.compareLoose([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ c: 3, d: 4 }, { a: 1, b: 2 }])).toBe(true);
   });
 
   it('#removeElement should not change array when element does not exists', () => {

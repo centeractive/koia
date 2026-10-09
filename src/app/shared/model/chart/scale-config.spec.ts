@@ -1,13 +1,14 @@
 import { fakeAsync, flush } from '@angular/core/testing';
 import { ScaleConfig, TicksConfig } from '.';
+import type { Mock } from 'vitest';
 
 describe('ScaleConfig - specific column', () => {
 
-    let onChangeSpy: jasmine.Spy;
+    let onChangeSpy: Mock;
     let scaleConfig: ScaleConfig;
 
     beforeEach(() => {
-        onChangeSpy = jasmine.createSpy('onChange');
+        onChangeSpy = vi.fn();
         scaleConfig = new ScaleConfig(onChangeSpy, {
             columnName: 'X',
             ticks: {}
@@ -34,7 +35,7 @@ describe('ScaleConfig - specific column', () => {
     it('#ticks should fire change event when ticks changed', fakeAsync(() => {
         // given
         const ticks = new TicksConfig(onChangeSpy, { stepSize: 2 });
-        onChangeSpy.calls.reset();
+        vi.mocked(onChangeSpy).mockClear();
 
 
         // when
@@ -89,11 +90,11 @@ describe('ScaleConfig - specific column', () => {
 
 describe('ScaleConfig - generic', () => {
 
-    let onChangeSpy: jasmine.Spy;
+    let onChangeSpy: Mock;
     let scaleConfig: ScaleConfig;
 
     beforeEach(() => {
-        onChangeSpy = jasmine.createSpy('onChange');
+        onChangeSpy = vi.fn();
         scaleConfig = new ScaleConfig(onChangeSpy);
     });
 
@@ -117,7 +118,7 @@ describe('ScaleConfig - generic', () => {
     it('#ticks should fire change event when ticks changed', fakeAsync(() => {
         // given
         const ticks = new TicksConfig(onChangeSpy, { stepSize: 2 });
-        onChangeSpy.calls.reset();
+        vi.mocked(onChangeSpy).mockClear();
 
 
         // when

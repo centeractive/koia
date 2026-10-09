@@ -84,7 +84,7 @@ describe('ConfirmDialogComponent', () => {
 
     // given
     const button: HTMLButtonElement = fixture.debugElement.queryAll(By.css('button'))[0].nativeElement;
-    spyOn(component.dialogRef, 'close');
+    vi.spyOn(component.dialogRef, 'close').mockReturnValue(undefined);
 
     // when
     button.click();
@@ -99,7 +99,7 @@ describe('ConfirmDialogComponent', () => {
 
     // given
     const button: HTMLButtonElement = fixture.debugElement.queryAll(By.css('button'))[1].nativeElement;
-    spyOn(component.dialogRef, 'close');
+    vi.spyOn(component.dialogRef, 'close').mockReturnValue(undefined);
 
     // when
     button.click();

@@ -1,12 +1,13 @@
 import { TicksConfig } from './ticks-config';
+import type { Mock } from 'vitest';
 
 describe('TicksConfig', () => {
 
-    let onChangeSpy: jasmine.Spy;
+    let onChangeSpy: Mock;
     let ticksConfig: TicksConfig;
 
     beforeEach(() => {
-        onChangeSpy = jasmine.createSpy('onChange');
+        onChangeSpy = vi.fn();
         ticksConfig = new TicksConfig(onChangeSpy);
     });
 
@@ -14,7 +15,7 @@ describe('TicksConfig', () => {
 
         // given
         ticksConfig.stepSize = 10;
-        onChangeSpy.calls.reset();
+        vi.mocked(onChangeSpy).mockClear();
 
         // when
         ticksConfig.stepSize = 10;
@@ -38,7 +39,7 @@ describe('TicksConfig', () => {
 
         // given
         ticksConfig.rotation = 45;
-        onChangeSpy.calls.reset();
+        vi.mocked(onChangeSpy).mockClear();
 
         // when
         ticksConfig.rotation = 45;

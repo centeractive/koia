@@ -18,7 +18,7 @@ describe('FormattedFlatDirective', () => {
 
         // given
         const event = new KeyboardEvent('keydown', { key: 'x' });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -31,7 +31,7 @@ describe('FormattedFlatDirective', () => {
 
         // given    
         const event = new KeyboardEvent('keydown', { ctrlKey: true, key: '1' });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -44,7 +44,7 @@ describe('FormattedFlatDirective', () => {
 
         // given    
         const event = new KeyboardEvent('keydown', { ctrlKey: true, key: '1' });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -57,7 +57,7 @@ describe('FormattedFlatDirective', () => {
 
         // given    
         const event = new KeyboardEvent('keydown', { shiftKey: true, key: '1' });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -72,7 +72,7 @@ describe('FormattedFlatDirective', () => {
 
             // given    
             const event = new KeyboardEvent('keydown', { ctrlKey: true, key: l });
-            const preventDefaultSpy = spyOn(event, 'preventDefault');
+            const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
             // when
             directive.onKeyPressed(event);
@@ -88,7 +88,7 @@ describe('FormattedFlatDirective', () => {
 
             // given    
             const event = new KeyboardEvent('keydown', { metaKey: true, key: l });
-            const preventDefaultSpy = spyOn(event, 'preventDefault');
+            const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
             // when
             directive.onKeyPressed(event);
@@ -102,7 +102,7 @@ describe('FormattedFlatDirective', () => {
 
         // given    
         const event = new KeyboardEvent('keydown', { key: '-' });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -115,7 +115,7 @@ describe('FormattedFlatDirective', () => {
 
         // given    
         const event = new KeyboardEvent('keydown', { key: ds });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -128,7 +128,7 @@ describe('FormattedFlatDirective', () => {
 
         // given
         const event = new KeyboardEvent('keydown', { key: '1' });
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onKeyPressed(event);
@@ -181,7 +181,7 @@ describe('FormattedFlatDirective', () => {
 
         // given
         const event = clipboardEvent('x123', 0);
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
@@ -194,7 +194,7 @@ describe('FormattedFlatDirective', () => {
 
         // given
         const event = clipboardEvent('1234', 0);
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
@@ -207,7 +207,7 @@ describe('FormattedFlatDirective', () => {
 
         // given
         const event = clipboardEvent('1234' + ds + '55', 0);
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
@@ -220,7 +220,7 @@ describe('FormattedFlatDirective', () => {
 
         // given
         const event = clipboardEvent('1' + ts + '234' + ds + '55', 0);
-        const preventDefaultSpy = spyOn(event, 'preventDefault');
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);

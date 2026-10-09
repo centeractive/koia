@@ -21,6 +21,7 @@ import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { of, throwError } from 'rxjs';
 import { RawDataComponent } from './raw-data.component';
+import type { Mock } from 'vitest';
 
 describe('RawDataComponent', () => {
 
@@ -31,11 +32,11 @@ describe('RawDataComponent', () => {
   let component: RawDataComponent;
   let fixture: ComponentFixture<RawDataComponent>;
   const dbService: DBService = new DBService(null);
-  let getActiveSceneSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   let exportService: ExportService;
-  let requestEntriesPageSpy: jasmine.Spy;
+  let requestEntriesPageSpy: Mock;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -82,10 +83,10 @@ describe('RawDataComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(RawDataComponent);
     component = fixture.componentInstance;
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
     const page = { query: new Query(), entries: entries, totalRowCount: entries.length };
-    requestEntriesPageSpy = spyOn(dbService, 'requestEntriesPage').and.resolveTo(page);
-    spyOn(dialogService, 'showConfirmDialog').and.returnValue(null);
+    requestEntriesPageSpy = vi.spyOn(dbService, 'requestEntriesPage').mockResolvedValue(page);
+    vi.spyOn(dialogService, 'showConfirmDialog').mockReturnValue(null);
     exportService = TestBed.inject(ExportService);
     fixture.detectChanges();
     flush();
@@ -100,7 +101,7 @@ describe('RawDataComponent', () => {
   });
 
   it('should fetch initial entries page', () => {
-    const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
+    const query: Query = vi.mocked(requestEntriesPageSpy).mock.lastCall[0];
     expect(query.getPageIndex()).toBe(0);
     expect(query.getRowsPerPage()).toBe(10);
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
@@ -110,9 +111,9 @@ describe('RawDataComponent', () => {
   it('#ngOnInit should navigate to scenes view when no scene is active', async () => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
+    getActiveSceneSpy.mockReturnValue(null);
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigateByUrl');
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -139,15 +140,15 @@ describe('RawDataComponent', () => {
   it('#onFilterChanged should notify error when entries page request fails', fakeAsync(() => {
 
     // given
-    requestEntriesPageSpy.and.rejectWith('server error');
-    spyOn(component, 'notifyError').and.callFake(err => null);
+    requestEntriesPageSpy.mockRejectedValue('server error');
+    vi.spyOn(component, 'notifyError').mockImplementation(err => null);
 
     // when
     component.onFilterChanged(new Query());
     flush();
 
     // then
-    expect(component.loading).toBeFalse();
+    expect(component.loading).toBe(false);
     expect(component.notifyError).toHaveBeenCalledWith('server error');
   }));
 
@@ -161,7 +162,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
-    const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
+    const query: Query = vi.mocked(requestEntriesPageSpy).mock.lastCall[0];
     expect(query.getSort()).toEqual({ active: 'Path', direction: 'desc' });
     expect(query.getPageIndex()).toBe(0);
     expect(query.getRowsPerPage()).toBe(10);
@@ -171,7 +172,7 @@ describe('RawDataComponent', () => {
 
     // given
     SortLimitationWorkaround.couchDbSortLimitationDialogData.rememberChoice = false;
-    spyOn(dbService, 'isCouchDbInUse').and.returnValue(true);
+    vi.spyOn(dbService, 'isCouchDbInUse').mockReturnValue(true);
 
     // when
     component.sortEntries({ active: 'Level', direction: 'asc' });
@@ -185,7 +186,7 @@ describe('RawDataComponent', () => {
 
     // given
     SortLimitationWorkaround.couchDbSortLimitationDialogData.rememberChoice = true;
-    spyOn(dbService, 'isCouchDbInUse').and.returnValue(true);
+    vi.spyOn(dbService, 'isCouchDbInUse').mockReturnValue(true);
 
     // when
     component.sortEntries({ active: 'Level', direction: 'asc' });
@@ -313,7 +314,7 @@ describe('RawDataComponent', () => {
 
     // then
     expect(dbService.requestEntriesPage).toHaveBeenCalled();
-    const query: Query = requestEntriesPageSpy.calls.mostRecent().args[0];
+    const query: Query = vi.mocked(requestEntriesPageSpy).mock.lastCall[0];
     expect(query.getPageIndex()).toBe(0);
     expect(query.getRowsPerPage()).toBe(50);
   });
@@ -347,10 +348,10 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should save complete data as CSV file', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
-    spyOn(component.snackBar, 'open').and.callThrough();
-    spyOn(exportService, 'exportData').and.callFake(() => null);
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(component.snackBar, 'open');
+    vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
 
     // when
     component.saveAs(ExportFormat.CSV);
@@ -364,10 +365,10 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should save filtered data as CSV file', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
-    spyOn(component.snackBar, 'open').and.callThrough();
-    spyOn(exportService, 'exportData').and.callFake(() => null);
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(component.snackBar, 'open');
+    vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
     component.query.setFullTextFilter('x');
 
     // when
@@ -382,10 +383,10 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should save complete data as Excel file', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
-    spyOn(component.snackBar, 'open').and.callThrough();
-    spyOn(exportService, 'exportData').and.callFake(() => null);
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(component.snackBar, 'open');
+    vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
 
     // when
     component.saveAs(ExportFormat.EXCEL);
@@ -399,10 +400,10 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should save filtered data as Excel file', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
-    spyOn(component.snackBar, 'open').and.callThrough();
-    spyOn(exportService, 'exportData').and.callFake(() => null);
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(component.snackBar, 'open');
+    vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
     component.query.setFullTextFilter('x');
 
     // when
@@ -417,10 +418,10 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should save complete data as JSON file', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
-    spyOn(component.snackBar, 'open').and.callThrough();
-    spyOn(exportService, 'exportData').and.callFake(() => null);
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(component.snackBar, 'open');
+    vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
 
     // when
     component.saveAs(ExportFormat.JSON);
@@ -434,10 +435,10 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should save filtered data as JSON file', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
-    spyOn(component.snackBar, 'open').and.callThrough();
-    spyOn(exportService, 'exportData').and.callFake(() => null);
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(component.snackBar, 'open');
+    vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
     component.query.setFullTextFilter('x');
 
     // when
@@ -452,9 +453,9 @@ describe('RawDataComponent', () => {
 
   it('#saveAs should notify error', fakeAsync(() => {
 
-    // given;
-    spyOn(dbService, 'findEntries').and.returnValue(throwError({ status: 404 }));
-    spyOn(notificationService, 'onError');
+    // given
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(throwError({ status: 404 }));
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
     component.saveAs(ExportFormat.JSON);
@@ -466,9 +467,9 @@ describe('RawDataComponent', () => {
 
   it('#click on print button should print window', async () => {
 
-    // given;
+    // given
     const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
-    spyOn(window, 'print');
+    vi.spyOn(window, 'print').mockReturnValue(undefined);
 
     // when
     okButton.click();

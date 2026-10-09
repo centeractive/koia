@@ -83,7 +83,7 @@ describe('SummaryTableSideBarComponent', () => {
   it('#click on multi expand toggle should close all expansion panels when unchecked', () => {
 
     // given
-    spyOn(component.accordion, 'closeAll');
+    vi.spyOn(component.accordion, 'closeAll').mockReturnValue(undefined);
     const multiExpandToggleElement: MatSlideToggle = fixture.debugElement.query(By.css('.toggle_multi_expand')).nativeElement;
     const multiExpandToggleLabelElement = fixture.debugElement.query(By.css('label')).nativeElement;
     multiExpandToggleLabelElement.click();
@@ -197,7 +197,7 @@ describe('SummaryTableSideBarComponent', () => {
     const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBeTrue();
+    expect(countDistinctValuesEnabled).toBe(true);
   });
 
   it('#isCountDistinctValuesEnabled should return true if context has non-value-grouped numeric data column', () => {
@@ -209,7 +209,7 @@ describe('SummaryTableSideBarComponent', () => {
     const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBeTrue();
+    expect(countDistinctValuesEnabled).toBe(true);
   });
 
   it('#isCountDistinctValuesEnabled should return false if context has value-grouped numeric data column', () => {
@@ -222,13 +222,13 @@ describe('SummaryTableSideBarComponent', () => {
     const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBeFalse();
+    expect(countDistinctValuesEnabled).toBe(false);
   });
 
   it('#click on data column button should invoke #onColumnNameChanged', () => {
 
     // given
-    spyOn(component, 'onColumnChanged');
+    vi.spyOn(component, 'onColumnChanged').mockReturnValue(undefined);
     const butColumn: HTMLButtonElement = fixture.debugElement.query(By.css('.but_column')).nativeElement;
 
     // when
@@ -241,10 +241,10 @@ describe('SummaryTableSideBarComponent', () => {
   it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
     const decimalSeparator = (0.1).toLocaleString().charAt(1);
 
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBeTrue();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBeTrue();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBeTrue();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBeFalse();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBe(true);
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBe(true);
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBe(true);
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBe(false);
   });
 
   it('#dropAggregation should re-position context aggregations when moved inside selected aggregations', () => {

@@ -1,4 +1,4 @@
-import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { Column, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneFactory } from 'app/shared/test';
@@ -17,8 +17,8 @@ describe('DBService', () => {
   let initialScene: Scene;
 
   beforeEach(async () => {
-    spyOn(console, 'log');
-    spyOn(console, 'warn');
+    vi.spyOn(console, 'log').mockReturnValue(undefined);
+    vi.spyOn(console, 'warn').mockReturnValue(undefined);
     new CouchDBConfig().reset();
     columns = [
       { name: 'ID', dataType: DataType.NUMBER, width: 10, indexed: true },
@@ -54,18 +54,17 @@ describe('DBService', () => {
         initialScene = SceneFactory.createScene('0', columns);
         return dbService.persistScene(initialScene, true);
       })
-      .then(() => null)
-      .catch(e => fail(e));
+      .then(() => null);
   });
 
   it('#isBackendInitialized should return true', () => {
-    expect(dbService.isBackendInitialized()).toBeTrue();
+    expect(dbService.isBackendInitialized()).toBe(true);
   });
 
   it('#initBackend should be ignored when backend is already initialized', async () => {
 
     // given
-    spyOn(couchDBService, 'listDatabases');
+    vi.spyOn(couchDBService, 'listDatabases').mockReturnValue(undefined);
 
     // when
     await dbService.initBackend(false).then(r => null);
@@ -77,7 +76,7 @@ describe('DBService', () => {
   it('#initBackend should not create scenes DB when it already exists', async () => {
 
     // given
-    spyOn(couchDBService, 'createDatabase');
+    vi.spyOn(couchDBService, 'createDatabase').mockReturnValue(undefined);
 
     // when
     await dbService.initBackend(true).then(r => {
@@ -91,7 +90,7 @@ describe('DBService', () => {
   it('#initBackend should switch to IndexedDB when CouchDB access fails', fakeAsync(() => {
 
     // given
-    spyOn(couchDBService, 'listDatabases').and.rejectWith('error');
+    vi.spyOn(couchDBService, 'listDatabases').mockRejectedValue('error');
 
     // when
     dbService.initBackend(true).then(r => null);
@@ -99,9 +98,9 @@ describe('DBService', () => {
 
     // then
     expect(console.warn).toHaveBeenCalledWith('CouchDB cannot be accessed, browser storage is used instead', 'error');
-    expect(dbService.isIndexedDbInUse()).toBeTrue();
-    expect(dbService.isCouchDbInUse()).toBeFalse();
-    expect(dbService.isBackendInitialized()).toBeTrue();
+    expect(dbService.isIndexedDbInUse()).toBe(true);
+    expect(dbService.isCouchDbInUse()).toBe(false);
+    expect(dbService.isBackendInitialized()).toBe(true);
   }));
 
   it('#getActiveScene should return active scene', () => {
@@ -116,7 +115,7 @@ describe('DBService', () => {
       // then
       expect(dbService.useIndexedDb).toBeTruthy();
 
-    }).catch(e => fail(e));
+    });
   });
 
   it('#findFreeDatabaseName should return free name from CouchDB', async () => {
@@ -128,7 +127,7 @@ describe('DBService', () => {
         // then
         expect(db).toBe(testDBPrefix + DBService.DATA + '_1');
 
-      }).catch(e => fail(e));
+      });
   });
 
   it('#findFreeDatabaseName should throw error when max number of CouchDB databases is reached', async () => {
@@ -138,16 +137,13 @@ describe('DBService', () => {
     for (let i = 1; i <= DBService.MAX_DB_COUNT; i++) {
       databases.push(testDBPrefix + DBService.DATA + '_' + i);
     }
-    spyOn(couchDBService, 'listDatabases').and.resolveTo(databases);
+    vi.spyOn(couchDBService, 'listDatabases').mockResolvedValue(databases);
 
     // when
-    await dbService.findFreeDatabaseName()
-      .then(() => fail(' should have been rejected'))
-      .catch(e => {
+    const freeName = dbService.findFreeDatabaseName();
 
-        // then
-        expect(e).toEqual(new Error('No free database table available (maximum of ' + DBService.MAX_DB_COUNT + ' reached)'));
-      });
+    // then
+    await expect(freeName).rejects.toThrow(expect.objectContaining({ message: 'No free database table available (maximum of ' + DBService.MAX_DB_COUNT + ' reached)' }));
   });
 
   it('#findFreeDatabaseName should return free name from IndexedDB', async () => {
@@ -163,7 +159,7 @@ describe('DBService', () => {
         // then
         expect(db).toBe(testDBPrefix + DBService.DATA + '_2');
 
-      }).catch(e => fail(e));
+      });
   });
 
   it('#getMaxDataItemsPerScene should return value when CouchDB is used', async () => {
@@ -206,40 +202,33 @@ describe('DBService', () => {
 
     // then
     await dbService.findScene(sceneID)
-      .then(s => expect(s._id).toBe(sceneID))
-      .catch(e => fail(e));
+      .then(s => expect(s._id).toBe(sceneID));
   });
 
   it('#persistScene should throw error when database cannot be created', async () => {
 
     // given
     const sceneID = '99';
-    spyOn(couchDBService, 'createDatabase').and.throwError('cannot create database');
+    vi.spyOn(couchDBService, 'createDatabase').mockImplementation(() => { throw new Error('cannot create database'); });
 
     // when
-    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false)
-      .then(s => fail('should be rejected'))
-      .catch(e => {
+    const persistence = dbService.persistScene(SceneFactory.createScene(sceneID, columns), false);
 
-        // then
-        expect(e).toEqual(new Error('cannot create database'));
-      });
+    // then
+    await expect(persistence).rejects.toThrow(expect.objectContaining({ message: 'cannot create database' }));
   });
 
   it('#persistScene should throw error when index cannot be created', async () => {
 
     // given
     const sceneID = '99';
-    spyOn(couchDBService, 'createIndex').and.throwError('cannot create index');
+    vi.spyOn(couchDBService, 'createIndex').mockImplementation(() => { throw new Error('cannot create index'); });
 
     // when
-    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false)
-      .then(s => fail('should be rejected'))
-      .catch(e => {
+    const persistence = dbService.persistScene(SceneFactory.createScene(sceneID, columns), false);
 
-        // then
-        expect(e).toEqual(new Error('cannot create index'));
-      });
+    // then
+    await expect(persistence).rejects.toThrow(expect.objectContaining({ message: 'cannot create index' }));
   });
 
   it('#activateScene should activate scene', async () => {
@@ -252,8 +241,7 @@ describe('DBService', () => {
 
     // when
     await dbService.activateScene(scene2._id)
-      .then(s => null)
-      .catch(e => fail(e));
+      .then(s => null);
 
     // then
     const activeScene = dbService.getActiveScene();
@@ -266,21 +254,18 @@ describe('DBService', () => {
   it('#activateScene should throw error when scene is already active', async () => {
 
     // when
-    await dbService.activateScene(initialScene._id)
-      .then(s => fail('should have been rejected'))
-      .catch(e => {
+    const activation = dbService.activateScene(initialScene._id);
 
-        // then
-        expect(e).toBe('scene with id "' + initialScene._id + '" is already active');
-      });
+    // then
+    await expect(activation).rejects.toBe('scene with id "' + initialScene._id + '" is already active');
   });
 
   it('#findSceneInfos should return info about all scenes', async () => {
 
     // given
-    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(s => null).catch(e => fail(e));
-    await dbService.persistScene(SceneFactory.createScene('2', columns), false).then(s => null).catch(e => fail(e));
-    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(s => null).catch(e => fail(e));
+    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene('2', columns), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(s => null);
 
     // when
     await dbService.findSceneInfos()
@@ -290,12 +275,11 @@ describe('DBService', () => {
         expect(scenes).toBeTruthy();
         expect(scenes.length).toBe(4);
         const sceneNames = scenes.map(s => s.name);
-        expect(sceneNames.includes(initialScene.name)).toBeTrue();
-        expect(sceneNames.includes('Scene 1')).toBeTrue();
-        expect(sceneNames.includes('Scene 2')).toBeTrue();
-        expect(sceneNames.includes('Scene 3')).toBeTrue();
-      })
-      .catch(e => fail(e));
+        expect(sceneNames.includes(initialScene.name)).toBe(true);
+        expect(sceneNames.includes('Scene 1')).toBe(true);
+        expect(sceneNames.includes('Scene 2')).toBe(true);
+        expect(sceneNames.includes('Scene 3')).toBe(true);
+      });
   });
 
   it('#createScene should enrich scene with _id and _rev', async () => {
@@ -311,8 +295,7 @@ describe('DBService', () => {
         // then
         expect(s._id).toBeDefined();
         expect(s._rev).toBeDefined();
-      })
-      .catch(e => fail(e));
+      });
   });
 
   it('#updateScene should update scene and its _rev', async () => {
@@ -323,32 +306,23 @@ describe('DBService', () => {
 
     // when
     await dbService.updateScene(initialScene)
-      .then(s => null)
-      .catch(e => fail(e));
+      .then(s => null);
 
     // then
     expect(initialScene._rev).not.toBe(sceneRev);
     await dbService.findScene(initialScene._id)
-      .then(s => expect(s.name).toBe('updated'))
-      .catch(e => fail(e));
+      .then(s => expect(s.name).toBe('updated'));
   });
 
   it('#deleteScene should delete active scene', async () => {
 
     // when
     await dbService.deleteScene(initialScene)
-      .then(s => null)
-      .catch(e => fail(e));
+      .then(s => null);
 
     // then
     expect(dbService.getActiveScene()).toBeUndefined();
-    await dbService.findScene(initialScene._id)
-      .then(s => fail('scene should not exist anymore: ' + JSON.stringify(s)))
-      .catch((e: HttpErrorResponse) => {
-        expect(e.ok).toBeFalse();
-        expect(e.status).toBe(404);
-        expect(e.statusText).toBe('Object Not Found');
-      });
+    await expect(dbService.findScene(initialScene._id)).rejects.toMatchObject({ ok: false, status: 404, statusText: 'Object Not Found' });
   });
 
   it('#deleteScene should delete non-active scene', async () => {
@@ -358,49 +332,39 @@ describe('DBService', () => {
     await dbService.persistScene(scene2, false).then(s => null);
 
     // when
-    await dbService.deleteScene(scene2).then(s => null).catch(e => fail(e));
+    await dbService.deleteScene(scene2).then(s => null);
 
     // then
     expect(dbService.getActiveScene()).toBe(initialScene);
-    await dbService.findScene(scene2._id)
-      .then(s => fail('scene should not exist anymore: ' + JSON.stringify(s)))
-      .catch((e: HttpErrorResponse) => {
-        expect(e.ok).toBeFalse();
-        expect(e.status).toBe(404);
-        expect(e.statusText).toBe('Object Not Found');
-      });
+    await expect(dbService.findScene(scene2._id)).rejects.toMatchObject({ ok: false, status: 404, statusText: 'Object Not Found' });
   });
 
   it('#deleteScene should throw error when database cannot be deleted', async () => {
 
     // given
-    spyOn(couchDBService, 'deleteDatabase').and.throwError('cannot delete database');
+    vi.spyOn(couchDBService, 'deleteDatabase').mockImplementation(() => { throw new Error('cannot delete database'); });
 
     // when
-    await dbService.deleteScene(initialScene)
-      .then(s => fail('should be rejected'))
-      .catch(e => {
+    const deletion = dbService.deleteScene(initialScene);
 
-        // then
-        expect(e).toEqual(new Error('cannot delete database'));
-      });
+    // then
+    await expect(deletion).rejects.toThrow(expect.objectContaining({ message: 'cannot delete database' }));
   });
 
   it('#writeEntries should write entries', async () => {
 
     // when
-    await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries).then(r => null);
 
     // then
     await lastValueFrom(dbService.findEntries(new Query(), false))
-      .then(data => expect(data.length).toBe(5))
-      .catch(err => fail(err));
+      .then(data => expect(data.length).toBe(5));
   });
 
   it('#countEntriesOfActiveScene should return number of documents', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries).then(r => null);
 
     // when
     await dbService.countEntriesOfActiveScene()
@@ -408,14 +372,13 @@ describe('DBService', () => {
 
         // then
         expect(count).toBe(5);
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#requestEntriesPage should return empty page when no matching entries exist', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries).then(r => null);
 
     // when
     const query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'xyz'));
@@ -428,14 +391,13 @@ describe('DBService', () => {
         expect(page.totalRowCount).toBe(0);
         expect(page.query).not.toBe(query);
         expect(page.query).toEqual(query);
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#requestEntriesPage should return first page with new context', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries).then(r => null);
 
     // when
     const query = new Query();
@@ -449,14 +411,13 @@ describe('DBService', () => {
         expect(page.totalRowCount).toBe(5);
         expect(page.query).not.toBe(query);
         expect(page.query).toEqual(query);
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#requestEntriesPage should return first page with matching entries', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries).then(r => null);
 
     // when
     const query = new Query();
@@ -473,20 +434,18 @@ describe('DBService', () => {
         expect(page.totalRowCount).toBe(1);
         expect(page.query).not.toBe(query);
         expect(page.query).toEqual(query);
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#requestEntriesPage should return second page with same context', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null);
     const query = new Query();
     query.setPageDefinition(0, 2);
     let prevPage: Page;
     await dbService.requestEntriesPage(query)
-      .then(page => prevPage = page)
-      .catch(err => fail(err));
+      .then(page => prevPage = page);
 
     // when
     query.setPageDefinition(1, 2);
@@ -499,32 +458,30 @@ describe('DBService', () => {
         expect(page.totalRowCount).toBe(5);
         expect(page.query).not.toBe(query);
         expect(page.query).toEqual(query);
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#findEntries should return filtered entries when full text filter is set', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null);
     const query = new Query();
     query.setFullTextFilter('warn');
 
-    // when8
+    // when
     await lastValueFrom(dbService.findEntries(query, true))
       .then(docs => {
 
         // then
         expect(docs.length).toBe(1);
         expect(docs[0]['Level']).toBe('WARN');
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#findEntries should return filtered entries when two contains filter on same column exist', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null);
     const query = new Query();
     query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'w'));
     query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'o'));
@@ -537,8 +494,7 @@ describe('DBService', () => {
         expect(docs.length).toBe(2);
         expect(docs[0]['Data']).toBe('WARN line one');
         expect(docs[1]['Data']).toBe('ERROR line two');
-      })
-      .catch(err => fail(err));
+      });
   });
 
   it('#numberRangeOf should return undefined time range when no entries exist', async () => {
@@ -550,14 +506,13 @@ describe('DBService', () => {
         // then
         expect(vr.min).toBeUndefined();
         expect(vr.max).toBeUndefined();
-      })
-      .catch(e => fail(e));
+      });
   });
 
   it('#numberRangeOf should return time range when entries exist', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null).catch(e => fail(e));
+    await dbService.writeEntries(initialScene.database, entries).then(r => null);
 
     // when
     await dbService.numberRangeOf(findColumn('Time'))
@@ -566,8 +521,7 @@ describe('DBService', () => {
         // then
         expect(vr.min).toBe(entries[0]['Time']);
         expect(vr.max).toBe(entries[entries.length - 1]['Time']);
-      })
-      .catch(e => fail(e));
+      });
   });
 
   function findColumn(name: string): Column {
@@ -587,8 +541,7 @@ describe('DBService', () => {
     if (!dbOneExists) {
       const scene = SceneFactory.createScene('1', columns);
       await dbService.persistScene(scene, true)
-        .then(r => null)
-        .catch(e => fail(e));
+        .then(r => null);
     }
   }
 

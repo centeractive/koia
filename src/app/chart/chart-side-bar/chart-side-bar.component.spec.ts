@@ -46,10 +46,10 @@ describe('ChartSideBarComponent', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(true);
     expect(context.groupByColumns).toEqual([findColumn('Name')]);
-    expect(context.isAggregationCountSelected()).toBeFalse();
+    expect(context.isAggregationCountSelected()).toBe(false);
   });
 
 });
@@ -89,7 +89,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
   it('#click on multi expand toggle should close all expansion panels when unchecked', () => {
 
     // given
-    spyOn(component.accordion, 'closeAll');
+    vi.spyOn(component.accordion, 'closeAll').mockReturnValue(undefined);
     const multiExpandToggleElement: MatSlideToggle = fixture.debugElement.query(By.css('.toggle_multi_expand')).nativeElement;
     const multiExpandToggleLabelElement = fixture.debugElement.query(By.css('label')).nativeElement;
     multiExpandToggleLabelElement.click();
@@ -150,8 +150,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
-    expect(component.countDistinctValuesEnabled).toBeFalse();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(false);
+    expect(component.individualValuesEnabled).toBe(true);
   });
 
   it('#click on LINE chart button should switch to individual values when number data column is selected', () => {
@@ -167,10 +167,10 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(true);
     expect(context.groupByColumns).toEqual([findColumn('Time')]);
-    expect(context.isAggregationCountSelected()).toBeFalse();
+    expect(context.isAggregationCountSelected()).toBe(false);
   });
 
   it('#click on SCATTER chart button should switch to individual values when number data column is selected', () => {
@@ -186,10 +186,10 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(true);
     expect(context.groupByColumns).toEqual([findColumn('Time')]);
-    expect(context.isAggregationCountSelected()).toBeFalse();
+    expect(context.isAggregationCountSelected()).toBe(false);
   });
 
   it('side bar should contain button for each non-time column', () => {
@@ -202,7 +202,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
   it('#click on data column button should invoke #onColumnChanged', () => {
 
     // given
-    spyOn(component, 'onColumnChanged');
+    vi.spyOn(component, 'onColumnChanged').mockReturnValue(undefined);
     const butPathColumn = findDataColumnButton('Path');
 
     // when
@@ -241,8 +241,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(true);
   });
 
   it('#click on data column should remove data column if it was the only selected one', () => {
@@ -270,8 +270,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Host']);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeFalse();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(false);
   });
 
   it('#click on number data column button should replace number data column when chart is LINE chart with count distinct values', () => {
@@ -288,8 +288,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Percent']);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(true);
   });
 
   it('#click on number data column button should keep existing number data column when chart is LINE chart with individual values', () => {
@@ -306,8 +306,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
-    expect(component.countDistinctValuesEnabled).toBeFalse();
-    expect(component.individualValuesEnabled).toBeTrue();
+    expect(component.countDistinctValuesEnabled).toBe(false);
+    expect(component.individualValuesEnabled).toBe(true);
   });
 
   it('#click on data column should replace group by column when data column was used as group by column', () => {
@@ -338,8 +338,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     expect(context.aggregations).toEqual([Aggregation.COUNT]);
-    expect(component.countDistinctValuesEnabled).toBeTrue();
-    expect(component.individualValuesEnabled).toBeFalse();
+    expect(component.countDistinctValuesEnabled).toBe(true);
+    expect(component.individualValuesEnabled).toBe(false);
     expect(context.dataColumns.map(c => c.name)).toEqual(['Path']);
   });
 
@@ -354,8 +354,8 @@ describe('ChartSideBarComponent - data includes time column', () => {
     component.onColumnChanged(findColumn('Amount'));
 
     // then
-    expect(component.individualValuesEnabled).toBeTrue();
-    expect(component.countDistinctValuesEnabled).toBeTrue();
+    expect(component.individualValuesEnabled).toBe(true);
+    expect(component.countDistinctValuesEnabled).toBe(true);
     expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
   });
 
@@ -448,7 +448,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
     const actual = component.isCircularChart();
 
     // then
-    expect(actual).toBeFalse();
+    expect(actual).toBe(false);
   });
 
   it('#isCircularChart should return true when PIE chart', () => {
@@ -461,7 +461,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
     const actual = component.isCircularChart();
 
     // then
-    expect(actual).toBeTrue();
+    expect(actual).toBe(true);
   });
 
   it('#getSingleGroupByColumn should return undefined when no group-by columns exist', () => {

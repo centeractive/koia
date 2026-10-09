@@ -67,7 +67,28 @@
                 }
               ]
             },
-            "development": {}
+            "development": {},
+            "test": {
+              "aot": false,
+              "polyfills": [
+                "zone.js",
+                "zone.js/testing",
+                "zone.js/plugins/vitest-patch"
+              ],
+              "styles": [
+                "src/styles.css"
+              ],
+              "scripts": [],
+              "assets": [
+                "src/assets",
+                "src/WEB-INF",
+                {
+                  "glob": "**/*",
+                  "input": "src/app/shared/services/reader/excel",
+                  "output": "src/app/shared/services/reader/excel"
+                }
+              ]
+            }
           },
           "defaultConfiguration": "production"
         },
@@ -91,34 +112,42 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
+          "builder": "@angular/build:unit-test",
           "options": {
-            "karmaConfig": "./karma.conf.js",
-            "codeCoverageExclude": [
+            "buildTarget": "koia:build:test",
+            "tsConfig": "src/tsconfig.spec.json",
+            "runner": "vitest",
+            "runnerConfig": "vitest.config.ts",
+            "browsers": [
+              "chromiumHeadless"
+            ],
+            "setupFiles": [
+              "src/test-setup.ts"
+            ],
+            "coverageExclude": [
               "src/app/testing/**"
             ],
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
-            "tsConfig": "src/tsconfig.spec.json",
-            "scripts": [
-              "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/jquery-ui-dist/jquery-ui.min.js",
-              "node_modules/pivottable/dist/pivot.min.js"
-            ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "assets": [
-              "src/assets",
-              "src/WEB-INF",
-              {
-                "glob": "**/*",
-                "input": "src/app/shared/services/reader/excel",
-                "output": "src/app/shared/services/reader/excel"
-              }
-            ]            
+            "coverageReporters": [
+              "html",
+              "lcovonly",
+              "text-summary",
+              "cobertura"
+            ]
+          },
+          "configurations": {
+            "ci": {
+              "watch": false,
+              "coverage": true,
+              "reporters": [
+                "default",
+                [
+                  "junit",
+                  {
+                    "outputFile": "test-results/junit.xml"
+                  }
+                ]
+              ]
+            }
           }
         }
       }

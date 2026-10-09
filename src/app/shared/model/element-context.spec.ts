@@ -7,6 +7,7 @@ import { Column } from './column.type';
 import { DataType } from './data-type.enum';
 import { ElementContext } from './element-context';
 import { ExportFormat } from './export-format.enum';
+import type { Mock } from 'vitest';
 
 class TestContext extends ElementContext {
 
@@ -27,7 +28,7 @@ describe('ElementContext', () => {
 
    let columns: Column[];
    let context: ElementContext;
-   let eventHandlerSpy: jasmine.Spy;
+   let eventHandlerSpy: Mock;
 
    beforeAll(() => {
       columns = [
@@ -39,7 +40,7 @@ describe('ElementContext', () => {
 
    beforeEach(() => {
       context = new TestContext(columns);
-      eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
+      eventHandlerSpy = vi.fn().mockImplementation(e => null);
       context.subscribeToChanges(eventHandlerSpy);
    });
 
@@ -110,8 +111,7 @@ describe('ElementContext', () => {
    });
 
    it('#aggregations should throw error when COUNT with other aggregation is provided', () => {
-      expect(() => context.aggregations = [Aggregation.COUNT, Aggregation.MAX])
-         .toThrowError('Count must not be combined with other aggregations');
+      expect(() => context.aggregations = [Aggregation.COUNT, Aggregation.MAX]).toThrow(expect.objectContaining({ message: 'Count must not be combined with other aggregations' }));
    });
 
    it('#valueGroupings should return empty array when no value groupings are defined', () => {
@@ -121,13 +121,13 @@ describe('ElementContext', () => {
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return false when no value grouping exists', () => {
-      expect(context.isAnyColumnWithValueGroupingInUse()).toBeFalse();
+      expect(context.isAnyColumnWithValueGroupingInUse()).toBe(false);
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return false when column with value grouping is not in use', () => {
       context.valueGroupings = [valueGrouping('Percent')];
 
-      expect(context.isAnyColumnWithValueGroupingInUse()).toBeFalse();
+      expect(context.isAnyColumnWithValueGroupingInUse()).toBe(false);
    });
 
    it('#isAnyColumnWithValueGroupingInUse should return true when column with value grouping is in use', () => {
@@ -145,7 +145,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).not.toHaveBeenCalled();
-      expect(context.hasValueGrouping('Amount')).toBeTrue();
+      expect(context.hasValueGrouping('Amount')).toBe(true);
    }));
 
    it('#addValueGrouping should fire structure change event when column is in use', fakeAsync(() => {
@@ -153,7 +153,7 @@ describe('ElementContext', () => {
       // given
       context.dataColumns = [column('Amount')];
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.addValueGrouping(valueGrouping('Amount'));
@@ -162,7 +162,7 @@ describe('ElementContext', () => {
       // then
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
-      expect(context.hasValueGrouping('Amount')).toBeTrue();
+      expect(context.hasValueGrouping('Amount')).toBe(true);
    }));
 
    it('#removeValueGrouping should not fire structure change when column is not in use', fakeAsync(() => {
@@ -171,7 +171,7 @@ describe('ElementContext', () => {
       const amountValueGrouping = valueGrouping('Amount');
       context.valueGroupings = [amountValueGrouping];
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.removeValueGrouping(amountValueGrouping);
@@ -179,7 +179,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).not.toHaveBeenCalled();
-      expect(context.hasValueGrouping('Amount')).toBeFalse();
+      expect(context.hasValueGrouping('Amount')).toBe(false);
    }));
 
    it('#removeValueGrouping should fire structure change when column is in use', fakeAsync(() => {
@@ -189,7 +189,7 @@ describe('ElementContext', () => {
       const amountValueGrouping = valueGrouping('Amount');
       context.valueGroupings = [amountValueGrouping];
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.removeValueGrouping(amountValueGrouping);
@@ -197,7 +197,7 @@ describe('ElementContext', () => {
 
       // then
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
-      expect(context.hasValueGrouping('Amount')).toBeFalse();
+      expect(context.hasValueGrouping('Amount')).toBe(false);
    }));
 
    function column(name: string): Column {

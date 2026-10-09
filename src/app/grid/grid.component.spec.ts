@@ -21,6 +21,7 @@ import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of, throwError } from 'rxjs';
 import { GridComponent } from './grid.component';
+import type { Mock } from 'vitest';
 
 @Component({
   selector: 'koia-main-toolbar', template: '',
@@ -69,8 +70,8 @@ describe('GridComponent', () => {
   const viewPersistenceService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
-  let getActiveSceneSpy: jasmine.Spy;
-  let findEntriesSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
+  let findEntriesSpy: Mock;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -123,10 +124,10 @@ describe('GridComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(GridComponent);
     component = fixture.componentInstance;
-    spyOn(dialogService, 'showViewLauncherDialog').and.stub();
-    spyOn(notificationService, 'showStatus').and.stub();
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    findEntriesSpy = spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));
+    vi.spyOn(dialogService, 'showViewLauncherDialog').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'showStatus').mockReturnValue(undefined);
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
+    findEntriesSpy = vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries.slice(0)));
     fixture.detectChanges();
     flush();
   }));
@@ -138,9 +139,9 @@ describe('GridComponent', () => {
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
+    getActiveSceneSpy.mockReturnValue(null);
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigateByUrl');
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -163,8 +164,8 @@ describe('GridComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(1);
     const context = component.elementContexts[0];
-    expect(component.isSummaryContext(context)).toBeTrue();
-    expect(context instanceof SummaryContext).toBeTrue();
+    expect(component.isSummaryContext(context)).toBe(true);
+    expect(context instanceof SummaryContext).toBe(true);
   });
 
   it('#addChart should add chart context', () => {
@@ -175,8 +176,8 @@ describe('GridComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(1);
     const context = component.elementContexts[0];
-    expect(component.isChartContext(context)).toBeTrue();
-    expect(context instanceof ChartContext).toBeTrue();
+    expect(component.isChartContext(context)).toBe(true);
+    expect(context instanceof ChartContext).toBe(true);
   });
 
   it('#addGraph should add graph context', () => {
@@ -187,8 +188,8 @@ describe('GridComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(1);
     const context = component.elementContexts[0];
-    expect(component.isGraphContext(context)).toBeTrue();
-    expect(context instanceof GraphContext).toBeTrue();
+    expect(component.isGraphContext(context)).toBe(true);
+    expect(context instanceof GraphContext).toBe(true);
   });
 
   it('#onFilterChanged should assign new query to each element context', () => {
@@ -224,8 +225,8 @@ describe('GridComponent', () => {
   it('#onFilterChanged should notify error when error occurs', fakeAsync(() => {
 
     // given
-    findEntriesSpy.and.returnValue(throwError('server error'));
-    spyOn(component, 'notifyError');
+    findEntriesSpy.mockReturnValue(throwError('server error'));
+    vi.spyOn(component, 'notifyError').mockReturnValue(undefined);
 
     // when
     component.onFilterChanged(new Query());
@@ -239,7 +240,7 @@ describe('GridComponent', () => {
 
     // given
     component.addSummaryTable();
-    spyOn(component.sidenav, 'open');
+    vi.spyOn(component.sidenav, 'open').mockReturnValue(undefined);
     const grid = fixture.debugElement.nativeElement;
     fixture.detectChanges();
     const configButton: HTMLButtonElement = grid.querySelector('#configButton');
@@ -288,7 +289,7 @@ describe('GridComponent', () => {
     const graphContext = component.addGraph();
     graphContext.groupByColumns = [findColumn('Level', graphContext)];
     component.addSummaryTable();
-    component.elementContexts.forEach(c => spyOn(c, 'fireSizeChanged'));
+    component.elementContexts.forEach(c => vi.spyOn(c, 'fireSizeChanged').mockReturnValue(undefined));
 
     // when
     component.setGridColumns(2);
@@ -303,8 +304,8 @@ describe('GridComponent', () => {
     component.gridColumns = 3;
     const graphContext = component.addGraph();
     graphContext.gridColumnSpan = 3;
-    component.elementContexts.forEach(c => spyOn(c, 'fireSizeChanged'));
-    spyOn(window, 'confirm').and.returnValue(true);
+    component.elementContexts.forEach(c => vi.spyOn(c, 'fireSizeChanged').mockReturnValue(undefined));
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     // when
     component.setGridColumns(2);
@@ -321,8 +322,8 @@ describe('GridComponent', () => {
     component.gridColumns = 3;
     const graphContext = component.addGraph();
     graphContext.gridColumnSpan = 3;
-    component.elementContexts.forEach(c => spyOn(c, 'fireSizeChanged'));
-    spyOn(window, 'confirm').and.returnValue(false);
+    component.elementContexts.forEach(c => vi.spyOn(c, 'fireSizeChanged').mockReturnValue(undefined));
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
 
     // when
     component.setGridColumns(2);
@@ -336,7 +337,7 @@ describe('GridComponent', () => {
 
     // given
     component.addGraph();
-    component.elementContexts.forEach(c => spyOn(c, 'fireSizeChanged'));
+    component.elementContexts.forEach(c => vi.spyOn(c, 'fireSizeChanged').mockReturnValue(undefined));
 
     // when
     component.setGridCellRatio('4:5');
@@ -379,11 +380,11 @@ describe('GridComponent', () => {
     // given
     component.addSummaryTable();
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.closedWithOK = false;
       return dialogRef;
     });
-    spyOn(viewPersistenceService, 'saveView').and.returnValue(undefined);
+    vi.spyOn(viewPersistenceService, 'saveView').mockReturnValue(undefined);
 
     // when
     component.saveView();
@@ -411,13 +412,13 @@ describe('GridComponent', () => {
     // given
     component.addSummaryTable();
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.input = 'test';
       data.closedWithOK = true;
       return dialogRef;
     });
     const status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
-    spyOn(viewPersistenceService, 'saveView').and.resolveTo(status);
+    vi.spyOn(viewPersistenceService, 'saveView').mockResolvedValue(status);
 
     // when
     component.saveView();
@@ -434,7 +435,7 @@ describe('GridComponent', () => {
     const chartContext = component.addChart();
     chartContext.title = 'Test';
     chartContext.chart = { toBase64Image: () => 'base64Image...' } as any;
-    spyOn(exportService, 'exportImage');
+    vi.spyOn(exportService, 'exportImage').mockReturnValue(undefined);
 
     // when
     component.saveAs(chartContext, ExportFormat.PNG);
@@ -450,9 +451,9 @@ describe('GridComponent', () => {
   it('#saveAs should export data when graph context is provided', fakeAsync(() => {
   
     // given
-    spyOn(component.sidenav, 'open').and.resolveTo());
+    vi.spyOn(component.sidenav, 'open').mockResolvedValue(undefined));
     const summaryContext = component.addSummaryTable();
-    spyOn(exportService, 'exportData');
+    vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
   
     // when
     component.saveAs(summaryContext, ExportFormat.EXCEL);

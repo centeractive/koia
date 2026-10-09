@@ -24,6 +24,7 @@ import { ValueGrouping } from 'app/shared/value-range/model';
 import { Observable, of } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
+import type { Mock } from 'vitest';
 
 @Injectable()
 export class MockElementRef {
@@ -47,7 +48,7 @@ describe('PivotTableComponent', () => {
   const exportService = new ExportService();
   const rawDataRevealService = new RawDataRevealService(null, null);
   let locatePivotTable: Function;
-  let getActiveSceneSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
 
   beforeAll(() => {
     now = Date.now();
@@ -95,9 +96,9 @@ describe('PivotTableComponent', () => {
     fixture = TestBed.createComponent(PivotTableComponent);
     component = fixture.componentInstance;
     locatePivotTable = () => component.divPivot.nativeElement.getElementsByClassName('pvtTable')[0];
-    spyOn(notificationService, 'showStatus').and.stub();
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries));
+    vi.spyOn(notificationService, 'showStatus').mockReturnValue(undefined);
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
     fixture.detectChanges();
     flush();
   }));
@@ -110,9 +111,9 @@ describe('PivotTableComponent', () => {
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
+    getActiveSceneSpy.mockReturnValue(null);
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigateByUrl');
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -276,11 +277,11 @@ describe('PivotTableComponent', () => {
 
     // given
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.closedWithOK = false;
       return dialogRef;
     });
-    spyOn(viewPersistenceService, 'saveRecord').and.returnValue(undefined);
+    vi.spyOn(viewPersistenceService, 'saveRecord').mockReturnValue(undefined);
 
     // when
     component.saveConfig();
@@ -302,14 +303,14 @@ describe('PivotTableComponent', () => {
         minMaxValues: { min: 10, max: 40 }
       }];
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.input = 'test';
       data.closedWithOK = true;
       return dialogRef;
     });
-    const saveRecordSpy = spyOn(viewPersistenceService, 'saveRecord');
+    const saveRecordSpy = vi.spyOn(viewPersistenceService, 'saveRecord').mockReturnValue(undefined);
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    saveRecordSpy.and.resolveTo(status);
+    saveRecordSpy.mockResolvedValue(status);
 
     // when
     component.saveConfig();
@@ -317,7 +318,7 @@ describe('PivotTableComponent', () => {
 
     // then
     expect(viewPersistenceService.saveRecord).toHaveBeenCalled();
-    const context = saveRecordSpy.calls.mostRecent().args[4];
+    const context = vi.mocked(saveRecordSpy).mock.lastCall[4];
     const expectedValueGroupings = [
       {
         columnName: 'Amount',
@@ -334,13 +335,13 @@ describe('PivotTableComponent', () => {
 
     // given
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.input = 'test';
       data.closedWithOK = true;
       return dialogRef;
     });
     const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    spyOn(viewPersistenceService, 'saveRecord').and.resolveTo(status);
+    vi.spyOn(viewPersistenceService, 'saveRecord').mockResolvedValue(status);
 
     // when
     component.saveConfig();
@@ -421,7 +422,7 @@ describe('PivotTableComponent', () => {
     flush();
 
     // then
-    expect(component.context.showRowTotals).toBeFalse();
+    expect(component.context.showRowTotals).toBe(false);
     expect(locatePivotTable()).not.toBe(pivotTable);
   }));
 
@@ -435,27 +436,27 @@ describe('PivotTableComponent', () => {
     flush();
 
     // then
-    expect(component.context.showColumnTotals).toBeFalse();
+    expect(component.context.showColumnTotals).toBe(false);
     expect(locatePivotTable()).not.toBe(pivotTable);
   }));
 
   it('#exportToExcel should export pivot table to Excel', () => {
 
     // given
-    spyOn(exportService, 'exportTableAsExcel').and.stub();
+    vi.spyOn(exportService, 'exportTableAsExcel').mockReturnValue(undefined);
 
     // when
     component.exportToExcel();
 
     // then
-    expect(exportService.exportTableAsExcel).toHaveBeenCalledWith(jasmine.any(Object), 'PivotTable');
+    expect(exportService.exportTableAsExcel).toHaveBeenCalledWith(expect.any(Object), 'PivotTable');
   });
 
   it('#click on print button should print window', fakeAsync(() => {
 
-    // given;
+    // given
     const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
-    spyOn(window, 'print');
+    vi.spyOn(window, 'print').mockReturnValue(undefined);
 
     // when
     okButton.click();

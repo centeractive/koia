@@ -39,7 +39,7 @@ describe('ColumnMappingComponent', () => {
   it('#onColumnNameChanged should emit change event', () => {
 
     // given
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onColumnNameChanged('Amount');
@@ -53,7 +53,7 @@ describe('ColumnMappingComponent', () => {
 
     // given
     component.mapping.target.dataType = DataType.TEXT;
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onDataTypeChanged();
@@ -66,7 +66,7 @@ describe('ColumnMappingComponent', () => {
 
     // given
     component.mapping.target.dataType = DataType.TIME;
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onDataTypeChanged();
@@ -81,7 +81,7 @@ describe('ColumnMappingComponent', () => {
     // given
     component.mapping.target.dataType = DataType.TIME;
     component.mapping.target.format = 'd MMM yyyy HH:mm';
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onDataTypeChanged();
@@ -160,7 +160,7 @@ describe('ColumnMappingComponent', () => {
   it('#openDatePipeFormatPage should open window', () => {
 
     // given
-    spyOn(window, 'open').and.callFake(s => null);
+    vi.spyOn(window, 'open').mockImplementation(s => null);
 
     // when
     component.openDatePipeFormatPage();

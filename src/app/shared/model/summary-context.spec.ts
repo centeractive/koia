@@ -4,12 +4,13 @@ import { Column } from './column.type';
 import { DataType } from './data-type.enum';
 import { ExportFormat } from './export-format.enum';
 import { SummaryContext } from './summary-context';
+import type { Mock } from 'vitest';
 
 describe('SummaryContext', () => {
 
    let columns: Column[];
    let context: SummaryContext;
-   let eventHandlerSpy: jasmine.Spy;
+   let eventHandlerSpy: Mock;
 
    beforeAll(() => {
       columns = [
@@ -23,7 +24,7 @@ describe('SummaryContext', () => {
 
    beforeEach(() => {
       context = new SummaryContext(columns);
-      eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
+      eventHandlerSpy = vi.fn().mockImplementation(e => null);
       context.subscribeToChanges(eventHandlerSpy);
    });
 

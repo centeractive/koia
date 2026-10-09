@@ -49,7 +49,7 @@ describe('GraphComponent', () => {
     component.context = context;
     await fixture.whenStable();
     fixture.detectChanges();
-    spyOn(component.onWarning, 'emit');
+    vi.spyOn(component.onWarning, 'emit').mockReturnValue(undefined);
   });
 
   it('should create', () => {
@@ -89,7 +89,7 @@ describe('GraphComponent', () => {
 
     // then    
     discardPeriodicTasks();
-    const joc = jasmine.objectContaining;
+    const joc = (expected: object) => expect.objectContaining(expected);
     const root = { index: 0, parent: null, group: 0, name: '', value: '', info: null };
     const child1 = { index: 1, parent: joc(root), group: 1, name: 't1', value: 'a', info: '1' };
     const child2 = { index: 2, parent: joc(root), group: 2, name: 't1', value: 'b', info: '3' };
@@ -133,7 +133,7 @@ describe('GraphComponent', () => {
     fixture.detectChanges();
     component.ngOnInit();
     flush();
-    spyOn(graphDataService, 'createData').and.returnValue({ nodes: new Array(GraphComponent.MAX_NODES + 1), links: [] });
+    vi.spyOn(graphDataService, 'createData').mockReturnValue({ nodes: new Array(GraphComponent.MAX_NODES + 1), links: [] });
 
     // when
     context.groupByColumns = [findColumn('t1')];
@@ -148,7 +148,7 @@ describe('GraphComponent', () => {
   }));
 
   it('#createExportData should throw error', () => {
-    expect(() => component.createExportData()).toThrowError('Method not implemented.');
+    expect(() => component.createExportData()).toThrow(expect.objectContaining({ message: 'Method not implemented.' }));
   });
 
   function findColumn(name: string): Column {

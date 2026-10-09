@@ -111,7 +111,7 @@ describe('PivotOptionsProvider', () => {
 
       // given
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-      spyOn(cellClickHandler, 'onCellClicked').and.callFake(m => null);
+      vi.spyOn(cellClickHandler, 'onCellClicked').mockImplementation(m => null);
 
       // when
       const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
@@ -183,7 +183,7 @@ describe('PivotOptionsProvider', () => {
    it('#enrichPivotOptions should return options that are linked with on refresh end callback', () => {
 
       // given
-      const onRefreshEndSpy = jasmine.createSpy('onPivotTableRefreshEnd').and.callFake(e => null);
+      const onRefreshEndSpy = vi.fn().mockImplementation(e => null);
 
       // when
       const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onRefreshEndSpy);
@@ -231,7 +231,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeFalse();
+      expect(isHeatmapSelected).toBe(false);
    });
 
    it('#isHeatmapRendererSelected should return true when heatmap is selected', () => {
@@ -244,7 +244,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeTrue();
+      expect(isHeatmapSelected).toBe(true);
    });
 
    it('#isHeatmapRendererSelected should return true when row heatmap is selected', () => {
@@ -257,7 +257,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeTrue();
+      expect(isHeatmapSelected).toBe(true);
    });
 
    it('#isHeatmapRendererSelected should return true when column heatmap is selected', () => {
@@ -270,7 +270,7 @@ describe('PivotOptionsProvider', () => {
       const isHeatmapSelected = optionsProvider.isHeatmapRendererSelected(options);
 
       // then
-      expect(isHeatmapSelected).toBeTrue();
+      expect(isHeatmapSelected).toBe(true);
    });
 
    it('#replaceTimeColumnsInUse should not replace anything when no time column is in use', () => {

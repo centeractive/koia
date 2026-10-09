@@ -20,7 +20,7 @@ describe('IconRegistrarService', () => {
 
     // given
     const iconRegistry = TestBed.inject(MatIconRegistry);
-    spyOn(iconRegistry, 'addSvgIcon');
+    vi.spyOn(iconRegistry, 'addSvgIcon').mockReturnValue(undefined);
 
     // when
     service.registerSvgIcons();

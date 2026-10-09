@@ -20,8 +20,8 @@ describe('NodeDoubleClickHandler', () => {
       graphContext = new GraphContext([timeColumn, levelColumn]);
       rawDataRevealService = new RawDataRevealService(null, null);
       handler = new NodeDoubleClickHandler(rawDataRevealService);
-      spyOn(rawDataRevealService, 'ofTimeUnit');
-      spyOn(rawDataRevealService, 'ofQuery');
+      vi.spyOn(rawDataRevealService, 'ofTimeUnit').mockReturnValue(undefined);
+      vi.spyOn(rawDataRevealService, 'ofQuery').mockReturnValue(undefined);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of root node', () => {

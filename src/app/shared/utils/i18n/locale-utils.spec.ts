@@ -13,8 +13,8 @@ describe('LocaleUtils', () => {
     it('#supportedLocales should include default locales', () => {
         const supportedLocales = LocaleUtils.supportedLocales();
 
-        expect(supportedLocales.includes(LocaleUtils.osDefaultLocale())).toBeTrue();
-        expect(supportedLocales.includes(LocaleUtils.browserDefaultLocale())).toBeTrue();
+        expect(supportedLocales.includes(LocaleUtils.osDefaultLocale())).toBe(true);
+        expect(supportedLocales.includes(LocaleUtils.browserDefaultLocale())).toBe(true);
     });
 
 });

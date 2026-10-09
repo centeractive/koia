@@ -40,7 +40,7 @@ describe('ViewController', () => {
       const result = viewController.isShowResizableMargin(new GraphContext([]));
 
       // then
-      expect(result).toBeFalse();
+      expect(result).toBe(false);
    });
 
    it('#isShowResizableMargin should return <undefined> when chart context but not showing margin', () => {
@@ -65,7 +65,7 @@ describe('ViewController', () => {
       const result = viewController.isShowResizableMargin(chartContext);
 
       // then
-      expect(result).toBeTrue();
+      expect(result).toBe(true);
    });
 
    it('#configure should open sidenav in "push" mode when element is far left', () => {
@@ -73,7 +73,7 @@ describe('ViewController', () => {
       // given
       const chartContext = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
       viewController.elementContexts = [chartContext];
-      spyOn(viewController.sidenav, 'open');
+      vi.spyOn(viewController.sidenav, 'open').mockReturnValue(undefined);
 
       // when
       viewController.configure({ clientX: ViewController.SIDENAV_WIDTH - 1 } as MouseEvent, chartContext);
@@ -88,7 +88,7 @@ describe('ViewController', () => {
       // given
       const chartContext = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
       viewController.elementContexts = [chartContext];
-      spyOn(viewController.sidenav, 'open');
+      vi.spyOn(viewController.sidenav, 'open').mockReturnValue(undefined);
 
       // when
       viewController.configure({ clientX: ViewController.SIDENAV_WIDTH + 1 } as MouseEvent, chartContext);
@@ -103,7 +103,7 @@ describe('ViewController', () => {
       // given
       const chartContext = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
       viewController.elementContexts = [chartContext];
-      spyOn(viewController.sidenav, 'open');
+      vi.spyOn(viewController.sidenav, 'open').mockReturnValue(undefined);
 
       // when
       viewController.configure({} as MouseEvent, chartContext);

@@ -10,18 +10,18 @@ describe('ValueRangeFilter', () => {
    });
 
    it('#isApplicable should return false when initial value range min and max are missing', () => {
-      expect(new ValueRangeFilter('x', { min: null, max: null }).isApplicable()).toBeFalse();
-      expect(new ValueRangeFilter('x', { min: undefined, max: undefined }).isApplicable()).toBeFalse();
-      expect(new ValueRangeFilter('x', { min: null, max: undefined }).isApplicable()).toBeFalse();
-      expect(new ValueRangeFilter('x', { min: undefined, max: null }).isApplicable()).toBeFalse();
+      expect(new ValueRangeFilter('x', { min: null, max: null }).isApplicable()).toBe(false);
+      expect(new ValueRangeFilter('x', { min: undefined, max: undefined }).isApplicable()).toBe(false);
+      expect(new ValueRangeFilter('x', { min: null, max: undefined }).isApplicable()).toBe(false);
+      expect(new ValueRangeFilter('x', { min: undefined, max: null }).isApplicable()).toBe(false);
    });
 
    it('#isApplicable should return true when initial value range min or max are present', () => {
-      expect(new ValueRangeFilter('x', { min: 0, max: null }).isApplicable()).toBeTrue();
-      expect(new ValueRangeFilter('x', { min: undefined, max: 0 }).isApplicable()).toBeTrue();
-      expect(new ValueRangeFilter('x', { min: 1, max: undefined }).isApplicable()).toBeTrue();
-      expect(new ValueRangeFilter('x', { min: null, max: 1 }).isApplicable()).toBeTrue();
-      expect(new ValueRangeFilter('x', { min: 1, max: 2 }).isApplicable()).toBeTrue();
+      expect(new ValueRangeFilter('x', { min: 0, max: null }).isApplicable()).toBe(true);
+      expect(new ValueRangeFilter('x', { min: undefined, max: 0 }).isApplicable()).toBe(true);
+      expect(new ValueRangeFilter('x', { min: 1, max: undefined }).isApplicable()).toBe(true);
+      expect(new ValueRangeFilter('x', { min: null, max: 1 }).isApplicable()).toBe(true);
+      expect(new ValueRangeFilter('x', { min: 1, max: 2 }).isApplicable()).toBe(true);
    });
 
    it('#isApplicable should return false when changed value range min and max are missing', () => {
@@ -34,7 +34,7 @@ describe('ValueRangeFilter', () => {
       const applicable = filter.isApplicable();
 
       // then
-      expect(applicable).toBeFalse();
+      expect(applicable).toBe(false);
       expect(filter.valueRange).toEqual({ min: null, max: null });
    });
 
@@ -48,7 +48,7 @@ describe('ValueRangeFilter', () => {
       const applicable = filter.isApplicable();
 
       // then
-      expect(applicable).toBeTrue();
+      expect(applicable).toBe(true);
       expect(filter.valueRange).toEqual({ min: 1, max: null });
    });
 
@@ -62,7 +62,7 @@ describe('ValueRangeFilter', () => {
       const applicable = filter.isApplicable();
 
       // then
-      expect(applicable).toBeFalse();
+      expect(applicable).toBe(false);
       expect(filter.valueRange).toEqual({ min: undefined, max: undefined });
    });
 
@@ -233,7 +233,7 @@ describe('ValueRangeFilter', () => {
       // then
       expect(clone.name).toBe('x');
       expect(clone.valueRange).toEqual({ min: 1, max: 2, maxExcluding: true });
-      expect(clone.inverted).toBeFalse();
+      expect(clone.inverted).toBe(false);
    });
 
    it('#clone when inverted', () => {
@@ -247,6 +247,6 @@ describe('ValueRangeFilter', () => {
       // then
       expect(clone.name).toBe('x');
       expect(clone.valueRange).toEqual({ min: 1, max: null, maxExcluding: undefined });
-      expect(clone.inverted).toBeTrue();
+      expect(clone.inverted).toBe(true);
    });
 });

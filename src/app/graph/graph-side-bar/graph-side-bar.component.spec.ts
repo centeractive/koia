@@ -49,7 +49,7 @@ describe('GraphSideBarComponent', () => {
         { provide: DBService, useValue: dbService }
       ]
     }).compileComponents();
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
   }));
 
   beforeEach(() => {
@@ -80,7 +80,7 @@ describe('GraphSideBarComponent', () => {
   it('#click on multi expand toggle should close all expansion panels when unchecked', () => {
 
     // given
-    spyOn(component.accordion, 'closeAll');
+    vi.spyOn(component.accordion, 'closeAll').mockReturnValue(undefined);
     const multiExpandToggleElement: MatSlideToggle = fixture.debugElement.query(By.css('.toggle_multi_expand')).nativeElement;
     const multiExpandToggleLabelElement = fixture.debugElement.query(By.css('label')).nativeElement;
     multiExpandToggleLabelElement.click();

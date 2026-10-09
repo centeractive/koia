@@ -12,6 +12,7 @@ import { SceneFactory } from 'app/shared/test';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
 import { SummaryTableComponent } from './summary-table.component';
+import type { Mock } from 'vitest';
 
 describe('SummaryTableComponent', () => {
 
@@ -26,8 +27,8 @@ describe('SummaryTableComponent', () => {
   let fixture: ComponentFixture<SummaryTableComponent>;
   const dbService = new DBService(null);
   const datePipe = new DatePipe('en-US');
-  let getActiveSceneSpy: jasmine.Spy;
-  let showRawDataSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
+  let showRawDataSpy: Mock;
 
   beforeAll(() => {
     const date = new Date();
@@ -51,7 +52,7 @@ describe('SummaryTableComponent', () => {
   });
 
   beforeEach(() => {
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(SceneFactory.createScene('1', columns));
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', columns));
     TestBed.configureTestingModule({
       imports: [MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule],
       declarations: [SummaryTableComponent],
@@ -69,7 +70,7 @@ describe('SummaryTableComponent', () => {
     context.entries = entries.slice(0);
     context.dataColumns = [findColumn('t2')];
     component.context = context;
-    showRawDataSpy = spyOn(TestBed.inject(RawDataRevealService), 'show').and.callFake(() => null);
+    showRawDataSpy = vi.spyOn(TestBed.inject(RawDataRevealService), 'show').mockImplementation(() => null);
   });
 
   it('should create', () => {
@@ -79,9 +80,9 @@ describe('SummaryTableComponent', () => {
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
+    getActiveSceneSpy.mockReturnValue(null);
     const r = TestBed.inject(Router);
-    spyOn(r, 'navigateByUrl');
+    vi.spyOn(r, 'navigateByUrl').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -96,7 +97,7 @@ describe('SummaryTableComponent', () => {
     // given
     fixture.detectChanges();
     flush();
-    spyOn(component, 'refreshDataFrameAsync');
+    vi.spyOn(component, 'refreshDataFrameAsync').mockReturnValue(undefined);
 
     // when
     context.dataColumns = [findColumn('t1')];
@@ -206,7 +207,7 @@ describe('SummaryTableComponent', () => {
     component.onAggregationCellClick({ t1: 'a', t2: 'x', 'Count': 522 });
 
     // then
-    const query: Query = showRawDataSpy.calls.argsFor(0)[0];
+    const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
     expect(query.getPropertyFilters()).toEqual([
       new PropertyFilter('t2', Operator.EQUAL, 'x'),
       new PropertyFilter('t1', Operator.EQUAL, 'a')
@@ -226,7 +227,7 @@ describe('SummaryTableComponent', () => {
     component.onAggregationCellClick({ 'Time (per minute)': oneMinuteAgo, t1: 'a', 'Count': 522 });
 
     // then
-    const query: Query = showRawDataSpy.calls.argsFor(0)[0];
+    const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
     expect(query.getPropertyFilters()).toEqual([new PropertyFilter('t1', Operator.EQUAL, 'a')]);
     expect(query.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: undefined })

@@ -115,10 +115,13 @@ describe('ChartDataHelper', () => {
          { _id: 2, x: 'b', y: 2 },
          { _id: 3, x: 'a', y: 1 },
       ];
-      spyOn(ChartDataHelper, 'valuesOfDistinctNames').and.callThrough();
+      vi.spyOn(ChartDataHelper, 'valuesOfDistinctNames');
 
-      // when -> then
-      expect(() => ChartDataHelper.valuesOfDistinctNames(context)).toThrowError('Value \'a\' is not unique');
+      // when
+      const extraction = () => ChartDataHelper.valuesOfDistinctNames(context);
+
+      // then
+      expect(extraction).toThrow(expect.objectContaining({ message: 'Value \'a\' is not unique' }));
    });
 
    it('#extractGroupingValue should return unchanged value when data type is NUMBER', () => {

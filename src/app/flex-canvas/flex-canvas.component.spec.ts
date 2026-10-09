@@ -22,6 +22,7 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { Chart } from 'chart.js';
 import { Observable, of } from 'rxjs';
 import { FlexCanvasComponent } from './flex-canvas.component';
+import type { Mock } from 'vitest';
 
 @Component({
   selector: 'koia-main-toolbar', template: '',
@@ -85,7 +86,7 @@ describe('FlexCanvasComponent', () => {
   const viewPersistenceService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
-  let getActiveSceneSpy: jasmine.Spy;
+  let getActiveSceneSpy: Mock;
 
   beforeAll(() => {
     now = new Date().getTime();
@@ -139,10 +140,10 @@ describe('FlexCanvasComponent', () => {
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(FlexCanvasComponent);
     component = fixture.componentInstance;
-    spyOn(dialogService, 'showViewLauncherDialog').and.stub();
-    spyOn(notificationService, 'showStatus').and.stub();
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scene);
-    spyOn(dbService, 'findEntries').and.returnValue(of(entries.slice(0)));
+    vi.spyOn(dialogService, 'showViewLauncherDialog').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'showStatus').mockReturnValue(undefined);
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries.slice(0)));
     fixture.detectChanges();
     flush();
   }));
@@ -154,9 +155,9 @@ describe('FlexCanvasComponent', () => {
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
+    getActiveSceneSpy.mockReturnValue(null);
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigateByUrl');
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -221,8 +222,8 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(2);
     const context = component.elementContexts[1];
-    expect(component.isSummaryContext(context)).toBeTrue();
-    expect(context instanceof SummaryContext).toBeTrue();
+    expect(component.isSummaryContext(context)).toBe(true);
+    expect(context instanceof SummaryContext).toBe(true);
   });
 
   it('#addChart should add chart context', () => {
@@ -234,8 +235,8 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(2);
     const context = component.elementContexts[1];
-    expect(component.isChartContext(context)).toBeTrue();
-    expect(context instanceof ChartContext).toBeTrue();
+    expect(component.isChartContext(context)).toBe(true);
+    expect(context instanceof ChartContext).toBe(true);
   });
 
   it('#addGraph should add graph context', () => {
@@ -247,8 +248,8 @@ describe('FlexCanvasComponent', () => {
     // then
     expect(component.elementContexts.length).toBe(2);
     const context = component.elementContexts[1];
-    expect(component.isGraphContext(context)).toBeTrue();
-    expect(context instanceof GraphContext).toBeTrue();
+    expect(component.isGraphContext(context)).toBe(true);
+    expect(context instanceof GraphContext).toBe(true);
   });
 
   it('#validateElementResize should return false when width is to small', () => {
@@ -258,7 +259,7 @@ describe('FlexCanvasComponent', () => {
     const validation = component.validateElementResize(event);
 
     // then
-    expect(validation).toBeFalse();
+    expect(validation).toBe(false);
   });
 
   it('#validateElementResize should return false when height is to small', () => {
@@ -268,7 +269,7 @@ describe('FlexCanvasComponent', () => {
     const validation = component.validateElementResize(event);
 
     // then
-    expect(validation).toBeFalse();
+    expect(validation).toBe(false);
   });
 
   it('#validateElementResize should return true when width and height are fine', () => {
@@ -278,7 +279,7 @@ describe('FlexCanvasComponent', () => {
     const validation = component.validateElementResize(event);
 
     // then
-    expect(validation).toBeTrue();
+    expect(validation).toBe(true);
   });
 
   it('#onResizeEnd should set graph context size', () => {
@@ -288,10 +289,9 @@ describe('FlexCanvasComponent', () => {
     fixture.detectChanges();
     const headerHeight = 26;
     component.elementContainerDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementContainerDivsRefs, 'toArray')
-      .and.returnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
+    vi.spyOn(component.elementContainerDivsRefs, 'toArray').mockReturnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
     const context = component.elementContexts[0];
-    spyOn(context, 'setSize');
+    vi.spyOn(context, 'setSize').mockReturnValue(undefined);
 
     // when
     const event = resizeEvent({ width: 333, height: 221 });
@@ -308,10 +308,9 @@ describe('FlexCanvasComponent', () => {
     fixture.detectChanges();
     const headerHeight = 26;
     component.elementContainerDivsRefs = new QueryList<ElementRef<HTMLDivElement>>();
-    spyOn(component.elementContainerDivsRefs, 'toArray')
-      .and.returnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
+    vi.spyOn(component.elementContainerDivsRefs, 'toArray').mockReturnValue([new ElementRef({ offsetHeight: headerHeight } as HTMLDivElement)]);
     const context = component.elementContexts[0] as SummaryContext;
-    spyOn(context, 'setSize');
+    vi.spyOn(context, 'setSize').mockReturnValue(undefined);
 
     // when
     const event = resizeEvent({ width: 300, height: 199 });
@@ -325,7 +324,7 @@ describe('FlexCanvasComponent', () => {
 
     // given
     component.addSummaryTable();
-    spyOn(component.sidenav, 'open');
+    vi.spyOn(component.sidenav, 'open').mockReturnValue(undefined);
     const grid = fixture.debugElement.nativeElement;
     fixture.detectChanges();
     const configButton: HTMLButtonElement = grid.querySelector('#configButton');
@@ -417,11 +416,11 @@ describe('FlexCanvasComponent', () => {
     // given
     component.addSummaryTable();
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.closedWithOK = false;
       return dialogRef;
     });
-    spyOn(viewPersistenceService, 'saveView').and.returnValue(undefined);
+    vi.spyOn(viewPersistenceService, 'saveView').mockReturnValue(undefined);
 
     // when
     component.saveView();
@@ -449,14 +448,14 @@ describe('FlexCanvasComponent', () => {
     // given
     component.addSummaryTable();
     const dialogRef = createInputDialogRef();
-    spyOn(dialogService, 'showInputDialog').and.callFake((data: InputDialogData) => {
+    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
       data.input = 'test';
       data.closedWithOK = true;
       return dialogRef;
     });
     const status: Status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
     const status$ = new Promise<Status>(resolve => resolve(status));
-    spyOn(viewPersistenceService, 'saveView').and.returnValue(status$);
+    vi.spyOn(viewPersistenceService, 'saveView').mockReturnValue(status$);
 
     // when
     component.saveView();
@@ -469,11 +468,11 @@ describe('FlexCanvasComponent', () => {
 
   it('#click on print button should print window', fakeAsync(() => {
 
-    // given;
+    // given
     component.addGraph();
     fixture.detectChanges();
     const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
-    spyOn(window, 'print');
+    vi.spyOn(window, 'print').mockReturnValue(undefined);
 
     // when
     okButton.click();
@@ -488,7 +487,7 @@ describe('FlexCanvasComponent', () => {
     const chartContext = component.addChart();
     chartContext.title = 'Test';
     chartContext.chart = { toBase64Image: () => 'base64Image...' } as Chart;
-    spyOn(exportService, 'exportImage');
+    vi.spyOn(exportService, 'exportImage').mockReturnValue(undefined);
 
     // when
     component.saveAs(chartContext, ExportFormat.PNG);
@@ -515,9 +514,9 @@ describe('FlexCanvasComponent', () => {
   it('#saveAs should export data when summary context is provided', fakeAsync(() => {
 
     // given
-    spyOn(component.sidenav, 'open').and.resolveTo();
+    vi.spyOn(component.sidenav, 'open').mockResolvedValue(undefined);
     const summaryContext = component.addSummaryTable();
-    spyOn(exportService, 'exportData');
+    vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
 
     // when
     component.saveAs(summaryContext, ExportFormat.EXCEL);

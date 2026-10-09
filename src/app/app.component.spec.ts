@@ -12,7 +12,7 @@ describe('AppComponent', () => {
     iconRegistrarService = {
       registerSvgIcons(): void { null }
     } as IconRegistrarService;
-    spyOn(iconRegistrarService, 'registerSvgIcons').and.callFake(() => null);
+    vi.spyOn(iconRegistrarService, 'registerSvgIcons').mockImplementation(() => null);
     TestBed.configureTestingModule({
       declarations: [AppComponent],
       providers: [{ provide: IconRegistrarService, useValue: iconRegistrarService }],

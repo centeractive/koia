@@ -3,12 +3,13 @@ import { GraphContext } from './graph-context';
 import { ChangeEvent } from '../change-event.enum';
 import { Column } from '../column.type';
 import { DataType } from '../data-type.enum';
+import type { Mock } from 'vitest';
 
 describe('GraphContext', () => {
 
    let columns: Column[];
    let context: GraphContext;
-   let eventHandlerSpy: jasmine.Spy;
+   let eventHandlerSpy: Mock;
 
    beforeAll(() => {
       columns = [
@@ -21,7 +22,7 @@ describe('GraphContext', () => {
 
    beforeEach(() => {
       context = new GraphContext(columns);
-      eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
+      eventHandlerSpy = vi.fn().mockImplementation(e => null);
       context.subscribeToChanges(eventHandlerSpy);
    });
 

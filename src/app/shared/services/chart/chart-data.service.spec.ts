@@ -337,7 +337,7 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[0].data).toEqual(expectedData);
       expect(context.valueRange).toEqual({ min: 2, max: 3 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalse();
+      expect(context.dataSampledDown).toBe(false);
       expect(context.warning).toBeUndefined();
    });
 
@@ -371,7 +371,7 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: -2, max: 4 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalse();
+      expect(context.dataSampledDown).toBe(false);
       expect(context.warning).toBeUndefined();
    });
 
@@ -400,7 +400,7 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[0].data).toEqual(expectedData);
       expect(context.valueRange).toEqual({ min: 2, max: 3 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalse();
+      expect(context.dataSampledDown).toBe(false);
       expect(context.warning).toBeUndefined();
    });
 
@@ -431,7 +431,7 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[1].data).toEqual(expectedData1);
       expect(context.valueRange).toEqual({ min: -1, max: 4 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeFalse();
+      expect(context.dataSampledDown).toBe(false);
       expect(context.warning).toBeUndefined();
    });
 
@@ -454,7 +454,7 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[0].data.length).toBeLessThan(10_000);
       expect(context.valueRange).toEqual({ min: 0, max: 1_000 });
       expect(result.error).toBeUndefined();
-      expect(context.dataSampledDown).toBeTrue();
+      expect(context.dataSampledDown).toBe(true);
       expect(context.warning).toBeDefined();
    });
 

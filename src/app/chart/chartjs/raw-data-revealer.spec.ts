@@ -5,10 +5,11 @@ import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ActiveElement, ArcElement, BarElement, ChartData, PointElement } from 'chart.js';
 import { RawDataRevealer } from './raw-data-revealer';
+import type { Mock } from 'vitest';
 
 let revealer: RawDataRevealer;
-let ofIDSpy: jasmine.Spy;
-let ofQuerySpy: jasmine.Spy;
+let ofIDSpy: Mock;
+let ofQuerySpy: Mock;
 
 describe('RawDataRevealer - PIE', () => {
 
@@ -259,7 +260,7 @@ describe('RawDataRevealer - LINEAR_HORIZONTAL_BAR', () => {
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['B'], jasmine.anything());
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['B'], expect.anything());
     });
 
 });
@@ -310,8 +311,8 @@ function setup(): void {
     });
     const rawDataRevealService = TestBed.inject(RawDataRevealService);
     revealer = new RawDataRevealer(rawDataRevealService);
-    ofIDSpy = spyOn(rawDataRevealService, 'ofID');
-    ofQuerySpy = spyOn(rawDataRevealService, 'ofQuery');
+    ofIDSpy = vi.spyOn(rawDataRevealService, 'ofID').mockReturnValue(undefined);
+    ofQuerySpy = vi.spyOn(rawDataRevealService, 'ofQuery').mockReturnValue(undefined);
 }
 
 

@@ -77,13 +77,13 @@ describe('ConnectionDialogComponent', () => {
     changeInputValue('user', 'abc123');
     changeInputValue('password', '%ad3Zds_');
     const cancelButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
-    spyOn(component.dialogRef, 'close');
+    vi.spyOn(component.dialogRef, 'close').mockReturnValue(undefined);
 
     // when
     cancelButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeFalse();
+    expect(component.data.closedWithOK).toBe(false);
     expect(component.data.connectionInfo).toEqual(connectionInfo);
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
@@ -96,13 +96,13 @@ describe('ConnectionDialogComponent', () => {
     changeInputValue('user', 'abc123');
     changeInputValue('password', '%ad3Zds_');
     const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_ok')).nativeElement;
-    spyOn(component.dialogRef, 'close');
+    vi.spyOn(component.dialogRef, 'close').mockReturnValue(undefined);
 
     // when
     okButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeTrue();
+    expect(component.data.closedWithOK).toBe(true);
     expect(component.data.connectionInfo.host).toBe('server-x');
     expect(component.data.connectionInfo.port).toBe(999);
     expect(component.data.connectionInfo.user).toBe('abc123');

@@ -27,7 +27,7 @@ describe('RawDataDialogComponent', () => {
       const component = createComponent(query);
 
       // then
-      expect(component.hideToolbar).toBeTrue();
+      expect(component.hideToolbar).toBe(true);
    });
 
    it('should not hide toolbar when data is not specified by specific ID', () => {
@@ -40,7 +40,7 @@ describe('RawDataDialogComponent', () => {
       const component = createComponent(query);
 
       // then
-      expect(component.hideToolbar).toBeFalse();
+      expect(component.hideToolbar).toBe(false);
    });
 
    function createComponent(query: Query): RawDataDialogComponent {

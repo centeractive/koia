@@ -42,22 +42,22 @@ describe('ReaderService', () => {
     expect(readers[2] instanceof JSONReader).toBeTruthy();
   });
 
-  it('#readHeader should return file start when bytesCount is less than file size', (done) => {
-    service.readHeader(file, 3)
-      .then(s => {
-        expect(s).toBe('A,B');
-        done();
-      })
-      .catch(e => fail(e));
+  it('#readHeader should return file start when bytesCount is less than file size', async () => {
+
+    // when
+    const header = await service.readHeader(file, 3);
+
+    // then
+    expect(header).toBe('A,B');
   });
 
-  it('#readHeader should return entire file content when bytesCount is greater than file size', (done) => {
-    service.readHeader(file, 100)
-      .then(s => {
-        expect(s).toBe(text);
-        done();
-      })
-      .catch(e => fail(e));
+  it('#readHeader should return entire file content when bytesCount is greater than file size', async () => {
+
+    // when
+    const header = await service.readHeader(file, 100);
+
+    // then
+    expect(header).toBe(text);
   });
 
   function createFile(data: string): File {

@@ -24,9 +24,13 @@ describe('Query', () => {
     // given
     const query = new Query();
 
-    // when/then
-    expect(query.hasFilter()).toBeFalse();
-    expect(query.hasFullTextFilter()).toBeFalse();
+    // when
+    const hasFilter = query.hasFilter();
+    const hasFullTextFilter = query.hasFullTextFilter();
+
+    // then
+    expect(hasFilter).toBe(false);
+    expect(hasFullTextFilter).toBe(false);
   });
 
   it('#hasFilter should return true when text filter exist', () => {
@@ -35,9 +39,13 @@ describe('Query', () => {
     const query = new Query();
     query.setFullTextFilter('abc');
 
-    // when/then
-    expect(query.hasFilter()).toBeTrue();
-    expect(query.hasFullTextFilter()).toBeTrue();
+    // when
+    const hasFilter = query.hasFilter();
+    const hasFullTextFilter = query.hasFullTextFilter();
+
+    // then
+    expect(hasFilter).toBe(true);
+    expect(hasFullTextFilter).toBe(true);
   });
 
   it('#hasFilter should return true when applicable property filter exists', () => {
@@ -49,7 +57,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeTrue();
+    expect(hasFilter).toBe(true);
   });
 
   it('#hasFilter should return false when non-applicable property filter exists', () => {
@@ -61,7 +69,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeFalse();
+    expect(hasFilter).toBe(false);
   });
 
   it('#hasFilter should return true when applicable value range filter exists', () => {
@@ -74,7 +82,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeTrue();
+    expect(hasFilter).toBe(true);
   });
 
   it('#hasFilter should return true when non-applicable value range filter exists', () => {
@@ -87,7 +95,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeFalse();
+    expect(hasFilter).toBe(false);
   });
 
   it('#hasFilter should return false when all filter are non-applicable', () => {
@@ -101,7 +109,7 @@ describe('Query', () => {
     const hasFilter = query.hasFilter();
 
     // then
-    expect(hasFilter).toBeFalse();
+    expect(hasFilter).toBe(false);
   });
 
   it('#clearSort should clear sort', () => {
@@ -114,7 +122,7 @@ describe('Query', () => {
     query.clearSort();
 
     // then
-    expect(query.hasSort()).toBeFalse();
+    expect(query.hasSort()).toBe(false);
     expect(query.getSort()).toBeUndefined();
   });
 
@@ -127,7 +135,7 @@ describe('Query', () => {
     query.setPageDefinition(8, 10);
 
     // then
-    expect(query.hasPageDefinition()).toBeTrue();
+    expect(query.hasPageDefinition()).toBe(true);
     expect(query.getPageIndex()).toBe(8);
     expect(query.getRowsPerPage()).toBe(10);
   });
@@ -142,7 +150,7 @@ describe('Query', () => {
     query.clearPageDefinition();
 
     // then
-    expect(query.hasPageDefinition()).toBeFalse();
+    expect(query.hasPageDefinition()).toBe(false);
     expect(query.getPageIndex()).toBeUndefined();
     expect(query.getRowsPerPage()).toBeUndefined();
   });

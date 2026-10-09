@@ -20,7 +20,7 @@ describe('ValueFilterComponent', () => {
   let columns: Column[];
   const dbService = new DBService(null);
 
-  beforeAll(() => {
+  beforeEach(() => {
     columns = [
       { name: 'Time', dataType: DataType.TIME, width: 100, format: 'yyyy-MM-dd HH:mm:ss SSS' },
       { name: 'Level', dataType: DataType.TEXT, width: 60 },
@@ -32,7 +32,7 @@ describe('ValueFilterComponent', () => {
       { name: 'Signed Off', dataType: DataType.BOOLEAN, width: 30 }
     ];
     const scene = SceneFactory.createScene('1', columns);
-    spyOn(dbService, 'getActiveScene').and.returnValue(scene);
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
   });
 
   beforeEach(waitForAsync(() => {
@@ -155,7 +155,7 @@ describe('ValueFilterComponent', () => {
 
     // given
     component.filter = new PropertyFilter('Level', Operator.EQUAL, 'ERROR');
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onNameChanged(column('Host'));
@@ -168,7 +168,7 @@ describe('ValueFilterComponent', () => {
 
     // given
     component.filter = new PropertyFilter('Level', Operator.EQUAL, '');
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onNameChanged(column('Host'));
@@ -290,7 +290,7 @@ describe('ValueFilterComponent', () => {
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
     const htmlInput = fixture.debugElement.query(By.css('#column_filter_input')).nativeElement;
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     const event: any = document.createEvent('Event');
@@ -313,7 +313,7 @@ describe('ValueFilterComponent', () => {
     htmlInput.value = '1';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     const event: any = document.createEvent('Event');

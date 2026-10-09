@@ -19,7 +19,7 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(end);
       expect(filter.selValueRange.min).toBe(start);
       expect(filter.selValueRange.max).toBe(end);
-      expect(filter.isFiltered()).toBeFalse();
+      expect(filter.isFiltered()).toBe(false);
    });
 
    it('#constructor should create inactive filter when selected values are undefined', () => {
@@ -37,7 +37,7 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(end);
       expect(filter.selValueRange.min).toBe(start);
       expect(filter.selValueRange.max).toBe(end);
-      expect(filter.isFiltered()).toBeFalse();
+      expect(filter.isFiltered()).toBe(false);
    });
 
    it('#constructor should create active filter when selected start time is defined', () => {
@@ -53,7 +53,7 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(10);
       expect(filter.selValueRange.min).toBe(1);
       expect(filter.selValueRange.max).toBe(10);
-      expect(filter.isFiltered()).toBeTrue();
+      expect(filter.isFiltered()).toBe(true);
    });
 
    it('#constructor should create non-inverted filter when inverted is not defined', () => {
@@ -65,7 +65,7 @@ describe('NumberRangeFilter', () => {
       const filter = new NumberRangeFilter(column, 0, 10, { min: null, max: 9 }, undefined);
 
       // then
-      expect(filter.inverted).toBeFalse();
+      expect(filter.inverted).toBe(false);
    });
 
    it('#constructor should create active filter when selected end time is defined', () => {
@@ -81,7 +81,7 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(10);
       expect(filter.selValueRange.min).toBe(0);
       expect(filter.selValueRange.max).toBe(9);
-      expect(filter.isFiltered()).toBeTrue();
+      expect(filter.isFiltered()).toBe(true);
    });
 
    it('#constructor should create active filter when start and end value are defined', () => {
@@ -99,7 +99,7 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(10);
       expect(filter.selValueRange.min).toBe(1);
       expect(filter.selValueRange.max).toBe(9);
-      expect(filter.isFiltered()).toBeTrue();
+      expect(filter.isFiltered()).toBe(true);
    });
 
    it('#constructor should init slider steps when values range from zero to positive', () => {
@@ -187,8 +187,8 @@ describe('NumberRangeFilter', () => {
       expect(options.floor).toBe(start);
       expect(options.ceil).toBe(end);
       expect(options.step).toBe(0.1);
-      expect(options.enforceStep).toBeFalse();
-      expect(options.draggableRange).toBeTrue();
+      expect(options.enforceStep).toBe(false);
+      expect(options.draggableRange).toBe(true);
       expect(options.translate(start, LabelType.Ceil)).toBe('-10');
       expect(options.combineLabels('-5', '8')).toBe('-5 - 8');
    });
@@ -209,8 +209,8 @@ describe('NumberRangeFilter', () => {
       expect(options.floor).toBe(start);
       expect(options.ceil).toBe(end);
       expect(options.step).toBe(1_000);
-      expect(options.enforceStep).toBeFalse();
-      expect(options.draggableRange).toBeTrue();
+      expect(options.enforceStep).toBe(false);
+      expect(options.draggableRange).toBe(true);
       expect(options.translate(start, LabelType.Ceil)).toBe('7');
       expect(options.combineLabels('10', '200')).toBe('10 - 200');
    });
@@ -272,6 +272,6 @@ describe('NumberRangeFilter', () => {
       expect(filter.end).toBe(end);
       expect(filter.selValueRange.min).toBe(start);
       expect(filter.selValueRange.max).toBe(end);
-      expect(filter.isFiltered()).toBeFalse();
+      expect(filter.isFiltered()).toBe(false);
    });
 });

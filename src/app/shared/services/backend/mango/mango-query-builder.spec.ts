@@ -27,7 +27,7 @@ describe('MangoQueryBuilder', () => {
       const result = queryBuilder.containsFilter();
 
       // then
-      expect(result).toBeFalse();
+      expect(result).toBe(false);
    });
 
    it('#containsFilter should return true when full text filter was added', () => {

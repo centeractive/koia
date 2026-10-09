@@ -44,13 +44,13 @@ describe('InputDialogComponent', () => {
 
     // given
     const cancelButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
-    spyOn(component.dialogRef, 'close');
+    vi.spyOn(component.dialogRef, 'close').mockReturnValue(undefined);
 
     // when
     cancelButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeFalse();
+    expect(component.data.closedWithOK).toBe(false);
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
 
@@ -59,13 +59,13 @@ describe('InputDialogComponent', () => {
     // given
     changeInputValue('test');
     const okButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_ok')).nativeElement;
-    spyOn(component.dialogRef, 'close');
+    vi.spyOn(component.dialogRef, 'close').mockReturnValue(undefined);
 
     // when
     okButton.click();
 
     // then
-    expect(component.data.closedWithOK).toBeTrue();
+    expect(component.data.closedWithOK).toBe(true);
     expect(component.data.input).toEqual('test');
     expect(component.dialogRef.close).toHaveBeenCalled();
   });

@@ -3,28 +3,29 @@ import { Document } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { EntryPersister } from './entry-persister';
 import { ProgressMonitor } from './progress-monitor.type';
+import type { Mock } from 'vitest';
 
 describe('EntryPersister', () => {
 
    const database = 'test_data';
    const batchSize = 4;
    const dbService: DBService = new DBService(null);
-   let dbServiceWriteEtriesSpy: jasmine.Spy;
+   let dbServiceWriteEtriesSpy: Mock;
    let monitor: ProgressMonitor;
-   let monitorOnProgressSpy: jasmine.Spy;
+   let monitorOnProgressSpy: Mock;
    let persister: EntryPersister;
 
    beforeEach(() => {
-      dbServiceWriteEtriesSpy = spyOn(dbService, 'writeEntries').and.resolveTo();
+      dbServiceWriteEtriesSpy = vi.spyOn(dbService, 'writeEntries').mockResolvedValue(undefined);
       monitor = {
          onProgress: percent => console.log('progress ' + percent + '%'),
          onComplete: msg => console.log(msg),
          onError: err => console.log(err)
       };
-      monitorOnProgressSpy = spyOn(monitor, 'onProgress');
-      spyOn(monitor, 'onError');
-      spyOn(monitor, 'onComplete');
-      spyOn(console, 'log');
+      monitorOnProgressSpy = vi.spyOn(monitor, 'onProgress').mockReturnValue(undefined);
+      vi.spyOn(monitor, 'onError').mockReturnValue(undefined);
+      vi.spyOn(monitor, 'onComplete').mockReturnValue(undefined);
+      vi.spyOn(console, 'log').mockReturnValue(undefined);
       persister = new EntryPersister(dbService, database, batchSize, monitor);
    });
 
@@ -34,7 +35,7 @@ describe('EntryPersister', () => {
       persister.post(entries(batchSize - 1));
 
       // then
-      expect(persister.isPostingComplete()).toBeFalse();
+      expect(persister.isPostingComplete()).toBe(false);
       expect(dbService.writeEntries).toHaveBeenCalledTimes(0);
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '3 items read');
@@ -48,7 +49,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeFalse();
+      expect(persister.isPostingComplete()).toBe(false);
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([1, 2, 3, 4]));
       expect(monitor.onProgress).toHaveBeenCalledTimes(2);
@@ -64,7 +65,7 @@ describe('EntryPersister', () => {
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeFalse();
+      expect(persister.isPostingComplete()).toBe(false);
       expect(dbService.writeEntries).toHaveBeenCalledTimes(2);
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([1, 2, 3, 4]));
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([5, 6, 7, 8]));
@@ -78,14 +79,14 @@ describe('EntryPersister', () => {
    it('#post should complete posting and report error when error occurs in DB service', fakeAsync(() => {
 
       // given
-      dbServiceWriteEtriesSpy.and.rejectWith('DB error');
+      dbServiceWriteEtriesSpy.mockRejectedValue('DB error');
 
       // when
       persister.post(entries(batchSize));
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeTrue();
+      expect(persister.isPostingComplete()).toBe(true);
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
       expect(monitor.onProgress).toHaveBeenCalledWith(0, '4 items read');
@@ -102,9 +103,11 @@ describe('EntryPersister', () => {
       persister.postingComplete(true);
       flush();
 
-      // when / then
-      expect(() => persister.post(entries(batchSize)))
-         .toThrow(new Error('Posting was completed and is now locked'));
+      // when
+      const post = () => persister.post(entries(batchSize));
+
+      // then
+      expect(post).toThrow(new Error('Posting was completed and is now locked'));
    }));
 
    it('#postingComplete should submit queued data if desired', fakeAsync(() => {
@@ -112,15 +115,15 @@ describe('EntryPersister', () => {
       // given
       persister.post(entries(batchSize + 2));
       flush();
-      dbServiceWriteEtriesSpy.calls.reset();
-      monitorOnProgressSpy.calls.reset();
+      vi.mocked(dbServiceWriteEtriesSpy).mockClear();
+      vi.mocked(monitorOnProgressSpy).mockClear();
 
       // when
       persister.postingComplete(true);
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeTrue();
+      expect(persister.isPostingComplete()).toBe(true);
       expect(dbService.writeEntries).toHaveBeenCalledTimes(1);
       expect(dbService.writeEntries).toHaveBeenCalledWith(database, documents([5, 6]));
       expect(monitor.onProgress).toHaveBeenCalledTimes(1);
@@ -134,15 +137,15 @@ describe('EntryPersister', () => {
       // given
       persister.post(entries(batchSize + 2));
       flush();
-      dbServiceWriteEtriesSpy.calls.reset();
-      monitorOnProgressSpy.calls.reset();
+      vi.mocked(dbServiceWriteEtriesSpy).mockClear();
+      vi.mocked(monitorOnProgressSpy).mockClear();
 
       // when
       persister.postingComplete(false);
       flush();
 
       // then
-      expect(persister.isPostingComplete()).toBeTrue();
+      expect(persister.isPostingComplete()).toBe(true);
       expect(dbService.writeEntries).toHaveBeenCalledTimes(0);
       expect(monitor.onProgress).toHaveBeenCalledTimes(0);
       expect(monitor.onComplete).toHaveBeenCalledTimes(1);
@@ -160,7 +163,7 @@ describe('EntryPersister', () => {
       persister.reset();
 
       // then
-      expect(persister.isPostingComplete()).toBeFalse();
+      expect(persister.isPostingComplete()).toBe(false);
       expect(() => persister.post(entries(batchSize)))
          .not.toThrow(new Error('Posting was completed and is now locked'));
       flush();

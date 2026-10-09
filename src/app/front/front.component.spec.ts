@@ -22,6 +22,7 @@ import { QueryParamExtractor } from 'app/shared/utils';
 import { Observable, of } from 'rxjs';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { FrontComponent } from './front.component';
+import type { Mock } from 'vitest';
 
 @Component({
   template: '',
@@ -36,9 +37,9 @@ const dialogService = new DialogService(null);
 const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'test', password: 'secret' };
 const notificationService = new NotificationServiceMock();
 let dbService: DBService;
-let isIndexedDbInUseSpy: jasmine.Spy;
-let initBackendSpy: jasmine.Spy;
-let findSceneInfosSpy: jasmine.Spy;
+let isIndexedDbInUseSpy: Mock;
+let initBackendSpy: Mock;
+let findSceneInfosSpy: Mock;
 
 describe('FrontComponent', () => {
 
@@ -46,7 +47,7 @@ describe('FrontComponent', () => {
   let fixture: ComponentFixture<FrontComponent>;
 
   beforeEach(waitForAsync(() => {
-    spyOn(console, 'log');
+    vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
@@ -66,10 +67,10 @@ describe('FrontComponent', () => {
       ]
     })
       .compileComponents();
-    initBackendSpy = spyOn(dbService, 'initBackend').and.resolveTo();
-    isIndexedDbInUseSpy = spyOn(dbService, 'isIndexedDbInUse').and.returnValue(true);
+    initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
+    isIndexedDbInUseSpy = vi.spyOn(dbService, 'isIndexedDbInUse').mockReturnValue(true);
     const sceneInfos = createSceneInfos(5);
-    findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.resolveTo(sceneInfos);
+    findSceneInfosSpy = vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue(sceneInfos);
   }));
 
   beforeEach(async () => {
@@ -85,14 +86,14 @@ describe('FrontComponent', () => {
 
   it('should pre-select IndexedDB', () => {
     expect(component.selectedDataStorage).toBe(component.indexedDB);
-    expect(component.ready).toBeTrue();
+    expect(component.ready).toBe(true);
   });
 
   it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
 
     // given
-    initBackendSpy.and.rejectWith();
-    spyOn(notificationService, 'onError');
+    initBackendSpy.mockRejectedValue(undefined);
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();
@@ -106,7 +107,7 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    spyOn(dbService, 'useIndexedDb').and.resolveTo();
+    vi.spyOn(dbService, 'useIndexedDb').mockResolvedValue(undefined);
 
     // when
     component.onDataStorageChanged(component.indexedDB);
@@ -115,15 +116,15 @@ describe('FrontComponent', () => {
     // then
     expect(dbService.useIndexedDb).not.toHaveBeenCalled();
     expect(component.selectedDataStorage).toBe(component.indexedDB);
-    expect(component.ready).toBeTrue();
+    expect(component.ready).toBe(true);
   }));
 
   it('#onDataStorageChanged should switch to IndexedDB', fakeAsync(() => {
 
     // given
     component.selectedDataStorage = component.couchDB;
-    spyOn(dbService, 'useIndexedDb').and.resolveTo();
-    spyOn(notificationService, 'onSuccess');
+    vi.spyOn(dbService, 'useIndexedDb').mockResolvedValue(undefined);
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.indexedDB);
@@ -140,12 +141,12 @@ describe('FrontComponent', () => {
     // given
     component.selectedDataStorage = component.indexedDB;
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.closedWithOK = false;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection');
-    spyOn(notificationService, 'onSuccess');
+    vi.spyOn(couchDBService, 'initConnection').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.couchDB);
@@ -163,15 +164,15 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
-    initBackendSpy.calls.reset();
-    spyOn(notificationService, 'onSuccess');
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection establihed');
+    vi.mocked(initBackendSpy).mockClear();
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.couchDB);
@@ -188,17 +189,17 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    isIndexedDbInUseSpy.and.returnValue(true);
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
+    isIndexedDbInUseSpy.mockReturnValue(true);
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
-    initBackendSpy.calls.reset();
-    spyOn(notificationService, 'onSuccess');
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection establihed');
+    vi.mocked(initBackendSpy).mockClear();
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.couchDB);
@@ -216,16 +217,16 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.rejectWith('connection failed');
-    initBackendSpy.calls.reset();
-    spyOn(notificationService, 'onError');
+    vi.spyOn(couchDBService, 'initConnection').mockRejectedValue('connection failed');
+    vi.mocked(initBackendSpy).mockClear();
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.couchDB);
@@ -242,16 +243,16 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
-    initBackendSpy.and.rejectWith('cannot initialize backend');
-    spyOn(notificationService, 'onError');
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection establihed');
+    initBackendSpy.mockRejectedValue('cannot initialize backend');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.couchDB);
@@ -268,18 +269,18 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.indexedDB;
-    isIndexedDbInUseSpy.and.returnValue(false);
-    spyOn(couchDBService, 'getConnectionInfo').and.returnValue(connectionInfo);
+    isIndexedDbInUseSpy.mockReturnValue(false);
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.connectionInfo.port = 999;
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection').and.resolveTo('connection establihed');
-    initBackendSpy.calls.reset();
-    findSceneInfosSpy.and.rejectWith('backend not available');
-    spyOn(notificationService, 'onError');
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection establihed');
+    vi.mocked(initBackendSpy).mockClear();
+    findSceneInfosSpy.mockRejectedValue('backend not available');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
     component.onDataStorageChanged(component.couchDB);
@@ -294,13 +295,13 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.couchDB;
-    isIndexedDbInUseSpy.and.returnValue(false);
+    isIndexedDbInUseSpy.mockReturnValue(false);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.closedWithOK = true;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection');
+    vi.spyOn(couchDBService, 'initConnection').mockReturnValue(undefined);
 
     // when
     component.showCouchDBConnectionDialog();
@@ -314,13 +315,13 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.couchDB;
-    isIndexedDbInUseSpy.and.returnValue(false);
+    isIndexedDbInUseSpy.mockReturnValue(false);
     const dialogRef = createConnectionDialogRef();
-    spyOn(dialogService, 'showConnectionDialog').and.callFake((data: ConnectionDialogData) => {
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
       data.closedWithOK = false;
       return dialogRef;
     });
-    spyOn(couchDBService, 'initConnection');
+    vi.spyOn(couchDBService, 'initConnection').mockReturnValue(undefined);
 
     // when
     component.showCouchDBConnectionDialog();
@@ -381,7 +382,7 @@ describe('FrontComponent (external invocation)', () => {
   let router: Router;
 
   beforeEach(waitForAsync(() => {
-    spyOn(console, 'log');
+    vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(couchDBService);
     TestBed.configureTestingModule({
       declarations: [FrontComponent, DummyComponent],
@@ -405,10 +406,10 @@ describe('FrontComponent (external invocation)', () => {
     const fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
-    spyOn(couchDBService, 'initConnection').and.resolveTo('connection established');
-    initBackendSpy = spyOn(dbService, 'initBackend').and.resolveTo();
-    spyOn(dbService, 'activateScene').and.resolveTo(SceneFactory.createScene('1', []));
-    spyOn(router, 'navigateByUrl');
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection established');
+    initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
+    vi.spyOn(dbService, 'activateScene').mockResolvedValue(SceneFactory.createScene('1', []));
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
     fixture.detectChanges();
     flush();
   }));
@@ -428,8 +429,8 @@ describe('FrontComponent (external invocation)', () => {
   it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
 
     // given
-    initBackendSpy.and.rejectWith();
-    spyOn(notificationService, 'onError');
+    initBackendSpy.mockRejectedValue(undefined);
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
     component.ngOnInit();

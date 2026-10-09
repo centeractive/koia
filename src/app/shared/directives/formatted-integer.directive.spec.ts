@@ -58,7 +58,7 @@ describe('FormattedIntegerDirective', () => {
 
         // given
         const event = clipboardEvent('x123', 0);
-        const stopPropagationSpy = spyOn(event, 'stopPropagation');
+        const stopPropagationSpy = vi.spyOn(event, 'stopPropagation').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
@@ -71,7 +71,7 @@ describe('FormattedIntegerDirective', () => {
 
         // given
         const event = clipboardEvent('1234', 0);
-        const stopPropagationSpy = spyOn(event, 'stopPropagation');
+        const stopPropagationSpy = vi.spyOn(event, 'stopPropagation').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
@@ -84,7 +84,7 @@ describe('FormattedIntegerDirective', () => {
 
         // given
         const event = clipboardEvent('1' + ts + '234', 0);
-        const stopPropagationSpy = spyOn(event, 'stopPropagation');
+        const stopPropagationSpy = vi.spyOn(event, 'stopPropagation').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);

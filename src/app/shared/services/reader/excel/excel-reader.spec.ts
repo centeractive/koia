@@ -1,6 +1,6 @@
 import { DataType } from 'app/shared/model';
 import { DateTime } from 'luxon';
-import { DataHandler } from '../data-handler.type';
+import { DataHandlerRecorder } from 'app/shared/test';
 import { ExcelReader } from './excel-reader';
 
 describe('ExcelReader', () => {
@@ -8,17 +8,9 @@ describe('ExcelReader', () => {
    const EXCEL_FILE_URL = '/src/app/shared/services/reader/excel/test.xlsx';
 
    let reader: ExcelReader;
-   let dataHandler: DataHandler;
 
    beforeEach(() => {
       reader = new ExcelReader();
-      dataHandler = {
-         onValues: () => null,
-         onEntries: () => null,
-         onError: err => fail(err),
-         onComplete: () => null,
-         isCanceled: () => null
-      };
    });
 
    it('#getDescription should return description', () => {
@@ -34,7 +26,7 @@ describe('ExcelReader', () => {
    });
 
    it('#expectsPlainTextData should return false', () => {
-      expect(reader.expectsPlainTextData()).toBeFalse();
+      expect(reader.expectsPlainTextData()).toBe(false);
    });
 
    it('#furnishAttributes should return attributes', () => {
@@ -49,7 +41,7 @@ describe('ExcelReader', () => {
       expect(attributes[0].description).toBe('Name of Excel sheet that contains the data');
       expect(attributes[0].dataType).toBe(DataType.TEXT);
       expect(attributes[0].value).toBe('');
-      expect(attributes[0].hasValueChoice()).toBeFalse();
+      expect(attributes[0].hasValueChoice()).toBe(false);
    });
 
    it('#readSample should return sample data', async () => {
@@ -67,8 +59,8 @@ describe('ExcelReader', () => {
          expect(entries[1]['c1']).toBe('b');
          expect(entries[0]['c2']).toBe(1);
          expect(entries[1]['c2']).toBe(2);
-         expect(entries[0]['c3']).toBeTrue();
-         expect(entries[1]['c3']).toBeFalse();
+         expect(entries[0]['c3']).toBe(true);
+         expect(entries[1]['c3']).toBe(false);
          expect(formatDate(entries[0]['c4'])).toBe('05.06.2019');
          expect(formatDate(entries[1]['c4'])).toBe('06.06.2019');
       });
@@ -78,16 +70,13 @@ describe('ExcelReader', () => {
 
       // given
       const file = new File([''], 'test.xlsx');
-      spyOn(reader, 'readEntries').and.rejectWith('invalid data');
+      vi.spyOn(reader, 'readEntries').mockRejectedValue('invalid data');
 
       // when
-      await reader.readSample(file, 2)
-         .then(() => fail('expected to be rejected'))
-         .catch(err => {
+      const sample = reader.readSample(file, 2);
 
-            // then
-            expect(err).toBe('invalid data');
-         });
+      // then
+      await expect(sample).rejects.toBe('invalid data');
    });
 
    it('#readSample should return first two entries', async () => {
@@ -102,85 +91,68 @@ describe('ExcelReader', () => {
             // then
             expect(sample).toEqual({
                entries: [
-                  { c1: 'a', c2: 1, c3: true, c4: jasmine.anything() },
-                  { c1: 'b', c2: 2, c3: false, c4: jasmine.anything() }
+                  { c1: 'a', c2: 1, c3: true, c4: expect.anything() },
+                  { c1: 'b', c2: 2, c3: false, c4: expect.anything() }
                ]
             });
             expect(formatDate(sample.entries[0]['c4'])).toBe('05.06.2019');
             expect(formatDate(sample.entries[1]['c4'])).toBe('06.06.2019');
-         })
-         .catch(() => fail('should not produce error'));
+         });
    });
 
-   it('#readData should return all entries', (done) => {
+   it('#readData should return all entries', async () => {
 
       // given
-      const request: XMLHttpRequest = createRequest();
-      dataHandler.onComplete = () => done();
+      const file = await loadExcelFile();
+      const recorder = new DataHandlerRecorder();
 
-      request.onload = () => {
-         const file = new File([request.response], 'test.xlsx');
+      // when
+      reader.readData(file, 100, recorder);
+      await recorder.completion;
 
-         // when
-         reader.readData(file, 100, dataHandler);
-      };
-
-      dataHandler.onEntries = entries => {
-
-         // then
-         expect(entries.length).toBe(3);
-         expect(entries[0]['c1']).toBe('a');
-         expect(entries[1]['c1']).toBe('b');
-         expect(entries[2]['c1']).toBe('c');
-         expect(entries[0]['c2']).toBe(1);
-         expect(entries[1]['c2']).toBe(2);
-         expect(entries[2]['c2']).toBe(3);
-         expect(entries[0]['c3']).toBeTrue();
-         expect(entries[1]['c3']).toBeFalse();
-         expect(entries[2]['c3']).toBeTrue();
-         expect(formatDate(entries[0]['c4'])).toBe('05.06.2019');
-         expect(formatDate(entries[1]['c4'])).toBe('06.06.2019');
-         expect(formatDate(entries[2]['c4'])).toBe('07.06.2019');
-      };
-
-      // trigger
-      request.send(null);
+      // then
+      const entries = recorder.entries;
+      expect(entries.length).toBe(3);
+      expect(entries[0]['c1']).toBe('a');
+      expect(entries[1]['c1']).toBe('b');
+      expect(entries[2]['c1']).toBe('c');
+      expect(entries[0]['c2']).toBe(1);
+      expect(entries[1]['c2']).toBe(2);
+      expect(entries[2]['c2']).toBe(3);
+      expect(entries[0]['c3']).toBe(true);
+      expect(entries[1]['c3']).toBe(false);
+      expect(entries[2]['c3']).toBe(true);
+      expect(formatDate(entries[0]['c4'])).toBe('05.06.2019');
+      expect(formatDate(entries[1]['c4'])).toBe('06.06.2019');
+      expect(formatDate(entries[2]['c4'])).toBe('07.06.2019');
    });
 
-   it('#readData should return error when worksheet does not exist', (done) => {
+   it('#readData should return error when worksheet does not exist', async () => {
 
       // given
-      const request: XMLHttpRequest = createRequest();
-      const file = new File([request.response], 'test.xlsx');
+      const file = await loadExcelFile();
       reader.furnishAttributes('')[0].value = 'XYZ Sheet';
-
-      dataHandler.onError = err => {
-
-         // then
-         expect(err).toBe('Worksheet "XYZ Sheet" does not exist or cannot be parsed');
-         done();
-      };
+      const recorder = new DataHandlerRecorder();
 
       // when
-      reader.readData(file, 100, dataHandler);
+      reader.readData(file, 100, recorder);
+
+      // then
+      await expect(recorder.completion).rejects.toBe('Worksheet "XYZ Sheet" does not exist or cannot be parsed');
    });
 
-   it('#readData should return error when data is invalid', (done) => {
+   it('#readData should return error when data is invalid', async () => {
 
       // given
-      const request: XMLHttpRequest = createRequest();
-      spyOn(reader, 'readEntries').and.rejectWith('invalid data');
-      const file = new File([request.response], 'test.xlsx');
-
-      dataHandler.onError = err => {
-
-         // then
-         expect(err).toBe('invalid data');
-         done();
-      };
+      vi.spyOn(reader, 'readEntries').mockRejectedValue('invalid data');
+      const file = new File([''], 'test.xlsx');
+      const recorder = new DataHandlerRecorder();
 
       // when
-      reader.readData(file, 100, dataHandler);
+      reader.readData(file, 100, recorder);
+
+      // then
+      await expect(recorder.completion).rejects.toBe('invalid data');
    });
 
    async function loadExcelFile(): Promise<File> {
@@ -190,13 +162,6 @@ describe('ExcelReader', () => {
          return new File([blob], 'test.xlsx');
       }
       throw new Error('Excel file cannot be loaded: ' + response.statusText);
-   }
-
-   function createRequest(): XMLHttpRequest {
-      const request = new XMLHttpRequest();
-      request.open('GET', EXCEL_FILE_URL, true);
-      request.responseType = 'arraybuffer';
-      return request;
    }
 
    function formatDate(date: Date): string {

@@ -16,7 +16,7 @@ describe('adjust-time-value-range', () => {
         const adjusted = adjustTimeValueRange(start, end, valueRange, TimeUnit.MILLISECOND);
 
         // then
-        expect(adjusted).toBeFalse();
+        expect(adjusted).toBe(false);
         expect(valueRange).toEqual(valueRangeOrig);
     });
 
@@ -30,7 +30,7 @@ describe('adjust-time-value-range', () => {
         const adjusted = adjustTimeValueRange(start, end, valueRange, TimeUnit.SECOND);
 
         // then
-        expect(adjusted).toBeTrue();
+        expect(adjusted).toBe(true);
         const expectedMin = toTime('01.01.2023 06:01:10 000');
         const expectedMax = toTime('01.01.2023 12:18:11 000');
         expect(valueRange).toEqual({ min: expectedMin, max: expectedMax, maxExcluding: true });
@@ -46,7 +46,7 @@ describe('adjust-time-value-range', () => {
         const adjusted = adjustTimeValueRange(start, end, valueRange, TimeUnit.MINUTE);
 
         // then
-        expect(adjusted).toBeTrue();
+        expect(adjusted).toBe(true);
         expect(valueRange).toEqual({ min: start, max: end, maxExcluding: false });
     });
 

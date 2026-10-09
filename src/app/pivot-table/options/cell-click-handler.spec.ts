@@ -4,6 +4,7 @@ import { CellClickHandler } from './cell-click-handler';
 import { ValueRangeFilter, ValueGrouping, ValueRange } from 'app/shared/value-range/model';
 import { flush, fakeAsync } from '@angular/core/testing';
 import { QueryProvider } from './query-provider';
+import type { Mock } from 'vitest';
 
 describe('CellClickHandler', () => {
 
@@ -12,7 +13,7 @@ describe('CellClickHandler', () => {
    let rawDataRevealService: RawDataRevealService;
    let baseQueryProvider: QueryProvider;
    let cellClickHandler: CellClickHandler;
-   let showSpy: jasmine.Spy;
+   let showSpy: Mock;
 
    beforeEach(() => {
       columns = [
@@ -26,7 +27,7 @@ describe('CellClickHandler', () => {
       rawDataRevealService = new RawDataRevealService(null, null);
       baseQueryProvider = { provide: () => new Query() };
       cellClickHandler = new CellClickHandler(columns, baseQueryProvider, rawDataRevealService);
-      showSpy = spyOn(rawDataRevealService, 'show').and.callFake(q => null);
+      showSpy = vi.spyOn(rawDataRevealService, 'show').mockImplementation(q => null);
    });
 
    it('#onCellClicked should show raw data with single empty filter', () => {
@@ -40,7 +41,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       const propertyFilters = query.getPropertyFilters();
       expect(propertyFilters.length).toBe(1);
       expect(propertyFilters[0]).toEqual(new PropertyFilter('Percent', Operator.EMPTY, '', DataType.NUMBER));
@@ -58,7 +59,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       const propertyFilters = query.getPropertyFilters();
       expect(propertyFilters.length).toBe(1);
       expect(propertyFilters[0]).toEqual(new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT));
@@ -76,7 +77,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       const propertyFilters = query.getPropertyFilters();
       expect(propertyFilters.length).toBe(1);
       expect(propertyFilters[0]).toEqual(new PropertyFilter('Amount', Operator.EQUAL, 12, DataType.NUMBER));
@@ -95,7 +96,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       const propertyFilters = query.getPropertyFilters();
       expect(propertyFilters.length).toBe(1);
       expect(propertyFilters[0]).toEqual(new PropertyFilter('Amount', Operator.EMPTY, '', DataType.NUMBER));
@@ -114,7 +115,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       const valueRangeFilters = query.getValueRangeFilters();
       expect(valueRangeFilters.length).toBe(1);
       expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: 10, max: 20, maxExcluding: true }));
@@ -126,7 +127,7 @@ describe('CellClickHandler', () => {
       // given
       const baseQuery = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
       baseQuery.addValueRangeFilter('Amount', 11, 22);
-      spyOn(baseQueryProvider, 'provide').and.returnValue(baseQuery);
+      vi.spyOn(baseQueryProvider, 'provide').mockReturnValue(baseQuery);
       const mouseEvent = createMouseEvent('any');
       const filters = { Percent: 10 };
 
@@ -135,7 +136,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       const propertyFilters = query.getPropertyFilters();
       expect(propertyFilters.length).toBe(2);
       expect(propertyFilters[0]).toEqual(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
@@ -157,7 +158,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
 
       const propertyFilters = query.getPropertyFilters();
       expect(propertyFilters.length).toBe(3);
@@ -181,7 +182,7 @@ describe('CellClickHandler', () => {
 
       // then
       expect(showSpy).toHaveBeenCalled();
-      const query: Query = showSpy.calls.mostRecent().args[0];
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       expect(query.getPropertyFilters()).toEqual([]);
       expect(query.getValueRangeFilters()).toEqual([]);
    }));

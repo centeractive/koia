@@ -20,7 +20,7 @@ describe('DialogService', () => {
       providers: [MatDialog]
     });
     matDialogService = TestBed.inject(MatDialog);
-    spyOn(matDialogService, 'open');
+    vi.spyOn(matDialogService, 'open').mockReturnValue(undefined);
     service = TestBed.inject(DialogService);
   });
 

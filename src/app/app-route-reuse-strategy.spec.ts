@@ -21,7 +21,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldDetach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeFalse();
+      expect(shouldAttach).toBe(false);
    });
 
    it('#shouldDetach should return true for cached route', () => {
@@ -35,7 +35,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldDetach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeTrue();
+      expect(shouldAttach).toBe(true);
    });
 
    it('#shouldAttach should return false for non-stored route', () => {
@@ -47,7 +47,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldAttach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeFalse();
+      expect(shouldAttach).toBe(false);
    });
 
    it('#shouldAttach should return true for stored route', () => {
@@ -61,7 +61,7 @@ describe('AppRouteReuseStrategy', () => {
       const shouldAttach = strategy.shouldAttach(routeSnapshot);
 
       // then
-      expect(shouldAttach).toBeTrue();
+      expect(shouldAttach).toBe(true);
    });
 
    it('#shouldAttach should remove stale tooltips', () => {
@@ -117,7 +117,7 @@ describe('AppRouteReuseStrategy', () => {
       const reuse = strategy.shouldReuseRoute(futureRouteSnapshot, currentRouteSnapshot);
 
       // then
-      expect(reuse).toBeFalse();
+      expect(reuse).toBe(false);
    });
 
    it('#shouldReuseRoute should return true when route configs are same', () => {
@@ -129,7 +129,7 @@ describe('AppRouteReuseStrategy', () => {
       const reuse = strategy.shouldReuseRoute(routeSnapshot, routeSnapshot);
 
       // then
-      expect(reuse).toBeTrue();
+      expect(reuse).toBe(true);
    });
 
    it('#clear should remove stored routes', () => {

@@ -1,5 +1,5 @@
 import { DataType } from 'app/shared/model';
-import { DataHandler } from '../data-handler.type';
+import { DataHandlerRecorder } from 'app/shared/test';
 import { CSVReader } from './csv-reader';
 
 describe('CSVReader', () => {
@@ -52,14 +52,14 @@ describe('CSVReader', () => {
       expect(attributes[0].name).toBe('First row contains column names');
       expect(attributes[0].description).toBeUndefined();
       expect(attributes[0].dataType).toBe(DataType.BOOLEAN);
-      expect(attributes[0].value).toBeFalse();
-      expect(attributes[0].hasValueChoice()).toBeFalse();
+      expect(attributes[0].value).toBe(false);
+      expect(attributes[0].hasValueChoice()).toBe(false);
 
       expect(attributes[1].name).toBe('Separator');
       expect(attributes[1].description).toBeUndefined();
       expect(attributes[1].dataType).toBe(DataType.TEXT);
       expect(attributes[1].value).toBeUndefined();
-      expect(attributes[0].hasValueChoice()).toBeFalse();
+      expect(attributes[0].hasValueChoice()).toBe(false);
    });
 
    it('#furnishAttributes should return has-no-header attribute when file header is single line', () => {
@@ -71,7 +71,7 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
-      expect(attributes[0].value).toBeFalse();
+      expect(attributes[0].value).toBe(false);
    });
 
    it('#furnishAttributes should return has-no-header attribute when first line contains number', () => {
@@ -85,7 +85,7 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
-      expect(attributes[0].value).toBeFalse();
+      expect(attributes[0].value).toBe(false);
    });
 
    it('#furnishAttributes should return has-no-header attribute when first line contains boolean', () => {
@@ -99,7 +99,7 @@ describe('CSVReader', () => {
       // then
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
-      expect(attributes[0].value).toBeFalse();
+      expect(attributes[0].value).toBe(false);
    });
 
    it('#furnishAttributes should return has-header attribute when first line contains text only', () => {
@@ -160,98 +160,80 @@ describe('CSVReader', () => {
       expect(attributes[1].value).toBe('|');
    });
 
-   it('#readSample should return sample data only when file has no header', (done) => {
+   it('#readSample should return sample data only when file has no header', async () => {
 
       // given
       const file = new File([content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = false;
 
-      // when/then
-      const expectedData = expectedValues.slice(0, 3);
-      reader.readSample(file, 3)
-         .then(sample => {
-            expect(sample.columnNames).toBeUndefined();
-            expect(sample.tableData).toEqual(expectedData);
-            expect(sample.entries).toBeUndefined();
-            done();
-         })
-         .catch(err => fail(err));
+      // when
+      const sample = await reader.readSample(file, 3);
+
+      // then
+      expect(sample.columnNames).toBeUndefined();
+      expect(sample.tableData).toEqual(expectedValues.slice(0, 3));
+      expect(sample.entries).toBeUndefined();
    });
 
-   it('#readSample should return all data when requested sample exceeds file size', (done) => {
+   it('#readSample should return all data when requested sample exceeds file size', async () => {
 
       // given
       const file = new File([content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = false;
 
-      // when/then
-      reader.readSample(file, 100)
-         .then(sample => {
-            expect(sample.columnNames).toBeUndefined();
-            expect(sample.tableData).toEqual(expectedValues);
-            expect(sample.entries).toBeUndefined();
-            done();
-         })
-         .catch(err => fail(err));
+      // when
+      const sample = await reader.readSample(file, 100);
+
+      // then
+      expect(sample.columnNames).toBeUndefined();
+      expect(sample.tableData).toEqual(expectedValues);
+      expect(sample.entries).toBeUndefined();
    });
 
-   it('#readSample should return column names and sample data when file has header', (done) => {
+   it('#readSample should return column names and sample data when file has header', async () => {
 
       // given
       const file = new File([header + '\n' + content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = true;
 
-      // when/then
-      const expectedData = expectedValues.slice(0, 3);
-      reader.readSample(file, 3)
-         .then(sample => {
-            expect(sample.columnNames).toEqual(['A', 'B', 'C']);
-            expect(sample.tableData).toEqual(expectedData);
-            expect(sample.entries).toBeUndefined();
-            done();
-         })
-         .catch(err => fail(err));
+      // when
+      const sample = await reader.readSample(file, 3);
+
+      // then
+      expect(sample.columnNames).toEqual(['A', 'B', 'C']);
+      expect(sample.tableData).toEqual(expectedValues.slice(0, 3));
+      expect(sample.entries).toBeUndefined();
    });
 
-   it('#readData should return values when file has no header', (done) => {
+   it('#readData should return values when file has no header', async () => {
 
       // given
       const file = new File([content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = false;
+      const recorder = new DataHandlerRecorder();
 
-      // when/then
-      let values: string[][];
-      const dataHandler: DataHandler = {
-         onValues: rows => values = values ? values.concat(rows) : rows,
-         onEntries: () => fail('no entries expected'),
-         onError: err => fail(err),
-         onComplete: () => {
-            expect(values).toEqual(expectedValues);
-            done();
-         },
-         isCanceled: () => false
-      }
-      reader.readData(file, 100, dataHandler);
+      // when
+      reader.readData(file, 100, recorder);
+      await recorder.completion;
+
+      // then
+      expect(recorder.values).toEqual(expectedValues);
+      expect(recorder.entries).toEqual([]);
    });
 
-   it('#readValues should return values when file has header', (done) => {
+   it('#readValues should return values when file has header', async () => {
 
       // given
       const file = new File([header + '\n' + content], 'Test.csv');
       reader.furnishAttributes('', 'en-US')[0].value = true;
+      const recorder = new DataHandlerRecorder();
 
-      // when/then
-      let values: string[][];
-      const dataHandler: DataHandler = {
-         onValues: rows => values = values ? values.concat(rows) : rows,
-         onEntries: () => fail('no entries expected'),
-         onError: err => fail(err),
-         onComplete: () => {
-            expect(values).toEqual(expectedValues);
-            done();
-         },
-         isCanceled: () => false
-      }
-      reader.readData(file, 100, dataHandler);
+      // when
+      reader.readData(file, 100, recorder);
+      await recorder.completion;
+
+      // then
+      expect(recorder.values).toEqual(expectedValues);
+      expect(recorder.entries).toEqual([]);
    });
 });

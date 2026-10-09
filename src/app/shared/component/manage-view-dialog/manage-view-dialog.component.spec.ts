@@ -9,17 +9,18 @@ import { Route } from 'app/shared/model';
 import { View } from 'app/shared/model/view-config';
 import { ManageViewContext } from './manage-view-context.type.';
 import { ManageViewDialogComponent } from './manage-view-dialog.component';
+import type { Mock } from 'vitest';
 
 describe('ManageViewDialogComponent', () => {
 
   let ctx: ManageViewContext;
   let component: ManageViewDialogComponent;
   let fixture: ComponentFixture<ManageViewDialogComponent>;
-  let updateViewsSpy: jasmine.Spy;
+  let updateViewsSpy: Mock;
 
   beforeEach(waitForAsync(() => {
     ctx = context();
-    updateViewsSpy = spyOn(ctx, 'updateViews');
+    updateViewsSpy = vi.spyOn(ctx, 'updateViews').mockReturnValue(undefined);
     TestBed.configureTestingModule({
       declarations: [ManageViewDialogComponent],
       imports: [FormsModule, MatCardModule, MatButtonModule, MatIconModule],
@@ -55,7 +56,7 @@ describe('ManageViewDialogComponent', () => {
         deleted: undefined
       }
     ]);
-    expect(button('but_ok').disabled).toBeTrue();
+    expect(button('but_ok').disabled).toBe(true);
   });
 
   it('butDelete#click', () => {
@@ -79,7 +80,7 @@ describe('ManageViewDialogComponent', () => {
       }
     ]);
     fixture.detectChanges();
-    expect(button('but_ok').disabled).toBeFalse();
+    expect(button('but_ok').disabled).toBe(false);
   });
 
   it('butOK#click when view was deleted', () => {

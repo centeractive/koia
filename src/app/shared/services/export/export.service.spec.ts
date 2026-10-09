@@ -13,7 +13,7 @@ describe('ExportService', () => {
 
     // given
     let blob: Blob;
-    spyOn(exportService, 'saveBlobAs').and.callFake(b => blob = b); // capture argument    
+    vi.spyOn(exportService, 'saveBlobAs').mockImplementation(b => blob = b); // capture argument    
     const data = [{ a: 'x', b: 1 }, { a: 'y', b: 2 }]
     const columns: Column[] = [
       { name: 'a', dataType: DataType.TEXT, width: 10 },
@@ -34,7 +34,7 @@ describe('ExportService', () => {
   it('#exportData should save .csv file', () => {
 
     // given
-    const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const saveAsSpy = vi.spyOn(exportService, 'saveBlobAs').mockReturnValue(undefined);
     const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
     // when
@@ -42,13 +42,13 @@ describe('ExportService', () => {
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
-    expect(saveAsSpy.calls.mostRecent().args[1]).toMatch(/testfile.*\.csv/);
+    expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.csv/);
   });
 
   it('#exportData should save .xlsx file', () => {
 
     // given
-    const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const saveAsSpy = vi.spyOn(exportService, 'saveBlobAs').mockReturnValue(undefined);
     const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
     // when
@@ -56,14 +56,14 @@ describe('ExportService', () => {
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
-    expect(saveAsSpy.calls.mostRecent().args[1]).toMatch(/testfile.*\.xlsx/);
+    expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.xlsx/);
   });
 
   it('#exportData should create JSON formatted data', () => {
 
     // given
     let blob: Blob;
-    spyOn(exportService, 'saveBlobAs').and.callFake(b => blob = b); // capture argument
+    vi.spyOn(exportService, 'saveBlobAs').mockImplementation(b => blob = b); // capture argument
     const data = [{ a: 'x', b: 1 }, { a: 'y', b: 2 }]
     const columns: Column[] = [
       { name: 'a', dataType: DataType.TEXT, width: 10 },
@@ -84,7 +84,7 @@ describe('ExportService', () => {
   it('#exportData should save .json file', () => {
 
     // given
-    const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const saveAsSpy = vi.spyOn(exportService, 'saveBlobAs').mockReturnValue(undefined);
     const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
     // when
@@ -92,14 +92,13 @@ describe('ExportService', () => {
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
-    expect(saveAsSpy.calls.mostRecent().args[1]).toMatch(/testfile.*\.json/);
+    expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.json/);
   });
 
   it('#exportData should throw error when format is not supported', () => {
     const column: Column = { name: 'a', dataType: DataType.NUMBER, width: 10 };
 
-    expect(() => exportService.exportData([{ a: 1 }], [column], ExportFormat.PNG, 'testfile'))
-      .toThrowError('export format PNG is not supported');
+    expect(() => exportService.exportData([{ a: 1 }], [column], ExportFormat.PNG, 'testfile')).toThrow(expect.objectContaining({ message: 'export format PNG is not supported' }));
   });
 
   it('#exportTableAsExcel should save .xlsx file', () => {
@@ -113,32 +112,31 @@ describe('ExportService', () => {
     tr.appendChild(td)
     tbody.appendChild(tr);
     table.appendChild(tbody);
-    const saveAsSpy = spyOn(exportService, 'saveBlobAs').and.stub();
+    const saveAsSpy = vi.spyOn(exportService, 'saveBlobAs').mockReturnValue(undefined);
 
     // when
     exportService.exportTableAsExcel(table, 'testfile');
 
     // then
     expect(exportService.saveBlobAs).toHaveBeenCalled();
-    expect(saveAsSpy.calls.mostRecent().args[1]).toMatch(/testfile.*\.xlsx/);
+    expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.xlsx/);
   });
 
   it('#exportImage should save .png file', () => {
 
     // given
-    const saveAsSpy = spyOn(exportService, 'saveUrlAs');
+    const saveAsSpy = vi.spyOn(exportService, 'saveUrlAs').mockReturnValue(undefined);
 
     // when
     exportService.exportImage('base64Image...', ExportFormat.PNG, 'testfile');
 
     // then
-    //expect(saveAsSpy.calls.mostRecent().args[0]).toBe('base64Image...');
-    expect(saveAsSpy.calls.mostRecent().args[1]).toMatch(/testfile.*\.png/);
+    //expect(vi.mocked(saveAsSpy).mock.lastCall[0]).toBe('base64Image...');
+    expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.png/);
   });
 
   it('#exportImage should throw error when format is not supported', () => {
-    expect(() => exportService.exportImage('base64Image...', ExportFormat.JSON, 'testfile'))
-      .toThrowError('export format JSON is not supported');
+    expect(() => exportService.exportImage('base64Image...', ExportFormat.JSON, 'testfile')).toThrow(expect.objectContaining({ message: 'export format JSON is not supported' }));
   });
 
 });

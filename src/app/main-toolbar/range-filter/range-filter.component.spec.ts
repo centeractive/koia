@@ -39,7 +39,7 @@ describe('RangeFilterComponent', () => {
   it('#onChanged should refresh update number range filter and emit change event', fakeAsync(() => {
 
     // given
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onChanged({ value: 3, highValue: 7, pointerType: undefined });
@@ -53,13 +53,13 @@ describe('RangeFilterComponent', () => {
   it('#onInvertedChanged should update number range filter and emit change event', fakeAsync(() => {
 
     // given
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     component.onInvertedChanged(true);
 
     // then
-    expect(component.filter.inverted).toBeTrue();
+    expect(component.filter.inverted).toBe(true);
     expect(component.onChange.emit).toHaveBeenCalled();
   }));
 
@@ -67,7 +67,7 @@ describe('RangeFilterComponent', () => {
 
     // given
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_remove_range_filter')).nativeElement;
-    spyOn(component.onRemove, 'emit');
+    vi.spyOn(component.onRemove, 'emit').mockReturnValue(undefined);
 
     // when
     htmlButton.click();
@@ -82,7 +82,7 @@ describe('RangeFilterComponent', () => {
 
     // given
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_reset_range_filter')).nativeElement;
-    spyOn(component.onChange, 'emit');
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
     htmlButton.click();

@@ -193,7 +193,7 @@ describe('SummaryTableSideBarComponent', () => {
       controller.removeValueGrouping(amountValueGrouping);
 
       // then
-      expect(context.hasValueGrouping('Amount')).toBeFalse();
+      expect(context.hasValueGrouping('Amount')).toBe(false);
       const expectedNonGroupedColumns = columns.filter(c => c.name === 'Amount' || c.name === 'Percent');
       expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
    });
@@ -213,7 +213,7 @@ describe('SummaryTableSideBarComponent', () => {
       // then
       expect(context.valueGroupings[0]).toBe(amountValueGrouping);
       expect(range).toBeTruthy();
-      expect(amountValueGrouping.ranges.includes(range)).toBeTrue();
+      expect(amountValueGrouping.ranges.includes(range)).toBe(true);
       expect(amountValueGrouping.ranges.length).toEqual(rangesCount + 1);
    });
 
@@ -254,7 +254,7 @@ describe('SummaryTableSideBarComponent', () => {
 
       // then
       expect(context.valueGroupings[0]).toBe(amountValueGrouping);
-      expect(amountValueGrouping.ranges.includes(rangeToRemove)).toBeFalse();
+      expect(amountValueGrouping.ranges.includes(rangeToRemove)).toBe(false);
       expect(amountValueGrouping.ranges.length).toEqual(rangesCount - 1);
    });
 
@@ -265,7 +265,7 @@ describe('SummaryTableSideBarComponent', () => {
       context.groupByColumns = [];
       const range: ValueRange = { max: 100, active: false };
       const valueGrouping = { columnName: 'Percent', ranges: [range] };
-      spyOn(context, 'fireStructureChanged');
+      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
 
       // when
       controller.groupingRangeStateChanged(valueGrouping, range, true);
@@ -282,7 +282,7 @@ describe('SummaryTableSideBarComponent', () => {
       context.groupByColumns = [findColumn('Percent')];
       const range: ValueRange = { max: 100, active: true };
       const valueGrouping = { columnName: 'Percent', ranges: [range] };
-      spyOn(context, 'fireStructureChanged');
+      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
 
       // when
       controller.groupingRangeStateChanged(valueGrouping, range, false);
@@ -299,7 +299,7 @@ describe('SummaryTableSideBarComponent', () => {
       context.groupByColumns = [findColumn('Time')];
       const range: ValueRange = { max: 100, active: true };
       const valueGrouping = { columnName: 'Percent', ranges: [range] };
-      spyOn(context, 'fireStructureChanged');
+      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
 
       // when
       controller.groupingRangeStateChanged(valueGrouping, range, false);
@@ -312,7 +312,7 @@ describe('SummaryTableSideBarComponent', () => {
    it('#setElementPosition should emit onElementPositionChange', () => {
 
       // given
-      spyOn(controller.onElementPositionChange, 'emit');
+      vi.spyOn(controller.onElementPositionChange, 'emit').mockReturnValue(undefined);
 
       // when
       controller.setElementPosition(3);
@@ -322,26 +322,26 @@ describe('SummaryTableSideBarComponent', () => {
    });
 
    it('#isNumericColumn should return true when column is "Number"', () => {
-      expect(controller.isNumericColumn(findColumn('Time'))).toBeTrue();
-      expect(controller.isNumericColumn(findColumn('Amount'))).toBeTrue();
-      expect(controller.isNumericColumn(findColumn('Percent'))).toBeTrue();
+      expect(controller.isNumericColumn(findColumn('Time'))).toBe(true);
+      expect(controller.isNumericColumn(findColumn('Amount'))).toBe(true);
+      expect(controller.isNumericColumn(findColumn('Percent'))).toBe(true);
    });
 
    it('#isNumericColumn should return false when column is "Text"', () => {
-      expect(controller.isNumericColumn(findColumn('Level'))).toBeFalse();
-      expect(controller.isNumericColumn(findColumn('Host'))).toBeFalse();
-      expect(controller.isNumericColumn(findColumn('Path'))).toBeFalse();
+      expect(controller.isNumericColumn(findColumn('Level'))).toBe(false);
+      expect(controller.isNumericColumn(findColumn('Host'))).toBe(false);
+      expect(controller.isNumericColumn(findColumn('Path'))).toBe(false);
    });
 
    it('#isNumericColumn should return false when column is missing', () => {
-      expect(controller.isNumericColumn(findColumn(undefined))).toBeFalse();
-      expect(controller.isNumericColumn(findColumn(null))).toBeFalse();
+      expect(controller.isNumericColumn(findColumn(undefined))).toBe(false);
+      expect(controller.isNumericColumn(findColumn(null))).toBe(false);
    });
 
    it('#isNumberKey should invoke NumberUtils#isNumberKey', () => {
 
       // given
-      spyOn(NumberUtils, 'isNumberKey');
+      vi.spyOn(NumberUtils, 'isNumberKey').mockReturnValue(undefined);
 
       // when
       const event = new KeyboardEvent('keydown', { key: '1' });

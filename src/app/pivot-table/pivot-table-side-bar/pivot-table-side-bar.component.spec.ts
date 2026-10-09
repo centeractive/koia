@@ -108,7 +108,7 @@ describe('PivotTableSideBarComponent', () => {
   it('#click on multi expand toggle should close all expansion panels when unchecked', () => {
 
     // given
-    spyOn(component.accordion, 'closeAll');
+    vi.spyOn(component.accordion, 'closeAll').mockReturnValue(undefined);
     const multiExpandToggleElement: MatSlideToggle = fixture.debugElement.query(By.css('.toggle_multi_expand')).nativeElement;
     const multiExpandToggleLabelElement = fixture.debugElement.query(By.css('label')).nativeElement;
     multiExpandToggleLabelElement.click();
@@ -185,8 +185,8 @@ describe('PivotTableSideBarComponent', () => {
     component.removeValueGrouping(grouping);
 
     // then
-    expect(component.context.valueGroupings.includes(grouping)).toBeFalse();
-    expect(component.nonGroupedColumns[0].name).toEqual('Amount', 'Percent');
+    expect(component.context.valueGroupings.includes(grouping)).toBe(false);
+    expect(component.nonGroupedColumns[0].name).toEqual('Amount');
   });
 
   it('#addGroupingRange should add range', () => {
@@ -240,9 +240,9 @@ describe('PivotTableSideBarComponent', () => {
   it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
     const decimalSeparator = (0.1).toLocaleString().charAt(1);
 
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBeTrue();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBeTrue();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBeTrue();
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBeFalse();
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBe(true);
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBe(true);
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBe(true);
+    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBe(false);
   });
 });

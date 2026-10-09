@@ -22,6 +22,7 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { Observable, of } from 'rxjs';
 import { SceneTableComponent } from './scene-table/scene-table.component';
 import { ScenesComponent } from './scenes.component';
+import type { Mock } from 'vitest';
 
 @Component({
   template: '',
@@ -37,10 +38,10 @@ describe('ScenesComponent', () => {
   const dbService = new DBService(null);
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
-  let navigateByUrlSpy: jasmine.Spy;
-  let isBackendInitializedSpy: jasmine.Spy;
-  let getActiveSceneSpy: jasmine.Spy;
-  let findSceneInfosSpy: jasmine.Spy;
+  let navigateByUrlSpy: Mock;
+  let isBackendInitializedSpy: Mock;
+  let getActiveSceneSpy: Mock;
+  let findSceneInfosSpy: Mock;
   let component: ScenesComponent;
   let fixture: ComponentFixture<ScenesComponent>;
 
@@ -66,16 +67,16 @@ describe('ScenesComponent', () => {
     }).compileComponents();
 
     const router = TestBed.inject(Router);
-    navigateByUrlSpy = spyOn(router, 'navigateByUrl');
+    navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
 
-    spyOn(appRouteReuseStrategy, 'clear');
-    spyOn(notificationService, 'onSuccess');
-    spyOn(notificationService, 'onError');
-    isBackendInitializedSpy = spyOn(dbService, 'isBackendInitialized').and.returnValue(true);
-    spyOn(dbService, 'initBackend').and.resolveTo();
-    getActiveSceneSpy = spyOn(dbService, 'getActiveScene').and.returnValue(scenes[0]);
-    findSceneInfosSpy = spyOn(dbService, 'findSceneInfos').and.resolveTo(scenes);
-    spyOn(dbService, 'findScene').and.resolveTo(scenes[0]);
+    vi.spyOn(appRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+    isBackendInitializedSpy = vi.spyOn(dbService, 'isBackendInitialized').mockReturnValue(true);
+    vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
+    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scenes[0]);
+    findSceneInfosSpy = vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue(scenes);
+    vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
   }));
 
   beforeEach(fakeAsync(() => {
@@ -102,7 +103,7 @@ describe('ScenesComponent', () => {
   it('#ngOnInit should navigate to front page when backend is not initialized', () => {
 
     // given
-    isBackendInitializedSpy.and.returnValue(false);
+    isBackendInitializedSpy.mockReturnValue(false);
 
     // when
     component.ngOnInit();
@@ -121,7 +122,7 @@ describe('ScenesComponent', () => {
     butHome.click();
 
     // then
-    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
     expect(urlTree.toString()).toBe('/' + Route.FRONT);
   });
 
@@ -135,7 +136,7 @@ describe('ScenesComponent', () => {
     butScene.click();
 
     // then
-    const urlTree: UrlTree = navigateByUrlSpy.calls.mostRecent().args[0];
+    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
     expect(urlTree.toString()).toBe('/' + Route.SCENE);
   });
 
@@ -172,10 +173,10 @@ describe('ScenesComponent', () => {
   it('#click on "Delete all" button should not delete scenes when not confiremd by user', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
-    findSceneInfosSpy.and.resolveTo([]);
+    getActiveSceneSpy.mockReturnValue(null);
+    findSceneInfosSpy.mockResolvedValue([]);
     spyOnConfirmDialogAndPressNo();
-    spyOn(dbService, 'deleteScene').and.resolveTo(null);
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
@@ -189,10 +190,10 @@ describe('ScenesComponent', () => {
   it('#click on "Delete all" button should delete all scenes', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
-    findSceneInfosSpy.and.resolveTo([]);
+    getActiveSceneSpy.mockReturnValue(null);
+    findSceneInfosSpy.mockResolvedValue([]);
     spyOnConfirmDialogAndPressYes();
-    spyOn(dbService, 'deleteScene').and.resolveTo(null);
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
@@ -208,10 +209,10 @@ describe('ScenesComponent', () => {
   it('#click on "Delete all" button should navigate to scene component', fakeAsync(() => {
 
     // given
-    getActiveSceneSpy.and.returnValue(null);
-    findSceneInfosSpy.and.resolveTo(null);
+    getActiveSceneSpy.mockReturnValue(null);
+    findSceneInfosSpy.mockResolvedValue(null);
     spyOnConfirmDialogAndPressYes();
-    spyOn(dbService, 'deleteScene').and.resolveTo(null);
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
@@ -226,7 +227,7 @@ describe('ScenesComponent', () => {
 
     // given
     spyOnConfirmDialogAndPressYes();
-    spyOn(dbService, 'deleteScene').and.rejectWith('error');
+    vi.spyOn(dbService, 'deleteScene').mockRejectedValue('error');
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
@@ -243,7 +244,7 @@ describe('ScenesComponent', () => {
     component.filter = '1';
     component.onFilterChange();
     spyOnConfirmDialogAndPressYes();
-    spyOn(dbService, 'deleteScene').and.resolveTo(null);
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
     const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
 
     // when
@@ -259,9 +260,9 @@ describe('ScenesComponent', () => {
   it('#click on "Delete filtered" button should reload data', fakeAsync(() => {
 
     // given
-    spyOn(dbService, 'deleteScene').and.resolveTo(null);
-    getActiveSceneSpy.calls.reset();
-    findSceneInfosSpy.calls.reset();
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
+    vi.mocked(getActiveSceneSpy).mockClear();
+    vi.mocked(findSceneInfosSpy).mockClear();
     component.filter = '1';
     component.onFilterChange();
     spyOnConfirmDialogAndPressYes();
@@ -280,7 +281,7 @@ describe('ScenesComponent', () => {
 
     // given
     const scene = scenes[0];
-    spyOn(dbService, 'deleteScene').and.resolveTo(null);
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
     const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
 
     // when
@@ -299,7 +300,7 @@ describe('ScenesComponent', () => {
 
     // given
     const scene = scenes[0];
-    spyOn(dbService, 'deleteScene').and.rejectWith('cannot delete scene');
+    vi.spyOn(dbService, 'deleteScene').mockRejectedValue('cannot delete scene');
     const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
 
     // when
@@ -318,7 +319,7 @@ describe('ScenesComponent', () => {
   it('#click on activate scene button should activate scene and switch to raw data component', fakeAsync(() => {
 
     // given
-    spyOn(dbService, 'activateScene').and.resolveTo(scenes[1]);
+    vi.spyOn(dbService, 'activateScene').mockResolvedValue(scenes[1]);
     const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
 
     // when
@@ -334,7 +335,7 @@ describe('ScenesComponent', () => {
   it('#click on activate scene button should notify error when error occurs', fakeAsync(() => {
 
     // given
-    spyOn(dbService, 'activateScene').and.rejectWith('cannot activate scene');
+    vi.spyOn(dbService, 'activateScene').mockRejectedValue('cannot activate scene');
     const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
 
     // when
@@ -364,7 +365,7 @@ describe('ScenesComponent', () => {
 
     // given
     const location = TestBed.inject(Location);
-    spyOn(location, 'back');
+    vi.spyOn(location, 'back').mockReturnValue(undefined);
     const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_cancel')).nativeElement;
 
     // when
@@ -384,7 +385,7 @@ describe('ScenesComponent', () => {
 
   function spyOnConfirmDialogAndPress(buttonIndex: number): void {
     const dialogRef = createConfirmDialogRef();
-    spyOn(dialogService, 'showConfirmDialog').and.callFake((data: ConfirmDialogData) => {
+    vi.spyOn(dialogService, 'showConfirmDialog').mockImplementation((data: ConfirmDialogData) => {
       data.closedWithButtonIndex = buttonIndex;
       data.closedWithButtonName = ConfirmDialogData.YES_NO[buttonIndex];
       return dialogRef;

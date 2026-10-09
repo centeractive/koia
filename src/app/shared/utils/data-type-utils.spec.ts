@@ -55,13 +55,13 @@ describe('DataTypeUtils', () => {
    });
 
    it('#isNumeric should return true when column is numeric', () => {
-      expect(DataTypeUtils.isNumeric(DataType.NUMBER)).toBeTrue();
-      expect(DataTypeUtils.isNumeric(DataType.TIME)).toBeTrue();
+      expect(DataTypeUtils.isNumeric(DataType.NUMBER)).toBe(true);
+      expect(DataTypeUtils.isNumeric(DataType.TIME)).toBe(true);
    });
 
    it('#isNumeric should return false when column is not numeric', () => {
-      expect(DataTypeUtils.isNumeric(DataType.TEXT)).toBeFalse();
-      expect(DataTypeUtils.isNumeric(DataType.BOOLEAN)).toBeFalse();
+      expect(DataTypeUtils.isNumeric(DataType.TEXT)).toBe(false);
+      expect(DataTypeUtils.isNumeric(DataType.BOOLEAN)).toBe(false);
    });
 
    it('#toTypedValue should return undefined when value is missing', () => {
@@ -257,15 +257,15 @@ describe('DataTypeUtils', () => {
    });
 
    it('#containsNonNumericColumns should return false when no columns are provided', () => {
-      expect(DataTypeUtils.containsNonNumericColumns(null)).toBeFalse();
-      expect(DataTypeUtils.containsNonNumericColumns(undefined)).toBeFalse();
-      expect(DataTypeUtils.containsNonNumericColumns([])).toBeFalse();
+      expect(DataTypeUtils.containsNonNumericColumns(null)).toBe(false);
+      expect(DataTypeUtils.containsNonNumericColumns(undefined)).toBe(false);
+      expect(DataTypeUtils.containsNonNumericColumns([])).toBe(false);
    });
 
    it('#containsNonNumericColumns should return true when single TEXT column is provided', () => {
       const column: Column = { name: 'x', dataType: DataType.TEXT, width: 10 };
 
-      expect(DataTypeUtils.containsNonNumericColumns([column])).toBeTrue();
+      expect(DataTypeUtils.containsNonNumericColumns([column])).toBe(true);
    });
 
    it('#containsNonNumericColumns should return true when non-numeric column is contained', () => {
@@ -274,19 +274,19 @@ describe('DataTypeUtils', () => {
          { name: 'x', dataType: DataType.NUMBER, width: 10 }
       ];
 
-      expect(DataTypeUtils.containsNonNumericColumns(columns)).toBeTrue();
+      expect(DataTypeUtils.containsNonNumericColumns(columns)).toBe(true);
    });
 
    it('#containsNonNumericColumns should return false when single NUMBER column is provided', () => {
       const column: Column = { name: 'x', dataType: DataType.NUMBER, width: 10 };
 
-      expect(DataTypeUtils.containsNonNumericColumns([column])).toBeFalse();
+      expect(DataTypeUtils.containsNonNumericColumns([column])).toBe(false);
    });
 
    it('#containsNonNumericColumns should return false when single TIME column is provided', () => {
       const column: Column = { name: 'x', dataType: DataType.TIME, width: 10 };
 
-      expect(DataTypeUtils.containsNonNumericColumns([column])).toBeFalse();
+      expect(DataTypeUtils.containsNonNumericColumns([column])).toBe(false);
    });
 
    it('#containsNonNumericColumns should return false when numeric column only are contained', () => {
@@ -295,6 +295,6 @@ describe('DataTypeUtils', () => {
          { name: 'x', dataType: DataType.NUMBER, width: 10 }
       ];
 
-      expect(DataTypeUtils.containsNonNumericColumns(columns)).toBeFalse();
+      expect(DataTypeUtils.containsNonNumericColumns(columns)).toBe(false);
    });
 });

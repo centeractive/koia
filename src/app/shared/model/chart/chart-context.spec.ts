@@ -8,12 +8,13 @@ import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
 import { ScaleConfig } from './scale-config';
 import { TicksConfig } from './ticks-config';
+import type { Mock } from 'vitest';
 
 describe('ChartContext', () => {
 
    let columns: Column[];
    let context: ChartContext;
-   let eventHandlerSpy: jasmine.Spy;
+   let eventHandlerSpy: Mock;
 
    beforeAll(() => {
       columns = [
@@ -28,7 +29,7 @@ describe('ChartContext', () => {
 
    beforeEach(() => {
       context = new ChartContext(columns, ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
-      eventHandlerSpy = jasmine.createSpy('eventHandler').and.callFake(e => null);
+      eventHandlerSpy = vi.fn().mockImplementation(e => null);
       context.subscribeToChanges(eventHandlerSpy);
    });
 
@@ -56,7 +57,7 @@ describe('ChartContext', () => {
       // given
       context.multiValueAxes = true;
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.dataColumns = [columns[3], columns[4]];
@@ -128,7 +129,7 @@ describe('ChartContext', () => {
       context.addDataColumn(columns[5]);
 
       // then
-      expect(context.multiValueAxes).toBeTrue();
+      expect(context.multiValueAxes).toBe(true);
       expect(ScaleConfig.toScales(context.valueScales)).toEqual([
          {
             columnName: 'Amount',
@@ -182,7 +183,7 @@ describe('ChartContext', () => {
       context.removeDataColumn(columns[4]);
 
       // then
-      expect(context.multiValueAxes).toBeFalse();
+      expect(context.multiValueAxes).toBe(false);
       expect(ScaleConfig.toScales(context.valueScales)).toEqual([
          {
             columnName: 'Amount',
@@ -219,7 +220,7 @@ describe('ChartContext', () => {
       // given
       context.legendPosition = 'right';
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.legendPosition = 'right';
@@ -246,7 +247,7 @@ describe('ChartContext', () => {
       // given
       context.showLegend = false;
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when      
       context.legendPosition = 'left';
@@ -261,7 +262,7 @@ describe('ChartContext', () => {
       // given
       context.showLegend = false;
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.showLegend = false;
@@ -289,7 +290,7 @@ describe('ChartContext', () => {
       // given
       context.valueAsPercent = false;
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.valueAsPercent = false;
@@ -372,7 +373,7 @@ describe('ChartContext', () => {
       // given
       context.dataColumns = [columns[3]];
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.valueScales = [scaleConfig('Amount')];
@@ -394,7 +395,7 @@ describe('ChartContext', () => {
       // given
       context.dataColumns = [columns[3]];
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.valueScales = [scaleConfig('X', 2)];
@@ -418,7 +419,7 @@ describe('ChartContext', () => {
       context.multiValueAxes = true;
       context.dataColumns = [columns[3], columns[4]];
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.valueScales[0].ticks = new TicksConfig(() => context.fireLookChanged(), { rotation: 45 });
@@ -450,8 +451,11 @@ describe('ChartContext', () => {
       // given
       context.chart = undefined;
 
-      // when/then
-      expect(context.stacked).toBeFalse();
+      // when
+      const stacked = context.stacked;
+
+      // then
+      expect(stacked).toBe(false);
    });
 
    it('#stacked should fire structure change event', fakeAsync(() => {
@@ -461,7 +465,7 @@ describe('ChartContext', () => {
 
       // then
       flush();
-      expect(context.stacked).toBeTrue();
+      expect(context.stacked).toBe(true);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
    }));
@@ -476,7 +480,7 @@ describe('ChartContext', () => {
 
       // then
       flush();
-      expect(context.multiValueAxes).toBeFalse();
+      expect(context.multiValueAxes).toBe(false);
    }));
 
    it('#multiValueAxes(true) should fire structure change event', fakeAsync(() => {
@@ -486,7 +490,7 @@ describe('ChartContext', () => {
 
       // then
       flush();
-      expect(context.multiValueAxes).toBeTrue();
+      expect(context.multiValueAxes).toBe(true);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
    }));
@@ -495,14 +499,14 @@ describe('ChartContext', () => {
       // given
       context.multiValueAxes = true;
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.multiValueAxes = false;
 
       // then
       flush();
-      expect(context.multiValueAxes).toBeFalse();
+      expect(context.multiValueAxes).toBe(false);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
    }));
@@ -517,7 +521,7 @@ describe('ChartContext', () => {
 
       // then
       flush();
-      expect(context.stacked).toBeFalse();
+      expect(context.stacked).toBe(false);
    }));
 
    it('#multiValueAxes(false) should not fire change event when value did not change', fakeAsync(() => {
@@ -527,7 +531,7 @@ describe('ChartContext', () => {
 
       // then
       flush();
-      expect(context.multiValueAxes).toBeFalse();
+      expect(context.multiValueAxes).toBe(false);
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
@@ -536,14 +540,14 @@ describe('ChartContext', () => {
       // given
       context.multiValueAxes = true;
       flush();
-      eventHandlerSpy.calls.reset();
+      vi.mocked(eventHandlerSpy).mockClear();
 
       // when
       context.splitColumns = [columns[1]];
 
       // then
       flush();
-      expect(context.multiValueAxes).toBeFalse();
+      expect(context.multiValueAxes).toBe(false);
       expect(context.splitColumns).toEqual([columns[1]]);
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);

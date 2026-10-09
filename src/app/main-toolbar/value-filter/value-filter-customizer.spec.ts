@@ -81,7 +81,7 @@ describe('ValueFilterCustomizer', () => {
 
          // then
          if (tooltips.includes(tooltip)) {
-            fail('generates identical tooltip (operator: ' + op + ')');
+            throw new Error('generates identical tooltip (operator: ' + op + ')');
          }
          expect(customizer.tooltipOf(filter)).toBeDefined();
          tooltips.push(tooltip);

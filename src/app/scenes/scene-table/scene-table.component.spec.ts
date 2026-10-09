@@ -10,14 +10,15 @@ import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { SceneTableComponent } from './scene-table.component';
+import type { Mock } from 'vitest';
 
 const dbService = new DBService(null);
 const dialogService = new DialogService(null);
 
 let fixture: ComponentFixture<SceneTableComponent>;
 let component: SceneTableComponent;
-let onActivateEmitSpy: jasmine.Spy;
-let onDeleteEmitSpy: jasmine.Spy;
+let onActivateEmitSpy: Mock;
+let onDeleteEmitSpy: Mock;
 
 describe('SceneTableComponent (all scenes)', () => {
 
@@ -32,7 +33,7 @@ describe('SceneTableComponent (all scenes)', () => {
 
   beforeEach(async () => {
     await setup();
-    spyOn(dbService, 'findScene').and.resolveTo(scenes[0]);
+    vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
     component.sceneInfos = scenes;
     component.ngOnChanges(null);
     fixture.detectChanges();
@@ -58,7 +59,7 @@ describe('SceneTableComponent (all scenes)', () => {
   it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
 
     // given
-    spyOn(dialogService, 'showSceneDetailsDialog');
+    vi.spyOn(dialogService, 'showSceneDetailsDialog').mockReturnValue(undefined);
     const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
 
     // when
@@ -132,6 +133,6 @@ async function setup(): Promise<void> {
 
   fixture = TestBed.createComponent(SceneTableComponent);
   component = fixture.componentInstance;
-  onActivateEmitSpy = spyOn(component.onActivate, 'emit');
-  onDeleteEmitSpy = spyOn(component.onDelete, 'emit');
+  onActivateEmitSpy = vi.spyOn(component.onActivate, 'emit').mockReturnValue(undefined);
+  onDeleteEmitSpy = vi.spyOn(component.onDelete, 'emit').mockReturnValue(undefined);
 }
