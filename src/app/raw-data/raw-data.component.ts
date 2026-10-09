@@ -28,10 +28,14 @@ import { DBService } from '../shared/services/backend';
 })
 export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit {
 
+  static readonly DIALOG_VIEWPORT_MARGIN = 40;
+  static readonly CONTENT_VERTICAL_MARGIN = 20;
+
   @Input() dialogStyle: boolean;
   @Input() query: Query;
   @Input() hideToolbar: boolean;
 
+  @ViewChild('header') divHeaderRef: ElementRef<HTMLDivElement>;
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -139,7 +143,8 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
   adjustLayout(): void {
     let maxHeight = window.innerHeight;
     if (this.dialogStyle) {
-      maxHeight -= 200; // TODO: compute dependent on dialog height and toolbar
+      maxHeight -= RawDataComponent.DIALOG_VIEWPORT_MARGIN + this.divHeaderRef.nativeElement.offsetHeight
+        + RawDataComponent.CONTENT_VERTICAL_MARGIN;
     }
     const style = this.divContentRef.nativeElement.style;
     style.maxHeight = maxHeight + 'px';

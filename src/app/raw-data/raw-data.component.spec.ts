@@ -329,13 +329,14 @@ describe('RawDataComponent', () => {
     component.adjustLayout();
 
     // then
-    expect(divContent.style['maxHeight']).toBeDefined();
+    expect(divContent.style['maxHeight']).toBe(window.innerHeight + 'px');
   });
 
   it('#adjustLayout should adjust content max height when dialog style', () => {
 
     // given
     component.dialogStyle = true;
+    component.divHeaderRef = new ElementRef({ offsetHeight: 100 } as HTMLDivElement);
     const divContent = { style: { marginTop: '' } };
     component.divContentRef = new ElementRef(divContent as HTMLDivElement);
 
@@ -343,7 +344,7 @@ describe('RawDataComponent', () => {
     component.adjustLayout();
 
     // then
-    expect(divContent.style['maxHeight']).toBeDefined();
+    expect(divContent.style['maxHeight']).toBe((window.innerHeight - 160) + 'px');
   });
 
   it('#saveAs should save complete data as CSV file', fakeAsync(() => {

@@ -4,6 +4,7 @@ import { GraphData, RawDataRevealService } from 'app/shared/services';
 import { GraphUtils } from '../options/graph-utils';
 import { ColorProvider } from 'app/shared/color';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
+import { tooltipPosition } from './tooltip-position';
 
 export class D3ForceGraphGenerator {
 
@@ -53,10 +54,11 @@ export class D3ForceGraphGenerator {
             tooltipDiv.transition()
                 .duration(200)
                 .style('opacity', 1);
-            // TODO: tooltip is partially hidden when node is close to the border of the svg    
-            tooltipDiv.html(generateTooltip(node, this.context))
-                .style('left', (node.x + 15) + 'px')
-                .style('top', (node.y - 10) + 'px');
+            tooltipDiv.html(generateTooltip(node, this.context));
+            const tooltip = tooltipDiv.node().firstElementChild as HTMLElement;
+            const position = tooltipPosition(node.x, node.y, { width: tooltip.offsetWidth, height: tooltip.offsetHeight },
+                { width: div.clientWidth, height: div.clientHeight });
+            tooltipDiv.style('left', position.left + 'px').style('top', position.top + 'px');
         };
 
         const mouseLeave = () => {

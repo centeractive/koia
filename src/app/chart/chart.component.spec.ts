@@ -3,6 +3,7 @@ import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testi
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideRouter, Router } from '@angular/router';
+import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
 import { Column, DataType, Route, Scene } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
@@ -35,7 +36,7 @@ describe('ChartComponent', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       declarations: [ChartComponent],
-      imports: [MatProgressBarModule, MatDialogModule],
+      imports: [MatProgressBarModule, MatDialogModule, ResizableDirective, ResizeHandleDirective],
       providers: [
         provideRouter([]),
         { provide: DBService, useValue: dbService },
@@ -185,6 +186,22 @@ describe('ChartComponent', () => {
     const top = cmpElement.getBoundingClientRect().top - cmpElement.parentElement.parentElement.getBoundingClientRect().top;
     expect(component.marginDivStyle).toEqual({ top: top + 'px', right: '1px', bottom: '2px', left: '0px' });
   }));
+
+  it('should show dashed border of ghost element when resizing margin', () => {
+
+    // given
+    component.marginDivStyle = {};
+    context.toggleShowResizableMargin();
+    fixture.detectChanges();
+    const handle = fixture.nativeElement.querySelector('.resize-handle-top');
+
+    // when
+    handle.dispatchEvent(new MouseEvent('mousedown', { clientX: 10, clientY: 10 }));
+
+    // then
+    const ghost = fixture.nativeElement.querySelector('.resize-ghost-element');
+    expect(getComputedStyle(ghost).borderTopStyle).toBe('dashed');
+  });
 
   it('#createExportData should throw error', () => {
     expect(() => component.createExportData()).toThrow(expect.objectContaining({ message: 'Method not implemented.' }));

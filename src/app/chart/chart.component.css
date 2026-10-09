@@ -1,4 +1,4 @@
-#div_margins {
+.div_margins {
   position: absolute;
   border: 1px dashed green;
   z-index: 9;
