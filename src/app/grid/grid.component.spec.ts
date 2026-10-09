@@ -22,6 +22,7 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { Observable, of, throwError } from 'rxjs';
 import { GridComponent } from './grid.component';
 import type { Mock } from 'vitest';
+import type { SummaryTableComponent } from 'app/summary-table/summary-table.component';
 
 @Component({
   selector: 'koia-main-toolbar', template: '',
@@ -445,25 +446,23 @@ describe('GridComponent', () => {
     expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
 
-  /**
-   * TODO: fix me
-   *
-  it('#saveAs should export data when graph context is provided', fakeAsync(() => {
-  
+  it('#saveAs should export data when summary context is provided', () => {
+
     // given
-    vi.spyOn(component.sidenav, 'open').mockResolvedValue(undefined));
     const summaryContext = component.addSummaryTable();
+    summaryContext.title = 'Test';
+    const exportData = [{ Level: 'INFO', Count: 3 }];
+    const summaryTableComponent = { context: summaryContext, createExportData: () => exportData };
+    component.sumTableComponents.reset([summaryTableComponent as unknown as SummaryTableComponent]);
     vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
-  
+
     // when
     component.saveAs(summaryContext, ExportFormat.EXCEL);
-    flush();
-    fixture.detectChanges();
-  
+
     // then
-    expect(exportService.exportData).toHaveBeenCalled();
-  }));
-  */
+    const indexedColumns = scene.columns.filter(c => c.indexed);
+    expect(exportService.exportData).toHaveBeenCalledWith(exportData, indexedColumns, ExportFormat.EXCEL, 'Test');
+  });
 
   function sanitize(v: any): any {
     return JSON.parse(JSON.stringify(v));

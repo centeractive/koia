@@ -23,6 +23,7 @@ import { Chart } from 'chart.js';
 import { Observable, of } from 'rxjs';
 import { FlexCanvasComponent } from './flex-canvas.component';
 import type { Mock } from 'vitest';
+import type { SummaryTableComponent as RealSummaryTableComponent } from 'app/summary-table/summary-table.component';
 
 @Component({
   selector: 'koia-main-toolbar', template: '',
@@ -497,6 +498,39 @@ describe('FlexCanvasComponent', () => {
     expect(exportService.exportImage).toHaveBeenCalledWith('base64Image...', ExportFormat.PNG, 'Test');
   });
 
+  it('#saveAs should export data when summary context is provided', () => {
+
+    // given
+    const summaryContext = component.addSummaryTable();
+    summaryContext.title = 'Test';
+    const exportData = [{ Level: 'INFO', Count: 3 }];
+    const summaryTableComponent = { context: summaryContext, createExportData: () => exportData };
+    component.sumTableComponents.reset([summaryTableComponent as unknown as RealSummaryTableComponent]);
+    vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
+
+    // when
+    component.saveAs(summaryContext, ExportFormat.EXCEL);
+
+    // then
+    const indexedColumns = scene.columns.filter(c => c.indexed);
+    expect(exportService.exportData).toHaveBeenCalledWith(exportData, indexedColumns, ExportFormat.EXCEL, 'Test');
+  });
+
+  it('#saveAs should not export when graph context is provided', () => {
+
+    // given
+    const graphContext = component.addGraph();
+    vi.spyOn(exportService, 'exportImage').mockReturnValue(undefined);
+    vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
+
+    // when
+    component.saveAs(graphContext, ExportFormat.PNG);
+
+    // then
+    expect(exportService.exportImage).not.toHaveBeenCalled();
+    expect(exportService.exportData).not.toHaveBeenCalled();
+  });
+
   function sanitize(v: any): any {
     return JSON.parse(JSON.stringify(v));
   }
@@ -507,26 +541,6 @@ describe('FlexCanvasComponent', () => {
       edges: null
     }
   }
-
-  /**
-   * TODO: fix me
-   *
-  it('#saveAs should export data when summary context is provided', fakeAsync(() => {
-
-    // given
-    vi.spyOn(component.sidenav, 'open').mockResolvedValue(undefined);
-    const summaryContext = component.addSummaryTable();
-    vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
-
-    // when
-    component.saveAs(summaryContext, ExportFormat.EXCEL);
-    flush();
-    fixture.detectChanges();
-
-    // then
-    expect(exportService.exportData).toHaveBeenCalled();
-  }));
-  */
 
   function findColumn(name: string, context: ElementContext): Column {
     return context.columns.find(c => c.name === name);
