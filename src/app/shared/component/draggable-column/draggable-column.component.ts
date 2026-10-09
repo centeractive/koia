@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Column, ElementContext, TimeUnit } from 'app/shared/model';
 import { DataTypeUtils } from 'app/shared/utils';
 
@@ -6,6 +6,7 @@ import { DataTypeUtils } from 'app/shared/utils';
     selector: 'koia-draggable-column',
     templateUrl: './draggable-column.component.html',
     styleUrls: ['./draggable-column.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class DraggableColumnComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Scene, SceneInfo } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -7,6 +7,7 @@ import { DBService } from 'app/shared/services/backend';
     selector: 'koia-scene-table',
     templateUrl: './scene-table.component.html',
     styleUrls: ['./scene-table.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SceneTableComponent implements OnChanges {

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CategoricalColorScheme, ColorProviderFactory, ColorOptions, ColorSchemeType, SequentialColorScheme } from 'app/shared/color';
 import { ElementContext } from 'app/shared/model';
 import * as _ from 'lodash';
@@ -7,6 +7,7 @@ import * as _ from 'lodash';
     selector: 'koia-color-scheme-selection',
     templateUrl: './color-scheme-selection.component.html',
     styleUrls: ['./color-scheme-selection.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ColorSchemeSelectionComponent implements OnChanges {

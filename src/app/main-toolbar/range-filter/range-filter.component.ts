@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { ChangeContext } from '@angular-slider/ngx-slider';
 import { DataType } from 'app/shared/model';
 import { ValueRange } from 'app/shared/value-range/model';
@@ -10,6 +10,7 @@ import { NumberRangeFilter } from './model/number-range-filter';
   templateUrl: './range-filter.component.html',
   styleUrls: ['./range-filter.component.css'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class RangeFilterComponent implements OnChanges, OnDestroy {

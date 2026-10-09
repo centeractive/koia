@@ -1,4 +1,4 @@
-import { Input, Component } from '@angular/core';
+import { Input, Component, ChangeDetectionStrategy } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MetadataOverride } from '@angular/core/testing';
 import { NgModule } from '@angular/core';
@@ -14,6 +14,7 @@ import { NgModule } from '@angular/core';
 @Component({
     selector: 'koia-mat-icon-module-mock',
     template: '<span></span>',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 // tslint:disable-next-line:component-class-suffix

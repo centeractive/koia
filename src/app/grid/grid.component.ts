@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import { ViewController } from 'app/shared/controller';
@@ -14,6 +14,7 @@ import { computeAspectRatio } from './aspect-ratio';
   selector: 'koia-grid',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class GridComponent extends ViewController {

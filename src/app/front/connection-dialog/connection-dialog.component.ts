@@ -1,4 +1,4 @@
-import { Component, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, Inject, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CommonUtils } from 'app/shared/utils';
 import { Protocol, ConnectionInfo } from 'app/shared/model';
@@ -9,6 +9,7 @@ import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-confi
     templateUrl: './connection-dialog.component.html',
     styleUrls: ['./connection-dialog.component.css'],
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ConnectionDialogComponent {

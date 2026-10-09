@@ -1,7 +1,7 @@
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -172,7 +172,7 @@ import { TrialComponent } from './testing/trial/trial.component';
         AggregationService,
         NotificationService,
         DialogService,
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideZoneChangeDetection()
     ]
 })

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,6 +16,7 @@ import { ConnectionDialogData } from './connection-dialog/connection-dialog.comp
     selector: 'koia-front',
     templateUrl: './front.component.html',
     styleUrls: ['./front.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class FrontComponent extends AbstractComponent implements OnInit {

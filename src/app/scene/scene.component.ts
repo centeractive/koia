@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatAccordion } from '@angular/material/expansion';
@@ -25,6 +25,7 @@ import { SceneUtils } from './utils';
   selector: 'koia-front',
   templateUrl: './scene.component.html',
   styleUrls: ['./scene.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit {

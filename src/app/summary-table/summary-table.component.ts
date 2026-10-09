@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, ElementRef, Inject, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { ExportDataProvider } from 'app/shared/controller';
@@ -19,6 +19,7 @@ import { RowSpanComputer, Span } from './row-span-computer';
   selector: 'koia-summary-table',
   templateUrl: './summary-table.component.html',
   styleUrls: ['./summary-table.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class SummaryTableComponent implements OnInit, ExportDataProvider {

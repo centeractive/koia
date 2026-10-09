@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Operator, Query } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
@@ -6,6 +6,7 @@ import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
 @Component({
    selector: 'koia-raw-data-dialog',
    template: '<koia-raw-data [dialogStyle]="true" [hideToolbar]="hideToolbar" [query]="query" />',
+   changeDetection: ChangeDetectionStrategy.Eager,
    standalone: false
 })
 export class RawDataDialogComponent {

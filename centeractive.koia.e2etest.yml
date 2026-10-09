@@ -24,7 +24,7 @@ steps:
 
 - task: NodeTool@0
   inputs:
-    versionSpec: '20.x'
+    versionSpec: '24.x'
   displayName: 'install Node.js'
 
 - task: PowerShell@2
@@ -47,7 +47,7 @@ steps:
 
 # perform unit-tets and publish test and code coverage results
 - script: |
-    npm ci -g @angular/cli@latest
+    npm i -g @angular/cli@22 --ignore-scripts
     npm ci
   displayName: 'install npm packages'
 

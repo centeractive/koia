@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Operator, PropertyFilter, Query } from 'app/shared/model';
@@ -7,6 +7,7 @@ import { RawDataDialogComponent } from './raw-data-dialog.component';
 
 @Component({
     selector: 'koia-raw-data', template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 class RawDataComponent {

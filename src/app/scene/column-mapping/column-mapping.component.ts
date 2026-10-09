@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { ColumnPair, DataType } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
@@ -10,6 +10,7 @@ import { ColumnMappingGenerator } from './mapper';
     selector: 'koia-column-mapping',
     templateUrl: './column-mapping.component.html',
     styleUrls: ['./column-mapping.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ColumnMappingComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Inject, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, ViewChild, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
@@ -31,6 +31,7 @@ declare let jQuery: any;
   templateUrl: './pivot-table.component.html',
   styleUrls: ['./pivot-table.component.css'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class PivotTableComponent extends ConfigController implements AfterViewInit {

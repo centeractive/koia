@@ -7,7 +7,8 @@ import {
   Input,
   OnInit,
   Output,
-  ViewEncapsulation
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { ExportDataProvider } from 'app/shared/controller';
 import { GraphContext } from 'app/shared/model/graph';
@@ -22,6 +23,7 @@ import { NodeDoubleClickHandler } from './options/node-double-click-handler';
   templateUrl: './graph.component.html',
   styleUrls: ['./graph.component.css'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider {

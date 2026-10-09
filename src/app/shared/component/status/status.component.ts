@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { Status } from '../../model';
 
@@ -6,6 +6,7 @@ import { Status } from '../../model';
     selector: 'koia-status',
     template: '@if (status) {<div [class]="status.type">{{ status.msg }}</div>}',
     styleUrls: ['./status.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class StatusComponent {

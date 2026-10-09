@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Scene } from 'app/shared/model';
 import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
@@ -57,6 +57,7 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
               padding-right: 10px;
               white-space: pre-wrap;
             }`],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SceneDetailsDialogComponent {

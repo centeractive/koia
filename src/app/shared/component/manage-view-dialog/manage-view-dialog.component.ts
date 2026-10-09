@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ViewController } from 'app/shared/controller';
 import { View } from 'app/shared/model/view-config';
@@ -9,6 +9,7 @@ import { ManageViewContext } from './manage-view-context.type.';
   selector: 'koia-manageView-dialog',
   templateUrl: './manage-view-dialog.component.html',
   styleUrls: ['./manage-view-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ManageViewDialogComponent {

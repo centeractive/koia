@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ViewLauncherContext } from './view-launcher-context.type.';
 
@@ -6,6 +6,7 @@ import { ViewLauncherContext } from './view-launcher-context.type.';
     selector: 'koia-view-launcher-dialog',
     templateUrl: './view-launcher-dialog.component.html',
     styleUrls: ['./view-launcher-dialog.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ViewLauncherDialogComponent {

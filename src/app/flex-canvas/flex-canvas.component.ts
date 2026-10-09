@@ -1,4 +1,4 @@
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, QueryList, ViewChildren, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import { Edges, ResizeEvent } from 'angular-resizable-element';
@@ -13,6 +13,7 @@ import { DialogService, ExportService, NotificationService, ViewPersistenceServi
   selector: 'koia-flex-canvas',
   templateUrl: './flex-canvas.component.html',
   styleUrls: ['./flex-canvas.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class FlexCanvasComponent extends ViewController {

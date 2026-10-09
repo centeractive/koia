@@ -19,12 +19,12 @@ steps:
 
 - task: NodeTool@0
   inputs:
-    versionSpec: '22.x'
+    versionSpec: '24.x'
   displayName: 'install Node.js'
 
 - script: |
-    npm i -g @angular/cli@21 --ignore-scripts
-    npm ci --ignore-scriptsnp
+    npm i -g @angular/cli@22 --ignore-scripts
+    npm ci --ignore-scripts
   displayName: 'install npm packages'
 
 # set-up and rund CouchDB in Docker container (used by unit tests)

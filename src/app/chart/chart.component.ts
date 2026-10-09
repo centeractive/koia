@@ -10,7 +10,8 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
@@ -28,6 +29,7 @@ import { ChartJs } from './chartjs/chartjs';
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.css'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {

@@ -1,5 +1,5 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
 import { ArrayUtils, NumberUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
@@ -13,6 +13,7 @@ import { PivotContext } from '../model';
     selector: 'koia-pivot-table-side-bar',
     templateUrl: './pivot-table-side-bar.component.html',
     styleUrls: ['./pivot-table-side-bar.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PivotTableSideBarComponent implements OnChanges {

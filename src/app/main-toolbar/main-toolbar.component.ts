@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -15,6 +15,7 @@ import { ValueFilterUtils } from './value-filter/value-filter-utils';
     selector: 'koia-main-toolbar',
     templateUrl: './main-toolbar.component.html',
     styleUrls: ['./main-toolbar.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked {

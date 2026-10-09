@@ -1,4 +1,4 @@
-import { Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
+import { Component, ElementRef, NO_ERRORS_SCHEMA, QueryList, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,42 +25,49 @@ import { FlexCanvasComponent } from './flex-canvas.component';
 
 @Component({
   selector: 'koia-main-toolbar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class MainToolbarComponent { }
 
 @Component({
   selector: 'koia-chart-side-bar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class ChartSideBarComponent { }
 
 @Component({
   selector: 'koia-graph-side-bar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class GraphSideBarComponent { }
 
 @Component({
   selector: 'koia-summary-table-side-bar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class SummaryTableSideBarComponent { }
 
 @Component({
   selector: 'koia-summary-table', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class SummaryTableComponent { }
 
 @Component({
   selector: 'koia-chart', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class ChartComponent { }
 
 @Component({
   selector: 'koia-graph', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 

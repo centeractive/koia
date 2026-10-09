@@ -1,4 +1,4 @@
-import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ConnectionInfo, Document, Protocol } from 'app/shared/model';
 import { lastValueFrom } from 'rxjs';
@@ -14,7 +14,7 @@ describe('CouchDBService', () => {
    beforeEach(async () => {
       spyOn(console, 'log');
       TestBed.configureTestingModule({
-         providers: [CouchDBService, provideHttpClient(withInterceptorsFromDi())]
+         providers: [CouchDBService, provideHttpClient(withXhr(), withInterceptorsFromDi())]
       });
       couchDBService = TestBed.inject(CouchDBService);
       await couchDBService.clear(testDBPrefix)

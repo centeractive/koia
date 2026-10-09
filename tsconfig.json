@@ -2,7 +2,9 @@
   "compileOnSave": false,
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
-    "baseUrl": "src",
+    "paths": {
+      "app/*": ["./src/app/*"]
+    },
     "strict": false,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,

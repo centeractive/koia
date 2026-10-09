@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { SideBarController } from 'app/shared/controller';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
@@ -9,6 +9,7 @@ import { Aggregation, Column, DataType } from '../../shared/model';
   selector: 'koia-chart-side-bar',
   templateUrl: './chart-side-bar.component.html',
   styleUrls: ['./chart-side-bar.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ChartSideBarComponent extends SideBarController implements OnChanges {

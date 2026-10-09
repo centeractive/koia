@@ -1,4 +1,4 @@
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, NO_ERRORS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,30 +24,35 @@ import { GridComponent } from './grid.component';
 
 @Component({
   selector: 'koia-main-toolbar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class MainToolbarComponent { }
 
 @Component({
   selector: 'koia-chart-side-bar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class ChartSideBarComponent { }
 
 @Component({
   selector: 'koia-graph-side-bar', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class GraphSideBarComponent { }
 
 @Component({
   selector: 'koia-chart', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class ChartComponent { }
 
 @Component({
   selector: 'koia-graph', template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class GraphComponent { }

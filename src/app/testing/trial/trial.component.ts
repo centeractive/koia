@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 export interface PeriodicElement {
   name: string;
@@ -19,6 +19,7 @@ const ELEMENT_DATA: PeriodicElement[] = [
     selector: 'koia-trial',
     templateUrl: './trial.component.html',
     styleUrls: ['./trial.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class TrialComponent {

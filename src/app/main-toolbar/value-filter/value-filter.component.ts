@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Column, DataType, Operator, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
@@ -11,6 +11,7 @@ import { ValueFilterUtils } from './value-filter-utils';
     selector: 'koia-value-filter',
     templateUrl: './value-filter.component.html',
     styleUrls: ['./value-filter.component.css'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ValueFilterComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SceneInfo, Route, Scene } from 'app/shared/model';
 import { Router } from '@angular/router';
 import { NotificationService, DialogService } from 'app/shared/services';
@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'koia-scenes',
   templateUrl: './scenes.component.html',
   styleUrls: ['./scenes.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class ScenesComponent extends AbstractComponent implements OnInit {

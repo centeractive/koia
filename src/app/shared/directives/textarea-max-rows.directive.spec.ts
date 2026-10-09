@@ -1,10 +1,11 @@
-import { Component, DebugElement } from '@angular/core';
+import { Component, DebugElement, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { TextareaMaxRowsDirective } from './textarea-max-rows.directive';
 
 @Component({
     template: '<textarea type="text" [textareaMaxRows]="2"></textarea>',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 class TextareaMaxRowsComponent {

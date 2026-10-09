@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, UntypedFormBuilder } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -25,6 +25,7 @@ import { FrontComponent } from './front.component';
 
 @Component({
   template: '',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class DummyComponent { }

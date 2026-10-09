@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { SideBarController } from 'app/shared/controller';
 import { Aggregation, Column, DataType, SummaryContext } from '../../shared/model';
 
@@ -7,6 +7,7 @@ import { Aggregation, Column, DataType, SummaryContext } from '../../shared/mode
   selector: 'koia-summary-table-side-bar',
   templateUrl: './summary-table-side-bar.component.html',
   styleUrls: ['./summary-table-side-bar.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class SummaryTableSideBarComponent extends SideBarController implements OnChanges {

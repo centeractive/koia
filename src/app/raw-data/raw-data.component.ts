@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -23,6 +23,7 @@ import { DBService } from '../shared/services/backend';
   selector: 'koia-raw-data',
   templateUrl: './raw-data.component.html',
   styleUrls: ['./raw-data.component.css'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit {
