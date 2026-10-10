@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+nav {
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+#butAddTab {
+  flex-shrink: 0;
+}
+
+.icon_close_tab {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+}
+
+.icon_close_tab:hover {
+  opacity: 1;
+}

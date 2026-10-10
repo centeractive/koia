@@ -7,6 +7,7 @@ import { Column } from './column.type';
 import { DataType } from './data-type.enum';
 import { ElementContext } from './element-context';
 import { ExportFormat } from './export-format.enum';
+import { ElementType, ViewElement } from './view-config';
 import type { Mock } from 'vitest';
 
 class TestContext extends ElementContext {
@@ -97,6 +98,26 @@ describe('ElementContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.SIZE);
    }));
+
+   it('#copyAttributes should copy grid spans', () => {
+
+      // when
+      context.copyAttributes(viewElement(2, 3));
+
+      // then
+      expect(context.gridColumnSpan).toBe(2);
+      expect(context.gridRowSpan).toBe(3);
+   });
+
+   it('#copyAttributes should replace missing grid spans with 1', () => {
+
+      // when
+      context.copyAttributes(viewElement(null, undefined));
+
+      // then
+      expect(context.gridColumnSpan).toBe(1);
+      expect(context.gridRowSpan).toBe(1);
+   });
 
    it('#groupByColumns should return empty array when no group by columns are defined', () => {
       context.groupByColumns = null;
@@ -202,6 +223,13 @@ describe('ElementContext', () => {
 
    function column(name: string): Column {
       return columns.find(c => c.name === name);
+   }
+
+   function viewElement(gridColumnSpan: number, gridRowSpan: number): ViewElement {
+      return {
+         elementType: ElementType.SUMMARY, title: 'T', gridColumnSpan, gridRowSpan, width: 300, height: 200, dataColumns: [],
+         splitColumns: [], groupByColumns: [], aggregations: [Aggregation.COUNT], valueGroupings: [], colorOptions: undefined
+      };
    }
 
    function valueGrouping(columnName: string): ValueGrouping {

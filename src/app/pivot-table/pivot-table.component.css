@@ -2,6 +2,7 @@
   margin: 10px;
   float: left;
   min-width: 500px;
+  border: var(--koia-tile-border);
 }
 
 .span_color {

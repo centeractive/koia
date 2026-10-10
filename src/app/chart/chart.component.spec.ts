@@ -1,6 +1,7 @@
 import { SimpleChange } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideRouter, Router } from '@angular/router';
 import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
@@ -111,6 +112,50 @@ describe('ChartComponent', () => {
 
     // then
     expect(component.onWarning.emit).toHaveBeenCalledWith('server not available');
+  }));
+
+  it('#ngOnDestroy should destroy chart', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
+    context.groupByColumns = [createColumn('t1', DataType.TEXT)];
+    fixture.detectChanges();
+    flush();
+    const chart = context.chart;
+    vi.spyOn(chart, 'destroy');
+
+    // when
+    fixture.destroy();
+
+    // then
+    expect(chart.destroy).toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not fail when no chart exists', () => {
+
+    // given
+    context.chart = undefined;
+
+    // when
+    const destroy = () => fixture.destroy();
+
+    // then
+    expect(destroy).not.toThrow();
+  });
+
+  it('should not create chart when destroyed before pending context change is processed', fakeAsync(() => {
+
+    // given
+    context.chart = undefined;
+    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
+
+    // when
+    fixture.destroy();
+    flush();
+
+    // then
+    expect(context.chart).toBeUndefined();
+    expect(component.loading).toBe(false);
   }));
 
   it('#validateElementResize should return true when margin is valid', () => {
@@ -229,6 +274,16 @@ describe('ChartComponent', () => {
 
     // then
     expect(hostListener).not.toHaveBeenCalled();
+  });
+
+  it('should position resize ghost of margin relative to its container', () => {
+
+    // when
+    showResizableMargin();
+
+    // then
+    const resizable = fixture.debugElement.query(By.directive(ResizableDirective)).injector.get(ResizableDirective);
+    expect(resizable.ghostElementPositioning).toBe('absolute');
   });
 
   it('#createExportData should throw error', () => {

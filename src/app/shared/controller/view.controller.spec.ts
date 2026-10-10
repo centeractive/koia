@@ -9,7 +9,7 @@ import { ViewController } from './view.controller';
 class ViewControllerTestable extends ViewController {
 
    constructor() {
-      super(null, null, null, null, null, null, null, null, null);
+      super(null, null, null, null, null, null, null, null, null, null);
    }
 
    protected onPreRestoreView(view: View): void { }

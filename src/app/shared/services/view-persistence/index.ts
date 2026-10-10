@@ -1,4 +1,5 @@
 export * from './chart.type';
+export * from './config-record-factory';
 export * from './graph.type';
 export * from './model-to-view-converter';
 export * from './scale.type';

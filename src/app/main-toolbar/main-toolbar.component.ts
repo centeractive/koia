@@ -1,10 +1,12 @@
-import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { PropertyFilterValidator } from 'app/shared/validator';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { Subscription } from 'rxjs';
+import { tabUrl } from 'app/shared/services/view-tabs/tab-defs';
 import { Column, DataType, PropertyFilter, Query, Route, Scene } from '../shared/model';
 import { QueryBuilder } from './query-builder';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
@@ -18,10 +20,11 @@ import { ValueFilterUtils } from './value-filter/value-filter-utils';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked {
+export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
 
   @Input() dialogStyle: boolean;
   @Input() route: Route;
+  @Input() tabId: string;
   @Input() query: Query;
   @Input() restoredQuery: Query;
   @Output() onFilterChange = new EventEmitter<Query>();
@@ -29,10 +32,6 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
   readonly urlScene = '/' + Route.SCENE;
-  readonly urlRawdata = '/' + Route.RAWDATA;
-  readonly urlPivot = '/' + Route.PIVOT;
-  readonly urlGrid = '/' + Route.GRID;
-  readonly urlFlex = '/' + Route.FLEX;
 
   currURL: string;
   scene: Scene;
@@ -44,12 +43,13 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
 
   private propertyFilterValidator: PropertyFilterValidator;
   private justNavigatedToParentView: boolean;
+  private navigationSubscription: Subscription;
 
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService) {
   }
 
   ngOnInit(): void {
-    this.currURL = '/' + this.route;
+    this.currURL = this.tabId ? tabUrl(this.tabId) : '/' + this.route;
     this.scene = this.dbService.getActiveScene();
     if (this.scene) {
       this.propertyFilterValidator = new PropertyFilterValidator(this.scene.columns);
@@ -61,8 +61,14 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.restoredQuery && !!this.restoredQuery) {
       this.query = this.restoredQuery;
-      this.retainInitialFilters();
+      if (!changes.restoredQuery.firstChange) {
+        this.retainInitialFilters();
+      }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.navigationSubscription?.unsubscribe();
   }
 
   /**
@@ -76,8 +82,8 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
    * @see #ngAfterViewChecked
    */
   private listenOnNavigationEvents(): void {
-    this.router.events.subscribe(e => {
-      if (e instanceof NavigationEnd && e.url === '/' + this.route) {
+    this.navigationSubscription = this.router.events.subscribe(e => {
+      if (e instanceof NavigationEnd && e.url === this.currURL) {
         this.justNavigatedToParentView = true;
       }
     });

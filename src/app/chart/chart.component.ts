@@ -6,6 +6,7 @@ import {
   Inject,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -32,7 +33,7 @@ import { ChartJs } from './chartjs/chartjs';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
+export class ChartComponent implements OnInit, OnChanges, OnDestroy, ExportDataProvider {
 
   @Input() gridView: boolean;
   @Input() context: ChartContext;
@@ -43,6 +44,8 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
   loading: boolean;
   marginDivStyle: object;
   validateMarginResize: (resizeEvent: ResizeEvent) => boolean;
+
+  private destroyed = false;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     private chartDataService: ChartDataService, private chartMarginService: ChartMarginService,
@@ -83,7 +86,7 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     try {
-      if (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE) {
+      if (!this.destroyed && (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE)) {
         this.updateChart();
       }
     } finally {
@@ -104,6 +107,11 @@ export class ChartComponent implements OnInit, OnChanges, ExportDataProvider {
     this.cdr.detectChanges();
 
     new ChartJs(this.rawDataRevealService).create(this.canvasRef.nativeElement, this.context);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.context.chart?.destroy();
   }
 
   onMarginResizeEnd(event: ResizeEvent): void {

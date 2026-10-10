@@ -6,7 +6,7 @@
 
   <mat-sidenav-content>
     <div #header class="div_header">
-      <koia-main-toolbar [route]="route" [restoredQuery]="restoredQuery" (onFilterChange)="fetchData($event)" />
+      <koia-main-toolbar [route]="route" [tabId]="tab?.id" [restoredQuery]="restoredQuery" (onFilterChange)="fetchData($event)" />
       @if (loading) {
         <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..." />
       }
@@ -119,7 +119,7 @@
       </div>
     </div>
 
-    <div #content class="div_content div_table mat-elevation-z8">
+    <div #content class="div_content div_table mat-elevation-z1">
       @if (computing) {
         <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
       }

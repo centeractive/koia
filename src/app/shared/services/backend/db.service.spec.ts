@@ -1,6 +1,7 @@
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { Column, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
+import { SceneTabs, ViewType } from 'app/shared/model/view-config';
 import { SceneFactory } from 'app/shared/test';
 import { lastValueFrom } from 'rxjs';
 import { CouchDBService } from './couchdb';
@@ -351,6 +352,123 @@ describe('DBService', () => {
     await expect(deletion).rejects.toThrow(expect.objectContaining({ message: 'cannot delete database' }));
   });
 
+  it('#deleteScene should delete open tabs of scene', async () => {
+
+    // given
+    await dbService.saveSceneTabs(sceneTabs(initialScene, 'tab1'));
+
+    // when
+    await dbService.deleteScene(initialScene);
+
+    // then
+    await expect(dbService.findSceneTabs(initialScene._id)).resolves.toBeUndefined();
+  });
+
+  it('#deleteScene should resolve when open tabs cannot be deleted', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'findById').mockRejectedValue({ status: 500 });
+
+    // when
+    const deletion = dbService.deleteScene(initialScene);
+
+    // then
+    await expect(deletion).resolves.toBeUndefined();
+    expect(console.warn).toHaveBeenCalledWith('open tabs of scene ' + initialScene._id + ' cannot be deleted', { status: 500 });
+  });
+
+  it('#findSceneTabs should return undefined when no open tabs were persisted', async () => {
+
+    // when
+    const result = dbService.findSceneTabs(initialScene._id);
+
+    // then
+    await expect(result).resolves.toBeUndefined();
+  });
+
+  it('#findSceneTabs should throw error other than not found', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'findById').mockRejectedValue({ status: 500 });
+
+    // when
+    const result = dbService.findSceneTabs(initialScene._id);
+
+    // then
+    await expect(result).rejects.toEqual({ status: 500 });
+  });
+
+  it('#saveSceneTabs should insert open tabs', async () => {
+
+    // given
+    const doc = sceneTabs(initialScene, 'tab1');
+
+    // when
+    await dbService.saveSceneTabs(doc);
+
+    // then
+    expect(doc._rev).toBeDefined();
+    const found = await dbService.findSceneTabs(initialScene._id);
+    expect(found.tabs).toEqual(doc.tabs);
+  });
+
+  it('#saveSceneTabs should update open tabs', async () => {
+
+    // given
+    const doc = sceneTabs(initialScene, 'tab1');
+    await dbService.saveSceneTabs(doc);
+    const rev = doc._rev;
+    doc.tabs = sceneTabs(initialScene, 'tab1', 'tab2').tabs;
+
+    // when
+    await dbService.saveSceneTabs(doc);
+
+    // then
+    expect(doc._rev).not.toBe(rev);
+    const found = await dbService.findSceneTabs(initialScene._id);
+    expect(found.tabs.map(t => t.id)).toEqual(['tab1', 'tab2']);
+  });
+
+  it('#saveSceneTabs should resolve revision conflict once', async () => {
+
+    // given
+    await dbService.saveSceneTabs(sceneTabs(initialScene, 'tab1'));
+    const staleDoc = sceneTabs(initialScene, 'tab3');
+
+    // when
+    await dbService.saveSceneTabs(staleDoc);
+
+    // then
+    const found = await dbService.findSceneTabs(initialScene._id);
+    expect(found.tabs.map(t => t.id)).toEqual(['tab3']);
+  });
+
+  it('#saveSceneTabs should throw conflict when open tabs were deleted meanwhile', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'insert').mockRejectedValue({ status: 409 });
+    vi.spyOn(couchDBService, 'findById').mockRejectedValue({ status: 404 });
+
+    // when
+    const result = dbService.saveSceneTabs(sceneTabs(initialScene, 'tab1'));
+
+    // then
+    await expect(result).rejects.toEqual({ status: 409 });
+    expect(couchDBService.insert).toHaveBeenCalledTimes(1);
+  });
+
+  it('#saveSceneTabs should throw error other than conflict', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'insert').mockRejectedValue({ status: 500 });
+
+    // when
+    const result = dbService.saveSceneTabs(sceneTabs(initialScene, 'tab1'));
+
+    // then
+    await expect(result).rejects.toEqual({ status: 500 });
+  });
+
   it('#writeEntries should write entries', async () => {
 
     // when
@@ -526,6 +644,13 @@ describe('DBService', () => {
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);
+  }
+
+  function sceneTabs(scene: Scene, ...tabIds: string[]): SceneTabs {
+    return {
+      _id: DBService.sceneTabsId(scene._id),
+      tabs: tabIds.map(id => ({ id, type: ViewType.PIVOT, title: id }))
+    };
   }
 
   async function initWithSingleDatabase() {

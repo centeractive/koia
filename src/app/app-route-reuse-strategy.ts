@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
+import { ActivatedRouteSnapshot, destroyDetachedRouteHandle, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
 import { selectAll } from 'd3';
 import { Route } from './shared/model';
 
@@ -56,17 +56,33 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
     * that routing has not changed). If it returns FALSE, routing happens and the rest of the methods are called.
     */
    shouldReuseRoute(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot): boolean {
-      return future.routeConfig === curr.routeConfig;
+      return future.routeConfig === curr.routeConfig && this.pathOf(future) === this.pathOf(curr);
    }
 
+   /**
+    * @returns the resolved path of the route (i.e. 'view/tab1' for route 'view/:id')
+    */
    private pathOf(route: ActivatedRouteSnapshot): string {
-      if (route.routeConfig !== null && route.routeConfig.path !== null) {
-         return route.routeConfig.path;
+      if (route.routeConfig) {
+         return route.url.map(s => s.path).join('/');
       }
       return '';
    }
 
+   /**
+    * destroys the cached component of the specified path and removes it from the cache
+    *
+    * @param path resolved route path (i.e. 'view/tab1')
+    */
+   evict(path: string): void {
+      const handle = this.routeHandlesCache.get(path);
+      if (handle) {
+         destroyDetachedRouteHandle(handle);
+      }
+      this.routeHandlesCache.delete(path);
+   }
+
    clear(): void {
-      this.routeHandlesCache.clear();
+      [...this.routeHandlesCache.keys()].forEach(path => this.evict(path));
    }
 }

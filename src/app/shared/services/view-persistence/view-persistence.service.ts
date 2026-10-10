@@ -4,12 +4,14 @@ import { Query, Route, Scene, Status, StatusType } from '../../model';
 import { View } from '../../model/view-config/view.type';
 import { ArrayUtils, StringUtils } from '../../utils';
 import { DBService } from '../backend';
-import { queryToQueryDef } from './filter/query-to-filter-converter';
+import { createConfigRecord } from './config-record-factory';
 
 @Injectable({
    providedIn: 'root'
 })
 export class ViewPersistenceService {
+
+   private static readonly DASHBOARD_ROUTES = [Route.GRID, Route.FLEX];
 
    constructor(private dbService: DBService) { }
 
@@ -30,13 +32,7 @@ export class ViewPersistenceService {
     */
    saveRecord(scene: Scene, route: Route, viewName: string, query: Query, data: any): Promise<Status> {
       const prevRecord = this.findRecord(scene, route, viewName);
-      const newRecord: ConfigRecord = {
-         route,
-         name: viewName,
-         modifiedTime: new Date().getTime(),
-         query: queryToQueryDef(query),
-         data
-      };
+      const newRecord = createConfigRecord(route, viewName, query, data, new Date().getTime());
       if (prevRecord) {
          ArrayUtils.replaceElement(scene.config.records, prevRecord, newRecord);
       } else {
@@ -52,16 +48,17 @@ export class ViewPersistenceService {
    }
 
    /**
-    * @returns matching [[View]]s descending sorted by their modified time
+    * @returns [[View]]s of the same route family (grid and flex views form a family) descending sorted by their modified time
     */
    findViews(scene: Scene, route: Route): View[] {
       return scene.config.views
-         .filter(v => v.route === route)
+         .filter(v => this.isSameFamily(v.route, route))
          .sort((v1, v2) => v2.modifiedTime - v1.modifiedTime);
    }
 
    /**
-    * adds or replaces the specified [[View]] for the [[Scene]] and updates it in the backing datastore.
+    * adds the specified [[View]] or replaces the one with the same name and route family, then updates the [[Scene]] in the
+    * backing datastore.
     *
     * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
     * invoking part to catch errors
@@ -78,8 +75,13 @@ export class ViewPersistenceService {
 
    private findView(scene: Scene, route: Route, name: string): View {
       return scene.config.views
-         .filter(v => v.route === route)
+         .filter(v => this.isSameFamily(v.route, route))
          .find(v => v.name === name);
+   }
+
+   private isSameFamily(route1: Route, route2: Route): boolean {
+      const dashboardRoutes = ViewPersistenceService.DASHBOARD_ROUTES;
+      return route1 === route2 || (dashboardRoutes.includes(route1) && dashboardRoutes.includes(route2));
    }
 
    /**
@@ -121,7 +123,7 @@ export class ViewPersistenceService {
             .then(() => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
             .catch(e => {
                const message = typeof e === 'string' ? e : e.message;
-               resolve({ type: StatusType.ERROR, msg: 'View "' + viewName + '" cannot be saved: ' + message })
+               resolve({ type: StatusType.ERROR, msg: 'View "' + viewName + '" cannot be saved: ' + message });
             });
       });
    }

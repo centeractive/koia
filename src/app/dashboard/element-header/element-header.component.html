@@ -1,0 +1,71 @@
+<div class="div_element_header">
+  <div style="display: flex">
+    @if (isMoreMenuAvailable()) {
+      <button class="but_config but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    }
+    <mat-menu #moreMenu="matMenu">
+      @if (gridLayout) {
+        <button class="menu_item_column_span" mat-menu-item [matMenuTriggerFor]="columnSpanMenu">
+          <mat-icon>view_column</mat-icon>
+          <span>Column Span</span>
+        </button>
+        <button class="menu_item_row_span" mat-menu-item [matMenuTriggerFor]="rowSpanMenu">
+          <mat-icon>table_rows</mat-icon>
+          <span>Row Span</span>
+        </button>
+      }
+      @for (exportFormat of context.getSupportedExportFormats(); track exportFormat) {
+        <button class="menu_item_save_as" mat-menu-item (click)="saveAs.emit(exportFormat)">
+          <mat-icon>insert_drive_file</mat-icon>
+          <span>Save As {{ exportFormat }}</span>
+        </button>
+      }
+    </mat-menu>
+
+    <mat-menu #columnSpanMenu="matMenu">
+      @for (span of gridLayout?.columnSpans(); track span) {
+        <button class="menu_item_span" mat-menu-item [disabled]="span === context.gridColumnSpan" (click)="context.gridColumnSpan = span">
+          {{ span }} Column{{ span === 1 ? '' : 's' }}
+        </button>
+      }
+    </mat-menu>
+
+    <mat-menu #rowSpanMenu="matMenu">
+      @for (span of rowSpans; track span) {
+        <button class="menu_item_span" mat-menu-item [disabled]="span === context.gridRowSpan" (click)="context.gridRowSpan = span">
+          {{ span }} Row{{ span === 1 ? '' : 's' }}
+        </button>
+      }
+    </mat-menu>
+
+    <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..." (click)="configure.emit($event)">
+      <mat-icon>settings</mat-icon>
+    </button>
+    @if (chartContext(); as chartContext) {
+      <button id="marginButton" [ngClass]="chartContext.isShowResizableMargin() ? 'but_config_active' : 'but_config'" mat-icon-button
+        [color]="chartContext.isShowResizableMargin() ? 'primary' : null" matTooltip="Toggle resizable chart margin"
+        (click)="chartContext.toggleShowResizableMargin()">
+        <mat-icon>crop_free</mat-icon>
+      </button>
+    }
+  </div>
+  <div class="div_title">
+    <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()" [textareaMaxRows]="2"
+      (keyup)="titleChange.emit($any($event.target).value)"></textarea>
+  </div>
+  @if (context.warning) {
+    <button class="but_warning" mat-icon-button [matTooltip]="context.warning" color="warn">
+      <mat-icon>error</mat-icon>
+    </button>
+  }
+  @if (movable) {
+    <button class="but_move" mat-icon-button matTooltip="Move" cdkDragHandle>
+      <mat-icon svgIcon="move"></mat-icon>
+    </button>
+  }
+  <button class="but_close" mat-icon-button matTooltip="Delete" (click)="remove.emit()">
+    <mat-icon>delete_forever</mat-icon>
+  </button>
+</div>

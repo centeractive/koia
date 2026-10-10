@@ -162,7 +162,35 @@ describe('ViewPersistenceService', () => {
     expect(views).toEqual([gridView]);
   });
 
-  it('#saveView should add view when none with same route exists', async () => {
+  it('#findViews should return grid and flex views as one family', () => {
+
+    // given
+    const flexView = createFlexView('flex', NOW, summary);
+    scene.config.views.push(flexView);
+
+    // when
+    const gridFamilyViews = service.findViews(scene, Route.GRID);
+    const flexFamilyViews = service.findViews(scene, Route.FLEX);
+
+    // then
+    expect(gridFamilyViews).toEqual([flexView, gridView]);
+    expect(flexFamilyViews).toEqual([flexView, gridView]);
+  });
+
+  it('#findViews should not return views of other routes', () => {
+
+    // given
+    const otherView = { ...createGridView('other', NOW, summary), route: Route.RAWDATA };
+    scene.config.views.push(otherView);
+
+    // when
+    const views = service.findViews(scene, Route.FLEX);
+
+    // then
+    expect(views).toEqual([gridView]);
+  });
+
+  it('#saveView should add view when none with same name exists in family', async () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
@@ -173,8 +201,7 @@ describe('ViewPersistenceService', () => {
 
     // then
     await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "flex" has been saved' }));
-    expect(service.findViews(scene, Route.FLEX)).toEqual([flexView]);
-    expect(service.findViews(scene, Route.GRID)).toEqual([gridView]);
+    expect(service.findViews(scene, Route.FLEX)).toEqual([flexView, gridView]);
   });
 
   it('#saveView should add view when none with same name exists', async () => {
@@ -189,7 +216,6 @@ describe('ViewPersistenceService', () => {
     // then
     await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
     expect(service.findViews(scene, Route.GRID)).toEqual([newGridView, gridView]);
-    expect(service.findViews(scene, Route.FLEX)).toEqual([]);
   });
 
   it('#saveView should update view when view with same name exists', async () => {
@@ -205,7 +231,19 @@ describe('ViewPersistenceService', () => {
     const expectedMsg = 'View "' + gridView.name + '" has been saved';
     await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
     expect(service.findViews(scene, Route.GRID)).toEqual([newGridView]);
-    expect(service.findViews(scene, Route.FLEX)).toEqual([]);
+  });
+
+  it('#saveView should replace grid view with flex view of same name', async () => {
+
+    // given
+    const flexView = createFlexView(gridView.name, NOW, summary);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
+
+    // when
+    await service.saveView(scene, flexView);
+
+    // then
+    expect(scene.config.views).toEqual([flexView]);
   });
 
   it('#saveView should return error status when server returns error', async () => {

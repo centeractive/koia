@@ -1,5 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { AfterViewInit, Directive, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, Input, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
@@ -13,22 +13,26 @@ import { ViewLauncherContext } from '../component/view-launcher-dialog';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext } from '../model';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
-import { View } from '../model/view-config';
+import { TabContent, TabDef, View, ViewElement } from '../model/view-config';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../services';
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { ChartMarginService } from '../services/chart';
 import { ModelToViewConverter, ViewToModelConverter } from '../services/view-persistence';
 import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
+import { TabContentProvider, ViewTabsService } from '../services/view-tabs';
 import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
 
 @Directive()
-export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, ViewLauncherContext, ManageViewContext {
+export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, OnDestroy, ViewLauncherContext,
+   ManageViewContext, TabContentProvider {
 
    static readonly VIEW_NAME_MAX_LENGTH = 40;
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 380; // keep in sync with .sidenav in styles.css
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
+
+   @Input() tab: TabDef;
 
    @ViewChild(MatSidenav) sidenav: MatSidenav;
    @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
@@ -46,6 +50,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    views: View[] = [];
 
    protected scene: Scene;
+   protected currentViewName = '';
 
    private timeColumns: Column[];
    private viewToModelConverter: ViewToModelConverter;
@@ -53,11 +58,12 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private columns: Column[];
    private query: Query;
    private entriesSubscription: Subscription;
-   private currentViewName = '';
+   private destroyed = false;
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
       private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
-      private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService) {
+      private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService,
+      private viewTabsService: ViewTabsService) {
       super(bottomSheet, notificationService);
    }
 
@@ -70,6 +76,12 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.elementContexts = [];
          this.queryData(new Query());
          this.identifyColumns();
+         if (this.tab) {
+            if (this.tab.view) {
+               this.applyView(this.tab.view);
+            }
+            this.viewTabsService.register(this.tab.id, this);
+         }
       }
    }
 
@@ -92,8 +104,17 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       }
    }
 
+   ngOnDestroy(): void {
+      this.destroyed = true;
+      if (this.tab) {
+         this.viewTabsService.unregister(this.tab.id, this);
+      }
+      this.entriesSubscription?.unsubscribe();
+   }
+
    drop(event: CdkDragDrop<object>): void {
       moveItemInArray(this.elementContexts, event.previousIndex, event.currentIndex);
+      this.requestPersist();
    }
 
    private identifyColumns(): void {
@@ -107,32 +128,31 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    addSummaryTable(): SummaryContext {
-      const context = new SummaryContext(this.clonedColumns());
-      context.query = this.query;
-      context.entries = this.entries;
-      this.elementContexts = this.elementContexts.concat([context]);
-      this.configure(null, context);
-      return context;
+      return this.addElementContext(new SummaryContext(this.clonedColumns()));
    }
 
    addChart(): ChartContext {
       const chartType = ChartType.BAR;
       const chartMargin = this.chartMarginService.marginOf(chartType);
-      const context = new ChartContext(this.clonedColumns(), chartType.type, chartMargin);
-      context.query = this.query;
-      context.entries = this.entries;
-      this.elementContexts = this.elementContexts.concat([context]);
-      this.configure(null, context);
-      return context;
+      return this.addElementContext(new ChartContext(this.clonedColumns(), chartType.type, chartMargin));
    }
 
    addGraph(): GraphContext {
-      const context = new GraphContext(this.clonedColumns());
+      return this.addElementContext(new GraphContext(this.clonedColumns()));
+   }
+
+   private addElementContext<T extends ElementContext>(context: T): T {
       context.query = this.query;
       context.entries = this.entries;
+      this.observeChanges(context);
       this.elementContexts = this.elementContexts.concat([context]);
       this.configure(null, context);
+      this.requestPersist();
       return context;
+   }
+
+   private observeChanges(context: ElementContext): void {
+      context.subscribeToChanges(() => this.requestPersist());
    }
 
    private clonedColumns(): Column[] {
@@ -142,6 +162,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    onFilterChanged(query: Query): void {
       this.elementContexts.forEach(c => c.query = query)
       this.queryData(query);
+      this.requestPersist();
    }
 
    private queryData(query: Query): void {
@@ -194,10 +215,17 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       ArrayUtils.move(this.elementContexts, this.selectedContextPosition - 1, position - 1);
       this.selectedContextPosition = position;
       this.elementContexts = this.elementContexts.slice(0);
+      this.requestPersist();
    }
 
    removeElement(context: ElementContext): void {
       this.elementContexts = this.elementContexts.filter(c => c !== context);
+      this.requestPersist();
+   }
+
+   onTitleChanged(context: ElementContext, title: string): void {
+      context.title = title;
+      this.requestPersist();
    }
 
    selectView(): void {
@@ -206,17 +234,27 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    loadView(view: View): void {
       this.currentViewName = view.name;
-      this.onPreRestoreView(view);
-      const elementContexts = this.viewToModelConverter.convert(view.elements);
-      if (view.query) {
-         this.restoredQuery = queryDefToQuery(view.query);
+      this.applyView(view);
+   }
+
+   protected applyView(view: View): void {
+      const clonedView: View = CommonUtils.clone(view);
+      this.onPreRestoreView(clonedView);
+      if (clonedView.query) {
+         this.restoredQuery = queryDefToQuery(clonedView.query);
          this.queryData(this.restoredQuery);
       }
+      this.elementContexts = this.restoreElementContexts(clonedView.elements);
+   }
+
+   protected restoreElementContexts(elements: ViewElement[]): ElementContext[] {
+      const elementContexts = this.viewToModelConverter.convert(elements);
       elementContexts.forEach(c => {
          c.query = this.query;
          c.entries = this.entries;
+         this.observeChanges(c);
       });
-      this.elementContexts = elementContexts;
+      return elementContexts;
    }
 
    protected abstract onPreRestoreView(view: View): void;
@@ -232,9 +270,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          .then(() => {
             if (dialogData.closedWithOK) {
                this.currentViewName = dialogData.input;
-               const view = this.modelToViewConverter.convert(this.route, dialogData.input, this.query, this.elementContexts);
-               this.onPreSaveView(view);
-               this.viewPersistenceService.saveView(this.scene, view)
+               this.viewPersistenceService.saveView(this.scene, this.toView(dialogData.input))
                   .then(s => {
                      this.showStatus(s);
                      this.refreshViews();
@@ -243,7 +279,27 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          });
    }
 
+   protected toView(name: string): View {
+      const view = this.modelToViewConverter.convert(this.route, name, this.query, this.elementContexts);
+      this.onPreSaveView(view);
+      return view;
+   }
+
    protected abstract onPreSaveView(view: View): void;
+
+   tabContent(): TabContent {
+      return { view: { ...this.toView(this.tab.title), modifiedTime: 0 } };
+   }
+
+   layout(): Route {
+      return this.route;
+   }
+
+   protected requestPersist(): void {
+      if (this.tab && !this.destroyed) {
+         this.viewTabsService.requestPersist();
+      }
+   }
 
    printView(): void {
       window.print();

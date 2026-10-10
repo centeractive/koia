@@ -1,11 +1,13 @@
-import { AfterViewInit, Component, ElementRef, Inject, ViewChild, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
 import { ConfigController } from 'app/shared/controller/config.controller';
-import { ConfigRecord } from 'app/shared/model/view-config';
+import { ConfigRecord, TabContent, TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
+import { createConfigRecord } from 'app/shared/services/view-persistence/config-record-factory';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
+import { TabContentProvider, ViewTabsService } from 'app/shared/services/view-tabs';
 import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
@@ -34,7 +36,9 @@ declare let jQuery: any;
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class PivotTableComponent extends ConfigController implements AfterViewInit {
+export class PivotTableComponent extends ConfigController implements AfterViewInit, OnDestroy, TabContentProvider {
+
+  @Input() tab: TabDef;
 
   @ViewChild(MatSidenav) sidenav: MatSidenav;
   @ViewChild('content') divContentRef: ElementRef<HTMLDivElement>;
@@ -60,11 +64,14 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   private valueGroupingGenerator = new ValueGroupingGenerator();
   private pivotOptionsProvider: PivotOptionsProvider;
   private stringifiedValueGroupings: string;
+  private pendingRecord: ConfigRecord;
+  private destroyed = false;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
     public override dbService: DBService, public override dialogService: DialogService, public override viewPersistenceService: ViewPersistenceService,
     private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
-    notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService) {
+    notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService,
+    private viewTabsService: ViewTabsService) {
     super(Route.PIVOT, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
   }
 
@@ -78,13 +85,25 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     const baseQueryProvider: QueryProvider = { provide: () => this.query };
     const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
     this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
-    this.fetchData(new Query());
+    this.pendingRecord = this.tab?.record;
+    this.fetchData(this.pendingRecord?.query ? queryDefToQuery(this.pendingRecord.query) : new Query());
+    if (this.tab) {
+      this.viewTabsService.register(this.tab.id, this);
+    }
   }
 
   ngAfterViewInit(): void {
-    if (this.scene.config.records.filter(r => r.route === this.route).length) {
+    if (!this.tab?.record && this.scene.config.records.filter(r => r.route === this.route).length) {
       this.selectConfig();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    if (this.tab) {
+      this.viewTabsService.unregister(this.tab.id, this);
+    }
+    this.entriesSubscription?.unsubscribe();
   }
 
   onSidenavOpening(): void {
@@ -96,6 +115,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
       this.refreshOptions();
       this.refreshDataFrameAsync();
     }
+    this.requestPersist();
   }
 
   fetchData(query: Query): void {
@@ -108,6 +128,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     }
     this.entriesSubscription = this.dbService.findEntries(query, true)
       .subscribe(entries => this.onData(entries));
+    this.requestPersist();
   }
 
   private onData(entries: Document[]): void {
@@ -116,6 +137,12 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     this.defineGroupingTimeUnits(entries);
     const firstTimeInvoked = !this.baseDataFrame;
     this.baseDataFrame = new DataFrame(entries);
+    if (firstTimeInvoked && this.pendingRecord) {
+      const record = this.pendingRecord;
+      this.pendingRecord = undefined;
+      this.applyConfig(record);
+      return;
+    }
     if (firstTimeInvoked && this.allowsForValueGrouping) {
       this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, this.columns);
     }
@@ -169,7 +196,11 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   loadConfig(configRecord: ConfigRecord): void {
     this.currentViewName = configRecord.name;
-    this.context = configRecord.data;
+    this.applyConfig(configRecord);
+  }
+
+  private applyConfig(configRecord: ConfigRecord): void {
+    this.context = CommonUtils.clone(configRecord.data);
     if (configRecord.query) {
       this.restoredQuery = queryDefToQuery(configRecord.query);
       this.query = this.restoredQuery;
@@ -177,6 +208,24 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     const pivotOptions = this.pivotOptionsProvider
       .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
     this.refreshDataFrame(pivotOptions);
+  }
+
+  tabContent(): TabContent {
+    if (this.pendingRecord || !this.getPivotOptions()) {
+      return { record: this.tab.record };
+    }
+    const config = this.configToBeSaved();
+    return { record: createConfigRecord(Route.PIVOT, this.tab.title, config.query, config.data, 0) };
+  }
+
+  layout(): Route {
+    return Route.PIVOT;
+  }
+
+  private requestPersist(): void {
+    if (this.tab && !this.destroyed) {
+      this.viewTabsService.requestPersist();
+    }
   }
 
   onNegativeColorChanged(color: string): void {
@@ -194,6 +243,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     if (this.pivotOptionsProvider.isHeatmapRendererSelected(this.getPivotOptions())) {
       this.renderPivotTableAsync();
     }
+    this.requestPersist();
   }
 
   onShowRowTotalsChanged(): void {
@@ -243,6 +293,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   private onPivotTableRefreshEnd(): void {
     this.computing = false;
     this.observePivotTableRefreshStart();
+    this.requestPersist();
   }
 
   private observePivotTableRefreshStart(): void {

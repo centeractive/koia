@@ -1,6 +1,6 @@
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
-import { Component, NO_ERRORS_SCHEMA, ChangeDetectionStrategy } from '@angular/core';
-import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
+import { Component, NO_ERRORS_SCHEMA, ChangeDetectionStrategy, SimpleChange } from '@angular/core';
+import { ComponentFixture, TestBed, TestModuleMetadata, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,16 +9,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { MatIconModuleMock } from 'app/shared/test';
+import { TabDef, ViewType } from 'app/shared/model/view-config';
+import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { MainToolbarComponent } from './main-toolbar.component';
+import { ViewTabBarComponent } from './view-tab-bar/view-tab-bar.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 import type { Mock } from 'vitest';
@@ -29,6 +33,87 @@ import type { Mock } from 'vitest';
   standalone: false
 })
 class DummyComponent { }
+
+function configureTestingModule(dbService: DBService, dialogService: DialogService, extra: TestModuleMetadata = {}): Promise<void> {
+  return TestBed.configureTestingModule({
+    schemas: [NO_ERRORS_SCHEMA],
+    declarations: [MainToolbarComponent, DummyComponent, ...(extra.declarations ?? [])],
+    imports: [
+      MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
+      MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule,
+      RouterModule.forRoot([{ path: '**', component: DummyComponent }], {}),
+      ...(extra.imports ?? [])
+    ],
+    providers: [
+      { provide: DBService, useValue: dbService },
+      { provide: DialogService, useValue: dialogService },
+      ...(extra.providers ?? [])
+    ]
+  })
+    .overrideModule(MatIconModule, MatIconModuleMock.override())
+    .compileComponents();
+}
+
+describe('MainToolbarComponent with many tabs', () => {
+
+  const dbService = new DBService(null);
+  const dialogService = new DialogService(null);
+  let fixture: ComponentFixture<MainToolbarComponent>;
+
+  beforeEach(async () => {
+    const tabs: TabDef[] = Array.from({ length: 30 }, (_, i) => ({ id: 'tab' + (i + 1), type: ViewType.DASHBOARD, title: 'Dashboard ' + (i + 1) }));
+    const viewTabsService = { tabs, ready: true, layoutOf: vi.fn() } as unknown as ViewTabsService;
+    await configureTestingModule(dbService, dialogService, {
+      declarations: [ViewTabBarComponent],
+      imports: [MatTabsModule],
+      providers: [{ provide: ViewTabsService, useValue: viewTabsService }]
+    });
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', [{ name: 'Level', dataType: DataType.TEXT, width: 60 }]));
+    vi.spyOn(dbService, 'findEntries').mockReturnValue(of([]));
+    fixture = TestBed.createComponent(MainToolbarComponent);
+    fixture.nativeElement.style.display = 'block';
+    fixture.nativeElement.style.width = '900px';
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  function toolbarRect(): DOMRect {
+    return fixture.nativeElement.querySelector('#div_toolbar').getBoundingClientRect();
+  }
+
+  function rightOf(selector: string): number {
+    return fixture.nativeElement.querySelector(selector).getBoundingClientRect().right;
+  }
+
+  it('should keep Add Filter button and refresh button visible when tabs exceed toolbar width', () => {
+
+    // when
+    const toolbarRight = toolbarRect().right;
+
+    // then
+    expect(rightOf('#butAddColFilter')).toBeLessThanOrEqual(toolbarRight);
+    expect(rightOf('.span_buttons:not(.span_navigation) > button:last-child')).toBeLessThanOrEqual(toolbarRight);
+  });
+
+  it('should enable tab pagination when tabs exceed toolbar width', () => {
+
+    // when
+    const nav: HTMLElement = fixture.nativeElement.querySelector('nav');
+
+    // then
+    expect(nav.classList).toContain('mat-mdc-tab-header-pagination-controls-enabled');
+  });
+
+  it('should keep add tab button visible', () => {
+
+    // when
+    const toolbarRight = toolbarRect().right;
+
+    // then
+    expect(rightOf('#butAddTab')).toBeLessThanOrEqual(toolbarRight);
+  });
+});
 
 describe('MainToolbarComponent', () => {
 
@@ -74,23 +159,7 @@ describe('MainToolbarComponent', () => {
     valueRange = { min: timeMin, max: timeMax };
   });
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      schemas: [NO_ERRORS_SCHEMA],
-      declarations: [MainToolbarComponent, DummyComponent],
-      imports: [
-        MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
-        MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule,
-        RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
-      ],
-      providers: [
-        { provide: DBService, useValue: dbService },
-        { provide: DialogService, useValue: dialogService }
-      ]
-    })
-      .overrideModule(MatIconModule, MatIconModuleMock.override())
-      .compileComponents();
-  }));
+  beforeEach(waitForAsync(() => configureTestingModule(dbService, dialogService)));
 
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(MainToolbarComponent);
@@ -169,11 +238,84 @@ describe('MainToolbarComponent', () => {
     expect(component.propertyFilters[1]).toBe(amountFilter);
   }));
 
-  it('#ngAfterViewChecked should re-create time slider options once the view became active', fakeAsync(() => {
+  it('#ngOnInit should define current url of route', () => {
+
+    // given
+    component.route = Route.RAWDATA;
+    component.tabId = undefined;
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.currURL).toBe('/' + Route.RAWDATA);
+  });
+
+  it('#ngOnInit should define current url of tab', () => {
 
     // given
     component.route = Route.GRID;
-    const event: RouterEvent = new NavigationEnd(0, '/' + Route.GRID, '/' + Route.GRID);
+    component.tabId = 'tab3';
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.currURL).toBe('/view/tab3');
+  });
+
+  it('#ngOnChanges should keep restored query filters for initialization when invoked before #ngOnInit', () => {
+
+    // given
+    const toolbar = TestBed.createComponent(MainToolbarComponent).componentInstance;
+    const query = new Query();
+    query.setFullTextFilter('abc');
+    query.addValueRangeFilter('Time', now - 1_000, now);
+    toolbar.restoredQuery = query;
+
+    // when
+    toolbar.ngOnChanges({ restoredQuery: new SimpleChange(undefined, query, true) });
+
+    // then
+    expect(toolbar.query).toBe(query);
+    expect(toolbar.fullTextFilter).toBe('');
+  });
+
+  it('#ngOnChanges should retain filters of restored query when invoked after #ngOnInit', () => {
+
+    // given
+    const query = new Query();
+    query.setFullTextFilter('abc');
+    component.restoredQuery = query;
+
+    // when
+    component.ngOnChanges({ restoredQuery: new SimpleChange(undefined, query, false) });
+
+    // then
+    expect(component.query).toBe(query);
+    expect(component.fullTextFilter).toBe('abc');
+  });
+
+  it('#ngOnDestroy should stop listening on navigation events', fakeAsync(() => {
+
+    // given
+    const events = new Subject<RouterEvent>();
+    component.router = { events } as unknown as Router;
+    component.ngOnInit();
+
+    // when
+    component.ngOnDestroy();
+
+    // then
+    expect(events.observed).toBe(false);
+  }));
+
+  it('#ngAfterViewChecked should re-create time slider options once the tab became active', fakeAsync(() => {
+
+    // given
+    component.route = Route.GRID;
+    component.tabId = 'tab1';
+    const event: RouterEvent = new NavigationEnd(0, '/view/tab1', '/view/tab1');
     component.router = { events: of(event) } as Router;
     const timeRangeFilter = new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null, false);
     const prevSliderOptions = timeRangeFilter.sliderOptions;
@@ -190,6 +332,25 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.rangeFilters[0].defineSliderOptions).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#ngAfterViewChecked should not re-create time slider options when another tab became active', fakeAsync(() => {
+
+    // given
+    component.route = Route.GRID;
+    component.tabId = 'tab1';
+    const event: RouterEvent = new NavigationEnd(0, '/view/tab2', '/view/tab2');
+    component.router = { events: of(event) } as Router;
+    component.rangeFilters = [new TimeRangeFilter(column('Time'), valueRange.min, valueRange.max, null, false)];
+    component.ngOnInit();
+    vi.spyOn(component.rangeFilters[0], 'defineSliderOptions').mockReturnValue(undefined);
+
+    // when
+    component.ngAfterViewChecked();
+    flush();
+
+    // then
+    expect(component.rangeFilters[0].defineSliderOptions).not.toHaveBeenCalled();
   }));
 
   it('#click on "Show Scene Details" button should show scene details', fakeAsync(() => {
@@ -256,54 +417,6 @@ describe('MainToolbarComponent', () => {
     expect(valueRangeFilter).toBeDefined();
     expect(valueRangeFilter.valueRange.min).toBe(valueRange.min + 1000);
     expect(valueRangeFilter.valueRange.max).toBe(valueRange.max - 1000);
-  });
-
-  it('raw data tab should point to raw data view', () => {
-
-    // given
-    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabRawData')).nativeElement;
-
-    // when
-    const link = tab.getAttribute('href');
-
-    // then
-    expect(link).toEqual('/' + Route.RAWDATA);
-  });
-
-  it('pivot view tab should point to pivot view', () => {
-
-    // given
-    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabPivotTable')).nativeElement;
-
-    // when
-    const link = tab.getAttribute('href');
-
-    // then
-    expect(link).toEqual('/' + Route.PIVOT);
-  });
-
-  it('grid view tab should point to grid view', () => {
-
-    // given
-    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabGridView')).nativeElement;
-
-    // when
-    const link = tab.getAttribute('href');
-
-    // then
-    expect(link).toEqual('/' + Route.GRID);
-  });
-
-  it('flex view tab should point to flex view', () => {
-
-    // given
-    const tab: HTMLAnchorElement = fixture.debugElement.query(By.css('#tabFlexView')).nativeElement;
-
-    // when
-    const link = tab.getAttribute('href');
-
-    // then
-    expect(link).toEqual('/' + Route.FLEX);
   });
 
   it('pressing non-<enter> key in full text filter field should not emit onFilterChange', () => {

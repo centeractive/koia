@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
 import { Column, DataType, Document, Operator, Page, Query, Scene, SceneInfo } from 'app/shared/model';
+import { SceneTabs } from 'app/shared/model/view-config';
 import { QueryUtils } from 'app/shared/utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -18,6 +19,7 @@ export class DBService {
   static readonly SCENES = 'scenes';
   static readonly DATA = 'data';
   static readonly MAX_DB_COUNT = 100;
+  static readonly SCENE_TABS_SUFFIX = '_tabs';
 
   private db: DB;
   private dbPrefix = '';
@@ -146,7 +148,64 @@ export class DBService {
       this.activeScene = undefined;
     }
     return this.db.delete(this.scenesDbName(), sceneInfo)
-      .then(() => this.db.deleteDatabase(sceneInfo.database));
+      .then(() => this.db.deleteDatabase(sceneInfo.database))
+      .then(() => this.deleteSceneTabs(sceneInfo._id));
+  }
+
+  private async deleteSceneTabs(sceneId: string): Promise<void> {
+    try {
+      const sceneTabs = await this.findSceneTabs(sceneId);
+      if (sceneTabs) {
+        await this.db.delete(this.scenesDbName(), sceneTabs);
+      }
+    } catch (err) {
+      console.warn('open tabs of scene ' + sceneId + ' cannot be deleted', err);
+    }
+  }
+
+  static sceneTabsId(sceneId: string): string {
+    return sceneId + DBService.SCENE_TABS_SUFFIX;
+  }
+
+  /**
+   * @returns the persisted open tabs of the specified scene or <undefined> if none were persisted yet
+   */
+  async findSceneTabs(sceneId: string): Promise<SceneTabs> {
+    return this.findSceneTabsById(DBService.sceneTabsId(sceneId));
+  }
+
+  private async findSceneTabsById(id: string): Promise<SceneTabs> {
+    return this.db.findById(this.scenesDbName(), id)
+      .then(doc => <SceneTabs>doc)
+      .catch(err => {
+        if (err?.status === 404) {
+          return undefined;
+        }
+        throw err;
+      });
+  }
+
+  /**
+   * inserts or updates the open tabs, a revision conflict is resolved once by retrying with the current revision
+   */
+  async saveSceneTabs(sceneTabs: SceneTabs): Promise<SceneTabs> {
+    return this.writeSceneTabs(sceneTabs)
+      .catch(async err => {
+        if (err?.status !== 409) {
+          throw err;
+        }
+        const current = await this.findSceneTabsById(sceneTabs._id);
+        if (!current) {
+          throw err;
+        }
+        sceneTabs._rev = current._rev;
+        return this.writeSceneTabs(sceneTabs);
+      });
+  }
+
+  private writeSceneTabs(sceneTabs: SceneTabs): Promise<SceneTabs> {
+    const write = sceneTabs._rev ? this.db.update(this.scenesDbName(), sceneTabs) : this.db.insert(this.scenesDbName(), sceneTabs);
+    return write.then(() => sceneTabs);
   }
 
   async activateScene(id: string): Promise<Scene> {

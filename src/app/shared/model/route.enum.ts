@@ -6,5 +6,6 @@ export enum Route {
    PIVOT = 'pivot',
    GRID = 'grid',
    FLEX = 'flex',
+   VIEW = 'view',
    TRIAL = 'trial'
 }

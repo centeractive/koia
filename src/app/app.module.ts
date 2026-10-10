@@ -39,13 +39,14 @@ import { ChartSideBarComponent } from './chart/chart-side-bar/chart-side-bar.com
 import { ScaleComponent } from './chart/chart-side-bar/scale/scale.component';
 import { TicksComponent } from './chart/chart-side-bar/scale/ticks/ticks.component';
 import { ChartComponent } from './chart/chart.component';
-import { FlexCanvasComponent } from './flex-canvas/flex-canvas.component';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { FrontComponent } from './front/front.component';
 import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.component';
 import { GraphComponent } from './graph/graph.component';
-import { GridComponent } from './grid/grid.component';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
+import { ViewTabBarComponent } from './main-toolbar/view-tab-bar/view-tab-bar.component';
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
@@ -82,16 +83,18 @@ import { ValueRangeGroupingService } from './shared/value-range';
 import { SummaryTableSideBarComponent } from './summary-table/summary-table-side-bar/summary-table-side-bar.component';
 import { SummaryTableComponent } from './summary-table/summary-table.component';
 import { TrialComponent } from './testing/trial/trial.component';
+import { ViewTabComponent } from './view-tab/view-tab.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         MainToolbarComponent,
+        ViewTabBarComponent,
         ScenesComponent,
         SceneDetailsDialogComponent,
         SceneComponent,
-        GridComponent,
-        FlexCanvasComponent,
+        DashboardComponent,
+        ElementHeaderComponent,
         RawDataComponent,
         RawDataViewComponent,
         RawDataDialogComponent,
@@ -126,7 +129,8 @@ import { TrialComponent } from './testing/trial/trial.component';
         ExpansionPanelComponent,
         SceneTableComponent,
         DraggableColumnComponent,
-        TrialComponent
+        TrialComponent,
+        ViewTabComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,

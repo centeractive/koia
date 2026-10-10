@@ -19,6 +19,15 @@ button {
   align-items: center;
 }
 
+.span_navigation {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.span_buttons:not(.span_navigation) {
+  flex-shrink: 0;
+}
+
 #div_filter {
   display: flex;
   flex: 1 1 auto;
