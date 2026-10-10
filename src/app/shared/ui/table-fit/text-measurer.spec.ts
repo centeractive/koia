@@ -24,6 +24,23 @@ describe('TextMeasurer', () => {
     expect(width).toBe(0);
   });
 
+  it.each(['日本語のテキスト', 'ｶﾀｶﾅ と ひらがな', 'Mixed 日本 text 123'])('#width should match rendered width of "%s"', text => {
+
+    // given
+    const font = '12px "Segoe UI", system-ui, -apple-system, sans-serif';
+    const span = document.createElement('span');
+    span.style.cssText = 'position: absolute; white-space: pre; font: ' + font;
+    span.textContent = text;
+    document.body.appendChild(span);
+
+    // when
+    const width = new TextMeasurer(font).width(text);
+
+    // then
+    expect(Math.abs(width - span.getBoundingClientRect().width)).toBeLessThan(1);
+    span.remove();
+  });
+
   it('#width should depend on font', () => {
 
     // given
