@@ -5,6 +5,7 @@ export default defineConfig({
       mainFields: ['browser', 'module', 'main']
    },
    test: {
-      fileParallelism: false
+      fileParallelism: false,
+      silent: 'passed-only'
    }
 });
