@@ -69,6 +69,7 @@ export class RawDataRevealService {
       this.dialogService.open(RawDataDialogComponent, {
         data: new QuerySanitizer(query).sanitize(),
         panelClass: 'dialog-container',
+        maxWidth: 'calc(100vw - 40px)',
         enterAnimationDuration: 1,
         exitAnimationDuration: 1
       });

@@ -63,6 +63,7 @@ describe('RawDataRevealService', () => {
     expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, {
       data: expectedQuery,
       panelClass: 'dialog-container',
+      maxWidth: 'calc(100vw - 40px)',
       enterAnimationDuration: 1,
       exitAnimationDuration: 1
     });

@@ -1,5 +1,5 @@
 <div class="div_wrapper">
-  <div #header class="div_header">
+  <div class="div_header">
     @if (!hideToolbar) {
       <koia-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" [restoredQuery]="restoredQuery"
         (onFilterChange)="onFilterChanged($event)" />
@@ -53,8 +53,12 @@
 
       <button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
         [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
-        (click)="considerColumnWidths = !considerColumnWidths">
+        (click)="toggleConsiderColumnWidths()">
         <mat-icon>wrap_text</mat-icon>
+      </button>
+      <button [color]="multiLine ? 'accent' : ''" mat-icon-button
+        [matTooltip]="multiLine ? 'Show single-line rows' : 'Show multi-line rows'" (click)="toggleMultiLine()">
+        <mat-icon>format_line_spacing</mat-icon>
       </button>
       @if (hasObjectDataTypeColumns) {
         <button [color]="showNestedObjects ? 'accent' : ''" mat-icon-button
@@ -64,43 +68,42 @@
         </button>
       }
       <button [color]="highlight ? 'accent' : ''" mat-icon-button
-        [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="highlight = !highlight">
+        [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="toggleHighlight()">
         <mat-icon>highlight</mat-icon>
       </button>
     </div>
   </div>
 
-  <div #content id="div_table" class="div_content mat-elevation-z8 printable">
-    <div [style.width]="considerColumnWidths ? tableStyleWidth + colWidthMeasurement : null">
-      <table [class]="considerColumnWidths ? 'table_layout_fixed' : ''" mat-table [dataSource]="entries" matSort (matSortChange)="sortEntries($event)">
-
-        @for (column of columns; track column) {
-          <ng-container [matColumnDef]="column.name">
-            @if (column.indexed) {
-              <span>
-                <th mat-header-cell *matHeaderCellDef mat-sort-header [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">
-                {{ column.name }}</th>
-              </span>
-            }
-            @if (!column.indexed) {
-              <span>
-                <th mat-header-cell *matHeaderCellDef [style.width]="considerColumnWidths ? column.width + colWidthMeasurement : null">{{ column.name }}</th>
-              </span>
-            }
-            <td [class]="'td_' + column.dataType" *matCellDef="let entry" (click)="displayValue(column, entry)">
-            {{ formattedValueOf(column, entry) }}</td>
-          </ng-container>
+  <div #content id="div_table" class="div_content printable">
+    <div #scroller class="vt" [class.multi-line]="multiLine" [class.dialog]="dialogStyle" [style.font]="font"
+      [style.height.px]="gridHeight" [style.width.px]="dialogStyle ? gridWidth : null">
+      <div class="vt-header" [style.grid-template-columns]="templateColumns" [style.width.px]="columnsWidth">
+        @for (column of columns; track column.name; let i = $index) {
+          <div class="vt-th" [class.sortable]="column.indexed" (click)="sortBy(column)">
+            <span class="vt-th-label">{{ column.name }}</span><span class="vt-sort">{{ sortIndicator(column) }}</span>
+            <span class="vt-resize" koiaColumnResize (resizing)="resizeColumn(i, $event)" (resized)="endResize()"></span>
+          </div>
         }
-
-        <tr mat-header-row *matHeaderRowDef="columnNames, sticky: true"></tr>
-        <tr mat-row *matRowDef="let entry; columns: columnNames;" [style.background]="highlight ? entry['bgcolor'] : null"
-          [style.color]="highlight ? entry['fgcolor'] : null">
-        </tr>
-      </table>
-      <mat-paginator #paginator class="mat-paginator-sticky" [pageSize]="initialPageSize" [disabled]="loading"
-        [pageSizeOptions]="pageSizeOptions" [pageIndex]="query.getPageIndex()" [length]="totalRowCount" (page)="onPageChanged()"
-        [showFirstLastButtons]="true" />
       </div>
-
+      <div class="vt-body" [style.height.px]="totalSize" [style.width.px]="columnsWidth">
+        @for (item of virtualItems; track item.key) {
+          <div #row class="vt-row" [attr.data-index]="item.index"
+            [style.transform]="'translateY(' + (item.start - headerHeight) + 'px)'"
+            [style.grid-template-columns]="templateColumns" [class.odd]="item.index % 2 === 1"
+            [class.selected]="item.index === selectedIndex" [ngStyle]="rowStyle(item.index)"
+            (click)="selectedIndex = item.index">
+            @if (rowAt(item.index); as entry) {
+              @for (column of columns; track column.name) {
+                <div [class]="'vt-td td_' + column.dataType" [attr.title]="multiLine ? null : formattedValueOf(column, entry)"
+                  (click)="displayValue(column, entry)">{{ formattedValueOf(column, entry) }}</div>
+              }
+            } @else {
+              <div class="vt-loading">…</div>
+            }
+          </div>
+        }
+      </div>
     </div>
+    <div class="row-count" [style.font]="font">{{ totalRowCount | number }} rows</div>
   </div>
+</div>
