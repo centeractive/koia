@@ -20,7 +20,7 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 ## Running unit tests
 
-Run `npm test` to execute the unit tests with [Vitest](https://vitest.dev) in headless Chromium (one-time: `npx playwright install chromium`). `npm run test-debug` runs them headed with the Vitest UI. CouchDB backend tests require a CouchDB at `http://localhost:5984`.
+Run `npm test` to execute the unit tests with [Vitest](https://vitest.dev) in headless Chromium (one-time: `npx playwright install chromium`). `npm run test-debug` runs them headed with the Vitest UI. CouchDB backend tests and the integration tests in the `IT` folders require a CouchDB at `http://localhost:5984`; the integration tests fail rather than fall back to the browser IndexedDB when it is not running.
 
 ## Further help
 
