@@ -68,6 +68,7 @@ import { ManageConfigDialogComponent } from './shared/component/manage-config-di
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
 import { StatusComponent } from './shared/component/status/status.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
+import { ColumnResizeDirective } from './shared/directives/column-resize.directive';
 import { FormattedFloatDirective } from './shared/directives/formatted-float.directive';
 import { FormattedIntegerDirective } from './shared/directives/formatted-integer.directive';
 import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.directive';
@@ -109,6 +110,7 @@ import { TrialComponent } from './testing/trial/trial.component';
         TextareaMaxRowsDirective,
         FormattedFloatDirective,
         FormattedIntegerDirective,
+        ColumnResizeDirective,
         ConnectionDialogComponent,
         FrontComponent,
         InputDialogComponent,
