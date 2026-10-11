@@ -233,3 +233,68 @@ var {
   }
 
 }
+
+.koia-form {
+  --mat-form-field-container-height: 40px;
+  --mat-form-field-container-vertical-padding: 8px;
+  --mat-form-field-outlined-container-shape: 8px;
+  --mat-form-field-outlined-outline-color: #8a94a6;
+  --mat-form-field-outlined-hover-outline-color: #4a5568;
+  --mat-button-filled-container-height: 40px;
+  --mat-button-outlined-container-height: 40px;
+  --mat-button-filled-container-shape: 8px;
+  --mat-button-outlined-container-shape: 8px;
+  --mat-card-outlined-container-shape: 12px;
+  --mat-card-outlined-outline-color: #e3e6ea;
+  --mat-expansion-container-elevation-shadow: var(--mat-app-elevation-shadow-level-1);
+  --mat-expansion-header-expanded-state-height: 56px;
+}
+
+.koia-form .mat-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.koia-form .mat-expansion-panel {
+  background: #fff !important;
+  border: var(--koia-tile-border);
+  border-radius: 10px !important;
+  margin: 0 !important;
+}
+
+.koia-form .mat-mdc-form-field-icon-suffix .mat-mdc-icon-button.mat-mdc-button-base {
+  --mat-icon-button-state-layer-size: 40px;
+  padding: 8px;
+}
+
+.koia-form .mat-expansion-panel-header-title h4 {
+  margin: 0;
+}
+
+.koia-form .field-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 12px 0;
+}
+
+.koia-form .mat-expansion-panel-body > .field-row:last-child {
+  margin-bottom: 0;
+}
+
+.koia-form .step {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: #303f9f;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+}

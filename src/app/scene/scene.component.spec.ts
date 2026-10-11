@@ -17,7 +17,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { Router, RouterModule, UrlTree } from '@angular/router';
 import { RawDataComponent } from 'app/raw-data/raw-data.component';
-import { ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
+import { Attribute, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { DataHandler, ReaderService } from 'app/shared/services/reader';
@@ -55,7 +56,7 @@ describe('SceneComponent', () => {
     dbService = new DBService(null);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [SceneComponent, ColumnMappingComponent],
+      declarations: [SceneComponent, ColumnMappingComponent, KoiaFormDirective],
       imports: [RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {}), MatBottomSheetModule, MatExpansionModule,
         MatCardModule, FormsModule, MatFormFieldModule, ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule,
         MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule
@@ -384,13 +385,14 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
+    expect(fixture.nativeElement.querySelector('.span_load img')).toBeNull();
 
     // when
     const cancel = fixture.nativeElement.querySelector('#but_cancel').getBoundingClientRect();
     const loadData = fixture.nativeElement.querySelector('#but_load_data').getBoundingClientRect();
 
     // then
-    expect(loadData.left - cancel.right).toBeCloseTo(16, 0);
+    expect(loadData.left - cancel.right).toBeCloseTo(8, 0);
   }));
 
   it('should separate load data button and max items by gap', fakeAsync(() => {
@@ -404,6 +406,113 @@ describe('SceneComponent', () => {
 
     // then
     expect(maxItems.left - loadData.right).toBeCloseTo(16, 0);
+  }));
+
+  it('form fields should be outlined', () => {
+
+    // when
+    const formFields: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('mat-form-field'));
+
+    // then
+    expect(formFields.length).toBeGreaterThanOrEqual(3);
+    formFields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
+  });
+
+  it('column mapping form fields should inherit outlined appearance', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    const formFields: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('koia-column-mapping mat-form-field'));
+
+    // then
+    expect(formFields.length).toBe(6);
+    formFields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
+  }));
+
+  it('adopt columns toggle, scene select and detect button should share one row', fakeAsync(() => {
+
+    // given
+    fixture.nativeElement.style.display = 'block';
+    fixture.nativeElement.style.width = '1200px';
+    initUpToDetectColumns();
+    const sceneInfos = createSceneInfos(1);
+    component.columnMappingsSourceCandidates = sceneInfos;
+    component.columnMappingsSource = sceneInfos[0];
+    fixture.detectChanges();
+
+    // when
+    fixture.nativeElement.querySelector('#div_detect_columns mat-slide-toggle button').click();
+    fixture.detectChanges();
+
+    // then
+    const row: HTMLElement = fixture.nativeElement.querySelector('#div_detect_columns');
+    expect(getComputedStyle(row).display).toBe('flex');
+    const toggle = row.querySelector('mat-slide-toggle').getBoundingClientRect();
+    const select = row.querySelector('#column_mapping_source').getBoundingClientRect();
+    const button = row.querySelector('#but_detect_columns').getBoundingClientRect();
+    const centerOf = (r: DOMRect) => r.top + r.height / 2;
+    expect(Math.abs(centerOf(select) - centerOf(toggle))).toBeLessThanOrEqual(1);
+    expect(Math.abs(centerOf(button) - centerOf(toggle))).toBeLessThanOrEqual(1);
+    expect(toggle.right).toBeLessThan(select.left);
+    expect(select.right).toBeLessThan(button.left);
+  }));
+
+  it('panel titles should show step numbers', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    const steps: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.step'));
+
+    // then
+    expect(steps.map(s => s.textContent)).toEqual(['1', '2', '3', '4']);
+  }));
+
+  it('value choice button should sit inside attribute form field', () => {
+
+    // given
+    showValueChoiceAttribute();
+
+    // when
+    const button = fixture.nativeElement.querySelector('.form_field_separator .but_value_choice');
+
+    // then
+    expect(button).not.toBeNull();
+  });
+
+  it('value choice menu item should set attribute value', fakeAsync(() => {
+
+    // given
+    const attr = showValueChoiceAttribute();
+    component.columnMappings = [];
+
+    // when
+    fixture.nativeElement.querySelector('.but_value_choice').click();
+    fixture.detectChanges();
+    flush();
+    const menuItems: HTMLElement[] = Array.from(document.querySelectorAll('.mat-mdc-menu-item'));
+    menuItems.find(i => i.textContent.trim() === '$.b').click();
+    flush();
+
+    // then
+    expect(attr.value).toBe('$.b');
+    expect(component.columnMappings).toBeNull();
+  }));
+
+  it('column mapping rows should wrap fields with gap', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    const style = getComputedStyle(fixture.nativeElement.querySelector('koia-column-mapping > div'));
+
+    // then
+    expect(style.flexWrap).toBe('wrap');
+    expect(style.columnGap).toBe('12px');
   }));
 
   it('#onDataTypeChanged should show data format fields when TIME', fakeAsync(() => {
@@ -621,6 +730,15 @@ describe('SceneComponent', () => {
     return sceneInfos;
   }
 
+  function showValueChoiceAttribute(): Attribute {
+    const attr = new Attribute('Path', 'desc', DataType.TEXT, '$.a');
+    attr.valueChoice = ['$.a', '$.b'];
+    component.readerAttributes = [attr];
+    component.fileHeader = 'x';
+    fixture.detectChanges();
+    return attr;
+  }
+
   function initUpToDetectColumns(): void {
     const fileList = createFileList('dummy data');
     vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
@@ -631,6 +749,7 @@ describe('SceneComponent', () => {
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();
+    flush();
   }
 
   function createFileList(data: string): FileList {

@@ -17,6 +17,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/
 import { Route, Scene } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
@@ -54,7 +55,7 @@ describe('ScenesComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent],
+      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective],
       imports: [MatBottomSheetModule, MatDialogModule, MatCardModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
@@ -168,6 +169,52 @@ describe('ScenesComponent', () => {
 
     // then
     expect(component.filteredSceneInfos.length).toBe(1);
+  });
+
+  it('filter field should be outlined form field with search icon', () => {
+
+    // when
+    const formField: HTMLElement = fixture.nativeElement.querySelector('#div_filter mat-form-field');
+
+    // then
+    expect(formField.classList).toContain('mat-form-field-appearance-outline');
+    expect(formField.querySelector('mat-icon[matprefix]').textContent).toBe('search');
+  });
+
+  it('typing into filter field should filter scene infos', () => {
+
+    // given
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('#div_filter input');
+
+    // when
+    input.value = 'e 1';
+    input.dispatchEvent(new Event('input'));
+
+    // then
+    expect(component.filteredSceneInfos.length).toBe(1);
+  });
+
+  it('active scene card should be marked by accent left border', () => {
+
+    // when
+    const style = getComputedStyle(fixture.nativeElement.querySelector('#mat_card_active_scene'));
+
+    // then
+    expect(style.borderLeftWidth).toBe('4px');
+    expect(style.borderLeftColor).toBe('rgb(56, 142, 60)');
+  });
+
+  it('scene table header should have row background with semi-bold labels and bottom line', () => {
+
+    // when
+    const headerStyle = getComputedStyle(fixture.nativeElement.querySelector('.mat-mdc-header-cell'));
+    const cellStyle = getComputedStyle(fixture.nativeElement.querySelector('.mat-mdc-cell'));
+
+    // then
+    expect(headerStyle.fontWeight).toBe('600');
+    expect(headerStyle.borderBottomWidth).toBe('2px');
+    expect(headerStyle.borderBottomColor).toBe('rgb(212, 212, 212)');
+    expect(headerStyle.backgroundColor).toBe(cellStyle.backgroundColor);
   });
 
   it('#click on "Delete all" button should not delete scenes when not confiremd by user', fakeAsync(() => {

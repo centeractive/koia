@@ -3,28 +3,27 @@ h1 {
 }
 
 .mat-expansion-panel-header-title {
-  font-style: bold;
   display: flex;
   align-items: center;
 }
 
 .scene_name {
-  width: 25em;
-  padding-right: 10px;
+  flex: 1 1 280px;
+  max-width: 420px;
 }
 
 .scene_short_desc {
-  width: 50em;
-  padding-right: 10px;
+  flex: 2 1 400px;
 }
 
-.form_field_source_type {
-  width: 10em;
+.form_field_source_type,
+.form_field_language,
+.form_field_separator {
+  flex: 0 0 180px;
 }
 
 .file_name {
-  width: 50em;
-  padding-left: 10px;
+  flex: 1 1 300px;
 }
 
 p {
@@ -33,31 +32,20 @@ p {
 
 #textarea_data_sample {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   height: 15em;
   overflow-x: auto;
-}
-
-mat-slide-toggle {
-  margin-bottom: 8px;
-}
-
-.form_field_language {
-  width: 10em;
-}
-
-.form_field_separator {
-  width: 10em;
-}
-
-.but_value_choice {
-  position: relative;
-  right: 30px;
+  padding: 8px;
+  font-family: monospace;
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fafafa;
+  resize: vertical;
 }
 
 #column_mapping_source {
-  width: 550px;
-  padding-left: 20px;
+  flex: 0 1 420px;
 }
 
 .scene_info_creation_time {
@@ -91,5 +79,13 @@ mat-slide-toggle {
 .span_load {
   display: flex;
   align-items: baseline;
+}
+
+.div_actions {
+  margin-top: 16px;
+  gap: 8px;
+}
+
+.span_load {
   gap: 16px;
 }

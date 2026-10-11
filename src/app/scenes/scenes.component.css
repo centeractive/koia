@@ -1,13 +1,12 @@
 #mat_card_active_scene {
-  margin-bottom: 10px;
-  border: solid 2px rgba(10, 218, 20, 0.856);
+  margin-bottom: 16px;
+  border-left: 4px solid #388e3c;
 }
 
 #div_filter {
-  margin-left: 1em;
-  display: flex;
+  margin: 0 0 12px;
 }
 
-#but_delete_scenes {
-  margin-left: 10px;
+.filter {
+  flex: 0 1 360px;
 }

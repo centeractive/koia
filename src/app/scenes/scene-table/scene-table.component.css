@@ -10,3 +10,8 @@ div {
 .nowrap {
     white-space: nowrap
 }
+
+.mat-mdc-table .mat-mdc-header-cell {
+    font-weight: 600;
+    border-bottom: 2px solid #d4d4d4;
+}

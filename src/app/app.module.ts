@@ -71,6 +71,7 @@ import { ManageViewDialogComponent } from './shared/component/manage-view-dialog
 import { StatusComponent } from './shared/component/status/status.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { ColumnResizeDirective } from './shared/directives/column-resize.directive';
+import { KoiaFormDirective } from './shared/directives/koia-form.directive';
 import { FormattedFloatDirective } from './shared/directives/formatted-float.directive';
 import { FormattedIntegerDirective } from './shared/directives/formatted-integer.directive';
 import { TextareaMaxRowsDirective } from './shared/directives/textarea-max-rows.directive';
@@ -117,6 +118,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         FormattedFloatDirective,
         FormattedIntegerDirective,
         ColumnResizeDirective,
+        KoiaFormDirective,
         ConnectionDialogComponent,
         FrontComponent,
         InputDialogComponent,

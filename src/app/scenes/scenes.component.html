@@ -5,7 +5,7 @@
   <mat-icon style="color: white;">add_photo_alternate</mat-icon>
 </button>
 @if (activeScene) {
-  <mat-card appearance="outlined" id="mat_card_active_scene">
+  <mat-card appearance="outlined" id="mat_card_active_scene" koiaForm>
     <mat-card-header>
       <div mat-card-avatar id="image-scene"></div>
       <mat-card-title>Active Scene</mat-card-title>
@@ -17,15 +17,18 @@
   </mat-card>
 }
 
-<mat-card appearance="outlined" id="mat_card_all_scenes">
+<mat-card appearance="outlined" id="mat_card_all_scenes" koiaForm>
   <mat-card-header>
     <div mat-card-avatar id="image-scenes"></div>
     <mat-card-title>All Scenes</mat-card-title>
     <mat-card-subtitle>Manage your existing scenes. Activate one to start creating graphics.</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
-    <div id="div_filter">
-      <input type="search" placeholder="Text Filter..." [(ngModel)]="filter" (ngModelChange)="onFilterChange()" />
+    <div id="div_filter" class="field-row">
+      <mat-form-field class="filter">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput type="text" placeholder="Filter scenes" [(ngModel)]="filter" (ngModelChange)="onFilterChange()">
+      </mat-form-field>
       <button id="but_delete_scenes" mat-stroked-button [disabled]="filteredSceneInfos.length === 0" (click)="onDeleteScenesButtonPressed()">
         <mat-icon>delete_forever</mat-icon>
         <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
@@ -35,6 +38,6 @@
     </koia-scene-table>
   </mat-card-content>
   <mat-card-actions>
-    <button id="but_cancel" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
+    <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">Cancel</button>
   </mat-card-actions>
 </mat-card>
