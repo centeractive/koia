@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, getDebugNode, provideZoneChangeDetection } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, getDebugNode, NgZone, provideZoneChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +15,8 @@ import { NotificationService, RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { TableModeTogglesComponent } from 'app/shared/ui/virtual-table/table-mode-toggles.component';
+import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { page } from 'vitest/browser';
 import { RawDataDialogComponent } from '../raw-data-dialog.component';
 import { RawDataComponent } from '../raw-data.component';
@@ -34,7 +36,7 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataDialogComponent, RawDataComponent, ColumnResizeDirective],
+      declarations: [RawDataDialogComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ColumnResizeDirective],
       imports: [MatDialogModule, MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule,
         MatBottomSheetModule],
       providers: [
@@ -67,6 +69,10 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
     return getDebugNode(pane().querySelector('koia-raw-data')).componentInstance;
   }
 
+  function table(): VirtualTableComponent {
+    return getDebugNode(pane().querySelector('koia-virtual-table')).componentInstance;
+  }
+
   function paneWidth(): number {
     return pane().getBoundingClientRect().width;
   }
@@ -81,8 +87,10 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
   }
 
   async function resizeData(delta: number): Promise<void> {
-    rawDataComponent().resizeColumn(DATA_INDEX, delta);
-    rawDataComponent().endResize();
+    TestBed.inject(NgZone).run(() => {
+      table().onResizing(DATA_INDEX, delta);
+      table().onResized();
+    });
     await DomMetrics.waitStable(paneWidth, 3, 120);
   }
 

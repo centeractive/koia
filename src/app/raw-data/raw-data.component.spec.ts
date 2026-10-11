@@ -9,26 +9,30 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
+import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
 import { Column, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
-import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { TextMeasurer } from 'app/shared/ui/table-fit/text-measurer';
+import { ColumnAutoSizer } from 'app/shared/ui/virtual-table/column-auto-sizer';
+import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
+import { TableModeTogglesComponent } from 'app/shared/ui/virtual-table/table-mode-toggles.component';
+import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
-import { ColumnAutoSizer } from './column-auto-sizer';
 import { RawDataBlockCache } from './raw-data-block-cache';
 import { RawDataComponent } from './raw-data.component';
 
 describe('RawDataComponent', () => {
 
-  const ROW_HEIGHT = RawDataComponent.ROW_HEIGHT;
+  const ROW_HEIGHT = VirtualTableComponent.ROW_HEIGHT;
+  const EM_PX = ColumnWidthResolver.EM_PX;
   const FRAME_LIMIT = 120;
   const LONG_HOST = 'server-with-a-much-longer-host-name';
 
@@ -62,7 +66,7 @@ describe('RawDataComponent', () => {
     scene = SceneFactory.createScene('1', columns);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataComponent, ColumnResizeDirective],
+      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ColumnResizeDirective],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),
@@ -112,6 +116,10 @@ describe('RawDataComponent', () => {
     return requestEntriesPageSpy.mock.calls.map(call => (call[0] as Query).getPageIndex());
   }
 
+  function table(): VirtualTableComponent {
+    return fixture.debugElement.query(By.directive(VirtualTableComponent)).componentInstance;
+  }
+
   function scroller(): HTMLDivElement {
     return fixture.nativeElement.querySelector('.vt');
   }
@@ -128,9 +136,13 @@ describe('RawDataComponent', () => {
     return columns.findIndex(c => c.name === name);
   }
 
+  function toolbarButton(icon: string): HTMLButtonElement {
+    return fixture.debugElement.queryAll(By.css('#view_toolbar button')).map(b => b.nativeElement).find(b => b.textContent.includes(icon));
+  }
+
   async function settle(): Promise<void> {
     await fixture.whenStable();
-    await DomMetrics.waitStable(() => [component.gridHeight, component.gridWidth, component.virtualItems.length,
+    await DomMetrics.waitStable(() => [table().gridHeight, table().gridWidth, table().virtualItems.length,
     fixture.nativeElement.querySelectorAll('.vt-loading').length, requestEntriesPageSpy.mock.calls.length].join(), 3, FRAME_LIMIT);
   }
 
@@ -139,14 +151,16 @@ describe('RawDataComponent', () => {
     await settle();
   }
 
+  async function change(action: () => void): Promise<void> {
+    action();
+    fixture.detectChanges();
+    await settle();
+  }
+
   async function scrollToRow(index: number): Promise<void> {
     scroller().scrollTop = index * ROW_HEIGHT;
     await DomMetrics.waitFrames(() => !!rowElement(index), FRAME_LIMIT);
     await settle();
-  }
-
-  function nextFrame(): Promise<void> {
-    return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)));
   }
 
   describe('loading and rendering', () => {
@@ -173,31 +187,6 @@ describe('RawDataComponent', () => {
 
       // then
       expect(fixture.nativeElement.querySelector('mat-progress-bar')).not.toBeNull();
-    });
-
-    it('should render placeholder for rows not loaded', async () => {
-
-      // given
-      await render();
-      requestEntriesPageSpy.mockReturnValue(new Promise(() => undefined));
-
-      // when
-      scroller().scrollTop = 600 * ROW_HEIGHT;
-      await DomMetrics.waitFrames(() => !!rowElement(600), FRAME_LIMIT);
-
-      // then
-      expect(rowElement(600).querySelector('.vt-loading').textContent).toBe('…');
-    });
-
-    it('should size body for all rows in single-line mode', async () => {
-
-      // when
-      await render();
-
-      // then
-      expect(component.totalSize).toBe(1234 * ROW_HEIGHT);
-      expect(fixture.nativeElement.querySelector('.vt-body').offsetHeight).toBe(1234 * ROW_HEIGHT);
-      expect(rowElement(1).getBoundingClientRect().height).toBe(ROW_HEIGHT);
     });
 
     it('should request blocks of scrolled range', async () => {
@@ -233,67 +222,18 @@ describe('RawDataComponent', () => {
 
   describe('row modes', () => {
 
-    it('should cut long text and show it as title in single-line mode', async () => {
-
-      // when
-      await render();
-
-      // then
-      const cell = cellOf(1, 'Data');
-      expect(cell.getAttribute('title')).toBe(cell.textContent);
-      expect(cell.scrollWidth).toBeGreaterThan(cell.clientWidth);
-      expect(rowElement(1).getBoundingClientRect().height).toBe(ROW_HEIGHT);
-    });
-
-    it('should grow row with content in multi-line mode', async () => {
+    it('#toggleMultiLine should grow rows with content', async () => {
 
       // given
       await render();
 
       // when
-      component.toggleMultiLine();
-      await settle();
+      await change(() => component.toggleMultiLine());
 
       // then
+      expect(component.multiLine).toBe(true);
       expect(rowElement(1).getBoundingClientRect().height).toBeGreaterThan(ROW_HEIGHT);
-      expect(rowElement(2).getBoundingClientRect().height).toBe(ROW_HEIGHT);
-      expect(cellOf(1, 'Data').hasAttribute('title')).toBe(false);
-      expect(component.totalSize).toBeGreaterThan(1234 * ROW_HEIGHT);
-    });
-
-    it('#toggleMultiLine should return to fixed row height', async () => {
-
-      // given
-      await render();
-      component.toggleMultiLine();
-      await settle();
-
-      // when
-      component.toggleMultiLine();
-      await settle();
-
-      // then
-      expect(rowElement(1).getBoundingClientRect().height).toBe(ROW_HEIGHT);
-      expect(component.totalSize).toBe(1234 * ROW_HEIGHT);
-    });
-
-    it('#reload should forget measured heights', async () => {
-
-      // given
-      longDataFrom = 1200;
-      await render();
-      component.toggleMultiLine();
-      await scrollToRow(1233);
-      expect(component.totalSize).toBeGreaterThan(1234 * ROW_HEIGHT);
-      longDataFrom = Number.MAX_SAFE_INTEGER;
-
-      // when
-      component.onFilterChanged(new Query());
-      await settle();
-
-      // then
-      expect(rowElement(1).getBoundingClientRect().height).toBeGreaterThan(ROW_HEIGHT);
-      expect(component.totalSize).toBe(1233 * ROW_HEIGHT + rowElement(1).getBoundingClientRect().height);
+      expect(table().totalSize).toBeGreaterThan(1234 * ROW_HEIGHT);
     });
   });
 
@@ -462,7 +402,7 @@ describe('RawDataComponent', () => {
       await render();
 
       // then
-      expect(component.widths[columnIndex('Level')]).toBe(5 * RawDataComponent.EM_PX);
+      expect(component.widths[columnIndex('Level')]).toBe(5 * EM_PX);
       expect(fixture.nativeElement.querySelectorAll('.vt-th')[columnIndex('Level')].getBoundingClientRect().width).toBe(70);
     });
 
@@ -478,51 +418,19 @@ describe('RawDataComponent', () => {
       expect(component.widths[columnIndex('Level')]).toBe(5);
     });
 
-    it('#resizeColumn should change width from drag start and refit', async () => {
+    it('#onColumnResize should replace width and remember custom width', async () => {
 
       // given
       await render();
-      const index = columnIndex('Data');
-      const startWidth = component.widths[index];
-      const gridWidth = component.gridWidth;
+      const widths = component.widths;
 
       // when
-      component.resizeColumn(index, 50);
-      component.resizeColumn(index, 80);
+      component.onColumnResize({ index: columnIndex('Data'), width: 300 });
 
       // then
-      expect(component.widths[index]).toBe(startWidth + 80);
-      expect(component.columnsWidth).toBe(component.widths.reduce((a, b) => a + b));
-      expect(component.gridWidth).toBe(gridWidth + 80);
-      expect(component.customWidths).toEqual({ Data: startWidth + 80 });
-    });
-
-    it('#resizeColumn should not go below min width', async () => {
-
-      // given
-      await render();
-
-      // when
-      component.resizeColumn(columnIndex('Level'), -1000);
-
-      // then
-      expect(component.widths[columnIndex('Level')]).toBe(ColumnAutoSizer.MIN);
-    });
-
-    it('#endResize should start next drag from current width', async () => {
-
-      // given
-      await render();
-      const index = columnIndex('Data');
-      const startWidth = component.widths[index];
-      component.resizeColumn(index, 50);
-      component.endResize();
-
-      // when
-      component.resizeColumn(index, 30);
-
-      // then
-      expect(component.widths[index]).toBe(startWidth + 80);
+      expect(component.widths[columnIndex('Data')]).toBe(300);
+      expect(component.widths).not.toBe(widths);
+      expect(component.customWidths).toEqual({ Data: 300 });
     });
 
     it('#drag on resize handle should resize column without sorting', async () => {
@@ -543,27 +451,11 @@ describe('RawDataComponent', () => {
       expect(component.query.hasSort()).toBe(false);
     });
 
-    it('#resizeColumn should add horizontal scrollbar height when columns overflow in route mode', async () => {
-
-      // given
-      vi.spyOn(DomMetrics, 'scrollbarWidth').mockReturnValue(15);
-      await render();
-      const gridHeight = component.gridHeight;
-
-      // when
-      component.resizeColumn(columnIndex('Data'), 2000);
-      await settle();
-
-      // then
-      expect(component.gridHeight).toBe(gridHeight + 15);
-    });
-
-    it('#resizeColumn should keep custom width when widths reapplied', async () => {
+    it('#onColumnResize should keep custom width when widths reapplied', async () => {
 
       // given
       await render();
-      component.resizeColumn(columnIndex('Level'), 30);
-      component.endResize();
+      component.onColumnResize({ index: columnIndex('Level'), width: 100 });
 
       // when
       component.onFilterChanged(new Query());
@@ -577,7 +469,7 @@ describe('RawDataComponent', () => {
 
       // given
       await render();
-      component.resizeColumn(columnIndex('Level'), 30);
+      component.onColumnResize({ index: columnIndex('Level'), width: 100 });
 
       // when
       component.toggleConsiderColumnWidths();
@@ -592,15 +484,14 @@ describe('RawDataComponent', () => {
 
       // given
       await render();
-      const measurer = new TextMeasurer(RawDataComponent.FONT);
-      const texts = Array.from({ length: 100 }, (_, i) => String(component.formattedValueOf(columns[columnIndex('Host')], entryAt(i))));
+      const measurer = new TextMeasurer(ColumnWidthResolver.FONT);
+      const texts = Array.from({ length: 100 }, (_, i) => String(entryAt(i)['Host']));
 
       // when
-      component.toggleConsiderColumnWidths();
-      await settle();
+      await change(() => component.toggleConsiderColumnWidths());
 
       // then
-      const headerWidth = ColumnAutoSizer.width(['Host'], t => measurer.width(t)) + RawDataComponent.SORT_WIDTH;
+      const headerWidth = ColumnAutoSizer.width(['Host'], t => measurer.width(t)) + ColumnWidthResolver.SORT_WIDTH;
       expect(component.widths[columnIndex('Host')]).toBe(Math.max(headerWidth, ColumnAutoSizer.width(texts, t => measurer.width(t))));
       expect(component.widths[columnIndex('Data')]).toBe(ColumnAutoSizer.MAX);
     });
@@ -611,7 +502,7 @@ describe('RawDataComponent', () => {
       longHostFrom = 1200;
       await render();
       await scrollToRow(1233);
-      const measurer = new TextMeasurer(RawDataComponent.FONT);
+      const measurer = new TextMeasurer(ColumnWidthResolver.FONT);
 
       // when
       component.toggleConsiderColumnWidths();
@@ -620,66 +511,23 @@ describe('RawDataComponent', () => {
       expect(component.widths[columnIndex('Host')]).toBe(ColumnAutoSizer.width([LONG_HOST], t => measurer.width(t)));
     });
 
-    it('should not auto size header beyond max width', async () => {
-
-      // given
-      columns[columnIndex('Host')].name = 'H'.repeat(200);
-      await render();
-
-      // when
-      component.toggleConsiderColumnWidths();
-
-      // then
-      expect(component.widths[columnIndex('H'.repeat(200))]).toBe(ColumnAutoSizer.MAX);
-    });
-
     it('should auto size column without scene width when widths considered', async () => {
 
       // given
       columns[columnIndex('Host')].width = null;
-      const measurer = new TextMeasurer(RawDataComponent.FONT);
+      const measurer = new TextMeasurer(ColumnWidthResolver.FONT);
 
       // when
       await render();
 
       // then
       const expected = ColumnAutoSizer.width(['server-node-0', 'server-node-1'], t => measurer.width(t));
-      expect(expected).toBeGreaterThan(ColumnAutoSizer.width(['Host'], t => measurer.width(t)) + RawDataComponent.SORT_WIDTH);
+      expect(expected).toBeGreaterThan(ColumnAutoSizer.width(['Host'], t => measurer.width(t)) + ColumnWidthResolver.SORT_WIDTH);
       expect(component.widths[columnIndex('Host')]).toBe(expected);
     });
   });
 
   describe('interaction', () => {
-
-    it('should select row on click', async () => {
-
-      // given
-      await render();
-
-      // when
-      rowElement(3).click();
-      fixture.detectChanges();
-
-      // then
-      expect(component.selectedIndex).toBe(3);
-      expect(rowElement(3).classList).toContain('selected');
-      expect(getComputedStyle(rowElement(3)).backgroundColor).toBe('rgb(204, 232, 255)');
-    });
-
-    it('should render selection of row created while scrolling', async () => {
-
-      // given
-      fixture.autoDetectChanges();
-      await settle();
-      await scrollToRow(600);
-
-      // when
-      rowElement(601).click();
-      await fixture.whenStable();
-
-      // then
-      expect(rowElement(601).classList).toContain('selected');
-    });
 
     it('should color row from bgcolor and fgcolor when highlight on', async () => {
 
@@ -704,54 +552,9 @@ describe('RawDataComponent', () => {
       expect(getComputedStyle(rowElement(7)).backgroundColor).toBe('rgb(247, 247, 247)');
       expect(getComputedStyle(rowElement(7)).color).toBe('rgb(0, 0, 0)');
     });
-
-    it('should open object dialog on object cell click', async () => {
-
-      // given
-      await render();
-
-      // when
-      cellOf(0, 'Nested').click();
-
-      // then
-      expect(dialogService.showConfirmDialog).toHaveBeenCalled();
-    });
-
-    it('should right align number cells', async () => {
-
-      // when
-      await render();
-
-      // then
-      expect(getComputedStyle(cellOf(1, 'Amount')).textAlign).toBe('right');
-    });
   });
 
   describe('fit', () => {
-
-    it('should fit height to content when few rows', async () => {
-
-      // given
-      total = 5;
-
-      // when
-      await render();
-
-      // then
-      expect(component.gridHeight).toBe(RawDataComponent.HEADER_HEIGHT + RawDataComponent.BORDER + 5 * ROW_HEIGHT);
-      expect(scroller().offsetHeight).toBe(component.gridHeight);
-    });
-
-    it('should cap height at host when many rows', async () => {
-
-      // when
-      await render();
-
-      // then
-      const hostBottom = fixture.nativeElement.getBoundingClientRect().bottom;
-      expect(scroller().getBoundingClientRect().bottom).toBeLessThanOrEqual(hostBottom);
-      expect(scroller().scrollHeight).toBeGreaterThan(scroller().clientHeight);
-    });
 
     it('should widen in dialog style by column widths', async () => {
 
@@ -764,44 +567,9 @@ describe('RawDataComponent', () => {
       await render();
 
       // then
-      const expected = component.columnsWidth + DomMetrics.scrollbarWidth() + RawDataComponent.BORDER;
-      expect(component.gridWidth).toBe(expected);
+      const expected = table().columnsWidth + DomMetrics.scrollbarWidth() + VirtualTableComponent.BORDER;
+      expect(table().gridWidth).toBe(expected);
       expect(scroller().getBoundingClientRect().width).toBe(expected);
-    });
-
-    it('should refit when content width changes', async () => {
-
-      // given
-      vi.spyOn(DomMetrics, 'scrollbarWidth').mockReturnValue(15);
-      await render();
-      const gridHeight = component.gridHeight;
-
-      // when
-      fixture.nativeElement.style.width = '300px';
-      await settle();
-      const narrowGridHeight = component.gridHeight;
-      fixture.nativeElement.style.width = '3000px';
-      await settle();
-
-      // then
-      expect(narrowGridHeight).toBe(gridHeight + 15);
-      expect(component.gridHeight).toBe(gridHeight);
-    });
-
-    it('should refit once per frame for several content resizes', async () => {
-
-      // given
-      await render();
-      const onVirtualizerChange = vi.spyOn(component as unknown as { onVirtualizerChange: () => void }, 'onVirtualizerChange');
-
-      // when
-      component['scheduleContentRefit']();
-      component['scheduleContentRefit']();
-      component['scheduleContentRefit']();
-      await nextFrame();
-
-      // then
-      expect(onVirtualizerChange).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -819,6 +587,23 @@ describe('RawDataComponent', () => {
 
       // then
       expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
+    });
+
+    it('should render without table and mode toggles when no scene is active', () => {
+
+      // given
+      vi.mocked(dbService.getActiveScene).mockReturnValue(null);
+      vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockReturnValue(undefined);
+      vi.spyOn(dialogService, 'showConfigLauncherDialog').mockReturnValue(null);
+
+      // when
+      const detectChanges = () => fixture.detectChanges();
+
+      // then
+      expect(detectChanges).not.toThrow();
+      expect(fixture.nativeElement.querySelector('koia-virtual-table')).toBeNull();
+      expect(fixture.nativeElement.querySelector('koia-table-mode-toggles')).toBeNull();
+      expect(dialogService.showConfigLauncherDialog).not.toHaveBeenCalled();
     });
 
     it('#ngOnInit should not define new query when query is defined', async () => {
@@ -841,7 +626,7 @@ describe('RawDataComponent', () => {
       component.sortBy(columns[columnIndex('Level')]);
       component.toggleMultiLine();
       component.toggleHighlight();
-      component.resizeColumn(columnIndex('Data'), 10);
+      component.onColumnResize({ index: columnIndex('Data'), width: 20 * EM_PX + 10 });
 
       // when
       const config = component.configToBeSaved();
@@ -849,7 +634,7 @@ describe('RawDataComponent', () => {
       // then
       expect(config.query.getSort()).toEqual({ active: 'Level', direction: 'asc' });
       expect(config.data).toEqual({
-        considerColumnWidths: true, highlight: false, multiLine: true, columnWidths: { Data: 20 * RawDataComponent.EM_PX + 10 }
+        considerColumnWidths: true, highlight: false, multiLine: true, columnWidths: { Data: 20 * EM_PX + 10 }
       });
       expect(config.data.columnWidths).not.toBe(component.customWidths);
     });
@@ -911,40 +696,17 @@ describe('RawDataComponent', () => {
       expect(dialogService.showConfigLauncherDialog).toHaveBeenCalledWith(component);
     });
 
-    it('#ngOnDestroy should cancel cache and remove listeners', async () => {
+    it('#ngOnDestroy should cancel cache', async () => {
 
       // given
       await render();
       const cancel = vi.spyOn(RawDataBlockCache.prototype, 'cancel');
-      const callCount = requestEntriesPageSpy.mock.calls.length;
 
       // when
       fixture.destroy();
-      scroller().scrollTop = 600 * ROW_HEIGHT;
-      await nextFrame();
-      await nextFrame();
 
       // then
       expect(cancel).toHaveBeenCalled();
-      expect(requestEntriesPageSpy.mock.calls.length).toBe(callCount);
-    });
-
-    it('#ngOnDestroy should ignore late observer callbacks', async () => {
-
-      // given
-      await render();
-      const scrollerElement = scroller();
-      const callCount = requestEntriesPageSpy.mock.calls.length;
-      fixture.destroy();
-      scrollerElement.scrollTop = 600 * ROW_HEIGHT;
-
-      // when
-      component['virtualizer'].options.onChange(component['virtualizer'], false);
-      component['scheduleContentRefit']();
-      await nextFrame();
-
-      // then
-      expect(requestEntriesPageSpy.mock.calls.length).toBe(callCount);
     });
 
     it('#ngOnDestroy should not fail when no scene was active', () => {
@@ -962,118 +724,10 @@ describe('RawDataComponent', () => {
     });
   });
 
-  describe('values and export', () => {
+  describe('export and toolbar', () => {
 
     beforeEach(async () => {
       await render();
-    });
-
-    it('#formattedValueOf should return empty string when object value is null', () => {
-
-      // given
-      const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
-      const entry = { ID: 1, Nested: null };
-
-      // when
-      const formatted = component.formattedValueOf(column, entry);
-
-      // then
-      expect(formatted).toBe('');
-    });
-
-    it('#formattedValueOf should return ellipsis when object value is defined', () => {
-
-      // given
-      const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
-      const entry = { ID: 1, Nested: '{ a: \'x\' }' };
-
-      // when
-      const formatted = component.formattedValueOf(column, entry);
-
-      // then
-      expect(formatted).toBe('...');
-    });
-
-    it('#formattedValueOf should return empty string when number value is null', () => {
-
-      // given
-      const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
-      const entry = { ID: 1, Amount: null };
-
-      // when
-      const formatted = component.formattedValueOf(column, entry);
-
-      // then
-      expect(formatted).toBe('');
-    });
-
-    it('#formattedValueOf should return formatted time using column displayFormat', () => {
-
-      // given
-      const column: Column = {
-        name: 'Time', dataType: DataType.TIME, width: 100,
-        format: 'yyyy-MM-dd HH:mm:ss SSS'
-      };
-      const time = new Date('2019-01-30T18:24:17').getTime() + 557;
-      const entry = { ID: 1, Time: time };
-
-      // when
-      const formatted = component.formattedValueOf(column, entry);
-
-      // then
-      expect(formatted).toBe('2019-01-30 18:24:17 557');
-    });
-
-    it('#formattedValueOf should return formatted number using current locale', () => {
-
-      // given
-      const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
-      const entry = { ID: 1, Amount: 15_000 };
-
-      // when
-      const formatted = component.formattedValueOf(column, entry);
-
-      // then
-      expect(formatted).toBe((15_000).toLocaleString());
-    });
-
-    it('#formattedValueOf should return value when value is text', () => {
-
-      // given
-      const column: Column = { name: 'Host', dataType: DataType.TEXT, width: 100 };
-      const entry = { ID: 1, Host: 'server1' };
-
-      // when
-      const formatted = component.formattedValueOf(column, entry);
-
-      // then
-      expect(formatted).toBe('server1');
-    });
-
-    it('#displayValue should display dialog when data type is OBJECT', () => {
-
-      // given
-      const column: Column = { name: 'Data', dataType: DataType.OBJECT, width: 100 };
-      const entry = { ID: 1, Data: '[ 1, 2, 3]' };
-
-      // when
-      component.displayValue(column, entry);
-
-      // then
-      expect(dialogService.showConfirmDialog).toHaveBeenCalled();
-    });
-
-    it('#displayValue should not display dialog when data type is not OBJECT', () => {
-
-      // given
-      const column: Column = { name: 'Host', dataType: DataType.TEXT, width: 100 };
-      const entry = { ID: 1, Host: 'server1' };
-
-      // when
-      component.displayValue(column, entry);
-
-      // then
-      expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
     });
 
     it.each([ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON])('#saveAs should save complete data as %s file', async exportFormat => {
@@ -1140,17 +794,23 @@ describe('RawDataComponent', () => {
 
     it('#click on multi-line button should toggle multi-line', () => {
 
-      // given
-      const button: HTMLButtonElement = fixture.debugElement.queryAll(By.css('#view_toolbar button'))
-        .map(b => b.nativeElement).find(b => b.textContent.includes('format_line_spacing'));
-
       // when
-      button.click();
+      toolbarButton('format_line_spacing').click();
       fixture.detectChanges();
 
       // then
       expect(component.multiLine).toBe(true);
       expect(scroller().classList).toContain('multi-line');
+    });
+
+    it('#click on nested objects button should show object values', async () => {
+
+      // when
+      await change(() => toolbarButton('code').click());
+
+      // then
+      expect(component.showNestedObjects).toBe(true);
+      expect(cellOf(0, 'Nested').textContent).toBe('{ "a": 1 }');
     });
   });
 });

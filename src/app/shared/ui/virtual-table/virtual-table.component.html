@@ -1,0 +1,32 @@
+<div #content id="div_table" class="div_content printable">
+  <div #scroller class="vt" [class.multi-line]="multiLine" [class.dialog]="dialogStyle" [style.font]="font"
+    [style.height.px]="gridHeight" [style.width.px]="dialogStyle ? gridWidth : null">
+    <div class="vt-header" [style.grid-template-columns]="templateColumns" [style.width.px]="contentWidth">
+      @for (column of columns; track $index; let i = $index) {
+        <div class="vt-th" [class.sortable]="sortable && column.indexed" (click)="onHeaderClick(column)">
+          <span class="vt-th-label">{{ column.name }}</span><span class="vt-sort">{{ sortIndicatorOf(column) }}</span>
+          <span class="vt-resize" koiaColumnResize (resizing)="onResizing(i, $event)" (resized)="onResized()"></span>
+        </div>
+      }
+    </div>
+    <div class="vt-body" [style.height.px]="totalSize" [style.width.px]="contentWidth">
+      @for (item of virtualItems; track item.key) {
+        <div #row class="vt-row" [attr.data-index]="item.index"
+          [style.transform]="'translateY(' + (item.start - headerHeight) + 'px)'"
+          [style.grid-template-columns]="templateColumns" [class.odd]="item.index % 2 === 1"
+          [class.selected]="item.index === selectedIndex" [ngStyle]="rowStyle(item.index)"
+          (click)="selectedIndex = item.index">
+          @if (source.rowAt(item.index); as entry) {
+            @for (column of columns; track $index; let first = $first) {
+              <div [class]="'vt-td td_' + column.dataType" [attr.title]="multiLine ? null : formattedValueOf(column, entry)"
+                (click)="displayValue(column, entry)">@if (first && rowMarker) {<ng-container *ngTemplateOutlet="rowMarker; context: { $implicit: item.index }" />}{{ formattedValueOf(column, entry) }}</div>
+            }
+          } @else {
+            <div class="vt-loading">…</div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+  <div class="row-count" [style.font]="font">{{ source.rowCount() | number }} rows</div>
+</div>

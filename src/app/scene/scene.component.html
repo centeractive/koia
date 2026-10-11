@@ -45,12 +45,12 @@
             }
           </mat-select>
         </mat-form-field>&nbsp;
-        <button id="select_file_button" mat-raised-button color="primary" (click)="fileInput.click()">
+        <button id="select_file_button" mat-raised-button color="primary" (click)="selectFile()">
           <mat-icon>folder</mat-icon>
           <span>&nbsp;Select File</span>
         </button>
         <input #fileInput id="fileInput" hidden type="file"
-          [accept]="selectedReader ? selectedReader.getFileExtension() : ''" (change)="readingSample = true">
+          [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
           @if (file) {
             <mat-form-field class="file_name">
               <mat-label>File Name</mat-label>
@@ -210,53 +210,28 @@
                 <mat-icon color="primary">looks_4</mat-icon>&nbsp;<h4>Preview</h4>
               </mat-panel-title>
             </mat-expansion-panel-header>
-            <div id="div_preview_table">
-              <div #content [style.width]="previewTableStyleWidth()">
-                <table mat-table [dataSource]="previewData">
-                  @for (columnPair of columnMappings; track columnPair; let iCol = $index) {
-                    <ng-container
-                      [matColumnDef]="columnPair.target.name">
-                      <th mat-header-cell *matHeaderCellDef [style.width]="columnPair.target.width + 'em'">
-                        {{ columnPair.target.name }}
-                      </th>
-                      <td [class]="'td_' + columnPair.target.dataType" *matCellDef="let mappingResult">
-                        @if (iCol === 0 && mappingResult.errors.length > 0) {
-                          <img src="/assets/warning.png"
-                            [matTooltip]="mappingResult.errors.join('\n')" matTooltipClass="tooltip_preview_warning" />
-                        }
-                        {{ formatValue(columnPair.target, mappingResult.entry) }}
-                      </td>
-                    </ng-container>
-                  }
-                  <tr mat-header-row *matHeaderRowDef="targetColumnNames, sticky: true"></tr>
-                  <tr mat-row *matRowDef="let mappingResult; columns: targetColumnNames;"></tr>
-                </table>
-              </div>
-            </div>
+            <koia-scene-preview [columnPairs]="columnMappings" [mappingResults]="previewData" />
           </mat-expansion-panel>
         }
       </mat-accordion>
 
       <br>
         @if (scene) {
-          <div>
+          <div class="div_actions">
             @if (!canceled) {
               <button id="but_cancel" mat-raised-button color="primary" (click)="cancel()">Cancel</button>
             }
-            &nbsp;
             @if (scene.name && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
-              <span>
+              <span class="span_load">
                 @if (isPreviewDirty()) {
                   <img src="/assets/warning.png"
                     matTooltip="Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database"
                     matTooltipClass="tooltip_preview_warning" />
                 }
-                &nbsp;
                 <button id="but_load_data" mat-raised-button color="primary" matTooltip="Loads all data to the database"
                   [disabled]="maxItemsToLoadControl.invalid" (click)="persistScene()">
                   Load Data
                 </button>
-                &nbsp;
                 <mat-form-field class="max_items">
                   <mat-label>Max. items</mat-label>
                   <input matInput type="text" required [formControl]="maxItemsToLoadControl"
@@ -266,7 +241,6 @@
                       <mat-error>{{ 'Exp. 1-' + maxItemsPerScene }}</mat-error>
                     }
                   </mat-form-field>
-                  &nbsp;
                   <mat-slide-toggle [(ngModel)]="abortDataloadOnError"
                     matTooltip="Abort loading data when inconsitent data is encountered">
                     Abort on data error

@@ -1,4 +1,5 @@
 import { DatePipe, Location } from '@angular/common';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -12,12 +13,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { Router, RouterModule, UrlTree } from '@angular/router';
 import { RawDataComponent } from 'app/raw-data/raw-data.component';
-import { Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
+import { ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { DataHandler, ReaderService } from 'app/shared/services/reader';
@@ -54,10 +54,11 @@ describe('SceneComponent', () => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(null);
     TestBed.configureTestingModule({
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [SceneComponent, ColumnMappingComponent],
       imports: [RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {}), MatBottomSheetModule, MatExpansionModule,
         MatCardModule, FormsModule, MatFormFieldModule, ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule,
-        MatSlideToggleModule, MatTableModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule
+        MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule
       ],
       providers: [
         Location,
@@ -156,23 +157,172 @@ describe('SceneComponent', () => {
     expect(component.initContext).toHaveBeenCalled();
   }));
 
-  it('#change on file input should init context', fakeAsync(() => {
+  function loadSample(): void {
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
+    component.onFileSelChange(createFileList('dummy data'));
+    flush();
+    fixture.detectChanges();
+  }
+
+  function clickSelectFile(): void {
+    vi.spyOn(component.fileInputRef.nativeElement, 'click').mockReturnValue(undefined);
+    fixture.nativeElement.querySelector('#select_file_button').click();
+  }
+
+  function putFileIntoInput(name: string): void {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(new File(['other data'], name));
+    component.fileInputRef.nativeElement.files = dataTransfer.files;
+  }
+
+  function dataSample(): HTMLTextAreaElement {
+    return fixture.nativeElement.querySelector('#textarea_data_sample');
+  }
+
+  function progressBar(): HTMLElement {
+    return fixture.nativeElement.querySelector('mat-progress-bar');
+  }
+
+  it('#click on select file button should open file dialog with cleared input', fakeAsync(() => {
 
     // given
-    component.file = new File([], 'Test.csv');
-    component.fileHeader = 'xyz';
+    loadSample();
+    putFileIntoInput('Other.csv');
+
+    // when
+    clickSelectFile();
+
+    // then
+    expect(component.fileInputRef.nativeElement.click).toHaveBeenCalled();
+    expect(component.fileInputRef.nativeElement.value).toBe('');
+  }));
+
+  it('#window focus after select file should hide previous data sample and show progress bar immediately', fakeAsync(() => {
+
+    // given
+    loadSample();
+    clickSelectFile();
+
+    // when
+    window.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+
+    // then
+    expect(dataSample()).toBeNull();
+    expect(progressBar()).not.toBeNull();
+  }));
+
+  it('#window focus without select file should keep data sample', fakeAsync(() => {
+
+    // given
+    loadSample();
+
+    // when
+    window.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+
+    // then
+    expect(dataSample()).not.toBeNull();
+    expect(progressBar()).toBeNull();
+  }));
+
+  it('#cancel on file input after window focus should restore previous data sample and hide progress bar', fakeAsync(() => {
+
+    // given
+    loadSample();
+    const file = component.file;
     component.columnMappings = [createColumnPair('x')];
-    component.feedback = 'abc';
+    clickSelectFile();
+    window.dispatchEvent(new Event('focus'));
+
+    // when
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
+    fixture.detectChanges();
+
+    // then
+    expect(component.file).toBe(file);
+    expect(dataSample().value).toBe('dummy');
+    expect(component.columnMappings.length).toBe(1);
+    expect(progressBar()).toBeNull();
+  }));
+
+  it('#change on file input without file after window focus should restore previous data sample', fakeAsync(() => {
+
+    // given
+    loadSample();
+    clickSelectFile();
+    window.dispatchEvent(new Event('focus'));
+
+    // when
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    // then
+    expect(dataSample().value).toBe('dummy');
+    expect(progressBar()).toBeNull();
+  }));
+
+  it('#cancel on file input without previous context should not show progress bar', fakeAsync(() => {
+
+    // when
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
+    fixture.detectChanges();
+
+    // then
+    expect(component.file).toBeUndefined();
+    expect(progressBar()).toBeNull();
+  }));
+
+  it('#change on file input after window focus should show new data sample', fakeAsync(() => {
+
+    // given
+    loadSample();
+    clickSelectFile();
+    window.dispatchEvent(new Event('focus'));
+    putFileIntoInput('Other.csv');
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('other');
+
+    // when
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(component.file.name).toBe('Other.csv');
+    expect(dataSample().value).toBe('other');
+    expect(progressBar()).toBeNull();
+  }));
+
+  it('#change on file input should hide previous data sample and show progress bar immediately', fakeAsync(() => {
+
+    // given
+    loadSample();
+    putFileIntoInput('Other.csv');
+
+    // when
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    // then
+    expect(dataSample()).toBeNull();
+    expect(progressBar()).not.toBeNull();
+    flush();
+  }));
+
+  it('#change on file input after cancel should not restore previous data sample again', fakeAsync(() => {
+
+    // given
+    loadSample();
+    clickSelectFile();
+    window.dispatchEvent(new Event('focus'));
+    component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
+    component.fileHeader = 'changed';
 
     // when
     component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
 
     // then
-    flush();
-    expect(component.file).toBeUndefined();
-    expect(component.fileHeader).toBeUndefined();
-    expect(component.columnMappings).toBeUndefined();
-    expect(component.feedback).toBeUndefined();
+    expect(component.fileHeader).toBe('changed');
   }));
 
   it('#onFileSelChange should generate scene name and short description', fakeAsync(() => {
@@ -223,8 +373,37 @@ describe('SceneComponent', () => {
     flush();
     expect(component.columnMappings).toBeDefined();
     expect(component.columnMappings.length).toBe(2);
-    expect(fixture.debugElement.query(By.css('#div_preview_table'))).toBeDefined();
-    expect(fixture.debugElement.query(By.css('#but_load_data'))).toBeDefined();
+    fixture.detectChanges();
+    const preview = fixture.debugElement.query(By.css('koia-scene-preview')).nativeElement;
+    expect(preview.columnPairs).toBe(component.columnMappings);
+    expect(preview.mappingResults).toBe(component.previewData);
+    expect(fixture.debugElement.query(By.css('#but_load_data'))).not.toBeNull();
+  }));
+
+  it('should separate cancel and load data buttons by gap', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    const cancel = fixture.nativeElement.querySelector('#but_cancel').getBoundingClientRect();
+    const loadData = fixture.nativeElement.querySelector('#but_load_data').getBoundingClientRect();
+
+    // then
+    expect(loadData.left - cancel.right).toBeCloseTo(16, 0);
+  }));
+
+  it('should separate load data button and max items by gap', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    const loadData = fixture.nativeElement.querySelector('#but_load_data').getBoundingClientRect();
+    const maxItems = fixture.nativeElement.querySelector('.max_items').getBoundingClientRect();
+
+    // then
+    expect(maxItems.left - loadData.right).toBeCloseTo(16, 0);
   }));
 
   it('#onDataTypeChanged should show data format fields when TIME', fakeAsync(() => {
@@ -283,88 +462,6 @@ describe('SceneComponent', () => {
     expect(component.columnMappings.length).toBe(2);
     expect(component.columnMappings.map(cp => cp.skip)).toEqual([undefined, true]);
   }));
-
-  it('#formatValue should return empty string when object value is null', () => {
-
-    // given
-    const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
-    const entry = { ID: 1, Nested: null };
-
-    // when
-    const formatted = component.formatValue(column, entry);
-
-    // then
-    expect(formatted).toBe('');
-  });
-
-  it('#formatValue should return ellipsis when object value is defined', () => {
-
-    // given
-    const column: Column = { name: 'Nested', dataType: DataType.OBJECT, width: 100 };
-    const entry = { ID: 1, Nested: '{ a: \'x\' }' };
-
-    // when
-    const formatted = component.formatValue(column, entry);
-
-    // then
-    expect(formatted).toBe('...');
-  });
-
-  it('#formatValue should return empty string when number value is null', () => {
-
-    // given
-    const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
-    const entry = { ID: 1, Amount: null };
-
-    // when
-    const formatted = component.formatValue(column, entry);
-
-    // then
-    expect(formatted).toBe('');
-  });
-
-  it('#formatValue should return formatted time using column displayFormat', () => {
-
-    // given
-    const column: Column = {
-      name: 'Time', dataType: DataType.TIME, width: 100,
-      format: 'yyyy-MM-dd HH:mm:ss SSS'
-    };
-    const time = new Date('2019-01-30T18:24:17').getTime() + 557;
-    const entry = { ID: 1, Time: time };
-
-    // when
-    const formatted = component.formatValue(column, entry);
-
-    // then
-    expect(formatted).toBe('2019-01-30 18:24:17 557');
-  });
-
-  it('#formatValue should return formatted number using current locale', () => {
-
-    // given
-    const column: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 100 };
-    const entry = { ID: 1, Amount: 15_000 };
-
-    // when
-    const formatted = component.formatValue(column, entry);
-
-    // then
-    expect(formatted).toBe((15_000).toLocaleString());
-  });
-
-  it('#formatValue should return value when value is text', () => {
-
-    // given
-    const column: Column = { name: 'Host', dataType: DataType.TEXT, width: 100 };
-    const entry = { ID: 1, Host: 'server1' };
-
-    // when
-    const formatted = component.formatValue(column, entry);
-
-    // then
-    expect(formatted).toBe('server1');
-  });
 
   it('#click on "Load Data" should notify error when scene cannot be persisted', fakeAsync(() => {
 

@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, provideZoneChangeDetection } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgZone, provideZoneChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,14 +18,17 @@ import { DBService } from 'app/shared/services/backend';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, scrollTableTo, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
+import { ValueFormatter } from 'app/shared/format';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { TableModeTogglesComponent } from 'app/shared/ui/virtual-table/table-mode-toggles.component';
+import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { page } from 'vitest/browser';
 import type { Mock } from 'vitest';
 import { RawDataViewComponent } from '../raw-data-view.component';
 import { RawDataComponent } from '../raw-data.component';
 
 const ENTRY_COUNT = 1234;
-const ROW_HEIGHT = RawDataComponent.ROW_HEIGHT;
+const ROW_HEIGHT = VirtualTableComponent.ROW_HEIGHT;
 const TIMEOUT = 30_000;
 
 describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
@@ -42,7 +45,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataViewComponent, RawDataComponent, ColumnResizeDirective],
+      declarations: [RawDataViewComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ColumnResizeDirective],
       imports: [MatSidenavModule, MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule,
         MatBottomSheetModule],
       providers: [
@@ -69,6 +72,10 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
     return fixture.nativeElement;
   }
 
+  function table(): VirtualTableComponent {
+    return fixture.debugElement.query(By.directive(VirtualTableComponent)).componentInstance;
+  }
+
   function scroller(): HTMLElement {
     return root().querySelector('.vt');
   }
@@ -86,12 +93,12 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
   }
 
   function formatted(columnName: string, value: number): string {
-    return component.formattedValueOf(column(columnName), { [columnName]: value });
+    return new ValueFormatter().formatCell(column(columnName), { [columnName]: value }, false);
   }
 
   async function settle(): Promise<void> {
     await DomMetrics.waitFrames(() => !component.loading && !!rowElement(0)?.querySelector('.vt-td'), 600);
-    await DomMetrics.waitStable(() => [component.gridHeight, component.gridWidth, root().querySelectorAll('.vt-loading').length].join(), 3, 120);
+    await DomMetrics.waitStable(() => [table().gridHeight, table().gridWidth, root().querySelectorAll('.vt-loading').length].join(), 3, 120);
   }
 
   async function render(): Promise<void> {
@@ -130,7 +137,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
 
     // then
     expect(requestEntriesPageSpy).toHaveBeenCalledTimes(1);
-    expect(scroller().scrollHeight).toBe(RawDataComponent.HEADER_HEIGHT + ENTRY_COUNT * ROW_HEIGHT);
+    expect(scroller().scrollHeight).toBe(VirtualTableComponent.HEADER_HEIGHT + ENTRY_COUNT * ROW_HEIGHT);
   }, TIMEOUT);
 
   it('should load only rendered blocks when scrolled to bottom', async () => {
@@ -157,7 +164,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
     await render();
 
     // when
-    component.toggleMultiLine();
+    TestBed.inject(NgZone).run(() => component.toggleMultiLine());
     await DomMetrics.waitStable(() => rowElement(4).getBoundingClientRect().height, 3, 120);
 
     // then
@@ -244,7 +251,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
 
     // then
     expect(component.totalRowCount).toBe(3);
-    expect(scroller().getBoundingClientRect().height).toBe(RawDataComponent.HEADER_HEIGHT + RawDataComponent.BORDER + 3 * ROW_HEIGHT);
+    expect(scroller().getBoundingClientRect().height).toBe(VirtualTableComponent.HEADER_HEIGHT + VirtualTableComponent.BORDER + 3 * ROW_HEIGHT);
     expect(rowElement(2).getBoundingClientRect().bottom).toBeLessThanOrEqual(scroller().getBoundingClientRect().bottom);
   }, TIMEOUT);
 
@@ -288,15 +295,19 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
     await render();
     await reloaded(() => component.sortBy(column('Amount')));
     await reloaded(() => component.sortBy(column('Amount')));
-    component.toggleMultiLine();
-    component.resizeColumn(IT_COLUMNS.findIndex(c => c.name === 'Data'), 50);
-    component.endResize();
+    TestBed.inject(NgZone).run(() => {
+      component.toggleMultiLine();
+      table().onResizing(IT_COLUMNS.findIndex(c => c.name === 'Data'), 50);
+      table().onResized();
+    });
     const dataWidth = component.widths[3];
     const saved = component.configToBeSaved();
     const record: ConfigRecord = { route: Route.RAWDATA, name: 'sorted', modifiedTime: 0, query: queryToQueryDef(saved.query), data: saved.data };
     await reloaded(() => component.sortBy(column('Amount')));
-    component.toggleMultiLine();
-    component.toggleConsiderColumnWidths();
+    TestBed.inject(NgZone).run(() => {
+      component.toggleMultiLine();
+      component.toggleConsiderColumnWidths();
+    });
 
     // when
     await reloaded(() => component.loadConfig(record));

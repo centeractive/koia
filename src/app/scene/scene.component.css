@@ -65,53 +65,6 @@ mat-slide-toggle {
   font-size: 0.75em;
 }
 
-#div_preview_table {
-  height: 30em;
-  overflow: auto;
-}
-
-th {
-  text-align: left;
-  padding: 5px;
-  background-color: white;
-  overflow: hidden;
-}
-
-td {
-  word-wrap: break-word;
-  vertical-align: top;
-  padding: 5px;
-}
-
-.td_Text {
-  text-align: left;
-}
-
-.td_Object {
-  white-space: pre;
-  overflow: hidden;
-}
-
-.td_Number {
-  text-align: right;
-}
-
-.mat-mdc-header-row {
-  height: auto;
-}
-
-.mat-mdc-row {
-  height: auto;
-}
-
-.mat-mdc-row:nth-child(even) {
-  background-color: #fff;
-}
-
-.mat-mdc-row:nth-child(odd) {
-  background-color: #efefef;
-}
-
 ::ng-deep .tooltip_preview_warning {
   color: red !important;
   ;
@@ -132,4 +85,11 @@ td {
   background-image: url('/assets/mat-icons/new_scene.png');
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.div_actions,
+.span_load {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
 }

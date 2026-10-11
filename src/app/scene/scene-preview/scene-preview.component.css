@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  max-height: 30em;
+}
+
+.div_buttons {
+  flex-shrink: 0;
+  --mat-icon-button-state-layer-size: 32px;
+}
+
+:host ::ng-deep koia-virtual-table #div_table {
+  margin: 2px 0 0;
+  padding: 0;
+}
+
+.img_row_warning {
+  height: 14px;
+  vertical-align: text-bottom;
+  margin-right: 4px;
+}

@@ -1,12 +1,11 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatAccordion } from '@angular/material/expansion';
 import { ProgressBarMode } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
-import { ValueFormatter } from 'app/shared/format';
 import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -15,7 +14,6 @@ import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
-import * as _ from 'lodash';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
@@ -76,7 +74,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private sampleEntries: object[];
   private columnFactory = new ColumnMappingGenerator();
   private mappingErrors = new ConfinedStringSet(10);
-  private valueFormatter = new ValueFormatter();
+  private fileDialogOpen = false;
+  private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[] } | undefined;
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
@@ -100,6 +99,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   ngAfterViewInit(): void {
     this.fileInputRef.nativeElement.addEventListener('change', () => this.onFileSelChange(this.fileInputRef.nativeElement.files));
+    this.fileInputRef.nativeElement.addEventListener('cancel', () => this.restorePreviousContext());
   }
 
   private defineLocales(): void {
@@ -129,10 +129,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         this.columnMappingsSource = this.columnMappingsSourceCandidates[0];
       }
     });
-  }
-
-  previewTableStyleWidth(): string {
-    return _.sum(this.columnMappings.map(m => m.target.width)) + 'em';
   }
 
   private initScene(): void {
@@ -181,14 +177,46 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.initContext();
   }
 
-  async onFileSelChange(files: FileList): Promise<void> {
-    this.readingSample = true;
-    await CommonUtils.sleep(100); // releases UI thread for showing progress bar
+  selectFile(): void {
+    this.fileInputRef.nativeElement.value = '';
+    this.fileDialogOpen = true;
+    this.fileInputRef.nativeElement.click();
+  }
+
+  /**
+   * browsers fire the file input 'change' event up to several seconds after the file dialog was closed,
+   * the window regaining focus is the earliest sign of a file being selected
+   */
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (this.fileDialogOpen) {
+      this.fileDialogOpen = false;
+      this.previousContext = { file: this.file, fileHeader: this.fileHeader, sampleEntries: this.sampleEntries,
+        columnMappings: this.columnMappings, feedback: this.feedback };
+      this.initContext();
+      this.readingSample = true;
+    }
+  }
+
+  onFileSelChange(files: FileList): void {
+    if (!files.length) {
+      this.restorePreviousContext();
+      return;
+    }
+    this.fileDialogOpen = false;
+    this.previousContext = undefined;
     this.initContext();
-    if (files.length) {
-      this.file = files[0];
-      this.scene.context = SceneUtils.fileContextInfo(this.file);
-      this.readDataSample();
+    this.file = files[0];
+    this.scene.context = SceneUtils.fileContextInfo(this.file);
+    this.readDataSample();
+  }
+
+  private restorePreviousContext(): void {
+    this.fileDialogOpen = false;
+    this.readingSample = false;
+    if (this.previousContext) {
+      Object.assign(this, this.previousContext);
+      this.previousContext = undefined;
     }
   }
 
@@ -253,13 +281,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   deleteColumnMapping(columnPair: ColumnPair): void {
     columnPair.skip = true;
     this.onColumnChanged();
-  }
-
-  formatValue(column: Column, entry: object): any {
-    if (column.dataType === DataType.OBJECT) {
-      return entry[column.name] ? '...' : '';
-    }
-    return this.valueFormatter.formatValue(column, entry[column.name]);
   }
 
   onDataTypeChanged(targetColumn: Column): void {

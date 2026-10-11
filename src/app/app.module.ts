@@ -55,6 +55,7 @@ import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
 import { RawDataViewComponent } from './raw-data/raw-data-view.component';
 import { RawDataComponent } from './raw-data/raw-data.component';
 import { ColumnMappingComponent } from './scene/column-mapping/column-mapping.component';
+import { ScenePreviewComponent } from './scene/scene-preview/scene-preview.component';
 import { SceneComponent } from './scene/scene.component';
 import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog/scene-details-dialog.component';
 import { SceneTableComponent } from './scenes/scene-table/scene-table.component';
@@ -78,6 +79,8 @@ import { DBService } from './shared/services/backend';
 import { CouchDBService } from './shared/services/backend/couchdb/couchdb.service';
 import { DialogService } from './shared/services/dialog.service';
 import { ReaderService } from './shared/services/reader';
+import { TableModeTogglesComponent } from './shared/ui/virtual-table/table-mode-toggles.component';
+import { VirtualTableComponent } from './shared/ui/virtual-table/virtual-table.component';
 import { MatIconModuleMock } from './shared/test';
 import { ValueRangeGroupingService } from './shared/value-range';
 import { SummaryTableSideBarComponent } from './summary-table/summary-table-side-bar/summary-table-side-bar.component';
@@ -121,6 +124,9 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         ValueFilterComponent,
         RangeFilterComponent,
         ColumnMappingComponent,
+        ScenePreviewComponent,
+        VirtualTableComponent,
+        TableModeTogglesComponent,
         ViewLauncherDialogComponent,
         ConfigLauncherDialogComponent,
         ManageConfigDialogComponent,

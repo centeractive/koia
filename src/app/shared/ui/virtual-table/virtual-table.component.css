@@ -1,0 +1,151 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+#div_table {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  margin: 10px;
+  padding: 0 5px;
+}
+
+.vt {
+  box-sizing: border-box;
+  flex: 0 1 auto;
+  min-height: 48px;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: scroll;
+  color: #000;
+  background: #fff;
+  border: 1px solid #d4d4d4;
+}
+
+.vt.dialog {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+.vt-header {
+  box-sizing: border-box;
+  display: grid;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-width: 100%;
+  height: 24px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.vt-th {
+  position: relative;
+  display: flex;
+  padding: 0 6px;
+  line-height: 23px;
+  border-right: 1px solid #d4d4d4;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.vt-th.sortable {
+  cursor: pointer;
+}
+
+.vt-th-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vt-sort {
+  flex: 0 0 12px;
+  text-align: right;
+}
+
+.vt-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.vt-body {
+  position: relative;
+  min-width: 100%;
+}
+
+.vt-row {
+  box-sizing: border-box;
+  display: grid;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 22px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.vt-row.odd {
+  background: #f7f7f7;
+}
+
+.vt-row:hover {
+  background: #e5f3ff;
+}
+
+.vt-row.selected {
+  background: #cce8ff;
+}
+
+.multi-line .vt-row {
+  height: auto;
+  min-height: 22px;
+}
+
+.vt-td {
+  padding: 3px 6px 2px;
+  line-height: 16px;
+  border-right: 1px solid #e0e0e0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.multi-line .vt-td {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.td_Number {
+  text-align: right;
+}
+
+.td_Object {
+  cursor: pointer;
+}
+
+.vt-loading {
+  padding: 3px 6px 2px;
+  line-height: 16px;
+  color: #888;
+}
+
+.row-count {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  background: #f0f0f0;
+  border: 1px solid #d4d4d4;
+  border-top: none;
+}

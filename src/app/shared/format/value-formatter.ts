@@ -23,4 +23,12 @@ export class ValueFormatter {
       }
       return value;
    }
+
+   // eslint-disable-next-line
+   formatCell(column: Column, entry: object, showNestedObjects: boolean): any {
+      if (!showNestedObjects && column.dataType === DataType.OBJECT) {
+         return entry[column.name] ? '...' : '';
+      }
+      return this.formatValue(column, entry[column.name]);
+   }
 }
