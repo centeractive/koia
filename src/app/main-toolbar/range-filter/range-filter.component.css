@@ -82,23 +82,6 @@ button {
    margin-bottom: 3px;
 }
 
-.span_menu_trigger {
-   padding: 3px;
-   margin-right: 4px;
-   border: 1px;
-   border-style: solid;
-   border-radius: 5px;
-   border-color: lightgray;
-   cursor: pointer;
-}
-
-.span_outside_range_menu_trigger {
-   padding: 3px;
-   margin-right: 4px;
-   border: 1px;
-   border-style: solid;
-   border-radius: 5px;
-   border-color: lightgray;
-   cursor: pointer;
-   background-color: rgb(250, 218, 162);
+.div_range_filter .but_range_step {
+   margin-right: 8px;
 }

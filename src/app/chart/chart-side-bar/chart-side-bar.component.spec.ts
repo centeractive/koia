@@ -18,6 +18,7 @@ import { MatIconModuleMock } from 'app/shared/test';
 import { ChartSideBarComponent } from './chart-side-bar.component';
 import { ScaleComponent } from './scale/scale.component';
 import { TicksComponent } from './scale/ticks/ticks.component';
+import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
 
 let context: ChartContext;
 let component: ChartSideBarComponent;
@@ -601,7 +602,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
 function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void {
   TestBed.configureTestingModule({
     schemas: [NO_ERRORS_SCHEMA],
-    declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent, KoiaFormDirective],
+    declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent, KoiaFormDirective, SideBarHeaderComponent],
     imports: [
       MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
       MatMenuModule, DragDropModule, MatSelectModule, MatInputModule, MatSliderModule

@@ -4,14 +4,16 @@ button {
 
 #div_main {
   margin-top: 2px;
-  background-color: #ECEFF1;
+  background-color: var(--koia-surface);
 }
 
 #div_toolbar {
   display: flex;
   align-items: flex-start;
   flex-wrap: nowrap;
+  box-sizing: border-box;
   width: 100%;
+  padding: 0 8px;
 }
 
 .span_buttons {
@@ -49,6 +51,14 @@ button {
 }
 
 #butAddColFilter {
-  color: white;
-  background-color: #38983b;
+  white-space: nowrap;
+  color: var(--koia-on-color);
+  background-color: var(--koia-accent);
+  border-color: var(--koia-accent);
+  border-radius: 8px;
+}
+
+#div_range_filters {
+  border-top: var(--koia-tile-border);
+  padding-top: 4px;
 }

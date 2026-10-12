@@ -149,10 +149,6 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
       .catch(error => this.notifyError(error));
   }
 
-  printView(): void {
-    window.print();
-  }
-
   configToBeSaved(): { query: Query, data: ConfigRecordData } {
     return {
       query: this.query,

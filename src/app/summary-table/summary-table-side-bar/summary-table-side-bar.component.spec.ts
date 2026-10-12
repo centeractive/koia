@@ -14,6 +14,7 @@ import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { Aggregation, ChangeEvent, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
+import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
 
 describe('SummaryTableSideBarComponent', () => {
 
@@ -44,7 +45,7 @@ describe('SummaryTableSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [SummaryTableSideBarComponent, KoiaFormDirective],
+      declarations: [SummaryTableSideBarComponent, KoiaFormDirective, SideBarHeaderComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         MatMenuModule, DragDropModule, MatSelectModule, MatRadioModule

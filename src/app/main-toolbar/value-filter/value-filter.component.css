@@ -2,6 +2,7 @@
    display: flex;
    flex-wrap: nowrap;
    align-items: center;
+   gap: 4px;
 }
 
 button {
@@ -27,12 +28,17 @@ button {
    opacity: 1;
 }
 
-.span_menu_trigger {
-   padding: 3px;
-   margin-right: 4px;
-   border: 1px;
-   border-style: solid;
-   border-radius: 5px;
-   border-color: lightgray;
-   cursor: pointer;
+#column_filter_input {
+   box-sizing: border-box;
+   height: 28px;
+   padding: 0 8px;
+   border: 1px solid var(--koia-outline-color);
+   border-radius: 8px;
+   background-color: var(--koia-surface);
+   font: inherit;
+}
+
+#column_filter_input:focus {
+   outline: none;
+   border-color: var(--koia-primary);
 }

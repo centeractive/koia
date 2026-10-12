@@ -13,6 +13,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -37,7 +38,7 @@ class DummyComponent { }
 function configureTestingModule(dbService: DBService, dialogService: DialogService, extra: TestModuleMetadata = {}): Promise<void> {
   return TestBed.configureTestingModule({
     schemas: [NO_ERRORS_SCHEMA],
-    declarations: [MainToolbarComponent, DummyComponent, ...(extra.declarations ?? [])],
+    declarations: [MainToolbarComponent, DummyComponent, KoiaFormDirective, ...(extra.declarations ?? [])],
     imports: [
       MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
       MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule,
@@ -194,6 +195,67 @@ describe('MainToolbarComponent', () => {
   it('should load active scene data', () => {
     expect(dbService.getActiveScene).toHaveBeenCalled();
   });
+
+  it('toolbar should be white surface', () => {
+
+    // when
+    const style = getComputedStyle(fixture.nativeElement.querySelector('#div_main'));
+
+    // then
+    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+  });
+
+  it('navigation buttons should be separated from tab bar by divider', () => {
+
+    // when
+    const separator: HTMLElement = fixture.nativeElement.querySelector('.span_navigation > .koia-toolbar-separator');
+
+    // then
+    expect(separator.previousElementSibling.id).toBe('butScene');
+    expect(separator.nextElementSibling.tagName).toBe('KOIA-VIEW-TAB-BAR');
+  });
+
+  it('add filter button should be rounded accent button without non-breaking spaces', () => {
+
+    // when
+    const button: HTMLElement = fixture.nativeElement.querySelector('#butAddColFilter');
+
+    // then
+    const style = getComputedStyle(button);
+    expect(style.backgroundColor).toBe('rgb(56, 142, 60)');
+    expect(style.color).toBe('rgb(255, 255, 255)');
+    expect(style.borderTopLeftRadius).toBe('8px');
+    expect(button.querySelector('.mdc-button__label').textContent.trim()).toBe('Add Filter');
+  });
+
+  it('full text filter should be compact outlined field', () => {
+
+    // given
+    component.showFullTextFilter = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const field: HTMLElement = fixture.nativeElement.querySelector('.full_text_filter');
+    expect(field.classList).toContain('mat-form-field-appearance-outline');
+    expect(field.querySelector<HTMLElement>('.mat-mdc-text-field-wrapper').offsetHeight).toBe(40);
+  });
+
+  it('range filters should be separated from toolbar by top border', fakeAsync(() => {
+
+    // given
+    component.addRangeFilter(column('Amount'), null);
+
+    // when
+    flush();
+    fixture.detectChanges();
+
+    // then
+    const style = getComputedStyle(fixture.nativeElement.querySelector('#div_range_filters'));
+    expect(style.borderTopWidth).toBe('1px');
+    expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
+  }));
 
   it('#ngOnInit should not retain initial filters when active scene is not defeined', () => {
 

@@ -28,6 +28,7 @@ import { of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { RawDataBlockCache } from './raw-data-block-cache';
 import { RawDataComponent } from './raw-data.component';
+import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 describe('RawDataComponent', () => {
 
@@ -66,7 +67,7 @@ describe('RawDataComponent', () => {
     scene = SceneFactory.createScene('1', columns);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ColumnResizeDirective],
+      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, ColumnResizeDirective],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),
@@ -571,6 +572,21 @@ describe('RawDataComponent', () => {
       expect(table().gridWidth).toBe(expected);
       expect(scroller().getBoundingClientRect().width).toBe(expected);
     });
+
+    it('dialog style should hide print, save and restore buttons', async () => {
+
+      // given
+      component.dialogStyle = true;
+
+      // when
+      await render();
+
+      // then
+      expect(fixture.nativeElement.querySelector('#but_print')).toBeNull();
+      expect(fixture.nativeElement.querySelector('#but_save_view')).toBeNull();
+      expect(fixture.nativeElement.querySelector('#but_restore_view')).toBeNull();
+      expect(fixture.nativeElement.querySelector('#but_view_more')).not.toBeNull();
+    });
   });
 
   describe('config and lifecycle', () => {
@@ -790,6 +806,47 @@ describe('RawDataComponent', () => {
 
       // then
       expect(window.print).toHaveBeenCalled();
+    });
+
+    it('wrap text button should be marked active while column widths are observed', () => {
+
+      // when
+      const wrapTextButton = toolbarButton('wrap_text');
+
+      // then
+      expect(component.considerColumnWidths).toBe(true);
+      expect(wrapTextButton.classList).toContain('koia-toggle-active');
+    });
+
+    it('wrap text button should not be marked active while column widths are ignored', async () => {
+
+      // when
+      await change(() => toolbarButton('wrap_text').click());
+
+      // then
+      expect(component.considerColumnWidths).toBe(false);
+      expect(toolbarButton('wrap_text').classList).not.toContain('koia-toggle-active');
+    });
+
+    it('highlight button should be marked active while rows are highlighted', () => {
+
+      // when
+      const highlightButton = toolbarButton('highlight');
+
+      // then
+      expect(component.highlight).toBe(true);
+      expect(highlightButton.classList).toContain('koia-toggle-active');
+    });
+
+    it('highlight button should not be marked active while rows are not highlighted', () => {
+
+      // when
+      toolbarButton('highlight').click();
+      fixture.detectChanges();
+
+      // then
+      expect(component.highlight).toBe(false);
+      expect(toolbarButton('highlight').classList).not.toContain('koia-toggle-active');
     });
 
     it('#click on multi-line button should toggle multi-line', () => {

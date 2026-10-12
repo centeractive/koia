@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+
+#view_toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--koia-toolbar-height);
+  padding: 0 8px;
+  background-color: var(--koia-surface);
+  border-top: var(--koia-tile-border);
+  border-bottom: var(--koia-tile-border);
+}

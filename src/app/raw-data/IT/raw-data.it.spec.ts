@@ -26,6 +26,7 @@ import { page } from 'vitest/browser';
 import type { Mock } from 'vitest';
 import { RawDataViewComponent } from '../raw-data-view.component';
 import { RawDataComponent } from '../raw-data.component';
+import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 const ENTRY_COUNT = 1234;
 const ROW_HEIGHT = VirtualTableComponent.ROW_HEIGHT;
@@ -45,7 +46,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataViewComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ColumnResizeDirective],
+      declarations: [RawDataViewComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, ColumnResizeDirective],
       imports: [MatSidenavModule, MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule,
         MatBottomSheetModule],
       providers: [

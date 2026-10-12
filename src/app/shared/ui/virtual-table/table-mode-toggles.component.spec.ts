@@ -49,7 +49,7 @@ describe('TableModeTogglesComponent', () => {
     expect(host.multiLine).toBe(true);
   });
 
-  it('should mark multi-line button accent when multi-line', () => {
+  it('should mark multi-line button active when multi-line', () => {
 
     // given
     host.multiLine = true;
@@ -58,7 +58,16 @@ describe('TableModeTogglesComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(button('format_line_spacing').classList).toContain('mat-accent');
+    expect(button('format_line_spacing').classList).toContain('koia-toggle-active');
+  });
+
+  it('should not mark multi-line button active when single-line', () => {
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(button('format_line_spacing').classList).not.toContain('koia-toggle-active');
   });
 
   it('should hide nested objects button without object column', () => {
@@ -84,7 +93,7 @@ describe('TableModeTogglesComponent', () => {
     expect(host.showNestedObjects).toBe(true);
   });
 
-  it('should mark nested objects button accent when shown', () => {
+  it('should mark nested objects button active when shown', () => {
 
     // given
     host.columns = [...host.columns, { name: 'Nested', dataType: DataType.OBJECT, width: 10 }];
@@ -94,6 +103,6 @@ describe('TableModeTogglesComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(button('code').classList).toContain('mat-accent');
+    expect(button('code').classList).toContain('koia-toggle-active');
   });
 });

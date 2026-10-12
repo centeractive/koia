@@ -58,8 +58,8 @@ p {
 }
 
 .mat-active {
-   background-color: #388E3C;
-   color: #fff;
+   background-color: var(--koia-accent);
+   color: var(--koia-on-color);
 }
 
 .mat-inactive {

@@ -1,0 +1,16 @@
+<div class="div_accordion_options">
+  <mat-slide-toggle class="toggle_multi_expand" [checked]="multiExpandable" (change)="onMultiExpandableChanged($event.checked)">
+    Multi Expansion
+  </mat-slide-toggle>
+  @if (multiExpandable) {
+    <span class="span_exp_collapse_all">
+      <button id="but_expand_all" mat-icon-button matTooltip="Expand all" (click)="expandAll.emit()">
+        <mat-icon>expand_more</mat-icon>
+      </button>
+      <button id="but_collapse_all" mat-icon-button matTooltip="Collapse all" (click)="collapseAll.emit()">
+        <mat-icon>expand_less</mat-icon>
+      </button>
+    </span>
+  }
+  <ng-content />
+</div>

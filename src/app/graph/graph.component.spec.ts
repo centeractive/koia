@@ -57,6 +57,18 @@ describe('GraphComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('svg container should leave room for tile header', () => {
+
+    // given
+    fixture.nativeElement.style.display = 'block';
+
+    // when
+    fixture.nativeElement.style.height = '300px';
+
+    // then
+    expect(fixture.nativeElement.querySelector('#div_svg').offsetHeight).toBe(252);
+  });
+
   it('context entries change should refresh graph data', fakeAsync(() => {
 
     // given

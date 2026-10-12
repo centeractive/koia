@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
@@ -38,6 +39,33 @@ class PanelHostComponent { }
   standalone: false
 })
 class FieldRowHostComponent { }
+
+@Component({
+  template: `
+    <div>
+      <button id="toggle" mat-icon-button class="koia-toggle-active">x</button>
+      <span id="separator" class="koia-toolbar-separator"></span>
+      <span id="trigger" class="span_menu_trigger">a</span>
+      <span id="outside" class="span_outside_range_menu_trigger">b</span>
+    </div>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false
+})
+class ToggleHostComponent { }
+
+@Component({
+  template: `
+    <div class="div_column_list cdk-drop-list-dragging">
+      <div id="item_a" class="div_column_item">a</div>
+      <div id="item_b" class="div_column_item">b</div>
+    </div>
+    <div id="preview" class="div_group_value cdk-drag-preview">p</div>
+    <div id="placeholder" class="div_column_item cdk-drag-placeholder">h</div>`,
+  styles: ['.div_column_item { border-bottom: 1px solid red; }'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false
+})
+class DragHostComponent { }
 
 describe('global styles', () => {
 
@@ -207,5 +235,134 @@ describe('global styles', () => {
     expect(step.offsetHeight).toBe(22);
     expect(style.borderTopLeftRadius).toBe('50%');
     expect(style.backgroundColor).toBe('rgb(48, 63, 159)');
+  });
+
+  function createToggleHost(): HTMLElement {
+    TestBed.configureTestingModule({
+      declarations: [ToggleHostComponent],
+      imports: [MatButtonModule]
+    });
+    const fixture = TestBed.createComponent(ToggleHostComponent);
+    fixture.detectChanges();
+    return fixture.nativeElement;
+  }
+
+  function createDragHost(): HTMLElement {
+    TestBed.configureTestingModule({
+      declarations: [DragHostComponent]
+    });
+    const fixture = TestBed.createComponent(DragHostComponent);
+    fixture.detectChanges();
+    return fixture.nativeElement;
+  }
+
+  function styleOf(host: HTMLElement, selector: string): CSSStyleDeclaration {
+    return getComputedStyle(host.querySelector(selector));
+  }
+
+  it('root should define koia design tokens', () => {
+
+    // when
+    const style = getComputedStyle(document.documentElement);
+
+    // then
+    expect(style.getPropertyValue('--koia-primary').trim()).toBe('#303f9f');
+    expect(style.getPropertyValue('--koia-accent').trim()).toBe('#388e3c');
+    expect(style.getPropertyValue('--koia-border-color').trim()).toBe('#e0e0e0');
+    expect(style.getPropertyValue('--koia-toolbar-height').trim()).toBe('48px');
+    expect(style.getPropertyValue('--koia-tile-header-height').trim()).toBe('48px');
+  });
+
+  it('active toggle icon button should be accent tinted', () => {
+
+    // when
+    const style = styleOf(createToggleHost(), '#toggle');
+
+    // then
+    expect(style.color).toBe('rgb(56, 142, 60)');
+    expect(style.backgroundColor).toBe('rgba(56, 142, 60, 0.12)');
+  });
+
+  it('toolbar separator should be thin vertical divider', () => {
+
+    // when
+    const style = styleOf(createToggleHost(), '#separator');
+
+    // then
+    expect(style.width).toBe('1px');
+    expect(style.height).toBe('24px');
+    expect(style.backgroundColor).toBe('rgb(224, 224, 224)');
+  });
+
+  it('menu trigger should look like chip', () => {
+
+    // when
+    const style = styleOf(createToggleHost(), '#trigger');
+
+    // then
+    expect(style.borderTopLeftRadius).toBe('12px');
+    expect(style.paddingLeft).toBe('8px');
+    expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
+    expect(style.cursor).toBe('pointer');
+    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+  });
+
+  it('outside range menu trigger should be highlighted chip', () => {
+
+    // when
+    const style = styleOf(createToggleHost(), '#outside');
+
+    // then
+    expect(style.borderTopLeftRadius).toBe('12px');
+    expect(style.backgroundColor).toBe('rgb(250, 218, 162)');
+  });
+
+  it('drag preview of side bar items should be rounded and shadowed', () => {
+
+    // when
+    const style = styleOf(createDragHost(), '#preview');
+
+    // then
+    expect(style.borderTopLeftRadius).toBe('4px');
+    expect(style.boxShadow).toBe('rgba(0, 0, 0, 0.2) 0px 5px 5px -3px, rgba(0, 0, 0, 0.14) 0px 8px 10px 1px, rgba(0, 0, 0, 0.12) 0px 3px 14px 2px');
+  });
+
+  it('drag placeholder of side bar items should be invisible', () => {
+
+    // when
+    const style = styleOf(createDragHost(), '#placeholder');
+
+    // then
+    expect(style.opacity).toBe('0');
+  });
+
+  it('column items of dragging list should animate sorting', () => {
+
+    // when
+    const style = styleOf(createDragHost(), '#item_a');
+
+    // then
+    expect(style.transitionProperty).toBe('transform');
+    expect(style.transitionDuration).toBe('0.25s');
+  });
+
+  it('last column item of list should have no border', () => {
+
+    // when
+    const host = createDragHost();
+
+    // then
+    expect(styleOf(host, '#item_b').borderBottomStyle).toBe('none');
+    expect(styleOf(host, '#item_a').borderBottomStyle).toBe('solid');
+  });
+
+  it('print styles should hide view toolbar', () => {
+
+    // when
+    const rule = printRule('koia-main-toolbar, koia-range-filter, koia-view-toolbar, img');
+
+    // then
+    expect(rule).toBeDefined();
+    expect(rule.style.display).toBe('none');
   });
 });

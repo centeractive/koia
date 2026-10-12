@@ -2,7 +2,7 @@
   position: relative;
   display: block;
   width: 100%;
-  height: calc(100% - 48px);
+  height: calc(100% - var(--koia-tile-header-height));
 }
 
 svg {

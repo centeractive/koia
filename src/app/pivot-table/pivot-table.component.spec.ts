@@ -27,6 +27,7 @@ import { Observable, of, Subject } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
 import type { Mock } from 'vitest';
+import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 @Injectable()
 export class MockElementRef {
@@ -75,7 +76,7 @@ describe('PivotTableComponent', () => {
     viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn() } as unknown as ViewTabsService;
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [PivotTableComponent],
+      declarations: [PivotTableComponent, ViewToolbarComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
         MatMenuModule, MatBottomSheetModule
@@ -734,6 +735,15 @@ describe('PivotTableComponent', () => {
     // then
     expect(window.print).toHaveBeenCalled();
   }));
+
+  it('pivot buttons should follow toolbar separator', () => {
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelectorAll('#view_toolbar .koia-toolbar-separator ~ .but_config').length).toBe(3);
+  });
 
   function pivotContext(): PivotContext {
     return {

@@ -1,0 +1,29 @@
+<div id="view_toolbar">
+  <button id="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  @if (persistable) {
+    <button id="but_print" mat-icon-button matTooltip="Print current view" [disabled]="!hasContent" (click)="printView()">
+      <mat-icon>print</mat-icon>
+    </button>
+    <button id="but_save_view" mat-icon-button matTooltip="Save current view" [disabled]="!hasContent" (click)="save.emit()">
+      <mat-icon>save_alt</mat-icon>
+    </button>
+    <button id="but_restore_view" class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!savedViews.length"
+      [matMenuTriggerFor]="restoreViewMenu">
+      <mat-icon [matBadge]="savedViews.length" [matBadgeHidden]="!savedViews.length" matBadgeSize="small" matBadgeColor="accent">
+        open_in_browser
+      </mat-icon>
+    </button>
+    <mat-menu #restoreViewMenu="matMenu">
+      @for (view of savedViews; track view) {
+        <button class="menu_item_details" mat-menu-item (click)="restore.emit(view)">
+          <mat-icon>monitor</mat-icon>
+          <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
+        </button>
+      }
+    </mat-menu>
+  }
+  <span class="koia-toolbar-separator"></span>
+  <ng-content />
+</div>

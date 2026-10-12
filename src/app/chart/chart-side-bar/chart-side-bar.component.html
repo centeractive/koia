@@ -1,19 +1,4 @@
-<div class="div_accordion_options">
-  <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-    (change)="onMultiExpandableChanged($event.checked)">
-    Multi Expansion
-  </mat-slide-toggle>
-  @if (multiExpandable) {
-    <span class="span_exp_collapse_all">
-      <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
-        <mat-icon>expand_more</mat-icon>
-      </button>
-      <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
-        <mat-icon>expand_less</mat-icon>
-      </button>
-    </span>
-  }
-</div>
+<koia-side-bar-header [(multiExpandable)]="multiExpandable" (expandAll)="accordion.openAll()" (collapseAll)="accordion.closeAll()" />
 
 <div id="div_charts">
   @for (chartType of chartTypes; track chartType) {

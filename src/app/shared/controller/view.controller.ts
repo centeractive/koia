@@ -301,10 +301,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       }
    }
 
-   printView(): void {
-      window.print();
-   }
-
    saveAs(context: ElementContext, exportFormat: ExportFormat): void {
       if (this.isChartContext(context)) {
          const base64Image = this.asChartContext(context).chart.toBase64Image();

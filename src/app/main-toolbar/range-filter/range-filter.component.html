@@ -1,6 +1,6 @@
 @if (filter) {
   <div class="div_range_filter">
-    <button color="accent" mat-icon-button matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
+    <button class="but_range_step" color="accent" mat-icon-button matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
       <mat-icon [matBadge]="filter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="accent">
         linear_scale
       </mat-icon>
@@ -13,7 +13,6 @@
         </button>
       }
     </mat-menu>
-    &nbsp;&nbsp;
     <ngx-slider [value]="valueRange.min" [highValue]="valueRange.max" [options]="filter.sliderOptions" [manualRefresh]="refreshSlider"
       (highValueChange)="onHighValueChanged()" (userChangeEnd)="onChanged($event)">
     </ngx-slider>

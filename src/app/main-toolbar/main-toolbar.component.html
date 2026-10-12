@@ -16,13 +16,14 @@
         <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
           <mat-icon>add_photo_alternate</mat-icon>
         </button>
+        <span class="koia-toolbar-separator"></span>
         <koia-view-tab-bar [currUrl]="currURL" />
       </span>
     }
 
     <div id="div_filter">
       @if (showFullTextFilter) {
-        <mat-form-field class="full_text_filter">
+        <mat-form-field class="full_text_filter" koiaForm>
           <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)" [(ngModel)]="fullTextFilter"
             (keyup)="onFullTextFilterFieldKeyUp($event)">
             @if (fullTextFilter) {
@@ -46,7 +47,7 @@
         <span class="span_buttons">
           <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter" [matMenuTriggerFor]="columnFilterMenu">
             <mat-icon>add_circle_outline</mat-icon>
-            <span>&nbsp;Add&nbsp;Filter</span>
+            <span>Add Filter</span>
           </button>
           <mat-menu #columnFilterMenu="matMenu">
             @for (column of scene.columns; track column) {
@@ -92,7 +93,7 @@
     </div>
 
     @if (showRangeFilters) {
-      <div>
+      <div id="div_range_filters">
         @for (rangeFilter of rangeFilters; track rangeFilter) {
           <div>
             <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">

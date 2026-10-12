@@ -1,5 +1,5 @@
 <div class="div_element_header">
-  <div style="display: flex">
+  <div class="div_header_actions">
     @if (isMoreMenuAvailable()) {
       <button class="but_config but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
         <mat-icon>more_vert</mat-icon>
@@ -44,9 +44,8 @@
       <mat-icon>settings</mat-icon>
     </button>
     @if (chartContext(); as chartContext) {
-      <button id="marginButton" [ngClass]="chartContext.isShowResizableMargin() ? 'but_config_active' : 'but_config'" mat-icon-button
-        [color]="chartContext.isShowResizableMargin() ? 'primary' : null" matTooltip="Toggle resizable chart margin"
-        (click)="chartContext.toggleShowResizableMargin()">
+      <button id="marginButton" class="but_config" mat-icon-button [class.koia-toggle-active]="chartContext.isShowResizableMargin()"
+        matTooltip="Toggle resizable chart margin" (click)="chartContext.toggleShowResizableMargin()">
         <mat-icon>crop_free</mat-icon>
       </button>
     }

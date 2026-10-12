@@ -36,6 +36,38 @@ describe('RangeFilterComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('step button should be spaced from slider without non-breaking spaces', () => {
+
+    // when
+    const stepButton: HTMLElement = fixture.nativeElement.querySelector('.but_range_step');
+
+    // then
+    expect(getComputedStyle(stepButton).marginRight).toBe('8px');
+    expect(fixture.nativeElement.querySelector('.div_range_filter').textContent).not.toContain('\u00A0');
+  });
+
+  it('inside range trigger should look like chip', () => {
+
+    // when
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.div_range_column_name .span_menu_trigger');
+
+    // then
+    expect(getComputedStyle(trigger).borderTopLeftRadius).toBe('12px');
+  });
+
+  it('outside range trigger should be highlighted', () => {
+
+    // given
+    component.filter.inverted = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.span_outside_range_menu_trigger');
+    expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(250, 218, 162)');
+  });
+
   it('#onChanged should refresh update number range filter and emit change event', fakeAsync(() => {
 
     // given

@@ -17,6 +17,7 @@ import { GraphContext } from 'app/shared/model/graph';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { GraphSideBarComponent } from './graph-side-bar.component';
+import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
 
 describe('GraphSideBarComponent', () => {
 
@@ -41,7 +42,7 @@ describe('GraphSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [GraphSideBarComponent, KoiaFormDirective],
+      declarations: [GraphSideBarComponent, KoiaFormDirective, SideBarHeaderComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         MatMenuModule, DragDropModule, MatSelectModule, MatSliderModule

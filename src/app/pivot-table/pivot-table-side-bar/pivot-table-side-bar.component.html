@@ -1,18 +1,4 @@
-<div class="div_accordion_options">
-  <mat-slide-toggle class="toggle_multi_expand" [(ngModel)]="multiExpandable"
-    (change)="onMultiExpandableChanged($event.checked)">
-    Multi Expansion
-  </mat-slide-toggle>
-  @if (multiExpandable) {
-    <span class="span_exp_collapse_all">
-      <button mat-icon-button matTooltip="Expand all" (click)="accordion.openAll()">
-        <mat-icon>expand_more</mat-icon>
-      </button>
-      <button mat-icon-button matTooltip="Collapse all" (click)="accordion.closeAll()">
-        <mat-icon>expand_less</mat-icon>
-      </button>
-    </span>
-  }
+<koia-side-bar-header [(multiExpandable)]="multiExpandable" (expandAll)="accordion.openAll()" (collapseAll)="accordion.closeAll()">
   @if (nonGroupedColumns && nonGroupedColumns.length > 0) {
     <span class="span_add_group">
       <mat-form-field koiaForm>
@@ -30,8 +16,7 @@
       </button>
     </span>
   }
-</div>
-<hr>
+</koia-side-bar-header>
 
   <div style="padding: 0 5px 0 5px;" koiaForm>
     @if (context) {

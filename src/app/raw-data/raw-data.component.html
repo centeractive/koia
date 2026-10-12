@@ -7,51 +7,9 @@
     @if (loading) {
       <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..." />
     }
-    <div id="view_toolbar">
-      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-      <mat-menu #moreMenu="matMenu">
-        @for (exportFormat of exportFormats; track exportFormat) {
-          <button mat-menu-item (click)="saveAs(exportFormat)">
-            <mat-icon>insert_drive_file</mat-icon>
-            <span>Save As {{ exportFormat }}</span>
-          </button>
-        }
-        @if (!dialogStyle) {
-          <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
-            <mat-icon>monitor</mat-icon>
-            <span>Manage Views</span>
-          </button>
-        }
-      </mat-menu>
-      @if (!dialogStyle) {
-        <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint
-          matTooltip="Print current view" (click)="printView()">
-          <mat-icon>print</mat-icon>
-        </button>
-      }
-
-      @if (!dialogStyle) {
-        <button mat-icon-button matTooltip="Save current view" (click)="saveConfig()">
-          <mat-icon>save_alt</mat-icon>
-        </button>
-        <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!configRecords.length" [matMenuTriggerFor]="restoreViewMenu">
-          <mat-icon [matBadge]="configRecords.length" [matBadgeHidden]="!configRecords.length" matBadgeSize="small" matBadgeColor="accent">
-            open_in_browser
-          </mat-icon>
-        </button>
-        <mat-menu #restoreViewMenu="matMenu">
-          @for (record of configRecords; track record) {
-            <button class="menu_item_details" mat-menu-item (click)="loadConfig(record)">
-              <mat-icon>monitor</mat-icon>
-              <span>{{ record.name }} <var>{{ record.modifiedTime | date:'short' }}</var></span>
-            </button>
-          }
-        </mat-menu>
-      }
-
-      <button [color]="considerColumnWidths ? 'accent' : ''" mat-icon-button
+    <koia-view-toolbar [moreMenu]="moreMenu" [persistable]="!dialogStyle" [savedViews]="configRecords" (save)="saveConfig()"
+      (restore)="loadConfig($event)">
+      <button mat-icon-button [class.koia-toggle-active]="considerColumnWidths"
         [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
         (click)="toggleConsiderColumnWidths()">
         <mat-icon>wrap_text</mat-icon>
@@ -60,11 +18,25 @@
         <koia-table-mode-toggles [columns]="columns" [multiLine]="multiLine" (multiLineChange)="toggleMultiLine()"
           [(showNestedObjects)]="showNestedObjects" />
       }
-      <button [color]="highlight ? 'accent' : ''" mat-icon-button
+      <button mat-icon-button [class.koia-toggle-active]="highlight"
         [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="toggleHighlight()">
         <mat-icon>highlight</mat-icon>
       </button>
-    </div>
+    </koia-view-toolbar>
+    <mat-menu #moreMenu="matMenu">
+      @for (exportFormat of exportFormats; track exportFormat) {
+        <button mat-menu-item (click)="saveAs(exportFormat)">
+          <mat-icon>insert_drive_file</mat-icon>
+          <span>Save As {{ exportFormat }}</span>
+        </button>
+      }
+      @if (!dialogStyle) {
+        <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
+          <mat-icon>monitor</mat-icon>
+          <span>Manage Views</span>
+        </button>
+      }
+    </mat-menu>
   </div>
 
   @if (columns) {

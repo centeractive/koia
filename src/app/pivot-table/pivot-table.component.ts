@@ -183,10 +183,6 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     this.renderPivotTable(config);
   }
 
-  printView(): void {
-    window.print();
-  }
-
   configToBeSaved(): { query: Query, data: PivotContext } {
     this.context.pivotOptions = this.pivotOptionsProvider.clonedPurgedPivotOptions(this.getPivotOptions());
     const context = CommonUtils.clone(this.context) as PivotContext;

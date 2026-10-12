@@ -20,6 +20,7 @@ import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table
 import { page } from 'vitest/browser';
 import { RawDataDialogComponent } from '../raw-data-dialog.component';
 import { RawDataComponent } from '../raw-data.component';
+import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 const TIMEOUT = 30_000;
 const FILTERED_COUNT = 411;
@@ -36,7 +37,7 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataDialogComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ColumnResizeDirective],
+      declarations: [RawDataDialogComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, ColumnResizeDirective],
       imports: [MatDialogModule, MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule,
         MatBottomSheetModule],
       providers: [

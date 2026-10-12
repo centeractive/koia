@@ -28,6 +28,7 @@ import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
+import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 @Component({ selector: 'koia-main-toolbar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
 class MainToolbarComponent { }
@@ -99,7 +100,7 @@ describe('DashboardComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
-        SummaryTableComponent, ChartComponent, GraphComponent, ElementHeaderComponent
+        SummaryTableComponent, ChartComponent, GraphComponent, ElementHeaderComponent, ViewToolbarComponent
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule],
       providers: [
@@ -956,6 +957,33 @@ describe('DashboardComponent', () => {
 
       // then
       expect(window.print).toHaveBeenCalled();
+    });
+
+    it('#click on save button should save view', () => {
+
+      // given
+      component.addGraph();
+      fixture.detectChanges();
+      vi.spyOn(component, 'saveView').mockReturnValue(undefined);
+
+      // when
+      fixture.debugElement.query(By.css('#but_save_view')).nativeElement.click();
+
+      // then
+      expect(component.saveView).toHaveBeenCalled();
+    });
+
+    it('print and save buttons should be disabled without elements', () => {
+
+      // given
+      component.elementContexts = [];
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.debugElement.query(By.css('#but_print')).nativeElement.disabled).toBe(true);
+      expect(fixture.debugElement.query(By.css('#but_save_view')).nativeElement.disabled).toBe(true);
     });
 
     it('#saveAs should export image', () => {

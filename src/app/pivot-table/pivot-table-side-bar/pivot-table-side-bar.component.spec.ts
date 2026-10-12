@@ -16,6 +16,7 @@ import { ValueGrouping } from '../../shared/value-range/model/value-grouping.typ
 import { ValueRange } from '../../shared/value-range/model/value-range.type';
 import { PivotContext } from '../model';
 import { PivotTableSideBarComponent } from './pivot-table-side-bar.component';
+import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
 
 describe('PivotTableSideBarComponent', () => {
 
@@ -48,7 +49,7 @@ describe('PivotTableSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [PivotTableSideBarComponent, KoiaFormDirective],
+      declarations: [PivotTableSideBarComponent, KoiaFormDirective, SideBarHeaderComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         DragDropModule, MatSelectModule

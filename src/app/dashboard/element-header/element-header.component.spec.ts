@@ -253,6 +253,98 @@ describe('ElementHeaderComponent', () => {
     expect(query('.but_move')).toBeFalsy();
   });
 
+  it('header should have tile header height, bottom border and keep buttons inside', () => {
+
+    // when
+    render(new SummaryContext([]), null, true);
+
+    // then
+    const header = query('.div_element_header');
+    const style = getComputedStyle(header);
+    expect(header.offsetHeight).toBe(48);
+    expect(style.borderBottomWidth).toBe('1px');
+    expect(style.borderBottomColor).toBe('rgb(224, 224, 224)');
+    expect(query('.but_close').getBoundingClientRect().right).toBeLessThanOrEqual(fixture.nativeElement.getBoundingClientRect().right);
+  });
+
+  it('header buttons should be compact', () => {
+
+    // when
+    render(new SummaryContext([]), null);
+
+    // then
+    expect(query('#configButton').offsetWidth).toBe(36);
+    expect(query('#configButton').offsetHeight).toBe(36);
+    expect(getComputedStyle(query('#configButton .mat-mdc-button-touch-target')).display).toBe('none');
+  });
+
+  it('idle header buttons should be dimmed and stay behind sticky header', () => {
+
+    // when
+    render(new SummaryContext([]), null);
+
+    // then
+    const style = getComputedStyle(query('.but_close'));
+    expect(style.opacity).toBe('0.6');
+    expect(style.zIndex).toBe('1');
+  });
+
+  it('warning button should be fully opaque', () => {
+
+    // given
+    const context = new SummaryContext([]);
+    context.warning = 'too many values';
+
+    // when
+    render(context, null);
+
+    // then
+    expect(getComputedStyle(query('.but_warning')).opacity).toBe('1');
+  });
+
+  it('margin button should be marked active while resizable margin is shown', () => {
+
+    // given
+    render(new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 }), null);
+
+    // when
+    query('#marginButton').click();
+    fixture.detectChanges();
+
+    // then
+    const marginButton = query('#marginButton');
+    const style = getComputedStyle(marginButton);
+    expect(marginButton.classList).toContain('but_config');
+    expect(marginButton.classList).toContain('koia-toggle-active');
+    expect(style.opacity).toBe('1');
+    expect(style.color).toBe('rgb(56, 142, 60)');
+  });
+
+  it('margin button should not be marked active while resizable margin is hidden', () => {
+
+    // when
+    render(new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 }), null);
+
+    // then
+    const marginButton = query('#marginButton');
+    expect(marginButton.classList).toContain('but_config');
+    expect(marginButton.classList).not.toContain('koia-toggle-active');
+  });
+
+  it('title should fit two compact rows', () => {
+
+    // when
+    render(new SummaryContext([]), null);
+
+    // then
+    const title = query('.textarea_title');
+    const style = getComputedStyle(title);
+    expect(title.offsetHeight).toBe(36);
+    expect(style.fontSize).toBe('14px');
+    expect(style.fontWeight).toBe('500');
+    expect(style.lineHeight).toBe('16px');
+  });
+
   it('should register move button as drag handle of enclosing drag element', () => {
 
     // given

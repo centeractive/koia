@@ -16,6 +16,7 @@ import { DialogService } from 'app/shared/services';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { MatIconModuleMock } from 'app/shared/test';
 import { of } from 'rxjs';
+import { page, userEvent } from 'vitest/browser';
 import { ViewTabBarComponent } from './view-tab-bar.component';
 
 @Component({ template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
@@ -97,6 +98,71 @@ describe('ViewTabBarComponent', () => {
 
     // then
     expect(activeLinks.map(l => l.nativeElement.id)).toEqual(['tab-tab2']);
+  });
+
+  it('active tab should be marked by rounded primary underline', () => {
+
+    // when
+    const underline = element('#tab-tab2 .mdc-tab-indicator__content--underline');
+
+    // then
+    const style = getComputedStyle(underline);
+    expect(element('#tab-tab2').classList).toContain('mdc-tab-indicator--active');
+    expect(style.borderTopWidth).toBe('3px');
+    expect(style.borderTopColor).toBe('rgb(48, 63, 159)');
+    expect(style.borderTopLeftRadius).toBe('3px');
+    expect(style.borderBottomLeftRadius).toBe('0px');
+    expect(style.opacity).toBe('1');
+  });
+
+  it('inactive tab should not show underline', () => {
+
+    // when
+    const underline = element('#tab-tab1 .mdc-tab-indicator__content--underline');
+
+    // then
+    expect(getComputedStyle(underline).opacity).toBe('0');
+  });
+
+  it('tab titles should not be padded by non-breaking spaces', () => {
+
+    // when
+    const label = element('#tab-tab1 .tab_label');
+
+    // then
+    expect(element('#tabRawData').textContent).not.toContain('\u00A0');
+    expect(element('#tab-tab1').textContent).not.toContain('\u00A0');
+    expect(getComputedStyle(label).columnGap).toBe('6px');
+  });
+
+  it('close icon should be visible on active tab only', () => {
+
+    // when
+    const activeCloseIcon = element('#tab-tab2 .icon_close_tab');
+    const inactiveCloseIcon = element('#tab-tab1 .icon_close_tab');
+
+    // then
+    expect(getComputedStyle(activeCloseIcon).visibility).toBe('visible');
+    expect(getComputedStyle(inactiveCloseIcon).visibility).toBe('hidden');
+  });
+
+  describe('hovering', () => {
+
+    beforeAll(() => page.viewport(1280, 800));
+
+    afterAll(() => page.viewport(414, 896));
+
+    afterEach(() => userEvent.unhover(element('#tab-tab1')));
+
+    it('hovered tab should be tinted and show close icon', async () => {
+
+      // when
+      await userEvent.hover(element('#tab-tab1'));
+
+      // then
+      expect(getComputedStyle(element('#tab-tab1')).backgroundColor).toBe('rgba(48, 63, 159, 0.06)');
+      expect(getComputedStyle(element('#tab-tab1 .icon_close_tab')).visibility).toBe('visible');
+    });
   });
 
   it('#urlOf should return url of tab', () => {

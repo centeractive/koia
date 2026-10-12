@@ -1,7 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
 
 :root {
-  --koia-tile-border: 1px solid #e0e0e0;
+  --koia-primary: #303f9f;
+  --koia-accent: #388e3c;
+  --koia-on-color: #fff;
+  --koia-surface: #fff;
+  --koia-text-primary: rgba(0, 0, 0, 0.87);
+  --koia-text-secondary: rgba(0, 0, 0, 0.6);
+  --koia-border-color: #e0e0e0;
+  --koia-outline-color: #8a94a6;
+  --koia-tile-border: 1px solid var(--koia-border-color);
+  --koia-hover-tint: rgba(48, 63, 159, 0.06);
+  --koia-active-tint: rgba(56, 142, 60, 0.12);
+  --koia-toolbar-height: 48px;
+  --koia-tile-header-height: 48px;
 }
 
 html {
@@ -34,7 +46,7 @@ body {
 }
 
 mat-sidenav-content.mat-drawer-content {
-  background-color: white;
+  background-color: var(--koia-surface);
   overflow-x: hidden;
 }
 
@@ -58,30 +70,10 @@ mat-sidenav-content.mat-drawer-content {
   white-space: pre-line;
 }
 
-#view_toolbar {
-  background-color: #CFD8DC;
-  width: 100%;
-  border-top: 1px solid rgb(145, 144, 144);
-}
-
 .sidenav {
   width: 380px;
   max-width: 380px;
   /* keep in sync with ViewController#SIDENAV_WIDTH */
-}
-
-.div_accordion_options {
-  width: 100%;
-}
-
-.toggle_multi_expand {
-  padding: 10px 10px 12px 15px;
-}
-
-.span_exp_collapse_all {
-  position: absolute;
-  right: 0px;
-  margin-right: 20px;
 }
 
 mat-panel-description {
@@ -98,10 +90,11 @@ mat-panel-description {
   justify-content: space-between;
 }
 
-.div_group_values {
+.div_group_values,
+.div_column_list {
   border: solid 1px #ccc;
   min-height: 40px;
-  background: white;
+  background: var(--koia-surface);
   border-radius: 4px;
   overflow: hidden;
   display: block;
@@ -141,17 +134,70 @@ mat-panel-description {
 }
 
 .accent {
-  color: white;
-  background-color: #38983b;
-}
-
-.primary {
-  color: white;
-  background-color: #3F51B5;
+  color: var(--koia-on-color);
+  background-color: var(--koia-accent);
 }
 
 .white {
-  background-color: white;
+  background-color: var(--koia-surface);
+}
+
+.mat-mdc-icon-button.koia-toggle-active {
+  --mat-icon-button-icon-color: var(--koia-accent);
+  --mat-icon-button-state-layer-color: var(--koia-accent);
+  background-color: var(--koia-active-tint);
+}
+
+.koia-toolbar-separator {
+  display: inline-block;
+  flex-shrink: 0;
+  align-self: center;
+  vertical-align: middle;
+  width: 1px;
+  height: 24px;
+  margin: 0 8px;
+  background-color: var(--koia-border-color);
+}
+
+.span_menu_trigger,
+.span_outside_range_menu_trigger {
+  padding: 2px 8px;
+  border: var(--koia-tile-border);
+  border-radius: 12px;
+  background-color: var(--koia-surface);
+  cursor: pointer;
+}
+
+.span_menu_trigger:hover {
+  background-color: var(--koia-hover-tint);
+}
+
+.span_outside_range_menu_trigger {
+  background-color: rgb(250, 218, 162);
+}
+
+.div_column_item.cdk-drag-preview,
+.div_group_value.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 4px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+    0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.div_column_item.cdk-drag-placeholder,
+.div_group_value.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.div_column_item.cdk-drag-animating,
+.div_group_value.cdk-drag-animating,
+.div_column_list.cdk-drop-list-dragging .div_column_item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.div_column_list > .div_column_item:last-child {
+  border: none;
 }
 
 .dialog-container .mat-mdc-dialog-container {
@@ -193,6 +239,7 @@ var {
 
   koia-main-toolbar,
   koia-range-filter,
+  koia-view-toolbar,
   img {
     display: none;
   }
@@ -234,7 +281,7 @@ var {
   --mat-form-field-container-height: 40px;
   --mat-form-field-container-vertical-padding: 8px;
   --mat-form-field-outlined-container-shape: 8px;
-  --mat-form-field-outlined-outline-color: #8a94a6;
+  --mat-form-field-outlined-outline-color: var(--koia-outline-color);
   --mat-form-field-outlined-hover-outline-color: #4a5568;
   --mat-button-filled-container-height: 40px;
   --mat-button-outlined-container-height: 40px;
@@ -253,14 +300,14 @@ var {
 }
 
 .koia-form .mat-expansion-panel {
-  background: #fff !important;
+  background: var(--koia-surface) !important;
   border: var(--koia-tile-border);
   border-radius: 10px !important;
   margin: 0 !important;
 }
 
 .koia-form .mdc-text-field--outlined:not(.mdc-text-field--disabled) {
-  background: #fff;
+  background: var(--koia-surface);
   border-radius: var(--mat-form-field-outlined-container-shape);
 }
 
@@ -294,8 +341,8 @@ var {
   height: 22px;
   margin-right: 10px;
   border-radius: 50%;
-  background: #303f9f;
-  color: #fff;
+  background: var(--koia-primary);
+  color: var(--koia-on-color);
   font-size: 12px;
   font-weight: 500;
 }

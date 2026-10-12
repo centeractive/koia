@@ -30,82 +30,8 @@
       @if (loading) {
         <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..."></mat-progress-bar>
       }
-      <div id="view_toolbar">
-        <button id="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #moreMenu="matMenu">
-          <button id="menuItemLayout" mat-menu-item [matMenuTriggerFor]="layoutMenu">
-            <mat-icon>dashboard</mat-icon>
-            <span>Layout</span>
-          </button>
-          @if (isGridLayout()) {
-            <button id="menuItemGridColumns" mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
-              <mat-icon>view_column</mat-icon>
-              <span>Grid Columns</span>
-            </button>
-            <button id="menuItemGridCellRatio" mat-menu-item [matMenuTriggerFor]="gridRatioMenu">
-              <mat-icon>aspect_ratio</mat-icon>
-              <span>Grid Cell Ratio (width:height)</span>
-            </button>
-          }
-          <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
-            <mat-icon>monitor</mat-icon>
-            <span>Manage Views</span>
-          </button>
-        </mat-menu>
-
-        <mat-menu #layoutMenu="matMenu">
-          <button id="menuItemGridLayout" mat-menu-item [disabled]="isGridLayout()" (click)="setLayout(gridRoute)">
-            <mat-icon svgIcon="grid_view"></mat-icon>
-            <span>Grid (snap to grid)</span>
-          </button>
-          <button id="menuItemFlexLayout" mat-menu-item [disabled]="!isGridLayout()" (click)="setLayout(flexRoute)">
-            <mat-icon svgIcon="flex_view"></mat-icon>
-            <span>Flex</span>
-          </button>
-        </mat-menu>
-
-        <mat-menu #gridColumnsMenu="matMenu">
-          @for (columns of gridColumnChoices; track columns) {
-            <button mat-menu-item [disabled]="columns === gridLayout.gridColumns" (click)="setGridColumns(columns)">{{ columns }}
-            Column{{ columns === 1 ? '' : 's' }}</button>
-          }
-        </mat-menu>
-
-        <mat-menu #gridRatioMenu="matMenu">
-          @for (ratio of gridCellRatioChoices; track ratio) {
-            <button mat-menu-item [disabled]="ratio === gridLayout.gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
-          }
-        </mat-menu>
-
-        <button id="but_print" mat-icon-button printSectionId="print-section" ngxPrint matTooltip="Print current view"
-          [disabled]="!elementContexts?.length" (click)="printView()">
-          <mat-icon>print</mat-icon>
-        </button>
-
-        <button mat-icon-button matTooltip="Save current view"
-          [disabled]="!elementContexts?.length" (click)="saveView()">
-          <mat-icon>save_alt</mat-icon>
-        </button>
-
-        <button class="but_more" mat-icon-button matTooltip="Restore saved view" [disabled]="!views.length"
-          [matMenuTriggerFor]="restoreViewMenu">
-          <mat-icon [matBadge]="views.length" [matBadgeHidden]="!views.length" matBadgeSize="small"
-            matBadgeColor="accent">
-            open_in_browser
-          </mat-icon>
-        </button>
-        <mat-menu #restoreViewMenu="matMenu">
-          @for (view of views; track view) {
-            <button class="menu_item_details" mat-menu-item (click)="loadView(view)">
-              <mat-icon>monitor</mat-icon>
-              <span>{{ view.name }} <var>{{ view.modifiedTime | date:'short' }}</var></span>
-            </button>
-          }
-        </mat-menu>
-
-        &nbsp;&nbsp;&nbsp;
+      <koia-view-toolbar [moreMenu]="moreMenu" [hasContent]="!!elementContexts?.length" [savedViews]="views" (save)="saveView()"
+        (restore)="loadView($event)">
         <button mat-icon-button matTooltip="Add Chart" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
         </button>
@@ -115,7 +41,51 @@
         <button mat-icon-button matTooltip="Add Summary" (click)="addSummaryTable()">
           <mat-icon svgIcon="add_summary"></mat-icon>
         </button>
-      </div>
+      </koia-view-toolbar>
+      <mat-menu #moreMenu="matMenu">
+        <button id="menuItemLayout" mat-menu-item [matMenuTriggerFor]="layoutMenu">
+          <mat-icon>dashboard</mat-icon>
+          <span>Layout</span>
+        </button>
+        @if (isGridLayout()) {
+          <button id="menuItemGridColumns" mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
+            <mat-icon>view_column</mat-icon>
+            <span>Grid Columns</span>
+          </button>
+          <button id="menuItemGridCellRatio" mat-menu-item [matMenuTriggerFor]="gridRatioMenu">
+            <mat-icon>aspect_ratio</mat-icon>
+            <span>Grid Cell Ratio (width:height)</span>
+          </button>
+        }
+        <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
+          <mat-icon>monitor</mat-icon>
+          <span>Manage Views</span>
+        </button>
+      </mat-menu>
+
+      <mat-menu #layoutMenu="matMenu">
+        <button id="menuItemGridLayout" mat-menu-item [disabled]="isGridLayout()" (click)="setLayout(gridRoute)">
+          <mat-icon svgIcon="grid_view"></mat-icon>
+          <span>Grid (snap to grid)</span>
+        </button>
+        <button id="menuItemFlexLayout" mat-menu-item [disabled]="!isGridLayout()" (click)="setLayout(flexRoute)">
+          <mat-icon svgIcon="flex_view"></mat-icon>
+          <span>Flex</span>
+        </button>
+      </mat-menu>
+
+      <mat-menu #gridColumnsMenu="matMenu">
+        @for (columns of gridColumnChoices; track columns) {
+          <button mat-menu-item [disabled]="columns === gridLayout.gridColumns" (click)="setGridColumns(columns)">{{ columns }}
+          Column{{ columns === 1 ? '' : 's' }}</button>
+        }
+      </mat-menu>
+
+      <mat-menu #gridRatioMenu="matMenu">
+        @for (ratio of gridCellRatioChoices; track ratio) {
+          <button mat-menu-item [disabled]="ratio === gridLayout.gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
+        }
+      </mat-menu>
     </div>
 
     <ng-template #elementBody let-context>

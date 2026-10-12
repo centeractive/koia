@@ -77,6 +77,19 @@ describe('SummaryTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('table container should leave room for tile header', () => {
+
+    // given
+    fixture.detectChanges();
+    fixture.nativeElement.style.display = 'block';
+
+    // when
+    fixture.nativeElement.style.height = '300px';
+
+    // then
+    expect(fixture.nativeElement.querySelector('#div_table').offsetHeight).toBe(252);
+  });
+
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {
 
     // given

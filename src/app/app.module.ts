@@ -66,6 +66,7 @@ import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confir
 import { DraggableColumnComponent } from './shared/component/draggable-column/draggable-column.component';
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
+import { SideBarHeaderComponent } from './shared/component/side-bar-header/side-bar-header.component';
 import { ManageConfigDialogComponent } from './shared/component/manage-config-dialog';
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
 import { StatusComponent } from './shared/component/status/status.component';
@@ -81,6 +82,7 @@ import { CouchDBService } from './shared/services/backend/couchdb/couchdb.servic
 import { DialogService } from './shared/services/dialog.service';
 import { ReaderService } from './shared/services/reader';
 import { TableModeTogglesComponent } from './shared/ui/virtual-table/table-mode-toggles.component';
+import { ViewToolbarComponent } from './shared/ui/view-toolbar/view-toolbar.component';
 import { VirtualTableComponent } from './shared/ui/virtual-table/virtual-table.component';
 import { MatIconModuleMock } from './shared/test';
 import { ValueRangeGroupingService } from './shared/value-range';
@@ -129,6 +131,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         ScenePreviewComponent,
         VirtualTableComponent,
         TableModeTogglesComponent,
+        ViewToolbarComponent,
+        SideBarHeaderComponent,
         ViewLauncherDialogComponent,
         ConfigLauncherDialogComponent,
         ManageConfigDialogComponent,

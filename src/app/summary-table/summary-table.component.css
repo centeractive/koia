@@ -2,7 +2,7 @@
   overflow: auto;
   margin-right: 1px;
   /* to have resize-cursor displayed when vertical scrollbar is shown */
-  height: calc(100% - 48px);
+  height: calc(100% - var(--koia-tile-header-height));
 }
 
 .mat-mdc-table {

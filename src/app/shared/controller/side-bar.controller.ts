@@ -45,12 +45,6 @@ export abstract class SideBarController implements OnChanges {
          .filter(c => !groupedColumns.includes(c.name));
    }
 
-   onMultiExpandableChanged(checked: boolean): void {
-      if (!checked) {
-         this.accordion.closeAll();
-      }
-   }
-
    protected defineSelectableItems(): void {
       this.selectedSplitColumns = this.elementContext.splitColumns;
       this.availableSplitColumns = this.determineAvailableSplitColumns();

@@ -39,12 +39,6 @@ export class PivotTableSideBarComponent implements OnChanges {
     }
   }
 
-  onMultiExpandableChanged(checked: boolean): void {
-    if (!checked) {
-      this.accordion.closeAll();
-    }
-  }
-
   addValueGrouping(column: Column): ValueGrouping {
     const grouping = this.valueGroupingGenerator.createGrouping(this.data, column.name);
     this.context.valueGroupings.push(grouping);

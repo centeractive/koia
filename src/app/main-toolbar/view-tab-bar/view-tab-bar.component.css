@@ -8,6 +8,37 @@
 nav {
   flex-shrink: 1;
   min-width: 0;
+  --mat-tab-divider-height: 0;
+  --mat-tab-active-indicator-color: var(--koia-primary);
+  --mat-tab-active-focus-indicator-color: var(--koia-primary);
+  --mat-tab-active-hover-indicator-color: var(--koia-primary);
+  --mat-tab-active-indicator-height: 3px;
+  --mat-tab-active-indicator-shape: 3px 3px 0 0;
+  --mat-tab-active-label-text-color: var(--koia-primary);
+  --mat-tab-active-focus-label-text-color: var(--koia-primary);
+  --mat-tab-active-hover-label-text-color: var(--koia-primary);
+  --mat-tab-inactive-label-text-color: var(--koia-text-secondary);
+  --mat-tab-inactive-focus-label-text-color: var(--koia-text-primary);
+  --mat-tab-inactive-hover-label-text-color: var(--koia-text-primary);
+}
+
+.mat-mdc-tab-link {
+  padding: 0 12px 0 16px;
+  border-radius: 8px 8px 0 0;
+}
+
+.mat-mdc-tab-link:hover {
+  background-color: var(--koia-hover-tint);
+}
+
+:host ::ng-deep .mat-mdc-tab-link .mat-mdc-tab-ripple {
+  border-radius: inherit;
+}
+
+.tab_label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 #butAddTab {
@@ -18,9 +49,18 @@ nav {
   font-size: 16px;
   width: 16px;
   height: 16px;
-  opacity: 0.5;
+  border-radius: 50%;
+  opacity: 0.6;
+  visibility: hidden;
+}
+
+.mat-mdc-tab-link:hover .icon_close_tab,
+.mat-mdc-tab-link:focus-visible .icon_close_tab,
+.mdc-tab--active .icon_close_tab {
+  visibility: visible;
 }
 
 .icon_close_tab:hover {
   opacity: 1;
+  background-color: rgba(0, 0, 0, 0.08);
 }

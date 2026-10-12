@@ -59,6 +59,30 @@ describe('ValueFilterComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('menu triggers should look like chips', () => {
+
+    // when
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.span_menu_trigger');
+
+    // then
+    const style = getComputedStyle(trigger);
+    expect(style.borderTopLeftRadius).toBe('12px');
+    expect(style.paddingLeft).toBe('8px');
+  });
+
+  it('filter value input should look like compact outlined field', () => {
+
+    // when
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('#column_filter_input');
+
+    // then
+    const style = getComputedStyle(input);
+    expect(input.offsetHeight).toBe(28);
+    expect(style.borderTopLeftRadius).toBe('8px');
+    expect(style.borderTopColor).toBe('rgb(138, 148, 166)');
+    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+  });
+
   it('#availableOperators should return all operators when column has TEXT data type', () => {
 
     // given

@@ -1,15 +1,19 @@
 <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
 <nav mat-tab-nav-bar [tabPanel]="tabPanel">
   <a id="tabRawData" mat-tab-link [routerLink]="[urlRawdata]" [active]="currUrl === urlRawdata">
-    <mat-icon svgIcon="raw_data_view"></mat-icon>
-    <span>&nbsp;Raw Data</span>
+    <span class="tab_label">
+      <mat-icon svgIcon="raw_data_view"></mat-icon>
+      <span>Raw Data</span>
+    </span>
   </a>
   @for (tab of viewTabsService.tabs; track tab.id) {
     <a [id]="'tab-' + tab.id" mat-tab-link [routerLink]="[urlOf(tab)]" [active]="currUrl === urlOf(tab)"
       matTooltip="Double-click to rename" (dblclick)="rename(tab)">
-      <mat-icon [svgIcon]="iconFor(tab)"></mat-icon>
-      <span>&nbsp;{{ tab.title }}&nbsp;</span>
-      <mat-icon class="icon_close_tab" matTooltip="Close" (click)="close($event, tab)">close</mat-icon>
+      <span class="tab_label">
+        <mat-icon [svgIcon]="iconFor(tab)"></mat-icon>
+        <span>{{ tab.title }}</span>
+        <mat-icon class="icon_close_tab" matTooltip="Close" (click)="close($event, tab)">close</mat-icon>
+      </span>
     </a>
   }
 </nav>
