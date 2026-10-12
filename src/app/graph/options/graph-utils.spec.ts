@@ -7,7 +7,7 @@ describe('GraphUtils', () => {
 
    const now = new Date().getTime();
    const datePipe = new DatePipe('en-US');
-   const rootNode: GraphNode = { parent: null, group: 0, name: '', value: '', info: null };
+   const rootNode: GraphNode = { parent: null, group: 0, name: '', value: '', info: null, count: 0 };
 
    it('#createDisplayText should return empty string for root node', () => {
 
@@ -23,7 +23,7 @@ describe('GraphUtils', () => {
       // given
       const graphContext = new GraphContext([]);
       graphContext.groupByColumns = [createColumn('Path', DataType.TEXT)];
-      const node: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51' };
+      const node: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51', count: 51 };
 
       // when
       const text = GraphUtils.createDisplayText(node, graphContext);
@@ -37,8 +37,8 @@ describe('GraphUtils', () => {
       // given
       const graphContext = new GraphContext([]);
       graphContext.groupByColumns = [createColumn('Path', DataType.TEXT), createColumn('Level', DataType.TEXT)];
-      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51' };
-      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'ERROR', info: '7' };
+      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51', count: 51 };
+      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'ERROR', info: '7', count: 7 };
 
       // when
       const value = GraphUtils.findColumnValue(levelNode, 'Host');
@@ -50,8 +50,8 @@ describe('GraphUtils', () => {
    it('#findColumnValue should return value when provided node matches column name', () => {
 
       // given
-      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51' };
-      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'ERROR', info: '7' };
+      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51', count: 51 };
+      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'ERROR', info: '7', count: 7 };
 
       // when
       const value = GraphUtils.findColumnValue(levelNode, 'Level');
@@ -63,8 +63,8 @@ describe('GraphUtils', () => {
    it('#findColumnValue should return value when parent node matches column name', () => {
 
       // given
-      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51' };
-      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'ERROR', info: '7' };
+      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '51', count: 51 };
+      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'ERROR', info: '7', count: 7 };
 
       // when
       const value = GraphUtils.findColumnValue(levelNode, 'Path');
@@ -87,7 +87,7 @@ describe('GraphUtils', () => {
       // given
       const graphContext = new GraphContext([]);
       graphContext.groupByColumns = [createColumn('Created', DataType.TIME, TimeUnit.SECOND)];
-      const timeNode: GraphNode = { parent: rootNode, group: 0, name: 'Created (per second)', value: now, info: '88' };
+      const timeNode: GraphNode = { parent: rootNode, group: 0, name: 'Created (per second)', value: now, info: '88', count: 88 };
 
       // when
       const columnNames = GraphUtils.collectNonTimeColumnNames(timeNode, graphContext);
@@ -105,9 +105,9 @@ describe('GraphUtils', () => {
          createColumn('Path', DataType.TEXT),
          createColumn('Level', DataType.TEXT),
       ];
-      const timeNode: GraphNode = { parent: rootNode, group: 0, name: 'Date/Time (per minute)', value: now, info: '88' };
-      const pathNode: GraphNode = { parent: timeNode, group: 0, name: 'Path', value: '/var/log/messages', info: '27' };
-      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'WARN', info: '4' };
+      const timeNode: GraphNode = { parent: rootNode, group: 0, name: 'Date/Time (per minute)', value: now, info: '88', count: 88 };
+      const pathNode: GraphNode = { parent: timeNode, group: 0, name: 'Path', value: '/var/log/messages', info: '27', count: 27 };
+      const levelNode: GraphNode = { parent: pathNode, group: 0, name: 'Level', value: 'WARN', info: '4', count: 4 };
 
       // when
       const columnNames = GraphUtils.collectNonTimeColumnNames(levelNode, graphContext);
@@ -121,7 +121,7 @@ describe('GraphUtils', () => {
       // given
       const graphContext = new GraphContext([]);
       graphContext.groupByColumns = [createColumn('Date', DataType.TIME, TimeUnit.YEAR)];
-      const graphNode: GraphNode = { parent: rootNode, group: 0, name: 'Date (per year)', value: now, info: '156' };
+      const graphNode: GraphNode = { parent: rootNode, group: 0, name: 'Date (per year)', value: now, info: '156', count: 156 };
 
       // when
       const formattedValue = GraphUtils.formattedValueOf(graphNode, graphContext);
@@ -135,7 +135,7 @@ describe('GraphUtils', () => {
       // given
       const graphContext = new GraphContext([]);
       graphContext.groupByColumns = [createColumn('Path', DataType.TEXT)];
-      const graphNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: 'var/log/messages', info: '51' };
+      const graphNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: 'var/log/messages', info: '51', count: 51 };
 
       // when
       const formattedValue = GraphUtils.formattedValueOf(graphNode, graphContext);

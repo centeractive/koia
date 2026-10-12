@@ -27,7 +27,7 @@ describe('NodeDoubleClickHandler', () => {
    it('#onNodeDoubleClicked should reveal raw data of root node', () => {
 
       // given
-      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '25' };
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '25', count: 25 };
       graphContext.query = new Query();
 
       // when
@@ -40,8 +40,8 @@ describe('NodeDoubleClickHandler', () => {
    it('#onNodeDoubleClicked should reveal raw data of leaf node', () => {
 
       // given
-      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
-      const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '25' };
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '', count: 0 };
+      const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '25', count: 25 };
       graphContext.groupByColumns = [levelColumn];
       graphContext.query = new Query();
 
@@ -55,8 +55,8 @@ describe('NodeDoubleClickHandler', () => {
    it('#onNodeDoubleClicked should reveal raw data of leaf node with <empty> value', () => {
 
       // given
-      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
-      const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: PropertyFilter.EMPTY_VALUE, info: '25' };
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '', count: 0 };
+      const node: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: PropertyFilter.EMPTY_VALUE, info: '25', count: 25 };
       graphContext.query = new Query();
 
       // when
@@ -70,8 +70,8 @@ describe('NodeDoubleClickHandler', () => {
    it('#onNodeDoubleClicked should reveal raw data of time node', () => {
 
       // given
-      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '' };
-      const node: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '25' };
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '', count: 0 };
+      const node: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '25', count: 25 };
       timeColumn.groupingTimeUnit = TimeUnit.HOUR;
       graphContext.groupByColumns = [timeColumn];
       graphContext.query = new Query();

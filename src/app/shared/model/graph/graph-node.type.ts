@@ -6,4 +6,5 @@ export interface GraphNode extends SimulationNodeDatum {
    name: string; // column name or time unit
    value: string | number;
    info: string; // i.e. count
+   count: number; // number of related rows
 }

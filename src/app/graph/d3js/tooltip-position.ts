@@ -4,10 +4,10 @@ const OFFSET_Y = 10;
 export interface Size { width: number; height: number; }
 export interface Position { left: number; top: number; }
 
-export function tooltipPosition(nodeX: number, nodeY: number, tooltip: Size, container: Size): Position {
-    let left = nodeX + OFFSET_X;
+export function tooltipPosition(nodeX: number, nodeY: number, nodeRadius: number, tooltip: Size, container: Size): Position {
+    let left = nodeX + nodeRadius + OFFSET_X;
     if (left + tooltip.width > container.width) {
-        left = nodeX - OFFSET_X - tooltip.width;
+        left = nodeX - nodeRadius - OFFSET_X - tooltip.width;
     }
     return {
         left: clamp(left, container.width - tooltip.width),

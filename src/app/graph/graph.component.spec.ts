@@ -6,6 +6,7 @@ import { Column, DataType } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { SceneFactory } from 'app/shared/test';
+import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
 import { GraphComponent } from './graph.component';
 
 describe('GraphComponent', () => {
@@ -90,9 +91,9 @@ describe('GraphComponent', () => {
     // then    
     discardPeriodicTasks();
     const joc = (expected: object) => expect.objectContaining(expected);
-    const root = { index: 0, parent: null, group: 0, name: '', value: '', info: null };
-    const child1 = { index: 1, parent: joc(root), group: 1, name: 't1', value: 'a', info: '1' };
-    const child2 = { index: 2, parent: joc(root), group: 2, name: 't1', value: 'b', info: '3' };
+    const root = { index: 0, parent: null, group: 0, name: '', value: '', info: null, count: 4 };
+    const child1 = { index: 1, parent: joc(root), group: 1, name: 't1', value: 'a', info: '1', count: 1 };
+    const child2 = { index: 2, parent: joc(root), group: 2, name: 't1', value: 'b', info: '3', count: 3 };
 
     expect(component.graphData.nodes.length).toBe(3);
     expect(component.graphData.nodes[0]).toEqual(joc(root));
@@ -106,24 +107,60 @@ describe('GraphComponent', () => {
     expect(component.graphData.links[1].target.index).toBe(child2.index);
   }));
 
-  it('should create graph options when size changes', fakeAsync(() => {
+  it('size change should regenerate graph', fakeAsync(() => {
 
     // given
-    context.dataColumns = [findColumn('n1')];
-    fixture.detectChanges();
-    component.ngOnInit();
-    flush();
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
 
     // when
-    context.setSize(120, 500)
-    fixture.detectChanges();
+    context.setSize(120, 500);
     flush();
 
     // then
-    expect(component.graphOptions['chart'].width).toEqual(120);
-    expect(component.graphOptions['chart'].height).toEqual(500);
+    expect(generate).toHaveBeenCalledExactlyOnceWith(component.graphData, svgDiv(), context);
+  }));
 
-    discardPeriodicTasks();
+  it('window resize should regenerate graph', fakeAsync(() => {
+
+    // given
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+
+    // when
+    window.dispatchEvent(new Event('resize'));
+    flush();
+
+    // then
+    expect(generate).toHaveBeenCalledExactlyOnceWith(component.graphData, svgDiv(), context);
+  }));
+
+  it('destroy should stop graph simulation', () => {
+
+    // given
+    const stop = vi.spyOn(D3ForceGraphGenerator.prototype, 'stop');
+
+    // when
+    fixture.destroy();
+
+    // then
+    expect(stop).toHaveBeenCalled();
+  });
+
+  it('grid view should leave parent element size untouched', fakeAsync(() => {
+
+    // given
+    vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+    component.gridView = true;
+    const parentStyle = component.cmpElementRef.nativeElement.parentElement.style;
+    parentStyle.width = '';
+    parentStyle.height = '';
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(parentStyle.width).toBe('');
+    expect(parentStyle.height).toBe('');
   }));
 
   it('should warn user when graph contains too many nodes', fakeAsync(() => {
@@ -153,5 +190,9 @@ describe('GraphComponent', () => {
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);
+  }
+
+  function svgDiv(): HTMLDivElement {
+    return fixture.nativeElement.querySelector('#div_svg');
   }
 });

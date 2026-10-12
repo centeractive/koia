@@ -1,22 +1,38 @@
-import { GraphContext, GraphNode } from 'app/shared/model/graph';
+import { GraphContext, GraphLink, GraphNode } from 'app/shared/model/graph';
 import { GraphData, RawDataRevealService } from 'app/shared/services';
-import { drag, forceCenter, forceLink, forceManyBody, forceSimulation, forceX, forceY, select } from 'd3';
+import {
+    D3DragEvent, Simulation, drag, forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY, max,
+    scaleSqrt, select
+} from 'd3';
 import { GraphUtils } from '../options/graph-utils';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
+import { graphTooltip } from './graph-tooltip';
+import { linkEnds } from './link-ends';
 import { tooltipPosition } from './tooltip-position';
+
+const MIN_RADIUS = 4;
+const MAX_RADIUS = 30;
+const ROOT_RADIUS = 12;
+
+type NodeDragEvent = D3DragEvent<SVGGElement, GraphNode, GraphNode>;
 
 export class D3ForceGraphGenerator {
 
     private rootColor = 'black';
     private nodeDoubleClickHandler: NodeDoubleClickHandler;
+    private simulation: Simulation<GraphNode, GraphLink>;
 
-    constructor(private context: GraphContext, rawDataRevealService: RawDataRevealService) {
+    constructor(rawDataRevealService: RawDataRevealService) {
         this.nodeDoubleClickHandler = new NodeDoubleClickHandler(rawDataRevealService);
     }
 
     generate(graphData: GraphData, div: HTMLDivElement, context: GraphContext): void {
+        this.stop();
         div.replaceChildren();
         const bgColors = context.colorProvider.bgColors(this.countDistinctGroups(graphData.nodes) - 1);
+        const colorOf = (graphNode: GraphNode) => graphNode.parent ? bgColors[graphNode.group - 1] : this.rootColor;
+        const radius = scaleSqrt().domain([0, Math.max(1, max(graphData.nodes, n => n.parent ? n.count : 0))]).range([MIN_RADIUS, MAX_RADIUS]);
+        const radiusOf = (graphNode: GraphNode) => graphNode.parent ? radius(graphNode.count) : ROOT_RADIUS;
 
         const tooltipDiv = select(div).append('div')
             .attr('class', 'tooltip')
@@ -27,36 +43,36 @@ export class D3ForceGraphGenerator {
         const link = svg.append('g')
             .attr('stroke', '#999')
             .attr('stroke-opacity', 0.6)
-            .selectAll('line')
+            .selectAll<SVGLineElement, GraphLink>('line')
             .data(graphData.links)
             .join('line');
 
         const node = svg.append('g')
             .attr('class', 'nodes')
-            .selectAll('g')
+            .selectAll<SVGGElement, GraphNode>('g')
             .data(graphData.nodes)
-            .enter().append('g');
+            .join('g')
+            .call(drag<SVGGElement, GraphNode, GraphNode>()
+                .on('start', event => this.dragStarted(event))
+                .on('drag', event => this.dragged(event))
+                .on('end', event => this.dragEnded(event)));
 
-        const circles = node.append('circle')
-            .attr('r', node => node.parent ? 10 : 12)
-            .style('fill', node => node.parent ? bgColors[node.group - 1] : this.rootColor)
+        node.append('circle')
+            .attr('r', n => radiusOf(n))
+            .style('fill', n => colorOf(n))
             .style('cursor', 'pointer')
-            .on('dblclick', (e: any, node) => this.nodeDoubleClickHandler.onNodeDoubleClicked(node, this.context))
-            .on('mouseenter', (e: any, node) => mouseEnter(node))
-            .on('mouseleave', () => mouseLeave())
-            .call(drag()
-                .on('start', (e: any, d: GraphNode) => dragstarted(e, d))
-                .on('drag', (e: any, d: GraphNode) => dragged(e, d))
-                .on('end', (e: any, d: GraphNode) => dragended(e, d)));
+            .on('dblclick', (_event: MouseEvent, n: GraphNode) => this.nodeDoubleClickHandler.onNodeDoubleClicked(n, context))
+            .on('mouseenter', (_event: MouseEvent, n: GraphNode) => mouseEnter(n))
+            .on('mouseleave', () => mouseLeave());
 
-        const mouseEnter = (node: GraphNode) => {
+        const mouseEnter = (graphNode: GraphNode) => {
             tooltipDiv.transition()
                 .duration(200)
                 .style('opacity', 1);
-            tooltipDiv.html(generateTooltip(node, this.context));
+            tooltipDiv.html(graphTooltip(graphNode, colorOf(graphNode), context));
             const tooltip = tooltipDiv.node().firstElementChild as HTMLElement;
-            const position = tooltipPosition(node.x, node.y, { width: tooltip.offsetWidth, height: tooltip.offsetHeight },
-                { width: div.clientWidth, height: div.clientHeight });
+            const position = tooltipPosition(graphNode.x, graphNode.y, radiusOf(graphNode),
+                { width: tooltip.offsetWidth, height: tooltip.offsetHeight }, { width: div.clientWidth, height: div.clientHeight });
             tooltipDiv.style('left', position.left + 'px').style('top', position.top + 'px');
         };
 
@@ -66,68 +82,49 @@ export class D3ForceGraphGenerator {
                 .style('opacity', 0);
         }
 
-        const labels = node.append('text')
-            .text(node => GraphUtils.createDisplayText(node, this.context))
-            .attr('dx', 12)
+        node.append('text')
+            .text(n => GraphUtils.createDisplayText(n, context))
+            .attr('dx', n => radiusOf(n) + 3)
             .attr('dy', '.35em')
             .style('font-size', '12px');
-        // .style('color', node => colors[node.group]);
 
-        const simulation = forceSimulation(graphData.nodes)
-            .force('link', forceLink(graphData.links).id(node => node.index)
-                .distance(this.context.linkDist)
-                .strength(this.context.linkStrength))
-            .force('charge', forceManyBody().strength(this.context.charge))
+        this.simulation = forceSimulation<GraphNode, GraphLink>(graphData.nodes)
+            .force('link', forceLink<GraphNode, GraphLink>(graphData.links).id(n => n.index)
+                .distance(context.linkDist)
+                .strength(context.linkStrength))
+            .force('charge', forceManyBody().strength(context.charge))
             .force('center', forceCenter(div.clientWidth / 2, div.clientHeight / 2))
-            .force('x', forceX(div.clientWidth / 2).strength(this.context.gravity))
-            .force('y', forceY(div.clientHeight / 2).strength(this.context.gravity))
-            .tick()
+            .force('x', forceX(div.clientWidth / 2).strength(context.gravity))
+            .force('y', forceY(div.clientHeight / 2).strength(context.gravity))
+            .force('collide', forceCollide<GraphNode>(n => radiusOf(n) + 2))
             .on('tick', () => {
                 node.attr('transform', n => 'translate(' + n.x + ',' + n.y + ')');
-                link
-                    .attr('x1', l => l.source.x)
-                    .attr('y1', l => l.source.y)
-                    .attr('x2', l => l.target.x)
-                    .attr('y2', l => l.target.y);
+                link.each((l, i, lines) => {
+                    const ends = linkEnds(l.source, l.target, radiusOf(l.source), radiusOf(l.target));
+                    select(lines[i]).attr('x1', ends.x1).attr('y1', ends.y1).attr('x2', ends.x2).attr('y2', ends.y2);
+                });
             });
+    }
 
-        const dragstarted = (e: any, node: GraphNode) => {
-            if (!e.active) {
-                simulation.alphaTarget(0.3).restart();
-            }
-            node.fx = node.x;
-            node.fy = node.y;
-        }
+    stop(): void {
+        this.simulation?.stop();
+    }
 
-        const dragged = (e: any, node: GraphNode) => {
-            node.fx = e.x;
-            node.fy = e.y;
-        }
+    private dragStarted(event: NodeDragEvent): void {
+        this.simulation.alphaTarget(0.3).restart();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
 
-        const dragended = (e: any, node: GraphNode) => {
-            if (!e.active) {
-                simulation.alphaTarget(0);
-            }
-            node.fx = null;
-            node.fy = null;
-        }
+    private dragged(event: NodeDragEvent): void {
+        event.subject.fx = event.x;
+        event.subject.fy = event.y;
+    }
 
-        const generateTooltip = (graphNode: GraphNode, context: GraphContext): string => {
-            const color = graphNode.parent ? bgColors[graphNode.group - 1] : this.rootColor;
-            let result = '<div class="div_tooltip">'
-                + '<span class="tooltip_colored_box" style="background:' + color + ';margin-right:10px;"></span>';
-            if (graphNode.parent) {
-                result += graphNode.name + ': <b>' + GraphUtils.formattedValueOf(graphNode, context) + '</b>';
-            } else {
-                result += 'Root Node';
-            }
-            if (graphNode.info) {
-                const entries = graphNode.info === '1' ? ' Entry' : ' Entries';
-                result += ' (' + graphNode.info.toLocaleString() + entries + ')';
-            }
-            return result + '<br><br>Double-click to show data...</div>';
-        }
-
+    private dragEnded(event: NodeDragEvent): void {
+        this.simulation.alphaTarget(0);
+        event.subject.fx = null;
+        event.subject.fy = null;
     }
 
     private countDistinctGroups(nodes: GraphNode[]): number {

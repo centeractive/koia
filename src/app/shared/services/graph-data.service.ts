@@ -21,14 +21,14 @@ export class GraphDataService {
 
    createData(graphContext: GraphContext): GraphData {
       const providerContext = new ProviderContext(graphContext);
-      let dataFrame: IDataFrame<number, any> = new DataFrame(providerContext.entries);
+      let dataFrame: IDataFrame<number, object> = new DataFrame(providerContext.entries);
       graphContext.columns.filter(c => c.dataType === DataType.TIME).forEach(c => dataFrame = this.convertTime(dataFrame, c));
       const treeRoot = this.createTree(dataFrame.toArray(), providerContext);
       this.buildGraphData(null, treeRoot, -1, providerContext);
       return { nodes: providerContext.nodes, links: providerContext.links };
    }
 
-   private convertTime(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
+   private convertTime(dataFrame: IDataFrame<number, object>, timeColumn: Column): IDataFrame<number, object> {
       return DataFrameUtils.transformColumn(dataFrame, timeColumn.name, (time: number) => DateTimeUtils.toBaseTime(time, timeColumn.groupingTimeUnit));
    }
 
@@ -36,7 +36,7 @@ export class GraphDataService {
     * creates an object tree out of the specified data, grouped by the selected columns
     */
    private createTree(data: object[], providerContext: ProviderContext): TreeNode {
-      if (!providerContext.groupByColumns) {
+      if (providerContext.groupByColumns.length === 0) {
          return { key: '', values: data.length };
       }
       const groupByColumns = providerContext.groupByColumns.map(c => c.name);
@@ -60,26 +60,27 @@ export class GraphDataService {
       return { key: '', values: rootValues };
    }
 
-   private buildGraphData(parent: GraphNode, treeNode: TreeNode, columnIndex: number, providerContext: ProviderContext): void {
+   private buildGraphData(parent: GraphNode, treeNode: TreeNode, columnIndex: number, providerContext: ProviderContext): number {
       const column = columnIndex === -1 ? undefined : providerContext.groupByColumns[columnIndex] // -1 is root node
       let graphNode: GraphNode;
       if (Array.isArray(treeNode.values)) {
-         graphNode = this.createNode(parent, column, treeNode.key, null, providerContext);
+         graphNode = this.createNode(parent, column, treeNode.key, null, 0, providerContext);
          providerContext.nodes.push(graphNode);
-         Array.from(treeNode.values).forEach(child => this.buildGraphData(graphNode, child, columnIndex + 1, providerContext));
+         graphNode.count = treeNode.values.reduce((sum, child) => sum + this.buildGraphData(graphNode, child, columnIndex + 1, providerContext), 0);
       } else {
-         graphNode = this.createNode(parent, column, treeNode.key, treeNode.values.toLocaleString(), providerContext)
+         graphNode = this.createNode(parent, column, treeNode.key, treeNode.values.toLocaleString(), treeNode.values, providerContext)
          providerContext.nodes.push(graphNode);
       }
       if (parent) {
          providerContext.links.push({ source: parent, target: graphNode });
       }
+      return graphNode.count;
    }
 
-   private createNode(parent: GraphNode, column: Column, value: string, info: string, providerContext: ProviderContext): GraphNode {
+   private createNode(parent: GraphNode, column: Column, value: string, info: string, count: number, providerContext: ProviderContext): GraphNode {
       const group = !parent || !parent.parent ? providerContext.group++ : parent.group;
       const nodeName = this.nodeNameFrom(column);
-      return { parent, group, name: nodeName, value, info }
+      return { parent, group, name: nodeName, value, info, count }
    }
 
    private nodeNameFrom(column: Column): string {

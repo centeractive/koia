@@ -55,19 +55,21 @@ describe('GraphDataService', () => {
       const nodes: GraphNode[] = data['nodes'];
       expect(nodes.length).toEqual(3);
       const rootNode = nodes[0];
-      expect(rootNode).toEqual({ parent: null, group: 0, name: '', value: '', info: null });
+      expect(rootNode).toEqual({ parent: null, group: 0, name: '', value: '', info: null, count: 4 });
 
       expect(nodes[1].parent).toEqual(rootNode);
       expect(nodes[1].group).toEqual(1);
       expect(nodes[1].name).toEqual('c1');
       expect(nodes[1].value).toEqual('a');
       expect(nodes[1].info).toEqual('1');
+      expect(nodes[1].count).toBe(1);
 
       expect(nodes[2].parent).toEqual(rootNode);
       expect(nodes[2].group).toEqual(2);
       expect(nodes[2].name).toEqual('c1');
       expect(nodes[2].value).toEqual('b');
       expect(nodes[2].info).toEqual('3');
+      expect(nodes[2].count).toBe(3);
    });
 
    /**
@@ -91,37 +93,52 @@ describe('GraphDataService', () => {
       const nodes: GraphNode[] = data['nodes'];
       expect(nodes.length).toEqual(6);
       const rootNode = nodes[0];
-      expect(rootNode).toEqual({ parent: null, group: 0, name: '', value: '', info: null });
+      expect(rootNode).toEqual({ parent: null, group: 0, name: '', value: '', info: null, count: 4 });
 
       expect(nodes[1].parent).toEqual(rootNode);
       expect(nodes[1].group).toEqual(1);
       expect(nodes[1].name).toEqual('Time (per minute)');
       expect(nodes[1].value).toEqual(now);
       expect(nodes[1].info).toBeNull();
+      expect(nodes[1].count).toBe(2);
 
       expect(nodes[2].parent).toEqual(nodes[1]);
       expect(nodes[2].group).toEqual(1);
       expect(nodes[2].name).toEqual('c1');
       expect(nodes[2].value).toEqual('a');
       expect(nodes[2].info).toEqual('1');
+      expect(nodes[2].count).toBe(1);
 
       expect(nodes[3].parent).toEqual(nodes[1]);
       expect(nodes[3].group).toEqual(1);
       expect(nodes[3].name).toEqual('c1');
       expect(nodes[3].value).toEqual('b');
       expect(nodes[3].info).toEqual('1');
+      expect(nodes[3].count).toBe(1);
 
       expect(nodes[4].parent).toEqual(rootNode);
       expect(nodes[4].group).toEqual(2);
       expect(nodes[4].name).toEqual('Time (per minute)');
       expect(nodes[4].value).toEqual(now + min);
       expect(nodes[4].info).toBeNull();
+      expect(nodes[4].count).toBe(2);
 
       expect(nodes[5].parent).toEqual(nodes[4]);
       expect(nodes[5].group).toEqual(2);
       expect(nodes[5].name).toEqual('c1');
       expect(nodes[5].value).toEqual('b');
       expect(nodes[5].info).toEqual('2');
+      expect(nodes[5].count).toBe(2);
+   });
+
+   it('#createData should return single root node counting all entries when no column is grouped', () => {
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      expect(data.nodes).toEqual([{ parent: null, group: 0, name: '', value: '', info: '4', count: 4 }]);
+      expect(data.links).toEqual([]);
    });
 
    it('#createData should return columnValue <empty> when column value is null', () => {
@@ -156,11 +173,14 @@ describe('GraphDataService', () => {
       // then
       const nodes: GraphNode[] = data['nodes'];
       expect(nodes.length).toEqual(3);
+      expect(nodes[0].count).toBe(3);
       expect(nodes[1].name).toEqual('Time (per minute)');
       expect(nodes[1].value).toEqual(PropertyFilter.EMPTY_VALUE);
       expect(nodes[1].info).toEqual('1');
+      expect(nodes[1].count).toBe(1);
       expect(nodes[2].value).toEqual(now);
       expect(nodes[2].info).toEqual('2');
+      expect(nodes[2].count).toBe(2);
    });
 
    function findColumn(name: string): Column {

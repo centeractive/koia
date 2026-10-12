@@ -1,11 +1,12 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Inject,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   ViewEncapsulation
@@ -15,8 +16,6 @@ import { GraphContext } from 'app/shared/model/graph';
 import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { CommonUtils } from 'app/shared/utils';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
-import { GraphOptionsProvider } from './options/graph-options-provider';
-import { NodeDoubleClickHandler } from './options/node-double-click-handler';
 
 @Component({
   selector: 'koia-graph',
@@ -26,7 +25,7 @@ import { NodeDoubleClickHandler } from './options/node-double-click-handler';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider {
+export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
 
   static readonly MAX_NODES = 1_000;
 
@@ -35,17 +34,15 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
 
   @Output() onWarning = new EventEmitter<string>();
 
-  graphOptions: object;
   title: string;
   graphData: GraphData;
   loading: boolean;
-  svgContainerId = Date.now();
 
-  private optionsProvider: GraphOptionsProvider;
+  private graphGenerator: D3ForceGraphGenerator;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private graphDataService: GraphDataService,
-    private rawDataRevealService: RawDataRevealService) {
-    this.optionsProvider = new GraphOptionsProvider(new NodeDoubleClickHandler(rawDataRevealService));
+    rawDataRevealService: RawDataRevealService) {
+    this.graphGenerator = new D3ForceGraphGenerator(rawDataRevealService);
   }
 
   ngOnInit(): void {
@@ -62,8 +59,9 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
     }
   }
 
-  ngAfterViewInit(): void {
-    window.onresize = () => this.prepareGraphAsync();
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.prepareGraphAsync();
   }
 
   private prepareGraphAsync(): void {
@@ -73,8 +71,6 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
   private async prepareGraph(): Promise<void> {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
-    const parentDiv: HTMLDivElement = this.gridView ? this.cmpElementRef.nativeElement.parentElement : null;
-    this.graphOptions = this.optionsProvider.createOptions(this.context, parentDiv);
     this.buildGraphData();
     this.loading = false;
   }
@@ -95,11 +91,14 @@ export class GraphComponent implements OnInit, AfterViewInit, ExportDataProvider
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
     const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('#div_svg');
-    new D3ForceGraphGenerator(this.context, this.rawDataRevealService)
-      .generate(this.graphData, div, this.context);
+    this.graphGenerator.generate(this.graphData, div, this.context);
   }
 
   createExportData(): object[] {
     throw new Error('Method not implemented.');
+  }
+
+  ngOnDestroy(): void {
+    this.graphGenerator.stop();
   }
 }
