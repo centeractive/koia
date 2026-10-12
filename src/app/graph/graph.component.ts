@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
@@ -7,8 +8,7 @@ import {
   Input,
   OnInit,
   Output,
-  ViewEncapsulation,
-  ChangeDetectionStrategy
+  ViewEncapsulation
 } from '@angular/core';
 import { ExportDataProvider } from 'app/shared/controller';
 import { GraphContext } from 'app/shared/model/graph';

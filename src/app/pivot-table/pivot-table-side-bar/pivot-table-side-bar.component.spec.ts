@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { DataFrame, IDataFrame } from 'data-forge';
+import { KoiaFormDirective } from '../../shared/directives/koia-form.directive';
 import { Column, DataType, TimeUnit } from '../../shared/model';
 import { ValueGrouping } from '../../shared/value-range/model/value-grouping.type';
 import { ValueRange } from '../../shared/value-range/model/value-range.type';
@@ -47,7 +48,7 @@ describe('PivotTableSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [PivotTableSideBarComponent],
+      declarations: [PivotTableSideBarComponent, KoiaFormDirective],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         DragDropModule, MatSelectModule
@@ -76,6 +77,24 @@ describe('PivotTableSideBarComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('non grouped columns field should be outlined', () => {
+
+    // when
+    const field: HTMLElement = fixture.nativeElement.querySelector('mat-form-field');
+
+    // then
+    expect(field.classList).toContain('mat-form-field-appearance-outline');
+  });
+
+  it('accordion panels should be separated by gap like new scene', () => {
+
+    // when
+    const accordion: HTMLElement = fixture.nativeElement.querySelector('mat-accordion');
+
+    // then
+    expect(getComputedStyle(accordion).rowGap).toBe('12px');
   });
 
   it('should identify non grouped columns', () => {

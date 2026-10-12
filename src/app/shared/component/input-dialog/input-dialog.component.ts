@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
     selector: 'koia-input-dialog',
-    template: `<mat-card appearance="outlined">
+    template: `<mat-card appearance="outlined" koiaForm>
                 <mat-card-header>
                   <mat-card-title>{{ data.title }}</mat-card-title>
                 </mat-card-header>
@@ -13,8 +13,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
                            maxlength="{{ data.maxLength }}" [(ngModel)]="data.input">
                   </mat-form-field>
                   <div>
-                    <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
-                    <button id="but_ok" mat-raised-button color="primary" [disabled]="!data.input" (click)="onOK()">OK</button>
+                    <button id="but_cancel" mat-flat-button color="primary" (click)="onCancel()">Cancel</button>
+                    <button id="but_ok" mat-flat-button color="primary" [disabled]="!data.input" (click)="onOK()">OK</button>
                   </div>
                 </mat-card-content>
              </mat-card>`,

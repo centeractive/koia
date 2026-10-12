@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
 import { By } from '@angular/platform-browser';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { Column, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { DBService } from 'app/shared/services/backend';
@@ -40,7 +41,7 @@ describe('GraphSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [GraphSideBarComponent],
+      declarations: [GraphSideBarComponent, KoiaFormDirective],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         MatMenuModule, DragDropModule, MatSelectModule, MatSliderModule
@@ -69,6 +70,15 @@ describe('GraphSideBarComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('accordion panels should be separated by gap like new scene', () => {
+
+    // when
+    const accordion: HTMLElement = fixture.nativeElement.querySelector('mat-accordion');
+
+    // then
+    expect(getComputedStyle(accordion).rowGap).toBe('12px');
   });
 
   it('should initialize fields', () => {

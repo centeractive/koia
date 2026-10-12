@@ -10,6 +10,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { Aggregation, ChangeEvent, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
@@ -43,7 +44,7 @@ describe('SummaryTableSideBarComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [SummaryTableSideBarComponent],
+      declarations: [SummaryTableSideBarComponent, KoiaFormDirective],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
         MatMenuModule, DragDropModule, MatSelectModule, MatRadioModule
@@ -70,6 +71,15 @@ describe('SummaryTableSideBarComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('accordion panels should be separated by gap like new scene', () => {
+
+    // when
+    const accordion: HTMLElement = fixture.nativeElement.querySelector('mat-accordion');
+
+    // then
+    expect(getComputedStyle(accordion).rowGap).toBe('12px');
   });
 
   it('should initialize fields', () => {

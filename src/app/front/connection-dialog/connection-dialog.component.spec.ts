@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { By } from '@angular/platform-browser';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { ConnectionInfo, Protocol } from 'app/shared/model';
 import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog.component';
@@ -23,7 +24,7 @@ describe('ConnectionDialogComponent', () => {
   beforeEach(waitForAsync(() => {
     dialogData = new ConnectionDialogData(connectionInfo);
     TestBed.configureTestingModule({
-      declarations: [ConnectionDialogComponent],
+      declarations: [ConnectionDialogComponent, KoiaFormDirective],
       imports: [MatCardModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
@@ -109,6 +110,70 @@ describe('ConnectionDialogComponent', () => {
     expect(component.data.connectionInfo.password).toBe('%ad3Zds_');
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
+
+  it('form fields should be outlined', () => {
+
+    // when
+    const fields: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('mat-form-field'));
+
+    // then
+    expect(fields.length).toBe(5);
+    fields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
+  });
+
+  it('host and port should share a field row', () => {
+
+    // given
+    widenFixture();
+
+    // when
+    const host = fieldOf('host');
+    const port = fieldOf('port');
+
+    // then
+    expect(host.parentElement.classList).toContain('field-row');
+    expect(port.parentElement).toBe(host.parentElement);
+    expect(port.getBoundingClientRect().top).toBe(host.getBoundingClientRect().top);
+  });
+
+  it('user and password should share a field row', () => {
+
+    // given
+    widenFixture();
+
+    // when
+    const user = fieldOf('user');
+    const password = fieldOf('password');
+
+    // then
+    expect(user.parentElement.classList).toContain('field-row');
+    expect(password.parentElement).toBe(user.parentElement);
+    expect(password.getBoundingClientRect().top).toBe(user.getBoundingClientRect().top);
+  });
+
+  it('cancel and ok buttons should be flat and separated by gap', () => {
+
+    // given
+    widenFixture();
+
+    // when
+    const cancel: HTMLElement = fixture.nativeElement.querySelector('#but_cancel');
+    const ok: HTMLElement = fixture.nativeElement.querySelector('#but_ok');
+
+    // then
+    expect(cancel.classList).toContain('mat-mdc-unelevated-button');
+    expect(ok.classList).toContain('mat-mdc-unelevated-button');
+    expect(ok.getBoundingClientRect().left - cancel.getBoundingClientRect().right).toBeCloseTo(16, 0);
+  });
+
+  function widenFixture(): void {
+    fixture.nativeElement.style.display = 'block';
+    fixture.nativeElement.style.width = '800px';
+  }
+
+  function fieldOf(inputId: string): HTMLElement {
+    return fixture.nativeElement.querySelector('#' + inputId).closest('mat-form-field');
+  }
 
   function getSelectedProtocol(): Protocol {
     const matSelect: MatSelect = fixture.debugElement.query(By.css('#protocol')).componentInstance;

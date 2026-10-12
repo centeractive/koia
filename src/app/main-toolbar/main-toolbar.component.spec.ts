@@ -105,6 +105,21 @@ describe('MainToolbarComponent with many tabs', () => {
     expect(nav.classList).toContain('mat-mdc-tab-header-pagination-controls-enabled');
   });
 
+  it('tab bar should touch bottom of toolbar when column filter makes toolbar taller', () => {
+
+    // given
+    const toolbar = fixture.componentInstance;
+    toolbar.addValueFilter(toolbar.scene.columns.find(c => c.name === 'Level'));
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const navRect: DOMRect = fixture.nativeElement.querySelector('nav').getBoundingClientRect();
+    expect(toolbarRect().height - navRect.height).toBeGreaterThanOrEqual(1);
+    expect(navRect.bottom).toBeCloseTo(toolbarRect().bottom, 0);
+  });
+
   it('should keep add tab button visible', () => {
 
     // when

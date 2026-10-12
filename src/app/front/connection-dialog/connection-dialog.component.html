@@ -1,45 +1,43 @@
-<mat-card appearance="outlined">
+<mat-card appearance="outlined" koiaForm>
   <mat-card-header>
     <mat-card-title>CouchDB Access</mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <mat-form-field class="form_field_protocol">
-      <mat-label>Protocol</mat-label>
-      <mat-select id="protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
-        @for (protocol of protocols; track protocol) {
-          <mat-option [value]="protocol" (click)="onProtocolChanged(protocol)">
-            {{ protocol }}
-          </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-    <div>
+    <div class="field-row">
+      <mat-form-field class="form_field_protocol">
+        <mat-label>Protocol</mat-label>
+        <mat-select id="protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
+          @for (protocol of protocols; track protocol) {
+            <mat-option [value]="protocol" (click)="onProtocolChanged(protocol)">
+              {{ protocol }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="field-row">
       <mat-form-field class="form_field_default">
         <mat-label>Host</mat-label>
         <input id="host" matInput type="text" [(ngModel)]="data.connectionInfo.host">
       </mat-form-field>
-      &nbsp;
       <mat-form-field class="form_field_port">
         <mat-label>Port</mat-label>
         <input id="port" matInput type="number" [(ngModel)]="data.connectionInfo.port">
       </mat-form-field>
     </div>
-    <div>
+    <div class="field-row">
       <mat-form-field class="form_field_default">
         <mat-label>User</mat-label>
         <input id="user" matInput type="text" [(ngModel)]="data.connectionInfo.user">
       </mat-form-field>
-      &nbsp;
       <mat-form-field class="form_field_default">
         <mat-label>Password</mat-label>
         <input id="password" matInput type="password" [(ngModel)]="data.connectionInfo.password">
       </mat-form-field>
     </div>
-    <br>
-      <div>
-        <button id="but_cancel" mat-raised-button color="primary" (click)="onCancel()">Cancel</button>
-        &nbsp;
-        <button id="but_ok" mat-raised-button color="primary" (click)="onOK()">OK</button>
-      </div>
-    </mat-card-content>
-  </mat-card>
+    <div class="field-row">
+      <button id="but_cancel" mat-flat-button color="primary" (click)="onCancel()">Cancel</button>
+      <button id="but_ok" mat-flat-button color="primary" (click)="onOK()">OK</button>
+    </div>
+  </mat-card-content>
+</mat-card>

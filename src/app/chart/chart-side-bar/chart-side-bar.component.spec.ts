@@ -5,11 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
 import { By } from '@angular/platform-browser';
 import { Aggregation, ChangeEvent, Column, DataType, TimeUnit } from 'app/shared/model';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { MatIconModuleMock } from 'app/shared/test';
 import { ChartSideBarComponent } from './chart-side-bar.component';
@@ -34,6 +37,16 @@ describe('ChartSideBarComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('name column field should be outlined for individual values of circular chart', () => {
+
+    // when
+    const fields = formFields();
+
+    // then
+    expect(fields.length).toBe(1);
+    expect(fields[0].classList).toContain('mat-form-field-appearance-outline');
   });
 
   it('#click on SCATTER chart button should switch to individual values when number data column is selected', () => {
@@ -71,6 +84,29 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('group by, time unit and step size fields should be outlined for counted line chart', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const fields = formFields();
+    expect(fields.length).toBe(4);
+    fields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
+  });
+
+  it('accordion panels should be separated by gap like new scene', () => {
+
+    // when
+    const accordion: HTMLElement = fixture.nativeElement.querySelector('mat-accordion');
+
+    // then
+    expect(getComputedStyle(accordion).rowGap).toBe('12px');
   });
 
   it('should initialize fields', () => {
@@ -565,10 +601,10 @@ describe('ChartSideBarComponent - data includes time column', () => {
 function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void {
   TestBed.configureTestingModule({
     schemas: [NO_ERRORS_SCHEMA],
-    declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent],
+    declarations: [ChartSideBarComponent, ScaleComponent, TicksComponent, KoiaFormDirective],
     imports: [
       MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-      MatMenuModule, DragDropModule, MatSelectModule
+      MatMenuModule, DragDropModule, MatSelectModule, MatInputModule, MatSliderModule
     ]
   })
     .overrideModule(MatIconModule, MatIconModuleMock.override())
@@ -585,6 +621,10 @@ function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void
   component.elementPosition = 2;
   component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
   fixture.detectChanges();
+}
+
+function formFields(): HTMLElement[] {
+  return Array.from(fixture.nativeElement.querySelectorAll('mat-form-field'));
 }
 
 function findColumn(name: string): Column {

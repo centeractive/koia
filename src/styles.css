@@ -74,10 +74,6 @@ mat-sidenav-content.mat-drawer-content {
   width: 100%;
 }
 
-.mat-expansion-panel {
-  background: #e8eced !important;
-}
-
 .toggle_multi_expand {
   padding: 10px 10px 12px 15px;
 }
@@ -261,6 +257,11 @@ var {
   border: var(--koia-tile-border);
   border-radius: 10px !important;
   margin: 0 !important;
+}
+
+.koia-form .mdc-text-field--outlined:not(.mdc-text-field--disabled) {
+  background: #fff;
+  border-radius: var(--mat-form-field-outlined-container-shape);
 }
 
 .koia-form .mat-mdc-form-field-icon-suffix .mat-mdc-icon-button.mat-mdc-button-base {

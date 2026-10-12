@@ -6,6 +6,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { By } from '@angular/platform-browser';
+import { KoiaFormDirective } from '../../directives/koia-form.directive';
 import { InputDialogComponent, InputDialogData } from './input-dialog.component';
 
 describe('InputDialogComponent', () => {
@@ -17,7 +18,7 @@ describe('InputDialogComponent', () => {
   beforeEach(waitForAsync(() => {
     dialogData = new InputDialogData('Save View', 'View Name', 'abc', 10);
     TestBed.configureTestingModule({
-      declarations: [InputDialogComponent],
+      declarations: [InputDialogComponent, KoiaFormDirective],
       imports: [MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
@@ -68,6 +69,26 @@ describe('InputDialogComponent', () => {
     expect(component.data.closedWithOK).toBe(true);
     expect(component.data.input).toEqual('test');
     expect(component.dialogRef.close).toHaveBeenCalled();
+  });
+
+  it('input field should be outlined', () => {
+
+    // when
+    const field: HTMLElement = fixture.nativeElement.querySelector('mat-form-field');
+
+    // then
+    expect(field.classList).toContain('mat-form-field-appearance-outline');
+  });
+
+  it('cancel and ok buttons should be flat', () => {
+
+    // when
+    const cancel: HTMLElement = fixture.nativeElement.querySelector('#but_cancel');
+    const ok: HTMLElement = fixture.nativeElement.querySelector('#but_ok');
+
+    // then
+    expect(cancel.classList).toContain('mat-mdc-unelevated-button');
+    expect(ok.classList).toContain('mat-mdc-unelevated-button');
   });
 
   function getInputValue(): string {

@@ -4,6 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSliderModule } from '@angular/material/slider';
 import { TicksConfig } from 'app/shared/model/chart';
+import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { TicksComponent } from './ticks.component';
 
 describe('TicksConfigComponent', () => {
@@ -13,7 +14,7 @@ describe('TicksConfigComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TicksComponent],
+      declarations: [TicksComponent, KoiaFormDirective],
       imports: [FormsModule, MatSliderModule, MatFormFieldModule, MatInputModule]
     }).compileComponents();
 
@@ -25,5 +26,14 @@ describe('TicksConfigComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('step size field should be outlined', () => {
+
+    // when
+    const field: HTMLElement = fixture.nativeElement.querySelector('mat-form-field');
+
+    // then
+    expect(field.classList).toContain('mat-form-field-appearance-outline');
   });
 });

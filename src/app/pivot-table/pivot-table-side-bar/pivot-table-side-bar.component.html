@@ -15,7 +15,7 @@
   }
   @if (nonGroupedColumns && nonGroupedColumns.length > 0) {
     <span class="span_add_group">
-      <mat-form-field>
+      <mat-form-field koiaForm>
         <mat-select #nonGroupedCols placeholder="Non Grouped Columns" [value]="nonGroupedColumns[0]">
           @for (column of nonGroupedColumns; track column) {
             <mat-option [value]="column">
@@ -33,7 +33,7 @@
 </div>
 <hr>
 
-  <div style="padding: 0 5px 0 5px;">
+  <div style="padding: 0 5px 0 5px;" koiaForm>
     @if (context) {
       <mat-accordion [multi]="multiExpandable">
         @for (grouping of context.valueGroupings; track grouping) {
