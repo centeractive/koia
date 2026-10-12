@@ -1,4 +1,5 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -102,7 +103,7 @@ describe('DashboardComponent', () => {
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
         SummaryTableComponent, ChartComponent, GraphComponent, ElementHeaderComponent, ViewToolbarComponent
       ],
-      imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule],
+      imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule],
       providers: [
         provideRouter([]),
         MatBottomSheet,
@@ -439,6 +440,67 @@ describe('DashboardComponent', () => {
       expect(fixture.debugElement.query(By.css('.div_graph'))).toBeFalsy();
       expect(fixture.debugElement.query(By.css('.div_flex_element koia-graph'))).toBeTruthy();
     });
+
+    it('grid content should scroll below header', () => {
+
+      // given
+      const grid: HTMLElement = fixture.nativeElement.querySelector('#div_grid');
+
+      // when
+      (grid.firstElementChild as HTMLElement).style.height = '5000px';
+
+      // then
+      expectScrollingBelowHeader(grid);
+    });
+
+    it('flex content should scroll below header', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+      const flex: HTMLElement = fixture.nativeElement.querySelector('#div_flex');
+
+      // when
+      flex.style.height = '5000px';
+
+      // then
+      expectScrollingBelowHeader(flex.parentElement);
+    });
+
+    it('grid content should be registered as scrollable', () => {
+
+      // given
+      const grid: HTMLElement = fixture.nativeElement.querySelector('#div_grid');
+
+      // when
+      const scrollables = TestBed.inject(ScrollDispatcher).getAncestorScrollContainers(grid.firstElementChild as HTMLElement);
+
+      // then
+      expect(scrollables.map(s => s.getElementRef().nativeElement)).toContain(grid);
+    });
+
+    it('flex content should be scrollable ancestor of drop list for drag auto-scroll', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+      const flex: HTMLElement = fixture.nativeElement.querySelector('#div_flex');
+
+      // when
+      const scrollables = TestBed.inject(ScrollDispatcher).getAncestorScrollContainers(flex);
+
+      // then
+      expect(scrollables.map(s => s.getElementRef().nativeElement)).toContain(flex.parentElement);
+    });
+
+    function expectScrollingBelowHeader(content: HTMLElement): void {
+      const header: HTMLElement = fixture.nativeElement.querySelector('.div_header');
+      const sidenavContent: HTMLElement = fixture.nativeElement.querySelector('mat-sidenav-content');
+      expect(content.classList).toContain('div_content');
+      expect(content.scrollHeight).toBeGreaterThan(content.clientHeight);
+      expect(content.getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
+      expect(sidenavContent.scrollHeight).toBe(sidenavContent.clientHeight);
+    }
 
     it('should render grid tiles as white surface with thin frame instead of heavy shadow', () => {
 

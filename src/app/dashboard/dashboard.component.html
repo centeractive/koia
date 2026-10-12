@@ -114,7 +114,7 @@
     </ng-template>
 
     @if (isGridLayout()) {
-      <div #content id="div_grid" class="div_content printable" style="padding: 5px;" cdkDropList cdkDropListOrientation="mixed"
+      <div #content id="div_grid" class="div_content printable" style="padding: 5px;" cdkScrollable cdkDropList cdkDropListOrientation="mixed"
         (cdkDropListDropped)="drop($event)">
         <div [ngStyle]="gridLayout.gridStyle()">
           @for (context of elementContexts; track context) {
@@ -130,7 +130,7 @@
         </div>
       </div>
     } @else {
-      <div class="div_content">
+      <div class="div_content" cdkScrollable>
         <div #content id="div_flex" class="div_flex_content printable" cdkDropList cdkDropListOrientation="mixed"
           (cdkDropListDropped)="drop($event)">
           @for (context of elementContexts; track context) {

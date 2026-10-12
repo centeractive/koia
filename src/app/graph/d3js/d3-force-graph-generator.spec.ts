@@ -1,6 +1,7 @@
 import { GraphContext, GraphNode } from 'app/shared/model/graph';
 import { GraphData, RawDataRevealService } from 'app/shared/services';
 import { CommonUtils } from 'app/shared/utils';
+import { ForceManyBody } from 'd3';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
 import { D3ForceGraphGenerator } from './d3-force-graph-generator';
 import { linkEnds } from './link-ends';
@@ -231,6 +232,59 @@ describe('D3ForceGraphGenerator', () => {
 
         // then
         await vi.waitFor(() => expect(Math.hypot(nodes[0].x - nodes[1].x, nodes[0].y - nodes[1].y)).toBeGreaterThanOrEqual(24));
+    });
+
+    it('#generate should apply theta of context to charge force', () => {
+        // given
+        context.theta = 0.5;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].force<ForceManyBody<GraphNode>>('charge').theta()).toBe(0.5);
+    });
+
+    it('#generate should start simulation with scaled alpha of context', () => {
+        // given
+        context.alpha = 0.05;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].alpha()).toBeCloseTo(0.5);
+    });
+
+    it('#generate should start simulation at full alpha by default', () => {
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].alpha()).toBeCloseTo(1);
+    });
+
+    it('#generate should clamp alpha below range', () => {
+        // given
+        context.alpha = 0;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].alpha()).toBeCloseTo(0.1);
+    });
+
+    it('#generate should clamp alpha above range', () => {
+        // given
+        context.alpha = 1;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].alpha()).toBeCloseTo(1);
     });
 
     function graphOf(...childCounts: number[]): GraphData {

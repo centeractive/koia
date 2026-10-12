@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -45,7 +46,7 @@ describe('GraphSideBarComponent', () => {
       declarations: [GraphSideBarComponent, KoiaFormDirective, SideBarHeaderComponent],
       imports: [
         MatExpansionModule, MatSlideToggleModule, MatButtonModule, MatIconModule, MatFormFieldModule,
-        MatMenuModule, DragDropModule, MatSelectModule, MatSliderModule
+        MatMenuModule, DragDropModule, MatSelectModule, MatSliderModule, FormsModule
       ],
       providers: [
         { provide: DBService, useValue: dbService }
@@ -103,6 +104,44 @@ describe('GraphSideBarComponent', () => {
     // then
     expect(multiExpandToggleElement.checked).toBeFalsy();
     expect(component.accordion.closeAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('alpha slider should be bound to alpha of context', async () => {
+
+    // given
+    context.alpha = 0.05;
+
+    // when
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // then
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('#alpha input');
+    expect(input.value).toBe('0.05');
+    expect(input.min).toBe('0.01');
+    expect(input.max).toBe('0.1');
+  });
+
+  it('theta slider should be bound to theta of context', async () => {
+
+    // given
+    context.theta = 0.3;
+
+    // when
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#theta input').value).toBe('0.3');
+  });
+
+  it('alpha slider should be labelled without stray text', () => {
+
+    // when
+    const label: HTMLElement = fixture.nativeElement.querySelector('#alpha').parentElement;
+
+    // then
+    expect(label.textContent.trim()).toBe('Alpha');
   });
 
   function findColumn(name: string): Column {

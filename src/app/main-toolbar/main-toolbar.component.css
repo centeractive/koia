@@ -58,6 +58,6 @@ button {
 }
 
 #div_range_filters {
-  border-top: 1px solid var(--koia-header-border);
+  border-top: var(--koia-header-line);
   padding-top: 4px;
 }

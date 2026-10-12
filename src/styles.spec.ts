@@ -9,26 +9,14 @@ import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
   template: `
     <mat-sidenav-container style="height: 200px; width: 300px">
       <mat-sidenav-content>
-        <div style="width: 600px; height: 50px"></div>
+        <div class="div_header"><div style="margin-top: 2px; height: 40px">h</div></div>
+        <div class="div_content"><div style="width: 600px; height: 1000px"></div></div>
       </mat-sidenav-content>
     </mat-sidenav-container>`,
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class SidenavHostComponent { }
-
-@Component({
-  template: `
-    <mat-sidenav-container style="height: 200px; width: 300px">
-      <mat-sidenav-content>
-        <div class="div_header"><div style="margin-top: 2px; height: 40px">h</div></div>
-        <div style="height: 1000px"></div>
-      </mat-sidenav-content>
-    </mat-sidenav-container>`,
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
-})
-class StickyHostComponent { }
 
 @Component({
   template: `
@@ -101,57 +89,49 @@ describe('global styles', () => {
     return undefined;
   }
 
-  it('mat-sidenav-content should hide horizontal overflow and keep vertical scrolling', async () => {
-
-    // given
+  async function createSidenavHost(): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       declarations: [SidenavHostComponent],
       imports: [MatSidenavModule]
     });
     const fixture = TestBed.createComponent(SidenavHostComponent);
-
-    // when
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    // then
-    const content: HTMLElement = fixture.nativeElement.querySelector('mat-sidenav-content');
-    const style = getComputedStyle(content);
-    expect(style.overflowX).toBe('hidden');
-    expect(style.overflowY).toBe('auto');
-    expect(content.scrollWidth).toBeGreaterThan(content.clientWidth);
-    expect(content.offsetHeight - content.clientHeight).toBe(0);
-  });
-
-  async function createStickyHost(): Promise<HTMLElement> {
-    TestBed.configureTestingModule({
-      declarations: [StickyHostComponent],
-      imports: [MatSidenavModule]
-    });
-    const fixture = TestBed.createComponent(StickyHostComponent);
     fixture.detectChanges();
     await fixture.whenStable();
     return fixture.nativeElement;
   }
 
+  it('mat-sidenav-content should stack header above content without scrolling itself', async () => {
+
+    // when
+    const content: HTMLElement = (await createSidenavHost()).querySelector('mat-sidenav-content');
+
+    // then
+    const style = getComputedStyle(content);
+    expect(style.display).toBe('flex');
+    expect(style.flexDirection).toBe('column');
+    expect(style.overflowX).toBe('hidden');
+    expect(style.overflowY).toBe('hidden');
+    expect(content.scrollHeight).toBe(content.clientHeight);
+    expect(content.scrollWidth).toBe(content.clientWidth);
+  });
+
   it('mat-sidenav-content should be grey canvas', async () => {
 
     // when
-    const host = await createStickyHost();
+    const host = await createSidenavHost();
 
     // then
     expect(getComputedStyle(host.querySelector('mat-sidenav-content')).backgroundColor).toBe('rgb(236, 239, 241)');
   });
 
-  it('header should be sticky tinted surface with shadow and bottom line', async () => {
+  it('header should be tinted surface above content with shadow and bottom line', async () => {
 
     // when
-    const host = await createStickyHost();
+    const host = await createSidenavHost();
 
     // then
     const style = getComputedStyle(host.querySelector('.div_header'));
-    expect(style.position).toBe('sticky');
-    expect(style.top).toBe('0px');
+    expect(style.position).toBe('relative');
     expect(style.zIndex).toBe('2');
     expect(style.backgroundColor).toBe('rgb(232, 234, 246)');
     expect(style.boxShadow).toBe('rgba(0, 0, 0, 0.2) 0px 2px 4px 0px');
@@ -162,7 +142,7 @@ describe('global styles', () => {
   it('header should start at top of sidenav content despite child margin', async () => {
 
     // when
-    const host = await createStickyHost();
+    const host = await createSidenavHost();
 
     // then
     const content: HTMLElement = host.querySelector('mat-sidenav-content');
@@ -170,19 +150,46 @@ describe('global styles', () => {
     expect(header.getBoundingClientRect().top).toBe(content.getBoundingClientRect().top);
   });
 
-  it('header should stay at top of scrolled sidenav content', async () => {
-
-    // given
-    const host = await createStickyHost();
-    const content: HTMLElement = host.querySelector('mat-sidenav-content');
-    const header: HTMLElement = host.querySelector('.div_header');
+  it('content should fill sidenav content below header and scroll', async () => {
 
     // when
-    content.scrollTop = 300;
+    const host = await createSidenavHost();
 
     // then
-    expect(content.scrollTop).toBe(300);
-    expect(header.getBoundingClientRect().top).toBe(content.getBoundingClientRect().top);
+    const sidenavContent: HTMLElement = host.querySelector('mat-sidenav-content');
+    const header: HTMLElement = host.querySelector('.div_header');
+    const divContent: HTMLElement = host.querySelector('.div_content');
+    expect(divContent.getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
+    expect(divContent.offsetHeight).toBe(sidenavContent.clientHeight - header.offsetHeight);
+    expect(divContent.scrollHeight).toBeGreaterThan(divContent.clientHeight);
+  });
+
+  it('header should stay at top when content is scrolled', async () => {
+
+    // given
+    const host = await createSidenavHost();
+    const sidenavContent: HTMLElement = host.querySelector('mat-sidenav-content');
+    const header: HTMLElement = host.querySelector('.div_header');
+    const divContent: HTMLElement = host.querySelector('.div_content');
+
+    // when
+    divContent.scrollTop = 300;
+
+    // then
+    expect(divContent.scrollTop).toBe(300);
+    expect(sidenavContent.scrollTop).toBe(0);
+    expect(header.getBoundingClientRect().top).toBe(sidenavContent.getBoundingClientRect().top);
+  });
+
+  it('print styles should lay out sidenav content as block', () => {
+
+    // when
+    const rule = printRule('mat-sidenav-content.mat-drawer-content');
+
+    // then
+    expect(rule).toBeDefined();
+    expect(rule.style.display).toBe('block');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
   });
 
   it('print styles should keep dashboard tiles on one page', () => {
@@ -350,6 +357,8 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-header-shadow').trim()).toBe('0 2px 4px rgba(0, 0, 0, 0.2)');
     expect(style.getPropertyValue('--koia-header-surface').trim()).toBe('#e8eaf6');
     expect(style.getPropertyValue('--koia-header-border').trim()).toBe('#c5cae9');
+    expect(style.getPropertyValue('--koia-header-line').trim()).toBe('1px solid #c5cae9');
+    expect(style.getPropertyValue('--koia-hover-tint').trim()).toBe('rgba(48, 63, 159, 0.1)');
   });
 
   it('active toggle icon button should be accent tinted', () => {

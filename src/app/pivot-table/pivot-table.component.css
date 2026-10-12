@@ -1,4 +1,5 @@
 .div_table {
+  position: relative;
   margin: 10px;
   float: left;
   min-width: 500px;

@@ -18,6 +18,7 @@
   --koia-header-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   --koia-header-surface: #e8eaf6;
   --koia-header-border: #c5cae9;
+  --koia-header-line: 1px solid var(--koia-header-border);
 }
 
 html {
@@ -51,7 +52,9 @@ body {
 
 mat-sidenav-content.mat-drawer-content {
   background-color: var(--koia-canvas);
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .div_wrapper {
@@ -64,11 +67,10 @@ mat-sidenav-content.mat-drawer-content {
 .div_header {
   flex-shrink: 0;
   display: flow-root;
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 2;
   background-color: var(--koia-header-surface);
-  border-bottom: 1px solid var(--koia-header-border);
+  border-bottom: var(--koia-header-line);
   box-shadow: var(--koia-header-shadow);
 }
 
@@ -278,6 +280,10 @@ var {
   .div_content {
     display: block !important;
     flex-grow: 1;
+  }
+
+  mat-sidenav-content.mat-drawer-content {
+    display: block !important;
   }
 
   .div_grid_element,

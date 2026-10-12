@@ -13,6 +13,10 @@ import { tooltipPosition } from './tooltip-position';
 const MIN_RADIUS = 4;
 const MAX_RADIUS = 30;
 const ROOT_RADIUS = 12;
+const MIN_ALPHA = 0.01;
+const MAX_ALPHA = 0.1;
+// GraphContext#alpha keeps the d3 v3 scale where 0.1 was the initial alpha
+const ALPHA_SCALE = 10;
 
 type NodeDragEvent = D3DragEvent<SVGGElement, GraphNode, GraphNode>;
 
@@ -92,11 +96,12 @@ export class D3ForceGraphGenerator {
             .force('link', forceLink<GraphNode, GraphLink>(graphData.links).id(n => n.index)
                 .distance(context.linkDist)
                 .strength(context.linkStrength))
-            .force('charge', forceManyBody().strength(context.charge))
+            .force('charge', forceManyBody().strength(context.charge).theta(context.theta))
             .force('center', forceCenter(div.clientWidth / 2, div.clientHeight / 2))
             .force('x', forceX(div.clientWidth / 2).strength(context.gravity))
             .force('y', forceY(div.clientHeight / 2).strength(context.gravity))
             .force('collide', forceCollide<GraphNode>(n => radiusOf(n) + 2))
+            .alpha(Math.min(Math.max(context.alpha, MIN_ALPHA), MAX_ALPHA) * ALPHA_SCALE)
             .on('tick', () => {
                 node.attr('transform', n => 'translate(' + n.x + ',' + n.y + ')');
                 link.each((l, i, lines) => {

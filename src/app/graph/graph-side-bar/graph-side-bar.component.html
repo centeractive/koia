@@ -68,15 +68,15 @@
               </div>
               <div class="div_label_rotation">
                 Theta
-                <mat-slider min="0" max="1" step="0.1">
+                <mat-slider id="theta" min="0" max="1" step="0.1">
                   <input matSliderThumb [(ngModel)]="context.theta" />
                 </mat-slider>
               </div>
               <div class="div_label_rotation">
                 Alpha
-                <mat-slider min="0" max="1" step="0.1">
-                  <input matSliderThumb [(ngModel)]="context.gravity" />
-                </mat-slider>alpha
+                <mat-slider id="alpha" min="0.01" max="0.1" step="0.01">
+                  <input matSliderThumb [(ngModel)]="context.alpha" />
+                </mat-slider>
               </div>
             </koia-expansion-panel>
           </mat-accordion>

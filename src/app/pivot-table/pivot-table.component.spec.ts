@@ -1,3 +1,4 @@
+import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { DatePipe } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injectable } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
@@ -79,7 +80,7 @@ describe('PivotTableComponent', () => {
       declarations: [PivotTableComponent, ViewToolbarComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
-        MatMenuModule, MatBottomSheetModule
+        MatMenuModule, MatBottomSheetModule, CdkScrollableModule
       ],
       providers: [
         provideRouter([]),
@@ -141,6 +142,56 @@ describe('PivotTableComponent', () => {
     expect(style.borderTopWidth).toBe('1px');
     expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
     expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+  });
+
+  it('should scroll tall table below header', () => {
+
+    // when
+    component.divPivot.nativeElement.style.height = '5000px';
+
+    // then
+    const content: HTMLElement = fixture.nativeElement.querySelector('.div_content');
+    const header: HTMLElement = fixture.nativeElement.querySelector('.div_header');
+    const sidenavContent: HTMLElement = fixture.nativeElement.querySelector('mat-sidenav-content');
+    expect(content.scrollHeight).toBeGreaterThan(content.clientHeight);
+    expect(content.getBoundingClientRect().top).toBe(header.getBoundingClientRect().bottom);
+    expect(sidenavContent.scrollHeight).toBe(sidenavContent.clientHeight);
+  });
+
+  it('should scroll wide table inside content', () => {
+
+    // when
+    component.divPivot.nativeElement.style.width = '3000px';
+
+    // then
+    const content: HTMLElement = fixture.nativeElement.querySelector('.div_content');
+    const sidenavContent: HTMLElement = fixture.nativeElement.querySelector('mat-sidenav-content');
+    expect(content.scrollWidth).toBeGreaterThan(content.clientWidth);
+    expect(sidenavContent.scrollWidth).toBe(sidenavContent.clientWidth);
+  });
+
+  it('should position opened filter popup relative to scrolled table', () => {
+
+    // given
+    fixture.nativeElement.querySelector('.pvtTriangle').click();
+    const filterBox = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.pvtFilterBox'))
+      .find(box => box.style.display !== 'none');
+
+    // when
+    filterBox.style.position = 'absolute';
+
+    // then
+    expect(filterBox.offsetParent).toBe(fixture.nativeElement.querySelector('.div_table'));
+  });
+
+  it('should register content as scrollable for overlays', () => {
+
+    // when
+    const scrollables = TestBed.inject(ScrollDispatcher).getAncestorScrollContainers(component.divPivot);
+
+    // then
+    const content = fixture.nativeElement.querySelector('.div_content');
+    expect(scrollables.map(s => s.getElementRef().nativeElement)).toContain(content);
   });
 
   it('should retain indexed columns from active scene', () => {
