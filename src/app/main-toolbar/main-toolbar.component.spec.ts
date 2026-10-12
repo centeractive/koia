@@ -196,13 +196,13 @@ describe('MainToolbarComponent', () => {
     expect(dbService.getActiveScene).toHaveBeenCalled();
   });
 
-  it('toolbar should be white surface', () => {
+  it('toolbar should let header surface show through', () => {
 
     // when
     const style = getComputedStyle(fixture.nativeElement.querySelector('#div_main'));
 
     // then
-    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
   it('navigation buttons should be separated from tab bar by divider', () => {
@@ -254,7 +254,7 @@ describe('MainToolbarComponent', () => {
     // then
     const style = getComputedStyle(fixture.nativeElement.querySelector('#div_range_filters'));
     expect(style.borderTopWidth).toBe('1px');
-    expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
+    expect(style.borderTopColor).toBe('rgb(197, 202, 233)');
   }));
 
   it('#ngOnInit should not retain initial filters when active scene is not defeined', () => {

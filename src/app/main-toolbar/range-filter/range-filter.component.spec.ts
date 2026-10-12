@@ -68,6 +68,17 @@ describe('RangeFilterComponent', () => {
     expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(250, 218, 162)');
   });
 
+  it('slider bar should stand out from header surface while selection stays green', () => {
+
+    // when
+    const fullBar: HTMLElement = fixture.nativeElement.querySelector('.ngx-slider-full-bar .ngx-slider-bar');
+    const selection: HTMLElement = fixture.nativeElement.querySelector('.ngx-slider-selection');
+
+    // then
+    expect(getComputedStyle(fullBar).backgroundColor).toBe('rgb(159, 168, 218)');
+    expect(getComputedStyle(selection).backgroundColor).toBe('rgb(3, 204, 3)');
+  });
+
   it('#onChanged should refresh update number range filter and emit change event', fakeAsync(() => {
 
     // given

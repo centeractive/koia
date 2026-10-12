@@ -19,6 +19,19 @@ class SidenavHostComponent { }
 
 @Component({
   template: `
+    <mat-sidenav-container style="height: 200px; width: 300px">
+      <mat-sidenav-content>
+        <div class="div_header"><div style="margin-top: 2px; height: 40px">h</div></div>
+        <div style="height: 1000px"></div>
+      </mat-sidenav-content>
+    </mat-sidenav-container>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false
+})
+class StickyHostComponent { }
+
+@Component({
+  template: `
     <div koiaForm style="--mat-app-elevation-shadow-level-1: rgb(1, 2, 3) 0px 1px 3px 0px"><mat-accordion multi="true">
       <mat-expansion-panel id="panel_a" expanded="true"><mat-expansion-panel-header><mat-panel-title><h4>A</h4></mat-panel-title></mat-expansion-panel-header>a</mat-expansion-panel>
       <mat-expansion-panel id="panel_b" expanded="true"><mat-expansion-panel-header><mat-panel-title><h4>B</h4></mat-panel-title></mat-expansion-panel-header><div class="field-row">b</div></mat-expansion-panel>
@@ -108,6 +121,68 @@ describe('global styles', () => {
     expect(style.overflowY).toBe('auto');
     expect(content.scrollWidth).toBeGreaterThan(content.clientWidth);
     expect(content.offsetHeight - content.clientHeight).toBe(0);
+  });
+
+  async function createStickyHost(): Promise<HTMLElement> {
+    TestBed.configureTestingModule({
+      declarations: [StickyHostComponent],
+      imports: [MatSidenavModule]
+    });
+    const fixture = TestBed.createComponent(StickyHostComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return fixture.nativeElement;
+  }
+
+  it('mat-sidenav-content should be grey canvas', async () => {
+
+    // when
+    const host = await createStickyHost();
+
+    // then
+    expect(getComputedStyle(host.querySelector('mat-sidenav-content')).backgroundColor).toBe('rgb(236, 239, 241)');
+  });
+
+  it('header should be sticky tinted surface with shadow and bottom line', async () => {
+
+    // when
+    const host = await createStickyHost();
+
+    // then
+    const style = getComputedStyle(host.querySelector('.div_header'));
+    expect(style.position).toBe('sticky');
+    expect(style.top).toBe('0px');
+    expect(style.zIndex).toBe('2');
+    expect(style.backgroundColor).toBe('rgb(232, 234, 246)');
+    expect(style.boxShadow).toBe('rgba(0, 0, 0, 0.2) 0px 2px 4px 0px');
+    expect(style.borderBottomWidth).toBe('1px');
+    expect(style.borderBottomColor).toBe('rgb(197, 202, 233)');
+  });
+
+  it('header should start at top of sidenav content despite child margin', async () => {
+
+    // when
+    const host = await createStickyHost();
+
+    // then
+    const content: HTMLElement = host.querySelector('mat-sidenav-content');
+    const header: HTMLElement = host.querySelector('.div_header');
+    expect(header.getBoundingClientRect().top).toBe(content.getBoundingClientRect().top);
+  });
+
+  it('header should stay at top of scrolled sidenav content', async () => {
+
+    // given
+    const host = await createStickyHost();
+    const content: HTMLElement = host.querySelector('mat-sidenav-content');
+    const header: HTMLElement = host.querySelector('.div_header');
+
+    // when
+    content.scrollTop = 300;
+
+    // then
+    expect(content.scrollTop).toBe(300);
+    expect(header.getBoundingClientRect().top).toBe(content.getBoundingClientRect().top);
   });
 
   it('print styles should keep dashboard tiles on one page', () => {
@@ -271,6 +346,10 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-border-color').trim()).toBe('#e0e0e0');
     expect(style.getPropertyValue('--koia-toolbar-height').trim()).toBe('48px');
     expect(style.getPropertyValue('--koia-tile-header-height').trim()).toBe('48px');
+    expect(style.getPropertyValue('--koia-canvas').trim()).toBe('#eceff1');
+    expect(style.getPropertyValue('--koia-header-shadow').trim()).toBe('0 2px 4px rgba(0, 0, 0, 0.2)');
+    expect(style.getPropertyValue('--koia-header-surface').trim()).toBe('#e8eaf6');
+    expect(style.getPropertyValue('--koia-header-border').trim()).toBe('#c5cae9');
   });
 
   it('active toggle icon button should be accent tinted', () => {
@@ -291,7 +370,7 @@ describe('global styles', () => {
     // then
     expect(style.width).toBe('1px');
     expect(style.height).toBe('24px');
-    expect(style.backgroundColor).toBe('rgb(224, 224, 224)');
+    expect(style.backgroundColor).toBe('rgb(197, 202, 233)');
   });
 
   it('menu trigger should look like chip', () => {

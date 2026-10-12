@@ -4,7 +4,6 @@ button {
 
 #div_main {
   margin-top: 2px;
-  background-color: var(--koia-surface);
 }
 
 #div_toolbar {
@@ -59,6 +58,6 @@ button {
 }
 
 #div_range_filters {
-  border-top: var(--koia-tile-border);
+  border-top: 1px solid var(--koia-header-border);
   padding-top: 4px;
 }

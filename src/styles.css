@@ -10,10 +10,14 @@
   --koia-border-color: #e0e0e0;
   --koia-outline-color: #8a94a6;
   --koia-tile-border: 1px solid var(--koia-border-color);
-  --koia-hover-tint: rgba(48, 63, 159, 0.06);
+  --koia-hover-tint: rgba(48, 63, 159, 0.1);
   --koia-active-tint: rgba(56, 142, 60, 0.12);
   --koia-toolbar-height: 48px;
   --koia-tile-header-height: 48px;
+  --koia-canvas: #eceff1;
+  --koia-header-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --koia-header-surface: #e8eaf6;
+  --koia-header-border: #c5cae9;
 }
 
 html {
@@ -46,7 +50,7 @@ body {
 }
 
 mat-sidenav-content.mat-drawer-content {
-  background-color: var(--koia-surface);
+  background-color: var(--koia-canvas);
   overflow-x: hidden;
 }
 
@@ -59,6 +63,13 @@ mat-sidenav-content.mat-drawer-content {
 
 .div_header {
   flex-shrink: 0;
+  display: flow-root;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--koia-header-surface);
+  border-bottom: 1px solid var(--koia-header-border);
+  box-shadow: var(--koia-header-shadow);
 }
 
 .div_content {
@@ -156,7 +167,7 @@ mat-panel-description {
   width: 1px;
   height: 24px;
   margin: 0 8px;
-  background-color: var(--koia-border-color);
+  background-color: var(--koia-header-border);
 }
 
 .span_menu_trigger,

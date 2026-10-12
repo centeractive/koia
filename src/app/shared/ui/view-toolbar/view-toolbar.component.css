@@ -10,7 +10,5 @@
   width: 100%;
   min-height: var(--koia-toolbar-height);
   padding: 0 8px;
-  background-color: var(--koia-surface);
-  border-top: var(--koia-tile-border);
-  border-bottom: var(--koia-tile-border);
+  border-top: 1px solid var(--koia-header-border);
 }

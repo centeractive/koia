@@ -173,7 +173,7 @@ describe('ViewToolbarComponent', () => {
     expect(element('#view_toolbar > .koia-toolbar-separator + #but_custom')).not.toBeNull();
   });
 
-  it('toolbar should be white with subtle top and bottom border', () => {
+  it('toolbar should let header surface show through and have top border only', () => {
 
     // when
     fixture.detectChanges();
@@ -181,11 +181,10 @@ describe('ViewToolbarComponent', () => {
     // then
     const toolbar = element('#view_toolbar');
     const style = getComputedStyle(toolbar);
-    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
     expect(style.borderTopWidth).toBe('1px');
-    expect(style.borderBottomWidth).toBe('1px');
-    expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
-    expect(style.borderBottomColor).toBe('rgb(224, 224, 224)');
+    expect(style.borderTopColor).toBe('rgb(197, 202, 233)');
+    expect(style.borderBottomStyle).toBe('none');
     expect(toolbar.offsetHeight).toBe(48);
   });
 });

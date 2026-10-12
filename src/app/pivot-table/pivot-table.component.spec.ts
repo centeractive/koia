@@ -140,6 +140,7 @@ describe('PivotTableComponent', () => {
     const style = getComputedStyle(container);
     expect(style.borderTopWidth).toBe('1px');
     expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
+    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
   });
 
   it('should retain indexed columns from active scene', () => {

@@ -97,7 +97,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
             this.elementContainerDivRefs.changes.subscribe(() => {
                if (this.elementContainerDivRefs.last) {
                   const htmlDiv = this.elementContainerDivRefs.last.nativeElement;
-                  htmlDiv.scrollIntoView();
+                  htmlDiv.scrollIntoView({ block: 'end' });
                }
             });
          }

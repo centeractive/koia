@@ -3,6 +3,7 @@
   float: left;
   min-width: 500px;
   border: var(--koia-tile-border);
+  background-color: var(--koia-surface);
 }
 
 .span_color {
@@ -14,11 +15,6 @@
   padding-right: 100px;
   border: solid 1px gray;
   opacity: 0.4;
-}
-
-.but_config {
-  /* otherwise, it doesn't stay behind sticky header when scrolling */
-  z-index: 1;
 }
 
 .mat-badge .mat-badge-content {

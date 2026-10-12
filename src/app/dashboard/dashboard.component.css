@@ -27,6 +27,7 @@
 .div_tile {
   position: relative;
   z-index: 0;
+  background-color: var(--koia-surface);
 }
 
 .div_tile::after {

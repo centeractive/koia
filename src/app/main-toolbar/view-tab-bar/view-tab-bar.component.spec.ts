@@ -160,7 +160,7 @@ describe('ViewTabBarComponent', () => {
       await userEvent.hover(element('#tab-tab1'));
 
       // then
-      expect(getComputedStyle(element('#tab-tab1')).backgroundColor).toBe('rgba(48, 63, 159, 0.06)');
+      expect(getComputedStyle(element('#tab-tab1')).backgroundColor).toBe('rgba(48, 63, 159, 0.1)');
       expect(getComputedStyle(element('#tab-tab1 .icon_close_tab')).visibility).toBe('visible');
     });
   });

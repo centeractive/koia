@@ -440,7 +440,7 @@ describe('DashboardComponent', () => {
       expect(fixture.debugElement.query(By.css('.div_flex_element koia-graph'))).toBeTruthy();
     });
 
-    it('should render grid tiles with thin frame instead of heavy shadow', () => {
+    it('should render grid tiles as white surface with thin frame instead of heavy shadow', () => {
 
       // given
       component.addGraph();
@@ -449,10 +449,10 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expectThinFramedTiles('#div_grid .div_tile');
+      expectWhiteThinFramedTiles('#div_grid .div_tile');
     });
 
-    it('should render flex tiles with thin frame instead of heavy shadow', () => {
+    it('should render flex tiles as white surface with thin frame instead of heavy shadow', () => {
 
       // given
       component.addGraph();
@@ -462,10 +462,10 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expectThinFramedTiles('.div_flex_element');
+      expectWhiteThinFramedTiles('.div_flex_element');
     });
 
-    function expectThinFramedTiles(selector: string): void {
+    function expectWhiteThinFramedTiles(selector: string): void {
       const tiles: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll(selector));
       expect(tiles.length).toBe(1);
       tiles.forEach(tile => {
@@ -476,6 +476,7 @@ describe('DashboardComponent', () => {
         expect(frame.borderTopWidth).toBe('1px');
         expect(frame.borderTopColor).toBe('rgb(224, 224, 224)');
         expect(frame.pointerEvents).toBe('none');
+        expect(getComputedStyle(tile).backgroundColor).toBe('rgb(255, 255, 255)');
       });
     }
 
@@ -1132,7 +1133,7 @@ describe('DashboardComponent', () => {
       expect(JSON.stringify(view)).toBe(viewJson);
     }));
 
-    it('should scroll new element into view when tab with elements was restored', fakeAsync(() => {
+    it('should scroll bottom of new element into view when tab with elements was restored', fakeAsync(() => {
 
       // given
       init(dashboardTab(viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
@@ -1143,7 +1144,7 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(scrollIntoViewSpy).toHaveBeenCalledTimes(1);
+      expect(scrollIntoViewSpy).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
     }));
 
     it('#manageViews should show manage view dialog', fakeAsync(() => {
