@@ -81,6 +81,7 @@
               "scripts": [],
               "assets": [
                 "src/assets",
+                "src/intro",
                 "src/WEB-INF",
                 {
                   "glob": "**/*",

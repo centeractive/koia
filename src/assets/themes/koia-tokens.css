@@ -1,0 +1,20 @@
+:root {
+  --koia-primary: #303f9f;
+  --koia-accent: #388e3c;
+  --koia-on-color: #fff;
+  --koia-surface: #fff;
+  --koia-text-primary: rgba(0, 0, 0, 0.87);
+  --koia-text-secondary: rgba(0, 0, 0, 0.6);
+  --koia-border-color: #e0e0e0;
+  --koia-outline-color: #8a94a6;
+  --koia-tile-border: 1px solid var(--koia-border-color);
+  --koia-hover-tint: rgba(48, 63, 159, 0.1);
+  --koia-active-tint: rgba(56, 142, 60, 0.12);
+  --koia-toolbar-height: 48px;
+  --koia-tile-header-height: 48px;
+  --koia-canvas: #eceff1;
+  --koia-header-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --koia-header-surface: #e8eaf6;
+  --koia-header-border: #c5cae9;
+  --koia-header-line: 1px solid var(--koia-header-border);
+}

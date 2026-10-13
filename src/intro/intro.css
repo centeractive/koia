@@ -1,0 +1,328 @@
+:root {
+  --koia-primary-dark: #1a237e;
+  --koia-accent-strong: #2e7d32;
+  --koia-radius-tile: 12px;
+  --koia-radius-button: 8px;
+  --koia-tile-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --koia-frame-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  --koia-font-landing: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:where(.landing-root) {
+  font-family: var(--koia-font-landing);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--koia-text-primary);
+}
+
+:where(.landing-root) img {
+  max-width: 100%;
+  height: auto;
+}
+
+:where(.landing-root a:not(.landing-btn)) {
+  color: var(--koia-primary);
+}
+
+body.landing-root {
+  margin: 0;
+  background: var(--koia-surface);
+}
+
+html:has(body.landing-root) {
+  scroll-padding-top: 64px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(body.landing-root) {
+    scroll-behavior: smooth;
+  }
+}
+
+.landing-container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 32px);
+}
+
+.landing-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 64px;
+  background: var(--koia-surface);
+  box-shadow: var(--koia-header-shadow);
+  border-bottom: var(--koia-header-line);
+}
+
+.landing-header-inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.landing-nav-secondary {
+  color: var(--koia-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.landing-nav-secondary:hover {
+  color: var(--koia-primary);
+}
+
+.landing-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: var(--koia-radius-button);
+  font: 600 15px var(--koia-font-landing);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.landing-btn-primary {
+  background: var(--koia-primary);
+  color: var(--koia-on-color);
+}
+
+.landing-btn-accent {
+  background: var(--koia-accent-strong);
+  color: var(--koia-on-color);
+}
+
+.landing-btn-outline {
+  background: transparent;
+  color: inherit;
+  border-color: currentColor;
+}
+
+.landing-btn-light {
+  background: var(--koia-surface);
+  color: var(--koia-primary);
+}
+
+.landing-btn:focus-visible,
+.landing-zoom:focus-visible {
+  outline-width: 2px;
+  outline-style: solid;
+  outline-color: var(--koia-primary-dark);
+  outline-offset: 2px;
+}
+
+:is(.landing-hero, .landing-cta) .landing-btn:focus-visible {
+  outline-color: var(--koia-on-color);
+}
+
+.landing-zoom-dialog .landing-btn:focus-visible {
+  outline-color: var(--koia-primary-dark);
+}
+
+.landing-zoom:focus-visible {
+  outline-offset: -4px;
+}
+
+.landing-hero {
+  background: linear-gradient(135deg, var(--koia-primary), var(--koia-primary-dark));
+  color: var(--koia-on-color);
+  text-align: center;
+  padding-block: 72px;
+}
+
+.landing-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.2;
+  margin: 0 0 16px;
+}
+
+.landing-lead {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 24px 0 40px;
+}
+
+.landing-section {
+  padding-block: 72px;
+}
+
+.landing-canvas {
+  background: var(--koia-canvas);
+}
+
+.landing-tile {
+  background: var(--koia-surface);
+  border: var(--koia-tile-border);
+  border-radius: var(--koia-radius-tile);
+  box-shadow: var(--koia-tile-shadow);
+  padding: 24px;
+}
+
+.landing-tile-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-tile h3 {
+  font-size: 1.25rem;
+  margin: 8px 0;
+}
+
+.landing-tile-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.landing-frame {
+  margin: 0;
+  border: var(--koia-tile-border);
+  border-radius: var(--koia-radius-tile);
+  box-shadow: var(--koia-frame-shadow);
+  overflow: hidden;
+}
+
+.landing-frame img {
+  display: block;
+  width: 100%;
+}
+
+.landing-zoom {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.landing-zoom-dialog {
+  padding: 0;
+  border: 0;
+  max-width: none;
+  max-height: none;
+  border-radius: var(--koia-radius-tile);
+  box-shadow: var(--koia-frame-shadow);
+  overflow: hidden;
+}
+
+.landing-zoom-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.landing-zoom-dialog img {
+  max-width: 95vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+}
+
+.landing-zoom-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.landing-frame.landing-hero-shot {
+  max-width: 1080px;
+  margin-inline: auto;
+}
+
+.landing-grid {
+  display: grid;
+  gap: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.landing-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.landing-showcase-row {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 48px;
+  align-items: center;
+  margin-block: 72px;
+}
+
+.landing-showcase-row:nth-of-type(even) {
+  grid-template-columns: 7fr 5fr;
+}
+
+.landing-showcase-row:nth-of-type(even) .landing-showcase-text {
+  order: 2;
+}
+
+.landing-cta {
+  background: var(--koia-primary);
+  color: var(--koia-on-color);
+  text-align: center;
+}
+
+.landing-footer {
+  background: var(--koia-canvas);
+  border-top: var(--koia-tile-border);
+  padding-block: 32px;
+}
+
+.landing-badge {
+  mix-blend-mode: multiply;
+}
+
+.landing-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .landing-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .landing-nav-secondary {
+    display: none;
+  }
+
+  .landing-grid-4,
+  .landing-showcase-row,
+  .landing-showcase-row:nth-of-type(even) {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-showcase-row:nth-of-type(even) .landing-showcase-text {
+    order: 0;
+  }
+}

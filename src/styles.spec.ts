@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
+import { findStyleRule } from 'app/shared/test';
 
 @Component({
   template: `
@@ -69,25 +70,6 @@ class ToggleHostComponent { }
 class DragHostComponent { }
 
 describe('global styles', () => {
-
-  function printRule(selectorText: string): CSSStyleRule {
-    for (const sheet of Array.from(document.styleSheets)) {
-      let rules: CSSRule[];
-      try {
-        rules = Array.from(sheet.cssRules);
-      } catch {
-        continue;
-      }
-      const printRules = rules
-        .filter(r => r instanceof CSSMediaRule && r.media.mediaText === 'print')
-        .flatMap(r => Array.from((r as CSSMediaRule).cssRules));
-      const rule = printRules.find(r => r instanceof CSSStyleRule && r.selectorText === selectorText);
-      if (rule) {
-        return rule as CSSStyleRule;
-      }
-    }
-    return undefined;
-  }
 
   async function createSidenavHost(): Promise<HTMLElement> {
     TestBed.configureTestingModule({
@@ -184,7 +166,7 @@ describe('global styles', () => {
   it('print styles should lay out sidenav content as block', () => {
 
     // when
-    const rule = printRule('mat-sidenav-content.mat-drawer-content');
+    const rule = findStyleRule(Array.from(document.styleSheets), 'mat-sidenav-content.mat-drawer-content', 'print');
 
     // then
     expect(rule).toBeDefined();
@@ -195,7 +177,7 @@ describe('global styles', () => {
   it('print styles should keep dashboard tiles on one page', () => {
 
     // when
-    const rule = printRule('.div_grid_element, .div_flex_element');
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_grid_element, .div_flex_element', 'print');
 
     // then
     expect(rule).toBeDefined();
@@ -359,6 +341,7 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-header-border').trim()).toBe('#c5cae9');
     expect(style.getPropertyValue('--koia-header-line').trim()).toBe('1px solid #c5cae9');
     expect(style.getPropertyValue('--koia-hover-tint').trim()).toBe('rgba(48, 63, 159, 0.1)');
+    expect(style.getPropertyValue('--koia-primary-dark')).toBe('');
   });
 
   it('active toggle icon button should be accent tinted', () => {
@@ -447,7 +430,7 @@ describe('global styles', () => {
   it('print styles should hide view toolbar', () => {
 
     // when
-    const rule = printRule('koia-main-toolbar, koia-range-filter, koia-view-toolbar, img');
+    const rule = findStyleRule(Array.from(document.styleSheets), 'koia-main-toolbar, koia-range-filter, koia-view-toolbar, img', 'print');
 
     // then
     expect(rule).toBeDefined();

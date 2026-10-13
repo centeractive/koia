@@ -27,13 +27,13 @@ Besides simply visualizing data, Koia also features **time and value filters** t
 
  When satisfied with the outcome, users can **save** the current view or **export** data to use it elsewhere.
 
- <img align="center" src="./doc/lemon_marketprice.png">
+ <img align="center" width="880" src="./src/intro/screenshots/dashboards.webp" alt="Dashboard with charts and summary table">
 
- **Picture 1:** Relationship graph showing the time/log level relation of log entries and a pie/scatter chart showing the occurance of the log levels.
+ **Picture 1:** Dashboard with bar, doughnut and pie charts of sales per region, product and channel and a summary table of the average revenue per region.
 
- <img align="center" src="./doc/log_levels.png">
+ <img align="center" width="880" src="./src/intro/screenshots/timeseries.webp" alt="Time series dashboard">
 
- **Picture 2:** Line chart of market prices over the course of several years and the according summmaries with the average prices for each year and in total.
+ **Picture 2:** Line chart of lemon market prices narrowed by a time range filter and a summary of the average EU price per year.
 
 ## Getting Started
 
