@@ -59,7 +59,7 @@ export class RawDataRevealer {
    }
 
    private fromFlatData(elements: ActiveElement[], data: ChartData, context: ChartContext): void {
-      if (!!data.labels?.length) {
+      if (data.labels?.length) {
          const dsIndex = elements[0].datasetIndex;
          const index = elements[0].index;
          const column = context.isAggregationCountSelected() ? context.dataColumns[dsIndex] : context.groupByColumns[0];

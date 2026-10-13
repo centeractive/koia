@@ -39,7 +39,7 @@ export class ScaleRestorer {
     }
 
     private getOrDefault(columnName: string): Scale {
-        let scale = this.colNamesToScale.get(columnName);
+        const scale = this.colNamesToScale.get(columnName);
         return scale ? _.cloneDeep(scale) : this.defaultScale(columnName);
     }
 

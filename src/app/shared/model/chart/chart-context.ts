@@ -176,7 +176,7 @@ export class ChartContext extends ElementContext {
    }
 
    override set splitColumns(splitColumns: Column[]) {
-      if (!!splitColumns.length) {
+      if (splitColumns.length) {
          this._multiValueAxes = false;
       }
       super.splitColumns = splitColumns;

@@ -12,7 +12,7 @@ const COLUMNS: Column[] = [
   { name: 'Percent', dataType: DataType.NUMBER, width: 1 },
 ];
 
-let provider = new ChartJsOptionsProvider(new RawDataRevealService(null, null));
+const provider = new ChartJsOptionsProvider(new RawDataRevealService(null, null));
 
 describe('ChartJsOptionsProvider - PIE', () => {
   it('#provide', () => {
