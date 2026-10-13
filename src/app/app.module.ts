@@ -1,6 +1,5 @@
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -23,7 +22,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
-import { MatStepperModule } from '@angular/material/stepper';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -42,6 +40,8 @@ import { ChartComponent } from './chart/chart.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
+import { FrontGuideComponent } from './front/front-guide/front-guide.component';
+import { FrontInfoComponent } from './front/front-info/front-info.component';
 import { FrontComponent } from './front/front.component';
 import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.component';
 import { GraphComponent } from './graph/graph.component';
@@ -123,6 +123,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         KoiaFormDirective,
         ConnectionDialogComponent,
         FrontComponent,
+        FrontGuideComponent,
+        FrontInfoComponent,
         InputDialogComponent,
         ConfirmDialogComponent,
         ValueFilterComponent,
@@ -172,13 +174,11 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         ResizeHandleDirective,
         AppRoutingModule,
         MatDialogModule,
-        MatStepperModule,
         MatSnackBarModule,
         ReactiveFormsModule,
         NgxSliderModule],
     providers: [
         { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
-        { provide: STEPPER_GLOBAL_OPTIONS, useValue: { displayDefaultIndicatorType: false } },
         ReaderService,
         CouchDBService,
         DBService,

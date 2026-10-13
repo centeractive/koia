@@ -8,3 +8,4 @@ export * from './drag-drop-event-factory';
 export * from './data-handler-recorder';
 export * from './css-rules';
 export * from './external-links';
+export * from './dom-queries';

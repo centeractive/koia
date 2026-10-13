@@ -1,5 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
@@ -7,7 +6,6 @@ import { ConnectionInfo, Route } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { DataReader, ReaderService } from 'app/shared/services/reader';
 import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
 import { firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
@@ -26,24 +24,18 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
 
-  stepsVisible = true;
-  stepVisibleControl: UntypedFormGroup;
   dataStorages = [this.indexedDB, this.couchDB];
   selectedDataStorage: string;
   ready = false;
   scenesCount: number;
-  readers: DataReader[];
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
-    private couchDBService: CouchDBService, private readerService: ReaderService, private dialogService: DialogService,
-    notificationService: NotificationService, private formBuilder: UntypedFormBuilder) {
+    private couchDBService: CouchDBService, private dialogService: DialogService,
+    notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
   ngOnInit(): void {
-    this.stepVisibleControl = this.formBuilder.group({ firstCtrl: ['', Validators.required] });
-    this.readers = this.readerService.getReaders();
-
     this.activatedRoute.queryParamMap.subscribe(params => {
       const queryParamExtractor = new QueryParamExtractor(params);
       if (queryParamExtractor.getCouchDBConnectionInfo() && queryParamExtractor.getSceneID()) {
@@ -87,7 +79,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   showCouchDBConnectionDialog(): void {
     const data = new ConnectionDialogData(this.couchDBService.getConnectionInfo());
     const dialogRef = this.dialogService.showConnectionDialog(data);
-    firstValueFrom(dialogRef.afterClosed()).then(r => this.onCouchDBConnectionDialogClosed(data));
+    firstValueFrom(dialogRef.afterClosed()).then(() => this.onCouchDBConnectionDialogClosed(data));
   }
 
   private onCouchDBConnectionDialogClosed(data: ConnectionDialogData): void {

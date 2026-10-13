@@ -1,0 +1,105 @@
+<div class="landing-tile front-info">
+  <details class="front-info-topic" name="front-info">
+    <summary>
+      <img class="landing-tile-icon" src="/assets/mat-icons/features.png" alt="" width="40" height="40">
+      <hgroup class="front-info-title">
+        <h3>Features</h3>
+        <p class="front-info-teaser">Raw data is always one click away</p>
+      </hgroup>
+      <mat-icon class="front-info-chevron">expand_more</mat-icon>
+    </summary>
+    <div class="front-info-body">
+      <p>Koia differs from similar programs mainly in that the context to the original data is never lost. You are
+        always only a mouse click apart from seeing the raw data on which the displayed element or value is based.
+        Next to this, Koia enables the uploading of multiple data sets, so it is possible to create graphics based
+        on different data without opening a lot of tabs in your browser but switching between the data sets in one
+        tab.</p>
+      <p>Other features:</p>
+      <ul class="front-info-columns">
+        <li>Column filters supporting the following operators: contains, &lt;, &lt;=, =, &gt;=, &gt;, not empty</li>
+        <li>Draggable column value range filters</li>
+        <li>Automatic and manual value range grouping</li>
+        <li>Customizable grids</li>
+        <li>Value sampling</li>
+        <li>Exporting charts to PNG images</li>
+        <li>Exporting summary tables to Excel</li>
+        <li>Pivot tables with drag and drop column support</li>
+      </ul>
+    </div>
+  </details>
+  <details class="front-info-topic" name="front-info">
+    <summary>
+      <img class="landing-tile-icon" src="/assets/mat-icons/data_formats.png" alt="" width="40" height="40">
+      <hgroup class="front-info-title">
+        <h3>Data formats</h3>
+        <p class="front-info-teaser">CSV, Excel and JSON with full control over the import</p>
+      </hgroup>
+      <mat-icon class="front-info-chevron">expand_more</mat-icon>
+    </summary>
+    <div class="front-info-body">
+      <p>Data is loaded from files to the backing data storage through Koia itself or it may be written to it by a
+        third party program.</p>
+      <p>The following file types are supported.</p>
+      <ul class="front-info-readers">
+        @for (reader of readers; track reader) {
+          <li><b>{{ reader.getSourceName() }} ({{ reader.getFileExtension() }})</b><br>{{ reader.getDescription() }}</li>
+        }
+      </ul>
+      <p>When importing a file, you're granted full control over which portions of the data should be imported.
+        You're also in control over...</p>
+      <ul>
+        <li>The data types to be used for storing the values in the data storage</li>
+        <li>The format to be applied for displaying certain values</li>
+      </ul>
+    </div>
+  </details>
+  <details class="front-info-topic" name="front-info">
+    <summary>
+      <img class="landing-tile-icon" src="/assets/mat-icons/scenes.png" alt="" width="40" height="40">
+      <hgroup class="front-info-title">
+        <h3>What is a scene?</h3>
+        <p class="front-info-teaser">One scene per data set, switch between them at any time</p>
+      </hgroup>
+      <mat-icon class="front-info-chevron">expand_more</mat-icon>
+    </summary>
+    <div class="front-info-body">
+      <p>Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>.
+        You can switch between different scenes as you please.</p>
+      <p>Scenes can be given a user-defined name and description. They also contain the following items.</p>
+      <ul class="front-info-columns">
+        <li>Information about the origin of the loaded data (i.e. file name and modification date).</li>
+        <li>A link to the loaded raw data in the data storage.</li>
+        <li>The name, data type, width and format of individual data columns.</li>
+        <li>View definitions that were saved by the user in order to be restored later on.</li>
+      </ul>
+    </div>
+  </details>
+  <details class="front-info-topic" name="front-info">
+    <summary>
+      <img class="landing-tile-icon" src="/assets/mat-icons/view_data.png" alt="" width="40" height="40">
+      <hgroup class="front-info-title">
+        <h3>Views</h3>
+        <p class="front-info-teaser">Raw data table, pivot tables and dashboards</p>
+      </hgroup>
+      <mat-icon class="front-info-chevron">expand_more</mat-icon>
+    </summary>
+    <div class="front-info-body">
+      <ul>
+        <li>The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size.
+          The table offers sorting and filtering of individual columns.</li>
+        <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing
+          patterns and trends. It's based on amazing <a href="https://www.npmjs.com/package/pivottable#what-does-it-do"
+            target="_blank" rel="noopener">PivotTable.js</a> that offers many different views (e.g. heatmaps and table
+          barcharts) and lets you shape the pivot table through drag and drop of individual columns.</li>
+        <li>A <b>Dashboard</b> contains a variable number of elements (summary tables, charts and graphs). In
+          <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a
+          single cell or spread over several columns and rows. When the window size changes, the element size also
+          changes in order to always fit the allocated grid space. In <b>flex</b> layout, each element has a specific
+          size that is not changed when the window size changes, the elements are however automatically laid out
+          according to the available window space.</li>
+        <li>Any number of pivot tables and dashboards may be opened as individual tabs next to the raw data
+          table. Open tabs are kept with the scene.</li>
+      </ul>
+    </div>
+  </details>
+</div>

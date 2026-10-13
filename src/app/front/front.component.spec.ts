@@ -1,28 +1,28 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkScrollable } from '@angular/cdk/scrolling';
+import { ChangeDetectionStrategy, Component, EnvironmentProviders, Provider } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
-import { FormsModule, UntypedFormBuilder } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, provideRouter, Router, RouterModule } from '@angular/router';
 import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { ReaderService } from 'app/shared/services/reader';
-import { CouchDBServiceMock, QueryParams, SceneFactory } from 'app/shared/test';
+import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, rowCountOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { QueryParamExtractor } from 'app/shared/utils';
 import { Observable, of } from 'rxjs';
-import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
-import { FrontComponent } from './front.component';
 import type { Mock } from 'vitest';
+import { page } from 'vitest/browser';
+import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
+import { FrontGuideComponent } from './front-guide/front-guide.component';
+import { FrontInfoComponent } from './front-info/front-info.component';
+import { FrontComponent } from './front.component';
 
 @Component({
   template: '',
@@ -32,7 +32,6 @@ import type { Mock } from 'vitest';
 class DummyComponent { }
 
 const couchDBService = new CouchDBServiceMock();
-const readerService = new ReaderService();
 const dialogService = new DialogService(null);
 const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'test', password: 'secret' };
 const notificationService = new NotificationServiceMock();
@@ -40,6 +39,24 @@ let dbService: DBService;
 let isIndexedDbInUseSpy: Mock;
 let initBackendSpy: Mock;
 let findSceneInfosSpy: Mock;
+
+function configureTestingModule(queryParams: QueryParams, ...providers: (Provider | EnvironmentProviders)[]): void {
+  TestBed.configureTestingModule({
+    declarations: [FrontComponent, FrontInfoComponent, FrontGuideComponent, DummyComponent],
+    imports: [MatButtonModule, MatIconModule, MatTooltipModule, MatDialogModule, DragDropModule,
+      RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
+    ],
+    providers: [
+      ...providers,
+      { provide: ActivatedRoute, useValue: { queryParamMap: of(queryParams) } },
+      MatBottomSheet,
+      { provide: DBService, useValue: dbService },
+      { provide: CouchDBService, useValue: couchDBService },
+      { provide: DialogService, useValue: dialogService },
+      { provide: NotificationService, useValue: notificationService }
+    ]
+  });
+}
 
 describe('FrontComponent', () => {
 
@@ -49,24 +66,8 @@ describe('FrontComponent', () => {
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(couchDBService);
-    TestBed.configureTestingModule({
-      declarations: [FrontComponent, DummyComponent],
-      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
-        MatDialogModule, MatStepperModule, MatTooltipModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
-      ],
-      providers: [
-        provideRouter([]),
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(new QueryParams()) } },
-        MatBottomSheet,
-        { provide: DBService, useValue: dbService },
-        { provide: CouchDBService, useValue: couchDBService },
-        { provide: ReaderService, useValue: readerService },
-        { provide: DialogService, useValue: dialogService },
-        { provide: NotificationService, useValue: notificationService },
-        UntypedFormBuilder
-      ]
-    })
-      .compileComponents();
+    configureTestingModule(new QueryParams(), provideRouter([]));
+    TestBed.compileComponents();
     initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
     isIndexedDbInUseSpy = vi.spyOn(dbService, 'isIndexedDbInUse').mockReturnValue(true);
     const sceneInfos = createSceneInfos(5);
@@ -351,6 +352,319 @@ describe('FrontComponent', () => {
     expect(component.colorOf(component.indexedDB)).toBe('inactive');
   });
 
+  it('should show shared header logo 40px high', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const logo = host.querySelector<HTMLImageElement>('header .landing-logo');
+    expect(new URL(logo.src).pathname).toBe('/assets/koialogo_textblack.png');
+    expect(logo.getBoundingClientRect().height).toBe(40);
+  });
+
+  it('should keep scrollbar below header', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const headerBottom = host.querySelector('.landing-header').getBoundingClientRect().bottom;
+    expect(host.querySelector('.landing-scroll').getBoundingClientRect().top).toBeCloseTo(headerBottom, 0);
+  });
+
+  it('should register content as cdk scrollable', () => {
+
+    // when
+    render();
+
+    // then
+    const scrollable = fixture.debugElement.query(By.directive(CdkScrollable)).nativeElement as HTMLElement;
+    expect(scrollable.classList).toContain('landing-scroll');
+  });
+
+  it('should show compact hero and steps section', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(styleOf(host, '.front-hero').paddingTop).toBe('40px');
+    expect(styleOf(host, '.front-steps').paddingTop).toBe('40px');
+  });
+
+  it('should show three steps in order', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(textsOf(host, 'ol.landing-grid-3 > li h3'))
+      .toEqual(['1. Choose data storage', '2. Import data to scene', '3. Visualize and analyze']);
+  });
+
+  it('should show monitor icon when IndexedDB is selected', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(new URL(storageIcon(host).src).pathname).toBe('/assets/monitor.png');
+  });
+
+  it('should show CouchDB icon when CouchDB is selected', () => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+
+    // when
+    const host = render();
+
+    // then
+    expect(new URL(storageIcon(host).src).pathname).toBe('/assets/couchdb.png');
+  });
+
+  it('should mark selected storage active and pressed', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const [indexedDB, couchDB] = storageButtons(host);
+    expect(indexedDB.getAttribute('data-state')).toBe('active');
+    expect(indexedDB.getAttribute('aria-pressed')).toBe('true');
+    expect(couchDB.getAttribute('data-state')).toBe('inactive');
+    expect(couchDB.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('should fill active storage button with strong accent', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const style = getComputedStyle(storageButtons(host)[0]);
+    expect(style.backgroundColor).toBe('rgb(46, 125, 50)');
+    expect(style.color).toBe('rgb(255, 255, 255)');
+  });
+
+  it('should outline inactive storage button', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(getComputedStyle(storageButtons(host)[1]).borderTopColor).toBe('rgb(138, 148, 166)');
+  });
+
+  it('should fill corrupt CouchDB button with error color', () => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    component.ready = false;
+
+    // when
+    const host = render();
+
+    // then
+    const couchDB = storageButtons(host)[1];
+    expect(couchDB.getAttribute('data-state')).toBe('corrupt');
+    expect(getComputedStyle(couchDB).backgroundColor).toBe('rgb(198, 40, 40)');
+  });
+
+  it('should switch storage when storage button is clicked', () => {
+
+    // given
+    const host = render();
+    vi.spyOn(component, 'onDataStorageChanged').mockReturnValue(undefined);
+
+    // when
+    storageButtons(host)[1].click();
+
+    // then
+    expect(component.onDataStorageChanged).toHaveBeenCalledWith('CouchDB');
+  });
+
+  it('should hide CouchDB settings when IndexedDB is selected', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(host.querySelector('.front-storage-settings')).toBeNull();
+  });
+
+  it('should open CouchDB connection dialog when settings button is clicked', () => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    const host = render();
+    vi.spyOn(component, 'showCouchDBConnectionDialog').mockReturnValue(undefined);
+
+    // when
+    host.querySelector<HTMLElement>('.front-storage-settings').click();
+
+    // then
+    expect(component.showCouchDBConnectionDialog).toHaveBeenCalled();
+  });
+
+  it('should link start button to scenes when ready', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const start = startButton(host);
+    expect(start.getAttribute('href')).toMatch(/\/scenes$/);
+    expect(start.getAttribute('aria-disabled')).toBe('false');
+    expect(start.querySelector('mat-icon').textContent.trim()).toBe('play_circle_outline');
+  });
+
+  it('should disable start button until ready', () => {
+
+    // given
+    component.ready = false;
+
+    // when
+    const host = render();
+
+    // then
+    const start = startButton(host);
+    const style = getComputedStyle(start);
+    expect(start.hasAttribute('href')).toBe(false);
+    expect(start.getAttribute('role')).toBe('link');
+    expect(start.getAttribute('aria-disabled')).toBe('true');
+    expect(style.pointerEvents).toBe('none');
+    expect(style.opacity).toBe('0.4');
+  });
+
+  it('should show scenes count when ready', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(textsOf(host, '.front-scenes-count')).toEqual(['IndexedDB currently contains 5 scenes.']);
+  });
+
+  it('should show singular scene count', () => {
+
+    // given
+    component.scenesCount = 1;
+
+    // when
+    const host = render();
+
+    // then
+    expect(textsOf(host, '.front-scenes-count')).toEqual(['IndexedDB currently contains 1 scene.']);
+  });
+
+  it('should open external links in new tab without opener', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(findUnsafeExternalLinks(host)).toEqual([]);
+  });
+
+  it('should stack steps on mobile', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const rects = steps(host).map(s => s.getBoundingClientRect());
+    rects.slice(1).forEach((r, i) => expect(r.top).toBeGreaterThanOrEqual(rects[i].bottom));
+  });
+
+  it('should hide secondary navigation on mobile', () => {
+
+    // when
+    const host = render();
+
+    // then
+    Array.from(host.querySelectorAll('.landing-nav-secondary'))
+      .forEach(l => expect(getComputedStyle(l).display).toBe('none'));
+  });
+
+  it('should end every tile with its padding only', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(stylesOf(host, '.landing-tile > :last-child').map(s => s.marginBottom)).toEqual(Array(8).fill('0px'));
+  });
+
+  describe('on desktop', () => {
+
+    beforeAll(() => page.viewport(1280, 800));
+
+    afterAll(() => page.viewport(414, 896));
+
+    it('should lay out steps in one row', () => {
+
+      // when
+      const host = render();
+
+      // then
+      expect(rowCountOf(host, 'ol.landing-grid-3 > li')).toBe(1);
+    });
+
+    it('should show start button without scrolling', () => {
+
+      // when
+      const host = render();
+
+      // then
+      expect(startButton(host).getBoundingClientRect().bottom).toBeLessThanOrEqual(800);
+    });
+  });
+
+  describe('on medium screens', () => {
+
+    beforeAll(() => page.viewport(800, 800));
+
+    afterAll(() => page.viewport(414, 896));
+
+    it('should lay out steps two per row', () => {
+
+      // when
+      const host = render();
+
+      // then
+      const [first, second, third] = steps(host).map(s => s.getBoundingClientRect().top);
+      expect(second).toBe(first);
+      expect(third).toBeGreaterThan(first);
+    });
+  });
+
+  function render(): HTMLElement {
+    fixture.detectChanges();
+    return fixture.nativeElement;
+  }
+
+  function styleOf(host: HTMLElement, selector: string): CSSStyleDeclaration {
+    return getComputedStyle(host.querySelector(selector));
+  }
+
+  function steps(host: HTMLElement): HTMLElement[] {
+    return Array.from(host.querySelectorAll<HTMLElement>('ol.landing-grid-3 > li'));
+  }
+
+  function storageIcon(host: HTMLElement): HTMLImageElement {
+    return host.querySelector<HTMLImageElement>('ol.landing-grid-3 > li .landing-tile-icon');
+  }
+
+  function storageButtons(host: HTMLElement): HTMLButtonElement[] {
+    return Array.from(host.querySelectorAll<HTMLButtonElement>('.front-storage-option'));
+  }
+
+  function startButton(host: HTMLElement): HTMLAnchorElement {
+    return host.querySelector<HTMLAnchorElement>('#start_button');
+  }
+
   function createSceneInfos(count: number): SceneInfo[] {
     const sceneInfos: SceneInfo[] = [];
     const now = new Date().getTime();
@@ -384,22 +698,8 @@ describe('FrontComponent (external invocation)', () => {
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(couchDBService);
-    TestBed.configureTestingModule({
-      declarations: [FrontComponent, DummyComponent],
-      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatButtonModule, MatSelectModule, MatIconModule,
-        MatDialogModule, MatStepperModule, MatTooltipModule, RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
-      ],
-      providers: [
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(createQueryParams()) } },
-        MatBottomSheet,
-        { provide: DBService, useValue: dbService },
-        { provide: CouchDBService, useValue: couchDBService },
-        { provide: ReaderService, useValue: readerService },
-        { provide: DialogService, useValue: dialogService },
-        { provide: NotificationService, useValue: notificationService },
-        UntypedFormBuilder
-      ]
-    }).compileComponents();
+    configureTestingModule(createQueryParams());
+    TestBed.compileComponents();
   }));
 
   beforeEach(fakeAsync(() => {

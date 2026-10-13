@@ -28,6 +28,10 @@ describe('intro page', () => {
     return Array.from(doc.querySelectorAll<HTMLElement>(selector));
   }
 
+  function scrollerOf(doc: Document): HTMLElement {
+    return doc.querySelector<HTMLElement>('.landing-scroll');
+  }
+
   function tops(elements: HTMLElement[]): number[] {
     return elements.map(e => e.getBoundingClientRect().top);
   }
@@ -214,7 +218,7 @@ describe('intro page', () => {
     const doc = await loadIntro(DESKTOP);
 
     // when
-    const rule = findStyleRule(Array.from(doc.styleSheets), 'html:has(body.landing-root)', '(prefers-reduced-motion: no-preference)');
+    const rule = findStyleRule(Array.from(doc.styleSheets), '.landing-scroll', '(prefers-reduced-motion: no-preference)');
 
     // then
     expect(rule.style.scrollBehavior).toBe('smooth');
@@ -241,26 +245,63 @@ describe('intro page', () => {
     expect(style.marginLeft).toBe('0px');
   });
 
-  it('should keep header pinned to top when page is scrolled', async () => {
+  it('should keep header pinned to top when content is scrolled', async () => {
 
     // given
     const doc = await loadIntro(DESKTOP);
 
     // when
-    doc.defaultView.scrollTo({ top: 1000, behavior: 'instant' });
+    scrollerOf(doc).scrollTo({ top: 1000, behavior: 'instant' });
 
     // then
-    expect(doc.defaultView.scrollY).toBe(1000);
+    expect(scrollerOf(doc).scrollTop).toBe(1000);
     expect(doc.querySelector('.landing-header').getBoundingClientRect().top).toBe(0);
   });
 
-  it('should offset anchor targets by header height', async () => {
+  it('should scroll features anchor to top of content below header', async () => {
+
+    // given
+    const doc = await loadIntro(DESKTOP);
+
+    // when
+    doc.getElementById('features').scrollIntoView({ behavior: 'instant' });
+
+    // then
+    const headerBottom = doc.querySelector('.landing-header').getBoundingClientRect().bottom;
+    expect(doc.getElementById('features').getBoundingClientRect().top).toBeCloseTo(headerBottom, 0);
+  });
+
+  it('should keep scrollbar below header', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
-    expect(doc.defaultView.getComputedStyle(doc.documentElement).scrollPaddingTop).toBe('64px');
+    const scroller = scrollerOf(doc).getBoundingClientRect();
+    expect(scroller.top).toBeCloseTo(doc.querySelector('.landing-header').getBoundingClientRect().bottom, 0);
+    expect(scroller.bottom).toBe(doc.defaultView.innerHeight);
+    expect(doc.documentElement.scrollHeight).toBe(doc.documentElement.clientHeight);
+  });
+
+  it('should paint header above scrolled content', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const style = styleOf(doc, '.landing-header');
+    expect(style.position).toBe('relative');
+    expect(style.zIndex).toBe('1');
+  });
+
+  it('should load shared landing stylesheet between tokens and intro stylesheet', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const hrefs = all(doc, 'link[rel=stylesheet]').map(l => l.getAttribute('href').split('/').pop());
+    expect(hrefs).toEqual(['koia-tokens.css', 'koia-landing.css', 'intro.css']);
   });
 
   it('should show secondary navigation on desktop', async () => {
@@ -370,7 +411,7 @@ describe('intro page', () => {
     const doc = await loadIntro(MOBILE);
 
     // then
-    expect(doc.documentElement.scrollWidth).toBe(doc.documentElement.clientWidth);
+    expect(scrollerOf(doc).scrollWidth).toBe(scrollerOf(doc).clientWidth);
   });
 
   it('should center hero screenshot on desktop', async () => {

@@ -1,303 +1,106 @@
-<mat-card appearance="outlined">
-  <mat-card-content>
-
-    <div id="header">
-      <img id="img_koia" src="/assets/koialogo_textblack.png">
+<div class="landing-root landing-shell">
+  <header class="landing-header">
+    <div class="landing-container landing-header-inner">
+      <a href="/intro/index.html">
+        <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
+      </a>
+      <nav class="landing-nav">
+        <a class="landing-nav-secondary" href="/intro/index.html">Intro</a>
+        <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank" rel="noopener">GitHub</a>
+      </nav>
     </div>
+  </header>
 
-    <mat-card appearance="outlined" class="info-card">
-      <mat-card-header>
-        <div mat-card-avatar id="about-image"></div>
-        <mat-card-title>About Koia</mat-card-title>
-        <mat-card-subtitle>What is Koia and where does it come from?</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p>
-          Koia is an open-source application that anyone can use for free to create pivot tables,
-          summaries and charts out of custom data in just a few minutes.
-        </p>
-        <p>
-          Koia was originally built to improve analysis and visualization capabilities for data collected and
-          structured with
-          <a href="https://retrospective.centeractive.com/" target="_blank">
-            <img style='vertical-align: middle' src="/assets/retrospective-log-analyzer.png">
-          </a>
-        </p>
-      </mat-card-content>
-    </mat-card>
-    <br>
+  <div class="landing-scroll" cdkScrollable>
+    <section class="landing-hero front-hero">
+      <div class="landing-container">
+        <h1>Get started with Koia</h1>
+        <p class="landing-lead">Choose where your data lives, import a file and create your first graphs.</p>
+      </div>
+    </section>
 
-      <div id="div_action_cards">
-
-        <mat-card appearance="outlined" class="intro-card koia-color-left">
-          <mat-card-header>
-            <div mat-card-avatar [id]="selectedDataStorage === couchDB ? 'couchdb-image' : 'monitor-image'"></div>
-            <mat-card-title>Step 1: Choose data storage</mat-card-title>
-            <mat-card-subtitle class="koia-color-left">Define where to store the data</mat-card-subtitle>
-          </mat-card-header>
-          <img mat-card-image class="intro-card-image" src="/assets/data-source.png">
-          <mat-card-content>
-            <p>
-              Koia writes and reads data from the browser's internal IndexedDB or from an external CouchDB database
-              <a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank">
-                <mat-icon style="color: white; vertical-align: middle" matTooltip="Tell me more...">info_outlined
-                </mat-icon>
-              </a>.
-              The latter is in most cases faster and has further advantages:
-            </p>
-            <ul>
-              <li>All data remains available even after clearing browser cache.</li>
-              <li>The data can be shared with other persons.</li>
-            </ul>
-          </mat-card-content>
-
-          <mat-card-actions>
-            <div class="div_define_connection">
-              <button mat-stroked-button [color]="colorOf(indexedDB)" (click)="onDataStorageChanged(indexedDB)">
-                {{ indexedDB }}
-              </button>
-              &nbsp;&nbsp;&nbsp;
-              <button mat-stroked-button [color]="colorOf(couchDB)" (click)="onDataStorageChanged(couchDB)">
-                {{ couchDB }}
-              </button>
+    <section class="landing-section landing-canvas front-steps">
+      <div class="landing-container">
+        <h2>Three steps to your first graph</h2>
+        <ol class="landing-grid landing-grid-3">
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <img class="landing-tile-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
+                alt="" width="40" height="40">
+              <h3>1. Choose data storage</h3>
+            </div>
+            <p>Keep data in the browser (IndexedDB) or in an external CouchDB database
+              (<a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank"
+                rel="noopener">setup guide</a>).
+              CouchDB is usually faster, survives clearing the browser cache and can be shared with others.</p>
+            <div class="front-storage" role="group" aria-label="Data storage">
+              <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
+                [attr.aria-pressed]="selectedDataStorage === indexedDB" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
+              <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
+                [attr.aria-pressed]="selectedDataStorage === couchDB" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
               @if (selectedDataStorage === couchDB) {
-                <button mat-icon-button matTooltip="Configure access to CouchDB" color="accent"
-                  (click)="showCouchDBConnectionDialog()">
-                  <mat-icon style="color: white">settings</mat-icon>
+                <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
+                  aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">
+                  <mat-icon>settings</mat-icon>
                 </button>
               }
             </div>
-          </mat-card-actions>
-        </mat-card>
-
-        <mat-card appearance="outlined" class="intro-card koia-color-center">
-          <mat-card-header>
-            <div mat-card-avatar id="folder-document-image"></div>
-            <mat-card-title>Step 2: Import data to scene</mat-card-title>
-            <mat-card-subtitle>Create new scene or select an existing one</mat-card-subtitle>
-          </mat-card-header>
-          <img mat-card-image class="intro-card-image" src="/assets/data.png">
-          <mat-card-content>
-            <p>
-              Import data to create a new scene or select an existing scene containing data that has been previously
-              imported.
-            </p>
-            <p>
-              It is possible to switch between scenes or to create new ones by pressing the <mat-icon
-              style="vertical-align: middle">collections
-              </mat-icon> or <mat-icon style="vertical-align: middle"> add_photo_alternate</mat-icon> button.
-            </p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <img class="landing-tile-icon" src="/assets/folder_document.png" alt="" width="40" height="40">
+              <h3>2. Import data to scene</h3>
+            </div>
+            <p>Load a CSV, Excel or JSON file into a new scene or continue with an existing one. Switch scenes anytime with
+              <b>Scenes</b> <mat-icon class="landing-inline-icon">collections</mat-icon> or add one with
+              <b>Add Scene</b> <mat-icon class="landing-inline-icon">add_photo_alternate</mat-icon>.</p>
             @if (ready && scenesCount >= 0) {
-              <p>
-                {{ selectedDataStorage }} currently contains <b>{{ scenesCount }} scenes.</b>
-              </p>
+              <p class="front-scenes-count">{{ selectedDataStorage }} currently contains <b>{{ scenesCount }} {{ scenesCount === 1 ? 'scene' : 'scenes' }}.</b></p>
             }
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card appearance="outlined" class="intro-card koia-color-right">
-          <mat-card-header>
-            <div mat-card-avatar id="line-chart-image"></div>
-            <mat-card-title>Step 3: Visualize and analyze</mat-card-title>
-            <mat-card-subtitle class="koia-color-right">Shape, visualyze and analyze your data</mat-card-subtitle>
-          </mat-card-header>
-          <img mat-card-image class="intro-card-image" src="/assets/graph_close.png">
-          <mat-card-content>
-            <p>
-              Refine your data applying value and range filters. Create pivot tables, summaries, relationship graphs and a
-              variety of different charts.
-            </p>
-            <p>
-              Pivot tables and summaries can be exported to Excel files, charts may be saved as images.
-              Entire views can be saved and then restored as required.
-            </p>
-          </mat-card-content>
-        </mat-card>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <img class="landing-tile-icon" src="/assets/line_chart.png" alt="" width="40" height="40">
+              <h3>3. Visualize and analyze</h3>
+            </div>
+            <p>Filter your data and create pivot tables, charts, relationship graphs and summaries. Export tables to Excel,
+              charts as images and save entire views to restore them later.</p>
+          </li>
+        </ol>
+        <div class="landing-actions">
+          <a id="start_button" class="landing-btn landing-btn-accent front-start" role="link"
+            [routerLink]="ready ? urlScenes : null" [attr.aria-disabled]="!ready">
+            <mat-icon>play_circle_outline</mat-icon>Start
+          </a>
+        </div>
       </div>
+    </section>
 
-      <div id="div_start">
-        <mat-icon [id]="'start_button' + (ready ? '' : '_disabled')" [inline]="true" color="accent" matTooltip="Start"
-          [routerLink]="ready ? [urlScenes] : null">
-        play_circle_outline</mat-icon>
+    <section class="landing-section">
+      <div class="landing-container">
+        <h2>Create your first views</h2>
+        <koia-front-guide></koia-front-guide>
       </div>
+    </section>
 
-      <mat-horizontal-stepper [linear]="!stepsVisible" #stepper>
+    <section class="landing-section landing-canvas">
+      <div class="landing-container">
+        <h2>Learn more</h2>
+        <koia-front-info></koia-front-info>
+      </div>
+    </section>
 
-        <ng-template matStepperIcon="edit">
-          <mat-icon>check</mat-icon>
-        </ng-template>
-
-        <ng-template matStepperIcon="trust">
-          <mat-icon>security</mat-icon>
-        </ng-template>
-        <ng-template matStepperIcon="features">
-          <mat-icon>build</mat-icon>
-        </ng-template>
-        <ng-template matStepperIcon="data">
-          <mat-icon>insert_drive_file</mat-icon>
-        </ng-template>
-        <ng-template matStepperIcon="scenes">
-          <mat-icon>collections</mat-icon>
-        </ng-template>
-        <ng-template matStepperIcon="views">
-          <mat-icon>pageview</mat-icon>
-        </ng-template>
-
-        <mat-step label="Trust" state="trust" [stepControl]="stepVisibleControl">
-          @if (stepsVisible) {
-            <mat-card appearance="outlined" class="info-card">
-              <mat-card-header>
-                <div mat-card-avatar id="shield-image"></div>
-                <mat-card-title>Open-source / Closed-data</mat-card-title>
-                <mat-card-subtitle>Keep control over the code and your data</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <p>
-                  Koia is open-source software and will remain so forever. The source code is <a
-                  href="https://github.com/centeractive/koia" target="_blank">
-                publically available</a> and can be inspected, modified and enhanced by anyone.
-                Koia runs on public web servers but it can also easily be installed in your trusted environment.
-              </p>
-              <p>
-                The Koia web application loads static content from a web site but your data
-                never flows back to that web site. It only 'travels' between your browser
-                and the data storage, without it ever being accessible to any unauthorized third party. You decide whether
-                the data is kept locally on your computer or in a private external data storage.
-              </p>
-            </mat-card-content>
-          </mat-card>
-        }
-      </mat-step>
-
-      <mat-step label="Features" state="features" [stepControl]="stepVisibleControl">
-        @if (stepsVisible) {
-          <mat-card appearance="outlined" class="info-card">
-            <mat-card-header>
-              <div mat-card-avatar id="features-image"></div>
-              <mat-card-title>Features</mat-card-title>
-              <mat-card-subtitle>What can Koia do for me?</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-              <p>
-                Koia differs from similar programs mainly in that the context to the original data is never lost. You are
-                always only a mouse click apart from seeing the raw data on which the displayed element or value is based.
-                Next to this, Koia enables the uploading of multiple data sets, so it is possible to create graphics based
-                on different data without opening a lot of tabs in your browser but switching between the data sets in one
-                tab.
-              </p>
-              <p>Other features:</p>
-              <ul>
-                <li>Column filters supporting the following operators: contains, &lt;, &lt;=, =, &gt;=, &gt;, not empty
-                </li>
-                <li>Draggable column value range filters</li>
-                <li>Automatic and manual value range grouping</li>
-                <li>Customizable grids</li>
-                <li>Value sampling</li>
-                <li>Exporting charts to PNG images</li>
-                <li>Exporting summary tables to Excel</li>
-                <li>Pivot tables with drag and drop column support</li>
-                <li>...</li>
-              </ul>
-            </mat-card-content>
-          </mat-card>
-        }
-      </mat-step>
-
-      <mat-step label="Data" state="data" [stepControl]="stepVisibleControl">
-        @if (stepsVisible) {
-          <mat-card appearance="outlined" class="info-card">
-            <mat-card-header>
-              <div mat-card-avatar id="data-image"></div>
-              <mat-card-title>Data Formats</mat-card-title>
-              <mat-card-subtitle>Import your structured data</mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-              <p>
-                Data is loaded from files to the backing data storage through Koia itself or it may be written to it by a
-                third party program.
-              </p>
-              <p>
-                The following file types are supported.
-              </p>
-              <ul>
-                @for (reader of readers; track reader) {
-                  <li>
-                    <p><b>{{ reader.getSourceName() }} ({{ reader.getFileExtension() }})</b><br>
-                  {{ reader.getDescription() }}</p>
-                </li>
-              }
-            </ul>
-            <p>
-              When importing a file, you're granted full control over which portions of the data should be imported.
-              You're also in control over...
-            </p>
-            <ul>
-              <li>The data types to be used for storing the values in the data storage</li>
-              <li>The format to be applied for displaying certain values</li>
-            </ul>
-          </mat-card-content>
-        </mat-card>
-      }
-    </mat-step>
-
-    <mat-step label="Scenes" state="scenes" [stepControl]="stepVisibleControl">
-      @if (stepsVisible) {
-        <mat-card appearance="outlined" class="info-card">
-          <mat-card-header>
-            <div mat-card-avatar id="image-scenes"></div>
-            <mat-card-title>What is a Scene?</mat-card-title>
-            <mat-card-subtitle>Scenes represent individual datasets</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <p>
-              Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>.
-              You can switch between different scenes as you please.
-            </p>
-            <p>
-              Scenes can be given a user-defined name and description. They also contain the following items.
-            </p>
-            <ul>
-              <li>Information about the origin of the loaded data (i.e. file name and modification date).</li>
-              <li>A link to the loaded raw data in the data storage.</li>
-              <li>The name, data type, width and format of individual data columns.</li>
-              <li>View definitions that were saved by the user in order to be restored later on.</li>
-            </ul>
-          </mat-card-content>
-        </mat-card>
-      }
-    </mat-step>¨
-
-    <mat-step label="Views" state="views" [stepControl]="stepVisibleControl">
-      @if (stepsVisible) {
-        <mat-card appearance="outlined" class="info-card">
-          <mat-card-header>
-            <div mat-card-avatar id="view-image"></div>
-            <mat-card-title>Views</mat-card-title>
-            <mat-card-subtitle>Koia offers convenient views of your data</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <ul>
-              <li>The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size.
-            The table offers sorting and filtering of individual columns.</li>
-            <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing
-            patterns and trends. It's based on amazing <a
-          href="https://www.npmjs.com/package/pivottable#what-does-it-do" target="_blank">PivotTable.js</a> that
-          offers many different views (e.g. heatmaps and table barcharts)
-        and lets you shape the pivot table through drag and drop of individual columns.</li>
-        <li>A <b>Dashboard</b> contains a variable number of elements (summary tables, charts and graphs). In
-        <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a
-        single cell or spread over several columns and rows. When the window size changes, the element size also
-        changes in order to always fit the allocated grid space. In <b>flex</b> layout, each element has a specific
-        size that is not changed when the window size changes, the elements are however automatically laid out
-        according to the available window space.
-      </li>
-      <li>Any number of pivot tables and dashboards may be opened as individual tabs next to the raw data
-      table. Open tabs are kept with the scene.</li>
-  </ul>
-</mat-card-content>
-</mat-card>
-}
-</mat-step>
-</mat-horizontal-stepper>
-</mat-card-content>
-</mat-card>
+    <footer class="landing-footer">
+      <div class="landing-container landing-footer-inner">
+        <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
+        <a href="https://retrospective.centeractive.com/" target="_blank" rel="noopener">
+          <img class="landing-badge" src="/assets/retrospective_compatible.png" alt="Retrospective compatible"
+            width="142" height="46">
+        </a>
+        <small>Koia is <a href="https://github.com/centeractive/koia/blob/master/LICENSE" target="_blank"
+            rel="noopener">MIT licensed</a>. © 2026 centeractive ag. <a href="https://github.com/centeractive/koia"
+            target="_blank" rel="noopener">GitHub</a></small>
+      </div>
+    </footer>
+  </div>
+</div>

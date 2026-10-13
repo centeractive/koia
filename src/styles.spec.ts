@@ -341,7 +341,7 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-header-border').trim()).toBe('#c5cae9');
     expect(style.getPropertyValue('--koia-header-line').trim()).toBe('1px solid #c5cae9');
     expect(style.getPropertyValue('--koia-hover-tint').trim()).toBe('rgba(48, 63, 159, 0.1)');
-    expect(style.getPropertyValue('--koia-primary-dark')).toBe('');
+    expect(style.getPropertyValue('--koia-primary-dark').trim()).toBe('#1a237e');
   });
 
   it('active toggle icon button should be accent tinted', () => {

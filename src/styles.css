@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import url('./assets/themes/koia-tokens.css');
+@import url('./assets/themes/koia-landing.css');
 
 html {
   background-color: #292626;
