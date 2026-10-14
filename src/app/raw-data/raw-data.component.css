@@ -6,6 +6,11 @@
   min-height: 0;
 }
 
+.dialog_top_row {
+  display: block;
+  padding-right: 40px;
+}
+
 .div_wrapper {
   display: flex;
   flex-direction: column;

@@ -37,8 +37,12 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
                       }
                     </table>
                   </mat-card-content>
-                </mat-card>`,
-    styles: [`table {
+                </mat-card>
+                <koia-dialog-close-button />`,
+    styles: [`h2 {
+              padding-right: 32px;
+            }
+            table {
                font-size: 12px;
             }
             .column-header {

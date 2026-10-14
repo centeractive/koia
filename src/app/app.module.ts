@@ -83,6 +83,7 @@ import { DialogService } from './shared/services/dialog.service';
 import { ReaderService } from './shared/services/reader';
 import { TableModeTogglesComponent } from './shared/ui/virtual-table/table-mode-toggles.component';
 import { ViewToolbarComponent } from './shared/ui/view-toolbar/view-toolbar.component';
+import { DialogCloseButtonComponent } from './shared/ui/dialog-close-button/dialog-close-button.component';
 import { VirtualTableComponent } from './shared/ui/virtual-table/virtual-table.component';
 import { MatIconModuleMock } from './shared/test';
 import { ValueRangeGroupingService } from './shared/value-range';
@@ -134,6 +135,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         VirtualTableComponent,
         TableModeTogglesComponent,
         ViewToolbarComponent,
+        DialogCloseButtonComponent,
         SideBarHeaderComponent,
         ViewLauncherDialogComponent,
         ConfigLauncherDialogComponent,

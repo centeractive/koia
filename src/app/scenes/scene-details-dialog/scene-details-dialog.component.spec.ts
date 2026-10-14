@@ -1,9 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { DataType, Scene } from 'app/shared/model';
 import { SceneFactory } from 'app/shared/test';
+import { DialogCloseButtonComponent } from 'app/shared/ui/dialog-close-button/dialog-close-button.component';
 import { SceneDetailsDialogComponent } from './scene-details-dialog.component';
 import { MatCardModule } from '@angular/material/card';
 
@@ -24,8 +27,8 @@ describe('SceneDetailsDialogComponent', () => {
 
    beforeEach(waitForAsync(() => {
       TestBed.configureTestingModule({
-         declarations: [SceneDetailsDialogComponent],
-         imports: [MatCardModule],
+         declarations: [SceneDetailsDialogComponent, DialogCloseButtonComponent],
+         imports: [MatCardModule, MatDialogModule, MatIconModule, MatTooltipModule],
          providers: [
             { provide: MatDialogRef, useValue: { close(): void { } } },
             { provide: MAT_DIALOG_DATA, useValue: scene },

@@ -1,13 +1,13 @@
 <div class="div_wrapper">
   <div class="div_header">
     @if (!hideToolbar) {
-      <koia-main-toolbar [dialogStyle]="dialogStyle" [route]="route" [query]="query" [restoredQuery]="restoredQuery"
+      <koia-main-toolbar [class.dialog_top_row]="dialogStyle" [dialogStyle]="dialogStyle" [route]="route" [query]="query" [restoredQuery]="restoredQuery"
         (onFilterChange)="onFilterChanged($event)" />
     }
     @if (loading) {
       <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..." />
     }
-    <koia-view-toolbar [moreMenu]="moreMenu" [persistable]="!dialogStyle" [savedViews]="configRecords" (save)="saveConfig()"
+    <koia-view-toolbar [class.dialog_top_row]="dialogStyle && hideToolbar" [moreMenu]="moreMenu" [persistable]="!dialogStyle" [savedViews]="configRecords" (save)="saveConfig()"
       (restore)="loadConfig($event)">
       <button mat-icon-button [class.koia-toggle-active]="considerColumnWidths"
         [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"

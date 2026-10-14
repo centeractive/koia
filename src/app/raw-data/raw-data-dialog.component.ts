@@ -5,7 +5,9 @@ import { CouchDBConstants } from 'app/shared/services/backend/couchdb';
 
 @Component({
    selector: 'koia-raw-data-dialog',
-   template: '<koia-raw-data [dialogStyle]="true" [hideToolbar]="hideToolbar" [query]="query" />',
+   template: `
+      <koia-raw-data [dialogStyle]="true" [hideToolbar]="hideToolbar" [query]="query" />
+      <koia-dialog-close-button />`,
    changeDetection: ChangeDetectionStrategy.Eager,
    standalone: false
 })
