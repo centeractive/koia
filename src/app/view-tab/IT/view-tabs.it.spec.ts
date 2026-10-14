@@ -93,13 +93,15 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     return { route, name, modifiedTime: 1, query: null, gridColumns, gridCellRatio: gridColumns ? '1:1' : null, elements: [element] };
   }
 
-  it('should persist open tabs and restore them after scene was activated again', async () => {
+  it('should persist open tabs numbered per type and restore them after scene was activated again', async () => {
 
     // given
     const service = await readyTabsService();
     await service.addTab(ViewType.PIVOT);
     await service.addTab(ViewType.DASHBOARD);
-    await persistedTabs(2);
+    await service.addTab(ViewType.DASHBOARD);
+    await service.addTab(ViewType.PIVOT);
+    await persistedTabs(4);
 
     // when
     scene = await run.db.findScene(scene._id);
@@ -107,8 +109,10 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
 
     // then
     expect(restoredService.tabs).toEqual([
-      { id: 'tab1', type: ViewType.PIVOT, title: 'Pivot Table 1' },
-      { id: 'tab2', type: ViewType.DASHBOARD, title: 'Dashboard 2' }
+      { id: 'tab1', type: ViewType.PIVOT, title: 'Pivot Table' },
+      { id: 'tab2', type: ViewType.DASHBOARD, title: 'Dashboard' },
+      { id: 'tab3', type: ViewType.DASHBOARD, title: 'Dashboard 2' },
+      { id: 'tab4', type: ViewType.PIVOT, title: 'Pivot Table 2' }
     ]);
   }, TIMEOUT);
 

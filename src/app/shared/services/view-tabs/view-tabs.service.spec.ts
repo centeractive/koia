@@ -160,7 +160,7 @@ describe('ViewTabsService', () => {
       expect(found).toBe(tab);
    });
 
-   it('#addTab should add tab with next sequence, persist and navigate to it', async () => {
+   it('#addTab should add tab with next sequence and unnumbered title, persist and navigate to it', async () => {
 
       // given
       findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 3)));
@@ -170,9 +170,22 @@ describe('ViewTabsService', () => {
       await service.addTab(ViewType.DASHBOARD);
 
       // then
-      expect(service.tabs[1]).toEqual({ id: 'tab4', type: ViewType.DASHBOARD, title: 'Dashboard 4' });
+      expect(service.tabs[1]).toEqual({ id: 'tab4', type: ViewType.DASHBOARD, title: 'Dashboard' });
       expect(persistedSnapshot()).toBe(service.tabs);
       expect(router.navigateByUrl).toHaveBeenCalledWith('/view/tab4');
+   });
+
+   it('#addTab should number second tab of same type', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.DASHBOARD, 1)));
+      await loaded();
+
+      // when
+      await service.addTab(ViewType.DASHBOARD);
+
+      // then
+      expect(service.tabs[1]).toEqual({ id: 'tab2', type: ViewType.DASHBOARD, title: 'Dashboard 2' });
    });
 
    it('#addTab should not persist when not ready', async () => {

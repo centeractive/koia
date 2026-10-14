@@ -39,8 +39,9 @@ export class ViewTabsService {
    }
 
    addTab(type: ViewType): Promise<boolean> {
-      const tab = createTabDef(type, ++this.seq);
-      this.tabs.push(tab);
+      const tabs = this.tabs;
+      const tab = createTabDef(type, ++this.seq, tabs);
+      tabs.push(tab);
       this.persistNow();
       return this.router.navigateByUrl(tabUrl(tab.id));
    }

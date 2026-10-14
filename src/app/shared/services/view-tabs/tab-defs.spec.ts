@@ -10,7 +10,7 @@ describe('tab-defs', () => {
       const tab = createTabDef(ViewType.PIVOT, 3);
 
       // then
-      expect(tab).toEqual({ id: 'tab3', type: ViewType.PIVOT, title: 'Pivot Table 3' });
+      expect(tab).toEqual({ id: 'tab3', type: ViewType.PIVOT, title: 'Pivot Table' });
    });
 
    it('#createTabDef should create dashboard tab', () => {
@@ -19,7 +19,79 @@ describe('tab-defs', () => {
       const tab = createTabDef(ViewType.DASHBOARD, 1);
 
       // then
-      expect(tab).toEqual({ id: 'tab1', type: ViewType.DASHBOARD, title: 'Dashboard 1' });
+      expect(tab).toEqual({ id: 'tab1', type: ViewType.DASHBOARD, title: 'Dashboard' });
+   });
+
+   it('#createTabDef should not number first tab of type when other type exists', () => {
+
+      // given
+      const tabs = [createTabDef(ViewType.PIVOT, 1)];
+
+      // when
+      const tab = createTabDef(ViewType.DASHBOARD, 2, tabs);
+
+      // then
+      expect(tab.title).toBe('Dashboard');
+   });
+
+   it('#createTabDef should number second tab of same type with 2', () => {
+
+      // given
+      const tabs = [createTabDef(ViewType.DASHBOARD, 1)];
+
+      // when
+      const tab = createTabDef(ViewType.DASHBOARD, 2, tabs);
+
+      // then
+      expect(tab.title).toBe('Dashboard 2');
+   });
+
+   it('#createTabDef should continue numbering after highest consecutive title', () => {
+
+      // given
+      const tabs = [titled(ViewType.DASHBOARD, 'Dashboard'), titled(ViewType.DASHBOARD, 'Dashboard 2')];
+
+      // when
+      const tab = createTabDef(ViewType.DASHBOARD, 3, tabs);
+
+      // then
+      expect(tab.title).toBe('Dashboard 3');
+   });
+
+   it('#createTabDef should reuse first free numbered title', () => {
+
+      // given
+      const tabs = [titled(ViewType.DASHBOARD, 'Dashboard'), titled(ViewType.DASHBOARD, 'Dashboard 3')];
+
+      // when
+      const tab = createTabDef(ViewType.DASHBOARD, 4, tabs);
+
+      // then
+      expect(tab.title).toBe('Dashboard 2');
+   });
+
+   it('#createTabDef should reuse unnumbered title when free', () => {
+
+      // given
+      const tabs = [titled(ViewType.DASHBOARD, 'Dashboard 2')];
+
+      // when
+      const tab = createTabDef(ViewType.DASHBOARD, 3, tabs);
+
+      // then
+      expect(tab.title).toBe('Dashboard');
+   });
+
+   it('#createTabDef should ignore renamed tabs', () => {
+
+      // given
+      const tabs = [titled(ViewType.DASHBOARD, 'Sales')];
+
+      // when
+      const tab = createTabDef(ViewType.DASHBOARD, 2, tabs);
+
+      // then
+      expect(tab.title).toBe('Dashboard');
    });
 
    it('#maxTabSeq should return 0 when no tabs exist', () => {
@@ -198,6 +270,10 @@ describe('tab-defs', () => {
       // then
       expect(icon).toBe('grid_view');
    });
+
+   function titled(type: ViewType, title: string): TabDef {
+      return { id: 'other', type, title };
+   }
 
    function view(route: Route, elementCount: number): View {
       return {

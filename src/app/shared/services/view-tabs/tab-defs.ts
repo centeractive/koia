@@ -3,13 +3,22 @@ import { TabDef, ViewType } from '../../model/view-config';
 
 const TAB_ID_PREFIX = 'tab';
 const TAB_ID_PATTERN = /^tab(\d+)$/;
-const TITLE_PREFIXES: Record<ViewType, string> = {
-   [ViewType.PIVOT]: 'Pivot Table ',
-   [ViewType.DASHBOARD]: 'Dashboard '
+const TITLES: Record<ViewType, string> = {
+   [ViewType.PIVOT]: 'Pivot Table',
+   [ViewType.DASHBOARD]: 'Dashboard'
 };
 
-export function createTabDef(type: ViewType, seq: number): TabDef {
-   return { id: TAB_ID_PREFIX + seq, type, title: TITLE_PREFIXES[type] + seq };
+export function createTabDef(type: ViewType, seq: number, tabs: TabDef[] = []): TabDef {
+   return { id: TAB_ID_PREFIX + seq, type, title: nextTitle(TITLES[type], tabs) };
+}
+
+function nextTitle(base: string, tabs: TabDef[]): string {
+   const titles = new Set(tabs.map(t => t.title));
+   let title = base;
+   for (let n = 2; titles.has(title); n++) {
+      title = base + ' ' + n;
+   }
+   return title;
 }
 
 export function maxTabSeq(tabs: TabDef[]): number {
