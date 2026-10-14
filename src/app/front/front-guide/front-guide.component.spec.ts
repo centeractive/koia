@@ -114,6 +114,23 @@ describe('FrontGuideComponent', () => {
       expect(rowCountOf(host, '.landing-grid-4 > .landing-tile')).toBe(1);
     });
 
+    it('should align tile icons and texts when a title wraps', () => {
+
+      // given
+      fixture.nativeElement.style.width = '1000px';
+      const host = render();
+      const titleHeights = Array.from(host.querySelectorAll('h3')).map(h => h.getBoundingClientRect().height);
+
+      // when
+      const iconRows = rowCountOf(host, '.landing-tile-icon');
+      const textRows = rowCountOf(host, '.landing-tile > p');
+
+      // then
+      expect(new Set(titleHeights).size).toBeGreaterThan(1);
+      expect(iconRows).toBe(1);
+      expect(textRows).toBe(1);
+    });
+
     it('should keep configure tile icon 40px square', () => {
 
       // when

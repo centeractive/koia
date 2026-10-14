@@ -140,7 +140,7 @@ describe('FrontInfoComponent', () => {
 
     // then
     expect(textsOf(host, '.front-info-readers li')).toEqual(readers
-      .map(r => `${r.getSourceName()} (${r.getFileExtension()})${r.getDescription()}`.replace(/\s+/g, ' ').trim()));
+      .map(r => `${r.getSourceName()} (${r.getFileExtension()}) – ${r.getDescription()}`.replace(/\s+/g, ' ').trim()));
   });
 
   it('should show decorative 40px topic icons', async () => {
@@ -181,20 +181,6 @@ describe('FrontInfoComponent', () => {
     expect(style.borderTopLeftRadius).toBe('12px');
   });
 
-  it('should limit topic body width for readability', () => {
-
-    // when
-    const styles = stylesOf(render(), '.front-info-body');
-
-    // then
-    expect(styles.length).toBe(4);
-    styles.forEach(s => {
-      expect(s.maxWidth).toBe('720px');
-      expect(s.paddingLeft).toBe('24px');
-      expect(s.paddingRight).toBe('24px');
-    });
-  });
-
   it('should indent lists moderately', () => {
 
     // when
@@ -215,41 +201,14 @@ describe('FrontInfoComponent', () => {
     styles.forEach(s => expect(s.marginBottom).toBe('0px'));
   });
 
-  it('should separate prose list items', () => {
+  it('should separate list items', () => {
 
     // when
-    const styles = stylesOf(render(), '.front-info-body ul:not(.front-info-columns) li + li');
+    const styles = stylesOf(render(), '.front-info-body li + li');
 
     // then
-    expect(styles.length).toBe(6);
+    expect(styles.length).toBe(16);
     styles.forEach(s => expect(s.marginTop).toBe('8px'));
-  });
-
-  it('should stack lists in one column on mobile', () => {
-
-    // when
-    const styles = stylesOf(render(), '.front-info-columns');
-
-    // then
-    expect(styles.length).toBe(2);
-    styles.forEach(s => expect(s.columnCount).toBe('auto'));
-  });
-
-  describe('on tablet', () => {
-
-    beforeAll(() => page.viewport(800, 800));
-
-    afterAll(() => page.viewport(414, 896));
-
-    it('should keep lists in one column on tablet', () => {
-
-      // when
-      const styles = stylesOf(render(), '.front-info-columns');
-
-      // then
-      expect(styles.length).toBe(2);
-      styles.forEach(s => expect(s.columnCount).toBe('auto'));
-    });
   });
 
   describe('on desktop', () => {
@@ -258,18 +217,33 @@ describe('FrontInfoComponent', () => {
 
     afterAll(() => page.viewport(414, 896));
 
-    it('should show short lists in two columns on desktop', () => {
+    it('should keep every list in one column on desktop', () => {
 
       // when
-      const host = render();
+      const styles = stylesOf(render(), '.front-info-body ul');
 
       // then
-      const columns = stylesOf(host, '.front-info-columns');
-      const prose = stylesOf(host, '.front-info-body ul:not(.front-info-columns)');
-      expect(columns.length).toBe(2);
-      columns.forEach(s => expect(s.columnCount).toBe('2'));
-      expect(prose.length).toBe(3);
-      prose.forEach(s => expect(s.columnCount).toBe('auto'));
+      expect(styles.length).toBe(5);
+      styles.forEach(s => expect(s.columnCount).toBe('auto'));
+    });
+
+    it('should span topic body across tile width', () => {
+
+      // given
+      const topic = topics(render())[0];
+
+      // when
+      summaryOf(topic).click();
+
+      // then
+      const styles = stylesOf(fixture.nativeElement, '.front-info-body');
+      expect(topic.querySelector('.front-info-body').getBoundingClientRect().width).toBe(topic.clientWidth);
+      expect(styles.length).toBe(4);
+      styles.forEach(s => {
+        expect(s.maxWidth).toBe('none');
+        expect(s.paddingLeft).toBe('24px');
+        expect(s.paddingRight).toBe('24px');
+      });
     });
 
     it('should start topic body at icon edge', () => {

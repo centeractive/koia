@@ -15,7 +15,7 @@
         on different data without opening a lot of tabs in your browser but switching between the data sets in one
         tab.</p>
       <p>Other features:</p>
-      <ul class="front-info-columns">
+      <ul>
         <li>Column filters supporting the following operators: contains, &lt;, &lt;=, =, &gt;=, &gt;, not empty</li>
         <li>Draggable column value range filters</li>
         <li>Automatic and manual value range grouping</li>
@@ -42,7 +42,7 @@
       <p>The following file types are supported.</p>
       <ul class="front-info-readers">
         @for (reader of readers; track reader) {
-          <li><b>{{ reader.getSourceName() }} ({{ reader.getFileExtension() }})</b><br>{{ reader.getDescription() }}</li>
+          <li><b>{{ reader.getSourceName() }} ({{ reader.getFileExtension() }})</b> – {{ reader.getDescription() }}</li>
         }
       </ul>
       <p>When importing a file, you're granted full control over which portions of the data should be imported.
@@ -66,7 +66,7 @@
       <p>Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>.
         You can switch between different scenes as you please.</p>
       <p>Scenes can be given a user-defined name and description. They also contain the following items.</p>
-      <ul class="front-info-columns">
+      <ul>
         <li>Information about the origin of the loaded data (i.e. file name and modification date).</li>
         <li>A link to the loaded raw data in the data storage.</li>
         <li>The name, data type, width and format of individual data columns.</li>

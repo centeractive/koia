@@ -27,13 +27,13 @@ Besides simply visualizing data, Koia also features **time and value filters** t
 
  When satisfied with the outcome, users can **save** the current view or **export** data to use it elsewhere.
 
- <img align="center" width="880" src="./src/intro/screenshots/dashboards.webp" alt="Dashboard with charts and summary table">
+ <img align="center" width="880" src="./src/intro/screenshots/dashboard.webp" alt="Dashboard on a five column grid">
 
- **Picture 1:** Dashboard with bar, doughnut and pie charts of sales per region, product and channel and a summary table of the average revenue per region.
+ **Picture 1:** Dashboard on a five column grid with a summary table of revenue grouped by region, channel and product (average, sum, max), a scatter chart of units and revenue over time, and bar, doughnut and polar area charts.
 
- <img align="center" width="880" src="./src/intro/screenshots/timeseries.webp" alt="Time series dashboard">
+ <img align="center" width="880" src="./src/intro/screenshots/dashboards.webp" alt="Dashboard with aggregated summary table and six chart types">
 
- **Picture 2:** Line chart of lemon market prices narrowed by a time range filter and a summary of the average EU price per year.
+ **Picture 2:** Dashboard with a summary table of average and total revenue per region and product next to bar, doughnut, pie, radar, polar area and horizontal bar charts.
 
 ## Getting Started
 

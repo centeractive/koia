@@ -100,11 +100,6 @@
   border-color: currentColor;
 }
 
-.landing-btn-light {
-  background: var(--koia-surface);
-  color: var(--koia-primary);
-}
-
 .landing-btn:focus-visible,
 .landing-zoom:focus-visible {
   outline-width: 2px;
@@ -195,6 +190,13 @@
 
 .landing-grid-3 {
   grid-template-columns: repeat(3, 1fr);
+}
+
+.landing-grid-4 > .landing-tile {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+  row-gap: 0;
 }
 
 .landing-shell {

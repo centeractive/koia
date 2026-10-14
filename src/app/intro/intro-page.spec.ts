@@ -184,14 +184,16 @@ describe('intro page', () => {
     expect(backgroundImage).toContain('rgb(26, 35, 126)');
   });
 
-  it('should style call to action band light on primary', async () => {
+  it('should style call to action band with accent button on primary', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
+    const button = styleOf(doc, '.landing-cta .landing-btn-accent');
     expect(styleOf(doc, '.landing-cta').backgroundColor).toBe('rgb(48, 63, 159)');
-    expect(styleOf(doc, '.landing-cta .landing-btn-light').backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(button.backgroundColor).toBe('rgb(46, 125, 50)');
+    expect(button.color).toBe('rgb(255, 255, 255)');
   });
 
   it('should outline focused button in contrasting color', async () => {
@@ -338,6 +340,22 @@ describe('intro page', () => {
 
     // then
     expect(new Set(tops(all(doc, '.landing-grid-4 > .landing-tile'))).size).toBe(1);
+  });
+
+  it('should align feature tile icons and texts on desktop', async () => {
+
+    // given
+    const doc = await loadIntro(DESKTOP);
+    const titleHeights = all(doc, '.landing-grid-4 h3').map(h => h.getBoundingClientRect().height);
+
+    // when
+    const iconTops = tops(all(doc, '.landing-grid-4 .landing-tile-icon'));
+    const textTops = tops(all(doc, '.landing-grid-4 .landing-tile > p'));
+
+    // then
+    expect(new Set(titleHeights).size).toBeGreaterThan(1);
+    expect(new Set(iconTops).size).toBe(1);
+    expect(new Set(textTops).size).toBe(1);
   });
 
   it('should lay out feature tiles in two rows on medium screens', async () => {
