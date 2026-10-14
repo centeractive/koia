@@ -15,25 +15,27 @@ Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or cont
 
 Koia differs from similar programs mainly in that the **context to the original data** is never lost. You are always only a mouseclick apart from seeing the raw data on which the displayed element or value is based.
 
-Next to this, Koia enables the **switch between mulitple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
+Next to this, Koia enables the **switch between multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
 ## How it works
 
 Data is loaded from files (CSV, Excel or JSON) to the browser's IndexedDB or a local CouchDB through Koia itself or it may be written to it by a third party program. Uploaded data from an individual file is represented by a **scene**. You can switch between different scenes as you please to create diagrams based on different data.
 
-The data can be viewed, filtered and sorted in a **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables** with a few mouseclicks. To gain insights into your data, Koia offers a variety of chart types such as: Pie charts, doughnut charts, bar charts, line charts, area charts, scatter charts radar charts and polar area charts.
+The data can be viewed, filtered and sorted in a **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables** with a few mouseclicks. To gain insights into your data, Koia offers a variety of chart types such as: Pie charts, doughnut charts, bar charts, line charts, area charts, scatter charts, radar charts and polar area charts.
 
-Besides simply visualizing data, Koia also features **time and value filters** to present a closer look at diagrams and the numbers behind them.
+Besides simply visualizing data, Koia also features **time and value filters** to take a closer look at the data. Each view has its own filters. A time range slider, for instance, narrows the raw data table to the selected period (Picture 1).
 
- When satisfied with the outcome, users can **save** the current view or **export** data to use it elsewhere.
+ <img align="center" width="880" src="./doc/rawdata-filter.webp" alt="Raw data filtered by a time range slider">
+
+ **Picture 1:** Raw data table filtered by a time range slider on the date column.
+
+Dashboards combine summary tables, charts and relationship graphs in a grid of customizable dimension. Summary tables group data by several hierarchy levels and aggregate values such as average, sum or maximum (Picture 2).
 
  <img align="center" width="880" src="./src/intro/screenshots/dashboard.webp" alt="Dashboard on a five column grid">
 
- **Picture 1:** Dashboard on a five column grid with a summary table of revenue grouped by region, channel and product (average, sum, max), a scatter chart of units and revenue over time, and bar, doughnut and polar area charts.
+ **Picture 2:** Dashboard on a five column grid with a summary table of revenue grouped by region, channel and product (average, sum, max), a scatter chart of units and revenue over time, and bar, doughnut and polar area charts.
 
- <img align="center" width="880" src="./src/intro/screenshots/dashboards.webp" alt="Dashboard with aggregated summary table and six chart types">
-
- **Picture 2:** Dashboard with a summary table of average and total revenue per region and product next to bar, doughnut, pie, radar, polar area and horizontal bar charts.
+When satisfied with the outcome, users can **save** the current view or **export** data to use it elsewhere.
 
 ## Getting Started
 
