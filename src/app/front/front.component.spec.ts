@@ -413,6 +413,15 @@ describe('FrontComponent', () => {
       .toEqual(['/assets/monitor.png', '/assets/couchdb.png']);
   });
 
+  it('should blend storage icons into button background', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(stylesOf(host, '.front-storage-option img').map(s => s.mixBlendMode)).toEqual(['multiply', 'multiply']);
+  });
+
   it('should show sections in order', () => {
 
     // when
