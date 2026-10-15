@@ -13,7 +13,7 @@ import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, rowCountOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
+import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { QueryParamExtractor } from 'app/shared/utils';
 import { Observable, of } from 'rxjs';
@@ -383,45 +383,43 @@ describe('FrontComponent', () => {
     expect(scrollable.classList).toContain('landing-scroll');
   });
 
-  it('should show compact hero and steps section', () => {
+  it('should show compact hero', () => {
 
     // when
     const host = render();
 
     // then
     expect(styleOf(host, '.front-hero').paddingTop).toBe('40px');
-    expect(styleOf(host, '.front-steps').paddingTop).toBe('40px');
   });
 
-  it('should show three steps in order', () => {
+  it('should show start panel in hero', () => {
 
     // when
     const host = render();
 
     // then
-    expect(textsOf(host, 'ol.landing-grid-3 > li h3'))
-      .toEqual(['1. Choose data storage', '2. Import data to scene', '3. Visualize and analyze']);
+    const panel = host.querySelector('.front-hero .front-start-panel');
+    expect(panel.querySelector('.front-storage')).toBeTruthy();
+    expect(panel.querySelector('#start_button')).toBeTruthy();
   });
 
-  it('should show monitor icon when IndexedDB is selected', () => {
+  it('should show icon on every storage option', () => {
 
     // when
     const host = render();
 
     // then
-    expect(new URL(storageIcon(host).src).pathname).toBe('/assets/monitor.png');
+    expect(storageButtons(host).map(b => new URL(b.querySelector('img').src).pathname))
+      .toEqual(['/assets/monitor.png', '/assets/couchdb.png']);
   });
 
-  it('should show CouchDB icon when CouchDB is selected', () => {
-
-    // given
-    component.selectedDataStorage = component.couchDB;
+  it('should show sections in order', () => {
 
     // when
     const host = render();
 
     // then
-    expect(new URL(storageIcon(host).src).pathname).toBe('/assets/couchdb.png');
+    expect(textsOf(host, '.landing-section h2')).toEqual(['Create your first views', 'Reference']);
   });
 
   it('should mark selected storage active and pressed', () => {
@@ -568,16 +566,6 @@ describe('FrontComponent', () => {
     expect(findUnsafeExternalLinks(host)).toEqual([]);
   });
 
-  it('should stack steps on mobile', () => {
-
-    // when
-    const host = render();
-
-    // then
-    const rects = steps(host).map(s => s.getBoundingClientRect());
-    rects.slice(1).forEach((r, i) => expect(r.top).toBeGreaterThanOrEqual(rects[i].bottom));
-  });
-
   it('should hide secondary navigation on mobile', () => {
 
     // when
@@ -594,7 +582,7 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    expect(stylesOf(host, '.landing-tile > :last-child').map(s => s.marginBottom)).toEqual(Array(8).fill('0px'));
+    expect(stylesOf(host, '.landing-tile > :last-child').map(s => s.marginBottom)).toEqual(Array(6).fill('0px'));
   });
 
   describe('on desktop', () => {
@@ -602,15 +590,6 @@ describe('FrontComponent', () => {
     beforeAll(() => page.viewport(1280, 800));
 
     afterAll(() => page.viewport(414, 896));
-
-    it('should lay out steps in one row', () => {
-
-      // when
-      const host = render();
-
-      // then
-      expect(rowCountOf(host, 'ol.landing-grid-3 > li')).toBe(1);
-    });
 
     it('should show start button without scrolling', () => {
 
@@ -622,24 +601,6 @@ describe('FrontComponent', () => {
     });
   });
 
-  describe('on medium screens', () => {
-
-    beforeAll(() => page.viewport(800, 800));
-
-    afterAll(() => page.viewport(414, 896));
-
-    it('should lay out steps two per row', () => {
-
-      // when
-      const host = render();
-
-      // then
-      const [first, second, third] = steps(host).map(s => s.getBoundingClientRect().top);
-      expect(second).toBe(first);
-      expect(third).toBeGreaterThan(first);
-    });
-  });
-
   function render(): HTMLElement {
     fixture.detectChanges();
     return fixture.nativeElement;
@@ -647,14 +608,6 @@ describe('FrontComponent', () => {
 
   function styleOf(host: HTMLElement, selector: string): CSSStyleDeclaration {
     return getComputedStyle(host.querySelector(selector));
-  }
-
-  function steps(host: HTMLElement): HTMLElement[] {
-    return Array.from(host.querySelectorAll<HTMLElement>('ol.landing-grid-3 > li'));
-  }
-
-  function storageIcon(host: HTMLElement): HTMLImageElement {
-    return host.querySelector<HTMLImageElement>('ol.landing-grid-3 > li .landing-tile-icon');
   }
 
   function storageButtons(host: HTMLElement): HTMLButtonElement[] {

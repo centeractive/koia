@@ -30,13 +30,13 @@ describe('FrontInfoComponent', () => {
     return topic.querySelector<HTMLElement>('summary');
   }
 
-  it('should show four topics in order', () => {
+  it('should show three topics in order', () => {
 
     // when
     const host = render();
 
     // then
-    expect(textsOf(host, '.front-info-topic summary h3')).toEqual(['Features', 'Data formats', 'What is a scene?', 'Views']);
+    expect(textsOf(host, '.front-info-topic summary h3')).toEqual(['Data formats', 'What is a scene?', 'Views']);
   });
 
   it('should show teaser for every topic', () => {
@@ -46,7 +46,6 @@ describe('FrontInfoComponent', () => {
 
     // then
     expect(textsOf(host, '.front-info-topic summary .front-info-teaser')).toEqual([
-      'Raw data is always one click away',
       'CSV, Excel and JSON with full control over the import',
       'One scene per data set, switch between them at any time',
       'Raw data table, pivot tables and dashboards'
@@ -84,7 +83,7 @@ describe('FrontInfoComponent', () => {
     summaryOf(all[2]).click();
 
     // then
-    expect(all.map(t => t.open)).toEqual([false, false, true, false]);
+    expect(all.map(t => t.open)).toEqual([false, false, true]);
   });
 
   it('should flip chevron of open topic', () => {
@@ -123,7 +122,7 @@ describe('FrontInfoComponent', () => {
     const styles = stylesOf(render(), 'summary');
 
     // then
-    expect(styles.length).toBe(4);
+    expect(styles.length).toBe(3);
     styles.forEach(s => {
       expect(s.listStyleType).toBe('none');
       expect(s.cursor).toBe('pointer');
@@ -152,7 +151,7 @@ describe('FrontInfoComponent', () => {
     await Promise.all(icons.map(icon => icon.decode()));
 
     // then
-    expect(icons.length).toBe(4);
+    expect(icons.length).toBe(3);
     icons.forEach(icon => {
       expect(icon.alt).toBe('');
       expect(icon.getBoundingClientRect().width).toBe(40);
@@ -187,7 +186,7 @@ describe('FrontInfoComponent', () => {
     const styles = stylesOf(render(), '.front-info-body ul');
 
     // then
-    expect(styles.length).toBe(5);
+    expect(styles.length).toBe(4);
     styles.forEach(s => expect(s.paddingLeft).toBe('20px'));
   });
 
@@ -197,7 +196,7 @@ describe('FrontInfoComponent', () => {
     const styles = stylesOf(render(), '.front-info-body > :last-child');
 
     // then
-    expect(styles.length).toBe(4);
+    expect(styles.length).toBe(3);
     styles.forEach(s => expect(s.marginBottom).toBe('0px'));
   });
 
@@ -207,7 +206,7 @@ describe('FrontInfoComponent', () => {
     const styles = stylesOf(render(), '.front-info-body li + li');
 
     // then
-    expect(styles.length).toBe(16);
+    expect(styles.length).toBe(9);
     styles.forEach(s => expect(s.marginTop).toBe('8px'));
   });
 
@@ -223,7 +222,7 @@ describe('FrontInfoComponent', () => {
       const styles = stylesOf(render(), '.front-info-body ul');
 
       // then
-      expect(styles.length).toBe(5);
+      expect(styles.length).toBe(4);
       styles.forEach(s => expect(s.columnCount).toBe('auto'));
     });
 
@@ -238,7 +237,7 @@ describe('FrontInfoComponent', () => {
       // then
       const styles = stylesOf(fixture.nativeElement, '.front-info-body');
       expect(topic.querySelector('.front-info-body').getBoundingClientRect().width).toBe(topic.clientWidth);
-      expect(styles.length).toBe(4);
+      expect(styles.length).toBe(3);
       styles.forEach(s => {
         expect(s.maxWidth).toBe('none');
         expect(s.paddingLeft).toBe('24px');

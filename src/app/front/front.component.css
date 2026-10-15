@@ -2,12 +2,16 @@
   padding-block: 40px;
 }
 
-.front-steps {
-  padding-block: 40px;
+.front-start-panel {
+  max-width: 560px;
+  margin: 24px auto 0;
+  color: var(--koia-text-primary);
+  text-align: left;
 }
 
-.front-steps h2 {
-  margin-top: 0;
+.front-start-panel h2 {
+  font-size: 1.25rem;
+  margin: 0;
 }
 
 .front-storage {
@@ -19,6 +23,9 @@
 }
 
 .front-storage-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: var(--koia-surface);
   color: var(--koia-text-primary);
   border-color: var(--koia-outline-color);
@@ -34,6 +41,12 @@
   background: var(--koia-error);
   color: var(--koia-on-color);
   border-color: transparent;
+}
+
+.front-start-panel .front-start {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
 }
 
 .front-start[aria-disabled="true"] {

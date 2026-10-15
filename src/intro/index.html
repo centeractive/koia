@@ -36,7 +36,9 @@
         <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
       </a>
       <nav class="landing-nav">
+        <a class="landing-nav-secondary" href="#why">Why Koia</a>
         <a class="landing-nav-secondary" href="#features">Features</a>
+        <a class="landing-nav-secondary" href="#how">How it works</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
           rel="noopener">GitHub</a>
         <a class="landing-btn landing-btn-primary" href="/front">Open Koia</a>
@@ -48,7 +50,8 @@
     <section class="landing-hero">
       <div class="landing-container">
         <h1>Privacy-focused graphing</h1>
-        <p class="landing-lead">Create graphs and pivot tables online from CSV, Excel or JSON data.</p>
+        <p class="landing-lead">Create graphs and pivot tables online from CSV, Excel or JSON data. Open-source, no
+          registration, no subscription fees.</p>
         <div class="landing-actions">
           <a class="landing-btn landing-btn-accent" href="/front">Create your graph</a>
           <a class="landing-btn landing-btn-outline" href="https://youtu.be/6UB_URk02t8" target="_blank"
@@ -72,73 +75,45 @@
       </div>
     </section>
 
-    <section id="features" class="landing-section landing-canvas">
+    <section id="why" class="landing-section landing-canvas">
       <div class="landing-container">
-        <h2>What is Koia?</h2>
-        <p>Koia is an open-source web application for visualizing and analyzing table-like data structures. It is a
-          simple and privacy-focused tool for everyone who just wants to create graphs without having to be worried
-          about registration or subscription fees.</p>
+        <h2>Why Koia?</h2>
         <ul class="landing-grid landing-grid-4">
           <li class="landing-tile">
             <div class="landing-tile-head">
               <img class="landing-tile-icon" src="/assets/mat-icons/trust.png" alt="" width="40" height="40">
               <h3>Open-source</h3>
             </div>
-            <p>The source code is and will always be publicly available and can be inspected, modified and enhanced by
-              anyone. Koia can also be installed in your trusted environment.</p>
+            <p>Free and publicly available. Use it online or install it in your own trusted environment.</p>
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
               <img class="landing-tile-icon" src="/assets/mat-icons/features.png" alt="" width="40" height="40">
               <h3>Your data stays private</h3>
             </div>
-            <p>Your data never flows back to the website. It only travels between your browser and the data storage
-              you choose, locally or in a private external database.</p>
+            <p>Data only travels between your browser and the storage you choose: the browser itself or your own
+              CouchDB.</p>
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
               <img class="landing-tile-icon" src="/assets/mat-icons/data_formats.png" alt="" width="40" height="40">
               <h3>CSV, Excel, JSON</h3>
             </div>
-            <p>Load your structured data from files and keep full control over which portions are imported and how
-              values are typed and formatted.</p>
+            <p>Import files and decide which columns are loaded and how values are typed and formatted.</p>
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/mat-icons/scenes.png" alt="" width="40" height="40">
-              <h3>Switch between scenes</h3>
+              <img class="landing-tile-icon" src="/assets/mat-icons/view_data.png" alt="" width="40" height="40">
+              <h3>Raw data one click away</h3>
             </div>
-            <p>Each loaded data set is a scene. Switch between scenes in one browser tab to create graphs based on
-              different data.</p>
+            <p>Click any chart element or summary value to see the rows behind it. The context is never lost.</p>
           </li>
         </ul>
       </div>
     </section>
-    <section class="landing-container">
-      <article class="landing-showcase-row">
-        <div class="landing-showcase-text">
-          <h3>Why Koia?</h3>
-          <p>With Koia, you can effortlessly create meaningful graphs while having <b>total control over your
-              data</b>. The context to the original data is never lost. You are always only a mouse click away from
-            seeing the raw data on which the displayed element or value is based.</p>
-          <p>Koia features <b>time and value filters</b> to present a closer look at diagrams and the numbers behind
-            them. When satisfied with the outcome, you can save the current view or <b>export</b> data to use it
-            elsewhere.</p>
-        </div>
-        <figure class="landing-frame">
-          <button class="landing-zoom" type="button" commandfor="zoom-rawdata" command="show-modal">
-            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440"
-              height="900" loading="lazy">
-          </button>
-          <dialog id="zoom-rawdata" class="landing-zoom-dialog" closedby="any"
-            aria-label="Raw data dialog opened by clicking a bar">
-            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-rawdata"
-              command="close">Close</button>
-            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440"
-              height="900" loading="lazy">
-          </dialog>
-        </figure>
-      </article>
+
+    <section id="features" class="landing-section landing-container">
+      <h2>Features</h2>
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
           <h3>Loading data</h3>
@@ -207,6 +182,27 @@
       </article>
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
+          <h3>Configure with a few clicks</h3>
+          <p>Every chart, relationship graph and summary table has its own <b>side bar</b>. Pick value columns, chart
+            type, grouping, aggregation, colors and scales and see the element adapt instantly — no formulas, no
+            wizards.</p>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-configure" command="show-modal">
+            <img src="screenshots/configure.webp" alt="Chart side bar configuring a stacked area chart" width="1440"
+              height="632" loading="lazy">
+          </button>
+          <dialog id="zoom-configure" class="landing-zoom-dialog" closedby="any"
+            aria-label="Chart side bar configuring a stacked area chart">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button"
+              commandfor="zoom-configure" command="close">Close</button>
+            <img src="screenshots/configure.webp" alt="Chart side bar configuring a stacked area chart" width="1440"
+              height="632" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
           <h3>Time series</h3>
           <p>Follow values over time in <b>line and area charts</b> and summarize them per day, month or year.</p>
           <p>Drag the <b>time range slider</b> to narrow every chart and summary of the view at once.</p>
@@ -229,27 +225,6 @@
       </article>
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
-          <h3>Configure with a few clicks</h3>
-          <p>Every chart, relationship graph and summary table has its own <b>side bar</b>. Pick value columns, chart
-            type, grouping, aggregation, colors and scales and see the element adapt instantly — no formulas, no
-            wizards.</p>
-        </div>
-        <figure class="landing-frame">
-          <button class="landing-zoom" type="button" commandfor="zoom-configure" command="show-modal">
-            <img src="screenshots/configure.webp" alt="Chart side bar configuring a stacked area chart" width="1440"
-              height="632" loading="lazy">
-          </button>
-          <dialog id="zoom-configure" class="landing-zoom-dialog" closedby="any"
-            aria-label="Chart side bar configuring a stacked area chart">
-            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button"
-              commandfor="zoom-configure" command="close">Close</button>
-            <img src="screenshots/configure.webp" alt="Chart side bar configuring a stacked area chart" width="1440"
-              height="632" loading="lazy">
-          </dialog>
-        </figure>
-      </article>
-      <article class="landing-showcase-row">
-        <div class="landing-showcase-text">
           <h3>Relationship graphs</h3>
           <p>Explore how values relate across columns in interactive force-directed graphs; bubble size reflects the
             number of related rows.</p>
@@ -265,13 +240,38 @@
           </dialog>
         </figure>
       </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>Drill into raw data</h3>
+          <p>You are always only a mouse click away from the raw data behind any displayed element or value.</p>
+          <p><b>Time and value filters</b> take a closer look at diagrams and the numbers behind them. Save the
+            current view or <b>export</b> data to use it elsewhere.</p>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-rawdata" command="show-modal">
+            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440"
+              height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-rawdata" class="landing-zoom-dialog" closedby="any"
+            aria-label="Raw data dialog opened by clicking a bar">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-rawdata"
+              command="close">Close</button>
+            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440"
+              height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
     </section>
 
-    <section class="landing-cta landing-section">
+    <section id="how" class="landing-cta landing-section">
       <div class="landing-container">
-        <h2>Ready to visualize your data?</h2>
-        <p>Create graphs, summaries and pivot tables with a few mouse clicks</p>
-        <a class="landing-btn landing-btn-accent" href="/front">Start now</a>
+        <h2>How it works</h2>
+        <ol class="landing-grid landing-grid-3 intro-steps">
+          <li><b>Choose storage</b><span>Keep data in your browser or in your own CouchDB.</span></li>
+          <li><b>Load a file</b><span>Import CSV, Excel or JSON into a new scene.</span></li>
+          <li><b>Create views</b><span>Add pivot tables and dashboards with charts, graphs and summaries.</span></li>
+        </ol>
+        <a class="landing-btn landing-btn-accent" href="/front">Get started</a>
       </div>
     </section>
 

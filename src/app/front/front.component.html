@@ -5,7 +5,7 @@
         <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
       </a>
       <nav class="landing-nav">
-        <a class="landing-nav-secondary" href="/intro/index.html">Intro</a>
+        <a class="landing-nav-secondary" href="/intro/index.html">About Koia</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank" rel="noopener">GitHub</a>
       </nav>
     </div>
@@ -14,60 +14,31 @@
   <div class="landing-scroll" cdkScrollable>
     <section class="landing-hero front-hero">
       <div class="landing-container">
-        <h1>Get started with Koia</h1>
-        <p class="landing-lead">Choose where your data lives, import a file and create your first graphs.</p>
-      </div>
-    </section>
-
-    <section class="landing-section landing-canvas front-steps">
-      <div class="landing-container">
-        <h2>Three steps to your first graph</h2>
-        <ol class="landing-grid landing-grid-3">
-          <li class="landing-tile">
-            <div class="landing-tile-head">
-              <img class="landing-tile-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
-                alt="" width="40" height="40">
-              <h3>1. Choose data storage</h3>
-            </div>
-            <p>Keep data in the browser (IndexedDB) or in an external CouchDB database
-              (<a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank"
-                rel="noopener">setup guide</a>).
-              CouchDB is usually faster, survives clearing the browser cache and can be shared with others.</p>
-            <div class="front-storage" role="group" aria-label="Data storage">
-              <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
-                [attr.aria-pressed]="selectedDataStorage === indexedDB" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
-              <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
-                [attr.aria-pressed]="selectedDataStorage === couchDB" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
-              @if (selectedDataStorage === couchDB) {
-                <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
-                  aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">
-                  <mat-icon>settings</mat-icon>
-                </button>
-              }
-            </div>
-          </li>
-          <li class="landing-tile">
-            <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/folder_document.png" alt="" width="40" height="40">
-              <h3>2. Import data to scene</h3>
-            </div>
-            <p>Load a CSV, Excel or JSON file into a new scene or continue with an existing one. Switch scenes anytime with
-              <b>Scenes</b> <mat-icon class="landing-inline-icon">collections</mat-icon> or add one with
-              <b>Add Scene</b> <mat-icon class="landing-inline-icon">add_photo_alternate</mat-icon>.</p>
-            @if (ready && scenesCount >= 0) {
-              <p class="front-scenes-count">{{ selectedDataStorage }} currently contains <b>{{ scenesCount }} {{ scenesCount === 1 ? 'scene' : 'scenes' }}.</b></p>
+        <h1>Get started</h1>
+        <p class="landing-lead">Choose where your data lives, then press <b>Start</b> to load a file or open a scene.</p>
+        <div class="landing-tile front-start-panel">
+          <h2>Data storage</h2>
+          <div class="front-storage" role="group" aria-label="Data storage">
+            <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
+              [attr.aria-pressed]="selectedDataStorage === indexedDB" (click)="onDataStorageChanged(indexedDB)">
+              <img src="/assets/monitor.png" alt="" width="24" height="24">{{ indexedDB }}</button>
+            <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
+              [attr.aria-pressed]="selectedDataStorage === couchDB" (click)="onDataStorageChanged(couchDB)">
+              <img src="/assets/couchdb.png" alt="" width="24" height="24">{{ couchDB }}</button>
+            @if (selectedDataStorage === couchDB) {
+              <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
+                aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">
+                <mat-icon>settings</mat-icon>
+              </button>
             }
-          </li>
-          <li class="landing-tile">
-            <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/line_chart.png" alt="" width="40" height="40">
-              <h3>3. Visualize and analyze</h3>
-            </div>
-            <p>Filter your data and create pivot tables, charts, relationship graphs and summaries. Export tables to Excel,
-              charts as images and save entire views to restore them later.</p>
-          </li>
-        </ol>
-        <div class="landing-actions">
+          </div>
+          <p class="front-storage-hint">IndexedDB keeps data in this browser. CouchDB is usually faster, survives
+            clearing the browser cache and can be shared
+            (<a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank"
+              rel="noopener">setup guide</a>).</p>
+          @if (ready && scenesCount >= 0) {
+            <p class="front-scenes-count">{{ selectedDataStorage }} currently contains <b>{{ scenesCount }} {{ scenesCount === 1 ? 'scene' : 'scenes' }}.</b></p>
+          }
           <a id="start_button" class="landing-btn landing-btn-accent front-start" role="link"
             [routerLink]="ready ? urlScenes : null" [attr.aria-disabled]="!ready">
             <mat-icon>play_circle_outline</mat-icon>Start
@@ -76,16 +47,16 @@
       </div>
     </section>
 
-    <section class="landing-section">
+    <section class="landing-section landing-canvas">
       <div class="landing-container">
         <h2>Create your first views</h2>
         <koia-front-guide></koia-front-guide>
       </div>
     </section>
 
-    <section class="landing-section landing-canvas">
+    <section class="landing-section">
       <div class="landing-container">
-        <h2>Learn more</h2>
+        <h2>Reference</h2>
         <koia-front-info></koia-front-info>
       </div>
     </section>

@@ -86,6 +86,37 @@ body.landing-root {
   text-align: center;
 }
 
+.intro-steps {
+  counter-reset: step;
+  margin-block: 32px 40px;
+  text-align: left;
+}
+
+.intro-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  column-gap: 12px;
+  align-items: center;
+}
+
+.intro-steps li::before {
+  content: counter(step);
+  grid-row: span 2;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--koia-on-color);
+  color: var(--koia-primary);
+  font-weight: 700;
+}
+
+.intro-steps b {
+  font-size: 1.125rem;
+}
+
 @media (max-width: 767px) {
   .landing-showcase-row,
   .landing-showcase-row:nth-of-type(even) {
