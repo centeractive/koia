@@ -9,7 +9,7 @@
   text-align: left;
 }
 
-.front-start-panel h2 {
+.front-start-panel .landing-tile-head h2 {
   font-size: 1.25rem;
   margin: 0;
 }
@@ -23,16 +23,9 @@
 }
 
 .front-storage-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   background: var(--koia-surface);
   color: var(--koia-text-primary);
   border-color: var(--koia-outline-color);
-}
-
-.front-storage-option img {
-  mix-blend-mode: multiply;
 }
 
 .front-storage-option[data-state="active"] {

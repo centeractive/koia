@@ -17,14 +17,16 @@
         <h1>Get started</h1>
         <p class="landing-lead">Choose where your data lives, then press <b>Start</b> to load a file or open a scene.</p>
         <div class="landing-tile front-start-panel">
-          <h2>Data storage</h2>
+          <div class="landing-tile-head">
+            <img class="landing-tile-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
+              alt="" width="40" height="40">
+            <h2>Data storage</h2>
+          </div>
           <div class="front-storage" role="group" aria-label="Data storage">
             <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
-              [attr.aria-pressed]="selectedDataStorage === indexedDB" (click)="onDataStorageChanged(indexedDB)">
-              <img src="/assets/monitor.png" alt="" width="24" height="24">{{ indexedDB }}</button>
+              [attr.aria-pressed]="selectedDataStorage === indexedDB" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
             <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
-              [attr.aria-pressed]="selectedDataStorage === couchDB" (click)="onDataStorageChanged(couchDB)">
-              <img src="/assets/couchdb.png" alt="" width="24" height="24">{{ couchDB }}</button>
+              [attr.aria-pressed]="selectedDataStorage === couchDB" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
             @if (selectedDataStorage === couchDB) {
               <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
                 aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">

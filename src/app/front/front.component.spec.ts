@@ -403,23 +403,25 @@ describe('FrontComponent', () => {
     expect(panel.querySelector('#start_button')).toBeTruthy();
   });
 
-  it('should show icon on every storage option', () => {
+  it('should show monitor icon when IndexedDB is selected', () => {
 
     // when
     const host = render();
 
     // then
-    expect(storageButtons(host).map(b => new URL(b.querySelector('img').src).pathname))
-      .toEqual(['/assets/monitor.png', '/assets/couchdb.png']);
+    expect(new URL(storageIcon(host).src).pathname).toBe('/assets/monitor.png');
   });
 
-  it('should blend storage icons into button background', () => {
+  it('should show CouchDB icon when CouchDB is selected', () => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
 
     // when
     const host = render();
 
     // then
-    expect(stylesOf(host, '.front-storage-option img').map(s => s.mixBlendMode)).toEqual(['multiply', 'multiply']);
+    expect(new URL(storageIcon(host).src).pathname).toBe('/assets/couchdb.png');
   });
 
   it('should show sections in order', () => {
@@ -617,6 +619,10 @@ describe('FrontComponent', () => {
 
   function styleOf(host: HTMLElement, selector: string): CSSStyleDeclaration {
     return getComputedStyle(host.querySelector(selector));
+  }
+
+  function storageIcon(host: HTMLElement): HTMLImageElement {
+    return host.querySelector<HTMLImageElement>('.front-start-panel .landing-tile-icon');
   }
 
   function storageButtons(host: HTMLElement): HTMLButtonElement[] {
