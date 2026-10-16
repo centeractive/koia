@@ -1,0 +1,660 @@
+{
+  "language": {
+    "select": "Sprache"
+  },
+  "front": {
+    "nav": {
+      "about": "Über Koia"
+    },
+    "title": "Loslegen",
+    "lead": "Laden Sie Ihre eigene CSV-, Excel- oder JSON-Datei oder erkunden Sie Koia mit Beispieldaten.",
+    "externalInvocationFailed": "Rohdaten der Szene mit _id {{id}} können nicht angezeigt werden",
+    "storage": {
+      "storedIn": "Daten werden gespeichert in",
+      "thisBrowser": "diesem Browser (IndexedDB)",
+      "change": "Speicher wechseln",
+      "group": "Datenspeicher",
+      "configureCouchDB": "Zugriff auf CouchDB konfigurieren",
+      "hint": "IndexedDB speichert die Daten in diesem Browser. CouchDB ist meist schneller, übersteht das Leeren des Browser-Caches und kann gemeinsam genutzt werden",
+      "setupGuide": "Installationsanleitung",
+      "hintEnd": ".",
+      "switchedTo": "Erfolgreich zu {{storage}} gewechselt"
+    },
+    "couchdbTip": {
+      "title": "Empfohlen: CouchDB verwenden",
+      "text": "Schneller bei grösseren Datenmengen, und Ihre Daten überstehen das Leeren des Browser-Caches. Installieren Sie CouchDB lokal und verbinden Sie sich dann.",
+      "connect": "Mit CouchDB verbinden",
+      "setupGuide": "Installationsanleitung",
+      "notNow": "Nicht jetzt"
+    },
+    "actions": {
+      "continueOne": "Mit Ihrer Szene fortfahren",
+      "continueMany": "Mit Ihren {{count}} Szenen fortfahren",
+      "loadFile": "Datei laden",
+      "loadingSample": "Beispiel wird geladen…",
+      "trySample": "Beispieldaten ausprobieren"
+    },
+    "guide": {
+      "title": "Erstellen Sie Ihre ersten Ansichten",
+      "intro": "Sobald Ihre Daten geladen sind, zeigt Koia die Rohdaten. Fügen Sie daneben Ansichten als Tabs hinzu.",
+      "rawData": {
+        "title": "Rohdaten erkunden",
+        "text": "Sortieren Sie Spalten, schränken Sie Zeilen mit <b>Filter hinzufügen</b> ein und klicken Sie auf ein Diagrammelement oder einen Wert, um die zugrunde liegenden Zeilen zu sehen."
+      },
+      "pivot": {
+        "title": "Pivot-Tabelle",
+        "beforeIcon": "Klicken Sie neben den Tabs auf ",
+        "afterIcon": ", wählen Sie <b>Neue Pivot-Tabelle</b> und ziehen Sie die Spalten an ihren Platz."
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "beforeIcon": "Klicken Sie auf ",
+        "afterIcon": ", wählen Sie <b>Neues Dashboard</b> und kombinieren Sie Diagramme, Graphen und Übersichtstabellen."
+      },
+      "configure": {
+        "title": "Elemente konfigurieren",
+        "beforeIcon": "Klicken Sie bei einem Element auf ",
+        "afterIcon": ", um Spalten, Diagrammtyp und Farben zu wählen."
+      }
+    },
+    "info": {
+      "title": "Referenz",
+      "formats": {
+        "title": "Datenformate",
+        "teaser": "CSV, Excel und JSON mit voller Kontrolle über den Import",
+        "loading": "Daten werden von Koia selbst aus Dateien in den Datenspeicher geladen oder von einem Drittprogramm dorthin geschrieben.",
+        "supported": "Die folgenden Dateitypen werden unterstützt.",
+        "control": "Beim Import einer Datei bestimmen Sie vollständig, welche Teile der Daten importiert werden. Ausserdem bestimmen Sie...",
+        "dataTypes": "Die Datentypen, mit denen die Werte im Datenspeicher abgelegt werden",
+        "displayFormat": "Das Format, mit dem bestimmte Werte angezeigt werden"
+      },
+      "scene": {
+        "title": "Was ist eine Szene?",
+        "teaser": "Eine Szene pro Datensatz, jederzeit zwischen ihnen wechseln",
+        "text": "Jeder in den Datenspeicher geladene Datensatz wird durch eine <b>Szene</b> repräsentiert. Sie können beliebig zwischen verschiedenen Szenen wechseln.",
+        "items": "Szenen können einen eigenen Namen und eine Beschreibung erhalten. Sie enthalten zudem folgende Elemente.",
+        "origin": "Informationen über die Herkunft der geladenen Daten (d. h. Dateiname und Änderungsdatum).",
+        "link": "Einen Verweis auf die geladenen Rohdaten im Datenspeicher.",
+        "columns": "Name, Datentyp, Breite und Format der einzelnen Datenspalten.",
+        "views": "Ansichtsdefinitionen, die vom Benutzer gespeichert wurden, um sie später wiederherzustellen."
+      },
+      "views": {
+        "title": "Ansichten",
+        "teaser": "Rohdatentabelle, Pivot-Tabellen und Dashboards",
+        "rawData": "Die <b>Rohdaten</b>-Tabelle zeigt die Daten unverarbeitet in Seiten einstellbarer Grösse. Die Tabelle bietet Sortieren und Filtern einzelner Spalten.",
+        "pivotBeforeLink": "Die <b>Pivot-Tabelle</b> ist ein leistungsfähiges Werkzeug, um Daten zu berechnen, zusammenzufassen und zu analysieren und dabei Muster und Trends aufzudecken. Sie basiert auf dem hervorragenden ",
+        "pivotAfterLink": ", das viele verschiedene Darstellungen bietet (z. B. Heatmaps und Tabellen-Balkendiagramme) und die Gestaltung der Pivot-Tabelle per Drag-and-Drop einzelner Spalten erlaubt.",
+        "dashboard": "Ein <b>Dashboard</b> enthält eine variable Anzahl Elemente (Übersichtstabellen, Diagramme und Graphen). Im <b>Raster</b>-Layout liegen die Elemente in einem festen Raster anpassbarer Grösse; sie belegen eine einzelne Zelle oder erstrecken sich über mehrere Spalten und Zeilen. Ändert sich die Fenstergrösse, passt sich auch die Grösse der Elemente an, damit sie stets den zugewiesenen Rasterplatz ausfüllen. Im <b>Flex</b>-Layout hat jedes Element eine feste Grösse, die sich bei Änderung der Fenstergrösse nicht ändert; die Elemente werden jedoch automatisch gemäss dem verfügbaren Platz angeordnet.",
+        "tabs": "Beliebig viele Pivot-Tabellen und Dashboards können als einzelne Tabs neben der Rohdatentabelle geöffnet werden. Offene Tabs bleiben mit der Szene erhalten."
+      }
+    },
+    "connection": {
+      "title": "CouchDB-Zugriff",
+      "protocol": "Protokoll",
+      "host": "Host",
+      "port": "Port",
+      "user": "Benutzer",
+      "password": "Passwort",
+      "cancel": "Abbrechen",
+      "ok": "OK"
+    },
+    "footer": {
+      "retrospectiveCompatible": "Kompatibel mit Retrospective",
+      "licensedPrefix": "Koia steht unter der ",
+      "license": "MIT-Lizenz",
+      "licensedSuffix": "."
+    }
+  },
+  "toolbar": {
+    "home": "Startseite",
+    "sceneDetails": "Szenendetails anzeigen",
+    "scenes": "Szenen",
+    "addScene": "Szene hinzufügen",
+    "fullTextFilter": "Filter (nur Textspalten)",
+    "clear": "Löschen",
+    "addColumnFilter": "Spaltenfilter hinzufügen",
+    "addFilter": "Filter hinzufügen",
+    "value": "Wert",
+    "valueRange": "Wertebereich",
+    "hideRangeFilters": "Wertebereichsfilter ausblenden",
+    "showRangeFilters": "Wertebereichsfilter einblenden",
+    "refresh": "Daten aktualisieren",
+    "tabs": {
+      "rawData": "Rohdaten",
+      "renameHint": "Doppelklick zum Umbenennen",
+      "close": "Schliessen",
+      "addView": "Ansicht hinzufügen",
+      "newPivotTable": "Neue Pivot-Tabelle",
+      "newDashboard": "Neues Dashboard",
+      "renameTitle": "Tab umbenennen",
+      "tabName": "Tab-Name",
+      "closeTitle": "Tab schliessen",
+      "closeQuestion": "Möchten Sie \"{{title}}\" wirklich schliessen?"
+    }
+  },
+  "filter": {
+    "operator": {
+      "contains": "enthält",
+      "empty": "ist leer",
+      "notEmpty": "ist nicht leer",
+      "anyOf": "ist eines von",
+      "noneOf": "ist keines von"
+    },
+    "value": {
+      "placeholder": "Filterwert",
+      "remove": "Spaltenfilter entfernen",
+      "tooltip": {
+        "contains": "Filtert alle Einträge, bei denen '{{name}}' den Filterwert enthält (Gross-/Kleinschreibung egal)",
+        "lessThan": "Filtert alle Einträge, bei denen '{{name}}' kleiner als der Filterwert ist",
+        "lessThanOrEqual": "Filtert alle Einträge, bei denen '{{name}}' kleiner oder gleich dem Filterwert ist",
+        "equal": "Filtert alle Einträge, bei denen '{{name}}' gleich dem Filterwert ist (Gross-/Kleinschreibung beachten)",
+        "notEqual": "Filtert alle Einträge, bei denen '{{name}}' ungleich dem Filterwert ist (Gross-/Kleinschreibung beachten)",
+        "greaterThanOrEqual": "Filtert alle Einträge, bei denen '{{name}}' grösser oder gleich dem Filterwert ist",
+        "greaterThan": "Filtert alle Einträge, bei denen '{{name}}' grösser als der Filterwert ist",
+        "empty": "Filtert alle Einträge, bei denen '{{name}}' leer ist",
+        "notEmpty": "Filtert alle Einträge, bei denen '{{name}}' nicht leer ist",
+        "anyOf": "Filtert alle Einträge, bei denen '{{name}}' einem der Filterwerte entspricht, jeweils getrennt durch ein Semikolon ';'",
+        "noneOf": "Filtert alle Einträge, bei denen '{{name}}' keinem der Filterwerte entspricht, jeweils getrennt durch ein Semikolon ';'",
+        "caseSensitive": "(Gross-/Kleinschreibung beachten)"
+      }
+    },
+    "range": {
+      "stepSize": "Schrittweite des Schiebereglers festlegen",
+      "stepBy": "Schrittweite {{step}}",
+      "reset": "Wertebereichsfilter zurücksetzen",
+      "remove": "Wertebereichsfilter entfernen",
+      "inside": "liegt im Bereich",
+      "outside": "liegt ausserhalb des Bereichs",
+      "excluding": "exkl."
+    },
+    "timeUnit": {
+      "millisecond": "Millisekunde",
+      "second": "Sekunde",
+      "minute": "Minute",
+      "hour": "Stunde",
+      "day": "Tag",
+      "month": "Monat",
+      "year": "Jahr"
+    },
+    "invalidValue": "Ungültiger Wert ({{type}})"
+  },
+  "rawData": {
+    "loading": "Daten werden geladen...",
+    "ignoreColumnWidths": "Festgelegte Spaltenbreiten ignorieren",
+    "observeColumnWidths": "Festgelegte Spaltenbreiten beachten",
+    "undoHighlight": "Zeilenhervorhebung aufheben",
+    "highlight": "Zeilen hervorheben",
+    "saveAs": "Speichern als {{format}}",
+    "manageViews": "Ansichten verwalten",
+    "exportFiltered": "gefilterte Daten werden gesammelt und im Hintergrund als {{format}} gespeichert",
+    "exportComplete": "alle Daten werden gesammelt und im Hintergrund als {{format}} gespeichert"
+  },
+  "sample": {
+    "loadFailed": "Beispieldaten können nicht geladen werden: {{reason}}"
+  },
+  "common": {
+    "addScene": "Szene hinzufügen",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "delete": "Löschen",
+    "frontPage": "Startseite",
+    "more": "mehr...",
+    "no": "Nein",
+    "ok": "OK",
+    "scenes": "Szenen",
+    "yes": "Ja"
+  },
+  "scene": {
+    "title": "Neue Szene",
+    "subtitle": "Neue Datenszene aus einer Datei erstellen",
+    "name": "Szenenname",
+    "shortDescription": "Kurzbeschreibung",
+    "dataSource": "Datenquelle",
+    "sourceType": "Quelltyp",
+    "selectFile": "Datei auswählen",
+    "fileName": "Dateiname",
+    "encoding": "Zeichenkodierung",
+    "encodingTooltip": "Zeichensatz, mit dem der Dateiinhalt kodiert wurde",
+    "dataSample": "Datenauszug",
+    "sourceAttributes": "{{source}}-Quellattribute",
+    "language": "Sprache",
+    "languageTooltip": "Die richtige Sprache ist für das Einlesen von Datums-/Zeit- und Zahlenwerten erforderlich",
+    "adoptColumns": "Spalten einer bestehenden Szene übernehmen",
+    "scene": "Szene",
+    "created": "erstellt {{time}}",
+    "detectColumnsTooltip": "Spalten anhand der definierten Attribute erkennen",
+    "adoptColumnsButton": "Spalten übernehmen",
+    "detectColumnsButton": "Spalten erkennen",
+    "columnDefinitions": "Spaltendefinitionen",
+    "preview": "Vorschau",
+    "previewErrorsTooltip": "Die Vorschau enthält Zuordnungsfehler. Bitte korrigieren Sie die Leseattribute und/oder Spaltendefinitionen, bevor fehlerhafte Daten in die Datenbank geladen werden",
+    "loadDataTooltip": "Lädt alle Daten in die Datenbank",
+    "loadData": "Daten laden",
+    "maxItems": "Max. Einträge",
+    "maxItemsTooltip": "Maximale Anzahl zu ladender Einträge\n(min: 1, max: {{max}})",
+    "maxItemsError": "Erw. 1-{{max}}",
+    "abortOnErrorTooltip": "Laden abbrechen, wenn inkonsistente Daten auftreten",
+    "abortOnError": "Bei Datenfehler abbrechen",
+    "aborting": "{{message}} wird abgebrochen...",
+    "loadingCanceled": "Laden abgebrochen: {{message}}",
+    "mappingErrors": "{{message}}, {{count}} Zuordnungsfehler sind aufgetreten...",
+    "initializingDataLoad": "Datenladen wird vorbereitet...",
+    "tasksInitializing": "Aufgaben ({{settled}}/{{count}}) - Datenladen wird vorbereitet...",
+    "taskCompleted": "Aufgaben ({{settled}}/{{count}}) - {{task}} abgeschlossen",
+    "readingData": "Daten werden gelesen...",
+    "noSceneExists": "Es existiert noch keine Szene, mindestens eine muss erstellt werden!",
+    "persistAborted": "Speichern der Daten wegen eines Fehlers abgebrochen: {{error}}",
+    "itemsPersisted": "{{count}} Einträge wurden in der Datenbank gespeichert",
+    "itemsPersistedProgress": "{{count}} von {{total}} Einträgen gespeichert ({{percent}}%)",
+    "itemsRead": "{{count}} Einträge gelesen",
+    "itemsReadPersisted": "{{count}} Einträge gelesen / {{persisted}} gespeichert",
+    "task": {
+      "insertScene": "Szene einfügen",
+      "createDatabase": "Datenbank erstellen",
+      "indexColumns": "Spalten indexieren",
+      "indexColumn": "Spalte {{column}} indexieren"
+    },
+    "column": {
+      "deleteTooltip": "Irrelevante Spalte löschen",
+      "name": "Spaltenname",
+      "dataType": "Datentyp",
+      "width": "Breite",
+      "sourceFormat": "Quellformat",
+      "refreshPreview": "Vorschau aktualisieren",
+      "formatOptions": "Optionen für benutzerdefinierte Formate anzeigen",
+      "displayFormat": "Anzeigeformat",
+      "nameRequired": "Name ist erforderlich",
+      "nameDollar": "Name darf nicht mit $ beginnen",
+      "nameTooLong": "Name darf höchstens {{max}} Zeichen lang sein",
+      "incompatibleTypes": "Spalte enthält Werte mit unverträglichen Datentypen"
+    },
+    "mapping": {
+      "columnError": "Spalte '{{column}}': {{error}}",
+      "cannotConvert": "\"{{value}}\" kann nicht in {{dataType}} umgewandelt werden",
+      "cannotConvertTime": "\"{{value}}\" kann ohne benutzerdefiniertes Quellformat nicht in Zeit umgewandelt werden",
+      "cannotConvertTimeWithFormat": "\"{{value}}\" kann mit Format \"{{format}}\" nicht in Zeit umgewandelt werden"
+    },
+    "reader": {
+      "csvDescription": "CSV (Comma Separated Values) ist Klartext in Tabellenform.\nJede Zeile stellt einen Datensatz dar, dessen Felder durch dasselbe Zeichen (z.B. Komma) getrennt sein müssen.",
+      "csvHeaderRow": "Erste Zeile enthält Spaltennamen",
+      "csvSeparator": "Trennzeichen",
+      "excelDescription": "Microsoft Excel besteht aus einem oder mehreren Tabellenblättern mit Daten in Tabellenform.\nDie Spaltennamen werden in der ersten Zeile des ausgewählten Tabellenblatts erwartet.",
+      "excelSheetName": "Tabellenblatt",
+      "excelSheetNameDescription": "Name des Excel-Tabellenblatts mit den Daten",
+      "jsonDescription": "JSON (JavaScript Object Notation) ist formatierter, selbstbeschreibender Text zum Speichern und Austauschen von Daten.\nSie importieren ein Array flacher (nicht verschachtelter) Objekte, indem Sie dessen JSONPath angeben.",
+      "jsonPath": "Array-JSONPath",
+      "jsonPathDescription": "JSONPath zum Objekt-Array mit den Daten",
+      "worksheetMissing": "Tabellenblatt \"{{sheet}}\" existiert nicht oder kann nicht gelesen werden"
+    }
+  },
+  "scenes": {
+    "activeScene": "Aktive Szene",
+    "activeSceneSubtitle": "Mit dieser Szene arbeiten Sie gerade",
+    "allScenes": "Alle Szenen",
+    "allScenesSubtitle": "Verwalten Sie Ihre Szenen. Aktivieren Sie eine, um Grafiken zu erstellen.",
+    "filter": "Szenen filtern",
+    "deleteFiltered": "Gefilterte löschen",
+    "deleteAll": "Alle löschen",
+    "deleteFilteredTitle": "Gefilterte Szenen löschen",
+    "deleteAllTitle": "Alle Szenen löschen",
+    "deleteConfirm": "Wollen Sie wirklich {{count}} Szene(n) löschen?",
+    "sceneDeleted": "Szene wurde gelöscht",
+    "scenesDeleted": "{{count}} Szenen wurden gelöscht",
+    "scenesDeletedOne": "{{count}} Szene wurde gelöscht",
+    "showDetails": "Details anzeigen",
+    "activate": "Szene aktivieren",
+    "continueActive": "Mit aktiver Szene fortfahren",
+    "creationTime": "Erstellt",
+    "details": {
+      "sourceContext": "Quellkontext",
+      "columns": "Spalten",
+      "name": "Name",
+      "type": "Typ",
+      "format": "Format",
+      "groupBy": "Gruppieren nach",
+      "width": "Breite ({{unit}})",
+      "unit": {
+        "chars": "Zeichen",
+        "pixel": "Pixel"
+      }
+    }
+  },
+  "dialog": {
+    "selectView": "Ansicht auswählen",
+    "restoreView": "Gespeicherte Ansicht wiederherstellen",
+    "restoreViewHint": "Eine zuvor gespeicherte Ansicht laden.",
+    "manageViews": "Ansichten verwalten",
+    "manageSavedViews": "Gespeicherte Ansichten verwalten",
+    "manageSavedViewsHint": "Zuvor gespeicherte Ansichten löschen oder umbenennen.",
+    "createView": "Ansicht erstellen",
+    "createNewView": "Neue Ansicht erstellen",
+    "chooseInitialElement": "Wählen Sie das erste Element der neuen Ansicht.",
+    "chart": "Diagramm",
+    "graph": "Beziehungsgraph",
+    "summaryTable": "Übersichtstabelle",
+    "dontShowAgain": "Nicht mehr anzeigen",
+    "rememberChoice": "Auswahl merken",
+    "couchDbLimitation": "CouchDB-Einschränkung",
+    "couchDbSortLimitation": "CouchDB-Abfrageergebnisse enthalten keine Zeilen, in denen der Wert des Sortierfelds fehlt.",
+    "gotIt": "Verstanden"
+  },
+  "view": {
+    "print": "Aktuelle Ansicht drucken",
+    "save": "Aktuelle Ansicht speichern",
+    "restore": "Gespeicherte Ansicht wiederherstellen",
+    "saveTitle": "Ansicht speichern",
+    "name": "Name der Ansicht",
+    "noElements": "Ansicht enthält keine Elemente",
+    "saved": "Ansicht \"{{name}}\" wurde gespeichert",
+    "notSaved": "Ansicht \"{{name}}\" kann nicht gespeichert werden: {{error}}",
+    "deleted": "{{count}} Ansichten gelöscht",
+    "deletedOne": "{{count}} Ansicht gelöscht",
+    "renamed": "{{count}} Ansichten umbenannt",
+    "renamedOne": "{{count}} Ansicht umbenannt",
+    "tabsNotSaved": "Offene Tabs können nicht gespeichert werden:",
+    "tabsNotLoaded": "Offene Tabs können nicht geladen werden:"
+  },
+  "ui": {
+    "color": {
+      "categorical": "Kategorisch",
+      "sequential": "Sequenziell",
+      "bgOpacity": "Deckkraft Hintergrundfarbe",
+      "borderOpacity": "Deckkraft Rahmenfarbe"
+    },
+    "multiExpansion": "Mehrfach aufklappen",
+    "expandAll": "Alle aufklappen",
+    "collapseAll": "Alle zuklappen",
+    "notGrouped": "nicht gruppiert",
+    "per": {
+      "millisecond": "pro Millisekunde",
+      "second": "pro Sekunde",
+      "minute": "pro Minute",
+      "hour": "pro Stunde",
+      "day": "pro Tag",
+      "month": "pro Monat",
+      "year": "pro Jahr"
+    },
+    "rows": "{{count}} Zeilen",
+    "columnValue": "Spalte {{column}}",
+    "singleLineRows": "Einzeilige Zeilen anzeigen",
+    "multiLineRows": "Mehrzeilige Zeilen anzeigen",
+    "hideNestedObjects": "Verschachtelte Objekte ausblenden",
+    "showNestedObjects": "Verschachtelte Objekte anzeigen"
+  },
+  "chart": {
+    "typeTooltip": "Diagramm: {{type}}",
+    "countDistinctValues": "Unterschiedliche Werte zählen",
+    "uniqueNamedValues": "Eindeutig benannte Werte",
+    "individualValues": "Einzelwerte",
+    "stacked": "Gestapelt",
+    "showDistinctScales": "Separate Skalen anzeigen",
+    "values": "Werte",
+    "valuesOnAxis": "Werte ({{axis}})",
+    "name": "Name",
+    "names": "Namen",
+    "nameColumn": "Namensspalte",
+    "xAxis": "X-Achse",
+    "yAxis": "Y-Achse",
+    "valueSplitting": "Werte aufteilen",
+    "selectedColumns": "Ausgewählte Spalten",
+    "availableColumns": "Verfügbare Spalten",
+    "splitColumnsHelp": "Verfügbare Spalten per Drag & Drop auswählen\n\nWerte werden für jeden unterschiedlichen Inhalt der ausgewählten Aufteilungsspalten separat angezeigt. Ist eine Zelle einer Aufteilungsspalte leer, wird der Wert ignoriert",
+    "columnName": "Spaltenname",
+    "groupBy": "Gruppieren nach",
+    "timeUnitGrouping": "Gruppierung nach Zeiteinheit",
+    "colorScheme": "Farbschema",
+    "legendAndLabels": "Legende & Beschriftungen",
+    "legendAndScales": "Legende & Skalen",
+    "showLegend": "Legende anzeigen",
+    "percentValueLabels": "Werte in Prozent beschriften",
+    "baseScale": "Basisskala",
+    "valueScale": "Werteskala",
+    "valueScaleNumbered": "Werteskala {{number}}",
+    "stepSize": "Schrittweite",
+    "automatic": "Automatisch",
+    "labelRotation": "Beschriftungsdrehung",
+    "legendPosition": {
+      "top": "oben",
+      "right": "rechts",
+      "bottom": "unten",
+      "left": "links"
+    },
+    "title": {
+      "countDistinctValuesOf": "Anzahl unterschiedlicher Werte von {{columns}}",
+      "groupedBy": "{{title}} nach {{columns}}",
+      "sample": "{{title}} (Stichprobe)",
+      "splitBy": "{{title}}\naufgeteilt nach {{columns}}"
+    },
+    "error": {
+      "nameColumnUndefined": "Namensspalte ist nicht definiert",
+      "axisUndefined": "{{axis}} ist nicht definiert",
+      "maxValuesExceeded": "Diagramm {{chartType}}: Maximale Anzahl von {{max}} Werten überschritten.\n\nBitte das Diagramm neu konfigurieren oder die Daten (genauer) filtern."
+    },
+    "warning": {
+      "sampledDown": "Die Daten wurden reduziert, das Diagramm enthält nur einen Teil der verfügbaren Werte. Filter anwenden, um die Daten einzuschränken und alle Werte des gewählten Kontexts zu sehen."
+    }
+  },
+  "element": {
+    "title": {
+      "dataUndefined": "Daten: noch nicht definiert",
+      "distinctValuesOf": "Unterschiedliche Werte von {{column}}",
+      "relationshipUndefined": "Beziehung: noch nicht definiert",
+      "relationship": "Beziehung: Wurzel ⯈ {{columns}}"
+    },
+    "columnSpan": "Spaltenbreite",
+    "rowSpan": "Zeilenhöhe",
+    "saveAs": "Speichern als {{format}}",
+    "column": "{{count}} Spalte",
+    "columns": "{{count}} Spalten",
+    "row": "{{count}} Zeile",
+    "rows": "{{count}} Zeilen",
+    "configure": "Konfigurieren...",
+    "toggleMargin": "Veränderbaren Diagrammrand ein-/ausblenden",
+    "move": "Verschieben",
+    "delete": "Löschen"
+  },
+  "dashboard": {
+    "loadingData": "Daten werden geladen...",
+    "addChart": "Diagramm hinzufügen",
+    "addGraph": "Beziehungsgraph hinzufügen",
+    "addSummary": "Zusammenfassung hinzufügen",
+    "layout": "Layout",
+    "gridColumns": "Rasterspalten",
+    "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
+    "manageViews": "Ansichten verwalten",
+    "gridLayout": "Raster (am Raster ausrichten)",
+    "flexLayout": "Flexibel",
+    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst"
+  },
+  "enum": {
+    "chartType": {
+      "pie": "Kreis",
+      "doughnut": "Ring",
+      "bar": "Balken",
+      "linearBar": "Lineare Balken",
+      "horizontalBar": "Horizontale Balken",
+      "linearHorizontalBar": "Lineare horizontale Balken",
+      "radar": "Netz",
+      "polarArea": "Polarfläche",
+      "line": "Linie",
+      "area": "Fläche",
+      "scatter": "Streuung"
+    },
+    "aggregation": {
+      "COUNT": "Anzahl",
+      "AVG": "Durchschnitt",
+      "MEDIAN": "Median",
+      "MAX": "Max",
+      "MIN": "Min",
+      "SUM": "Summe"
+    },
+    "operator": {
+      "CONTAINS": "enthält",
+      "LESS_THAN": "<",
+      "LESS_THAN_OR_EQUAL": "<=",
+      "EQUAL": "=",
+      "NOT_EQUAL": "≠",
+      "GREATER_THAN_OR_EQUAL": ">=",
+      "GREATER_THAN": ">",
+      "EMPTY": "ist leer",
+      "NOT_EMPTY": "ist nicht leer",
+      "ANY_OF": "ist eines von",
+      "NONE_OF": "ist keines von"
+    },
+    "timeUnit": {
+      "MILLISECOND": "Millisekunde",
+      "SECOND": "Sekunde",
+      "MINUTE": "Minute",
+      "HOUR": "Stunde",
+      "DAY": "Tag",
+      "MONTH": "Monat",
+      "YEAR": "Jahr"
+    },
+    "dataType": {
+      "BOOLEAN": "Boolesch",
+      "NUMBER": "Zahl",
+      "OBJECT": "Objekt",
+      "TEXT": "Text",
+      "TIME": "Zeit"
+    },
+    "exportFormat": {
+      "CSV": "CSV",
+      "JSON": "JSON",
+      "EXCEL": "Excel",
+      "PNG": "PNG"
+    }
+  },
+  "pivot": {
+    "loadingData": "Daten werden geladen...",
+    "defineValueGrouping": "Wertgruppierung definieren...",
+    "timeUnitGrouping": "Gruppierung nach Zeiteinheit",
+    "heatmapColors": "Heatmap-Farben",
+    "showOverallTotals": "Gesamtsummen anzeigen",
+    "saveAsExcel": "Als Excel speichern",
+    "manageViews": "Ansichten verwalten",
+    "rows": "Zeilen",
+    "columns": "Spalten",
+    "negativeValues": "Negative Werte",
+    "positiveValues": "Positive Werte",
+    "timeUnit": {
+      "millisecond": "Millisekunde",
+      "second": "Sekunde",
+      "minute": "Minute",
+      "hour": "Stunde",
+      "day": "Tag",
+      "month": "Monat",
+      "year": "Jahr"
+    },
+    "sideBar": {
+      "nonGroupedColumns": "Nicht gruppierte Spalten",
+      "addGroupingDefinition": "Gruppierung hinzufügen",
+      "columnGrouping": "Gruppierung {{column}}",
+      "max": "max. {{value}}",
+      "min": "min. {{value}}",
+      "addValueRange": "Wertebereich hinzufügen",
+      "upTo": "Bis:",
+      "rangeMaxTooltip": "Obergrenze des Bereichs, ohne den oberen Grenzwert"
+    },
+    "locale": {
+      "renderError": "Beim Darstellen der Pivot-Tabelle ist ein Fehler aufgetreten.",
+      "computeError": "Beim Berechnen der Pivot-Tabelle ist ein Fehler aufgetreten.",
+      "uiRenderError": "Beim Darstellen der Pivot-Tabellen-Oberfläche ist ein Fehler aufgetreten.",
+      "selectAll": "Alle auswählen",
+      "selectNone": "Keine auswählen",
+      "tooMany": "(zu viele zum Auflisten)",
+      "filterResults": "Werte filtern",
+      "apply": "Übernehmen",
+      "cancel": "Abbrechen",
+      "totals": "Summen",
+      "vs": "gegen",
+      "by": "nach"
+    },
+    "renderer": {
+      "table": "Tabelle",
+      "tableBarchart": "Tabelle mit Balken",
+      "heatmap": "Heatmap",
+      "rowHeatmap": "Heatmap pro Zeile",
+      "colHeatmap": "Heatmap pro Spalte"
+    },
+    "aggregator": {
+      "count": "Anzahl",
+      "countUnique": "Anzahl eindeutiger Werte",
+      "listUnique": "Eindeutige Werte auflisten",
+      "sum": "Summe",
+      "integerSum": "Ganzzahlige Summe",
+      "average": "Durchschnitt",
+      "median": "Median",
+      "sampleVariance": "Stichprobenvarianz",
+      "sampleStdDev": "Stichproben-Standardabweichung",
+      "minimum": "Minimum",
+      "maximum": "Maximum",
+      "first": "Erster Wert",
+      "last": "Letzter Wert",
+      "sumOverSum": "Summe über Summe",
+      "upperBound80": "80% obere Grenze",
+      "lowerBound80": "80% untere Grenze",
+      "sumFractionTotal": "Summe als Anteil am Total",
+      "sumFractionRows": "Summe als Anteil der Zeile",
+      "sumFractionColumns": "Summe als Anteil der Spalte",
+      "countFractionTotal": "Anzahl als Anteil am Total",
+      "countFractionRows": "Anzahl als Anteil der Zeile",
+      "countFractionColumns": "Anzahl als Anteil der Spalte"
+    }
+  },
+  "graph": {
+    "maxNodesExceeded": "Graph: Maximale Anzahl von {{max}} Knoten überschritten.\n\nBitte wählen Sie stattdessen ein Diagramm oder verfeinern Sie die Datenfilterung.",
+    "tooltip": {
+      "rootNode": "Wurzelknoten",
+      "oneEntry": "({{count}} Eintrag)",
+      "entries": "({{count}} Einträge)",
+      "doubleClick": "Doppelklick zeigt die Daten..."
+    },
+    "sideBar": {
+      "dataHierarchy": "Datenhierarchie",
+      "selectedColumns": "Ausgewählte Spalten",
+      "dragDropColumnsHelp": "Verfügbare Spalten per Drag & Drop auswählen",
+      "availableColumns": "Verfügbare Spalten",
+      "colorScheme": "Farbschema",
+      "other": "Weiteres",
+      "linkDistance": "Kantenlänge",
+      "linkStrength": "Kantenstärke",
+      "friction": "Reibung",
+      "charge": "Ladung",
+      "gravity": "Gravitation",
+      "theta": "Theta",
+      "alpha": "Alpha"
+    }
+  },
+  "summary": {
+    "overall": "Gesamt",
+    "showData": "Daten anzeigen...",
+    "aggregation": {
+      "Count": "Anzahl",
+      "Average": "Durchschnitt",
+      "Median": "Median",
+      "Max": "Max",
+      "Min": "Min",
+      "Sum": "Summe"
+    },
+    "sideBar": {
+      "data": "Daten",
+      "defineValueGrouping": "Wertgruppierung definieren",
+      "countDistinctValues": "Eindeutige Werte zählen",
+      "aggregateValues": "Werte aggregieren",
+      "columnGrouping": "Gruppierung {{column}}",
+      "max": "max. {{value}}",
+      "min": "min. {{value}}",
+      "addValueRange": "Wertebereich hinzufügen",
+      "upTo": "Bis:",
+      "rangeMaxTooltip": "Obergrenze des Bereichs, ohne den oberen Grenzwert",
+      "hierarchy": "Hierarchie",
+      "selectedColumns": "Ausgewählte Spalten",
+      "dragDropColumnsHelp": "Verfügbare Spalten per Drag & Drop auswählen",
+      "availableColumns": "Verfügbare Spalten",
+      "aggregation": "Aggregation",
+      "selectedAggregations": "Ausgewählte Aggregationen",
+      "dragDropAggregationsHelp": "Verfügbare Aggregationen per Drag & Drop auswählen",
+      "availableAggregations": "Verfügbare Aggregationen"
+    }
+  }
+}

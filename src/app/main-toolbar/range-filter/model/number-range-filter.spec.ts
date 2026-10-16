@@ -253,7 +253,7 @@ describe('NumberRangeFilter', () => {
       const formatted = filter.formatStep(num);
 
       // then
-      expect(formatted).toBe(num.toLocaleString());
+      expect(formatted).toBe(num.toLocaleString('en-US'));
    });
 
    it('#reset should reset selected start and end value', () => {

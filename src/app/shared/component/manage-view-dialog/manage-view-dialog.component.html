@@ -1,12 +1,12 @@
 <mat-card appearance="outlined">
 
   <mat-card-header>
-    <mat-card-title>Manage Views</mat-card-title>
+    <mat-card-title>{{ 'dialog.manageViews' | translate }}</mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
-    <h4>Manage saved views</h4>
-    <p>Delete or rename views that have previously been saved.</p>
+    <h4>{{ 'dialog.manageSavedViews' | translate }}</h4>
+    <p>{{ 'dialog.manageSavedViewsHint' | translate }}</p>
     <div id="div_config_records">
       @for (item of items; track item; let i = $index) {
         @if (!item.deleted) {
@@ -16,16 +16,16 @@
             </button>
             <mat-icon>monitor</mat-icon>&nbsp;
             <input [(ngModel)]="item.view.name" (ngModelChange)="onChange()" required [maxlength]="viewNameMaxLength" />
-            <var>{{ item.view.modifiedTime | date:'short' }}</var>
+            <var>{{ item.view.modifiedTime | koiaDate:'short' }}</var>
           </div>
         }
       }
     </div>
     <div id="div_buttons">
       <button id="but_cancel" mat-raised-button [color]="changed ? null : 'primary'"
-      (click)="dialogRef.close()">Cancel</button>
+      (click)="dialogRef.close()">{{ 'common.cancel' | translate }}</button>
       <button id="but_ok" mat-raised-button [color]="changed ? 'primary' : null" [disabled]="!changed"
-      (click)="butOkPressed()">OK</button>
+      (click)="butOkPressed()">{{ 'common.ok' | translate }}</button>
     </div>
   </mat-card-content>
 </mat-card>

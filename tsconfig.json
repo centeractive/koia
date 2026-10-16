@@ -4,7 +4,8 @@
     "outDir": "./dist/out-tsc",
     "types": ["vitest/globals"],
     "paths": {
-      "app/*": ["./src/app/*"]
+      "app/*": ["./src/app/*"],
+      "assets/*": ["./src/assets/*"]
     },
     "strict": false,
     "noImplicitOverride": true,
@@ -14,6 +15,7 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "moduleResolution": "bundler",
     "importHelpers": true,

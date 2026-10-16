@@ -1,6 +1,6 @@
 @if (filter) {
   <div class="div_range_filter">
-    <button class="but_range_step" color="accent" mat-icon-button matTooltip="Define slider step size" [matMenuTriggerFor]="stepmenu">
+    <button class="but_range_step" color="accent" mat-icon-button [matTooltip]="'filter.range.stepSize' | translate" [matMenuTriggerFor]="stepmenu">
       <mat-icon [matBadge]="filter.selectedStepAbbrev" matBadgePosition="below" matBadgeColor="accent">
         linear_scale
       </mat-icon>
@@ -9,18 +9,18 @@
       @for (step of filter.availableSteps; track step) {
         <button mat-menu-item [disabled]="step === filter.selectedStep"
           (click)="filter.onStepChanged(step)">
-          <span>Step by {{ filter.formatStep(step) }}</span>
+          <span>{{ 'filter.range.stepBy' | translate: { step: filter.formatStep(step) } }}</span>
         </button>
       }
     </mat-menu>
     <ngx-slider [value]="valueRange.min" [highValue]="valueRange.max" [options]="filter.sliderOptions" [manualRefresh]="refreshSlider"
       (highValueChange)="onHighValueChanged()" (userChangeEnd)="onChanged($event)">
     </ngx-slider>
-    <button class="but_reset_range_filter" color="accent" mat-icon-button matTooltip="Reset value range filter"
+    <button class="but_reset_range_filter" color="accent" mat-icon-button [matTooltip]="'filter.range.reset' | translate"
       [disabled]="!filter.isFiltered()" (click)="reset()">
       <mat-icon>undo</mat-icon>
     </button>
-    <button class="but_remove_range_filter" mat-icon-button matTooltip="Remove value range filter"
+    <button class="but_remove_range_filter" mat-icon-button [matTooltip]="'filter.range.remove' | translate"
       (click)="onRemove.emit()">
       <mat-icon>remove_circle_outline</mat-icon>
     </button>
@@ -28,13 +28,13 @@
 }
 <div class="div_range_column_name">{{ filter.column.name }}
   <span [class]="filter.inverted ? 'span_outside_range_menu_trigger' : 'span_menu_trigger'"
-  [matMenuTriggerFor]="rangeTypeMenu">{{ filter.inverted ? 'is outside range' : 'is inside range' }}</span>
+  [matMenuTriggerFor]="rangeTypeMenu">{{ (filter.inverted ? 'filter.range.outside' : 'filter.range.inside') | translate }}</span>
   <mat-menu #rangeTypeMenu="matMenu">
     <button mat-menu-item [disabled]="!filter.inverted" (click)="onInvertedChanged(false)">
-      <span>is inside range</span>
+      <span>{{ 'filter.range.inside' | translate }}</span>
     </button>
     <button mat-menu-item [disabled]="filter.inverted" (click)="onInvertedChanged(true)">
-      <span>is outside range</span>
+      <span>{{ 'filter.range.outside' | translate }}</span>
     </button>
   </mat-menu>
 </div>

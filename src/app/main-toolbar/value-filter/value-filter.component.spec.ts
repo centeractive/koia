@@ -305,7 +305,7 @@ describe('ValueFilterComponent', () => {
     // then
     expect(component.filter.value).toBe('x');
     expect(component.valueControl.hasError('error')).toBe(true);
-    expect(component.valueControl.getError('error')).toBe('Invalid number');
+    expect(component.valueControl.getError('error')).toBe('Invalid Number');
   });
 
   it('pressing digit key in number column filter field should not emit change event', fakeAsync(() => {

@@ -1,4 +1,6 @@
+import { TestBed } from '@angular/core/testing';
 import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { LanguageService } from 'app/shared/services/language';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -323,7 +325,57 @@ describe('PivotOptionsProvider', () => {
       expect(options['cols']).toBe(cols);
       expect(options['rows']).toEqual(['Path', 'Amount', 'Date/Time (per minute)']);
    });
-})
+
+   it('#enrichPivotOptions should provide translated locale strings to pivot table and renderers', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      await TestBed.inject(LanguageService).use('de');
+
+      // when
+      const pivotOptions = optionsProvider.enrichPivotOptions(createOptions(), context, () => null);
+
+      // then
+      expect(pivotOptions['localeStrings']['totals']).toBe('Summen');
+      expect(pivotOptions['localeStrings']['selectAll']).toBe('Alle auswählen');
+      expect(pivotOptions['rendererOptions']['localeStrings']).toBe(pivotOptions['localeStrings']);
+      expect(pivotOptions['rendererOptions']['table']['clickCallback']).toBeDefined();
+      expect(pivotOptions['aggregatorName']).toBe('Count');
+      document.documentElement.lang = 'en';
+   });
+
+   it('#clonedPurgedPivotOptions should not contain locale strings', () => {
+
+      // given
+      const pivotOptions = optionsProvider.enrichPivotOptions(createOptions(), context, () => null);
+
+      // when
+      const purged = optionsProvider.clonedPurgedPivotOptions(pivotOptions);
+
+      // then
+      expect(purged['localeStrings']).toBeUndefined();
+      expect(purged['rendererOptions']).toBeUndefined();
+      expect(JSON.stringify(purged)).not.toContain('Totals');
+   });
+
+   it('#localizeSelections should translate displayed names of renderers and aggregators but not their values', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      await TestBed.inject(LanguageService).use('ja');
+      const element = document.createElement('div');
+      element.innerHTML = '<select class="pvtRenderer"><option value="Heatmap">Heatmap</option><option value="Custom">Custom</option></select>'
+         + '<select class="pvtAggregator"><option value="Sum">Sum</option></select>';
+
+      // when
+      optionsProvider.localizeSelections(element);
+
+      // then
+      const options = Array.from(element.querySelectorAll('option')).map(o => [o.value, o.textContent]);
+      expect(options).toEqual([['Heatmap', 'ヒートマップ'], ['Custom', 'Custom'], ['Sum', '合計']]);
+      document.documentElement.lang = 'en';
+   });
+});
 
 function createOptions(): object {
    return {

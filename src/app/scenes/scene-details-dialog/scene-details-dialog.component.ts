@@ -1,6 +1,6 @@
 import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Scene } from 'app/shared/model';
+import { EnumLabels, Scene } from 'app/shared/model';
 import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 
 @Component({
@@ -8,7 +8,7 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
     template: `<mat-card appearance="outlined">
                   <mat-card-content>
                     <h2>{{ scene.name }}</h2>
-                    <h3>Source Context</h3>
+                    <h3>{{ 'scenes.details.sourceContext' | translate }}</h3>
                     <table>
                       @for (contextInfo of scene.context; track contextInfo) {
                         <tr>
@@ -17,19 +17,19 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
                         </tr>
                       }
                     </table>
-                    <h3>Columns</h3>
+                    <h3>{{ 'scenes.details.columns' | translate }}</h3>
                     <table>
                       <tr>
-                        <th class="column-header">Name</th>
-                        <th class="column-header">Type</th>
-                        <th class="column-header">Format</th>
-                        <th class="column-header">Group By</th>
-                        <th class="column-header">Width ({{ colWidthMeasurement }})</th>
+                        <th class="column-header">{{ 'scenes.details.name' | translate }}</th>
+                        <th class="column-header">{{ 'scenes.details.type' | translate }}</th>
+                        <th class="column-header">{{ 'scenes.details.format' | translate }}</th>
+                        <th class="column-header">{{ 'scenes.details.groupBy' | translate }}</th>
+                        <th class="column-header">{{ 'scenes.details.width' | translate: { unit: ('scenes.details.unit.' + colWidthMeasurement | translate) } }}</th>
                       </tr>
                       @for (column of scene.columns; track column) {
                         <tr>
                           <th class="row-header">{{ column.name }}</th>
-                          <td>{{ column.dataType }}</td>
+                          <td>{{ dataTypeLabel(column.dataType) }}</td>
                           <td>{{ column.format }}</td>
                           <td>{{ column.groupingTimeUnit }}</td>
                           <td style="text-align: right">{{ column.width }}</td>
@@ -65,6 +65,8 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
     standalone: false
 })
 export class SceneDetailsDialogComponent {
+
+  readonly dataTypeLabel = EnumLabels.dataType;
 
   colWidthMeasurement: string;
 

@@ -1,15 +1,15 @@
-import { Component, OnInit, ChangeDetectionStrategy, Inject, LOCALE_ID } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConnectionInfo, Route } from 'app/shared/model';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
-import { sampleLanguageOf } from 'app/shared/samples/sample-language';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
+import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
 import { firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
@@ -39,7 +39,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private dialogService: DialogService, private sampleSceneService: SampleSceneService,
-    notificationService: NotificationService, @Inject(LOCALE_ID) private localeId: string) {
+    notificationService: NotificationService, private languageService: LanguageService) {
     super(bottomSheet, notificationService);
   }
 
@@ -64,7 +64,8 @@ export class FrontComponent extends AbstractComponent implements OnInit {
       .then(() => this.dbService.initBackend(true)
         .then(() => this.dbService.activateScene(queryParamExtractor.getSceneID())
           .then(() => this.router.navigateByUrl(Route.RAWDATA)))
-        .catch(err => this.notifyError('cannot show raw data of scene with _id ' + queryParamExtractor.getSceneID() + ':\n\n' + err)));
+        .catch(err => this.notifyError(this.languageService.instant('front.externalInvocationFailed', { id: queryParamExtractor.getSceneID() })
+          + ':\n\n' + err)));
   }
 
   onDataStorageChanged(dataStorage: string): void {
@@ -77,11 +78,19 @@ export class FrontComponent extends AbstractComponent implements OnInit {
         this.dbService.useIndexedDb()
           .then(() => {
             this.init().catch(err => this.notifyError(err));
-            this.notifySuccess('Successfully switched to ' + this.indexedDB);
+            this.notifySuccess(this.languageService.instant('front.storage.switchedTo', { storage: this.indexedDB }));
             this.ready = true;
           });
       }
     }
+  }
+
+  /**
+   * @returns the URL of the introduction page in the current language
+   */
+  introUrl(): string {
+    const language = this.languageService.current();
+    return language === 'en' ? '/intro/index.html' : '/intro/index.' + language + '.html';
   }
 
   /**
@@ -96,7 +105,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    */
   openSample(): void {
     this.loadingSample = true;
-    this.sampleSceneService.open(fruitSalesSampleOf(sampleLanguageOf(this.localeId)))
+    this.sampleSceneService.open(fruitSalesSampleOf(this.languageService.current()))
       .then(() => {
         (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
         return this.router.navigateByUrl(Route.RAWDATA);

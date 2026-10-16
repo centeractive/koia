@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language/language.service';
 import { SeriesNameConverter } from 'app/shared/services/chart';
 import { ChartUtils } from 'app/shared/utils';
 import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
@@ -333,20 +334,21 @@ export class ChartContext extends ElementContext {
       if (this.title) {
          return this.title;
       }
-      let title: string;
       if (this.dataColumns.length === 0) {
-         return 'Data: to be defined';
+         return LanguageService.instant('element.title.dataUndefined');
       }
-      title = this.isAggregationCountSelected() ? 'Count distinct values of ' : '';
-      title += this.dataColumns.map(c => c.name).join(', ');
+      const dataColumns = this.dataColumns.map(c => c.name).join(', ');
+      let title = this.isAggregationCountSelected() ?
+         LanguageService.instant('chart.title.countDistinctValuesOf', { columns: dataColumns }) : dataColumns;
       if (this.groupByColumns.length > 0 && (!this.isCategoryChart() || !this.isAggregationCountSelected())) {
-         title += ' by ' + this.groupByColumns.map(c => c.name).join(', ');
+         title = LanguageService.instant('chart.title.groupedBy', { title, columns: this.groupByColumns.map(c => c.name).join(', ') });
       }
       if (this.dataSampledDown) {
-         title += ' (Sample)';
+         title = LanguageService.instant('chart.title.sample', { title });
       }
       if (!this.isCategoryChart() && this.splitColumns.length > 0) {
-         title += '\nsplit by ' + this.splitColumns.map(c => c.name).join(SeriesNameConverter.SEPARATOR);
+         const columns = this.splitColumns.map(c => c.name).join(SeriesNameConverter.SEPARATOR);
+         title = LanguageService.instant('chart.title.splitBy', { title, columns });
       }
       return title;
    }

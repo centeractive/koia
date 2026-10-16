@@ -27,6 +27,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
+import { TranslatePipe } from '@ngx-translate/core';
 import { RouteReuseStrategy } from '@angular/router';
 import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
 import 'd3';
@@ -71,6 +72,9 @@ import { ManageConfigDialogComponent } from './shared/component/manage-config-di
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
 import { StatusComponent } from './shared/component/status/status.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
+import { LocalizedDatePipe, LocalizedNumberPipe } from './shared/pipes';
+import { provideTranslation } from './shared/services/language';
+import { LanguageSelectComponent } from './shared/ui/language-select/language-select.component';
 import { ColumnResizeDirective } from './shared/directives/column-resize.directive';
 import { KoiaFormDirective } from './shared/directives/koia-form.directive';
 import { FormattedFloatDirective } from './shared/directives/formatted-float.directive';
@@ -146,7 +150,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         SceneTableComponent,
         DraggableColumnComponent,
         TrialComponent,
-        ViewTabComponent
+        ViewTabComponent,
+        LanguageSelectComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,
@@ -178,7 +183,10 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         MatDialogModule,
         MatSnackBarModule,
         ReactiveFormsModule,
-        NgxSliderModule],
+        NgxSliderModule,
+        TranslatePipe,
+        LocalizedDatePipe,
+        LocalizedNumberPipe],
     providers: [
         { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
         ReaderService,
@@ -193,7 +201,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         NotificationService,
         DialogService,
         provideHttpClient(withXhr(), withInterceptorsFromDi()),
-        provideZoneChangeDetection()
+        provideZoneChangeDetection(),
+        ...provideTranslation()
     ]
 })
 export class AppModule { }

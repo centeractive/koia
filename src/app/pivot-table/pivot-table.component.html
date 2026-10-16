@@ -8,46 +8,46 @@
     <div #header class="div_header">
       <koia-main-toolbar [route]="route" [tabId]="tab?.id" [restoredQuery]="restoredQuery" (onFilterChange)="fetchData($event)" />
       @if (loading) {
-        <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..." />
+        <mat-progress-bar mode="indeterminate" [matTooltip]="'pivot.loadingData' | translate" />
       }
       <koia-view-toolbar [moreMenu]="moreMenu" [savedViews]="configRecords" (save)="saveConfig()" (restore)="loadConfig($event)">
         @if (allowsForValueGrouping) {
           <button class="but_config" mat-icon-button
-            matTooltip="Define Value Grouping..." (click)="sidenav.open()">
+            [matTooltip]="'pivot.defineValueGrouping' | translate" (click)="sidenav.open()">
             <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
               matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
             </mat-icon>
           </button>
         }
         <button class="but_config" mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
-          matTooltip="Time Unit Grouping">
+          [matTooltip]="'pivot.timeUnitGrouping' | translate">
           <mat-icon>timer</mat-icon>
         </button>
         <button class="but_config" mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
-          matTooltip="Heatmap Colors">
+          [matTooltip]="'pivot.heatmapColors' | translate">
           <mat-icon>color_lens</mat-icon>
         </button>
       </koia-view-toolbar>
       <mat-menu #moreMenu="matMenu">
-        <button mat-menu-item [matMenuTriggerFor]="showTotalsMenu">Show Overall Totals</button>
+        <button mat-menu-item [matMenuTriggerFor]="showTotalsMenu">{{ 'pivot.showOverallTotals' | translate }}</button>
         <button mat-menu-item (click)="exportToExcel()">
           <mat-icon>insert_drive_file</mat-icon>
-          <span>Save As Excel</span>
+          <span>{{ 'pivot.saveAsExcel' | translate }}</span>
         </button>
         <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
           <mat-icon>monitor</mat-icon>
-          <span>Manage Views</span>
+          <span>{{ 'pivot.manageViews' | translate }}</span>
         </button>
       </mat-menu>
 
       <mat-menu #showTotalsMenu="matMenu">
         <button mat-menu-item (click)="onShowRowTotalsChanged()">
           <mat-icon>{{ context.showRowTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-          <span>Rows</span>
+          <span>{{ 'pivot.rows' | translate }}</span>
         </button>
         <button mat-menu-item (click)="onShowColumnTotalsChanged()">
           <mat-icon>{{ context.showColumnTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-          <span>Columns</span>
+          <span>{{ 'pivot.columns' | translate }}</span>
         </button>
       </mat-menu>
 
@@ -61,14 +61,14 @@
         <ng-template matMenuContent let-column="column">
           @for (timeUnit of timeUnits; track timeUnit) {
             <button mat-menu-item [disabled]="timeUnit === column.groupingTimeUnit"
-            (click)="onTimeUnitChanged(column, timeUnit)">{{ timeUnit }}</button>
+            (click)="onTimeUnitChanged(column, timeUnit)">{{ 'pivot.timeUnit.' + timeUnit | translate }}</button>
           }
         </ng-template>
       </mat-menu>
 
       <mat-menu #heatmapColorsMenu="matMenu">
-        <button mat-menu-item [matMenuTriggerFor]="colorsNegativeValsMenu">Negative Values</button>
-        <button mat-menu-item [matMenuTriggerFor]="colorsPositiveValsMenu">Positive Values</button>
+        <button mat-menu-item [matMenuTriggerFor]="colorsNegativeValsMenu">{{ 'pivot.negativeValues' | translate }}</button>
+        <button mat-menu-item [matMenuTriggerFor]="colorsPositiveValsMenu">{{ 'pivot.positiveValues' | translate }}</button>
       </mat-menu>
       <mat-menu #colorsNegativeValsMenu="matMenu">
         @for (color of contextFactory.colors; track color) {

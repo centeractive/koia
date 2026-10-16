@@ -1,6 +1,6 @@
 import { DataType } from '../model/data-type.enum';
 import { Column } from '../model/column.type';
-import { DatePipe } from '@angular/common';
+import { formatDate } from '@angular/common';
 import { NumberUtils } from '../utils/number-utils';
 import { NumberFormatter } from './number-formatter';
 
@@ -8,14 +8,19 @@ export class ValueFormatter {
 
    static readonly DEFAULT_DATETIME_FORMAT = 'd MMM yyyy HH:mm:ss';
 
-   private datePipe = new DatePipe('en-US');
    private numberFormatter = new NumberFormatter();
+
+   /**
+    * @param localeId provides the locale used to format times, English by default (e.g. for exports), the locale of the
+    * user interface language for display
+    */
+   constructor(private localeId: () => string = () => 'en-US') { }
 
    formatValue(column: Column, value: string | number | boolean): any {
       if (value == undefined) {
          return '';
       } else if (column.dataType === DataType.TIME && NumberUtils.isNumber(value, undefined)) {
-         return this.datePipe.transform(value as string | number, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
+         return formatDate(value as string | number, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT, this.localeId());
       } else if (column.dataType === DataType.NUMBER) {
          return this.numberFormatter.format(value as number);
       } else if (column.dataType === DataType.BOOLEAN && typeof value === 'boolean') {

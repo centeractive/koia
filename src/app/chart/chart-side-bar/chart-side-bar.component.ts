@@ -3,7 +3,8 @@ import { SideBarController } from 'app/shared/controller';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { ChartUtils, DataTypeUtils } from 'app/shared/utils';
-import { Aggregation, Column, DataType } from '../../shared/model';
+import { LanguageService } from 'app/shared/services/language';
+import { Aggregation, Column, DataType, EnumLabels, TimeUnit } from '../../shared/model';
 
 @Component({
   selector: 'koia-chart-side-bar',
@@ -25,7 +26,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   readonly chartTypes = ChartType.ALL;
   readonly legendPositions = ['top', 'right', 'bottom', 'left'];
 
-  constructor(private chartMarginService: ChartMarginService) {
+  constructor(private chartMarginService: ChartMarginService, private languageService: LanguageService) {
     super();
   }
 
@@ -123,17 +124,26 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   dataPanelName(): string {
     if (this.context.isCircularChart()) {
-      return 'Values';
+      return this.languageService.instant('chart.values');
     }
-    return 'Values (' + (this.context.isHorizontalChart() ? 'X-Axis' : 'Y-Axis') + ')';
+    const axis = this.languageService.instant(this.context.isHorizontalChart() ? 'chart.xAxis' : 'chart.yAxis');
+    return this.languageService.instant('chart.valuesOnAxis', { axis });
   }
 
   groupingPanelName(): string {
     if (this.context.isCircularChart()) {
-      return 'Name';
+      return this.languageService.instant('chart.name');
     } else {
-      return this.context.isHorizontalChart() ? 'Y-Axis' : 'X-Axis';
+      return this.languageService.instant(this.context.isHorizontalChart() ? 'chart.yAxis' : 'chart.xAxis');
     }
+  }
+
+  chartTypeLabel(chartType: ChartType): string {
+    return EnumLabels.chartType(chartType.type);
+  }
+
+  timeUnitKey(timeUnit: TimeUnit): string {
+    return timeUnit ? EnumLabels.timeUnitKey(timeUnit) : '';
   }
 
   isCircularChart(): boolean {

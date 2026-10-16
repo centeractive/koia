@@ -1,15 +1,15 @@
-<button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+<button id="butHome" mat-icon-button [matTooltip]="'common.frontPage' | translate" [routerLink]="[urlFront]">
   <mat-icon style="color: white;">home</mat-icon>
 </button>
-<button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+<button id="butScene" mat-icon-button [matTooltip]="'common.addScene' | translate" [routerLink]="[urlScene]">
   <mat-icon style="color: white;">add_photo_alternate</mat-icon>
 </button>
 @if (activeScene) {
   <mat-card appearance="outlined" id="mat_card_active_scene" koiaForm>
     <mat-card-header>
       <div mat-card-avatar id="image-scene"></div>
-      <mat-card-title>Active Scene</mat-card-title>
-      <mat-card-subtitle>This is the scene you're currently working with</mat-card-subtitle>
+      <mat-card-title>{{ 'scenes.activeScene' | translate }}</mat-card-title>
+      <mat-card-subtitle>{{ 'scenes.activeSceneSubtitle' | translate }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <koia-scene-table [activeScene]="activeScene" (onActivate)="showRawData()" (onDelete)="delete($event)"></koia-scene-table>
@@ -20,24 +20,24 @@
 <mat-card appearance="outlined" id="mat_card_all_scenes" koiaForm>
   <mat-card-header>
     <div mat-card-avatar id="image-scenes"></div>
-    <mat-card-title>All Scenes</mat-card-title>
-    <mat-card-subtitle>Manage your existing scenes. Activate one to start creating graphics.</mat-card-subtitle>
+    <mat-card-title>{{ 'scenes.allScenes' | translate }}</mat-card-title>
+    <mat-card-subtitle>{{ 'scenes.allScenesSubtitle' | translate }}</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
     <div id="div_filter" class="field-row">
       <mat-form-field class="filter">
         <mat-icon matPrefix>search</mat-icon>
-        <input matInput type="text" placeholder="Filter scenes" [(ngModel)]="filter" (ngModelChange)="onFilterChange()">
+        <input matInput type="text" [placeholder]="'scenes.filter' | translate" [(ngModel)]="filter" (ngModelChange)="onFilterChange()">
       </mat-form-field>
       <button id="but_delete_scenes" mat-stroked-button [disabled]="filteredSceneInfos.length === 0" (click)="onDeleteScenesButtonPressed()">
         <mat-icon>delete_forever</mat-icon>
-        <span>&nbsp;{{ filter ? 'Delete filtered' : 'Delete all' }}</span>
+        <span>&nbsp;{{ (filter ? 'scenes.deleteFiltered' : 'scenes.deleteAll') | translate }}</span>
       </button>
     </div>
     <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)" (onDelete)="delete($event)">
     </koia-scene-table>
   </mat-card-content>
   <mat-card-actions>
-    <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">Cancel</button>
+    <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
   </mat-card-actions>
 </mat-card>

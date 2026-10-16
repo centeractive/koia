@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
@@ -47,7 +48,7 @@ export class ConfirmDialogComponent {
 
   constructor(public dialogRef: MatDialogRef<ConfirmDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData) {
     this.dialogRef.disableClose = true;
-    this.rememberChoiceLabel = data.buttonNames.length === 1 ? 'Don\'t show again' : 'Remember choice';
+    this.rememberChoiceLabel = LanguageService.instant(data.buttonNames.length === 1 ? 'dialog.dontShowAgain' : 'dialog.rememberChoice');
   }
 
   onButtonPressed(buttonName: string) {
@@ -59,7 +60,12 @@ export class ConfirmDialogComponent {
 
 export class ConfirmDialogData {
 
-  static readonly YES_NO = ['Yes', 'No'];
+  /**
+   * translated names of the buttons 'Yes' and 'No', callers distinguish them by their index
+   */
+  static get YES_NO(): string[] {
+    return [LanguageService.instant('common.yes'), LanguageService.instant('common.no')];
+  }
 
   closedWithButtonIndex: number;
   closedWithButtonName: string;

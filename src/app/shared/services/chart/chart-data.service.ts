@@ -7,6 +7,7 @@ import { ValueRange } from 'app/shared/value-range/model';
 import { ChartData, ChartDataset } from 'chart.js';
 import { largestTriangleThreeBucket } from 'd3fc-sample';
 import { CouchDBConstants } from '../backend/couchdb';
+import { LanguageService } from '../language/language.service';
 import { ChartDataHelper } from './chart-data-helper';
 import { ErrorResultFactory } from './error-result-factory';
 import { SeriesNameConverter } from './series-name-converter';
@@ -84,7 +85,7 @@ export class ChartDataService {
 
   private categoryData(chartType: ChartType, context: ChartContext): ChartData {
     if (context.groupByColumns.length === 0) {
-      throw this.errorResultFactory.toError('Name column is not defined');
+      throw this.errorResultFactory.toError(LanguageService.instant('chart.error.nameColumnUndefined'));
     }
     const labeledData = ChartDataHelper.categoryData(context);
     if (labeledData.labels.length > chartType.maxValues) {
@@ -268,8 +269,7 @@ export class ChartDataService {
     const bucketSize = Math.ceil(values.length / ChartDataService.MAX_DATA_POINTS);
     sampler.bucketSize(bucketSize);
     context.dataSampledDown = true;
-    context.warning = 'Data has been down-sampled and the chart contains part of available values only.' +
-      ' Apply filters to limit the data and see all values of the chosen context.'
+    context.warning = LanguageService.instant('chart.warning.sampledDown');
     return sampler(values);
   }
 

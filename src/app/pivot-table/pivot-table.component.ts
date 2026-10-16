@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, DoCheck, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { ConfigRecord, TabContent, TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { createConfigRecord } from 'app/shared/services/view-persistence/config-record-factory';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
+import { LanguageService } from 'app/shared/services/language';
 import { TabContentProvider, ViewTabsService } from 'app/shared/services/view-tabs';
 import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
@@ -36,7 +37,7 @@ declare let jQuery: any;
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class PivotTableComponent extends ConfigController implements AfterViewInit, OnDestroy, TabContentProvider {
+export class PivotTableComponent extends ConfigController implements AfterViewInit, DoCheck, OnDestroy, TabContentProvider {
 
   @Input() tab: TabDef;
 
@@ -61,6 +62,9 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   private query: Query;
   private entriesSubscription: Subscription;
+  private languageSubscription: Subscription;
+  private languageChanged = false;
+  private languageRefresh = false;
   private valueGroupingGenerator = new ValueGroupingGenerator();
   private pivotOptionsProvider: PivotOptionsProvider;
   private stringifiedValueGroupings: string;
@@ -71,7 +75,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     public override dbService: DBService, public override dialogService: DialogService, public override viewPersistenceService: ViewPersistenceService,
     private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
     notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService,
-    private viewTabsService: ViewTabsService) {
+    private viewTabsService: ViewTabsService, private languageService: LanguageService) {
     super(Route.PIVOT, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
   }
 
@@ -90,6 +94,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     if (this.tab) {
       this.viewTabsService.register(this.tab.id, this);
     }
+    this.languageSubscription = this.languageService.changed$.subscribe(() => this.languageChanged = true);
   }
 
   ngAfterViewInit(): void {
@@ -98,8 +103,25 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     }
   }
 
+  /**
+   * re-renders the pivot table in the new language once it is shown and not busy, the pivot table of a cached route is
+   * re-rendered when it is attached again
+   */
+  ngDoCheck(): void {
+    if (!this.languageChanged || !this.divPivot?.nativeElement.isConnected || this.loading || this.computing || this.pendingRecord) {
+      return;
+    }
+    this.languageChanged = false;
+    if (this.getPivotOptions()) {
+      this.languageRefresh = true;
+      this.refreshOptions();
+      this.renderPivotTableAsync();
+    }
+  }
+
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.languageSubscription?.unsubscribe();
     if (this.tab) {
       this.viewTabsService.unregister(this.tab.id, this);
     }
@@ -279,6 +301,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
       targetElement.pivotUI(this.dataFrame.toArray(),
         this.pivotOptionsProvider.enrichPivotOptions(undefined, this.context, () => this.onPivotTableRefreshEnd()));
     }
+    this.pivotOptionsProvider.localizeSelections(this.divPivot.nativeElement);
   }
 
   // eslint-disable-next-line
@@ -286,10 +309,17 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     return jQuery(this.cmpElementRef.nativeElement).find('#pivot');
   }
 
+  /**
+   * requests persisting unless the pivot table was only re-rendered in another language, which does not change its configuration
+   */
   private onPivotTableRefreshEnd(): void {
     this.computing = false;
     this.observePivotTableRefreshStart();
-    this.requestPersist();
+    if (this.languageRefresh) {
+      this.languageRefresh = false;
+    } else {
+      this.requestPersist();
+    }
   }
 
   private observePivotTableRefreshStart(): void {

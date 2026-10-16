@@ -1,3 +1,4 @@
+import { LanguageService } from '../services/language';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AfterViewInit, Directive, ElementRef, Input, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -261,10 +262,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    saveView(): void {
       if (this.elementContexts.length === 0) {
-         this.notifyWarning('View contains no elements');
+         this.notifyWarning(LanguageService.instant('view.noElements'));
          return;
       }
-      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
+      const dialogData = new InputDialogData(LanguageService.instant('view.saveTitle'), LanguageService.instant('view.name'),
+         this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
       const dialogRef = this.dialogService.showInputDialog(dialogData);
       lastValueFrom(dialogRef.afterClosed())
          .then(() => {

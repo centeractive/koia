@@ -1,6 +1,7 @@
 import { EventEmitter } from '@angular/core';
 import { Column } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
+import { LanguageService } from 'app/shared/services/language';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Observable } from 'rxjs';
 import { NumberRangeSliderCustomizer } from './slider/number-range-slider-customizer';
@@ -76,7 +77,7 @@ export class NumberRangeFilter {
 
    formatStep(step: any): any {
       const num = NumberUtils.asNumber(step, undefined);
-      return num == undefined || num < 1_000 ? step : num.toLocaleString();
+      return num == undefined || num < 1_000 ? step : num.toLocaleString(LanguageService.localeId());
    }
 
    onStepChanged(step: any): void {

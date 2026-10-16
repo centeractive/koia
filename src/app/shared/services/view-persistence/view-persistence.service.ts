@@ -1,8 +1,9 @@
+import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { Query, Route, Scene, Status, StatusType } from '../../model';
 import { View } from '../../model/view-config/view.type';
-import { ArrayUtils, StringUtils } from '../../utils';
+import { ArrayUtils } from '../../utils';
 import { DBService } from '../backend';
 import { createConfigRecord } from './config-record-factory';
 
@@ -109,10 +110,10 @@ export class ViewPersistenceService {
       this.dbService.persistScene(scene, false);
       const message: string[] = [];
       if (deletedCount) {
-         message.push('Deleted ' + deletedCount + StringUtils.pluralize(' view', deletedCount));
+         message.push(LanguageService.instant(deletedCount === 1 ? 'view.deletedOne' : 'view.deleted', { count: deletedCount }));
       }
       if (renamedCount) {
-         message.push('Renamed ' + renamedCount + StringUtils.pluralize(' view', renamedCount));
+         message.push(LanguageService.instant(renamedCount === 1 ? 'view.renamedOne' : 'view.renamed', { count: renamedCount }));
       }
       return { type: StatusType.SUCCESS, msg: message.join('\n') };
    }
@@ -120,10 +121,10 @@ export class ViewPersistenceService {
    private updateScene(scene: Scene, viewName: string): Promise<Status> {
       return new Promise<Status>(resolve => {
          this.dbService.updateScene(scene)
-            .then(() => resolve({ type: StatusType.SUCCESS, msg: 'View "' + viewName + '" has been saved' }))
+            .then(() => resolve({ type: StatusType.SUCCESS, msg: LanguageService.instant('view.saved', { name: viewName }) }))
             .catch(e => {
                const message = typeof e === 'string' ? e : e.message;
-               resolve({ type: StatusType.ERROR, msg: 'View "' + viewName + '" cannot be saved: ' + message });
+               resolve({ type: StatusType.ERROR, msg: LanguageService.instant('view.notSaved', { name: viewName, error: message }) });
             });
       });
    }

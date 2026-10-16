@@ -1,4 +1,6 @@
+import { EnumLabels } from 'app/shared/model/enum-labels';
 import { ChartType } from 'app/shared/model/chart';
+import { LanguageService } from 'app/shared/services/language/language.service';
 
 export class ErrorResultFactory {
 
@@ -10,19 +12,20 @@ export class ErrorResultFactory {
    }
 
    groupByColumnNotDefined(chartType: ChartType): Error {
-      const axisType = ChartType.isHorizontalChart(chartType) ? 'Y' : 'X';
+      const axis = LanguageService.instant(ChartType.isHorizontalChart(chartType) ? 'chart.yAxis' : 'chart.xAxis');
       return {
          name: undefined,
-         message: axisType + '-Axis is not defined'
+         message: LanguageService.instant('chart.error.axisUndefined', { axis })
       };
    }
 
    exceedingValues(chartType: ChartType): Error {
       return {
          name: undefined,
-         message: chartType.name + ' chart: Maximum number of ' + chartType.maxValues.toLocaleString()
-            + ' values exceeded.' +
-            '\n\nPlease re-configure the chart or apply/refine data filtering.'
+         message: LanguageService.instant('chart.error.maxValuesExceeded', {
+            chartType: EnumLabels.chartType(chartType.type),
+            max: chartType.maxValues.toLocaleString(LanguageService.localeId())
+         })
       };
    }
 }

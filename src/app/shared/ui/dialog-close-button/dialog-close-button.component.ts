@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'koia-dialog-close-button',
   template: `
-    <button id="but_close_dialog" mat-dialog-close matTooltip="Close" aria-label="Close">
+    <button id="but_close_dialog" mat-dialog-close [matTooltip]="'common.close' | translate" [attr.aria-label]="'common.close' | translate">
       <mat-icon>close</mat-icon>
     </button>`,
   styles: [`

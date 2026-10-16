@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { DBService } from 'app/shared/services/backend';
 import { ProgressMonitor } from './progress-monitor.type';
 import { Document } from 'app/shared/model';
@@ -59,7 +60,7 @@ export class EntryPersister {
 
   private onError(error: any): void {
     this.monitor.onError(error);
-    this.monitor.onComplete('data persisting aborted due to error: ' + error);
+    this.monitor.onComplete(LanguageService.instant('scene.persistAborted', { error }));
     this.postingComplete(false);
   }
 
@@ -73,7 +74,7 @@ export class EntryPersister {
       this.submit(this.data);
       this.data = [];
     } else if (this.submitted === this.successful) {
-      this.monitor.onComplete(this.successful.toLocaleString() + ' items have been persisted in the database');
+      this.monitor.onComplete(LanguageService.instant('scene.itemsPersisted', { count: this.format(this.successful) }));
     }
   }
 
@@ -86,20 +87,23 @@ export class EntryPersister {
     this.successful += count;
     this.notifyProgress();
     if (this.postLocked && this.successful === this.submitted) {
-      this.monitor.onComplete(this.successful.toLocaleString() + ' items have been persisted in the database');
+      this.monitor.onComplete(LanguageService.instant('scene.itemsPersisted', { count: this.format(this.successful) }));
     }
+  }
+
+  private format(count: number): string {
+    return count.toLocaleString(LanguageService.localeId());
   }
 
   private notifyProgress(): void {
     const percent = Math.floor(100 / (this.data.length + this.submitted) * this.successful);
     if (this.isPostingComplete()) {
-      this.monitor.onProgress(percent, this.successful.toLocaleString() + ' of ' + this.posted.toLocaleString() +
-        ' items persisted (' + percent + '%)');
+      this.monitor.onProgress(percent, LanguageService.instant('scene.itemsPersistedProgress',
+        { count: this.format(this.successful), total: this.format(this.posted), percent }));
     } else {
-      let message = this.posted.toLocaleString() + ' items read';
-      if (this.successful !== 0) {
-        message += ' / ' + this.successful.toLocaleString() + ' persisted';
-      }
+      const message = this.successful === 0 ?
+        LanguageService.instant('scene.itemsRead', { count: this.format(this.posted) }) :
+        LanguageService.instant('scene.itemsReadPersisted', { count: this.format(this.posted), persisted: this.format(this.successful) });
       this.monitor.onProgress(percent, message);
     }
   }

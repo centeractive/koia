@@ -53,13 +53,13 @@ describe('PropertyFilterValidator', () => {
    });
 
    it('#validate should return error message when NUMBER value is invalid', () => {
-      expect(validator.validate(new PropertyFilter('Amount', Operator.EQUAL, 'x'))).toBe('Invalid number');
-      expect(validator.validate(new PropertyFilter('Amount', Operator.NOT_EQUAL, 'y'))).toBe('Invalid number');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.EQUAL, 'x'))).toBe('Invalid Number');
+      expect(validator.validate(new PropertyFilter('Amount', Operator.NOT_EQUAL, 'y'))).toBe('Invalid Number');
    });
 
    it('#validate should return error message when BOOLEAN value is invalid', () => {
-      expect(validator.validate(new PropertyFilter('Valid', Operator.EQUAL, 'abc'))).toBe('Invalid boolean');
-      expect(validator.validate(new PropertyFilter('Valid', Operator.NOT_EQUAL, '123'))).toBe('Invalid boolean');
+      expect(validator.validate(new PropertyFilter('Valid', Operator.EQUAL, 'abc'))).toBe('Invalid Boolean');
+      expect(validator.validate(new PropertyFilter('Valid', Operator.NOT_EQUAL, '123'))).toBe('Invalid Boolean');
    });
 
    it('#validate with "is any of" should return <null> when all NUMBERs are valid', () => {

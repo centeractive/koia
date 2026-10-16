@@ -9,3 +9,4 @@ export * from './data-handler-recorder';
 export * from './css-rules';
 export * from './external-links';
 export * from './dom-queries';
+export * from './translate-testing';

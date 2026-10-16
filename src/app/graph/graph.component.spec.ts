@@ -191,7 +191,7 @@ describe('GraphComponent', () => {
 
     // then
     discardPeriodicTasks();
-    const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES.toLocaleString() + ' nodes exceeded.' +
+    const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES.toLocaleString('en-US') + ' nodes exceeded.' +
       '\n\nPlease choose chart instead or apply/refine data filtering.';
     expect(component.onWarning.emit).toHaveBeenCalledWith(msg);
   }));

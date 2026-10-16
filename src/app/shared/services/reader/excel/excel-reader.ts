@@ -1,3 +1,4 @@
+import { LanguageService } from '../../language';
 import * as XLSX from '@e965/xlsx';
 import { Attribute, DataType } from 'app/shared/model';
 import { DataHandler } from '../data-handler.type';
@@ -6,11 +7,10 @@ import { Sample } from '../sample.type';
 
 export class ExcelReader implements DataReader {
 
-   private attrSheetName = new Attribute('Sheet Name', 'Name of Excel sheet that contains the data', DataType.TEXT, '');
+   private attrSheetName = new Attribute('scene.reader.excelSheetName', 'scene.reader.excelSheetNameDescription', DataType.TEXT, '');
 
    getDescription(): string {
-      return 'Microsoft Excel is composed of one or several spreadsheets that contain data in tabular form.\n' +
-         'It is expected that column names appear in the first row of the selected spreadsheet.';
+      return LanguageService.instant('scene.reader.excelDescription');
    }
 
    getSourceName(): string {
@@ -57,7 +57,7 @@ export class ExcelReader implements DataReader {
                const sheetName = this.identifySheetName(workbook);
                const sheet = workbook.Sheets[sheetName];
                if (!sheet) {
-                  reject('Worksheet "' + sheetName + '" does not exist or cannot be parsed');
+                  reject(LanguageService.instant('scene.reader.worksheetMissing', { sheet: sheetName }));
                }
                resolve(XLSX.utils.sheet_to_json(sheet));
             });

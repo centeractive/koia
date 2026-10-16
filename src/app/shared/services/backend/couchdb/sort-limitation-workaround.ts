@@ -1,3 +1,4 @@
+import { LanguageService } from '../../language';
 import { MangoQueryBuilder } from '../mango';
 import { Query, Page } from 'app/shared/model';
 import { DBService } from '../db.service';
@@ -16,8 +17,24 @@ import { CommonUtils } from 'app/shared/utils';
  */
 export class SortLimitationWorkaround {
 
-   static readonly couchDbSortLimitationDialogData = new ConfirmDialogData('CouchDB Limitation',
-      '<p>CouchDB query results don\'t include rows where the value of the sort field is missing.</p>', ['Got it'], true);
+   private static dialogData: ConfirmDialogData;
+   private static dialogDataLocale: string;
+
+   /**
+    * @returns the data of the info dialog in the current language, the same instance as long as the language does not change
+    * (it remembers the choice of the user)
+    */
+   static get couchDbSortLimitationDialogData(): ConfirmDialogData {
+      const locale = LanguageService.localeId();
+      if (!this.dialogData || this.dialogDataLocale !== locale) {
+         const data = new ConfirmDialogData(LanguageService.instant('dialog.couchDbLimitation'),
+            '<p>' + LanguageService.instant('dialog.couchDbSortLimitation') + '</p>', [LanguageService.instant('dialog.gotIt')], true);
+         data.rememberChoice = !!this.dialogData?.rememberChoice;
+         this.dialogData = data;
+         this.dialogDataLocale = locale;
+      }
+      return this.dialogData;
+   }
 
    static isCouchDbWithSort(dbService: DBService, query: Query): boolean {
       return dbService.isCouchDbInUse() && query.hasSort();

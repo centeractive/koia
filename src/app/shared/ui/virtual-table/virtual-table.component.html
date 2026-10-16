@@ -28,5 +28,5 @@
       }
     </div>
   </div>
-  <div class="row-count" [style.font]="font">{{ source.rowCount() | number }} rows</div>
+  <div class="row-count" [style.font]="font">{{ 'ui.rows' | translate: { count: (source.rowCount() | koiaNumber) ?? '' } }}</div>
 </div>

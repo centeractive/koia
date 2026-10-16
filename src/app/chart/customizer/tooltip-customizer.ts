@@ -1,4 +1,4 @@
-import { DataType } from 'app/shared/model';
+import { Aggregation, DataType, EnumLabels } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartOptions } from 'chart.js';
 import { FormatUtils } from '../chartjs/formatter/format-utils';
@@ -25,7 +25,7 @@ export class TooltipCustomizer extends TimeFormatter {
                 options.plugins.tooltip.callbacks.title = ctx => '' + ctx[0].chart.data.labels[ctx[0].dataIndex];
             }
             if (context.isAggregationCountSelected()) {
-                options.plugins.tooltip.callbacks.label = ctx => 'Count: ' + ctx.formattedValue;
+                options.plugins.tooltip.callbacks.label = ctx => EnumLabels.aggregation(Aggregation.COUNT) + ': ' + ctx.formattedValue;
             } else if (context.isCircularChart() && chartType !== ChartType.RADAR) {
                 options.plugins.tooltip.callbacks.label = ctx => context.dataColumns[ctx.datasetIndex].name + ': ' + ctx.formattedValue +
                     ' (' + FormatUtils.percentage(ctx.chart.data.datasets[ctx.datasetIndex].data, <number>ctx.raw) + ')';

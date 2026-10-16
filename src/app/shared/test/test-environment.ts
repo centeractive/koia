@@ -1,4 +1,5 @@
 import { getTestBed } from '@angular/core/testing';
+import { LanguageService } from 'app/shared/services/language/language.service';
 
 export async function installJQueryPlugins(target: Record<string, unknown>): Promise<void> {
    const { default: jQuery } = await import('jquery');
@@ -10,4 +11,5 @@ export async function installJQueryPlugins(target: Record<string, unknown>): Pro
 export function resetTestDoubles(): void {
    getTestBed().resetTestingModule();
    vi.restoreAllMocks();
+   LanguageService.reset();
 }

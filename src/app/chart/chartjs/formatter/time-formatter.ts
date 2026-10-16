@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { DateTime } from 'luxon';
 
 export abstract class TimeFormatter {
@@ -6,6 +7,6 @@ export abstract class TimeFormatter {
         if (typeof time === 'string') {
             time = parseInt(time);
         }
-        return DateTime.fromMillis(time).toFormat(format);
+        return DateTime.fromMillis(time, { locale: LanguageService.localeId() }).toFormat(format);
     }
 }

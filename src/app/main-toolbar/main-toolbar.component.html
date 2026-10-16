@@ -3,17 +3,17 @@
   <div id="div_toolbar">
     @if (!dialogStyle) {
       <span class="span_buttons span_navigation">
-        <button id="butHome" mat-icon-button matTooltip="Front Page" [routerLink]="[urlFront]">
+        <button id="butHome" mat-icon-button [matTooltip]="'toolbar.home' | translate" [routerLink]="[urlFront]">
           <mat-icon>home</mat-icon>
         </button>
-        <button id="butShowSceneDetails" mat-icon-button matTooltip="Show Scene Details"
+        <button id="butShowSceneDetails" mat-icon-button [matTooltip]="'toolbar.sceneDetails' | translate"
           (click)="showSceneDetails()">
           <mat-icon>info_outlined</mat-icon>
         </button>
-        <button id="butScenes" mat-icon-button matTooltip="Scenes" [routerLink]="[urlScenes]">
+        <button id="butScenes" mat-icon-button [matTooltip]="'toolbar.scenes' | translate" [routerLink]="[urlScenes]">
           <mat-icon>collections</mat-icon>
         </button>
-        <button id="butScene" mat-icon-button matTooltip="Add Scene" [routerLink]="[urlScene]">
+        <button id="butScene" mat-icon-button [matTooltip]="'toolbar.addScene' | translate" [routerLink]="[urlScene]">
           <mat-icon>add_photo_alternate</mat-icon>
         </button>
         <span class="koia-toolbar-separator"></span>
@@ -24,11 +24,11 @@
     <div id="div_filter">
       @if (showFullTextFilter) {
         <mat-form-field class="full_text_filter" koiaForm>
-          <input id="fullTextFilter" matInput type="text" placeholder="Filter (text columns only)" [(ngModel)]="fullTextFilter"
+          <input id="fullTextFilter" matInput type="text" [placeholder]="'toolbar.fullTextFilter' | translate" [(ngModel)]="fullTextFilter"
             (keyup)="onFullTextFilterFieldKeyUp($event)">
             @if (fullTextFilter) {
               <button id="clearFullTextFilterButton" color="primary" matSuffix
-                mat-icon-button aria-label="Clear" (click)="resetFullTextFilter()">
+                mat-icon-button [attr.aria-label]="'toolbar.clear' | translate" (click)="resetFullTextFilter()">
                 <mat-icon>close</mat-icon>
               </button>
             }
@@ -45,9 +45,9 @@
 
       @if (scene) {
         <span class="span_buttons">
-          <button id="butAddColFilter" mat-stroked-button matTooltip="Add column filter" [matMenuTriggerFor]="columnFilterMenu">
+          <button id="butAddColFilter" mat-stroked-button [matTooltip]="'toolbar.addColumnFilter' | translate" [matMenuTriggerFor]="columnFilterMenu">
             <mat-icon>add_circle_outline</mat-icon>
-            <span>Add Filter</span>
+            <span>{{ 'toolbar.addFilter' | translate }}</span>
           </button>
           <mat-menu #columnFilterMenu="matMenu">
             @for (column of scene.columns; track column) {
@@ -67,11 +67,11 @@
                 <mat-menu #numericColumnFilterMenu="matMenu">
                   <button mat-menu-item (click)="addValueFilter(column)" [disabled]="!canAddValueFilter(column)">
                     <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-                    <span>Value</span>
+                    <span>{{ 'toolbar.value' | translate }}</span>
                   </button>
                   <button mat-menu-item (click)="addRangeFilter(column, null)">
                     <mat-icon>swap_horiz</mat-icon>
-                    <span>Value Range</span>
+                    <span>{{ 'toolbar.valueRange' | translate }}</span>
                   </button>
                 </mat-menu>
               </span>
@@ -79,15 +79,20 @@
           </mat-menu>
           @if (rangeFilters.length > 0) {
             <button mat-icon-button
-              [matTooltip]="showRangeFilters ? 'Hide value range filters' : 'Show value range filters'"
+              [matTooltip]="(showRangeFilters ? 'toolbar.hideRangeFilters' : 'toolbar.showRangeFilters') | translate"
               (click)="showRangeFilters = !showRangeFilters">
               <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
               [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
             </button>
           }
-          <button (click)="refreshEntries()" color="accent" mat-icon-button matTooltip="Refresh data">
+          <button (click)="refreshEntries()" color="accent" mat-icon-button [matTooltip]="'toolbar.refresh' | translate">
             <mat-icon>refresh</mat-icon>
           </button>
+        </span>
+      }
+      @if (!dialogStyle) {
+        <span class="span_buttons span_language">
+          <koia-language-select />
         </span>
       }
     </div>

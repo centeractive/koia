@@ -2,7 +2,7 @@
   @if (nonGroupedColumns && nonGroupedColumns.length > 0) {
     <span class="span_add_group">
       <mat-form-field koiaForm>
-        <mat-select #nonGroupedCols placeholder="Non Grouped Columns" [value]="nonGroupedColumns[0]">
+        <mat-select #nonGroupedCols [placeholder]="'pivot.sideBar.nonGroupedColumns' | translate" [value]="nonGroupedColumns[0]">
           @for (column of nonGroupedColumns; track column) {
             <mat-option [value]="column">
               {{ column.name }}
@@ -10,7 +10,7 @@
           }
         </mat-select>
       </mat-form-field>
-      <button mat-icon-button matTooltip="Add Grouping Definition" [disabled]="!nonGroupedCols.value"
+      <button mat-icon-button [matTooltip]="'pivot.sideBar.addGroupingDefinition' | translate" [disabled]="!nonGroupedCols.value"
         (click)="addValueGrouping(nonGroupedCols.value)">
         <mat-icon>add_circle_outline</mat-icon>
       </button>
@@ -22,11 +22,11 @@
     @if (context) {
       <mat-accordion [multi]="multiExpandable">
         @for (grouping of context.valueGroupings; track grouping) {
-          <koia-expansion-panel [title]="grouping.columnName + ' Grouping'"
+          <koia-expansion-panel [title]="'pivot.sideBar.columnGrouping' | translate: { column: grouping.columnName }"
             [deletable]="true" (delete)="removeValueGrouping(grouping)">
             <span class="span_left_to_right">
-              <label>max. {{ grouping.minMaxValues.max | number }}</label>
-              <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingRange(grouping)">
+              <label>{{ 'pivot.sideBar.max' | translate: { value: (grouping.minMaxValues.max | koiaNumber) } }}</label>
+              <button mat-icon-button [matTooltip]="'pivot.sideBar.addValueRange' | translate" (click)="addGroupingRange(grouping)">
                 <mat-icon>add_circle_outline</mat-icon>
               </button>
             </span>
@@ -34,9 +34,9 @@
               @for (range of grouping.ranges; track range) {
                 <div class="div_group_value" mat-stroked-button cdkDrag>
                   <mat-checkbox [(ngModel)]="range.active"></mat-checkbox>
-                  <label>Up&nbsp;to:</label>
+                  <label>{{ 'pivot.sideBar.upTo' | translate }}</label>
                   <input matInput type="number" [(ngModel)]="range.max"
-                    matTooltip="Range max. value, excluding upper value boundary" (keypress)="isNumberKey($event)">
+                    [matTooltip]="'pivot.sideBar.rangeMaxTooltip' | translate" (keypress)="isNumberKey($event)">
                     @if (grouping.ranges.length > 1) {
                       <mat-icon class="icon_remove"
                         (click)="removeGroupingRange(grouping, range)">
@@ -46,7 +46,7 @@
                   </div>
                 }
               </div>
-              <label>min. {{ grouping.minMaxValues.min | number }}</label>
+              <label>{{ 'pivot.sideBar.min' | translate: { value: (grouping.minMaxValues.min | koiaNumber) } }}</label>
             </koia-expansion-panel>
           }
         </mat-accordion>

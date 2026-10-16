@@ -1,31 +1,31 @@
-<p class="front-guide-intro">Once your data is loaded, Koia opens its raw data. Add views as tabs next to it.</p>
+<p class="front-guide-intro">{{ 'front.guide.intro' | translate }}</p>
 <ul class="landing-grid landing-grid-4">
   <li class="landing-tile">
     <div class="landing-tile-head">
       <img class="landing-tile-icon" src="/assets/svg-icons/raw_data_view.svg" alt="" width="40" height="40">
-      <h3>Explore raw data</h3>
+      <h3>{{ 'front.guide.rawData.title' | translate }}</h3>
     </div>
-    <p>Sort columns, narrow rows with <b>Add Filter</b> and click any chart element or value to see the rows behind it.</p>
+    <p [innerHTML]="'front.guide.rawData.text' | translate"></p>
   </li>
   <li class="landing-tile">
     <div class="landing-tile-head">
       <img class="landing-tile-icon" src="/assets/svg-icons/pivot_table.svg" alt="" width="40" height="40">
-      <h3>Pivot table</h3>
+      <h3>{{ 'front.guide.pivot.title' | translate }}</h3>
     </div>
-    <p>Press <mat-icon class="landing-inline-icon">add</mat-icon> next to the tabs, choose <b>New Pivot Table</b> and drag columns into place.</p>
+    <p>{{ 'front.guide.pivot.beforeIcon' | translate }}<mat-icon class="landing-inline-icon">add</mat-icon><span [innerHTML]="'front.guide.pivot.afterIcon' | translate"></span></p>
   </li>
   <li class="landing-tile">
     <div class="landing-tile-head">
       <img class="landing-tile-icon" src="/assets/svg-icons/grid_view.svg" alt="" width="40" height="40">
-      <h3>Dashboard</h3>
+      <h3>{{ 'front.guide.dashboard.title' | translate }}</h3>
     </div>
-    <p>Press <mat-icon class="landing-inline-icon">add</mat-icon>, choose <b>New Dashboard</b> and combine charts, graphs and summary tables.</p>
+    <p>{{ 'front.guide.dashboard.beforeIcon' | translate }}<mat-icon class="landing-inline-icon">add</mat-icon><span [innerHTML]="'front.guide.dashboard.afterIcon' | translate"></span></p>
   </li>
   <li class="landing-tile">
     <div class="landing-tile-head">
       <mat-icon class="landing-tile-icon" aria-hidden="true">settings</mat-icon>
-      <h3>Configure elements</h3>
+      <h3>{{ 'front.guide.configure.title' | translate }}</h3>
     </div>
-    <p>Press <mat-icon class="landing-inline-icon">settings</mat-icon> on an element to pick columns, chart type and colors.</p>
+    <p>{{ 'front.guide.configure.beforeIcon' | translate }}<mat-icon class="landing-inline-icon">settings</mat-icon>{{ 'front.guide.configure.afterIcon' | translate }}</p>
   </li>
 </ul>

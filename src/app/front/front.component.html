@@ -1,12 +1,13 @@
 <div class="landing-root landing-shell">
   <header class="landing-header">
     <div class="landing-container landing-header-inner">
-      <a href="/intro/index.html">
+      <a [href]="introUrl()">
         <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
       </a>
       <nav class="landing-nav">
-        <a class="landing-nav-secondary" href="/intro/index.html">About Koia</a>
+        <a class="landing-nav-secondary" [href]="introUrl()">{{ 'front.nav.about' | translate }}</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank" rel="noopener">GitHub</a>
+        <koia-language-select [showName]="true" />
       </nav>
     </div>
   </header>
@@ -14,53 +15,51 @@
   <div class="landing-scroll" cdkScrollable>
     <section class="landing-hero front-hero">
       <div class="landing-container">
-        <h1>Get started</h1>
-        <p class="landing-lead">Load your own CSV, Excel or JSON file, or explore Koia with sample data.</p>
+        <h1>{{ 'front.title' | translate }}</h1>
+        <p class="landing-lead">{{ 'front.lead' | translate }}</p>
         <div class="landing-tile front-start-panel">
           <div class="front-storage-line">
             <img class="front-storage-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
               alt="" width="24" height="24">
-            <span>Data is stored in <b>{{ selectedDataStorage === couchDB ? 'CouchDB' : 'this browser (IndexedDB)' }}</b></span>
+            <span>{{ 'front.storage.storedIn' | translate }} <b>{{ selectedDataStorage === couchDB ? 'CouchDB' : ('front.storage.thisBrowser' | translate) }}</b></span>
             <button type="button" class="front-storage-change" [attr.aria-expanded]="storageExpanded" [disabled]="loadingSample"
               aria-controls="front-storage-options" (click)="storageExpanded = !storageExpanded">
-              <mat-icon aria-hidden="true">swap_horiz</mat-icon>Change storage
+              <mat-icon aria-hidden="true">swap_horiz</mat-icon>{{ 'front.storage.change' | translate }}
             </button>
           </div>
           @if (storageExpanded) {
             <div id="front-storage-options" class="front-storage-options">
-              <div class="front-storage" role="group" aria-label="Data storage">
+              <div class="front-storage" role="group" [attr.aria-label]="'front.storage.group' | translate">
                 <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
                   [attr.aria-pressed]="selectedDataStorage === indexedDB" [disabled]="loadingSample" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
                 <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
                   [attr.aria-pressed]="selectedDataStorage === couchDB" [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
                 @if (selectedDataStorage === couchDB) {
-                  <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
-                    aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">
+                  <button mat-icon-button type="button" class="front-storage-settings" [matTooltip]="'front.storage.configureCouchDB' | translate"
+                    [attr.aria-label]="'front.storage.configureCouchDB' | translate" (click)="showCouchDBConnectionDialog()">
                     <mat-icon>settings</mat-icon>
                   </button>
                 }
               </div>
-              <p class="front-storage-hint">IndexedDB keeps data in this browser. CouchDB is usually faster, survives
-                clearing the browser cache and can be shared
+              <p class="front-storage-hint">{{ 'front.storage.hint' | translate }}
                 @if (!showCouchDBTip()) {
                   (<a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank"
-                    rel="noopener">setup guide</a>)
-                }.</p>
+                    rel="noopener">{{ 'front.storage.setupGuide' | translate }}</a>)
+                }{{ 'front.storage.hintEnd' | translate }}</p>
             </div>
           }
           @if (showCouchDBTip()) {
             <aside class="front-couchdb-tip" aria-labelledby="front-couchdb-tip-title">
               <mat-icon class="front-couchdb-tip-icon" aria-hidden="true">lightbulb</mat-icon>
               <div>
-                <h2 id="front-couchdb-tip-title">Recommended: use CouchDB</h2>
-                <p>Faster with larger data, and your data survives clearing the browser cache. Install CouchDB locally, then
-                  connect.</p>
+                <h2 id="front-couchdb-tip-title">{{ 'front.couchdbTip.title' | translate }}</h2>
+                <p>{{ 'front.couchdbTip.text' | translate }}</p>
                 <div class="front-couchdb-tip-actions">
                   <button id="connect_couchdb_button" type="button" class="landing-btn landing-btn-accent"
-                    [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">Connect to CouchDB</button>
+                    [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">{{ 'front.couchdbTip.connect' | translate }}</button>
                   <a class="front-couchdb-tip-link" href="https://github.com/centeractive/koia/blob/master/README.md#getting-started"
-                    target="_blank" rel="noopener">Setup guide</a>
-                  <button type="button" class="front-couchdb-tip-dismiss" (click)="dismissCouchDBTip()">Not now</button>
+                    target="_blank" rel="noopener">{{ 'front.couchdbTip.setupGuide' | translate }}</a>
+                  <button type="button" class="front-couchdb-tip-dismiss" (click)="dismissCouchDBTip()">{{ 'front.couchdbTip.notNow' | translate }}</button>
                 </div>
               </div>
             </aside>
@@ -69,24 +68,24 @@
             @if (scenesCount > 0) {
               <a id="start_button" class="landing-btn landing-btn-accent" role="link"
                 [routerLink]="busy ? null : urlScenes" [attr.aria-disabled]="busy">
-                <mat-icon>play_circle_outline</mat-icon>Continue with your {{ scenesCount === 1 ? 'scene' : scenesCount + ' scenes' }}
+                <mat-icon>play_circle_outline</mat-icon>{{ (scenesCount === 1 ? 'front.actions.continueOne' : 'front.actions.continueMany') | translate: { count: scenesCount } }}
               </a>
               <a id="load_file_button" class="landing-btn landing-btn-outline" role="link"
                 [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
-                <mat-icon>upload_file</mat-icon>Load a file
+                <mat-icon>upload_file</mat-icon>{{ 'front.actions.loadFile' | translate }}
               </a>
             } @else {
               <a id="start_button" class="landing-btn landing-btn-accent" role="link"
                 [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
-                <mat-icon>upload_file</mat-icon>Load a file
+                <mat-icon>upload_file</mat-icon>{{ 'front.actions.loadFile' | translate }}
               </a>
             }
             <button id="sample_button" type="button" class="landing-btn landing-btn-outline" [disabled]="busy"
               [attr.aria-busy]="loadingSample" (click)="openSample()">
               @if (loadingSample) {
-                <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>Loading sample…
+                <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>{{ 'front.actions.loadingSample' | translate }}
               } @else {
-                <mat-icon>science</mat-icon>Try sample data
+                <mat-icon>science</mat-icon>{{ 'front.actions.trySample' | translate }}
               }
             </button>
           </div>
@@ -96,14 +95,14 @@
 
     <section class="landing-section landing-canvas">
       <div class="landing-container">
-        <h2>Create your first views</h2>
+        <h2>{{ 'front.guide.title' | translate }}</h2>
         <koia-front-guide></koia-front-guide>
       </div>
     </section>
 
     <section class="landing-section">
       <div class="landing-container">
-        <h2>Reference</h2>
+        <h2>{{ 'front.info.title' | translate }}</h2>
         <koia-front-info></koia-front-info>
       </div>
     </section>
@@ -112,11 +111,11 @@
       <div class="landing-container landing-footer-inner">
         <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
         <a href="https://retrospective.centeractive.com/" target="_blank" rel="noopener">
-          <img class="landing-badge" src="/assets/retrospective_compatible.png" alt="Retrospective compatible"
+          <img class="landing-badge" src="/assets/retrospective_compatible.png" [alt]="'front.footer.retrospectiveCompatible' | translate"
             width="142" height="46">
         </a>
-        <small>Koia is <a href="https://github.com/centeractive/koia/blob/master/LICENSE" target="_blank"
-            rel="noopener">MIT licensed</a>. © 2026 centeractive ag. <a href="https://github.com/centeractive/koia"
+        <small>{{ 'front.footer.licensedPrefix' | translate }}<a href="https://github.com/centeractive/koia/blob/master/LICENSE" target="_blank"
+            rel="noopener">{{ 'front.footer.license' | translate }}</a>{{ 'front.footer.licensedSuffix' | translate }} © 2026 centeractive ag. <a href="https://github.com/centeractive/koia"
             target="_blank" rel="noopener">GitHub</a></small>
       </div>
     </footer>

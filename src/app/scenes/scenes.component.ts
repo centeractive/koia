@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SceneInfo, Route, Scene } from 'app/shared/model';
 import { Router } from '@angular/router';
@@ -64,7 +65,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     this.dbService.deleteScene(sceneInfo)
       .then(s => {
         this.loadData();
-        this.notifySuccess('Scene has been deleted');
+        this.notifySuccess(LanguageService.instant('scenes.sceneDeleted'));
       })
       .catch(err => {
         this.loadData();
@@ -73,8 +74,8 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   }
 
   onDeleteScenesButtonPressed(): void {
-    const title = this.filter ? 'Delete filtered scenes' : 'Delete all scenes';
-    const text = '<p>Do you really want to delete ' + this.filteredSceneInfos.length + ' scene(s)?</p>';
+    const title = LanguageService.instant(this.filter ? 'scenes.deleteFilteredTitle' : 'scenes.deleteAllTitle');
+    const text = '<p>' + LanguageService.instant('scenes.deleteConfirm', { count: this.filteredSceneInfos.length }) + '</p>';
     const data = new ConfirmDialogData(title, text, ConfirmDialogData.YES_NO);
     const dialogRef = this.dialogService.showConfirmDialog(data);
     firstValueFrom(dialogRef.afterClosed()).then(r => {
@@ -88,8 +89,8 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     const promises = sceneInfos.map(si => this.dbService.deleteScene(si));
     Promise.all(promises)
       .then(r => {
-        const action = sceneInfos.length === 1 ? ' scene has ' : ' scenes have ';
-        this.notifySuccess(sceneInfos.length + action + 'been deleted');
+        this.notifySuccess(LanguageService.instant(sceneInfos.length === 1 ? 'scenes.scenesDeletedOne' : 'scenes.scenesDeleted',
+          { count: sceneInfos.length }));
         this.loadData();
       })
       .catch(err => {

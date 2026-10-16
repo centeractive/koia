@@ -1,0 +1,660 @@
+{
+  "language": {
+    "select": "Language"
+  },
+  "front": {
+    "nav": {
+      "about": "About Koia"
+    },
+    "title": "Get started",
+    "lead": "Load your own CSV, Excel or JSON file, or explore Koia with sample data.",
+    "externalInvocationFailed": "cannot show raw data of scene with _id {{id}}",
+    "storage": {
+      "storedIn": "Data is stored in",
+      "thisBrowser": "this browser (IndexedDB)",
+      "change": "Change storage",
+      "group": "Data storage",
+      "configureCouchDB": "Configure access to CouchDB",
+      "hint": "IndexedDB keeps data in this browser. CouchDB is usually faster, survives clearing the browser cache and can be shared",
+      "setupGuide": "setup guide",
+      "hintEnd": ".",
+      "switchedTo": "Successfully switched to {{storage}}"
+    },
+    "couchdbTip": {
+      "title": "Recommended: use CouchDB",
+      "text": "Faster with larger data, and your data survives clearing the browser cache. Install CouchDB locally, then connect.",
+      "connect": "Connect to CouchDB",
+      "setupGuide": "Setup guide",
+      "notNow": "Not now"
+    },
+    "actions": {
+      "continueOne": "Continue with your scene",
+      "continueMany": "Continue with your {{count}} scenes",
+      "loadFile": "Load a file",
+      "loadingSample": "Loading sample…",
+      "trySample": "Try sample data"
+    },
+    "guide": {
+      "title": "Create your first views",
+      "intro": "Once your data is loaded, Koia opens its raw data. Add views as tabs next to it.",
+      "rawData": {
+        "title": "Explore raw data",
+        "text": "Sort columns, narrow rows with <b>Add Filter</b> and click any chart element or value to see the rows behind it."
+      },
+      "pivot": {
+        "title": "Pivot table",
+        "beforeIcon": "Press ",
+        "afterIcon": " next to the tabs, choose <b>New Pivot Table</b> and drag columns into place."
+      },
+      "dashboard": {
+        "title": "Dashboard",
+        "beforeIcon": "Press ",
+        "afterIcon": ", choose <b>New Dashboard</b> and combine charts, graphs and summary tables."
+      },
+      "configure": {
+        "title": "Configure elements",
+        "beforeIcon": "Press ",
+        "afterIcon": " on an element to pick columns, chart type and colors."
+      }
+    },
+    "info": {
+      "title": "Reference",
+      "formats": {
+        "title": "Data formats",
+        "teaser": "CSV, Excel and JSON with full control over the import",
+        "loading": "Data is loaded from files to the backing data storage through Koia itself or it may be written to it by a third party program.",
+        "supported": "The following file types are supported.",
+        "control": "When importing a file, you're granted full control over which portions of the data should be imported. You're also in control over...",
+        "dataTypes": "The data types to be used for storing the values in the data storage",
+        "displayFormat": "The format to be applied for displaying certain values"
+      },
+      "scene": {
+        "title": "What is a scene?",
+        "teaser": "One scene per data set, switch between them at any time",
+        "text": "Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>. You can switch between different scenes as you please.",
+        "items": "Scenes can be given a user-defined name and description. They also contain the following items.",
+        "origin": "Information about the origin of the loaded data (i.e. file name and modification date).",
+        "link": "A link to the loaded raw data in the data storage.",
+        "columns": "The name, data type, width and format of individual data columns.",
+        "views": "View definitions that were saved by the user in order to be restored later on."
+      },
+      "views": {
+        "title": "Views",
+        "teaser": "Raw data table, pivot tables and dashboards",
+        "rawData": "The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size. The table offers sorting and filtering of individual columns.",
+        "pivotBeforeLink": "The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing patterns and trends. It's based on amazing ",
+        "pivotAfterLink": " that offers many different views (e.g. heatmaps and table barcharts) and lets you shape the pivot table through drag and drop of individual columns.",
+        "dashboard": "A <b>Dashboard</b> contains a variable number of elements (summary tables, charts and graphs). In <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a single cell or spread over several columns and rows. When the window size changes, the element size also changes in order to always fit the allocated grid space. In <b>flex</b> layout, each element has a specific size that is not changed when the window size changes, the elements are however automatically laid out according to the available window space.",
+        "tabs": "Any number of pivot tables and dashboards may be opened as individual tabs next to the raw data table. Open tabs are kept with the scene."
+      }
+    },
+    "connection": {
+      "title": "CouchDB Access",
+      "protocol": "Protocol",
+      "host": "Host",
+      "port": "Port",
+      "user": "User",
+      "password": "Password",
+      "cancel": "Cancel",
+      "ok": "OK"
+    },
+    "footer": {
+      "retrospectiveCompatible": "Retrospective compatible",
+      "licensedPrefix": "Koia is ",
+      "license": "MIT licensed",
+      "licensedSuffix": "."
+    }
+  },
+  "toolbar": {
+    "home": "Front Page",
+    "sceneDetails": "Show Scene Details",
+    "scenes": "Scenes",
+    "addScene": "Add Scene",
+    "fullTextFilter": "Filter (text columns only)",
+    "clear": "Clear",
+    "addColumnFilter": "Add column filter",
+    "addFilter": "Add Filter",
+    "value": "Value",
+    "valueRange": "Value Range",
+    "hideRangeFilters": "Hide value range filters",
+    "showRangeFilters": "Show value range filters",
+    "refresh": "Refresh data",
+    "tabs": {
+      "rawData": "Raw Data",
+      "renameHint": "Double-click to rename",
+      "close": "Close",
+      "addView": "Add view",
+      "newPivotTable": "New Pivot Table",
+      "newDashboard": "New Dashboard",
+      "renameTitle": "Rename Tab",
+      "tabName": "Tab Name",
+      "closeTitle": "Close Tab",
+      "closeQuestion": "Do you really want to close \"{{title}}\"?"
+    }
+  },
+  "filter": {
+    "operator": {
+      "contains": "contains",
+      "empty": "is empty",
+      "notEmpty": "is not empty",
+      "anyOf": "is any of",
+      "noneOf": "is none of"
+    },
+    "value": {
+      "placeholder": "Filter Value",
+      "remove": "Remove column filter",
+      "tooltip": {
+        "contains": "Filters all items where '{{name}}' contains the filter value (non-case-sensitive)",
+        "lessThan": "Filters all items where '{{name}}' is less than the filter value",
+        "lessThanOrEqual": "Filters all items where '{{name}}' is less than or equal to the filter value",
+        "equal": "Filters all items where '{{name}}' is equal to the filter value (case-sensitive)",
+        "notEqual": "Filters all items where '{{name}}' is not equal to the filter value (case-sensitive)",
+        "greaterThanOrEqual": "Filters all items where '{{name}}' is greater than or equal to the filter value",
+        "greaterThan": "Filters all items where '{{name}}' is greater than the filter value",
+        "empty": "Filters all items where '{{name}}' is empty",
+        "notEmpty": "Filters all items where '{{name}}' is not empty",
+        "anyOf": "Filters all items where '{{name}}' is equal to any of the filter values, separated by a semicolon ';' each",
+        "noneOf": "Filters all items where '{{name}}' is equal to none of the filter values, separated by a semicolon ';' each",
+        "caseSensitive": "(case-sensitive)"
+      }
+    },
+    "range": {
+      "stepSize": "Define slider step size",
+      "stepBy": "Step by {{step}}",
+      "reset": "Reset value range filter",
+      "remove": "Remove value range filter",
+      "inside": "is inside range",
+      "outside": "is outside range",
+      "excluding": "excl."
+    },
+    "timeUnit": {
+      "millisecond": "millisecond",
+      "second": "second",
+      "minute": "minute",
+      "hour": "hour",
+      "day": "day",
+      "month": "month",
+      "year": "year"
+    },
+    "invalidValue": "Invalid {{type}}"
+  },
+  "rawData": {
+    "loading": "Loading Data...",
+    "ignoreColumnWidths": "Ignore specified column widths",
+    "observeColumnWidths": "Observe specified column widths",
+    "undoHighlight": "Undo highlight rows",
+    "highlight": "Highlight rows",
+    "saveAs": "Save As {{format}}",
+    "manageViews": "Manage Views",
+    "exportFiltered": "filtered data is collected and saved as {{format}} in the background",
+    "exportComplete": "complete data is collected and saved as {{format}} in the background"
+  },
+  "sample": {
+    "loadFailed": "cannot load sample data: {{reason}}"
+  },
+  "common": {
+    "addScene": "Add Scene",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "frontPage": "Front Page",
+    "more": "more...",
+    "no": "No",
+    "ok": "OK",
+    "scenes": "Scenes",
+    "yes": "Yes"
+  },
+  "scene": {
+    "title": "New Scene",
+    "subtitle": "Create a new scene of data from a file",
+    "name": "Scene Name",
+    "shortDescription": "Short Description",
+    "dataSource": "Data Source",
+    "sourceType": "Source Type",
+    "selectFile": "Select File",
+    "fileName": "File Name",
+    "encoding": "Character Encoding",
+    "encodingTooltip": "Character set that was used to encode the file content",
+    "dataSample": "Data Sample",
+    "sourceAttributes": "{{source}} Source Attributes",
+    "language": "Language",
+    "languageTooltip": "Proper language is required when parsing date/time and number data",
+    "adoptColumns": "Adopt columns from existing Scene",
+    "scene": "Scene",
+    "created": "created {{time}}",
+    "detectColumnsTooltip": "Detect columns by considering defined attributes",
+    "adoptColumnsButton": "Adopt Columns",
+    "detectColumnsButton": "Detect Columns",
+    "columnDefinitions": "Column Definitions",
+    "preview": "Preview",
+    "previewErrorsTooltip": "Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database",
+    "loadDataTooltip": "Loads all data to the database",
+    "loadData": "Load Data",
+    "maxItems": "Max. items",
+    "maxItemsTooltip": "Maximum number of items to be loaded\n(min: 1, max: {{max}})",
+    "maxItemsError": "Exp. 1-{{max}}",
+    "abortOnErrorTooltip": "Abort loading data when inconsistent data is encountered",
+    "abortOnError": "Abort on data error",
+    "aborting": "{{message}} aborting...",
+    "loadingCanceled": "Loading canceled: {{message}}",
+    "mappingErrors": "{{message}}, {{count}} mapping errors did occur...",
+    "initializingDataLoad": "initializing data load...",
+    "tasksInitializing": "Tasks ({{settled}}/{{count}}) - initializing data load...",
+    "taskCompleted": "Tasks ({{settled}}/{{count}}) - {{task}} completed",
+    "readingData": "reading data...",
+    "noSceneExists": "Currently there exists no scene, at least one must be created!",
+    "persistAborted": "data persisting aborted due to error: {{error}}",
+    "itemsPersisted": "{{count}} items have been persisted in the database",
+    "itemsPersistedProgress": "{{count}} of {{total}} items persisted ({{percent}}%)",
+    "itemsRead": "{{count}} items read",
+    "itemsReadPersisted": "{{count}} items read / {{persisted}} persisted",
+    "task": {
+      "insertScene": "insert scene",
+      "createDatabase": "create database",
+      "indexColumns": "indexed columns",
+      "indexColumn": "index column {{column}}"
+    },
+    "column": {
+      "deleteTooltip": "Delete irrelevant column",
+      "name": "Column Name",
+      "dataType": "Data Type",
+      "width": "Width",
+      "sourceFormat": "Source Format",
+      "refreshPreview": "Refresh Preview",
+      "formatOptions": "Show custom format options",
+      "displayFormat": "Display Format",
+      "nameRequired": "Name is required",
+      "nameDollar": "Name must not start with $",
+      "nameTooLong": "Name must not exceed {{max}} characters",
+      "incompatibleTypes": "Column contains values of incompatible data types"
+    },
+    "mapping": {
+      "columnError": "Column '{{column}}': {{error}}",
+      "cannotConvert": "Cannot convert \"{{value}}\" to {{dataType}}",
+      "cannotConvertTime": "Cannot convert \"{{value}}\" to Time without a custom source format",
+      "cannotConvertTimeWithFormat": "Cannot convert \"{{value}}\" to Time using format \"{{format}}\""
+    },
+    "reader": {
+      "csvDescription": "CSV (Comma Separated Values) is plain text of tabular form.\nEach line represents a row and individual fields of these rows must be separated by the same character (i.e. comma).",
+      "csvHeaderRow": "First row contains column names",
+      "csvSeparator": "Separator",
+      "excelDescription": "Microsoft Excel is composed of one or several spreadsheets that contain data in tabular form.\nIt is expected that column names appear in the first row of the selected spreadsheet.",
+      "excelSheetName": "Sheet Name",
+      "excelSheetNameDescription": "Name of Excel sheet that contains the data",
+      "jsonDescription": "JSON (JavaScript Object Notation) is formatted and self-describing text for storing and interchanging data.\nYou import an array of flat (non-nested) objects by specifying its JSONPath.",
+      "jsonPath": "Array JSONPath",
+      "jsonPathDescription": "JSONPath to the object array that contains the data",
+      "worksheetMissing": "Worksheet \"{{sheet}}\" does not exist or cannot be parsed"
+    }
+  },
+  "scenes": {
+    "activeScene": "Active Scene",
+    "activeSceneSubtitle": "This is the scene you're currently working with",
+    "allScenes": "All Scenes",
+    "allScenesSubtitle": "Manage your existing scenes. Activate one to start creating graphics.",
+    "filter": "Filter scenes",
+    "deleteFiltered": "Delete filtered",
+    "deleteAll": "Delete all",
+    "deleteFilteredTitle": "Delete filtered scenes",
+    "deleteAllTitle": "Delete all scenes",
+    "deleteConfirm": "Do you really want to delete {{count}} scene(s)?",
+    "sceneDeleted": "Scene has been deleted",
+    "scenesDeleted": "{{count}} scenes have been deleted",
+    "scenesDeletedOne": "{{count}} scene has been deleted",
+    "showDetails": "Show details",
+    "activate": "Activate scene",
+    "continueActive": "Continue with active scene",
+    "creationTime": "Creation Time",
+    "details": {
+      "sourceContext": "Source Context",
+      "columns": "Columns",
+      "name": "Name",
+      "type": "Type",
+      "format": "Format",
+      "groupBy": "Group By",
+      "width": "Width ({{unit}})",
+      "unit": {
+        "chars": "chars",
+        "pixel": "pixel"
+      }
+    }
+  },
+  "dialog": {
+    "selectView": "Select View",
+    "restoreView": "Restore saved view",
+    "restoreViewHint": "Load a view that has previously been saved.",
+    "manageViews": "Manage Views",
+    "manageSavedViews": "Manage saved views",
+    "manageSavedViewsHint": "Delete or rename views that have previously been saved.",
+    "createView": "Create View",
+    "createNewView": "Create new view",
+    "chooseInitialElement": "Choose the initial element to be added to the new view.",
+    "chart": "Chart",
+    "graph": "Relationship Graph",
+    "summaryTable": "Summary Table",
+    "dontShowAgain": "Don't show again",
+    "rememberChoice": "Remember choice",
+    "couchDbLimitation": "CouchDB Limitation",
+    "couchDbSortLimitation": "CouchDB query results don't include rows where the value of the sort field is missing.",
+    "gotIt": "Got it"
+  },
+  "view": {
+    "print": "Print current view",
+    "save": "Save current view",
+    "restore": "Restore saved view",
+    "saveTitle": "Save View",
+    "name": "View Name",
+    "noElements": "View contains no elements",
+    "saved": "View \"{{name}}\" has been saved",
+    "notSaved": "View \"{{name}}\" cannot be saved: {{error}}",
+    "deleted": "Deleted {{count}} views",
+    "deletedOne": "Deleted {{count}} view",
+    "renamed": "Renamed {{count}} views",
+    "renamedOne": "Renamed {{count}} view",
+    "tabsNotSaved": "Open tabs cannot be saved:",
+    "tabsNotLoaded": "Open tabs cannot be loaded:"
+  },
+  "ui": {
+    "color": {
+      "categorical": "Categorical",
+      "sequential": "Sequential",
+      "bgOpacity": "Background Color Opacity",
+      "borderOpacity": "Border Color Opacity"
+    },
+    "multiExpansion": "Multi Expansion",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "notGrouped": "not grouped",
+    "per": {
+      "millisecond": "per millisecond",
+      "second": "per second",
+      "minute": "per minute",
+      "hour": "per hour",
+      "day": "per day",
+      "month": "per month",
+      "year": "per year"
+    },
+    "rows": "{{count}} rows",
+    "columnValue": "Column {{column}}",
+    "singleLineRows": "Show single-line rows",
+    "multiLineRows": "Show multi-line rows",
+    "hideNestedObjects": "Hide nested objects",
+    "showNestedObjects": "Show nested objects"
+  },
+  "chart": {
+    "typeTooltip": "{{type}} Chart",
+    "countDistinctValues": "Count Distinct Values",
+    "uniqueNamedValues": "Unique Named Values",
+    "individualValues": "Individual Values",
+    "stacked": "Stacked",
+    "showDistinctScales": "Show Distinct Scales",
+    "values": "Values",
+    "valuesOnAxis": "Values ({{axis}})",
+    "name": "Name",
+    "names": "Names",
+    "nameColumn": "Name Column",
+    "xAxis": "X-Axis",
+    "yAxis": "Y-Axis",
+    "valueSplitting": "Value Splitting",
+    "selectedColumns": "Selected Columns",
+    "availableColumns": "Available Columns",
+    "splitColumnsHelp": "Drag & Drop available columns to make them selected\n\nValues are shown separately for distinct content of the selected split columns. If any split column cell is empty, the value is ignored",
+    "columnName": "Column Name",
+    "groupBy": "Group by",
+    "timeUnitGrouping": "Time Unit Grouping",
+    "colorScheme": "Color Scheme",
+    "legendAndLabels": "Legend & Labels",
+    "legendAndScales": "Legend & Scales",
+    "showLegend": "Show Legend",
+    "percentValueLabels": "Percent Value Labels",
+    "baseScale": "Base Scale",
+    "valueScale": "Value Scale",
+    "valueScaleNumbered": "Value Scale {{number}}",
+    "stepSize": "Step Size",
+    "automatic": "Automatic",
+    "labelRotation": "Label Rotation",
+    "legendPosition": {
+      "top": "top",
+      "right": "right",
+      "bottom": "bottom",
+      "left": "left"
+    },
+    "title": {
+      "countDistinctValuesOf": "Count distinct values of {{columns}}",
+      "groupedBy": "{{title}} by {{columns}}",
+      "sample": "{{title}} (Sample)",
+      "splitBy": "{{title}}\nsplit by {{columns}}"
+    },
+    "error": {
+      "nameColumnUndefined": "Name column is not defined",
+      "axisUndefined": "{{axis}} is not defined",
+      "maxValuesExceeded": "{{chartType}} chart: Maximum number of {{max}} values exceeded.\n\nPlease re-configure the chart or apply/refine data filtering."
+    },
+    "warning": {
+      "sampledDown": "Data has been down-sampled and the chart contains part of available values only. Apply filters to limit the data and see all values of the chosen context."
+    }
+  },
+  "element": {
+    "title": {
+      "dataUndefined": "Data: to be defined",
+      "distinctValuesOf": "Distinct values of {{column}}",
+      "relationshipUndefined": "Relationship: to be defined",
+      "relationship": "Relationship: Root ⯈ {{columns}}"
+    },
+    "columnSpan": "Column Span",
+    "rowSpan": "Row Span",
+    "saveAs": "Save As {{format}}",
+    "column": "{{count}} Column",
+    "columns": "{{count}} Columns",
+    "row": "{{count}} Row",
+    "rows": "{{count}} Rows",
+    "configure": "Configure...",
+    "toggleMargin": "Toggle resizable chart margin",
+    "move": "Move",
+    "delete": "Delete"
+  },
+  "dashboard": {
+    "loadingData": "Loading Data...",
+    "addChart": "Add Chart",
+    "addGraph": "Add Relationship Graph",
+    "addSummary": "Add Summary",
+    "layout": "Layout",
+    "gridColumns": "Grid Columns",
+    "gridCellRatio": "Grid Cell Ratio (width:height)",
+    "manageViews": "Manage Views",
+    "gridLayout": "Grid (snap to grid)",
+    "flexLayout": "Flex",
+    "confirmResize": "Larger elements will be resized to fit the new setting"
+  },
+  "enum": {
+    "chartType": {
+      "pie": "Pie",
+      "doughnut": "Doughnut",
+      "bar": "Bar",
+      "linearBar": "Linear Bar",
+      "horizontalBar": "Horizontal Bar",
+      "linearHorizontalBar": "Linear Horizontal Bar",
+      "radar": "Radar",
+      "polarArea": "Polar Area",
+      "line": "Line",
+      "area": "Area",
+      "scatter": "Scatter"
+    },
+    "aggregation": {
+      "COUNT": "Count",
+      "AVG": "Average",
+      "MEDIAN": "Median",
+      "MAX": "Max",
+      "MIN": "Min",
+      "SUM": "Sum"
+    },
+    "operator": {
+      "CONTAINS": "contains",
+      "LESS_THAN": "<",
+      "LESS_THAN_OR_EQUAL": "<=",
+      "EQUAL": "=",
+      "NOT_EQUAL": "≠",
+      "GREATER_THAN_OR_EQUAL": ">=",
+      "GREATER_THAN": ">",
+      "EMPTY": "is empty",
+      "NOT_EMPTY": "is not empty",
+      "ANY_OF": "is any of",
+      "NONE_OF": "is none of"
+    },
+    "timeUnit": {
+      "MILLISECOND": "millisecond",
+      "SECOND": "second",
+      "MINUTE": "minute",
+      "HOUR": "hour",
+      "DAY": "day",
+      "MONTH": "month",
+      "YEAR": "year"
+    },
+    "dataType": {
+      "BOOLEAN": "Boolean",
+      "NUMBER": "Number",
+      "OBJECT": "Object",
+      "TEXT": "Text",
+      "TIME": "Time"
+    },
+    "exportFormat": {
+      "CSV": "CSV",
+      "JSON": "JSON",
+      "EXCEL": "Excel",
+      "PNG": "PNG"
+    }
+  },
+  "pivot": {
+    "loadingData": "Loading Data...",
+    "defineValueGrouping": "Define Value Grouping...",
+    "timeUnitGrouping": "Time Unit Grouping",
+    "heatmapColors": "Heatmap Colors",
+    "showOverallTotals": "Show Overall Totals",
+    "saveAsExcel": "Save As Excel",
+    "manageViews": "Manage Views",
+    "rows": "Rows",
+    "columns": "Columns",
+    "negativeValues": "Negative Values",
+    "positiveValues": "Positive Values",
+    "timeUnit": {
+      "millisecond": "millisecond",
+      "second": "second",
+      "minute": "minute",
+      "hour": "hour",
+      "day": "day",
+      "month": "month",
+      "year": "year"
+    },
+    "sideBar": {
+      "nonGroupedColumns": "Non Grouped Columns",
+      "addGroupingDefinition": "Add Grouping Definition",
+      "columnGrouping": "{{column}} Grouping",
+      "max": "max. {{value}}",
+      "min": "min. {{value}}",
+      "addValueRange": "Add Value Range",
+      "upTo": "Up to:",
+      "rangeMaxTooltip": "Range max. value, excluding upper value boundary"
+    },
+    "locale": {
+      "renderError": "An error occurred rendering the PivotTable results.",
+      "computeError": "An error occurred computing the PivotTable results.",
+      "uiRenderError": "An error occurred rendering the PivotTable UI.",
+      "selectAll": "Select All",
+      "selectNone": "Select None",
+      "tooMany": "(too many to list)",
+      "filterResults": "Filter values",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "totals": "Totals",
+      "vs": "vs",
+      "by": "by"
+    },
+    "renderer": {
+      "table": "Table",
+      "tableBarchart": "Table Barchart",
+      "heatmap": "Heatmap",
+      "rowHeatmap": "Row Heatmap",
+      "colHeatmap": "Col Heatmap"
+    },
+    "aggregator": {
+      "count": "Count",
+      "countUnique": "Count Unique Values",
+      "listUnique": "List Unique Values",
+      "sum": "Sum",
+      "integerSum": "Integer Sum",
+      "average": "Average",
+      "median": "Median",
+      "sampleVariance": "Sample Variance",
+      "sampleStdDev": "Sample Standard Deviation",
+      "minimum": "Minimum",
+      "maximum": "Maximum",
+      "first": "First",
+      "last": "Last",
+      "sumOverSum": "Sum over Sum",
+      "upperBound80": "80% Upper Bound",
+      "lowerBound80": "80% Lower Bound",
+      "sumFractionTotal": "Sum as Fraction of Total",
+      "sumFractionRows": "Sum as Fraction of Rows",
+      "sumFractionColumns": "Sum as Fraction of Columns",
+      "countFractionTotal": "Count as Fraction of Total",
+      "countFractionRows": "Count as Fraction of Rows",
+      "countFractionColumns": "Count as Fraction of Columns"
+    }
+  },
+  "graph": {
+    "maxNodesExceeded": "Graph: Maximum number of {{max}} nodes exceeded.\n\nPlease choose chart instead or apply/refine data filtering.",
+    "tooltip": {
+      "rootNode": "Root Node",
+      "oneEntry": "({{count}} Entry)",
+      "entries": "({{count}} Entries)",
+      "doubleClick": "Double-click to show data..."
+    },
+    "sideBar": {
+      "dataHierarchy": "Data Hierarchy",
+      "selectedColumns": "Selected Columns",
+      "dragDropColumnsHelp": "Drag & Drop available columns to make them selected",
+      "availableColumns": "Available Columns",
+      "colorScheme": "Color Scheme",
+      "other": "Other",
+      "linkDistance": "Link Distance",
+      "linkStrength": "Link Strength",
+      "friction": "Friction",
+      "charge": "Charge",
+      "gravity": "Gravity",
+      "theta": "Theta",
+      "alpha": "Alpha"
+    }
+  },
+  "summary": {
+    "overall": "Overall",
+    "showData": "Show Data...",
+    "aggregation": {
+      "Count": "Count",
+      "Average": "Average",
+      "Median": "Median",
+      "Max": "Max",
+      "Min": "Min",
+      "Sum": "Sum"
+    },
+    "sideBar": {
+      "data": "Data",
+      "defineValueGrouping": "Define value grouping",
+      "countDistinctValues": "Count Distinct Values",
+      "aggregateValues": "Aggregate Values",
+      "columnGrouping": "{{column}} Grouping",
+      "max": "max. {{value}}",
+      "min": "min. {{value}}",
+      "addValueRange": "Add Value Range",
+      "upTo": "Up to:",
+      "rangeMaxTooltip": "Range max. value, excluding upper value boundary",
+      "hierarchy": "Hierarchy",
+      "selectedColumns": "Selected Columns",
+      "dragDropColumnsHelp": "Drag & Drop available columns to make them selected",
+      "availableColumns": "Available Columns",
+      "aggregation": "Aggregation",
+      "selectedAggregations": "Selected Aggregations",
+      "dragDropAggregationsHelp": "Drag & Drop available aggregations to make them selected",
+      "availableAggregations": "Available Aggregations"
+    }
+  }
+}

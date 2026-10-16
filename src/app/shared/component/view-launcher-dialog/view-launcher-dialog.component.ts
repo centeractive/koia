@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ViewLauncherContext } from './view-launcher-context.type.';
@@ -15,6 +16,6 @@ export class ViewLauncherDialogComponent {
 
   constructor(public dialogRef: MatDialogRef<ViewLauncherDialogComponent>, @Inject(MAT_DIALOG_DATA) public context: ViewLauncherContext) {
     this.dialogRef.disableClose = true;
-    this.title = 'Create View';
+    this.title = LanguageService.instant('dialog.createView');
   }
 }

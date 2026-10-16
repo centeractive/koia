@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { LabelType } from '@angular-slider/ngx-slider';
 import { TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
@@ -18,14 +19,14 @@ export class TimeRangeSliderCustomizer {
 
       let label = this.format(value);
       if (labelType === LabelType.High && this.isMaxExcluding(value)) {
-         label += ' excl.';
+         label += ' ' + LanguageService.instant('filter.range.excluding');
       }
       return label;
    }
 
    private format(value: number): string {
       const time = DateTimeUtils.add(this.start, this.timeUnit, value);
-      return DateTimeUtils.formatTime(time, this.timeUnit);
+      return DateTimeUtils.formatTime(time, this.timeUnit, LanguageService.localeId());
    }
 
    private isMaxExcluding(value: number): boolean {

@@ -1,3 +1,4 @@
+import { LanguageService } from '../language';
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { SceneTabs, TabDef } from '../../model/view-config';
@@ -85,7 +86,7 @@ export class TabsPersister implements OnDestroy {
             if (this.lastJson === json) {
                this.lastJson = prevJson;
             }
-            this.reportError('Open tabs cannot be saved: ', err);
+            this.reportError(LanguageService.instant('view.tabsNotSaved') + ' ', err);
          });
       return this.writes;
    }

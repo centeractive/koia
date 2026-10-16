@@ -1,5 +1,5 @@
 import { TooltipCustomizer } from 'app/chart/customizer/tooltip-customizer';
-import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, DataType, EnumLabels, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
@@ -164,7 +164,7 @@ export class ChartJsOptionsProvider {
 
     private valueScaleTitle(context: ChartContext, columnIdx: number): string {
         if (context.isAggregationCountSelected()) {
-            return 'Count';
+            return EnumLabels.aggregation(Aggregation.COUNT);
         } else if (context.dataColumns.length == 1 || context.multiValueAxes) {
             return context.dataColumns[columnIdx].name;
         } else {

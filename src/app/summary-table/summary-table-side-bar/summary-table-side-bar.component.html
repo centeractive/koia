@@ -2,7 +2,7 @@
   <div style="padding: 0 5px 0 5px;" koiaForm>
     @if (context) {
       <mat-accordion [multi]="multiExpandable">
-        <koia-expansion-panel title="Data" [expanded]="true">
+        <koia-expansion-panel [title]="'summary.sideBar.data' | translate" [expanded]="true">
           <div id="div_sel_data_columns">
             @for (column of dataColumns; track column) {
               <span>
@@ -15,7 +15,7 @@
                     </button>
                     @if (isNumericColumn(column)) {
                       <mat-icon class="icon_define_value_grouping"
-                        [matTooltip]="'Define value grouping'" (click)="addValueGroupingFor(column)">
+                        [matTooltip]="'summary.sideBar.defineValueGrouping' | translate" (click)="addValueGroupingFor(column)">
                         group_work
                       </mat-icon>
                     }
@@ -35,20 +35,20 @@
           <div>
             <br>
               <mat-radio-group [value]="context.isAggregationCountSelected()">
-                <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">Count Distinct Values
+                <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">{{ 'summary.sideBar.countDistinctValues' | translate }}
                 </mat-radio-button>
                 <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()"
-                  (change)="onAggregationTypeChanged(false)">Aggregate Values
+                  (change)="onAggregationTypeChanged(false)">{{ 'summary.sideBar.aggregateValues' | translate }}
                 </mat-radio-button>
               </mat-radio-group>
             </div>
           </koia-expansion-panel>
           @for (grouping of context.valueGroupings; track grouping) {
-            <koia-expansion-panel [title]="grouping.columnName + ' Grouping'"
+            <koia-expansion-panel [title]="'summary.sideBar.columnGrouping' | translate: { column: grouping.columnName }"
               [deletable]="true" (delete)="removeValueGrouping(grouping)">
               <span class="span_left_to_right">
-                <label>max. {{ grouping.minMaxValues.max }}</label>
-                <button mat-icon-button matTooltip="Add Value Range" (click)="addGroupingValueRange(grouping)">
+                <label>{{ 'summary.sideBar.max' | translate: { value: grouping.minMaxValues.max } }}</label>
+                <button mat-icon-button [matTooltip]="'summary.sideBar.addValueRange' | translate" (click)="addGroupingValueRange(grouping)">
                   <mat-icon>add_circle_outline</mat-icon>
                 </button>
               </span>
@@ -58,9 +58,9 @@
                     <mat-checkbox [checked]="range.active"
                       (change)="groupingRangeStateChanged(grouping, range, $event.checked)">
                     </mat-checkbox>
-                    <label>Up&nbsp;to:</label>
+                    <label>{{ 'summary.sideBar.upTo' | translate }}</label>
                     <input matInput type="number" [(ngModel)]="range.max"
-                      matTooltip="Range max. value, excluding upper value boundary" (keypress)="isNumberKey($event)">
+                      [matTooltip]="'summary.sideBar.rangeMaxTooltip' | translate" (keypress)="isNumberKey($event)">
                       @if (grouping.ranges.length > 1) {
                         <mat-icon class="icon_remove"
                           (click)="removeGroupingRange(grouping, range)">
@@ -70,13 +70,13 @@
                     </div>
                   }
                 </div>
-                <label>min. {{ grouping.minMaxValues.min }}</label>
+                <label>{{ 'summary.sideBar.min' | translate: { value: grouping.minMaxValues.min } }}</label>
               </koia-expansion-panel>
             }
-            <koia-expansion-panel title="Hierarchy">
+            <koia-expansion-panel [title]="'summary.sideBar.hierarchy' | translate">
               <span class="span_left_to_right">
-                <label>Selected Columns</label>
-                <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
+                <label>{{ 'summary.sideBar.selectedColumns' | translate }}</label>
+                <mat-icon [matTooltip]="'summary.sideBar.dragDropColumnsHelp' | translate">help</mat-icon>
               </span>
               <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
                 [cdkDropListData]="selectedGroupByColumns" [cdkDropListConnectedTo]="availableColList"
@@ -88,7 +88,7 @@
                 }
               </div>
               <br>
-                <label>Available Columns</label>
+                <label>{{ 'summary.sideBar.availableColumns' | translate }}</label>
                 <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
                   [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
                   (cdkDropListDropped)="dropGroupByColumn($event)">
@@ -100,11 +100,11 @@
                 </div>
               </koia-expansion-panel>
               @if (!context.isAggregationCountSelected()) {
-                <koia-expansion-panel title="Aggregation">
+                <koia-expansion-panel [title]="'summary.sideBar.aggregation' | translate">
                   <div div_column_swap_list>
                     <span class="span_left_to_right">
-                      <label>Selected Aggregations</label>
-                      <mat-icon matTooltip="Drag & Drop available aggregations to make them selected">help</mat-icon>
+                      <label>{{ 'summary.sideBar.selectedAggregations' | translate }}</label>
+                      <mat-icon [matTooltip]="'summary.sideBar.dragDropAggregationsHelp' | translate">help</mat-icon>
                     </span>
                     <div id="selectedAggregations" #selectedAggList="cdkDropList" cdkDropList #selectedColumnsList="cdkDropList"
                       [cdkDropListData]="selectedAggregations" [cdkDropListConnectedTo]="availableAggList"
@@ -112,19 +112,19 @@
                       @for (aggregation of selectedAggregations; track aggregation) {
                         <div class="div_column_item accent" mat-stroked-button
                           cdkDrag>
-                          <span class="accent">{{ aggregation }}</span>
+                          <span class="accent">{{ 'summary.aggregation.' + aggregation | translate }}</span>
                         </div>
                       }
                     </div>
                     <br>
-                      <label>Available Aggregations</label>
+                      <label>{{ 'summary.sideBar.availableAggregations' | translate }}</label>
                       <div #availableAggList="cdkDropList" cdkDropList [cdkDropListData]="availableAggregations"
                         [cdkDropListConnectedTo]="selectedAggList" class="div_column_list"
                         (cdkDropListDropped)="dropAggregation($event)">
                         @for (aggregation of availableAggregations; track aggregation) {
                           <div class="div_column_item white" mat-stroked-button
                             cdkDrag>
-                            {{ aggregation }}
+                            {{ 'summary.aggregation.' + aggregation | translate }}
                           </div>
                         }
                       </div>

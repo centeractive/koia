@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ConfigController } from 'app/shared/controller/config.controller';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
 import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
@@ -141,7 +142,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
 
   saveAs(exportFormat: ExportFormat): void {
     const query = this.query.clone();
-    const message = (query.hasFilter() ? 'filtered' : 'complete') + ' data is collected and saves as ' + exportFormat + ' in the background';
+    const message = LanguageService.instant(query.hasFilter() ? 'rawData.exportFiltered' : 'rawData.exportComplete', { format: exportFormat });
     this.snackBar.open(message, undefined, { duration: 4000 });
     query.clearPageDefinition();
     lastValueFrom(this.dbService.findEntries(query, false))

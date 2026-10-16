@@ -1,3 +1,4 @@
+import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
 import { Column, DataType, Document, Operator, Page, Query, Scene, SceneInfo } from 'app/shared/model';
@@ -123,17 +124,18 @@ export class DBService {
 
   async persistScene(scene: Scene, activate: boolean, promiseMonitor?: PromiseProgressMonitor): Promise<Scene> {
     promiseMonitor = promiseMonitor ?? new PromiseProgressMonitor();
-    return promiseMonitor.add("insert scene", this.db.insert(this.scenesDbName(), scene))
-      .then("create database", () => {
+    return promiseMonitor.add(LanguageService.instant('scene.task.insertScene'), this.db.insert(this.scenesDbName(), scene))
+      .then(LanguageService.instant('scene.task.createDatabase'), () => {
         if (activate) {
           this.activeScene = scene;
           console.log('scene activated (id: ' + scene._id + ', rev: ' + scene._rev + ')');
         }
         return this.db.createDatabase(scene.database);
       })
-      .then("indexed columns", () => Promise.all(scene.columns
+      .then(LanguageService.instant('scene.task.indexColumns'), () => Promise.all(scene.columns
         .filter(c => c.indexed)
-        .map(c => promiseMonitor.addUnchained("index column " + c.name, this.db.createIndex(scene.database, c.name)))))
+        .map(c => promiseMonitor.addUnchained(LanguageService.instant('scene.task.indexColumn', { column: c.name }),
+          this.db.createIndex(scene.database, c.name)))))
       .unwrap()
       .then(() => scene);
   }

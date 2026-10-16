@@ -50,8 +50,25 @@
   </style>
 
   <script>
+    // opens the intro in the language of the user (query parameter, last selected language, browser preferences)
     if (location.pathname === '/') {
-      location.href = '/intro/index.html';
+      (function () {
+        function supported(tag) {
+          var l = String(tag || '').toLowerCase().split(/[-_]/)[0];
+          return ['en', 'de', 'ja'].indexOf(l) >= 0 ? l : null;
+        }
+        var lang = supported(new URLSearchParams(location.search).get('lang'));
+        if (lang) {
+          try { localStorage.setItem('koia.language', lang); } catch (e) { }
+        } else {
+          try { lang = supported(localStorage.getItem('koia.language')); } catch (e) { }
+        }
+        var browser = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+        for (var i = 0; !lang && i < browser.length; i++) {
+          lang = supported(browser[i]);
+        }
+        location.replace('/intro/index' + (lang && lang !== 'en' ? '.' + lang : '') + '.html' + location.hash);
+      })();
     }
   </script>
 

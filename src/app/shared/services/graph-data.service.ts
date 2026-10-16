@@ -3,6 +3,7 @@ import { Column, PropertyFilter, DataType } from 'app/shared/model';
 import { GraphContext, GraphNode, GraphLink } from 'app/shared/model/graph';
 import { DateTimeUtils, ColumnNameConverter, DataFrameUtils } from 'app/shared/utils';
 import { Injectable } from '@angular/core';
+import { LanguageService } from './language/language.service';
 
 export interface GraphData {
    nodes: GraphNode[];
@@ -68,7 +69,7 @@ export class GraphDataService {
          providerContext.nodes.push(graphNode);
          graphNode.count = treeNode.values.reduce((sum, child) => sum + this.buildGraphData(graphNode, child, columnIndex + 1, providerContext), 0);
       } else {
-         graphNode = this.createNode(parent, column, treeNode.key, treeNode.values.toLocaleString(), treeNode.values, providerContext)
+         graphNode = this.createNode(parent, column, treeNode.key, treeNode.values.toLocaleString(LanguageService.localeId()), treeNode.values, providerContext)
          providerContext.nodes.push(graphNode);
       }
       if (parent) {

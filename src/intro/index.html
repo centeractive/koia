@@ -2,6 +2,38 @@
 <html lang="en">
 
 <head>
+  <meta charset="utf-8">
+  <script>
+    // shows the intro in the language of the user (query parameter, last selected language, browser preferences), English by default
+    (function () {
+      var key = 'koia.language';
+      function supported(tag) {
+        var l = String(tag || '').toLowerCase().split(/[-_]/)[0];
+        return ['en', 'de', 'ja'].indexOf(l) >= 0 ? l : null;
+      }
+      function store(l) {
+        try { localStorage.setItem(key, l); } catch (e) { }
+      }
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('.intro-languages a[hreflang]');
+        if (a) { store(a.hreflang); }
+      });
+      var lang = supported(new URLSearchParams(location.search).get('lang'));
+      if (lang) {
+        store(lang);
+      } else {
+        try { lang = supported(localStorage.getItem(key)); } catch (e) { }
+      }
+      var browser = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+      for (var i = 0; !lang && i < browser.length; i++) {
+        lang = supported(browser[i]);
+      }
+      if (lang && lang !== 'en') {
+        location.replace('/intro/index.' + lang + '.html' + location.hash);
+      }
+    })();
+  </script>
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-66X1MBQRD9"></script>
   <script>
@@ -12,7 +44,6 @@
     gtag('config', 'G-66X1MBQRD9');
   </script>
 
-  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Koia Data Analysis</title>
   <meta name="description"
@@ -23,6 +54,10 @@
     content="Create charts, pivot tables and dashboards from CSV, Excel or JSON data right in your browser. Open-source, no sign-up, your data stays under your control.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.koia.io/intro/screenshots/dashboard.jpg">
+  <link rel="alternate" hreflang="en" href="https://www.koia.io/intro/index.html">
+  <link rel="alternate" hreflang="de" href="https://www.koia.io/intro/index.de.html">
+  <link rel="alternate" hreflang="ja" href="https://www.koia.io/intro/index.ja.html">
+  <link rel="alternate" hreflang="x-default" href="https://www.koia.io/intro/index.html">
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="stylesheet" href="/assets/themes/koia-tokens.css">
   <link rel="stylesheet" href="/assets/themes/koia-landing.css">
@@ -41,6 +76,11 @@
         <a class="landing-nav-secondary" href="#how">How it works</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
           rel="noopener">GitHub</a>
+        <span class="intro-languages">
+          <a href="/intro/index.html" hreflang="en" lang="en" aria-current="page">EN</a>
+          <a href="/intro/index.de.html" hreflang="de" lang="de">DE</a>
+          <a href="/intro/index.ja.html" hreflang="ja" lang="ja">JA</a>
+        </span>
         <a class="landing-btn landing-btn-primary" href="/front">Open Koia</a>
       </nav>
     </div>

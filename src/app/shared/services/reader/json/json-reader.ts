@@ -1,3 +1,4 @@
+import { LanguageService } from '../../language';
 import { Attribute, DataType } from 'app/shared/model';
 import oboe from 'oboe';
 import { DataHandler } from '../data-handler.type';
@@ -8,11 +9,10 @@ import { PathConverter } from './path-converter';
 export class JSONReader implements DataReader {
 
   private pathConverter = new PathConverter();
-  private attrArrayJSONPath = new Attribute('Array JSONPath', 'JSONPath to the object array that contains the data', DataType.TEXT, '');
+  private attrArrayJSONPath = new Attribute('scene.reader.jsonPath', 'scene.reader.jsonPathDescription', DataType.TEXT, '');
 
   getDescription(): string {
-    return 'JSON (JavaScript Object Notation) is formatted and self-describing text for storing and interchanging data.\n' +
-      'You import an array of flat (non-nested) objects by specifying its JSONPath.';
+    return LanguageService.instant('scene.reader.jsonDescription');
   }
 
   getSourceName(): string {

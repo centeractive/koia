@@ -1,8 +1,13 @@
+import { TestBed } from '@angular/core/testing';
+import { LanguageService } from '../language';
 import { Route } from '../../model';
 import { ConfigRecord, TabDef, View, ViewType } from '../../model/view-config';
 import { createTabDef, hasContent, iconOf, maxTabSeq, tabPath, tabUrl } from './tab-defs';
 
 describe('tab-defs', () => {
+
+   beforeEach(() => vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined));
+   afterEach(() => document.documentElement.lang = 'en');
 
    it('#createTabDef should create pivot table tab', () => {
 
@@ -92,6 +97,31 @@ describe('tab-defs', () => {
 
       // then
       expect(tab.title).toBe('Dashboard');
+   });
+
+   it('#createTabDef should use title of current language', async () => {
+
+      // given
+      await TestBed.inject(LanguageService).use('de');
+
+      // when
+      const tab = createTabDef(ViewType.PIVOT, 1);
+
+      // then
+      expect(tab.title).toBe('Pivot-Tabelle');
+   });
+
+   it('#createTabDef should number title when tab of same type exists in other language', async () => {
+
+      // given
+      const tabs = [titled(ViewType.PIVOT, 'Pivot Table'), titled(ViewType.PIVOT, 'ピボットテーブル 2')];
+      await TestBed.inject(LanguageService).use('de');
+
+      // when
+      const tab = createTabDef(ViewType.PIVOT, 3, tabs);
+
+      // then
+      expect(tab.title).toBe('Pivot-Tabelle 3');
    });
 
    it('#maxTabSeq should return 0 when no tabs exist', () => {

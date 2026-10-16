@@ -1,4 +1,6 @@
+import { TestBed } from '@angular/core/testing';
 import { TimeGroupingService } from './time-grouping.service';
+import { LanguageService } from './language/language.service';
 import { DatePipe } from '@angular/common';
 import { IDataFrame, DataFrame } from 'data-forge';
 import { Column, DataType, TimeUnit } from '../model';
@@ -296,5 +298,30 @@ describe('TimeGroupingService', () => {
       day.setSeconds(0);
       day.setMilliseconds(0);
       return day.getTime();
+   }
+
+   for (const language of ['de', 'ja'] as const) {
+
+      it('#groupByFormattedTimeUnit should produce same values in ' + language + ' as in English', async () => {
+
+         // given
+         vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+         const languageService = TestBed.inject(LanguageService);
+         const valuesOf = (timeUnit: TimeUnit) => {
+            const column: Column = { ...timeColumn, groupingTimeUnit: timeUnit };
+            return service.groupByFormattedTimeUnit(baseDataFrame, column).toArray();
+         };
+         const timeUnits = [TimeUnit.MINUTE, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];
+         const englishValues = timeUnits.map(valuesOf);
+
+         // when
+         await languageService.use(language);
+         const values = timeUnits.map(valuesOf);
+
+         // then
+         expect(values).toEqual(englishValues);
+         expect(JSON.stringify(values)).toContain(datePipe.transform(now, 'MMM', undefined, 'en-US'));
+         document.documentElement.lang = 'en';
+      });
    }
 });

@@ -5,12 +5,12 @@
         (onFilterChange)="onFilterChanged($event)" />
     }
     @if (loading) {
-      <mat-progress-bar mode="indeterminate" matTooltip="Loading Data..." />
+      <mat-progress-bar mode="indeterminate" [matTooltip]="'rawData.loading' | translate" />
     }
     <koia-view-toolbar [class.dialog_top_row]="dialogStyle && hideToolbar" [moreMenu]="moreMenu" [persistable]="!dialogStyle" [savedViews]="configRecords" (save)="saveConfig()"
       (restore)="loadConfig($event)">
       <button mat-icon-button [class.koia-toggle-active]="considerColumnWidths"
-        [matTooltip]="considerColumnWidths ? 'Ignore specified column widths' : 'Observe specified column widths'"
+        [matTooltip]="(considerColumnWidths ? 'rawData.ignoreColumnWidths' : 'rawData.observeColumnWidths') | translate"
         (click)="toggleConsiderColumnWidths()">
         <mat-icon>wrap_text</mat-icon>
       </button>
@@ -19,7 +19,7 @@
           [(showNestedObjects)]="showNestedObjects" />
       }
       <button mat-icon-button [class.koia-toggle-active]="highlight"
-        [matTooltip]="highlight ? 'Undo highlight rows' : 'Higlight rows'" (click)="toggleHighlight()">
+        [matTooltip]="(highlight ? 'rawData.undoHighlight' : 'rawData.highlight') | translate" (click)="toggleHighlight()">
         <mat-icon>highlight</mat-icon>
       </button>
     </koia-view-toolbar>
@@ -27,13 +27,13 @@
       @for (exportFormat of exportFormats; track exportFormat) {
         <button mat-menu-item (click)="saveAs(exportFormat)">
           <mat-icon>insert_drive_file</mat-icon>
-          <span>Save As {{ exportFormat }}</span>
+          <span>{{ 'rawData.saveAs' | translate: { format: exportFormat } }}</span>
         </button>
       }
       @if (!dialogStyle) {
         <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
           <mat-icon>monitor</mat-icon>
-          <span>Manage Views</span>
+          <span>{{ 'rawData.manageViews' | translate }}</span>
         </button>
       }
     </mat-menu>

@@ -2,11 +2,11 @@
   <div style="padding: 0 5px 0 5px;" koiaForm>
     @if (context) {
       <mat-accordion [multi]="multiExpandable">
-        <koia-expansion-panel title="Data Hierarchy" [expanded]="true">
+        <koia-expansion-panel [title]="'graph.sideBar.dataHierarchy' | translate" [expanded]="true">
           <div div_column_swap_list>
             <span class="span_left_to_right">
-              <label>Selected Columns</label>
-              <mat-icon matTooltip="Drag & Drop available columns to make them selected">help</mat-icon>
+              <label>{{ 'graph.sideBar.selectedColumns' | translate }}</label>
+              <mat-icon [matTooltip]="'graph.sideBar.dragDropColumnsHelp' | translate">help</mat-icon>
             </span>
             <div id="selectedGroupByColumns" #selectedColList="cdkDropList" cdkDropList
               #selectedColumnsList="cdkDropList" [cdkDropListData]="selectedGroupByColumns"
@@ -19,7 +19,7 @@
               }
             </div>
             <br>
-              <label>Available Columns</label>
+              <label>{{ 'graph.sideBar.availableColumns' | translate }}</label>
               <div #availableColList="cdkDropList" cdkDropList [cdkDropListData]="availableGroupByColumns"
                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
                 (cdkDropListDropped)="dropGroupByColumn($event)">
@@ -31,49 +31,49 @@
               </div>
             </div>
           </koia-expansion-panel>
-          <koia-expansion-panel title="Color Scheme">
+          <koia-expansion-panel [title]="'graph.sideBar.colorScheme' | translate">
             <koia-color-scheme-selection [context]="context"></koia-color-scheme-selection>
           </koia-expansion-panel>
-          <koia-expansion-panel title="Other">
+          <koia-expansion-panel [title]="'graph.sideBar.other' | translate">
             <div class="div_label_rotation">
-              Link Distance
+              {{ 'graph.sideBar.linkDistance' | translate }}
               <mat-slider min="0" max="100" step="1">
                 <input matSliderThumb [(ngModel)]="context.linkDist" />
               </mat-slider>
             </div>
             <div class="div_label_rotation">
-              Link Strength
+              {{ 'graph.sideBar.linkStrength' | translate }}
               <mat-slider id="linkStrength" min="0" max="1" step="0.1">
                 <input matSliderThumb [(ngModel)]="context.linkStrength" />
               </mat-slider>
             </div>
             <div class="div_label_rotation">
-              Friction
+              {{ 'graph.sideBar.friction' | translate }}
               <mat-slider min="0" max="1" step="0.1">
                 <input matSliderThumb [(ngModel)]="context.friction" />
               </mat-slider>
             </div>
             <div class="div_label_rotation">
-              Charge
+              {{ 'graph.sideBar.charge' | translate }}
               <mat-slider min="-1000" max="1000" step="1" #ngSlider>
                 <input matSliderThumb [value]="- context.charge" (valueChange)="context.charge = - $event"
                   #ngSliderThumb="matSliderThumb" />
                 </mat-slider>
               </div>
               <div class="div_label_rotation">
-                Gravity
+                {{ 'graph.sideBar.gravity' | translate }}
                 <mat-slider min="0.1" max="1" step="0.1">
                   <input matSliderThumb [(ngModel)]="context.gravity" />
                 </mat-slider>
               </div>
               <div class="div_label_rotation">
-                Theta
+                {{ 'graph.sideBar.theta' | translate }}
                 <mat-slider id="theta" min="0" max="1" step="0.1">
                   <input matSliderThumb [(ngModel)]="context.theta" />
                 </mat-slider>
               </div>
               <div class="div_label_rotation">
-                Alpha
+                {{ 'graph.sideBar.alpha' | translate }}
                 <mat-slider id="alpha" min="0.01" max="0.1" step="0.01">
                   <input matSliderThumb [(ngModel)]="context.alpha" />
                 </mat-slider>

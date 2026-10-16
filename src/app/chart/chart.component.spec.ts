@@ -1,15 +1,17 @@
 import { SimpleChange } from '@angular/core';
-import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideRouter, Router } from '@angular/router';
 import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
-import { Column, DataType, Route, Scene } from 'app/shared/model';
+import { ChangeEvent, Column, DataType, Route, Scene } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService, defaultMargin } from 'app/shared/services/chart';
+import { LanguageService } from 'app/shared/services/language';
+import { TabsPersister } from 'app/shared/services/view-tabs/tabs-persister';
 import { SceneFactory } from 'app/shared/test';
 import { ChartComponent } from './chart.component';
 import type { Mock } from 'vitest';
@@ -296,6 +298,105 @@ describe('ChartComponent', () => {
     // then
     const resizable = fixture.debugElement.query(By.directive(ResizableDirective)).injector.get(ResizableDirective);
     expect(resizable.ghostElementPositioning).toBe('absolute');
+  });
+
+  describe('language change', () => {
+
+    let languageService: LanguageService;
+
+    beforeEach(() => {
+      languageService = TestBed.inject(LanguageService);
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    });
+
+    afterEach(() => document.documentElement.lang = 'en');
+
+    function createCountBarChart(): void {
+      context.chartType = ChartType.BAR.type;
+      context.dataColumns = [createColumn('t1', DataType.TEXT)];
+      fixture.detectChanges();
+      flush();
+    }
+
+    function valueScaleTitle(): string {
+      return context.chart.options.scales['y']['title'].text;
+    }
+
+    it('should re-create chart with texts of new language', fakeAsync(() => {
+
+      // given
+      createCountBarChart();
+      const chart = context.chart;
+      expect(valueScaleTitle()).toBe('Count');
+
+      // when
+      languageService.use('de');
+      flush();
+
+      // then
+      expect(context.chart).not.toBe(chart);
+      expect(valueScaleTitle()).toBe('Anzahl');
+    }));
+
+    it('should neither change context nor persist anything', fakeAsync(() => {
+
+      // given
+      createCountBarChart();
+      const changeEvents: ChangeEvent[] = [];
+      context.subscribeToChanges((e: ChangeEvent) => changeEvents.push(e));
+      const dbWrites = (['persistScene', 'updateScene', 'saveSceneTabs', 'writeEntries'] as const)
+        .map(m => vi.spyOn(dbService, m).mockResolvedValue(undefined));
+
+      // when
+      languageService.use('de');
+      flush();
+      languageService.use('ja');
+      tick(TabsPersister.DELAY_MS + 1);
+      flush();
+
+      // then
+      expect(changeEvents).toEqual([]);
+      dbWrites.forEach(spy => expect(spy).not.toHaveBeenCalled());
+    }));
+
+    it('should re-create invisible chart not before it is visible again', fakeAsync(() => {
+
+      // given
+      createCountBarChart();
+      const chart = context.chart;
+      fixture.nativeElement.style.display = 'none';
+
+      // when
+      languageService.use('ja');
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(context.chart).toBe(chart);
+
+      // when
+      fixture.nativeElement.style.display = 'block';
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(context.chart).not.toBe(chart);
+      expect(valueScaleTitle()).toBe('件数');
+    }));
+
+    it('should not create chart that did not exist before', fakeAsync(() => {
+
+      // given
+      context.chart = undefined;
+
+      // when
+      languageService.use('de');
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(context.chart).toBeUndefined();
+    }));
   });
 
   it('#createExportData should throw error', () => {

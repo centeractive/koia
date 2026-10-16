@@ -1,0 +1,660 @@
+{
+  "language": {
+    "select": "言語"
+  },
+  "front": {
+    "nav": {
+      "about": "Koia について"
+    },
+    "title": "はじめに",
+    "lead": "CSV、Excel、JSON ファイルを読み込むか、サンプルデータで Koia を試してみましょう。",
+    "externalInvocationFailed": "_id {{id}} のシーンの生データを表示できません",
+    "storage": {
+      "storedIn": "データの保存先:",
+      "thisBrowser": "このブラウザー (IndexedDB)",
+      "change": "保存先を変更",
+      "group": "データの保存先",
+      "configureCouchDB": "CouchDB へのアクセスを設定",
+      "hint": "IndexedDB はデータをこのブラウザーに保存します。CouchDB は通常より高速で、ブラウザーのキャッシュを消去してもデータが残り、共有もできます",
+      "setupGuide": "セットアップガイド",
+      "hintEnd": "。",
+      "switchedTo": "{{storage}} に切り替えました"
+    },
+    "couchdbTip": {
+      "title": "おすすめ: CouchDB を使う",
+      "text": "大きなデータでも高速で、ブラウザーのキャッシュを消去してもデータが残ります。CouchDB をローカルにインストールしてから接続してください。",
+      "connect": "CouchDB に接続",
+      "setupGuide": "セットアップガイド",
+      "notNow": "後で"
+    },
+    "actions": {
+      "continueOne": "シーンの作業を続ける",
+      "continueMany": "{{count}} 件のシーンの作業を続ける",
+      "loadFile": "ファイルを読み込む",
+      "loadingSample": "サンプルを読み込み中…",
+      "trySample": "サンプルデータを試す"
+    },
+    "guide": {
+      "title": "最初のビューを作成する",
+      "intro": "データを読み込むと、Koia は生データを表示します。その横にビューをタブとして追加できます。",
+      "rawData": {
+        "title": "生データを調べる",
+        "text": "列を並べ替え、<b>フィルターを追加</b> で行を絞り込み、グラフの要素や値をクリックすると、その元になった行を確認できます。"
+      },
+      "pivot": {
+        "title": "ピボットテーブル",
+        "beforeIcon": "タブの横の ",
+        "afterIcon": " を押して <b>新しいピボットテーブル</b> を選び、列をドラッグして配置します。"
+      },
+      "dashboard": {
+        "title": "ダッシュボード",
+        "beforeIcon": "タブの横の ",
+        "afterIcon": " を押して <b>新しいダッシュボード</b> を選び、グラフ、ネットワーク図、集計表を組み合わせます。"
+      },
+      "configure": {
+        "title": "要素を設定する",
+        "beforeIcon": "要素の ",
+        "afterIcon": " を押して、列、グラフの種類、色を選びます。"
+      }
+    },
+    "info": {
+      "title": "リファレンス",
+      "formats": {
+        "title": "データ形式",
+        "teaser": "CSV、Excel、JSON をインポート内容を完全に制御して読み込み",
+        "loading": "データは Koia 自身によってファイルからデータストレージに読み込まれるか、他のプログラムによって書き込まれます。",
+        "supported": "次のファイル形式に対応しています。",
+        "control": "ファイルをインポートする際、データのどの部分をインポートするかを完全に制御できます。さらに次の点も指定できます...",
+        "dataTypes": "データストレージに値を保存する際のデータ型",
+        "displayFormat": "特定の値を表示する際の書式"
+      },
+      "scene": {
+        "title": "シーンとは?",
+        "teaser": "データセットごとに 1 つのシーン、いつでも切り替え可能",
+        "text": "データストレージに読み込まれた各データセットは、それぞれ <b>シーン</b> として表されます。シーンは自由に切り替えられます。",
+        "items": "シーンには任意の名前と説明を付けられます。また、次の項目も含まれます。",
+        "origin": "読み込んだデータの出所に関する情報 (ファイル名や更新日時など)。",
+        "link": "データストレージ内の読み込まれた生データへの参照。",
+        "columns": "各データ列の名前、データ型、幅、書式。",
+        "views": "後で復元するためにユーザーが保存したビューの定義。"
+      },
+      "views": {
+        "title": "ビュー",
+        "teaser": "生データテーブル、ピボットテーブル、ダッシュボード",
+        "rawData": "<b>生データ</b> テーブルは、データを加工せずにサイズ調整可能なページ単位で表示します。列ごとの並べ替えとフィルターができます。",
+        "pivotBeforeLink": "<b>ピボットテーブル</b> は、データを計算・集計・分析し、パターンや傾向を明らかにする強力なツールです。優れたライブラリ ",
+        "pivotAfterLink": " をベースにしており、ヒートマップやテーブル棒グラフなど多彩な表示形式を備え、列をドラッグ＆ドロップしてピボットテーブルを組み立てられます。",
+        "dashboard": "<b>ダッシュボード</b> には任意の数の要素 (集計表、グラフ、ネットワーク図) を配置できます。<b>グリッド</b> レイアウトでは、要素はサイズを調整できる固定のグリッドに配置され、1 つのセルに収まるか、複数の行と列にまたがります。ウィンドウサイズが変わると、割り当てられたグリッド領域に収まるよう要素のサイズも変わります。<b>フレックス</b> レイアウトでは、各要素は固定のサイズを持ち、ウィンドウサイズが変わっても変化しませんが、利用可能な領域に合わせて自動的に配置されます。",
+        "tabs": "生データテーブルの横に、任意の数のピボットテーブルとダッシュボードをタブとして開けます。開いているタブはシーンと一緒に保持されます。"
+      }
+    },
+    "connection": {
+      "title": "CouchDB へのアクセス",
+      "protocol": "プロトコル",
+      "host": "ホスト",
+      "port": "ポート",
+      "user": "ユーザー",
+      "password": "パスワード",
+      "cancel": "キャンセル",
+      "ok": "OK"
+    },
+    "footer": {
+      "retrospectiveCompatible": "Retrospective 対応",
+      "licensedPrefix": "Koia は ",
+      "license": "MIT ライセンス",
+      "licensedSuffix": " で提供されています。"
+    }
+  },
+  "toolbar": {
+    "home": "トップページ",
+    "sceneDetails": "シーンの詳細を表示",
+    "scenes": "シーン",
+    "addScene": "シーンを追加",
+    "fullTextFilter": "フィルター (テキスト列のみ)",
+    "clear": "クリア",
+    "addColumnFilter": "列フィルターを追加",
+    "addFilter": "フィルターを追加",
+    "value": "値",
+    "valueRange": "値の範囲",
+    "hideRangeFilters": "値範囲フィルターを隠す",
+    "showRangeFilters": "値範囲フィルターを表示",
+    "refresh": "データを更新",
+    "tabs": {
+      "rawData": "生データ",
+      "renameHint": "ダブルクリックで名前を変更",
+      "close": "閉じる",
+      "addView": "ビューを追加",
+      "newPivotTable": "新しいピボットテーブル",
+      "newDashboard": "新しいダッシュボード",
+      "renameTitle": "タブの名前を変更",
+      "tabName": "タブ名",
+      "closeTitle": "タブを閉じる",
+      "closeQuestion": "「{{title}}」を閉じてもよろしいですか?"
+    }
+  },
+  "filter": {
+    "operator": {
+      "contains": "含む",
+      "empty": "空",
+      "notEmpty": "空でない",
+      "anyOf": "いずれかに一致",
+      "noneOf": "どれにも一致しない"
+    },
+    "value": {
+      "placeholder": "フィルター値",
+      "remove": "列フィルターを削除",
+      "tooltip": {
+        "contains": "'{{name}}' がフィルター値を含むすべての項目を抽出します (大文字と小文字を区別しない)",
+        "lessThan": "'{{name}}' がフィルター値より小さいすべての項目を抽出します",
+        "lessThanOrEqual": "'{{name}}' がフィルター値以下のすべての項目を抽出します",
+        "equal": "'{{name}}' がフィルター値と等しいすべての項目を抽出します (大文字と小文字を区別)",
+        "notEqual": "'{{name}}' がフィルター値と等しくないすべての項目を抽出します (大文字と小文字を区別)",
+        "greaterThanOrEqual": "'{{name}}' がフィルター値以上のすべての項目を抽出します",
+        "greaterThan": "'{{name}}' がフィルター値より大きいすべての項目を抽出します",
+        "empty": "'{{name}}' が空のすべての項目を抽出します",
+        "notEmpty": "'{{name}}' が空でないすべての項目を抽出します",
+        "anyOf": "'{{name}}' がいずれかのフィルター値 (セミコロン ';' 区切り) と等しいすべての項目を抽出します",
+        "noneOf": "'{{name}}' がどのフィルター値 (セミコロン ';' 区切り) とも等しくないすべての項目を抽出します",
+        "caseSensitive": "(大文字と小文字を区別)"
+      }
+    },
+    "range": {
+      "stepSize": "スライダーの刻み幅を設定",
+      "stepBy": "刻み幅: {{step}}",
+      "reset": "値範囲フィルターをリセット",
+      "remove": "値範囲フィルターを削除",
+      "inside": "範囲内",
+      "outside": "範囲外",
+      "excluding": "(含まない)"
+    },
+    "timeUnit": {
+      "millisecond": "ミリ秒",
+      "second": "秒",
+      "minute": "分",
+      "hour": "時間",
+      "day": "日",
+      "month": "月",
+      "year": "年"
+    },
+    "invalidValue": "無効な値（{{type}}）"
+  },
+  "rawData": {
+    "loading": "データを読み込み中...",
+    "ignoreColumnWidths": "指定された列幅を無視",
+    "observeColumnWidths": "指定された列幅を適用",
+    "undoHighlight": "行の強調表示を解除",
+    "highlight": "行を強調表示",
+    "saveAs": "{{format}} として保存",
+    "manageViews": "ビューを管理",
+    "exportFiltered": "フィルター後のデータを収集し、バックグラウンドで {{format}} として保存しています",
+    "exportComplete": "すべてのデータを収集し、バックグラウンドで {{format}} として保存しています"
+  },
+  "sample": {
+    "loadFailed": "サンプルデータを読み込めません: {{reason}}"
+  },
+  "common": {
+    "addScene": "シーンを追加",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "delete": "削除",
+    "frontPage": "トップページ",
+    "more": "その他...",
+    "no": "いいえ",
+    "ok": "OK",
+    "scenes": "シーン",
+    "yes": "はい"
+  },
+  "scene": {
+    "title": "新しいシーン",
+    "subtitle": "ファイルからデータの新しいシーンを作成します",
+    "name": "シーン名",
+    "shortDescription": "短い説明",
+    "dataSource": "データソース",
+    "sourceType": "ソースの種類",
+    "selectFile": "ファイルを選択",
+    "fileName": "ファイル名",
+    "encoding": "文字エンコーディング",
+    "encodingTooltip": "ファイル内容のエンコードに使われた文字セット",
+    "dataSample": "データサンプル",
+    "sourceAttributes": "{{source}} ソース属性",
+    "language": "言語",
+    "languageTooltip": "日付・時刻や数値データの解析には正しい言語が必要です",
+    "adoptColumns": "既存シーンの列を引き継ぐ",
+    "scene": "シーン",
+    "created": "作成 {{time}}",
+    "detectColumnsTooltip": "定義された属性を考慮して列を検出します",
+    "adoptColumnsButton": "列を引き継ぐ",
+    "detectColumnsButton": "列を検出",
+    "columnDefinitions": "列の定義",
+    "preview": "プレビュー",
+    "previewErrorsTooltip": "プレビューにマッピングエラーがあります。不正なデータをデータベースに読み込む前に、読み取り属性や列の定義を修正してください",
+    "loadDataTooltip": "すべてのデータをデータベースに読み込みます",
+    "loadData": "データを読み込む",
+    "maxItems": "最大件数",
+    "maxItemsTooltip": "読み込む最大件数\n(最小: 1、最大: {{max}})",
+    "maxItemsError": "1-{{max}} を入力",
+    "abortOnErrorTooltip": "不整合なデータがあれば読み込みを中止します",
+    "abortOnError": "データエラーで中止",
+    "aborting": "{{message}} 中止しています...",
+    "loadingCanceled": "読み込みを中止しました: {{message}}",
+    "mappingErrors": "{{message}}、{{count}} 件のマッピングエラーが発生しました...",
+    "initializingDataLoad": "データの読み込みを準備しています...",
+    "tasksInitializing": "タスク ({{settled}}/{{count}}) - データの読み込みを準備しています...",
+    "taskCompleted": "タスク ({{settled}}/{{count}}) - {{task}} 完了",
+    "readingData": "データを読み取っています...",
+    "noSceneExists": "シーンがまだありません。少なくとも 1 つ作成してください！",
+    "persistAborted": "エラーのためデータの保存を中止しました: {{error}}",
+    "itemsPersisted": "{{count}} 件をデータベースに保存しました",
+    "itemsPersistedProgress": "{{total}} 件中 {{count}} 件を保存 ({{percent}}%)",
+    "itemsRead": "{{count}} 件を読み取り",
+    "itemsReadPersisted": "{{count}} 件を読み取り / {{persisted}} 件を保存",
+    "task": {
+      "insertScene": "シーンの挿入",
+      "createDatabase": "データベースの作成",
+      "indexColumns": "列のインデックス作成",
+      "indexColumn": "列 {{column}} のインデックス作成"
+    },
+    "column": {
+      "deleteTooltip": "不要な列を削除",
+      "name": "列名",
+      "dataType": "データ型",
+      "width": "幅",
+      "sourceFormat": "ソース形式",
+      "refreshPreview": "プレビューを更新",
+      "formatOptions": "カスタム形式のオプションを表示",
+      "displayFormat": "表示形式",
+      "nameRequired": "名前は必須です",
+      "nameDollar": "名前を $ で始めることはできません",
+      "nameTooLong": "名前は {{max}} 文字以内にしてください",
+      "incompatibleTypes": "列に互換性のないデータ型の値が含まれています"
+    },
+    "mapping": {
+      "columnError": "列 '{{column}}': {{error}}",
+      "cannotConvert": "\"{{value}}\" を {{dataType}} に変換できません",
+      "cannotConvertTime": "カスタムのソース形式がないため \"{{value}}\" を時刻に変換できません",
+      "cannotConvertTimeWithFormat": "形式 \"{{format}}\" で \"{{value}}\" を時刻に変換できません"
+    },
+    "reader": {
+      "csvDescription": "CSV (Comma Separated Values) は表形式のプレーンテキストです。\n各行が 1 レコードを表し、各フィールドは同じ文字 (例: カンマ) で区切る必要があります。",
+      "csvHeaderRow": "1 行目に列名を含む",
+      "csvSeparator": "区切り文字",
+      "excelDescription": "Microsoft Excel は表形式のデータを含む 1 つ以上のシートで構成されます。\n選択したシートの 1 行目に列名があることを前提とします。",
+      "excelSheetName": "シート名",
+      "excelSheetNameDescription": "データを含む Excel シートの名前",
+      "jsonDescription": "JSON (JavaScript Object Notation) はデータの保存と交換のための自己記述型のテキストです。\nJSONPath を指定して、フラットな (ネストされていない) オブジェクトの配列をインポートします。",
+      "jsonPath": "配列の JSONPath",
+      "jsonPathDescription": "データを含むオブジェクト配列への JSONPath",
+      "worksheetMissing": "シート \"{{sheet}}\" が存在しないか、解析できません"
+    }
+  },
+  "scenes": {
+    "activeScene": "アクティブなシーン",
+    "activeSceneSubtitle": "現在作業中のシーンです",
+    "allScenes": "すべてのシーン",
+    "allScenesSubtitle": "既存のシーンを管理します。シーンをアクティブにするとグラフィックを作成できます。",
+    "filter": "シーンを絞り込む",
+    "deleteFiltered": "絞り込み結果を削除",
+    "deleteAll": "すべて削除",
+    "deleteFilteredTitle": "絞り込んだシーンを削除",
+    "deleteAllTitle": "すべてのシーンを削除",
+    "deleteConfirm": "{{count}} 件のシーンを削除してもよろしいですか？",
+    "sceneDeleted": "シーンを削除しました",
+    "scenesDeleted": "{{count}} 件のシーンを削除しました",
+    "scenesDeletedOne": "{{count}} 件のシーンを削除しました",
+    "showDetails": "詳細を表示",
+    "activate": "シーンをアクティブにする",
+    "continueActive": "アクティブなシーンで続ける",
+    "creationTime": "作成日時",
+    "details": {
+      "sourceContext": "ソースのコンテキスト",
+      "columns": "列",
+      "name": "名前",
+      "type": "型",
+      "format": "形式",
+      "groupBy": "グループ化",
+      "width": "幅 ({{unit}})",
+      "unit": {
+        "chars": "文字",
+        "pixel": "ピクセル"
+      }
+    }
+  },
+  "dialog": {
+    "selectView": "ビューを選択",
+    "restoreView": "保存したビューを復元",
+    "restoreViewHint": "以前に保存したビューを読み込みます。",
+    "manageViews": "ビューの管理",
+    "manageSavedViews": "保存したビューの管理",
+    "manageSavedViewsHint": "以前に保存したビューを削除または名前変更します。",
+    "createView": "ビューを作成",
+    "createNewView": "新しいビューを作成",
+    "chooseInitialElement": "新しいビューに最初に追加する要素を選択してください。",
+    "chart": "チャート",
+    "graph": "関係グラフ",
+    "summaryTable": "集計表",
+    "dontShowAgain": "今後表示しない",
+    "rememberChoice": "選択を記憶する",
+    "couchDbLimitation": "CouchDB の制限",
+    "couchDbSortLimitation": "CouchDB のクエリ結果には、並べ替えフィールドの値がない行は含まれません。",
+    "gotIt": "了解"
+  },
+  "view": {
+    "print": "現在のビューを印刷",
+    "save": "現在のビューを保存",
+    "restore": "保存したビューを復元",
+    "saveTitle": "ビューを保存",
+    "name": "ビュー名",
+    "noElements": "ビューに要素がありません",
+    "saved": "ビュー \"{{name}}\" を保存しました",
+    "notSaved": "ビュー \"{{name}}\" を保存できません: {{error}}",
+    "deleted": "{{count}} 件のビューを削除しました",
+    "deletedOne": "{{count}} 件のビューを削除しました",
+    "renamed": "{{count}} 件のビューの名前を変更しました",
+    "renamedOne": "{{count}} 件のビューの名前を変更しました",
+    "tabsNotSaved": "開いているタブを保存できません:",
+    "tabsNotLoaded": "開いているタブを読み込めません:"
+  },
+  "ui": {
+    "color": {
+      "categorical": "カテゴリ",
+      "sequential": "連続",
+      "bgOpacity": "背景色の不透明度",
+      "borderOpacity": "枠線色の不透明度"
+    },
+    "multiExpansion": "複数展開",
+    "expandAll": "すべて展開",
+    "collapseAll": "すべて折りたたむ",
+    "notGrouped": "グループ化なし",
+    "per": {
+      "millisecond": "ミリ秒ごと",
+      "second": "秒ごと",
+      "minute": "分ごと",
+      "hour": "時間ごと",
+      "day": "日ごと",
+      "month": "月ごと",
+      "year": "年ごと"
+    },
+    "rows": "{{count}} 行",
+    "columnValue": "列 {{column}}",
+    "singleLineRows": "行を 1 行で表示",
+    "multiLineRows": "行を複数行で表示",
+    "hideNestedObjects": "ネストされたオブジェクトを隠す",
+    "showNestedObjects": "ネストされたオブジェクトを表示"
+  },
+  "chart": {
+    "typeTooltip": "{{type}}チャート",
+    "countDistinctValues": "異なる値を数える",
+    "uniqueNamedValues": "一意な名前付きの値",
+    "individualValues": "個別の値",
+    "stacked": "積み上げ",
+    "showDistinctScales": "個別のスケールを表示",
+    "values": "値",
+    "valuesOnAxis": "値（{{axis}}）",
+    "name": "名前",
+    "names": "名前",
+    "nameColumn": "名前の列",
+    "xAxis": "X軸",
+    "yAxis": "Y軸",
+    "valueSplitting": "値の分割",
+    "selectedColumns": "選択した列",
+    "availableColumns": "使用可能な列",
+    "splitColumnsHelp": "使用可能な列をドラッグ＆ドロップして選択します\n\n選択した分割列の異なる内容ごとに値を個別に表示します。分割列のセルが空の場合、その値は無視されます",
+    "columnName": "列名",
+    "groupBy": "グループ化",
+    "timeUnitGrouping": "時間単位でグループ化",
+    "colorScheme": "配色",
+    "legendAndLabels": "凡例とラベル",
+    "legendAndScales": "凡例とスケール",
+    "showLegend": "凡例を表示",
+    "percentValueLabels": "値をパーセントで表示",
+    "baseScale": "基準スケール",
+    "valueScale": "値スケール",
+    "valueScaleNumbered": "値スケール {{number}}",
+    "stepSize": "目盛り間隔",
+    "automatic": "自動",
+    "labelRotation": "ラベルの回転",
+    "legendPosition": {
+      "top": "上",
+      "right": "右",
+      "bottom": "下",
+      "left": "左"
+    },
+    "title": {
+      "countDistinctValuesOf": "{{columns}} の異なる値の数",
+      "groupedBy": "{{title}}（{{columns}} 別）",
+      "sample": "{{title}}（サンプル）",
+      "splitBy": "{{title}}\n{{columns}} で分割"
+    },
+    "error": {
+      "nameColumnUndefined": "名前の列が定義されていません",
+      "axisUndefined": "{{axis}}が定義されていません",
+      "maxValuesExceeded": "{{chartType}}チャート：値の最大数 {{max}} を超えました。\n\nチャートを設定し直すか、データを絞り込んでください。"
+    },
+    "warning": {
+      "sampledDown": "データが間引かれたため、チャートには使用可能な値の一部のみが含まれています。フィルターでデータを絞り込むと、選択した条件のすべての値が表示されます。"
+    }
+  },
+  "element": {
+    "title": {
+      "dataUndefined": "データ：未定義",
+      "distinctValuesOf": "{{column}} の異なる値",
+      "relationshipUndefined": "関係：未定義",
+      "relationship": "関係：ルート ⯈ {{columns}}"
+    },
+    "columnSpan": "列の幅",
+    "rowSpan": "行の高さ",
+    "saveAs": "{{format}}として保存",
+    "column": "{{count}} 列",
+    "columns": "{{count}} 列",
+    "row": "{{count}} 行",
+    "rows": "{{count}} 行",
+    "configure": "設定...",
+    "toggleMargin": "サイズ変更可能なチャート余白の切り替え",
+    "move": "移動",
+    "delete": "削除"
+  },
+  "dashboard": {
+    "loadingData": "データを読み込み中...",
+    "addChart": "チャートを追加",
+    "addGraph": "関係グラフを追加",
+    "addSummary": "サマリーを追加",
+    "layout": "レイアウト",
+    "gridColumns": "グリッドの列数",
+    "gridCellRatio": "グリッドセルの比率（幅:高さ）",
+    "manageViews": "ビューの管理",
+    "gridLayout": "グリッド（グリッドに合わせる）",
+    "flexLayout": "フレックス",
+    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます"
+  },
+  "enum": {
+    "chartType": {
+      "pie": "円",
+      "doughnut": "ドーナツ",
+      "bar": "棒",
+      "linearBar": "線形棒",
+      "horizontalBar": "横棒",
+      "linearHorizontalBar": "線形横棒",
+      "radar": "レーダー",
+      "polarArea": "鶏頭図",
+      "line": "折れ線",
+      "area": "面",
+      "scatter": "散布図"
+    },
+    "aggregation": {
+      "COUNT": "件数",
+      "AVG": "平均",
+      "MEDIAN": "中央値",
+      "MAX": "最大",
+      "MIN": "最小",
+      "SUM": "合計"
+    },
+    "operator": {
+      "CONTAINS": "含む",
+      "LESS_THAN": "<",
+      "LESS_THAN_OR_EQUAL": "<=",
+      "EQUAL": "=",
+      "NOT_EQUAL": "≠",
+      "GREATER_THAN_OR_EQUAL": ">=",
+      "GREATER_THAN": ">",
+      "EMPTY": "空",
+      "NOT_EMPTY": "空ではない",
+      "ANY_OF": "いずれかに一致",
+      "NONE_OF": "いずれにも一致しない"
+    },
+    "timeUnit": {
+      "MILLISECOND": "ミリ秒",
+      "SECOND": "秒",
+      "MINUTE": "分",
+      "HOUR": "時",
+      "DAY": "日",
+      "MONTH": "月",
+      "YEAR": "年"
+    },
+    "dataType": {
+      "BOOLEAN": "真偽値",
+      "NUMBER": "数値",
+      "OBJECT": "オブジェクト",
+      "TEXT": "テキスト",
+      "TIME": "時刻"
+    },
+    "exportFormat": {
+      "CSV": "CSV",
+      "JSON": "JSON",
+      "EXCEL": "Excel",
+      "PNG": "PNG"
+    }
+  },
+  "pivot": {
+    "loadingData": "データを読み込み中...",
+    "defineValueGrouping": "値のグループ化を定義...",
+    "timeUnitGrouping": "時間単位でグループ化",
+    "heatmapColors": "ヒートマップの色",
+    "showOverallTotals": "総計を表示",
+    "saveAsExcel": "Excel 形式で保存",
+    "manageViews": "ビューを管理",
+    "rows": "行",
+    "columns": "列",
+    "negativeValues": "負の値",
+    "positiveValues": "正の値",
+    "timeUnit": {
+      "millisecond": "ミリ秒",
+      "second": "秒",
+      "minute": "分",
+      "hour": "時",
+      "day": "日",
+      "month": "月",
+      "year": "年"
+    },
+    "sideBar": {
+      "nonGroupedColumns": "グループ化されていない列",
+      "addGroupingDefinition": "グループ化を追加",
+      "columnGrouping": "{{column}} のグループ化",
+      "max": "最大 {{value}}",
+      "min": "最小 {{value}}",
+      "addValueRange": "値の範囲を追加",
+      "upTo": "上限:",
+      "rangeMaxTooltip": "範囲の最大値（上限値は含まない）"
+    },
+    "locale": {
+      "renderError": "ピボットテーブルの結果を表示中にエラーが発生しました。",
+      "computeError": "ピボットテーブルの結果を計算中にエラーが発生しました。",
+      "uiRenderError": "ピボットテーブルの UI を表示中にエラーが発生しました。",
+      "selectAll": "すべて選択",
+      "selectNone": "選択解除",
+      "tooMany": "（多すぎて表示できません）",
+      "filterResults": "値を絞り込む",
+      "apply": "適用",
+      "cancel": "キャンセル",
+      "totals": "合計",
+      "vs": "対",
+      "by": "別"
+    },
+    "renderer": {
+      "table": "テーブル",
+      "tableBarchart": "棒グラフ付きテーブル",
+      "heatmap": "ヒートマップ",
+      "rowHeatmap": "行ヒートマップ",
+      "colHeatmap": "列ヒートマップ"
+    },
+    "aggregator": {
+      "count": "件数",
+      "countUnique": "一意の値の件数",
+      "listUnique": "一意の値の一覧",
+      "sum": "合計",
+      "integerSum": "整数の合計",
+      "average": "平均",
+      "median": "中央値",
+      "sampleVariance": "標本分散",
+      "sampleStdDev": "標本標準偏差",
+      "minimum": "最小",
+      "maximum": "最大",
+      "first": "最初",
+      "last": "最後",
+      "sumOverSum": "合計の比率",
+      "upperBound80": "80% 上限",
+      "lowerBound80": "80% 下限",
+      "sumFractionTotal": "合計の全体比",
+      "sumFractionRows": "合計の行比",
+      "sumFractionColumns": "合計の列比",
+      "countFractionTotal": "件数の全体比",
+      "countFractionRows": "件数の行比",
+      "countFractionColumns": "件数の列比"
+    }
+  },
+  "graph": {
+    "maxNodesExceeded": "グラフ: ノード数の上限 {{max}} を超えました。\n\n代わりにチャートを選択するか、データの絞り込みを調整してください。",
+    "tooltip": {
+      "rootNode": "ルートノード",
+      "oneEntry": "（{{count}} 件）",
+      "entries": "（{{count}} 件）",
+      "doubleClick": "ダブルクリックでデータを表示..."
+    },
+    "sideBar": {
+      "dataHierarchy": "データ階層",
+      "selectedColumns": "選択された列",
+      "dragDropColumnsHelp": "利用可能な列をドラッグ＆ドロップして選択します",
+      "availableColumns": "利用可能な列",
+      "colorScheme": "配色",
+      "other": "その他",
+      "linkDistance": "リンク距離",
+      "linkStrength": "リンク強度",
+      "friction": "摩擦",
+      "charge": "電荷",
+      "gravity": "重力",
+      "theta": "シータ",
+      "alpha": "アルファ"
+    }
+  },
+  "summary": {
+    "overall": "全体",
+    "showData": "データを表示...",
+    "aggregation": {
+      "Count": "件数",
+      "Average": "平均",
+      "Median": "中央値",
+      "Max": "最大",
+      "Min": "最小",
+      "Sum": "合計"
+    },
+    "sideBar": {
+      "data": "データ",
+      "defineValueGrouping": "値のグループ化を定義",
+      "countDistinctValues": "一意の値を数える",
+      "aggregateValues": "値を集計",
+      "columnGrouping": "{{column}} のグループ化",
+      "max": "最大 {{value}}",
+      "min": "最小 {{value}}",
+      "addValueRange": "値の範囲を追加",
+      "upTo": "上限:",
+      "rangeMaxTooltip": "範囲の最大値（上限値は含まない）",
+      "hierarchy": "階層",
+      "selectedColumns": "選択された列",
+      "dragDropColumnsHelp": "利用可能な列をドラッグ＆ドロップして選択します",
+      "availableColumns": "利用可能な列",
+      "aggregation": "集計",
+      "selectedAggregations": "選択された集計",
+      "dragDropAggregationsHelp": "利用可能な集計をドラッグ＆ドロップして選択します",
+      "availableAggregations": "利用可能な集計"
+    }
+  }
+}

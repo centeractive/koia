@@ -7,12 +7,12 @@ import { ViewToModelConverter } from 'app/shared/services/view-persistence/view-
 import { hasContent } from 'app/shared/services/view-tabs/tab-defs';
 import { ColumnNameConverter } from 'app/shared/utils';
 import { fruitSalesSampleOf, SampleDef } from './fruit-sales.sample';
-import { SampleLanguage } from './sample-language';
+import { LANGUAGES } from 'app/shared/services/language';
 import { SampleData, toEntries } from './sample-scene.service';
 
 describe('sample files', () => {
 
-   const languages: SampleLanguage[] = ['en', 'de', 'ja'];
+   const languages = LANGUAGES;
 
    async function dataOf(def: SampleDef): Promise<SampleData> {
       const response = await fetch('/assets/samples/' + def.file);

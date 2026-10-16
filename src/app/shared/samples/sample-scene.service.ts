@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { DataType, Document, Scene } from 'app/shared/model';
 import { TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
+import { LanguageService } from 'app/shared/services/language';
 import { SampleDef } from './fruit-sales.sample';
 
 /**
@@ -43,7 +44,7 @@ export class SampleSceneService {
    private async fetchSampleData(sample: SampleDef): Promise<SampleData> {
       const response = await fetch(new URL('assets/samples/' + sample.file, document.baseURI));
       if (!response.ok) {
-         throw new Error('cannot load sample data: ' + response.statusText);
+         throw new Error(LanguageService.instant('sample.loadFailed', { reason: response.statusText }));
       }
       return response.json();
    }

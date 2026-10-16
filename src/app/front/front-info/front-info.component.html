@@ -3,25 +3,23 @@
     <summary>
       <img class="landing-tile-icon" src="/assets/mat-icons/data_formats.png" alt="" width="40" height="40">
       <hgroup class="front-info-title">
-        <h3>Data formats</h3>
-        <p class="front-info-teaser">CSV, Excel and JSON with full control over the import</p>
+        <h3>{{ 'front.info.formats.title' | translate }}</h3>
+        <p class="front-info-teaser">{{ 'front.info.formats.teaser' | translate }}</p>
       </hgroup>
       <mat-icon class="front-info-chevron">expand_more</mat-icon>
     </summary>
     <div class="front-info-body">
-      <p>Data is loaded from files to the backing data storage through Koia itself or it may be written to it by a
-        third party program.</p>
-      <p>The following file types are supported.</p>
+      <p>{{ 'front.info.formats.loading' | translate }}</p>
+      <p>{{ 'front.info.formats.supported' | translate }}</p>
       <ul class="front-info-readers">
         @for (reader of readers; track reader) {
           <li><b>{{ reader.getSourceName() }} ({{ reader.getFileExtension() }})</b> – {{ reader.getDescription() }}</li>
         }
       </ul>
-      <p>When importing a file, you're granted full control over which portions of the data should be imported.
-        You're also in control over...</p>
+      <p>{{ 'front.info.formats.control' | translate }}</p>
       <ul>
-        <li>The data types to be used for storing the values in the data storage</li>
-        <li>The format to be applied for displaying certain values</li>
+        <li>{{ 'front.info.formats.dataTypes' | translate }}</li>
+        <li>{{ 'front.info.formats.displayFormat' | translate }}</li>
       </ul>
     </div>
   </details>
@@ -29,20 +27,19 @@
     <summary>
       <img class="landing-tile-icon" src="/assets/mat-icons/scenes.png" alt="" width="40" height="40">
       <hgroup class="front-info-title">
-        <h3>What is a scene?</h3>
-        <p class="front-info-teaser">One scene per data set, switch between them at any time</p>
+        <h3>{{ 'front.info.scene.title' | translate }}</h3>
+        <p class="front-info-teaser">{{ 'front.info.scene.teaser' | translate }}</p>
       </hgroup>
       <mat-icon class="front-info-chevron">expand_more</mat-icon>
     </summary>
     <div class="front-info-body">
-      <p>Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>.
-        You can switch between different scenes as you please.</p>
-      <p>Scenes can be given a user-defined name and description. They also contain the following items.</p>
+      <p [innerHTML]="'front.info.scene.text' | translate"></p>
+      <p>{{ 'front.info.scene.items' | translate }}</p>
       <ul>
-        <li>Information about the origin of the loaded data (i.e. file name and modification date).</li>
-        <li>A link to the loaded raw data in the data storage.</li>
-        <li>The name, data type, width and format of individual data columns.</li>
-        <li>View definitions that were saved by the user in order to be restored later on.</li>
+        <li>{{ 'front.info.scene.origin' | translate }}</li>
+        <li>{{ 'front.info.scene.link' | translate }}</li>
+        <li>{{ 'front.info.scene.columns' | translate }}</li>
+        <li>{{ 'front.info.scene.views' | translate }}</li>
       </ul>
     </div>
   </details>
@@ -50,27 +47,20 @@
     <summary>
       <img class="landing-tile-icon" src="/assets/mat-icons/view_data.png" alt="" width="40" height="40">
       <hgroup class="front-info-title">
-        <h3>Views</h3>
-        <p class="front-info-teaser">Raw data table, pivot tables and dashboards</p>
+        <h3>{{ 'front.info.views.title' | translate }}</h3>
+        <p class="front-info-teaser">{{ 'front.info.views.teaser' | translate }}</p>
       </hgroup>
       <mat-icon class="front-info-chevron">expand_more</mat-icon>
     </summary>
     <div class="front-info-body">
       <ul>
-        <li>The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size.
-          The table offers sorting and filtering of individual columns.</li>
-        <li>The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing
-          patterns and trends. It's based on amazing <a href="https://www.npmjs.com/package/pivottable#what-does-it-do"
-            target="_blank" rel="noopener">PivotTable.js</a> that offers many different views (e.g. heatmaps and table
-          barcharts) and lets you shape the pivot table through drag and drop of individual columns.</li>
-        <li>A <b>Dashboard</b> contains a variable number of elements (summary tables, charts and graphs). In
-          <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a
-          single cell or spread over several columns and rows. When the window size changes, the element size also
-          changes in order to always fit the allocated grid space. In <b>flex</b> layout, each element has a specific
-          size that is not changed when the window size changes, the elements are however automatically laid out
-          according to the available window space.</li>
-        <li>Any number of pivot tables and dashboards may be opened as individual tabs next to the raw data
-          table. Open tabs are kept with the scene.</li>
+        <li [innerHTML]="'front.info.views.rawData' | translate"></li>
+        <li>
+          <span [innerHTML]="'front.info.views.pivotBeforeLink' | translate"></span><a href="https://www.npmjs.com/package/pivottable#what-does-it-do"
+            target="_blank" rel="noopener">PivotTable.js</a>{{ 'front.info.views.pivotAfterLink' | translate }}
+        </li>
+        <li [innerHTML]="'front.info.views.dashboard' | translate"></li>
+        <li>{{ 'front.info.views.tabs' | translate }}</li>
       </ul>
     </div>
   </details>

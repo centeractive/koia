@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import {
   AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnDestroy, OnInit,
   Output, QueryList, SimpleChanges, TemplateRef, ViewChild, ViewChildren
@@ -68,7 +69,7 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
   private hScroll = 0;
   private resizeStartWidth: number | undefined;
   private resizeStartColumnsWidth: number | undefined;
-  private readonly valueFormatter = new ValueFormatter();
+  private readonly valueFormatter = new ValueFormatter(LanguageService.localeId);
 
   constructor(private dialogService: DialogService, private zone: NgZone, private cdr: ChangeDetectorRef) { }
 
@@ -145,7 +146,8 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
 
   displayValue(column: Column, entry: object): void {
     if (column.dataType === DataType.OBJECT) {
-      const data = new ConfirmDialogData('Column ' + column.name, '<pre>' + entry[column.name] + '</pre>', ['CLose']);
+      const data = new ConfirmDialogData(LanguageService.instant('ui.columnValue', { column: column.name }), '<pre>' + entry[column.name] + '</pre>',
+        [LanguageService.instant('common.close')]);
       this.dialogService.showConfirmDialog(data);
     }
   }

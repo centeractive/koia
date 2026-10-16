@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language/language.service';
 import { ElementContext } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { cellRatioToNumber } from './aspect-ratio';
@@ -49,7 +50,7 @@ export class GridLayout {
 
   setGridColumns(gridColumns: number, elementContexts: ElementContext[]): void {
     const largerElementContexts = elementContexts.filter(c => c.gridColumnSpan > gridColumns);
-    if (largerElementContexts.length === 0 || confirm('Larger elements will be resized to fit the new setting')) {
+    if (largerElementContexts.length === 0 || confirm(LanguageService.instant('dashboard.confirmResize'))) {
       largerElementContexts.forEach(c => c.gridColumnSpan = gridColumns);
       this.gridColumns = gridColumns;
       elementContexts

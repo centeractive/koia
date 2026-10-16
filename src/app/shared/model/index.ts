@@ -23,3 +23,4 @@ export * from './export-format.enum';
 export * from './connection-info.type';
 export * from './http-method.enum';
 export * from './protocol.enum';
+export * from './enum-labels';

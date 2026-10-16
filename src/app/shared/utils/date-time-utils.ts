@@ -134,8 +134,12 @@ export class DateTimeUtils {
     return date ? date.getTime() : undefined;
   }
 
-  static formatTime(time: number, timeUnit: TimeUnit): string {
-    return DateTime.fromMillis(time).toFormat(this.luxonFormatOf(timeUnit));
+  /**
+   * @param locale English by default, since the formatted times are data (e.g. pivot table values) that are parsed back
+   * with English locale, other locales are meant for display only
+   */
+  static formatTime(time: number, timeUnit: TimeUnit, locale = 'en'): string {
+    return DateTime.fromMillis(time, { locale }).toFormat(this.luxonFormatOf(timeUnit));
   }
 
   /**

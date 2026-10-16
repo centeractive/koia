@@ -61,3 +61,8 @@ button {
   border-top: var(--koia-header-line);
   padding-top: 4px;
 }
+
+.span_language {
+  min-height: 50px;
+  margin-left: 4px;
+}

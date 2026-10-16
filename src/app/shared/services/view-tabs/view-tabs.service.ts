@@ -1,3 +1,4 @@
+import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
@@ -148,6 +149,6 @@ export class ViewTabsService {
                this._ready = true;
             }
          })
-         .catch(err => this.persister.reportError('Open tabs cannot be loaded: ', err));
+         .catch(err => this.persister.reportError(LanguageService.instant('view.tabsNotLoaded') + ' ', err));
    }
 }

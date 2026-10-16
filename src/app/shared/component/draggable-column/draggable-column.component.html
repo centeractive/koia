@@ -7,17 +7,17 @@
     <span class="select_time_unit">
       <span [matMenuTriggerFor]="groupingTimeUnitMenu">
         @if (!column.groupingTimeUnit) {
-          <span [class]="cssClass">not grouped</span>
+          <span [class]="cssClass">{{ 'ui.notGrouped' | translate }}</span>
         }
         @if (column.groupingTimeUnit) {
-          <span [class]="cssClass">per {{ column.groupingTimeUnit }}</span>
+          <span [class]="cssClass">{{ 'ui.per.' + column.groupingTimeUnit | translate }}</span>
         }
         <mat-icon [class]="cssClass">more_vert</mat-icon>
       </span>
       <mat-menu #groupingTimeUnitMenu="matMenu">
         @for (timeUnit of selectableTimeUnits; track timeUnit) {
           <button mat-menu-item (click)="groupingTimeUnitChanged(timeUnit)">
-            {{ timeUnit ? 'per ' + timeUnit : '' }}
+            {{ timeUnit ? ('ui.per.' + timeUnit | translate) : '' }}
           </button>
         }
       </mat-menu>

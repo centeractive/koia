@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { ColumnPair, DataType } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 
@@ -78,8 +79,8 @@ export class EntryMapper {
          } else {
             const value = DataTypeUtils.toTypedValue(sourceValue, columnPair.target.dataType, this.locale);
             if (value == undefined) {
-               mappingResult.errors.push('Column \'' + columnPair.source.name + '\': Cannot convert "' + this.abbreviate(sourceValue) +
-                  '" to ' + columnPair.target.dataType);
+               mappingResult.errors.push(this.columnError(columnPair, LanguageService.instant('scene.mapping.cannotConvert',
+                  { value: this.abbreviate(sourceValue), dataType: columnPair.target.dataType })));
             } else {
                mappingResult.entry[columnPair.target.name] = value;
             }
@@ -100,8 +101,12 @@ export class EntryMapper {
          const date = this.parseDate(sourceValue, columnPair.source.format);
          mappingResult.entry[columnPair.target.name] = this.roundDownToTargetFormat(date, columnPair.target.format).getTime();
       } catch (e) {
-         mappingResult.errors.push('Column \'' + columnPair.source.name + '\': ' + e.message);
+         mappingResult.errors.push(this.columnError(columnPair, e.message));
       }
+   }
+
+   private columnError(columnPair: ColumnPair, error: string): string {
+      return LanguageService.instant('scene.mapping.columnError', { column: columnPair.source.name, error });
    }
 
    private parseDate(value: string, format: string): Date {
@@ -110,8 +115,9 @@ export class EntryMapper {
          date = DateTimeUtils.parseDate(value, undefined);
       }
       if (!date || isNaN(date.getTime())) {
-         const formatHint = format ? ' using format "' + format + '"' : ' without a custom source format';
-         throw new Error('Cannot convert "' + this.abbreviate(value) + '" to Time' + formatHint);
+         throw new Error(format ?
+            LanguageService.instant('scene.mapping.cannotConvertTimeWithFormat', { value: this.abbreviate(value), format }) :
+            LanguageService.instant('scene.mapping.cannotConvertTime', { value: this.abbreviate(value) }));
       }
       return date;
    }

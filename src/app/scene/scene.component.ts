@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { DBService } from 'app/shared/services/backend';
 import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
@@ -146,7 +147,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     const progressMonitor: ProgressMonitor = {
       onProgress: (percent, message) => {
         this.percentPersisted = percent;
-        this.feedback = message + (this.canceled ? ' aborting...' : '');
+        this.feedback = this.canceled ? LanguageService.instant('scene.aborting', { message }) : message;
       },
       onComplete: msg => this.entryPersisterCompleted(msg),
       onError: err => {
@@ -158,12 +159,12 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private entryPersisterCompleted(msg: string): void {
-    const canceledHint = this.canceled ? 'Loading canceled: ' : '';
+    const message = this.canceled ? LanguageService.instant('scene.loadingCanceled', { message: msg }) : msg;
     if (this.mappingErrors.size() > 0) {
-      this.notifyWarning(canceledHint + msg + ', ' + this.mappingErrors.size() + ' mapping errors did occur...\n\n' +
+      this.notifyWarning(LanguageService.instant('scene.mappingErrors', { message, count: this.mappingErrors.size() }) + '\n\n' +
         this.mappingErrors.toString());
     } else if (this.canceled) {
-      this.notifyWarning(canceledHint + msg);
+      this.notifyWarning(message);
     } else {
       this.notifySuccess(msg);
     }
@@ -312,16 +313,17 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.scene.columns = colMappings.map(cp => cp.target);
     this.accordion.closeAll();
     this.progressBarMode = 'query';
-    this.feedback = 'initializing data load...';
+    this.feedback = LanguageService.instant('scene.initializingDataLoad');
     const progressMonitor = new PromiseProgressMonitor();
 
     progressMonitor.onProgressChange(() => {
       this.progressBarMode = 'determinate';
       this.percentPersisted = progressMonitor.settledPercent;
       if (progressMonitor.settled == 0) {
-        this.feedback = `Tasks (${progressMonitor.settled}/${progressMonitor.count}) - initializing data load...`;
+        this.feedback = LanguageService.instant('scene.tasksInitializing', { settled: progressMonitor.settled, count: progressMonitor.count });
       } else {
-        this.feedback = `Tasks (${progressMonitor.settled}/${progressMonitor.count}) - ${progressMonitor.lastSettledTask} completed`;
+        this.feedback = LanguageService.instant('scene.taskCompleted',
+          { settled: progressMonitor.settled, count: progressMonitor.count, task: progressMonitor.lastSettledTask });
       }
     });
 
@@ -331,7 +333,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private loadData(): void {
-    this.feedback = 'reading data...';
+    this.feedback = LanguageService.instant('scene.readingData');
     this.progressBarMode = 'query';
     this.mappingErrors.clear();
     this.entryPersister.reset();
@@ -397,7 +399,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     } else if (this.scenesExist) {
       this.location.back();
     } else {
-      this.notifyWarning('Currently there exists no scene, at least one must be created!');
+      this.notifyWarning(LanguageService.instant('scene.noSceneExists'));
     }
   }
 }

@@ -1,5 +1,6 @@
 import { LabelType } from '@angular-slider/ngx-slider';
 import { Column, TimeUnit } from 'app/shared/model';
+import { LanguageService } from 'app/shared/services/language';
 import { DateTimeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { NumberRangeFilter } from './number-range-filter';
@@ -43,6 +44,13 @@ export class TimeRangeFilter extends NumberRangeFilter {
          timeUnits.push(timeUnit);
       }
       return timeUnits;
+   }
+
+   /**
+    * @returns the name of the time unit in the current language
+    */
+   override formatStep(step: TimeUnit): string {
+      return LanguageService.instant('filter.timeUnit.' + step);
    }
 
    override onStepChanged(timeStep: any): void {

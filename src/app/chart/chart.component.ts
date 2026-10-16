@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  DoCheck,
   ElementRef,
   EventEmitter,
   Inject,
@@ -21,7 +22,9 @@ import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils } from 'app/shared/utils';
+import { Subscription } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';
 import { ChartJs } from './chartjs/chartjs';
 
@@ -33,7 +36,7 @@ import { ChartJs } from './chartjs/chartjs';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class ChartComponent implements OnInit, OnChanges, OnDestroy, ExportDataProvider {
+export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, ExportDataProvider {
 
   @Input() gridView: boolean;
   @Input() context: ChartContext;
@@ -46,10 +49,12 @@ export class ChartComponent implements OnInit, OnChanges, OnDestroy, ExportDataP
   validateMarginResize: (resizeEvent: ResizeEvent) => boolean;
 
   private destroyed = false;
+  private textsOutdated = false;
+  private languageSubscription: Subscription;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     private chartDataService: ChartDataService, private chartMarginService: ChartMarginService,
-    private cdr: ChangeDetectorRef, private rawDataRevealService: RawDataRevealService) {
+    private cdr: ChangeDetectorRef, private rawDataRevealService: RawDataRevealService, private languageService: LanguageService) {
   }
 
   ngOnInit(): void {
@@ -57,8 +62,37 @@ export class ChartComponent implements OnInit, OnChanges, OnDestroy, ExportDataP
       this.router.navigateByUrl(Route.SCENES);
     } else {
       this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
+      this.languageSubscription = this.languageService.changed$.subscribe(() => this.onLanguageChanged());
     }
     this.initSize();
+  }
+
+  /**
+   * re-creates an existing chart in order to show its texts in the new language; the context is not changed, hence no change
+   * event is fired and nothing gets persisted. A chart that is not visible (e.g. its view is detached) is re-created once it becomes
+   * visible again, Chart.js would otherwise render it with zero size.
+   */
+  private onLanguageChanged(): void {
+    if (this.context.chart) {
+      this.textsOutdated = true;
+      this.refreshOutdatedTexts();
+    }
+  }
+
+  ngDoCheck(): void {
+    this.refreshOutdatedTexts();
+  }
+
+  private refreshOutdatedTexts(): void {
+    if (this.textsOutdated && !this.destroyed && this.isVisible()) {
+      this.textsOutdated = false;
+      this.prepareChartAsync(ChangeEvent.LOOK);
+    }
+  }
+
+  private isVisible(): boolean {
+    const canvas = this.canvasRef?.nativeElement;
+    return !!canvas?.isConnected && canvas.getClientRects().length > 0;
   }
 
   private initSize(): void {
@@ -111,6 +145,7 @@ export class ChartComponent implements OnInit, OnChanges, OnDestroy, ExportDataP
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.languageSubscription?.unsubscribe();
     this.context.chart?.destroy();
   }
 

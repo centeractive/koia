@@ -1,3 +1,4 @@
+import { LanguageService } from '../services/language';
 import { Directive, OnInit } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
@@ -44,7 +45,8 @@ export abstract class ConfigController extends AbstractComponent implements OnIn
    }
 
    saveConfig(): void {
-      const dialogData = new InputDialogData('Save View', 'View Name', this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
+      const dialogData = new InputDialogData(LanguageService.instant('view.saveTitle'), LanguageService.instant('view.name'),
+         this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
       const dialogRef = this.dialogService.showInputDialog(dialogData);
       firstValueFrom(dialogRef.afterClosed()).then(() => {
          if (dialogData.closedWithOK) {

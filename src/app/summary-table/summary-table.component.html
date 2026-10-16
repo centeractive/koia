@@ -12,27 +12,27 @@
           <td *matCellDef="let entry; let iRow = index" [attr.rowspan]="rowSpans[iCol][iRow].span"
             [style.display]="rowSpans[iCol][iRow].span === 0 ? 'none'  : ''">{{ formattedValueOf(iCol, entry[column]) }}
           </td>
-          <td mat-footer-cell *matFooterCellDef>{{iCol === frameColumns.length - overalls.length - 1 ? 'Overall' : '' }}
+          <td mat-footer-cell *matFooterCellDef>{{ iCol === frameColumns.length - overalls.length - 1 ? ('summary.overall' | translate) : '' }}
           </td>
         </ng-container>
       }
       @for (aggregation of context.aggregations; track aggregation; let iCol = $index) {
         <ng-container [matColumnDef]="aggregation">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ aggregation }}</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'summary.aggregation.' + aggregation | translate }}</th>
           <td class="td_aggregation" *matCellDef="let entry">
             @if (aggregation !== 'Count' || context.isAnyColumnWithValueGroupingInUse()) {
               <span>
-                {{ entry[aggregation] | number }}
+                {{ entry[aggregation] | koiaNumber }}
               </span>
             }
             @if (aggregation === 'Count' && !context.isAnyColumnWithValueGroupingInUse()) {
               <a
-                (click)="onAggregationCellClick(entry)" matTooltip="Show Data...">
-                {{ entry[aggregation] | number }}
+                (click)="onAggregationCellClick(entry)" [matTooltip]="'summary.showData' | translate">
+                {{ entry[aggregation] | koiaNumber }}
               </a>
             }
           </td>
-          <td mat-footer-cell *matFooterCellDef>{{ overalls[iCol] | number }}</td>
+          <td mat-footer-cell *matFooterCellDef>{{ overalls[iCol] | koiaNumber }}</td>
         </ng-container>
       }
       <tr mat-header-row *matHeaderRowDef="frameColumns; sticky: true"></tr>

@@ -13,8 +13,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
                            maxlength="{{ data.maxLength }}" [(ngModel)]="data.input">
                   </mat-form-field>
                   <div>
-                    <button id="but_cancel" mat-flat-button color="primary" (click)="onCancel()">Cancel</button>
-                    <button id="but_ok" mat-flat-button color="primary" [disabled]="!data.input" (click)="onOK()">OK</button>
+                    <button id="but_cancel" mat-flat-button color="primary" (click)="onCancel()">{{ 'common.cancel' | translate }}</button>
+                    <button id="but_ok" mat-flat-button color="primary" [disabled]="!data.input" (click)="onOK()">{{ 'common.ok' | translate }}</button>
                   </div>
                 </mat-card-content>
              </mat-card>`,

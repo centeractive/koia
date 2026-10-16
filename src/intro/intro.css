@@ -172,3 +172,24 @@ svg.landing-tile-icon {
   margin-inline: auto;
   text-wrap: balance;
 }
+
+.intro-languages {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.intro-languages a {
+  color: var(--koia-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.intro-languages a:hover {
+  color: var(--koia-primary);
+}
+
+.intro-languages a[aria-current="page"] {
+  color: var(--koia-primary);
+  font-weight: 700;
+}

@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { DataType } from 'app/shared/model';
 import { DataHandlerRecorder } from 'app/shared/test';
 import { JSONReader } from './json-reader';
@@ -75,8 +76,8 @@ describe('JSONReader', () => {
       // then
       await vi.waitFor(() => expect(attributes[0].value).toBe('$.objArr1'));
       expect(attributes.length).toBe(1);
-      expect(attributes[0].name).toBe('Array JSONPath');
-      expect(attributes[0].description).toBe('JSONPath to the object array that contains the data');
+      expect(LanguageService.instant(attributes[0].name)).toBe('Array JSONPath');
+      expect(LanguageService.instant(attributes[0].description)).toBe('JSONPath to the object array that contains the data');
       expect(attributes[0].dataType).toBe(DataType.TEXT);
       expect(attributes[0].hasValueChoice()).toBe(true);
       expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);

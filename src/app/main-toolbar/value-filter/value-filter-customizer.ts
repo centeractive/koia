@@ -1,41 +1,34 @@
 import { PropertyFilter, Operator, DataType } from 'app/shared/model';
 import { NumberFormatter } from 'app/shared/format';
+import { LanguageService } from 'app/shared/services/language';
 import { NumberUtils } from 'app/shared/utils';
 
 export class ValueFilterCustomizer {
 
+      private static readonly TOOLTIP_KEYS: Record<Operator, string> = {
+            [Operator.CONTAINS]: 'contains',
+            [Operator.LESS_THAN]: 'lessThan',
+            [Operator.LESS_THAN_OR_EQUAL]: 'lessThanOrEqual',
+            [Operator.EQUAL]: 'equal',
+            [Operator.NOT_EQUAL]: 'notEqual',
+            [Operator.GREATER_THAN_OR_EQUAL]: 'greaterThanOrEqual',
+            [Operator.GREATER_THAN]: 'greaterThan',
+            [Operator.EMPTY]: 'empty',
+            [Operator.NOT_EMPTY]: 'notEmpty',
+            [Operator.ANY_OF]: 'anyOf',
+            [Operator.NONE_OF]: 'noneOf'
+      };
+
       private numberFormatter = new NumberFormatter();
 
       tooltipOf(filter: PropertyFilter): string {
-            const prefix = 'Filters all items where \'' + filter.name + '\' ';
-            switch (filter.operator) {
-                  case Operator.CONTAINS:
-                        return prefix + 'contains the filter value (non-case-sensitive)';
-                  case Operator.LESS_THAN:
-                        return prefix + 'is less than the filter value';
-                  case Operator.LESS_THAN_OR_EQUAL:
-                        return prefix + 'is less than or equal to the filter value';
-                  case Operator.EQUAL:
-                        return prefix + 'is equal to the filter value (case-sensitive)';
-                  case Operator.NOT_EQUAL:
-                        return prefix + 'is not equal to the filter value (case-sensitive)';
-                  case Operator.GREATER_THAN_OR_EQUAL:
-                        return prefix + 'is greater than or equal to the filter value';
-                  case Operator.GREATER_THAN:
-                        return prefix + 'is greater than the filter value';
-                  case Operator.EMPTY:
-                        return prefix + 'is empty';
-                  case Operator.NOT_EMPTY:
-                        return prefix + 'is not empty';
-                  case Operator.ANY_OF:
-                        return prefix + 'is equal to any of the filter values, separated by a semicolon \';\' each' +
-                              this.caseSensitiveText(filter);
-                  case Operator.NONE_OF:
-                        return prefix + 'is equal to none of the filter values, separated by a semicolon \';\' each' +
-                              this.caseSensitiveText(filter);
-                  default:
-                        return undefined;
+            const key = ValueFilterCustomizer.TOOLTIP_KEYS[filter.operator];
+            if (!key) {
+                  return undefined;
             }
+            const tooltip = LanguageService.instant('filter.value.tooltip.' + key, { name: filter.name });
+            const multiValue = filter.operator === Operator.ANY_OF || filter.operator === Operator.NONE_OF;
+            return multiValue ? tooltip + this.caseSensitiveText(filter) : tooltip;
       }
 
       formattedValueOf(filter: PropertyFilter): string {
@@ -49,6 +42,6 @@ export class ValueFilterCustomizer {
       }
 
       private caseSensitiveText(filter: PropertyFilter) {
-            return filter.dataType === DataType.TEXT ? ' (case-sensitive)' : '';
+            return filter.dataType === DataType.TEXT ? ' ' + LanguageService.instant('filter.value.tooltip.caseSensitive') : '';
       }
 }

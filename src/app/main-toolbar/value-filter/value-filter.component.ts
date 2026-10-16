@@ -56,6 +56,10 @@ export class ValueFilterComponent implements OnInit {
     }
   }
 
+  operatorLabel(operator: Operator): string {
+    return ValueFilterUtils.labelOf(operator);
+  }
+
   isEqualBoolean(): boolean {
     return this.filter.operator === Operator.EQUAL && this.filter.dataType === DataType.BOOLEAN;
   }

@@ -1,4 +1,6 @@
+import { TestBed } from '@angular/core/testing';
 import { GraphContext, GraphNode } from 'app/shared/model/graph';
+import { LanguageService } from 'app/shared/services/language';
 import { graphTooltip } from './graph-tooltip';
 
 describe('graph-tooltip', () => {
@@ -57,5 +59,22 @@ describe('graph-tooltip', () => {
         expect(tooltip).toEqual('<div class="div_tooltip">'
             + '<span class="tooltip_colored_box" style="background:green;margin-right:10px;"></span>'
             + 'Path: <b>/var/log</b> (7 Entries)<br><br>Double-click to show data...</div>');
+    });
+
+    it('should generate tooltip in current language', async () => {
+
+        // given
+        vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+        await TestBed.inject(LanguageService).use('de');
+        const leafNode: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: 'ERROR', info: '1200', count: 1200 };
+
+        // when
+        const tooltip = graphTooltip(leafNode, 'red', context);
+
+        // then
+        expect(tooltip).toEqual('<div class="div_tooltip">'
+            + '<span class="tooltip_colored_box" style="background:red;margin-right:10px;"></span>'
+            + 'Level: <b>ERROR</b> (1.200 Einträge)<br><br>Doppelklick zeigt die Daten...</div>');
+        document.documentElement.lang = 'en';
     });
 });

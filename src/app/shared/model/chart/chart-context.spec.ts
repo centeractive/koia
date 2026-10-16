@@ -1,4 +1,5 @@
-import { fakeAsync, flush } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { LanguageService } from 'app/shared/services/language';
 import { Aggregation } from '../aggregation.enum';
 import { ChangeEvent } from '../change-event.enum';
 import { Column } from '../column.type';
@@ -651,6 +652,24 @@ describe('ChartContext', () => {
 
       // then
       expect(title).toBe('Percent by Time\nsplit by Name ⯈ Amount');
+   });
+
+   it('#getTitle should follow current language', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      context.chartType = ChartType.AREA.type;
+      context.dataColumns = [column('Percent')];
+      context.splitColumns = [column('Name')];
+      context.groupByColumns = [column('Time')];
+      context.dataSampledDown = true;
+
+      // when
+      await TestBed.inject(LanguageService).use('de');
+
+      // then
+      expect(context.getTitle()).toBe('Percent nach Time (Stichprobe)\naufgeteilt nach Name');
+      document.documentElement.lang = 'en';
    });
 
    it('#getSupportedExportFormats should return PNG', () => {

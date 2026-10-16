@@ -9,17 +9,17 @@
       @if (gridLayout) {
         <button class="menu_item_column_span" mat-menu-item [matMenuTriggerFor]="columnSpanMenu">
           <mat-icon>view_column</mat-icon>
-          <span>Column Span</span>
+          <span>{{ 'element.columnSpan' | translate }}</span>
         </button>
         <button class="menu_item_row_span" mat-menu-item [matMenuTriggerFor]="rowSpanMenu">
           <mat-icon>table_rows</mat-icon>
-          <span>Row Span</span>
+          <span>{{ 'element.rowSpan' | translate }}</span>
         </button>
       }
       @for (exportFormat of context.getSupportedExportFormats(); track exportFormat) {
         <button class="menu_item_save_as" mat-menu-item (click)="saveAs.emit(exportFormat)">
           <mat-icon>insert_drive_file</mat-icon>
-          <span>Save As {{ exportFormat }}</span>
+          <span>{{ 'element.saveAs' | translate: { format: exportFormatLabel(exportFormat) } }}</span>
         </button>
       }
     </mat-menu>
@@ -27,7 +27,7 @@
     <mat-menu #columnSpanMenu="matMenu">
       @for (span of gridLayout?.columnSpans(); track span) {
         <button class="menu_item_span" mat-menu-item [disabled]="span === context.gridColumnSpan" (click)="context.gridColumnSpan = span">
-          {{ span }} Column{{ span === 1 ? '' : 's' }}
+          {{ (span === 1 ? 'element.column' : 'element.columns') | translate: { count: span } }}
         </button>
       }
     </mat-menu>
@@ -35,17 +35,17 @@
     <mat-menu #rowSpanMenu="matMenu">
       @for (span of rowSpans; track span) {
         <button class="menu_item_span" mat-menu-item [disabled]="span === context.gridRowSpan" (click)="context.gridRowSpan = span">
-          {{ span }} Row{{ span === 1 ? '' : 's' }}
+          {{ (span === 1 ? 'element.row' : 'element.rows') | translate: { count: span } }}
         </button>
       }
     </mat-menu>
 
-    <button id="configButton" class="but_config" mat-icon-button matTooltip="Configure..." (click)="configure.emit($event)">
+    <button id="configButton" class="but_config" mat-icon-button [matTooltip]="'element.configure' | translate" (click)="configure.emit($event)">
       <mat-icon>settings</mat-icon>
     </button>
     @if (chartContext(); as chartContext) {
       <button id="marginButton" class="but_config" mat-icon-button [class.koia-toggle-active]="chartContext.isShowResizableMargin()"
-        matTooltip="Toggle resizable chart margin" (click)="chartContext.toggleShowResizableMargin()">
+        [matTooltip]="'element.toggleMargin' | translate" (click)="chartContext.toggleShowResizableMargin()">
         <mat-icon>crop_free</mat-icon>
       </button>
     }
@@ -60,11 +60,11 @@
     </button>
   }
   @if (movable) {
-    <button class="but_move" mat-icon-button matTooltip="Move" cdkDragHandle>
+    <button class="but_move" mat-icon-button [matTooltip]="'element.move' | translate" cdkDragHandle>
       <mat-icon svgIcon="move"></mat-icon>
     </button>
   }
-  <button class="but_close" mat-icon-button matTooltip="Delete" (click)="remove.emit()">
+  <button class="but_close" mat-icon-button [matTooltip]="'element.delete' | translate" (click)="remove.emit()">
     <mat-icon>delete_forever</mat-icon>
   </button>
 </div>

@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { ValueFormatter } from 'app/shared/format';
 import { Column } from 'app/shared/model';
 import { TextMeasurer } from '../table-fit/text-measurer';
@@ -10,7 +11,7 @@ export class ColumnWidthResolver {
   static readonly FONT = '12px "Segoe UI", system-ui, -apple-system, sans-serif';
 
   private readonly measurer = new TextMeasurer(ColumnWidthResolver.FONT);
-  private readonly valueFormatter = new ValueFormatter();
+  private readonly valueFormatter = new ValueFormatter(LanguageService.localeId);
 
   widthOf(column: Column, measurement: 'em' | 'px', considerColumnWidths: boolean, entries: object[], showNestedObjects: boolean): number {
     if (considerColumnWidths && column.width > 0) {

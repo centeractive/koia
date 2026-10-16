@@ -1,4 +1,4 @@
-import { Column, DataType } from 'app/shared/model';
+import { Aggregation, Column, DataType, EnumLabels } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartConfiguration } from 'chart.js';
 import { TimeFormatter } from '../chartjs/formatter/time-formatter';
@@ -73,7 +73,7 @@ export class BarLegendCustomizer extends TimeFormatter {
             tooltipOptions.callbacks.title = ctx => ctx[0].dataset.label;
         }
         if (context.isAggregationCountSelected()) {
-            tooltipOptions.callbacks.label = ctx => 'Count: ' + ctx.formattedValue;
+            tooltipOptions.callbacks.label = ctx => EnumLabels.aggregation(Aggregation.COUNT) + ': ' + ctx.formattedValue;
         } else {
             tooltipOptions.callbacks.label = ctx => dataColumn.name + ': ' + ctx.formattedValue;
         }

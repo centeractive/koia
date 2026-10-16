@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language/language.service';
 import { StringUtils } from '../utils/string-utils';
 import { Column } from './column.type';
 import { ElementContext } from './element-context';
@@ -14,10 +15,10 @@ export class SummaryContext extends ElementContext {
          return this.title;
       }
       if (this.dataColumns.length > 0) {
-         const prefix = this.isAggregationCountSelected() ? 'Distinct values of ' : '';
-         return prefix + StringUtils.quote(this.dataColumns[0].name);
+         const column = StringUtils.quote(this.dataColumns[0].name);
+         return this.isAggregationCountSelected() ? LanguageService.instant('element.title.distinctValuesOf', { column }) : column;
       }
-      return 'Data: to be defined';
+      return LanguageService.instant('element.title.dataUndefined');
    }
 
    getSupportedExportFormats(): ExportFormat[] {

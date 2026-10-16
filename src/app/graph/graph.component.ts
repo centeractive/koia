@@ -14,6 +14,7 @@ import {
 import { ExportDataProvider } from 'app/shared/controller';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils } from 'app/shared/utils';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
 
@@ -78,9 +79,8 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   private buildGraphData(): void {
     const graphData = this.graphDataService.createData(this.context);
     if (graphData['nodes'].length > GraphComponent.MAX_NODES) {
-      const msg = 'Graph: Maximum number of ' + GraphComponent.MAX_NODES.toLocaleString() + ' nodes exceeded.' +
-        '\n\nPlease choose chart instead or apply/refine data filtering.'
-      this.onWarning.emit(msg);
+      const max = GraphComponent.MAX_NODES.toLocaleString(LanguageService.localeId());
+      this.onWarning.emit(LanguageService.instant('graph.maxNodesExceeded', { max }));
     } else {
       this.graphData = graphData;
       this.generateGraph();

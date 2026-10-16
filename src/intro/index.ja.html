@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <script>
+    // remembers the language chosen with the language links, also used by the application
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('.intro-languages a[hreflang]');
+      if (a) {
+        try { localStorage.setItem('koia.language', a.hreflang); } catch (err) { }
+      }
+    });
+  </script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-66X1MBQRD9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-66X1MBQRD9');
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Koia データ分析</title>
+  <meta name="description"
+    content="CSV、Excel、JSON のデータから、ブラウザー上でグラフ、ピボットテーブル、ダッシュボードを作成できます。オープンソースで登録不要、データは常にあなたの管理下にあります。">
+  <meta name="theme-color" content="#303f9f">
+  <meta property="og:title" content="Koia データ分析">
+  <meta property="og:description"
+    content="CSV、Excel、JSON のデータから、ブラウザー上でグラフ、ピボットテーブル、ダッシュボードを作成できます。オープンソースで登録不要、データは常にあなたの管理下にあります。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.koia.io/intro/screenshots/dashboard.jpg">
+  <link rel="alternate" hreflang="en" href="https://www.koia.io/intro/index.html">
+  <link rel="alternate" hreflang="de" href="https://www.koia.io/intro/index.de.html">
+  <link rel="alternate" hreflang="ja" href="https://www.koia.io/intro/index.ja.html">
+  <link rel="alternate" hreflang="x-default" href="https://www.koia.io/intro/index.html">
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/assets/themes/koia-tokens.css">
+  <link rel="stylesheet" href="/assets/themes/koia-landing.css">
+  <link rel="stylesheet" href="intro.css">
+</head>
+
+<body class="landing-root landing-shell">
+  <header class="landing-header">
+    <div class="landing-container landing-header-inner">
+      <a href="/intro/index.ja.html">
+        <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
+      </a>
+      <nav class="landing-nav">
+        <a class="landing-nav-secondary" href="#why">Koia を選ぶ理由</a>
+        <a class="landing-nav-secondary" href="#features">機能</a>
+        <a class="landing-nav-secondary" href="#how">使い方</a>
+        <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
+          rel="noopener">GitHub</a>
+        <span class="intro-languages">
+          <a href="/intro/index.html" hreflang="en" lang="en">EN</a>
+          <a href="/intro/index.de.html" hreflang="de" lang="de">DE</a>
+          <a href="/intro/index.ja.html" hreflang="ja" lang="ja" aria-current="page">JA</a>
+        </span>
+        <a class="landing-btn landing-btn-primary" href="/front">Koia を開く</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="landing-scroll">
+    <section class="landing-hero">
+      <div class="landing-container">
+        <h1>あなたのデータからグラフ、ピボットテーブル、ダッシュボードを</h1>
+        <p class="landing-lead">ブラウザーだけで。オープンソースで登録不要、データは常にあなたの管理下にあります。</p>
+        <div class="landing-actions">
+          <a class="landing-btn landing-btn-accent" href="/front">はじめる</a>
+        </div>
+        <figure class="landing-frame landing-hero-shot">
+          <button class="landing-zoom" type="button" commandfor="zoom-hero" command="show-modal">
+            <img src="screenshots/dashboard.webp"
+              alt="5 列グリッドの Koia ダッシュボード。グループ化されたサマリーテーブル、散布図、棒グラフ、ドーナツグラフ、鶏頭図を表示"
+              width="1440" height="900" fetchpriority="high">
+          </button>
+          <dialog id="zoom-hero" class="landing-zoom-dialog" closedby="any"
+            aria-label="5 列グリッドの Koia ダッシュボード。グループ化されたサマリーテーブル、散布図、棒グラフ、ドーナツグラフ、鶏頭図を表示">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-hero"
+              command="close">閉じる</button>
+            <img src="screenshots/dashboard.webp"
+              alt="5 列グリッドの Koia ダッシュボード。グループ化されたサマリーテーブル、散布図、棒グラフ、ドーナツグラフ、鶏頭図を表示"
+              width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </div>
+    </section>
+
+    <section id="why" class="landing-section landing-canvas">
+      <div class="landing-container">
+        <h2>Koia を選ぶ理由</h2>
+        <ul class="landing-grid landing-grid-4">
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+              <h3>オープンソース</h3>
+            </div>
+            <p>無料で公開されています。オンラインで使うことも、信頼できる自社環境にインストールすることもできます。</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <h3>データは非公開のまま</h3>
+            </div>
+            <p>データがやり取りされるのは、ブラウザーと選択したストレージ（ブラウザー自体または独自の
+              CouchDB）の間だけです。</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M10 10.02h5V21h-5zM17 21h3c1.1 0 2-.9 2-2v-9h-5v11zm3-18H5c-1.1 0-2 .9-2 2v3h19V5c0-1.1-.9-2-2-2zM3 19c0 1.1.9 2 2 2h3V10H3v9z"/></svg>
+              <h3>CSV, Excel, JSON</h3>
+            </div>
+            <p>ファイルをインポートし、読み込む列と値のデータ型・書式を指定できます。</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <h3>ワンクリックで元データへ</h3>
+            </div>
+            <p>グラフの要素や集計値をクリックすると、その元になった行を表示できます。コンテキストが失われることはありません。</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="features" class="landing-section landing-container">
+      <h2>機能</h2>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>データを読み込む</h3>
+          <p>CSV、Excel、JSON ファイルをインポートし、読み込む列と値のデータ型を指定します。</p>
+          <p>各データセットは<b>シーン</b>になります。1 つのブラウザータブでシーンを切り替えられます。</p>
+          <ul class="intro-chips">
+            <li>CSV</li>
+            <li>Excel</li>
+            <li>JSON</li>
+            <li>Retrospective Log Analyzer</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-scene" command="show-modal">
+            <img src="screenshots/scene.webp" alt="CSV ファイルを新しいシーンに読み込む" width="1440" height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-scene" class="landing-zoom-dialog" closedby="any" aria-label="CSV ファイルを新しいシーンに読み込む">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-scene"
+              command="close">閉じる</button>
+            <img src="screenshots/scene.webp" alt="CSV ファイルを新しいシーンに読み込む" width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>ピボットテーブルとグラフ</h3>
+          <p>列を<b>ピボットテーブル</b>にドラッグし、ヒートマップや棒グラフなどを切り替えられます。</p>
+          <p>円グラフ、ドーナツグラフ、棒グラフ、折れ線グラフ、面グラフ、レーダーチャート、鶏頭図、散布図から選べます。</p>
+          <ul class="intro-chips">
+            <li>ヒートマップ</li>
+            <li>関係グラフ</li>
+            <li>時系列</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-pivot" command="show-modal">
+            <img src="screenshots/pivot.webp" alt="ピボットテーブルのヒートマップ" width="1440" height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-pivot" class="landing-zoom-dialog" closedby="any" aria-label="ピボットテーブルのヒートマップ">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-pivot"
+              command="close">閉じる</button>
+            <img src="screenshots/pivot.webp" alt="ピボットテーブルのヒートマップ" width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>ダッシュボード</h3>
+          <p>グラフ、関係グラフ、<b>サマリーテーブル</b>をダッシュボード上にグリッドまたはフレックスレイアウトで組み合わせられます。</p>
+          <p>各要素のサイドバーで列、グラフの種類、グループ化、色を選択できます。</p>
+          <ul class="intro-chips">
+            <li>グリッドレイアウト</li>
+            <li>フレックスレイアウト</li>
+            <li>保存済みビュー</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-dashboards" command="show-modal">
+            <img src="screenshots/dashboards.webp" alt="地域・チャネル・製品ごとの行数を集計するサマリーテーブルと、棒グラフ、ドーナツグラフ、円グラフ、レーダーチャート、鶏頭図、横棒グラフを並べたダッシュボード" width="1440" height="818" loading="lazy">
+          </button>
+          <dialog id="zoom-dashboards" class="landing-zoom-dialog" closedby="any" aria-label="地域・チャネル・製品ごとの行数を集計するサマリーテーブルと、棒グラフ、ドーナツグラフ、円グラフ、レーダーチャート、鶏頭図、横棒グラフを並べたダッシュボード">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-dashboards"
+              command="close">閉じる</button>
+            <img src="screenshots/dashboards.webp" alt="地域・チャネル・製品ごとの行数を集計するサマリーテーブルと、棒グラフ、ドーナツグラフ、円グラフ、レーダーチャート、鶏頭図、横棒グラフを並べたダッシュボード" width="1440" height="818" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>元データを掘り下げる</h3>
+          <p>グラフの要素や集計値をクリックすると、<b>その元になった行</b>を表示できます。</p>
+          <p><b>時間フィルターと値フィルター</b>でビューを絞り込み、結果をエクスポートできます。</p>
+          <ul class="intro-chips">
+            <li>時間フィルター</li>
+            <li>値フィルター</li>
+            <li>Excel エクスポート</li>
+            <li>PNG エクスポート</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-rawdata" command="show-modal">
+            <img src="screenshots/rawdata.webp" alt="棒をクリックして開いた元データのダイアログ" width="1440" height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-rawdata" class="landing-zoom-dialog" closedby="any" aria-label="棒をクリックして開いた元データのダイアログ">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-rawdata"
+              command="close">閉じる</button>
+            <img src="screenshots/rawdata.webp" alt="棒をクリックして開いた元データのダイアログ" width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+    </section>
+
+    <section id="how" class="landing-cta landing-section">
+      <div class="landing-container">
+        <h2>使い方</h2>
+        <ol class="landing-grid landing-grid-3 intro-steps">
+          <li><b>Koia を開く</b><span>登録不要。CouchDB を選ばない限り、データはブラウザー内に保存されます。</span></li>
+          <li><b>ファイルを読み込むかサンプルデータを試す</b><span>CSV、Excel、JSON をインポートするか、用意された果物の売上ビューを試せます。</span></li>
+          <li><b>ビューを作成</b><span>グラフ、関係グラフ、サマリーを含むピボットテーブルとダッシュボードを追加できます。</span></li>
+        </ol>
+        <a class="landing-btn landing-btn-accent" href="/front">はじめる</a>
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      <div class="landing-container landing-footer-inner">
+        <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
+        <a href="https://retrospective.centeractive.com/" target="_blank" rel="noopener">
+          <img class="landing-badge" src="/assets/retrospective_compatible.png" alt="Retrospective 対応"
+            width="142" height="46">
+        </a>
+        <small>Koia は <a href="https://github.com/centeractive/koia/blob/master/LICENSE" target="_blank"
+            rel="noopener">MIT ライセンス</a>です。© 2026 centeractive ag. <a href="https://github.com/centeractive/koia"
+            target="_blank" rel="noopener">GitHub</a></small>
+      </div>
+    </footer>
+  </div>
+</body>
+
+</html>

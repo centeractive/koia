@@ -1,7 +1,8 @@
+import { LanguageService } from 'app/shared/services/language';
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { ColumnPair, DataType } from 'app/shared/model';
+import { ColumnPair, DataType, EnumLabels } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { ColumnDefinitionAssistant } from '../utils';
 import { ColumnMappingGenerator } from './mapper';
@@ -14,6 +15,8 @@ import { ColumnMappingGenerator } from './mapper';
     standalone: false
 })
 export class ColumnMappingComponent implements OnInit {
+
+  readonly dataTypeLabel = EnumLabels.dataType;
 
   @Input() mapping: ColumnPair;
   @Output() onChange = new EventEmitter<void>();
@@ -44,14 +47,22 @@ export class ColumnMappingComponent implements OnInit {
 
   getColumnNameErrorMessage(): string {
     if (this.columnNameControl.hasError('required')) {
-      return 'Name is required';
+      return LanguageService.instant('scene.column.nameRequired');
     } else if (this.columnNameControl.hasError('pattern')) {
-      return 'Name must not start with $';
+      return LanguageService.instant('scene.column.nameDollar');
     } else if (this.columnNameControl.hasError('maxlength')) {
-      return 'Name must not exceed ' + ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH + ' characters';
+      return LanguageService.instant('scene.column.nameTooLong', { max: ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH });
     } else {
       return '';
     }
+  }
+
+  /**
+   * @returns the translation key of the known warning, the warning itself otherwise (the warning is persisted with the scene
+   * and therefore stays English)
+   */
+  warningOf(mapping: ColumnPair): string {
+    return mapping.warning === ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES ? 'scene.column.incompatibleTypes' : mapping.warning;
   }
 
   formattedNow(format: string): string {

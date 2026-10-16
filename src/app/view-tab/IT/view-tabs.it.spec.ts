@@ -1,3 +1,4 @@
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, provideZoneChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -39,7 +40,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [DashboardComponent, PivotTableComponent, ChartComponent, DummyComponent],
-      imports: [MatSidenavModule, MatMenuModule, MatDialogModule, MatBottomSheetModule, MatProgressBarModule, ResizableDirective, ResizeHandleDirective],
+      imports: [MatSidenavModule, MatMenuModule, MatTooltipModule, MatDialogModule, MatBottomSheetModule, MatProgressBarModule, ResizableDirective, ResizeHandleDirective],
       providers: [
         provideZoneChangeDetection(),
         ...IT_PROVIDERS,

@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -124,7 +125,7 @@ describe('SceneTableComponent (active scene)', () => {
 async function setup(): Promise<void> {
   await TestBed.configureTestingModule({
     declarations: [SceneTableComponent],
-    imports: [MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule],
+    imports: [MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
     providers: [Location,
       { provide: DBService, useValue: dbService },
       { provide: DialogService, useValue: dialogService }

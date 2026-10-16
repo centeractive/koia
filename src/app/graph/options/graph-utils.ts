@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { Column, DataType } from 'app/shared/model';
 import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { DateTimeUtils } from 'app/shared/utils/date-time-utils';
@@ -50,7 +51,7 @@ export class GraphUtils {
       let value: any = graphNode.value;
       const timeColumn = this.findCorrespondingTimeColumn(graphNode.name, context);
       if (timeColumn) {
-         value = DateTimeUtils.formatTime(value, timeColumn.groupingTimeUnit);
+         value = DateTimeUtils.formatTime(value, timeColumn.groupingTimeUnit, LanguageService.localeId());
       }
       return value;
    }

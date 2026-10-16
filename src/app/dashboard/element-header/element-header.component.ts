@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { ElementContext, ExportFormat } from 'app/shared/model';
+import { ElementContext, EnumLabels, ExportFormat } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { GridLayout } from '../grid-layout';
 
@@ -24,6 +24,10 @@ export class ElementHeaderComponent {
 
   isMoreMenuAvailable(): boolean {
     return !!this.gridLayout || this.context.getSupportedExportFormats().length > 0;
+  }
+
+  exportFormatLabel(exportFormat: ExportFormat): string {
+    return EnumLabels.exportFormat(exportFormat);
   }
 
   chartContext(): ChartContext {

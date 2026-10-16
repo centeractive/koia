@@ -1,4 +1,5 @@
-import { DatePipe } from '@angular/common';
+import { formatDate } from '@angular/common';
+import { LanguageService } from 'app/shared/services/language';
 import { Component, ElementRef, Inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
@@ -39,7 +40,6 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
   private dataFrame: IDataFrame<number, any>;
   private dataFrameSorter = new DataFrameSorter();
   private numberFormatter = new NumberFormatter();
-  private datePipe = new DatePipe('en-US');
   private exportDataGenerator = new ExportDataGenerator();
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
@@ -165,9 +165,9 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
       column = this.context.groupByColumns[columnIndex];
       if (column.dataType === DataType.TIME) {
         if (column.groupingTimeUnit) {
-          return this.datePipe.transform(value, DateTimeUtils.ngFormatOf(column.groupingTimeUnit));
+          return formatDate(value, DateTimeUtils.ngFormatOf(column.groupingTimeUnit), LanguageService.localeId());
         } else if (column.format) {
-          return DateTime.fromMillis(value).toFormat(column.format);
+          return DateTime.fromMillis(value, { locale: LanguageService.localeId() }).toFormat(column.format);
         }
       }
     }

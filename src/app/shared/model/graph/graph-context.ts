@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language/language.service';
 import { ElementContext, Column, ExportFormat } from '..';
 
 /**
@@ -101,9 +102,9 @@ export class GraphContext extends ElementContext {
          return this.title;
       }
       if (this.groupByColumns.length === 0) {
-         return 'Relationship: to be defined';
+         return LanguageService.instant('element.title.relationshipUndefined');
       }
-      return 'Relationship: Root ⯈ ' + this.groupByColumns.map(c => c.name).join(' ⯈ ');
+      return LanguageService.instant('element.title.relationship', { columns: this.groupByColumns.map(c => c.name).join(' ⯈ ') });
    }
 
    getSupportedExportFormats(): ExportFormat[] {

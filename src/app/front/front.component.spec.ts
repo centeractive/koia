@@ -6,6 +6,7 @@ import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, provideRouter, Router, RouteReuseStrategy, RouterModule } from '@angular/router';
@@ -26,6 +27,8 @@ import { FrontComponent } from './front.component';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
+import { LanguageService } from 'app/shared/services/language';
+import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 
 @Component({
   template: '',
@@ -46,8 +49,8 @@ let findSceneInfosSpy: Mock;
 
 function configureTestingModule(queryParams: QueryParams, ...providers: (Provider | EnvironmentProviders)[]): void {
   TestBed.configureTestingModule({
-    declarations: [FrontComponent, FrontInfoComponent, FrontGuideComponent, DummyComponent],
-    imports: [MatButtonModule, MatIconModule, MatTooltipModule, MatDialogModule, DragDropModule,
+    declarations: [FrontComponent, FrontInfoComponent, FrontGuideComponent, LanguageSelectComponent, DummyComponent],
+    imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDialogModule, DragDropModule,
       RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
     ],
     providers: [
@@ -742,6 +745,60 @@ describe('FrontComponent', () => {
     expect(openSpy).toHaveBeenCalledWith(fruitSalesSampleOf('en'));
     expect(clearSpy).toHaveBeenCalled();
     expect(navigateSpy).toHaveBeenCalledWith(Route.RAWDATA);
+  });
+
+  it('#openSample should open sample of selected language', async () => {
+
+    // given
+    vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    await TestBed.inject(LanguageService).use('ja');
+    const openSpy = vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockResolvedValue(undefined);
+    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    // when
+    component.openSample();
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+
+    // then
+    expect(openSpy).toHaveBeenCalledWith(fruitSalesSampleOf('ja'));
+  });
+
+  it('should show texts in selected language without reload', async () => {
+
+    // given
+    vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    expect(render().querySelector('h1').textContent).toBe('Get started');
+
+    // when
+    await TestBed.inject(LanguageService).use('de');
+
+    // then
+    const host = render();
+    expect(host.querySelector('h1').textContent).toBe('Loslegen');
+    expect(host.querySelector('#sample_button').textContent).toContain('Beispieldaten ausprobieren');
+  });
+
+  it('should link introduction of selected language', async () => {
+
+    // given
+    vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    expect(render().querySelector('.landing-nav a').getAttribute('href')).toBe('/intro/index.html');
+
+    // when
+    await TestBed.inject(LanguageService).use('ja');
+
+    // then
+    expect(render().querySelector('.landing-nav a').getAttribute('href')).toBe('/intro/index.ja.html');
+    expect(component.introUrl()).toBe('/intro/index.ja.html');
+  });
+
+  it('should offer language selection in navigation', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(host.querySelector('.landing-nav koia-language-select #but_language').textContent).toContain('English');
   });
 
   it('#openSample should block start actions and storage while sample is loading', () => {

@@ -5,6 +5,7 @@ import { ViewController } from 'app/shared/controller';
 import { Route } from 'app/shared/model';
 import { TabDef, ViewType } from 'app/shared/model/view-config';
 import { DialogService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { hasContent, iconOf, tabUrl, ViewTabsService } from 'app/shared/services/view-tabs';
 import { firstValueFrom } from 'rxjs';
 
@@ -23,7 +24,8 @@ export class ViewTabBarComponent {
   readonly pivotType = ViewType.PIVOT;
   readonly dashboardType = ViewType.DASHBOARD;
 
-  constructor(public viewTabsService: ViewTabsService, private dialogService: DialogService) { }
+  constructor(public viewTabsService: ViewTabsService, private dialogService: DialogService,
+    private languageService: LanguageService) { }
 
   urlOf(tab: TabDef): string {
     return tabUrl(tab.id);
@@ -38,7 +40,8 @@ export class ViewTabBarComponent {
   }
 
   rename(tab: TabDef): void {
-    const dialogData = new InputDialogData('Rename Tab', 'Tab Name', tab.title, ViewController.VIEW_NAME_MAX_LENGTH);
+    const dialogData = new InputDialogData(this.languageService.instant('toolbar.tabs.renameTitle'),
+      this.languageService.instant('toolbar.tabs.tabName'), tab.title, ViewController.VIEW_NAME_MAX_LENGTH);
     firstValueFrom(this.dialogService.showInputDialog(dialogData).afterClosed())
       .then(() => {
         if (dialogData.closedWithOK) {
@@ -51,7 +54,8 @@ export class ViewTabBarComponent {
     event.stopPropagation();
     event.preventDefault();
     if (hasContent(this.viewTabsService.currentTab(tab))) {
-      const data = new ConfirmDialogData('Close Tab', '<p>Do you really want to close "' + tab.title + '"?</p>', ConfirmDialogData.YES_NO);
+      const data = new ConfirmDialogData(this.languageService.instant('toolbar.tabs.closeTitle'),
+        '<p>' + this.languageService.instant('toolbar.tabs.closeQuestion', { title: tab.title }) + '</p>', ConfirmDialogData.YES_NO);
       firstValueFrom(this.dialogService.showConfirmDialog(data).afterClosed())
         .then(() => {
           if (data.closedWithButtonIndex === 0) {

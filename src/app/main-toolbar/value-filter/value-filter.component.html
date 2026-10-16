@@ -10,24 +10,24 @@
       }
     </mat-menu>
     <span class="span_menu_trigger" [matMenuTriggerFor]="operatorMenu"
-    [matTooltip]="valueFilterCustomizer.tooltipOf(filter)">{{ filter.operator }}</span>
+    [matTooltip]="valueFilterCustomizer.tooltipOf(filter)">{{ operatorLabel(filter.operator) }}</span>
     <mat-menu #operatorMenu="matMenu">
       @for (operator of availableOperators(); track operator) {
         <button mat-menu-item [disabled]="operator === filter.operator"
           (click)="filter.operator = operator; onChange.emit()">
-          <span>{{ operator }}</span>
+          <span>{{ operatorLabel(operator) }}</span>
         </button>
       }
     </mat-menu>
     @if (!isEqualBoolean() && !filter.operator.endsWith('empty')) {
       <div class="div_column_filter_value">
         @if (numberDataType) {
-          <input id="column_filter_input" matInput type="search" placeholder="Filter Value"
+          <input id="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
             [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
             [formControl]="valueControl" formattedFloat (search)="onChange.emit()">
         }
         @if (!numberDataType) {
-          <input id="column_filter_input" matInput type="search" placeholder="Filter Value"
+          <input id="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
             [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
             [formControl]="valueControl" (search)="onChange.emit()">
         }
@@ -47,7 +47,7 @@
         <span>false</span>
       </button>
     </mat-menu>
-    <mat-icon class="icon_remove_column_filter" matTooltip="Remove column filter" (click)="onRemove.emit()">
+    <mat-icon class="icon_remove_column_filter" [matTooltip]="'filter.value.remove' | translate" (click)="onRemove.emit()">
       remove_circle_outline
     </mat-icon>
   </div>

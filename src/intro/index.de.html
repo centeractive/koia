@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8">
+  <script>
+    // remembers the language chosen with the language links, also used by the application
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('.intro-languages a[hreflang]');
+      if (a) {
+        try { localStorage.setItem('koia.language', a.hreflang); } catch (err) { }
+      }
+    });
+  </script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-66X1MBQRD9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-66X1MBQRD9');
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Koia Datenanalyse</title>
+  <meta name="description"
+    content="Erstellen Sie Diagramme, Pivot-Tabellen und Dashboards aus CSV-, Excel- oder JSON-Daten direkt im Browser. Open Source, ohne Registrierung, Ihre Daten bleiben unter Ihrer Kontrolle.">
+  <meta name="theme-color" content="#303f9f">
+  <meta property="og:title" content="Koia Datenanalyse">
+  <meta property="og:description"
+    content="Erstellen Sie Diagramme, Pivot-Tabellen und Dashboards aus CSV-, Excel- oder JSON-Daten direkt im Browser. Open Source, ohne Registrierung, Ihre Daten bleiben unter Ihrer Kontrolle.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.koia.io/intro/screenshots/dashboard.jpg">
+  <link rel="alternate" hreflang="en" href="https://www.koia.io/intro/index.html">
+  <link rel="alternate" hreflang="de" href="https://www.koia.io/intro/index.de.html">
+  <link rel="alternate" hreflang="ja" href="https://www.koia.io/intro/index.ja.html">
+  <link rel="alternate" hreflang="x-default" href="https://www.koia.io/intro/index.html">
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/assets/themes/koia-tokens.css">
+  <link rel="stylesheet" href="/assets/themes/koia-landing.css">
+  <link rel="stylesheet" href="intro.css">
+</head>
+
+<body class="landing-root landing-shell">
+  <header class="landing-header">
+    <div class="landing-container landing-header-inner">
+      <a href="/intro/index.de.html">
+        <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
+      </a>
+      <nav class="landing-nav">
+        <a class="landing-nav-secondary" href="#why">Warum Koia</a>
+        <a class="landing-nav-secondary" href="#features">Funktionen</a>
+        <a class="landing-nav-secondary" href="#how">So funktioniert es</a>
+        <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
+          rel="noopener">GitHub</a>
+        <span class="intro-languages">
+          <a href="/intro/index.html" hreflang="en" lang="en">EN</a>
+          <a href="/intro/index.de.html" hreflang="de" lang="de" aria-current="page">DE</a>
+          <a href="/intro/index.ja.html" hreflang="ja" lang="ja">JA</a>
+        </span>
+        <a class="landing-btn landing-btn-primary" href="/front">Koia öffnen</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="landing-scroll">
+    <section class="landing-hero">
+      <div class="landing-container">
+        <h1>Diagramme, Pivot-Tabellen und Dashboards aus Ihren Daten</h1>
+        <p class="landing-lead">Direkt im Browser. Open Source, ohne Registrierung, Ihre Daten bleiben unter Ihrer Kontrolle.</p>
+        <div class="landing-actions">
+          <a class="landing-btn landing-btn-accent" href="/front">Jetzt starten</a>
+        </div>
+        <figure class="landing-frame landing-hero-shot">
+          <button class="landing-zoom" type="button" commandfor="zoom-hero" command="show-modal">
+            <img src="screenshots/dashboard.webp"
+              alt="Koia-Dashboard in einem Raster mit fünf Spalten mit gruppierter Übersichtstabelle, Streudiagramm sowie Balken-, Ring- und Polarflächendiagrammen"
+              width="1440" height="900" fetchpriority="high">
+          </button>
+          <dialog id="zoom-hero" class="landing-zoom-dialog" closedby="any"
+            aria-label="Koia-Dashboard in einem Raster mit fünf Spalten mit gruppierter Übersichtstabelle, Streudiagramm sowie Balken-, Ring- und Polarflächendiagrammen">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-hero"
+              command="close">Schliessen</button>
+            <img src="screenshots/dashboard.webp"
+              alt="Koia-Dashboard in einem Raster mit fünf Spalten mit gruppierter Übersichtstabelle, Streudiagramm sowie Balken-, Ring- und Polarflächendiagrammen"
+              width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </div>
+    </section>
+
+    <section id="why" class="landing-section landing-canvas">
+      <div class="landing-container">
+        <h2>Warum Koia?</h2>
+        <ul class="landing-grid landing-grid-4">
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+              <h3>Open Source</h3>
+            </div>
+            <p>Kostenlos und öffentlich verfügbar. Nutzen Sie Koia online oder installieren Sie es in Ihrer eigenen vertrauenswürdigen Umgebung.</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <h3>Ihre Daten bleiben privat</h3>
+            </div>
+            <p>Daten werden nur zwischen Ihrem Browser und dem gewählten Speicher übertragen: dem Browser selbst oder Ihrer eigenen
+              CouchDB.</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M10 10.02h5V21h-5zM17 21h3c1.1 0 2-.9 2-2v-9h-5v11zm3-18H5c-1.1 0-2 .9-2 2v3h19V5c0-1.1-.9-2-2-2zM3 19c0 1.1.9 2 2 2h3V10H3v9z"/></svg>
+              <h3>CSV, Excel, JSON</h3>
+            </div>
+            <p>Importieren Sie Dateien und bestimmen Sie, welche Spalten geladen und wie Werte typisiert und formatiert werden.</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <h3>Rohdaten mit einem Klick</h3>
+            </div>
+            <p>Klicken Sie auf ein Diagrammelement oder einen Summenwert, um die zugrunde liegenden Zeilen zu sehen. Der Kontext bleibt immer erhalten.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="features" class="landing-section landing-container">
+      <h2>Funktionen</h2>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>Daten laden</h3>
+          <p>Importieren Sie eine CSV-, Excel- oder JSON-Datei und bestimmen Sie, welche Spalten geladen und wie Werte typisiert werden.</p>
+          <p>Jeder Datensatz wird zu einer <b>Szene</b>. Wechseln Sie in einem einzigen Browser-Tab zwischen Szenen.</p>
+          <ul class="intro-chips">
+            <li>CSV</li>
+            <li>Excel</li>
+            <li>JSON</li>
+            <li>Retrospective Log Analyzer</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-scene" command="show-modal">
+            <img src="screenshots/scene.webp" alt="Laden einer CSV-Datei in eine neue Szene" width="1440" height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-scene" class="landing-zoom-dialog" closedby="any" aria-label="Laden einer CSV-Datei in eine neue Szene">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-scene"
+              command="close">Schliessen</button>
+            <img src="screenshots/scene.webp" alt="Laden einer CSV-Datei in eine neue Szene" width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>Pivot-Tabellen und Diagramme</h3>
+          <p>Ziehen Sie Spalten in eine <b>Pivot-Tabelle</b> und wechseln Sie zwischen Heatmaps, Balkendiagrammen und mehr.</p>
+          <p>Wählen Sie aus Kreis-, Ring-, Balken-, Linien-, Flächen-, Netz-, Polarflächen- und Streudiagrammen.</p>
+          <ul class="intro-chips">
+            <li>Heatmaps</li>
+            <li>Beziehungsgraphen</li>
+            <li>Zeitreihen</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-pivot" command="show-modal">
+            <img src="screenshots/pivot.webp" alt="Pivot-Tabelle als Heatmap" width="1440" height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-pivot" class="landing-zoom-dialog" closedby="any" aria-label="Pivot-Tabelle als Heatmap">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-pivot"
+              command="close">Schliessen</button>
+            <img src="screenshots/pivot.webp" alt="Pivot-Tabelle als Heatmap" width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>Dashboards</h3>
+          <p>Kombinieren Sie Diagramme, Beziehungsgraphen und <b>Übersichtstabellen</b> auf Dashboards, im Raster- oder Flex-Layout.</p>
+          <p>Jedes Element hat eine Seitenleiste zur Wahl von Spalten, Diagrammtyp, Gruppierung und Farben.</p>
+          <ul class="intro-chips">
+            <li>Raster-Layout</li>
+            <li>Flex-Layout</li>
+            <li>Gespeicherte Ansichten</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-dashboards" command="show-modal">
+            <img src="screenshots/dashboards.webp" alt="Dashboard mit einer Übersichtstabelle, die Zeilen pro Region, Kanal und Produkt zählt, neben Balken-, Ring-, Kreis-, Netz-, Polarflächen- und horizontalen Balkendiagrammen" width="1440" height="818" loading="lazy">
+          </button>
+          <dialog id="zoom-dashboards" class="landing-zoom-dialog" closedby="any" aria-label="Dashboard mit einer Übersichtstabelle, die Zeilen pro Region, Kanal und Produkt zählt, neben Balken-, Ring-, Kreis-, Netz-, Polarflächen- und horizontalen Balkendiagrammen">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-dashboards"
+              command="close">Schliessen</button>
+            <img src="screenshots/dashboards.webp" alt="Dashboard mit einer Übersichtstabelle, die Zeilen pro Region, Kanal und Produkt zählt, neben Balken-, Ring-, Kreis-, Netz-, Polarflächen- und horizontalen Balkendiagrammen" width="1440" height="818" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+      <article class="landing-showcase-row">
+        <div class="landing-showcase-text">
+          <h3>Rohdaten untersuchen</h3>
+          <p>Klicken Sie auf ein Diagrammelement oder einen Summenwert, um die <b>zugrunde liegenden Zeilen</b> zu sehen.</p>
+          <p>Grenzen Sie jede Ansicht mit <b>Zeit- und Wertfiltern</b> ein und exportieren Sie die Ergebnisse.</p>
+          <ul class="intro-chips">
+            <li>Zeitfilter</li>
+            <li>Wertfilter</li>
+            <li>Excel-Export</li>
+            <li>PNG-Export</li>
+          </ul>
+        </div>
+        <figure class="landing-frame">
+          <button class="landing-zoom" type="button" commandfor="zoom-rawdata" command="show-modal">
+            <img src="screenshots/rawdata.webp" alt="Rohdaten-Dialog, geöffnet durch Klick auf einen Balken" width="1440" height="900" loading="lazy">
+          </button>
+          <dialog id="zoom-rawdata" class="landing-zoom-dialog" closedby="any" aria-label="Rohdaten-Dialog, geöffnet durch Klick auf einen Balken">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-rawdata"
+              command="close">Schliessen</button>
+            <img src="screenshots/rawdata.webp" alt="Rohdaten-Dialog, geöffnet durch Klick auf einen Balken" width="1440" height="900" loading="lazy">
+          </dialog>
+        </figure>
+      </article>
+    </section>
+
+    <section id="how" class="landing-cta landing-section">
+      <div class="landing-container">
+        <h2>So funktioniert es</h2>
+        <ol class="landing-grid landing-grid-3 intro-steps">
+          <li><b>Koia öffnen</b><span>Ohne Registrierung. Daten bleiben in Ihrem Browser, sofern Sie nicht CouchDB wählen.</span></li>
+          <li><b>Datei laden oder Beispieldaten testen</b><span>Importieren Sie CSV, Excel oder JSON oder erkunden Sie fertige Ansichten zum Obstverkauf.</span></li>
+          <li><b>Ansichten erstellen</b><span>Fügen Sie Pivot-Tabellen und Dashboards mit Diagrammen, Graphen und Übersichten hinzu.</span></li>
+        </ol>
+        <a class="landing-btn landing-btn-accent" href="/front">Jetzt starten</a>
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      <div class="landing-container landing-footer-inner">
+        <img class="landing-logo" src="/assets/koialogo_textblack.png" alt="Koia" width="120" height="57">
+        <a href="https://retrospective.centeractive.com/" target="_blank" rel="noopener">
+          <img class="landing-badge" src="/assets/retrospective_compatible.png" alt="Retrospective-kompatibel"
+            width="142" height="46">
+        </a>
+        <small>Koia steht unter der <a href="https://github.com/centeractive/koia/blob/master/LICENSE" target="_blank"
+            rel="noopener">MIT-Lizenz</a>. © 2026 centeractive ag. <a href="https://github.com/centeractive/koia"
+            target="_blank" rel="noopener">GitHub</a></small>
+      </div>
+    </footer>
+  </div>
+</body>
+
+</html>

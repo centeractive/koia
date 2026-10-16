@@ -45,7 +45,7 @@ describe('ChartDataService', () => {
 
       // then
       const expectedError = ChartType.DOUGHNUT.name + ' chart: Maximum number of ' +
-         maxValues.toLocaleString() + ' values exceeded.' +
+         maxValues.toLocaleString('en-US') + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.'
       expect(result.error).toBe(expectedError);
       expect(result.data).toBeUndefined();
@@ -269,7 +269,7 @@ describe('ChartDataService', () => {
 
       // then
       const expectedError = ChartType.BAR.name + ' chart: Maximum number of ' +
-         maxValues.toLocaleString() + ' values exceeded.' +
+         maxValues.toLocaleString('en-US') + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.'
       expect(result.error).toBe(expectedError);
       expect(result.data).toBeUndefined();
@@ -308,7 +308,7 @@ describe('ChartDataService', () => {
 
       // then
       const expectedError = ChartType.HORIZONTAL_BAR.name + ' chart: Maximum number of ' +
-         maxValues.toLocaleString() + ' values exceeded.' +
+         maxValues.toLocaleString('en-US') + ' values exceeded.' +
          '\n\nPlease re-configure the chart or apply/refine data filtering.'
       expect(result.error).toBe(expectedError);
       expect(result.data).toBeUndefined();

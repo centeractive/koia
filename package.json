@@ -15,7 +15,8 @@
     "test": "ng test --coverage",
     "test:ci": "ng test --configuration=ci",
     "test-debug": "ng test --browsers=chromium",
-    "lint": "eslint src/app --fix"
+    "lint": "eslint src/app --fix && npm run check:i18n",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "private": true,
   "dependencies": {
@@ -30,6 +31,8 @@
     "@angular/platform-server": "^22.2.2",
     "@angular/router": "^22.2.2",
     "@e965/xlsx": "0.20.3",
+    "@ngx-translate/core": "18.0.0",
+    "@ngx-translate/http-loader": "18.0.0",
     "@tanstack/virtual-core": "3.17.11",
     "@types/d3": "~7.4.3",
     "@types/file-saver": "~2.0.7",

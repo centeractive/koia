@@ -758,7 +758,7 @@ describe('RawDataComponent', () => {
       await fixture.whenStable();
 
       // then
-      expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saves as ' + exportFormat + ' in the background',
+      expect(component.snackBar.open).toHaveBeenCalledWith('complete data is collected and saved as ' + exportFormat + ' in the background',
         undefined, { duration: 4000 });
       expect(exportService.exportData).toHaveBeenCalledWith([entryAt(0)], columns, exportFormat, 'Raw-Data');
     });
@@ -776,7 +776,7 @@ describe('RawDataComponent', () => {
       await fixture.whenStable();
 
       // then
-      expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saves as ' + exportFormat + ' in the background',
+      expect(component.snackBar.open).toHaveBeenCalledWith('filtered data is collected and saved as ' + exportFormat + ' in the background',
         undefined, { duration: 4000 });
       expect(exportService.exportData).toHaveBeenCalledWith([entryAt(0)], columns, exportFormat, 'Raw-Data');
     });

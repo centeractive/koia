@@ -1,7 +1,7 @@
 import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { DatePipe } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injectable } from '@angular/core';
-import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -22,6 +22,7 @@ import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-co
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { LanguageService } from 'app/shared/services/language';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model';
 import { Observable, of, Subject } from 'rxjs';
@@ -548,6 +549,143 @@ describe('PivotTableComponent', () => {
       expect(viewTabsService.requestPersist).toHaveBeenCalled();
       flush();
     })());
+
+    describe('language change', () => {
+
+      const sumRecord = (): ConfigRecord => ({
+        route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
+        data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Sum', vals: ['Amount'], cols: ['Level'], rows: [] } }
+      });
+
+      function switchLanguage(language: 'en' | 'de' | 'ja'): void {
+        TestBed.inject(LanguageService).use(language);
+        flushMicrotasks();
+        tabFixture.detectChanges();
+        flush();
+      }
+
+      function optionText(selectClass: string, value: string): string {
+        return tabFixture.nativeElement.querySelector('select.' + selectClass + ' option[value="' + value + '"]').textContent;
+      }
+
+      function totalLabels(): string[] {
+        return Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll('.pvtTotalLabel')).map(e => e.textContent);
+      }
+
+      beforeEach(() => vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined));
+
+      afterEach(() => document.documentElement.lang = 'en');
+
+      it('should show pivot table in current language', fakeAsync(() => {
+
+        // given
+        createTabComponent(sumRecord());
+
+        // when
+        tabFixture.detectChanges();
+        flush();
+
+        // then
+        expect(totalLabels()).toContain('Totals');
+        expect(optionText('pvtAggregator', 'Sum')).toBe('Sum');
+        expect(optionText('pvtRenderer', 'Row Heatmap')).toBe('Row Heatmap');
+      }));
+
+      it('should re-render pivot table in new language without changing or persisting its configuration', fakeAsync(() => {
+
+        // given
+        createTabComponent(sumRecord());
+        tabFixture.detectChanges();
+        flush();
+        const contentBefore = JSON.stringify(tabComponent.tabContent());
+        vi.mocked(viewTabsService.requestPersist).mockClear();
+
+        // when
+        switchLanguage('de');
+        tick(5_000);
+
+        // then
+        expect(totalLabels()).toContain('Summen');
+        expect(totalLabels()).not.toContain('Totals');
+        expect(optionText('pvtAggregator', 'Sum')).toBe('Summe');
+        expect(optionText('pvtRenderer', 'Row Heatmap')).toBe('Heatmap pro Zeile');
+        expect(tabFixture.nativeElement.querySelector('select.pvtAggregator').value).toBe('Sum');
+        expect(tabComponent.getPivotOptions()['aggregatorName']).toBe('Sum');
+        expect(tabComponent.getPivotOptions()['cols']).toEqual(['Level']);
+        expect(viewTabsService.requestPersist).not.toHaveBeenCalled();
+        const content = tabComponent.tabContent();
+        expect(JSON.stringify(content)).toBe(contentBefore);
+        expect(content.record.data.pivotOptions['localeStrings']).toBeUndefined();
+        expect(content.record.data.pivotOptions['rendererOptions']).toBeUndefined();
+      }));
+
+      it('should request persisting again when pivot table is changed after language change', fakeAsync(() => {
+
+        // given
+        createTabComponent(sumRecord());
+        tabFixture.detectChanges();
+        flush();
+        switchLanguage('ja');
+        vi.mocked(viewTabsService.requestPersist).mockClear();
+
+        // when
+        tabComponent.onShowColumnTotalsChanged();
+        flush();
+
+        // then
+        expect(viewTabsService.requestPersist).toHaveBeenCalled();
+        expect(totalLabels()).toContain('合計');
+      }));
+
+      it('should re-render detached pivot table in new language once attached again', fakeAsync(() => {
+
+        // given
+        createTabComponent(sumRecord());
+        tabFixture.detectChanges();
+        flush();
+        const host: HTMLElement = tabFixture.nativeElement;
+        const parent = host.parentNode;
+        parent.removeChild(host);
+
+        // when
+        switchLanguage('de');
+        const labelsWhileDetached = totalLabels();
+        parent.appendChild(host);
+        tabFixture.detectChanges();
+        flush();
+
+        // then
+        expect(labelsWhileDetached).toContain('Totals');
+        expect(totalLabels()).toContain('Summen');
+      }));
+
+      it('should reveal raw data of time grouped cell in new language', fakeAsync(() => {
+
+        // given
+        const timeLabel = 'Time (per month)';
+        const record = sumRecord();
+        record.data.pivotOptions = { rendererName: 'Table', aggregatorName: 'Count', cols: ['Level'], rows: [timeLabel] };
+        createTabComponent(record);
+        tabFixture.detectChanges();
+        flush();
+        switchLanguage('de');
+        const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
+        tabComponent.columns.find(c => c.name === 'Time').groupingTimeUnit = TimeUnit.MONTH; // as context of restored record
+        const rowLabel: HTMLElement = tabFixture.nativeElement.querySelector('th.pvtRowLabel');
+
+        // when
+        const cell: HTMLTableCellElement = tabFixture.nativeElement.querySelector('td.pvtVal');
+        (cell.onclick as (e: unknown) => void)({ srcElement: cell });
+
+        // then
+        const monthStart = new Date(now);
+        monthStart.setDate(1);
+        monthStart.setHours(0, 0, 0, 0);
+        expect(rowLabel.textContent).toBe(datePipe.transform(now, 'MMM yyyy'));
+        const query: Query = showSpy.mock.lastCall[0];
+        expect(query.findValueRangeFilter('Time').valueRange.min).toBe(monthStart.getTime());
+      }));
+    });
 
     it('#ngOnDestroy should unregister and stop requesting persisting', fakeAsync(() => {
 

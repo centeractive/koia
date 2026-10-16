@@ -1,3 +1,4 @@
+import { LanguageService } from 'app/shared/services/language';
 import { DataType } from 'app/shared/model';
 import { DataHandlerRecorder } from 'app/shared/test';
 import { CSVReader } from './csv-reader';
@@ -49,13 +50,13 @@ describe('CSVReader', () => {
       expect(attributes).toBeDefined();
       expect(attributes.length).toBe(2);
 
-      expect(attributes[0].name).toBe('First row contains column names');
+      expect(LanguageService.instant(attributes[0].name)).toBe('First row contains column names');
       expect(attributes[0].description).toBeUndefined();
       expect(attributes[0].dataType).toBe(DataType.BOOLEAN);
       expect(attributes[0].value).toBe(false);
       expect(attributes[0].hasValueChoice()).toBe(false);
 
-      expect(attributes[1].name).toBe('Separator');
+      expect(LanguageService.instant(attributes[1].name)).toBe('Separator');
       expect(attributes[1].description).toBeUndefined();
       expect(attributes[1].dataType).toBe(DataType.TEXT);
       expect(attributes[1].value).toBeUndefined();

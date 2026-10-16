@@ -3,30 +3,30 @@
   <a id="tabRawData" mat-tab-link [routerLink]="[urlRawdata]" [active]="currUrl === urlRawdata">
     <span class="tab_label">
       <mat-icon svgIcon="raw_data_view"></mat-icon>
-      <span>Raw Data</span>
+      <span>{{ 'toolbar.tabs.rawData' | translate }}</span>
     </span>
   </a>
   @for (tab of viewTabsService.tabs; track tab.id) {
     <a [id]="'tab-' + tab.id" mat-tab-link [routerLink]="[urlOf(tab)]" [active]="currUrl === urlOf(tab)"
-      matTooltip="Double-click to rename" (dblclick)="rename(tab)">
+      [matTooltip]="'toolbar.tabs.renameHint' | translate" (dblclick)="rename(tab)">
       <span class="tab_label">
         <mat-icon [svgIcon]="iconFor(tab)"></mat-icon>
         <span>{{ tab.title }}</span>
-        <mat-icon class="icon_close_tab" matTooltip="Close" (click)="close($event, tab)">close</mat-icon>
+        <mat-icon class="icon_close_tab" [matTooltip]="'toolbar.tabs.close' | translate" (click)="close($event, tab)">close</mat-icon>
       </span>
     </a>
   }
 </nav>
-<button id="butAddTab" mat-icon-button matTooltip="Add view" [disabled]="!viewTabsService.ready" [matMenuTriggerFor]="addTabMenu">
+<button id="butAddTab" mat-icon-button [matTooltip]="'toolbar.tabs.addView' | translate" [disabled]="!viewTabsService.ready" [matMenuTriggerFor]="addTabMenu">
   <mat-icon>add</mat-icon>
 </button>
 <mat-menu #addTabMenu="matMenu">
   <button id="menuItemNewPivotTable" mat-menu-item (click)="addTab(pivotType)">
     <mat-icon svgIcon="pivot_table"></mat-icon>
-    <span>New Pivot Table</span>
+    <span>{{ 'toolbar.tabs.newPivotTable' | translate }}</span>
   </button>
   <button id="menuItemNewDashboard" mat-menu-item (click)="addTab(dashboardType)">
     <mat-icon svgIcon="grid_view"></mat-icon>
-    <span>New Dashboard</span>
+    <span>{{ 'toolbar.tabs.newDashboard' | translate }}</span>
   </button>
 </mat-menu>

@@ -1,3 +1,4 @@
+import { LanguageService } from '../../language';
 import { Attribute, DataType } from 'app/shared/model';
 import { DataTypeUtils } from 'app/shared/utils';
 import * as Papa from 'papaparse';
@@ -8,12 +9,11 @@ import { Sample } from '../sample.type';
 export class CSVReader implements DataReader {
 
    private static readonly SEPARATORS = [',', ';', ':', '|'];
-   private attrHasHeaderColumn = new Attribute('First row contains column names', undefined, DataType.BOOLEAN, false);
-   private attrSeparator = new Attribute('Separator', undefined, DataType.TEXT, undefined);
+   private attrHasHeaderColumn = new Attribute('scene.reader.csvHeaderRow', undefined, DataType.BOOLEAN, false);
+   private attrSeparator = new Attribute('scene.reader.csvSeparator', undefined, DataType.TEXT, undefined);
 
    getDescription(): string {
-      return 'CSV (Comma Separated Values) is plain text of tabular form.\n' +
-         'Each line represents a row and individual fields of these rows must be separated by the same character (i.e. comma).';
+      return LanguageService.instant('scene.reader.csvDescription');
    }
 
    getSourceName(): string {
