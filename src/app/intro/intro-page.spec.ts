@@ -62,9 +62,26 @@ describe('intro page', () => {
     const doc = await loadIntro(DESKTOP);
 
     // then
-    const links = all(doc, 'a.landing-btn:not(.landing-btn-outline)');
-    expect(links.length).toBe(3);
-    links.forEach(l => expect(l.getAttribute('href')).toBe('/front'));
+    expect(all(doc, 'a.landing-btn').map(l => l.getAttribute('href')))
+      .toEqual(['/front', '/front', '/front']);
+  });
+
+  it('should lead new users to front page as main call to action', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(all(doc, 'a.landing-btn-accent').map(l => l.textContent)).toEqual(['Get started', 'Get started']);
+  });
+
+  it('should not link outdated video', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(all(doc, 'a[href*="youtu"]')).toEqual([]);
   });
 
   it('should open external links in new tab without opener', async () => {
@@ -150,17 +167,6 @@ describe('intro page', () => {
     const style = styleOf(doc, '.landing-hero .landing-btn-accent');
     expect(style.backgroundColor).toBe('rgb(46, 125, 50)');
     expect(style.color).toBe('rgb(255, 255, 255)');
-  });
-
-  it('should render outline hero button in on-color', async () => {
-
-    // when
-    const doc = await loadIntro(DESKTOP);
-
-    // then
-    const style = styleOf(doc, '.landing-hero .landing-btn-outline');
-    expect(style.color).toBe('rgb(255, 255, 255)');
-    expect(style.borderTopColor).toBe('rgb(255, 255, 255)');
   });
 
   it('should separate hero actions by gap', async () => {
@@ -477,7 +483,7 @@ describe('intro page', () => {
       .toBe('system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif');
   });
 
-  it('should show seven showcase rows in order', async () => {
+  it('should show four showcase rows in order', async () => {
 
     // given
     const doc = await loadIntro(DESKTOP);
@@ -486,8 +492,37 @@ describe('intro page', () => {
     const titles = all(doc, '.landing-showcase-row h3').map(h => h.textContent);
 
     // then
-    expect(titles).toEqual(['Why Koia?', 'Loading data', 'Visualize data', 'Dashboards', 'Time series',
-      'Configure with a few clicks', 'Relationship graphs']);
+    expect(titles).toEqual(['Load your data', 'Pivot tables and charts', 'Dashboards', 'Drill into raw data']);
+  });
+
+  it('should show screenshots in uniform 16:10 frames', async () => {
+
+    // given
+    const doc = await loadIntro(DESKTOP);
+
+    // when
+    const thumbnails = all(doc, '.landing-zoom > img');
+
+    // then
+    expect(thumbnails.length).toBe(5);
+    thumbnails.forEach(img => {
+      const rect = img.getBoundingClientRect();
+      expect(rect.width / rect.height).toBeCloseTo(1.6, 2);
+    });
+  });
+
+  it('should render tile icons as inline svg in primary color', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const icons = all(doc, 'svg.landing-tile-icon');
+    expect(icons.length).toBe(4);
+    icons.forEach(i => {
+      expect(i.getAttribute('aria-hidden')).toBe('true');
+      expect(doc.defaultView.getComputedStyle(i).color).toBe('rgb(48, 63, 159)');
+    });
   });
 
   it('should pair every screenshot with zoom dialog showing same image', async () => {
@@ -499,7 +534,7 @@ describe('intro page', () => {
     const buttons = all(doc, 'figure .landing-zoom');
 
     // then
-    expect(buttons.length).toBe(8);
+    expect(buttons.length).toBe(5);
     buttons.forEach(button => {
       const thumbnail = button.querySelector('img');
       const dialog = zoomDialogOf(button);

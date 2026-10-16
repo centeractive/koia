@@ -25,14 +25,13 @@ describe('FrontGuideComponent', () => {
     return host.querySelector<HTMLElement>('.landing-tile:nth-child(4) .landing-tile-icon');
   }
 
-  it('should point first-time users to import before raw data', () => {
+  it('should explain that views are added next to raw data', () => {
 
     // when
     const host = render();
 
     // then
-    expect(textsOf(host, '.front-guide-intro')).toEqual(['After Start, Koia lists your scenes or, if there are none yet, '
-      + 'opens New Scene where you load a file. Activate a scene with play_circle_outline; Koia opens its raw data.']);
+    expect(textsOf(host, '.front-guide-intro')).toEqual(['Once your data is loaded, Koia opens its raw data. Add views as tabs next to it.']);
   });
 
   it('should show four guide tiles in order', () => {
@@ -54,7 +53,7 @@ describe('FrontGuideComponent', () => {
 
     // then
     const names = new Set(images.map(img => new URL(img.src).pathname));
-    expect(names).toEqual(new Set(['raw_data_view', 'pivot_table', 'grid_view', 'add_chart', 'add_graph', 'add_summary']
+    expect(names).toEqual(new Set(['raw_data_view', 'pivot_table', 'grid_view']
       .map(name => '/assets/svg-icons/' + name + '.svg')));
     images.forEach(img => expect(img.naturalWidth).toBeGreaterThan(0));
   });
@@ -78,15 +77,6 @@ describe('FrontGuideComponent', () => {
     expect(text).toContain('Add Filter');
     expect(text).toContain('New Pivot Table');
     expect(text).toContain('New Dashboard');
-  });
-
-  it('should explain launcher dialog of new dashboard', () => {
-
-    // when
-    const host = render();
-
-    // then
-    expect(textsOf(host, '.landing-tile:nth-child(3) p')[0]).toContain('A dialog asks for the first element');
   });
 
   it('should align inline icons with text', () => {

@@ -16,11 +16,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Koia Data Analysis</title>
   <meta name="description"
-    content="Create graphs online with CSV, Excel or JSON data. Choose from different chart types, pivot tables and relationship graphs. Easy, user-friendly, open-source.">
+    content="Create charts, pivot tables and dashboards from CSV, Excel or JSON data right in your browser. Open-source, no sign-up, your data stays under your control.">
   <meta name="theme-color" content="#303f9f">
   <meta property="og:title" content="Koia Data Analysis">
   <meta property="og:description"
-    content="Privacy-focused graphing: create graphs and pivot tables online from CSV, Excel or JSON data.">
+    content="Create charts, pivot tables and dashboards from CSV, Excel or JSON data right in your browser. Open-source, no sign-up, your data stays under your control.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.koia.io/intro/screenshots/dashboard.jpg">
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
@@ -49,13 +49,10 @@
   <div class="landing-scroll">
     <section class="landing-hero">
       <div class="landing-container">
-        <h1>Privacy-focused graphing</h1>
-        <p class="landing-lead">Create graphs and pivot tables online from CSV, Excel or JSON data. Open-source, no
-          registration, no subscription fees.</p>
+        <h1>Charts, pivot tables and dashboards from your data</h1>
+        <p class="landing-lead">Right in your browser. Open-source, no sign-up, your data stays under your control.</p>
         <div class="landing-actions">
-          <a class="landing-btn landing-btn-accent" href="/front">Create your graph</a>
-          <a class="landing-btn landing-btn-outline" href="https://youtu.be/6UB_URk02t8" target="_blank"
-            rel="noopener">Watch the video</a>
+          <a class="landing-btn landing-btn-accent" href="/front">Get started</a>
         </div>
         <figure class="landing-frame landing-hero-shot">
           <button class="landing-zoom" type="button" commandfor="zoom-hero" command="show-modal">
@@ -81,14 +78,14 @@
         <ul class="landing-grid landing-grid-4">
           <li class="landing-tile">
             <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/mat-icons/trust.png" alt="" width="40" height="40">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
               <h3>Open-source</h3>
             </div>
             <p>Free and publicly available. Use it online or install it in your own trusted environment.</p>
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/mat-icons/features.png" alt="" width="40" height="40">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
               <h3>Your data stays private</h3>
             </div>
             <p>Data only travels between your browser and the storage you choose: the browser itself or your own
@@ -96,14 +93,14 @@
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/mat-icons/data_formats.png" alt="" width="40" height="40">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M10 10.02h5V21h-5zM17 21h3c1.1 0 2-.9 2-2v-9h-5v11zm3-18H5c-1.1 0-2 .9-2 2v3h19V5c0-1.1-.9-2-2-2zM3 19c0 1.1.9 2 2 2h3V10H3v9z"/></svg>
               <h3>CSV, Excel, JSON</h3>
             </div>
             <p>Import files and decide which columns are loaded and how values are typed and formatted.</p>
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
-              <img class="landing-tile-icon" src="/assets/mat-icons/view_data.png" alt="" width="40" height="40">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
               <h3>Raw data one click away</h3>
             </div>
             <p>Click any chart element or summary value to see the rows behind it. The context is never lost.</p>
@@ -116,34 +113,37 @@
       <h2>Features</h2>
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
-          <h3>Loading data</h3>
-          <p>Data loaded from an individual file are represented by a scene. You can <b>switch between different
-              scenes</b> as you please to create diagrams based on different data.</p>
-          <p>It is also possible to load data through a third party program like <a
-              href="https://retrospective.centeractive.com/" target="_blank" rel="noopener">Retrospective Log
-              Analyzer</a>.</p>
+          <h3>Load your data</h3>
+          <p>Import a CSV, Excel or JSON file and decide which columns are loaded and how values are typed.</p>
+          <p>Each data set becomes a <b>scene</b>. Switch between scenes in a single browser tab.</p>
+          <ul class="intro-chips">
+            <li>CSV</li>
+            <li>Excel</li>
+            <li>JSON</li>
+            <li>Retrospective Log Analyzer</li>
+          </ul>
         </div>
         <figure class="landing-frame">
           <button class="landing-zoom" type="button" commandfor="zoom-scene" command="show-modal">
-            <img src="screenshots/scene.webp" alt="Loading a CSV file into a new scene" width="1440" height="900"
-              loading="lazy">
+            <img src="screenshots/scene.webp" alt="Loading a CSV file into a new scene" width="1440" height="900" loading="lazy">
           </button>
-          <dialog id="zoom-scene" class="landing-zoom-dialog" closedby="any"
-            aria-label="Loading a CSV file into a new scene">
+          <dialog id="zoom-scene" class="landing-zoom-dialog" closedby="any" aria-label="Loading a CSV file into a new scene">
             <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-scene"
               command="close">Close</button>
-            <img src="screenshots/scene.webp" alt="Loading a CSV file into a new scene" width="1440" height="900"
-              loading="lazy">
+            <img src="screenshots/scene.webp" alt="Loading a CSV file into a new scene" width="1440" height="900" loading="lazy">
           </dialog>
         </figure>
       </article>
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
-          <h3>Visualize data</h3>
-          <p>The data can be <b>viewed and sorted</b> in a raw data table or it may be refined and displayed as
-            charts, relationship graphs, summary or pivot tables with a few mouse clicks.</p>
-          <p>Koia offers a <b>variety of chart types</b> such as pie charts, doughnut charts, bar charts, radar
-            charts, polar area charts, line charts, area charts and scatter charts.</p>
+          <h3>Pivot tables and charts</h3>
+          <p>Drag columns into a <b>pivot table</b> and switch between heatmaps, bar charts and more.</p>
+          <p>Pick from pie, doughnut, bar, line, area, radar, polar area and scatter charts.</p>
+          <ul class="intro-chips">
+            <li>Heatmaps</li>
+            <li>Relationship graphs</li>
+            <li>Time series</li>
+          </ul>
         </div>
         <figure class="landing-frame">
           <button class="landing-zoom" type="button" commandfor="zoom-pivot" command="show-modal">
@@ -159,105 +159,45 @@
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
           <h3>Dashboards</h3>
-          <p>Combine charts, relationship graphs and <b>summary tables</b> on <b>dashboards</b>. Arrange the elements
-            in a <b>grid</b> of customizable dimension or let them flow in a <b>flex</b> layout.</p>
-          <p>Any number of pivot tables and dashboards may be opened as tabs next to the raw data table and are kept
-            with the scene.</p>
+          <p>Combine charts, relationship graphs and <b>summary tables</b> on dashboards, in a grid or flex layout.</p>
+          <p>Each element has a side bar to pick columns, chart type, grouping and colors.</p>
+          <ul class="intro-chips">
+            <li>Grid layout</li>
+            <li>Flex layout</li>
+            <li>Saved views</li>
+          </ul>
         </div>
         <figure class="landing-frame">
           <button class="landing-zoom" type="button" commandfor="zoom-dashboards" command="show-modal">
-            <img src="screenshots/dashboards.webp"
-              alt="Dashboard with a summary table counting rows per region, channel and product, with links to the underlying data, next to bar, doughnut, pie, radar, polar area and horizontal bar charts"
-              width="1440" height="818" loading="lazy">
+            <img src="screenshots/dashboards.webp" alt="Dashboard with a summary table counting rows per region, channel and product, next to bar, doughnut, pie, radar, polar area and horizontal bar charts" width="1440" height="818" loading="lazy">
           </button>
-          <dialog id="zoom-dashboards" class="landing-zoom-dialog" closedby="any"
-            aria-label="Dashboard with a summary table counting rows per region, channel and product, with links to the underlying data, next to bar, doughnut, pie, radar, polar area and horizontal bar charts">
-            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button"
-              commandfor="zoom-dashboards" command="close">Close</button>
-            <img src="screenshots/dashboards.webp"
-              alt="Dashboard with a summary table counting rows per region, channel and product, with links to the underlying data, next to bar, doughnut, pie, radar, polar area and horizontal bar charts"
-              width="1440" height="818" loading="lazy">
-          </dialog>
-        </figure>
-      </article>
-      <article class="landing-showcase-row">
-        <div class="landing-showcase-text">
-          <h3>Configure with a few clicks</h3>
-          <p>Every chart, relationship graph and summary table has its own <b>side bar</b>. Pick value columns, chart
-            type, grouping, aggregation, colors and scales and see the element adapt instantly — no formulas, no
-            wizards.</p>
-        </div>
-        <figure class="landing-frame">
-          <button class="landing-zoom" type="button" commandfor="zoom-configure" command="show-modal">
-            <img src="screenshots/configure.webp" alt="Chart side bar configuring a stacked area chart" width="1440"
-              height="632" loading="lazy">
-          </button>
-          <dialog id="zoom-configure" class="landing-zoom-dialog" closedby="any"
-            aria-label="Chart side bar configuring a stacked area chart">
-            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button"
-              commandfor="zoom-configure" command="close">Close</button>
-            <img src="screenshots/configure.webp" alt="Chart side bar configuring a stacked area chart" width="1440"
-              height="632" loading="lazy">
-          </dialog>
-        </figure>
-      </article>
-      <article class="landing-showcase-row">
-        <div class="landing-showcase-text">
-          <h3>Time series</h3>
-          <p>Follow values over time in <b>line and area charts</b> and summarize them per day, month or year.</p>
-          <p>Drag the <b>time range slider</b> to narrow every chart and summary of the view at once.</p>
-        </div>
-        <figure class="landing-frame">
-          <button class="landing-zoom" type="button" commandfor="zoom-timeseries" command="show-modal">
-            <img src="screenshots/timeseries.webp"
-              alt="Line chart and yearly summary of lemon prices narrowed by a time range filter" width="1440"
-              height="655" loading="lazy">
-          </button>
-          <dialog id="zoom-timeseries" class="landing-zoom-dialog" closedby="any"
-            aria-label="Line chart and yearly summary of lemon prices narrowed by a time range filter">
-            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button"
-              commandfor="zoom-timeseries" command="close">Close</button>
-            <img src="screenshots/timeseries.webp"
-              alt="Line chart and yearly summary of lemon prices narrowed by a time range filter" width="1440"
-              height="655" loading="lazy">
-          </dialog>
-        </figure>
-      </article>
-      <article class="landing-showcase-row">
-        <div class="landing-showcase-text">
-          <h3>Relationship graphs</h3>
-          <p>Explore how values relate across columns in interactive force-directed graphs; bubble size reflects the
-            number of related rows.</p>
-        </div>
-        <figure class="landing-frame">
-          <button class="landing-zoom" type="button" commandfor="zoom-graph" command="show-modal">
-            <img src="screenshots/graph.webp" alt="Relationship graph" width="1440" height="900" loading="lazy">
-          </button>
-          <dialog id="zoom-graph" class="landing-zoom-dialog" closedby="any" aria-label="Relationship graph">
-            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-graph"
+          <dialog id="zoom-dashboards" class="landing-zoom-dialog" closedby="any" aria-label="Dashboard with a summary table counting rows per region, channel and product, next to bar, doughnut, pie, radar, polar area and horizontal bar charts">
+            <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-dashboards"
               command="close">Close</button>
-            <img src="screenshots/graph.webp" alt="Relationship graph" width="1440" height="900" loading="lazy">
+            <img src="screenshots/dashboards.webp" alt="Dashboard with a summary table counting rows per region, channel and product, next to bar, doughnut, pie, radar, polar area and horizontal bar charts" width="1440" height="818" loading="lazy">
           </dialog>
         </figure>
       </article>
       <article class="landing-showcase-row">
         <div class="landing-showcase-text">
           <h3>Drill into raw data</h3>
-          <p>You are always only a mouse click away from the raw data behind any displayed element or value.</p>
-          <p><b>Time and value filters</b> take a closer look at diagrams and the numbers behind them. Save the
-            current view or <b>export</b> data to use it elsewhere.</p>
+          <p>Click any chart element or summary value to see the <b>rows behind it</b>.</p>
+          <p>Narrow every view with <b>time and value filters</b> and export results.</p>
+          <ul class="intro-chips">
+            <li>Time filters</li>
+            <li>Value filters</li>
+            <li>Excel export</li>
+            <li>PNG export</li>
+          </ul>
         </div>
         <figure class="landing-frame">
           <button class="landing-zoom" type="button" commandfor="zoom-rawdata" command="show-modal">
-            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440"
-              height="900" loading="lazy">
+            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440" height="900" loading="lazy">
           </button>
-          <dialog id="zoom-rawdata" class="landing-zoom-dialog" closedby="any"
-            aria-label="Raw data dialog opened by clicking a bar">
+          <dialog id="zoom-rawdata" class="landing-zoom-dialog" closedby="any" aria-label="Raw data dialog opened by clicking a bar">
             <button class="landing-btn landing-btn-primary landing-zoom-close" type="button" commandfor="zoom-rawdata"
               command="close">Close</button>
-            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440"
-              height="900" loading="lazy">
+            <img src="screenshots/rawdata.webp" alt="Raw data dialog opened by clicking a bar" width="1440" height="900" loading="lazy">
           </dialog>
         </figure>
       </article>
@@ -267,8 +207,8 @@
       <div class="landing-container">
         <h2>How it works</h2>
         <ol class="landing-grid landing-grid-3 intro-steps">
-          <li><b>Choose storage</b><span>Keep data in your browser or in your own CouchDB.</span></li>
-          <li><b>Load a file</b><span>Import CSV, Excel or JSON into a new scene.</span></li>
+          <li><b>Open Koia</b><span>No sign-up. Data stays in your browser unless you choose CouchDB.</span></li>
+          <li><b>Load a file or try sample data</b><span>Import CSV, Excel or JSON, or explore ready-made fruit sales views.</span></li>
           <li><b>Create views</b><span>Add pivot tables and dashboards with charts, graphs and summaries.</span></li>
         </ol>
         <a class="landing-btn landing-btn-accent" href="/front">Get started</a>

@@ -15,36 +15,81 @@
     <section class="landing-hero front-hero">
       <div class="landing-container">
         <h1>Get started</h1>
-        <p class="landing-lead">Choose where your data lives, then press <b>Start</b> to load a file or open a scene.</p>
+        <p class="landing-lead">Load your own CSV, Excel or JSON file, or explore Koia with sample data.</p>
         <div class="landing-tile front-start-panel">
-          <div class="landing-tile-head">
-            <img class="landing-tile-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
-              alt="" width="40" height="40">
-            <h2>Data storage</h2>
+          <div class="front-storage-line">
+            <img class="front-storage-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
+              alt="" width="24" height="24">
+            <span>Data is stored in <b>{{ selectedDataStorage === couchDB ? 'CouchDB' : 'this browser (IndexedDB)' }}</b></span>
+            <button type="button" class="front-storage-change" [attr.aria-expanded]="storageExpanded" [disabled]="loadingSample"
+              aria-controls="front-storage-options" (click)="storageExpanded = !storageExpanded">
+              <mat-icon aria-hidden="true">swap_horiz</mat-icon>Change storage
+            </button>
           </div>
-          <div class="front-storage" role="group" aria-label="Data storage">
-            <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
-              [attr.aria-pressed]="selectedDataStorage === indexedDB" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
-            <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
-              [attr.aria-pressed]="selectedDataStorage === couchDB" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
-            @if (selectedDataStorage === couchDB) {
-              <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
-                aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">
-                <mat-icon>settings</mat-icon>
-              </button>
-            }
-          </div>
-          <p class="front-storage-hint">IndexedDB keeps data in this browser. CouchDB is usually faster, survives
-            clearing the browser cache and can be shared
-            (<a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank"
-              rel="noopener">setup guide</a>).</p>
-          @if (ready && scenesCount >= 0) {
-            <p class="front-scenes-count">{{ selectedDataStorage }} currently contains <b>{{ scenesCount }} {{ scenesCount === 1 ? 'scene' : 'scenes' }}.</b></p>
+          @if (storageExpanded) {
+            <div id="front-storage-options" class="front-storage-options">
+              <div class="front-storage" role="group" aria-label="Data storage">
+                <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
+                  [attr.aria-pressed]="selectedDataStorage === indexedDB" [disabled]="loadingSample" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
+                <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
+                  [attr.aria-pressed]="selectedDataStorage === couchDB" [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
+                @if (selectedDataStorage === couchDB) {
+                  <button mat-icon-button type="button" class="front-storage-settings" matTooltip="Configure access to CouchDB"
+                    aria-label="Configure access to CouchDB" (click)="showCouchDBConnectionDialog()">
+                    <mat-icon>settings</mat-icon>
+                  </button>
+                }
+              </div>
+              <p class="front-storage-hint">IndexedDB keeps data in this browser. CouchDB is usually faster, survives
+                clearing the browser cache and can be shared
+                @if (!showCouchDBTip()) {
+                  (<a href="https://github.com/centeractive/koia/blob/master/README.md#getting-started" target="_blank"
+                    rel="noopener">setup guide</a>)
+                }.</p>
+            </div>
           }
-          <a id="start_button" class="landing-btn landing-btn-accent front-start" role="link"
-            [routerLink]="ready ? urlScenes : null" [attr.aria-disabled]="!ready">
-            <mat-icon>play_circle_outline</mat-icon>Start
-          </a>
+          @if (showCouchDBTip()) {
+            <aside class="front-couchdb-tip" aria-labelledby="front-couchdb-tip-title">
+              <mat-icon class="front-couchdb-tip-icon" aria-hidden="true">lightbulb</mat-icon>
+              <div>
+                <h2 id="front-couchdb-tip-title">Recommended: use CouchDB</h2>
+                <p>Faster with larger data, and your data survives clearing the browser cache. Install CouchDB locally, then
+                  connect.</p>
+                <div class="front-couchdb-tip-actions">
+                  <button id="connect_couchdb_button" type="button" class="landing-btn landing-btn-accent"
+                    [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">Connect to CouchDB</button>
+                  <a class="front-couchdb-tip-link" href="https://github.com/centeractive/koia/blob/master/README.md#getting-started"
+                    target="_blank" rel="noopener">Setup guide</a>
+                  <button type="button" class="front-couchdb-tip-dismiss" (click)="dismissCouchDBTip()">Not now</button>
+                </div>
+              </div>
+            </aside>
+          }
+          <div class="front-actions">
+            @if (scenesCount > 0) {
+              <a id="start_button" class="landing-btn landing-btn-accent" role="link"
+                [routerLink]="busy ? null : urlScenes" [attr.aria-disabled]="busy">
+                <mat-icon>play_circle_outline</mat-icon>Continue with your {{ scenesCount === 1 ? 'scene' : scenesCount + ' scenes' }}
+              </a>
+              <a id="load_file_button" class="landing-btn landing-btn-outline" role="link"
+                [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
+                <mat-icon>upload_file</mat-icon>Load a file
+              </a>
+            } @else {
+              <a id="start_button" class="landing-btn landing-btn-accent" role="link"
+                [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
+                <mat-icon>upload_file</mat-icon>Load a file
+              </a>
+            }
+            <button id="sample_button" type="button" class="landing-btn landing-btn-outline" [disabled]="busy"
+              [attr.aria-busy]="loadingSample" (click)="openSample()">
+              @if (loadingSample) {
+                <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>Loading sample…
+              } @else {
+                <mat-icon>science</mat-icon>Try sample data
+              }
+            </button>
+          </div>
         </div>
       </div>
     </section>

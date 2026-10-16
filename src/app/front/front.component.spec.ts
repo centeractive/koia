@@ -8,7 +8,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
-import { ActivatedRoute, provideRouter, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router, RouteReuseStrategy, RouterModule } from '@angular/router';
 import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -23,6 +23,9 @@ import { ConnectionDialogComponent, ConnectionDialogData } from './connection-di
 import { FrontGuideComponent } from './front-guide/front-guide.component';
 import { FrontInfoComponent } from './front-info/front-info.component';
 import { FrontComponent } from './front.component';
+import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
+import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
+import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
 
 @Component({
   template: '',
@@ -35,6 +38,7 @@ const couchDBService = new CouchDBServiceMock();
 const dialogService = new DialogService(null);
 const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'test', password: 'secret' };
 const notificationService = new NotificationServiceMock();
+const COUCHDB_TIP_DISMISSED = 'koia.front.couchdbTipDismissed';
 let dbService: DBService;
 let isIndexedDbInUseSpy: Mock;
 let initBackendSpy: Mock;
@@ -49,6 +53,7 @@ function configureTestingModule(queryParams: QueryParams, ...providers: (Provide
     providers: [
       ...providers,
       { provide: ActivatedRoute, useValue: { queryParamMap: of(queryParams) } },
+      { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
       MatBottomSheet,
       { provide: DBService, useValue: dbService },
       { provide: CouchDBService, useValue: couchDBService },
@@ -65,6 +70,7 @@ describe('FrontComponent', () => {
 
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
+    localStorage.removeItem(COUCHDB_TIP_DISMISSED);
     dbService = new DBService(couchDBService);
     configureTestingModule(new QueryParams(), provideRouter([]));
     TestBed.compileComponents();
@@ -238,6 +244,9 @@ describe('FrontComponent', () => {
     expect(couchDBService.initConnection).toHaveBeenCalled();
     expect(dbService.initBackend).not.toHaveBeenCalled();
     expect(notificationService.onError).toHaveBeenCalled();
+    expect(component.selectedDataStorage).toBe(component.indexedDB);
+    expect(component.ready).toBe(true);
+    expect(component.showCouchDBTip()).toBe(true);
   }));
 
   it('#onDataStorageChanged should show error when backend cannot be initialized', fakeAsync(() => {
@@ -392,15 +401,146 @@ describe('FrontComponent', () => {
     expect(styleOf(host, '.front-hero').paddingTop).toBe('40px');
   });
 
-  it('should show start panel in hero', () => {
+  it('should show start panel in hero with collapsed storage options', () => {
 
     // when
     const host = render();
 
     // then
     const panel = host.querySelector('.front-hero .front-start-panel');
-    expect(panel.querySelector('.front-storage')).toBeTruthy();
-    expect(panel.querySelector('#start_button')).toBeTruthy();
+    expect(panel.querySelector('.front-actions #start_button')).toBeTruthy();
+    expect(panel.querySelector('.front-storage-line')).toBeTruthy();
+    expect(panel.querySelector('.front-storage')).toBeNull();
+  });
+
+  it('should expand storage options when Change storage is clicked', () => {
+
+    // given
+    const host = render();
+    const change = host.querySelector<HTMLButtonElement>('.front-storage-change');
+
+    // when
+    change.click();
+    fixture.detectChanges();
+
+    // then
+    expect(change.getAttribute('aria-expanded')).toBe('true');
+    expect(host.querySelector('#front-storage-options .front-storage')).toBeTruthy();
+  });
+
+  it('should name browser storage in storage line', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(textsOf(host, '.front-storage-line span')).toEqual(['Data is stored in this browser (IndexedDB)']);
+  });
+
+  it('should name CouchDB in storage line', () => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+
+    // when
+    const host = render();
+
+    // then
+    expect(textsOf(host, '.front-storage-line span')).toEqual(['Data is stored in CouchDB']);
+  });
+
+
+  it('should recommend CouchDB while IndexedDB is in use', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const tip = host.querySelector('.front-couchdb-tip');
+    expect(tip.querySelector('h2').textContent).toBe('Recommended: use CouchDB');
+    expect(tip.querySelector('a').getAttribute('href')).toContain('README.md#getting-started');
+    expect(host.querySelector('.front-storage-hint')).toBeNull();
+  });
+
+  it('should show storage before CouchDB recommendation and start actions', () => {
+
+    // given
+    component.storageExpanded = true;
+
+    // when
+    const host = render();
+
+    // then
+    const sections = ['.front-storage-line', '.front-storage-options', '.front-couchdb-tip', '.front-actions']
+      .map(selector => host.querySelector(selector));
+    sections.slice(1).forEach((section, i) =>
+      expect(sections[i].compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
+  });
+
+  it('should not recommend CouchDB while CouchDB is in use', () => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+
+    // when
+    const host = render();
+
+    // then
+    expect(host.querySelector('.front-couchdb-tip')).toBeNull();
+  });
+
+  it('should hide CouchDB recommendation while connection dialog is open', () => {
+
+    // given
+    vi.spyOn(component, 'showCouchDBConnectionDialog').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.couchDB);
+    const host = render();
+
+    // then
+    expect(host.querySelector('.front-couchdb-tip')).toBeNull();
+  });
+
+  it('should connect to CouchDB from recommendation', () => {
+
+    // given
+    const host = render();
+    vi.spyOn(component, 'onDataStorageChanged').mockReturnValue(undefined);
+
+    // when
+    host.querySelector<HTMLButtonElement>('#connect_couchdb_button').click();
+
+    // then
+    expect(component.onDataStorageChanged).toHaveBeenCalledWith('CouchDB');
+  });
+
+  it('should dismiss CouchDB recommendation permanently', () => {
+
+    // given
+    const host = render();
+
+    // when
+    host.querySelector<HTMLButtonElement>('.front-couchdb-tip-dismiss').click();
+    fixture.detectChanges();
+
+    // then
+    expect(host.querySelector('.front-couchdb-tip')).toBeNull();
+    expect(localStorage.getItem(COUCHDB_TIP_DISMISSED)).toBe('true');
+    expect(TestBed.createComponent(FrontComponent).componentInstance.couchDBTipDismissed).toBe(true);
+  });
+
+  it('should show setup guide link in storage hint when recommendation is dismissed', () => {
+
+    // given
+    component.couchDBTipDismissed = true;
+    component.storageExpanded = true;
+
+    // when
+    const host = render();
+
+    // then
+    expect(host.querySelector('.front-storage-hint a').getAttribute('href')).toContain('README.md#getting-started');
   });
 
   it('should show monitor icon when IndexedDB is selected', () => {
@@ -436,6 +576,7 @@ describe('FrontComponent', () => {
   it('should mark selected storage active and pressed', () => {
 
     // when
+    component.storageExpanded = true;
     const host = render();
 
     // then
@@ -449,6 +590,7 @@ describe('FrontComponent', () => {
   it('should fill active storage button with strong accent', () => {
 
     // when
+    component.storageExpanded = true;
     const host = render();
 
     // then
@@ -460,6 +602,7 @@ describe('FrontComponent', () => {
   it('should outline inactive storage button', () => {
 
     // when
+    component.storageExpanded = true;
     const host = render();
 
     // then
@@ -473,6 +616,7 @@ describe('FrontComponent', () => {
     component.ready = false;
 
     // when
+    component.storageExpanded = true;
     const host = render();
 
     // then
@@ -484,6 +628,7 @@ describe('FrontComponent', () => {
   it('should switch storage when storage button is clicked', () => {
 
     // given
+    component.storageExpanded = true;
     const host = render();
     vi.spyOn(component, 'onDataStorageChanged').mockReturnValue(undefined);
 
@@ -507,6 +652,7 @@ describe('FrontComponent', () => {
 
     // given
     component.selectedDataStorage = component.couchDB;
+    component.storageExpanded = true;
     const host = render();
     vi.spyOn(component, 'showCouchDBConnectionDialog').mockReturnValue(undefined);
 
@@ -517,7 +663,7 @@ describe('FrontComponent', () => {
     expect(component.showCouchDBConnectionDialog).toHaveBeenCalled();
   });
 
-  it('should link start button to scenes when ready', () => {
+  it('should continue with existing scenes when ready', () => {
 
     // when
     const host = render();
@@ -527,7 +673,111 @@ describe('FrontComponent', () => {
     expect(start.getAttribute('href')).toMatch(/\/scenes$/);
     expect(start.getAttribute('aria-disabled')).toBe('false');
     expect(start.querySelector('mat-icon').textContent.trim()).toBe('play_circle_outline');
+    expect(start.textContent).toContain('Continue with your 5 scenes');
   });
+
+  it('should continue with single scene', () => {
+
+    // given
+    component.scenesCount = 1;
+
+    // when
+    const host = render();
+
+    // then
+    expect(startButton(host).textContent).toContain('Continue with your scene');
+  });
+
+  it('should offer loading a file and sample data next to continue', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(host.querySelector('#load_file_button').getAttribute('href')).toMatch(/\/scene$/);
+    expect(host.querySelector('#sample_button').textContent).toContain('Try sample data');
+  });
+
+  it('should start with loading a file when no scene exists', () => {
+
+    // given
+    component.scenesCount = 0;
+
+    // when
+    const host = render();
+
+    // then
+    const start = startButton(host);
+    expect(start.getAttribute('href')).toMatch(/\/scene$/);
+    expect(start.textContent).toContain('Load a file');
+    expect(host.querySelector('#load_file_button')).toBeNull();
+    expect(host.querySelector('#sample_button')).toBeTruthy();
+  });
+
+  it('should disable sample button until ready', () => {
+
+    // given
+    component.ready = false;
+
+    // when
+    const host = render();
+
+    // then
+    expect((host.querySelector('#sample_button') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('#openSample should open sample of current language and show its raw data', async () => {
+
+    // given
+    const openSpy = vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockResolvedValue(undefined);
+    const router = TestBed.inject(Router);
+    const clearSpy = vi.spyOn(router.routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    // when
+    component.openSample();
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+
+    // then
+    expect(openSpy).toHaveBeenCalledWith(fruitSalesSampleOf('en'));
+    expect(clearSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(Route.RAWDATA);
+  });
+
+  it('#openSample should block start actions and storage while sample is loading', () => {
+
+    // given
+    vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockReturnValue(new Promise(() => undefined));
+    component.storageExpanded = true;
+
+    // when
+    component.openSample();
+    const host = render();
+
+    // then
+    const sample = host.querySelector('#sample_button') as HTMLButtonElement;
+    expect(sample.disabled).toBe(true);
+    expect(sample.textContent).toContain('Loading sample');
+    expect(startButton(host).getAttribute('aria-disabled')).toBe('true');
+    expect((host.querySelector('.front-storage-change') as HTMLButtonElement).disabled).toBe(true);
+    storageButtons(host).forEach(b => expect(b.disabled).toBe(true));
+  });
+
+  it('#openSample should notify error and unblock actions when sample cannot be opened', async () => {
+
+    // given
+    vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockRejectedValue('no space left');
+    const onErrorSpy = vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.openSample();
+    await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
+
+    // then
+    expect(component.loadingSample).toBe(false);
+    expect((render().querySelector('#sample_button') as HTMLButtonElement).disabled).toBe(false);
+  });
+
 
   it('should disable start button until ready', () => {
 
@@ -547,26 +797,6 @@ describe('FrontComponent', () => {
     expect(style.opacity).toBe('0.4');
   });
 
-  it('should show scenes count when ready', () => {
-
-    // when
-    const host = render();
-
-    // then
-    expect(textsOf(host, '.front-scenes-count')).toEqual(['IndexedDB currently contains 5 scenes.']);
-  });
-
-  it('should show singular scene count', () => {
-
-    // given
-    component.scenesCount = 1;
-
-    // when
-    const host = render();
-
-    // then
-    expect(textsOf(host, '.front-scenes-count')).toEqual(['IndexedDB currently contains 1 scene.']);
-  });
 
   it('should open external links in new tab without opener', () => {
 
@@ -622,7 +852,7 @@ describe('FrontComponent', () => {
   }
 
   function storageIcon(host: HTMLElement): HTMLImageElement {
-    return host.querySelector<HTMLImageElement>('.front-start-panel .landing-tile-icon');
+    return host.querySelector<HTMLImageElement>('.front-storage-line .front-storage-icon');
   }
 
   function storageButtons(host: HTMLElement): HTMLButtonElement[] {
