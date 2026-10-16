@@ -29,6 +29,7 @@ import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
+import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 @Component({ selector: 'koia-main-toolbar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
@@ -101,7 +102,7 @@ describe('DashboardComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
-        SummaryTableComponent, ChartComponent, GraphComponent, ElementHeaderComponent, ViewToolbarComponent
+        SummaryTableComponent, ChartComponent, GraphComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule],
       providers: [
@@ -1147,6 +1148,17 @@ describe('DashboardComponent', () => {
       // then
       expect(viewTabsService.register).toHaveBeenCalledWith('tab1', component);
       expect(dialogService.showViewLauncherDialog).toHaveBeenCalled();
+    }));
+
+    it('should show print heading with tab title and scene name', fakeAsync(() => {
+
+      // when
+      init(dashboardTab());
+
+      // then
+      const heading: HTMLElement = fixture.nativeElement.querySelector('.div_header > koia-print-heading');
+      expect(heading.querySelector('.span_print_title').textContent).toBe('Dashboard 1');
+      expect(heading.querySelector('.span_print_details').textContent).toContain('Scene: Scene 1');
     }));
 
     it('#ngOnInit should restore view of tab without showing view launcher', fakeAsync(() => {

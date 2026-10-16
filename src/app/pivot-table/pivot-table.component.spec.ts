@@ -29,6 +29,7 @@ import { Observable, of, Subject } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
 import type { Mock } from 'vitest';
+import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 @Injectable()
@@ -78,7 +79,7 @@ describe('PivotTableComponent', () => {
     viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn() } as unknown as ViewTabsService;
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [PivotTableComponent, ViewToolbarComponent],
+      declarations: [PivotTableComponent, ViewToolbarComponent, PrintHeadingComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
         MatMenuModule, MatBottomSheetModule, CdkScrollableModule
@@ -114,6 +115,20 @@ describe('PivotTableComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
     expect(component.context).toBeTruthy();
+  });
+
+  it('should show print heading with tab title and scene name', () => {
+
+    // given
+    component.tab = { id: 'tab1', type: ViewType.PIVOT, title: 'Pivot Table 1' };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const heading: HTMLElement = fixture.nativeElement.querySelector('.div_header > koia-print-heading');
+    expect(heading.querySelector('.span_print_title').textContent).toBe('Pivot Table 1');
+    expect(heading.querySelector('.span_print_details').textContent).toContain('Scene: Scene 1');
   });
 
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {

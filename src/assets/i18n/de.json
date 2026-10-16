@@ -340,6 +340,7 @@
   },
   "view": {
     "print": "Aktuelle Ansicht drucken",
+    "printScene": "Szene: {{name}}",
     "save": "Aktuelle Ansicht speichern",
     "restore": "Gespeicherte Ansicht wiederherstellen",
     "saveTitle": "Ansicht speichern",

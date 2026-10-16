@@ -37,6 +37,9 @@
         </button>
       }
     </mat-menu>
+    @if (!dialogStyle) {
+      <koia-print-heading [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" />
+    }
   </div>
 
   @if (columns) {

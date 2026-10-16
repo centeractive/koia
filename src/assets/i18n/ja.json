@@ -340,6 +340,7 @@
   },
   "view": {
     "print": "現在のビューを印刷",
+    "printScene": "シーン: {{name}}",
     "save": "現在のビューを保存",
     "restore": "保存したビューを復元",
     "saveTitle": "ビューを保存",
