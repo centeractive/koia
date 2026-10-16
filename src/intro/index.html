@@ -4,6 +4,13 @@
 <head>
   <meta charset="utf-8">
   <script>
+    // closes the open language menu when clicking elsewhere or pressing escape
+    function closeLanguages(target) {
+      var open = document.querySelector('.intro-languages[open]');
+      if (open && !(target && open.contains(target))) { open.open = false; }
+    }
+    document.addEventListener('click', function (e) { closeLanguages(e.target); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeLanguages(null); } });
     // shows the intro in the language of the user (query parameter, last selected language, browser preferences), English by default
     (function () {
       var key = 'koia.language';
@@ -76,11 +83,14 @@
         <a class="landing-nav-secondary" href="#how">How it works</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
           rel="noopener">GitHub</a>
-        <span class="intro-languages">
-          <a href="/intro/index.html" hreflang="en" lang="en" aria-current="page">EN</a>
-          <a href="/intro/index.de.html" hreflang="de" lang="de">DE</a>
-          <a href="/intro/index.ja.html" hreflang="ja" lang="ja">JA</a>
-        </span>
+        <details class="intro-languages">
+          <summary aria-label="Language" title="Language" lang="en">EN</summary>
+          <div class="intro-languages-menu">
+            <a href="/intro/index.html" hreflang="en" lang="en" aria-current="page">English</a>
+            <a href="/intro/index.de.html" hreflang="de" lang="de">Deutsch</a>
+            <a href="/intro/index.ja.html" hreflang="ja" lang="ja">日本語</a>
+          </div>
+        </details>
         <a class="landing-btn landing-btn-primary" href="/front">Open Koia</a>
       </nav>
     </div>

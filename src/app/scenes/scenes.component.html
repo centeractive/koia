@@ -4,6 +4,7 @@
 <button id="butScene" mat-icon-button [matTooltip]="'common.addScene' | translate" [routerLink]="[urlScene]">
   <mat-icon style="color: white;">add_photo_alternate</mat-icon>
 </button>
+<koia-language-select class="page-language" />
 @if (activeScene) {
   <mat-card appearance="outlined" id="mat_card_active_scene" koiaForm>
     <mat-card-header>

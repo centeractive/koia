@@ -93,6 +93,12 @@ describe('SceneComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should offer language selection at the right', () => {
+    const host = fixture.nativeElement.querySelector('koia-language-select.page-language');
+    expect(host).toBeTruthy();
+    expect(getComputedStyle(host).float).toBe('right');
+  });
+
   it('#ngOnInit should navigate to front page when backend is not initialized', () => {
 
     // given

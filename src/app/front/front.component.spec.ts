@@ -798,7 +798,7 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    expect(host.querySelector('.landing-nav koia-language-select #but_language').textContent).toContain('English');
+    expect(host.querySelector('.landing-nav koia-language-select #but_language .language-code').textContent.trim()).toBe('EN');
   });
 
   it('#openSample should block start actions and storage while sample is loading', () => {

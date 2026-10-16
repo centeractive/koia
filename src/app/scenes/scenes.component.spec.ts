@@ -19,6 +19,7 @@ import { Route, Scene } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
+import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
@@ -56,7 +57,7 @@ describe('ScenesComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective],
+      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective, LanguageSelectComponent],
       imports: [MatBottomSheetModule, MatDialogModule, MatCardModule, MatTooltipModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
@@ -91,6 +92,12 @@ describe('ScenesComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should offer language selection at the right', () => {
+    const host = fixture.nativeElement.querySelector('koia-language-select.page-language');
+    expect(host.querySelector('#but_language')).toBeTruthy();
+    expect(getComputedStyle(host).float).toBe('right');
   });
 
   it('should find active scene', () => {

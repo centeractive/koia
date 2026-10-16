@@ -127,4 +127,57 @@ describe('intro page languages', () => {
       // then
       expect(localStorage.getItem(STORAGE_KEY)).toBe('en');
    });
+
+   [['en', '/intro/index.html', 'EN'], ['de', '/intro/index.de.html', 'DE'], ['ja', '/intro/index.ja.html', '日']].forEach(([language, url, code]) => {
+
+      it(language + ' intro should show language code on closed language button', async () => {
+
+         // when
+         const doc = await load(url);
+
+         // then
+         const languages = doc.querySelector<HTMLDetailsElement>('details.intro-languages');
+         expect(languages.open).toBe(false);
+         expect(languages.querySelector('summary').textContent.trim()).toBe(code);
+         expect(languages.querySelector('summary').getAttribute('lang')).toBe(language);
+      });
+   });
+
+   it('should show language button with background', async () => {
+
+      // when
+      const doc = await load('/intro/index.html');
+
+      // then
+      const summary = doc.querySelector('.intro-languages summary');
+      expect(doc.defaultView.getComputedStyle(summary).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+   });
+
+   it('should close language menu when clicking elsewhere', async () => {
+
+      // given
+      const doc = await load('/intro/index.de.html', true);
+      const languages = doc.querySelector<HTMLDetailsElement>('details.intro-languages');
+      languages.open = true;
+
+      // when
+      doc.querySelector('h1').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+      // then
+      expect(languages.open).toBe(false);
+   });
+
+   it('should close language menu when pressing escape', async () => {
+
+      // given
+      const doc = await load('/intro/index.ja.html', true);
+      const languages = doc.querySelector<HTMLDetailsElement>('details.intro-languages');
+      languages.open = true;
+
+      // when
+      doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+      // then
+      expect(languages.open).toBe(false);
+   });
 });

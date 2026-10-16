@@ -11,6 +11,13 @@
         try { localStorage.setItem('koia.language', a.hreflang); } catch (err) { }
       }
     });
+    // closes the open language menu when clicking elsewhere or pressing escape
+    function closeLanguages(target) {
+      var open = document.querySelector('.intro-languages[open]');
+      if (open && !(target && open.contains(target))) { open.open = false; }
+    }
+    document.addEventListener('click', function (e) { closeLanguages(e.target); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeLanguages(null); } });
   </script>
 
   <!-- Google tag (gtag.js) -->
@@ -55,11 +62,14 @@
         <a class="landing-nav-secondary" href="#how">So funktioniert es</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
           rel="noopener">GitHub</a>
-        <span class="intro-languages">
-          <a href="/intro/index.html" hreflang="en" lang="en">EN</a>
-          <a href="/intro/index.de.html" hreflang="de" lang="de" aria-current="page">DE</a>
-          <a href="/intro/index.ja.html" hreflang="ja" lang="ja">JA</a>
-        </span>
+        <details class="intro-languages">
+          <summary aria-label="Sprache" title="Sprache" lang="de">DE</summary>
+          <div class="intro-languages-menu">
+            <a href="/intro/index.html" hreflang="en" lang="en">English</a>
+            <a href="/intro/index.de.html" hreflang="de" lang="de" aria-current="page">Deutsch</a>
+            <a href="/intro/index.ja.html" hreflang="ja" lang="ja">日本語</a>
+          </div>
+        </details>
         <a class="landing-btn landing-btn-primary" href="/front">Koia öffnen</a>
       </nav>
     </div>

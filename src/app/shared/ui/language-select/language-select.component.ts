@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageService } from 'app/shared/services/language';
 
 /**
@@ -7,9 +7,10 @@ import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageSe
 @Component({
   selector: 'koia-language-select',
   template: `
-    <button id="but_language" type="button" [class.language-text-button]="showName" [attr.lang]="languageService.current()"
+    <button id="but_language" type="button" [attr.lang]="languageService.current()"
       [matMenuTriggerFor]="languageMenu" [matTooltip]="'language.select' | translate" [attr.aria-label]="'language.select' | translate">
-      {{ showName ? nameOf(languageService.current()) : abbreviationOf(languageService.current()) }}
+      <span class="language-code">{{ abbreviationOf(languageService.current()) }}</span>
+      <mat-icon class="language-caret" aria-hidden="true">arrow_drop_down</mat-icon>
     </button>
     <mat-menu #languageMenu="matMenu">
       @for (language of languages; track language) {
@@ -24,31 +25,30 @@ import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageSe
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 40px;
-      height: 40px;
-      padding: 0 8px;
+      min-width: 56px;
+      height: 32px;
+      margin: 4px 0;
+      padding: 0 4px 0 12px;
       border: none;
-      border-radius: 8px;
-      background: none;
-      color: inherit;
+      border-radius: 16px;
+      background: var(--koia-language-bg, rgba(48, 63, 159, 0.10));
+      color: var(--koia-language-color, var(--koia-primary, #303f9f));
       font: inherit;
       font-weight: 500;
       cursor: pointer;
     }
-    button#but_language.language-text-button {
-      height: auto;
-      padding: 4px 8px;
-      font-weight: inherit;
+    button#but_language:hover, button#but_language:focus-visible {
+      background: var(--koia-language-bg-hover, rgba(48, 63, 159, 0.18));
     }
-    button#but_language:hover {
-      background: rgba(0, 0, 0, 0.06);
+    .language-caret {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
     }`],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class LanguageSelectComponent {
-
-  @Input() showName = false;
 
   readonly languages = LANGUAGES;
 

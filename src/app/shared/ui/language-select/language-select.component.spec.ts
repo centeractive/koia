@@ -30,14 +30,16 @@ describe('LanguageSelectComponent', () => {
    }
 
    function buttonText(): string {
-      return fixture.nativeElement.querySelector('#but_language').textContent.trim();
+      return fixture.nativeElement.querySelector('#but_language .language-code').textContent.trim();
    }
 
-   it('should show abbreviation of current language instead of icon', () => {
+   it('should show abbreviation of current language with drop down caret', () => {
 
       // then
       expect(buttonText()).toBe('EN');
-      expect(fixture.nativeElement.querySelector('#but_language mat-icon')).toBeNull();
+      const icons = fixture.nativeElement.querySelectorAll('#but_language mat-icon');
+      expect(icons.length).toBe(1);
+      expect(icons[0].textContent.trim()).toBe('arrow_drop_down');
    });
 
    it('should list languages in their own language and mark current language', () => {
@@ -64,15 +66,5 @@ describe('LanguageSelectComponent', () => {
       expect(fixture.nativeElement.querySelector('#but_language').getAttribute('aria-label')).toBe('言語');
       expect(buttonText()).toBe('日');
       expect(fixture.nativeElement.querySelector('#but_language').getAttribute('lang')).toBe('ja');
-   });
-
-   it('should show name of current language when requested', () => {
-
-      // when
-      fixture.componentInstance.showName = true;
-      fixture.detectChanges();
-
-      // then
-      expect(buttonText()).toBe('English');
    });
 });
