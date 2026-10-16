@@ -29,6 +29,17 @@ describe('LanguageSelectComponent', () => {
       return Array.from(document.querySelectorAll<HTMLButtonElement>('.menu_item_language'));
    }
 
+   function buttonText(): string {
+      return fixture.nativeElement.querySelector('#but_language').textContent.trim();
+   }
+
+   it('should show abbreviation of current language instead of icon', () => {
+
+      // then
+      expect(buttonText()).toBe('EN');
+      expect(fixture.nativeElement.querySelector('#but_language mat-icon')).toBeNull();
+   });
+
    it('should list languages in their own language and mark current language', () => {
 
       // when
@@ -51,6 +62,8 @@ describe('LanguageSelectComponent', () => {
       // then
       expect(languageService.current()).toBe('ja');
       expect(fixture.nativeElement.querySelector('#but_language').getAttribute('aria-label')).toBe('言語');
+      expect(buttonText()).toBe('日');
+      expect(fixture.nativeElement.querySelector('#but_language').getAttribute('lang')).toBe('ja');
    });
 
    it('should show name of current language when requested', () => {
@@ -60,6 +73,6 @@ describe('LanguageSelectComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(fixture.nativeElement.querySelector('#but_language').textContent).toContain('English');
+      expect(buttonText()).toBe('English');
    });
 });

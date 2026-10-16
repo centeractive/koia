@@ -319,6 +319,7 @@ describe('PivotTableComponent', () => {
     expect(component.context.negativeColor).toBe('yellow');
     expect(component.context.positiveColor).toBe('red');
     expect(component.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
+    expect(component.timeColumns[0]).toBe(component.context.timeColumns[0]);
   });
 
   it('#loadConfig should spice pivot options', () => {
@@ -411,6 +412,91 @@ describe('PivotTableComponent', () => {
       expect(tabComponent.context.valueGroupings).toEqual([]);
       expect(tabFixture.nativeElement.querySelector('.pvtTable')).toBeTruthy();
     }));
+
+    describe('with restored time unit', () => {
+
+      const timeRecord = (): ConfigRecord => ({
+        route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
+        data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Count', cols: ['Level'], rows: ['Time (per month)'] } }
+      });
+
+      function clickFirstCell(): Query {
+        const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
+        const cell: HTMLTableCellElement = tabFixture.nativeElement.querySelector('td.pvtVal');
+        (cell.onclick as (e: unknown) => void)({ srcElement: cell });
+        return showSpy.mock.lastCall[0];
+      }
+
+      function monthStart(): number {
+        const date = new Date(now);
+        date.setDate(1);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+      }
+
+      it('should reveal raw data of clicked cell with restored time unit', fakeAsync(() => {
+
+        // given
+        createTabComponent(timeRecord());
+        tabFixture.detectChanges();
+        flush();
+
+        // when
+        const query = clickFirstCell();
+
+        // then
+        const valueRange = query.findValueRangeFilter('Time').valueRange;
+        expect(valueRange.min).toBe(monthStart());
+        const monthEnd = new Date(monthStart());
+        monthEnd.setMonth(monthEnd.getMonth() + 1);
+        expect(valueRange.max).toBe(monthEnd.getTime());
+      }));
+
+      it('should keep restored time unit when data is fetched again', fakeAsync(() => {
+
+        // given
+        createTabComponent(timeRecord());
+        tabFixture.detectChanges();
+        flush();
+
+        // when
+        tabComponent.fetchData(new Query());
+        flush();
+
+        // then
+        expect(tabComponent.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
+        expect(clickFirstCell().findValueRangeFilter('Time').valueRange.min).toBe(monthStart());
+      }));
+
+      it('should share restored time columns with time unit menu', fakeAsync(() => {
+
+        // when
+        createTabComponent(timeRecord());
+        tabFixture.detectChanges();
+        flush();
+
+        // then
+        expect(tabComponent.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
+        expect(tabComponent.context.timeColumns[0]).toBe(tabComponent.timeColumns[0]);
+      }));
+
+      it('should regroup restored pivot table when time unit is changed', fakeAsync(() => {
+
+        // given
+        createTabComponent(timeRecord());
+        tabFixture.detectChanges();
+        flush();
+
+        // when
+        tabComponent.onTimeUnitChanged(tabComponent.timeColumns[0], TimeUnit.YEAR);
+        flush();
+
+        // then
+        expect(tabComponent.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.YEAR);
+        expect(tabComponent.getPivotOptions()['rows']).toEqual(['Time (per year)']);
+        expect(tabComponent.dataFrame.first()['Time (per year)']).toBe(datePipe.transform(now, 'yyyy'));
+      }));
+    });
 
     it('should restore record of tab without query', fakeAsync(() => {
 
@@ -670,7 +756,6 @@ describe('PivotTableComponent', () => {
         flush();
         switchLanguage('de');
         const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
-        tabComponent.columns.find(c => c.name === 'Time').groupingTimeUnit = TimeUnit.MONTH; // as context of restored record
         const rowLabel: HTMLElement = tabFixture.nativeElement.querySelector('th.pvtRowLabel');
 
         // when

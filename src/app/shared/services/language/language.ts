@@ -13,6 +13,15 @@ export const LANGUAGE_NAMES: Readonly<Record<Language, string>> = {
    ja: '日本語'
 };
 
+/**
+ * short language names in their own language, as shown on the language button
+ */
+export const LANGUAGE_ABBREVIATIONS: Readonly<Record<Language, string>> = {
+   en: 'EN',
+   de: 'DE',
+   ja: '日'
+};
+
 const LOCALE_IDS: Readonly<Record<Language, string>> = {
    en: 'en-US',
    de: 'de',

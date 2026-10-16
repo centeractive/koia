@@ -173,12 +173,11 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   private defineGroupingTimeUnits(entries: Document[]): void {
     const options = this.getPivotOptions();
-    let nonSelectedTimeColumns = this.context.timeColumns;
-    if (options) {
-      const selColNames = [...options['cols'], ...options['rows']];
-      nonSelectedTimeColumns = this.context.timeColumns
-        .filter(c => !selColNames.includes(ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
-    }
+    const selColNames = [options, this.context.pivotOptions]
+      .filter(o => o)
+      .flatMap(o => [...(o['cols'] ?? []), ...(o['rows'] ?? [])]);
+    const nonSelectedTimeColumns = this.context.timeColumns
+      .filter(c => !selColNames.includes(ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
     DateTimeUtils.defineTimeUnits(nonSelectedTimeColumns, entries);
   }
 
@@ -219,6 +218,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   private applyConfig(configRecord: ConfigRecord): void {
     this.context = CommonUtils.clone(configRecord.data);
+    this.adoptRestoredTimeUnits();
     if (configRecord.query) {
       this.restoredQuery = queryDefToQuery(configRecord.query);
       this.query = this.restoredQuery;
@@ -226,6 +226,20 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     const pivotOptions = this.pivotOptionsProvider
       .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
     this.refreshDataFrame(pivotOptions);
+  }
+
+  /**
+   * takes over the time units of the restored context and lets the context share the time columns of this component, so that
+   * grouping, the time unit menu and revealing raw data of a clicked cell all use the same time units
+   */
+  private adoptRestoredTimeUnits(): void {
+    this.timeColumns.forEach(c => {
+      const restored = this.context.timeColumns?.find(rc => rc.name === c.name);
+      if (restored?.groupingTimeUnit) {
+        c.groupingTimeUnit = restored.groupingTimeUnit;
+      }
+    });
+    this.context.timeColumns = this.timeColumns;
   }
 
   tabContent(): TabContent {
