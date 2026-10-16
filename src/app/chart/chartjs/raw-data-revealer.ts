@@ -14,10 +14,6 @@ export class RawDataRevealer {
    constructor(private rawDataRevealService: RawDataRevealService) { }
 
    reveal(elements: ActiveElement[], data: ChartData, context: ChartContext): void {
-      console.log('elements', elements)
-      console.log('data', data)
-      console.log('context', context)
-
       if (!elements.length) {
          return;
       }
@@ -32,8 +28,6 @@ export class RawDataRevealer {
          } else {
             this.fromDataPoint(point, data.datasets, element.datasetIndex, context);
          }
-      } else {
-         this.fromGroupedData(data.datasets, element.datasetIndex, context);
       }
    }
 
@@ -42,11 +36,19 @@ export class RawDataRevealer {
    }
 
    private fromDataPoint(point: Point, datasets: ChartDataset[], datasetIndex: number, context: ChartContext): void {
-      const dataColumnName = context.isAggregationCountSelected() ? context.dataColumns[0].name : datasets[datasetIndex].label;
-      const columnNames = context.splitColumns.map(c => c.name).concat(dataColumnName);
       const dsLabel = datasets[datasetIndex].label;
-      const seriesName = context.isAggregationCountSelected() ? dsLabel : point.y;
-      const values = this.seriesNameConverter.toValues(seriesName, context.dataColumns[0], context.splitColumns);
+      let dataColumn = context.dataColumns[0];
+      let groupKey = dsLabel;
+      if (!context.isAggregationCountSelected()) {
+
+         // series name consists of split column values followed by the data column name
+         const tokens = dsLabel.split(SeriesNameConverter.SEPARATOR);
+         const dataColumnName = tokens.pop();
+         dataColumn = context.dataColumns.find(c => c.name === dataColumnName) || dataColumn;
+         groupKey = tokens.concat(String(point.y)).join(SeriesNameConverter.SEPARATOR);
+      }
+      const columnNames = context.splitColumns.map(c => c.name).concat(dataColumn.name);
+      const values = this.seriesNameConverter.toValues(groupKey, dataColumn, context.splitColumns);
       const groupByColumn = context.groupByColumns[0];
       if (groupByColumn.dataType === DataType.TIME) {
          const timeStart: number = point.x;
@@ -71,21 +73,6 @@ export class RawDataRevealer {
          const ds = data.datasets[dsIndex];
          const label = ds['originalLabel'] || ds.label;
          this.rawDataRevealService.ofQuery(context.query, [column.name], [label], context);
-      }
-   }
-
-   private fromGroupedData(datasets: ChartDataset[], dsIndex: number, context: ChartContext): void {
-      const columnNames = context.splitColumns.map(c => c.name).concat(context.dataColumns[0].name);
-      const groupName = context.isAggregationCountSelected() ? context.dataColumns[dsIndex] : context.groupByColumns[dsIndex];
-      const values = this.seriesNameConverter.toValues(groupName, context.dataColumns[0], context.splitColumns);
-      const groupByColumn = context.groupByColumns[0];
-      if (context.groupByColumns[0].dataType === DataType.TIME) {
-         // const timeStart: number = datasets[dsIndex].label;
-         // this.rawDataRevealService.ofTimeUnit(context.query, [groupByColumn], [timeStart], columnNames, values, context);
-      } else {
-         columnNames.push(groupByColumn.name);
-         values.push(datasets[dsIndex].label);
-         this.rawDataRevealService.ofQuery(context.query, columnNames, values, context);
       }
    }
 

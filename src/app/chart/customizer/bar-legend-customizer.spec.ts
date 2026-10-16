@@ -49,6 +49,20 @@ describe('BarLegendCustomizer', () => {
         });
     });
 
+    it('#customize should take over tick options except callback since labels are formatted already', () => {
+        // given
+        const data = chartData();
+        const ctx = context(ChartType.BAR, data)
+        const cfg = config(data);
+        cfg.options.scales.x.ticks = { stepSize: 2, minRotation: 45, maxRotation: 45, callback: v => 'formatted ' + v };
+
+        // when
+        new BarLegendCustomizer(3).customize(ctx, cfg);
+
+        // then
+        expect(cfg.options.scales['x1'].ticks).toEqual({ stepSize: 2, minRotation: 45, maxRotation: 45 });
+    });
+
     function context(type: ChartType, data: ChartData): ChartContext {
         const colName: Column = { name: 'Name', dataType: DataType.TEXT, width: 10 };
         const colAmount: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };

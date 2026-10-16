@@ -34,7 +34,8 @@ export class RawDataRevealService {
     const query = baseQuery.clone();
     for (let i = 0; i < timeColumns.length; i++) {
       const timeStart = startTimes[i];
-      const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, timeColumns[i].groupingTimeUnit);
+      const timeUnit = timeColumns[i].groupingTimeUnit;
+      const timeEnd = timeUnit ? DateTimeUtils.addTimeUnits(timeStart, 1, timeUnit) : timeStart;
       query.addValueRangeFilter(timeColumns[i].name, timeStart, timeEnd);
     }
     this.ofQuery(query, columnNames, columnValues, context);

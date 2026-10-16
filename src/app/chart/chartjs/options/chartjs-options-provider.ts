@@ -202,7 +202,7 @@ export class ChartJsOptionsProvider {
         }
 
         if (context.isCategoryChart()) {
-            this.tickLabelFormatter.format(context, column, scaleOptions);
+            this.tickLabelFormatter.format(column, scaleOptions);
         } else if (column.dataType) {
             switch (column.dataType) {
                 case DataType.NUMBER: {

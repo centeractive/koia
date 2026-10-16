@@ -51,3 +51,6 @@ Thumbs.db
 # unit test results
 /test-results
 /.vitest
+
+# shell crash dumps
+*.stackdump

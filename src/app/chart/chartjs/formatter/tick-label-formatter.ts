@@ -1,25 +1,22 @@
 import { Column, DataType } from 'app/shared/model';
-import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ScaleOptions } from 'chart.js';
 import { TimeFormatter } from './time-formatter';
 
 export class TickLabelFormatter extends TimeFormatter {
 
     /**
-     * only works if scale type is 'linear'
-     * @see https://github.com/chartjs/Chart.js/issues/7850 
+     * formats the tick labels of a category scale grouped by a time column; since category scales pass the label index
+     * as tick value, the label is resolved through the scale
+     * @see https://www.chartjs.org/docs/latest/axes/labelling.html#creating-custom-tick-formats
      */
-    format(context: ChartContext, column: Column, options: ScaleOptions): void {
+    format(column: Column, options: ScaleOptions): void {
         if (column?.dataType === DataType.TIME) {
             if (!options.ticks) {
                 options.ticks = {};
             }
-            options.ticks.callback = (v, i) => {
-                const chartType = ChartType.fromType(context.chartType);
-                if ([ChartType.BAR, ChartType.HORIZONTAL_BAR].includes(chartType)) {
-                    return this.formatTime(context.data.labels[i] as any, column.format);
-                }
-                return this.formatTime(v, column.format);
+            const format = (v: string | number) => this.formatTime(v, column.format);
+            options.ticks.callback = function (value) {
+                return format(this.getLabelForValue(value as number));
             };
         }
     }

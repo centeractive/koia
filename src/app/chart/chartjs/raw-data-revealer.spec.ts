@@ -3,6 +3,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { Aggregation, Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
+import { SeriesNameConverter } from 'app/shared/services/chart';
 import { ActiveElement, ArcElement, BarElement, ChartData, PointElement } from 'chart.js';
 import { RawDataRevealer } from './raw-data-revealer';
 import type { Mock } from 'vitest';
@@ -10,6 +11,7 @@ import type { Mock } from 'vitest';
 let revealer: RawDataRevealer;
 let ofIDSpy: Mock;
 let ofQuerySpy: Mock;
+let ofTimeUnitSpy: Mock;
 
 describe('RawDataRevealer - PIE', () => {
 
@@ -72,7 +74,7 @@ describe('RawDataRevealer - PIE', () => {
                 data: [900, 550, 470]
             }]
         };
-        const colTimestamp = textColumn('Timestamp');
+        const colTimestamp = timeColumn('Timestamp');
         const colAmount = numberColumn('Amount');
         const context = new ChartContext([colTimestamp, colAmount], ChartType.PIE.type, null);
         context.dataColumns = [colAmount];
@@ -177,7 +179,7 @@ describe('RawDataRevealer - LINEAR_HORIZONTAL_BAR', () => {
                     data: [{ x: 'Glasgow', y: 1 }, { x: 'London', y: 14 }]
                 }
             ]
-        } as any as ChartData;
+        } as unknown as ChartData;
         const colCity = textColumn('City');
         const colFoodType = textColumn('Food Type');
         const context = new ChartContext([colCity, colFoodType], ChartType.LINEAR_HORIZONTAL_BAR.type, null);
@@ -219,7 +221,7 @@ describe('RawDataRevealer - LINEAR_HORIZONTAL_BAR', () => {
                     ]
                 }
             ]
-        } as any as ChartData;
+        } as unknown as ChartData;
         const colTimestamp = timeColumn('Timestamp');
         const colAmount = numberColumn('Amount');
         const context = new ChartContext([colTimestamp, colAmount], ChartType.LINEAR_HORIZONTAL_BAR.type, null);
@@ -248,7 +250,7 @@ describe('RawDataRevealer - LINEAR_HORIZONTAL_BAR', () => {
                     data: [90, 50, 0]
                 }
             ]
-        } as any as ChartData;
+        } as unknown as ChartData;
         const colName = textColumn('Name');
         const colAmount = numberColumn('Amount');
         const colDiscount = numberColumn('Discount');
@@ -302,7 +304,185 @@ describe('RawDataRevealer - LINE', () => {
         expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['C'], context);
     });
 
+    it('#reveal - no element', () => {
+        // given
+        const colTimestamp = timeColumn('Timestamp');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colTimestamp];
+
+        // when
+        revealer.reveal([], { datasets: [] }, context);
+
+        // then
+        expectNoReveal();
+    });
+
+    it('#reveal - unexpected element', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: arcElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Amount', data: [{ x: 1734994800000, y: 900 }] }]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colTimestamp];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expectNoReveal();
+    });
+
+    it('#reveal - count values by time', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 1, index: 1 }];
+        const data: ChartData = {
+            datasets: [
+                { label: '550', data: [{ x: 1734994800000, y: 1 }] },
+                { label: '900', data: [{ x: 1734994800000, y: 2 }, { x: 1735081200000, y: 3 }] }
+            ]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.aggregations = [Aggregation.COUNT];
+        context.groupByColumns = [colTimestamp];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(undefined, [colTimestamp], [1735081200000], ['Amount'], [900], context);
+    });
+
+    it('#reveal - count values by text split by column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            datasets: [{
+                label: 'London' + SeriesNameConverter.SEPARATOR + '900',
+                data: [{ x: 'Burger', y: 1 }, { x: 'Pizza', y: 2 }]
+            }]
+        } as unknown as ChartData;
+        const colCity = textColumn('City');
+        const colAmount = numberColumn('Amount');
+        const colFood = textColumn('Food');
+        const context = new ChartContext([colCity, colAmount, colFood], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.aggregations = [Aggregation.COUNT];
+        context.groupByColumns = [colFood];
+        context.splitColumns = [colCity];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['City', 'Amount', 'Food'], ['London', 900, 'Pizza'], context);
+    });
+
+    it('#reveal - individual values with ID', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Amount', data: [{ id: '1000001', x: 1734994800000, y: 900 }] }]
+        } as unknown as ChartData;
+        const colTimestamp = timeColumn('Timestamp');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colTimestamp];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofIDSpy).toHaveBeenCalledWith('1000001');
+    });
+
+    it('#reveal - individual values without ID split by column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'London' + SeriesNameConverter.SEPARATOR + 'Amount', data: [{ x: 1734994800000, y: 900 }] }]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colCity = textColumn('City');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colCity, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colTimestamp];
+        context.splitColumns = [colCity];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(undefined, [colTimestamp], [1734994800000], ['City', 'Amount'], ['London', 900], context);
+    });
+
+    it('#reveal - individual values without ID of second data column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 1, index: 0 }];
+        const data: ChartData = {
+            datasets: [
+                { label: 'Amount', data: [{ x: 'A', y: 900 }] },
+                { label: 'Discount', data: [{ x: 'A', y: 90 }] }
+            ]
+        } as unknown as ChartData;
+        const colName = numberColumn('Rank');
+        const colAmount = numberColumn('Amount');
+        const colDiscount = numberColumn('Discount');
+        const context = new ChartContext([colName, colAmount, colDiscount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount, colDiscount];
+        context.groupByColumns = [colName];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Discount', 'Rank'], [90, 'A'], context);
+    });
+
 });
+
+describe('RawDataRevealer - SCATTER', () => {
+
+    beforeEach(() => {
+        setup();
+    });
+
+    it('#reveal - individual values with ID', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Amount', data: [{ id: '1000001', x: 3, y: 900 }, { id: '1000002', x: 5, y: 550 }] }]
+        } as unknown as ChartData;
+        const colRank = numberColumn('Rank');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colRank, colAmount], ChartType.SCATTER.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colRank];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofIDSpy).toHaveBeenCalledWith('1000002');
+    });
+
+});
+
+function expectNoReveal(): void {
+    expect(ofIDSpy).not.toHaveBeenCalled();
+    expect(ofQuerySpy).not.toHaveBeenCalled();
+    expect(ofTimeUnitSpy).not.toHaveBeenCalled();
+}
 
 function setup(): void {
     TestBed.configureTestingModule({
@@ -313,6 +493,7 @@ function setup(): void {
     revealer = new RawDataRevealer(rawDataRevealService);
     ofIDSpy = vi.spyOn(rawDataRevealService, 'ofID').mockReturnValue(undefined);
     ofQuerySpy = vi.spyOn(rawDataRevealService, 'ofQuery').mockReturnValue(undefined);
+    ofTimeUnitSpy = vi.spyOn(rawDataRevealService, 'ofTimeUnit').mockReturnValue(undefined);
 }
 
 
@@ -326,7 +507,7 @@ function numberColumn(name: string): Column {
 
 function timeColumn(name: string): Column {
     return {
-        ...column(name, DataType.NUMBER),
+        ...column(name, DataType.TIME),
         format: 'd MMM yyyy'
     };
 }

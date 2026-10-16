@@ -1,4 +1,4 @@
-import { BubbleDataPoint, Point, ScatterDataPoint } from 'chart.js';
+import { BubbleDataPoint, Point } from 'chart.js';
 
 export class FormatUtils {
 

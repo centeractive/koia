@@ -95,6 +95,23 @@ describe('RawDataRevealService', () => {
     ]);
   });
 
+  it('#ofTimeUnit should navigate to raw data view for exact time when time column is not grouped', () => {
+
+    // given
+    timeColumn.groupingTimeUnit = undefined;
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'], context);
+
+    // then
+    expect(dialogServiceOpenSpy).toHaveBeenCalled();
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
+    expect(actualQuery.getValueRangeFilters()).toEqual([
+      new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo, maxExcluding: undefined })
+    ]);
+  });
+
   it('#ofTimeUnit should navigate to raw data view for time period of trimmed timeunit', () => {
 
     // given

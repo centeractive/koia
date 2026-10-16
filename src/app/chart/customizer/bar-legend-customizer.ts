@@ -49,9 +49,12 @@ export class BarLegendCustomizer extends TimeFormatter {
 
         const hiddenScale = config.options.scales[horizontalBar ? 'y' : 'x'];
         hiddenScale.display = false;
+        // labels are formatted dataset labels already, hence the tick callback is not taken over
+        const ticks = { ...hiddenScale.ticks };
+        delete ticks.callback;
         config.options.scales[horizontalBar ? 'y1' : 'x1'] = {
             offset: true,
-            ticks: hiddenScale.ticks || {} // without {}, tick index instead of name is shown
+            ticks // without {}, tick index instead of name is shown
         }
     }
 

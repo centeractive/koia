@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   DoCheck,
@@ -12,11 +13,10 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ViewEncapsulation,
-  ChangeDetectionStrategy
+  ViewEncapsulation
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { ResizableDirective, ResizeEvent, ResizeHandleDirective } from 'angular-resizable-element';
+import { ResizeEvent } from 'angular-resizable-element';
 import { ExportDataProvider } from 'app/shared/controller';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
