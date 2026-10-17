@@ -45,6 +45,7 @@ describe('ScenesComponent', () => {
   let isBackendInitializedSpy: Mock;
   let getActiveSceneSpy: Mock;
   let findSceneInfosSpy: Mock;
+  let findSceneActivationTimesSpy: Mock;
   let component: ScenesComponent;
   let fixture: ComponentFixture<ScenesComponent>;
 
@@ -79,6 +80,7 @@ describe('ScenesComponent', () => {
     vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
     getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scenes[0]);
     findSceneInfosSpy = vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue(scenes);
+    findSceneActivationTimesSpy = vi.spyOn(dbService, 'findSceneActivationTimes').mockResolvedValue(new Map([['2', Date.now() + 1000], ['3', Date.now() + 2000]]));
     vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
   }));
 
@@ -202,21 +204,48 @@ describe('ScenesComponent', () => {
     expect(component.filteredSceneInfos.length).toBe(1);
   });
 
-  it('active scene card should be marked by accent left border', () => {
+  it('card title should be "Scenes"', () => {
 
     // when
-    const style = getComputedStyle(fixture.nativeElement.querySelector('#mat_card_active_scene'));
+    const title: HTMLElement = fixture.nativeElement.querySelector('#mat_card_scenes mat-card-title');
 
     // then
-    expect(style.borderLeftWidth).toBe('4px');
-    expect(style.borderLeftColor).toBe('rgb(56, 142, 60)');
+    expect(title.textContent).toBe('Scenes');
+    expect(fixture.nativeElement.querySelectorAll('mat-card').length).toBe(1);
   });
+
+  it('should list active scene on top, others by activation time', () => {
+
+    // when
+    const names = rowNames();
+
+    // then
+    expect(names).toEqual(['Scene 1', 'Scene 3', 'Scene 2']);
+    expect(fixture.nativeElement.querySelector('tr.mat-mdc-row').classList).toContain('active-scene');
+  });
+
+  it('should mark no scene when none is active', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.mockReturnValue(undefined);
+
+    // when
+    component.ngOnInit();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(rowNames()).toEqual(['Scene 3', 'Scene 2', 'Scene 1']);
+    expect(fixture.nativeElement.querySelectorAll('tr.active-scene').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.continueActiveScene').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.activateScene').length).toBe(3);
+  }));
 
   it('scene table header should have row background with semi-bold labels and bottom line', () => {
 
     // when
     const headerStyle = getComputedStyle(fixture.nativeElement.querySelector('.mat-mdc-header-cell'));
-    const cellStyle = getComputedStyle(fixture.nativeElement.querySelector('.mat-mdc-cell'));
+    const cellStyle = getComputedStyle(fixture.nativeElement.querySelector('tr.mat-mdc-row:not(.active-scene) .mat-mdc-cell'));
 
     // then
     expect(headerStyle.fontWeight).toBe('600');
@@ -318,6 +347,7 @@ describe('ScenesComponent', () => {
     vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
     vi.mocked(getActiveSceneSpy).mockClear();
     vi.mocked(findSceneInfosSpy).mockClear();
+    vi.mocked(findSceneActivationTimesSpy).mockClear();
     component.filter = '1';
     component.onFilterChange();
     spyOnConfirmDialogAndPressYes();
@@ -330,6 +360,7 @@ describe('ScenesComponent', () => {
     // then
     expect(dbService.getActiveScene).toHaveBeenCalledTimes(1);
     expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
+    expect(dbService.findSceneActivationTimes).toHaveBeenCalledTimes(1);
   }));
 
   it('#selecting delete menu item should delete scene', fakeAsync(() => {
@@ -375,7 +406,7 @@ describe('ScenesComponent', () => {
 
     // given
     vi.spyOn(dbService, 'activateScene').mockResolvedValue(scenes[1]);
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
+    const htmlButton = activateButtonOf(scenes[1]);
 
     // when
     htmlButton.click();
@@ -391,7 +422,7 @@ describe('ScenesComponent', () => {
 
     // given
     vi.spyOn(dbService, 'activateScene').mockRejectedValue('cannot activate scene');
-    const htmlButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
+    const htmlButton = activateButtonOf(scenes[1]);
 
     // when
     htmlButton.click();
@@ -429,6 +460,17 @@ describe('ScenesComponent', () => {
     // then
     expect(location.back).toHaveBeenCalled();
   });
+
+  function rowNames(): string[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row .scene-name'))
+      .map((e: HTMLElement) => e.textContent);
+  }
+
+  function activateButtonOf(scene: Scene): HTMLButtonElement {
+    return fixture.debugElement.queryAll(By.css('tr.mat-mdc-row'))
+      .find(r => r.nativeElement.textContent.includes(scene.name))
+      .query(By.css('.activateScene')).nativeElement;
+  }
 
   function spyOnConfirmDialogAndPressYes(): void {
     spyOnConfirmDialogAndPress(0);

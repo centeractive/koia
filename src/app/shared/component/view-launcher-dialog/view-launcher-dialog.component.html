@@ -44,6 +44,15 @@
       </button>
       &nbsp;{{ 'dialog.summaryTable' | translate }}
     </div>
+    <p>{{ 'dialog.generateDashboardHint' | translate }}</p>
+    <div class="div_row">
+      <button id="but_generate_dashboard" mat-icon-button [disabled]="!context.canGenerateDashboard()"
+        (click)="context.generateDashboard(); dialogRef.close()">
+        <mat-icon>auto_awesome</mat-icon>
+      </button>
+      &nbsp;{{ 'dialog.generateDashboard' | translate }}
+      @if (context.loading) {&nbsp;<var>{{ 'dashboard.loadingData' | translate }}</var>}
+    </div>
 
     <div id="div_close_button">
       <button id="but_cancel" mat-raised-button color="primary" (click)="dialogRef.close()">{{ 'common.cancel' | translate }}</button>

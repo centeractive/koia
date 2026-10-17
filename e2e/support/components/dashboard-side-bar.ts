@@ -5,11 +5,13 @@ export class DashboardSideBar {
 
    private readonly sidenav: Locator;
    private readonly backdrop: Locator;
+   private readonly fadingBackdrop: Locator;
    private readonly content: Locator;
 
    constructor(dashboard: Locator) {
       this.sidenav = dashboard.locator('mat-sidenav');
       this.backdrop = dashboard.locator('.mat-drawer-backdrop.mat-drawer-shown');
+      this.fadingBackdrop = dashboard.locator('.mat-drawer-backdrop');
       this.content = dashboard.locator('mat-sidenav-content');
    }
 
@@ -32,5 +34,6 @@ export class DashboardSideBar {
       await this.backdrop.click();
       await this.sidenav.waitFor({ state: 'hidden' });
       await expect(this.content).toHaveCSS('margin-left', '0px');
+      await expect(this.fadingBackdrop).toBeHidden();
    }
 }

@@ -19,9 +19,10 @@ const dialogService = new DialogService(null);
 let fixture: ComponentFixture<SceneTableComponent>;
 let component: SceneTableComponent;
 let onActivateEmitSpy: Mock;
+let onContinueEmitSpy: Mock;
 let onDeleteEmitSpy: Mock;
 
-describe('SceneTableComponent (all scenes)', () => {
+describe('SceneTableComponent', () => {
 
   let scenes: Scene[];
 
@@ -36,25 +37,101 @@ describe('SceneTableComponent (all scenes)', () => {
     await setup();
     vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
     component.sceneInfos = scenes;
-    component.ngOnChanges();
+    component.activeScene = scenes[0];
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    expect(component.tableData.length).toBe(3);
+    expect(rows().length).toBe(3);
   });
 
-  it('#click on activate button should emit event', () => {
+  it('should mark active scene row', () => {
+
+    // when
+    const row = rows()[0];
+
+    // then
+    expect(row.classList).toContain('active-scene');
+    expect(row.querySelector('.active-chip').textContent).toBe('Active');
+    expect(getComputedStyle(row.querySelector('.scene-name')).fontWeight).toBe('600');
+  });
+
+  it('should not mark other scene rows', () => {
+
+    // when
+    const otherRows = rows().slice(1);
+
+    // then
+    otherRows.forEach(r => {
+      expect(r.classList).not.toContain('active-scene');
+      expect(r.querySelector('.active-chip')).toBeNull();
+    });
+  });
+
+  it('should mark no row when no scene is active', () => {
 
     // given
-    const activateButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.activateScene'))[1].nativeElement;
+    component.activeScene = undefined;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelectorAll('tr.active-scene').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.continueActiveScene').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.activateScene').length).toBe(3);
+  });
+
+  it('active scene row should have green tint and left bar', () => {
+
+    // when
+    const cells: HTMLElement[] = Array.from(rows()[0].querySelectorAll('td'));
+
+    // then
+    cells.forEach(c => expect(getComputedStyle(c).backgroundColor).toBe('rgba(56, 142, 60, 0.12)'));
+    expect(getComputedStyle(cells[0]).boxShadow).toContain('rgb(56, 142, 60)');
+    expect(getComputedStyle(cells[1]).boxShadow).toBe('none');
+  });
+
+  it('active chip should be green pill', () => {
+
+    // when
+    const style = getComputedStyle(rows()[0].querySelector('.active-chip'));
+
+    // then
+    expect(style.backgroundColor).toBe('rgb(56, 142, 60)');
+    expect(style.color).toBe('rgb(255, 255, 255)');
+    expect(style.borderRadius).toBe('10px');
+  });
+
+  it('#click on continue button should emit continue event', () => {
+
+    // given
+    const continueButtons: HTMLButtonElement[] = Array.from(rows()[0].querySelectorAll('.continueActiveScene'));
+
+    // when
+    continueButtons[0].click();
+
+    // then
+    expect(continueButtons.length).toBe(1);
+    expect(rows()[0].querySelector('.activateScene')).toBeNull();
+    expect(onContinueEmitSpy).toHaveBeenCalledWith(scenes[0]);
+    expect(onActivateEmitSpy).not.toHaveBeenCalled();
+  });
+
+  it('#click on activate button should emit activate event', () => {
+
+    // given
+    const activateButton: HTMLButtonElement = rows()[1].querySelector('.activateScene');
 
     // when
     activateButton.click();
 
     // then
+    expect(rows()[1].querySelector('.continueActiveScene')).toBeNull();
     expect(onActivateEmitSpy).toHaveBeenCalledWith(scenes[1]);
+    expect(onContinueEmitSpy).not.toHaveBeenCalled();
   });
 
   it('#selecting "Details" menu item should show scene details', fakeAsync(() => {
@@ -89,37 +166,10 @@ describe('SceneTableComponent (all scenes)', () => {
     // then
     expect(onDeleteEmitSpy).toHaveBeenCalledWith(scenes[2]);
   }));
-});
 
-describe('SceneTableComponent (active scene)', () => {
-
-  let activeScene: Scene;
-
-  beforeEach(async () => {
-    await setup();
-    activeScene = SceneFactory.createScene('1', []);
-    component.activeScene = activeScene;
-    component.ngOnChanges();
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-    expect(component.tableData.length).toBe(1);
-  });
-
-  it('#click on continue button should emit event', () => {
-
-    // given
-    const continueButton: HTMLButtonElement = fixture.debugElement.query(By.css('.continueActiveScene')).nativeElement;
-
-    // when
-    continueButton.click();
-
-    // then
-    expect(onActivateEmitSpy).toHaveBeenCalledWith(activeScene);
-  });
-
+  function rows(): HTMLElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row'));
+  }
 });
 
 async function setup(): Promise<void> {
@@ -135,5 +185,6 @@ async function setup(): Promise<void> {
   fixture = TestBed.createComponent(SceneTableComponent);
   component = fixture.componentInstance;
   onActivateEmitSpy = vi.spyOn(component.onActivate, 'emit').mockReturnValue(undefined);
+  onContinueEmitSpy = vi.spyOn(component.onContinue, 'emit').mockReturnValue(undefined);
   onDeleteEmitSpy = vi.spyOn(component.onDelete, 'emit').mockReturnValue(undefined);
 }

@@ -45,6 +45,10 @@
         <button mat-icon-button [matTooltip]="'dashboard.addSummary' | translate" (click)="addSummaryTable()">
           <mat-icon svgIcon="add_summary"></mat-icon>
         </button>
+        <button id="but_regenerate_dashboard" mat-icon-button [matTooltip]="'dashboard.regenerate' | translate"
+          [disabled]="!canGenerateDashboard()" (click)="generateDashboard()">
+          <mat-icon>auto_awesome</mat-icon>
+        </button>
       </koia-view-toolbar>
       <mat-menu #moreMenu="matMenu">
         @if (isGridLayout()) {

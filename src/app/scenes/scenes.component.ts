@@ -10,6 +10,7 @@ import { Location } from '@angular/common';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { firstValueFrom } from 'rxjs';
+import { orderSceneInfos } from './scene-order';
 
 @Component({
   selector: 'koia-scenes',
@@ -25,7 +26,6 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   activeScene: Scene;
   filter = '';
   filteredSceneInfos: SceneInfo[] = [];
-  columns = ['actions', 'name', 'shortDescription', 'creationTime'];
 
   private sceneInfos: SceneInfo[] = [];
 
@@ -96,10 +96,10 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
 
   private loadData(): void {
     this.activeScene = this.dbService.getActiveScene();
-    this.dbService.findSceneInfos()
-      .then(sceneInfos => {
+    Promise.all([this.dbService.findSceneInfos(), this.dbService.findSceneActivationTimes()])
+      .then(([sceneInfos, activationTimes]) => {
         if (sceneInfos && sceneInfos.length > 0) {
-          this.sceneInfos = sceneInfos;
+          this.sceneInfos = orderSceneInfos(sceneInfos, activationTimes, this.activeScene?._id);
           this.filteredSceneInfos = this.filterSceneInfos();
         } else {
           this.router.navigateByUrl(Route.SCENE);

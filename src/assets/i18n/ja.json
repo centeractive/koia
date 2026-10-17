@@ -288,10 +288,8 @@
     }
   },
   "scenes": {
-    "activeScene": "アクティブなシーン",
-    "activeSceneSubtitle": "現在作業中のシーンです",
-    "allScenes": "すべてのシーン",
-    "allScenesSubtitle": "既存のシーンを管理します。シーンをアクティブにするとグラフィックを作成できます。",
+    "title": "シーン",
+    "subtitle": "既存のシーンを管理します。シーンをアクティブにするとグラフィックを作成できます。",
     "filter": "シーンを絞り込む",
     "deleteFiltered": "絞り込み結果を削除",
     "deleteAll": "すべて削除",
@@ -304,6 +302,7 @@
     "showDetails": "詳細を表示",
     "activate": "シーンをアクティブにする",
     "continueActive": "アクティブなシーンで続ける",
+    "active": "アクティブ",
     "creationTime": "作成日時",
     "details": {
       "sourceContext": "ソースのコンテキスト",
@@ -332,6 +331,8 @@
     "chart": "チャート",
     "graph": "関係グラフ",
     "summaryTable": "集計表",
+    "generateDashboardHint": "または、データからダッシュボードを自動生成します。",
+    "generateDashboard": "ダッシュボードを生成",
     "dontShowAgain": "今後表示しない",
     "rememberChoice": "選択を記憶する",
     "couchDbLimitation": "CouchDB の制限",
@@ -463,7 +464,10 @@
     "gridCellRatio": "グリッドセルの比率（幅:高さ）",
     "manageViews": "ビューの管理",
     "snapToGrid": "グリッドに合わせる",
-    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます"
+    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます",
+    "regenerate": "ダッシュボードを再生成",
+    "regenerateQuestion": "このダッシュボードのすべての要素が新しく生成された要素に置き換えられます。続行しますか？",
+    "nothingToGenerate": "データにダッシュボードの生成に適した列がありません"
   },
   "enum": {
     "chartType": {

@@ -13,10 +13,14 @@ export class LocalizedNumberPipe implements PipeTransform {
 
    constructor(private languageService: LanguageService) { }
 
-   transform(value: number | string | null | undefined, digitsInfo?: string): string | null {
+   static format(value: number | string | null | undefined, localeId: string, digitsInfo?: string): string | null {
       if (value === null || value === undefined || value === '' || isNaN(Number(value))) {
          return null;
       }
-      return formatNumber(Number(value), this.languageService.localeId(), digitsInfo);
+      return formatNumber(Number(value), localeId, digitsInfo);
+   }
+
+   transform(value: number | string | null | undefined, digitsInfo?: string): string | null {
+      return LocalizedNumberPipe.format(value, this.languageService.localeId(), digitsInfo);
    }
 }

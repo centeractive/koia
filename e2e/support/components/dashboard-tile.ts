@@ -1,5 +1,13 @@
 import { expect, Locator } from '@playwright/test';
 
+export interface RenderedCellStyle {
+   fontWeight: number;
+   fontSize: number;
+   fontFamily: string;
+   letterSpacing: number;
+   horizontalPadding: number;
+}
+
 export class DashboardTile {
 
    readonly title: Locator;
@@ -22,6 +30,57 @@ export class DashboardTile {
 
    async expectChartPainted(): Promise<void> {
       await expect.poll(() => this.paintedPixelCount()).toBeGreaterThan(0);
+   }
+
+   spans(): Promise<{ columns: number; rows: number }> {
+      return this.root.evaluate((e: HTMLElement) => {
+         const style = getComputedStyle(e);
+         const spanOf = (end: string) => Number(/span (\d+)/.exec(end)?.[1] ?? 1);
+         return { columns: spanOf(style.gridColumnEnd), rows: spanOf(style.gridRowEnd) };
+      });
+   }
+
+   /**
+    * @returns the rendered width of the summary table, its width without wrapping and its number of columns
+    */
+   async tableWidths(): Promise<{ rendered: number; maxContent: number; columnCount: number }> {
+      await this.waitForSummaryTable();
+      return this.root.locator('table').evaluate((table: HTMLTableElement) => {
+         const rendered = table.getBoundingClientRect().width;
+         const inlineWidth = table.style.width;
+         table.style.width = 'max-content';
+         const maxContent = table.getBoundingClientRect().width;
+         table.style.width = inlineWidth;
+         return { rendered, maxContent, columnCount: table.querySelectorAll('tr.mat-mdc-header-row th').length };
+      });
+   }
+
+   async tableCellStyles(): Promise<{ header: RenderedCellStyle; cell: RenderedCellStyle; footer: RenderedCellStyle;
+      sortArrowWidth: number }> {
+      await this.waitForSummaryTable();
+      return this.root.locator('table').evaluate((table: HTMLTableElement) => {
+         const styleOf = (textElement: Element, paddedElement: Element) => {
+            const text = getComputedStyle(textElement);
+            const padded = getComputedStyle(paddedElement);
+            return {
+               fontWeight: Number(text.fontWeight),
+               fontSize: parseFloat(text.fontSize),
+               fontFamily: text.fontFamily,
+               letterSpacing: text.letterSpacing === 'normal' ? 0 : parseFloat(text.letterSpacing),
+               horizontalPadding: parseFloat(padded.paddingLeft) + parseFloat(padded.paddingRight)
+            };
+         };
+         const th = table.querySelector('th');
+         const td = table.querySelector('tr.mat-mdc-row td');
+         const footer = table.querySelector('td.mat-mdc-footer-cell');
+         const arrow = table.querySelector<HTMLElement>('.mat-sort-header-arrow');
+         return {
+            header: styleOf(th.querySelector('.mat-sort-header-content'), th),
+            cell: styleOf(td, td),
+            footer: styleOf(footer, footer),
+            sortArrowWidth: arrow.offsetWidth + parseFloat(getComputedStyle(arrow).marginLeft)
+         };
+      });
    }
 
    async saveAs(menuItem: string): Promise<void> {
@@ -52,6 +111,11 @@ export class DashboardTile {
    async remove(): Promise<void> {
       await this.root.locator('.but_close').click();
       await this.root.waitFor({ state: 'detached' });
+   }
+
+   private async waitForSummaryTable(): Promise<void> {
+      await expect(this.root.locator('td.mat-mdc-footer-cell').first()).toBeVisible();
+      await expect(this.root.locator('mat-progress-bar')).toHaveCount(0);
    }
 
    private paintedPixelCount(): Promise<number> {

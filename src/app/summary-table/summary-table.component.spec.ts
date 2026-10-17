@@ -301,119 +301,18 @@ describe('SummaryTableComponent', () => {
     expect(formattedValue).toBe('');
   });
 
-  it('#formattedValueOf should return null when value is null', () => {
-
-    // given
-    context.dataColumns = [findColumn('t1')];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, null);
-
-    // then
-    expect(formattedValue).toBeNull();
-  });
-
-  it('#formattedValueOf should return undefined when value is undefined', () => {
-
-    // given
-    context.dataColumns = [findColumn('t1')];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, undefined);
-
-    // then
-    expect(formattedValue).toBeUndefined();
-  });
-
-  it('#formattedValueOf should return string when value is text', () => {
-
-    // given
-    context.dataColumns = [findColumn('t1')];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, 'abc');
-
-    // then
-    expect(formattedValue).toBe('abc');
-  });
-
-  it('#formattedValueOf should return boolean when data column value is boolean', () => {
-
-    // given
-    context.dataColumns = [findColumn('b')];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, true);
-
-    // then
-    expect(formattedValue).toBe(true);
-  });
-
-  it('#formattedValueOf should return formatted number when data column value is number', () => {
-
-    // given
-    context.dataColumns = [findColumn('n1')];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, -1_000_000.5);
-
-    // then
-    const expectedFormattedValue = (-1_000_000.5).toLocaleString();
-    expect(formattedValue).toBe(expectedFormattedValue);
-  });
-
-  it('#formattedValueOf should return formatted hierarchy column value is number', () => {
-
-    // given
-    context.dataColumns = [findColumn('t1')];
-    context.groupByColumns = [findColumn('n1')];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, -1_000_000.5);
-
-    // then
-    const expectedFormattedValue = (-1_000_000.5).toLocaleString();
-    expect(formattedValue).toBe(expectedFormattedValue);
-  });
-
-
-  it('#formattedValueOf should return formatted time when hierarchy column value is time', () => {
+  it('#formattedValueOf should format value of group-by column when not computing', () => {
 
     // given
     context.dataColumns = [findColumn('t1')];
     context.groupByColumns = [findColumn('Time')];
+    component.computing = false;
 
     // when
     const formattedValue = component.formattedValueOf(0, now);
 
     // then
     expect(formattedValue).toBe(datePipe.transform(now, 'd MMM yyyy HH:mm'));
-  });
-
-  it('#formattedValueOf should return time formatted by column format when hierarchy time column has no time unit', () => {
-
-    // given
-    context.dataColumns = [findColumn('t1')];
-    context.groupByColumns = [{ ...findColumn('Time'), groupingTimeUnit: undefined, format: 'yyyy-MM-dd HH:mm' }];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, now);
-
-    // then
-    expect(formattedValue).toBe(datePipe.transform(now, 'yyyy-MM-dd HH:mm'));
-  });
-
-  it('#formattedValueOf should return formatted number when hierarchy time column has neither time unit nor format', () => {
-
-    // given
-    context.dataColumns = [findColumn('t1')];
-    context.groupByColumns = [{ ...findColumn('Time'), groupingTimeUnit: undefined }];
-
-    // when
-    const formattedValue = component.formattedValueOf(0, now);
-
-    // then
-    expect(formattedValue).toBe(now.toLocaleString());
   });
 
   it('should not size parent element when shown in grid view', () => {

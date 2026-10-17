@@ -288,10 +288,8 @@
     }
   },
   "scenes": {
-    "activeScene": "Active Scene",
-    "activeSceneSubtitle": "This is the scene you're currently working with",
-    "allScenes": "All Scenes",
-    "allScenesSubtitle": "Manage your existing scenes. Activate one to start creating graphics.",
+    "title": "Scenes",
+    "subtitle": "Manage your existing scenes. Activate one to start creating graphics.",
     "filter": "Filter scenes",
     "deleteFiltered": "Delete filtered",
     "deleteAll": "Delete all",
@@ -304,6 +302,7 @@
     "showDetails": "Show details",
     "activate": "Activate scene",
     "continueActive": "Continue with active scene",
+    "active": "Active",
     "creationTime": "Creation Time",
     "details": {
       "sourceContext": "Source Context",
@@ -332,6 +331,8 @@
     "chart": "Chart",
     "graph": "Relationship Graph",
     "summaryTable": "Summary Table",
+    "generateDashboardHint": "Or let Koia compose a dashboard from the data.",
+    "generateDashboard": "Generate Dashboard",
     "dontShowAgain": "Don't show again",
     "rememberChoice": "Remember choice",
     "couchDbLimitation": "CouchDB Limitation",
@@ -463,7 +464,10 @@
     "gridCellRatio": "Grid Cell Ratio (width:height)",
     "manageViews": "Manage Views",
     "snapToGrid": "Snap to Grid",
-    "confirmResize": "Larger elements will be resized to fit the new setting"
+    "confirmResize": "Larger elements will be resized to fit the new setting",
+    "regenerate": "Regenerate Dashboard",
+    "regenerateQuestion": "All elements of this dashboard will be replaced by newly generated ones. Continue?",
+    "nothingToGenerate": "The data contains no columns suitable for generating a dashboard"
   },
   "enum": {
     "chartType": {

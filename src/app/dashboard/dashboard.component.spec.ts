@@ -1,7 +1,7 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
-import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -11,6 +11,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { ResizeEvent } from 'angular-resizable-element';
+import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
@@ -29,8 +30,10 @@ import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
+import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
+import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 
 @Component({ selector: 'koia-main-toolbar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
 class MainToolbarComponent { }
@@ -1298,6 +1301,245 @@ describe('DashboardComponent', () => {
       expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), status);
     });
 
+    it('#generateDashboard should replace empty dashboard with generated elements without confirmation', fakeAsync(() => {
+
+      // given
+      const result = generatedDashboard();
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(result);
+      vi.spyOn(dialogService, 'showConfirmDialog');
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
+      expectElementContexts(result.elementContexts);
+    }));
+
+    it('#generateDashboard should apply grid of generated dashboard', fakeAsync(() => {
+
+      // given
+      component.gridLayout.gridColumns = 5;
+      component.addSummaryTable().gridColumnSpan = 5;
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard(3));
+      mockConfirmDialog(0);
+      vi.spyOn(window, 'confirm');
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(window.confirm).not.toHaveBeenCalled();
+      expect(component.gridLayout.gridColumns).toBe(3);
+      expect(component.gridLayout.gridCellRatio).toBe('1:1');
+    }));
+
+    it('#generateDashboard should pass current elements and grid to generator', fakeAsync(() => {
+
+      // given
+      const context = component.addSummaryTable();
+      component.gridLayout.gridColumns = 4;
+      component.gridLayout.gridCellRatio = '3:2';
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+      mockConfirmDialog(0);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      const request = generateSpy.mock.lastCall[0];
+      expect(request.entries).toBe(component.entries);
+      expect(request.currentContexts).toEqual([context]);
+      expect(request.currentGrid).toEqual({ columns: 4, cellRatio: '3:2' });
+      expect(request.columns().map(c => c.name)).toEqual(scene.columns.filter(c => c.indexed).map(c => c.name));
+      expect(request.columns()[0]).not.toBe(request.columns()[0]);
+    }));
+
+    it('#generateDashboard should pass grid scroller width without scrollbar to generator', fakeAsync(() => {
+
+      // given
+      const scroller = component.divContentRef.nativeElement;
+      scroller.style.boxSizing = 'border-box';
+      scroller.style.width = '640px';
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].containerWidth).toBe(640 - DomMetrics.scrollbarWidth());
+    }));
+
+    it('#generateDashboard should pass flex scroller width without scrollbar to generator', fakeAsync(() => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+      const content = component.divContentRef.nativeElement;
+      content.style.width = '300px';
+      content.parentElement.style.width = '700px';
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].containerWidth).toBe(700 - DomMetrics.scrollbarWidth());
+    }));
+
+    it('#generateDashboard should ask for confirmation when dashboard has elements', fakeAsync(() => {
+
+      // given
+      component.addSummaryTable();
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+      mockConfirmDialog(1);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      const data: ConfirmDialogData = vi.mocked(dialogService.showConfirmDialog).mock.lastCall[0];
+      expect(data.title).toBe('Regenerate Dashboard');
+      expect(data.htmlContent).toBe('<p>All elements of this dashboard will be replaced by newly generated ones. Continue?</p>');
+      expect(data.buttonNames).toEqual(ConfirmDialogData.YES_NO);
+    }));
+
+    it('#generateDashboard should replace elements when regeneration is confirmed', fakeAsync(() => {
+
+      // given
+      component.addSummaryTable();
+      const result = generatedDashboard();
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(result);
+      mockConfirmDialog(0);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expectElementContexts(result.elementContexts);
+    }));
+
+    it('#generateDashboard should keep elements when regeneration is declined', fakeAsync(() => {
+
+      // given
+      const context = component.addSummaryTable();
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+      mockConfirmDialog(1);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy).not.toHaveBeenCalled();
+      expectElementContexts([context]);
+    }));
+
+    it('#generateDashboard should warn and keep elements when nothing can be generated', fakeAsync(() => {
+
+      // given
+      const context = component.addSummaryTable();
+      component.gridLayout.gridColumns = 4;
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(undefined);
+      mockConfirmDialog(0);
+      vi.spyOn(component, 'notifyWarning').mockReturnValue(undefined);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(component.notifyWarning).toHaveBeenCalledWith('The data contains no columns suitable for generating a dashboard');
+      expectElementContexts([context]);
+      expect(component.gridLayout.gridColumns).toBe(4);
+    }));
+
+    it('#generateDashboard should close side bar and clear selection', fakeAsync(() => {
+
+      // given
+      const context = component.addGraph();
+      component.configure(null, context);
+      vi.spyOn(component.sidenav, 'close');
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+      mockConfirmDialog(0);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(component.sidenav.close).toHaveBeenCalled();
+      expect(component.selectedContext).toBeUndefined();
+      expect(component.selectedContextPosition).toBeUndefined();
+    }));
+
+    it('#generateDashboard should switch flex layout to grid layout', fakeAsync(() => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(component.isGridLayout()).toBe(true);
+      expect(fixture.debugElement.query(By.css('#div_grid'))).toBeTruthy();
+    }));
+
+    it('#generateDashboard should fire structure change on generated chart contexts after rendering', fakeAsync(() => {
+
+      // given
+      const result = generatedDashboard();
+      const [chartContext, summaryContext] = result.elementContexts;
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(result);
+
+      // when
+      component.generateDashboard();
+      fixture.detectChanges();
+      vi.spyOn(chartContext, 'fireStructureChanged');
+      vi.spyOn(summaryContext, 'fireStructureChanged');
+      tick();
+
+      // then
+      expect(chartContext.fireStructureChanged).toHaveBeenCalledTimes(1);
+      expect(summaryContext.fireStructureChanged).not.toHaveBeenCalled();
+    }));
+
+    it('#click on regenerate button should generate dashboard', () => {
+
+      // given
+      vi.spyOn(component, 'generateDashboard').mockReturnValue(undefined);
+      fixture.detectChanges();
+
+      // when
+      fixture.debugElement.query(By.css('#but_regenerate_dashboard')).nativeElement.click();
+
+      // then
+      expect(component.generateDashboard).toHaveBeenCalled();
+    });
+
+    it('regenerate button should be disabled while entries are loading', () => {
+
+      // given
+      component.loading = true;
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.debugElement.query(By.css('#but_regenerate_dashboard')).nativeElement.disabled).toBe(true);
+    });
+
     it('should not request persisting when not shown in a tab', () => {
 
       // when
@@ -1512,6 +1754,69 @@ describe('DashboardComponent', () => {
       // then
       expect(viewTabsService.requestPersist).toHaveBeenCalled();
     }));
+
+    it('#generateDashboard should scroll generated dashboard to top', fakeAsync(() => {
+
+      // given
+      init(dashboardTab(viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
+      const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
+      const grid: HTMLElement = fixture.nativeElement.querySelector('#div_grid');
+      const scrollToSpy = vi.spyOn(grid, 'scrollTo').mockReturnValue(undefined);
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+      mockConfirmDialog(0);
+
+      // when
+      component.generateDashboard();
+      flushMicrotasks();
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(scrollIntoViewSpy).toHaveBeenCalled();
+      expect(scrollToSpy).toHaveBeenCalledExactlyOnceWith({ top: 0 });
+      expect(scrollToSpy.mock.invocationCallOrder[0]).toBeGreaterThan(scrollIntoViewSpy.mock.invocationCallOrder[0]);
+    }));
+
+    it('#generateDashboard should bind query and entries and request persisting', fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      const query = new Query();
+      query.setFullTextFilter('abc');
+      component.onFilterChanged(query);
+      const result = generatedDashboard();
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(result);
+      vi.mocked(viewTabsService.requestPersist).mockClear();
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      result.elementContexts.forEach(c => {
+        expect(c.query).toBe(query);
+        expect(c.entries).toBe(component.entries);
+      });
+      expect(viewTabsService.requestPersist).toHaveBeenCalled();
+    }));
+
+    it('#generateDashboard should persist changes of generated elements', fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      const result = generatedDashboard();
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(result);
+      component.generateDashboard();
+      flush();
+      vi.mocked(viewTabsService.requestPersist).mockClear();
+
+      // when
+      result.elementContexts[1].gridColumnSpan = 2;
+      flush();
+
+      // then
+      expect(viewTabsService.requestPersist).toHaveBeenCalled();
+    }));
   });
 
   function elementsOf(contexts: ElementContext[]): unknown {
@@ -1535,5 +1840,30 @@ describe('DashboardComponent', () => {
         return of(true);
       }
     };
+  }
+
+  function mockConfirmDialog(closedWithButtonIndex: number): void {
+    vi.spyOn(dialogService, 'showConfirmDialog').mockImplementation((data: ConfirmDialogData) => {
+      data.closedWithButtonIndex = closedWithButtonIndex;
+      return <MatDialogRef<ConfirmDialogComponent>>{
+        afterClosed(): Observable<boolean> {
+          return of(true);
+        }
+      };
+    });
+  }
+
+  function generatedDashboard(gridColumns = 3): GeneratedDashboard {
+    const indexedColumns = (): Column[] => scene.columns.filter(c => c.indexed).map(c => ({ ...c }));
+    const chartContext = new ChartContext(indexedColumns(), ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+    chartContext.dataColumns = [findColumn('Level', chartContext)];
+    const summaryContext = new SummaryContext(indexedColumns());
+    summaryContext.dataColumns = [findColumn('Host', summaryContext)];
+    return { grid: { columns: gridColumns, cellRatio: '1:1' }, elementContexts: [chartContext, summaryContext] };
+  }
+
+  function expectElementContexts(expected: ElementContext[]): void {
+    expect(component.elementContexts.length).toBe(expected.length);
+    component.elementContexts.forEach((c, i) => expect(c).toBe(expected[i]));
   }
 });

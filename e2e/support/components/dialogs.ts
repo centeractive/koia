@@ -27,9 +27,20 @@ export class ConfirmDialog {
    /**
     * @returns the question, the first button (Yes) confirms
     */
-   async confirm(): Promise<string> {
+   confirm(): Promise<string> {
+      return this.press(0);
+   }
+
+   /**
+    * @returns the question, the second button (No) declines
+    */
+   decline(): Promise<string> {
+      return this.press(1);
+   }
+
+   private async press(buttonIndex: number): Promise<string> {
       const question = await this.root.locator('mat-card-content > div').first().innerText();
-      await this.root.locator('#div_buttons button').first().click();
+      await this.root.locator('#div_buttons button').nth(buttonIndex).click();
       await this.root.waitFor({ state: 'detached' });
       return question.trim();
    }
@@ -55,6 +66,10 @@ export class ViewLauncherDialog {
 
    addGraph(): Promise<void> {
       return this.choose(this.root.locator('button:has(mat-icon[svgicon="add_graph"])'));
+   }
+
+   generateDashboard(): Promise<void> {
+      return this.choose(this.root.locator('#but_generate_dashboard'));
    }
 
    cancel(): Promise<void> {

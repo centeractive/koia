@@ -2,14 +2,20 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { ViewController } from 'app/shared/controller';
 import { View, ViewElement } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
-import { ChartMarginService } from 'app/shared/services/chart';
+import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { LanguageService } from 'app/shared/services/language';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { firstValueFrom } from 'rxjs';
 import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 import { FlexLayout } from './flex-layout';
+import { DashboardGenerator } from './generator/dashboard-generator';
+import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
 
 @Component({
@@ -21,18 +27,21 @@ import { GridLayout, GridSpans } from './grid-layout';
 })
 export class DashboardComponent extends ViewController {
 
-  readonly gridColumnChoices = [1, 2, 3, 4, 5];
-  readonly gridCellRatioChoices = ['1:1', '3:2', '2:1', '2:3', '1:2'];
+  readonly gridColumnChoices = GridLayout.COLUMN_CHOICES;
+  readonly gridCellRatioChoices = GridLayout.CELL_RATIO_CHOICES;
   readonly gridLayout = new GridLayout();
   readonly validateElementResize = FlexLayout.validateResize;
   gridResizePreview: { left: number, top: number, width: number, height: number };
   private gridResizeContentWidth: number;
 
+  private readonly dashboardGenerator: DashboardGenerator;
+
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
     viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
-    exportService: ExportService, viewTabsService: ViewTabsService) {
+    exportService: ExportService, viewTabsService: ViewTabsService, chartDataService: ChartDataService) {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
       exportService, viewTabsService);
+    this.dashboardGenerator = new DashboardGenerator(chartMarginService, chartDataService, new MathRandomSource());
   }
 
   isGridLayout(): boolean {
@@ -51,14 +60,64 @@ export class DashboardComponent extends ViewController {
       } else {
         this.applyGridSpans(view.elements);
       }
-      this.sidenav.close();
-      this.selectedContext = undefined;
-      this.selectedContextPosition = undefined;
+      this.closeSideBar();
       this.route = route;
       this.elementContexts = this.restoreElementContexts(view.elements);
       this.renderChartsOnceCreated(this.elementContexts);
       this.requestPersist();
     }
+  }
+
+  private closeSideBar(): void {
+    this.sidenav.close();
+    this.selectedContext = undefined;
+    this.selectedContextPosition = undefined;
+  }
+
+  generateDashboard(): void {
+    if (this.elementContexts.length === 0) {
+      this.replaceByGeneratedElements();
+    } else {
+      const data = new ConfirmDialogData(LanguageService.instant('dashboard.regenerate'),
+        '<p>' + LanguageService.instant('dashboard.regenerateQuestion') + '</p>', ConfirmDialogData.YES_NO);
+      firstValueFrom(this.dialogService.showConfirmDialog(data).afterClosed())
+        .then(() => {
+          if (data.closedWithButtonIndex === 0) {
+            this.replaceByGeneratedElements();
+          }
+        });
+    }
+  }
+
+  private replaceByGeneratedElements(): void {
+    const result = this.dashboardGenerator.generate({
+      columns: () => this.clonedColumns(),
+      entries: this.entries,
+      currentContexts: this.elementContexts,
+      currentGrid: { columns: this.gridLayout.gridColumns, cellRatio: this.gridLayout.gridCellRatio },
+      containerWidth: this.generationContainerWidth()
+    });
+    if (!result) {
+      this.notifyWarning(LanguageService.instant('dashboard.nothingToGenerate'));
+      return;
+    }
+    this.closeSideBar();
+    this.route = Route.GRID;
+    this.gridLayout.gridColumns = result.grid.columns;
+    this.gridLayout.gridCellRatio = result.grid.cellRatio;
+    this.elementContexts = this.bindElementContexts(result.elementContexts);
+    this.renderChartsOnceCreated(this.elementContexts);
+    setTimeout(() => this.divContentRef.nativeElement.scrollTo({ top: 0 }));
+    this.requestPersist();
+  }
+
+  /**
+   * returns the width of the scroller as if a vertical scrollbar were shown, as the generated grid usually scrolls
+   */
+  private generationContainerWidth(): number {
+    const element = this.divContentRef.nativeElement;
+    const scroller = this.isGridLayout() ? element : element.parentElement;
+    return scroller.offsetWidth - DomMetrics.scrollbarWidth();
   }
 
   private applyRenderedTileSizes(elements: ViewElement[]): void {

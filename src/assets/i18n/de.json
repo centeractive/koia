@@ -288,10 +288,8 @@
     }
   },
   "scenes": {
-    "activeScene": "Aktive Szene",
-    "activeSceneSubtitle": "Mit dieser Szene arbeiten Sie gerade",
-    "allScenes": "Alle Szenen",
-    "allScenesSubtitle": "Verwalten Sie Ihre Szenen. Aktivieren Sie eine, um Grafiken zu erstellen.",
+    "title": "Szenen",
+    "subtitle": "Verwalten Sie Ihre Szenen. Aktivieren Sie eine, um Grafiken zu erstellen.",
     "filter": "Szenen filtern",
     "deleteFiltered": "Gefilterte löschen",
     "deleteAll": "Alle löschen",
@@ -304,6 +302,7 @@
     "showDetails": "Details anzeigen",
     "activate": "Szene aktivieren",
     "continueActive": "Mit aktiver Szene fortfahren",
+    "active": "Aktiv",
     "creationTime": "Erstellt",
     "details": {
       "sourceContext": "Quellkontext",
@@ -332,6 +331,8 @@
     "chart": "Diagramm",
     "graph": "Beziehungsgraph",
     "summaryTable": "Übersichtstabelle",
+    "generateDashboardHint": "Oder lassen Sie Koia ein Dashboard aus den Daten zusammenstellen.",
+    "generateDashboard": "Dashboard generieren",
     "dontShowAgain": "Nicht mehr anzeigen",
     "rememberChoice": "Auswahl merken",
     "couchDbLimitation": "CouchDB-Einschränkung",
@@ -463,7 +464,10 @@
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
     "manageViews": "Ansichten verwalten",
     "snapToGrid": "Am Raster ausrichten",
-    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst"
+    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst",
+    "regenerate": "Dashboard neu generieren",
+    "regenerateQuestion": "Alle Elemente dieses Dashboards werden durch neu generierte ersetzt. Fortfahren?",
+    "nothingToGenerate": "Die Daten enthalten keine Spalten, aus denen ein Dashboard generiert werden kann"
   },
   "enum": {
     "chartType": {
