@@ -1,5 +1,5 @@
 <div>
-  <table mat-table [dataSource]="tableData">
+  <table mat-table [dataSource]="sceneInfos">
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td class="nowrap" mat-cell *matCellDef="let sceneInfo">
@@ -16,15 +16,13 @@
             <span>{{ 'common.delete' | translate }}</span>
           </button>
         </mat-menu>
-        @if (!!sceneInfos) {
-          <button class="activateScene" [disabled]="activeScene && sceneInfo._id === activeScene._id" mat-icon-button
-            [matTooltip]="'scenes.activate' | translate"
-            (click)="onActivate.emit(sceneInfo)">
+        @if (isActive(sceneInfo)) {
+          <button class="continueActiveScene" mat-icon-button color="accent" [matTooltip]="'scenes.continueActive' | translate"
+            (click)="onContinue.emit(sceneInfo)">
             <mat-icon>play_circle_outline</mat-icon>
           </button>
-        }
-        @if (!sceneInfos) {
-          <button class="continueActiveScene" mat-icon-button color="accent" [matTooltip]="'scenes.continueActive' | translate"
+        } @else {
+          <button class="activateScene" mat-icon-button [matTooltip]="'scenes.activate' | translate"
             (click)="onActivate.emit(sceneInfo)">
             <mat-icon>play_circle_outline</mat-icon>
           </button>
@@ -33,7 +31,12 @@
     </ng-container>
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef>{{ 'scene.name' | translate }}</th>
-      <td class="nowrap" mat-cell *matCellDef="let sceneInfo"> {{sceneInfo.name}} </td>
+      <td class="nowrap" mat-cell *matCellDef="let sceneInfo">
+        <span class="scene-name">{{sceneInfo.name}}</span>
+        @if (isActive(sceneInfo)) {
+          <span class="active-chip">{{ 'scenes.active' | translate }}</span>
+        }
+      </td>
     </ng-container>
     <ng-container matColumnDef="shortDescription">
       <th mat-header-cell *matHeaderCellDef>{{ 'scene.shortDescription' | translate }}</th>
@@ -44,6 +47,6 @@
       <td class="nowrap" mat-cell *matCellDef="let sceneInfo"> {{sceneInfo.creationTime | koiaDate:'medium' }} </td>
     </ng-container>
     <tr mat-header-row *matHeaderRowDef="columns"></tr>
-    <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns;" [class.active-scene]="isActive(row)"></tr>
   </table>
 </div>

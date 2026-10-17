@@ -288,10 +288,8 @@
     }
   },
   "scenes": {
-    "activeScene": "Aktive Szene",
-    "activeSceneSubtitle": "Mit dieser Szene arbeiten Sie gerade",
-    "allScenes": "Alle Szenen",
-    "allScenesSubtitle": "Verwalten Sie Ihre Szenen. Aktivieren Sie eine, um Grafiken zu erstellen.",
+    "title": "Szenen",
+    "subtitle": "Verwalten Sie Ihre Szenen. Aktivieren Sie eine, um Grafiken zu erstellen.",
     "filter": "Szenen filtern",
     "deleteFiltered": "Gefilterte löschen",
     "deleteAll": "Alle löschen",
@@ -304,6 +302,7 @@
     "showDetails": "Details anzeigen",
     "activate": "Szene aktivieren",
     "continueActive": "Mit aktiver Szene fortfahren",
+    "active": "Aktiv",
     "creationTime": "Erstellt",
     "details": {
       "sourceContext": "Quellkontext",

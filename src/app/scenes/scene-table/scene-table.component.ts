@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Scene, SceneInfo } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -10,25 +10,21 @@ import { DBService } from 'app/shared/services/backend';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class SceneTableComponent implements OnChanges {
+export class SceneTableComponent {
 
-  @Input() sceneInfos: SceneInfo[];
+  @Input() sceneInfos: SceneInfo[] = [];
   @Input() activeScene: Scene;
 
   @Output() onActivate = new EventEmitter<SceneInfo>();
+  @Output() onContinue = new EventEmitter<SceneInfo>();
   @Output() onDelete = new EventEmitter<SceneInfo>();
 
-  tableData: SceneInfo[] = []
   columns = ['actions', 'name', 'shortDescription', 'creationTime'];
 
   constructor(private dbService: DBService, private dialogService: DialogService) { }
 
-  ngOnChanges(): void {
-    if (this.sceneInfos) {
-      this.tableData = this.sceneInfos;
-    } else {
-      this.tableData = [this.activeScene];
-    }
+  isActive(sceneInfo: SceneInfo): boolean {
+    return !!this.activeScene && sceneInfo._id === this.activeScene._id;
   }
 
   showSceneDetails(sceneID: string): void {

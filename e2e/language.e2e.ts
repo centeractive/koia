@@ -11,7 +11,7 @@ test('scenes page is translated when switching to German', async ({ front, rawDa
 
    await languageSelect.switchTo('de');
 
-   await expect(scenes.title).toHaveText(de.get('scenes.allScenes'));
+   await expect(scenes.title).toHaveText(de.get('scenes.title'));
 });
 
 test('scene page is translated when switching to Japanese', async ({ front, scene, languageSelect }) => {
