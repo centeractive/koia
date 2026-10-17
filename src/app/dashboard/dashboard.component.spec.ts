@@ -33,6 +33,7 @@ import { DashboardComponent } from './dashboard.component';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
+import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 
 @Component({ selector: 'koia-main-toolbar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
 class MainToolbarComponent { }
@@ -1174,6 +1175,40 @@ describe('DashboardComponent', () => {
       expect(request.currentGrid).toEqual({ columns: 4, cellRatio: '3:2' });
       expect(request.columns().map(c => c.name)).toEqual(scene.columns.filter(c => c.indexed).map(c => c.name));
       expect(request.columns()[0]).not.toBe(request.columns()[0]);
+    }));
+
+    it('#generateDashboard should pass grid scroller width without scrollbar to generator', fakeAsync(() => {
+
+      // given
+      const scroller = component.divContentRef.nativeElement;
+      scroller.style.boxSizing = 'border-box';
+      scroller.style.width = '640px';
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].containerWidth).toBe(640 - DomMetrics.scrollbarWidth());
+    }));
+
+    it('#generateDashboard should pass flex scroller width without scrollbar to generator', fakeAsync(() => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+      const content = component.divContentRef.nativeElement;
+      content.style.width = '300px';
+      content.parentElement.style.width = '700px';
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].containerWidth).toBe(700 - DomMetrics.scrollbarWidth());
     }));
 
     it('#generateDashboard should ask for confirmation when dashboard has elements', fakeAsync(() => {

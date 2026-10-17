@@ -142,6 +142,45 @@ describe('GridPlanner', () => {
     }
   });
 
+  it('#plan should keep a small slot for small table', () => {
+
+    // when
+    const sizes = plannerOf([0.99]).plan(4, 2, false, 4, 1, true);
+
+    // then
+    expect(count(sizes, TileSize.WIDE)).toBe(3);
+    expect(count(sizes, TileSize.SMALL)).toBe(2);
+    expect(cellsOf(4, sizes).flat().every(c => c)).toBe(true);
+  });
+
+  it('#plan should fill rows with kept small slot', () => {
+    for (const gridColumns of [3, 4, 5]) {
+      for (let rows = 1; rows <= 4; rows++) {
+        for (let wideStock = 0; wideStock <= 6; wideStock++) {
+          for (let smallStock = 1; smallStock <= 8; smallStock++) {
+            for (const values of SEQUENCES) {
+
+              // when
+              const sizes = plannerOf(values).plan(gridColumns, rows, false, wideStock, smallStock, true);
+
+              // then
+              const cells = cellsOf(gridColumns, sizes);
+              const unkeptCells = cellsOf(gridColumns, plannerOf(values).plan(gridColumns, rows, false, wideStock, smallStock));
+              expect(cells.length).toBe(unkeptCells.length);
+              expect(cells.flat().every(c => c)).toBe(true);
+              if (cells.length) {
+                expect(sizes).toContain(TileSize.SMALL);
+              }
+              const wideCount = count(sizes, TileSize.WIDE);
+              expect(wideCount).toBeLessThanOrEqual(wideStock);
+              expect(count(sizes, TileSize.SMALL)).toBeLessThanOrEqual(smallStock + wideStock - wideCount);
+            }
+          }
+        }
+      }
+    }
+  });
+
   it('#canFill should match feasibility of plan', () => {
     const planner = plannerOf([0.4, 0.8]);
     for (const gridColumns of [3, 4, 5]) {

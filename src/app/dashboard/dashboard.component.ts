@@ -9,6 +9,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 import { LanguageService } from 'app/shared/services/language';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { firstValueFrom } from 'rxjs';
 import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
@@ -89,7 +90,8 @@ export class DashboardComponent extends ViewController {
       columns: () => this.clonedColumns(),
       entries: this.entries,
       currentContexts: this.elementContexts,
-      currentGrid: { columns: this.gridLayout.gridColumns, cellRatio: this.gridLayout.gridCellRatio }
+      currentGrid: { columns: this.gridLayout.gridColumns, cellRatio: this.gridLayout.gridCellRatio },
+      containerWidth: this.generationContainerWidth()
     });
     if (!result) {
       this.notifyWarning(LanguageService.instant('dashboard.nothingToGenerate'));
@@ -103,6 +105,15 @@ export class DashboardComponent extends ViewController {
     this.renderChartsOnceCreated(this.elementContexts);
     setTimeout(() => this.divContentRef.nativeElement.scrollTo({ top: 0 }));
     this.requestPersist();
+  }
+
+  /**
+   * returns the width of the scroller as if a vertical scrollbar were shown, as the generated grid usually scrolls
+   */
+  private generationContainerWidth(): number {
+    const element = this.divContentRef.nativeElement;
+    const scroller = this.isGridLayout() ? element : element.parentElement;
+    return scroller.offsetWidth - DomMetrics.scrollbarWidth();
   }
 
   private applyRenderedTileSizes(elements: ViewElement[]): void {

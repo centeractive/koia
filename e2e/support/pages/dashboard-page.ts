@@ -38,6 +38,20 @@ export class DashboardPage {
    }
 
    /**
+    * @returns the width of the grid scroll container and the width a vertical scrollbar takes when shown
+    */
+   scrollerWidth(): Promise<{ offsetWidth: number; scrollbarWidth: number }> {
+      return this.root.locator('#div_grid').evaluate((container: HTMLElement) => {
+         const probe = document.createElement('div');
+         probe.style.cssText = 'position: absolute; top: -9999px; width: 100px; height: 100px; overflow: scroll;';
+         document.body.appendChild(probe);
+         const scrollbarWidth = probe.offsetHeight - probe.clientHeight;
+         probe.remove();
+         return { offsetWidth: container.offsetWidth, scrollbarWidth };
+      });
+   }
+
+   /**
     * @returns the computed track sizes of the grid and the width of the vertical scrollbar of its scroll container
     */
    gridTracks(): Promise<{ rowHeight: number; columnWidths: number[]; scrollbarWidth: number }> {

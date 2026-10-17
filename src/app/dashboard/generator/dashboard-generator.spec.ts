@@ -7,8 +7,9 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { LANGUAGES } from 'app/shared/services/language';
 import { occupiedCells, SequenceRandomSource } from 'app/shared/test';
+import { SummaryTableWidthEstimator } from 'app/summary-table/summary-table-width-estimator';
 import { DashboardGenerator, GeneratedDashboard, GenerationRequest } from './dashboard-generator';
-import { GENERATED_GRID_COLUMNS, GridDef, rowsOf } from './generated-grid';
+import { GENERATED_GRID_COLUMNS, GridChooser, GridDef, rowsOf } from './generated-grid';
 import { TileContextFactory } from './tile-context-factory';
 import { TileSignature } from './tile-signature';
 import { TileSize } from './tile-spec';
@@ -33,13 +34,27 @@ describe('DashboardGenerator', () => {
     return Array.from({ length: count }, (_, m) => new Date(2024, m, 1).getTime());
   }
 
-  function generatorOf(values: number[] = [0.3]): DashboardGenerator {
-    return new DashboardGenerator(new ChartMarginService(), new ChartDataService(), new SequenceRandomSource(values));
+  function generatorOf(values: number[] = [0.3], tableWidthEstimator?: SummaryTableWidthEstimator): DashboardGenerator {
+    return new DashboardGenerator(new ChartMarginService(), new ChartDataService(), new SequenceRandomSource(values), tableWidthEstimator);
   }
 
   function requestOf(columns: Column[], entries: object[], currentContexts: ElementContext[] = [],
-    currentGrid: GridDef = { columns: 3, cellRatio: '1:1' }): GenerationRequest {
-    return { columns: () => columns.map(c => ({ ...c })), entries, currentContexts, currentGrid };
+    currentGrid: GridDef = { columns: 3, cellRatio: '1:1' }, containerWidth = 0): GenerationRequest {
+    return { columns: () => columns.map(c => ({ ...c })), entries, currentContexts, currentGrid, containerWidth };
+  }
+
+  function estimatorOf(tableWidth: number): SummaryTableWidthEstimator {
+    const estimator = new SummaryTableWidthEstimator();
+    vi.spyOn(estimator, 'estimate').mockReturnValue(tableWidth);
+    return estimator;
+  }
+
+  function tableOf(result: GeneratedDashboard): SummaryContext {
+    return result.elementContexts.find(c => c instanceof SummaryContext);
+  }
+
+  function chooseGridOf(columns: number): void {
+    vi.spyOn(GridChooser.prototype, 'next').mockReturnValue({ columns, cellRatio: '1:1' });
   }
 
   /**
@@ -483,6 +498,82 @@ describe('DashboardGenerator', () => {
     const timeChartKeys = validated.filter(c => isTimeChart(c)).map(c => TileSignature.keyOfContext(c));
     expect(timeChartKeys.length).toBe(4);
     expect(new Set(timeChartKeys).size).toBe(timeChartKeys.length);
+  });
+
+  it('#generate should give summary table one cell when its content fits a cell', () => {
+    for (const values of SEQUENCES) {
+
+      // when
+      const result = generatorOf(values, estimatorOf(100)).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+
+      // then
+      expectFilled(result);
+      expect([tableOf(result).gridColumnSpan, tableOf(result).gridRowSpan]).toEqual([1, 1]);
+    }
+  });
+
+  it('#generate should give summary table two cells when its content exceeds a cell', () => {
+    for (const values of SEQUENCES) {
+
+      // when
+      const result = generatorOf(values, estimatorOf(400)).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+
+      // then
+      expectFilled(result);
+      expect([tableOf(result).gridColumnSpan, tableOf(result).gridRowSpan]).toEqual([2, 1]);
+    }
+  });
+
+  it('#generate should give summary table two cells without container width', () => {
+
+    // given
+    const estimator = estimatorOf(0);
+
+    // when
+    const result = generatorOf([0.3], estimator).generate(requestOf(COLUMNS, ENTRIES));
+
+    // then
+    expect(estimator.estimate).not.toHaveBeenCalled();
+    expect(tableOf(result).gridColumnSpan).toBe(2);
+  });
+
+  it('#generate should place small summary table in a small slot', () => {
+    for (const values of SEQUENCES) {
+
+      // given
+      vi.restoreAllMocks();
+      chooseGridOf(4);
+      const generate = TileSpecGenerator.prototype.generate;
+      vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer) {
+        return generate.call(this, profiles, randomizer).filter(s => s.size !== TileSize.SMALL || !s.chartType);
+      });
+
+      // when
+      const result = generatorOf(values, estimatorOf(100)).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+
+      // then
+      expectFilled(result);
+      expect(tableOf(result).gridColumnSpan).toBe(1);
+      expect(charts(result).filter(c => c.gridColumnSpan === 2).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('#generate should estimate summary table against cell width of chosen grid', () => {
+
+    // given
+    chooseGridOf(4);
+    const cellWidth = 1000 / 4 - 10;
+    const fitting = estimatorOf(cellWidth);
+    const exceeding = estimatorOf(cellWidth + 0.5);
+
+    // when
+    const fittingResult = generatorOf([0.3], fitting).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+    const exceedingResult = generatorOf([0.3], exceeding).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+
+    // then
+    expect(fitting.estimate).toHaveBeenCalledExactlyOnceWith(tableOf(fittingResult));
+    expect(tableOf(fittingResult).gridColumnSpan).toBe(1);
+    expect(tableOf(exceedingResult).gridColumnSpan).toBe(2);
   });
 
   LANGUAGES.forEach(language => it('#generate should create charts rendering without error from sample entries (' + language + ')', async () => {

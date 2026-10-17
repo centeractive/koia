@@ -1,20 +1,18 @@
-import { formatDate } from '@angular/common';
-import { LanguageService } from 'app/shared/services/language';
 import { Component, ElementRef, Inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { ExportDataProvider } from 'app/shared/controller';
-import { NumberFormatter } from 'app/shared/format';
 import { DBService } from 'app/shared/services/backend';
-import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { ColumnNameConverter, CommonUtils } from 'app/shared/utils';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
-import { DateTime } from 'luxon';
-import { Aggregation, ChangeEvent, Column, DataType, Route, SummaryContext } from '../shared/model';
+import { ChangeEvent, DataType, Route, SummaryContext } from '../shared/model';
 import { AggregationService, RawDataRevealService } from '../shared/services';
 import { DataFrameSorter } from './data-frame-sorter';
 import { ExportDataGenerator } from './export-data-generator';
 import { RowSpanComputer, Span } from './row-span-computer';
+import { SummaryDataComputer } from './summary-data-computer';
+import { SummaryValueFormatter } from './summary-value-formatter';
 
 @Component({
   selector: 'koia-summary-table',
@@ -39,12 +37,14 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
   private baseDataFrame: IDataFrame<number, object>;
   private dataFrame: IDataFrame<number, object>;
   private dataFrameSorter = new DataFrameSorter();
-  private numberFormatter = new NumberFormatter();
+  private valueFormatter = new SummaryValueFormatter();
   private exportDataGenerator = new ExportDataGenerator();
+  private dataComputer: SummaryDataComputer;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
-    private aggregationService: AggregationService, private valueRangeGroupingService: ValueRangeGroupingService,
+    aggregationService: AggregationService, valueRangeGroupingService: ValueRangeGroupingService,
     private rawDataRevealService: RawDataRevealService) {
+    this.dataComputer = new SummaryDataComputer(aggregationService, valueRangeGroupingService);
   }
 
   ngOnInit(): void {
@@ -112,12 +112,10 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
     }
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
-    const data = this.valueRangeGroupingService.compute(this.baseDataFrame, this.context.valueGroupings);
-    data.bake();
-    this.dataFrame = this.aggregationService.compute(data, this.context);
+    this.dataFrame = this.dataComputer.aggregate(this.baseDataFrame, this.context);
     this.frameColumns = this.dataFrame.getColumnNames();
     this.sortDataFrame();
-    this.overalls = this.computeOveralls();
+    this.overalls = this.dataComputer.overallsOf(this.dataFrame, this.context);
     this.computing = false;
   }
 
@@ -146,32 +144,8 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
     this.rowSpans = this.rowSpanComputer.compute(this.frameData, columnNames);
   }
 
-  private computeOveralls(): number[] {
-    return this.context.aggregations.map(a => {
-      const series = this.dataFrame.getSeries(a);
-      const aggregation = a === Aggregation.COUNT ? Aggregation.SUM : a;
-      return this.aggregationService.aggregateValue(series, aggregation);
-    });
-  }
-
   formattedValueOf(columnIndex: number, value: string | number | boolean): string | boolean {
-    if (this.computing) {
-      return '';
-    } else if (value == undefined || typeof value === 'string' || typeof value === 'boolean') {
-      return value as string | boolean;
-    }
-    let column: Column;
-    if (this.context.groupByColumns.length > 0 && columnIndex < this.context.groupByColumns.length) {
-      column = this.context.groupByColumns[columnIndex];
-      if (column.dataType === DataType.TIME) {
-        if (column.groupingTimeUnit) {
-          return formatDate(value, DateTimeUtils.ngFormatOf(column.groupingTimeUnit), LanguageService.localeId());
-        } else if (column.format) {
-          return DateTime.fromMillis(value, { locale: LanguageService.localeId() }).toFormat(column.format);
-        }
-      }
-    }
-    return this.numberFormatter.format(value);
+    return this.computing ? '' : this.valueFormatter.format(this.context.groupByColumns, columnIndex, value);
   }
 
   createExportData(): object[] {

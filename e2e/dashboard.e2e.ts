@@ -5,6 +5,7 @@ import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { StringUtils } from 'app/shared/utils/string-utils';
+import { SUMMARY_TABLE_STYLE } from 'app/summary-table/summary-table-style';
 import { DashboardTile } from './support/components/dashboard-tile';
 import { downloadOf, exportFileName } from './support/downloads';
 import { expect, test } from './support/fixtures';
@@ -13,6 +14,7 @@ import { DashboardPage } from './support/pages/dashboard-page';
 import { Texts } from './support/texts';
 
 const VIEW_NAME = 'Regions overview';
+const GRID_GAP_PX = 10;
 const en = new Texts('en');
 const column = firstColumnOf(fruitSalesOf('en'), DataType.TEXT);
 
@@ -196,6 +198,39 @@ test('declining regeneration keeps tiles and grid resolution', async ({ dashboar
    expect(await previousTile.evaluate(e => e.isConnected)).toBe(true);
    await expect(dashboard.tiles).toHaveCount(previousTileCount);
    expect((await dashboard.gridTracks()).columnWidths.length).toBe(previousColumns);
+});
+
+test('summary table style matches width estimator constants', async ({ dashboard }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.close();
+
+   const styles = await dashboard.tile(0).tableCellStyles();
+
+   for (const part of ['header', 'cell', 'footer'] as const) {
+      const expected = SUMMARY_TABLE_STYLE[part];
+      expect(styles[part].fontWeight).toBe(expected.fontWeight);
+      expect(styles[part].fontSize).toBe(expected.fontSize);
+      expect(styles[part].fontFamily).toBe(expected.fontFamily);
+      expect(styles[part].letterSpacing).toBeCloseTo(expected.letterSpacing, 2);
+      expect(styles[part].horizontalPadding).toBe(expected.horizontalPadding);
+   }
+   expect(styles.sortArrowWidth).toBe(SUMMARY_TABLE_STYLE.sortArrowWidth);
+});
+
+test('generated summary table spans one cell only when its content fits', async ({ page, dashboard }) => {
+   await dashboard.launcher.generateDashboard();
+
+   const columns = await generatedGridColumns(dashboard);
+   const tile = new DashboardTile(dashboard.tiles.filter({ has: page.locator('koia-summary-table') }));
+   const { rendered, maxContent, columnCount } = await tile.tableWidths();
+   const { offsetWidth, scrollbarWidth } = await dashboard.scrollerWidth();
+   if ((await tile.spans()).columns === 1) {
+      expect(Math.abs(rendered - maxContent)).toBeLessThanOrEqual(0.5);
+   } else {
+      const cellWidth = (offsetWidth - scrollbarWidth) / columns - GRID_GAP_PX;
+      expect(maxContent + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth + columnCount).toBeGreaterThanOrEqual(cellWidth - 1);
+   }
 });
 
 async function generatedGridColumns(dashboard: DashboardPage): Promise<number> {

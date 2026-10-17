@@ -41,6 +41,35 @@ describe('TextMeasurer', () => {
     span.remove();
   });
 
+  it('#width should add letter spacing per character', () => {
+
+    // given
+    const spacedMeasurer = new TextMeasurer('12px sans-serif', '2px');
+
+    // when
+    const width = spacedMeasurer.width('abc');
+
+    // then
+    expect(width).toBeCloseTo(measurer.width('abc') + 3 * 2, 1);
+  });
+
+  it('#width should match rendered width with letter spacing', () => {
+
+    // given
+    const font = '700 14px sans-serif';
+    const span = document.createElement('span');
+    span.style.cssText = 'position: absolute; white-space: pre; letter-spacing: 0.25px; font: ' + font;
+    span.textContent = 'Overall 1,234,567';
+    document.body.appendChild(span);
+
+    // when
+    const width = new TextMeasurer(font, '0.25px').width(span.textContent);
+
+    // then
+    expect(Math.abs(width - span.getBoundingClientRect().width)).toBeLessThan(1);
+    span.remove();
+  });
+
   it('#width should depend on font', () => {
 
     // given

@@ -9,13 +9,18 @@ export class GridPlanner {
 
   constructor(private readonly randomizer: Randomizer) { }
 
-  plan(gridColumns: number, rows: number, hasFeature: boolean, wideStock: number, smallStock: number): TileSize[] {
+  /**
+   * @param keepSmallSlot whether at least one small slot must remain, requires a small stock of at least one
+   */
+  plan(gridColumns: number, rows: number, hasFeature: boolean, wideStock: number, smallStock: number, keepSmallSlot = false):
+    TileSize[] {
     const sizes = hasFeature ? [TileSize.FEATURE] : [];
     for (let r = hasFeature ? rows - 1 : rows; r >= 1; r--) {
       const lo = this.minWideCount(gridColumns, r, wideStock, smallStock);
       const hi = this.maxWideCount(gridColumns, r, wideStock);
       if (lo <= hi) {
-        const k = hi >= Math.max(lo, 1) ? this.randomizer.pick(range(Math.max(lo, 1), hi + 1)) : lo;
+        const hiK = keepSmallSlot ? Math.min(hi, Math.floor((r * gridColumns - 1) / 2)) : hi;
+        const k = hiK >= Math.max(lo, 1) ? this.randomizer.pick(range(Math.max(lo, 1), hiK + 1)) : lo;
         return sizes.concat(this.planRows(gridColumns, r, k));
       }
     }
