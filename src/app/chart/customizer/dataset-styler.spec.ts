@@ -1,12 +1,12 @@
 import { ChartType } from 'app/shared/model/chart';
-import { ChartData } from 'chart.js';
+import { ChartData, ChartDataset } from 'chart.js';
 import { DatasetStyler } from './dataset-styler';
 
 describe('DatasetStyler', () => {
 
     const styler = new DatasetStyler();
 
-    it('#style should define point radius 3 of LINE dataset with 125 points', () => {
+    it('#style should set point radius 3 when line chart has up to 125 values', () => {
         // given
         const data = chartData(125);
 
@@ -14,21 +14,21 @@ describe('DatasetStyler', () => {
         styler.style(data, ChartType.LINE);
 
         // then
-        expect(data.datasets[0]['pointRadius']).toBe(3);
+        expect(pointRadius(data)).toBe(3);
     });
 
-    it('#style should define point radius 2 of LINE dataset with 126 points', () => {
+    it('#style should set point radius 2 when area chart has more than 125 values', () => {
         // given
         const data = chartData(126);
 
         // when
-        styler.style(data, ChartType.LINE);
+        styler.style(data, ChartType.AREA);
 
         // then
-        expect(data.datasets[0]['pointRadius']).toBe(2);
+        expect(pointRadius(data)).toBe(2);
     });
 
-    it('#style should define point radius 2 of LINE dataset with 250 points', () => {
+    it('#style should set point radius 2 when line chart has 250 values', () => {
         // given
         const data = chartData(250);
 
@@ -36,10 +36,10 @@ describe('DatasetStyler', () => {
         styler.style(data, ChartType.LINE);
 
         // then
-        expect(data.datasets[0]['pointRadius']).toBe(2);
+        expect(pointRadius(data)).toBe(2);
     });
 
-    it('#style should define point radius 1 of LINE dataset with 251 points', () => {
+    it('#style should set point radius 1 when line chart has more than 250 values', () => {
         // given
         const data = chartData(251);
 
@@ -47,38 +47,29 @@ describe('DatasetStyler', () => {
         styler.style(data, ChartType.LINE);
 
         // then
-        expect(data.datasets[0]['pointRadius']).toBe(1);
+        expect(pointRadius(data)).toBe(1);
     });
 
-    it('#style should define point radius of AREA dataset', () => {
+    it('#style should not set point radius when bar chart', () => {
         // given
-        const data = chartData(10);
-
-        // when
-        styler.style(data, ChartType.AREA);
-
-        // then
-        expect(data.datasets[0]['pointRadius']).toBe(3);
-    });
-
-    it('#style should not define point radius of BAR dataset', () => {
-        // given
-        const data = chartData(10);
+        const data = chartData(3);
 
         // when
         styler.style(data, ChartType.BAR);
 
         // then
-        expect(data.datasets[0]['pointRadius']).toBeUndefined();
+        expect(pointRadius(data)).toBeUndefined();
     });
 
-    function chartData(pointCount: number): ChartData {
+    function chartData(valuesCount: number): ChartData {
         return {
             datasets: [{
-                label: 'Amount',
-                data: Array.from({ length: pointCount }, (_, i) => i)
+                data: Array.from({ length: valuesCount }, (_, i) => i)
             }]
         };
     }
 
+    function pointRadius(data: ChartData): unknown {
+        return (data.datasets[0] as ChartDataset<'line'>).pointRadius;
+    }
 });

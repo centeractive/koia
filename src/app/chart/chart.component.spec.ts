@@ -1,4 +1,4 @@
-import { SimpleChange } from '@angular/core';
+import { NgZone, SimpleChange } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
@@ -298,6 +298,148 @@ describe('ChartComponent', () => {
     // then
     const resizable = fixture.debugElement.query(By.directive(ResizableDirective)).injector.get(ResizableDirective);
     expect(resizable.ghostElementPositioning).toBe('absolute');
+  });
+
+  describe('resizable margin on pointer press', () => {
+
+    let tile: HTMLDivElement;
+    let ownMarginButton: HTMLButtonElement;
+    let otherTile: HTMLDivElement;
+
+    beforeEach(() => {
+      tile = document.createElement('div');
+      document.body.appendChild(tile);
+      tile.appendChild(fixture.nativeElement);
+      ownMarginButton = createMarginButton(tile);
+      otherTile = document.createElement('div');
+      document.body.appendChild(otherTile);
+      createMarginButton(otherTile);
+      showResizableMargin();
+    });
+
+    afterEach(() => {
+      tile.remove();
+      otherTile.remove();
+    });
+
+    function createMarginButton(parent: HTMLElement): HTMLButtonElement {
+      const button = document.createElement('button');
+      button.classList.add('but_element_margin');
+      button.appendChild(document.createElement('span'));
+      parent.appendChild(button);
+      return button;
+    }
+
+    function pressPointerOn(element: Element): void {
+      element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      fixture.detectChanges();
+    }
+
+    function expectMarginShown(shown: boolean): void {
+      expect(context.isShowResizableMargin()).toBe(shown);
+      expect(!!fixture.nativeElement.querySelector('.div_margins')).toBe(shown);
+    }
+
+    it('should hide margin when pointer is pressed on chart canvas', () => {
+
+      // when
+      pressPointerOn(fixture.nativeElement.querySelector('canvas'));
+
+      // then
+      expectMarginShown(false);
+    });
+
+    it('should hide margin when pointer is pressed inside margin area', () => {
+
+      // when
+      pressPointerOn(fixture.nativeElement.querySelector('.div_margins'));
+
+      // then
+      expectMarginShown(false);
+    });
+
+    it('should hide margin when pointer is pressed on margin button of other tile', () => {
+
+      // when
+      pressPointerOn(otherTile.querySelector('.but_element_margin'));
+
+      // then
+      expectMarginShown(false);
+    });
+
+    it.each(['top', 'left', 'right', 'bottom'])('should keep margin when pointer is pressed on %s margin resize handle', edge => {
+
+      // when
+      pressPointerOn(fixture.nativeElement.querySelector('.resize-handle-' + edge));
+
+      // then
+      expectMarginShown(true);
+    });
+
+    it('should keep margin when pointer is pressed on own margin button', () => {
+
+      // when
+      pressPointerOn(ownMarginButton.querySelector('span'));
+
+      // then
+      expectMarginShown(true);
+    });
+
+    it('should keep margin hidden when pointer is pressed while margin is hidden', () => {
+
+      // given
+      context.toggleShowResizableMargin();
+      fixture.detectChanges();
+
+      // when
+      pressPointerOn(fixture.nativeElement.querySelector('canvas'));
+
+      // then
+      expectMarginShown(false);
+    });
+
+    it('should not hide margin when pointer is pressed after chart is destroyed', () => {
+
+      // given
+      fixture.destroy();
+
+      // when
+      tile.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+      // then
+      expect(context.isShowResizableMargin()).toBe(true);
+    });
+
+    it('should hide margin inside Angular zone', () => {
+
+      // given
+      vi.spyOn(TestBed.inject(NgZone), 'run').mockReturnValue(undefined);
+
+      // when
+      fixture.nativeElement.querySelector('canvas').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+      // then
+      expect(context.isShowResizableMargin()).toBe(true);
+    });
+
+    it.each([
+      { edge: 'top', point: (r: DOMRect) => [r.left + r.width / 2, r.top] },
+      { edge: 'bottom', point: (r: DOMRect) => [r.left + r.width / 2, r.bottom - 1] },
+      { edge: 'left', point: (r: DOMRect) => [r.left, r.top + r.height / 2] },
+      { edge: 'right', point: (r: DOMRect) => [r.right - 1, r.top + r.height / 2] }
+    ])('should cover $edge border line of margin with resize handle', ({ edge, point }) => {
+
+      // given
+      component.marginDivStyle = { top: '20px', right: '20px', bottom: '20px', left: '20px' };
+      fixture.detectChanges();
+      const [x, y] = point(fixture.nativeElement.querySelector('.div_margins').getBoundingClientRect());
+
+      // when
+      const element = document.elementFromPoint(x, y);
+
+      // then
+      expect(element.classList).toContain('resize-handle-' + edge);
+    });
   });
 
   describe('language change', () => {

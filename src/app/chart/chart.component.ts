@@ -7,10 +7,12 @@ import {
   EventEmitter,
   Inject,
   Input,
+  NgZone,
   OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  Renderer2,
   SimpleChanges,
   ViewChild,
   ViewEncapsulation
@@ -51,13 +53,17 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   private destroyed = false;
   private textsOutdated = false;
   private languageSubscription: Subscription;
+  private removePointerDownListener: () => void;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     private chartDataService: ChartDataService, private chartMarginService: ChartMarginService,
-    private cdr: ChangeDetectorRef, private rawDataRevealService: RawDataRevealService, private languageService: LanguageService) {
+    private cdr: ChangeDetectorRef, private rawDataRevealService: RawDataRevealService, private languageService: LanguageService,
+    private zone: NgZone, private renderer: Renderer2) {
   }
 
   ngOnInit(): void {
+    this.removePointerDownListener = this.zone.runOutsideAngular(() => this.renderer.listen('document', 'pointerdown',
+      (event: PointerEvent) => this.hideResizableMarginWhenPressedElsewhere(event.target as Node)));
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
@@ -144,9 +150,22 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   }
 
   ngOnDestroy(): void {
+    this.removePointerDownListener();
     this.destroyed = true;
     this.languageSubscription?.unsubscribe();
     this.context.chart?.destroy();
+  }
+
+  private hideResizableMarginWhenPressedElsewhere(target: Node): void {
+    if (this.context.isShowResizableMargin() && !this.isResizableMarginControl(target)) {
+      this.zone.run(() => this.context.toggleShowResizableMargin());
+    }
+  }
+
+  private isResizableMarginControl(target: Node): boolean {
+    const tile: HTMLElement = this.cmpElementRef.nativeElement.parentElement;
+    return Array.from(tile.querySelectorAll('.but_element_margin, .div_margins > [mwlResizeHandle]'))
+      .some(control => control.contains(target));
   }
 
   onMarginResizeEnd(event: ResizeEvent): void {

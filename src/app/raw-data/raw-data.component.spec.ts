@@ -28,6 +28,7 @@ import { of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { RawDataBlockCache } from './raw-data-block-cache';
 import { RawDataComponent } from './raw-data.component';
+import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 describe('RawDataComponent', () => {
@@ -67,7 +68,8 @@ describe('RawDataComponent', () => {
     scene = SceneFactory.createScene('1', columns);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, ColumnResizeDirective],
+      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PrintHeadingComponent,
+        ColumnResizeDirective],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),
@@ -586,6 +588,29 @@ describe('RawDataComponent', () => {
       expect(fixture.nativeElement.querySelector('#but_save_view')).toBeNull();
       expect(fixture.nativeElement.querySelector('#but_restore_view')).toBeNull();
       expect(fixture.nativeElement.querySelector('.but_view_more')).not.toBeNull();
+    });
+
+    it('should show print heading with raw data title and scene name', async () => {
+
+      // when
+      await render();
+
+      // then
+      const heading: HTMLElement = fixture.nativeElement.querySelector('.div_header > koia-print-heading');
+      expect(heading.querySelector('.span_print_title').textContent).toBe('Raw Data');
+      expect(heading.querySelector('.span_print_details').textContent).toContain('Scene: Scene 1');
+    });
+
+    it('dialog style should not show print heading', async () => {
+
+      // given
+      component.dialogStyle = true;
+
+      // when
+      await render();
+
+      // then
+      expect(fixture.nativeElement.querySelector('koia-print-heading')).toBeNull();
     });
   });
 

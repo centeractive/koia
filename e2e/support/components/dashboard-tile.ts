@@ -5,11 +5,15 @@ export class DashboardTile {
    readonly title: Locator;
    readonly firstCountLink: Locator;
    readonly graphRootNode: Locator;
+   readonly marginButton: Locator;
+   readonly margin: Locator;
 
    constructor(readonly root: Locator) {
       this.title = root.locator('textarea.textarea_title');
       this.firstCountLink = root.locator('td.td_aggregation a').first();
       this.graphRootNode = root.locator('koia-graph svg g.nodes > g > circle').first();
+      this.marginButton = root.locator('.but_element_margin');
+      this.margin = root.locator('.div_margins');
    }
 
    async configure(): Promise<void> {

@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { findStyleRule } from 'app/shared/test';
+import { findPageRule, findStyleRule } from 'app/shared/test';
 
 @Component({
   template: `
@@ -435,5 +435,164 @@ describe('global styles', () => {
     // then
     expect(rule).toBeDefined();
     expect(rule.style.display).toBe('none');
+  });
+
+  function printRule(selectorText: string): CSSStyleRule {
+    return findStyleRule(Array.from(document.styleSheets), selectorText, 'print');
+  }
+
+  it('print styles should print landscape pages', () => {
+
+    // when
+    const rule = findPageRule(Array.from(document.styleSheets), 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('size')).toBe('landscape');
+    expect(rule.style.getPropertyValue('margin')).toBe('10mm');
+  });
+
+  it('print styles should paint white page background', () => {
+
+    // when
+    const rule = printRule('html');
+
+    // then
+    expect(rule.style.backgroundColor).toBe('white');
+  });
+
+  it('print styles should zoom printable content by print zoom', () => {
+
+    // when
+    const rule = printRule('.printable');
+
+    // then
+    expect(rule.style.getPropertyValue('zoom')).toBe('var(--koia-print-zoom, 1)');
+  });
+
+  it('print styles should not shrink every element', () => {
+
+    // when
+    const rule = printRule('*');
+
+    // then
+    expect(rule.style.getPropertyValue('zoom')).toBe('');
+    expect(rule.style.overflow).toBe('visible');
+    expect(rule.style.getPropertyPriority('overflow')).toBe('important');
+  });
+
+  it('print styles should lay out sidenav content without side bar margins', () => {
+
+    // when
+    const rule = printRule('mat-sidenav-content.mat-drawer-content');
+
+    // then
+    expect(rule.style.marginLeft).toBe('0px');
+    expect(rule.style.marginRight).toBe('0px');
+    expect(rule.style.getPropertyPriority('margin-left')).toBe('important');
+    expect(rule.style.getPropertyPriority('margin-right')).toBe('important');
+    expect(rule.style.transitionProperty).toBe('none');
+    expect(rule.style.getPropertyPriority('transition-property')).toBe('important');
+  });
+
+  it('print styles should hide side bar and its backdrop', () => {
+
+    // when
+    const rule = printRule('mat-sidenav, .mat-drawer-backdrop');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should strip header decoration', () => {
+
+    // when
+    const rule = printRule('.div_header');
+
+    // then
+    expect(rule.style.backgroundColor).toBe('transparent');
+    expect(rule.style.getPropertyPriority('background-color')).toBe('important');
+    expect(rule.style.backgroundImage).toBe('none');
+    expect(rule.style.getPropertyPriority('background-image')).toBe('important');
+    expect(rule.style.borderTopStyle).toBe('none');
+    expect(rule.style.borderBottomStyle).toBe('none');
+    expect(rule.style.getPropertyPriority('border-bottom-style')).toBe('important');
+    expect(rule.style.boxShadow).toBe('none');
+    expect(rule.style.getPropertyPriority('box-shadow')).toBe('important');
+  });
+
+  it('print styles should hide header content except print heading', () => {
+
+    // when
+    const rule = printRule('.div_header > :not(koia-print-heading)');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should show print heading and its logo', () => {
+
+    // when
+    const heading = printRule('koia-print-heading');
+    const visibility = printRule('koia-print-heading, koia-print-heading *');
+    const logo = printRule('koia-print-heading img');
+    const title = printRule('.span_print_title');
+    const details = printRule('.span_print_details');
+
+    // then
+    expect(heading.style.display).toBe('flex');
+    expect(heading.style.borderBottom).toBe('1px solid rgb(153, 153, 153)');
+    expect(visibility.style.visibility).toBe('visible');
+    expect(logo.style.display).toBe('block');
+    expect(logo.style.height).toBe('28px');
+    expect(title.style.fontSize).toBe('18px');
+    expect(details.style.fontSize).toBe('11px');
+    expect(details.style.marginLeft).toBe('auto');
+  });
+
+  it('print heading should be hidden on screen before print styles apply', () => {
+
+    // given
+    const sheet = Array.from(document.styleSheets).find(s => findStyleRule([s], 'koia-print-heading', 'print'));
+    const rules = Array.from(sheet.cssRules);
+
+    // when
+    const screenRule = findStyleRule([sheet], 'koia-print-heading');
+
+    // then
+    expect(screenRule.style.display).toBe('none');
+    expect(rules.indexOf(screenRule)).toBeLessThan(rules.findIndex(r => r.type === CSSRule.MEDIA_RULE && (r as CSSMediaRule).media.mediaText === 'print'));
+  });
+
+  it('print styles should hide visually hidden cdk containers', () => {
+
+    // when
+    const rule = printRule('.cdk-visually-hidden, .cdk-overlay-container');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should hide pivot configuration', () => {
+
+    // when
+    const rule = printRule('#pivot .pvtRenderer, #pivot .pvtAxisContainer, #pivot .pvtVals');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should print pivot cells as plain text', () => {
+
+    // when
+    const rule = printRule('#pivot table.pvtTable td');
+
+    // then
+    expect(rule.style.color).toBe('inherit');
+    expect(rule.style.textDecoration).toBe('none');
+    expect(rule.style.getPropertyPriority('text-decoration')).toBe('important');
   });
 });

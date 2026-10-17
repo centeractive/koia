@@ -96,3 +96,31 @@ test('column span widens the tile of the element', async ({ dashboard }) => {
 
    await expect(dashboard.tile(0).root).toHaveCSS('grid-column-end', 'span 2');
 });
+
+test('pressing outside the shown chart margin hides it and resets the margin button', async ({ dashboard }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+   await tile.marginButton.click();
+   await expect(tile.margin).toBeVisible();
+
+   await tile.title.click();
+
+   await expect(tile.margin).toHaveCount(0);
+   await expect(tile.marginButton).not.toHaveClass(/\bkoia-toggle-active\b/);
+});
+
+test('margin button hides the shown chart margin', async ({ dashboard }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+   await tile.marginButton.click();
+   await expect(tile.marginButton).toHaveClass(/\bkoia-toggle-active\b/);
+
+   await tile.marginButton.click();
+
+   await expect(tile.margin).toHaveCount(0);
+   await expect(tile.marginButton).not.toHaveClass(/\bkoia-toggle-active\b/);
+});

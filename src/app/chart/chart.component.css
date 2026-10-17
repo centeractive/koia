@@ -13,31 +13,33 @@ mwlResizable {
   position: absolute;
   height: 4px;
   cursor: row-resize;
-  width: 100%;
+  left: -1px;
+  width: calc(100% + 2px);
 }
 
 .resize-handle-top {
-  top: 0;
+  top: -1px;
 }
 
 .resize-handle-bottom {
-  bottom: 0;
+  bottom: -1px;
 }
 
 .resize-handle-left,
 .resize-handle-right {
   position: absolute;
-  height: 100%;
+  top: -1px;
+  height: calc(100% + 2px);
   cursor: col-resize;
   width: 4px;
 }
 
 .resize-handle-left {
-  left: 0;
+  left: -1px;
 }
 
 .resize-handle-right {
-  right: 0;
+  right: -1px;
 }
 
 .div_chartjs {

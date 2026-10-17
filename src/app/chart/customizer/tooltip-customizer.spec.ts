@@ -1,6 +1,6 @@
 import { Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
-import { ChartOptions } from 'chart.js';
+import { ChartOptions, TooltipItem } from 'chart.js';
 import { DateTime } from 'luxon';
 import { TooltipCustomizer } from './tooltip-customizer';
 
@@ -23,8 +23,8 @@ describe('TooltipCustomizer', () => {
         customizer.customize(ctx, opts);
 
         // then
-        const title = opts.plugins.tooltip.callbacks.title as (items: object[]) => string;
-        expect(title([{ chart: { data: { labels: [time] } }, dataIndex: 0 }])).toBe(DateTime.fromMillis(time).toFormat('MMM yyyy'));
+        const tooltipItem = { chart: { data: { labels: [time] } }, dataIndex: 0 } as TooltipItem<'bar'>;
+        expect(opts.plugins.tooltip.callbacks.title.call(null, [tooltipItem])).toBe(DateTime.fromMillis(time).toFormat('MMM yyyy'));
     });
 
     it('#customize should define count title with data column name', () => {
@@ -36,8 +36,8 @@ describe('TooltipCustomizer', () => {
         customizer.customize(ctx, opts);
 
         // then
-        const title = opts.plugins.tooltip.callbacks.title as (items: object[]) => string;
-        expect(title([{ chart: { data: { labels: ['a'] } }, dataIndex: 0 }])).toBe('Name: a');
+        const tooltipItem = { chart: { data: { labels: ['a'] } }, dataIndex: 0 } as TooltipItem<'bar'>;
+        expect(opts.plugins.tooltip.callbacks.title.call(null, [tooltipItem])).toBe('Name: a');
     });
 
     it('#customize should define PIE label with percentage', () => {
@@ -51,9 +51,8 @@ describe('TooltipCustomizer', () => {
         customizer.customize(ctx, opts);
 
         // then
-        const label = opts.plugins.tooltip.callbacks.label as (item: object) => string;
-        const item = { datasetIndex: 0, formattedValue: '1', raw: 1, chart: { data: { datasets: [{ data: [1, 3] }] } } };
-        expect(label(item)).toBe('Amount: 1 (25%)');
+        const tooltipItem = { datasetIndex: 0, formattedValue: '1', raw: 1, chart: { data: { datasets: [{ data: [1, 3] }] } } } as TooltipItem<'pie'>;
+        expect(opts.plugins.tooltip.callbacks.label.call(null, tooltipItem)).toBe('Amount: 1 (25%)');
     });
 
     it('#customize should not define label of RADAR', () => {

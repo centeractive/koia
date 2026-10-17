@@ -1,4 +1,4 @@
-import { findStyleRule } from './css-rules';
+import { findPageRule, findStyleRule } from './css-rules';
 
 describe('findStyleRule', () => {
 
@@ -72,5 +72,66 @@ describe('findStyleRule', () => {
     // then
     expect(rule.style.color).toBe('green');
     iframe.remove();
+  });
+});
+
+describe('findPageRule', () => {
+
+  function createSheet(): CSSStyleSheet {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('@page { margin: 1mm } @media print { @page { size: landscape } }');
+    return sheet;
+  }
+
+  it('should find top level page rule', () => {
+
+    // when
+    const rule = findPageRule([createSheet()]);
+
+    // then
+    expect(rule.style.getPropertyValue('margin')).toBe('1mm');
+  });
+
+  it('should find page rule inside matching media rule', () => {
+
+    // when
+    const rule = findPageRule([createSheet()], 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('size')).toBe('landscape');
+  });
+
+  it('should ignore page rule inside other media rule', () => {
+
+    // when
+    const rule = findPageRule([createSheet()], 'screen');
+
+    // then
+    expect(rule).toBeUndefined();
+  });
+
+  it('should return undefined when no page rule exists', () => {
+
+    // given
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.a { color: red }');
+
+    // when
+    const rule = findPageRule([sheet]);
+
+    // then
+    expect(rule).toBeUndefined();
+  });
+
+  it('should skip style sheets whose rules cannot be read', () => {
+
+    // given
+    const unreadable = { get cssRules(): CSSRuleList { throw new DOMException('x', 'SecurityError'); } } as unknown as CSSStyleSheet;
+
+    // when
+    const rule = findPageRule([unreadable, createSheet()]);
+
+    // then
+    expect(rule.style.getPropertyValue('margin')).toBe('1mm');
   });
 });

@@ -340,6 +340,7 @@
   },
   "view": {
     "print": "Print current view",
+    "printScene": "Scene: {{name}}",
     "save": "Save current view",
     "restore": "Restore saved view",
     "saveTitle": "Save View",

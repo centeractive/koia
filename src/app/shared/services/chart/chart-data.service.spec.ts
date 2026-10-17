@@ -248,8 +248,8 @@ describe('ChartDataService', () => {
       // then
       expect(result.data.labels).toBeUndefined();
       expect(result.data.datasets.length).toBe(2);
-      expect(result.data.datasets[0].data).toEqual([{ x: 'b', y: 2 } as any]);
-      expect(result.data.datasets[1].data).toEqual([{ x: 'b', y: 1 } as any]);
+      expect(result.data.datasets[0].data).toEqual([{ x: 'b', y: 2 }]);
+      expect(result.data.datasets[1].data).toEqual([{ x: 'b', y: 1 }]);
       expect(context.valueRange).toEqual({ min: 1, max: 2 });
       expect(result.error).toBeUndefined();
    });

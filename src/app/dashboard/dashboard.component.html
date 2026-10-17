@@ -86,6 +86,7 @@
           <button mat-menu-item [disabled]="ratio === gridLayout.gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
         }
       </mat-menu>
+      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" />
     </div>
 
     <ng-template #elementBody let-context>

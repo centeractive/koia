@@ -15,35 +15,35 @@ describe('LegendLabelFormatter', () => {
         // given
         const context = chartContext(ChartType.BAR, timeColumn);
         const options = chartOptions();
-        const legendItem: LegendItem = { text: 1230764400000 as any };
+        const legendItem: LegendItem = { text: '1230764400000' };
 
         // when
         formatter.format(context, options);
         options.plugins.legend.labels.filter(legendItem, null);
 
         // then
-        expect(legendItem.text.toString()).toBe('1230764400000');
+        expect(legendItem.text).toBe('1230764400000');
     });
 
     it('#format circular chart & non-time column', () => {
         // given
         const context = chartContext(ChartType.PIE, amountColumn);
         const options = chartOptions();
-        const legendItem: LegendItem = { text: 1230764400000 as any };
+        const legendItem: LegendItem = { text: '1230764400000' };
 
         // when
         formatter.format(context, options);
         options.plugins.legend.labels.filter(legendItem, null);
 
         // then
-        expect(legendItem.text.toString()).toBe('1230764400000');
+        expect(legendItem.text).toBe('1230764400000');
     });
 
     it('#format pie chart & time column', () => {
         // given
         const context = chartContext(ChartType.PIE, timeColumn);
         const options = chartOptions();
-        const legendItem: LegendItem = { text: 1230764400000 as any };
+        const legendItem: LegendItem = { text: '1230764400000' };
 
         // when
         formatter.format(context, options);
@@ -58,7 +58,7 @@ describe('LegendLabelFormatter', () => {
         // given
         const context = chartContext(ChartType.DOUGHNUT, timeColumn);
         const options = chartOptions();
-        const legendItem: LegendItem = { text: 1230764400000 as any };
+        const legendItem: LegendItem = { text: '1230764400000' };
 
         // when
         formatter.format(context, options);
@@ -73,21 +73,21 @@ describe('LegendLabelFormatter', () => {
         // given
         const context = chartContext(ChartType.RADAR, timeColumn);
         const options = chartOptions();
-        const legendItem: LegendItem = { text: 1230764400000 as any };
+        const legendItem: LegendItem = { text: '1230764400000' };
 
         // when
         formatter.format(context, options);
         options.plugins.legend.labels.filter(legendItem, null);
 
         // then
-        expect(legendItem.text.toString()).toBe('1230764400000');
+        expect(legendItem.text).toBe('1230764400000');
     });
 
     it('#format polar area chart & time column', () => {
         // given
         const context = chartContext(ChartType.POLAR_AREA, timeColumn);
         const options = chartOptions();
-        const legendItem: LegendItem = { text: 1230764400000 as any };
+        const legendItem: LegendItem = { text: '1230764400000' };
 
         // when
         formatter.format(context, options);

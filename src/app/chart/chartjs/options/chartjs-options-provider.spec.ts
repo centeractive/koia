@@ -1,7 +1,7 @@
 import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
-import { Chart, ChartData, RadialLinearScaleOptions, Scale, registerables } from 'chart.js';
+import { Chart, ChartData, Scale, ScaleOptions, registerables } from 'chart.js';
 import { DateTime } from 'luxon';
 import { ChartJsOptionsProvider } from './chartjs-options-provider';
 
@@ -67,10 +67,7 @@ describe('ChartJsOptionsProvider - LINE', () => {
 
     // given
     const timeColumn = { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE };
-    const context = new ChartContext(COLUMNS, ChartType.LINE.type, margin());
-    context.dataColumns = [COLUMNS[3]];
-    context.groupByColumns = [timeColumn];
-    context.data = data();
+    const context = chartContext(ChartType.LINE, timeColumn);
 
     // when
     const options = provider.provide(context);
@@ -94,7 +91,7 @@ describe('ChartJsOptionsProvider - BAR', () => {
   it('#provide should format time labels of x scale when grouped by time column', () => {
 
     // given
-    const context = barContext(ChartType.BAR, timeColumn);
+    const context = chartContext(ChartType.BAR, timeColumn);
 
     // when
     const options = provider.provide(context);
@@ -107,7 +104,7 @@ describe('ChartJsOptionsProvider - BAR', () => {
   it('#provide should format time labels of y scale when horizontal bar is grouped by time column', () => {
 
     // given
-    const context = barContext(ChartType.HORIZONTAL_BAR, timeColumn);
+    const context = chartContext(ChartType.HORIZONTAL_BAR, timeColumn);
 
     // when
     const options = provider.provide(context);
@@ -120,7 +117,7 @@ describe('ChartJsOptionsProvider - BAR', () => {
   it('#provide should not define tick callback when grouped by text column', () => {
 
     // given
-    const context = barContext(ChartType.BAR, COLUMNS[1]);
+    const context = chartContext(ChartType.BAR, COLUMNS[1]);
 
     // when
     const options = provider.provide(context);
@@ -128,14 +125,6 @@ describe('ChartJsOptionsProvider - BAR', () => {
     // then
     expect(options.scales['x'].ticks?.callback).toBeUndefined();
   });
-
-  function barContext(chartType: ChartType, groupByColumn: Column): ChartContext {
-    const context = new ChartContext(COLUMNS, chartType.type, margin());
-    context.dataColumns = [COLUMNS[3]];
-    context.groupByColumns = [groupByColumn];
-    context.data = data();
-    return context;
-  }
 });
 
 describe('ChartJsOptionsProvider - PIE datalabels', () => {
@@ -226,20 +215,29 @@ describe('ChartJsOptionsProvider - interaction', () => {
 
 describe('ChartJsOptionsProvider - RADAR', () => {
 
-  it('#provide should define circular r scale with point label callback when grouped by time column', () => {
+  it('#provide should define circular grid of radial scale', () => {
 
     // given
-    const time = 1275343200000;
-    const context = new ChartContext(COLUMNS, ChartType.RADAR.type, margin());
-    context.dataColumns = [COLUMNS[3]];
-    context.groupByColumns = [{ ...COLUMNS[0], format: 'MMM yyyy' }];
-    context.data = data();
+    const context = chartContext(ChartType.RADAR, COLUMNS[1]);
 
     // when
     const options = provider.provide(context);
 
     // then
-    const r = options.scales['r'] as RadialLinearScaleOptions;
+    expect(options.scales).toEqual({ r: { grid: { circular: true } } });
+  });
+
+  it('#provide should define circular r scale with point label callback when grouped by time column', () => {
+
+    // given
+    const time = 1275343200000;
+    const context = chartContext(ChartType.RADAR, { ...COLUMNS[0], format: 'MMM yyyy' });
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    const r = options.scales['r'] as ScaleOptions<'radialLinear'>;
     expect(r.grid.circular).toBe(true);
     expect(r.pointLabels.callback.call(undefined, String(time), 0)).toBe(DateTime.fromMillis(time).toFormat('MMM yyyy'));
   });
@@ -365,7 +363,7 @@ describe('ChartJsOptionsProvider - ticks', () => {
   it('#provide should define step size and rotation of value axis', () => {
 
     // given
-    const context = lineContext();
+    const context = chartContext(ChartType.LINE, { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE });
     context.valueScales[0].ticks.stepSize = 10;
     context.valueScales[0].ticks.rotation = 45;
 
@@ -379,7 +377,7 @@ describe('ChartJsOptionsProvider - ticks', () => {
   it('#provide should define rotation only of value axis', () => {
 
     // given
-    const context = lineContext();
+    const context = chartContext(ChartType.LINE, { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE });
     context.valueScales[0].ticks.rotation = 45;
 
     // when
@@ -392,7 +390,7 @@ describe('ChartJsOptionsProvider - ticks', () => {
   it('#provide should define step size and rotation of base axis', () => {
 
     // given
-    const context = lineContext();
+    const context = chartContext(ChartType.LINE, { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE });
     context.baseScale.ticks.stepSize = 5;
     context.baseScale.ticks.rotation = 30;
 
@@ -406,7 +404,7 @@ describe('ChartJsOptionsProvider - ticks', () => {
   it('#provide should define rotation only of base axis', () => {
 
     // given
-    const context = lineContext();
+    const context = chartContext(ChartType.LINE, { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE });
     context.baseScale.ticks.rotation = 30;
 
     // when
@@ -415,14 +413,6 @@ describe('ChartJsOptionsProvider - ticks', () => {
     // then
     expect(options.scales['x'].ticks).toEqual({ maxRotation: -30, minRotation: -30 });
   });
-
-  function lineContext(): ChartContext {
-    const context = new ChartContext(COLUMNS, ChartType.LINE.type, margin());
-    context.dataColumns = [COLUMNS[3]];
-    context.groupByColumns = [{ ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE }];
-    context.data = data();
-    return context;
-  }
 });
 
 describe('ChartJsOptionsProvider - LINE scales', () => {
@@ -525,6 +515,14 @@ describe('ChartJsOptionsProvider - LINE scales', () => {
     expect(options.scales['x']['time'].tooltipFormat).toBe('d.M.yyyy');
   });
 });
+
+function chartContext(chartType: ChartType, groupByColumn: Column): ChartContext {
+  const context = new ChartContext(COLUMNS, chartType.type, margin());
+  context.dataColumns = [COLUMNS[3]];
+  context.groupByColumns = [groupByColumn];
+  context.data = data();
+  return context;
+}
 
 function data(): ChartData {
   return {

@@ -225,7 +225,20 @@ var {
   padding-left: 15px;
 }
 
+koia-print-heading {
+  display: none;
+}
+
 @media print {
+
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  html {
+    background-color: white;
+  }
 
   body * {
     visibility: hidden;
@@ -246,12 +259,15 @@ var {
 
   * {
     overflow: visible !important;
-    zoom: 0.95;
   }
 
   .printable,
   .printable * {
     visibility: visible;
+  }
+
+  .printable {
+    zoom: var(--koia-print-zoom, 1);
   }
 
   .div_summary_table,
@@ -266,12 +282,78 @@ var {
 
   mat-sidenav-content.mat-drawer-content {
     display: block !important;
+    margin: 0 !important;
+    transition: none !important;
+  }
+
+  mat-sidenav,
+  .mat-drawer-backdrop {
+    display: none !important;
+  }
+
+  .div_header {
+    background-color: transparent !important;
+    background-image: none !important;
+    border-style: none !important;
+    box-shadow: none !important;
+  }
+
+  .div_header > :not(koia-print-heading) {
+    display: none !important;
+  }
+
+  koia-print-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #999;
+    color: #222;
+  }
+
+  koia-print-heading,
+  koia-print-heading * {
+    visibility: visible;
+  }
+
+  koia-print-heading img {
+    display: block;
+    height: 28px;
+  }
+
+  .span_print_title {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .span_print_details {
+    margin-left: auto;
+    text-align: right;
+    font-size: 11px;
+    color: #555;
   }
 
   .div_grid_element,
   .div_flex_element {
     page-break-inside: avoid !important;
     overflow: hidden !important;
+  }
+
+  .cdk-visually-hidden,
+  .cdk-overlay-container {
+    display: none !important;
+  }
+
+  #pivot .pvtRenderer,
+  #pivot .pvtAxisContainer,
+  #pivot .pvtVals {
+    display: none !important;
+  }
+
+  #pivot table.pvtTable td {
+    color: inherit !important;
+    text-decoration: none !important;
   }
 
 }
