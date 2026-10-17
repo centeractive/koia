@@ -1,6 +1,6 @@
 import { Aggregation, Column, DataType, EnumLabels } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
-import { ChartConfiguration } from 'chart.js';
+import { ChartConfiguration, ChartOptions, ScaleOptions } from 'chart.js';
 import { TimeFormatter } from '../chartjs/formatter/time-formatter';
 
 /**
@@ -27,12 +27,12 @@ export class BarLegendCustomizer extends TimeFormatter {
             config.data.datasets = config.data.labels.map((l, i) => ({
                 label: this.formatDatasetLabel(grouByColumn, l),
                 originalLabel: l,
-                data: [{ x: i + 1, y: dataset.data[i] }],
+                data: [{ x: i + 1, y: dataset.data[i] as number }],
                 backgroundColor: dataset.backgroundColor[i],
                 borderColor: dataset.borderColor[i],
                 borderWidth: 1,
                 categoryPercentage: 1
-            })) as any;
+            }));
             config.data.labels = undefined;
             this.adjustTooltips(config.options.plugins.tooltip, context);
         }
@@ -40,12 +40,13 @@ export class BarLegendCustomizer extends TimeFormatter {
 
     private adjustBaseScale(horizontalBar: boolean, config: ChartConfiguration): void {
         config.plugins = [{
+            id: 'koiaBarLegendScale',
             beforeLayout: chart => {
-                chart.options.scales[horizontalBar ? 'y1' : 'x1'].labels = chart.data.datasets
+                (chart.options.scales[horizontalBar ? 'y1' : 'x1'] as ScaleOptions<'category'>).labels = chart.data.datasets
                     .filter((ds, i) => !chart.getDatasetMeta(i).hidden)
                     .map(ds => ds.label);
             }
-        }] as any;
+        }];
 
         const hiddenScale = config.options.scales[horizontalBar ? 'y' : 'x'];
         hiddenScale.display = false;
@@ -58,14 +59,14 @@ export class BarLegendCustomizer extends TimeFormatter {
         }
     }
 
-    private formatDatasetLabel(grouByColumn: Column, label: any): any {
+    private formatDatasetLabel(grouByColumn: Column, label: unknown): string {
         if (grouByColumn?.dataType === DataType.TIME) {
-            return this.formatTime(label, grouByColumn.format);
+            return this.formatTime(label as string | number, grouByColumn.format);
         }
-        return label;
+        return label as string;
     }
 
-    private adjustTooltips(tooltipOptions: any, context: ChartContext): void {
+    private adjustTooltips(tooltipOptions: ChartOptions['plugins']['tooltip'], context: ChartContext): void {
         if (!tooltipOptions.callbacks) {
             tooltipOptions.callbacks = {};
         }

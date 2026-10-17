@@ -67,10 +67,7 @@ describe('ChartJsOptionsProvider - LINE', () => {
 
     // given
     const timeColumn = { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE };
-    const context = new ChartContext(COLUMNS, ChartType.LINE.type, margin());
-    context.dataColumns = [COLUMNS[3]];
-    context.groupByColumns = [timeColumn];
-    context.data = data();
+    const context = chartContext(ChartType.LINE, timeColumn);
 
     // when
     const options = provider.provide(context);
@@ -94,7 +91,7 @@ describe('ChartJsOptionsProvider - BAR', () => {
   it('#provide should format time labels of x scale when grouped by time column', () => {
 
     // given
-    const context = barContext(ChartType.BAR, timeColumn);
+    const context = chartContext(ChartType.BAR, timeColumn);
 
     // when
     const options = provider.provide(context);
@@ -107,7 +104,7 @@ describe('ChartJsOptionsProvider - BAR', () => {
   it('#provide should format time labels of y scale when horizontal bar is grouped by time column', () => {
 
     // given
-    const context = barContext(ChartType.HORIZONTAL_BAR, timeColumn);
+    const context = chartContext(ChartType.HORIZONTAL_BAR, timeColumn);
 
     // when
     const options = provider.provide(context);
@@ -120,7 +117,7 @@ describe('ChartJsOptionsProvider - BAR', () => {
   it('#provide should not define tick callback when grouped by text column', () => {
 
     // given
-    const context = barContext(ChartType.BAR, COLUMNS[1]);
+    const context = chartContext(ChartType.BAR, COLUMNS[1]);
 
     // when
     const options = provider.provide(context);
@@ -128,15 +125,29 @@ describe('ChartJsOptionsProvider - BAR', () => {
     // then
     expect(options.scales['x'].ticks?.callback).toBeUndefined();
   });
-
-  function barContext(chartType: ChartType, groupByColumn: Column): ChartContext {
-    const context = new ChartContext(COLUMNS, chartType.type, margin());
-    context.dataColumns = [COLUMNS[3]];
-    context.groupByColumns = [groupByColumn];
-    context.data = data();
-    return context;
-  }
 });
+
+describe('ChartJsOptionsProvider - RADAR', () => {
+  it('#provide should define circular grid of radial scale', () => {
+
+    // given
+    const context = chartContext(ChartType.RADAR, COLUMNS[1]);
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales).toEqual({ r: { grid: { circular: true } } });
+  });
+});
+
+function chartContext(chartType: ChartType, groupByColumn: Column): ChartContext {
+  const context = new ChartContext(COLUMNS, chartType.type, margin());
+  context.dataColumns = [COLUMNS[3]];
+  context.groupByColumns = [groupByColumn];
+  context.data = data();
+  return context;
+}
 
 function data(): ChartData {
   return {

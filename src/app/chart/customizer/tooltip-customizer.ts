@@ -14,7 +14,7 @@ export class TooltipCustomizer extends TimeFormatter {
             if (nameColumn?.dataType === DataType.TIME) {
                 options.plugins.tooltip.callbacks.title = ctx => {
                     const label = ctx[0].chart.data.labels[ctx[0].dataIndex];
-                    return this.formatTime(label as any, nameColumn.format);
+                    return this.formatTime(label as string | number, nameColumn.format);
                 };
             } else if (context.isAggregationCountSelected()) {
                 options.plugins.tooltip.callbacks.title = ctx => {

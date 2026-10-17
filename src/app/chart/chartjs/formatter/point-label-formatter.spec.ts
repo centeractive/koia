@@ -1,5 +1,5 @@
 import { Column, DataType } from 'app/shared/model';
-import { RadialLinearScaleOptions } from 'chart.js';
+import { ScaleOptions } from 'chart.js';
 import { DateTime } from 'luxon';
 import { PointLabelFormatter } from './point-label-formatter';
 
@@ -14,7 +14,7 @@ describe('PointLabelFormatter', () => {
 
         // when
         formatter.format(column, options);
-        const result = options.pointLabels.callback(1230764400000 as any, null);
+        const result = options.pointLabels.callback('1230764400000', 0);
 
         // then
         const expected = formatTime(1230764400000, column.format);
@@ -28,18 +28,18 @@ describe('PointLabelFormatter', () => {
 
         // when
         formatter.format(column, options);
-        const result = options.pointLabels.callback(1230764400000 as any, null);
+        const result = options.pointLabels.callback('1230764400000', 0);
 
         // then
-        expect(result).toBe(1230764400000);
+        expect(result).toBe('1230764400000');
     });
 
-    function scaleOptions(): RadialLinearScaleOptions {
+    function scaleOptions(): ScaleOptions<'radialLinear'> {
         return {
             pointLabels: {
-                callback: (v: number) => v
+                callback: (label: string) => label
             }
-        } as any;
+        };
     }
 
     function formatTime(time: number, format: string): string {

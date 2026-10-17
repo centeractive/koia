@@ -1,5 +1,5 @@
 import { ChartType } from 'app/shared/model/chart';
-import { ChartData } from 'chart.js';
+import { ChartData, ChartDataset } from 'chart.js';
 
 export class DatasetStyler {
 
@@ -8,7 +8,7 @@ export class DatasetStyler {
             switch (chartType) {
                 case ChartType.LINE:
                 case ChartType.AREA:
-                    (ds as any).pointRadius = this.pointRadiusOf(ds.data.length);
+                    (ds as ChartDataset<'line'>).pointRadius = this.pointRadiusOf(ds.data.length);
                     break;
                 default:
                     break;

@@ -3,7 +3,7 @@ import { Aggregation, Column, DataType, EnumLabels, TimeUnit } from 'app/shared/
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
-import { Chart, ChartOptions, LayoutPosition, RadialLinearScaleOptions, ScaleOptions } from 'chart.js';
+import { Chart, ChartOptions, LayoutPosition, ScaleOptions } from 'chart.js';
 import { ChartJsUtils } from '../chart-js-utils';
 import { FormatUtils } from '../formatter/format-utils';
 import { LegendLabelFormatter } from '../formatter/legend-label-formatter';
@@ -127,11 +127,11 @@ export class ChartJsOptionsProvider {
     }
 
     private radarScaleOptions(context: ChartContext): ScaleOptions {
-        const scaleOptions = {
+        const scaleOptions: ScaleOptions<'radialLinear'> = {
             grid: {
                 circular: true
             }
-        } as RadialLinearScaleOptions;
+        };
         this.pointLabelFormatter.format(context.groupByColumns[0], scaleOptions);
         return scaleOptions;
     }
