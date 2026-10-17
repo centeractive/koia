@@ -332,6 +332,8 @@
     "chart": "チャート",
     "graph": "関係グラフ",
     "summaryTable": "集計表",
+    "generateDashboardHint": "または、データからダッシュボードを自動生成します。",
+    "generateDashboard": "ダッシュボードを生成",
     "dontShowAgain": "今後表示しない",
     "rememberChoice": "選択を記憶する",
     "couchDbLimitation": "CouchDB の制限",
@@ -465,7 +467,10 @@
     "manageViews": "ビューの管理",
     "gridLayout": "グリッド（グリッドに合わせる）",
     "flexLayout": "フレックス",
-    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます"
+    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます",
+    "regenerate": "ダッシュボードを再生成",
+    "regenerateQuestion": "このダッシュボードのすべての要素が新しく生成された要素に置き換えられます。続行しますか？",
+    "nothingToGenerate": "データにダッシュボードの生成に適した列がありません"
   },
   "enum": {
     "chartType": {

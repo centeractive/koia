@@ -5,8 +5,11 @@ import { View } from 'app/shared/model/view-config';
 
 export interface ViewLauncherContext {
    views: View[];
+   loading: boolean;
    loadView(view: View): void;
    addSummaryTable(): SummaryContext;
    addChart(): ChartContext;
    addGraph(): GraphContext;
+   canGenerateDashboard(): boolean;
+   generateDashboard(): void;
 }

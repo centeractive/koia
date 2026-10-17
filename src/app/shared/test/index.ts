@@ -10,3 +10,5 @@ export * from './css-rules';
 export * from './external-links';
 export * from './dom-queries';
 export * from './translate-testing';
+export * from './sequence-random-source';
+export * from './grid-placement-simulator';

@@ -332,6 +332,8 @@
     "chart": "Diagramm",
     "graph": "Beziehungsgraph",
     "summaryTable": "Übersichtstabelle",
+    "generateDashboardHint": "Oder lassen Sie Koia ein Dashboard aus den Daten zusammenstellen.",
+    "generateDashboard": "Dashboard generieren",
     "dontShowAgain": "Nicht mehr anzeigen",
     "rememberChoice": "Auswahl merken",
     "couchDbLimitation": "CouchDB-Einschränkung",
@@ -465,7 +467,10 @@
     "manageViews": "Ansichten verwalten",
     "gridLayout": "Raster (am Raster ausrichten)",
     "flexLayout": "Flexibel",
-    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst"
+    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst",
+    "regenerate": "Dashboard neu generieren",
+    "regenerateQuestion": "Alle Elemente dieses Dashboards werden durch neu generierte ersetzt. Fortfahren?",
+    "nothingToGenerate": "Die Daten enthalten keine Spalten, aus denen ein Dashboard generiert werden kann"
   },
   "enum": {
     "chartType": {

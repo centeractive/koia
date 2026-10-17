@@ -12,6 +12,8 @@ class ViewControllerTestable extends ViewController {
       super(null, null, null, null, null, null, null, null, null, null);
    }
 
+   generateDashboard(): void { }
+
    protected onPreRestoreView(): void { }
 
    protected onPreSaveView(): void { }
@@ -143,6 +145,48 @@ describe('ViewController', () => {
 
       // then
       expect(div.scrollIntoView).not.toHaveBeenCalled();
+   });
+
+   it('#canGenerateDashboard should return false while loading', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      controller.entries = [{ a: 1 }];
+      controller.loading = true;
+
+      // when
+      const result = controller.canGenerateDashboard();
+
+      // then
+      expect(result).toBe(false);
+   });
+
+   it('#canGenerateDashboard should return false without entries', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      controller.entries = [];
+      controller.loading = false;
+
+      // when
+      const result = controller.canGenerateDashboard();
+
+      // then
+      expect(result).toBe(false);
+   });
+
+   it('#canGenerateDashboard should return true when entries are loaded', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      controller.entries = [{ a: 1 }];
+      controller.loading = false;
+
+      // when
+      const result = controller.canGenerateDashboard();
+
+      // then
+      expect(result).toBe(true);
    });
 
 });

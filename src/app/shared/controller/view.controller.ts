@@ -62,7 +62,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private destroyed = false;
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
-      private dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
+      protected dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
       private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService,
       private viewTabsService: ViewTabsService) {
       super(bottomSheet, notificationService);
@@ -142,6 +142,12 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       return this.addElementContext(new GraphContext(this.clonedColumns()));
    }
 
+   abstract generateDashboard(): void;
+
+   canGenerateDashboard(): boolean {
+      return !this.loading && this.entries?.length > 0;
+   }
+
    private addElementContext<T extends ElementContext>(context: T): T {
       context.query = this.query;
       context.entries = this.entries;
@@ -156,7 +162,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       context.subscribeToChanges(() => this.requestPersist());
    }
 
-   private clonedColumns(): Column[] {
+   protected clonedColumns(): Column[] {
       return this.columns.map(c => <Column>CommonUtils.clone(c));
    }
 
@@ -249,13 +255,16 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    protected restoreElementContexts(elements: ViewElement[]): ElementContext[] {
-      const elementContexts = this.viewToModelConverter.convert(elements);
-      elementContexts.forEach(c => {
+      return this.bindElementContexts(this.viewToModelConverter.convert(elements));
+   }
+
+   protected bindElementContexts<T extends ElementContext>(contexts: T[]): T[] {
+      contexts.forEach(c => {
          c.query = this.query;
          c.entries = this.entries;
          this.observeChanges(c);
       });
-      return elementContexts;
+      return contexts;
    }
 
    protected abstract onPreRestoreView(view: View): void;

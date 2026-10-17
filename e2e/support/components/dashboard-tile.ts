@@ -24,6 +24,14 @@ export class DashboardTile {
       await expect.poll(() => this.paintedPixelCount()).toBeGreaterThan(0);
    }
 
+   spans(): Promise<{ columns: number; rows: number }> {
+      return this.root.evaluate((e: HTMLElement) => {
+         const style = getComputedStyle(e);
+         const spanOf = (end: string) => Number(/span (\d+)/.exec(end)?.[1] ?? 1);
+         return { columns: spanOf(style.gridColumnEnd), rows: spanOf(style.gridRowEnd) };
+      });
+   }
+
    async saveAs(menuItem: string): Promise<void> {
       await this.root.locator('.but_more').click();
       await this.root.page().getByRole('menuitem', { name: menuItem, exact: true }).click();

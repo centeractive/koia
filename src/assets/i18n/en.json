@@ -332,6 +332,8 @@
     "chart": "Chart",
     "graph": "Relationship Graph",
     "summaryTable": "Summary Table",
+    "generateDashboardHint": "Or let Koia compose a dashboard from the data.",
+    "generateDashboard": "Generate Dashboard",
     "dontShowAgain": "Don't show again",
     "rememberChoice": "Remember choice",
     "couchDbLimitation": "CouchDB Limitation",
@@ -465,7 +467,10 @@
     "manageViews": "Manage Views",
     "gridLayout": "Grid (snap to grid)",
     "flexLayout": "Flex",
-    "confirmResize": "Larger elements will be resized to fit the new setting"
+    "confirmResize": "Larger elements will be resized to fit the new setting",
+    "regenerate": "Regenerate Dashboard",
+    "regenerateQuestion": "All elements of this dashboard will be replaced by newly generated ones. Continue?",
+    "nothingToGenerate": "The data contains no columns suitable for generating a dashboard"
   },
   "enum": {
     "chartType": {
