@@ -21,10 +21,13 @@ import { Attribute, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/sh
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { DataHandler, ReaderService } from 'app/shared/services/reader';
+import { DataHandler, ReaderService, Sample } from 'app/shared/services/reader';
 import { SceneFactory } from 'app/shared/test';
+import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
+import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
+import { EntryPersister } from './persister/entry-persister';
 import { SceneComponent } from './scene.component';
 import type { Mock } from 'vitest';
 
@@ -162,6 +165,19 @@ describe('SceneComponent', () => {
 
     // then
     expect(component.initContext).toHaveBeenCalled();
+  }));
+
+  it('#onFileSelChange should truncate header of large file', fakeAsync(() => {
+
+    // given
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
+
+    // when
+    component.onFileSelChange(createFileList('x'.repeat(10_001)));
+    flush();
+
+    // then
+    expect(component.fileHeader).toBe('dummy...');
   }));
 
   function loadSample(): void {
@@ -536,11 +552,11 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
-    const targetColumn = component.columnMappings[1].target;
-    targetColumn.dataType = DataType.TIME;
+    const columnMapping: ColumnMappingComponent = fixture.debugElement.queryAll(By.directive(ColumnMappingComponent))[1].componentInstance;
+    columnMapping.mapping.target.dataType = DataType.TIME;
 
     // when
-    component.onDataTypeChanged(targetColumn);
+    columnMapping.onDataTypeChanged();
 
     // then
     fixture.detectChanges();
@@ -552,16 +568,16 @@ describe('SceneComponent', () => {
     expect(sourceFormatDebutElement.nativeElement.value).toBe('');
     expect(displayFormatDebugElement).toBeDefined();
     const matSelect: MatSelect = displayFormatDebugElement.componentInstance;
-    expect(matSelect.value).toBe(component.dateFormats[0]);
+    expect(matSelect.value).toBe(columnMapping.dateFormats[0]);
   }));
 
   it('#click on date format icon should show DatePipe format page', fakeAsync(() => {
 
     // given
     initUpToDetectColumns();
-    const targetColumn = component.columnMappings[1].target;
-    targetColumn.dataType = DataType.TIME;
-    component.onDataTypeChanged(targetColumn);
+    const columnMapping: ColumnMappingComponent = fixture.debugElement.queryAll(By.directive(ColumnMappingComponent))[1].componentInstance;
+    columnMapping.mapping.target.dataType = DataType.TIME;
+    columnMapping.onDataTypeChanged();
     fixture.detectChanges();
     vi.spyOn(window, 'open').mockReturnValue(undefined);
     const refreshPreviewButtons: HTMLButtonElement[] =
@@ -732,6 +748,459 @@ describe('SceneComponent', () => {
     expect(location.back).toHaveBeenCalled();
   });
 
+  it('#ngOnInit should select browser default locale when OS default locale is not supported', fakeAsync(() => {
+
+    // given
+    vi.spyOn(LocaleUtils, 'supportedLocales').mockReturnValue(['de-CH', 'en-US']);
+    vi.spyOn(LocaleUtils, 'osDefaultLocale').mockReturnValue('xx');
+    vi.spyOn(LocaleUtils, 'browserDefaultLocale').mockReturnValue('de-CH');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedLocale).toBe('de-CH');
+  }));
+
+  it('#ngOnInit should select en-US when neither OS nor browser default locale is supported', fakeAsync(() => {
+
+    // given
+    vi.spyOn(LocaleUtils, 'supportedLocales').mockReturnValue(['de-CH', 'en-US']);
+    vi.spyOn(LocaleUtils, 'osDefaultLocale').mockReturnValue('xx');
+    vi.spyOn(LocaleUtils, 'browserDefaultLocale').mockReturnValue('yy');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedLocale).toBe('en-US');
+  }));
+
+  it('#ngOnInit should select en when en-US is not supported', fakeAsync(() => {
+
+    // given
+    vi.spyOn(LocaleUtils, 'supportedLocales').mockReturnValue(['de-CH', 'en']);
+    vi.spyOn(LocaleUtils, 'osDefaultLocale').mockReturnValue('xx');
+    vi.spyOn(LocaleUtils, 'browserDefaultLocale').mockReturnValue('yy');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedLocale).toBe('en');
+  }));
+
+  it('#ngOnInit should select first supported locale when no English locale is supported', fakeAsync(() => {
+
+    // given
+    vi.spyOn(LocaleUtils, 'supportedLocales').mockReturnValue(['de-CH', 'fr-CH']);
+    vi.spyOn(LocaleUtils, 'osDefaultLocale').mockReturnValue('xx');
+    vi.spyOn(LocaleUtils, 'browserDefaultLocale').mockReturnValue('yy');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedLocale).toBe('de-CH');
+  }));
+
+  it('#ngOnInit should notify error when free database name cannot be found', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'findFreeDatabaseName').mockRejectedValue('no database');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'no database');
+  }));
+
+  it('#onCharacterEncodingChange should read file header again', fakeAsync(() => {
+
+    // given
+    loadSample();
+    vi.mocked(readerService.readHeader).mockClear();
+
+    // when
+    component.onCharacterEncodingChange();
+    flush();
+
+    // then
+    expect(readerService.readHeader).toHaveBeenCalledWith(component.file, 10_000, component.encoding);
+  }));
+
+  it('#onCharacterEncodingChange should not read file header when no file is selected', fakeAsync(() => {
+
+    // given
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
+
+    // when
+    component.onCharacterEncodingChange();
+    flush();
+
+    // then
+    expect(readerService.readHeader).not.toHaveBeenCalled();
+  }));
+
+  it('#onCharacterEncodingChange should keep scene name and short description edited by user', fakeAsync(() => {
+
+    // given
+    loadSample();
+    component.scene.name = 'My Scene';
+    component.scene.shortDescription = 'My Description';
+
+    // when
+    component.onCharacterEncodingChange();
+    flush();
+
+    // then
+    expect(component.scene.name).toBe('My Scene');
+    expect(component.scene.shortDescription).toBe('My Description');
+  }));
+
+  it('#onFileSelChange should not show binary file header', fakeAsync(() => {
+
+    // given
+    vi.spyOn(component.selectedReader, 'expectsPlainTextData').mockReturnValue(false);
+
+    // when
+    loadSample();
+
+    // then
+    expect(component.fileHeader).toBe('*** binary data cannot be displayed ***');
+  }));
+
+  it('#readSample should detect columns of sample entries', fakeAsync(() => {
+
+    // when
+    initUpToDetectColumns({ entries: [{ Name: 'A', Amount: 1 }, { Name: 'B', Amount: 2 }] });
+
+    // then
+    expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['Name', 'Amount']);
+    expect(component.previewData.map(mr => mr.entry)).toEqual([
+      { _id: '1000001', Name: 'A', Amount: 1 },
+      { _id: '1000002', Name: 'B', Amount: 2 }
+    ]);
+  }));
+
+  it('#readSample should adopt copy of column mappings of existing scene', fakeAsync(() => {
+
+    // given
+    loadSample();
+    const sceneInfo = createSceneInfos(1)[0];
+    component.columnMappingsSource = sceneInfo;
+    component.adoptColumnsFromExistingScene = true;
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
+
+    // when
+    component.readSample();
+    flush();
+
+    // then
+    expect(component.columnMappings).toEqual(sceneInfo.columnMappings);
+    expect(component.columnMappings).not.toBe(sceneInfo.columnMappings);
+    expect(component.columnMappings[0]).not.toBe(sceneInfo.columnMappings[0]);
+  }));
+
+  it('#readSample should notify error when sample cannot be read', fakeAsync(() => {
+
+    // given
+    loadSample();
+    vi.spyOn(component.selectedReader, 'readSample').mockRejectedValue('corrupt file');
+
+    // when
+    fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'corrupt file');
+    expect(component.readingSample).toBe(false);
+  }));
+
+  it('#click on "Load Data" should show initializing tasks progress', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene, activate: boolean, monitor: PromiseProgressMonitor) => {
+      monitor.add('create database', new Promise(() => null));
+      return new Promise(() => null);
+    });
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(component.progressBarMode).toBe('determinate');
+    expect(component.percentPersisted).toBe(0);
+    expect(component.feedback).toBe('Tasks (0/1) - initializing data load...');
+  }));
+
+  it('#click on "Load Data" should show completed tasks progress', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene, activate: boolean, monitor: PromiseProgressMonitor) => {
+      monitor.add('create database', Promise.resolve());
+      return new Promise(() => null);
+    });
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(component.percentPersisted).toBe(100);
+    expect(component.feedback).toBe('Tasks (1/1) - create database completed');
+  }));
+
+  it('#click on "Load Data" should reset creation time and progress bar when scene cannot be persisted', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'persistScene').mockRejectedValue('conflict');
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(component.scene.creationTime).toBeUndefined();
+    expect(component.progressBarMode).toBeUndefined();
+  }));
+
+  it('#click on "Load Data" should import entries provided by reader', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    const [name1, name2] = component.columnMappings.map(cp => cp.source.name);
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onEntries([{ [name1]: 'D', [name2]: '4' }]);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls).toEqual([['data_1', [{ _id: '1000001', 'Column 1': 'D', 'Column 2': 4 }]]]);
+    expect(notificationService.onSuccess).toHaveBeenCalled();
+  }));
+
+  it('#click on "Load Data" should show number of items read', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    let handler: DataHandler;
+    loadData(dataHandler => handler = dataHandler);
+
+    // when
+    handler.onValues(tableData);
+
+    // then
+    expect(component.feedback).toBe('3 items read');
+  }));
+
+  it('#click on "Load Data" should show number of items read while aborting', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    let handler: DataHandler;
+    loadData(dataHandler => handler = dataHandler);
+    component.canceled = true;
+
+    // when
+    handler.onValues(tableData);
+
+    // then
+    expect(component.feedback).toBe('3 items read aborting...');
+  }));
+
+  it('#click on "Load Data" should report reading canceled and ignore values after cancel', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    let handler: DataHandler;
+    loadData(dataHandler => handler = dataHandler);
+    const canceledBefore = handler.isCanceled();
+
+    // when
+    component.cancel();
+    handler.onValues(tableData);
+    flush();
+
+    // then
+    expect(canceledBefore).toBe(false);
+    expect(handler.isCanceled()).toBe(true);
+    expect(dbService.writeEntries).not.toHaveBeenCalled();
+  }));
+
+  it('#click on "Load Data" should warn about mapping errors', fakeAsync(() => {
+
+    // when
+    initUpToDetectColumns();
+    loadData(dataHandler => {
+      dataHandler.onValues([['D', 'x']]);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(notificationService.onWarning).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      expect.stringContaining('1 mapping errors did occur...'));
+    expect(notificationService.onSuccess).not.toHaveBeenCalled();
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on "Load Data" should abort on mapping error when requested', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.abortDataloadOnError = true;
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues([['D', 'x']]);
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(dbService.writeEntries).not.toHaveBeenCalled();
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on cancel button should warn that loading was canceled', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    loadData(dataHandler => dataHandler.onValues(tableData));
+
+    // when
+    component.cancel();
+    flush();
+
+    // then
+    expect(notificationService.onWarning).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'Loading canceled: 0 items have been persisted in the database');
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on cancel button should not write queued entries when reader completes afterwards', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    let handler: DataHandler;
+    loadData(dataHandler => {
+      handler = dataHandler;
+      dataHandler.onValues(tableData);
+    });
+    component.cancel();
+
+    // when
+    handler.onComplete();
+    flush();
+
+    // then
+    expect(dbService.writeEntries).not.toHaveBeenCalled();
+  }));
+
+  it('#click on "Load Data" should not complete posting again when reader fails after cancel', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    let handler: DataHandler;
+    loadData(dataHandler => handler = dataHandler);
+    component.cancel();
+    const postingComplete = vi.spyOn(EntryPersister.prototype, 'postingComplete');
+
+    // when
+    handler.onError('read error');
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'read error');
+    expect(postingComplete).not.toHaveBeenCalled();
+  }));
+
+  it('#click on "Load Data" should import number of items limited by max items', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.maxItemsToLoadControl.setValue(2);
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls.flatMap(c => c[1]).length).toBe(2);
+  }));
+
+  it('#click on "Load Data" should import number of items limited by formatted max items', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.maxItemsToLoadControl.setValue((1_000).toLocaleString() as unknown as number);
+    const rows = Array.from({ length: 1_500 }, (v, i) => ['A', String(i)]);
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues(rows);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls.flatMap(c => c[1]).length).toBe(1_000);
+  }));
+
+  it('#click on "Load Data" should reset progress bar and not notify success when data cannot be read', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    loadData(dataHandler => dataHandler.onError('read error'));
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'read error');
+    expect(notificationService.onSuccess).not.toHaveBeenCalled();
+    expect(component.progressBarMode).toBeUndefined();
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on "Load Data" should not notify success when entries cannot be written', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'writeEntries').mockRejectedValue('disk full');
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'disk full');
+    expect(notificationService.onSuccess).not.toHaveBeenCalled();
+    expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  function loadData(readData: (dataHandler: DataHandler) => void): void {
+    vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) =>
+      readData(dataHandler));
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+  }
+
   function createSceneInfos(count: number): SceneInfo[] {
     const sceneInfos: SceneInfo[] = [];
     const now = new Date().getTime();
@@ -756,13 +1225,13 @@ describe('SceneComponent', () => {
     return attr;
   }
 
-  function initUpToDetectColumns(): void {
+  function initUpToDetectColumns(sample: Sample = { tableData: tableData.slice(0, 4) }): void {
     const fileList = createFileList('dummy data');
     vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
     component.onFileSelChange(fileList);
     flush();
     fixture.detectChanges();
-    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue(sample);
     fixture.debugElement.query(By.css('#but_detect_columns')).nativeElement.click();
     flush();
     fixture.detectChanges();

@@ -28,4 +28,17 @@ describe('DraggableColumnComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it.each([TimeUnit.DAY, undefined])('#groupingTimeUnitChanged should set time unit %s and fire structure change', timeUnit => {
+
+    // given
+    vi.spyOn(context, 'fireStructureChanged');
+
+    // when
+    component.groupingTimeUnitChanged(timeUnit);
+
+    // then
+    expect(column.groupingTimeUnit).toBe(timeUnit);
+    expect(context.fireStructureChanged).toHaveBeenCalled();
+  });
 });

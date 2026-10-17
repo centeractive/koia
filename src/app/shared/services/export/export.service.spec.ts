@@ -61,7 +61,7 @@ describe('ExportService', () => {
     exportService.exportData([], columns, ExportFormat.CSV, 'testfile');
 
     // then
-    expect(await blob.text()).toBe('a,b');
+    expect(await blob.text()).toBe('a,b\n');
   });
 
   it('#exportData should quote CSV values containing delimiter, quotes or line breaks', async () => {
@@ -200,6 +200,21 @@ describe('ExportService', () => {
     // then
     //expect(vi.mocked(saveAsSpy).mock.lastCall[0]).toBe('base64Image...');
     expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.png/);
+  });
+
+  it('#saveBlobAs should click anchor with object URL and file name', () => {
+
+    // given
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/123');
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockReturnValue(undefined);
+
+    // when
+    exportService.saveBlobAs(new Blob(['x']), 'testfile.csv');
+
+    // then
+    const anchor = click.mock.contexts[0] as HTMLAnchorElement;
+    expect(anchor.href).toBe('blob:http://localhost/123');
+    expect(anchor.download).toBe('testfile.csv');
   });
 
   it('#exportImage should throw error when format is not supported', () => {

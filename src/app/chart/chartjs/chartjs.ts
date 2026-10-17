@@ -29,8 +29,6 @@ export class ChartJs {
             options: this.optionsProvider.provide(context)
         };
 
-        console.log('chart config', config);
-
         new BarLegendCustomizer().customize(context, config);
         context.chart = new Chart(canvas, config);
     }

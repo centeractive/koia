@@ -28,7 +28,7 @@ export class ExportDataConverter {
         for (const column of timeColumns) {
             for (const item of data) {
                 const value = item[column.name];
-                if (value) {
+                if (value !== null && value !== undefined) {
                     item[column.name] = this.valueFormatter.formatValue(column, value);
                 }
             }

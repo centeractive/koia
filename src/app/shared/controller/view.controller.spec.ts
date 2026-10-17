@@ -1,8 +1,9 @@
-import { Directive } from '@angular/core';
+import { Directive, ElementRef, QueryList } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
 import { View } from '../model/view-config';
+import { SceneFactory } from '../test';
 import { ViewController } from './view.controller';
 
 @Directive()
@@ -111,6 +112,38 @@ describe('ViewController', () => {
       // then
       expect(viewController.sidenav.mode).toBe('over');
       expect(viewController.sidenav.open).toHaveBeenCalled();
+   });
+
+   it('#ngAfterViewInit should not select view when scene is undefined', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      vi.spyOn(controller, 'selectView').mockReturnValue(undefined);
+
+      // when
+      controller.ngAfterViewInit();
+
+      // then
+      expect(controller.selectView).not.toHaveBeenCalled();
+   });
+
+   it('#ngAfterViewInit should not scroll when element containers changed to none', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      controller['scene'] = SceneFactory.createScene('1', []);
+      const div = document.createElement('div');
+      vi.spyOn(div, 'scrollIntoView').mockReturnValue(undefined);
+      controller.elementContainerDivRefs = new QueryList<ElementRef<HTMLDivElement>>();
+      controller.elementContainerDivRefs.reset([new ElementRef(div)]);
+      controller.ngAfterViewInit();
+
+      // when
+      controller.elementContainerDivRefs.reset([]);
+      controller.elementContainerDivRefs.notifyOnChanges();
+
+      // then
+      expect(div.scrollIntoView).not.toHaveBeenCalled();
    });
 
 });

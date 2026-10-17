@@ -66,6 +66,27 @@ describe('ChartSideBarComponent', () => {
     expect(context.isAggregationCountSelected()).toBe(false);
   });
 
+  it('#click on number data column should replace data column on LINE chart when no group-by column would remain', () => {
+
+    // given
+    context.entries = [
+      { Name: 'a', Amount: 1, Percent: 1 },
+      { Name: 'a', Amount: 2, Percent: 2 }
+    ];
+    context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
+    context.groupByColumns = [findColumn('Percent')];
+    const butPercentColumn = findDataColumnButton('Percent');
+
+    // when
+    butPercentColumn.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Percent']);
+    expect(context.groupByColumns).toEqual([findColumn('Amount')]);
+    expect(context.isAggregationCountSelected()).toBe(false);
+  });
+
 });
 
 describe('ChartSideBarComponent - data includes time column', () => {
@@ -171,6 +192,39 @@ describe('ChartSideBarComponent - data includes time column', () => {
     // then
     expect(context.gridColumnSpan).toBe(initialGridColumnSpan * 2);
     expect(context.width).toBe(initialWidth * 2);
+  });
+
+  it('#click on PIE chart button should shrink width back after LINE chart when no data column exists yet', () => {
+
+    // given
+    context.dataColumns = [];
+    const initialGridColumnSpan = context.gridColumnSpan;
+    const initialWidth = context.width;
+    findChartButton(ChartType.LINE).click();
+    const butChart = findChartButton(ChartType.PIE);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.gridColumnSpan).toBe(initialGridColumnSpan);
+    expect(context.width).toBe(initialWidth);
+  });
+
+  it('#click on BAR chart button should keep size of PIE chart when no data column exists yet', () => {
+
+    // given
+    context.dataColumns = [];
+    const initialGridColumnSpan = context.gridColumnSpan;
+    const initialWidth = context.width;
+    const butChart = findChartButton(ChartType.BAR);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.gridColumnSpan).toBe(initialGridColumnSpan);
+    expect(context.width).toBe(initialWidth);
   });
 
   it('#click on PIE chart button should keep previous selected data columns', () => {
@@ -597,7 +651,294 @@ describe('ChartSideBarComponent - data includes time column', () => {
     expect(context.groupByColumns).toEqual([findColumn('Time')]);
   });
 
+  it('#click on text data column should keep TIME group-by column and count distinct values on LINEAR_BAR chart', () => {
+
+    // given
+    context.chartType = ChartType.LINEAR_BAR.type;
+    component.selectedChartType = ChartType.LINEAR_BAR;
+    context.dataColumns = [findColumn('Amount')];
+    const butHostColumn = findDataColumnButton('Host');
+
+    // when
+    butHostColumn.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Host']);
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
+  });
+
+  it('#click on text data column should keep user selected group-by column on LINE chart', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
+    component.onGroupByColumnChanged(findColumn('Path'));
+    const butHostColumn = findDataColumnButton('Host');
+
+    // when
+    butHostColumn.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Host']);
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([findColumn('Path')]);
+  });
+
+  it('#click on number data column should select count distinct values on BAR chart when names are not unique', () => {
+
+    // given
+    context.entries = REPEATING_ENTRIES;
+    context.chartType = ChartType.BAR.type;
+    component.selectedChartType = ChartType.BAR;
+    const butAmountColumn = findDataColumnButton('Amount');
+
+    // when
+    butAmountColumn.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([]);
+    expect(component.individualValuesEnabled).toBe(false);
+  });
+
+  it('#click on number data column should select individual values on BAR chart when names are unique', () => {
+
+    // given
+    context.entries = [
+      { Time: 1, Level: 'x', Host: 'h1', Path: 'p', Amount: 1, Percent: 1 },
+      { Time: 1, Level: 'x', Host: 'h2', Path: 'p', Amount: 1, Percent: 1 }
+    ];
+    context.chartType = ChartType.BAR.type;
+    component.selectedChartType = ChartType.BAR;
+    const butAmountColumn = findDataColumnButton('Amount');
+
+    // when
+    butAmountColumn.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+    expect(context.isAggregationCountSelected()).toBe(false);
+    expect(context.groupByColumns).toEqual([findColumn('Host')]);
+  });
+
+  it('#click on LINE chart button should select TIME group-by column when count distinct values on BAR chart', () => {
+
+    // given
+    context.chartType = ChartType.BAR.type;
+    component.selectedChartType = ChartType.BAR;
+    context.dataColumns = [findColumn('Amount')];
+    context.aggregations = [Aggregation.COUNT];
+    const butChart = findChartButton(ChartType.LINE);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
+  });
+
+  it('#click on LINEAR_HORIZONTAL_BAR chart button should select TIME group-by column when count distinct values on HORIZONTAL_BAR chart', () => {
+
+    // given
+    context.chartType = ChartType.HORIZONTAL_BAR.type;
+    component.selectedChartType = ChartType.HORIZONTAL_BAR;
+    context.dataColumns = [findColumn('Amount')];
+    context.aggregations = [Aggregation.COUNT];
+    const butChart = findChartButton(ChartType.LINEAR_HORIZONTAL_BAR);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
+  });
+
+  it('#click on HORIZONTAL_BAR chart button should select count distinct values when names are not unique', () => {
+
+    // given
+    context.entries = REPEATING_ENTRIES;
+    context.chartType = ChartType.LINEAR_HORIZONTAL_BAR.type;
+    component.selectedChartType = ChartType.LINEAR_HORIZONTAL_BAR;
+    context.dataColumns = [findColumn('Amount')];
+    const butChart = findChartButton(ChartType.HORIZONTAL_BAR);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([]);
+  });
+
+  it('#click on BAR chart button should keep first data column only when no unique name column exists', () => {
+
+    // given
+    context.entries = REPEATING_ENTRIES;
+    context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
+    context.dataColumns = [findColumn('Amount'), findColumn('Percent')];
+    const butChart = findChartButton(ChartType.BAR);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([]);
+  });
+
+  it('#click on BAR chart button should reset stacked when data columns are reduced', () => {
+
+    // given
+    context.entries = REPEATING_ENTRIES;
+    context.chartType = ChartType.LINE.type;
+    component.selectedChartType = ChartType.LINE;
+    context.dataColumns = [findColumn('Amount'), findColumn('Percent')];
+    context.stacked = true;
+    const butChart = findChartButton(ChartType.BAR);
+
+    // when
+    butChart.click();
+
+    // then
+    expect(context.stacked).toBe(false);
+  });
+
+  it('#onAggregationTypeChanged should keep group-by column when count distinct values is selected on LINE chart', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    context.dataColumns = [findColumn('Amount')];
+    context.groupByColumns = [findColumn('Percent')];
+
+    // when
+    component.onAggregationTypeChanged(true);
+
+    // then
+    expect(context.isAggregationCountSelected()).toBe(true);
+    expect(context.groupByColumns).toEqual([findColumn('Percent')]);
+  });
+
+  it('#onAggregationTypeChanged should select group-by column when individual values are selected on LINE chart without group-by column', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    context.dataColumns = [findColumn('Amount')];
+    context.splitColumns = [findColumn('Time')];
+    context.groupByColumns = [];
+
+    // when
+    component.onAggregationTypeChanged(false);
+
+    // then
+    expect(context.isAggregationCountSelected()).toBe(false);
+    expect(context.groupByColumns).toEqual([findColumn('Percent')]);
+  });
+
+  it('#ngOnChanges should enable individual values when number data column on LINE chart', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    context.dataColumns = [findColumn('Amount')];
+
+    // when
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+
+    // then
+    expect(component.individualValuesEnabled).toBe(true);
+    expect(component.countDistinctValuesEnabled).toBe(true);
+  });
+
+  it('#ngOnChanges should disable individual values when text data column', () => {
+
+    // given
+    context.dataColumns = [findColumn('Host')];
+
+    // when
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+
+    // then
+    expect(component.individualValuesEnabled).toBe(false);
+    expect(component.countDistinctValuesEnabled).toBe(true);
+  });
+
+  it('time unit field should be hidden when group-by column is removed', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    fixture.detectChanges();
+
+    // when
+    context.groupByColumns = [];
+    fixture.detectChanges();
+
+    // then
+    expect(formFieldLabels()).not.toContain('Time Unit Grouping');
+    expect(component.groupByTimeColumn).toBeUndefined();
+  });
+
+  it('#groupByTimeColumn should return undefined when group-by column is not TIME', () => {
+
+    // given
+    context.groupByColumns = [findColumn('Host')];
+
+    // when
+    const column = component.groupByTimeColumn;
+
+    // then
+    expect(column).toBeUndefined();
+  });
+
+  it('group-by and time unit fields should be placed in field row', () => {
+
+    // when
+    context.chartType = ChartType.LINE.type;
+    fixture.detectChanges();
+
+    // then
+    const fieldRow: HTMLElement = fixture.nativeElement.querySelector('.field-row');
+    const labels = Array.from(fieldRow.querySelectorAll('mat-label')).map(l => l.textContent.trim());
+    expect(labels).toEqual(['Group by', 'Time Unit Grouping']);
+  });
+
+  it('group-by options should exclude data columns', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    fixture.detectChanges();
+
+    // when
+    const options = openSelectOptions();
+
+    // then
+    expect(options).toEqual(['Time', 'Host', 'Path', 'Amount', 'Percent']);
+  });
+
+  it('name options should exclude data columns on PIE chart', () => {
+
+    // given
+    context.dataColumns = [findColumn('Amount')];
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+    fixture.detectChanges();
+
+    // when
+    const options = openSelectOptions();
+
+    // then
+    expect(options).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent']);
+  });
+
 });
+
+const REPEATING_ENTRIES = [
+  { Time: 1, Level: 'x', Host: 'h', Path: 'p', Amount: 1, Percent: 1 },
+  { Time: 1, Level: 'x', Host: 'h', Path: 'p', Amount: 1, Percent: 1 }
+];
 
 function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void {
   TestBed.configureTestingModule({
@@ -626,6 +967,16 @@ function setup(columns: Column[], baseColumn: Column, valueColumn: Column): void
 
 function formFields(): HTMLElement[] {
   return Array.from(fixture.nativeElement.querySelectorAll('mat-form-field'));
+}
+
+function formFieldLabels(): string[] {
+  return Array.from(fixture.nativeElement.querySelectorAll('mat-form-field mat-label')).map((l: HTMLElement) => l.textContent.trim());
+}
+
+function openSelectOptions(): string[] {
+  fixture.nativeElement.querySelector('.mat-mdc-select-trigger').click();
+  fixture.detectChanges();
+  return Array.from(document.querySelectorAll('mat-option')).map(o => o.textContent.trim().split(/\s+/).pop());
 }
 
 function findColumn(name: string): Column {

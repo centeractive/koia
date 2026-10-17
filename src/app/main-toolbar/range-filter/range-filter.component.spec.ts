@@ -7,7 +7,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { Column, DataType } from 'app/shared/model';
+import { Subject } from 'rxjs';
 import { NumberRangeFilter } from './model/number-range-filter';
+import { TimeRangeFilter } from './model/time-range-filter';
 import { RangeFilterComponent } from './range-filter.component';
 
 describe('RangeFilterComponent', () => {
@@ -105,6 +107,64 @@ describe('RangeFilterComponent', () => {
     expect(component.filter.inverted).toBe(true);
     expect(component.onChange.emit).toHaveBeenCalled();
   }));
+
+  it('#onHighValueChanged should reset max excluding when NUMBER', () => {
+
+    // given
+    component.valueRange.maxExcluding = true;
+
+    // when
+    component.onHighValueChanged();
+
+    // then
+    expect(component.filter.selValueRange.maxExcluding).toBe(false);
+  });
+
+  it('#onHighValueChanged should keep max excluding when TIME', () => {
+
+    // given
+    const timeColumn: Column = { name: 'Time', dataType: DataType.TIME, width: 70, format: 'd MMM yyyy HH:mm:ss SSS' };
+    component.filter = new TimeRangeFilter(timeColumn, 0, 100_000, { min: 0, max: 50_000, maxExcluding: true }, false);
+    component.ngOnChanges(null);
+
+    // when
+    component.onHighValueChanged();
+
+    // then
+    expect(component.filter.selValueRange.maxExcluding).toBe(true);
+  });
+
+  it('#ngOnChanges should keep single subscription to adjusted value range', () => {
+
+    // given
+    const adjustedValueRange = new Subject<void>();
+    vi.spyOn(component.filter, 'onAdjustedValueRange').mockReturnValue(adjustedValueRange);
+    const emit = vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
+
+    // when
+    component.ngOnChanges(null);
+    component.ngOnChanges(null);
+    adjustedValueRange.next();
+
+    // then
+    expect(emit).toHaveBeenCalledTimes(1);
+  });
+
+  it('#ngOnDestroy should unsubscribe from adjusted value range', () => {
+
+    // given
+    const adjustedValueRange = new Subject<void>();
+    vi.spyOn(component.filter, 'onAdjustedValueRange').mockReturnValue(adjustedValueRange);
+    const emit = vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
+    component.ngOnChanges(null);
+
+    // when
+    component.ngOnDestroy();
+    adjustedValueRange.next();
+
+    // then
+    expect(emit).not.toHaveBeenCalled();
+  });
 
   it('#click on "remove" button should emit remove event', fakeAsync(() => {
 

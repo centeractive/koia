@@ -53,6 +53,11 @@ describe('CategoricalColorProvider', () => {
         });
     });
 
+    it('#constructor should throw error when scheme is unknown', () => {
+        expect(() => new CategoricalColorProvider(colorOptions('unknown' as CategoricalColorScheme)))
+            .toThrow('no colors defined for scheme: unknown');
+    });
+
     function colorOptions(scheme: CategoricalColorScheme): ColorOptions {
         return {
             type: ColorSchemeType.CATEGORICAL,

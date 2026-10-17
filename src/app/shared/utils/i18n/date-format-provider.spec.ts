@@ -24,6 +24,11 @@ describe('ColumnMappingGenerator', () => {
         expect(provider.provide('fr-CH')).toBe('dd.MM.yyyy');
     });
 
+    it('#provide when locale key contains upper case letters', () => {
+        expect(provider.provide('pt-BR')).toBe('d/M/yyyy');
+        expect(provider.provide('zh-CN')).toBe('yyyy/M/d');
+    });
+
     it('#provide when locale includes language only', () => {
         expect(provider.provide('en')).toBe('dd/MM/yyyy');
         expect(provider.provide('es')).toBe('dd/MM/yyyy');

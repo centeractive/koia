@@ -87,4 +87,16 @@ describe('PropertyFilterValidator', () => {
       expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;y;3'))).toBe('\'y\' is not a number');
       expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;2;z'))).toBe('\'z\' is not a number');
    });
+
+   it('#validate with "is any of" should return <null> when TEXT values', () => {
+
+      // given
+      const filter = new PropertyFilter('Name', Operator.ANY_OF, 'a;1;c');
+
+      // when
+      const result = validator.validate(filter);
+
+      // then
+      expect(result).toBeNull();
+   });
 });

@@ -1,7 +1,7 @@
 import { LanguageService } from 'app/shared/services/language/language.service';
 import { SeriesNameConverter } from 'app/shared/services/chart';
-import { ChartUtils } from 'app/shared/utils';
-import { containsNumberOnly, isAnyNonNumeric } from 'app/shared/utils/column-utils';
+import { ChartUtils, DataTypeUtils } from 'app/shared/utils';
+import { containsAnyNumber } from 'app/shared/utils/column-utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
 import * as _ from 'lodash';
@@ -107,14 +107,19 @@ export class ChartContext extends ElementContext {
    }
 
    override set dataColumns(columns: Column[]) {
-      if (isAnyNonNumeric(columns)) {
+      if (DataTypeUtils.containsNonNumericColumns(columns)) {
          this._aggregations = [Aggregation.COUNT];
-         this._groupByColumns = [];
-      } else if (containsNumberOnly(columns)) {
+         if (this.isCategoryChart()) {
+            this._groupByColumns = [];
+         }
+      } else if (containsAnyNumber(columns)) {
          this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
          if (this._groupByColumns?.length) {
             this._aggregations = [];
          }
+      }
+      if (columns.length < 2) {
+         this._multiValueAxes = false;
       }
       this._valueScaleRestorer.store(this._valueScales);
       if (this._multiValueAxes || columns.length == 1) {
@@ -129,7 +134,7 @@ export class ChartContext extends ElementContext {
       if (this.multiValueAxes) {
          this._valueScales.push(this._valueScaleRestorer.scaleConfig(dataColumn));
       } else if (this.dataColumns.length == 1) {
-         this._valueScaleRestorer.set(this._valueScales[0]);
+         this._valueScaleRestorer.set(this._valueScales[0].toScale());
          this._valueScales = [this._valueScaleRestorer.scaleConfig()];
       } else {
          this._valueScales = [this._valueScaleRestorer.scaleConfig(dataColumn)];
@@ -144,6 +149,9 @@ export class ChartContext extends ElementContext {
             this._valueScaleRestorer.set(scaleConfig.toScale());
          }
          this._valueScales = this._valueScales.filter(s => s.columnName != dataColumn.name);
+         if (!this._valueScales.length) {
+            this._valueScales = [this._valueScaleRestorer.scaleConfig()];
+         }
          if (this.dataColumns.length <= 2) {
             this._multiValueAxes = false;
          }
@@ -191,7 +199,7 @@ export class ChartContext extends ElementContext {
    }
 
    override set aggregations(aggregations: Aggregation[]) {
-      if (aggregations?.length) {
+      if (aggregations?.length && this.isCategoryChart()) {
          this._groupByColumns = [];
       } else {
          this._groupByColumns = ChartUtils.identifyGroupByColumns(this);

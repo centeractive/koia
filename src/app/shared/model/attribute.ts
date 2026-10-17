@@ -7,7 +7,6 @@ export class Attribute {
    private _dataType: DataType;
    private _value: any;
    private _valueChoice: any[];
-   private _valueChoiceBinding: boolean;
 
    constructor(name: string, description: string, dataType: DataType, value: any) {
       this._name = name;
@@ -54,13 +53,5 @@ export class Attribute {
 
    hasValueChoice(): boolean {
       return !!this._valueChoice && this._valueChoice.length > 0;
-   }
-
-   get isValueChoiceBinding(): boolean {
-      return this._valueChoiceBinding;
-   }
-
-   set valueChoiceBinding(valueChoiceBinding: boolean) {
-      this._valueChoiceBinding = valueChoiceBinding;
    }
 }

@@ -65,8 +65,6 @@ export class ColumnMappingGenerator {
             columnPair.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
          }
          this.downgrade(columnPair, DataType.TEXT);
-      } else if (typeof value === 'string' && columnPair.target.dataType === DataType.TIME && columnPair.source.format == undefined) {
-         this.dateTimeColumnDetector.refineDateTimeFormat(columnPair, value, locale);
       }
       columnPair.target.width = Math.max(columnPair.target.width, this.computeWidth(value, columnPair));
       if (columnPair.target.indexed && !this.shallBeIndexed(value)) {

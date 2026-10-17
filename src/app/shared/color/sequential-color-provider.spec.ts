@@ -47,6 +47,11 @@ describe('SequentialColorProvider', () => {
         });
     });
 
+    it('#constructor should throw error when scheme is unknown', () => {
+        expect(() => new SequentialColorProvider(colorOptions('unknown' as SequentialColorScheme)))
+            .toThrow('no color function defined for scheme: unknown');
+    });
+
     function colorOptions(scheme: SequentialColorScheme): ColorOptions {
         return {
             type: ColorSchemeType.SEQUENTIAL,

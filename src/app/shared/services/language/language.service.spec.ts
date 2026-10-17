@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
+import { throwError } from 'rxjs';
 import { LanguageService } from './language.service';
 
 describe('LanguageService', () => {
@@ -142,5 +143,56 @@ describe('LanguageService', () => {
 
       // then
       expect(service.current()).toBe('ja');
+   });
+
+   it('#use should switch language although translations cannot be loaded', async () => {
+
+      // given
+      vi.spyOn(TestBed.inject(TranslateService), 'use').mockReturnValue(throwError(() => new Error('offline')));
+      const warn = vi.spyOn(console, 'warn').mockReturnValue(undefined);
+
+      // when
+      await service.use('de');
+
+      // then
+      expect(service.current()).toBe('de');
+      expect(warn).toHaveBeenCalled();
+   });
+
+   it('#init should use navigator language when browser provides no language preferences', async () => {
+
+      // given
+      browserLanguages = [];
+      vi.spyOn(navigator, 'language', 'get').mockReturnValue('ja-JP');
+
+      // when
+      await service.init();
+
+      // then
+      expect(service.current()).toBe('ja');
+   });
+
+   it('#instant should translate in English without params when no instance exists', () => {
+
+      // given
+      LanguageService.reset();
+
+      // when
+      const text = LanguageService.instant('language.select');
+
+      // then
+      expect(text).toBe('Language');
+   });
+
+   it('#instant should keep placeholders when no instance exists and params are empty', () => {
+
+      // given
+      LanguageService.reset();
+
+      // when
+      const text = LanguageService.instant('scene.aborting', {});
+
+      // then
+      expect(text).toBe('{{message}} aborting...');
    });
 });

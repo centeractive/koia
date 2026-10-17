@@ -32,9 +32,7 @@ export class CSVReader implements DataReader {
    furnishAttributes(dataHeader: string, locale: string): Attribute[] {
       if (dataHeader && dataHeader.length > 0) {
          this.attrSeparator.value = this.detectSeparator(dataHeader);
-         if (this.attrSeparator.value) {
-            this.attrHasHeaderColumn.value = this.detectHeaderColumn(dataHeader, locale);
-         }
+         this.attrHasHeaderColumn.value = this.detectHeaderColumn(dataHeader, locale);
       }
       return [this.attrHasHeaderColumn, this.attrSeparator];
    }

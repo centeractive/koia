@@ -282,4 +282,52 @@ describe('CSVReader', () => {
       expect(recorder.values).toEqual(expectedValues);
       expect(recorder.entries).toEqual([]);
    });
+
+   it('#readData should provide no values when reading is canceled', async () => {
+
+      // given
+      const file = new File([content], 'Test.csv');
+      reader.furnishAttributes('', 'en-US')[0].value = false;
+      const recorder = new DataHandlerRecorder();
+      vi.spyOn(recorder, 'isCanceled').mockReturnValue(true);
+
+      // when
+      reader.readData(file, 100, recorder);
+      await recorder.completion;
+
+      // then
+      expect(recorder.values).toEqual([]);
+   });
+
+   it('#readSample should reject when file cannot be read', async () => {
+
+      // given
+      const file = new File([content], 'Test.csv');
+      vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+         this.onerror(undefined);
+      });
+
+      // when
+      const sample = reader.readSample(file, 3);
+
+      // then
+      await expect(sample).rejects.toBeNull();
+   });
+
+   it('#readData should report error when file cannot be read', () => {
+
+      // given
+      const file = new File([content], 'Test.csv');
+      vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+         this.onerror(undefined);
+      });
+      const recorder = new DataHandlerRecorder();
+      const onError = vi.spyOn(recorder, 'onError').mockReturnValue(undefined);
+
+      // when
+      reader.readData(file, 100, recorder);
+
+      // then
+      expect(onError).toHaveBeenCalledWith(null);
+   });
 });

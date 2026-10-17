@@ -14,7 +14,6 @@ import { tooltipMode } from './tooltip-mode';
 
 export class ChartJsOptionsProvider {
 
-    private readonly chartTypesHiddenScales = [ChartType.PIE, ChartType.DOUGHNUT, ChartType.RADAR, ChartType.POLAR_AREA];
     private legendLabelFormatter = new LegendLabelFormatter();
     private tickLabelFormatter = new TickLabelFormatter();
     private pointLabelFormatter = new PointLabelFormatter();
@@ -39,16 +38,16 @@ export class ChartJsOptionsProvider {
                 options.indexAxis = 'y';
                 options.parsing = { yAxisKey: 'x', xAxisKey: 'y' };
                 options.scales = {
-                    y: this.baseScaleOptions(chartType, context),
-                    x: this.valueScaleOptions(chartType, context)
+                    y: this.baseScaleOptions(context),
+                    x: this.valueScaleOptions(context)
                 };
                 this.addAdditionalValueAxes(context, options);
                 break;
             default:
                 if (!context.isCircularChart()) {
                     options.scales = {
-                        y: this.valueScaleOptions(chartType, context),
-                        x: this.baseScaleOptions(chartType, context)
+                        y: this.valueScaleOptions(context),
+                        x: this.baseScaleOptions(context)
                     };
                     this.addAdditionalValueAxes(context, options);
                 }
@@ -62,17 +61,16 @@ export class ChartJsOptionsProvider {
     private addAdditionalValueAxes(context: ChartContext, options: ChartOptions): void {
         if (context.dataColumns.length > 1 && context.multiValueAxes) {
             const scaleOptions = options.scales as ScaleOptions;
-            const chartType = ChartType.fromType(context.chartType);
             for (let i = 1; i < context.dataColumns.length; i++) {
                 if (context.isHorizontalChart()) {
                     const id = 'x' + (i + 1);
-                    scaleOptions[id] = this.valueScaleOptions(chartType, context, i);
+                    scaleOptions[id] = this.valueScaleOptions(context, i);
                     if (i % 2) {
                         scaleOptions[id].position = 'top';
                     }
                 } else {
                     const id = 'y' + (i + 1);
-                    scaleOptions[id] = this.valueScaleOptions(chartType, context, i);
+                    scaleOptions[id] = this.valueScaleOptions(context, i);
                     if (i % 2) {
                         scaleOptions[id].position = 'right';
                     }
@@ -136,23 +134,23 @@ export class ChartJsOptionsProvider {
         return scaleOptions;
     }
 
-    private valueScaleOptions(chartType: ChartType, context: ChartContext, columnIdx = 0): ScaleOptions {
+    private valueScaleOptions(context: ChartContext, columnIdx = 0): ScaleOptions {
         const title = this.valueScaleTitle(context, columnIdx);
         const scaleOptions: ScaleOptions = {
-            display: !this.chartTypesHiddenScales.includes(chartType),
+            display: true,
             stacked: context.stacked,
             title: {
                 display: !!title,
                 text: title
             }
         };
-        const ticks = context.valueScales[columnIdx].ticks;
-        if (ticks.stepSize) {
+        const ticks = context.valueScales?.[columnIdx]?.ticks;
+        if (ticks?.stepSize) {
             scaleOptions.ticks = {
                 stepSize: ticks.stepSize
             };
         }
-        if (ticks.rotation) {
+        if (ticks?.rotation) {
             scaleOptions.ticks = {
                 ...scaleOptions.ticks || {},
                 maxRotation: -ticks.rotation,
@@ -172,12 +170,9 @@ export class ChartJsOptionsProvider {
         }
     }
 
-    private baseScaleOptions(chartType: ChartType, context: ChartContext): ScaleOptions {
-        if (this.chartTypesHiddenScales.includes(chartType)) {
-            return { display: false };
-        }
+    private baseScaleOptions(context: ChartContext): ScaleOptions {
         const scaleOptions: ScaleOptions = {
-            display: !this.chartTypesHiddenScales.includes(chartType),
+            display: true,
             stacked: context.stacked
         };
         const ticks = context.baseScale.ticks;
@@ -203,7 +198,7 @@ export class ChartJsOptionsProvider {
 
         if (context.isCategoryChart()) {
             this.tickLabelFormatter.format(column, scaleOptions);
-        } else if (column.dataType) {
+        } else if (column?.dataType) {
             switch (column.dataType) {
                 case DataType.NUMBER: {
                     scaleOptions.type = 'linear';

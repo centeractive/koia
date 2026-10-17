@@ -190,6 +190,17 @@ export class NumberUtils {
    }
 
    /**
+    * @returns the number unchanged, or the string parsed as a number of the default locale after removing all thousands
+    * separators regardless of their position, [[undefined]] if the string does not represent a number
+    */
+   static parseFormattedNumber(value: number | string): number {
+      if (typeof value === 'string') {
+         return this.parseNumber(this.removeThousandsSeparators(value, undefined), undefined);
+      }
+      return value;
+   }
+
+   /**
     * removes thousands separators regardless of whether they appear at correct position
     */
    static removeThousandsSeparators(str: string, locale: string): string {

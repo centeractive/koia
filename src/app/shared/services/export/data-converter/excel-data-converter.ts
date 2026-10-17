@@ -17,8 +17,8 @@ export class ExcelDataConverter {
         for (const column of timeColumns) {
             for (const item of data) {
                 const value = item[column.name];
-                if (value) {
-                    if (column.format.includes('S')) {
+                if (value !== null && value !== undefined) {
+                    if (column.format?.includes('S')) {
                         item[column.name] = this.valueFormatter.formatValue(column, value);
                     } else {
                         item[column.name] = new Date(value);

@@ -82,6 +82,19 @@ describe('SampleSceneService', () => {
       expect(activateSceneSpy).not.toHaveBeenCalled();
    });
 
+   it('#open should not delete sample scene and reject when scene cannot be persisted', async () => {
+
+      // given
+      persistSceneSpy.mockRejectedValue('conflict');
+
+      // when
+      const result = service.open(sample);
+
+      // then
+      await expect(result).rejects.toBe('conflict');
+      expect(deleteSceneSpy).not.toHaveBeenCalled();
+   });
+
    it('#open should reject with original error when incomplete scene cannot be deleted', async () => {
 
       // given

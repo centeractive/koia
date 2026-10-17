@@ -207,6 +207,27 @@ describe('NumberUtils', () => {
     expect(NumberUtils.asNumber('abc', 'en-US')).toBeUndefined();
   });
 
+  it('#normalize should return undefined when string is blank', () => {
+    expect(NumberUtils.normalize('   ', 'en-US')).toBeUndefined();
+  });
+
+  it('#parseFormattedNumber should return number unchanged', () => {
+    expect(NumberUtils.parseFormattedNumber(1500)).toBe(1500);
+  });
+
+  it('#parseFormattedNumber should parse string with thousands separators', () => {
+    expect(NumberUtils.parseFormattedNumber((1_500).toLocaleString())).toBe(1500);
+  });
+
+  it('#parseFormattedNumber should parse string with misplaced thousands separators', () => {
+    const ts = (1_000).toLocaleString().charAt(1);
+    expect(NumberUtils.parseFormattedNumber('1' + ts + '5000')).toBe(15000);
+  });
+
+  it('#parseFormattedNumber should return undefined when string does not represent a number', () => {
+    expect(NumberUtils.parseFormattedNumber('abc')).toBeUndefined();
+  });
+
   it('#normalize when string represents an integer', () => {
     expect(NumberUtils.normalize('-1', 'en-US')).toBe('-1');
     expect(NumberUtils.normalize('0', 'en-US')).toBe('0');

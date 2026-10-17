@@ -1,4 +1,5 @@
 import { fakeAsync, flush } from '@angular/core/testing';
+import { ColorProviderFactory } from '../color';
 import { ValueGrouping } from '../value-range/model/value-grouping.type';
 import { ValueRange } from '../value-range/model/value-range.type';
 import { Aggregation } from './aggregation.enum';
@@ -118,6 +119,50 @@ describe('ElementContext', () => {
       expect(context.gridColumnSpan).toBe(1);
       expect(context.gridRowSpan).toBe(1);
    });
+
+   it('#copyAttributes should keep default width when width is max safe integer', () => {
+
+      // when
+      context.copyAttributes({ ...viewElement(1, 1), width: Number.MAX_SAFE_INTEGER });
+
+      // then
+      expect(context.width).toBe(600);
+   });
+
+   it('#splitColumns should replace missing value with empty array', () => {
+
+      // when
+      context.splitColumns = undefined;
+
+      // then
+      expect(context.splitColumns).toEqual([]);
+   });
+
+   it('#colorProvider should not fire look change event when options are equal', fakeAsync(() => {
+
+      // when
+      context.colorProvider = ColorProviderFactory.create({ ...context.colorProvider.options });
+      flush();
+
+      // then
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#colorProvider should fire look change event when options are different', fakeAsync(() => {
+
+      // given
+      const options = context.colorProvider.options;
+      const colorProvider = ColorProviderFactory.create({ ...options, bgColorOpacity: options.bgColorOpacity / 2 });
+
+      // when
+      context.colorProvider = colorProvider;
+      flush();
+
+      // then
+      expect(context.colorProvider).toBe(colorProvider);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
 
    it('#groupByColumns should return empty array when no group by columns are defined', () => {
       context.groupByColumns = null;

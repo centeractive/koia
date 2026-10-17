@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import * as XLSX from '@e965/xlsx';
+import * as Papa from 'papaparse';
 import { ExportDataConverter } from './data-converter/export-data-converter';
 import { Column, ExportFormat } from 'app/shared/model';
 import { ExcelDataConverter } from './data-converter/excel-data-converter';
@@ -55,18 +56,7 @@ export class ExportService {
   }
 
   private toCSV(data: object[], columns: Column[], delimiter: string): string {
-    const keys = propertyNamesOf(data, columns);
-    return [keys, ...data.map(e => keys.map(k => e[k]))]
-      .map(values => values.map(v => this.toCSVValue(v, delimiter)).join(delimiter))
-      .join(this.newline);
-  }
-
-  /**
-   * quotes values containing the delimiter, quotes or line breaks (RFC 4180)
-   */
-  private toCSVValue(value: unknown, delimiter: string): string {
-    const text = value === undefined || value === null ? '' : String(value);
-    return text.includes(delimiter) || /["\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    return Papa.unparse({ fields: propertyNamesOf(data, columns), data }, { delimiter, newline: this.newline });
   }
 
   private exportAsExcel(data: object[], columns: Column[], baseFileName: string): void {

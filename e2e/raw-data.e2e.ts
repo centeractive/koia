@@ -86,7 +86,7 @@ test('raw data without matching rows is exported as CSV file with the column nam
 
    const download = await downloadOf(page, () => rawData.viewToolbar.chooseMoreMenuItem(en.get('rawData.saveAs', { format: ExportFormat.CSV })));
 
-   expect(await contentOf(download)).toBe(sample.scene.columns.map(column => column.name).join(','));
+   expect(await contentOf(download)).toBe(sample.scene.columns.map(column => column.name).join(',') + '\n');
    await expect(notifications.pane(StatusType.ERROR)).toHaveCount(0);
 });
 

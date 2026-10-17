@@ -113,6 +113,50 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
+   it('full text selector should escape regex syntax for CouchDB', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .whereAnyText('a(b')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $or: [
+               { Level: { $regex: '(?i).*a\\(b.*' } },
+               { Data: { $regex: '(?i).*a\\(b.*' } },
+               { Host: { $regex: '(?i).*a\\(b.*' } },
+               { Path: { $regex: '(?i).*a\\(b.*' } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('full text selector should escape regex syntax for PouchDB', () => {
+
+      // when
+      const query = new MangoQueryBuilder(true, columns)
+         .whereAnyText('a(b')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $or: [
+               { Level: { $regex: /.*a\(b.*/i } },
+               { Data: { $regex: /.*a\(b.*/i } },
+               { Host: { $regex: /.*a\(b.*/i } },
+               { Path: { $regex: /.*a\(b.*/i } }
+            ]
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
    it('EQUAL text selector', () => {
 
       // when
@@ -426,6 +470,58 @@ describe('MangoQueryBuilder', () => {
       const expected = {
          selector: {
             a: { $regex: /(?=.*x.*)(?=.*y.*)(?=.*z.*)/i }
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('selector should escape regex syntax of contains filters on same field (PouchDB)', () => {
+
+      // when
+      const query = new MangoQueryBuilder(true, columns)
+         .where('a', Operator.CONTAINS, 'a(b')
+         .where('a', Operator.CONTAINS, 'c|d')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            a: { $regex: /(?=.*a\(b.*)(?=.*c\|d.*)/i }
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('selector should escape regex syntax of single contains filter (PouchDB)', () => {
+
+      // when
+      const query = new MangoQueryBuilder(true, columns)
+         .where('a', Operator.CONTAINS, 'a(b')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            a: { $regex: /.*a\(b.*/i }
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('selector should escape regex syntax of single contains filter (CouchDB)', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('a', Operator.CONTAINS, 'a(b')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            a: { $regex: '(?i).*a\\(b.*' }
          },
          limit: MangoQueryBuilder.LIMIT
       };

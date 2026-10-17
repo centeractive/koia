@@ -138,6 +138,38 @@ describe('SliderTimeValueRange - restricted range', () => {
     });
 });
 
+describe('SliderTimeValueRange - start between steps', () => {
+
+    it('#min should not fall below start', () => {
+
+        // given
+        const startBetweenHours = toTime('01.01.2023 06:30:00');
+        valueRange = { min: startBetweenHours, max: end };
+        const range = new SliderTimeValueRange(startBetweenHours, end, valueRange, () => TimeUnit.HOUR);
+
+        // when
+        range.min = 0.25;
+
+        // then
+        expect(valueRange.min).toBe(startBetweenHours);
+    });
+
+    it('#max should not exceed end', () => {
+
+        // given
+        const startBetweenHours = toTime('01.01.2023 06:30:00');
+        const endBetweenHours = toTime('01.01.2023 07:15:00');
+        valueRange = { min: startBetweenHours, max: endBetweenHours };
+        const range = new SliderTimeValueRange(startBetweenHours, endBetweenHours, valueRange, () => TimeUnit.HOUR);
+
+        // when
+        range.max = 2;
+
+        // then
+        expect(valueRange.max).toBe(endBetweenHours);
+    });
+});
+
 function toTime(s: string): number {
     return DateTime.fromFormat(s, 'dd.MM.yyyy HH:mm:ss').toMillis();
 }

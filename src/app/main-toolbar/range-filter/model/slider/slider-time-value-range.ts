@@ -44,10 +44,6 @@ export class SliderTimeValueRange implements ValueRange {
             && this.valueRange.min !== this.valueRange.max;
     }
 
-    set maxExcluding(maxExcluding: boolean) {
-        this.valueRange.maxExcluding = maxExcluding;
-    }
-
     private startOfStart(): number {
         return DateTimeUtils.startOf(this.start, this.timeUnit());
     }

@@ -49,4 +49,20 @@ describe('DateTimeColumnDetector', () => {
         expect(columnPair.warning).toBeUndefined();
     })
 
+    it('#detect should detect date of locale with language and country', () => {
+
+        // given
+        const columnPair: ColumnPair = {
+            source: { name: 'Date', dataType: DataType.TEXT, width: undefined },
+            target: { name: 'Date', dataType: DataType.TEXT, width: undefined }
+        };
+
+        // when
+        detector.detect(columnPair, '15.03.2024', 'de-CH');
+
+        // then
+        expect(columnPair.source.format).toBe('dd.MM.yyyy');
+        expect(columnPair.target.dataType).toBe(DataType.TIME);
+    });
+
 });

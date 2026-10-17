@@ -92,4 +92,17 @@ describe('formatted-time-comparator', () => {
         expect(compareFormattedTime(before, before, timeUnit)).toBe(0);
         expect(compareFormattedTime(after, before, timeUnit)).toBe(1);
     });
+
+    it('#compareFormattedTime should log and throw when time is invalid', () => {
+
+        // given
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockReturnValue(undefined);
+
+        // when
+        const compare = () => compareFormattedTime('invalid', '1 Jan 2023 06:55:10', TimeUnit.SECOND);
+
+        // then
+        expect(compare).toThrow(TypeError);
+        expect(consoleErrorSpy).toHaveBeenCalledWith('invalid', '1 Jan 2023 06:55:10', TimeUnit.SECOND);
+    });
 });

@@ -177,6 +177,26 @@ describe('FormattedFlatDirective', () => {
         expect(inputElement.selectionStart).toBe(2);
     });
 
+    it('#onInputChange should keep minus sign', () => {
+
+        // when
+        directive.onInputChange(onInput('-'));
+
+        // then
+        expect(inputElement.value).toBe('-');
+        expect(inputElement.selectionStart).toBe(1);
+    });
+
+    it('#onInputChange should not count non-digit in front of caret', () => {
+
+        // when
+        directive.onInputChange(onInput('-12', 3));
+
+        // then
+        expect(inputElement.value).toBe('-12');
+        expect(inputElement.selectionStart).toBe(3);
+    });
+
     it('#onPaste should reject non-number representation', () => {
 
         // given

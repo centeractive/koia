@@ -95,6 +95,40 @@ describe('ManageViewDialogComponent', () => {
     expect(updateViewsSpy).toHaveBeenCalledWith([component.items[1].view], []);
   });
 
+  it('butOK#click when view was renamed', () => {
+
+    // given
+    rename(1, 'X');
+    fixture.detectChanges();
+
+    // when
+    button('but_ok').click();
+
+    // then
+    expect(updateViewsSpy).toHaveBeenCalledWith([], [component.items[1].view]);
+    expect(component.items[1].view.name).toBe('X');
+  });
+
+  it('butOK#click when view was renamed and then deleted', () => {
+
+    // given
+    rename(1, 'X');
+    button('butDelete-1').click();
+    fixture.detectChanges();
+
+    // when
+    button('but_ok').click();
+
+    // then
+    expect(updateViewsSpy).toHaveBeenCalledWith([component.items[1].view], []);
+  });
+
+  function rename(index: number, name: string): void {
+    const input: HTMLInputElement = fixture.debugElement.queryAll(By.css('input'))[index].nativeElement;
+    input.value = name;
+    input.dispatchEvent(new Event('input'));
+  }
+
   function context(): ManageViewContext {
     return {
       views: [

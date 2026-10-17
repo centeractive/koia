@@ -53,7 +53,6 @@ describe('JSONReader', () => {
       await vi.waitFor(() => expect(attributes[0].value).toBe('$'));
       expect(attributes.length).toBe(1);
       expect(attributes[0].valueChoice).toEqual(['$']);
-      expect(attributes[0].isValueChoiceBinding).toBeUndefined();
    });
 
    it('#furnishAttributes should set paths of detected non-root object arrays', async () => {
@@ -81,7 +80,6 @@ describe('JSONReader', () => {
       expect(attributes[0].dataType).toBe(DataType.TEXT);
       expect(attributes[0].hasValueChoice()).toBe(true);
       expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);
-      expect(attributes[0].isValueChoiceBinding).toBeUndefined();
    });
 
    it('#readSample should return entries sample', async () => {
@@ -152,4 +150,60 @@ describe('JSONReader', () => {
       expect(recorder.values).toEqual([]);
    });
 
+   it('#readSample should return no entries when array is empty', async () => {
+
+      // given
+      const file = new File(['[]'], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$';
+
+      // when
+      const sample = await reader.readSample(file, 3);
+
+      // then
+      expect(sample).toEqual({ entries: [] });
+   });
+
+   it('#readSample should reject when file is corrupt', async () => {
+
+      // given
+      const file = new File(['{ "entries": [{ "A": } ]'], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$.entries';
+
+      // when
+      const sample = reader.readSample(file, 3);
+
+      // then
+      await expect(sample).rejects.toBeDefined();
+   });
+
+   it('#readData should report error when file is corrupt', async () => {
+
+      // given
+      const file = new File(['{ "entries": [{ "A": } ]'], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$.entries';
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 2, recorder);
+
+      // then
+      await expect(recorder.completion).rejects.toBeDefined();
+   });
+
+   it('#readData should provide entries once when entry count equals chunk size', async () => {
+
+      // given
+      const file = new File([JSON.stringify(entries)], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$';
+      const recorder = new DataHandlerRecorder();
+      const onEntries = vi.spyOn(recorder, 'onEntries');
+
+      // when
+      reader.readData(file, entries.length, recorder);
+      await recorder.completion;
+
+      // then
+      expect(onEntries).toHaveBeenCalledTimes(1);
+      expect(recorder.entries).toEqual(entries);
+   });
 });

@@ -3,8 +3,11 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
 import { Protocol } from 'app/shared/model';
+import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
+import { ManageConfigContext, ManageConfigDialogComponent } from '../component/manage-config-dialog';
+import { ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
 import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
 import { SceneFactory } from '../test';
 import { DialogService } from './dialog.service';
@@ -81,6 +84,36 @@ describe('DialogService', () => {
 
     // then
     expect(matDialogService.open).toHaveBeenCalledWith(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  });
+
+  it('#showConfigLauncherDialog should open dialog', () => {
+
+    // when
+    const context = {} as ConfigLauncherContext;
+    service.showConfigLauncherDialog(context);
+
+    // then
+    expect(matDialogService.open).toHaveBeenCalledWith(ConfigLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  });
+
+  it('#showManageConfigDialog should open dialog', () => {
+
+    // when
+    const context = {} as ManageConfigContext;
+    service.showManageConfigDialog(context);
+
+    // then
+    expect(matDialogService.open).toHaveBeenCalledWith(ManageConfigDialogComponent, { data: context, panelClass: 'dialog-container' });
+  });
+
+  it('#showManageViewDialog should open dialog', () => {
+
+    // when
+    const context = {} as ManageViewContext;
+    service.showManageViewDialog(context);
+
+    // then
+    expect(matDialogService.open).toHaveBeenCalledWith(ManageViewDialogComponent, { data: context, panelClass: 'dialog-container' });
   });
 
 });
