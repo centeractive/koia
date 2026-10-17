@@ -177,12 +177,52 @@ describe('global styles', () => {
   it('print styles should keep dashboard tiles on one page', () => {
 
     // when
-    const rule = findStyleRule(Array.from(document.styleSheets), '.div_grid_element, .div_flex_element', 'print');
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_element', 'print');
 
     // then
     expect(rule).toBeDefined();
     expect(rule.style.breakInside).toBe('avoid');
     expect(rule.style.getPropertyPriority('break-inside')).toBe('important');
+  });
+
+  it('print styles should print canvas as wide as page', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_pages', 'print');
+
+    // then
+    expect(rule.style.maxWidth).toBe('calc(970px / var(--koia-print-zoom, 1))');
+    expect(rule.style.getPropertyPriority('max-width')).toBe('important');
+  });
+
+  it('print styles should cut canvas page content at page bottom', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page', 'print');
+
+    // then
+    expect(rule.style.overflow).toBe('hidden');
+    expect(rule.style.getPropertyPriority('overflow')).toBe('important');
+  });
+
+  it('print styles should print each canvas page on a new sheet below heading band', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page + .div_canvas_page', 'print');
+
+    // then
+    expect(rule.style.breakBefore).toBe('page');
+    expect(rule.style.borderTop).toBe('calc(44px / var(--koia-print-zoom, 1)) solid transparent');
+  });
+
+  it('print styles should hide page boundary and spare page', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page::after, .div_canvas_page_spare', 'print');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
   });
 
   function createPanelHost(): HTMLElement {
@@ -542,6 +582,9 @@ describe('global styles', () => {
 
     // then
     expect(heading.style.display).toBe('flex');
+    expect(heading.style.height).toBe('36px');
+    expect(heading.style.boxSizing).toBe('border-box');
+    expect(heading.style.marginBottom).toBe('8px');
     expect(heading.style.borderBottom).toBe('1px solid rgb(153, 153, 153)');
     expect(visibility.style.visibility).toBe('visible');
     expect(logo.style.display).toBe('block');

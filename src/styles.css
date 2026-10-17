@@ -300,6 +300,8 @@ koia-print-heading {
     display: flex;
     align-items: center;
     gap: 10px;
+    height: 36px;
+    box-sizing: border-box;
     margin-bottom: 8px;
     padding-bottom: 6px;
     border-bottom: 1px solid #999;
@@ -328,10 +330,27 @@ koia-print-heading {
     color: #555;
   }
 
-  .div_grid_element,
-  .div_flex_element {
+  .div_element {
     page-break-inside: avoid !important;
     overflow: hidden !important;
+  }
+
+  .div_canvas_pages {
+    max-width: calc(970px / var(--koia-print-zoom, 1)) !important;
+  }
+
+  .div_canvas_page {
+    overflow: hidden !important;
+  }
+
+  .div_canvas_page + .div_canvas_page {
+    break-before: page;
+    border-top: calc(44px / var(--koia-print-zoom, 1)) solid transparent;
+  }
+
+  .div_canvas_page::after,
+  .div_canvas_page_spare {
+    display: none !important;
   }
 
   .cdk-visually-hidden,

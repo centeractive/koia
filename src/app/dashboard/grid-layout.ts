@@ -3,16 +3,22 @@ import { ElementContext } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { cellRatioToNumber } from './aspect-ratio';
 
+export interface GridSpans {
+  columnSpan: number;
+  rowSpan: number;
+}
+
 /**
  * lays out elements in a grid where each element spans one or several cells
  */
 export class GridLayout {
 
-  /** must equal twice the grid padding and the flex element margin (5px) for tiles to keep their position across layouts */
+  /** must equal twice the grid padding (5px) */
   static readonly GAP_PX = 10;
   static readonly ROW_SPANS = [1, 2, 3, 4];
   static readonly COLUMN_CHOICES = [1, 2, 3, 4, 5];
   static readonly CELL_RATIO_CHOICES = ['1:1', '3:2', '2:1', '2:3', '1:2'];
+  private static readonly MAX_ROW_SPAN = GridLayout.ROW_SPANS[GridLayout.ROW_SPANS.length - 1];
 
   gridColumns = 3;
   gridCellRatio = '1:1';
@@ -31,12 +37,35 @@ export class GridLayout {
     };
   }
 
-  spansOf(width: number, height: number, contentWidth: number): { columnSpan: number, rowSpan: number } {
-    const columnSpan = this.clamp(Math.round((width + GridLayout.GAP_PX) * this.gridColumns / contentWidth), this.gridColumns);
-    const rowHeight = (contentWidth / this.gridColumns - GridLayout.GAP_PX) / cellRatioToNumber(this.gridCellRatio);
-    const maxRowSpan = GridLayout.ROW_SPANS[GridLayout.ROW_SPANS.length - 1];
-    const rowSpan = this.clamp(Math.round((height + GridLayout.GAP_PX) / (rowHeight + GridLayout.GAP_PX)), maxRowSpan);
+  spansOf(width: number, height: number, contentWidth: number): GridSpans {
+    const columnSpan = this.clamp(Math.round((width + GridLayout.GAP_PX) / this.columnPitchOf(contentWidth)), this.gridColumns);
+    const rowSpan = this.clamp(Math.round((height + GridLayout.GAP_PX) / this.rowPitchOf(contentWidth)), GridLayout.MAX_ROW_SPAN);
     return { columnSpan, rowSpan };
+  }
+
+  columnOf(left: number, contentWidth: number): number {
+    return Math.round(left / this.columnPitchOf(contentWidth));
+  }
+
+  coveredSpansOf(width: number, height: number, column: number, contentWidth: number): GridSpans {
+    const columnSpan = this.clamp(Math.ceil(width / this.columnPitchOf(contentWidth)), this.gridColumns - column);
+    const rowSpan = this.clamp(Math.ceil(height / this.rowPitchOf(contentWidth)), GridLayout.MAX_ROW_SPAN);
+    return { columnSpan, rowSpan };
+  }
+
+  tileSizeOf(spans: GridSpans, contentWidth: number): { width: number, height: number } {
+    return {
+      width: spans.columnSpan * this.columnPitchOf(contentWidth) - GridLayout.GAP_PX,
+      height: spans.rowSpan * this.rowPitchOf(contentWidth) - GridLayout.GAP_PX
+    };
+  }
+
+  private columnPitchOf(contentWidth: number): number {
+    return contentWidth / this.gridColumns;
+  }
+
+  private rowPitchOf(contentWidth: number): number {
+    return (this.columnPitchOf(contentWidth) - GridLayout.GAP_PX) / cellRatioToNumber(this.gridCellRatio) + GridLayout.GAP_PX;
   }
 
   private clamp(span: number, max: number): number {

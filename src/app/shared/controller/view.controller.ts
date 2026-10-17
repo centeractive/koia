@@ -95,11 +95,12 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          if (this.elementContainerDivRefs.length === 0) {
             this.selectView();
          } else {
+            let containerCount = this.elementContainerDivRefs.length;
             this.elementContainerDivRefs.changes.subscribe(() => {
-               if (this.elementContainerDivRefs.last) {
-                  const htmlDiv = this.elementContainerDivRefs.last.nativeElement;
-                  htmlDiv.scrollIntoView({ block: 'end' });
+               if (this.elementContainerDivRefs.length > containerCount) {
+                  this.elementContainerDivRefs.last.nativeElement.scrollIntoView({ block: 'end' });
                }
+               containerCount = this.elementContainerDivRefs.length;
             });
          }
       }
@@ -153,6 +154,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       context.entries = this.entries;
       this.observeChanges(context);
       this.elementContexts = this.elementContexts.concat([context]);
+      this.onElementContextAdded(context);
       this.configure(null, context);
       this.requestPersist();
       return context;
@@ -268,6 +270,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    protected abstract onPreRestoreView(view: View): void;
+
+   protected abstract onElementContextAdded(context: ElementContext): void;
 
    saveView(): void {
       if (this.elementContexts.length === 0) {

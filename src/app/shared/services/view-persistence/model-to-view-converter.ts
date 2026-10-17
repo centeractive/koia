@@ -33,14 +33,23 @@ export class ModelToViewConverter {
       throw new Error('unknown context ' + context);
    }
 
-   private toChart(context: ChartContext): Chart {
+   private layoutOf(context: ElementContext): Pick<ViewElement, 'gridColumnSpan' | 'gridRowSpan' | 'width' | 'height' | 'x' | 'y' | 'z'> {
       return {
-         elementType: ElementType.CHART,
-         title: context.title,
          gridColumnSpan: context.gridColumnSpan,
          gridRowSpan: context.gridRowSpan,
          width: context.width,
          height: context.height,
+         x: context.x,
+         y: context.y,
+         z: context.z
+      };
+   }
+
+   private toChart(context: ChartContext): Chart {
+      return {
+         elementType: ElementType.CHART,
+         title: context.title,
+         ...this.layoutOf(context),
          dataColumns: context.dataColumns,
          splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,
@@ -62,10 +71,7 @@ export class ModelToViewConverter {
       return {
          elementType: ElementType.GRAPH,
          title: context.title,
-         gridColumnSpan: context.gridColumnSpan,
-         gridRowSpan: context.gridRowSpan,
-         width: context.width,
-         height: context.height,
+         ...this.layoutOf(context),
          dataColumns: context.dataColumns,
          splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,
@@ -86,10 +92,7 @@ export class ModelToViewConverter {
       return {
          elementType: ElementType.SUMMARY,
          title: context.title,
-         gridColumnSpan: context.gridColumnSpan,
-         gridRowSpan: context.gridRowSpan,
-         width: context.width,
-         height: context.height,
+         ...this.layoutOf(context),
          dataColumns: context.dataColumns,
          splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,

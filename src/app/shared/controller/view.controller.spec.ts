@@ -1,12 +1,16 @@
 import { Directive, ElementRef, QueryList } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
+import { ElementContext } from '../model';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
+import { ChartMarginService } from '../services/chart';
 import { SceneFactory } from '../test';
 import { ViewController } from './view.controller';
 
 @Directive()
 class ViewControllerTestable extends ViewController {
+
+   readonly addedContexts: ElementContext[] = [];
 
    constructor() {
       super(null, null, null, null, null, null, null, null, null, null);
@@ -17,6 +21,10 @@ class ViewControllerTestable extends ViewController {
    protected onPreRestoreView(): void { }
 
    protected onPreSaveView(): void { }
+
+   protected onElementContextAdded(context: ElementContext): void {
+      this.addedContexts.push(context);
+   }
 }
 
 describe('ViewController', () => {
@@ -145,6 +153,80 @@ describe('ViewController', () => {
 
       // then
       expect(div.scrollIntoView).not.toHaveBeenCalled();
+   });
+
+   it('#ngAfterViewInit should scroll when element containers grew', () => {
+
+      // given
+      const controller = controllerWithContainers(document.createElement('div'));
+      const added = document.createElement('div');
+      vi.spyOn(added, 'scrollIntoView').mockReturnValue(undefined);
+
+      // when
+      controller.elementContainerDivRefs.reset([controller.elementContainerDivRefs.first, new ElementRef(added)]);
+      controller.elementContainerDivRefs.notifyOnChanges();
+
+      // then
+      expect(added.scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
+   });
+
+   it('#ngAfterViewInit should not scroll when element containers are re-created with same count', () => {
+
+      // given
+      const controller = controllerWithContainers(document.createElement('div'));
+      const recreated = document.createElement('div');
+      vi.spyOn(recreated, 'scrollIntoView').mockReturnValue(undefined);
+
+      // when
+      controller.elementContainerDivRefs.reset([new ElementRef(recreated)]);
+      controller.elementContainerDivRefs.notifyOnChanges();
+
+      // then
+      expect(recreated.scrollIntoView).not.toHaveBeenCalled();
+   });
+
+   it('#ngAfterViewInit should not scroll when grown element containers are re-created with same count', () => {
+
+      // given
+      const controller = controllerWithContainers(document.createElement('div'));
+      const added = document.createElement('div');
+      vi.spyOn(added, 'scrollIntoView').mockReturnValue(undefined);
+      controller.elementContainerDivRefs.reset([controller.elementContainerDivRefs.first, new ElementRef(added)]);
+      controller.elementContainerDivRefs.notifyOnChanges();
+      const recreated = document.createElement('div');
+      vi.spyOn(recreated, 'scrollIntoView').mockReturnValue(undefined);
+
+      // when
+      controller.elementContainerDivRefs.reset([new ElementRef(document.createElement('div')), new ElementRef(recreated)]);
+      controller.elementContainerDivRefs.notifyOnChanges();
+
+      // then
+      expect(recreated.scrollIntoView).not.toHaveBeenCalled();
+   });
+
+   function controllerWithContainers(...divs: HTMLDivElement[]): ViewControllerTestable {
+      const controller = new ViewControllerTestable();
+      controller['scene'] = SceneFactory.createScene('1', []);
+      controller.elementContainerDivRefs = new QueryList<ElementRef<HTMLDivElement>>();
+      controller.elementContainerDivRefs.reset(divs.map(div => new ElementRef(div)));
+      controller.ngAfterViewInit();
+      return controller;
+   }
+
+   it('#addChart should notify added element context', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      controller['columns'] = [];
+      controller['chartMarginService'] = new ChartMarginService();
+      controller.sidenav = viewController.sidenav;
+      controller.elementContexts = [];
+
+      // when
+      const context = controller.addChart();
+
+      // then
+      expect(controller.addedContexts).toEqual([context]);
    });
 
    it('#canGenerateDashboard should return false while loading', () => {

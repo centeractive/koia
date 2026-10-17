@@ -21,6 +21,7 @@ export class IconRegistrarService {
     'pivot_table',
     'polar_area_chart',
     'raw_data_view',
+    'snap_grid',
     'zoomable_line_chart'
   ];
 

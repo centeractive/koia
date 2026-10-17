@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CdkDragEnd, DragRef, Point } from '@angular/cdk/drag-drop';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
-import { Edges, ResizeEvent } from 'angular-resizable-element';
+import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { ViewController } from 'app/shared/controller';
 import { View, ViewElement } from 'app/shared/model/view-config';
@@ -13,10 +14,21 @@ import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { firstValueFrom } from 'rxjs';
 import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
-import { FlexLayout } from './flex-layout';
+import { FreeLayout } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
-import { GridLayout } from './grid-layout';
+import { GridLayout, GridSpans } from './grid-layout';
+import { resizableEdges } from './resizable-edges';
+import { Guide, Snap, SnapGuides } from './snap-guides';
+
+interface CanvasInteraction {
+  context: ElementContext;
+  scale: number;
+  pagesRect: DOMRect;
+  page: number;
+  guides: SnapGuides;
+  snap?: Snap;
+}
 
 @Component({
   selector: 'koia-dashboard',
@@ -29,10 +41,14 @@ export class DashboardComponent extends ViewController {
 
   readonly gridColumnChoices = GridLayout.COLUMN_CHOICES;
   readonly gridCellRatioChoices = GridLayout.CELL_RATIO_CHOICES;
-  readonly gridRoute = Route.GRID;
-  readonly flexRoute = Route.FLEX;
   readonly gridLayout = new GridLayout();
-  readonly validateElementResize = FlexLayout.validateResize;
+  readonly freeLayout = new FreeLayout();
+  @ViewChild('gridCells') gridCellsRef: ElementRef<HTMLDivElement>;
+  @ViewChild('canvasPages') canvasPagesRef: ElementRef<HTMLDivElement>;
+  resizePreview: { left: number, top: number, width: number, height: number };
+  canvasGuides: Guide[] = [];
+  private gridResizeContentWidth: number;
+  private canvasInteraction: CanvasInteraction;
 
   private readonly dashboardGenerator: DashboardGenerator;
 
@@ -48,11 +64,15 @@ export class DashboardComponent extends ViewController {
     return this.route === Route.GRID;
   }
 
+  toggleGridLayout(): void {
+    this.setLayout(this.isGridLayout() ? Route.FLEX : Route.GRID);
+  }
+
   setLayout(route: Route): void {
     if (route !== this.route) {
       const view = this.toView('');
       if (route === Route.FLEX) {
-        this.applyRenderedTileSizes(view.elements);
+        this.applyRenderedTilePositions(view.elements);
       } else {
         this.applyGridSpans(view.elements);
       }
@@ -111,30 +131,39 @@ export class DashboardComponent extends ViewController {
    * returns the width of the scroller as if a vertical scrollbar were shown, as the generated grid usually scrolls
    */
   private generationContainerWidth(): number {
-    const element = this.divContentRef.nativeElement;
-    const scroller = this.isGridLayout() ? element : element.parentElement;
-    return scroller.offsetWidth - DomMetrics.scrollbarWidth();
+    return this.divContentRef.nativeElement.offsetWidth - DomMetrics.scrollbarWidth();
   }
 
-  private applyRenderedTileSizes(elements: ViewElement[]): void {
-    elements.forEach((element, i) => {
-      const rect = this.elementContainerDivRefs.get(i)?.nativeElement.parentElement.getBoundingClientRect();
-      if (rect?.width > 0 && rect.height > 0) {
-        element.width = rect.width;
-        element.height = rect.height;
-      }
-    });
+  private applyRenderedTilePositions(elements: ViewElement[]): void {
+    const cells = this.gridCellsRef?.nativeElement.getBoundingClientRect();
+    if (cells?.width > 0) {
+      const scale = cells.width / FreeLayout.PAGE_WIDTH;
+      const tiles = elements.map((element, i) =>
+        ({ element, rect: this.elementContainerDivRefs.get(i)?.nativeElement.parentElement.getBoundingClientRect() }));
+      const renderedTiles = tiles.filter(t => t.rect?.width > 0 && t.rect.height > 0);
+      const rects = this.freeLayout.fitToPages(renderedTiles.map(t =>
+        this.freeLayout.rectFromRendered(t.rect.left - cells.left, t.rect.top - cells.top, t.rect.width, t.rect.height, scale)));
+      tiles.forEach(t => t.element.x = t.element.y = undefined);
+      renderedTiles.forEach((t, i) => Object.assign(t.element, rects[i], { z: i + 1 }));
+    }
   }
 
   private applyGridSpans(elements: ViewElement[]): void {
-    const contentWidth = this.divContentRef?.nativeElement.clientWidth;
-    if (contentWidth > 0) {
+    const canvasWidth = this.canvasPagesRef?.nativeElement.clientWidth;
+    if (canvasWidth > 0) {
+      const scale = canvasWidth / FreeLayout.PAGE_WIDTH;
+      elements.sort((a, b) => a.y - b.y || a.x - b.x);
       elements.forEach(element => {
-        const spans = this.gridLayout.spansOf(element.width, element.height, contentWidth);
+        const rect = this.freeLayout.rectOf(element);
+        const spans = this.gridLayout.spansOf(rect.width * scale, rect.height * scale, this.contentWidth());
         element.gridColumnSpan = spans.columnSpan;
         element.gridRowSpan = spans.rowSpan;
       });
     }
+  }
+
+  private contentWidth(): number {
+    return this.divContentRef?.nativeElement.clientWidth;
   }
 
   private renderChartsOnceCreated(contexts: ElementContext[]): void {
@@ -156,18 +185,143 @@ export class DashboardComponent extends ViewController {
   }
 
   resizableEdgesOf(context: ElementContext): Edges {
-    return FlexLayout.resizableEdges(this.isShowResizableMargin(context));
+    return resizableEdges(this.isShowResizableMargin(context));
   }
 
-  onResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
+  onGridResizeStart(): void {
+    this.gridResizeContentWidth = this.contentWidth();
+  }
+
+  onGridResizing(resizeEvent: ResizeEvent): void {
     const rect = resizeEvent.rectangle;
-    const containerDivRef = this.elementContainerDivRefs.get(this.elementContexts.indexOf(context));
-    if (containerDivRef) {
-      const style = containerDivRef.nativeElement.style;
-      style.width = rect.width + 'px';
-      style.height = rect.height + 'px';
+    const spans = this.resizedGridSpansOf(rect);
+    this.resizePreview = { left: rect.left, top: rect.top, ...this.gridLayout.tileSizeOf(spans, this.gridResizeContentWidth) };
+  }
+
+  onGridResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
+    const spans = this.resizedGridSpansOf(resizeEvent.rectangle);
+    context.gridColumnSpan = spans.columnSpan;
+    context.gridRowSpan = spans.rowSpan;
+    this.resizePreview = undefined;
+  }
+
+  private resizedGridSpansOf(rect: BoundingRectangle): GridSpans {
+    const cw = this.gridResizeContentWidth;
+    return this.gridLayout.coveredSpansOf(rect.width, rect.height, this.gridLayout.columnOf(rect.left, cw), cw);
+  }
+
+  protected override restoreElementContexts(elements: ViewElement[]): ElementContext[] {
+    const contexts = super.restoreElementContexts(elements);
+    this.placeUnpositionedTiles(contexts);
+    return contexts;
+  }
+
+  protected onElementContextAdded(): void {
+    this.placeUnpositionedTiles(this.elementContexts);
+  }
+
+  private placeUnpositionedTiles(contexts: ElementContext[]): void {
+    if (!this.isGridLayout()) {
+      this.freeLayout.placeUnpositioned(contexts);
     }
-    context.setSize(rect.width, rect.height);
+  }
+
+  onFreeMoveStarted(context: ElementContext): void {
+    this.startCanvasInteraction(context);
+  }
+
+  readonly constrainFreeMove = (point: Point, _dragRef: DragRef, _dimensions: DOMRect, pickup: Point): Point => {
+    const { context, scale, pagesRect, guides } = this.canvasInteraction;
+    const livePagesRect = this.canvasPagesRef.nativeElement.getBoundingClientRect();
+    const snap = guides.snapMove({
+      ...this.freeLayout.rectOf(context),
+      x: (point.x - pickup.x - livePagesRect.left) / scale,
+      y: (point.y - pickup.y - livePagesRect.top) / scale
+    });
+    this.canvasInteraction.snap = snap;
+    return { x: pagesRect.left + snap.rect.x * scale, y: pagesRect.top + snap.rect.y * scale };
+  };
+
+  onFreeMoving(): void {
+    this.canvasGuides = this.canvasInteraction.snap?.guides ?? [];
+  }
+
+  onFreeMoveEnded(context: ElementContext, event: CdkDragEnd): void {
+    const { snap, page } = this.canvasInteraction;
+    if (snap) {
+      context.setPosition(snap.rect.x, snap.rect.y);
+      if (this.freeLayout.pageOf(context) !== page) {
+        this.renderChartsOnceCreated([context]);
+      }
+    }
+    this.endCanvasInteraction();
+    event.source.reset();
+    this.bringToFront(context);
+  }
+
+  onFreeResizeStart(context: ElementContext): void {
+    this.startCanvasInteraction(context);
+  }
+
+  onFreeResizing(context: ElementContext, resizeEvent: ResizeEvent): void {
+    const snap = this.freeResizeSnapOf(context, resizeEvent);
+    const scale = this.canvasInteraction.scale;
+    this.resizePreview = {
+      left: snap.rect.x * scale,
+      top: snap.rect.y * scale,
+      width: snap.rect.width * scale,
+      height: snap.rect.height * scale
+    };
+    this.canvasGuides = snap.guides;
+  }
+
+  onFreeResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
+    if (Object.values(resizeEvent.edges).some(delta => delta !== 0)) {
+      const snap = this.freeResizeSnapOf(context, resizeEvent);
+      context.setSize(snap.rect.width, snap.rect.height);
+      this.bringToFront(context);
+    }
+    this.resizePreview = undefined;
+    this.endCanvasInteraction();
+  }
+
+  private freeResizeSnapOf(context: ElementContext, resizeEvent: ResizeEvent): Snap {
+    const { scale, guides } = this.canvasInteraction;
+    return guides.snapResize({
+      ...this.freeLayout.rectOf(context),
+      width: resizeEvent.rectangle.width / scale,
+      height: resizeEvent.rectangle.height / scale
+    });
+  }
+
+  private startCanvasInteraction(context: ElementContext): void {
+    const pages = this.canvasPagesRef.nativeElement;
+    const scale = pages.clientWidth / FreeLayout.PAGE_WIDTH;
+    const others = this.elementContexts
+      .filter(c => c !== context)
+      .map(c => this.freeLayout.rectOf(c));
+    this.canvasInteraction = {
+      context,
+      scale,
+      pagesRect: pages.getBoundingClientRect(),
+      page: this.freeLayout.pageOf(context),
+      guides: new SnapGuides(others, this.freeLayout.pageIndexes(this.elementContexts).length, FreeLayout.SNAP_THRESHOLD_PX / scale)
+    };
+  }
+
+  private endCanvasInteraction(): void {
+    this.canvasInteraction = undefined;
+    this.canvasGuides = [];
+  }
+
+  bringToFront(context: ElementContext): void {
+    this.freeLayout.bringToFront(context, this.elementContexts);
+    this.requestPersist();
+  }
+
+  sendToBack(context: ElementContext): void {
+    this.freeLayout.sendToBack(context, this.elementContexts);
+    this.requestPersist();
   }
 
   protected onPreRestoreView(view: View): void {

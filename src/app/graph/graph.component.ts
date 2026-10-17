@@ -30,7 +30,6 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
 
   static readonly MAX_NODES = 1_000;
 
-  @Input() gridView: boolean;
   @Input() context: GraphContext;
 
   @Output() onWarning = new EventEmitter<string>();
@@ -48,16 +47,7 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
 
   ngOnInit(): void {
     this.context.subscribeToChanges(() => this.prepareGraphAsync());
-    this.initSize();
     this.prepareGraphAsync()
-  }
-
-  private initSize(): void {
-    if (!this.gridView) {
-      const parentDivStyle = this.cmpElementRef.nativeElement.parentElement.style;
-      parentDivStyle.width = this.context.width + 'px';
-      parentDivStyle.height = this.context.height + 'px';
-    }
   }
 
   @HostListener('window:resize')

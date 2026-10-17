@@ -17,13 +17,16 @@ export class ElementHeaderComponent {
   @Input() context: ElementContext;
   @Input() gridLayout: GridLayout;
   @Input() movable: boolean;
+  @Input() stackable: boolean;
   @Output() configure = new EventEmitter<MouseEvent>();
   @Output() remove = new EventEmitter<void>();
   @Output() saveAs = new EventEmitter<ExportFormat>();
   @Output() titleChange = new EventEmitter<string>();
+  @Output() bringToFront = new EventEmitter<void>();
+  @Output() sendToBack = new EventEmitter<void>();
 
   isMoreMenuAvailable(): boolean {
-    return !!this.gridLayout || this.context.getSupportedExportFormats().length > 0;
+    return !!this.gridLayout || this.stackable || this.context.getSupportedExportFormats().length > 0;
   }
 
   exportFormatLabel(exportFormat: ExportFormat): string {

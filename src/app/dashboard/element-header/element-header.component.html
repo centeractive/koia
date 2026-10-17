@@ -16,6 +16,16 @@
           <span>{{ 'element.rowSpan' | translate }}</span>
         </button>
       }
+      @if (stackable) {
+        <button class="menu_item_bring_to_front" mat-menu-item (click)="bringToFront.emit()">
+          <mat-icon>flip_to_front</mat-icon>
+          <span>{{ 'element.bringToFront' | translate }}</span>
+        </button>
+        <button class="menu_item_send_to_back" mat-menu-item (click)="sendToBack.emit()">
+          <mat-icon>flip_to_back</mat-icon>
+          <span>{{ 'element.sendToBack' | translate }}</span>
+        </button>
+      }
       @for (exportFormat of context.getSupportedExportFormats(); track exportFormat) {
         <button class="menu_item_save_as" mat-menu-item (click)="saveAs.emit(exportFormat)">
           <mat-icon>insert_drive_file</mat-icon>

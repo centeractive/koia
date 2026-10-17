@@ -124,6 +124,100 @@ describe('GridLayout', () => {
     });
   });
 
+  describe('resizing', () => {
+
+    const contentWidth = 800;
+
+    beforeEach(() => gridLayout.gridColumns = 4);
+
+    it('#columnOf should return start column of tile offset', () => {
+
+      // when
+      const column = gridLayout.columnOf(400, contentWidth);
+
+      // then
+      expect(column).toBe(2);
+    });
+
+    it('#coveredSpansOf should keep cells while edge stays within them', () => {
+
+      // when
+      const spans = gridLayout.coveredSpansOf(390, 590, 0, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 2, rowSpan: 3 });
+    });
+
+    it('#coveredSpansOf should keep cells while edge is in gap', () => {
+
+      // when
+      const spans = gridLayout.coveredSpansOf(399, 399, 0, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 2, rowSpan: 2 });
+    });
+
+    it('#coveredSpansOf should grow as soon as edge enters next cell', () => {
+
+      // when
+      const spans = gridLayout.coveredSpansOf(401, 401, 0, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 3, rowSpan: 3 });
+    });
+
+    it('#coveredSpansOf should limit column span to columns right of start column', () => {
+
+      // when
+      const spans = gridLayout.coveredSpansOf(790, 190, 2, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 2, rowSpan: 1 });
+    });
+
+    it('#coveredSpansOf should limit row span to max row span', () => {
+
+      // when
+      const spans = gridLayout.coveredSpansOf(190, 2000, 0, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 1, rowSpan: 4 });
+    });
+
+    it('#coveredSpansOf should consider cell ratio', () => {
+
+      // given
+      gridLayout.gridCellRatio = '2:1';
+
+      // when
+      const spans = gridLayout.coveredSpansOf(190, 106, 0, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 1, rowSpan: 2 });
+    });
+
+    it('#tileSizeOf should return size of covered cells', () => {
+
+      // when
+      const size = gridLayout.tileSizeOf({ columnSpan: 2, rowSpan: 3 }, contentWidth);
+
+      // then
+      expect(size).toEqual({ width: 390, height: 590 });
+    });
+
+    it('#tileSizeOf should consider cell ratio', () => {
+
+      // given
+      gridLayout.gridCellRatio = '2:1';
+
+      // when
+      const size = gridLayout.tileSizeOf({ columnSpan: 1, rowSpan: 2 }, contentWidth);
+
+      // then
+      expect(size).toEqual({ width: 190, height: 200 });
+    });
+  });
+
   it('#cellStyle should span cells of element', () => {
 
     // given

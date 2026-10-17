@@ -44,6 +44,8 @@ describe('GraphComponent', () => {
       ]
     })
     fixture = TestBed.createComponent(GraphComponent);
+    fixture.nativeElement.parentElement.style.width = '600px';
+    fixture.nativeElement.parentElement.style.height = '400px';
     component = fixture.componentInstance;
     context = new GraphContext(columns);
     context.entries = entries;
@@ -156,24 +158,6 @@ describe('GraphComponent', () => {
     // then
     expect(stop).toHaveBeenCalled();
   });
-
-  it('grid view should leave parent element size untouched', fakeAsync(() => {
-
-    // given
-    vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
-    component.gridView = true;
-    const parentStyle = component.cmpElementRef.nativeElement.parentElement.style;
-    parentStyle.width = '';
-    parentStyle.height = '';
-
-    // when
-    component.ngOnInit();
-    flush();
-
-    // then
-    expect(parentStyle.width).toBe('');
-    expect(parentStyle.height).toBe('');
-  }));
 
   it('should warn user when graph contains too many nodes', fakeAsync(() => {
 

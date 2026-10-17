@@ -49,6 +49,8 @@ describe('ChartComponent', () => {
       ]
     })
     fixture = TestBed.createComponent(ChartComponent);
+    fixture.nativeElement.parentElement.style.width = '600px';
+    fixture.nativeElement.parentElement.style.height = '400px';
     component = fixture.componentInstance;
     context = new ChartContext([], ChartType.PIE.type, defaultMargin());
     context.entries = entries;

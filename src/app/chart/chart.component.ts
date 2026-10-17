@@ -40,7 +40,6 @@ import { ChartJs } from './chartjs/chartjs';
 })
 export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, ExportDataProvider {
 
-  @Input() gridView: boolean;
   @Input() context: ChartContext;
   @Output() onWarning = new EventEmitter<string>();
 
@@ -70,7 +69,6 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
       this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
       this.languageSubscription = this.languageService.changed$.subscribe(() => this.onLanguageChanged());
     }
-    this.initSize();
   }
 
   /**
@@ -99,14 +97,6 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   private isVisible(): boolean {
     const canvas = this.canvasRef?.nativeElement;
     return !!canvas?.isConnected && canvas.getClientRects().length > 0;
-  }
-
-  private initSize(): void {
-    if (!this.gridView) {
-      const parentDivStyle = this.cmpElementRef.nativeElement.parentElement.style;
-      parentDivStyle.width = this.context.width + 'px';
-      parentDivStyle.height = this.context.height + 'px';
-    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {

@@ -1,7 +1,7 @@
 import { Locator, Page } from '@playwright/test';
 import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
-import { ViewLauncherDialog } from '../components/dialogs';
+import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';
 import { ViewToolbar } from '../components/view-toolbar';
 
 export class DashboardPage {
@@ -12,7 +12,13 @@ export class DashboardPage {
    readonly launcher: ViewLauncherDialog;
    readonly sideBar: DashboardSideBar;
    readonly viewToolbar: ViewToolbar;
+   readonly snapToGridButton: Locator;
+   readonly gridContent: Locator;
+   readonly canvasContent: Locator;
+   readonly canvasGuide: Locator;
+   readonly resizePreview: Locator;
    private readonly root: Locator;
+   private readonly toolbar: Locator;
 
    constructor(page: Page) {
       this.root = page.locator('koia-dashboard');
@@ -21,7 +27,46 @@ export class DashboardPage {
       this.chartTiles = this.tiles.filter({ has: page.locator('koia-chart') });
       this.launcher = new ViewLauncherDialog(page);
       this.sideBar = new DashboardSideBar(this.root);
-      this.viewToolbar = new ViewToolbar(this.root.locator('koia-view-toolbar'));
+      this.toolbar = this.root.locator('koia-view-toolbar');
+      this.viewToolbar = new ViewToolbar(this.toolbar);
+      this.snapToGridButton = this.root.locator('#but_snap_to_grid');
+      this.gridContent = this.root.locator('#div_grid');
+      this.canvasContent = this.root.locator('#div_canvas');
+      this.canvasGuide = this.root.locator('.div_canvas_guide');
+      this.resizePreview = this.root.locator('.div_resize_preview');
+   }
+
+   async addChart(): Promise<void> {
+      await this.toolbar.locator(ADD_CHART_BUTTON).click();
+   }
+
+   async addGraph(): Promise<void> {
+      await this.toolbar.locator(ADD_GRAPH_BUTTON).click();
+   }
+
+   async addSummary(): Promise<void> {
+      await this.toolbar.locator(ADD_SUMMARY_BUTTON).click();
+   }
+
+   async setGridColumns(menuItem: string): Promise<void> {
+      await this.chooseMoreMenuItem('#menuItemGridColumns', menuItem);
+   }
+
+   async setGridCellRatio(menuItem: string): Promise<void> {
+      await this.chooseMoreMenuItem('#menuItemGridCellRatio', menuItem);
+   }
+
+   private async chooseMoreMenuItem(subMenuItem: string, menuItem: string): Promise<void> {
+      await this.toolbar.locator('.but_view_more').click();
+      await this.root.page().locator(subMenuItem).click();
+      await this.root.page().getByRole('menuitem', { name: menuItem, exact: true }).click();
+   }
+
+   /**
+    * @returns the screen pixels per page unit of the free canvas
+    */
+   canvasScale(): Promise<number> {
+      return this.canvasContent.locator('.div_canvas_pages').evaluate((pages: HTMLElement) => pages.clientWidth / 1400);
    }
 
    tile(index: number): DashboardTile {
@@ -41,7 +86,7 @@ export class DashboardPage {
     * @returns the width of the grid scroll container and the width a vertical scrollbar takes when shown
     */
    scrollerWidth(): Promise<{ offsetWidth: number; scrollbarWidth: number }> {
-      return this.root.locator('#div_grid').evaluate((container: HTMLElement) => {
+      return this.gridContent.evaluate((container: HTMLElement) => {
          const probe = document.createElement('div');
          probe.style.cssText = 'position: absolute; top: -9999px; width: 100px; height: 100px; overflow: scroll;';
          document.body.appendChild(probe);
@@ -55,7 +100,7 @@ export class DashboardPage {
     * @returns the computed track sizes of the grid and the width of the vertical scrollbar of its scroll container
     */
    gridTracks(): Promise<{ rowHeight: number; columnWidths: number[]; scrollbarWidth: number }> {
-      return this.root.locator('#div_grid').evaluate((container: HTMLElement) => {
+      return this.gridContent.evaluate((container: HTMLElement) => {
          const style = getComputedStyle(container.querySelector(':scope > div'));
          return {
             rowHeight: parseFloat(style.gridAutoRows),

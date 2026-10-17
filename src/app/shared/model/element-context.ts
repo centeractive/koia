@@ -13,6 +13,9 @@ import { ViewElement } from './view-config';
 
 export abstract class ElementContext {
 
+   static readonly DEFAULT_WIDTH = 600;
+   static readonly DEFAULT_HEIGHT = 400;
+
    private changeEventEmitter = new EventEmitter<ChangeEvent>(true);
 
    private _title: string;
@@ -21,6 +24,9 @@ export abstract class ElementContext {
    private _gridRowSpan: number;
    private _width: number;
    private _height: number;
+   private _x: number;
+   private _y: number;
+   private _z: number;
 
    private _query: Query;
    private _dataColumns: Column[] = [];
@@ -41,8 +47,8 @@ export abstract class ElementContext {
       this._columns = columns;
       this._gridColumnSpan = 1;
       this._gridRowSpan = 1;
-      this._width = 600;
-      this._height = 400;
+      this._width = ElementContext.DEFAULT_WIDTH;
+      this._height = ElementContext.DEFAULT_HEIGHT;
       this._groupByColumns = [];
       this._aggregations = [Aggregation.COUNT];
       this._valueGroupings = [];
@@ -60,6 +66,9 @@ export abstract class ElementContext {
          this._width = from.width;
       }
       this._height = from.height;
+      this._x = from.x;
+      this._y = from.y;
+      this._z = from.z;
       this._aggregations = from.aggregations;
       this._valueGroupings = from.valueGroupings;
       this._colorProvider = ColorProviderFactory.create(from.colorOptions);
@@ -116,6 +125,27 @@ export abstract class ElementContext {
          this._height = height;
          this.fireSizeChanged();
       }
+   }
+
+   get x(): number {
+      return this._x;
+   }
+
+   get y(): number {
+      return this._y;
+   }
+
+   setPosition(x: number, y: number): void {
+      this._x = x;
+      this._y = y;
+   }
+
+   get z(): number {
+      return this._z;
+   }
+
+   set z(z: number) {
+      this._z = z;
    }
 
    get query(): Query {

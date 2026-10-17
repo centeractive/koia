@@ -1,4 +1,4 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
@@ -30,6 +30,7 @@ import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
+import { FreeLayout } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
@@ -373,48 +374,6 @@ describe('DashboardComponent', () => {
       expect(edges).toEqual({ bottom: false, right: false, top: false, left: false });
     });
 
-    it('#validateElementResize should reject too small element', () => {
-
-      // when
-      const valid = component.validateElementResize(resizeEvent(100, 100));
-
-      // then
-      expect(valid).toBe(false);
-    });
-
-    it('#onResizeEnd should resize element container and set context size', () => {
-
-      // given
-      component.setLayout(Route.FLEX);
-      fixture.detectChanges();
-      const context = component.addSummaryTable();
-      fixture.detectChanges();
-      vi.spyOn(context, 'setSize').mockReturnValue(undefined);
-
-      // when
-      component.onResizeEnd(context, resizeEvent(333, 221));
-
-      // then
-      expect(context.setSize).toHaveBeenCalledWith(333, 221);
-      const containerStyle = component.elementContainerDivRefs.get(0).nativeElement.style;
-      expect(containerStyle.width).toBe('333px');
-      expect(containerStyle.height).toBe('221px');
-    });
-
-    it('#onResizeEnd should set context size when container is not rendered', () => {
-
-      // given
-      const context = component.addSummaryTable();
-      component.elementContainerDivRefs = new QueryList<ElementRef<HTMLDivElement>>();
-      vi.spyOn(context, 'setSize').mockReturnValue(undefined);
-
-      // when
-      component.onResizeEnd(context, resizeEvent(300, 199));
-
-      // then
-      expect(context.setSize).toHaveBeenCalledWith(300, 199);
-    });
-
     it('should render grid layout markup', () => {
 
       // given
@@ -425,11 +384,11 @@ describe('DashboardComponent', () => {
 
       // then
       expect(fixture.debugElement.query(By.css('#div_grid'))).toBeTruthy();
-      expect(fixture.debugElement.query(By.css('#div_flex'))).toBeFalsy();
+      expect(fixture.debugElement.query(By.css('#div_canvas'))).toBeFalsy();
       expect(fixture.debugElement.query(By.css('.div_graph koia-graph'))).toBeTruthy();
     });
 
-    it('should render flex layout markup', () => {
+    it('should render canvas layout markup', () => {
 
       // given
       component.addGraph();
@@ -439,10 +398,10 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(fixture.debugElement.query(By.css('#div_flex'))).toBeTruthy();
       expect(fixture.debugElement.query(By.css('#div_grid'))).toBeFalsy();
-      expect(fixture.debugElement.query(By.css('.div_graph'))).toBeFalsy();
-      expect(fixture.debugElement.query(By.css('.div_flex_element koia-graph'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('#div_canvas > .div_canvas_pages .div_canvas_tile .div_graph koia-graph'))).toBeTruthy();
+      const pages: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.div_canvas_page'));
+      expect(pages.map(p => p.classList.contains('div_canvas_page_spare'))).toEqual([false, true]);
     });
 
     it('grid content should scroll below header', () => {
@@ -457,18 +416,18 @@ describe('DashboardComponent', () => {
       expectScrollingBelowHeader(grid);
     });
 
-    it('flex content should scroll below header', () => {
+    it('canvas content should scroll below header', () => {
 
       // given
       component.setLayout(Route.FLEX);
       fixture.detectChanges();
-      const flex: HTMLElement = fixture.nativeElement.querySelector('#div_flex');
+      const canvas: HTMLElement = fixture.nativeElement.querySelector('#div_canvas');
 
       // when
-      flex.style.height = '5000px';
+      (canvas.firstElementChild as HTMLElement).style.height = '5000px';
 
       // then
-      expectScrollingBelowHeader(flex.parentElement);
+      expectScrollingBelowHeader(canvas);
     });
 
     it('grid content should be registered as scrollable', () => {
@@ -483,18 +442,18 @@ describe('DashboardComponent', () => {
       expect(scrollables.map(s => s.getElementRef().nativeElement)).toContain(grid);
     });
 
-    it('flex content should be scrollable ancestor of drop list for drag auto-scroll', () => {
+    it('canvas content should be registered as scrollable', () => {
 
       // given
       component.setLayout(Route.FLEX);
       fixture.detectChanges();
-      const flex: HTMLElement = fixture.nativeElement.querySelector('#div_flex');
+      const canvas: HTMLElement = fixture.nativeElement.querySelector('#div_canvas');
 
       // when
-      const scrollables = TestBed.inject(ScrollDispatcher).getAncestorScrollContainers(flex);
+      const scrollables = TestBed.inject(ScrollDispatcher).getAncestorScrollContainers(canvas.firstElementChild as HTMLElement);
 
       // then
-      expect(scrollables.map(s => s.getElementRef().nativeElement)).toContain(flex.parentElement);
+      expect(scrollables.map(s => s.getElementRef().nativeElement)).toContain(canvas);
     });
 
     function expectScrollingBelowHeader(content: HTMLElement): void {
@@ -518,7 +477,7 @@ describe('DashboardComponent', () => {
       expectWhiteThinFramedTiles('#div_grid .div_tile');
     });
 
-    it('should render flex tiles as white surface with thin frame instead of heavy shadow', () => {
+    it('should render canvas tiles as white surface with thin frame instead of heavy shadow', () => {
 
       // given
       component.addGraph();
@@ -528,7 +487,7 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expectWhiteThinFramedTiles('.div_flex_element');
+      expectWhiteThinFramedTiles('.div_canvas_tile');
     });
 
     function expectWhiteThinFramedTiles(selector: string): void {
@@ -577,7 +536,8 @@ describe('DashboardComponent', () => {
       // then
       expect(component.isGridLayout()).toBe(false);
       expect(component.elementContexts[0]).not.toBe(previousContexts[0]);
-      expect(elementsOf(component.elementContexts)).toEqual(elementsOf(previousContexts));
+      expect(unplacedElementsOf(component.elementContexts)).toEqual(elementsOf(previousContexts));
+      expect(component.elementContexts.map(c => [c.x, c.y, c.z])).toEqual([[0, 0, 1], [610, 0, 2]]);
     });
 
     it('#setLayout should close side bar and clear selection', () => {
@@ -603,7 +563,9 @@ describe('DashboardComponent', () => {
       context.setSize(321, 234);
       context.gridColumnSpan = 2;
       context.gridRowSpan = 3;
+      context.setPosition(20, 30);
       component.elementContainerDivRefs = new QueryList<ElementRef<HTMLDivElement>>();
+      component.gridCellsRef = undefined;
       component.divContentRef = undefined;
 
       // when
@@ -617,6 +579,7 @@ describe('DashboardComponent', () => {
       [flexContext, gridContext].forEach(c => {
         expect([c.width, c.height]).toEqual([321, 234]);
         expect([c.gridColumnSpan, c.gridRowSpan]).toEqual([2, 3]);
+        expect([c.x, c.y]).toEqual([20, 30]);
       });
     });
 
@@ -707,9 +670,9 @@ describe('DashboardComponent', () => {
         renderGridSummaries(4, [[2, 1], [2, 1]]);
       }
 
-      function renderGridSummaries(gridColumns: number, spans: number[][]): void {
+      function renderGridSummaries(gridColumns: number, spans: number[][], gridCellRatio = '1:1'): void {
         component.gridLayout.gridColumns = gridColumns;
-        component.gridLayout.gridCellRatio = '1:1';
+        component.gridLayout.gridCellRatio = gridCellRatio;
         component.elementContexts = spans.map(([columnSpan, rowSpan]) => {
           const context = new SummaryContext(scene.columns);
           context.gridColumnSpan = columnSpan;
@@ -746,11 +709,6 @@ describe('DashboardComponent', () => {
         return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(selector)).map(e => e.getBoundingClientRect());
       }
 
-      function applyContextSizes(): void {
-        component.elementContexts.forEach(c => component.onResizeEnd(c, resizeEvent(c.width, c.height)));
-        fixture.detectChanges();
-      }
-
       function expectSameRects(actual: DOMRect[], expected: DOMRect[]): void {
         expect(actual.length).toBe(expected.length);
         actual.forEach((rect, i) => {
@@ -761,10 +719,10 @@ describe('DashboardComponent', () => {
         });
       }
 
-      it('#setLayout to flex should take size of rendered grid tiles', () => {
+      it('#setLayout to free canvas should keep rendered tile rects', () => {
 
         // given
-        renderHalfWidthSummaries();
+        renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
         const gridRects = rectsOf('#div_grid .div_tile');
 
         // when
@@ -772,65 +730,568 @@ describe('DashboardComponent', () => {
         fixture.detectChanges();
 
         // then
-        component.elementContexts.forEach((c, i) => {
-          expect(c.width).toBeCloseTo(gridRects[i].width, 0);
-          expect(c.height).toBeCloseTo(gridRects[i].height, 0);
-        });
+        expectSameRects(rectsOf('.div_canvas_tile'), gridRects);
       });
 
-      it('#setLayout to flex should place tiles at former grid positions', () => {
+      it('#setLayout to free canvas should push tiles crossing page to next page', () => {
 
         // given
-        renderHalfWidthSummaries();
-        const gridRects = rectsOf('#div_grid .div_tile');
+        renderGridSummaries(3, [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1]]);
 
         // when
         component.setLayout(Route.FLEX);
-        fixture.detectChanges();
-        applyContextSizes();
 
         // then
-        expectSameRects(rectsOf('.div_flex_element'), gridRects);
+        const tops = component.elementContexts.map(c => c.y);
+        expect(tops.slice(0, 3)).toEqual([0, 0, 0]);
+        expect(tops[3] + component.elementContexts[3].height).toBeLessThanOrEqual(FreeLayout.PAGE_HEIGHT);
+        expect(tops[6]).toBe(FreeLayout.PAGE_HEIGHT);
       });
 
-      it('#setLayout to flex should keep size of tile with zero-sized rect', () => {
+      it('#setLayout to free canvas should place tile with zero-sized rect below converted tiles', () => {
 
         // given
         renderHalfWidthSummaries();
         const tile = component.elementContainerDivRefs.get(0).nativeElement.parentElement;
         vi.spyOn(tile, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 100, 0));
-        const [width, height] = [component.elementContexts[0].width, component.elementContexts[0].height];
 
         // when
         component.setLayout(Route.FLEX);
 
         // then
-        expect([component.elementContexts[0].width, component.elementContexts[0].height]).toEqual([width, height]);
+        const [unrendered, converted] = component.elementContexts;
+        expect([unrendered.x, unrendered.y]).toEqual([0, converted.y + converted.height + 10]);
       });
 
-      it('#setLayout to grid should derive spans from flex size', () => {
+      it('#setLayout to grid should derive spans from canvas size', () => {
 
         // given
         component.gridLayout.gridColumns = 4;
         component.gridLayout.gridCellRatio = '1:1';
-        component.setLayout(Route.FLEX);
-        component.elementContexts = [new SummaryContext(scene.columns), new SummaryContext(scene.columns)];
-        fixture.detectChanges();
-        const contentWidth = component.divContentRef.nativeElement.clientWidth;
-        const rowHeight = contentWidth / 4 - 10;
-        component.onResizeEnd(component.elementContexts[0], resizeEvent(contentWidth / 2 - 10, rowHeight));
-        component.onResizeEnd(component.elementContexts[1], resizeEvent(contentWidth - 10, rowHeight));
-        fixture.detectChanges();
-        const flexRects = rectsOf('.div_flex_element');
+        renderCanvasSummaries([[0, 0, 690, 340], [0, 350, 1390, 340]]);
 
         // when
         component.setLayout(Route.GRID);
-        fixture.detectChanges();
 
         // then
         expect(component.elementContexts.map(c => [c.gridColumnSpan, c.gridRowSpan])).toEqual([[2, 1], [4, 1]]);
-        expectSameRects(rectsOf('#div_grid .div_tile'), flexRects);
       });
+
+      it('#setLayout to grid should order tiles by reading order', () => {
+
+        // given
+        const [right, left, below] = renderCanvasSummaries([[700, 0, 300, 300], [0, 0, 300, 300], [0, 500, 300, 300]]);
+        [right.title, left.title, below.title] = ['right', 'left', 'below'];
+
+        // when
+        component.setLayout(Route.GRID);
+
+        // then
+        expect(component.elementContexts.map(c => c.title)).toEqual(['left', 'right', 'below']);
+      });
+
+      it('#setLayout to grid should keep spans when canvas is not rendered', () => {
+
+        // given
+        renderGridSummaries(4, [[2, 3]]);
+        component.setLayout(Route.FLEX);
+
+        // when
+        component.setLayout(Route.GRID);
+
+        // then
+        expect([component.elementContexts[0].gridColumnSpan, component.elementContexts[0].gridRowSpan]).toEqual([2, 3]);
+      });
+
+      it('should render tile on page of its top', () => {
+
+        // when
+        renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+
+        // then
+        const secondPage: HTMLElement = fixture.nativeElement.querySelectorAll('.div_canvas_page')[1];
+        const tileRect = secondPage.querySelector('.div_canvas_tile').getBoundingClientRect();
+        expect(tileRect.top - secondPage.getBoundingClientRect().top).toBeCloseTo(10 * canvasScale(), 0);
+      });
+
+      it('canvas tiles should be absolutely positioned', () => {
+
+        // when
+        renderCanvasSummaries([[100, 50, 600, 400]]);
+
+        // then
+        const [tileRect] = rectsOf('.div_canvas_tile');
+        expect(getComputedStyle(fixture.nativeElement.querySelector('.div_canvas_tile')).position).toBe('absolute');
+        expect(tileRect.left - pagesRect().left).toBeCloseTo(100 * canvasScale(), 0);
+        expect(tileRect.top - pagesRect().top).toBeCloseTo(50 * canvasScale(), 0);
+        expect(tileRect.width).toBeCloseTo(600 * canvasScale(), 0);
+      });
+
+      it('should render canvas guides', () => {
+
+        // given
+        renderCanvasSummaries([[0, 0, 600, 400]]);
+        component.canvasGuides = [{ axis: 'x', position: 700 }, { axis: 'y', position: 400 }];
+
+        // when
+        fixture.detectChanges();
+
+        // then
+        const [vertical, horizontal] = rectsOf('.div_canvas_pages > .div_canvas_guide');
+        expect(vertical.left - pagesRect().left).toBeCloseTo(700 * canvasScale(), 0);
+        expect(vertical.height).toBeCloseTo(pagesRect().height, 0);
+        expect(horizontal.top - pagesRect().top).toBeCloseTo(400 * canvasScale(), 0);
+        expect(horizontal.width).toBeCloseTo(pagesRect().width, 0);
+      });
+
+      it('should render resize preview on canvas', () => {
+
+        // given
+        renderCanvasSummaries([[0, 0, 600, 400]]);
+        component.resizePreview = { left: 10, top: 20, width: 100, height: 50 };
+
+        // when
+        fixture.detectChanges();
+
+        // then
+        const [previewRect] = rectsOf('.div_canvas_pages > .div_resize_preview');
+        expect(previewRect.left - pagesRect().left).toBeCloseTo(10, 0);
+        expect(previewRect.top - pagesRect().top).toBeCloseTo(20, 0);
+        expect([previewRect.width, previewRect.height]).toEqual([100, 50]);
+      });
+
+      it('guides and resize preview should be stacked above tiles', () => {
+
+        // given
+        renderCanvasSummaries([[0, 0, 600, 400]]);
+        component.canvasGuides = [{ axis: 'x', position: 700 }];
+        component.resizePreview = { left: 10, top: 20, width: 100, height: 50 };
+
+        // when
+        fixture.detectChanges();
+
+        // then
+        expect(getComputedStyle(fixture.nativeElement.querySelector('.div_canvas_guide')).zIndex).toBe('100001');
+        expect(getComputedStyle(fixture.nativeElement.querySelector('.div_resize_preview')).zIndex).toBe('100001');
+      });
+
+      it('grid and canvas content should reserve scrollbar gutter', () => {
+
+        // given
+        const gridGutter = getComputedStyle(fixture.nativeElement.querySelector('#div_grid')).scrollbarGutter;
+
+        // when
+        component.setLayout(Route.FLEX);
+        fixture.detectChanges();
+
+        // then
+        expect(gridGutter).toBe('stable');
+        expect(getComputedStyle(fixture.nativeElement.querySelector('#div_canvas')).scrollbarGutter).toBe('stable');
+      });
+
+      function contentWidth(): number {
+        return component.divContentRef.nativeElement.clientWidth;
+      }
+
+      function renderGridSummariesForResize(spans: number[][]): number {
+        renderGridSummaries(4, spans);
+        component.onGridResizeStart();
+        return contentWidth() / 4;
+      }
+
+      function expectPreview(expected: { left: number, top: number, width: number, height: number }): void {
+        const preview = component.resizePreview;
+        expect(preview.left).toBeCloseTo(expected.left, 0);
+        expect(preview.top).toBeCloseTo(expected.top, 0);
+        expect(preview.width).toBeCloseTo(expected.width, 0);
+        expect(preview.height).toBeCloseTo(expected.height, 0);
+      }
+
+      it('#onGridResizing should keep content width of resize start', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[3, 1]]);
+        component.divContentRef = { nativeElement: { clientWidth: contentWidth() - 17 } } as ElementRef<HTMLDivElement>;
+
+        // when
+        component.onGridResizing(resizeEvent(3 * pitch - 10, pitch - 10));
+
+        // then
+        expect(component.resizePreview.width).toBeCloseTo(3 * pitch - 10, 0);
+      });
+
+      it('#onGridResizing should preview covered cells', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+
+        // when
+        component.onGridResizing(resizeEvent(pitch + 5, pitch + 5));
+
+        // then
+        expectPreview({ left: 0, top: 0, width: 2 * pitch - 10, height: 2 * pitch - 10 });
+      });
+
+      it('#onGridResizing should limit preview to grid columns', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
+
+        // when
+        component.onGridResizing(resizeEvent(2 * pitch - 10, pitch - 10, 3 * pitch));
+
+        // then
+        expect(component.resizePreview.width).toBeCloseTo(pitch - 10, 0);
+      });
+
+      it('should render grid resize preview', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+        component.onGridResizing(resizeEvent(pitch + 5, pitch + 5));
+
+        // when
+        fixture.detectChanges();
+
+        // then
+        const cellsRect: DOMRect = fixture.nativeElement.querySelector('.div_grid_cells').getBoundingClientRect();
+        const [previewRect] = rectsOf('.div_grid_cells > .div_resize_preview');
+        expect(previewRect.left - cellsRect.left).toBeCloseTo(0, 0);
+        expect(previewRect.top - cellsRect.top).toBeCloseTo(0, 0);
+        expect(previewRect.width).toBeCloseTo(2 * pitch - 10, 0);
+        expect(previewRect.height).toBeCloseTo(2 * pitch - 10, 0);
+      });
+
+      it('#onGridResizeEnd should snap tile to covered grid cells', () => {
+
+        // given
+        renderGridSummariesForResize([[1, 1], [1, 1]]);
+        const cw = contentWidth();
+        component.onGridResizing(resizeEvent(cw / 2, cw / 2));
+        const context = component.elementContexts[0];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(cw / 2 - 10 + 7, cw / 2 - 10 - 6));
+        fixture.detectChanges();
+
+        // then
+        expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([2, 2]);
+        const tileRect = rectsOf('#div_grid .div_tile')[0];
+        expect(tileRect.width).toBeCloseTo(cw / 2 - 10, 0);
+        expect(tileRect.height).toBeCloseTo(cw / 2 - 10, 0);
+        expect(component.resizePreview).toBeUndefined();
+      });
+
+      it('#onGridResizeEnd should limit column span to grid columns', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
+        const context = component.elementContexts[3];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(3 * pitch, pitch - 10, 3 * pitch));
+
+        // then
+        expect(context.gridColumnSpan).toBe(1);
+      });
+
+      function renderCanvasSummaries(rects: number[][]): SummaryContext[] {
+        component.setLayout(Route.FLEX);
+        component.elementContexts = rects.map(([x, y, width, height], i) => {
+          const context = new SummaryContext(scene.columns);
+          context.setPosition(x, y);
+          context.setSize(width, height);
+          context.z = i + 1;
+          return context;
+        });
+        fixture.detectChanges();
+        return component.elementContexts as SummaryContext[];
+      }
+
+      function canvasScale(): number {
+        return component.canvasPagesRef.nativeElement.clientWidth / FreeLayout.PAGE_WIDTH;
+      }
+
+      function pagesRect(): DOMRect {
+        return component.canvasPagesRef.nativeElement.getBoundingClientRect();
+      }
+
+      const PICKUP = { x: 10, y: 10 };
+
+      function constrainMoveTo(x: number, y: number, pages = pagesRect()): { x: number, y: number } {
+        const scale = canvasScale();
+        return component.constrainFreeMove({ x: pages.left + x * scale + PICKUP.x, y: pages.top + y * scale + PICKUP.y }, null, null, PICKUP);
+      }
+
+      function dragEnd(): CdkDragEnd {
+        return { source: { reset: vi.fn() } } as unknown as CdkDragEnd;
+      }
+
+      function requestPersistSpy(): Mock {
+        return vi.spyOn(component as unknown as { requestPersist: () => void }, 'requestPersist');
+      }
+
+      it('#constrainFreeMove should snap tile to aligned position', () => {
+
+        // given
+        const [, moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        component.onFreeMoveStarted(moved);
+
+        // when
+        const point = constrainMoveTo(603, 3);
+
+        // then
+        expect(point.x).toBeCloseTo(pagesRect().left + 600 * canvasScale(), 5);
+        expect(point.y).toBeCloseTo(pagesRect().top, 5);
+      });
+
+      it('#constrainFreeMove should follow scrolled canvas', () => {
+
+        // given
+        const [, moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        const startRect = pagesRect();
+        component.onFreeMoveStarted(moved);
+        const scrolledRect = new DOMRect(startRect.left, startRect.top - 100, startRect.width, startRect.height);
+        vi.spyOn(component.canvasPagesRef.nativeElement, 'getBoundingClientRect').mockReturnValue(scrolledRect);
+
+        // when
+        const point = constrainMoveTo(603, 3, scrolledRect);
+
+        // then
+        expect(point.x).toBeCloseTo(startRect.left + 600 * canvasScale(), 5);
+        expect(point.y).toBeCloseTo(startRect.top, 5);
+      });
+
+      it('#onFreeMoving should show guides of snap', () => {
+
+        // given
+        const [, moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 300]]);
+        component.onFreeMoveStarted(moved);
+        constrainMoveTo(603, 3);
+
+        // when
+        component.onFreeMoving();
+
+        // then
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: 600 }, { axis: 'y', position: 0 }]);
+      });
+
+      it('#onFreeMoving should show no guides before first move', () => {
+
+        // given
+        const [moved] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        component.onFreeMoveStarted(moved);
+
+        // when
+        component.onFreeMoving();
+
+        // then
+        expect(component.canvasGuides).toEqual([]);
+      });
+
+      it('#onFreeMoveEnded should set position, bring tile to front and reset drag', () => {
+
+        // given
+        const [moved, other] = renderCanvasSummaries([[0, 410, 600, 400], [0, 0, 600, 400]]);
+        component.onFreeMoveStarted(moved);
+        constrainMoveTo(603, 3);
+        component.onFreeMoving();
+        const event = dragEnd();
+
+        // when
+        component.onFreeMoveEnded(moved, event);
+
+        // then
+        expect([moved.x, moved.y]).toEqual([600, 0]);
+        expect(moved.z).toBeGreaterThan(other.z);
+        expect(event.source.reset).toHaveBeenCalled();
+        expect(component.canvasGuides).toEqual([]);
+      });
+
+      it('#onFreeMoveEnded should keep position without move', () => {
+
+        // given
+        const [moved] = renderCanvasSummaries([[100, 200, 600, 400]]);
+        component.onFreeMoveStarted(moved);
+        const event = dragEnd();
+
+        // when
+        component.onFreeMoveEnded(moved, event);
+
+        // then
+        expect([moved.x, moved.y]).toEqual([100, 200]);
+        expect(event.source.reset).toHaveBeenCalled();
+      });
+
+      it('#onFreeMoveEnded should re-render chart moved to other page', fakeAsync(() => {
+
+        // given
+        component.setLayout(Route.FLEX);
+        const chartContext = component.addChart();
+        chartContext.dataColumns = [findColumn('Amount', chartContext)];
+        fixture.detectChanges();
+        component.onFreeMoveStarted(chartContext);
+        constrainMoveTo(0, FreeLayout.PAGE_HEIGHT + 2);
+        vi.spyOn(chartContext, 'fireStructureChanged');
+
+        // when
+        component.onFreeMoveEnded(chartContext, dragEnd());
+        tick();
+
+        // then
+        expect(chartContext.y).toBe(FreeLayout.PAGE_HEIGHT);
+        expect(chartContext.fireStructureChanged).toHaveBeenCalledTimes(1);
+      }));
+
+      it('#onFreeMoveEnded should not re-render chart moved within page', fakeAsync(() => {
+
+        // given
+        component.setLayout(Route.FLEX);
+        const chartContext = component.addChart();
+        chartContext.dataColumns = [findColumn('Amount', chartContext)];
+        fixture.detectChanges();
+        component.onFreeMoveStarted(chartContext);
+        constrainMoveTo(0, 103);
+        vi.spyOn(chartContext, 'fireStructureChanged');
+
+        // when
+        component.onFreeMoveEnded(chartContext, dragEnd());
+        tick();
+
+        // then
+        expect(chartContext.y).toBe(100);
+        expect(chartContext.fireStructureChanged).not.toHaveBeenCalled();
+      }));
+
+      it('#onFreeResizing should preview snapped size', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
+
+        // then
+        expect(component.resizePreview.left).toBe(0);
+        expect(component.resizePreview.top).toBe(0);
+        expect(component.resizePreview.width).toBeCloseTo(700 * scale, 5);
+        expect(component.resizePreview.height).toBeCloseTo(400 * scale, 5);
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: 700 }]);
+      });
+
+      it('#onFreeResizeEnd should set snapped size and bring tile to front', () => {
+
+        // given
+        const [resized, other] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+        component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
+
+        // when
+        component.onFreeResizeEnd(resized, { ...resizeEvent(697 * scale, 397 * scale), edges: { top: 0, left: 0, right: 97, bottom: -3 } });
+
+        // then
+        expect([resized.width, resized.height]).toEqual([700, 400]);
+        expect(resized.z).toBeGreaterThan(other.z);
+        expect(component.resizePreview).toBeUndefined();
+        expect(component.canvasGuides).toEqual([]);
+      });
+
+      it('#onFreeResizeEnd should keep size without resize', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[0, 0, 447, 333]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizeEnd(resized, { ...resizeEvent(447 * scale, 333 * scale), edges: { top: 0, left: 0, right: 0, bottom: 0 } });
+
+        // then
+        expect([resized.width, resized.height]).toEqual([447, 333]);
+        expect(component.resizePreview).toBeUndefined();
+      });
+
+      it('#bringToFront should rank tile first and request persisting', () => {
+
+        // given
+        const [back, front] = renderCanvasSummaries([[0, 0, 600, 400], [100, 100, 600, 400]]);
+        const persistSpy = requestPersistSpy();
+
+        // when
+        component.bringToFront(back);
+
+        // then
+        expect([back.z, front.z]).toEqual([2, 1]);
+        expect(persistSpy).toHaveBeenCalled();
+      });
+
+      it('#sendToBack should rank tile last and request persisting', () => {
+
+        // given
+        const [back, front] = renderCanvasSummaries([[0, 0, 600, 400], [100, 100, 600, 400]]);
+        const persistSpy = requestPersistSpy();
+
+        // when
+        component.sendToBack(front);
+
+        // then
+        expect([back.z, front.z]).toEqual([2, 1]);
+        expect(persistSpy).toHaveBeenCalled();
+      });
+    });
+
+    it('#loadView should place tiles of legacy flex view in rows', () => {
+
+      // given
+      component.addSummaryTable();
+      component.addSummaryTable();
+      const view = viewOf(Route.FLEX, component.elementContexts);
+
+      // when
+      component.loadView(view);
+
+      // then
+      expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[0, 0], [610, 0]]);
+    });
+
+    it('#loadView should size legacy flex tiles without size by default', () => {
+
+      // given
+      component.addSummaryTable();
+      const view = viewOf(Route.FLEX, component.elementContexts);
+      view.elements[0].width = null;
+      view.elements[0].height = null;
+
+      // when
+      component.loadView(view);
+
+      // then
+      expect([component.elementContexts[0].width, component.elementContexts[0].height]).toEqual([600, 400]);
+    });
+
+    it('#addChart should place new tile below canvas tiles', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      component.addChart();
+
+      // when
+      const context = component.addChart();
+
+      // then
+      expect([context.x, context.y]).toEqual([0, 410]);
+    });
+
+    it('#addChart should not place new tile in grid layout', () => {
+
+      // when
+      const context = component.addChart();
+
+      // then
+      expect(context.x).toBeUndefined();
     });
 
     it('#setLayout should keep element contexts when layout is unchanged', () => {
@@ -846,21 +1307,96 @@ describe('DashboardComponent', () => {
       expect(component.elementContexts).toBe(contexts);
     });
 
-    it('layout menu items should switch layout', fakeAsync(() => {
+    function snapToGridButton(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('#but_snap_to_grid');
+    }
 
-      // given
-      fixture.debugElement.query(By.css('.but_view_more')).nativeElement.click();
-      fixture.detectChanges();
-      (document.querySelector('#menuItemLayout') as HTMLButtonElement).click();
-      fixture.detectChanges();
-      flush();
+    it('snap to grid button should be active in grid layout', () => {
+      expect(snapToGridButton().classList).toContain('koia-toggle-active');
+    });
+
+    it('snap to grid button should show snap grid icon', () => {
+      expect(snapToGridButton().querySelector('mat-icon').getAttribute('svgicon')).toBe('snap_grid');
+    });
+
+    it('snap to grid button should follow separator in front of add buttons', () => {
 
       // when
-      (document.querySelector('#menuItemFlexLayout') as HTMLButtonElement).click();
+      const button = snapToGridButton();
+
+      // then
+      expect(button.previousElementSibling.classList).toContain('koia-toolbar-separator');
+      expect(button.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
+    });
+
+    it('snap to grid button should switch to flex layout', () => {
+
+      // when
+      snapToGridButton().click();
+      fixture.detectChanges();
 
       // then
       expect(component.isGridLayout()).toBe(false);
+      expect(snapToGridButton().classList).not.toContain('koia-toggle-active');
+    });
+
+    it('snap to grid button should switch back to grid layout', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+
+      // when
+      snapToGridButton().click();
+
+      // then
+      expect(component.isGridLayout()).toBe(true);
+    });
+
+    it('more menu should offer grid settings but no layout menu', fakeAsync(() => {
+
+      // when
+      fixture.debugElement.query(By.css('.but_view_more')).nativeElement.click();
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(document.querySelector('#menuItemGridColumns')).toBeTruthy();
+      expect(document.querySelector('#menuItemLayout')).toBeNull();
     }));
+
+    it('should render resize handle on grid tiles', () => {
+
+      // given
+      component.addSummaryTable();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.nativeElement.querySelector('#div_grid .div_tile > img.resize-handle')).toBeTruthy();
+    });
+
+    it.each([
+      { layout: Route.GRID, type: 'mousedown' },
+      { layout: Route.GRID, type: 'touchstart' },
+      { layout: Route.FLEX, type: 'mousedown' },
+      { layout: Route.FLEX, type: 'touchstart' }
+    ])('resize handle should not propagate $type to tile in $layout layout', ({ layout, type }) => {
+
+      // given
+      component.addSummaryTable();
+      component.setLayout(layout);
+      fixture.detectChanges();
+      const tileListener = vi.fn();
+      fixture.nativeElement.querySelector('.div_tile').addEventListener(type, tileListener);
+
+      // when
+      fixture.nativeElement.querySelector('.div_tile img.resize-handle').dispatchEvent(new Event(type, { bubbles: true }));
+
+      // then
+      expect(tileListener).not.toHaveBeenCalled();
+    });
 
     it('#loadView should load grid view', () => {
 
@@ -1193,14 +1729,14 @@ describe('DashboardComponent', () => {
       expect(generateSpy.mock.lastCall[0].containerWidth).toBe(640 - DomMetrics.scrollbarWidth());
     }));
 
-    it('#generateDashboard should pass flex scroller width without scrollbar to generator', fakeAsync(() => {
+    it('#generateDashboard should pass canvas scroller width without scrollbar to generator', fakeAsync(() => {
 
       // given
       component.setLayout(Route.FLEX);
       fixture.detectChanges();
-      const content = component.divContentRef.nativeElement;
-      content.style.width = '300px';
-      content.parentElement.style.width = '700px';
+      const scroller = component.divContentRef.nativeElement;
+      scroller.style.boxSizing = 'border-box';
+      scroller.style.width = '700px';
       const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
 
       // when
@@ -1522,6 +2058,7 @@ describe('DashboardComponent', () => {
       { change: 'setGridColumns', apply: (c: DashboardComponent) => c.setGridColumns(2) },
       { change: 'setGridCellRatio', apply: (c: DashboardComponent) => c.setGridCellRatio('2:1') },
       { change: 'setLayout', apply: (c: DashboardComponent) => c.setLayout(Route.FLEX) },
+      { change: 'toggleGridLayout', apply: (c: DashboardComponent) => c.toggleGridLayout() },
       { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) }
     ])('#$change should request persisting', ({ apply }) => fakeAsync(() => {
 
@@ -1641,9 +2178,17 @@ describe('DashboardComponent', () => {
     return JSON.parse(JSON.stringify(new ModelToViewConverter().convert(Route.GRID, '', new Query(), contexts).elements));
   }
 
-  function resizeEvent(width: number, height: number): ResizeEvent {
+  function unplacedElementsOf(contexts: ElementContext[]): unknown {
+    return (elementsOf(contexts) as Record<string, unknown>[]).map(element => {
+      const unplaced = { ...element };
+      ['x', 'y', 'z'].forEach(key => delete unplaced[key]);
+      return unplaced;
+    });
+  }
+
+  function resizeEvent(width: number, height: number, left = 0, top = 0): ResizeEvent {
     return {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, width, height },
+      rectangle: { top, bottom: top + height, left, right: left + width, width, height },
       edges: null
     };
   }

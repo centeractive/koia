@@ -1,14 +1,18 @@
-import { Locator } from '@playwright/test';
+import { expect, Locator } from '@playwright/test';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 
 export class DashboardSideBar {
 
    private readonly sidenav: Locator;
    private readonly backdrop: Locator;
+   private readonly fadingBackdrop: Locator;
+   private readonly content: Locator;
 
    constructor(dashboard: Locator) {
       this.sidenav = dashboard.locator('mat-sidenav');
       this.backdrop = dashboard.locator('.mat-drawer-backdrop.mat-drawer-shown');
+      this.fadingBackdrop = dashboard.locator('.mat-drawer-backdrop');
+      this.content = dashboard.locator('mat-sidenav-content');
    }
 
    chartTypeButton(chartType: ChartType): Locator {
@@ -29,5 +33,7 @@ export class DashboardSideBar {
    async close(): Promise<void> {
       await this.backdrop.click();
       await this.sidenav.waitFor({ state: 'hidden' });
+      await expect(this.content).toHaveCSS('margin-left', '0px');
+      await expect(this.fadingBackdrop).toBeHidden();
    }
 }

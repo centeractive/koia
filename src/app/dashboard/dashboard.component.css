@@ -1,4 +1,4 @@
-.div_grid_element {
+.div_element {
   display: block;
   position: relative;
   width: 100%;
@@ -10,24 +10,33 @@
   container-type: inline-size;
 }
 
-.div_flex_content {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+.div_grid_cells {
+  position: relative;
 }
 
-.div_flex_element {
-  flex-shrink: 0;
-  position: relative;
-  margin: 5px;
-  min-width: 200px;
-  overflow: hidden;
+.div_resize_preview {
+  position: absolute;
+  z-index: 100001;
+  box-sizing: border-box;
+  border: 2px dashed var(--koia-accent);
+  background-color: var(--koia-active-tint);
+  pointer-events: none;
 }
 
 .div_tile {
   position: relative;
   z-index: 0;
   background-color: var(--koia-surface);
+}
+
+.div_tile.div_canvas_tile {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.div_tile.div_canvas_tile.cdk-drag-dragging {
+  z-index: 100000 !important;
 }
 
 .div_tile::after {
@@ -37,6 +46,48 @@
   border: var(--koia-tile-border);
   pointer-events: none;
   z-index: 10;
+}
+
+#div_grid,
+#div_canvas {
+  scrollbar-gutter: stable;
+}
+
+.div_canvas_pages {
+  position: relative;
+  container-type: inline-size;
+}
+
+.div_canvas_page {
+  position: relative;
+}
+
+.div_canvas_page::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-bottom: 1px dashed var(--koia-outline-color);
+  pointer-events: none;
+}
+
+.div_canvas_guide {
+  position: absolute;
+  z-index: 100001;
+  pointer-events: none;
+}
+
+.div_canvas_guide_x {
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--koia-accent);
+}
+
+.div_canvas_guide_y {
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--koia-accent);
 }
 
 .div_graph {
