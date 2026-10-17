@@ -459,12 +459,10 @@
     "addChart": "Diagramm hinzufügen",
     "addGraph": "Beziehungsgraph hinzufügen",
     "addSummary": "Zusammenfassung hinzufügen",
-    "layout": "Layout",
     "gridColumns": "Rasterspalten",
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
     "manageViews": "Ansichten verwalten",
-    "gridLayout": "Raster (am Raster ausrichten)",
-    "flexLayout": "Flexibel",
+    "snapToGrid": "Am Raster ausrichten",
     "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst"
   },
   "enum": {

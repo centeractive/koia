@@ -459,12 +459,10 @@
     "addChart": "Add Chart",
     "addGraph": "Add Relationship Graph",
     "addSummary": "Add Summary",
-    "layout": "Layout",
     "gridColumns": "Grid Columns",
     "gridCellRatio": "Grid Cell Ratio (width:height)",
     "manageViews": "Manage Views",
-    "gridLayout": "Grid (snap to grid)",
-    "flexLayout": "Flex",
+    "snapToGrid": "Snap to Grid",
     "confirmResize": "Larger elements will be resized to fit the new setting"
   },
   "enum": {

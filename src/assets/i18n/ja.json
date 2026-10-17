@@ -459,12 +459,10 @@
     "addChart": "チャートを追加",
     "addGraph": "関係グラフを追加",
     "addSummary": "サマリーを追加",
-    "layout": "レイアウト",
     "gridColumns": "グリッドの列数",
     "gridCellRatio": "グリッドセルの比率（幅:高さ）",
     "manageViews": "ビューの管理",
-    "gridLayout": "グリッド（グリッドに合わせる）",
-    "flexLayout": "フレックス",
+    "snapToGrid": "グリッドに合わせる",
     "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます"
   },
   "enum": {

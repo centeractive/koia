@@ -10,6 +10,19 @@
   container-type: inline-size;
 }
 
+.div_grid_cells {
+  position: relative;
+}
+
+.div_grid_resize_preview {
+  position: absolute;
+  z-index: 1;
+  box-sizing: border-box;
+  border: 2px dashed var(--koia-accent);
+  background-color: var(--koia-active-tint);
+  pointer-events: none;
+}
+
 .div_flex_content {
   display: flex;
   flex-wrap: wrap;

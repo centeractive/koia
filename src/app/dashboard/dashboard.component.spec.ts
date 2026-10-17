@@ -828,6 +828,112 @@ describe('DashboardComponent', () => {
         expect(component.elementContexts.map(c => [c.gridColumnSpan, c.gridRowSpan])).toEqual([[2, 1], [4, 1]]);
         expectSameRects(rectsOf('#div_grid .div_tile'), flexRects);
       });
+
+      function contentWidth(): number {
+        return component.divContentRef.nativeElement.clientWidth;
+      }
+
+      function renderGridSummariesForResize(spans: number[][]): number {
+        renderGridSummaries(4, spans);
+        component.onGridResizeStart();
+        return contentWidth() / 4;
+      }
+
+      function expectPreview(expected: { left: number, top: number, width: number, height: number }): void {
+        const preview = component.gridResizePreview;
+        expect(preview.left).toBeCloseTo(expected.left, 0);
+        expect(preview.top).toBeCloseTo(expected.top, 0);
+        expect(preview.width).toBeCloseTo(expected.width, 0);
+        expect(preview.height).toBeCloseTo(expected.height, 0);
+      }
+
+      it('#onGridResizing should keep content width of resize start', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[3, 1]]);
+        component.divContentRef = { nativeElement: { clientWidth: contentWidth() - 17 } } as ElementRef<HTMLDivElement>;
+
+        // when
+        component.onGridResizing(resizeEvent(3 * pitch - 10, pitch - 10));
+
+        // then
+        expect(component.gridResizePreview.width).toBeCloseTo(3 * pitch - 10, 0);
+      });
+
+      it('#onGridResizing should preview covered cells', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+
+        // when
+        component.onGridResizing(resizeEvent(pitch + 5, pitch + 5));
+
+        // then
+        expectPreview({ left: 0, top: 0, width: 2 * pitch - 10, height: 2 * pitch - 10 });
+      });
+
+      it('#onGridResizing should limit preview to grid columns', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
+
+        // when
+        component.onGridResizing(resizeEvent(2 * pitch - 10, pitch - 10, 3 * pitch));
+
+        // then
+        expect(component.gridResizePreview.width).toBeCloseTo(pitch - 10, 0);
+      });
+
+      it('should render grid resize preview', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+        component.onGridResizing(resizeEvent(pitch + 5, pitch + 5));
+
+        // when
+        fixture.detectChanges();
+
+        // then
+        const cellsRect: DOMRect = fixture.nativeElement.querySelector('.div_grid_cells').getBoundingClientRect();
+        const [previewRect] = rectsOf('.div_grid_cells > .div_grid_resize_preview');
+        expect(previewRect.left - cellsRect.left).toBeCloseTo(0, 0);
+        expect(previewRect.top - cellsRect.top).toBeCloseTo(0, 0);
+        expect(previewRect.width).toBeCloseTo(2 * pitch - 10, 0);
+        expect(previewRect.height).toBeCloseTo(2 * pitch - 10, 0);
+      });
+
+      it('#onGridResizeEnd should snap tile to covered grid cells', () => {
+
+        // given
+        renderGridSummariesForResize([[1, 1], [1, 1]]);
+        const cw = contentWidth();
+        component.onGridResizing(resizeEvent(cw / 2, cw / 2));
+        const context = component.elementContexts[0];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(cw / 2 - 10 + 7, cw / 2 - 10 - 6));
+        fixture.detectChanges();
+
+        // then
+        expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([2, 2]);
+        const tileRect = rectsOf('#div_grid .div_tile')[0];
+        expect(tileRect.width).toBeCloseTo(cw / 2 - 10, 0);
+        expect(tileRect.height).toBeCloseTo(cw / 2 - 10, 0);
+        expect(component.gridResizePreview).toBeUndefined();
+      });
+
+      it('#onGridResizeEnd should limit column span to grid columns', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
+        const context = component.elementContexts[3];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(3 * pitch, pitch - 10, 3 * pitch));
+
+        // then
+        expect(context.gridColumnSpan).toBe(1);
+      });
     });
 
     it('#setLayout should keep element contexts when layout is unchanged', () => {
@@ -843,21 +949,96 @@ describe('DashboardComponent', () => {
       expect(component.elementContexts).toBe(contexts);
     });
 
-    it('layout menu items should switch layout', fakeAsync(() => {
+    function snapToGridButton(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('#but_snap_to_grid');
+    }
 
-      // given
-      fixture.debugElement.query(By.css('.but_view_more')).nativeElement.click();
-      fixture.detectChanges();
-      (document.querySelector('#menuItemLayout') as HTMLButtonElement).click();
-      fixture.detectChanges();
-      flush();
+    it('snap to grid button should be active in grid layout', () => {
+      expect(snapToGridButton().classList).toContain('koia-toggle-active');
+    });
+
+    it('snap to grid button should show snap grid icon', () => {
+      expect(snapToGridButton().querySelector('mat-icon').getAttribute('svgicon')).toBe('snap_grid');
+    });
+
+    it('snap to grid button should follow separator in front of add buttons', () => {
 
       // when
-      (document.querySelector('#menuItemFlexLayout') as HTMLButtonElement).click();
+      const button = snapToGridButton();
+
+      // then
+      expect(button.previousElementSibling.classList).toContain('koia-toolbar-separator');
+      expect(button.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
+    });
+
+    it('snap to grid button should switch to flex layout', () => {
+
+      // when
+      snapToGridButton().click();
+      fixture.detectChanges();
 
       // then
       expect(component.isGridLayout()).toBe(false);
+      expect(snapToGridButton().classList).not.toContain('koia-toggle-active');
+    });
+
+    it('snap to grid button should switch back to grid layout', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+
+      // when
+      snapToGridButton().click();
+
+      // then
+      expect(component.isGridLayout()).toBe(true);
+    });
+
+    it('more menu should offer grid settings but no layout menu', fakeAsync(() => {
+
+      // when
+      fixture.debugElement.query(By.css('.but_view_more')).nativeElement.click();
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(document.querySelector('#menuItemGridColumns')).toBeTruthy();
+      expect(document.querySelector('#menuItemLayout')).toBeNull();
     }));
+
+    it('should render resize handle on grid tiles', () => {
+
+      // given
+      component.addSummaryTable();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.nativeElement.querySelector('#div_grid .div_tile > img.resize-handle')).toBeTruthy();
+    });
+
+    it.each([
+      { layout: Route.GRID, type: 'mousedown' },
+      { layout: Route.GRID, type: 'touchstart' },
+      { layout: Route.FLEX, type: 'mousedown' },
+      { layout: Route.FLEX, type: 'touchstart' }
+    ])('resize handle should not propagate $type to tile in $layout layout', ({ layout, type }) => {
+
+      // given
+      component.addSummaryTable();
+      component.setLayout(layout);
+      fixture.detectChanges();
+      const tileListener = vi.fn();
+      fixture.nativeElement.querySelector('.div_tile').addEventListener(type, tileListener);
+
+      // when
+      fixture.nativeElement.querySelector('.div_tile img.resize-handle').dispatchEvent(new Event(type, { bubbles: true }));
+
+      // then
+      expect(tileListener).not.toHaveBeenCalled();
+    });
 
     it('#loadView should load grid view', () => {
 
@@ -1280,6 +1461,7 @@ describe('DashboardComponent', () => {
       { change: 'setGridColumns', apply: (c: DashboardComponent) => c.setGridColumns(2) },
       { change: 'setGridCellRatio', apply: (c: DashboardComponent) => c.setGridCellRatio('2:1') },
       { change: 'setLayout', apply: (c: DashboardComponent) => c.setLayout(Route.FLEX) },
+      { change: 'toggleGridLayout', apply: (c: DashboardComponent) => c.toggleGridLayout() },
       { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) }
     ])('#$change should request persisting', ({ apply }) => fakeAsync(() => {
 
@@ -1336,9 +1518,9 @@ describe('DashboardComponent', () => {
     return JSON.parse(JSON.stringify(new ModelToViewConverter().convert(Route.GRID, '', new Query(), contexts).elements));
   }
 
-  function resizeEvent(width: number, height: number): ResizeEvent {
+  function resizeEvent(width: number, height: number, left = 0, top = 0): ResizeEvent {
     return {
-      rectangle: { top: 0, bottom: 0, left: 0, right: 0, width, height },
+      rectangle: { top, bottom: top + height, left, right: left + width, width, height },
       edges: null
     };
   }

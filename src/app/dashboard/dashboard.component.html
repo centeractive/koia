@@ -32,6 +32,10 @@
       }
       <koia-view-toolbar [moreMenu]="moreMenu" [hasContent]="!!elementContexts?.length" [savedViews]="views" (save)="saveView()"
         (restore)="loadView($event)">
+        <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
+          [matTooltip]="'dashboard.snapToGrid' | translate" (click)="toggleGridLayout()">
+          <mat-icon svgIcon="snap_grid"></mat-icon>
+        </button>
         <button mat-icon-button [matTooltip]="'dashboard.addChart' | translate" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
         </button>
@@ -43,10 +47,6 @@
         </button>
       </koia-view-toolbar>
       <mat-menu #moreMenu="matMenu">
-        <button id="menuItemLayout" mat-menu-item [matMenuTriggerFor]="layoutMenu">
-          <mat-icon>dashboard</mat-icon>
-          <span>{{ 'dashboard.layout' | translate }}</span>
-        </button>
         @if (isGridLayout()) {
           <button id="menuItemGridColumns" mat-menu-item [matMenuTriggerFor]="gridColumnsMenu">
             <mat-icon>view_column</mat-icon>
@@ -60,17 +60,6 @@
         <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
           <mat-icon>monitor</mat-icon>
           <span>{{ 'dashboard.manageViews' | translate }}</span>
-        </button>
-      </mat-menu>
-
-      <mat-menu #layoutMenu="matMenu">
-        <button id="menuItemGridLayout" mat-menu-item [disabled]="isGridLayout()" (click)="setLayout(gridRoute)">
-          <mat-icon svgIcon="grid_view"></mat-icon>
-          <span>{{ 'dashboard.gridLayout' | translate }}</span>
-        </button>
-        <button id="menuItemFlexLayout" mat-menu-item [disabled]="!isGridLayout()" (click)="setLayout(flexRoute)">
-          <mat-icon svgIcon="flex_view"></mat-icon>
-          <span>{{ 'dashboard.flexLayout' | translate }}</span>
         </button>
       </mat-menu>
 
@@ -117,16 +106,23 @@
     @if (isGridLayout()) {
       <div #content id="div_grid" class="div_content printable" style="padding: 5px;" cdkScrollable cdkDropList cdkDropListOrientation="mixed"
         (cdkDropListDropped)="drop($event)">
-        <div [ngStyle]="gridLayout.gridStyle()">
+        <div class="div_grid_cells" [ngStyle]="gridLayout.gridStyle()">
           @for (context of elementContexts; track context) {
-            <div class="div_tile mat-elevation-z1" [ngStyle]="gridLayout.cellStyle(context)" cdkDrag>
+            <div class="div_tile mat-elevation-z1" [ngStyle]="gridLayout.cellStyle(context)" mwlResizable ghostElementPositioning="absolute"
+              (resizeStart)="onGridResizeStart()" (resizing)="onGridResizing($event)" (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
               <div #elementContainer class="div_grid_element">
                 <koia-element-header [context]="context" [gridLayout]="gridLayout" [movable]="elementContexts.length > 1"
                   (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
                   (titleChange)="onTitleChanged(context, $event)" />
                 <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
               </div>
+              <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
             </div>
+          }
+          @if (gridResizePreview; as preview) {
+            <div class="div_grid_resize_preview" [style.left.px]="preview.left" [style.top.px]="preview.top"
+              [style.width.px]="preview.width" [style.height.px]="preview.height"></div>
           }
         </div>
       </div>
@@ -143,7 +139,7 @@
                 (titleChange)="onTitleChanged(context, $event)" />
               <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
               <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle
-                [resizeEdges]="resizableEdgesOf(context)">
+                [resizeEdges]="resizableEdgesOf(context)" (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
             </div>
           }
         </div>

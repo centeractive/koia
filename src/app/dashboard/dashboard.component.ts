@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
-import { Edges, ResizeEvent } from 'angular-resizable-element';
+import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
 import { ViewController } from 'app/shared/controller';
 import { View, ViewElement } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
@@ -10,7 +10,7 @@ import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { ElementContext, Route } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 import { FlexLayout } from './flex-layout';
-import { GridLayout } from './grid-layout';
+import { GridLayout, GridSpans } from './grid-layout';
 
 @Component({
   selector: 'koia-dashboard',
@@ -23,10 +23,10 @@ export class DashboardComponent extends ViewController {
 
   readonly gridColumnChoices = [1, 2, 3, 4, 5];
   readonly gridCellRatioChoices = ['1:1', '3:2', '2:1', '2:3', '1:2'];
-  readonly gridRoute = Route.GRID;
-  readonly flexRoute = Route.FLEX;
   readonly gridLayout = new GridLayout();
   readonly validateElementResize = FlexLayout.validateResize;
+  gridResizePreview: { left: number, top: number, width: number, height: number };
+  private gridResizeContentWidth: number;
 
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
     viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
@@ -37,6 +37,10 @@ export class DashboardComponent extends ViewController {
 
   isGridLayout(): boolean {
     return this.route === Route.GRID;
+  }
+
+  toggleGridLayout(): void {
+    this.setLayout(this.isGridLayout() ? Route.FLEX : Route.GRID);
   }
 
   setLayout(route: Route): void {
@@ -68,7 +72,7 @@ export class DashboardComponent extends ViewController {
   }
 
   private applyGridSpans(elements: ViewElement[]): void {
-    const contentWidth = this.divContentRef?.nativeElement.clientWidth;
+    const contentWidth = this.contentWidth();
     if (contentWidth > 0) {
       elements.forEach(element => {
         const spans = this.gridLayout.spansOf(element.width, element.height, contentWidth);
@@ -76,6 +80,10 @@ export class DashboardComponent extends ViewController {
         element.gridRowSpan = spans.rowSpan;
       });
     }
+  }
+
+  private contentWidth(): number {
+    return this.divContentRef?.nativeElement.clientWidth;
   }
 
   private renderChartsOnceCreated(contexts: ElementContext[]): void {
@@ -109,6 +117,28 @@ export class DashboardComponent extends ViewController {
       style.height = rect.height + 'px';
     }
     context.setSize(rect.width, rect.height);
+  }
+
+  onGridResizeStart(): void {
+    this.gridResizeContentWidth = this.contentWidth();
+  }
+
+  onGridResizing(resizeEvent: ResizeEvent): void {
+    const rect = resizeEvent.rectangle;
+    const spans = this.resizedGridSpansOf(rect);
+    this.gridResizePreview = { left: rect.left, top: rect.top, ...this.gridLayout.tileSizeOf(spans, this.gridResizeContentWidth) };
+  }
+
+  onGridResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
+    const spans = this.resizedGridSpansOf(resizeEvent.rectangle);
+    context.gridColumnSpan = spans.columnSpan;
+    context.gridRowSpan = spans.rowSpan;
+    this.gridResizePreview = undefined;
+  }
+
+  private resizedGridSpansOf(rect: BoundingRectangle): GridSpans {
+    const cw = this.gridResizeContentWidth;
+    return this.gridLayout.coveredSpansOf(rect.width, rect.height, this.gridLayout.columnOf(rect.left, cw), cw);
   }
 
   protected onPreRestoreView(view: View): void {

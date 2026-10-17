@@ -35,6 +35,20 @@ export class DashboardTile {
       await this.root.page().getByRole('menuitem', { name: menuItem, exact: true }).click();
    }
 
+   async startResizeBy(dx: number, dy: number): Promise<void> {
+      const handle = await this.root.locator('.resize-handle').boundingBox();
+      const x = handle.x + handle.width / 2;
+      const y = handle.y + handle.height / 2;
+      const mouse = this.root.page().mouse;
+      await mouse.move(x, y);
+      await mouse.down();
+      await mouse.move(x + dx, y + dy, { steps: 5 });
+   }
+
+   async endResize(): Promise<void> {
+      await this.root.page().mouse.up();
+   }
+
    async remove(): Promise<void> {
       await this.root.locator('.but_close').click();
       await this.root.waitFor({ state: 'detached' });
