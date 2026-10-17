@@ -22,14 +22,17 @@ describe('GraphContext', () => {
 
    beforeEach(() => {
       context = new GraphContext(columns);
-      eventHandlerSpy = vi.fn().mockImplementation(e => null);
+      eventHandlerSpy = vi.fn();
       context.subscribeToChanges(eventHandlerSpy);
    });
 
    it('#linkStrength should not fire look change event when linkStrength is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.linkStrength;
+
       // when
-      context.linkStrength = context.linkStrength;
+      context.linkStrength = initialValue;
       flush();
 
       // then
@@ -50,8 +53,11 @@ describe('GraphContext', () => {
 
    it('#friction should not fire look change event when friction is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.friction;
+
       // when
-      context.friction = context.friction;
+      context.friction = initialValue;
       flush();
 
       // then
@@ -72,8 +78,11 @@ describe('GraphContext', () => {
 
    it('#linkDist should not fire look change event when linkDist is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.linkDist;
+
       // when
-      context.linkDist = context.linkDist;
+      context.linkDist = initialValue;
       flush();
 
       // then
@@ -94,8 +103,11 @@ describe('GraphContext', () => {
 
    it('#charge should not fire look change event when charge is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.charge;
+
       // when
-      context.charge = context.charge;
+      context.charge = initialValue;
       flush();
 
       // then
@@ -116,8 +128,11 @@ describe('GraphContext', () => {
 
    it('#gravity should not fire look change event when gravity is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.gravity;
+
       // when
-      context.gravity = context.gravity;
+      context.gravity = initialValue;
       flush();
 
       // then
@@ -138,8 +153,11 @@ describe('GraphContext', () => {
 
    it('#theta should not fire look change event when theta is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.theta;
+
       // when
-      context.theta = context.theta;
+      context.theta = initialValue;
       flush();
 
       // then
@@ -160,8 +178,11 @@ describe('GraphContext', () => {
 
    it('#alpha should not fire look change event when alpha is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.alpha;
+
       // when
-      context.alpha = context.alpha;
+      context.alpha = initialValue;
       flush();
 
       // then

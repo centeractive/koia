@@ -1,5 +1,5 @@
 import { EventEmitter } from '@angular/core';
-import { Column } from 'app/shared/model';
+import { Column, TimeUnit } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { LanguageService } from 'app/shared/services/language';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -15,8 +15,8 @@ export class NumberRangeFilter {
    start: number;
    end: number;
    inverted: boolean;
-   availableSteps: any[];
-   selectedStep: any;
+   availableSteps: (number | TimeUnit)[];
+   selectedStep: number | TimeUnit;
    selectedStepAbbrev: string;
    sliderOptions: Options;
    selValueRange: ValueRange;
@@ -67,20 +67,21 @@ export class NumberRangeFilter {
       if (diff / step < NumberRangeFilter.MIN_REQUIRED_UNITS_PER_SLIDER_STEP_TYPE) {
          step = step / 10;
       }
-      this.availableSteps = [step];
-      for (let i = 0; i < 5 || this.availableSteps[0] > 1; i++) {
-         this.availableSteps.unshift(this.availableSteps[0] / 10);
+      const steps: number[] = [step];
+      for (let i = 0; i < 5 || steps[0] > 1; i++) {
+         steps.unshift(steps[0] / 10);
       }
-      this.selectedStep = this.availableSteps[this.availableSteps.length - 2];
+      this.availableSteps = steps;
+      this.selectedStep = steps[steps.length - 2];
       this.selectedStepAbbrev = 'n';
    }
 
-   formatStep(step: any): any {
+   formatStep(step: number | TimeUnit): string | number {
       const num = NumberUtils.asNumber(step, undefined);
       return num == undefined || num < 1_000 ? step : num.toLocaleString(LanguageService.localeId());
    }
 
-   onStepChanged(step: any): void {
+   onStepChanged(step: number | TimeUnit): void {
       this.selectedStep = step;
       this.defineSliderOptions();
    }
@@ -90,7 +91,7 @@ export class NumberRangeFilter {
       this.sliderOptions = {
          floor: this.start,
          ceil: this.end,
-         step: this.selectedStep,
+         step: this.selectedStep as number,
          animate: true,
          enforceStep: false,
          draggableRange: true,

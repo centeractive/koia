@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Scene, SceneInfo } from 'app/shared/model';
 import { DialogService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -23,7 +23,7 @@ export class SceneTableComponent implements OnChanges {
 
   constructor(private dbService: DBService, private dialogService: DialogService) { }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     if (this.sceneInfos) {
       this.tableData = this.sceneInfos;
     } else {

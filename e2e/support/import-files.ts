@@ -36,7 +36,7 @@ function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFi
 }
 
 function jsonFile(path: string, dataTypes: DataType[]): ImportFile {
-   return fileWithRows(path, SourceName.JSON, jsonOf(path), dataTypes);
+   return fileWithRows(path, SourceName.JSON, jsonOf<object[]>(path), dataTypes);
 }
 
 function excelFile(path: string, dataTypes: DataType[]): ImportFile {

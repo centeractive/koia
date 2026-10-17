@@ -24,7 +24,7 @@ describe('SummaryContext', () => {
 
    beforeEach(() => {
       context = new SummaryContext(columns);
-      eventHandlerSpy = vi.fn().mockImplementation(e => null);
+      eventHandlerSpy = vi.fn();
       context.subscribeToChanges(eventHandlerSpy);
    });
 

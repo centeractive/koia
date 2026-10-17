@@ -9,7 +9,7 @@ export class DataFrameSorter {
    * @returns a new data frame with the sorted data or the original data frame when sorting could not be performed
    * (when sort is undefined or sort column is not contained in the data frame)
    */
-  sort(dataFrame: IDataFrame<number, any>, sort: Sort, context: ElementContext): IDataFrame<number, any> {
+  sort(dataFrame: IDataFrame<number, object>, sort: Sort, context: ElementContext): IDataFrame<number, object> {
     if (!sort || !dataFrame.getColumnNames().includes(sort.active)) {
       return dataFrame;
     }
@@ -20,7 +20,7 @@ export class DataFrameSorter {
     }
   }
 
-  private toSortableValue(columnName: string, entry: object, context: ElementContext): any {
+  private toSortableValue(columnName: string, entry: object, context: ElementContext): unknown {
     let value = entry[columnName];
     if (context.hasValueGrouping(columnName)) {
       const minValue = ValueRangeConverter.toMinValue(value as string);

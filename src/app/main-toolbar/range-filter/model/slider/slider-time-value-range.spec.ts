@@ -173,7 +173,3 @@ describe('SliderTimeValueRange - start between steps', () => {
 function toTime(s: string): number {
     return DateTime.fromFormat(s, 'dd.MM.yyyy HH:mm:ss').toMillis();
 }
-
-function startOf(time: number, timeUnit: TimeUnit): number {
-    return DateTime.fromMillis(time).startOf(timeUnit).toMillis();
-}

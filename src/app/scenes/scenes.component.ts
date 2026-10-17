@@ -58,7 +58,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
 
   delete(sceneInfo: SceneInfo) {
     this.dbService.deleteScene(sceneInfo)
-      .then(s => {
+      .then(() => {
         this.loadData();
         this.notifySuccess(LanguageService.instant('scenes.sceneDeleted'));
       })
@@ -73,7 +73,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     const text = '<p>' + LanguageService.instant('scenes.deleteConfirm', { count: this.filteredSceneInfos.length }) + '</p>';
     const data = new ConfirmDialogData(title, text, ConfirmDialogData.YES_NO);
     const dialogRef = this.dialogService.showConfirmDialog(data);
-    firstValueFrom(dialogRef.afterClosed()).then(r => {
+    firstValueFrom(dialogRef.afterClosed()).then(() => {
       if (data.closedWithButtonIndex === 0) {
         this.deleteScenes(this.filteredSceneInfos);
       }
@@ -83,7 +83,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   private deleteScenes(sceneInfos: SceneInfo[]): void {
     const promises = sceneInfos.map(si => this.dbService.deleteScene(si));
     Promise.all(promises)
-      .then(r => {
+      .then(() => {
         this.notifySuccess(LanguageService.instant(sceneInfos.length === 1 ? 'scenes.scenesDeletedOne' : 'scenes.scenesDeleted',
           { count: sceneInfos.length }));
         this.loadData();

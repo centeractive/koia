@@ -317,7 +317,7 @@ describe('ValueFilterComponent', () => {
     vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
-    const event: any = document.createEvent('Event');
+    const event = document.createEvent('Event') as Event & { key: string };
     event.key = '1';
     event.initEvent('keyup');
     htmlInput.dispatchEvent(event);
@@ -340,7 +340,7 @@ describe('ValueFilterComponent', () => {
     vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
-    const event: any = document.createEvent('Event');
+    const event = document.createEvent('Event');
     event.initEvent('search');
     htmlInput.dispatchEvent(event);
 

@@ -14,8 +14,8 @@ export class AggregationService {
 
   private timeGroupingService = new TimeGroupingService();
 
-  compute(data: IDataFrame<number, any>, context: ElementContext): IDataFrame<number, any> {
-    let dataFrame: IDataFrame<number, any> = new DataFrame(data);
+  compute(data: IDataFrame<number, object>, context: ElementContext): IDataFrame<number, object> {
+    let dataFrame: IDataFrame<number, object> = new DataFrame(data);
     const columns = context.groupByColumns;
     columns.push(context.dataColumns[0]);
     context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c =>
@@ -30,25 +30,25 @@ export class AggregationService {
     }
   }
 
-  private countDistinctValues(data: IDataFrame<number, any>, pivotColumns: string[], aggregation: Aggregation): IDataFrame<number, any> {
+  private countDistinctValues(data: IDataFrame<number, object>, pivotColumns: string[], aggregation: Aggregation): IDataFrame<number, object> {
     return data.pivot(pivotColumns, aggregation, v => this.aggregateValue(v, aggregation));
   }
 
-  private aggregate(data: IDataFrame<number, any>, numberColumn: string, aggregations: Aggregation[]): IDataFrame<number, any> {
+  private aggregate(data: IDataFrame<number, object>, numberColumn: string, aggregations: Aggregation[]): IDataFrame<number, object> {
     const namedAggregatedValues = {};
     aggregations.map(a => namedAggregatedValues[a] = this.aggregateValue(data.getSeries(numberColumn), a));
     return new DataFrame([namedAggregatedValues]);
   }
 
-  private groupAndAggregate(data: IDataFrame<number, any>, pivotColumns: string[], numberColumn: string, aggregations: Aggregation[])
-    : IDataFrame<number, any> {
+  private groupAndAggregate(data: IDataFrame<number, object>, pivotColumns: string[], numberColumn: string, aggregations: Aggregation[])
+    : IDataFrame<number, object> {
     const aggregationMappings = {};
     aggregations.map(a => aggregationMappings[a] = v => this.aggregateValue(v, a));
     const aggregationSpec = { [numberColumn]: aggregationMappings };
     return data.pivot(pivotColumns, aggregationSpec);
   }
 
-  aggregateValue(values: ISeries<number, any>, aggregation: Aggregation): number {
+  aggregateValue(values: ISeries<number, unknown>, aggregation: Aggregation): number {
     switch (aggregation) {
       case Aggregation.COUNT:
         return values.count();

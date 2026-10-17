@@ -1,5 +1,14 @@
 import { FormattedIntegerDirective } from './formatted-integer.directive';
-import { ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+
+@Component({
+    template: '<input formattedInteger>',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
+})
+class FormattedIntegerHostComponent {
+}
 
 describe('FormattedIntegerDirective', () => {
 
@@ -16,8 +25,11 @@ describe('FormattedIntegerDirective', () => {
 
     it('#onInputChange should reject letter', () => {
 
+        // given
+        onInput('x');
+
         // when
-        directive.onInputChange(onInput('x'));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('');
@@ -26,8 +38,11 @@ describe('FormattedIntegerDirective', () => {
 
     it('#onInputChange should reject decimal separator', () => {
 
+        // given
+        onInput(ds);
+
         // when
-        directive.onInputChange(onInput(ds));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('');
@@ -36,8 +51,11 @@ describe('FormattedIntegerDirective', () => {
 
     it('#onInputChange should accept number', () => {
 
+        // given
+        onInput('1');
+
         // when
-        directive.onInputChange(onInput('1'));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('1');
@@ -46,8 +64,11 @@ describe('FormattedIntegerDirective', () => {
 
     it('#onInputChange should format number', () => {
 
+        // given
+        onInput('1234', 1);
+
         // when
-        directive.onInputChange(onInput('1234', 1));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('1' + ts + '234');
@@ -93,13 +114,28 @@ describe('FormattedIntegerDirective', () => {
         expect(stopPropagationSpy).not.toHaveBeenCalled();
     });
 
-    function onInput(text: string, caretPos?: number): KeyboardEvent {
+    it('input event on host element should format number', () => {
+
+        // given
+        TestBed.configureTestingModule({ declarations: [FormattedIntegerHostComponent, FormattedIntegerDirective] });
+        const fixture = TestBed.createComponent(FormattedIntegerHostComponent);
+        fixture.detectChanges();
+        const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
+        input.value = '1234';
+
+        // when
+        input.dispatchEvent(new Event('input'));
+
+        // then
+        expect(input.value).toBe('1' + ts + '234');
+    });
+
+    function onInput(text: string, caretPos?: number): void {
         inputElement.value = text;
         if (caretPos === undefined) {
             caretPos = text.length;
         }
         inputElement.setSelectionRange(caretPos, caretPos)
-        return new KeyboardEvent('input', {});
     }
 
     function clipboardEvent(text: string, selectionStart: number, selectionEnd?: number): ClipboardEvent {

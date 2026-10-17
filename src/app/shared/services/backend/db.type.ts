@@ -1,18 +1,19 @@
 import { Document } from 'app/shared/model';
 import { Observable } from 'rxjs';
+import { DocChangeResponse } from './doc-change-response.type';
 
 export interface DB {
 
-   createDatabase(database: string): Promise<any>;
+   createDatabase(database: string): Promise<unknown>;
 
    /**
     * @returns the maximum number of data items that can be stored for an individual [[Scene]]
     */
    getMaxDataItemsPerScene(): number;
 
-   createIndex(database: string, columnName: string): Promise<any>;
+   createIndex(database: string, columnName: string): Promise<unknown>;
 
-   deleteDatabase(database: string): Promise<any>;
+   deleteDatabase(database: string): Promise<unknown>;
 
    findById(database: string, id: string): Promise<Document>;
 
@@ -24,7 +25,7 @@ export interface DB {
 
    update(database: string, document: Document): Promise<Document>;
 
-   delete(database: string, document: Document): Promise<any>;
+   delete(database: string, document: Document): Promise<DocChangeResponse>;
 
    /**
     * @return the number of all (design and non-design) documents contained in the specified database
@@ -37,5 +38,5 @@ export interface DB {
     * @param prefix if defined, database names must match in order to be deleted (relevant only for CouchDB only, which may be shared for
     * other purpose than testing)
     */
-   clear(prefix?: string): Promise<any>;
+   clear(prefix?: string): Promise<unknown[]>;
 }

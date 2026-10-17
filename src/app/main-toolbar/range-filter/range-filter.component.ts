@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { ChangeContext } from '@angular-slider/ngx-slider';
 import { DataType } from 'app/shared/model';
 import { ValueRange } from 'app/shared/value-range/model';
@@ -24,7 +24,7 @@ export class RangeFilterComponent implements OnChanges, OnDestroy {
 
   private subscription: Subscription;
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     this.unsubscribeSubscription();
     this.subscription = this.filter.onAdjustedValueRange().subscribe(() => this.onChange.emit());
     this.valueRange = this.filter.sliderValueRange;

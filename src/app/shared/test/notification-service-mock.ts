@@ -1,6 +1,4 @@
 import { NotificationService } from '../services';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { Status } from '../model';
 
 export class NotificationServiceMock extends NotificationService {
 
@@ -8,7 +6,7 @@ export class NotificationServiceMock extends NotificationService {
       super();
    }
 
-   override showStatus(bottomSheet: MatBottomSheet, status: Status): void {
+   override showStatus(): void {
       // ignore
    }
 }

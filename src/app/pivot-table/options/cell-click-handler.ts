@@ -13,14 +13,14 @@ export class CellClickHandler {
   /**
    * reveals the raw data represented by the pivot table cell, a mouse click was made on
    */
-  onCellClicked(valueGroupings: ValueGrouping[], mouseEvent: any, filters: object, exclusions: object, inclusions: object,
+  onCellClicked(valueGroupings: ValueGrouping[], mouseEvent: MouseEvent, filters: object, exclusions: object, inclusions: object,
     pivotData: object): void {
     this.revealRawData(filters, exclusions, inclusions, pivotData, valueGroupings, this.isTotalCell(mouseEvent));
   }
 
-  private isTotalCell(mouseEvent: any) {
+  private isTotalCell(mouseEvent: MouseEvent) {
     for (const totalCellClass of CellClickHandler.TOTAL_CELL_CLASSES) {
-      if (mouseEvent.srcElement.classList.contains(totalCellClass)) {
+      if ((mouseEvent.srcElement as Element).classList.contains(totalCellClass)) {
         return true;
       }
     }

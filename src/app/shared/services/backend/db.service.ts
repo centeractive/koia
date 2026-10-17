@@ -41,7 +41,7 @@ export class DBService {
    * @param force [[true]] to initialize the backend regardless if it was already initialized before,
    * [[false]] to initialize the backend only in case it was not already initialized before
    */
-  async initBackend(force: boolean): Promise<void> {
+  async initBackend(force: boolean): Promise<unknown> {
     if (!this.db || force) {
       this.db = null;
       return this.couchDBService.listDatabases()
@@ -59,13 +59,13 @@ export class DBService {
     }
   }
 
-  useIndexedDb(): Promise<any> {
+  useIndexedDb(): Promise<unknown> {
     this.db = new PouchDBAccess();
     this.queryConverter = new QueryConverter(true);
     return this.createScenesDB();
   }
 
-  private async createScenesDB(): Promise<any> {
+  private async createScenesDB(): Promise<unknown> {
     const scenesDB = this.scenesDbName();
     return this.db.createDatabase(scenesDB)
       .then(() => this.db.createIndex(scenesDB, 'creationTime'));
@@ -145,7 +145,7 @@ export class DBService {
       .then(() => scene);
   }
 
-  async deleteScene(sceneInfo: SceneInfo): Promise<any> {
+  async deleteScene(sceneInfo: SceneInfo): Promise<void> {
     if (this.activeScene && this.activeScene._id === sceneInfo._id) {
       this.activeScene = undefined;
     }

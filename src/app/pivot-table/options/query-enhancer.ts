@@ -22,13 +22,13 @@ export class QueryEnhancer {
       }
    }
 
-   private addFilter(column: Column, filterValue: any): void {
+   private addFilter(column: Column, filterValue: string | number | boolean): void {
       if (this.hasValueGrouping(column.name)) {
-         this.addValueGroupingFilter(column, filterValue, false);
+         this.addValueGroupingFilter(column, filterValue as string, false);
       } else if (filterValue === 'null') {
          this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.EMPTY, '', column.dataType));
       } else if (column.dataType === DataType.TIME) {
-         this.addTimeRangeFilter(column, filterValue, false);
+         this.addTimeRangeFilter(column, filterValue as string, false);
       } else {
          this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.EQUAL, filterValue, column.dataType));
       }
@@ -66,7 +66,7 @@ export class QueryEnhancer {
       return this.valueGroupings.find(vg => vg.columnName === columnName) !== undefined;
    }
 
-   private addValueGroupingFilter(column: Column, filterValue: any, inverted: boolean): void {
+   private addValueGroupingFilter(column: Column, filterValue: string, inverted: boolean): void {
       if (filterValue === ValueRangeConverter.EMPTY) {
          const operator = inverted ? Operator.NOT_EMPTY : Operator.EMPTY;
          this.query.addPropertyFilter(new PropertyFilter(column.name, operator, '', column.dataType));
@@ -77,7 +77,7 @@ export class QueryEnhancer {
       }
    }
 
-   private addTimeRangeFilter(column: Column, filterValue: any, inverted: boolean): void {
+   private addTimeRangeFilter(column: Column, filterValue: string, inverted: boolean): void {
       const ngFormat = DateTimeUtils.ngFormatOf(column.groupingTimeUnit);
       if (filterValue === ValueRangeConverter.EMPTY) {
          const operator = inverted ? Operator.NOT_EMPTY : Operator.EMPTY;

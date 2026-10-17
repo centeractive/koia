@@ -30,7 +30,7 @@ describe('ExcelDataConverter', () => {
             { Position: 3, Name: 'C', Amount: 78.6, Time: '18.1.2019 14:00:00 000' },
             { Position: 4, Name: 'D', Amount: 45.2, Time: '18.1.2019 15:00:00 000' }
         ];
-        expect(data as any).toEqual(expected);
+        expect(data).toEqual(expected);
     });
 
     it('#convertTime (format not including milliseconds)', () => {
@@ -58,7 +58,7 @@ describe('ExcelDataConverter', () => {
             { Position: 3, Name: 'C', Amount: 78.6, Time: new Date('2019-01-18 14:00:00.000') },
             { Position: 4, Name: 'D', Amount: 45.2, Time: new Date('2019-01-18 15:00:00.000') }
         ];
-        expect(data as any).toEqual(expected);
+        expect(data).toEqual(expected);
     });
 
     it('#toWorksheet', () => {

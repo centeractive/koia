@@ -20,7 +20,7 @@ export class ValueGroupingGenerator {
     * @param columns columns (included text columns will be ignored)
     * @returns an array of value groupings or an empty array
     */
-   generate(data: IDataFrame<number, any>, columns: Column[]): ValueGrouping[] {
+   generate(data: IDataFrame<number, object>, columns: Column[]): ValueGrouping[] {
       const groupings: ValueGrouping[] = [];
       const numberColumns = columns.filter(c => c.dataType === DataType.NUMBER);
       for (const column of numberColumns) {
@@ -39,14 +39,14 @@ export class ValueGroupingGenerator {
     * @param numberColumnName name of the number column
     * @returns an array of value groupings or an empty array
     */
-   createGrouping(data: IDataFrame<number, any>, numberColumnName: string): ValueGrouping {
+   createGrouping(data: IDataFrame<number, object>, numberColumnName: string): ValueGrouping {
       return this.createConditionalGrouping(data, numberColumnName, 1);
    }
 
    /**
     * @returns value grouping or [[null]] if data has not the minimum required number of distinct values
     */
-   private createConditionalGrouping(data: IDataFrame<number, any>, numberColumnName: string, minDistinctValues: number): ValueGrouping {
+   private createConditionalGrouping(data: IDataFrame<number, object>, numberColumnName: string, minDistinctValues: number): ValueGrouping {
       const series = data.getSeries(numberColumnName).where(v => !isNaN(v));
       if (series.distinct().count() < minDistinctValues) {
          return null;

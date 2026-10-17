@@ -69,7 +69,7 @@ export class EntryMapper {
       };
    }
 
-   private mapValue(columnPair: ColumnPair, sourceValue: any, mappingResult: MappingResult): void {
+   private mapValue(columnPair: ColumnPair, sourceValue: string | number | boolean | object, mappingResult: MappingResult): void {
       if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
          if (sourceValue instanceof Date) {
             this.mapDate(sourceValue, columnPair, mappingResult);
@@ -131,7 +131,7 @@ export class EntryMapper {
       return DateTimeUtils.toBaseDate(date.getTime(), DateTimeUtils.timeUnitFromNgFormat(format));
    }
 
-   private abbreviate(value: any): string {
+   private abbreviate(value: string | number | boolean | object): string {
       if (typeof value !== 'string') {
          value = value.toString();
       }

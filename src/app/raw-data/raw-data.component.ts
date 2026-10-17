@@ -168,7 +168,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     this.currentViewName = configRecord.name;
     this.query = queryDefToQuery(configRecord.query);
     this.restoredQuery = this.query;
-    const configRecordData: ConfigRecordData = configRecord.data;
+    const configRecordData = configRecord.data as ConfigRecordData;
     this.considerColumnWidths = configRecordData.considerColumnWidths;
     this.highlight = configRecordData.highlight;
     this.multiLine = configRecordData.multiLine ?? false;

@@ -4,6 +4,8 @@ import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 import { TimeGuesser } from './time-guesser';
 
+type SourceValue = string | number | boolean | object;
+
 export class ColumnMappingGenerator {
 
    static readonly COLUMN_NAME_MAX_LENGTH = 100;
@@ -36,7 +38,7 @@ export class ColumnMappingGenerator {
       return this.extractColumnPairs(columnNamesToPair);
    }
 
-   private createColumnPair(name: string, value: any, locale: string): ColumnPair {
+   private createColumnPair(name: string, value: SourceValue, locale: string): ColumnPair {
       const dataType = this.guessDataTypeOf(value, locale);
       const columnPair: ColumnPair = {
          source: { name: name, dataType: dataType, width: undefined },
@@ -47,7 +49,7 @@ export class ColumnMappingGenerator {
       return columnPair;
    }
 
-   private refine(columnPair: ColumnPair, value: any, locale: string): void {
+   private refine(columnPair: ColumnPair, value: SourceValue, locale: string): void {
       const dataType = this.guessDataTypeOf(value, locale);
       if (dataType == undefined) {
          return;
@@ -72,7 +74,7 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private sharpenMapping(dataType: DataType, columnPair: ColumnPair, value: any, locale: string) {
+   private sharpenMapping(dataType: DataType, columnPair: ColumnPair, value: SourceValue, locale: string) {
       if (dataType === DataType.TIME) {
          columnPair.target.format = DateTimeUtils.ngFormatOf(TimeUnit.SECOND);
       } else if (dataType === DataType.NUMBER || dataType === DataType.TEXT) {
@@ -87,7 +89,7 @@ export class ColumnMappingGenerator {
       delete columnPair.target.format;
    }
 
-   private detectDateTime(columnPair: ColumnPair, value: string | number, locale: string): void {
+   private detectDateTime(columnPair: ColumnPair, value: SourceValue, locale: string): void {
       if (columnPair.source.dataType === DataType.TEXT &&
          NumberUtils.countDigits(value as string) >= ColumnMappingGenerator.DATESTRING_MIN_EXPECTED_DIGITS) {
          this.dateTimeColumnDetector.detect(columnPair, value as string, locale);
@@ -103,11 +105,11 @@ export class ColumnMappingGenerator {
       }
    }
 
-   private guessDataTypeOf(value: any, locale: string): DataType {
+   private guessDataTypeOf(value: SourceValue, locale: string): DataType {
       return value === '' ? undefined : DataTypeUtils.typeOf(value, locale);
    }
 
-   private shallBeIndexed(value: any): boolean {
+   private shallBeIndexed(value: SourceValue): boolean {
       if (value == undefined) {
          return true;
       }
@@ -117,7 +119,7 @@ export class ColumnMappingGenerator {
       return typeof value !== 'string' || value.length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED;
    }
 
-   private computeWidth(value: any, columnPair: ColumnPair): number {
+   private computeWidth(value: SourceValue, columnPair: ColumnPair): number {
       let width = ColumnMappingGenerator.MIN_WIDTH;
       if (value) {
          let formattedValue: string = null;

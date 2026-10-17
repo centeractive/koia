@@ -16,7 +16,7 @@ export class ValueFormatter {
     */
    constructor(private localeId: () => string = () => 'en-US') { }
 
-   formatValue(column: Column, value: string | number | boolean): any {
+   formatValue(column: Column, value: string | number | boolean): string | number | boolean {
       if (value == undefined) {
          return '';
       } else if (column.dataType === DataType.TIME && NumberUtils.isNumber(value, undefined)) {

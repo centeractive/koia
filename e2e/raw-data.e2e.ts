@@ -28,13 +28,13 @@ test('sorting a number column twice shows the descending indicator and the large
    await rawData.table.sortBy(column);
 
    await expect(rawData.table.sortIndicator(column)).toHaveText(SORT_INDICATORS.desc);
-   await expect(await rawData.table.cell(0, column)).toHaveText(en.number(Math.max(...columnValuesOf(sample, column))));
+   await expect(await rawData.table.cell(0, column)).toHaveText(en.number(Math.max(...columnValuesOf<number>(sample, column))));
 });
 
 test('value filter reduces the rows to the matching ones', async ({ rawData }) => {
    const column = firstColumnOf(sample, DataType.TEXT);
    const value: string = sample.entries[0][column];
-   const matching = columnValuesOf(sample, column).filter(v => v.toLowerCase().includes(value.toLowerCase()));
+   const matching = columnValuesOf<string>(sample, column).filter(v => v.toLowerCase().includes(value.toLowerCase()));
 
    await rawData.toolbar.addValueFilter(column, value);
 
@@ -43,7 +43,7 @@ test('value filter reduces the rows to the matching ones', async ({ rawData }) =
 
 test('range filter at the maximum shows its rows, removing it shows all rows and hides the range filter panel', async ({ rawData }) => {
    const column = firstColumnOf(sample, DataType.NUMBER);
-   const max = Math.max(...columnValuesOf(sample, column));
+   const max = Math.max(...columnValuesOf<number>(sample, column));
    const rangeFilter = await rawData.toolbar.addRangeFilter(column, en.get('toolbar.valueRange'));
 
    await rangeFilter.moveMinToMax();

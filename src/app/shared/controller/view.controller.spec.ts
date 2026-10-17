@@ -2,7 +2,6 @@ import { Directive, ElementRef, QueryList } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
-import { View } from '../model/view-config';
 import { SceneFactory } from '../test';
 import { ViewController } from './view.controller';
 
@@ -13,9 +12,9 @@ class ViewControllerTestable extends ViewController {
       super(null, null, null, null, null, null, null, null, null, null);
    }
 
-   protected onPreRestoreView(view: View): void { }
+   protected onPreRestoreView(): void { }
 
-   protected onPreSaveView(view: View): void { }
+   protected onPreSaveView(): void { }
 }
 
 describe('ViewController', () => {

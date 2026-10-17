@@ -30,7 +30,7 @@ describe('ChartContext', () => {
 
    beforeEach(() => {
       context = new ChartContext(columns, ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
-      eventHandlerSpy = vi.fn().mockImplementation(e => null);
+      eventHandlerSpy = vi.fn();
       context.subscribeToChanges(eventHandlerSpy);
    });
 

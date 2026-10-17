@@ -30,7 +30,7 @@ export class RawDataRevealService {
    * column names and their values
    */
   ofTimeUnit(baseQuery: Query, timeColumns: Column[], startTimes: number[], columnNames: string[],
-    columnValues: any[], context: ElementContext): void {
+    columnValues: unknown[], context: ElementContext): void {
     const query = baseQuery.clone();
     for (let i = 0; i < timeColumns.length; i++) {
       const timeStart = startTimes[i];
@@ -49,14 +49,14 @@ export class RawDataRevealService {
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
    */
-  ofQuery(baseQuery: Query, columnNames: string[], columnValues: any[], context: ElementContext): void {
+  ofQuery(baseQuery: Query, columnNames: string[], columnValues: unknown[], context: ElementContext): void {
     const query = baseQuery.clone();
     for (let i = 0; i < columnNames.length; i++) {
       const dataType = context.columns.find(c => c.name === columnNames[i]).dataType;
       if (dataType === DataType.TIME) {
-        query.addValueRangeFilter(columnNames[i], columnValues[i], columnValues[i]);
+        query.addValueRangeFilter(columnNames[i], columnValues[i] as number, columnValues[i] as number);
       } else {
-        query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i]));
+        query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i] as string | number | boolean));
       }
     }
     this.show(query);

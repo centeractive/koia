@@ -43,7 +43,7 @@ export class ChartDataHelper {
 
    static categoryData(context: ChartContext): CategoryData {
       const nameColumn = context.groupByColumns[0];
-      const labels: any[] = [];
+      const labels: unknown[] = [];
       const labeledValues: LabeledValues[] = [];
       const nonUniqueName = this.findNonUniqueName(context.entries, nameColumn, context.dataColumns, (label, e) => {
          context.dataColumns.forEach((c, iCol) => {
@@ -92,9 +92,9 @@ export class ChartDataHelper {
       return undefined;
    }
 
-   private static throwNonUniqueValueError(column: Column, value: any): void {
+   private static throwNonUniqueValueError(column: Column, value: unknown): void {
       if (column.dataType == DataType.TIME) {
-         value = DateTimeUtils.formatTime(value, column.groupingTimeUnit);
+         value = DateTimeUtils.formatTime(value as number, column.groupingTimeUnit);
       }
       throw new Error('Value \'' + value + '\' is not unique');
    }
@@ -114,7 +114,7 @@ export class ChartDataHelper {
     * @returns the first [[DataPoint]] with an 'x' attribute matching the specified 'xValue'
     * or [[undefined]] if no matching [[DataPoint]] is found
     */
-   static findDataPoint(datapoints: DataPoint[], xValue: any): DataPoint {
+   static findDataPoint(datapoints: DataPoint[], xValue: number): DataPoint {
       return datapoints.find(dp => dp.x === xValue);
    }
 

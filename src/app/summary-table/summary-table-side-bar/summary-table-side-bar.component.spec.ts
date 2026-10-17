@@ -11,7 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { Aggregation, ChangeEvent, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
 import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
@@ -166,7 +166,7 @@ describe('SummaryTableSideBarComponent', () => {
     context.dataColumns = [findColumn('Amount')];
     context.aggregations = [Aggregation.COUNT];
     let contextChangeEvents = 0;
-    context.subscribeToChanges((e: ChangeEvent) => ++contextChangeEvents);
+    context.subscribeToChanges(() => ++contextChangeEvents);
 
     // when
     component.addValueGroupingFor(findColumn('Amount'));
@@ -186,7 +186,7 @@ describe('SummaryTableSideBarComponent', () => {
     context.dataColumns = [amountColumn];
     context.aggregations = [Aggregation.SUM, Aggregation.MEDIAN];
     let contextChangeEvents = 0;
-    context.subscribeToChanges((e: ChangeEvent) => ++contextChangeEvents);
+    context.subscribeToChanges(() => ++contextChangeEvents);
 
     // when
     component.addValueGroupingFor(amountColumn);

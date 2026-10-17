@@ -4,8 +4,7 @@ export class DragDropEventFactory<T> {
 
    createInContainerEvent(containerId: string, data: T[], fromIndex: number, toIndex: number): CdkDragDrop<T[], T[]> {
       const event = this.createEvent(fromIndex, toIndex);
-      const container: any = { id: containerId, data: data };
-      event.container = container;
+      event.container = { id: containerId, data: data } as CdkDropList<T[]>;
       event.previousContainer = event.container;
       event.item = { data: data[fromIndex] } as CdkDrag<T>;
       return event;
@@ -34,8 +33,7 @@ export class DragDropEventFactory<T> {
    }
 
    private createContainer(model: ContainerModel<T>): CdkDropList<T[]> {
-      const container: any = { id: model.id, data: model.data };
-      return <CdkDropList<T[]>>container;
+      return { id: model.id, data: model.data } as CdkDropList<T[]>;
    }
 }
 

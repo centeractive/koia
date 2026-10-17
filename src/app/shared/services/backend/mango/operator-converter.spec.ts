@@ -23,8 +23,7 @@ describe('OperatorConverter', () => {
    it('#toMangoOperator should throw error when operator is unknown', () => {
 
       // given
-      const op: any = 'xyz';
-      const operator: Operator = op;
+      const operator = 'xyz' as unknown as Operator;
 
       // when
       const conversion = () => operatorConverter.toMangoOperator(operator);

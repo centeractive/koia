@@ -297,7 +297,7 @@ export abstract class ElementContext {
      *
      * @param eventHandler custom handler for emitted events of type <ChangeEvent>
     */
-   subscribeToChanges(eventHandler: any): void {
+   subscribeToChanges(eventHandler: (changeEvent: ChangeEvent) => void): void {
       this.changeEventEmitter.subscribe(eventHandler);
    }
 

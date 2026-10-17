@@ -30,7 +30,7 @@ describe('RangeFilterComponent', () => {
     fixture = TestBed.createComponent(RangeFilterComponent);
     component = fixture.componentInstance;
     component.filter = new NumberRangeFilter(amountColumn, 1, 10, { min: 2, max: 5 }, false);
-    component.ngOnChanges(null);
+    component.ngOnChanges();
     fixture.detectChanges();
   });
 
@@ -125,7 +125,7 @@ describe('RangeFilterComponent', () => {
     // given
     const timeColumn: Column = { name: 'Time', dataType: DataType.TIME, width: 70, format: 'd MMM yyyy HH:mm:ss SSS' };
     component.filter = new TimeRangeFilter(timeColumn, 0, 100_000, { min: 0, max: 50_000, maxExcluding: true }, false);
-    component.ngOnChanges(null);
+    component.ngOnChanges();
 
     // when
     component.onHighValueChanged();
@@ -142,8 +142,8 @@ describe('RangeFilterComponent', () => {
     const emit = vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
-    component.ngOnChanges(null);
-    component.ngOnChanges(null);
+    component.ngOnChanges();
+    component.ngOnChanges();
     adjustedValueRange.next();
 
     // then
@@ -156,7 +156,7 @@ describe('RangeFilterComponent', () => {
     const adjustedValueRange = new Subject<void>();
     vi.spyOn(component.filter, 'onAdjustedValueRange').mockReturnValue(adjustedValueRange);
     const emit = vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
-    component.ngOnChanges(null);
+    component.ngOnChanges();
 
     // when
     component.ngOnDestroy();

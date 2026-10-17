@@ -1,5 +1,14 @@
 import { FormattedFloatDirective } from './formatted-float.directive';
-import { ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+
+@Component({
+    template: '<input formattedFloat>',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
+})
+class FormattedFloatHostComponent {
+}
 
 describe('FormattedFlatDirective', () => {
 
@@ -139,8 +148,11 @@ describe('FormattedFlatDirective', () => {
 
     it('#onInputChange should accepted number', () => {
 
+        // given
+        onInput('1');
+
         // when
-        directive.onInputChange(onInput('1'));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('1');
@@ -149,8 +161,11 @@ describe('FormattedFlatDirective', () => {
 
     it('#onInputChange should accept decimal separator at end', () => {
 
+        // given
+        onInput('1' + ds);
+
         // when
-        directive.onInputChange(onInput('1' + ds));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('1' + ds);
@@ -159,8 +174,11 @@ describe('FormattedFlatDirective', () => {
 
     it('#onInputChange should accept zero following decimal separator', () => {
 
+        // given
+        onInput('1' + ds + '0');
+
         // when
-        directive.onInputChange(onInput('1' + ds + '0'));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('1' + ds + '0');
@@ -169,8 +187,11 @@ describe('FormattedFlatDirective', () => {
 
     it('#onInputChange should format number', () => {
 
+        // given
+        onInput('1234', 1);
+
         // when
-        directive.onInputChange(onInput('1234', 1));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('1' + ts + '234');
@@ -179,8 +200,11 @@ describe('FormattedFlatDirective', () => {
 
     it('#onInputChange should keep minus sign', () => {
 
+        // given
+        onInput('-');
+
         // when
-        directive.onInputChange(onInput('-'));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('-');
@@ -189,8 +213,11 @@ describe('FormattedFlatDirective', () => {
 
     it('#onInputChange should not count non-digit in front of caret', () => {
 
+        // given
+        onInput('-12', 3);
+
         // when
-        directive.onInputChange(onInput('-12', 3));
+        directive.onInputChange();
 
         // then
         expect(inputElement.value).toBe('-12');
@@ -255,7 +282,7 @@ describe('FormattedFlatDirective', () => {
         inputElement.value = '1' + ds + '0';
 
         // when
-        directive.onBlur(new FocusEvent('blur'));
+        directive.onBlur();
 
         // then
         expect(inputElement.value).toBe('1');
@@ -267,19 +294,44 @@ describe('FormattedFlatDirective', () => {
         inputElement.value = '-';
 
         // when
-        directive.onBlur(new FocusEvent('blur'));
+        directive.onBlur();
 
         // then
         expect(inputElement.value).toBe('-');
     });
 
-    function onInput(text: string, caretPos?: number): KeyboardEvent {
+    it('input event on host element should format number', () => {
+
+        // given
+        const input = createHostInput();
+        input.value = '1234';
+
+        // when
+        input.dispatchEvent(new Event('input'));
+
+        // then
+        expect(input.value).toBe('1' + ts + '234');
+    });
+
+    it('blur event on host element should format float representation', () => {
+
+        // given
+        const input = createHostInput();
+        input.value = '1' + ds + '0';
+
+        // when
+        input.dispatchEvent(new Event('blur'));
+
+        // then
+        expect(input.value).toBe('1');
+    });
+
+    function onInput(text: string, caretPos?: number): void {
         inputElement.value = text;
         if (caretPos === undefined) {
             caretPos = text.length;
         }
         inputElement.setSelectionRange(caretPos, caretPos)
-        return new KeyboardEvent('input', {});
     }
 
     function clipboardEvent(text: string, selectionStart: number, selectionEnd?: number): ClipboardEvent {
@@ -287,5 +339,12 @@ describe('FormattedFlatDirective', () => {
         const clipboardData = new DataTransfer();
         clipboardData.setData('text/plain', text);
         return new ClipboardEvent('paste', { clipboardData });
+    }
+
+    function createHostInput(): HTMLInputElement {
+        TestBed.configureTestingModule({ declarations: [FormattedFloatHostComponent, FormattedFloatDirective] });
+        const fixture = TestBed.createComponent(FormattedFloatHostComponent);
+        fixture.detectChanges();
+        return fixture.nativeElement.querySelector('input');
     }
 });

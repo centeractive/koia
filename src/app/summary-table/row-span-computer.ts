@@ -30,7 +30,7 @@ export class RowSpanComputer {
 
    private initSpans(columns: string[]): Array<Span[]> {
       const spans: Array<Span[]> = [];
-      columns.forEach(p => spans.push([]));
+      columns.forEach(() => spans.push([]));
       return spans;
    }
 }

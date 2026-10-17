@@ -34,7 +34,7 @@ describe('ExportDataConverter', () => {
             { a: 'y', b: 2, c: object },
             { a: 'z', b: 3, d: array }
         ];
-        expect(data as any).toEqual(expected);
+        expect(data).toEqual(expected);
     });
 
     it('#timeToFormattedString', () => {
@@ -62,7 +62,7 @@ describe('ExportDataConverter', () => {
             { Position: 3, Name: 'C', Amount: 78.6, Time: '18 Jan 2019 14:00:00' },
             { Position: 4, Name: 'D', Amount: 45.2, Time: '18 Jan 2019 15:00:00' }
         ];
-        expect(data as any).toEqual(expected);
+        expect(data).toEqual(expected);
     });
 
     it('#timeToFormattedString should keep null time', () => {

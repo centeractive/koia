@@ -187,7 +187,7 @@ describe('ArrayUtils', () => {
 
   it('#removeElement should not change array when element does not exists', () => {
     expect(ArrayUtils.removeElement([], 1)).toEqual([]);
-    expect(ArrayUtils.removeElement([1, 5], '5')).toEqual([1, 5]);
+    expect(ArrayUtils.removeElement<number | string>([1, 5], '5')).toEqual([1, 5]);
     expect(ArrayUtils.removeElement(['a', 'b', 'c'], 'x')).toEqual(['a', 'b', 'c']);
   });
 

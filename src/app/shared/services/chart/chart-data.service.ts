@@ -176,7 +176,7 @@ export class ChartDataService {
     if (!context.groupByColumns.length) {
       throw this.errorResultFactory.groupByColumnNotDefined(chartType);
     }
-    const distinctGroupingValues = new Set<any>();
+    const distinctGroupingValues = new Set<number>();
     const datasets: DataSet[] = [];
     context.entries.map(entry => {
       const key = this.dataNameConverter.toGroupKey(entry, context.dataColumns[0], context.splitColumns);
@@ -184,7 +184,7 @@ export class ChartDataService {
         const groupingValue = ChartDataHelper.extractGroupingValue(entry, context.groupByColumns[0]);
         if (groupingValue !== null && groupingValue !== undefined) {
           distinctGroupingValues.add(groupingValue);
-          this.addGroupValue(datasets, key, groupingValue);
+          this.addGroupValue(datasets, key as string, groupingValue);
         }
       }
     });

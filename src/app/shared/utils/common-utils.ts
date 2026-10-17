@@ -41,7 +41,7 @@ export class CommonUtils {
   /**
    * @returns a clone (copy) of the specified object or array, the value itself if it's a primitive
    */
-  static clone(value: any): any {
+  static clone<T>(value: T): T {
     if (value) {
       return JSON.parse(JSON.stringify(value));
     }

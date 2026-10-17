@@ -11,8 +11,8 @@ const sample = fruitSalesOf('en');
 const pivotTab = pivotTabOf(sample);
 const rowColumn = pivotRowColumnOf(pivotTab);
 const timeColumn = pivotTimeColumnOf(pivotTab);
-const firstRowValue = distinctValuesOf(sample, rowColumn)[0];
-const firstDay: string = distinctValuesOf(sample, timeColumn)[0];
+const firstRowValue = distinctValuesOf<string>(sample, rowColumn)[0];
+const firstDay = distinctValuesOf<string>(sample, timeColumn)[0];
 
 test.beforeEach(async ({ front, tabBar, pivot }) => {
    await front.open('en');

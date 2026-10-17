@@ -1,9 +1,9 @@
 export interface CategoryData {
-    labels: any[];
+    labels: unknown[];
     dataSets: LabeledValues[];
 }
 
 export interface LabeledValues {
-    label: any;
+    label: string;
     values: number[];
 }

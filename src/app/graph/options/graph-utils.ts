@@ -19,7 +19,7 @@ export class GraphUtils {
     *
     * @returns the value or en empty tring if no matching node was found
     */
-   static findColumnValue(graphNode: GraphNode, nodeName: string): any {
+   static findColumnValue(graphNode: GraphNode, nodeName: string): string | number {
       if (graphNode.name === nodeName) {
          return graphNode.value;
       } else if (graphNode.parent) {
@@ -47,11 +47,11 @@ export class GraphUtils {
       return graphNode.name === '' ? [] : [graphNode.name];
    }
 
-   static formattedValueOf(graphNode: GraphNode, context: GraphContext): any {
-      let value: any = graphNode.value;
+   static formattedValueOf(graphNode: GraphNode, context: GraphContext): string | number {
+      let value: string | number = graphNode.value;
       const timeColumn = this.findCorrespondingTimeColumn(graphNode.name, context);
       if (timeColumn) {
-         value = DateTimeUtils.formatTime(value, timeColumn.groupingTimeUnit, LanguageService.localeId());
+         value = DateTimeUtils.formatTime(value as number,timeColumn.groupingTimeUnit, LanguageService.localeId());
       }
       return value;
    }

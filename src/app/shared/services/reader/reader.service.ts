@@ -22,7 +22,7 @@ export class ReaderService {
   readHeader(blob: Blob, bytesCount: number, encoding?: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = e => resolve((<any>e.target).result);
+      reader.onloadend = e => resolve(e.target.result as string);
       reader.onerror = e => reject(e);
       reader.readAsText(blob.slice(0, bytesCount), encoding);
     });

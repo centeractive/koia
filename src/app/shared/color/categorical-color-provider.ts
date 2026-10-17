@@ -1,6 +1,6 @@
 import { NumberUtils } from 'app/shared/utils';
 import {
-    scaleOrdinal, schemeAccent, schemeCategory10, schemeDark2, schemePaired, schemePastel1,
+    ScaleOrdinal, scaleOrdinal, schemeAccent, schemeCategory10, schemeDark2, schemePaired, schemePastel1,
     schemePastel2, schemeSet1, schemeSet2, schemeSet3, schemeTableau10
 } from 'd3';
 import { ColorProvider, ColorOptions, ColorConverter, CategoricalColorScheme } from '.';
@@ -8,12 +8,12 @@ import { ColorProvider, ColorOptions, ColorConverter, CategoricalColorScheme } f
 export class CategoricalColorProvider extends ColorProvider {
 
     private colors: ReadonlyArray<string>;
-    private colorScale: any;
+    private colorScale: ScaleOrdinal<number, string>;
 
     constructor(options: ColorOptions) {
         super(options);
         this.colors = this.colorsOf(options.scheme as CategoricalColorScheme);
-        this.colorScale = scaleOrdinal(this.colors);
+        this.colorScale = scaleOrdinal<number, string>(this.colors);
     }
 
     /**

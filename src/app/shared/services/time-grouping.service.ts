@@ -17,7 +17,7 @@ export class TimeGroupingService {
     * @returns a new dataframe with the time column grouped by timeunit and renamed to "<column name> (per <time unit>)".
     * The original dataframe is returned when time column does not exist in any row or when timeunit is not defined.
     */
-   groupByTimeUnit(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
+   groupByTimeUnit(dataFrame: IDataFrame<number, object>, timeColumn: Column): IDataFrame<number, object> {
       return this.group(dataFrame, timeColumn, t => DateTimeUtils.toBaseTime(t, timeColumn.groupingTimeUnit));
    }
 
@@ -25,14 +25,14 @@ export class TimeGroupingService {
     * @returns a new dataframe with time column grouped by the formatted timeunit and renamed to "<column name> (per <time unit>)".
     * The original dataframe is returned when time column does not exist in any row or when timeunit is not defined.
     */
-   groupByFormattedTimeUnit(dataFrame: IDataFrame<number, any>, timeColumn: Column): IDataFrame<number, any> {
+   groupByFormattedTimeUnit(dataFrame: IDataFrame<number, object>, timeColumn: Column): IDataFrame<number, object> {
       return this.group(dataFrame, timeColumn, t => {
          const date = DateTimeUtils.toBaseDate(t, timeColumn.groupingTimeUnit);
          return date ? DateTimeUtils.formatTime(date.getTime(), timeColumn.groupingTimeUnit) : TimeGroupingService.EMPTY;
       });
    }
 
-   private group(dataFrame: IDataFrame<number, any>, timeColumn: Column, transformer: (t: number) => any): IDataFrame<number, any> {
+   private group(dataFrame: IDataFrame<number, object>, timeColumn: Column, transformer: (t: number) => number | string): IDataFrame<number, object> {
       if (timeColumn.groupingTimeUnit && DataFrameUtils.hasColumn(dataFrame, timeColumn.name)) {
          dataFrame = DataFrameUtils.transformColumn(dataFrame, timeColumn.name, transformer);
          if (timeColumn.groupingTimeUnit === TimeUnit.MILLISECOND) {

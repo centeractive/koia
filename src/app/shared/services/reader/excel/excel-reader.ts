@@ -26,7 +26,7 @@ export class ExcelReader implements DataReader {
       return false;
    }
 
-   furnishAttributes(dataHeader: string): Attribute[] {
+   furnishAttributes(): Attribute[] {
       return [this.attrSheetName];
    }
 
@@ -82,10 +82,10 @@ export class ExcelReader implements DataReader {
       return workbook.SheetNames[0];
    }
 
-   private read(blob: Blob): Promise<any> {
+   private read(blob: Blob): Promise<string> {
       return new Promise<string>((resolve, reject) => {
          const reader = new FileReader();
-         reader.onloadend = e => resolve((<any>e.target).result);
+         reader.onloadend = e => resolve(e.target.result as string);
          reader.onerror = e => reject(e);
          reader.readAsBinaryString(blob);
       });

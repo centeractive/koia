@@ -72,7 +72,7 @@ describe('PivotTableSideBarComponent', () => {
     };
     component.context = context;
     component.data = data;
-    component.ngOnChanges(null);
+    component.ngOnChanges();
     fixture.detectChanges();
   });
 
@@ -106,21 +106,21 @@ describe('PivotTableSideBarComponent', () => {
 
   it('#ngOnChanges should work smoothly when context is null', () => {
     component.context = null;
-    component.ngOnChanges(null);
+    component.ngOnChanges();
 
     expect('prevent "has no expectations" warning').toBeTruthy();
   });
 
   it('#ngOnChanges should work smoothly when columns are null', () => {
     component.columns = null;
-    component.ngOnChanges(null);
+    component.ngOnChanges();
 
     expect('prevent "has no expectations" warning').toBeTruthy();
   });
 
   it('#ngOnChanges should work smoothly when data is null', () => {
     component.data = null;
-    component.ngOnChanges(null);
+    component.ngOnChanges();
 
     expect('prevent "has no expectations" warning').toBeTruthy();
   });
@@ -151,7 +151,7 @@ describe('PivotTableSideBarComponent', () => {
     component.context.valueGroupings = [amountGrouping, percentGrouping];
 
     // when
-    component.ngOnChanges(null);
+    component.ngOnChanges();
 
     // then
     expect(amountGrouping.minMaxValues).toEqual({ min: 10, max: 40 });

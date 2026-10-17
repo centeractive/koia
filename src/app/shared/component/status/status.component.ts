@@ -13,7 +13,7 @@ export class StatusComponent {
 
   status: Status;
 
-  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: any) {
+  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) public data: { status: Status }) {
     this.status = this.data.status;
   }
 }

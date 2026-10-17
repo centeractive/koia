@@ -8,7 +8,7 @@ import { ScaleLinear, scaleLinear } from 'd3';
 import { PivotContext } from '../model';
 import { CellClickHandler } from './cell-click-handler';
 
-declare let $: any;
+declare let $: { pivotUtilities: { renderers: object } };
 
 export class PivotOptionsProvider {
 
@@ -63,7 +63,7 @@ export class PivotOptionsProvider {
    /**
     * enriches the specified pivot options with relevant elements or cretes new options if the specified [[pivotOptions]] is undefined
     */
-   enrichPivotOptions(pivotOptions: object, context: PivotContext, onPivotTableRefreshEnd: (config: object) => any): object {
+   enrichPivotOptions(pivotOptions: object, context: PivotContext, onPivotTableRefreshEnd: (config: object) => void): object {
       if (!pivotOptions) {
          pivotOptions = { rendererName: PivotOptionsProvider.DEFAULT_RENDERER };
       }
@@ -162,7 +162,7 @@ export class PivotOptionsProvider {
       };
    }
 
-   private onCellClicked(context: PivotContext, mouseEvent: any, filters: object, pivotData: object): void {
+   private onCellClicked(context: PivotContext, mouseEvent: MouseEvent, filters: object, pivotData: object): void {
       const exclusions = this.currConfig['exclusions'];
       const inclusions = this.currConfig['inclusions'];
       this.cellClickHandler.onCellClicked(context.valueGroupings, mouseEvent, filters, exclusions, inclusions, pivotData);

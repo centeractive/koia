@@ -4,6 +4,8 @@ import { Language, LANGUAGES, languageOf } from '../language/language';
 import { LanguageService } from '../language/language.service';
 import { DASHBOARD_TAB_TITLES, PIVOT_TABLE_TAB_TITLES } from './tab-titles';
 
+interface PivotOptionsHolder { pivotOptions?: { cols?: unknown[], rows?: unknown[] }; }
+
 const TAB_ID_PREFIX = 'tab';
 const TAB_ID_PATTERN = /^tab(\d+)$/;
 
@@ -56,7 +58,7 @@ export function hasContent(tab: TabDef): boolean {
    if (tab.type === ViewType.DASHBOARD) {
       return !!tab.view?.elements.length;
    }
-   const pivotOptions = tab.record?.data?.pivotOptions;
+   const pivotOptions = (tab.record?.data as PivotOptionsHolder)?.pivotOptions;
    return !!(pivotOptions?.cols?.length || pivotOptions?.rows?.length);
 }
 

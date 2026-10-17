@@ -13,7 +13,6 @@ class TextareaMaxRowsComponent {
 
 describe('TextareaMaxRowsDirective', () => {
 
-  let component: TextareaMaxRowsComponent;
   let fixture: ComponentFixture<TextareaMaxRowsComponent>;
   let taDebugElement: DebugElement;
   let textArea: HTMLTextAreaElement;
@@ -23,7 +22,6 @@ describe('TextareaMaxRowsDirective', () => {
       declarations: [TextareaMaxRowsComponent, TextareaMaxRowsDirective],
     }).compileComponents();
     fixture = TestBed.createComponent(TextareaMaxRowsComponent);
-    component = fixture.componentInstance;
     fixture.detectChanges();
 
     taDebugElement = fixture.debugElement.query(By.css('textarea'));

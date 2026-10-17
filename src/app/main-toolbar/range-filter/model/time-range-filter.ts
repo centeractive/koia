@@ -15,6 +15,9 @@ import { TimeRangeSliderCustomizer } from './slider/time-range-slider-customizer
  */
 export class TimeRangeFilter extends NumberRangeFilter {
 
+   declare availableSteps: TimeUnit[];
+   declare selectedStep: TimeUnit;
+
    constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
       super(column, start, end, selValueRange, inverted);
    }
@@ -53,7 +56,7 @@ export class TimeRangeFilter extends NumberRangeFilter {
       return LanguageService.instant('filter.timeUnit.' + step);
    }
 
-   override onStepChanged(timeStep: any): void {
+   override onStepChanged(timeStep: TimeUnit): void {
       this.selectedStep = timeStep;
       this.adjustValueRange();
       this.defineSelectedStepAbbreviation();

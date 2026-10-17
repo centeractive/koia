@@ -96,7 +96,7 @@ describe('PromiseProgressMonitor', () => {
     let expectedPercent = 100 / 3;
     let expectedLastSettledTask = "task0";
 
-    promiseProgressMonitor.onProgressChange((monitor) => {
+    promiseProgressMonitor.onProgressChange(() => {
       expect(promiseProgressMonitor.settled).toEqual(expectedSettled);
       expect(promiseProgressMonitor.settledPercent).toEqual(expectedPercent);
       expect(promiseProgressMonitor.lastSettledTask).toEqual(expectedLastSettledTask);

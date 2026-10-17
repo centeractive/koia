@@ -11,7 +11,7 @@ export class CSVReader implements DataReader {
 
    private static readonly SEPARATORS = [',', ';', ':', '|'];
    private attrHasHeaderColumn = new Attribute('scene.reader.csvHeaderRow', undefined, DataType.BOOLEAN, false);
-   private attrSeparator = new Attribute('scene.reader.csvSeparator', undefined, DataType.TEXT, undefined);
+   private attrSeparator = new Attribute<string>('scene.reader.csvSeparator', undefined, DataType.TEXT, undefined);
 
    getDescription(): string {
       return LanguageService.instant('scene.reader.csvDescription');

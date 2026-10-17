@@ -68,7 +68,7 @@ describe('DBService', () => {
     vi.spyOn(couchDBService, 'listDatabases').mockReturnValue(undefined);
 
     // when
-    await dbService.initBackend(false).then(r => null);
+    await dbService.initBackend(false).then(() => null);
 
     // then
     expect(couchDBService.listDatabases).not.toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe('DBService', () => {
     vi.spyOn(couchDBService, 'createDatabase').mockReturnValue(undefined);
 
     // when
-    await dbService.initBackend(true).then(r => {
+    await dbService.initBackend(true).then(() => {
 
       // then
       expect(couchDBService.createDatabase).not.toHaveBeenCalled();
@@ -94,7 +94,7 @@ describe('DBService', () => {
     vi.spyOn(couchDBService, 'listDatabases').mockRejectedValue('error');
 
     // when
-    dbService.initBackend(true).then(r => null);
+    dbService.initBackend(true).then(() => null);
     flush();
 
     // then
@@ -111,7 +111,7 @@ describe('DBService', () => {
   it('#isIndexedDbInUse should switch to IndexedDB', async () => {
 
     // when
-    await dbService.useIndexedDb().then(db => {
+    await dbService.useIndexedDb().then(() => {
 
       // then
       expect(dbService.useIndexedDb).toBeTruthy();
@@ -184,7 +184,7 @@ describe('DBService', () => {
   it('#getMaxDataItemsPerScene should return value when IndexedDB is used', async () => {
 
     // given
-    await dbService.useIndexedDb().then(db => null);
+    await dbService.useIndexedDb().then(() => null);
 
     // when
     const maxDataItems = dbService.getMaxDataItemsPerScene();
@@ -199,7 +199,7 @@ describe('DBService', () => {
     const sceneID = '99';
 
     // when
-    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene(sceneID, columns), false).then(() => null);
 
     // then
     await dbService.findScene(sceneID)
@@ -236,13 +236,13 @@ describe('DBService', () => {
 
     // given
     const scene2 = SceneFactory.createScene('2', columns);
-    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(s => null);
-    await dbService.persistScene(scene2, false).then(s => null);
-    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(() => null);
+    await dbService.persistScene(scene2, false).then(() => null);
+    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(() => null);
 
     // when
     await dbService.activateScene(scene2._id)
-      .then(s => null);
+      .then(() => null);
 
     // then
     const activeScene = dbService.getActiveScene();
@@ -264,9 +264,9 @@ describe('DBService', () => {
   it('#findSceneInfos should return info about all scenes', async () => {
 
     // given
-    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(s => null);
-    await dbService.persistScene(SceneFactory.createScene('2', columns), false).then(s => null);
-    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(s => null);
+    await dbService.persistScene(SceneFactory.createScene('1', columns), false).then(() => null);
+    await dbService.persistScene(SceneFactory.createScene('2', columns), false).then(() => null);
+    await dbService.persistScene(SceneFactory.createScene('3', columns), false).then(() => null);
 
     // when
     await dbService.findSceneInfos()
@@ -307,7 +307,7 @@ describe('DBService', () => {
 
     // when
     await dbService.updateScene(initialScene)
-      .then(s => null);
+      .then(() => null);
 
     // then
     expect(initialScene._rev).not.toBe(sceneRev);
@@ -319,7 +319,7 @@ describe('DBService', () => {
 
     // when
     await dbService.deleteScene(initialScene)
-      .then(s => null);
+      .then(() => null);
 
     // then
     expect(dbService.getActiveScene()).toBeUndefined();
@@ -330,10 +330,10 @@ describe('DBService', () => {
 
     // given
     const scene2 = SceneFactory.createScene('2', columns);
-    await dbService.persistScene(scene2, false).then(s => null);
+    await dbService.persistScene(scene2, false).then(() => null);
 
     // when
-    await dbService.deleteScene(scene2).then(s => null);
+    await dbService.deleteScene(scene2).then(() => null);
 
     // then
     expect(dbService.getActiveScene()).toBe(initialScene);
@@ -472,7 +472,7 @@ describe('DBService', () => {
   it('#writeEntries should write entries', async () => {
 
     // when
-    await dbService.writeEntries(initialScene.database, entries).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
 
     // then
     await lastValueFrom(dbService.findEntries(new Query(), false))
@@ -482,7 +482,7 @@ describe('DBService', () => {
   it('#countEntriesOfActiveScene should return number of documents', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
 
     // when
     await dbService.countEntriesOfActiveScene()
@@ -496,7 +496,7 @@ describe('DBService', () => {
   it('#requestEntriesPage should return empty page when no matching entries exist', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
 
     // when
     const query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'xyz'));
@@ -515,7 +515,7 @@ describe('DBService', () => {
   it('#requestEntriesPage should return first page with new context', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
 
     // when
     const query = new Query();
@@ -535,7 +535,7 @@ describe('DBService', () => {
   it('#requestEntriesPage should return first page with matching entries', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
 
     // when
     const query = new Query();
@@ -558,7 +558,7 @@ describe('DBService', () => {
   it('#requestEntriesPage should return second page with same context', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
     const query = new Query();
     query.setPageDefinition(0, 2);
     let prevPage: Page;
@@ -582,7 +582,7 @@ describe('DBService', () => {
   it('#findEntries should return filtered entries when full text filter is set', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
     const query = new Query();
     query.setFullTextFilter('warn');
 
@@ -599,7 +599,7 @@ describe('DBService', () => {
   it('#findEntries should return filtered entries when two contains filter on same column exist', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
     const query = new Query();
     query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'w'));
     query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'o'));
@@ -630,7 +630,7 @@ describe('DBService', () => {
   it('#numberRangeOf should return time range when entries exist', async () => {
 
     // given
-    await dbService.writeEntries(initialScene.database, entries).then(r => null);
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
 
     // when
     await dbService.numberRangeOf(findColumn('Time'))
@@ -666,7 +666,7 @@ describe('DBService', () => {
     if (!dbOneExists) {
       const scene = SceneFactory.createScene('1', columns);
       await dbService.persistScene(scene, true)
-        .then(r => null);
+        .then(() => null);
     }
   }
 

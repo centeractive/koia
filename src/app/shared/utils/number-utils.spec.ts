@@ -470,17 +470,17 @@ describe('NumberUtils', () => {
   });
 
   it('#countDecimals should return zero when argument is string', () => {
-    const s: any = '12';
+    const s = '12' as unknown as number;
     expect(NumberUtils.countDecimals(s, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is string', () => {
-    const b: any = true;
+    const b = true as unknown as number;
     expect(NumberUtils.countDecimals(b, 'en-US')).toBe(0);
   });
 
   it('#countDecimals should return zero when argument is object', () => {
-    const o: any = { num: 12 };
+    const o = { num: 12 } as unknown as number;
     expect(NumberUtils.countDecimals(o, 'en-US')).toBe(0);
   });
 

@@ -12,15 +12,15 @@ import { ValueRangeConverter } from './value-range-converter';
 })
 export class ValueRangeGroupingService {
 
-  compute(baseData: IDataFrame<number, any>, groupings: ValueGrouping[]): IDataFrame<number, any> {
-    let dataFrame: IDataFrame<number, any> = new DataFrame(baseData);
+  compute(baseData: IDataFrame<number, object>, groupings: ValueGrouping[]): IDataFrame<number, object> {
+    let dataFrame: IDataFrame<number, object> = new DataFrame(baseData);
     for (const grouping of groupings) {
       dataFrame = this.groupByValueRanges(dataFrame, grouping);
     }
     return dataFrame;
   }
 
-  private groupByValueRanges(dataFrame: IDataFrame<number, any>, grouping: ValueGrouping): IDataFrame<number, any> {
+  private groupByValueRanges(dataFrame: IDataFrame<number, object>, grouping: ValueGrouping): IDataFrame<number, object> {
     const sortedRangesMax = this.sortedActiveRangesMaxValues(grouping.ranges);
     const series = dataFrame.getSeries(grouping.columnName);
     const values: string[] = [];

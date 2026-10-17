@@ -643,7 +643,7 @@ describe('SceneComponent', () => {
       { _id: '1000001', 'Column 1': 'A', 'Column 2': 1 },
       { _id: '1000002', 'Column 1': 'B', 'Column 2': 2 },
       { _id: '1000003', 'Column 1': 'C', 'Column 2': 3 }
-    ] as any);
+    ]);
     expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
   }));
 
@@ -672,7 +672,7 @@ describe('SceneComponent', () => {
       { _id: '1000001', 'Column 2': 1 },
       { _id: '1000002', 'Column 2': 2 },
       { _id: '1000003', 'Column 2': 3 }
-    ] as any);
+    ]);
     expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
   }));
 
@@ -701,7 +701,7 @@ describe('SceneComponent', () => {
       { _id: '1000001', 'Column 1': 'A' },
       { _id: '1000002', 'Column 1': 'B' },
       { _id: '1000003', 'Column 1': 'C' }
-    ] as any);
+    ]);
     expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
   }));
 
@@ -1244,7 +1244,7 @@ describe('SceneComponent', () => {
       0: file,
       length: 1,
       item: () => file
-    } as any as FileList;
+    } as unknown as FileList;
   }
 
   function createColumnPair(name: string): ColumnPair {

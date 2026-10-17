@@ -4,7 +4,7 @@ import { SummaryContext } from 'app/shared/model';
 
 describe('DataFrameSorter', () => {
 
-   let dataFrame: IDataFrame<number, any>;
+   let dataFrame: IDataFrame<number, object>;
    let context: SummaryContext;
    let sorter: DataFrameSorter;
 

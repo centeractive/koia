@@ -560,7 +560,7 @@ describe('MainToolbarComponent', () => {
     vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
-    const event: any = document.createEvent('Event');
+    const event = document.createEvent('Event') as Event & { key: string };
     event.key = 'x';
     event.initEvent('keyup');
     htmlInput.dispatchEvent(event);
@@ -581,7 +581,7 @@ describe('MainToolbarComponent', () => {
     const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
 
     // when
-    const event: any = document.createEvent('Event');
+    const event = document.createEvent('Event') as Event & { key: string };
     event.key = 'Enter';
     event.initEvent('keyup');
     htmlInput.dispatchEvent(event);

@@ -9,7 +9,7 @@ export class SeriesNameConverter {
     * @returns the data group ID from the entry by considering data column and split column(s) value,
     * [[undefined]] if the data column value or any split column value is empty
     */
-   toGroupKey(entry: object, dataColumn: Column, splitColumns: Column[]): any | undefined {
+   toGroupKey(entry: object, dataColumn: Column, splitColumns: Column[]): string | number | boolean | undefined {
       if (splitColumns.length === 0) {
          return entry[dataColumn.name];
       }
@@ -50,8 +50,8 @@ export class SeriesNameConverter {
    /**
     * @returns values extracted from the specified group ID
     */
-   toValues(groupKey: any, dataColumn: Column, splitColumns: Column[]): any[] {
-      const values: any[] = [];
+   toValues(groupKey: string | number | boolean, dataColumn: Column, splitColumns: Column[]): (string | number | boolean)[] {
+      const values: (string | number | boolean)[] = [];
       const columns = splitColumns.concat(dataColumn);
       const tokens = groupKey.toString().split(SeriesNameConverter.SEPARATOR);
       for (let i = 0; i < columns.length; i++) {

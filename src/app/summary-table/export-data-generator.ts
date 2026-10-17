@@ -7,13 +7,13 @@ export class ExportDataGenerator {
 
    private datePipe = new DatePipe('en-US');
 
-   generate(context: SummaryContext, dataFrame: IDataFrame<number, any>, overalls: number[]): object[] {
+   generate(context: SummaryContext, dataFrame: IDataFrame<number, object>, overalls: number[]): object[] {
       const data = this.formatTimeColumns(context, dataFrame).toArray();
       data.push(this.createOverallRow(dataFrame.getColumnNames(), overalls));
       return data;
    }
 
-   private formatTimeColumns(context: SummaryContext, dataFrame: IDataFrame<number, any>) {
+   private formatTimeColumns(context: SummaryContext, dataFrame: IDataFrame<number, object>) {
       context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c => {
          dataFrame = DataFrameUtils.transformColumn(dataFrame, ColumnNameConverter.toLabel(c, c.groupingTimeUnit), (time: number) => isNaN(time) ? '' : this.datePipe.transform(time, DateTimeUtils.ngFormatOf(c.groupingTimeUnit)));
       });

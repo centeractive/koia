@@ -7,12 +7,6 @@ import { CouchDBConstants } from './backend/couchdb';
 import { RawDataRevealService } from './raw-data-reveal.service';
 import type { Mock } from 'vitest';
 
-class MatDialogMock {
-  open() {
-    // ignore
-  }
-}
-
 describe('RawDataRevealService', () => {
 
   const now = new Date().getTime();

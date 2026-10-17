@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ScaleLinear } from 'd3';
 import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { LanguageService } from 'app/shared/services/language';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
@@ -101,10 +102,10 @@ describe('PivotOptionsProvider', () => {
       expect(sorters).toBeTruthy();
       expect(sorters.Amount).toBeTruthy();
       expect(sorters.Percent).toBeTruthy();
-      const amountSorter: (v1, v2) => any = sorters.Amount;
+      const amountSorter: (v1: string, v2: string) => number = sorters.Amount;
       expect(amountSorter('min - 0', '0 - 1')).toBeLessThan(0);
       expect(amountSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
-      const percentSorter: (v1, v2) => any = sorters.Percent;
+      const percentSorter: (v1: string, v2: string) => number = sorters.Percent;
       expect(percentSorter('min - 0', '0 - 1')).toBeLessThan(0);
       expect(percentSorter('0 - 1', 'min - 0')).toBeGreaterThan(0);
    });
@@ -113,14 +114,14 @@ describe('PivotOptionsProvider', () => {
 
       // given
       const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
-      vi.spyOn(cellClickHandler, 'onCellClicked').mockImplementation(m => null);
+      vi.spyOn(cellClickHandler, 'onCellClicked').mockImplementation(() => null);
 
       // when
       const pivotOptions = optionsProvider.enrichPivotOptions(null, context, onPivotTableRefreshEnd);
 
       // then
       const rendererOptions = pivotOptions['rendererOptions'];
-      const clickCallback: Function = rendererOptions['table']['clickCallback'];
+      const clickCallback: (e: object, value: unknown, filters: object, pivotData: object) => void = rendererOptions['table']['clickCallback'];
       const mouseEvent = {};
       const filters = { x: '100', y: '57' };
       const pivotData = {};
@@ -176,7 +177,7 @@ describe('PivotOptionsProvider', () => {
       const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
 
       // then
-      const colorScaleGenerator: (values: number[]) => any = pivotOptions['rendererOptions'].heatmap.colorScaleGenerator;
+      const colorScaleGenerator: (values: number[]) => ScaleLinear<string, string> = pivotOptions['rendererOptions'].heatmap.colorScaleGenerator;
       const scale = colorScaleGenerator.call(context, [-2, -1, 0, 1, 2]);
       expect(scale.range()).toEqual(['red', 'white', 'green']);
       expect(scale.domain()).toEqual([-2, 0, 2]);
@@ -185,13 +186,13 @@ describe('PivotOptionsProvider', () => {
    it('#enrichPivotOptions should return options that are linked with on refresh end callback', () => {
 
       // given
-      const onRefreshEndSpy = vi.fn().mockImplementation(e => null);
+      const onRefreshEndSpy = vi.fn();
 
       // when
       const pivotOptions = optionsProvider.enrichPivotOptions(undefined, context, onRefreshEndSpy);
 
       // then
-      const onRefreshCallback: Function = pivotOptions['onRefresh'];
+      const onRefreshCallback: (config?: object) => void = pivotOptions['onRefresh'];
       onRefreshCallback();
       expect(onRefreshEndSpy).toHaveBeenCalled();
    });

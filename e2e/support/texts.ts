@@ -7,11 +7,11 @@ export class Texts {
    private readonly translations: object;
 
    constructor(readonly language: Language) {
-      this.translations = jsonOf(resolve(SRC_DIR, 'assets/i18n', language + '.json'));
+      this.translations = jsonOf<object>(resolve(SRC_DIR, 'assets/i18n', language + '.json'));
    }
 
    get(key: string, params: Record<string, string | number> = {}): string {
-      const text = key.split('.').reduce<any>((node, name) => node?.[name], this.translations);
+      const text = key.split('.').reduce<unknown>((node, name) => (node as Record<string, unknown>)?.[name], this.translations);
       if (typeof text !== 'string') {
          throw new Error(`no ${this.language} text for key ${key}`);
       }

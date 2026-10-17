@@ -1,14 +1,14 @@
 import { DataType } from './data-type.enum';
 
-export class Attribute {
+export class Attribute<T = unknown> {
 
    private _name: string;
    private _description: string;
    private _dataType: DataType;
-   private _value: any;
-   private _valueChoice: any[];
+   private _value: T;
+   private _valueChoice: T[];
 
-   constructor(name: string, description: string, dataType: DataType, value: any) {
+   constructor(name: string, description: string, dataType: DataType, value: T) {
       this._name = name;
       this._description = description;
       this._dataType = dataType;
@@ -35,19 +35,19 @@ export class Attribute {
       return this._dataType === DataType.NUMBER;
    }
 
-   get value(): any {
+   get value(): T {
       return this._value;
    }
 
-   set value(value: any) {
+   set value(value: T) {
       this._value = value;
    }
 
-   get valueChoice(): any[] {
+   get valueChoice(): T[] {
       return this._valueChoice;
    }
 
-   set valueChoice(valueChoice: any[]) {
+   set valueChoice(valueChoice: T[]) {
       this._valueChoice = valueChoice;
    }
 

@@ -1,5 +1,5 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, Input, OnChanges, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
 import { ArrayUtils, NumberUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
@@ -28,7 +28,7 @@ export class PivotTableSideBarComponent implements OnChanges {
   nonGroupedColumns: Column[];
   private valueGroupingGenerator = new ValueGroupingGenerator();
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     if (this.context) {
       if (this.columns) {
         this.identifyNonGroupedColumns();
@@ -65,7 +65,7 @@ export class PivotTableSideBarComponent implements OnChanges {
   }
 
   private limitsOf(columnName: string): ValueRange {
-    const series: ISeries<number, any> = this.data.getSeries(columnName);
+    const series: ISeries<number, number> = this.data.getSeries(columnName);
     return {
       min: series.min(),
       max: series.max(),

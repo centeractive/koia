@@ -67,7 +67,7 @@ export class ExportService {
 
   private saveExcelFile(worksheet: XLSX.WorkSheet, baseFileName: string) {
     const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
-    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const excelBuffer: ArrayBuffer =XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob: Blob = new Blob([excelBuffer], { type: ExportService.TYPE_EXCEL });
     this.saveBlobAs(blob, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.EXCEL]));
   }

@@ -15,8 +15,8 @@ export class FormattedIntegerDirective {
         this.inputElement = elementRef.nativeElement;
     }
 
-    @HostListener('input', ['$event'])
-    onInputChange(event: KeyboardEvent): void {
+    @HostListener('input')
+    onInputChange(): void {
         const digitsInFront = this.digitsInFrontOfCared();
         const v = this.inputElement.value.replace(/[^0-9]*/g, '');
         this.inputElement.value = v ? this.numberFormatter.format(parseInt(v)) : v;

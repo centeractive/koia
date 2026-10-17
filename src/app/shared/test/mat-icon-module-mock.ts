@@ -20,9 +20,9 @@ import { NgModule } from '@angular/core';
 // tslint:disable-next-line:component-class-suffix
 export class MatIconModuleMock {
 
-   @Input() svgIcon: any;
-   @Input() fontSet: any;
-   @Input() fontIcon: any;
+   @Input() svgIcon: string;
+   @Input() fontSet: string;
+   @Input() fontIcon: string;
 
    selector: 'mat-icon';
    template: '<span></span>';

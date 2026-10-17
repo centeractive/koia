@@ -7,7 +7,7 @@ export interface DataHandler {
     */
    onEntries(entries: object[]): void;
 
-   onError(error: any): void;
+   onError(error: string | object): void;
 
    onComplete(): void;
 

@@ -10,7 +10,7 @@ describe('TimeGroupingService', () => {
    const datePipe = new DatePipe('en-US');
    const timeColumn: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
    let now: number;
-   let baseDataFrame: IDataFrame<number, any>;
+   let baseDataFrame: IDataFrame<number, object>;
    const service = new TimeGroupingService();
 
    beforeAll(() => {

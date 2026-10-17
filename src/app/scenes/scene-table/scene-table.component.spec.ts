@@ -36,7 +36,7 @@ describe('SceneTableComponent (all scenes)', () => {
     await setup();
     vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
     component.sceneInfos = scenes;
-    component.ngOnChanges(null);
+    component.ngOnChanges();
     fixture.detectChanges();
   });
 
@@ -99,7 +99,7 @@ describe('SceneTableComponent (active scene)', () => {
     await setup();
     activeScene = SceneFactory.createScene('1', []);
     component.activeScene = activeScene;
-    component.ngOnChanges(null);
+    component.ngOnChanges();
     fixture.detectChanges();
   });
 

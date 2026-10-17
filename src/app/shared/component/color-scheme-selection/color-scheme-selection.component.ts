@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CategoricalColorScheme, ColorProviderFactory, ColorOptions, ColorSchemeType, SequentialColorScheme } from 'app/shared/color';
 import { ElementContext } from 'app/shared/model';
 import * as _ from 'lodash';
@@ -34,7 +34,7 @@ export class ColorSchemeSelectionComponent implements OnChanges {
       .map(key => SequentialColorScheme[key]);
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(): void {
     this.colorOptions = _.clone(this.context.colorProvider.options);
   }
 

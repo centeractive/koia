@@ -36,8 +36,8 @@ export class FormattedFloatDirective {
         }
     }
 
-    @HostListener('input', ['$event'])
-    onInputChange(event: KeyboardEvent): void {
+    @HostListener('input')
+    onInputChange(): void {
         if (this.decimalSeparatorInFrontOfCared()) {
             return;
         }
@@ -63,8 +63,8 @@ export class FormattedFloatDirective {
         return StringUtils.replace(this.inputElement.value, this.inputElement.selectionStart, this.inputElement.selectionEnd, replacement).text;
     }
 
-    @HostListener('blur', ['$event'])
-    onBlur(event: FocusEvent): void {
+    @HostListener('blur')
+    onBlur(): void {
         const v = this.inputElement.value;
         if (NumberUtils.isNumber(v, undefined)) {
             const n = NumberUtils.parseFloat(v, undefined);

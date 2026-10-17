@@ -69,7 +69,7 @@ export class CouchDBService implements DB {
     return lastValueFrom(observable);
   }
 
-  createDatabase(database: string): Promise<any> {
+  createDatabase(database: string): Promise<unknown> {
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.PUT, url);
     return lastValueFrom(this.http.put<string>(url, '', this.httpOptions));
@@ -79,7 +79,7 @@ export class CouchDBService implements DB {
     return CouchDBService.MAX_DATA_ITEMS_PER_SCENE;
   }
 
-  createIndex(database: string, columnName: string): Promise<any> {
+  createIndex(database: string, columnName: string): Promise<unknown> {
     const query = sanitizeIndexQuery({
       index: {
         fields: [columnName]
@@ -88,16 +88,16 @@ export class CouchDBService implements DB {
     });
     const url = this.url(database, '_index');
     LogUtils.logHttpRequest(HTTPMethod.POST, url, query);
-    return lastValueFrom(this.http.post<any>(url, query, this.httpOptions));
+    return lastValueFrom(this.http.post<unknown>(url, query, this.httpOptions));
   }
 
-  deleteDatabase(database: string): Promise<any> {
+  deleteDatabase(database: string): Promise<unknown> {
     if (database.startsWith('_')) {
       return Promise.reject('You have no permission to delete the system database ' + database);
     }
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
-    return lastValueFrom(this.http.delete<any>(url, this.httpOptions));
+    return lastValueFrom(this.http.delete<unknown>(url, this.httpOptions));
   }
 
   findById(database: string, id: string): Promise<Document> {
@@ -106,10 +106,10 @@ export class CouchDBService implements DB {
     return lastValueFrom(this.http.get<Scene>(url, this.httpOptions));
   }
 
-  find(database: string, mangoQuery: any): Observable<Document[]> {
+  find(database: string, mangoQuery: object): Observable<Document[]> {
     const url = this.baseURL + database + '/_find';
     LogUtils.logHttpRequest(HTTPMethod.POST, url, mangoQuery);
-    return this.http.post<any>(url, mangoQuery, this.httpOptions).pipe(
+    return this.http.post<{ docs: Document[] }>(url, mangoQuery, this.httpOptions).pipe(
       map(res => res.docs)
     );
   }
@@ -147,20 +147,20 @@ export class CouchDBService implements DB {
       .then(() => document);
   }
 
-  delete(database: string, document: Document): Promise<any> {
+  delete(database: string, document: Document): Promise<DocChangeResponse> {
     const url = this.url(database, document._id + '?rev=' + document._rev);
     LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
-    return lastValueFrom(this.http.delete<any>(url, this.httpOptions));
+    return lastValueFrom(this.http.delete<DocChangeResponse>(url, this.httpOptions));
   }
 
   async countDocuments(database: string): Promise<number> {
     const url = this.url(database);
     LogUtils.logHttpRequest(HTTPMethod.GET, url);
-    return lastValueFrom(this.http.get<any>(url, this.httpOptions))
+    return lastValueFrom(this.http.get<{ doc_count: number }>(url, this.httpOptions))
       .then(info => info['doc_count']);
   }
 
-  async clear(prefix?: string): Promise<any> {
+  async clear(prefix?: string): Promise<unknown[]> {
     return this.listDatabases()
       .then(dbs => Promise.all(dbs
         .filter(db => prefix ? db.startsWith(prefix) : db)

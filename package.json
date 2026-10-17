@@ -16,7 +16,7 @@
     "test:ci": "ng test --configuration=ci",
     "test-debug": "ng test --browsers=chromium",
     "e2e": "playwright test --config e2e/playwright.config.ts",
-    "lint": "eslint src/app --fix && npm run check:i18n",
+    "lint": "eslint . --fix && npm run check:i18n",
     "check:i18n": "node scripts/check-i18n.mjs"
   },
   "private": true,

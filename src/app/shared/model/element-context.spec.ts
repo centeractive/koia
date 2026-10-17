@@ -42,7 +42,7 @@ describe('ElementContext', () => {
 
    beforeEach(() => {
       context = new TestContext(columns);
-      eventHandlerSpy = vi.fn().mockImplementation(e => null);
+      eventHandlerSpy = vi.fn();
       context.subscribeToChanges(eventHandlerSpy);
    });
 
@@ -58,8 +58,11 @@ describe('ElementContext', () => {
 
    it('#gridColumnSpan should not fire size change event when row span is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.gridColumnSpan;
+
       // when
-      context.gridColumnSpan = context.gridColumnSpan;
+      context.gridColumnSpan = initialValue;
       flush();
 
       // then
@@ -80,8 +83,11 @@ describe('ElementContext', () => {
 
    it('#gridRowSpan should not fire size change event when row span is not changed', fakeAsync(() => {
 
+      // given
+      const initialValue = context.gridRowSpan;
+
       // when
-      context.gridRowSpan = context.gridRowSpan;
+      context.gridRowSpan = initialValue;
       flush();
 
       // then

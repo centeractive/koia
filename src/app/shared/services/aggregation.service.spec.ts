@@ -46,7 +46,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.COUNT];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -63,7 +63,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.COUNT];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -82,7 +82,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.COUNT];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -102,7 +102,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.COUNT];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -121,7 +121,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.COUNT];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -140,7 +140,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.AVG];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -156,7 +156,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MAX];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -172,7 +172,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MIN];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -188,7 +188,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MEDIAN];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -204,7 +204,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.SUM];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -220,7 +220,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MAX, Aggregation.MIN, Aggregation.SUM];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -237,7 +237,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MIN];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -255,7 +255,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MAX];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -273,7 +273,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.SUM];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -292,7 +292,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MEDIAN];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -311,7 +311,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MIN];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [
@@ -329,7 +329,7 @@ describe('AggregationService', () => {
     context.aggregations = [Aggregation.MIN];
 
     // when
-    const data: IDataFrame<number, any> = aggregationService.compute(baseData, context);
+    const data: IDataFrame<number, object> = aggregationService.compute(baseData, context);
 
     // then
     const expected = [

@@ -8,7 +8,7 @@ import { ValueRange } from 'app/shared/value-range/model';
 export function adjustTimeValueRange(start: number, end: number, valueRange: ValueRange, timeUnit: TimeUnit): boolean {
     let min = valueRange.min;
     let max = valueRange.max;
-    let maxExcluding = valueRange.maxExcluding;
+    let maxExcluding: boolean;
     if (timeUnit === TimeUnit.MILLISECOND) {
         maxExcluding = false;
     } else {

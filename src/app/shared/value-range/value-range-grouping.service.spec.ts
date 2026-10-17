@@ -6,7 +6,7 @@ import { ValueRangeConverter } from './value-range-converter';
 
 describe('ValueRangeGroupingService', () => {
 
-   let baseDataFrame: IDataFrame<number, any>;
+   let baseDataFrame: IDataFrame<number, object>;
    const groupingService = new ValueRangeGroupingService();
 
    beforeAll(() => {

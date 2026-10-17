@@ -31,7 +31,7 @@ export class ViewPersistenceService {
     * @returns a promise that provides the resolved processing status (success or error), hence there's no need for the
     * invoking part to catch errors
     */
-   saveRecord(scene: Scene, route: Route, viewName: string, query: Query, data: any): Promise<Status> {
+   saveRecord(scene: Scene, route: Route, viewName: string, query: Query, data: ConfigRecord['data']): Promise<Status> {
       const prevRecord = this.findRecord(scene, route, viewName);
       const newRecord = createConfigRecord(route, viewName, query, data, new Date().getTime());
       if (prevRecord) {

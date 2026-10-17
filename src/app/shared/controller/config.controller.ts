@@ -38,7 +38,7 @@ export abstract class ConfigController extends AbstractComponent implements OnIn
 
    abstract init(): void;
 
-   abstract configToBeSaved(): { query: Query, data: any };
+   abstract configToBeSaved(): { query: Query, data: unknown };
 
    private refreshRecords(): void {
       this.configRecords = this.viewPersistenceService.findRecords(this.scene, this.route);

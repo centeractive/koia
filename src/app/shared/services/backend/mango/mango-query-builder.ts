@@ -6,6 +6,8 @@ import { ValueRangeFilter } from 'app/shared/value-range/model';
 import { OperatorConverter } from './operator-converter';
 import { sanitizeFindQuery } from './mango-query-sanitizer';
 
+type SelectorValue = string | number | boolean | RegExp | string[] | number[] | boolean[];
+
 export class MangoQueryBuilder {
 
    static readonly LIMIT = 1_000_000;
@@ -144,7 +146,7 @@ export class MangoQueryBuilder {
          .filter(pf => pf.name === name)
          .filter(pf => pf.operator === Operator.CONTAINS)
       if (filters.length === 1) {
-         return this.toContainsSelectorValue(filters[0].value as string);
+         return this.toContainsSelectorValue(filters[0].value as string) as RegExp;
       }
       const regex = filters
          .map(pf => '(?=.*' + _.escapeRegExp(pf.value as string) + '.*)')
@@ -152,7 +154,7 @@ export class MangoQueryBuilder {
       return new RegExp(regex, 'i');
    }
 
-   private toSelectorValue(propertyFilter: PropertyFilter): any {
+   private toSelectorValue(propertyFilter: PropertyFilter): SelectorValue {
       if (propertyFilter.operator === Operator.CONTAINS) {
          return this.toContainsSelectorValue(propertyFilter.value as string);
       } else if (propertyFilter.operator === Operator.EMPTY) {
@@ -170,7 +172,7 @@ export class MangoQueryBuilder {
       return propertyFilter.value;
    }
 
-   private toInSelectorValue(propertyFilter: PropertyFilter): any[] {
+   private toInSelectorValue(propertyFilter: PropertyFilter): string[] | number[] | boolean[] {
       switch (propertyFilter.dataType) {
          case DataType.NUMBER:
          case DataType.TIME:
@@ -193,7 +195,7 @@ export class MangoQueryBuilder {
       return null;
    }
 
-   private toContainsSelectorValue(value: string): any {
+   private toContainsSelectorValue(value: string): RegExp | string {
       const selector = '.*' + _.escapeRegExp(value) + '.*';
       return this.forPouchDB ? new RegExp(selector, 'i') : '(?i)' + selector;
    }

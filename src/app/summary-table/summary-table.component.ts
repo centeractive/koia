@@ -36,8 +36,8 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
   computing: boolean;
 
   private rowSpanComputer: RowSpanComputer;
-  private baseDataFrame: IDataFrame<number, any>;
-  private dataFrame: IDataFrame<number, any>;
+  private baseDataFrame: IDataFrame<number, object>;
+  private dataFrame: IDataFrame<number, object>;
   private dataFrameSorter = new DataFrameSorter();
   private numberFormatter = new NumberFormatter();
   private exportDataGenerator = new ExportDataGenerator();
@@ -154,11 +154,11 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
     });
   }
 
-  formattedValueOf(columnIndex: number, value: any): string | boolean {
+  formattedValueOf(columnIndex: number, value: string | number | boolean): string | boolean {
     if (this.computing) {
       return '';
     } else if (value == undefined || typeof value === 'string' || typeof value === 'boolean') {
-      return value;
+      return value as string | boolean;
     }
     let column: Column;
     if (this.context.groupByColumns.length > 0 && columnIndex < this.context.groupByColumns.length) {

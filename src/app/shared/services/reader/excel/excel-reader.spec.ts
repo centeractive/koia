@@ -33,7 +33,7 @@ describe('ExcelReader', () => {
    it('#furnishAttributes should return attributes', () => {
 
       // when
-      const attributes = reader.furnishAttributes('');
+      const attributes = reader.furnishAttributes();
 
       // then
       expect(attributes).toBeDefined();
@@ -132,7 +132,7 @@ describe('ExcelReader', () => {
 
       // given
       const file = await loadExcelFile();
-      reader.furnishAttributes('')[0].value = 'XYZ Sheet';
+      reader.furnishAttributes()[0].value = 'XYZ Sheet';
       const recorder = new DataHandlerRecorder();
 
       // when

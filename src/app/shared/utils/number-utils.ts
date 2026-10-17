@@ -7,7 +7,7 @@ export class NumberUtils {
     *
     * Note: the number 1.0 is considered to be an integer but the string '1.0' is not.
     */
-   static isInteger(value: any, locale: string): boolean {
+   static isInteger(value: unknown, locale: string): boolean {
       if (value !== null && value !== undefined && this.isNumber(value, locale)) {
          if (typeof value === 'string') {
             if (value.includes(this.decimalSeparator(locale))) {
@@ -24,7 +24,7 @@ export class NumberUtils {
     * @returns [[true]], if the value is a number or represents a number (may contain thousands separators of the specified locale),
     * [[false]] otherwise (non-compliant string, boolean, object, array etc.)
     */
-   static isNumber(value: any, locale: string): boolean {
+   static isNumber(value: unknown, locale: string): boolean {
       if (value === 0) {
          return true;
       } else if (!value || typeof value === 'boolean' || typeof value === 'object' || Array.isArray(value)) {

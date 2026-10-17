@@ -8,7 +8,6 @@ import type { Mock } from 'vitest';
 
 describe('CellClickHandler', () => {
 
-   const now = new Date().getTime();
    let columns: Column[];
    let rawDataRevealService: RawDataRevealService;
    let baseQueryProvider: QueryProvider;
@@ -27,7 +26,7 @@ describe('CellClickHandler', () => {
       rawDataRevealService = new RawDataRevealService(null, null);
       baseQueryProvider = { provide: () => new Query() };
       cellClickHandler = new CellClickHandler(columns, baseQueryProvider, rawDataRevealService);
-      showSpy = vi.spyOn(rawDataRevealService, 'show').mockImplementation(q => null);
+      showSpy = vi.spyOn(rawDataRevealService, 'show').mockImplementation(() => null);
    });
 
    it('#onCellClicked should show raw data with single empty filter', () => {
@@ -187,18 +186,14 @@ describe('CellClickHandler', () => {
       expect(query.getValueRangeFilters()).toEqual([]);
    }));
 
-   function column(name: string): Column {
-      return columns.find(c => c.name === name);
-   }
-
    function createValueGrouping(columnName: string): ValueGrouping {
       const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }, { max: 30, active: true }]
       return { columnName: columnName, ranges: ranges };
    }
 
-   function createMouseEvent(cssClass: string): object {
-      const classList = document.createElement('TD').classList;
-      classList.add(cssClass);
-      return { srcElement: { classList: classList } };
+   function createMouseEvent(cssClass: string): MouseEvent {
+      const cell = document.createElement('TD');
+      cell.classList.add(cssClass);
+      return { srcElement: cell } as Partial<MouseEvent> as MouseEvent;
    }
 });

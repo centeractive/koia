@@ -2,7 +2,6 @@ import { MangoQueryBuilder } from './mango-query-builder';
 import { CouchDBConstants } from '../couchdb/couchdb-constants';
 import { Column, Query, Operator } from 'app/shared/model';
 import { SortLimitationWorkaround } from '../couchdb';
-import { sanitizeFindQuery } from './mango-query-sanitizer';
 
 export class QueryConverter {
 

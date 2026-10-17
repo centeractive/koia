@@ -10,7 +10,7 @@ export class LogUtils {
         padding: 0 .3em 0 .3em;
     `;
 
-    static logHttpRequest(httpMethod: HTTPMethod, url: string, body?: any): void {
+    static logHttpRequest(httpMethod: HTTPMethod, url: string, body?: unknown): void {
         if (body) {
             console.log('%c' + httpMethod, LogUtils.HTTP_METHOD_STYLE, url, body);
         } else {

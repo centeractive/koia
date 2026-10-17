@@ -60,7 +60,7 @@ export class ArrayUtils {
   /**
    * @returns a new array that contains only distinct values
    */
-  static distinctValues(arr: any[]): any[] {
+  static distinctValues<T>(arr: T[]): T[] {
     if (!arr) {
       return arr;
     }
@@ -70,7 +70,7 @@ export class ArrayUtils {
   /**
    * @returns <true> if the specified arrays are equal, <false> otherwise
    */
-  static compare(arr1: any[], arr2: any[]): boolean {
+  static compare(arr1: unknown[], arr2: unknown[]): boolean {
     if (!arr1 && !arr2) {
       return true;
     } else if ((!arr1 && arr2) || (arr1 && !arr2) || arr1.length !== arr2.length) {
@@ -82,7 +82,7 @@ export class ArrayUtils {
   /**
    * @returns <true> if the specified arrays contain equal elements regardless their position, <false> otherwise
    */
-  static compareLoose(arr1: any[], arr2: any[]): boolean {
+  static compareLoose(arr1: unknown[], arr2: unknown[]): boolean {
     if (!arr1 && !arr2) {
       return true;
     } else if ((!arr1 && arr2) || (arr1 && !arr2) || arr1.length !== arr2.length) {
@@ -101,7 +101,7 @@ export class ArrayUtils {
    * @param element element to be removed
    * @returns the changed array
    */
-  static removeElement(array: any[], element: any): any[] {
+  static removeElement<T>(array: T[], element: T): T[] {
     return this.removeElementAt(array, array.indexOf(element));
   }
 
@@ -112,7 +112,7 @@ export class ArrayUtils {
    * @param index index of element to be removed
    * @returns the changed array
    */
-  static removeElementAt(array: any[], index: number): any[] {
+  static removeElementAt<T>(array: T[], index: number): T[] {
     if (index !== -1) {
       array.splice(index, 1);
     }
@@ -124,7 +124,7 @@ export class ArrayUtils {
    *
    * @returns the changed array
    */
-  static replaceElement(array: any[], oldElement: any, newElement: any): any[] {
+  static replaceElement<T>(array: T[], oldElement: T, newElement: T): T[] {
     const index = array.indexOf(oldElement);
     if (index !== -1) {
       array.splice(index, 1, newElement);
@@ -139,7 +139,7 @@ export class ArrayUtils {
    *
    * @returns the changed array
    */
-  static move(array: any[], oldIndex: number, newIndex: number): any[] {
+  static move<T>(array: T[], oldIndex: number, newIndex: number): T[] {
     const element = array.splice(oldIndex, 1)[0];
     for (let i = array.length; i < newIndex; i++) {
       array.push(undefined);
@@ -163,7 +163,7 @@ export class ArrayUtils {
   /**
    * @returns the first object where given key has the specified value, [[null]] if no object is found
    */
-  static findObjectByKeyValue(array: object[], key: string, value: any): object {
+  static findObjectByKeyValue(array: object[], key: string, value: unknown): object {
     for (const obj of array) {
       const elementValue = obj[key];
       if (value instanceof Date) {
@@ -208,12 +208,12 @@ export class ArrayUtils {
   /**
    * @returns the value range of the specified number attribute
    */
-  static numberValueRange(array: any[], attributeName: string): ValueRange {
+  static numberValueRange(array: unknown[], attributeName: string): ValueRange {
     if (!array || array.length === 0) {
       return ArrayUtils.UNDEFINED_VALUE_RANGE;
     }
     const numbers: number[] = array
-      .map(o => o[attributeName])
+      .map(o => (o as Record<string, unknown>)[attributeName])
       .filter(n => typeof n === 'number')
       .filter(n => NumberUtils.isNumber(n, undefined));
     return ArrayUtils.toValueRange(numbers);

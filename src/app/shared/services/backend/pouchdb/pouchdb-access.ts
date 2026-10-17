@@ -14,7 +14,7 @@ export class PouchDBAccess implements DB {
 
   private databases: string[] = [];
 
-  createDatabase(database: string): Promise<any> {
+  createDatabase(database: string): Promise<void> {
     console.log('create database', database);
     this.databases.push(database);
     return Promise.resolve();
@@ -24,7 +24,7 @@ export class PouchDBAccess implements DB {
     return PouchDBAccess.MAX_DATA_ITEMS_PER_SCENE;
   }
 
-  createIndex(database: string, columnName: string): Promise<any> {
+  createIndex(database: string, columnName: string): Promise<PouchDB.Find.CreateIndexResponse<object>> {
     const query = sanitizeIndexQuery({
       index: {
         fields: [columnName]
@@ -35,7 +35,7 @@ export class PouchDBAccess implements DB {
     return new PouchDB(database).createIndex(query);
   }
 
-  deleteDatabase(database: string): Promise<any> {
+  deleteDatabase(database: string): Promise<void> {
     if (database.startsWith('_')) {
       return Promise.reject('You have no permission to delete the system database ' + database);
     }
@@ -50,9 +50,9 @@ export class PouchDBAccess implements DB {
       .then(doc => <Document>doc);
   }
 
-  find(database: string, mangoQuery: any): Observable<Document[]> {
+  find(database: string, mangoQuery: object): Observable<Document[]> {
     console.log('find', database, mangoQuery);
-    return from(new PouchDB(database).find(mangoQuery).then(r => r.docs.map(doc => <Document>doc)));
+    return from(new PouchDB(database).find(mangoQuery as PouchDB.Find.FindRequest<object>).then(r => r.docs.map(doc => <Document>doc)));
   }
 
   async insert(database: string, document: Document): Promise<Document> {
@@ -85,7 +85,7 @@ export class PouchDBAccess implements DB {
       .then(() => document);
   }
 
-  delete(database: string, document: Document): Promise<any> {
+  delete(database: string, document: Document): Promise<PouchDB.Core.Response> {
     console.log('delete', database, 'id:' + document._id);
     return new PouchDB(database).remove(document._id, document._rev);
   }
@@ -95,7 +95,7 @@ export class PouchDBAccess implements DB {
       .then(info => info.doc_count);
   }
 
-  async clear(): Promise<any> {
+  async clear(): Promise<void[]> {
     const promises = this.databases.map(db => new PouchDB(db).destroy());
     this.databases = [];
     return Promise.all(promises);

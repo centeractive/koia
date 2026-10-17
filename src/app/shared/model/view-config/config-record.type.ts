@@ -6,5 +6,5 @@ export interface ConfigRecord {
    name: string;
    modifiedTime: number;
    query: QueryDef;
-   data: any;
+   data: unknown;
 }

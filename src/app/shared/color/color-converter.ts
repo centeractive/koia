@@ -1,13 +1,12 @@
 export class ColorConverter {
 
     static hexToRgb(hex: string): string {
-        let rgb: any;
         if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-            rgb = hex.substring(1).split('');
-            if (rgb.length == 3) {
-                rgb = [rgb[0], rgb[0], rgb[1], rgb[1], rgb[2], rgb[2]];
+            let digits = hex.substring(1).split('');
+            if (digits.length == 3) {
+                digits = [digits[0], digits[0], digits[1], digits[1], digits[2], digits[2]];
             }
-            rgb = '0x' + rgb.join('');
+            const rgb = Number('0x' + digits.join(''));
             return 'rgb(' + [(rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255].join(',') + ')';
         }
         throw new Error('invalid hex color: ' + hex);

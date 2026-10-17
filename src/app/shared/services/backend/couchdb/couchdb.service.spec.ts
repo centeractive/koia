@@ -23,7 +23,7 @@ describe('CouchDBService', () => {
 
    afterEach(async () => {
       config.reset();
-      await couchDBService.initConnection(config.readConnectionInfo()).then(r => null);
+      await couchDBService.initConnection(config.readConnectionInfo()).then(() => null);
    });
 
    it('#initConnection should store config', async () => {
@@ -153,7 +153,7 @@ describe('CouchDBService', () => {
       ];
       await couchDBService.createDatabase(database);
       await couchDBService.insertBulk(database, documents).then(() => null);
-      const newDocument: any = { _id: '4', name: 'd' };
+      const newDocument = { _id: '4', name: 'd' };
 
 
       // when

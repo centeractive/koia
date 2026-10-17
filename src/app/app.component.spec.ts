@@ -10,7 +10,7 @@ describe('AppComponent', () => {
 
   beforeEach(waitForAsync(() => {
     iconRegistrarService = {
-      registerSvgIcons(): void { null }
+      registerSvgIcons(): void { }
     } as IconRegistrarService;
     vi.spyOn(iconRegistrarService, 'registerSvgIcons').mockImplementation(() => null);
     TestBed.configureTestingModule({

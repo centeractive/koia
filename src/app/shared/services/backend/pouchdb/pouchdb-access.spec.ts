@@ -11,11 +11,11 @@ describe('PouchDBAccess', () => {
    beforeEach(async () => {
       vi.spyOn(console, 'log').mockReturnValue(undefined);
       await dbAccess.clear()
-         .then(r => null);
+         .then(() => null);
 
       // Also destroy DB cached in the IndexedDB
       await new PouchDB(DB).destroy()
-         .then(r => null);
+         .then(() => null);
    });
 
    it('#getMaxDataItemsPerScene', async () => {

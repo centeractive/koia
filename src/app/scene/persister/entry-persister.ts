@@ -54,11 +54,11 @@ export class EntryPersister {
     console.log('submitting ' + entries.length + ' items to the database');
     this.submitted += entries.length;
     this.dbService.writeEntries(this.database, entries)
-      .then(r => this.onWriteSuccess(entries.length))
+      .then(() => this.onWriteSuccess(entries.length))
       .catch(e => this.onError(e));
   }
 
-  private onError(error: any): void {
+  private onError(error: string | object): void {
     this.monitor.onError(error);
     this.monitor.onComplete(LanguageService.instant('scene.persistAborted', { error }));
     this.postingComplete(false);

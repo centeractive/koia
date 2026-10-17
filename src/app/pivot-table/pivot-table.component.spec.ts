@@ -34,7 +34,7 @@ import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.co
 
 @Injectable()
 export class MockElementRef {
-  nativeElement: {}
+  nativeElement: object;
 }
 describe('PivotTableComponent', () => {
 
@@ -53,7 +53,7 @@ describe('PivotTableComponent', () => {
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   const rawDataRevealService = new RawDataRevealService(null, null);
-  let locatePivotTable: Function;
+  let locatePivotTable: () => Element;
   let getActiveSceneSpy: Mock;
   let viewTabsService: ViewTabsService;
 
@@ -608,8 +608,8 @@ describe('PivotTableComponent', () => {
       expect(content.record.name).toBe('Pivot Table 1');
       expect(content.record.modifiedTime).toBe(0);
       expect(content.record.query).toEqual(queryToQueryDef(new Query()));
-      expect(content.record.data.pivotOptions['rendererName']).toBeDefined();
-      expect(content.record.data.valueGroupings[0].minMaxValues).toBeNull();
+      expect((content.record.data as PivotContext).pivotOptions['rendererName']).toBeDefined();
+      expect((content.record.data as PivotContext).valueGroupings[0].minMaxValues).toBeNull();
     }));
 
     it('should request persisting when pivot table was rendered', fakeAsync(() => {
@@ -716,8 +716,8 @@ describe('PivotTableComponent', () => {
         expect(viewTabsService.requestPersist).not.toHaveBeenCalled();
         const content = tabComponent.tabContent();
         expect(JSON.stringify(content)).toBe(contentBefore);
-        expect(content.record.data.pivotOptions['localeStrings']).toBeUndefined();
-        expect(content.record.data.pivotOptions['rendererOptions']).toBeUndefined();
+        expect((content.record.data as PivotContext).pivotOptions['localeStrings']).toBeUndefined();
+        expect((content.record.data as PivotContext).pivotOptions['rendererOptions']).toBeUndefined();
       }));
 
       it('should request persisting again when pivot table is changed after language change', fakeAsync(() => {
@@ -781,7 +781,7 @@ describe('PivotTableComponent', () => {
         // given
         const timeLabel = 'Time (per month)';
         const record = sumRecord();
-        record.data.pivotOptions = { rendererName: 'Table', aggregatorName: 'Count', cols: ['Level'], rows: [timeLabel] };
+        (record.data as PivotContext).pivotOptions = { rendererName: 'Table', aggregatorName: 'Count', cols: ['Level'], rows: [timeLabel] };
         createTabComponent(record);
         tabFixture.detectChanges();
         flush();
@@ -877,7 +877,7 @@ describe('PivotTableComponent', () => {
 
     // then
     expect(viewPersistenceService.saveRecord).toHaveBeenCalled();
-    const context = vi.mocked(saveRecordSpy).mock.lastCall[4];
+    const context = vi.mocked(saveRecordSpy).mock.lastCall[4] as PivotContext;
     const expectedValueGroupings = [
       {
         columnName: 'Amount',

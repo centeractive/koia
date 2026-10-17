@@ -186,7 +186,7 @@ describe('ColumnMappingComponent', () => {
   it('#openDatePipeFormatPage should open window', () => {
 
     // given
-    vi.spyOn(window, 'open').mockImplementation(s => null);
+    vi.spyOn(window, 'open').mockImplementation(() => null);
 
     // when
     component.openDatePipeFormatPage();

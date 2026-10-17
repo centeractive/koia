@@ -3,13 +3,11 @@ import { DataType, TimeUnit, Query, Column, PropertyFilter, Operator } from 'app
 import { ValueRange, ValueGrouping, ValueRangeFilter } from 'app/shared/value-range/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { TimeGroupingService } from 'app/shared/services';
-import { DatePipe } from '@angular/common';
 import { ValueRangeConverter } from 'app/shared/value-range';
 
 describe('QueryEnhancer', () => {
 
    const now = new Date().getTime();
-   const datePipe = new DatePipe('en-us')
    let columns: Column[];
 
    beforeEach(() => {
