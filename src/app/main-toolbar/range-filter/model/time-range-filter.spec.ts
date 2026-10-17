@@ -390,6 +390,51 @@ describe('TimeRangeFilter', () => {
       expect(filter.isFiltered()).toBe(false);
    });
 
+   it('#formatStep should return name of time unit', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'yyyy', timeUnit: TimeUnit.YEAR };
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
+
+      // when
+      const step = filter.formatStep(TimeUnit.HOUR);
+
+      // then
+      expect(step).toBe('hour');
+   });
+
+   it('#onStepChanged should emit adjusted value range when selected start is not at step boundary', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };
+      const selStart = toTime(2001) + 5 * 3_600_000;
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), { min: selStart, max: toTime(2010) }, false);
+      const emitted = vi.fn();
+      filter.onAdjustedValueRange().subscribe(emitted);
+
+      // when
+      filter.onStepChanged(TimeUnit.DAY);
+
+      // then
+      expect(emitted).toHaveBeenCalledTimes(1);
+      expect(filter.selValueRange.min).toBe(toTime(2001));
+   });
+
+   it('#onStepChanged should not emit adjusted value range when value range is not filtered', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS', timeUnit: TimeUnit.YEAR };
+      const filter = new TimeRangeFilter(column, toTime(2000), toTime(2010), null, false);
+      const emitted = vi.fn();
+      filter.onAdjustedValueRange().subscribe(emitted);
+
+      // when
+      filter.onStepChanged(TimeUnit.DAY);
+
+      // then
+      expect(emitted).not.toHaveBeenCalled();
+   });
+
    function toTime(year: number): number {
       return new Date(year, 0).getTime();
    }

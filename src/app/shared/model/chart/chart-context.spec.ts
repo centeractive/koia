@@ -196,6 +196,151 @@ describe('ChartContext', () => {
       ]);
    }));
 
+   it('#removeDataColumn should leave one default value scale when last column is removed with multi axes selected', fakeAsync(() => {
+      // given
+      context.dataColumns = [column('Amount')];
+      context.multiValueAxes = true;
+
+      // when
+      context.removeDataColumn(column('Amount'));
+
+      // then
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: undefined,
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#removeDataColumn should keep multi axes when one of three columns is removed', fakeAsync(() => {
+      // given
+      context.multiValueAxes = true;
+      context.dataColumns = [column('Amount'), column('Percent'), column('Discount')];
+
+      // when
+      context.removeDataColumn(column('Discount'));
+
+      // then
+      expect(context.multiValueAxes).toBe(true);
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         {
+            columnName: 'Amount',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         },
+         {
+            columnName: 'Percent',
+            ticks: {
+               stepSize: undefined,
+               rotation: undefined
+            }
+         }
+      ]);
+   }));
+
+   it('#dataColumns should unset multiValueAxes option when single column is set', () => {
+
+      // given
+      context.multiValueAxes = true;
+
+      // when
+      context.dataColumns = [column('Location')];
+
+      // then
+      expect(context.multiValueAxes).toBe(false);
+   });
+
+   it('#dataColumns should keep group-by column when text column is set on LINE chart', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [column('Time')];
+
+      // when
+      context.dataColumns = [column('Location')];
+
+      // then
+      expect(context.aggregations).toEqual([Aggregation.COUNT]);
+      expect(context.groupByColumns).toEqual([column('Time')]);
+   });
+
+   it('#dataColumns should remove group-by columns when text column is set on BAR chart', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.groupByColumns = [column('Name')];
+
+      // when
+      context.dataColumns = [column('Location')];
+
+      // then
+      expect(context.aggregations).toEqual([Aggregation.COUNT]);
+      expect(context.groupByColumns).toEqual([]);
+   });
+
+   it('#dataColumns should select count and remove group-by columns when object column is set on BAR chart', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.aggregations = [];
+      context.groupByColumns = [column('Location')];
+
+      // when
+      context.dataColumns = [{ name: 'Details', dataType: DataType.OBJECT, width: 1 }];
+
+      // then
+      expect(context.aggregations).toEqual([Aggregation.COUNT]);
+      expect(context.groupByColumns).toEqual([]);
+   });
+
+   it('#aggregations should keep group-by column when count distinct values is selected on LINE chart', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [column('Amount')];
+      context.groupByColumns = [column('Name')];
+
+      // when
+      context.aggregations = [Aggregation.COUNT];
+
+      // then
+      expect(context.groupByColumns).toEqual([column('Name')]);
+   });
+
+   it('#aggregations should identify group-by column when count distinct values is selected on LINE chart without group-by column', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [column('Amount')];
+      context.groupByColumns = [];
+
+      // when
+      context.aggregations = [Aggregation.COUNT];
+
+      // then
+      expect(context.groupByColumns).toEqual([column('Time')]);
+   });
+
+   it('#aggregations should remove group-by columns when count distinct values is selected on BAR chart', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.dataColumns = [column('Amount')];
+      context.groupByColumns = [column('Name')];
+
+      // when
+      context.aggregations = [Aggregation.COUNT];
+
+      // then
+      expect(context.groupByColumns).toEqual([]);
+   });
+
    it('#groupByColumns should restore base scale of selected column', fakeAsync(() => {
 
       // given
@@ -596,7 +741,7 @@ describe('ChartContext', () => {
       const title = context.getTitle();
 
       // then
-      expect(title).toBe('Count distinct values of Amount, Percent');
+      expect(title).toBe('Count distinct values of Amount, Percent by Time');
    });
 
    it('#getTitle when individual values of two columns grouped by time', () => {

@@ -390,6 +390,90 @@ describe('SummaryTableComponent', () => {
     expect(formattedValue).toBe(datePipe.transform(now, 'd MMM yyyy HH:mm'));
   });
 
+  it('#formattedValueOf should return time formatted by column format when hierarchy time column has no time unit', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [{ ...findColumn('Time'), groupingTimeUnit: undefined, format: 'yyyy-MM-dd HH:mm' }];
+
+    // when
+    const formattedValue = component.formattedValueOf(0, now);
+
+    // then
+    expect(formattedValue).toBe(datePipe.transform(now, 'yyyy-MM-dd HH:mm'));
+  });
+
+  it('#formattedValueOf should return formatted number when hierarchy time column has neither time unit nor format', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [{ ...findColumn('Time'), groupingTimeUnit: undefined }];
+
+    // when
+    const formattedValue = component.formattedValueOf(0, now);
+
+    // then
+    expect(formattedValue).toBe(now.toLocaleString());
+  });
+
+  it('should not size parent element when shown in grid view', () => {
+
+    // given
+    component.gridView = true;
+    const parentStyle = fixture.nativeElement.parentElement.style;
+    parentStyle.width = '10px';
+    parentStyle.height = '20px';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(parentStyle.width).toBe('10px');
+    expect(parentStyle.height).toBe('20px');
+  });
+
+  it('should create empty summary data when context has no entries', fakeAsync(() => {
+
+    // given
+    context.entries = undefined;
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.frameData).toEqual([]);
+    expect(component.rowSpans).toBeUndefined();
+  }));
+
+  it('should create empty summary data when entries are empty', fakeAsync(() => {
+
+    // given
+    context.entries = [];
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.frameData).toEqual([]);
+    expect(component.rowSpans).toBeUndefined();
+  }));
+
+  it('should neither compute summary data nor sort by data column when context has no data column', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [];
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.frameData).toBeUndefined();
+    expect(component.currentSort).toEqual({ active: undefined, direction: 'asc' });
+  }));
+
   it('#createExportData should return data when aggregated by COUNT', fakeAsync(() => {
 
     // given

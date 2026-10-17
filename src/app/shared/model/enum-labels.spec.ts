@@ -52,6 +52,19 @@ describe('EnumLabels', () => {
       expect(EnumLabels.chartType('unknown')).toBe('unknown');
    });
 
+   it('should fall back to enum value when aggregation is unknown', () => {
+
+      // given
+      const aggregation = 'unknown' as Aggregation;
+
+      // when
+      const key = EnumLabels.aggregationKey(aggregation);
+
+      // then
+      expect(key).toBe('enum.aggregation.unknown');
+      expect(EnumLabels.aggregation(aggregation)).toBe('unknown');
+   });
+
    it('should translate all labels into Japanese', async () => {
 
       // when

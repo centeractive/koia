@@ -64,7 +64,7 @@
                   }
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
                 </mat-select-trigger>
-                @for (column of context.columns; track column) {
+                @for (column of selectableGroupByColumns; track column) {
                   <mat-option [value]="column"
                     (click)="context.groupByColumns = [column]">
                     <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
@@ -114,38 +114,40 @@
           @if (!context.isCircularChart() && !(context.isCategoryChart() && context.isAggregationCountSelected())) {
             <koia-expansion-panel
               [title]="groupingPanelName()">
-              <mat-form-field>
-                <mat-label>{{ (context.isCategoryChart() ? 'chart.columnName' : 'chart.groupBy') | translate }}</mat-label>
-                <mat-select [value]="getSingleGroupByColumn()">
-                  <mat-select-trigger>
-                    @if (getSingleGroupByColumn()) {
-                      <mat-icon style="vertical-align: middle">
-                      {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
-                    }
-                    {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
-                  </mat-select-trigger>
-                  @for (column of context.columns; track column) {
-                    <mat-option [value]="column"
-                      (click)="onGroupByColumnChanged(column)">
-                      <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-                      {{ column.name }}
-                    </mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-              @if (context.isAggregationCountSelected() && groupByTimeColumn) {
+              <div class="field-row">
                 <mat-form-field>
-                  <mat-label>{{ 'chart.timeUnitGrouping' | translate }}</mat-label>
-                  <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
-                    @for (timeUnit of selectableTimeUnits; track timeUnit) {
-                      <mat-option [value]="timeUnit"
-                        (click)="context.fireStructureChanged()">
-                        {{ timeUnitKey(timeUnit) | translate }}
+                  <mat-label>{{ (context.isCategoryChart() ? 'chart.columnName' : 'chart.groupBy') | translate }}</mat-label>
+                  <mat-select [value]="getSingleGroupByColumn()">
+                    <mat-select-trigger>
+                      @if (getSingleGroupByColumn()) {
+                        <mat-icon style="vertical-align: middle">
+                        {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
+                      }
+                      {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
+                    </mat-select-trigger>
+                    @for (column of selectableGroupByColumns; track column) {
+                      <mat-option [value]="column"
+                        (click)="onGroupByColumnChanged(column)">
+                        <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                        {{ column.name }}
                       </mat-option>
                     }
                   </mat-select>
                 </mat-form-field>
-              }
+                @if (context.isAggregationCountSelected() && groupByTimeColumn) {
+                  <mat-form-field>
+                    <mat-label>{{ 'chart.timeUnitGrouping' | translate }}</mat-label>
+                    <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
+                      @for (timeUnit of selectableTimeUnits; track timeUnit) {
+                        <mat-option [value]="timeUnit"
+                          (click)="context.fireStructureChanged()">
+                          {{ timeUnitKey(timeUnit) | translate }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                }
+              </div>
             </koia-expansion-panel>
           }
           <koia-expansion-panel [title]="'chart.colorScheme' | translate">

@@ -2,7 +2,7 @@ export class DateFormatProvider {
 
     private _default = 'yyyy-MM-dd';
 
-    private formats = {
+    private formats: Record<string, string> = {
         'af-za': 'yyyy/MM/dd',
         'am-et': 'd/M/yyyy',
         'ar-sa': 'dd/MM/yy',
@@ -159,6 +159,10 @@ export class DateFormatProvider {
         'zu-ZA': 'yyyy/MM/dd',
         '?': 'd MMM yyyy'
     };
+
+    constructor() {
+        this.formats = Object.fromEntries(Object.entries(this.formats).map(([locale, format]) => [locale.toLowerCase(), format]));
+    }
 
     get default(): string {
         return this._default;

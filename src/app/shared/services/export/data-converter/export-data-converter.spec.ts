@@ -1,3 +1,4 @@
+import { formatDate } from '@angular/common';
 import { Column, DataType } from 'app/shared/model';
 import { ExportDataConverter } from './export-data-converter';
 
@@ -62,6 +63,33 @@ describe('ExportDataConverter', () => {
             { Position: 4, Name: 'D', Amount: 45.2, Time: '18 Jan 2019 15:00:00' }
         ];
         expect(data as any).toEqual(expected);
+    });
+
+    it('#timeToFormattedString should keep null time', () => {
+
+        // given
+        const data: object[] = [{ Time: null }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16, format: 'd MMM yyyy HH:mm:ss' }];
+
+        // when
+        converter.timeToFormattedString(data, columns);
+
+        // then
+        expect(data).toEqual([{ Time: null }]);
+    });
+
+    it('#timeToFormattedString should format time zero', () => {
+
+        // given
+        const format = 'd MMM yyyy HH:mm:ss';
+        const data: object[] = [{ Time: 0 }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16, format }];
+
+        // when
+        converter.timeToFormattedString(data, columns);
+
+        // then
+        expect(data).toEqual([{ Time: formatDate(0, format, 'en-US') }]);
     });
 
     function time(date: string): number {

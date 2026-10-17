@@ -373,6 +373,32 @@ describe('MainToolbarComponent', () => {
     expect(component.fullTextFilter).toBe('abc');
   });
 
+  it('#ngOnChanges should keep query when restored query changed to null', () => {
+
+    // given
+    const query = component.query;
+    component.restoredQuery = null;
+
+    // when
+    component.ngOnChanges({ restoredQuery: new SimpleChange(new Query(), null, false) });
+
+    // then
+    expect(component.query).toBe(query);
+  });
+
+  it('#ngOnChanges should keep query when other input changed', () => {
+
+    // given
+    const query = component.query;
+    component.restoredQuery = new Query();
+
+    // when
+    component.ngOnChanges({ route: new SimpleChange(Route.GRID, Route.FLEX, false) });
+
+    // then
+    expect(component.query).toBe(query);
+  });
+
   it('#ngOnDestroy should stop listening on navigation events', fakeAsync(() => {
 
     // given

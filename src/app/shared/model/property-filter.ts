@@ -59,10 +59,6 @@ export class PropertyFilter {
       return this._value !== null && this._value !== undefined && this._value.toString().length > 0;
    }
 
-   clearFilterValue(): void {
-      this._value = '';
-   }
-
    clone(): PropertyFilter {
       return new PropertyFilter(this._name, this._operator, this._value, this._dataType);
    }

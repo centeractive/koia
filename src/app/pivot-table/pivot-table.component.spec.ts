@@ -745,6 +745,22 @@ describe('PivotTableComponent', () => {
         expect(totalLabels()).toContain('Summen');
       }));
 
+      it('should not re-render pivot table in new language when pivot table has no options', fakeAsync(() => {
+
+        // given
+        createTabComponent(sumRecord());
+        tabFixture.detectChanges();
+        flush();
+        vi.spyOn(tabComponent, 'getPivotOptions').mockReturnValue(undefined);
+
+        // when
+        switchLanguage('de');
+
+        // then
+        expect(totalLabels()).toContain('Totals');
+        expect(tabComponent.computing).toBe(false);
+      }));
+
       it('should reveal raw data of time grouped cell in new language', fakeAsync(() => {
 
         // given
@@ -985,6 +1001,102 @@ describe('PivotTableComponent', () => {
     expect(component.context.showColumnTotals).toBe(false);
     expect(locatePivotTable()).not.toBe(pivotTable);
   }));
+
+  it('#fetchData should define time unit of time column when pivot options have neither cols nor rows', fakeAsync(() => {
+
+    // given
+    component.context.pivotOptions = { rendererName: 'Table' };
+    component.context.timeColumns[0].groupingTimeUnit = TimeUnit.YEAR;
+
+    // when
+    component.fetchData(new Query());
+    flush();
+
+    // then
+    expect(component.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+  }));
+
+  it('#loadConfig should keep time unit of time column when restored time column has no time unit', () => {
+
+    // given
+    const context: PivotContext = {
+      ...pivotContext(),
+      timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100 }]
+    };
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
+
+    // when
+    component.loadConfig(configRecord);
+
+    // then
+    expect(component.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+    expect(component.context.timeColumns[0]).toBe(component.timeColumns[0]);
+  });
+
+  it('should set computing when pivot renderer area starts refreshing', async () => {
+
+    // given
+    const rendererArea: HTMLElement = component.divPivot.nativeElement.querySelector('.pvtRendererArea');
+    component.computing = false;
+
+    // when
+    rendererArea.style.opacity = '0.5';
+
+    // then
+    await sleep(0);
+    expect(component.computing).toBe(true);
+  });
+
+  it('should not set computing when pivot renderer area finished refreshing', async () => {
+
+    // given
+    const rendererArea: HTMLElement = component.divPivot.nativeElement.querySelector('.pvtRendererArea');
+    rendererArea.style.opacity = '0.5';
+    await sleep(0);
+    component.computing = false;
+
+    // when
+    rendererArea.style.opacity = '1';
+
+    // then
+    await sleep(0);
+    expect(component.computing).toBe(false);
+  });
+
+  it('should keep single mutation observer when pivot table is refreshed and none when destroyed', fakeAsync(() => {
+
+    // given
+    const observeSpy = vi.spyOn(MutationObserver.prototype, 'observe');
+    const disconnectSpy = vi.spyOn(MutationObserver.prototype, 'disconnect');
+    const connectedObservers = () => observeSpy.mock.calls
+      .map((call, i) => ({ target: call[0] as HTMLElement, observer: observeSpy.mock.contexts[i] }))
+      .filter(o => o.target.classList.contains('pvtRendererArea'))
+      .filter(o => !disconnectSpy.mock.contexts.includes(o.observer));
+    component.onShowColumnTotalsChanged();
+    flush();
+    component.onShowRowTotalsChanged();
+    flush();
+    const connectedObserversAfterRefreshes = connectedObservers().length;
+
+    // when
+    fixture.destroy();
+
+    // then
+    expect(connectedObserversAfterRefreshes).toBe(1);
+    expect(connectedObservers().length).toBe(0);
+  }));
+
+  it('#manageViews should open manage config dialog', () => {
+
+    // given
+    vi.spyOn(dialogService, 'showManageConfigDialog').mockReturnValue(undefined);
+
+    // when
+    component.manageViews();
+
+    // then
+    expect(dialogService.showManageConfigDialog).toHaveBeenCalledWith(component);
+  });
 
   it('#exportToExcel should export pivot table to Excel', () => {
 

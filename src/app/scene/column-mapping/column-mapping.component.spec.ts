@@ -157,6 +157,32 @@ describe('ColumnMappingComponent', () => {
     expect(formattedTime).toBe(new DatePipe('en-US').transform(component.now, 'd MMM yyyy HH:mm'));
   });
 
+  it('#warningOf should return translation key of incompatible data types warning', () => {
+
+    // given
+    const mapping = createColumnPair();
+    mapping.warning = ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES;
+
+    // when
+    const warning = component.warningOf(mapping);
+
+    // then
+    expect(warning).toBe('scene.column.incompatibleTypes');
+  });
+
+  it('#warningOf should return custom warning', () => {
+
+    // given
+    const mapping = createColumnPair();
+    mapping.warning = 'custom warning';
+
+    // when
+    const warning = component.warningOf(mapping);
+
+    // then
+    expect(warning).toBe('custom warning');
+  });
+
   it('#openDatePipeFormatPage should open window', () => {
 
     // given

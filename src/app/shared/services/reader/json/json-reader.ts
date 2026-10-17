@@ -67,7 +67,12 @@ export class JSONReader implements DataReader {
           }
         },
         onError: err => reject(err),
-        onComplete: () => null,
+        onComplete: () => {
+          if (!canceled) {
+            canceled = true;
+            resolve({ entries: [] });
+          }
+        },
         isCanceled: () => canceled
       }
       this.readData(file, entriesCount, dataHandler);

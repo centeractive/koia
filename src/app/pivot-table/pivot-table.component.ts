@@ -70,6 +70,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   private stringifiedValueGroupings: string;
   private pendingRecord: ConfigRecord;
   private destroyed = false;
+  private mutationObserver: MutationObserver;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
     public override dbService: DBService, public override dialogService: DialogService, public override viewPersistenceService: ViewPersistenceService,
@@ -126,6 +127,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
       this.viewTabsService.unregister(this.tab.id, this);
     }
     this.entriesSubscription?.unsubscribe();
+    this.mutationObserver?.disconnect();
   }
 
   onSidenavOpening(): void {
@@ -306,9 +308,6 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   private async renderPivotTable(pivotOptions?: object): Promise<void> {
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     const targetElement = this.getTargetElement();
-    while (targetElement.firstChild) {
-      targetElement.removeChild(targetElement.firstChild);
-    }
     if (pivotOptions) {
       targetElement.pivotUI(this.dataFrame.toArray(), pivotOptions, true);
     } else {
@@ -338,12 +337,13 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   private observePivotTableRefreshStart(): void {
     const pivotRendererArea = this.divPivot.nativeElement.getElementsByClassName('pvtRendererArea')[0] as HTMLTableElement;
-    const mutationObserver = new MutationObserver(() => {
+    this.mutationObserver?.disconnect();
+    this.mutationObserver = new MutationObserver(() => {
       if (pivotRendererArea.style.opacity !== '1') {
         this.computing = true; // refresh started
       }
     });
-    mutationObserver.observe(pivotRendererArea, { attributeFilter: ['style'], attributes: true });
+    this.mutationObserver.observe(pivotRendererArea, { attributeFilter: ['style'], attributes: true });
   }
 
   exportToExcel(): void {

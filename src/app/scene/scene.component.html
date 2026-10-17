@@ -120,22 +120,10 @@
               @if (!attr.isBoolean()) {
                 <mat-form-field class="form_field_separator">
                   <mat-label>{{ attr.name | translate }}</mat-label>
-                  @if (!attr.hasValueChoice() || !attr.isValueChoiceBinding) {
-                    <input matInput
-                      [type]="attr.isNumber() ? 'number' : 'text'" [(ngModel)]="attr.value" [matTooltip]="attr.description | translate"
-                      (change)="columnMappings = null">
-                  }
-                  @if (attr.hasValueChoice() && attr.isValueChoiceBinding) {
-                    <mat-select [(value)]="attr.value"
-                      [matTooltip]="attr.description | translate" (selectionChange)="columnMappings = null">
-                      @for (choice of attr.valueChoice; track choice) {
-                        <mat-option [value]="choice">
-                          {{ choice }}
-                        </mat-option>
-                      }
-                    </mat-select>
-                  }
-                  @if (attr.hasValueChoice() && !attr.isValueChoiceBinding) {
+                  <input matInput
+                    [type]="attr.isNumber() ? 'number' : 'text'" [(ngModel)]="attr.value" [matTooltip]="attr.description | translate"
+                    (change)="columnMappings = null">
+                  @if (attr.hasValueChoice()) {
                     <button matSuffix class="but_value_choice" mat-icon-button [matMenuTriggerFor]="valueChoiceMenu">
                       <mat-icon>expand_more</mat-icon>
                     </button>

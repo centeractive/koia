@@ -1,4 +1,5 @@
 import { Sort } from '@angular/material/sort';
+import * as _ from 'lodash';
 import { ArrayUtils } from 'app/shared/utils';
 import { PropertyFilter, Column, DataType, Operator } from 'app/shared/model';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
@@ -143,17 +144,17 @@ export class MangoQueryBuilder {
          .filter(pf => pf.name === name)
          .filter(pf => pf.operator === Operator.CONTAINS)
       if (filters.length === 1) {
-         return this.toContainsSelectorValue(filters[0].value as string, false);
+         return this.toContainsSelectorValue(filters[0].value as string);
       }
       const regex = filters
-         .map(pf => '(?=.*' + pf.value + '.*)')
+         .map(pf => '(?=.*' + _.escapeRegExp(pf.value as string) + '.*)')
          .join('');
       return new RegExp(regex, 'i');
    }
 
    private toSelectorValue(propertyFilter: PropertyFilter): any {
       if (propertyFilter.operator === Operator.CONTAINS) {
-         return this.toContainsSelectorValue(propertyFilter.value as string, false);
+         return this.toContainsSelectorValue(propertyFilter.value as string);
       } else if (propertyFilter.operator === Operator.EMPTY) {
          return false;
       } else if (propertyFilter.operator === Operator.NOT_EMPTY) {
@@ -186,17 +187,14 @@ export class MangoQueryBuilder {
          const selectors = [];
          this.columns
             .filter(c => c.dataType === DataType.TEXT)
-            .forEach(c => selectors.push({ [c.name]: { $regex: this.toContainsSelectorValue(this.fullTextFilter, false) } }));
+            .forEach(c => selectors.push({ [c.name]: { $regex: this.toContainsSelectorValue(this.fullTextFilter) } }));
          return { $or: selectors };
       }
       return null;
    }
 
-   private toContainsSelectorValue(value: string, matchCase: boolean): any {
-      const selector = '.*' + value + '.*';
-      if (matchCase) {
-         return selector;
-      }
+   private toContainsSelectorValue(value: string): any {
+      const selector = '.*' + _.escapeRegExp(value) + '.*';
       return this.forPouchDB ? new RegExp(selector, 'i') : '(?i)' + selector;
    }
 

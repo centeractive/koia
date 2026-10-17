@@ -45,26 +45,15 @@ export class DateTimeColumnDetector {
             const baseFormat = (dateFormat + ' ' + formatToTimeUnit.format).trim();
             for (const zone of DateTimeColumnDetector.ZONES) {
                 const format = (baseFormat + ' ' + zone).trim();
-                if (DateTimeUtils.parseDate(value, format, locale == '?' ? null : locale)) {
+                if (DateTimeUtils.parseDate(value, format, locale)) {
                     columnPair.source.format = format;
                     columnPair.target.dataType = DataType.TIME;
-                    if (formatToTimeUnit.timeUnit) {
-                        columnPair.target.format = DateTimeUtils.ngFormatOf(formatToTimeUnit.timeUnit);
-                    }
+                    columnPair.target.format = DateTimeUtils.ngFormatOf(formatToTimeUnit.timeUnit);
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    refineDateTimeFormat(columnPair: ColumnPair, value: string, locale: string): void {
-        for (const formatToTimeUnit of DateTimeColumnDetector.TIME_FORMATS_TO_TIMEUNITS) {
-            if (formatToTimeUnit.format && DateTimeUtils.parseDate(value, formatToTimeUnit.format, locale)) {
-                columnPair.source.format = formatToTimeUnit.format;
-                break;
-            }
-        }
     }
 
 }

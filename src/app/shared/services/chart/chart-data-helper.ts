@@ -41,55 +41,55 @@ export class ChartDataHelper {
       return data;
    }
 
-   /**
-    * @returns [[DataPoint]]s with the values of distinct names from [[context.entries]]. The names are extracted
-    * from the unique group-by column, corresponding values from the unique data column. An error is thrown if the
-    * names are notunique
-    */
-   static valuesOfDistinctNames(context: ChartContext): DataPoint[] {
-      const nameColumn = context.groupByColumns[0];
-      const dataColumn = context.dataColumns[0];
-      const names = [];
-      const data: DataPoint[] = [];
-      for (const entry of context.entries) {
-         const name = entry[nameColumn.name];
-         const value = entry[dataColumn.name];
-         if (!!name && !!value) {
-            if (names.includes(name)) {
-               this.throwNonUniqueValueError(nameColumn, name);
-            }
-            names.push(name);
-            data.push({ x: name, y: value });
-         }
-      }
-      return data;
-   }
-
    static categoryData(context: ChartContext): CategoryData {
       const nameColumn = context.groupByColumns[0];
       const labels: any[] = [];
       const labeledValues: LabeledValues[] = [];
-      context.entries.forEach(e => {
-         const label = e[nameColumn.name];
-         if (label) {
-            if (labels.includes(label)) {
-               this.throwNonUniqueValueError(nameColumn, label);
+      const nonUniqueName = this.findNonUniqueName(context.entries, nameColumn, context.dataColumns, (label, e) => {
+         context.dataColumns.forEach((c, iCol) => {
+            if (!labeledValues[iCol]) {
+               labeledValues.push({ label: c.name, values: [] });
             }
-            const someValueFound = context.dataColumns
-               .map(c => e[c.name])
-               .some(v => v !== null && v != undefined);
-            if (someValueFound) {
-               context.dataColumns.forEach((c, iCol) => {
-                  if (!labeledValues[iCol]) {
-                     labeledValues.push({ label: c.name, values: [] });
-                  }
-                  labeledValues[iCol].values.push(e[c.name]);
-               });
-               labels.push(label);
+            labeledValues[iCol].values.push(e[c.name]);
+         });
+         labels.push(label);
+      });
+      if (nonUniqueName !== undefined) {
+         this.throwNonUniqueValueError(nameColumn, nonUniqueName);
+      }
+      return { labels: labels, dataSets: labeledValues };
+   }
+
+   /**
+    * @returns the number of names or [[undefined]] if names are not unique
+    */
+   static uniqueNameCount(entries: object[], nameColumn: Column, dataColumns: Column[]): number {
+      let count = 0;
+      const nonUniqueName = this.findNonUniqueName(entries ?? [], nameColumn, dataColumns, () => count++);
+      return nonUniqueName === undefined ? count : undefined;
+   }
+
+   /**
+    * passes each entry with a name and at least one data value to the consumer
+    *
+    * @returns the first name that was already passed or [[undefined]] if all names are unique
+    */
+   private static findNonUniqueName(entries: object[], nameColumn: Column, dataColumns: Column[],
+      consumer: (name: unknown, entry: object) => void): unknown {
+      const names = new Set<unknown>();
+      for (const entry of entries) {
+         const name = entry[nameColumn.name];
+         if (name !== null && name !== undefined && name !== '') {
+            if (names.has(name)) {
+               return name;
+            }
+            if (dataColumns.some(c => entry[c.name] !== null && entry[c.name] !== undefined)) {
+               consumer(name, entry);
+               names.add(name);
             }
          }
-      });
-      return { labels: labels, dataSets: labeledValues };
+      }
+      return undefined;
    }
 
    private static throwNonUniqueValueError(column: Column, value: any): void {

@@ -72,58 +72,6 @@ describe('ChartDataHelper', () => {
       expect(distinceValues).toEqual(expectedValues);
    });
 
-   it('#valuesOfDistinctNames should return data points when all names are distinct', () => {
-
-      // given
-      const context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
-      context.groupByColumns = [createColumn('_id', DataType.NUMBER)];
-      context.dataColumns = [createColumn('y', DataType.NUMBER)];
-      context.entries = [
-         { _id: 1, x: 'a', y: 1 },
-         { x: 's', y: 5 },
-         { _id: 2, x: 'b', y: 2 },
-         { _id: 3, x: 'c', y: 2 },
-         { _id: null, x: 'd', y: 7 },
-         { _id: 4, x: 'd', y: 3 },
-         { _id: 5, x: 'e', y: 3 },
-         { _id: 6, x: 'e' },
-         { _id: 7, x: 'e', y: null },
-      ];
-
-      // when
-      const values = ChartDataHelper.valuesOfDistinctNames(context);
-
-      // then
-      const expectedValues: DataPoint[] = [
-         { x: 1, y: 1 },
-         { x: 2, y: 2 },
-         { x: 3, y: 2 },
-         { x: 4, y: 3 },
-         { x: 5, y: 3 }
-      ];
-      expect(values).toEqual(expectedValues);
-   });
-
-   it('#valuesOfDistinctNames should throw error when not all names are distinct', () => {
-
-      // given
-      const context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
-      context.groupByColumns = [createColumn('x', DataType.TEXT)];
-      context.dataColumns = [createColumn('y', DataType.NUMBER)];
-      context.entries = [
-         { _id: 1, x: 'a', y: 1 },
-         { _id: 2, x: 'b', y: 2 },
-         { _id: 3, x: 'a', y: 1 },
-      ];
-      vi.spyOn(ChartDataHelper, 'valuesOfDistinctNames');
-
-      // when
-      const extraction = () => ChartDataHelper.valuesOfDistinctNames(context);
-
-      // then
-      expect(extraction).toThrow(expect.objectContaining({ message: 'Value \'a\' is not unique' }));
-   });
-
    it('#extractGroupingValue should return unchanged value when data type is NUMBER', () => {
 
       // given
@@ -183,6 +131,184 @@ describe('ChartDataHelper', () => {
 
       // then
       expect(dataPoint).toEqual({ x: 4, y: 8 });
+   });
+
+   it('#categoryData should return labels and values of named entries', () => {
+
+      // given
+      const context = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('y', DataType.NUMBER), createColumn('z', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('x', DataType.TEXT)];
+      context.entries = [
+         { x: 'a', y: 1, z: 10 },
+         { y: 5, z: 50 },
+         { x: 'b', z: 20 },
+         { x: 'c' },
+         { x: 'c', y: 3 }
+      ];
+
+      // when
+      const categoryData = ChartDataHelper.categoryData(context);
+
+      // then
+      expect(categoryData).toEqual({
+         labels: ['a', 'b', 'c'],
+         dataSets: [
+            { label: 'y', values: [1, undefined, 3] },
+            { label: 'z', values: [10, 20, undefined] }
+         ]
+      });
+   });
+
+   it('#categoryData should throw error when names are not unique', () => {
+
+      // given
+      const context = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('y', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('x', DataType.TEXT)];
+      context.entries = [
+         { x: 'a', y: 1 },
+         { x: 'b', y: 2 },
+         { x: 'a', y: 3 }
+      ];
+
+      // when
+      const extraction = () => ChartDataHelper.categoryData(context);
+
+      // then
+      expect(extraction).toThrow(expect.objectContaining({ message: 'Value \'a\' is not unique' }));
+   });
+
+   it('#categoryData should throw error with formatted time when time names are not unique', () => {
+
+      // given
+      const context = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('y', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('x', DataType.TIME, TimeUnit.SECOND)];
+      context.entries = [
+         { x: now, y: 1 },
+         { x: now, y: 2 }
+      ];
+
+      // when
+      const extraction = () => ChartDataHelper.categoryData(context);
+
+      // then
+      expect(extraction).toThrow(expect.objectContaining({ message: 'Value \'' + formatTime(now) + '\' is not unique' }));
+   });
+
+   it('#categoryData should keep name zero', () => {
+
+      // given
+      const context = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('y', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('x', DataType.NUMBER)];
+      context.entries = [
+         { x: 0, y: 1 },
+         { x: 1, y: 2 }
+      ];
+
+      // when
+      const categoryData = ChartDataHelper.categoryData(context);
+
+      // then
+      expect(categoryData).toEqual({
+         labels: [0, 1],
+         dataSets: [{ label: 'y', values: [1, 2] }]
+      });
+   });
+
+   it('#uniqueNameCount should return number of names when all names are distinct', () => {
+
+      // given
+      const entries = [{ x: 'a', y: 1 }, { x: 'b', y: 2 }, { x: 'c', y: 3 }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.TEXT), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBe(3);
+   });
+
+   it('#uniqueNameCount should return undefined when names are not distinct', () => {
+
+      // given
+      const entries = [{ x: 'a', y: 1 }, { x: 'b', y: 2 }, { x: 'a', y: 3 }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.TEXT), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBeUndefined();
+   });
+
+   it('#uniqueNameCount should ignore entries without name', () => {
+
+      // given
+      const entries = [{ x: 'a', y: 1 }, { y: 2 }, { x: '', y: 3 }, { x: null, y: 4 }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.TEXT), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBe(1);
+   });
+
+   it('#uniqueNameCount should ignore name of preceding entry without data value', () => {
+
+      // given
+      const entries = [{ x: 'a' }, { x: 'a', y: null }, { x: 'a', y: 1 }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.TEXT), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBe(1);
+   });
+
+   it('#uniqueNameCount should return undefined when entry without data value repeats name of entry with data value', () => {
+
+      // given
+      const entries = [{ x: 'a', y: 1 }, { x: 'a' }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.TEXT), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBeUndefined();
+   });
+
+   it('#uniqueNameCount should return zero when entries are undefined', () => {
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(undefined, createColumn('x', DataType.TEXT), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBe(0);
+   });
+
+   it('#uniqueNameCount should count name zero', () => {
+
+      // given
+      const entries = [{ x: 0, y: 1 }, { x: 1, y: 2 }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.NUMBER), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBe(2);
+   });
+
+   it('#uniqueNameCount should return undefined when name zero is not distinct', () => {
+
+      // given
+      const entries = [{ x: 0, y: 1 }, { x: 0, y: 2 }];
+
+      // when
+      const count = ChartDataHelper.uniqueNameCount(entries, createColumn('x', DataType.NUMBER), [createColumn('y', DataType.NUMBER)]);
+
+      // then
+      expect(count).toBeUndefined();
    });
 
    it('#sortAscending should return data points ascending sorted by attribute x', () => {

@@ -96,6 +96,40 @@ describe('ManageConfigDialogComponent', () => {
     expect(updateConfigRecordsSpy).toHaveBeenCalledWith([component.items[1].configRecord], []);
   });
 
+  it('butOK#click when config record was renamed', () => {
+
+    // given
+    rename(1, 'X');
+    fixture.detectChanges();
+
+    // when
+    button('but_ok').click();
+
+    // then
+    expect(updateConfigRecordsSpy).toHaveBeenCalledWith([], [component.items[1].configRecord]);
+    expect(component.items[1].configRecord.name).toBe('X');
+  });
+
+  it('butOK#click when config record was renamed and then deleted', () => {
+
+    // given
+    rename(1, 'X');
+    button('butDelete-1').click();
+    fixture.detectChanges();
+
+    // when
+    button('but_ok').click();
+
+    // then
+    expect(updateConfigRecordsSpy).toHaveBeenCalledWith([component.items[1].configRecord], []);
+  });
+
+  function rename(index: number, name: string): void {
+    const input: HTMLInputElement = fixture.debugElement.queryAll(By.css('input'))[index].nativeElement;
+    input.value = name;
+    input.dispatchEvent(new Event('input'));
+  }
+
   function context(): ManageConfigContext {
     return {
       configRecords: [

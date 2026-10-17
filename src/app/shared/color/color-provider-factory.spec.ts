@@ -50,6 +50,18 @@ describe('ColorProviderFactory', () => {
         expect(colorProvider.options.scheme).toBe(SequentialColorScheme.RAINBOW);
     });
 
+    it('#create should throw error when color scheme type is unknown', () => {
+
+        // given
+        const options = colorOptions('unknown' as ColorSchemeType, CategoricalColorScheme.ACCENT);
+
+        // when
+        const creation = () => ColorProviderFactory.create(options);
+
+        // then
+        expect(creation).toThrow('unknown ColorSchemeType: unknown');
+    });
+
     function colorOptions(type: ColorSchemeType, scheme: CategoricalColorScheme | SequentialColorScheme): ColorOptions {
         return {
             type,

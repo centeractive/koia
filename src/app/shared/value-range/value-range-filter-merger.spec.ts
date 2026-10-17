@@ -169,4 +169,46 @@ describe('ValueFilterRangeMerger', () => {
       expect(merged).toBe(true);
       expect(f1.valueRange).toEqual({ min: 0, max: 2, maxExcluding: true });
    });
+
+   it('#merge should retain "max excluding" from first value range when max values are equal', () => {
+
+      // given
+      const f1 = new ValueRangeFilter('x', { min: -10, max: 2, maxExcluding: true });
+      const f2 = new ValueRangeFilter('x', { min: 0, max: 2 });
+
+      // when
+      const merged = merger.merge(f1, f2);
+
+      // then
+      expect(merged).toBe(true);
+      expect(f1.valueRange).toEqual({ min: 0, max: 2, maxExcluding: true });
+   });
+
+   it('#merge should not merge when only one filter is inverted', () => {
+
+      // given
+      const f1 = new ValueRangeFilter('x', { min: 0, max: 10 });
+      const f2 = new ValueRangeFilter('x', { min: 5, max: 20 }, true);
+
+      // when
+      const merged = merger.merge(f1, f2);
+
+      // then
+      expect(merged).toBe(false);
+      expect(f1.valueRange).toEqual({ min: 0, max: 10 });
+   });
+
+   it('#merge should not merge inverted filters when first max differs from second min', () => {
+
+      // given
+      const f1 = new ValueRangeFilter('x', { min: 0, max: 5, maxExcluding: true }, true);
+      const f2 = new ValueRangeFilter('x', { min: 6, max: 10 }, true);
+
+      // when
+      const merged = merger.merge(f1, f2);
+
+      // then
+      expect(merged).toBe(false);
+      expect(f1.valueRange).toEqual({ min: 0, max: 5, maxExcluding: true });
+   });
 });

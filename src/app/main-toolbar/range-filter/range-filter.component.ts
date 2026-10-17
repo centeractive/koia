@@ -26,7 +26,7 @@ export class RangeFilterComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.unsubscribeSubscription();
-    this.filter.onAdjustedValueRange().subscribe(() => this.onChange.emit());
+    this.subscription = this.filter.onAdjustedValueRange().subscribe(() => this.onChange.emit());
     this.valueRange = this.filter.sliderValueRange;
   }
 

@@ -46,11 +46,6 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     this.filteredSceneInfos = this.filterSceneInfos();
   }
 
-  showSceneDetails(sceneID: string): void {
-    this.dbService.findScene(sceneID)
-      .then(s => this.dialogService.showSceneDetailsDialog(s));
-  }
-
   activate(sceneInfo: SceneInfo) {
     this.dbService.activateScene(sceneInfo._id)
       .then(s => {

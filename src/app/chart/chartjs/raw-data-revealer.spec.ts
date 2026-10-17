@@ -449,6 +449,26 @@ describe('RawDataRevealer - LINE', () => {
         expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Discount', 'Rank'], [90, 'A'], context);
     });
 
+    it('#reveal - individual values without ID of unknown dataset label fall back to first data column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Unknown', data: [{ x: 'A', y: 900 }] }]
+        } as unknown as ChartData;
+        const colName = numberColumn('Rank');
+        const colAmount = numberColumn('Amount');
+        const colDiscount = numberColumn('Discount');
+        const context = new ChartContext([colName, colAmount, colDiscount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount, colDiscount];
+        context.groupByColumns = [colName];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Amount', 'Rank'], [900, 'A'], context);
+    });
+
 });
 
 describe('RawDataRevealer - SCATTER', () => {

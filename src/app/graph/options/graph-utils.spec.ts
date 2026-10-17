@@ -116,6 +116,24 @@ describe('GraphUtils', () => {
       expect(columnNames).toEqual(['Path', 'Level']);
    });
 
+   it('#collectNonTimeColumnNames should omit time column name of node with named parent', () => {
+
+      // given
+      const graphContext = new GraphContext([]);
+      graphContext.groupByColumns = [
+         createColumn('Path', DataType.TEXT),
+         createColumn('Date/Time', DataType.TIME, TimeUnit.MINUTE)
+      ];
+      const pathNode: GraphNode = { parent: rootNode, group: 0, name: 'Path', value: '/var/log/messages', info: '27', count: 27 };
+      const timeNode: GraphNode = { parent: pathNode, group: 0, name: 'Date/Time (per minute)', value: now, info: '4', count: 4 };
+
+      // when
+      const columnNames = GraphUtils.collectNonTimeColumnNames(timeNode, graphContext);
+
+      // then
+      expect(columnNames).toEqual(['Path']);
+   });
+
    it('#formattedValueOf should return formatted time', () => {
 
       // given

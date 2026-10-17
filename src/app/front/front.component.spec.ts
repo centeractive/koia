@@ -252,6 +252,32 @@ describe('FrontComponent', () => {
     expect(component.showCouchDBTip()).toBe(true);
   }));
 
+  it('#onDataStorageChanged should show error without reading scenes when connection to CouchDB fails while CouchDB is in use', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.indexedDB;
+    isIndexedDbInUseSpy.mockReturnValue(false);
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
+    const dialogRef = createConnectionDialogRef();
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
+      data.connectionInfo.port = 999;
+      data.closedWithOK = true;
+      return dialogRef;
+    });
+    vi.spyOn(couchDBService, 'initConnection').mockRejectedValue('connection failed');
+    findSceneInfosSpy.mockClear();
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.couchDB);
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalled();
+    expect(findSceneInfosSpy).not.toHaveBeenCalled();
+    expect(component.ready).toBe(false);
+  }));
+
   it('#onDataStorageChanged should show error when backend cannot be initialized', fakeAsync(() => {
 
     // given
@@ -531,6 +557,19 @@ describe('FrontComponent', () => {
     expect(host.querySelector('.front-couchdb-tip')).toBeNull();
     expect(localStorage.getItem(COUCHDB_TIP_DISMISSED)).toBe('true');
     expect(TestBed.createComponent(FrontComponent).componentInstance.couchDBTipDismissed).toBe(true);
+  });
+
+  it('should not consider CouchDB recommendation dismissed when local storage is not accessible', () => {
+
+    // given
+    localStorage.setItem(COUCHDB_TIP_DISMISSED, 'true');
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
+
+    // when
+    const front = TestBed.createComponent(FrontComponent).componentInstance;
+
+    // then
+    expect(front.couchDBTipDismissed).toBe(false);
   });
 
   it('should show setup guide link in storage hint when recommendation is dismissed', () => {

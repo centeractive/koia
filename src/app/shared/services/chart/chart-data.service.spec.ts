@@ -505,6 +505,126 @@ describe('ChartDataService', () => {
       expect(result.error).toBeUndefined();
    });
 
+   it('#createData should create LINE chart data with own color per dataset when grouped by single unique name', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.entries = [{ name: 'a', c2: 1, c3: 2 }];
+      context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
+      context.aggregations = [];
+      context.groupByColumns = [createColumn('name', DataType.TEXT)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets.map(ds => ds.backgroundColor)).toEqual(context.colorProvider.bgColors(2));
+      expect(result.data.datasets.map(ds => ds.borderColor)).toEqual(context.colorProvider.borderColors(2));
+   });
+
+   it('#createData should create RADAR chart data with single color per dataset', () => {
+
+      // given
+      context.chartType = ChartType.RADAR.type;
+      context.entries = [{ name: 'a', c2: 1 }, { name: 'b', c2: 2 }];
+      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
+      context.aggregations = [];
+      context.groupByColumns = [createColumn('name', DataType.TEXT)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0].backgroundColor).toBe(context.colorProvider.bgColors(1)[0]);
+      expect(result.data.datasets[0].borderColor).toBe(context.colorProvider.borderColors(1)[0]);
+   });
+
+   it('#createData should assign y-axis IDs to BAR chart data of unique named values when multi value axes selected', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.entries = [{ name: 'a', c2: 1, c3: 2 }];
+      context.multiValueAxes = true;
+      context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
+      context.aggregations = [];
+      context.groupByColumns = [createColumn('name', DataType.TEXT)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0]['yAxisID']).toBeUndefined();
+      expect(result.data.datasets[1]['yAxisID']).toBe('y2');
+   });
+
+   it('#createData should assign x-axis IDs to HORIZONTAL_BAR chart data of unique named values when multi value axes selected', () => {
+
+      // given
+      context.chartType = ChartType.HORIZONTAL_BAR.type;
+      context.entries = [{ name: 'a', c2: 1, c3: 2 }];
+      context.multiValueAxes = true;
+      context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
+      context.aggregations = [];
+      context.groupByColumns = [createColumn('name', DataType.TEXT)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0]['xAxisID']).toBeUndefined();
+      expect(result.data.datasets[1]['xAxisID']).toBe('x2');
+   });
+
+   it('#createData should assign y-axis IDs to individual values LINE chart data when multi value axes selected', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.multiValueAxes = true;
+      context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
+      context.aggregations = [];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0]['yAxisID']).toBeUndefined();
+      expect(result.data.datasets[1]['yAxisID']).toBe('y2');
+   });
+
+   it('#createData should assign x-axis IDs to individual values LINEAR_HORIZONTAL_BAR chart data when multi value axes selected', () => {
+
+      // given
+      context.chartType = ChartType.LINEAR_HORIZONTAL_BAR.type;
+      context.multiValueAxes = true;
+      context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
+      context.aggregations = [];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0]['xAxisID']).toBeUndefined();
+      expect(result.data.datasets[1]['xAxisID']).toBe('x2');
+   });
+
+   it('#createData should return error when no X-Axis is defined for timeline LINE chart (count distinct values)', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [createColumn('c1', DataType.TEXT)];
+      context.groupByColumns = [];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.error).toBe('X-Axis is not defined');
+      expect(result.data).toBeUndefined();
+      expect(context.valueRange).toBeUndefined();
+   });
+
    function createColumn(name: string, dataType: DataType, groupingTimeUnit?: TimeUnit): Column {
       const column: Column = {
          name: name,

@@ -96,6 +96,87 @@ describe('ExcelDataConverter', () => {
         });
     });
 
+    it('#convertTime should keep null time', () => {
+
+        // given
+        const data: object[] = [{ Time: null }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16, format: 'd MMM yyyy HH:mm:ss' }];
+
+        // when
+        converter.convertTime(data, columns);
+
+        // then
+        expect(data).toEqual([{ Time: null }]);
+    });
+
+    it('#convertTime should convert time zero to date', () => {
+
+        // given
+        const data: object[] = [{ Time: 0 }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16, format: 'd MMM yyyy HH:mm:ss' }];
+
+        // when
+        converter.convertTime(data, columns);
+
+        // then
+        expect(data).toEqual([{ Time: new Date(0) }]);
+    });
+
+    it('#convertTime should convert time to date when column has no format', () => {
+
+        // given
+        const data: object[] = [{ Time: time('2019-01-18 12:00:00.000') }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16 }];
+
+        // when
+        converter.convertTime(data, columns);
+
+        // then
+        expect(data).toEqual([{ Time: new Date('2019-01-18 12:00:00.000') }]);
+    });
+
+    it('#toWorksheet should create no time cell when time is missing', () => {
+
+        // given
+        const data: object[] = [{ Name: 'A', Time: new Date('2019-01-18 12:00:00.000') }, { Name: 'B' }];
+        const columns: Column[] = [
+            { name: 'Name', dataType: DataType.TEXT, width: 40 },
+            { name: 'Time', dataType: DataType.TIME, width: 16, format: 'd MMM yyyy HH:mm:ss' }
+        ];
+
+        // when
+        const worksheet = converter.toWorksheet(data, columns);
+
+        // then
+        expect(worksheet['B2'].z).toBe('d MMM yyyy HH:mm:ss');
+        expect(worksheet['B3']).toBeUndefined();
+    });
+
+    it('#toWorksheet should use default width when column is unknown', () => {
+
+        // given
+        const data: object[] = [{ Unknown: 'A' }];
+
+        // when
+        const worksheet = converter.toWorksheet(data, []);
+
+        // then
+        expect(worksheet['!cols']).toEqual([{ wch: 10 }]);
+    });
+
+    it('#toWorksheet should not format non-numeric time cell', () => {
+
+        // given
+        const data: object[] = [{ Time: 'n/a' }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16, format: 'd MMM yyyy HH:mm:ss' }];
+
+        // when
+        const worksheet = converter.toWorksheet(data, columns);
+
+        // then
+        expect(worksheet['A2']).toEqual({ t: 's', v: 'n/a' });
+    });
+
     function time(date: string): number {
         return new Date(date).getTime();
     }

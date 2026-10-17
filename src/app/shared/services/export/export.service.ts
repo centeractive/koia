@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import * as XLSX from '@e965/xlsx';
+import * as Papa from 'papaparse';
 import { ExportDataConverter } from './data-converter/export-data-converter';
 import { Column, ExportFormat } from 'app/shared/model';
 import { ExcelDataConverter } from './data-converter/excel-data-converter';
@@ -16,7 +17,7 @@ export class ExportService {
 
   private newline = '\n';
   private datePipe = new DatePipe('en-US');
-  private timeFormat = 'yyyy-mm-dd_HHmmss';
+  private timeFormat = 'yyyy-MM-dd_HHmmss';
   private exportDataConverter = new ExportDataConverter();
   private excelDataConverter = new ExcelDataConverter();
 
@@ -53,15 +54,7 @@ export class ExportService {
   }
 
   private toCSV(data: object[], delimiter: string): string {
-    const keys = Object.keys(data[0]);
-    return keys.join(delimiter) + this.newline +
-      data.map(e => this.toCSVLine(e, keys, delimiter))
-        .join(this.newline);
-  }
-
-  private toCSVLine(element: object, keys: string[], delimiter: string) {
-    return keys.map(k => element[k])
-      .join(delimiter);
+    return Papa.unparse(data, { delimiter, newline: this.newline });
   }
 
   private exportAsExcel(data: object[], columns: Column[], baseFileName: string): void {

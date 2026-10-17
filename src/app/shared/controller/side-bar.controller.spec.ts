@@ -309,6 +309,48 @@ describe('SummaryTableSideBarComponent', () => {
       expect(context.fireStructureChanged).not.toHaveBeenCalled();
    });
 
+   it('#ngOnChanges should keep element context when context did not change', () => {
+
+      // when
+      controller.ngOnChanges({ entries: new SimpleChange(undefined, [], true) });
+
+      // then
+      expect(controller.elementContext).toBe(context);
+   });
+
+   it('#addGroupingValueRange should not fire structure change when column not in use', () => {
+
+      // given
+      context.dataColumns = [findColumn('Path')];
+      context.groupByColumns = [findColumn('Time')];
+      const valueGrouping = { columnName: 'Percent', ranges: [], minMaxValues: { min: 0, max: 100 } };
+      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
+
+      // when
+      const range = controller.addGroupingValueRange(valueGrouping);
+
+      // then
+      expect(valueGrouping.ranges).toEqual([range]);
+      expect(context.fireStructureChanged).not.toHaveBeenCalled();
+   });
+
+   it('#removeGroupingRange should not fire structure change when column not in use', () => {
+
+      // given
+      context.dataColumns = [findColumn('Path')];
+      context.groupByColumns = [findColumn('Time')];
+      const range: ValueRange = { max: 100, active: true };
+      const valueGrouping = { columnName: 'Percent', ranges: [range] };
+      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
+
+      // when
+      controller.removeGroupingRange(valueGrouping, range);
+
+      // then
+      expect(valueGrouping.ranges).toEqual([]);
+      expect(context.fireStructureChanged).not.toHaveBeenCalled();
+   });
+
    it('#setElementPosition should emit onElementPositionChange', () => {
 
       // given

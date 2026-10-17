@@ -28,7 +28,6 @@ export class ChartType {
 
    static readonly CIRCULAR = [ChartType.PIE, ChartType.DOUGHNUT, ChartType.RADAR, ChartType.POLAR_AREA];
    static readonly CATEGORY = [ChartType.PIE, ChartType.DOUGHNUT, ChartType.BAR, ChartType.HORIZONTAL_BAR, ChartType.RADAR, ChartType.POLAR_AREA];
-   static readonly LINEAR = [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR, ChartType.LINE, ChartType.AREA, ChartType.SCATTER];
    static readonly HORIZONTAL = [ChartType.HORIZONTAL_BAR, ChartType.LINEAR_HORIZONTAL_BAR];
 
    static fromType(type: string): ChartType {
@@ -51,19 +50,8 @@ export class ChartType {
       return ChartType.CATEGORY.includes(chartType);
    }
 
-   static isLinearChart(chartType: ChartType): boolean {
-      return ChartType.LINEAR.includes(chartType);
-   }
-
    static isHorizontalChart(chartType: ChartType): boolean {
       return ChartType.HORIZONTAL.includes(chartType);
-   }
-
-   static isSameCategory(chartType1: ChartType, chartType2: ChartType): boolean {
-      return (ChartType.isCircularChart(chartType1) && ChartType.isCircularChart(chartType2)) ||
-         (ChartType.isCategoryChart(chartType1) && ChartType.isCategoryChart(chartType2)) ||
-         (ChartType.isLinearChart(chartType1) && ChartType.isLinearChart(chartType2)) ||
-         (ChartType.isHorizontalChart(chartType1) && ChartType.isHorizontalChart(chartType2));
    }
 
 }

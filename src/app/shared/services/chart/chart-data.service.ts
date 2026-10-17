@@ -94,11 +94,12 @@ export class ChartDataService {
     const labels = labeledData.labels;
     const colorPerLabel = this.useDifferentColorPerLabel(chartType, context);
     context.valueRange = ArrayUtils.categoryDataToValueRange(labeledData);
+    const colorCount = colorPerLabel ? labels.length : labeledData.dataSets.length;
+    const bgColors = context.colorProvider.bgColors(colorCount);
+    const borderColors = context.colorProvider.borderColors(colorCount);
     return {
       labels: labels,
       datasets: labeledData.dataSets.map((ds, i) => {
-        const bgColors = context.colorProvider.bgColors(labels.length);
-        const borderColors = context.colorProvider.borderColors(labels.length);
         const dataset: ChartDataset = {
           label: ds.label,
           data: ds.values,
@@ -187,9 +188,7 @@ export class ChartDataService {
         }
       }
     });
-    if (distinctGroupingValues.size > chartType.maxValues) {
-      throw this.errorResultFactory.exceedingValues(chartType);
-    } else if (DataTypeUtils.isNumeric(context.groupByColumns[0].dataType)) {
+    if (DataTypeUtils.isNumeric(context.groupByColumns[0].dataType)) {
       datasets.forEach(ds => ChartDataHelper.sortAscending(ds.values));
     }
     const valueRanges = datasets.map(ds => ArrayUtils.numberValueRange(ds.values, 'y'));
@@ -221,10 +220,6 @@ export class ChartDataService {
       const namedSeries = this.createIndividualValuesSeries(context.entries, dataColumn, context);
       for (const seriesName of Array.from(namedSeries.keys())) {
         const dataPoints = namedSeries.get(seriesName);
-        const distinctXValues = new Set(dataPoints.map(p => p.x));
-        if (distinctXValues.size > chartType.maxValues) {
-          throw this.errorResultFactory.exceedingValues(chartType);
-        }
         data.push({
           key: seriesName,
           values: this.optionallySampleDown(dataPoints, context),

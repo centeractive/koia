@@ -57,8 +57,7 @@ export class CategoricalColorProvider extends ColorProvider {
     }
 
     private rgbColor(index: number): string {
-        const color = this.colorScale(index % this.colors.length);
-        return color.startsWith('#') ? ColorConverter.hexToRgb(color) : color;
+        return ColorConverter.hexToRgb(this.colorScale(index % this.colors.length));
     }
 
 }

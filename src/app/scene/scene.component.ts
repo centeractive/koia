@@ -6,11 +6,11 @@ import { MatAccordion } from '@angular/material/expansion';
 import { ProgressBarMode } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
-import { Attribute, Column, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
+import { Attribute, ColumnPair, Route, Scene, SceneInfo } from 'app/shared/model';
 import { NotificationService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
 import { DBService } from 'app/shared/services/backend';
-import { CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { CommonUtils, NumberUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
@@ -35,7 +35,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
-  readonly columnDefinitions = 'Column Definitions';
 
   @ViewChild(MatAccordion) accordion: MatAccordion;
   @ViewChild('fileInput') fileInputRef: ElementRef<HTMLInputElement>;
@@ -51,12 +50,11 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   locales: string[];
   selectedLocale: string;
   columnMappingsSourceCandidates: SceneInfo[];
-  adoptColumnsFromExistingScene: false;
+  adoptColumnsFromExistingScene = false;
   columnMappingsSource: SceneInfo;
   columnMappings: ColumnPair[];
   columnMappingsValid: boolean;
   targetColumnNames: string[];
-  dateFormats: string[];
   readingSample: boolean;
   previewData: MappingResult[];
   scenesExist: boolean;
@@ -76,6 +74,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private columnFactory = new ColumnMappingGenerator();
   private mappingErrors = new ConfinedStringSet(10);
   private fileDialogOpen = false;
+  private loadFailed = false;
   private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[] } | undefined;
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
@@ -87,7 +86,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     if (!this.dbService.isBackendInitialized()) {
       this.router.navigateByUrl(Route.FRONT);
     } else {
-      this.dateFormats = DateTimeUtils.allTimeUnits('desc').map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
       this.readers = this.readerService.getReaders();
       this.selectedReader = this.readers[0];
       this.currSourceName = this.selectedReader.getSourceName();
@@ -151,6 +149,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       },
       onComplete: msg => this.entryPersisterCompleted(msg),
       onError: err => {
+        this.loadFailed = true;
         this.notifyError(err);
         this.progressBarMode = undefined;
       }
@@ -159,14 +158,16 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private entryPersisterCompleted(msg: string): void {
-    const message = this.canceled ? LanguageService.instant('scene.loadingCanceled', { message: msg }) : msg;
-    if (this.mappingErrors.size() > 0) {
-      this.notifyWarning(LanguageService.instant('scene.mappingErrors', { message, count: this.mappingErrors.size() }) + '\n\n' +
-        this.mappingErrors.toString());
-    } else if (this.canceled) {
-      this.notifyWarning(message);
-    } else {
-      this.notifySuccess(msg);
+    if (!this.loadFailed) {
+      const message = this.canceled ? LanguageService.instant('scene.loadingCanceled', { message: msg }) : msg;
+      if (this.mappingErrors.size() > 0) {
+        this.notifyWarning(LanguageService.instant('scene.mappingErrors', { message, count: this.mappingErrors.size() }) + '\n\n' +
+          this.mappingErrors.toString());
+      } else if (this.canceled) {
+        this.notifyWarning(message);
+      } else {
+        this.notifySuccess(msg);
+      }
     }
     this.progressBarMode = undefined;
     this.router.navigateByUrl(Route.SCENES);
@@ -269,9 +270,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
       .then(sample => {
-        this.closeExpPanelsAbove(this.columnDefinitions);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
-        this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
+        this.columnMappings = this.adoptColumnsFromExistingScene ? CommonUtils.clone(this.columnMappingsSource.columnMappings) :
           this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
         this.onColumnChanged();
       })
@@ -281,13 +281,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   deleteColumnMapping(columnPair: ColumnPair): void {
     columnPair.skip = true;
-    this.onColumnChanged();
-  }
-
-  onDataTypeChanged(targetColumn: Column): void {
-    if (targetColumn.dataType === DataType.TIME && !targetColumn.format) {
-      targetColumn.format = this.dateFormats[0];
-    }
     this.onColumnChanged();
   }
 
@@ -329,10 +322,15 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
     this.dbService.persistScene(this.scene, false, progressMonitor)
       .then(() => this.loadData())
-      .catch(err => this.notifyError(err));
+      .catch(err => {
+        this.notifyError(err);
+        this.scene.creationTime = undefined;
+        this.progressBarMode = undefined;
+      });
   }
 
   private loadData(): void {
+    this.loadFailed = false;
     this.feedback = LanguageService.instant('scene.readingData');
     this.progressBarMode = 'query';
     this.mappingErrors.clear();
@@ -347,11 +345,19 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     return {
       onValues: rows => this.persistEntries(entryMapper.mapRows(rows)),
       onEntries: entries => this.persistEntries(entryMapper.mapObjects(entries)),
-      onError: err => this.notifyError(err),
+      onError: err => {
+        this.loadFailed = true;
+        this.notifyError(err);
+        if (!this.entryPersister.isPostingComplete()) {
+          this.entryPersister.postingComplete(false);
+        }
+      },
       onComplete: () => {
-        this.progressBarMode = 'determinate';
-        this.entryPersister.postingComplete(true);
-        console.log('finished reading data');
+        if (!this.entryPersister.isPostingComplete()) {
+          this.progressBarMode = 'determinate';
+          this.entryPersister.postingComplete(true);
+          console.log('finished reading data');
+        }
       },
       isCanceled: () => this.entryPersister.isPostingComplete()
     };
@@ -368,7 +374,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         const entries = mappingResults
           .filter(mr => mr.entry)
           .map(mr => mr.entry);
-        const maxItemsToLoad = this.maxItemsToLoadControl.value;
+        const maxItemsToLoad = NumberUtils.parseFormattedNumber(this.maxItemsToLoadControl.value);
         if (this.entryPersister.getPosted() + entries.length > maxItemsToLoad) {
           this.entryPersister.post(entries.slice(0, maxItemsToLoad - this.entryPersister.getPosted()));
           this.entryPersister.postingComplete(true);
@@ -376,19 +382,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
           this.entryPersister.post(entries);
         }
       }
-    }
-  }
-
-  private closeExpPanelsAbove(headerName: string): void {
-    const headerNumber = Number(headerName.charAt(0));
-    const headers = this.accordion._headers.toArray();
-    for (let i = 0; i < headerNumber - 1; i++) {
-      if (headers[i]._isExpanded()) {
-        headers[i]._toggle();
-      }
-    }
-    if (headers[headerNumber - 1]) {
-      headers[headerNumber - 1].focus();
     }
   }
 

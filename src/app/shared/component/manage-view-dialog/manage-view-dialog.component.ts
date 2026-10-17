@@ -25,11 +25,9 @@ export class ManageViewDialogComponent {
 
   constructor(public dialogRef: MatDialogRef<ManageViewDialogComponent>, @Inject(MAT_DIALOG_DATA) public context: ManageViewContext) {
     this.dialogRef.disableClose = true;
-    if (context.views) {
-      this.clonedViews = _.cloneDeep(context.views);
-      this.items = context.views
-        .map(view => ({ view }));
-    }
+    this.clonedViews = _.cloneDeep(context.views);
+    this.items = context.views
+      .map(view => ({ view }));
   }
 
   deleteItem(item: ViewItem): void {
