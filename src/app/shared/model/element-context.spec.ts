@@ -135,6 +135,46 @@ describe('ElementContext', () => {
       expect(context.width).toBe(600);
    });
 
+   it('#copyAttributes should copy position and z-order', () => {
+
+      // when
+      context.copyAttributes({ ...viewElement(1, 1), x: 10, y: 20, z: 3 });
+
+      // then
+      expect([context.x, context.y, context.z]).toEqual([10, 20, 3]);
+   });
+
+   it('#copyAttributes should leave position undefined for legacy element', () => {
+
+      // when
+      context.copyAttributes(viewElement(1, 1));
+
+      // then
+      expect([context.x, context.y, context.z]).toEqual([undefined, undefined, undefined]);
+   });
+
+   it('#setPosition should not fire change event', fakeAsync(() => {
+
+      // when
+      context.setPosition(10, 20);
+      flush();
+
+      // then
+      expect([context.x, context.y]).toEqual([10, 20]);
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#z should not fire change event', fakeAsync(() => {
+
+      // when
+      context.z = 2;
+      flush();
+
+      // then
+      expect(context.z).toBe(2);
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
    it('#splitColumns should replace missing value with empty array', () => {
 
       // when

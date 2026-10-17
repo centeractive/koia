@@ -39,10 +39,11 @@ describe('ElementHeaderComponent', () => {
     component = fixture.componentInstance;
   });
 
-  function render(context: ElementContext, gridLayout: GridLayout, movable = false): void {
+  function render(context: ElementContext, gridLayout: GridLayout, movable = false, stackable = false): void {
     component.context = context;
     component.gridLayout = gridLayout;
     component.movable = movable;
+    component.stackable = stackable;
     fixture.detectChanges();
   }
 
@@ -84,6 +85,69 @@ describe('ElementHeaderComponent', () => {
 
     // then
     expect(query('.but_more')).toBeFalsy();
+  });
+
+  it('more menu should be available when only stackable', () => {
+
+    // when
+    render(new GraphContext([]), null, true, true);
+
+    // then
+    expect(query('.but_more')).toBeTruthy();
+  });
+
+  it('should offer z-order menu items when stackable', () => {
+
+    // given
+    render(new GraphContext([]), null, true, true);
+
+    // when
+    openMoreMenu();
+
+    // then
+    expect(menuItems('.menu_item_bring_to_front').length).toBe(1);
+    expect(menuItems('.menu_item_send_to_back').length).toBe(1);
+  });
+
+  it('should not offer z-order menu items when not stackable', () => {
+
+    // given
+    render(new SummaryContext([]), new GridLayout());
+
+    // when
+    openMoreMenu();
+
+    // then
+    expect(menuItems('.menu_item_bring_to_front').length).toBe(0);
+    expect(menuItems('.menu_item_send_to_back').length).toBe(0);
+  });
+
+  it('bring to front menu item should emit bringToFront', () => {
+
+    // given
+    render(new GraphContext([]), null, true, true);
+    const bringToFrontSpy = vi.spyOn(component.bringToFront, 'emit');
+    openMoreMenu();
+
+    // when
+    menuItems('.menu_item_bring_to_front')[0].click();
+
+    // then
+    expect(bringToFrontSpy).toHaveBeenCalled();
+  });
+
+  it('send to back menu item should emit sendToBack', () => {
+
+    // given
+    render(new GraphContext([]), null, true, true);
+    const sendToBackSpy = vi.spyOn(component.sendToBack, 'emit');
+    openMoreMenu();
+
+    // when
+    menuItems('.menu_item_send_to_back')[0].click();
+
+    // then
+    expect(sendToBackSpy).toHaveBeenCalled();
   });
 
   it('should show span menu items when grid layout is present', () => {

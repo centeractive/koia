@@ -23,7 +23,6 @@ import { SummaryValueFormatter } from './summary-value-formatter';
 })
 export class SummaryTableComponent implements OnInit, ExportDataProvider {
 
-  @Input() gridView: boolean;
   @Input() context: SummaryContext;
 
   frameColumns: string[];
@@ -51,19 +50,10 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
-      this.initSize();
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
       this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
       this.createBaseDataFrame();
-    }
-  }
-
-  private initSize(): void {
-    if (!this.gridView) {
-      const parentDivStyle = this.cmpElementRef.nativeElement.parentElement.style;
-      parentDivStyle.width = this.context.width + 'px';
-      parentDivStyle.height = this.context.height + 'px';
     }
   }
 

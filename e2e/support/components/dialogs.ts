@@ -46,6 +46,8 @@ export class ConfirmDialog {
    }
 }
 
+export const ADD_CHART_BUTTON = 'button:has(mat-icon[svgicon="add_chart"])';
+export const ADD_GRAPH_BUTTON = 'button:has(mat-icon[svgicon="add_graph"])';
 export const ADD_SUMMARY_BUTTON = 'button:has(mat-icon[svgicon="add_summary"])';
 
 export class ViewLauncherDialog {
@@ -57,7 +59,7 @@ export class ViewLauncherDialog {
    }
 
    addChart(): Promise<void> {
-      return this.choose(this.root.locator('button:has(mat-icon[svgicon="add_chart"])'));
+      return this.choose(this.root.locator(ADD_CHART_BUTTON));
    }
 
    addSummary(): Promise<void> {
@@ -65,7 +67,7 @@ export class ViewLauncherDialog {
    }
 
    addGraph(): Promise<void> {
-      return this.choose(this.root.locator('button:has(mat-icon[svgicon="add_graph"])'));
+      return this.choose(this.root.locator(ADD_GRAPH_BUTTON));
    }
 
    generateDashboard(): Promise<void> {

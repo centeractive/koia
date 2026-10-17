@@ -65,6 +65,8 @@ describe('SummaryTableComponent', () => {
       ]
     });
     fixture = TestBed.createComponent(SummaryTableComponent);
+    fixture.nativeElement.parentElement.style.width = '600px';
+    fixture.nativeElement.parentElement.style.height = '400px';
     component = fixture.componentInstance;
     context = new SummaryContext(columns);
     context.entries = entries.slice(0);
@@ -313,22 +315,6 @@ describe('SummaryTableComponent', () => {
 
     // then
     expect(formattedValue).toBe(datePipe.transform(now, 'd MMM yyyy HH:mm'));
-  });
-
-  it('should not size parent element when shown in grid view', () => {
-
-    // given
-    component.gridView = true;
-    const parentStyle = fixture.nativeElement.parentElement.style;
-    parentStyle.width = '10px';
-    parentStyle.height = '20px';
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    expect(parentStyle.width).toBe('10px');
-    expect(parentStyle.height).toBe('20px');
   });
 
   it('should create empty summary data when context has no entries', fakeAsync(() => {

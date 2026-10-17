@@ -89,22 +89,52 @@ export class DashboardTile {
    }
 
    async setColumnSpan(menuItem: string): Promise<void> {
+      await this.setSpan('.menu_item_column_span', menuItem);
+   }
+
+   async setRowSpan(menuItem: string): Promise<void> {
+      await this.setSpan('.menu_item_row_span', menuItem);
+   }
+
+   private async setSpan(spanMenuItem: string, menuItem: string): Promise<void> {
       await this.root.locator('.but_more').click();
-      await this.root.page().locator('.menu_item_column_span').click();
+      await this.root.page().locator(spanMenuItem).click();
       await this.root.page().getByRole('menuitem', { name: menuItem, exact: true }).click();
    }
 
-   async startResizeBy(dx: number, dy: number): Promise<void> {
-      const handle = await this.root.locator('.resize-handle').boundingBox();
-      const x = handle.x + handle.width / 2;
-      const y = handle.y + handle.height / 2;
+   async bringToFront(): Promise<void> {
+      await this.root.locator('.but_more').click();
+      await this.root.page().locator('.menu_item_bring_to_front').click();
+   }
+
+   async sendToBack(): Promise<void> {
+      await this.root.locator('.but_more').click();
+      await this.root.page().locator('.menu_item_send_to_back').click();
+   }
+
+   zIndex(): Promise<number> {
+      return this.root.evaluate((e: HTMLElement) => Number(getComputedStyle(e).zIndex));
+   }
+
+   startResizeBy(dx: number, dy: number): Promise<void> {
+      return this.startDragBy(this.root.locator('.resize-handle'), dx, dy);
+   }
+
+   startMoveBy(dx: number, dy: number): Promise<void> {
+      return this.startDragBy(this.root.locator('.but_move'), dx, dy);
+   }
+
+   private async startDragBy(grip: Locator, dx: number, dy: number): Promise<void> {
+      const box = await grip.boundingBox();
+      const x = box.x + box.width / 2;
+      const y = box.y + box.height / 2;
       const mouse = this.root.page().mouse;
       await mouse.move(x, y);
       await mouse.down();
       await mouse.move(x + dx, y + dy, { steps: 5 });
    }
 
-   async endResize(): Promise<void> {
+   async release(): Promise<void> {
       await this.root.page().mouse.up();
    }
 

@@ -13,7 +13,7 @@ export interface GridSpans {
  */
 export class GridLayout {
 
-  /** must equal twice the grid padding and the flex element margin (5px) for tiles to keep their position across layouts */
+  /** must equal twice the grid padding (5px) */
   static readonly GAP_PX = 10;
   static readonly ROW_SPANS = [1, 2, 3, 4];
   static readonly COLUMN_CHOICES = [1, 2, 3, 4, 5];

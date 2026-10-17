@@ -10,6 +10,9 @@ export interface ViewElement {
    gridRowSpan: number;
    width: number;
    height: number;
+   x?: number;
+   y?: number;
+   z?: number;
    dataColumns: Column[];
    splitColumns: Column[];
    groupByColumns: Column[];
