@@ -174,7 +174,7 @@ describe('ElementHeaderComponent', () => {
     const configureSpy = vi.spyOn(component.configure, 'emit');
 
     // when
-    query('#configButton').click();
+    query('.but_element_configure').click();
 
     // then
     expect(configureSpy).toHaveBeenCalledWith(expect.any(MouseEvent));
@@ -215,7 +215,7 @@ describe('ElementHeaderComponent', () => {
     render(context, null);
 
     // when
-    query('#marginButton').click();
+    query('.but_element_margin').click();
 
     // then
     expect(context.isShowResizableMargin()).toBe(true);
@@ -227,7 +227,7 @@ describe('ElementHeaderComponent', () => {
     render(new SummaryContext([]), null);
 
     // then
-    expect(query('#marginButton')).toBeFalsy();
+    expect(query('.but_element_margin')).toBeFalsy();
     expect(component.chartContext()).toBeUndefined();
   });
 
@@ -273,9 +273,9 @@ describe('ElementHeaderComponent', () => {
     render(new SummaryContext([]), null);
 
     // then
-    expect(query('#configButton').offsetWidth).toBe(36);
-    expect(query('#configButton').offsetHeight).toBe(36);
-    expect(getComputedStyle(query('#configButton .mat-mdc-button-touch-target')).display).toBe('none');
+    expect(query('.but_element_configure').offsetWidth).toBe(36);
+    expect(query('.but_element_configure').offsetHeight).toBe(36);
+    expect(getComputedStyle(query('.but_element_configure .mat-mdc-button-touch-target')).display).toBe('none');
   });
 
   it('idle header buttons should be dimmed and stay behind sticky header', () => {
@@ -308,11 +308,11 @@ describe('ElementHeaderComponent', () => {
     render(new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 }), null);
 
     // when
-    query('#marginButton').click();
+    query('.but_element_margin').click();
     fixture.detectChanges();
 
     // then
-    const marginButton = query('#marginButton');
+    const marginButton = query('.but_element_margin');
     const style = getComputedStyle(marginButton);
     expect(marginButton.classList).toContain('but_config');
     expect(marginButton.classList).toContain('koia-toggle-active');
@@ -326,7 +326,7 @@ describe('ElementHeaderComponent', () => {
     render(new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 }), null);
 
     // then
-    const marginButton = query('#marginButton');
+    const marginButton = query('.but_element_margin');
     expect(marginButton.classList).toContain('but_config');
     expect(marginButton.classList).not.toContain('koia-toggle-active');
   });

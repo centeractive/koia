@@ -90,7 +90,7 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   private generateGraph(): void {
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
-    const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('#div_svg');
+    const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('.div_svg');
     this.graphGenerator.generate(this.graphData, div, this.context);
   }
 

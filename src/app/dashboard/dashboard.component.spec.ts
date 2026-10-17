@@ -845,7 +845,7 @@ describe('DashboardComponent', () => {
     it('layout menu items should switch layout', fakeAsync(() => {
 
       // given
-      fixture.debugElement.query(By.css('#but_view_more')).nativeElement.click();
+      fixture.debugElement.query(By.css('.but_view_more')).nativeElement.click();
       fixture.detectChanges();
       (document.querySelector('#menuItemLayout') as HTMLButtonElement).click();
       fixture.detectChanges();

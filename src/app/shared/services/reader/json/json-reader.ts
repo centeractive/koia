@@ -4,6 +4,7 @@ import oboe from 'oboe';
 import { DataHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
+import { SourceName } from '../source-name.enum';
 import { PathConverter } from './path-converter';
 
 export class JSONReader implements DataReader {
@@ -16,7 +17,7 @@ export class JSONReader implements DataReader {
   }
 
   getSourceName(): string {
-    return 'JSON';
+    return SourceName.JSON;
   }
 
   getFileExtension(): string {

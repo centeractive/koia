@@ -1,6 +1,6 @@
-<div id="div_main">
+<div class="div_main">
 
-  <div id="div_toolbar">
+  <div class="div_toolbar">
     @if (!dialogStyle) {
       <span class="span_buttons span_navigation">
         <button id="butHome" mat-icon-button [matTooltip]="'toolbar.home' | translate" [routerLink]="[urlFront]">
@@ -21,7 +21,7 @@
       </span>
     }
 
-    <div id="div_filter">
+    <div class="div_filter">
       @if (showFullTextFilter) {
         <mat-form-field class="full_text_filter" koiaForm>
           <input id="fullTextFilter" matInput type="text" [placeholder]="'toolbar.fullTextFilter' | translate" [(ngModel)]="fullTextFilter"
@@ -45,7 +45,7 @@
 
       @if (scene) {
         <span class="span_buttons">
-          <button id="butAddColFilter" mat-stroked-button [matTooltip]="'toolbar.addColumnFilter' | translate" [matMenuTriggerFor]="columnFilterMenu">
+          <button class="but_add_col_filter" mat-stroked-button [matTooltip]="'toolbar.addColumnFilter' | translate" [matMenuTriggerFor]="columnFilterMenu">
             <mat-icon>add_circle_outline</mat-icon>
             <span>{{ 'toolbar.addFilter' | translate }}</span>
           </button>
@@ -98,7 +98,7 @@
     </div>
 
     @if (showRangeFilters) {
-      <div id="div_range_filters">
+      <div class="div_range_filters">
         @for (rangeFilter of rangeFilters; track rangeFilter) {
           <div>
             <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">

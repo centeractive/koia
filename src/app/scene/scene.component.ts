@@ -16,6 +16,7 @@ import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
+import { SourceName } from '../shared/services/reader/source-name.enum';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { SceneUtils } from './utils';
@@ -32,10 +33,11 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private static readonly HEADER_SIZE = 10_000;
   private static readonly SAMPLE_SIZE = 100;
   private static readonly BATCH_SIZE = 1_000;
+  private static readonly COLUMN_DEFINITIONS_STEP = 3;
 
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
-  readonly columnDefinitions = 'Column Definitions';
+  readonly csvSourceName = SourceName.CSV;
 
   @ViewChild(MatAccordion) accordion: MatAccordion;
   @ViewChild('fileInput') fileInputRef: ElementRef<HTMLInputElement>;
@@ -269,7 +271,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     this.selectedReader.readSample(this.file, SceneComponent.SAMPLE_SIZE, this.encoding)
       .then(sample => {
-        this.closeExpPanelsAbove(this.columnDefinitions);
+        this.collapsePanelsAbove(SceneComponent.COLUMN_DEFINITIONS_STEP);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
         this.columnMappings = this.adoptColumnsFromExistingScene ? this.columnMappingsSource.columnMappings :
           this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
@@ -379,17 +381,11 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  private closeExpPanelsAbove(headerName: string): void {
-    const headerNumber = Number(headerName.charAt(0));
-    const headers = this.accordion._headers.toArray();
-    for (let i = 0; i < headerNumber - 1; i++) {
-      if (headers[i]._isExpanded()) {
-        headers[i]._toggle();
-      }
-    }
-    if (headers[headerNumber - 1]) {
-      headers[headerNumber - 1].focus();
-    }
+  private collapsePanelsAbove(step: number): void {
+    this.accordion._headers.toArray()
+      .slice(0, step - 1)
+      .filter(header => header._isExpanded())
+      .forEach(header => header._toggle());
   }
 
   cancel(): void {

@@ -53,7 +53,7 @@ describe('ViewToolbarComponent', () => {
     fixture.detectChanges();
 
     // when
-    element('#but_view_more').click();
+    element('.but_view_more').click();
     fixture.detectChanges();
     flush();
 
@@ -84,7 +84,7 @@ describe('ViewToolbarComponent', () => {
     expect(element('#but_print')).toBeNull();
     expect(element('#but_save_view')).toBeNull();
     expect(element('#but_restore_view')).toBeNull();
-    expect(element('#but_view_more')).not.toBeNull();
+    expect(element('.but_view_more')).not.toBeNull();
     expect(element('#but_custom')).not.toBeNull();
   });
 
@@ -170,7 +170,7 @@ describe('ViewToolbarComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(element('#view_toolbar > .koia-toolbar-separator + #but_custom')).not.toBeNull();
+    expect(element('.view_toolbar > .koia-toolbar-separator + #but_custom')).not.toBeNull();
   });
 
   it('toolbar should let header surface show through and have top border only', () => {
@@ -179,7 +179,7 @@ describe('ViewToolbarComponent', () => {
     fixture.detectChanges();
 
     // then
-    const toolbar = element('#view_toolbar');
+    const toolbar = element('.view_toolbar');
     const style = getComputedStyle(toolbar);
     expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
     expect(style.borderTopWidth).toBe('1px');

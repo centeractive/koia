@@ -66,7 +66,7 @@ describe('GraphComponent', () => {
     fixture.nativeElement.style.height = '300px';
 
     // then
-    expect(fixture.nativeElement.querySelector('#div_svg').offsetHeight).toBe(252);
+    expect(fixture.nativeElement.querySelector('.div_svg').offsetHeight).toBe(252);
   });
 
   it('context entries change should refresh graph data', fakeAsync(() => {
@@ -205,6 +205,6 @@ describe('GraphComponent', () => {
   }
 
   function svgDiv(): HTMLDivElement {
-    return fixture.nativeElement.querySelector('#div_svg');
+    return fixture.nativeElement.querySelector('.div_svg');
   }
 });

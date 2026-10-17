@@ -63,7 +63,7 @@
         @if (selectedReader) {
           <p>{{ selectedReader.getDescription() }}</p>
         }
-        @if (currSourceName === 'CSV') {
+        @if (currSourceName === csvSourceName) {
           <div class="field-row">
             <mat-form-field class="form_field_encoding">
               <mat-label>{{ 'scene.encoding' | translate }}</mat-label>

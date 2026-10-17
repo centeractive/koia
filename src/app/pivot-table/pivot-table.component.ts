@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ConfigController } from 'app/shared/controller/config.controller';
 import { ConfigRecord, TabContent, TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
+import { PIVOT_TABLE_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { createConfigRecord } from 'app/shared/services/view-persistence/config-record-factory';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
 import { LanguageService } from 'app/shared/services/language';
@@ -348,7 +349,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   exportToExcel(): void {
     const table = this.divPivot.nativeElement.getElementsByClassName('pvtTable')[0] as HTMLTableElement;
-    this.exportService.exportTableAsExcel(table, 'PivotTable');
+    this.exportService.exportTableAsExcel(table, PIVOT_TABLE_FILE_BASE_NAME);
   }
 
 }

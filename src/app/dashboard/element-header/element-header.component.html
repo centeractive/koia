@@ -40,11 +40,11 @@
       }
     </mat-menu>
 
-    <button id="configButton" class="but_config" mat-icon-button [matTooltip]="'element.configure' | translate" (click)="configure.emit($event)">
+    <button class="but_config but_element_configure" mat-icon-button [matTooltip]="'element.configure' | translate" (click)="configure.emit($event)">
       <mat-icon>settings</mat-icon>
     </button>
     @if (chartContext(); as chartContext) {
-      <button id="marginButton" class="but_config" mat-icon-button [class.koia-toggle-active]="chartContext.isShowResizableMargin()"
+      <button class="but_config but_element_margin" mat-icon-button [class.koia-toggle-active]="chartContext.isShowResizableMargin()"
         [matTooltip]="'element.toggleMargin' | translate" (click)="chartContext.toggleShowResizableMargin()">
         <mat-icon>crop_free</mat-icon>
       </button>

@@ -4,6 +4,8 @@ import * as XLSX from '@e965/xlsx';
 import { ExportDataConverter } from './data-converter/export-data-converter';
 import { Column, ExportFormat } from 'app/shared/model';
 import { ExcelDataConverter } from './data-converter/excel-data-converter';
+import { EXPORT_FILE_EXTENSIONS } from './export-file';
+import { propertyNamesOf } from './data-converter/property-names';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +18,7 @@ export class ExportService {
 
   private newline = '\n';
   private datePipe = new DatePipe('en-US');
-  private timeFormat = 'yyyy-mm-dd_HHmmss';
+  private timeFormat = 'yyyy-MM-dd_HHmmss';
   private exportDataConverter = new ExportDataConverter();
   private excelDataConverter = new ExcelDataConverter();
 
@@ -39,7 +41,7 @@ export class ExportService {
 
   exportImage(base64Image: string, exportFormat: ExportFormat, baseFileName: string): void {
     if (exportFormat === ExportFormat.PNG) {
-      this.saveUrlAs(base64Image, this.generateFileName(baseFileName, '.png'));
+      this.saveUrlAs(base64Image, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.PNG]));
     } else {
       throw new Error('export format ' + exportFormat + ' is not supported');
     }
@@ -47,21 +49,24 @@ export class ExportService {
 
   private exportAsCSV(data: object[], columns: Column[], baseFileName: string): void {
     this.exportDataConverter.timeToFormattedString(data, columns);
-    const csv = this.toCSV(data, ',');
+    const csv = this.toCSV(data, columns, ',');
     const blob: Blob = new Blob([csv], { type: ExportService.TYPE_CSV });
-    this.saveBlobAs(blob, this.generateFileName(baseFileName, '.csv'));
+    this.saveBlobAs(blob, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.CSV]));
   }
 
-  private toCSV(data: object[], delimiter: string): string {
-    const keys = Object.keys(data[0]);
-    return keys.join(delimiter) + this.newline +
-      data.map(e => this.toCSVLine(e, keys, delimiter))
-        .join(this.newline);
+  private toCSV(data: object[], columns: Column[], delimiter: string): string {
+    const keys = propertyNamesOf(data, columns);
+    return [keys, ...data.map(e => keys.map(k => e[k]))]
+      .map(values => values.map(v => this.toCSVValue(v, delimiter)).join(delimiter))
+      .join(this.newline);
   }
 
-  private toCSVLine(element: object, keys: string[], delimiter: string) {
-    return keys.map(k => element[k])
-      .join(delimiter);
+  /**
+   * quotes values containing the delimiter, quotes or line breaks (RFC 4180)
+   */
+  private toCSVValue(value: unknown, delimiter: string): string {
+    const text = value === undefined || value === null ? '' : String(value);
+    return text.includes(delimiter) || /["\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   }
 
   private exportAsExcel(data: object[], columns: Column[], baseFileName: string): void {
@@ -74,14 +79,14 @@ export class ExportService {
     const workbook: XLSX.WorkBook = { Sheets: { 'data': worksheet }, SheetNames: ['data'] };
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob: Blob = new Blob([excelBuffer], { type: ExportService.TYPE_EXCEL });
-    this.saveBlobAs(blob, this.generateFileName(baseFileName, '.xlsx'));
+    this.saveBlobAs(blob, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.EXCEL]));
   }
 
   private exportAsJSON(data: object[], columns: Column[], baseFileName: string): void {
     this.exportDataConverter.restoreJSONObjects(data, columns);
     this.exportDataConverter.timeToFormattedString(data, columns);
     const blob: Blob = new Blob([JSON.stringify(data, undefined, '  ')], { type: ExportService.TYPE_JSON });
-    this.saveBlobAs(blob, this.generateFileName(baseFileName, '.json'));
+    this.saveBlobAs(blob, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.JSON]));
   }
 
   private generateFileName(baseFileName: string, extension: string): string {

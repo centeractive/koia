@@ -28,7 +28,7 @@ button {
    opacity: 1;
 }
 
-#column_filter_input {
+.column_filter_input {
    box-sizing: border-box;
    height: 28px;
    padding: 0 8px;
@@ -38,7 +38,7 @@ button {
    font: inherit;
 }
 
-#column_filter_input:focus {
+.column_filter_input:focus {
    outline: none;
    border-color: var(--koia-primary);
 }

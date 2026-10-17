@@ -71,7 +71,7 @@ describe('ChartComponent', () => {
     fixture.nativeElement.style.height = '300px';
 
     // then
-    expect(fixture.nativeElement.querySelector('#div_chartjs').offsetHeight).toBe(252);
+    expect(fixture.nativeElement.querySelector('.div_chartjs').offsetHeight).toBe(252);
   });
 
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {

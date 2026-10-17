@@ -1,18 +1,10 @@
 import { Injectable } from '@angular/core';
-import { DataType, Document, Scene } from 'app/shared/model';
+import { Scene } from 'app/shared/model';
 import { TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { LanguageService } from 'app/shared/services/language';
 import { SampleDef } from './fruit-sales.sample';
-
-/**
- * content of a sample file, the time values of the entries are local dates of pattern 'yyyy-MM-dd'
- */
-export interface SampleData {
-   scene: Pick<Scene, 'name' | 'shortDescription' | 'context' | 'columns' | 'columnMappings' | 'config'>;
-   tabs: TabDef[];
-   entries: object[];
-}
+import { SampleData, toEntries } from './sample-data';
 
 @Injectable({
    providedIn: 'root'
@@ -84,19 +76,4 @@ export class SampleSceneService {
          console.warn('sample views cannot be saved', err);
       }
    }
-}
-
-/**
- * converts the local dates of the time columns to their time at local midnight, the same as when importing a file
- */
-export function toEntries(data: SampleData): Document[] {
-   const timeColumns = data.scene.columns.filter(c => c.dataType === DataType.TIME).map(c => c.name);
-   return data.entries.map(e => {
-      const entry = { ...e };
-      timeColumns.forEach(name => {
-         const [year, month, day] = String(entry[name]).split('-').map(Number);
-         entry[name] = new Date(year, month - 1, day).getTime();
-      });
-      return entry as Document;
-   });
 }

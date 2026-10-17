@@ -22,12 +22,12 @@
     @if (!isEqualBoolean() && !filter.operator.endsWith('empty')) {
       <div class="div_column_filter_value">
         @if (numberDataType) {
-          <input id="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
+          <input class="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
             [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
             [formControl]="valueControl" formattedFloat (search)="onChange.emit()">
         }
         @if (!numberDataType) {
-          <input id="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
+          <input class="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
             [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
             [formControl]="valueControl" (search)="onChange.emit()">
         }

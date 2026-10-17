@@ -9,7 +9,7 @@
   --mat-icon-button-state-layer-size: 32px;
 }
 
-:host ::ng-deep koia-virtual-table #div_table {
+:host ::ng-deep koia-virtual-table .div_virtual_table {
   margin: 2px 0 0;
   padding: 0;
 }

@@ -19,6 +19,18 @@ describe('CouchDBConfig', () => {
       expect(CouchDBConfig.defaultPortOf(Protocol.HTTPS)).toEqual(CouchDBConfig.DEFAULT_HTTPS_PORT);
    });
 
+   it('#urlOf should return the base URL with trailing slash', () => {
+
+      // given
+      const connInfo: ConnectionInfo = { protocol: Protocol.HTTPS, host: 'server1', port: 6984, user: 'test', password: 'secret' };
+
+      // when
+      const url = CouchDBConfig.urlOf(connInfo);
+
+      // then
+      expect(url).toBe('https://server1:6984/');
+   });
+
    it('#readConnectionInfo should return default when no connection was saved', () => {
 
       // when

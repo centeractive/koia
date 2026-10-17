@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ConfigController } from 'app/shared/controller/config.controller';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
+import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { LanguageService } from 'app/shared/services/language';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
@@ -16,6 +17,7 @@ import { lastValueFrom } from 'rxjs';
 import { Column, ExportFormat, Page, Query, Route } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { RawDataBlockCache } from './raw-data-block-cache';
+import { SORT_INDICATORS } from './sort-indicators';
 
 @Component({
   selector: 'koia-raw-data',
@@ -116,7 +118,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     if (sort?.active !== column.name) {
       return '';
     }
-    return sort.direction === 'asc' ? '▲' : sort.direction === 'desc' ? '▼' : '';
+    return sort.direction === 'asc' ? SORT_INDICATORS.asc : sort.direction === 'desc' ? SORT_INDICATORS.desc : '';
   };
 
   readonly rowStyleOf = (entry: object): object | null => this.highlight ? { background: entry['bgcolor'], color: entry['fgcolor'] } : null;
@@ -146,7 +148,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     this.snackBar.open(message, undefined, { duration: 4000 });
     query.clearPageDefinition();
     lastValueFrom(this.dbService.findEntries(query, false))
-      .then(entries => this.exportService.exportData(entries, this.columns, exportFormat, 'Raw-Data'))
+      .then(entries => this.exportService.exportData(entries, this.columns, exportFormat, RAW_DATA_FILE_BASE_NAME))
       .catch(error => this.notifyError(error));
   }
 

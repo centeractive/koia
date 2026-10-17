@@ -102,8 +102,10 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
   retainInitialFilters(): void {
     if (this.query) {
       this.fullTextFilter = this.query.getFullTextFilter();
+      this.showFullTextFilter = !!this.fullTextFilter;
       this.propertyFilters = this.query.getPropertyFilters();
       this.rangeFilters = [];
+      this.showRangeFilters = false;
       this.query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
         this.addRangeFilter(column, f.valueRange, f.inverted);
@@ -166,11 +168,13 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
 
   resetFullTextFilter(): void {
     this.fullTextFilter = '';
+    this.showFullTextFilter = false;
     this.refreshEntries();
   }
 
   removeRangeFilter(rangeFilter: NumberRangeFilter): void {
     ArrayUtils.removeElement(this.rangeFilters, rangeFilter);
+    this.showRangeFilters = this.rangeFilters.length > 0;
     if (rangeFilter.isFiltered()) {
       this.refreshEntries();
     }

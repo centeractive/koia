@@ -5,6 +5,7 @@ import * as Papa from 'papaparse';
 import { DataHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
+import { SourceName } from '../source-name.enum';
 
 export class CSVReader implements DataReader {
 
@@ -17,7 +18,7 @@ export class CSVReader implements DataReader {
    }
 
    getSourceName(): string {
-      return 'CSV';
+      return SourceName.CSV;
    }
 
    getFileExtension(): string {

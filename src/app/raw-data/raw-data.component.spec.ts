@@ -138,7 +138,7 @@ describe('RawDataComponent', () => {
   }
 
   function toolbarButton(icon: string): HTMLButtonElement {
-    return fixture.debugElement.queryAll(By.css('#view_toolbar button')).map(b => b.nativeElement).find(b => b.textContent.includes(icon));
+    return fixture.debugElement.queryAll(By.css('.view_toolbar button')).map(b => b.nativeElement).find(b => b.textContent.includes(icon));
   }
 
   async function settle(): Promise<void> {
@@ -585,7 +585,7 @@ describe('RawDataComponent', () => {
       expect(fixture.nativeElement.querySelector('#but_print')).toBeNull();
       expect(fixture.nativeElement.querySelector('#but_save_view')).toBeNull();
       expect(fixture.nativeElement.querySelector('#but_restore_view')).toBeNull();
-      expect(fixture.nativeElement.querySelector('#but_view_more')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.but_view_more')).not.toBeNull();
     });
   });
 

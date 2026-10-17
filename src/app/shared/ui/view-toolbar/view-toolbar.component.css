@@ -2,7 +2,7 @@
   display: block;
 }
 
-#view_toolbar {
+.view_toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

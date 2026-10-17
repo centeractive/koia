@@ -1,6 +1,7 @@
 import { LanguageService } from 'app/shared/services/language/language.service';
 import { Aggregation } from './aggregation.enum';
 import { DataType } from './data-type.enum';
+import { EnumLabelKeys } from './enum-label-keys';
 import { ExportFormat } from './export-format.enum';
 import { Operator } from './operator.enum';
 import { TimeUnit } from './time-unit.enum';
@@ -8,13 +9,11 @@ import { TimeUnit } from './time-unit.enum';
 /**
  * Provides the translation keys and the translated labels of enum values. Enum values are persisted (e.g. in views) and must
  * therefore never be translated themselves, only their labels are shown in the language of the user interface.
- *
- * Keys are composed of the enum member names (e.g. 'enum.aggregation.AVG'), chart types use their type (e.g. 'enum.chartType.linearBar').
  */
 export class EnumLabels {
 
    static aggregationKey(aggregation: Aggregation): string {
-      return 'enum.aggregation.' + memberNameOf(Aggregation, aggregation);
+      return EnumLabelKeys.aggregation(aggregation);
    }
 
    static aggregation(aggregation: Aggregation): string {
@@ -22,7 +21,7 @@ export class EnumLabels {
    }
 
    static operatorKey(operator: Operator): string {
-      return 'enum.operator.' + memberNameOf(Operator, operator);
+      return EnumLabelKeys.operator(operator);
    }
 
    static operator(operator: Operator): string {
@@ -30,7 +29,7 @@ export class EnumLabels {
    }
 
    static timeUnitKey(timeUnit: TimeUnit): string {
-      return 'enum.timeUnit.' + memberNameOf(TimeUnit, timeUnit);
+      return EnumLabelKeys.timeUnit(timeUnit);
    }
 
    static timeUnit(timeUnit: TimeUnit): string {
@@ -38,7 +37,7 @@ export class EnumLabels {
    }
 
    static dataTypeKey(dataType: DataType): string {
-      return 'enum.dataType.' + memberNameOf(DataType, dataType);
+      return EnumLabelKeys.dataType(dataType);
    }
 
    static dataType(dataType: DataType): string {
@@ -46,7 +45,7 @@ export class EnumLabels {
    }
 
    static exportFormatKey(exportFormat: ExportFormat): string {
-      return 'enum.exportFormat.' + memberNameOf(ExportFormat, exportFormat);
+      return EnumLabelKeys.exportFormat(exportFormat);
    }
 
    static exportFormat(exportFormat: ExportFormat): string {
@@ -57,7 +56,7 @@ export class EnumLabels {
     * @param chartType type of a chart (e.g. 'linearBar', see ChartType#type)
     */
    static chartTypeKey(chartType: string): string {
-      return 'enum.chartType.' + chartType;
+      return EnumLabelKeys.chartType(chartType);
    }
 
    /**
@@ -66,10 +65,6 @@ export class EnumLabels {
    static chartType(chartType: string): string {
       return translate(EnumLabels.chartTypeKey(chartType), chartType);
    }
-}
-
-function memberNameOf(enumType: object, value: string): string {
-   return Object.keys(enumType).find(k => enumType[k] === value) ?? value;
 }
 
 /**

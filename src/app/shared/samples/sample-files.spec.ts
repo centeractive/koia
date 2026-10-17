@@ -8,7 +8,7 @@ import { hasContent } from 'app/shared/services/view-tabs/tab-defs';
 import { ColumnNameConverter } from 'app/shared/utils';
 import { fruitSalesSampleOf, SampleDef } from './fruit-sales.sample';
 import { LANGUAGES } from 'app/shared/services/language';
-import { SampleData, toEntries } from './sample-scene.service';
+import { SampleData, toEntries } from './sample-data';
 
 describe('sample files', () => {
 

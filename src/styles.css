@@ -254,7 +254,8 @@ var {
     visibility: visible;
   }
 
-  #div_table {
+  .div_summary_table,
+  .div_virtual_table {
     overflow: hidden !important;
   }
 

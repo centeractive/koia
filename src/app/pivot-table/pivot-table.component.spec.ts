@@ -1017,7 +1017,7 @@ describe('PivotTableComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelectorAll('#view_toolbar .koia-toolbar-separator ~ .but_config').length).toBe(3);
+    expect(fixture.nativeElement.querySelectorAll('.view_toolbar .koia-toolbar-separator ~ .but_config').length).toBe(3);
   });
 
   function pivotContext(): PivotContext {

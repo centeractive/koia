@@ -27,7 +27,7 @@ steps:
     npm ci --ignore-scripts
   displayName: 'install npm packages'
 
-# set-up and rund CouchDB in Docker container (used by unit tests)
+# set-up and rund CouchDB in Docker container (used by unit and end-to-end tests)
 - task: DownloadSecureFile@1
   displayName: 'download CouchDB local.ini file'
   name: couchdb_local_ini
@@ -70,6 +70,8 @@ steps:
     testResultsFormat: 'JUnit'
     testResultsFiles: 'test-results/junit.xml'
   displayName: 'publish unit test results'
+
+- template: e2e/azure-e2e-steps.yml
 
 - task: PublishCodeCoverageResults@2
   displayName: 'publish code coverage report'

@@ -73,7 +73,7 @@ describe('ValueFilterComponent', () => {
   it('filter value input should look like compact outlined field', () => {
 
     // when
-    const input: HTMLInputElement = fixture.nativeElement.querySelector('#column_filter_input');
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('.column_filter_input');
 
     // then
     const style = getComputedStyle(input);
@@ -313,7 +313,7 @@ describe('ValueFilterComponent', () => {
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
     fixture.detectChanges();
-    const htmlInput = fixture.debugElement.query(By.css('#column_filter_input')).nativeElement;
+    const htmlInput = fixture.debugElement.query(By.css('.column_filter_input')).nativeElement;
     vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
@@ -333,7 +333,7 @@ describe('ValueFilterComponent', () => {
     const ds = (0.1).toLocaleString().charAt(1);
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200' + ds + '7', DataType.NUMBER);
     fixture.detectChanges();
-    const htmlInput = fixture.debugElement.query(By.css('#column_filter_input')).nativeElement;
+    const htmlInput = fixture.debugElement.query(By.css('.column_filter_input')).nativeElement;
     htmlInput.value = '1';
     htmlInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();

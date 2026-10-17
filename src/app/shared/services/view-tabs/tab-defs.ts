@@ -2,6 +2,7 @@ import { Route } from '../../model';
 import { TabDef, ViewType } from '../../model/view-config';
 import { Language, LANGUAGES, languageOf } from '../language/language';
 import { LanguageService } from '../language/language.service';
+import { DASHBOARD_TAB_TITLES, PIVOT_TABLE_TAB_TITLES } from './tab-titles';
 
 const TAB_ID_PREFIX = 'tab';
 const TAB_ID_PATTERN = /^tab(\d+)$/;
@@ -9,9 +10,9 @@ const TAB_ID_PATTERN = /^tab(\d+)$/;
 /**
  * default tab titles, the title is persisted in the language that is current when the tab is created
  */
-const TITLES: Record<ViewType, Record<Language, string>> = {
-   [ViewType.PIVOT]: { en: 'Pivot Table', de: 'Pivot-Tabelle', ja: 'ピボットテーブル' },
-   [ViewType.DASHBOARD]: { en: 'Dashboard', de: 'Dashboard', ja: 'ダッシュボード' }
+const TITLES: Record<ViewType, Readonly<Record<Language, string>>> = {
+   [ViewType.PIVOT]: PIVOT_TABLE_TAB_TITLES,
+   [ViewType.DASHBOARD]: DASHBOARD_TAB_TITLES
 };
 
 export function createTabDef(type: ViewType, seq: number, tabs: TabDef[] = []): TabDef {
@@ -21,7 +22,7 @@ export function createTabDef(type: ViewType, seq: number, tabs: TabDef[] = []): 
 /**
  * numbers the title of the current language when a tab of the same type exists already, regardless of the language of its title
  */
-function nextTitle(titlesByLanguage: Record<Language, string>, tabs: TabDef[]): string {
+function nextTitle(titlesByLanguage: Readonly<Record<Language, string>>, tabs: TabDef[]): string {
    const base = titlesByLanguage[languageOf(LanguageService.localeId())];
    const bases = [...new Set(LANGUAGES.map(l => titlesByLanguage[l]))];
    const titles = new Set(tabs.map(t => t.title));

@@ -2,11 +2,11 @@ button {
   z-index: 999;
 }
 
-#div_main {
+.div_main {
   margin-top: 2px;
 }
 
-#div_toolbar {
+.div_toolbar {
   display: flex;
   align-items: flex-start;
   flex-wrap: nowrap;
@@ -30,7 +30,7 @@ button {
   flex-shrink: 0;
 }
 
-#div_filter {
+.div_filter {
   display: flex;
   flex: 1 1 auto;
   justify-content: flex-end;
@@ -49,7 +49,7 @@ button {
   width: 460px;
 }
 
-#butAddColFilter {
+.span_buttons .but_add_col_filter {
   white-space: nowrap;
   color: var(--koia-on-color);
   background-color: var(--koia-accent);
@@ -57,7 +57,7 @@ button {
   border-radius: 8px;
 }
 
-#div_range_filters {
+.div_range_filters {
   border-top: var(--koia-header-line);
   padding-top: 4px;
 }

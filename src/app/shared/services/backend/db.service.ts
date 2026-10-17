@@ -13,14 +13,14 @@ import { DB } from './db.type';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryConverter } from './mango/query-converter';
 import { PouchDBAccess } from './pouchdb';
+import { SCENES_DB, sceneTabsId } from './scenes-db';
 
 @Injectable()
 export class DBService {
 
-  static readonly SCENES = 'scenes';
+  static readonly SCENES = SCENES_DB;
   static readonly DATA = 'data';
   static readonly MAX_DB_COUNT = 100;
-  static readonly SCENE_TABS_SUFFIX = '_tabs';
 
   private db: DB;
   private dbPrefix = '';
@@ -165,9 +165,7 @@ export class DBService {
     }
   }
 
-  static sceneTabsId(sceneId: string): string {
-    return sceneId + DBService.SCENE_TABS_SUFFIX;
-  }
+  static readonly sceneTabsId = sceneTabsId;
 
   /**
    * @returns the persisted open tabs of the specified scene or <undefined> if none were persisted yet

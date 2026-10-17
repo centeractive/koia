@@ -80,7 +80,7 @@ describe('MainToolbarComponent with many tabs', () => {
   });
 
   function toolbarRect(): DOMRect {
-    return fixture.nativeElement.querySelector('#div_toolbar').getBoundingClientRect();
+    return fixture.nativeElement.querySelector('.div_toolbar').getBoundingClientRect();
   }
 
   function rightOf(selector: string): number {
@@ -93,7 +93,7 @@ describe('MainToolbarComponent with many tabs', () => {
     const toolbarRight = toolbarRect().right;
 
     // then
-    expect(rightOf('#butAddColFilter')).toBeLessThanOrEqual(toolbarRight);
+    expect(rightOf('.but_add_col_filter')).toBeLessThanOrEqual(toolbarRight);
     expect(rightOf('.span_buttons:not(.span_navigation) > button:last-child')).toBeLessThanOrEqual(toolbarRight);
   });
 
@@ -199,7 +199,7 @@ describe('MainToolbarComponent', () => {
   it('toolbar should let header surface show through', () => {
 
     // when
-    const style = getComputedStyle(fixture.nativeElement.querySelector('#div_main'));
+    const style = getComputedStyle(fixture.nativeElement.querySelector('.div_main'));
 
     // then
     expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
@@ -218,7 +218,7 @@ describe('MainToolbarComponent', () => {
   it('add filter button should be rounded accent button without non-breaking spaces', () => {
 
     // when
-    const button: HTMLElement = fixture.nativeElement.querySelector('#butAddColFilter');
+    const button: HTMLElement = fixture.nativeElement.querySelector('.but_add_col_filter');
 
     // then
     const style = getComputedStyle(button);
@@ -252,7 +252,7 @@ describe('MainToolbarComponent', () => {
     fixture.detectChanges();
 
     // then
-    const style = getComputedStyle(fixture.nativeElement.querySelector('#div_range_filters'));
+    const style = getComputedStyle(fixture.nativeElement.querySelector('.div_range_filters'));
     expect(style.borderTopWidth).toBe('1px');
     expect(style.borderTopColor).toBe('rgb(197, 202, 233)');
   }));
@@ -310,10 +310,23 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(component.fullTextFilter).toBe('abc');
+    expect(component.showFullTextFilter).toBe(true);
     expect(component.propertyFilters.length).toBe(2);
     expect(component.propertyFilters[0]).toBe(levelFilter);
     expect(component.propertyFilters[1]).toBe(amountFilter);
   }));
+
+  it('#ngOnInit should hide full text filter when query has none', () => {
+
+    // given
+    component.query = new Query();
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.showFullTextFilter).toBe(false);
+  });
 
   it('#ngOnInit should define current url of route', () => {
 
@@ -371,6 +384,19 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.query).toBe(query);
     expect(component.fullTextFilter).toBe('abc');
+  });
+
+  it('#ngOnChanges should hide range filters when restored query has none', () => {
+
+    // given
+    component.showRangeFilters = true;
+    component.restoredQuery = new Query();
+
+    // when
+    component.ngOnChanges({ restoredQuery: new SimpleChange(undefined, component.restoredQuery, false) });
+
+    // then
+    expect(component.showRangeFilters).toBe(false);
   });
 
   it('#ngOnDestroy should stop listening on navigation events', fakeAsync(() => {
@@ -561,6 +587,7 @@ describe('MainToolbarComponent', () => {
     expect(component.onFilterChange.emit).toHaveBeenCalled();
     const query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
     expect(query.hasFilter()).toBe(false);
+    expect(component.showFullTextFilter).toBe(false);
   });
 
   it('#addValueFilter should add EQUAL filter for boolean column', fakeAsync(() => {
@@ -756,6 +783,37 @@ describe('MainToolbarComponent', () => {
     expect(component.refreshEntries).not.toHaveBeenCalled();
   });
 
+  it('#removeRangeFilter should hide range filters when the last one was removed', () => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
+    component.rangeFilters = [rangeFilter];
+    component.showRangeFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.removeRangeFilter(rangeFilter);
+
+    // then
+    expect(component.showRangeFilters).toBe(false);
+  });
+
+  it('#removeRangeFilter should keep range filters shown when others remain', () => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
+    const otherRangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 3, max: 4 }, false);
+    component.rangeFilters = [rangeFilter, otherRangeFilter];
+    component.showRangeFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.removeRangeFilter(rangeFilter);
+
+    // then
+    expect(component.showRangeFilters).toBe(true);
+  });
+
   function createScene(id: string, context: ContextInfo[], columns: Column[]): Scene {
     return {
       _id: id,
@@ -775,7 +833,7 @@ describe('MainToolbarComponent', () => {
 
   function addLevelFilterThroughMenu(): void {
     const menuTrigger: HTMLSpanElement = fixture.debugElement.query(
-      By.css('#butAddColFilter')).nativeElement;
+      By.css('.but_add_col_filter')).nativeElement;
     menuTrigger.click()
     flush();
     fixture.detectChanges();

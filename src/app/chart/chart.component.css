@@ -40,7 +40,7 @@ mwlResizable {
   right: 0;
 }
 
-#div_chartjs {
+.div_chartjs {
   display: block;
   width: 100%;
   height: calc(100% - var(--koia-tile-header-height));

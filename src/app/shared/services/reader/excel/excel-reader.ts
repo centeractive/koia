@@ -4,6 +4,7 @@ import { Attribute, DataType } from 'app/shared/model';
 import { DataHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
+import { SourceName } from '../source-name.enum';
 
 export class ExcelReader implements DataReader {
 
@@ -14,7 +15,7 @@ export class ExcelReader implements DataReader {
    }
 
    getSourceName(): string {
-      return 'Excel';
+      return SourceName.EXCEL;
    }
 
    getFileExtension(): string {

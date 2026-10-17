@@ -1,0 +1,6 @@
+[
+  { "Item": "Apples", "Amount": 5, "Shipped": "2024-01-15" },
+  { "Item": "Pears", "Amount": 12, "Shipped": "2024-02-20" },
+  { "Item": "Lemons", "Amount": 3, "Shipped": "2024-03-05" },
+  { "Item": "Oranges", "Amount": 8, "Shipped": "2024-04-10" }
+]

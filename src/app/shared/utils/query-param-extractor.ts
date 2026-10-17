@@ -1,5 +1,6 @@
-import { ParamMap } from '@angular/router';
-import { Protocol, ConnectionInfo } from '../model';
+import type { ParamMap } from '@angular/router';
+import { ConnectionInfo } from '../model/connection-info.type';
+import { Protocol } from '../model/protocol.enum';
 
 /**
  * extracts the CouchDB [[ConnectionInfo]] from the specified [[ParamMap]] in case the web-app was invoked by a third-party

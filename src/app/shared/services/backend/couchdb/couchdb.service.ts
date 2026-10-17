@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { DB } from '../db.type';
 import { DocChangeResponse } from '../doc-change-response.type';
 import { CouchDBConfig } from './couchdb-config';
+import { CouchDBConstants } from './couchdb-constants';
 import { sanitizeIndexQuery } from '../mango';
 
 /**
@@ -38,7 +39,7 @@ export class CouchDBService implements DB {
     this.connectionInfo = connectionInfo;
     this.config.saveConnectionInfo(connectionInfo);
     this.httpOptions = this.createHttpOptions();
-    this.baseURL = connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
+    this.baseURL = CouchDBConfig.urlOf(connectionInfo);
     return this.listDatabases()
       .then(() => 'Connection to CouchDB at ' + this.baseURL + ' established');
   }
@@ -83,7 +84,7 @@ export class CouchDBService implements DB {
       index: {
         fields: [columnName]
       },
-      ddoc: 'index_' + columnName
+      ddoc: CouchDBConstants.INDEX_DDOC_PREFIX + columnName
     });
     const url = this.url(database, '_index');
     LogUtils.logHttpRequest(HTTPMethod.POST, url, query);

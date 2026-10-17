@@ -387,6 +387,16 @@ describe('SceneComponent', () => {
     expect(fixture.debugElement.query(By.css('#but_load_data'))).not.toBeNull();
   }));
 
+  it('#click on "Detect Columns" button should collapse data source and attribute panels', fakeAsync(() => {
+
+    // when
+    initUpToDetectColumns();
+
+    // then
+    const panels: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('mat-expansion-panel'));
+    expect(panels.map(p => p.classList.contains('mat-expanded'))).toEqual([false, false, true, true]);
+  }));
+
   it('should separate cancel and load data buttons by gap', fakeAsync(() => {
 
     // given
@@ -443,6 +453,7 @@ describe('SceneComponent', () => {
     fixture.nativeElement.style.display = 'block';
     fixture.nativeElement.style.width = '1200px';
     initUpToDetectColumns();
+    component.accordion.openAll();
     const sceneInfos = createSceneInfos(1);
     component.columnMappingsSourceCandidates = sceneInfos;
     component.columnMappingsSource = sceneInfos[0];

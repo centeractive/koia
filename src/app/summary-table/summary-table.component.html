@@ -1,7 +1,7 @@
 @if (computing) {
   <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
 }
-<div id="div_table">
+<div class="div_summary_table">
   @if (frameData && rowSpans) {
     <table mat-table [dataSource]="frameData" matSort (matSortChange)="sort($event)"
       [matSortActive]="currentSort.active" [matSortDirection]="currentSort.direction">

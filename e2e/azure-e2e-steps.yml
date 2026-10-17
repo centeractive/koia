@@ -1,0 +1,35 @@
+steps:
+
+- script: |
+    set -e
+    configure() {
+      curl --fail --silent --show-error -X PUT \
+        -H 'Content-Type: application/json' -H 'X-Couch-Persist: false' \
+        "http://admin:admin@localhost:5984/_node/_local/_config/$1" -d "$2"
+    }
+    configure chttpd/enable_cors '"true"'
+    configure cors/origins '"*"'
+    configure cors/credentials '"true"'
+    configure cors/methods '"GET,PUT,POST,HEAD,DELETE"'
+  displayName: 'allow CORS for end-to-end tests on CouchDB'
+
+- script: |
+    npm run e2e
+  env:
+    CI: 'true'
+  displayName: 'perform end-to-end tests'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: 'test-results/e2e-junit.xml'
+    testRunTitle: 'end-to-end tests'
+  displayName: 'publish end-to-end test results'
+
+- task: PublishPipelineArtifact@1
+  condition: failed()
+  inputs:
+    targetPath: 'test-results/e2e'
+    artifact: 'e2e-traces'
+  displayName: 'publish end-to-end test traces'

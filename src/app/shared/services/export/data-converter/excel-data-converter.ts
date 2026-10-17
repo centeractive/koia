@@ -1,6 +1,7 @@
 import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
 import * as XLSX from '@e965/xlsx';
+import { propertyNamesOf } from './property-names';
 
 export class ExcelDataConverter {
 
@@ -28,8 +29,8 @@ export class ExcelDataConverter {
     }
 
     toWorksheet(data: object[], columns: Column[]): XLSX.WorkSheet {
-        const ws = XLSX.utils.json_to_sheet(data);
-        const colNames = Object.keys(data[0]);
+        const colNames = propertyNamesOf(data, columns);
+        const ws = XLSX.utils.json_to_sheet(data, { header: colNames });
         ws['!cols'] = this.colInfos(colNames, columns);
         colNames.forEach((colName, i) => {
             const column = this.column(colName, columns);
