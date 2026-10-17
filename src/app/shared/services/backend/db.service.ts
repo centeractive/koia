@@ -1,7 +1,7 @@
 import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
-import { Column, DataType, Document, Operator, Page, Query, Scene, SceneInfo } from 'app/shared/model';
+import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivation, SceneInfo } from 'app/shared/model';
 import { SceneTabs } from 'app/shared/model/view-config';
 import { QueryUtils } from 'app/shared/utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
@@ -13,7 +13,7 @@ import { DB } from './db.type';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryConverter } from './mango/query-converter';
 import { PouchDBAccess } from './pouchdb';
-import { SCENES_DB, sceneTabsId } from './scenes-db';
+import { SCENES_DB, sceneActivationId, sceneTabsId } from './scenes-db';
 
 @Injectable()
 export class DBService {
@@ -151,17 +151,18 @@ export class DBService {
     }
     return this.db.delete(this.scenesDbName(), sceneInfo)
       .then(() => this.db.deleteDatabase(sceneInfo.database))
-      .then(() => this.deleteSceneTabs(sceneInfo._id));
+      .then(() => this.deleteOptional(DBService.sceneTabsId(sceneInfo._id), 'open tabs', sceneInfo._id))
+      .then(() => this.deleteOptional(sceneActivationId(sceneInfo._id), 'activation time', sceneInfo._id));
   }
 
-  private async deleteSceneTabs(sceneId: string): Promise<void> {
+  private async deleteOptional(docId: string, label: string, sceneId: string): Promise<void> {
     try {
-      const sceneTabs = await this.findSceneTabs(sceneId);
-      if (sceneTabs) {
-        await this.db.delete(this.scenesDbName(), sceneTabs);
+      const doc = await this.findOptional(docId);
+      if (doc) {
+        await this.db.delete(this.scenesDbName(), doc);
       }
     } catch (err) {
-      console.warn('open tabs of scene ' + sceneId + ' cannot be deleted', err);
+      console.warn(label + ' of scene ' + sceneId + ' cannot be deleted', err);
     }
   }
 
@@ -171,12 +172,12 @@ export class DBService {
    * @returns the persisted open tabs of the specified scene or <undefined> if none were persisted yet
    */
   async findSceneTabs(sceneId: string): Promise<SceneTabs> {
-    return this.findSceneTabsById(DBService.sceneTabsId(sceneId));
+    return this.findOptional<SceneTabs>(DBService.sceneTabsId(sceneId));
   }
 
-  private async findSceneTabsById(id: string): Promise<SceneTabs> {
+  private async findOptional<T extends Document>(id: string): Promise<T> {
     return this.db.findById(this.scenesDbName(), id)
-      .then(doc => <SceneTabs>doc)
+      .then(doc => <T>doc)
       .catch(err => {
         if (err?.status === 404) {
           return undefined;
@@ -189,23 +190,27 @@ export class DBService {
    * inserts or updates the open tabs, a revision conflict is resolved once by retrying with the current revision
    */
   async saveSceneTabs(sceneTabs: SceneTabs): Promise<SceneTabs> {
-    return this.writeSceneTabs(sceneTabs)
+    return this.saveDocument(sceneTabs);
+  }
+
+  private async saveDocument<T extends Document>(doc: T): Promise<T> {
+    return this.writeDocument(doc)
       .catch(async err => {
         if (err?.status !== 409) {
           throw err;
         }
-        const current = await this.findSceneTabsById(sceneTabs._id);
+        const current = await this.findOptional<T>(doc._id);
         if (!current) {
           throw err;
         }
-        sceneTabs._rev = current._rev;
-        return this.writeSceneTabs(sceneTabs);
+        doc._rev = current._rev;
+        return this.writeDocument(doc);
       });
   }
 
-  private writeSceneTabs(sceneTabs: SceneTabs): Promise<SceneTabs> {
-    const write = sceneTabs._rev ? this.db.update(this.scenesDbName(), sceneTabs) : this.db.insert(this.scenesDbName(), sceneTabs);
-    return write.then(() => sceneTabs);
+  private writeDocument<T extends Document>(doc: T): Promise<T> {
+    const write = doc._rev ? this.db.update(this.scenesDbName(), doc) : this.db.insert(this.scenesDbName(), doc);
+    return write.then(() => doc);
   }
 
   async activateScene(id: string): Promise<Scene> {
@@ -213,10 +218,39 @@ export class DBService {
       return Promise.reject('scene with id "' + id + '" is already active');
     }
     return this.db.findById(this.scenesDbName(), id)
-      .then(s => {
+      .then(async s => {
         this.activeScene = s as Scene;
+        await this.saveSceneActivation(id);
         return this.activeScene;
       });
+  }
+
+  private async saveSceneActivation(sceneId: string): Promise<void> {
+    try {
+      const activation: SceneActivation = await this.findOptional<SceneActivation>(sceneActivationId(sceneId))
+        ?? { _id: sceneActivationId(sceneId), sceneId, lastActivationTime: undefined };
+      activation.lastActivationTime = new Date().getTime();
+      await this.saveDocument(activation);
+    } catch (err) {
+      console.warn('activation time of scene ' + sceneId + ' cannot be saved', err);
+    }
+  }
+
+  /**
+   * @returns the last activation time of each scene that was ever activated, mapped by scene id
+   */
+  async findSceneActivationTimes(): Promise<Map<string, number>> {
+    const query = new MangoQueryBuilder(false, undefined)
+      .where('lastActivationTime', Operator.NOT_EMPTY, null, DataType.TIME)
+      .includeFields(['sceneId', 'lastActivationTime'])
+      .toQuery();
+    try {
+      const docs = await lastValueFrom(this.db.find(this.scenesDbName(), query));
+      return new Map(docs.map(d => <SceneActivation>d).map(a => [a.sceneId, a.lastActivationTime]));
+    } catch (err) {
+      console.warn('activation times of scenes cannot be read', err);
+      return new Map();
+    }
   }
 
   getActiveScene(): Scene {

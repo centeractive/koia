@@ -5,24 +5,12 @@
   <mat-icon style="color: white;">add_photo_alternate</mat-icon>
 </button>
 <koia-language-select class="page-language" />
-@if (activeScene) {
-  <mat-card appearance="outlined" id="mat_card_active_scene" koiaForm>
-    <mat-card-header>
-      <div mat-card-avatar id="image-scene"></div>
-      <mat-card-title>{{ 'scenes.activeScene' | translate }}</mat-card-title>
-      <mat-card-subtitle>{{ 'scenes.activeSceneSubtitle' | translate }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <koia-scene-table [activeScene]="activeScene" (onActivate)="showRawData()" (onDelete)="delete($event)"></koia-scene-table>
-    </mat-card-content>
-  </mat-card>
-}
 
-<mat-card appearance="outlined" id="mat_card_all_scenes" koiaForm>
+<mat-card appearance="outlined" id="mat_card_scenes" koiaForm>
   <mat-card-header>
     <div mat-card-avatar id="image-scenes"></div>
-    <mat-card-title>{{ 'scenes.allScenes' | translate }}</mat-card-title>
-    <mat-card-subtitle>{{ 'scenes.allScenesSubtitle' | translate }}</mat-card-subtitle>
+    <mat-card-title>{{ 'scenes.title' | translate }}</mat-card-title>
+    <mat-card-subtitle>{{ 'scenes.subtitle' | translate }}</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
     <div id="div_filter" class="field-row">
@@ -35,7 +23,8 @@
         <span>&nbsp;{{ (filter ? 'scenes.deleteFiltered' : 'scenes.deleteAll') | translate }}</span>
       </button>
     </div>
-    <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)" (onDelete)="delete($event)">
+    <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)"
+      (onContinue)="showRawData()" (onDelete)="delete($event)">
     </koia-scene-table>
   </mat-card-content>
   <mat-card-actions>

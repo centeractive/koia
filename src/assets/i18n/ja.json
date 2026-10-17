@@ -288,10 +288,8 @@
     }
   },
   "scenes": {
-    "activeScene": "アクティブなシーン",
-    "activeSceneSubtitle": "現在作業中のシーンです",
-    "allScenes": "すべてのシーン",
-    "allScenesSubtitle": "既存のシーンを管理します。シーンをアクティブにするとグラフィックを作成できます。",
+    "title": "シーン",
+    "subtitle": "既存のシーンを管理します。シーンをアクティブにするとグラフィックを作成できます。",
     "filter": "シーンを絞り込む",
     "deleteFiltered": "絞り込み結果を削除",
     "deleteAll": "すべて削除",
@@ -304,6 +302,7 @@
     "showDetails": "詳細を表示",
     "activate": "シーンをアクティブにする",
     "continueActive": "アクティブなシーンで続ける",
+    "active": "アクティブ",
     "creationTime": "作成日時",
     "details": {
       "sourceContext": "ソースのコンテキスト",

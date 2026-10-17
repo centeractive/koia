@@ -288,10 +288,8 @@
     }
   },
   "scenes": {
-    "activeScene": "Active Scene",
-    "activeSceneSubtitle": "This is the scene you're currently working with",
-    "allScenes": "All Scenes",
-    "allScenesSubtitle": "Manage your existing scenes. Activate one to start creating graphics.",
+    "title": "Scenes",
+    "subtitle": "Manage your existing scenes. Activate one to start creating graphics.",
     "filter": "Filter scenes",
     "deleteFiltered": "Delete filtered",
     "deleteAll": "Delete all",
@@ -304,6 +302,7 @@
     "showDetails": "Show details",
     "activate": "Activate scene",
     "continueActive": "Continue with active scene",
+    "active": "Active",
     "creationTime": "Creation Time",
     "details": {
       "sourceContext": "Source Context",

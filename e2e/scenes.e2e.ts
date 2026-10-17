@@ -28,6 +28,24 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(rawData.table.rowCount).toHaveText(en.rows(ORDERS_CSV.rowCount));
    });
 
+   test('most recently activated scene is on top and marked active', async ({ scenes, rawData }) => {
+      const sampleName = fruitSalesSampleOf('en').sceneName;
+
+      await scenes.activate(ORDERS_CSV.name);
+      await rawData.toolbar.openScenes();
+
+      await expect(scenes.rows.first()).toContainText(ORDERS_CSV.name);
+      await expect(scenes.rows.first()).toHaveClass(/active-scene/);
+      await expect(scenes.rows.nth(1)).toContainText(sampleName);
+
+      await scenes.activate(sampleName);
+      await rawData.toolbar.openScenes();
+
+      await expect(scenes.rows.first()).toContainText(sampleName);
+      await expect(scenes.rows.first()).toHaveClass(/active-scene/);
+      await expect(scenes.rows.nth(1)).toContainText(ORDERS_CSV.name);
+   });
+
    test('deleted scene disappears from the list', async ({ scenes }) => {
       const message = await scenes.delete(ORDERS_CSV.name);
 

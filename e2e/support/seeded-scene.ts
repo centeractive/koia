@@ -2,7 +2,7 @@ import type { Scene } from 'app/shared/model/scene.type';
 import type { SceneInfo } from 'app/shared/model/scene-info.type';
 import type { SceneTabs } from 'app/shared/model/view-config/tab-def.type';
 import { SampleData, toEntries } from 'app/shared/samples/sample-data';
-import { SCENES_DB, sceneTabsId } from 'app/shared/services/backend/scenes-db';
+import { SCENES_DB, sceneActivationId, sceneTabsId } from 'app/shared/services/backend/scenes-db';
 import { DEFAULT_LANGUAGE } from 'app/shared/services/language/language';
 import { CouchDB, uniqueTestName } from './couchdb';
 import { fruitSalesOf } from './fruit-sales-sample';
@@ -36,6 +36,7 @@ export class SeededScene {
    async remove(): Promise<void> {
       await this.couchDB.deleteDocumentIfExists(SCENES_DB, this.id);
       await this.couchDB.deleteDocumentIfExists(SCENES_DB, sceneTabsId(this.id));
+      await this.couchDB.deleteDocumentIfExists(SCENES_DB, sceneActivationId(this.id));
       await this.couchDB.deleteDatabaseIfExists(this.id);
    }
 

@@ -3,7 +3,7 @@ import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { Column, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneTabs, ViewType } from 'app/shared/model/view-config';
 import { SceneFactory } from 'app/shared/test';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, throwError } from 'rxjs';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
 import { DBService } from './db.service';
@@ -261,6 +261,111 @@ describe('DBService', () => {
     await expect(activation).rejects.toBe('scene with id "' + initialScene._id + '" is already active');
   });
 
+  it('#activateScene should persist activation time', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    const before = Date.now();
+
+    // when
+    await dbService.activateScene(scene._id);
+
+    // then
+    const activationTimes = await dbService.findSceneActivationTimes();
+    expect(activationTimes.size).toBe(1);
+    expect(activationTimes.get(scene._id)).toBeGreaterThanOrEqual(before);
+  });
+
+  it('#activateScene should update activation time on re-activation', async () => {
+
+    // given
+    const sceneA = SceneFactory.createScene('1', columns);
+    const sceneB = SceneFactory.createScene('2', columns);
+    await dbService.persistScene(sceneA, false);
+    await dbService.persistScene(sceneB, false);
+    await dbService.activateScene(sceneA._id);
+    await dbService.activateScene(sceneB._id);
+    const before = Date.now();
+
+    // when
+    await dbService.activateScene(sceneA._id);
+
+    // then
+    const activationTimes = await dbService.findSceneActivationTimes();
+    expect(activationTimes.size).toBe(2);
+    expect(activationTimes.get(sceneA._id)).toBeGreaterThanOrEqual(before);
+    expect(activationTimes.get(sceneB._id)).toBeLessThanOrEqual(activationTimes.get(sceneA._id));
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('#activateScene should not change revision of scene', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    const rev = scene._rev;
+
+    // when
+    await dbService.activateScene(scene._id);
+
+    // then
+    expect((await dbService.findScene(scene._id))._rev).toBe(rev);
+  });
+
+  it('#activateScene should activate scene when activation time cannot be saved', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    vi.spyOn(dbService['db'], 'insert').mockRejectedValue({ status: 500 });
+
+    // when
+    const activeScene = await dbService.activateScene(scene._id);
+
+    // then
+    expect(activeScene._id).toBe(scene._id);
+    expect(dbService.getActiveScene()).toBe(activeScene);
+    expect(console.warn).toHaveBeenCalledWith('activation time of scene ' + scene._id + ' cannot be saved', { status: 500 });
+  });
+
+  it('#findSceneActivationTimes should return empty map when no scene was activated', async () => {
+
+    // when
+    const activationTimes = await dbService.findSceneActivationTimes();
+
+    // then
+    expect(activationTimes.size).toBe(0);
+  });
+
+  it('#findSceneActivationTimes should return empty map when activation times cannot be read', async () => {
+
+    // given
+    const error = new Error('find failed');
+    vi.spyOn(dbService['db'], 'find').mockReturnValue(throwError(() => error));
+
+    // when
+    const activationTimes = await dbService.findSceneActivationTimes();
+
+    // then
+    expect(activationTimes.size).toBe(0);
+    expect(console.warn).toHaveBeenCalledWith('activation times of scenes cannot be read', error);
+  });
+
+  it('#findSceneInfos should not include activation documents', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    await dbService.activateScene(scene._id);
+
+    // when
+    const sceneInfos = await dbService.findSceneInfos();
+
+    // then
+    expect(sceneInfos.map(si => si._id).sort()).toEqual([initialScene._id, scene._id].sort());
+  });
+
   it('#findSceneInfos should return info about all scenes', async () => {
 
     // given
@@ -362,6 +467,21 @@ describe('DBService', () => {
 
     // then
     await expect(dbService.findSceneTabs(initialScene._id)).resolves.toBeUndefined();
+  });
+
+  it('#deleteScene should delete activation time of scene', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    await dbService.activateScene(scene._id);
+
+    // when
+    await dbService.deleteScene(scene);
+
+    // then
+    const activationTimes = await dbService.findSceneActivationTimes();
+    expect(activationTimes.has(scene._id)).toBe(false);
   });
 
   it('#deleteScene should resolve when open tabs cannot be deleted', async () => {

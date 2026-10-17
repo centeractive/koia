@@ -10,8 +10,8 @@ export class ScenesPage {
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
-      this.title = page.locator('#mat_card_all_scenes mat-card-title');
-      this.rows = page.locator('#mat_card_all_scenes tr.mat-mdc-row');
+      this.title = page.locator('#mat_card_scenes mat-card-title');
+      this.rows = page.locator('#mat_card_scenes tr.mat-mdc-row');
       this.notifications = new Notifications(page);
    }
 
