@@ -1,24 +1,23 @@
-<koia-side-bar-header [(multiExpandable)]="multiExpandable" (expandAll)="accordion.openAll()" (collapseAll)="accordion.closeAll()">
-  @if (nonGroupedColumns && nonGroupedColumns.length > 0) {
-    <span class="span_add_group">
-      <mat-form-field koiaForm>
-        <mat-select #nonGroupedCols [placeholder]="'pivot.sideBar.nonGroupedColumns' | translate" [value]="nonGroupedColumns[0]">
-          @for (column of nonGroupedColumns; track column) {
-            <mat-option [value]="column">
-              {{ column.name }}
-            </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-      <button mat-icon-button [matTooltip]="'pivot.sideBar.addGroupingDefinition' | translate" [disabled]="!nonGroupedCols.value"
-        (click)="addValueGrouping(nonGroupedCols.value)">
-        <mat-icon>add_circle_outline</mat-icon>
-      </button>
-    </span>
-  }
-</koia-side-bar-header>
+<koia-side-bar-header [(multiExpandable)]="multiExpandable" (expandAll)="accordion.openAll()" (collapseAll)="accordion.closeAll()" />
 
   <div style="padding: 0 5px 0 5px;" koiaForm>
+    @if (nonGroupedColumns && nonGroupedColumns.length > 0) {
+      <div class="div_add_group">
+        <mat-form-field koiaForm>
+          <mat-select #nonGroupedCols [placeholder]="'pivot.sideBar.nonGroupedColumns' | translate" [value]="nonGroupedColumns[0]">
+            @for (column of nonGroupedColumns; track column) {
+              <mat-option [value]="column">
+                {{ column.name }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button mat-icon-button [matTooltip]="'pivot.sideBar.addGroupingDefinition' | translate" [disabled]="!nonGroupedCols.value"
+          (click)="addValueGrouping(nonGroupedCols.value)">
+          <mat-icon>add_circle_outline</mat-icon>
+        </button>
+      </div>
+    }
     @if (context) {
       <mat-accordion [multi]="multiExpandable">
         @for (grouping of context.valueGroupings; track grouping) {

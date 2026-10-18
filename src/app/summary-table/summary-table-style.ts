@@ -1,3 +1,5 @@
+import { TABLE_FONT_FAMILY, TABLE_FONT_SIZE } from 'app/shared/ui/table-fit/table-font';
+
 export interface CellStyle {
   fontWeight: number;
   fontSize: number;
@@ -6,13 +8,15 @@ export interface CellStyle {
   horizontalPadding: number;
 }
 
+const TABLE_CELL = { fontSize: TABLE_FONT_SIZE, fontFamily: TABLE_FONT_FAMILY, letterSpacing: 0, horizontalPadding: 12 };
+
 /**
  * computed styles of the rendered summary table, e2e tests verify that they match the application theme
  */
 export const SUMMARY_TABLE_STYLE = {
-  header: { fontWeight: 500, fontSize: 14, fontFamily: 'Roboto, sans-serif', letterSpacing: 0, horizontalPadding: 16 } as CellStyle,
-  cell: { fontWeight: 400, fontSize: 14, fontFamily: 'Roboto, sans-serif', letterSpacing: 0, horizontalPadding: 10 } as CellStyle,
-  footer: { fontWeight: 700, fontSize: 14, fontFamily: 'Roboto, sans-serif', letterSpacing: 0.25, horizontalPadding: 15 } as CellStyle,
+  header: { ...TABLE_CELL, fontWeight: 600 } as CellStyle,
+  cell: { ...TABLE_CELL, fontWeight: 400 } as CellStyle,
+  footer: { ...TABLE_CELL, fontWeight: 600 } as CellStyle,
   sortArrowWidth: 18,
   marginRight: 1
 };

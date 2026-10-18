@@ -22,7 +22,7 @@ describe('SummaryTableWidthEstimator', () => {
   ];
   const headerMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.header));
   const cellMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.cell));
-  const footerMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.footer), '0.25px');
+  const footerMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.footer), SUMMARY_TABLE_STYLE.footer.letterSpacing + 'px');
   const estimator = new SummaryTableWidthEstimator();
   let context: SummaryContext;
 
@@ -116,7 +116,7 @@ describe('SummaryTableWidthEstimator', () => {
     expect(width).toBe(expected);
   });
 
-  it('#estimate should measure footer with letter spacing', () => {
+  it('#estimate should measure footer in footer font', () => {
 
     // given
     context.entries = [{ t1: 'a', n1: 111_111_111 }, { t1: 'b', n1: 111_111_111 }];

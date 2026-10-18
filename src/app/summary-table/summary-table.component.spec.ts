@@ -4,11 +4,13 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { provideRouter, Router } from '@angular/router';
 import { Aggregation, Column, DataType, Operator, PropertyFilter, Query, Route, SummaryContext, TimeUnit } from 'app/shared/model';
 import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
+import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
 import { SummaryTableComponent } from './summary-table.component';
@@ -54,7 +56,7 @@ describe('SummaryTableComponent', () => {
   beforeEach(() => {
     getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', columns));
     TestBed.configureTestingModule({
-      imports: [MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule],
+      imports: [MatTableModule, MatSortModule, MatProgressBarModule, MatDialogModule, MatTooltipModule],
       declarations: [SummaryTableComponent],
       providers: [
         provideRouter([]),
@@ -90,6 +92,126 @@ describe('SummaryTableComponent', () => {
 
     // then
     expect(fixture.nativeElement.querySelector('.div_summary_table').offsetHeight).toBe(252);
+  });
+
+  describe('styling', () => {
+
+    function render(): void {
+      fixture.detectChanges();
+      flush();
+      fixture.detectChanges();
+    }
+
+    function styleOf(selector: string): CSSStyleDeclaration {
+      return getComputedStyle(fixture.nativeElement.querySelector(selector));
+    }
+
+    function rows(): HTMLTableRowElement[] {
+      return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row'));
+    }
+
+    it('body cells should use dense table font', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const style = styleOf('tr.mat-mdc-row td');
+      expect(style.fontFamily).toBe(TABLE_FONT_FAMILY);
+      expect(style.fontSize).toBe('12px');
+      expect(style.lineHeight).toBe('16px');
+      expect(style.paddingTop).toBe('3px');
+      expect(style.paddingLeft).toBe('6px');
+      expect(style.letterSpacing).toBe('normal');
+    }));
+
+    it('header cells should be semibold on header surface with hairline below', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const style = styleOf('th');
+      expect(style.fontWeight).toBe('600');
+      expect(style.backgroundColor).toBe('rgb(245, 246, 248)');
+      expect(style.borderBottomWidth).toBe('1px');
+      expect(style.borderBottomColor).toBe('rgb(224, 224, 224)');
+    }));
+
+    it('columns should be separated by width neutral line', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const firstCell = styleOf('tr.mat-mdc-row td:first-child');
+      expect(firstCell.boxShadow).toBe('rgb(224, 224, 224) -1px 0px 0px 0px inset');
+      expect(firstCell.borderRightWidth).toBe('0px');
+      expect(styleOf('tr.mat-mdc-row td:last-child').boxShadow).toBe('none');
+    }));
+
+    it('last row should leave separation to footer total line', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const style = styleOf('tr.mat-mdc-row:last-child td:last-child');
+      expect(style.borderBottomStyle).toBe('none');
+      expect(style.borderTopWidth).toBe('1px');
+    }));
+
+    it('first row should rely on header hairline', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      expect(styleOf('tr.mat-mdc-row td:last-child').borderTopStyle).toBe('none');
+    }));
+
+    it('rows should not be striped', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const [first, second] = rows().map(r => getComputedStyle(r).backgroundColor);
+      expect(first).toBe('rgba(0, 0, 0, 0)');
+      expect(second).toBe(first);
+    }));
+
+    it('rows should be dense single lines', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      expect(rows()[1].offsetHeight).toBe(23);
+    }));
+
+    it('footer should be semibold below total line', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const style = styleOf('td.mat-mdc-footer-cell');
+      expect(style.fontWeight).toBe('600');
+      expect(style.borderTopWidth).toBe('2px');
+      expect(style.letterSpacing).toBe('normal');
+    }));
+
+    it('count link should be primary text without underline', fakeAsync(() => {
+
+      // when
+      render();
+
+      // then
+      const style = styleOf('td.td_aggregation a');
+      expect(style.color).toBe('rgb(48, 63, 159)');
+      expect(style.textDecorationLine).toBe('none');
+    }));
   });
 
   it('#ngOnInit should navigate to scenes view when no scene is active', fakeAsync(() => {

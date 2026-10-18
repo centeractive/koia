@@ -221,6 +221,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   private applyConfig(configRecord: ConfigRecord): void {
     this.context = CommonUtils.clone(configRecord.data as PivotContext);
+    this.contextFactory.adoptPalette(this.context);
     this.adoptRestoredTimeUnits();
     if (configRecord.query) {
       this.restoredQuery = queryDefToQuery(configRecord.query);

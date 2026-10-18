@@ -8,9 +8,7 @@ import { SideBarHeaderComponent } from './side-bar-header.component';
 
 @Component({
   template: `
-    <koia-side-bar-header [(multiExpandable)]="multiExpandable" (expandAll)="expanded = expanded + 1" (collapseAll)="collapsed = collapsed + 1">
-      <span id="projected">P</span>
-    </koia-side-bar-header>`,
+    <koia-side-bar-header [(multiExpandable)]="multiExpandable" (expandAll)="expanded = expanded + 1" (collapseAll)="collapsed = collapsed + 1" />`,
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
@@ -117,16 +115,6 @@ describe('SideBarHeaderComponent', () => {
     expect(host.multiExpandable).toBe(true);
     expect(host.collapsed).toBe(0);
     expect(element('#but_expand_all')).not.toBeNull();
-  });
-
-  it('should project additional header content before expand and collapse buttons', () => {
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    const projected = element('.div_accordion_options #projected');
-    expect(projected.getBoundingClientRect().right).toBeLessThanOrEqual(element('#but_expand_all').getBoundingClientRect().left);
   });
 
   it('header should be white with bottom border', () => {

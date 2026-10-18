@@ -12,24 +12,32 @@
       }
       <koia-view-toolbar [moreMenu]="moreMenu" [savedViews]="configRecords" (save)="saveConfig()" (restore)="loadConfig($event)">
         @if (allowsForValueGrouping) {
-          <button class="but_config" mat-icon-button
+          <button id="but_value_grouping" class="but_config" mat-icon-button
             [matTooltip]="'pivot.defineValueGrouping' | translate" (click)="sidenav.open()">
-            <mat-icon [matBadge]="context.valueGroupings.length === 0 ? 'G' : context.valueGroupings.length"
-              matBadgeSize="small" [matBadgeColor]="context.valueGroupings.length === 0 ? 'primary' : 'accent'">group_work
-            </mat-icon>
+            <mat-icon [matBadge]="context.valueGroupings.length" [matBadgeHidden]="context.valueGroupings.length === 0"
+              matBadgeSize="small" matBadgeColor="accent">linear_scale</mat-icon>
           </button>
         }
-        <button class="but_config" mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
+        <button id="but_time_unit" class="but_config" mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
           [matTooltip]="'pivot.timeUnitGrouping' | translate">
-          <mat-icon>timer</mat-icon>
+          <mat-icon>date_range</mat-icon>
         </button>
-        <button class="but_config" mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
+        <button id="but_row_totals" class="but_config" mat-icon-button [class.koia-toggle-active]="context.showRowTotals"
+          [matTooltip]="(context.showRowTotals ? 'pivot.hideRowTotals' : 'pivot.showRowTotals') | translate"
+          (click)="onShowRowTotalsChanged()">
+          <mat-icon>view_column</mat-icon>
+        </button>
+        <button id="but_column_totals" class="but_config" mat-icon-button [class.koia-toggle-active]="context.showColumnTotals"
+          [matTooltip]="(context.showColumnTotals ? 'pivot.hideColumnTotals' : 'pivot.showColumnTotals') | translate"
+          (click)="onShowColumnTotalsChanged()">
+          <mat-icon>table_rows</mat-icon>
+        </button>
+        <button id="but_heatmap_colors" class="but_config" mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
           [matTooltip]="'pivot.heatmapColors' | translate">
           <mat-icon>color_lens</mat-icon>
         </button>
       </koia-view-toolbar>
       <mat-menu #moreMenu="matMenu">
-        <button mat-menu-item [matMenuTriggerFor]="showTotalsMenu">{{ 'pivot.showOverallTotals' | translate }}</button>
         <button mat-menu-item (click)="exportToExcel()">
           <mat-icon>insert_drive_file</mat-icon>
           <span>{{ 'pivot.saveAsExcel' | translate }}</span>
@@ -37,17 +45,6 @@
         <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
           <mat-icon>monitor</mat-icon>
           <span>{{ 'pivot.manageViews' | translate }}</span>
-        </button>
-      </mat-menu>
-
-      <mat-menu #showTotalsMenu="matMenu">
-        <button mat-menu-item (click)="onShowRowTotalsChanged()">
-          <mat-icon>{{ context.showRowTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-          <span>{{ 'pivot.rows' | translate }}</span>
-        </button>
-        <button mat-menu-item (click)="onShowColumnTotalsChanged()">
-          <mat-icon>{{ context.showColumnTotals ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-          <span>{{ 'pivot.columns' | translate }}</span>
         </button>
       </mat-menu>
 
@@ -91,8 +88,8 @@
       <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" />
     </div>
 
-    <div #content class="div_content" cdkScrollable>
-      <div class="div_table mat-elevation-z1">
+    <div #content class="div_content div_pivot_content" cdkScrollable>
+      <div class="div_table">
         @if (computing) {
           <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
         }

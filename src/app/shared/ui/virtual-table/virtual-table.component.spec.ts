@@ -219,6 +219,18 @@ describe('VirtualTableComponent', () => {
       expect(fixture.nativeElement.querySelector('.row-count').textContent).toBe('1,234 rows');
     });
 
+    it('row hover should use table row hover token', async () => {
+
+      // when
+      await render();
+
+      // then
+      const rule = Array.from(document.styleSheets)
+        .flatMap(s => Array.from(s.cssRules))
+        .find(r => r instanceof CSSStyleRule && /^\.vt-row\[_ngcontent-[^\]]+\]:hover$/.test(r.selectorText)) as CSSStyleRule;
+      expect(rule.style.getPropertyValue('background')).toBe('var(--koia-table-row-hover)');
+    });
+
     it('should show no rows while row count unknown', async () => {
 
       // given

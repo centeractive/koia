@@ -68,10 +68,6 @@ mat-panel-description {
   justify-content: flex-end;
 }
 
-.span_add_group {
-  padding-left: 15px;
-}
-
 .span_left_to_right {
   display: flex;
   align-items: flex-end;

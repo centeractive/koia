@@ -1,10 +1,12 @@
+.div_pivot_content {
+  background-color: var(--koia-surface);
+}
+
 .div_table {
   position: relative;
-  margin: 10px;
   float: left;
   min-width: 500px;
-  border: var(--koia-tile-border);
-  background-color: var(--koia-surface);
+  padding: 4px 8px;
 }
 
 .span_color {
@@ -22,37 +24,209 @@
   font-size: 10px;
 }
 
-/* below definitions overwrites defaults from node_modules/pivottable/dist/pivot.css */
+/* below definitions overwrite defaults from node_modules/pivottable/dist/pivot.css */
 .pvtUi {
-  background-color: white !important;
+  color: var(--koia-text-primary);
+  font-family: var(--koia-table-font-family);
+  font-size: var(--koia-table-font-size);
 }
 
-table.pvtTable thead tr th,
-table.pvtTable tbody tr th {
-  background-color: #CFD8DC !important;
-  border: 1px solid white !important;
+.pvtUi select,
+.pvtUi input,
+.pvtUi button {
+  font: inherit;
+  color: inherit;
 }
 
-table.pvtTable td {
-  color: darkblue !important;
-  text-decoration: underline !important;
+.pvtUi select {
+  appearance: none;
+  height: var(--koia-pivot-field-height);
+  padding: 0 24px 0 8px;
+  border: 1px solid var(--koia-outline-color);
+  border-radius: 6px;
+  background: var(--koia-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f6368'/%3E%3C/svg%3E") no-repeat right 8px center;
   cursor: pointer;
 }
 
-.pvtAxisContainer,
-.pvtVals {
-  background: #ECEFF1 !important;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
+.pvtUi select:focus,
+.pvtUi .pvtFilterBox input.pvtSearch:focus {
+  outline: none;
+  border-color: var(--koia-primary);
+  box-shadow: 0 0 0 1px var(--koia-primary);
 }
 
-.pvtAxisContainer li span.pvtAttr {
-  background: white !important;
-  border: 1px solid #90A4AE !important;
+.pvtUi .pvtAxisContainer,
+.pvtUi .pvtVals {
+  border-radius: 8px;
 }
 
-.pvtFilterBox {
+.pvtUi .pvtAxisContainer.pvtUnused {
+  background: var(--koia-table-header-surface);
+  border: 1px dashed var(--koia-border-color);
+}
+
+.pvtUi .pvtVals,
+.pvtUi .pvtAxisContainer.pvtCols,
+.pvtUi .pvtAxisContainer.pvtRows {
+  background: var(--koia-header-surface);
+  border: 1px solid var(--koia-header-border);
+}
+
+.pvtUi .pvtAxisContainer li:not(.pvtPlaceholder) {
+  padding: 1px 2px;
+}
+
+.pvtUi .pvtAxisContainer li span.pvtAttr {
+  display: inline-block;
+  box-sizing: border-box;
+  height: var(--koia-pivot-field-height);
+  padding: 0 8px;
+  line-height: calc(var(--koia-pivot-field-height) - 2px);
+  background: var(--koia-surface);
+  border: 1px solid var(--koia-border-color);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.pvtUi .pvtAxisContainer li span.pvtAttr:hover {
+  border-color: var(--koia-primary);
+}
+
+.pvtUi .pvtAxisContainer li.pvtFilteredAttribute span.pvtAttr {
+  color: var(--koia-accent);
+  border-color: var(--koia-accent);
+}
+
+.pvtUi .pvtTriangle,
+.pvtUi .pvtRowOrder,
+.pvtUi .pvtColOrder {
+  color: var(--koia-text-secondary);
+  text-decoration: none;
+}
+
+.pvtUi .pvtFilterBox {
   /* must overlap sticky header */
-  z-index: 1000 !important;
+  z-index: 1000;
+  padding: 8px 0;
+  text-align: left;
+  background-color: var(--koia-surface);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.pvtUi .pvtFilterBox h4 {
+  margin: 4px 12px 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pvtUi .pvtFilterBox p {
+  margin: 4px 12px;
+}
+
+.pvtUi .pvtFilterBox .count {
+  color: var(--koia-text-secondary);
+}
+
+.pvtUi .pvtFilterBox input.pvtSearch {
+  box-sizing: border-box;
+  width: 100%;
+  height: 28px;
+  margin-bottom: 4px;
+  padding: 0 8px;
+  border: 1px solid var(--koia-outline-color);
+  border-radius: 6px;
+}
+
+.pvtUi .pvtFilterBox button {
+  height: 28px;
+  margin-right: 4px;
+  padding: 0 12px;
+  color: var(--koia-primary);
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pvtUi .pvtFilterBox button:hover {
+  background-color: var(--koia-hover-tint);
+}
+
+.pvtUi .pvtFilterBox > p:last-child > button:first-child:not(:only-child) {
+  color: var(--koia-on-color);
+  background-color: var(--koia-primary);
+}
+
+.pvtUi .pvtFilterBox > p:last-child > button:first-child:not(:only-child):hover {
+  background-color: var(--koia-primary-dark);
+}
+
+.pvtUi .pvtCheckContainer {
+  font-size: inherit;
+  border-color: var(--koia-border-color);
+}
+
+.pvtUi .pvtCheckContainer p {
+  margin: 2px 12px;
+}
+
+.pvtUi .pvtFilterBox input[type='checkbox'] {
+  margin: 0 8px 0 0;
+  vertical-align: middle;
+  accent-color: var(--koia-accent);
+}
+
+.pvtUi table.pvtTable {
+  font-size: var(--koia-pivot-font-size);
+  line-height: var(--koia-table-line-height);
+  font-variant-numeric: tabular-nums;
+}
+
+.pvtUi table.pvtTable thead tr th,
+.pvtUi table.pvtTable tbody tr th {
+  padding: var(--koia-pivot-cell-padding);
+  white-space: nowrap;
+  color: var(--koia-text-primary);
+  font-size: inherit;
+  font-weight: 600;
+  background-color: var(--koia-table-header-surface);
+  border: var(--koia-table-grid-line);
+}
+
+.pvtUi table.pvtTable th.pvtAxisLabel {
+  color: var(--koia-text-secondary);
+}
+
+.pvtUi table.pvtTable tbody tr td {
+  padding: var(--koia-pivot-cell-padding);
+  color: var(--koia-text-primary);
+  border: var(--koia-table-grid-line);
+  cursor: pointer;
+}
+
+.pvtUi table.pvtTable tbody tr td:hover {
+  outline-width: 2px;
+  outline-style: solid;
+  outline-color: var(--koia-primary);
+  outline-offset: -2px;
+}
+
+.pvtUi table.pvtTable .pvtTotal,
+.pvtUi table.pvtTable .pvtGrandTotal {
+  font-weight: 600;
+}
+
+.pvtUi table.pvtTable tr th.pvtColTotalLabel,
+.pvtUi table.pvtTable tr td.colTotal,
+.pvtUi table.pvtTable tr td.pvtGrandTotal {
+  border-top: var(--koia-table-total-line);
+}
+
+.pvtUi table.pvtTable tr th.pvtRowTotalLabel,
+.pvtUi table.pvtTable tr td.rowTotal,
+.pvtUi table.pvtTable tr td.pvtGrandTotal {
+  border-left: var(--koia-table-total-line);
 }

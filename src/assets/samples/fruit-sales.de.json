@@ -152,8 +152,8 @@
             "groupingTimeUnit": "month"
           }
         ],
-        "negativeColor": "#FF3333",
-        "positiveColor": "#00FF00",
+        "negativeColor": "#E57373",
+        "positiveColor": "#81C784",
         "showRowTotals": true,
         "showColumnTotals": true,
         "valueGroupings": [],
