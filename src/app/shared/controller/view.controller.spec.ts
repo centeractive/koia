@@ -172,7 +172,7 @@ describe('ViewController', () => {
       expect(div.scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
    });
 
-   it('#ngAfterViewInit should not scroll when text box was added', () => {
+   it('#ngAfterViewInit should scroll text tile into view when added', () => {
 
       // given
       const div = document.createElement('div');
@@ -181,7 +181,23 @@ describe('ViewController', () => {
       controller['columns'] = [];
 
       // when
-      controller.addTextBox();
+      controller.addTextTile();
+      controller.elementContainerDivRefs.notifyOnChanges();
+
+      // then
+      expect(div.scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
+   });
+
+   it('#ngAfterViewInit should not scroll when note was added', () => {
+
+      // given
+      const div = document.createElement('div');
+      vi.spyOn(div, 'scrollIntoView').mockReturnValue(undefined);
+      const controller = controllerWithContainers(div);
+      controller['columns'] = [];
+
+      // when
+      controller.addNote();
       controller.elementContainerDivRefs.notifyOnChanges();
 
       // then
@@ -214,7 +230,11 @@ describe('ViewController', () => {
       expect(controller.addedContexts).toEqual([context]);
    });
 
-   it('#addTextBox should add and persist text box without opening sidenav nor changing selected context', () => {
+   it.each([
+      { add: (controller: ViewControllerTestable) => controller.addNote(), tiled: false },
+      { add: (controller: ViewControllerTestable) => controller.addTextTile(), tiled: true }
+   ])('#add text box should add and persist text box of tiled $tiled without opening sidenav nor changing selected context',
+      ({ add, tiled }) => {
 
       // given
       const controller = new ViewControllerTestable();
@@ -227,10 +247,11 @@ describe('ViewController', () => {
       const requestPersistSpy = vi.spyOn(controller as unknown as { requestPersist: () => void }, 'requestPersist');
 
       // when
-      const context = controller.addTextBox();
+      const context = add(controller);
 
       // then
       expect(context).toBeInstanceOf(TextBoxContext);
+      expect(context.tiled).toBe(tiled);
       expect(controller.elementContexts).toEqual([context]);
       expect(controller.addedContexts).toEqual([context]);
       expect(requestPersistSpy).toHaveBeenCalled();

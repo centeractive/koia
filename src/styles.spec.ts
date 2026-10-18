@@ -672,13 +672,23 @@ describe('global styles', () => {
     expect(rule.style.getPropertyValue('print-color-adjust')).toBe('exact');
   });
 
-  it('print styles should hide text box frame', () => {
+  it('print styles should hide frame of text box without border', () => {
 
     // when
-    const rule = printRule('.div_text_box_tile::after');
+    const rule = printRule('.div_text_box_tile:not(.div_text_box_bordered)::after');
 
     // then
     expect(rule.style.borderStyle).toBe('none');
     expect(rule.style.getPropertyPriority('border-style')).toBe('important');
+  });
+
+  it('print styles should print border of bordered text box as tile border', () => {
+
+    // when
+    const rule = printRule('.div_text_box_tile.div_text_box_bordered::after');
+
+    // then
+    expect(rule.style.border).toBe('var(--koia-tile-border)');
+    expect(rule.style.getPropertyPriority('border')).toBe('important');
   });
 });

@@ -18,6 +18,7 @@ import {
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
+import type { JSONContent } from '@tiptap/core';
 import { TextBoxContext } from 'app/shared/model';
 import { LanguageService } from 'app/shared/services/language';
 import { listenToDocumentOutsideAngular } from 'app/shared/ui/document-listener';
@@ -25,6 +26,7 @@ import * as _ from 'lodash';
 import { Subscription } from 'rxjs';
 import { TextBoxEditor } from './text-box-editor';
 import { TextStyleState, TOOLBAR_HEIGHT_PX } from './text-box-style';
+import { TextFit } from './text-fit';
 
 const ABOVE_START: ConnectedPosition = { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom' };
 const ABOVE_END: ConnectedPosition = { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom' };
@@ -46,6 +48,8 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
 
   @Input() context: TextBoxContext;
   @Output() remove = new EventEmitter<void>();
+  /** emits the height in pixels the enclosing tile needs to show the whole text, measured only while observed */
+  @Output() fitHeightChange = new EventEmitter<number>();
 
   @ViewChild('editorElement') editorElementRef: ElementRef<HTMLDivElement>;
   @ViewChild(CdkConnectedOverlay) connectedOverlay: CdkConnectedOverlay;
@@ -64,6 +68,7 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
   private readonly overlayContainer = inject(OverlayContainer);
   private readonly languageService = inject(LanguageService);
   private readonly subscriptions = new Subscription();
+  private textFit: TextFit;
 
   /**
    * the enclosing dashboard tile
@@ -77,13 +82,18 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       this.editor = new TextBoxEditor(this.editorElementRef.nativeElement, this.context.content,
         () => this.languageService.instant('textBox.placeholder'),
-        content => this.zone.run(() => this.context.content = content),
+        content => this.onContentChange(content),
         state => this.onStateChange(state));
+      if (this.fitHeightChange.observed) {
+        this.textFit = new TextFit(this.toolbarOrigin, this.elementRef.nativeElement, this.editor.dom,
+          height => this.zone.run(() => this.fitHeightChange.emit(height)));
+      }
       this.subscriptions.add(this.scrollDispatcher.ancestorScrolled(this.elementRef)
         .subscribe(scrollable => this.onAncestorScrolled(scrollable)));
     });
     this.state = this.editor.state();
     this.subscriptions.add(() => this.editor.destroy());
+    this.subscriptions.add(() => this.textFit?.disconnect());
     this.subscriptions.add(this.languageService.changed$.subscribe(() => this.editor.refreshPlaceholder()));
     this.subscriptions.add(listenToDocumentOutsideAngular(this.zone, this.renderer, 'pointerdown',
       event => this.deactivateWhenPressedElsewhere(event.target as Node)));
@@ -115,6 +125,16 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
   @HostListener('touchstart', ['$event'])
   stopPropagation(event: Event): void {
     event.stopPropagation();
+  }
+
+  /**
+   * also measures the text, which the fit cannot observe while the text shrinks within the stretched editor content
+   */
+  private onContentChange(content: JSONContent): void {
+    this.zone.run(() => {
+      this.context.content = content;
+      this.textFit?.update();
+    });
   }
 
   private onStateChange(state: TextStyleState): void {

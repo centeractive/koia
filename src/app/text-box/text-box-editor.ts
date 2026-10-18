@@ -37,6 +37,10 @@ export class TextBoxEditor {
       this.editor.on('transaction', () => onStateChange(this.state()));
    }
 
+   get dom(): HTMLElement {
+      return this.editor.view.dom;
+   }
+
    state(): TextStyleState {
       const textStyle = this.editor.getAttributes('textStyle');
       return {

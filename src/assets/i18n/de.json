@@ -472,7 +472,8 @@
     "addChart": "Diagramm hinzufügen",
     "addGraph": "Beziehungsgraph hinzufügen",
     "addSummary": "Zusammenfassung hinzufügen",
-    "addTextBox": "Textfeld hinzufügen",
+    "addTextTile": "Textkachel hinzufügen",
+    "addNote": "Notiz hinzufügen",
     "gridColumns": "Rasterspalten",
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
     "manageViews": "Ansichten verwalten",
@@ -495,7 +496,8 @@
     "textColor": "Textfarbe",
     "resetTextColor": "Textfarbe zurücksetzen",
     "backgroundColor": "Hintergrundfarbe",
-    "resetBackgroundColor": "Hintergrundfarbe zurücksetzen"
+    "resetBackgroundColor": "Hintergrundfarbe zurücksetzen",
+    "border": "Rahmen"
   },
   "enum": {
     "chartType": {

@@ -6,7 +6,7 @@ koia-text-box {
 
 koia-text-box .div_text_box_editor {
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
 }
 
 koia-text-box .ProseMirror {
@@ -52,6 +52,10 @@ koia-text-box .ProseMirror p.is-editor-empty:first-child::before {
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+.div_text_tile:not(:hover) koia-text-box:not(.koia-text-box-active) .ProseMirror p.is-editor-empty::before {
+  content: none;
 }
 
 koia-text-box .ProseMirror .selection {

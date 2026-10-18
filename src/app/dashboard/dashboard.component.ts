@@ -143,12 +143,14 @@ export class DashboardComponent extends ViewController {
   }
 
   /**
-   * fits the rendered tiles to pages, overlays keep their offset to the fitted anchor tile, all within its page
+   * fits the rendered tiles to pages, overlays keep their offset to the fitted anchor tile, all within its page,
+   * text boxes grown to their content keep their own height
    */
   private applyRenderedTilePositions(elements: ViewElement[]): void {
     if (this.gridCellsRef?.nativeElement.getBoundingClientRect().width > 0) {
-      const rendered = this.renderedGridRects()
-        .map((r, i) => ({ element: elements[i], overlay: r.tile.isOverlay(), layerRect: r.rect }))
+      const { scale, rects: renderedRects } = this.renderedGridRects();
+      const rendered = renderedRects
+        .map((r, i) => ({ element: elements[i], context: r.tile, overlay: r.tile.isOverlay(), layerRect: r.rect }))
         .filter(t => t.layerRect.width > 0 && t.layerRect.height > 0);
       const renderedTiles = rendered.filter(t => !t.overlay);
       const rects = this.freeLayout.fitToPages(renderedTiles.map(t => t.layerRect));
@@ -161,7 +163,36 @@ export class DashboardComponent extends ViewController {
         const pageTop = FreeLayout.pageTopOf((anchorRect ?? rect).y);
         Object.assign(textBox, this.freeLayout.clampIntoPage(rect, pageTop), { z: renderedTiles.length + i + 1 });
       });
+      rendered
+        .filter(t => this.isGridGrown(t.context))
+        .forEach(t => t.element.height = Math.min(t.element.height, this.ungrownHeightOf(t.context, scale)));
     }
+  }
+
+  private isGridGrown(context: ElementContext): boolean {
+    return context.isOverlay() ? this.isGrown(context) : this.gridRowSpanOf(context) > context.gridRowSpan;
+  }
+
+  private isGrown(context: ElementContext): boolean {
+    return this.growthOf(context) > 0;
+  }
+
+  /**
+   * @returns the height in page units a text box is drawn larger than its size to show its whole content
+   */
+  private growthOf(context: ElementContext): number {
+    return this.freeLayout.drawnRectOf(context).height - this.freeLayout.rectOf(context).height;
+  }
+
+  /**
+   * @returns the height in page units of the grown text box as of its own size
+   */
+  private ungrownHeightOf(context: ElementContext, scale: number): number {
+    if (context.isOverlay()) {
+      return this.freeLayout.rectOf(context).height;
+    }
+    const spans = { columnSpan: context.gridColumnSpan, rowSpan: context.gridRowSpan };
+    return Math.round(this.gridLayout.tileSizeOf(spans, this.contentWidth()).height / scale);
   }
 
   private positionInAnchor(textBox: TextBox, rect: Rect, anchorRect: Rect): Rect {
@@ -174,12 +205,13 @@ export class DashboardComponent extends ViewController {
 
   /**
    * derives the spans of the tiles from their canvas size, overlays get anchored to the tile below their top left corner
+   * as drawn
    */
   private applyGridSpans(elements: ViewElement[]): void {
-    const canvasWidth = this.canvasPagesRef?.nativeElement.clientWidth;
-    if (canvasWidth > 0) {
-      const scale = canvasWidth / FreeLayout.PAGE_WIDTH;
-      const overlays = elements.filter((_element, i) => this.elementContexts[i].isOverlay()) as TextBox[];
+    const scale = this.layerScale();
+    if (scale > 0) {
+      const contextOf = new Map(elements.map((element, i) => [element, this.elementContexts[i]]));
+      const overlays = elements.filter(element => contextOf.get(element).isOverlay()) as TextBox[];
       elements.sort((a, b) => a.y - b.y || a.x - b.x);
       const tiles = elements.filter(e => !overlays.includes(e as TextBox));
       tiles.forEach(element => {
@@ -188,7 +220,7 @@ export class DashboardComponent extends ViewController {
         element.gridColumnSpan = spans.columnSpan;
         element.gridRowSpan = spans.rowSpan;
       });
-      const tileRects = tiles.map(tile => ({ tile, rect: this.freeLayout.rectOf(tile) }));
+      const tileRects = tiles.map(tile => ({ tile, rect: this.freeLayout.grownRect(this.freeLayout.rectOf(tile), contextOf.get(tile)) }));
       overlays.forEach(textBox => {
         const anchoring = this.freeLayout.anchorAt(this.freeLayout.rectOf(textBox), tileRects);
         textBox.anchor = anchoring && elements.indexOf(anchoring.tile);
@@ -244,6 +276,32 @@ export class DashboardComponent extends ViewController {
     return '--koia-tile-' + this.elementContexts.indexOf(context);
   }
 
+  gridCellStyleOf(context: ElementContext): object {
+    return this.gridLayout.cellStyle(context, this.gridRowSpanOf(context));
+  }
+
+  /**
+   * @returns the given row span, enlarged for a text box that needs more rows to show its whole content
+   */
+  private gridRowSpanOf(context: ElementContext, rowSpan = context.gridRowSpan, contentWidth?: number): number {
+    const scale = context instanceof TextBoxContext && context.fitHeight > 0 ? this.layerScale() : 0;
+    if (scale > 0) {
+      const fitRowSpan = this.gridLayout.rowSpanToFit((context as TextBoxContext).fitHeight * scale, contentWidth ?? this.contentWidth());
+      return Math.max(rowSpan, fitRowSpan);
+    }
+    return rowSpan;
+  }
+
+  /**
+   * @param height height in pixels the text box needs to show its whole content
+   */
+  onTextFitHeight(context: TextBoxContext, height: number): void {
+    const scale = this.layerScale();
+    if (scale > 0) {
+      context.fitHeight = Math.ceil(height / scale);
+    }
+  }
+
   resizableEdgesOf(context: ElementContext): Edges {
     return resizableEdges(this.isShowResizableMargin(context));
   }
@@ -252,22 +310,29 @@ export class DashboardComponent extends ViewController {
     this.gridResizeContentWidth = this.contentWidth();
   }
 
-  onGridResizing(resizeEvent: ResizeEvent): void {
+  onGridResizing(context: ElementContext, resizeEvent: ResizeEvent): void {
     const rect = resizeEvent.rectangle;
-    const spans = this.resizedGridSpansOf(rect);
-    this.resizePreview = { left: rect.left, top: rect.top, ...this.gridLayout.tileSizeOf(spans, this.gridResizeContentWidth) };
+    const spans = this.resizedGridSpansOf(context, rect);
+    const drawnSpans = { ...spans, rowSpan: this.gridRowSpanOf(context, spans.rowSpan, this.gridResizeContentWidth) };
+    this.resizePreview = { left: rect.left, top: rect.top, ...this.gridLayout.tileSizeOf(drawnSpans, this.gridResizeContentWidth) };
   }
 
   onGridResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
-    const spans = this.resizedGridSpansOf(resizeEvent.rectangle);
+    const spans = this.resizedGridSpansOf(context, resizeEvent.rectangle);
     context.gridColumnSpan = spans.columnSpan;
     context.gridRowSpan = spans.rowSpan;
     this.resizePreview = undefined;
   }
 
-  private resizedGridSpansOf(rect: BoundingRectangle): GridSpans {
+  /**
+   * the resized rect is drawn, the rows a text box is grown by to show its whole content are hence taken off
+   */
+  private resizedGridSpansOf(context: ElementContext, rect: BoundingRectangle): GridSpans {
     const cw = this.gridResizeContentWidth;
-    return this.gridLayout.coveredSpansOf(rect.width, rect.height, this.gridLayout.columnOf(rect.left, cw), cw);
+    const spans = { columnSpan: context.gridColumnSpan, rowSpan: context.gridRowSpan };
+    const drawnSpans = { ...spans, rowSpan: this.gridRowSpanOf(context, spans.rowSpan, cw) };
+    const growth = this.gridLayout.tileSizeOf(drawnSpans, cw).height - this.gridLayout.tileSizeOf(spans, cw).height;
+    return this.gridLayout.coveredSpansOf(rect.width, rect.height - growth, this.gridLayout.columnOf(rect.left, cw), cw);
   }
 
   protected override restoreElementContexts(elements: ViewElement[]): ElementContext[] {
@@ -299,8 +364,7 @@ export class DashboardComponent extends ViewController {
     if (!(cells?.width > 0)) {
       return 0;
     }
-    const scale = cells.width / FreeLayout.PAGE_WIDTH;
-    return Math.max(0, (this.divContentRef.nativeElement.getBoundingClientRect().top - cells.top) / scale);
+    return Math.max(0, (this.divContentRef.nativeElement.getBoundingClientRect().top - cells.top) / this.gridCellsScale(cells));
   }
 
   private anchorToTileBelow(context: TextBoxContext, rect: Rect, tiles: TileRect<ElementContext>[]): void {
@@ -313,22 +377,28 @@ export class DashboardComponent extends ViewController {
   }
 
   private renderedGridTileRects(): TileRect<ElementContext>[] {
-    return this.renderedGridRects().filter(r => !r.tile.isOverlay());
+    return this.renderedGridRects().rects.filter(r => !r.tile.isOverlay());
   }
 
   /**
-   * @returns the rendered rects of the grid's tiles and overlays in page units, relative to the grid cells
+   * @returns the rendered rects of the grid's tiles and overlays in page units, relative to the grid cells,
+   * together with the scale of the page units
    */
-  private renderedGridRects(): TileRect<ElementContext>[] {
+  private renderedGridRects(): { scale: number, rects: TileRect<ElementContext>[] } {
     const cellsRect = this.gridCellsRef.nativeElement.getBoundingClientRect();
-    const scale = cellsRect.width / FreeLayout.PAGE_WIDTH;
-    return this.elementContainerDivRefs.map((ref, i) => {
+    const scale = this.gridCellsScale(cellsRect);
+    const rects = this.elementContainerDivRefs.map((ref, i) => {
       const r = ref.nativeElement.parentElement.getBoundingClientRect();
       return {
         tile: this.elementContexts[i],
         rect: this.freeLayout.rectFromRendered(r.left - cellsRect.left, r.top - cellsRect.top, r.width, r.height, scale)
       };
     });
+    return { scale, rects };
+  }
+
+  private gridCellsScale(cellsRect: DOMRect): number {
+    return cellsRect.width / FreeLayout.PAGE_WIDTH;
   }
 
   /**
@@ -337,7 +407,7 @@ export class DashboardComponent extends ViewController {
   override removeElement(context: ElementContext): void {
     const anchored = this.textBoxesAnchoredTo(context);
     if (this.isGridLayout() && anchored.length) {
-      const rects = this.renderedGridRects();
+      const rects = this.renderedGridRects().rects;
       anchored.forEach(textBox => {
         const rect = rects.find(r => r.tile === textBox).rect;
         textBox.setPosition(rect.x, rect.y);
@@ -363,7 +433,14 @@ export class DashboardComponent extends ViewController {
   };
 
   onFreeMoving(): void {
-    this.canvasGuides = this.canvasInteraction.snap?.guides ?? [];
+    this.canvasGuides = this.visibleGuidesOf(this.canvasInteraction.context, this.canvasInteraction.snap?.guides ?? []);
+  }
+
+  /**
+   * the horizontal guides of a grown text box would mark its own size, not its drawn bottom
+   */
+  private visibleGuidesOf(context: ElementContext, guides: Guide[]): Guide[] {
+    return this.isGrown(context) ? guides.filter(g => g.axis === 'x') : guides;
   }
 
   onFreeMoveEnded(context: ElementContext, event: CdkDragEnd): void {
@@ -387,13 +464,14 @@ export class DashboardComponent extends ViewController {
   onFreeResizing(context: ElementContext, resizeEvent: ResizeEvent): void {
     const snap = this.freeResizeSnapOf(context, resizeEvent);
     const scale = this.canvasInteraction.scale;
+    const drawn = this.freeLayout.grownRect(snap.rect, context);
     this.resizePreview = {
-      left: snap.rect.x * scale,
-      top: snap.rect.y * scale,
-      width: snap.rect.width * scale,
-      height: snap.rect.height * scale
+      left: drawn.x * scale,
+      top: drawn.y * scale,
+      width: drawn.width * scale,
+      height: drawn.height * scale
     };
-    this.canvasGuides = snap.guides;
+    this.canvasGuides = this.visibleGuidesOf(context, snap.guides);
   }
 
   onFreeResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
@@ -407,12 +485,15 @@ export class DashboardComponent extends ViewController {
     this.endCanvasInteraction();
   }
 
+  /**
+   * the resized rect is drawn, the height a text box is grown by to show its whole content is hence taken off
+   */
   private freeResizeSnapOf(context: ElementContext, resizeEvent: ResizeEvent): Snap {
     const { scale, guides } = this.canvasInteraction;
     return guides.snapResize({
       ...this.freeLayout.rectOf(context),
       width: resizeEvent.rectangle.width / scale,
-      height: resizeEvent.rectangle.height / scale
+      height: resizeEvent.rectangle.height / scale - this.growthOf(context)
     }, this.freeLayout.minSizeOf(context));
   }
 
@@ -427,12 +508,12 @@ export class DashboardComponent extends ViewController {
    */
   private startCanvasInteraction(context: ElementContext): void {
     const layer = this.layerElement();
-    const scale = layer.clientWidth / FreeLayout.PAGE_WIDTH;
+    const scale = this.layerScale();
     const threshold = FreeLayout.SNAP_THRESHOLD_PX / scale;
     let guides: SnapGuides;
     let anchorTiles: TileRect<ElementContext>[] = [];
     if (this.isGridLayout()) {
-      const rects = this.renderedGridRects();
+      const rects = this.renderedGridRects().rects;
       const rect = rects.find(r => r.tile === context).rect;
       context.setPosition(rect.x, rect.y);
       guides = new SnapGuides(rects.filter(r => r.tile !== context).map(r => r.rect), 0, threshold, false);
@@ -440,7 +521,7 @@ export class DashboardComponent extends ViewController {
     } else {
       const others = this.elementContexts
         .filter(c => c !== context)
-        .map(c => this.freeLayout.rectOf(c));
+        .map(c => this.freeLayout.drawnRectOf(c));
       guides = new SnapGuides(others, this.freeLayout.pageIndexes(this.elementContexts).length, threshold);
     }
     this.canvasInteraction = {
@@ -455,6 +536,14 @@ export class DashboardComponent extends ViewController {
 
   private layerElement(): HTMLDivElement {
     return (this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef).nativeElement;
+  }
+
+  /**
+   * @returns the pixels per page unit of the rendered layer, 0 while it is not rendered
+   */
+  private layerScale(): number {
+    const layer = (this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef)?.nativeElement;
+    return (layer?.clientWidth ?? 0) / FreeLayout.PAGE_WIDTH;
   }
 
   private endCanvasInteraction(): void {

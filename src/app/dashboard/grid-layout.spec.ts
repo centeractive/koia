@@ -205,6 +205,32 @@ describe('GridLayout', () => {
       expect(size).toEqual({ width: 390, height: 590 });
     });
 
+    it.each([
+      { height: 10, rowSpan: 1 },
+      { height: 190, rowSpan: 1 },
+      { height: 191, rowSpan: 2 },
+      { height: 1000, rowSpan: 6 }
+    ])('#rowSpanToFit should return $rowSpan rows for height $height', ({ height, rowSpan }) => {
+
+      // when
+      const result = gridLayout.rowSpanToFit(height, contentWidth);
+
+      // then
+      expect(result).toBe(rowSpan);
+    });
+
+    it('#rowSpanToFit should consider cell ratio', () => {
+
+      // given
+      gridLayout.gridCellRatio = '2:1';
+
+      // when
+      const rowSpan = gridLayout.rowSpanToFit(200, contentWidth);
+
+      // then
+      expect(rowSpan).toBe(2);
+    });
+
     it('#tileSizeOf should consider cell ratio', () => {
 
       // given
@@ -230,6 +256,19 @@ describe('GridLayout', () => {
 
     // then
     expect(style).toEqual({ 'grid-column': 'auto / span 2', 'grid-row': 'auto / span 1' });
+  });
+
+  it('#cellStyle should span given row span', () => {
+
+    // given
+    const context = new SummaryContext([]);
+    context.gridColumnSpan = 2;
+
+    // when
+    const style = gridLayout.cellStyle(context, 3);
+
+    // then
+    expect(style).toEqual({ 'grid-column': 'auto / span 2', 'grid-row': 'auto / span 3' });
   });
 
   it('#setGridColumns should fire resize event for each element', () => {

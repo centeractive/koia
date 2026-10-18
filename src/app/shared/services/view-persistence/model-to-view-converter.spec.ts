@@ -83,8 +83,24 @@ describe('ModelToViewConverter', () => {
          valueGroupings: [],
          colorOptions: context.colorProvider.options,
          content: context.content,
-         backgroundColor: '#ffff00'
+         backgroundColor: '#ffff00',
+         tiled: false,
+         bordered: false
       });
+   });
+
+   it('#convert should map tiled and bordered of text tile', () => {
+
+      // given
+      const context = new TextBoxContext([], true);
+      context.bordered = true;
+
+      // when
+      const view = converter.convert(Route.GRID, 'test', new Query(), [context]);
+
+      // then
+      const element = view.elements[0] as TextBox;
+      expect([element.tiled, element.bordered]).toEqual([true, true]);
    });
 
    it('#convert should map anchor of text box to index of anchor element', () => {

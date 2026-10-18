@@ -27,13 +27,16 @@ describe('TextBoxContext', () => {
       expect(textBoxContext.getTitle()).toBe('');
       expect(textBoxContext.anchor).toBeUndefined();
       expect(textBoxContext.anchorOffset).toBeUndefined();
+      expect(textBoxContext.tiled).toBe(false);
+      expect(textBoxContext.bordered).toBe(false);
+      expect(textBoxContext.fitHeight).toBeUndefined();
    });
 
    it('should define minimum size smaller than tile minimum size', () => {
       expect([TextBoxContext.MIN_WIDTH, TextBoxContext.MIN_HEIGHT]).toEqual([40, 30]);
    });
 
-   it('#isOverlay should return true', () => {
+   it('#isOverlay should return true for note', () => {
 
       // when
       const overlay = context.isOverlay();
@@ -41,6 +44,52 @@ describe('TextBoxContext', () => {
       // then
       expect(overlay).toBe(true);
    });
+
+   it('#isOverlay should return false for text tile', () => {
+
+      // given
+      const textTile = new TextBoxContext([], true);
+
+      // when
+      const overlay = textTile.isOverlay();
+
+      // then
+      expect(overlay).toBe(false);
+      expect(textTile.tiled).toBe(true);
+   });
+
+   it('#bordered should fire look change event once when changed', fakeAsync(() => {
+
+      // when
+      context.bordered = true;
+      flush();
+
+      // then
+      expect(context.bordered).toBe(true);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
+   it('#bordered should not fire change event when unchanged', fakeAsync(() => {
+
+      // when
+      context.bordered = false;
+      flush();
+
+      // then
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
+
+   it('#fitHeight should not fire change event', fakeAsync(() => {
+
+      // when
+      context.fitHeight = 200;
+      flush();
+
+      // then
+      expect(context.fitHeight).toBe(200);
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
 
    it('#setAnchor should set anchor and offset without firing change event', fakeAsync(() => {
 

@@ -21,10 +21,19 @@ export class TextBoxContext extends ElementContext {
 
    private _content: JSONContent;
    private _backgroundColor: string;
+   private _bordered = false;
    private _anchor: ElementContext;
    private _anchorOffset: AnchorOffset;
 
-   constructor(columns: Column[]) {
+   /**
+    * height in page units the text box needs to show its whole content at the current scale, transient
+    */
+   fitHeight: number;
+
+   /**
+    * @param tiled [[true]] if the text box takes a tile of its own, [[false]] if it is a note drawn above the tiles
+    */
+   constructor(columns: Column[], readonly tiled = false) {
       super(columns);
       this.setSize(TextBoxContext.TEXT_BOX_WIDTH, TextBoxContext.TEXT_BOX_HEIGHT);
    }
@@ -47,6 +56,17 @@ export class TextBoxContext extends ElementContext {
    set backgroundColor(backgroundColor: string) {
       if (this._backgroundColor !== backgroundColor) {
          this._backgroundColor = backgroundColor;
+         this.fireLookChanged();
+      }
+   }
+
+   get bordered(): boolean {
+      return this._bordered;
+   }
+
+   set bordered(bordered: boolean) {
+      if (this._bordered !== bordered) {
+         this._bordered = bordered;
          this.fireLookChanged();
       }
    }
@@ -81,6 +101,6 @@ export class TextBoxContext extends ElementContext {
    }
 
    override isOverlay(): boolean {
-      return true;
+      return !this.tiled;
    }
 }

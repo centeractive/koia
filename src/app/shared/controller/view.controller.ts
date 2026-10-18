@@ -144,7 +144,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       return this.addElementContext(new GraphContext(this.clonedColumns()));
    }
 
-   addTextBox(): TextBoxContext {
+   addTextTile(): TextBoxContext {
+      return this.addElementContext(new TextBoxContext(this.clonedColumns(), true));
+   }
+
+   addNote(): TextBoxContext {
       return this.addElementContext(new TextBoxContext(this.clonedColumns()));
    }
 

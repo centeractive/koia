@@ -1,6 +1,6 @@
 import { OverlayContainer, OverlayModule } from '@angular/cdk/overlay';
 import { ScrollDispatcher, ScrollingModule } from '@angular/cdk/scrolling';
-import { Component, EventEmitter, Input, NgZone, Output, Type, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, NgZone, Output, Type, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { JSONContent } from '@tiptap/core';
@@ -22,6 +22,8 @@ class TextBoxToolbarStubComponent {
   @Input() state: TextStyleState;
   @Input() backgroundColor: string;
   @Output() backgroundColorChange = new EventEmitter<string>();
+  @Input() bordered: boolean;
+  @Output() borderedChange = new EventEmitter<boolean>();
   @Output() remove = new EventEmitter<void>();
 }
 
@@ -61,6 +63,35 @@ class NestedScrollContainersHostComponent {
   @ViewChild(TextBoxComponent) textBox: TextBoxComponent;
 }
 
+@Component({
+  template: `
+    <div class="div_tile" style="padding: 6px; box-sizing: border-box" [style.width.px]="tileWidth" [style.height.px]="tileHeight">
+      <koia-text-box [context]="context" (fitHeightChange)="fitHeights.push($event)" />
+    </div>`,
+  standalone: false
+})
+class FitHostComponent {
+  tileWidth = 300;
+  tileHeight = 150;
+  context = new TextBoxContext([]);
+  fitHeights: number[] = [];
+  @ViewChild(TextBoxComponent) textBox: TextBoxComponent;
+}
+
+@Component({
+  template: `
+    <div class="div_tile" [class.div_text_tile]="textTile" style="width: 300px; height: 150px">
+      <koia-text-box [context]="context" />
+    </div>`,
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false
+})
+class PlaceholderHostComponent {
+  textTile = true;
+  context = new TextBoxContext([]);
+  @ViewChild(TextBoxComponent) textBox: TextBoxComponent;
+}
+
 describe('TextBoxComponent', () => {
 
   const initialContent: JSONContent = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'initial' }] }] };
@@ -69,7 +100,8 @@ describe('TextBoxComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [TextBoxComponent, TextBoxToolbarStubComponent, ScrollContainerHostComponent, NestedScrollContainersHostComponent],
+      declarations: [TextBoxComponent, TextBoxToolbarStubComponent, ScrollContainerHostComponent, NestedScrollContainersHostComponent,
+        FitHostComponent, PlaceholderHostComponent],
       imports: [OverlayModule, ScrollingModule]
     });
     languageChanged = new Subject<Language>();
@@ -212,20 +244,29 @@ describe('TextBoxComponent', () => {
       expect(getComputedStyle(proseMirrorOf(hostOf(remainingFixture))).whiteSpace).toBe('break-spaces');
     });
 
-    it('should scroll editor content inside editor div when content exceeds tile', async () => {
-
-      // given
-      const paragraphs = Array.from({ length: 30 }, (_, i) => ({ type: 'paragraph', content: [{ type: 'text', text: 'line ' + i }] }));
-      const fixture = await createInScrollContainer(host => host.context.content = { type: 'doc', content: paragraphs });
-      await vi.waitFor(() => expect(proseMirrorOf(hostOf(fixture))).toBeTruthy());
-      const editorDiv: HTMLElement = hostOf(fixture).querySelector('.div_text_box_editor');
+    it('editor div should hide overflow', async () => {
 
       // when
-      editorDiv.scrollTop = 1000;
+      const fixture = await createInScrollContainer();
 
       // then
-      expect(editorDiv.scrollTop).toBeGreaterThan(0);
+      const editorDiv: HTMLElement = hostOf(fixture).querySelector('.div_text_box_editor');
+      expect(getComputedStyle(editorDiv).overflow).toBe('hidden');
       expect(rect(editorDiv).top).toBe(rect(hostOf(fixture)).top);
+    });
+
+    it('should not measure text without fit height binding', async () => {
+
+      // given
+      const fixture = await createTextBox();
+
+      // when
+      await userEvent.click(proseMirrorOf(fixture.nativeElement));
+      await userEvent.keyboard('typed');
+
+      // then
+      await vi.waitFor(() => expect(fixture.componentInstance.context.content).toBeDefined());
+      expect(fixture.componentInstance['textFit']).toBeUndefined();
     });
 
     it('should not run zone when state is unchanged', async () => {
@@ -499,6 +540,31 @@ describe('TextBoxComponent', () => {
       expect(stub.backgroundColor).toBe('#ff0000');
     });
 
+    it.each([false, true])('should pass bordered %s to toolbar', async bordered => {
+
+      // given
+      fixture.componentInstance.context.bordered = bordered;
+
+      // when
+      await openToolbar();
+
+      // then
+      expect(fixture.debugElement.query(By.directive(TextBoxToolbarStubComponent)).componentInstance.bordered).toBe(bordered);
+    });
+
+    it('should set context bordered emitted by toolbar', async () => {
+
+      // given
+      await openToolbar();
+      const stub = fixture.debugElement.query(By.directive(TextBoxToolbarStubComponent)).componentInstance;
+
+      // when
+      stub.borderedChange.emit(true);
+
+      // then
+      expect(fixture.componentInstance.context.bordered).toBe(true);
+    });
+
     it.each([
       { emitted: '#00ff00' },
       { emitted: undefined }
@@ -759,6 +825,179 @@ describe('TextBoxComponent', () => {
 
       // then
       expect(tileListener).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fit height', () => {
+
+    function lines(count: number): JSONContent {
+      return {
+        type: 'doc',
+        content: Array.from({ length: count }, (_, i) => ({ type: 'paragraph', content: [{ type: 'text', text: 'line ' + i }] }))
+      };
+    }
+
+    async function createFitHost(content?: JSONContent): Promise<ComponentFixture<FitHostComponent>> {
+      const fixture = TestBed.createComponent(FitHostComponent);
+      fixture.componentInstance.context.content = content;
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await vi.waitFor(() => expect(fixture.componentInstance.fitHeights.length).toBeGreaterThan(0));
+      return fixture;
+    }
+
+    function lastFitHeight(fixture: ComponentFixture<FitHostComponent>): number {
+      return fixture.componentInstance.fitHeights.at(-1);
+    }
+
+    function expectedFitHeightOf(fixture: ComponentFixture<FitHostComponent>): number {
+      const proseMirror = proseMirrorOf(hostOf(fixture));
+      const textBottom = rect(proseMirror.lastElementChild).bottom - rect(proseMirror).top;
+      return Math.ceil(textBottom + parseFloat(getComputedStyle(proseMirror).paddingBottom) + 2 * 6);
+    }
+
+    it('should emit fit height of text plus tile padding', async () => {
+
+      // when
+      const fixture = await createFitHost(lines(1));
+
+      // then
+      expect(lastFitHeight(fixture)).toBe(expectedFitHeightOf(fixture));
+      expect(lastFitHeight(fixture)).toBeLessThan(150);
+    });
+
+    it('should emit fit height inside Angular zone', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      const inAngularZone: boolean[] = [];
+      fixture.componentInstance.textBox.fitHeightChange.subscribe(() => inAngularZone.push(NgZone.isInAngularZone()));
+
+      // when
+      fixture.componentInstance.tileWidth = 200;
+      fixture.detectChanges();
+
+      // then
+      await vi.waitFor(() => expect(inAngularZone.length).toBeGreaterThan(0));
+      expect(inAngularZone.every(z => z)).toBe(true);
+    });
+
+    it('should emit fit height beyond tile when typed text exceeds tile', async () => {
+
+      // given
+      const fixture = await createFitHost();
+
+      // when
+      await userEvent.click(proseMirrorOf(hostOf(fixture)));
+      await userEvent.keyboard('line{Enter}'.repeat(12));
+
+      // then
+      await vi.waitFor(() => expect(lastFitHeight(fixture)).toBeGreaterThan(150));
+      expect(lastFitHeight(fixture)).toBe(expectedFitHeightOf(fixture));
+    });
+
+    it('should emit smaller fit height when text is deleted', async () => {
+
+      // given
+      const fixture = await createFitHost(lines(12));
+      await vi.waitFor(() => expect(lastFitHeight(fixture)).toBeGreaterThan(150));
+
+      // when
+      await userEvent.click(proseMirrorOf(hostOf(fixture)));
+      await userEvent.keyboard('{Control>}a{/Control}{Backspace}');
+
+      // then
+      await vi.waitFor(() => expect(lastFitHeight(fixture)).toBeLessThan(150));
+      expect(lastFitHeight(fixture)).toBe(expectedFitHeightOf(fixture));
+    });
+
+    it('should emit same fit height again when tile width changes', async () => {
+
+      // given
+      const fixture = await createFitHost(lines(1));
+      const count = fixture.componentInstance.fitHeights.length;
+      const fitHeight = lastFitHeight(fixture);
+
+      // when
+      fixture.componentInstance.tileWidth = 280;
+      fixture.detectChanges();
+
+      // then
+      await vi.waitFor(() => expect(fixture.componentInstance.fitHeights.length).toBeGreaterThan(count));
+      expect(lastFitHeight(fixture)).toBe(fitHeight);
+    });
+
+    it('should disconnect fit on destroy', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      const disconnectSpy = vi.spyOn(fixture.componentInstance.textBox['textFit'], 'disconnect');
+
+      // when
+      fixture.destroy();
+
+      // then
+      expect(disconnectSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('placeholder', () => {
+
+    async function createPlaceholderHost(textTile: boolean): Promise<ComponentFixture<PlaceholderHostComponent>> {
+      const fixture = TestBed.createComponent(PlaceholderHostComponent);
+      fixture.componentInstance.textTile = textTile;
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await vi.waitFor(() => expect(proseMirrorOf(hostOf(fixture))).toBeTruthy());
+      return fixture;
+    }
+
+    function placeholderContentOf(fixture: ComponentFixture<unknown>): string {
+      return getComputedStyle(proseMirrorOf(hostOf(fixture)).querySelector('p.is-editor-empty'), '::before').content;
+    }
+
+    it('should be hidden in empty text tile neither hovered nor active', async () => {
+
+      // when
+      const fixture = await createPlaceholderHost(true);
+
+      // then
+      expect(placeholderContentOf(fixture)).toBe('none');
+    });
+
+    it('should be shown in empty text tile while hovered', async () => {
+
+      // given
+      const fixture = await createPlaceholderHost(true);
+
+      // when
+      await userEvent.hover(tileOf(fixture));
+
+      // then
+      expect(placeholderContentOf(fixture)).not.toBe('none');
+      await userEvent.unhover(tileOf(fixture));
+    });
+
+    it('should be shown in empty text tile while active', async () => {
+
+      // given
+      const fixture = await createPlaceholderHost(true);
+
+      // when
+      fixture.componentInstance.textBox.active = true;
+      fixture.detectChanges();
+
+      // then
+      expect(placeholderContentOf(fixture)).not.toBe('none');
+    });
+
+    it('should be shown in empty note', async () => {
+
+      // when
+      const fixture = await createPlaceholderHost(false);
+
+      // then
+      expect(placeholderContentOf(fixture)).not.toBe('none');
     });
   });
 

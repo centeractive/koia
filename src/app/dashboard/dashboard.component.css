@@ -67,6 +67,14 @@
   border: none;
 }
 
+.div_tile.div_text_box_tile.div_text_tile {
+  pointer-events: auto;
+}
+
+.div_tile.div_text_box_tile.div_text_box_bordered::after {
+  border: var(--koia-tile-border);
+}
+
 .div_text_box_tile > .resize-handle {
   visibility: hidden;
 }
@@ -92,7 +100,7 @@
   visibility: visible;
 }
 
-.div_grid_cells .div_text_box_tile {
+.div_grid_cells .div_text_box_tile.div_canvas_tile {
   left: var(--koia-left);
   top: var(--koia-top);
 }

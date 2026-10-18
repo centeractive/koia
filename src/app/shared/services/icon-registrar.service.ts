@@ -23,6 +23,7 @@ export class IconRegistrarService {
     'lucide_eraser',
     'lucide_italic',
     'lucide_paint_bucket',
+    'lucide_square',
     'lucide_text_align_center',
     'lucide_text_align_end',
     'lucide_text_align_start',

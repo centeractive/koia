@@ -76,10 +76,11 @@ export class ViewToModelConverter {
    }
 
    private toTextBoxContext(textBox: TextBox): TextBoxContext {
-      const context = new TextBoxContext(this.clonedColumns());
+      const context = new TextBoxContext(this.clonedColumns(), textBox.tiled === true);
       context.copyAttributes(textBox);
       context.content = textBox.content;
       context.backgroundColor = textBox.backgroundColor;
+      context.bordered = textBox.bordered === true;
       return context;
    }
 
