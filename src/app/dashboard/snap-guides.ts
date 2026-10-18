@@ -1,4 +1,4 @@
-import { FreeLayout, Rect } from './free-layout';
+import { FreeLayout, Rect, Size } from './free-layout';
 import { GridLayout } from './grid-layout';
 
 export interface Guide {
@@ -26,20 +26,21 @@ const OUTER_EDGES = [0, 1];
 const END_EDGE = [1];
 
 /**
- * snaps the edges of a moved or resized tile to the edges of other tiles and pages, otherwise to the snap step
+ * snaps the edges of a moved or resized tile to the edges of other tiles and pages, otherwise to the snap step;
+ * an unpaged layer (the grid) has no page edges and no bottom
  */
 export class SnapGuides {
 
   private readonly xTargets: Target[];
   private readonly yTargets: Target[];
 
-  constructor(others: Rect[], private readonly pageCount: number, private readonly threshold: number) {
+  constructor(others: Rect[], private readonly pageCount: number, private readonly threshold: number, private readonly paged = true) {
     this.xTargets = [0, FreeLayout.PAGE_WIDTH / 2, FreeLayout.PAGE_WIDTH]
       .concat(others.flatMap(o => this.tileTargets(o.x, o.width)))
       .map(position => ({ position, edges: ALL_EDGES }));
     this.yTargets = others.flatMap(o => this.tileTargets(o.y, o.height))
       .map(position => ({ position, edges: ALL_EDGES }))
-      .concat(Array.from({ length: pageCount + 1 }, (_, k) => ({ position: k * FreeLayout.PAGE_HEIGHT, edges: OUTER_EDGES })));
+      .concat(Array.from({ length: paged ? pageCount + 1 : 0 }, (_, k) => ({ position: k * FreeLayout.PAGE_HEIGHT, edges: OUTER_EDGES })));
   }
 
   private tileTargets(start: number, size: number): number[] {
@@ -52,21 +53,23 @@ export class SnapGuides {
     const snappedX = xMatch ? xMatch.target - xMatch.edge * rect.width : this.roundToStep(rect.x);
     const snappedY = yMatch ? yMatch.target - yMatch.edge * rect.height : this.roundToStep(rect.y);
     const x = this.clamp(snappedX, 0, FreeLayout.PAGE_WIDTH - rect.width);
-    const y = this.fitIntoPage(this.clamp(snappedY, 0, this.pageCount * FreeLayout.PAGE_HEIGHT - rect.height), rect.height);
+    const y = this.paged
+      ? this.fitIntoPage(this.clamp(snappedY, 0, this.pageCount * FreeLayout.PAGE_HEIGHT - rect.height), rect.height)
+      : Math.max(snappedY, 0);
     return {
       rect: { ...rect, x, y },
       guides: this.guidesOf(x === snappedX ? xMatch : undefined, y === snappedY ? yMatch : undefined)
     };
   }
 
-  snapResize(rect: Rect): Snap {
+  snapResize(rect: Rect, minSize: Size = { width: FreeLayout.MIN_SIZE, height: FreeLayout.MIN_SIZE }): Snap {
     const xMatch = this.match(rect.x, rect.width, this.xTargets, END_EDGE);
     const yMatch = this.match(rect.y, rect.height, this.yTargets, END_EDGE);
     const snappedWidth = xMatch ? xMatch.target - rect.x : this.roundToStep(rect.x + rect.width) - rect.x;
     const snappedHeight = yMatch ? yMatch.target - rect.y : this.roundToStep(rect.y + rect.height) - rect.y;
-    const pageBottom = FreeLayout.pageTopOf(rect.y) + FreeLayout.PAGE_HEIGHT;
-    const width = this.clamp(snappedWidth, FreeLayout.MIN_SIZE, FreeLayout.PAGE_WIDTH - rect.x);
-    const height = this.clamp(snappedHeight, FreeLayout.MIN_SIZE, pageBottom - rect.y);
+    const maxHeight = this.paged ? FreeLayout.pageTopOf(rect.y) + FreeLayout.PAGE_HEIGHT - rect.y : FreeLayout.PAGE_HEIGHT;
+    const width = this.clamp(snappedWidth, minSize.width, FreeLayout.PAGE_WIDTH - rect.x);
+    const height = this.clamp(snappedHeight, minSize.height, maxHeight);
     return {
       rect: { ...rect, width, height },
       guides: this.guidesOf(width === snappedWidth ? xMatch : undefined, height === snappedHeight ? yMatch : undefined)

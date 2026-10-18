@@ -25,6 +25,7 @@ import { RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 import { LanguageService } from 'app/shared/services/language';
+import { listenToDocumentOutsideAngular } from 'app/shared/ui/document-listener';
 import { CommonUtils } from 'app/shared/utils';
 import { Subscription } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';
@@ -61,8 +62,8 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   }
 
   ngOnInit(): void {
-    this.removePointerDownListener = this.zone.runOutsideAngular(() => this.renderer.listen('document', 'pointerdown',
-      (event: PointerEvent) => this.hideResizableMarginWhenPressedElsewhere(event.target as Node)));
+    this.removePointerDownListener = listenToDocumentOutsideAngular(this.zone, this.renderer, 'pointerdown',
+      event => this.hideResizableMarginWhenPressedElsewhere(event.target as Node));
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {

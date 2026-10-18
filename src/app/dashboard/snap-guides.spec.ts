@@ -1,3 +1,4 @@
+import { FreeLayout } from './free-layout';
 import { SnapGuides } from './snap-guides';
 
 describe('SnapGuides', () => {
@@ -147,5 +148,78 @@ describe('SnapGuides', () => {
     // then
     expect([snap.rect.width, snap.rect.height]).toEqual(expected);
     expect(snap.guides).toEqual([]);
+  });
+
+  it('#snapResize should clamp to given minimum size', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1000, y: 350, width: 23, height: 17 }, { width: 40, height: 30 });
+
+    // then
+    expect([snap.rect.width, snap.rect.height]).toEqual([40, 30]);
+  });
+
+  describe('unpaged', () => {
+
+    function unpagedGuidesOf(): SnapGuides {
+      return new SnapGuides([other], 0, 5, false);
+    }
+
+    it('#snapMove should not snap to page boundary', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapMove({ x: 1003, y: 952, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect.y).toBe(950);
+      expect(snap.guides).toEqual([]);
+    });
+
+    it('#snapMove should keep tile crossing page boundary and below last page', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapMove({ x: 1003, y: 2903, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect).toEqual({ x: 1000, y: 2900, width: 150, height: 100 });
+    });
+
+    it('#snapMove should clamp top at 0', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapMove({ x: 1003, y: -98, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect.y).toBe(0);
+    });
+
+    it('#snapMove should snap to other tile', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapMove({ x: 1003, y: 402, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect.y).toBe(400);
+      expect(snap.guides).toEqual([{ axis: 'y', position: 400 }]);
+    });
+
+    it('#snapResize should let height cross page boundary', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapResize({ x: 1000, y: 900, width: 150, height: 203 });
+
+      // then
+      expect(snap.rect.height).toBe(200);
+      expect(snap.guides).toEqual([]);
+    });
+
+    it('#snapResize should clamp height to page height', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapResize({ x: 1000, y: 0, width: 150, height: 1203 });
+
+      // then
+      expect(snap.rect.height).toBe(FreeLayout.PAGE_HEIGHT);
+    });
   });
 });

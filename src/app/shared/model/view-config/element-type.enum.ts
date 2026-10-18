@@ -1,5 +1,6 @@
 export enum ElementType {
    CHART,
    GRAPH,
-   SUMMARY
+   SUMMARY,
+   TEXT_BOX
 }

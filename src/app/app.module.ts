@@ -1,5 +1,6 @@
 import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -39,6 +40,7 @@ import { ScaleComponent } from './chart/chart-side-bar/scale/scale.component';
 import { TicksComponent } from './chart/chart-side-bar/scale/ticks/ticks.component';
 import { ChartComponent } from './chart/chart.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { DetachFromDropListDirective } from './dashboard/detach-from-drop-list.directive';
 import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { FrontGuideComponent } from './front/front-guide/front-guide.component';
@@ -95,6 +97,9 @@ import { ValueRangeGroupingService } from './shared/value-range';
 import { SummaryTableSideBarComponent } from './summary-table/summary-table-side-bar/summary-table-side-bar.component';
 import { SummaryTableComponent } from './summary-table/summary-table.component';
 import { TrialComponent } from './testing/trial/trial.component';
+import { TextBoxSelectComponent } from './text-box/text-box-select/text-box-select.component';
+import { TextBoxToolbarComponent } from './text-box/text-box-toolbar/text-box-toolbar.component';
+import { TextBoxComponent } from './text-box/text-box.component';
 import { ViewTabComponent } from './view-tab/view-tab.component';
 
 @NgModule({
@@ -107,6 +112,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         SceneComponent,
         DashboardComponent,
         ElementHeaderComponent,
+        DetachFromDropListDirective,
         RawDataComponent,
         RawDataViewComponent,
         RawDataDialogComponent,
@@ -153,7 +159,10 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         DraggableColumnComponent,
         TrialComponent,
         ViewTabComponent,
-        LanguageSelectComponent
+        LanguageSelectComponent,
+        TextBoxComponent,
+        TextBoxToolbarComponent,
+        TextBoxSelectComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,
@@ -179,6 +188,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         MatTabsModule,
         MatBottomSheetModule,
         DragDropModule,
+        OverlayModule,
         ResizableDirective,
         ResizeHandleDirective,
         AppRoutingModule,

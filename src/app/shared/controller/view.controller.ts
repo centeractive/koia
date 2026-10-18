@@ -11,7 +11,7 @@ import { AbstractComponent } from '../component/abstract.component';
 import { InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ManageViewContext } from '../component/manage-view-dialog';
 import { ViewLauncherContext } from '../component/view-launcher-dialog';
-import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext } from '../model';
+import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext } from '../model';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
 import { TabContent, TabDef, View, ViewElement } from '../model/view-config';
@@ -97,7 +97,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          } else {
             let containerCount = this.elementContainerDivRefs.length;
             this.elementContainerDivRefs.changes.subscribe(() => {
-               if (this.elementContainerDivRefs.length > containerCount) {
+               if (this.elementContainerDivRefs.length > containerCount && !this.elementContexts.at(-1).isOverlay()) {
                   this.elementContainerDivRefs.last.nativeElement.scrollIntoView({ block: 'end' });
                }
                containerCount = this.elementContainerDivRefs.length;
@@ -114,8 +114,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.entriesSubscription?.unsubscribe();
    }
 
+   /**
+    * the indexes of the event count the tiles only, overlays are not part of the drop list
+    */
    drop(event: CdkDragDrop<object>): void {
-      moveItemInArray(this.elementContexts, event.previousIndex, event.currentIndex);
+      moveItemInArray(this.elementContexts, this.contextIndexOfTile(event.previousIndex), this.contextIndexOfTile(event.currentIndex));
       this.requestPersist();
    }
 
@@ -143,6 +146,10 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       return this.addElementContext(new GraphContext(this.clonedColumns()));
    }
 
+   addTextBox(): TextBoxContext {
+      return this.addElementContext(new TextBoxContext(this.clonedColumns()));
+   }
+
    abstract generateDashboard(): void;
 
    canGenerateDashboard(): boolean {
@@ -155,7 +162,9 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.observeChanges(context);
       this.elementContexts = this.elementContexts.concat([context]);
       this.onElementContextAdded(context);
-      this.configure(null, context);
+      if (context.isConfigurable()) {
+         this.configure(null, context);
+      }
       this.requestPersist();
       return context;
    }
@@ -194,6 +203,10 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       return context instanceof SummaryContext;
    }
 
+   isTextBoxContext(context: ElementContext): boolean {
+      return context instanceof TextBoxContext;
+   }
+
    isShowResizableMargin(context: ElementContext): boolean {
       return this.isChartContext(context) && this.asChartContext(context).isShowResizableMargin();
    }
@@ -212,16 +225,16 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    configure(event: MouseEvent, context: ElementContext): void {
       this.selectedContext = context;
-      this.selectedContextPosition = this.elementContexts.indexOf(context) + 1;
+      this.selectedContextPosition = this.tiles().indexOf(context) + 1;
       this.sidenav.mode = !event || event.clientX < ViewController.SIDENAV_WIDTH ? 'push' : 'over';
       this.sidenav.open();
    }
 
    /**
-   * @param position starts at 1
+   * @param position position among the tiles, starts at 1
    */
    changeElementPosition(position: number): void {
-      ArrayUtils.move(this.elementContexts, this.selectedContextPosition - 1, position - 1);
+      ArrayUtils.move(this.elementContexts, this.contextIndexOfTile(this.selectedContextPosition - 1), this.contextIndexOfTile(position - 1));
       this.selectedContextPosition = position;
       this.elementContexts = this.elementContexts.slice(0);
       this.requestPersist();
@@ -229,7 +242,27 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    removeElement(context: ElementContext): void {
       this.elementContexts = this.elementContexts.filter(c => c !== context);
+      this.textBoxesAnchoredTo(context).forEach(c => c.clearAnchor());
       this.requestPersist();
+   }
+
+   protected textBoxesAnchoredTo(context: ElementContext): TextBoxContext[] {
+      return this.elementContexts.filter(c => c instanceof TextBoxContext && c.anchor === context) as TextBoxContext[];
+   }
+
+   /**
+    * @returns the number of elements taking a tile of their own, i.e. no overlays
+    */
+   tileCount(): number {
+      return this.tiles().length;
+   }
+
+   private tiles(): ElementContext[] {
+      return this.elementContexts.filter(c => !c.isOverlay());
+   }
+
+   private contextIndexOfTile(tileIndex: number): number {
+      return this.elementContexts.indexOf(this.tiles()[tileIndex]);
    }
 
    onTitleChanged(context: ElementContext, title: string): void {

@@ -1,4 +1,4 @@
-import { ElementContext, SummaryContext } from 'app/shared/model';
+import { ElementContext, SummaryContext, TextBoxContext } from 'app/shared/model';
 import { FreeLayout } from './free-layout';
 
 describe('FreeLayout', () => {
@@ -355,5 +355,219 @@ describe('FreeLayout', () => {
 
     // then
     expect(contexts.map(c => c.z)).toEqual([3, 1, 2, 4]);
+  });
+
+  function textBox(x?: number, y?: number, z?: number): TextBoxContext {
+    const context = new TextBoxContext([]);
+    if (x != null) {
+      context.setPosition(x, y);
+    }
+    context.z = z;
+    return context;
+  }
+
+  it('#tileStyle should stack overlay above tiles', () => {
+
+    // when
+    const style = layout.tileStyle(textBox(0, 0, 3));
+
+    // then
+    expect(style['z-index']).toBe(FreeLayout.OVERLAY_Z_OFFSET + 3);
+  });
+
+  it('#tileStyle should stack overlay without z-order directly above tiles', () => {
+
+    // when
+    const style = layout.tileStyle(textBox(0, 0));
+
+    // then
+    expect(style['z-index']).toBe(FreeLayout.OVERLAY_Z_OFFSET);
+  });
+
+  it('#overlayStyle should give fallback position, size and z-order by custom properties without anchor', () => {
+
+    // given
+    const context = textBox(100, 1000, 2);
+    context.setSize(200, 50);
+
+    // when
+    const style = layout.overlayStyle(context, '--koia-tile-0');
+
+    // then
+    expect(style).toEqual({
+      '--koia-left': 'calc(100 * var(--koia-pu))',
+      '--koia-top': 'calc(1000 * var(--koia-pu))',
+      width: 'calc(200 * var(--koia-pu))',
+      height: 'calc(50 * var(--koia-pu))',
+      'z-index': FreeLayout.OVERLAY_Z_OFFSET + 2
+    });
+  });
+
+  it('#overlayStyle should give anchor name and offset as percentages when anchored', () => {
+
+    // given
+    const context = textBox(100, 200, 2);
+    context.setAnchor(new SummaryContext([]), { x: 0.6, y: 0.75 });
+
+    // when
+    const style = layout.overlayStyle(context, '--koia-tile-3');
+
+    // then
+    expect(style).toEqual(expect.objectContaining({
+      '--koia-left': 'calc(100 * var(--koia-pu))',
+      '--koia-top': 'calc(200 * var(--koia-pu))',
+      '--koia-anchor': '--koia-tile-3',
+      '--koia-anchor-fx': '60%',
+      '--koia-anchor-fy': '75%'
+    }));
+    expect(Object.keys(style)).not.toContain('left');
+    expect(Object.keys(style)).not.toContain('top');
+  });
+
+  it('#minSizeOf should return text box minimum size for text box', () => {
+
+    // when
+    const size = layout.minSizeOf(textBox());
+
+    // then
+    expect(size).toEqual({ width: 40, height: 30 });
+  });
+
+  it('#minSizeOf should return tile minimum size for other element', () => {
+
+    // when
+    const size = layout.minSizeOf(unpositioned());
+
+    // then
+    expect(size).toEqual({ width: FreeLayout.MIN_SIZE, height: FreeLayout.MIN_SIZE });
+  });
+
+  it('#anchorAt should return undefined when no tile contains top left corner', () => {
+
+    // given
+    const tiles = [{ tile: tile(0, 0, 100, 100), rect: { x: 0, y: 0, width: 100, height: 100 } }];
+
+    // when
+    const anchoring = layout.anchorAt({ x: 100, y: 50, width: 50, height: 50 }, tiles);
+
+    // then
+    expect(anchoring).toBeUndefined();
+  });
+
+  it('#anchorAt should return containing tile with offset as fractions of tile size', () => {
+
+    // given
+    const other = { tile: tile(0, 0, 0, 0), rect: { x: 0, y: 0, width: 100, height: 100 } };
+    const containing = { tile: tile(0, 0, 0, 0), rect: { x: 200, y: 100, width: 400, height: 200 } };
+
+    // when
+    const anchoring = layout.anchorAt({ x: 300, y: 250, width: 500, height: 500 }, [other, containing]);
+
+    // then
+    expect(anchoring).toEqual({ tile: containing.tile, offset: { x: 0.25, y: 0.75 } });
+  });
+
+  it('#anchorAt should return tile with top left corner at its start edges', () => {
+
+    // given
+    const tiles = [{ tile: tile(0, 0, 0, 0), rect: { x: 200, y: 100, width: 400, height: 200 } }];
+
+    // when
+    const anchoring = layout.anchorAt({ x: 200, y: 100, width: 50, height: 50 }, tiles);
+
+    // then
+    expect(anchoring.offset).toEqual({ x: 0, y: 0 });
+  });
+
+  it('#anchorAt should return topmost of overlapping tiles', () => {
+
+    // given
+    const top = { tile: tile(0, 0, 0, 0, 3), rect: { x: 0, y: 0, width: 400, height: 400 } };
+    const middle = { tile: tile(0, 0, 0, 0, 2), rect: { x: 0, y: 0, width: 400, height: 400 } };
+    const bottom = { tile: tile(0, 0, 0, 0), rect: { x: 0, y: 0, width: 400, height: 400 } };
+
+    // when
+    const anchoring = layout.anchorAt({ x: 10, y: 10, width: 50, height: 50 }, [top, bottom, middle]);
+
+    // then
+    expect(anchoring.tile).toBe(top.tile);
+  });
+
+  it('#anchorAt should return last of overlapping tiles with equal z-order', () => {
+
+    // given
+    const first = { tile: tile(0, 0, 0, 0), rect: { x: 0, y: 0, width: 400, height: 400 } };
+    const last = { tile: tile(0, 0, 0, 0), rect: { x: 0, y: 0, width: 400, height: 400 } };
+
+    // when
+    const anchoring = layout.anchorAt({ x: 10, y: 10, width: 50, height: 50 }, [first, last]);
+
+    // then
+    expect(anchoring.tile).toBe(last.tile);
+  });
+
+  it('#placeUnpositionedOverlays should cascade unpositioned overlays from rounded top and put them in front', () => {
+
+    // given
+    const contexts = [tile(0, 0, 600, 400, 4), textBox(), unpositioned(), textBox()];
+
+    // when
+    layout.placeUnpositionedOverlays(contexts, 503);
+
+    // then
+    expect(positionsOf(contexts)).toEqual([[0, 0], [0, 500], [undefined, undefined], [20, 520]]);
+    expect(contexts.map(c => c.z)).toEqual([4, 5, undefined, 6]);
+  });
+
+  it('#placeUnpositionedOverlays should continue cascade after overlays occupying cascade slots', () => {
+
+    // given
+    const contexts = [textBox(0, 500, 1), textBox(20, 520, 2), textBox()];
+
+    // when
+    layout.placeUnpositionedOverlays(contexts, 500);
+
+    // then
+    expect(positionsOf(contexts)).toEqual([[0, 500], [20, 520], [40, 540]]);
+    expect(contexts[2].z).toBe(3);
+  });
+
+  it('#placeUnpositionedOverlays should ignore overlays outside cascade slots', () => {
+
+    // given
+    const contexts = [textBox(15, 515), textBox(20, 500), textBox()];
+
+    // when
+    layout.placeUnpositionedOverlays(contexts, 500);
+
+    // then
+    expect(positionsOf(contexts)[2]).toEqual([0, 500]);
+  });
+
+  it('#clampIntoPage should keep rect within page', () => {
+
+    // when
+    const rect = layout.clampIntoPage({ x: 100, y: 1000, width: 300, height: 200 }, FreeLayout.PAGE_HEIGHT);
+
+    // then
+    expect(rect).toEqual({ x: 100, y: 1000, width: 300, height: 200 });
+  });
+
+  it('#clampIntoPage should move rect crossing page edges into page', () => {
+
+    // when
+    const rect = layout.clampIntoPage({ x: 1300, y: 1800, width: 300, height: 200 }, FreeLayout.PAGE_HEIGHT);
+
+    // then
+    expect(rect).toEqual({ x: 1100, y: 1700, width: 300, height: 200 });
+  });
+
+  it('#clampIntoPage should move rect above page to page top and cap size', () => {
+
+    // when
+    const rect = layout.clampIntoPage({ x: -10, y: 900, width: 2000, height: 1000 }, FreeLayout.PAGE_HEIGHT);
+
+    // then
+    expect(rect).toEqual({ x: 0, y: 950, width: 1400, height: 950 });
   });
 });

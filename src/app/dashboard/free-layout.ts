@@ -1,5 +1,6 @@
-import { ElementContext } from 'app/shared/model';
+import { AnchorOffset, ElementContext, TextBoxContext } from 'app/shared/model';
 import { ViewElement } from 'app/shared/model/view-config';
+import * as _ from 'lodash';
 import { GridLayout } from './grid-layout';
 import type { Guide } from './snap-guides';
 
@@ -8,6 +9,18 @@ export interface Rect {
   y: number;
   width: number;
   height: number;
+}
+
+export type Size = Pick<Rect, 'width' | 'height'>;
+
+export interface TileRect<T> {
+  tile: T;
+  rect: Rect;
+}
+
+export interface Anchoring<T> {
+  tile: T;
+  offset: AnchorOffset;
 }
 
 /**
@@ -20,6 +33,8 @@ export class FreeLayout {
   static readonly STEP = 10;
   static readonly MIN_SIZE = 100;
   static readonly SNAP_THRESHOLD_PX = 6;
+  static readonly OVERLAY_Z_OFFSET = 10000;
+  static readonly OVERLAY_CASCADE = 20;
 
   static pageTopOf(y: number): number {
     return Math.floor(y / FreeLayout.PAGE_HEIGHT) * FreeLayout.PAGE_HEIGHT;
@@ -40,8 +55,41 @@ export class FreeLayout {
       top: this.pageUnits(rect.y - FreeLayout.pageTopOf(rect.y)),
       width: this.pageUnits(rect.width),
       height: this.pageUnits(rect.height),
-      'z-index': context.z
+      'z-index': this.zIndexOf(context)
     };
+  }
+
+  /**
+   * positions an overlay of the grid by custom properties only, so that the anchor positioning rule takes precedence
+   * where supported, `--koia-left` and `--koia-top` serving as fallback
+   */
+  overlayStyle(context: TextBoxContext, anchorName: string): object {
+    const rect = this.rectOf(context);
+    const style = {
+      '--koia-left': this.pageUnits(rect.x),
+      '--koia-top': this.pageUnits(rect.y),
+      width: this.pageUnits(rect.width),
+      height: this.pageUnits(rect.height),
+      'z-index': this.zIndexOf(context)
+    };
+    if (context.anchor) {
+      Object.assign(style, {
+        '--koia-anchor': anchorName,
+        '--koia-anchor-fx': context.anchorOffset.x * 100 + '%',
+        '--koia-anchor-fy': context.anchorOffset.y * 100 + '%'
+      });
+    }
+    return style;
+  }
+
+  private zIndexOf(context: ElementContext): number {
+    return context.isOverlay() ? (context.z ?? 0) + FreeLayout.OVERLAY_Z_OFFSET : context.z;
+  }
+
+  minSizeOf(context: ElementContext): Size {
+    return context instanceof TextBoxContext
+      ? { width: TextBoxContext.MIN_WIDTH, height: TextBoxContext.MIN_HEIGHT }
+      : { width: FreeLayout.MIN_SIZE, height: FreeLayout.MIN_SIZE };
   }
 
   guideStyle(guide: Guide): object {
@@ -93,12 +141,34 @@ export class FreeLayout {
       x += width + GridLayout.GAP_PX;
       return rect;
     });
-    let z = Math.max(0, ...contexts.map(c => c.z ?? 0));
+    let z = this.maxZOf(contexts);
     this.fitToPages(rects, positionedBottom).forEach((rect, i) => {
       unpositioned[i].setPosition(rect.x, rect.y);
       unpositioned[i].setSize(rect.width, rect.height);
       unpositioned[i].z = ++z;
     });
+  }
+
+  /**
+   * cascades overlays without position from the given top on, ignoring the tiles of the grid below
+   */
+  placeUnpositionedOverlays(contexts: ElementContext[], top: number): void {
+    const overlays = contexts.filter(c => c.isOverlay());
+    const slotTop = Math.round(top / FreeLayout.STEP) * FreeLayout.STEP;
+    const cascade = FreeLayout.OVERLAY_CASCADE;
+    let slot = overlays.filter(c => c.x != null && c.x % cascade === 0 && c.y - slotTop === c.x).length;
+    let z = this.maxZOf(contexts);
+    overlays
+      .filter(c => c.x == null)
+      .forEach(c => {
+        c.setPosition(slot * cascade, slotTop + slot * cascade);
+        c.z = ++z;
+        slot++;
+      });
+  }
+
+  private maxZOf(contexts: ElementContext[]): number {
+    return Math.max(0, ...contexts.map(c => c.z ?? 0));
   }
 
   private bottomOf(contexts: ElementContext[]): number {
@@ -137,6 +207,36 @@ export class FreeLayout {
       width: Math.round(width / scale),
       height: Math.round(height / scale)
     };
+  }
+
+  clampIntoPage(rect: Rect, pageTop: number): Rect {
+    const width = Math.min(rect.width, FreeLayout.PAGE_WIDTH);
+    const height = Math.min(rect.height, FreeLayout.PAGE_HEIGHT);
+    return {
+      x: _.clamp(rect.x, 0, FreeLayout.PAGE_WIDTH - width),
+      y: _.clamp(rect.y, pageTop, pageTop + FreeLayout.PAGE_HEIGHT - height),
+      width,
+      height
+    };
+  }
+
+  /**
+   * @returns the topmost tile containing the top left corner of the overlay together with the overlay's offset
+   * relative to that tile, [[undefined]] if there is none
+   */
+  anchorAt<T extends { z?: number }>(overlay: Rect, tiles: TileRect<T>[]): Anchoring<T> {
+    const anchor = tiles
+      .filter(t => this.contains(t.rect, overlay.x, overlay.y))
+      .sort((a, b) => (a.tile.z ?? 0) - (b.tile.z ?? 0))
+      .at(-1);
+    return anchor && {
+      tile: anchor.tile,
+      offset: { x: (overlay.x - anchor.rect.x) / anchor.rect.width, y: (overlay.y - anchor.rect.y) / anchor.rect.height }
+    };
+  }
+
+  private contains(rect: Rect, x: number, y: number): boolean {
+    return x >= rect.x && x < rect.x + rect.width && y >= rect.y && y < rect.y + rect.height;
   }
 
   bringToFront(context: ElementContext, contexts: ElementContext[]): void {

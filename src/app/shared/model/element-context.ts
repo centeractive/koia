@@ -314,6 +314,17 @@ export abstract class ElementContext {
 
    abstract getSupportedExportFormats(): ExportFormat[];
 
+   isConfigurable(): boolean {
+      return true;
+   }
+
+   /**
+    * @returns [[true]] if the element is drawn above the tiles instead of taking a tile of its own
+    */
+   isOverlay(): boolean {
+      return false;
+   }
+
    get warning(): string {
       return this._warning;
    }

@@ -49,7 +49,7 @@
       "dashboard": {
         "title": "Dashboard",
         "beforeIcon": "Press ",
-        "afterIcon": ", choose <b>New Dashboard</b> and combine charts, graphs and summary tables."
+        "afterIcon": ", choose <b>New Dashboard</b> and combine charts, graphs, summary tables and text boxes."
       },
       "configure": {
         "title": "Configure elements",
@@ -84,7 +84,7 @@
         "rawData": "The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size. The table offers sorting and filtering of individual columns.",
         "pivotBeforeLink": "The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing patterns and trends. It's based on amazing ",
         "pivotAfterLink": " that offers many different views (e.g. heatmaps and table barcharts) and lets you shape the pivot table through drag and drop of individual columns.",
-        "dashboard": "A <b>Dashboard</b> contains a variable number of elements (summary tables, charts and graphs). In <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a single cell or spread over several columns and rows. When the window size changes, the element size also changes in order to always fit the allocated grid space. With <b>Snap to Grid</b> turned off, elements are placed and sized freely on pages that match the printed pages; alignment guides help to arrange them and the layout scales with the window width.",
+        "dashboard": "A <b>Dashboard</b> contains a variable number of elements (summary tables, charts, graphs and text boxes). In <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a single cell or spread over several columns and rows. When the window size changes, the element size also changes in order to always fit the allocated grid space. With <b>Snap to Grid</b> turned off, elements are placed and sized freely on pages that match the printed pages; alignment guides help to arrange them and the layout scales with the window width.",
         "tabs": "Any number of pivot tables and dashboards may be opened as individual tabs next to the raw data table. Open tabs are kept with the scene."
       }
     },
@@ -462,6 +462,7 @@
     "addChart": "Add Chart",
     "addGraph": "Add Relationship Graph",
     "addSummary": "Add Summary",
+    "addTextBox": "Add Text Box",
     "gridColumns": "Grid Columns",
     "gridCellRatio": "Grid Cell Ratio (width:height)",
     "manageViews": "Manage Views",
@@ -470,6 +471,21 @@
     "regenerate": "Regenerate Dashboard",
     "regenerateQuestion": "All elements of this dashboard will be replaced by newly generated ones. Continue?",
     "nothingToGenerate": "The data contains no columns suitable for generating a dashboard"
+  },
+  "textBox": {
+    "placeholder": "Type text here...",
+    "fontFamily": "Font",
+    "fontSize": "Font Size",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "alignLeft": "Align Left",
+    "alignCenter": "Center",
+    "alignRight": "Align Right",
+    "textColor": "Text Color",
+    "resetTextColor": "Reset Text Color",
+    "backgroundColor": "Background Color",
+    "resetBackgroundColor": "Reset Background Color"
   },
   "enum": {
     "chartType": {

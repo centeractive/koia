@@ -1,0 +1,59 @@
+koia-text-box {
+  display: block;
+  height: 100%;
+  cursor: text;
+}
+
+koia-text-box .div_text_box_editor {
+  height: 100%;
+  overflow: auto;
+}
+
+koia-text-box .ProseMirror {
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+  outline: none;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  font: 14px "Helvetica Neue", "Lucida Grande", Arial;
+  color: #000000;
+}
+
+koia-text-box img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+koia-text-box .ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+koia-text-box .ProseMirror-hideselection * {
+  caret-color: transparent;
+}
+
+koia-text-box .ProseMirror p {
+  margin: 0;
+  pointer-events: auto;
+}
+
+koia-text-box .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--koia-text-secondary);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+koia-text-box .ProseMirror .selection {
+  background: Highlight;
+}

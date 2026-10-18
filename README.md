@@ -29,7 +29,7 @@ Besides simply visualizing data, Koia also features **time and value filters** t
 
  **Picture 1:** Raw data table filtered by a time range slider on the date column.
 
-Dashboards combine summary tables, charts and relationship graphs in a grid of customizable dimension. Summary tables group data by several hierarchy levels and aggregate values such as average, sum or maximum (Picture 2).
+Dashboards combine summary tables, charts, relationship graphs and formatted text boxes in a grid of customizable dimension. Summary tables group data by several hierarchy levels and aggregate values such as average, sum or maximum (Picture 2).
 
  <img align="center" width="880" src="./src/intro/screenshots/dashboard.webp" alt="Dashboard on a five column grid">
 

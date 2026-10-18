@@ -1,4 +1,5 @@
 import { expect, Locator } from '@playwright/test';
+import { pressCenterAndMoveBy } from '../pointer';
 
 export interface RenderedCellStyle {
    fontWeight: number;
@@ -117,21 +118,11 @@ export class DashboardTile {
    }
 
    startResizeBy(dx: number, dy: number): Promise<void> {
-      return this.startDragBy(this.root.locator('.resize-handle'), dx, dy);
+      return pressCenterAndMoveBy(this.root.locator('.resize-handle'), dx, dy);
    }
 
    startMoveBy(dx: number, dy: number): Promise<void> {
-      return this.startDragBy(this.root.locator('.but_move'), dx, dy);
-   }
-
-   private async startDragBy(grip: Locator, dx: number, dy: number): Promise<void> {
-      const box = await grip.boundingBox();
-      const x = box.x + box.width / 2;
-      const y = box.y + box.height / 2;
-      const mouse = this.root.page().mouse;
-      await mouse.move(x, y);
-      await mouse.down();
-      await mouse.move(x + dx, y + dy, { steps: 5 });
+      return pressCenterAndMoveBy(this.root.locator('.but_move'), dx, dy);
    }
 
    async release(): Promise<void> {

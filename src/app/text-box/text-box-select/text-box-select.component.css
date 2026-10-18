@@ -1,0 +1,24 @@
+.span_select_label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.div_select_list {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-height: 240px;
+  overflow: auto;
+  padding: 3px;
+  border: 1px solid var(--koia-border-color);
+  border-radius: 10px;
+  background-color: var(--koia-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.but_select_option {
+  justify-content: flex-start;
+  white-space: nowrap;
+}

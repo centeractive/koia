@@ -49,7 +49,7 @@
       "dashboard": {
         "title": "Dashboard",
         "beforeIcon": "Klicken Sie auf ",
-        "afterIcon": ", wählen Sie <b>Neues Dashboard</b> und kombinieren Sie Diagramme, Graphen und Übersichtstabellen."
+        "afterIcon": ", wählen Sie <b>Neues Dashboard</b> und kombinieren Sie Diagramme, Graphen, Übersichtstabellen und Textfelder."
       },
       "configure": {
         "title": "Elemente konfigurieren",
@@ -84,7 +84,7 @@
         "rawData": "Die <b>Rohdaten</b>-Tabelle zeigt die Daten unverarbeitet in Seiten einstellbarer Grösse. Die Tabelle bietet Sortieren und Filtern einzelner Spalten.",
         "pivotBeforeLink": "Die <b>Pivot-Tabelle</b> ist ein leistungsfähiges Werkzeug, um Daten zu berechnen, zusammenzufassen und zu analysieren und dabei Muster und Trends aufzudecken. Sie basiert auf dem hervorragenden ",
         "pivotAfterLink": ", das viele verschiedene Darstellungen bietet (z. B. Heatmaps und Tabellen-Balkendiagramme) und die Gestaltung der Pivot-Tabelle per Drag-and-Drop einzelner Spalten erlaubt.",
-        "dashboard": "Ein <b>Dashboard</b> enthält eine variable Anzahl Elemente (Übersichtstabellen, Diagramme und Graphen). Im <b>Raster</b>-Layout liegen die Elemente in einem festen Raster anpassbarer Grösse; sie belegen eine einzelne Zelle oder erstrecken sich über mehrere Spalten und Zeilen. Ändert sich die Fenstergrösse, passt sich auch die Grösse der Elemente an, damit sie stets den zugewiesenen Rasterplatz ausfüllen. Ist <b>Am Raster ausrichten</b> ausgeschaltet, werden die Elemente frei auf Seiten platziert und dimensioniert, die den gedruckten Seiten entsprechen; Hilfslinien unterstützen beim Ausrichten und das Layout passt sich der Fensterbreite an.",
+        "dashboard": "Ein <b>Dashboard</b> enthält eine variable Anzahl Elemente (Übersichtstabellen, Diagramme, Graphen und Textfelder). Im <b>Raster</b>-Layout liegen die Elemente in einem festen Raster anpassbarer Grösse; sie belegen eine einzelne Zelle oder erstrecken sich über mehrere Spalten und Zeilen. Ändert sich die Fenstergrösse, passt sich auch die Grösse der Elemente an, damit sie stets den zugewiesenen Rasterplatz ausfüllen. Ist <b>Am Raster ausrichten</b> ausgeschaltet, werden die Elemente frei auf Seiten platziert und dimensioniert, die den gedruckten Seiten entsprechen; Hilfslinien unterstützen beim Ausrichten und das Layout passt sich der Fensterbreite an.",
         "tabs": "Beliebig viele Pivot-Tabellen und Dashboards können als einzelne Tabs neben der Rohdatentabelle geöffnet werden. Offene Tabs bleiben mit der Szene erhalten."
       }
     },
@@ -462,6 +462,7 @@
     "addChart": "Diagramm hinzufügen",
     "addGraph": "Beziehungsgraph hinzufügen",
     "addSummary": "Zusammenfassung hinzufügen",
+    "addTextBox": "Textfeld hinzufügen",
     "gridColumns": "Rasterspalten",
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
     "manageViews": "Ansichten verwalten",
@@ -470,6 +471,21 @@
     "regenerate": "Dashboard neu generieren",
     "regenerateQuestion": "Alle Elemente dieses Dashboards werden durch neu generierte ersetzt. Fortfahren?",
     "nothingToGenerate": "Die Daten enthalten keine Spalten, aus denen ein Dashboard generiert werden kann"
+  },
+  "textBox": {
+    "placeholder": "Text hier eingeben...",
+    "fontFamily": "Schriftart",
+    "fontSize": "Schriftgrösse",
+    "bold": "Fett",
+    "italic": "Kursiv",
+    "underline": "Unterstrichen",
+    "alignLeft": "Linksbündig",
+    "alignCenter": "Zentriert",
+    "alignRight": "Rechtsbündig",
+    "textColor": "Textfarbe",
+    "resetTextColor": "Textfarbe zurücksetzen",
+    "backgroundColor": "Hintergrundfarbe",
+    "resetBackgroundColor": "Hintergrundfarbe zurücksetzen"
   },
   "enum": {
     "chartType": {

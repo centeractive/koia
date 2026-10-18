@@ -292,6 +292,19 @@ koia-print-heading {
     box-shadow: none !important;
   }
 
+  koia-text-box .is-editor-empty::before {
+    content: none !important;
+  }
+
+  .div_text_box_tile {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .div_text_box_tile::after {
+    border: none !important;
+  }
+
   .div_header > :not(koia-print-heading) {
     display: none !important;
   }

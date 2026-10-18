@@ -1,0 +1,49 @@
+.div_text_box_toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 3px;
+  border: 1px solid var(--koia-border-color);
+  border-radius: 10px;
+  white-space: nowrap;
+  background-color: var(--koia-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.span_separator {
+  flex-shrink: 0;
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background-color: var(--koia-border-color);
+}
+
+.label_color {
+  position: relative;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.span_color_bar {
+  width: 14px;
+  height: 3px;
+  box-sizing: border-box;
+}
+
+.span_color_bar.span_color_bar_unset {
+  border: 1px solid var(--koia-border-color);
+  background-color: transparent;
+}
+
+.label_color input[type='color'] {
+  position: absolute;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
+}

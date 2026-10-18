@@ -4,19 +4,19 @@
     <mat-sidenav #sidenav mode="side" class="sidenav" (closedStart)="requestPersist()">
       @if (isChartContext(selectedContext)) {
         <koia-chart-side-bar [context]="$any(selectedContext)" [entries]="entries"
-          [gridColumns]="gridLayout.gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+          [gridColumns]="gridLayout.gridColumns" [elementCount]="tileCount()" [elementPosition]="selectedContextPosition"
           (onElementPositionChange)="changeElementPosition($event)">
         </koia-chart-side-bar>
       }
       @if (isGraphContext(selectedContext)) {
         <koia-graph-side-bar [context]="$any(selectedContext)" [entries]="entries"
-          [gridColumns]="gridLayout.gridColumns" [elementCount]="elementContexts.length" [elementPosition]="selectedContextPosition"
+          [gridColumns]="gridLayout.gridColumns" [elementCount]="tileCount()" [elementPosition]="selectedContextPosition"
           (onElementPositionChange)="changeElementPosition($event)">
         </koia-graph-side-bar>
       }
       @if (isSummaryContext(selectedContext)) {
         <koia-summary-table-side-bar [context]="selectedContext"
-          [entries]="entries" [gridColumns]="gridLayout.gridColumns" [elementCount]="elementContexts.length"
+          [entries]="entries" [gridColumns]="gridLayout.gridColumns" [elementCount]="tileCount()"
           [elementPosition]="selectedContextPosition" (onElementPositionChange)="changeElementPosition($event)">
         </koia-summary-table-side-bar>
       }
@@ -44,6 +44,9 @@
         </button>
         <button mat-icon-button [matTooltip]="'dashboard.addSummary' | translate" (click)="addSummaryTable()">
           <mat-icon svgIcon="add_summary"></mat-icon>
+        </button>
+        <button id="but_add_text_box" mat-icon-button [matTooltip]="'dashboard.addTextBox' | translate" (click)="addTextBox()">
+          <mat-icon>text_fields</mat-icon>
         </button>
         <button id="but_regenerate_dashboard" mat-icon-button [matTooltip]="'dashboard.regenerate' | translate"
           [disabled]="!canGenerateDashboard()" (click)="generateDashboard()">
@@ -106,23 +109,49 @@
       }
     </ng-template>
 
+    <ng-template #canvasGuidesTemplate>
+      @for (guide of canvasGuides; track guide) {
+        <div class="div_canvas_guide" [ngClass]="'div_canvas_guide_' + guide.axis" [ngStyle]="freeLayout.guideStyle(guide)"></div>
+      }
+    </ng-template>
+
     @if (isGridLayout()) {
       <div #content id="div_grid" class="div_content printable" style="padding: 5px;" cdkScrollable cdkDropList cdkDropListOrientation="mixed"
         (cdkDropListDropped)="drop($event)">
-        <div #gridCells class="div_grid_cells" [ngStyle]="gridLayout.gridStyle()">
+        <div #gridCells class="div_grid_cells" [ngStyle]="gridCellsStyle()">
           @for (context of elementContexts; track context) {
-            <div class="div_tile mat-elevation-z1" [ngStyle]="gridLayout.cellStyle(context)" mwlResizable ghostElementPositioning="absolute"
-              (resizeStart)="onGridResizeStart()" (resizing)="onGridResizing($event)" (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
-              <div #elementContainer class="div_element">
-                <koia-element-header [context]="context" [gridLayout]="gridLayout" [movable]="elementContexts.length > 1"
-                  (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
-                  (titleChange)="onTitleChanged(context, $event)" />
-                <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+            @if (context.isOverlay()) {
+              <div class="div_drop_list_detached" koiaDetachFromDropList>
+                <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_anchored]="!!$any(context).anchor"
+                  [style.background-color]="$any(context).backgroundColor"
+                  [ngStyle]="freeLayout.overlayStyle($any(context), anchorNameOf($any(context).anchor))"
+                  mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
+                  (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                  cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
+                  (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                  <div #elementContainer class="div_element">
+                    <koia-text-box [context]="$any(context)" (remove)="removeElement(context)" />
+                  </div>
+                  <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                    (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                </div>
               </div>
-              <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
-            </div>
+            } @else {
+              <div class="div_tile mat-elevation-z1" [style.--koia-anchor-name]="anchorNameOf(context)" [ngStyle]="gridLayout.cellStyle(context)"
+                mwlResizable ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart()" (resizing)="onGridResizing($event)"
+                (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
+                <div #elementContainer class="div_element">
+                  <koia-element-header [context]="context" [gridLayout]="gridLayout" [movable]="tileCount() > 1"
+                    (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
+                    (titleChange)="onTitleChanged(context, $event)" />
+                  <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                </div>
+                <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                  (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+              </div>
+            }
           }
+          <ng-container *ngTemplateOutlet="canvasGuidesTemplate" />
           <ng-container *ngTemplateOutlet="resizePreviewTemplate" />
         </div>
       </div>
@@ -132,26 +161,39 @@
           @for (page of freeLayout.pageIndexes(elementContexts); track page) {
             <div class="div_canvas_page" [class.div_canvas_page_spare]="$last" [ngStyle]="freeLayout.pageStyle()">
               @for (context of freeLayout.contextsOnPage(elementContexts, page); track context) {
-                <div class="div_tile div_canvas_tile mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
-                  mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
-                  (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
-                  cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
-                  (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
-                  <div #elementContainer class="div_element">
-                    <koia-element-header [context]="context" [gridLayout]="null" [movable]="true" [stackable]="true"
-                      (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
-                      (titleChange)="onTitleChanged(context, $event)" (bringToFront)="bringToFront(context)" (sendToBack)="sendToBack(context)" />
-                    <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                @if (context.isOverlay()) {
+                  <div class="div_tile div_canvas_tile div_text_box_tile" [style.background-color]="$any(context).backgroundColor"
+                    [ngStyle]="freeLayout.tileStyle(context)"
+                    mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
+                    (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                    cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
+                    (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                    <div #elementContainer class="div_element">
+                      <koia-text-box [context]="$any(context)" (remove)="removeElement(context)" />
+                    </div>
+                    <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                      (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
                   </div>
-                  <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                    (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
-                </div>
+                } @else {
+                  <div class="div_tile div_canvas_tile mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
+                    mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
+                    (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                    cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
+                    (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                    <div #elementContainer class="div_element">
+                      <koia-element-header [context]="context" [gridLayout]="null" [movable]="true" [stackable]="true"
+                        (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
+                        (titleChange)="onTitleChanged(context, $event)" (bringToFront)="bringToFront(context)" (sendToBack)="sendToBack(context)" />
+                      <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                    </div>
+                    <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                      (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                  </div>
+                }
               }
             </div>
           }
-          @for (guide of canvasGuides; track guide) {
-            <div class="div_canvas_guide" [ngClass]="'div_canvas_guide_' + guide.axis" [ngStyle]="freeLayout.guideStyle(guide)"></div>
-          }
+          <ng-container *ngTemplateOutlet="canvasGuidesTemplate" />
           <ng-container *ngTemplateOutlet="resizePreviewTemplate" />
         </div>
       </div>

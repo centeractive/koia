@@ -1,6 +1,7 @@
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Directive, ElementRef, QueryList } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
-import { ElementContext } from '../model';
+import { ElementContext, SummaryContext, TextBoxContext } from '../model';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
 import { ChartMarginService } from '../services/chart';
@@ -204,9 +205,26 @@ describe('ViewController', () => {
       expect(recreated.scrollIntoView).not.toHaveBeenCalled();
    });
 
+   it('#ngAfterViewInit should not scroll when element containers grew by overlay', () => {
+
+      // given
+      const controller = controllerWithContainers(document.createElement('div'));
+      controller.elementContexts = [new SummaryContext([]), new TextBoxContext([])];
+      const added = document.createElement('div');
+      vi.spyOn(added, 'scrollIntoView').mockReturnValue(undefined);
+
+      // when
+      controller.elementContainerDivRefs.reset([controller.elementContainerDivRefs.first, new ElementRef(added)]);
+      controller.elementContainerDivRefs.notifyOnChanges();
+
+      // then
+      expect(added.scrollIntoView).not.toHaveBeenCalled();
+   });
+
    function controllerWithContainers(...divs: HTMLDivElement[]): ViewControllerTestable {
       const controller = new ViewControllerTestable();
       controller['scene'] = SceneFactory.createScene('1', []);
+      controller.elementContexts = [new SummaryContext([]), new SummaryContext([])];
       controller.elementContainerDivRefs = new QueryList<ElementRef<HTMLDivElement>>();
       controller.elementContainerDivRefs.reset(divs.map(div => new ElementRef(div)));
       controller.ngAfterViewInit();
@@ -227,6 +245,126 @@ describe('ViewController', () => {
 
       // then
       expect(controller.addedContexts).toEqual([context]);
+   });
+
+   it('#addTextBox should add and persist text box without opening sidenav nor changing selected context', () => {
+
+      // given
+      const controller = new ViewControllerTestable();
+      controller['columns'] = [];
+      const sidenav = { mode: null, open: vi.fn() };
+      controller.sidenav = sidenav as unknown as MatSidenav;
+      const selectedContext = new SummaryContext([]);
+      controller.selectedContext = selectedContext;
+      controller.elementContexts = [];
+      const requestPersistSpy = vi.spyOn(controller as unknown as { requestPersist: () => void }, 'requestPersist');
+
+      // when
+      const context = controller.addTextBox();
+
+      // then
+      expect(context).toBeInstanceOf(TextBoxContext);
+      expect(controller.elementContexts).toEqual([context]);
+      expect(controller.addedContexts).toEqual([context]);
+      expect(requestPersistSpy).toHaveBeenCalled();
+      expect(sidenav.open).not.toHaveBeenCalled();
+      expect(controller.selectedContext).toBe(selectedContext);
+   });
+
+   it('#isTextBoxContext should return true when text box context', () => {
+      expect(viewController.isTextBoxContext(new TextBoxContext([]))).toBe(true);
+   });
+
+   it('#isTextBoxContext should return false when not text box context', () => {
+      expect(viewController.isTextBoxContext(new SummaryContext([]))).toBe(false);
+   });
+
+   function controllerWith(...contexts: ElementContext[]): ViewControllerTestable {
+      const controller = new ViewControllerTestable();
+      controller.sidenav = { mode: null, open: vi.fn() } as unknown as MatSidenav;
+      controller.elementContexts = contexts;
+      return controller;
+   }
+
+   it.each([
+      { case: 'forward', previousIndex: 0, currentIndex: 2, expected: ['textBox', 'tile2', 'tile3', 'tile1'] },
+      { case: 'backward', previousIndex: 2, currentIndex: 0, expected: ['tile3', 'tile1', 'textBox', 'tile2'] },
+      { case: 'past text box', previousIndex: 0, currentIndex: 1, expected: ['textBox', 'tile2', 'tile1', 'tile3'] }
+   ])('#drop should map tile indexes $case to element indexes when text box is between tiles', ({ previousIndex, currentIndex, expected }) => {
+
+      // given
+      const controller = controllerWith(...titledContexts());
+
+      // when
+      controller.drop({ previousIndex, currentIndex } as CdkDragDrop<object>);
+
+      // then
+      expect(controller.elementContexts.map(c => c.title)).toEqual(expected);
+   });
+
+   function titledContexts(): ElementContext[] {
+      return ['tile1', 'textBox', 'tile2', 'tile3'].map(title => {
+         const context = title === 'textBox' ? new TextBoxContext([]) : new SummaryContext([]);
+         context.title = title;
+         return context;
+      });
+   }
+
+   it('#configure should set position among tiles', () => {
+
+      // given
+      const controller = controllerWith(...titledContexts());
+
+      // when
+      controller.configure(null, controller.elementContexts[2]);
+
+      // then
+      expect(controller.selectedContextPosition).toBe(2);
+   });
+
+   it('#changeElementPosition should move selected tile to position among tiles', () => {
+
+      // given
+      const controller = controllerWith(...titledContexts());
+      controller.configure(null, controller.elementContexts[3]);
+
+      // when
+      controller.changeElementPosition(1);
+
+      // then
+      expect(controller.elementContexts.map(c => c.title)).toEqual(['tile3', 'tile1', 'textBox', 'tile2']);
+      expect(controller.selectedContextPosition).toBe(1);
+   });
+
+   it('#tileCount should not count overlays', () => {
+
+      // given
+      const controller = controllerWith(...titledContexts());
+
+      // when
+      const count = controller.tileCount();
+
+      // then
+      expect(count).toBe(3);
+   });
+
+   it('#removeElement should clear anchors of text boxes anchored to removed element', () => {
+
+      // given
+      const [removed, kept] = [new SummaryContext([]), new SummaryContext([])];
+      const anchoredToRemoved = new TextBoxContext([]);
+      anchoredToRemoved.setAnchor(removed, { x: 0.5, y: 0.5 });
+      const anchoredToKept = new TextBoxContext([]);
+      anchoredToKept.setAnchor(kept, { x: 0.5, y: 0.5 });
+      const controller = controllerWith(removed, anchoredToRemoved, kept, anchoredToKept);
+
+      // when
+      controller.removeElement(removed);
+
+      // then
+      expect(controller.elementContexts).toEqual([anchoredToRemoved, kept, anchoredToKept]);
+      expect(anchoredToRemoved.anchor).toBeUndefined();
+      expect(anchoredToKept.anchor).toBe(kept);
    });
 
    it('#canGenerateDashboard should return false while loading', () => {

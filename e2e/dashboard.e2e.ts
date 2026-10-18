@@ -6,8 +6,10 @@ import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { StringUtils } from 'app/shared/utils/string-utils';
 import { SUMMARY_TABLE_STYLE } from 'app/summary-table/summary-table-style';
-import { Page } from '@playwright/test';
+import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILIES, FONT_SIZES } from 'app/text-box/text-box-style';
+import { Locator, Page } from '@playwright/test';
 import { DashboardTile } from './support/components/dashboard-tile';
+import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
 import { expect, test } from './support/fixtures';
 import { firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
@@ -16,6 +18,11 @@ import { Texts } from './support/texts';
 
 const VIEW_NAME = 'Regions overview';
 const GRID_GAP_PX = 10;
+/** half a snap step of 10 page units */
+const SNAP_TOLERANCE_PX = 6;
+/** minimum of 40 × 30 page units of a text box added with 300 × 150 page units */
+const TEXT_BOX_MIN_SIZE_RATIO = { width: 40 / 300, height: 30 / 150 };
+const BOTTOM_RIGHT_QUADRANT = { x: 0.7, y: 0.7 };
 const en = new Texts('en');
 const column = firstColumnOf(fruitSalesOf('en'), DataType.TEXT);
 
@@ -283,14 +290,18 @@ async function tileBoxes(dashboard: DashboardPage): Promise<{ x: number; y: numb
 }
 
 async function printedSheets(page: Page): Promise<{ A4: number; Letter: number }> {
-   await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+   await dispatchWindowEvent(page, 'beforeprint');
    const sheetsOf = async (format: string) => {
       const pdf = await page.pdf({ format, landscape: true, margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' } });
       return pdf.toString('latin1').match(/\/Type\s*\/Page(?!s)/g).length;
    };
    const sheets = { A4: await sheetsOf('A4'), Letter: await sheetsOf('Letter') };
-   await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+   await dispatchWindowEvent(page, 'afterprint');
    return sheets;
+}
+
+async function dispatchWindowEvent(page: Page, type: string): Promise<void> {
+   await page.evaluate((t: string) => window.dispatchEvent(new Event(t)), type);
 }
 
 test('pressing outside the shown chart margin hides it and resets the margin button', async ({ dashboard }) => {
@@ -409,11 +420,11 @@ test('summary table style matches width estimator constants', async ({ dashboard
    expect(styles.sortArrowWidth).toBe(SUMMARY_TABLE_STYLE.sortArrowWidth);
 });
 
-test('generated summary table spans one cell only when its content fits', async ({ page, dashboard }) => {
+test('generated summary table spans one cell only when its content fits', async ({ dashboard }) => {
    await dashboard.launcher.generateDashboard();
 
    const columns = await generatedGridColumns(dashboard);
-   const tile = new DashboardTile(dashboard.tiles.filter({ has: page.locator('koia-summary-table') }));
+   const tile = new DashboardTile(dashboard.summaryTiles);
    const { rendered, maxContent, columnCount } = await tile.tableWidths();
    const { offsetWidth, scrollbarWidth } = await dashboard.scrollerWidth();
    if ((await tile.spans()).columns === 1) {
@@ -427,4 +438,373 @@ test('generated summary table spans one cell only when its content fits', async 
 async function generatedGridColumns(dashboard: DashboardPage): Promise<number> {
    await dashboard.tiles.first().waitFor();
    return (await dashboard.gridTracks()).columnWidths.length;
+}
+
+test('enter and shift enter split text box text into two paragraphs and a line break', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+
+   await textBox.type('first');
+   await textBox.press('Enter');
+   await textBox.type('second');
+   await textBox.press('Shift+Enter');
+   await textBox.type('third');
+
+   await expect(textBox.paragraphs).toHaveCount(2);
+   await expect(textBox.paragraphs.nth(0)).toHaveText('first');
+   await expect(textBox.paragraphs.nth(1)).toHaveText('secondthird');
+   await expect(textBox.lineBreaksOf(1)).toHaveCount(1);
+});
+
+test('long text box text wraps only after spaces', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+
+   await textBox.insert(Array.from({ length: 60 }, (_, i) => 'word' + i).join(' '));
+
+   const wrapped = await textBox.charactersBeforeWraps();
+   expect(wrapped.length).toBeGreaterThan(1);
+   expect(new Set(wrapped)).toEqual(new Set([' ']));
+});
+
+test('bold, font size and colour apply only to the selected word of a text box', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   await textBox.type('one two three');
+   await textBox.press('ArrowLeft', 6);
+   await textBox.press('Shift+ArrowLeft', 3);
+
+   await textBox.toolbar.toggleBold();
+   await textBox.toolbar.setFontSize(FONT_SIZES.at(-1));
+   await textBox.toolbar.setTextColor('#ff0000');
+
+   expect(await textBox.styleOf('two')).toMatchObject({ fontWeight: 700, fontSize: FONT_SIZES.at(-1), color: 'rgb(255, 0, 0)' });
+   for (const word of ['one', 'three']) {
+      expect(await textBox.styleOf(word)).toMatchObject({ fontWeight: 400, fontSize: DEFAULT_FONT_SIZE, color: 'rgb(0, 0, 0)' });
+   }
+});
+
+test('text box style changed at the cursor applies to subsequently typed text', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   await textBox.type('plain ');
+   const fontFamily = FONT_FAMILIES.at(-2);
+
+   await textBox.toolbar.toggleBold();
+   await textBox.toolbar.setFontFamily(fontFamily.label);
+   await expect(textBox.editor).toBeFocused();
+   await textBox.type('styled');
+
+   expect(await textBox.styleOf('styled')).toMatchObject({ fontWeight: 700, fontFamily: fontFamily.value });
+   expect(await textBox.styleOf('plain')).toMatchObject({ fontWeight: 400, fontFamily: DEFAULT_FONT_FAMILY });
+});
+
+test('text box background colour is applied to its tile', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+
+   await textBox.toolbar.setBackgroundColor('#ffff00');
+
+   await expect(textBox.tile).toHaveCSS('background-color', 'rgb(255, 255, 0)');
+});
+
+test('text box toolbar closes after clicking outside the text box', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   const grid = await dashboard.gridContent.boundingBox();
+
+   await dashboard.gridContent.click({ position: { x: grid.width - 20, y: grid.height - 20 } });
+
+   await expect(textBox.toolbar.root).toBeHidden();
+});
+
+test('text box toolbar of a text box with room above it is shown above the text box', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const columns = (await dashboard.gridTracks()).columnWidths.length;
+   await dashboard.addSummaries(columns + 1);
+   const textBox = await dashboard.addTextBox();
+   await dropOnto(textBox, dashboard.summaryTiles.nth(columns), { x: 0.1, y: 0.1 });
+
+   await textBox.focus();
+
+   const tile = await textBox.tile.boundingBox();
+   const toolbar = await textBox.toolbar.root.boundingBox();
+   expect(toolbar.y + toolbar.height).toBeLessThanOrEqual(tile.y + 1);
+});
+
+test('text box toolbar of a first row text box is shown below the text box within the grid', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+
+   await textBox.focus();
+
+   const tile = await textBox.tile.boundingBox();
+   const toolbar = await textBox.toolbar.root.boundingBox();
+   const grid = await dashboard.gridContent.boundingBox();
+   expect(toolbar.y).toBeGreaterThanOrEqual(tile.y + tile.height - 1);
+   expect(toolbar.y).toBeGreaterThanOrEqual(grid.y);
+});
+
+test('scrolling the text box out of view closes its toolbar', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   await dashboard.addSummaries((await dashboard.gridTracks()).columnWidths.length * 3);
+   await dashboard.gridContent.evaluate((e: HTMLElement) => e.scrollTop = 0);
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   const tile = await textBox.tile.boundingBox();
+   const grid = await dashboard.gridContent.boundingBox();
+
+   await dashboard.gridContent.evaluate((e: HTMLElement, top: number) => e.scrollTop = top, tile.y + tile.height - grid.y + 10);
+
+   await expect(textBox.toolbar.root).toBeHidden();
+});
+
+test('click near the bottom of a one line text box appends typed text to its end', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   await textBox.type('hello');
+   await textBox.press('Home');
+   const editor = await textBox.editor.boundingBox();
+
+   await textBox.editor.click({ position: { x: editor.width / 2, y: editor.height - 10 } });
+   await textBox.type(' world');
+
+   await expect(textBox.editor).toHaveText('hello world');
+});
+
+test('drag selecting text of a grid text box does not move it', async ({ page, dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   await textBox.type('drag to select');
+   const tile = await textBox.tile.boundingBox();
+   const text = await textBox.paragraphs.first().boundingBox();
+
+   await page.mouse.move(text.x + 1, text.y + text.height / 2);
+   await page.mouse.down();
+   await page.mouse.move(text.x + text.width - 1, text.y + text.height / 2 + 40, { steps: 10 });
+   const draggedTile = await textBox.tile.boundingBox();
+   await page.mouse.up();
+
+   expect(draggedTile).toEqual(tile);
+   expect(await textBox.tile.boundingBox()).toEqual(tile);
+   expect(await textBox.selectedText()).toBe('drag to select');
+});
+
+test('dragging the frame of a grid text box moves it', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   const tile = await textBox.tile.boundingBox();
+
+   await textBox.startMoveBy(200, 100);
+   await textBox.release();
+
+   const moved = await textBox.tile.boundingBox();
+   expect(Math.abs(moved.x - tile.x - 200)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+   expect(Math.abs(moved.y - tile.y - 100)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+});
+
+test('resizing a grid text box shrinks it down to its minimum size', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   const tile = await textBox.tile.boundingBox();
+
+   await textBox.startResizeBy(1 - tile.width, 1 - tile.height);
+   await textBox.release();
+
+   const resized = await textBox.tile.boundingBox();
+   expect(resized.width / tile.width).toBeCloseTo(TEXT_BOX_MIN_SIZE_RATIO.width, 2);
+   expect(resized.height / tile.height).toBeCloseTo(TEXT_BOX_MIN_SIZE_RATIO.height, 2);
+});
+
+test('new text box is transparent and shows its frame only while its text is hovered', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await expect(textBox.tile).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+   expect(await textBox.frameBorderStyle()).toBe('none');
+   await expect(textBox.resizeHandle).toBeHidden();
+
+   await textBox.hover();
+
+   await expect.poll(() => textBox.frameBorderStyle()).toBe('dashed');
+   await expect(textBox.resizeHandle).toBeVisible();
+});
+
+test('empty text box area entered from outside lets the pointer reach the tile below', async ({ page, dashboard }) => {
+   const textBox = await addSummaryChartAndTextBox(dashboard);
+   const { x, y } = await emptyPointOf(textBox);
+
+   await page.mouse.move(x, y + 40);
+   await page.mouse.move(x, y, { steps: 5 });
+
+   await expect(textBox.resizeHandle).toBeHidden();
+   expect(await isHitAt(dashboard.summaryTiles, x, y)).toBe(true);
+});
+
+test('empty text box area entered from its text keeps the text box revealed', async ({ page, dashboard }) => {
+   const textBox = await addSummaryChartAndTextBox(dashboard);
+   const { x, y } = await emptyPointOf(textBox);
+   await textBox.hover();
+
+   await page.mouse.move(x, y, { steps: 5 });
+
+   await expect(textBox.resizeHandle).toBeVisible();
+   expect(await isHitAt(textBox.tile, x, y)).toBe(true);
+});
+
+test('text box deleted from its toolbar is removed with the toolbar', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+
+   await textBox.toolbar.delete();
+
+   await expect(dashboard.tiles).toHaveCount(0);
+   await expect(textBox.toolbar.root).toBeHidden();
+});
+
+test('text box dropped onto a grid tile keeps its spot on the tile when the tile is reordered', async ({ dashboard }) => {
+   const textBox = await addSummaryChartAndTextBox(dashboard);
+   const spot = await dropOnto(textBox, dashboard.summaryTiles, BOTTOM_RIGHT_QUADRANT);
+   const [summary, chart] = await tileBoxes(dashboard);
+
+   await dashboard.tile(0).startMoveBy(chart.x - summary.x, 0);
+   await dashboard.tile(0).release();
+
+   await expect(dashboard.tile(1).root.locator('koia-summary-table')).toHaveCount(1);
+   expectSameSpot(await spotOf(textBox, dashboard.summaryTiles), spot);
+});
+
+test('text box dropped onto a grid tile keeps its spot on the tile when the grid columns change', async ({ dashboard }) => {
+   const textBox = await addSummaryChartAndTextBox(dashboard);
+   const spot = await dropOnto(textBox, dashboard.summaryTiles, BOTTOM_RIGHT_QUADRANT);
+   const summary = await dashboard.summaryTiles.boundingBox();
+
+   await dashboard.setGridColumns(en.get('element.columns', { count: 2 }));
+
+   await expect.poll(async () => (await dashboard.summaryTiles.boundingBox()).width).toBeGreaterThan(summary.width + 1);
+   expectSameSpot(await spotOf(textBox, dashboard.summaryTiles), spot);
+});
+
+test('text box dropped onto a grid tile keeps its spot on the tile when printing zooms out', async ({ page, dashboard }) => {
+   const textBox = await addSummaryChartAndTextBox(dashboard);
+   const spot = await dropOnto(textBox, dashboard.summaryTiles, BOTTOM_RIGHT_QUADRANT);
+
+   await page.emulateMedia({ media: 'print' });
+   await dispatchWindowEvent(page, 'beforeprint');
+
+   expect(await printZoom(page)).toBeLessThan(1);
+   expectSameSpot(await spotOf(textBox, dashboard.summaryTiles), spot);
+});
+
+test('switching layout back and forth keeps a text box on its spot of the tile', async ({ dashboard }) => {
+   const textBox = await addSummaryChartAndTextBox(dashboard);
+   const spot = await dropOnto(textBox, dashboard.chartTiles, BOTTOM_RIGHT_QUADRANT);
+
+   await dashboard.snapToGridButton.click();
+   await expect(dashboard.canvasContent).toBeVisible();
+   const canvasSpot = await spotOf(textBox, dashboard.chartTiles);
+   await dashboard.snapToGridButton.click();
+   await expect(dashboard.gridContent).toBeVisible();
+
+   expectSameSpot(canvasSpot, spot);
+   expectSameSpot(await spotOf(textBox, dashboard.chartTiles), spot);
+});
+
+test('switching layout back and forth keeps formatted text box content and background', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addTextBox();
+   await textBox.focus();
+   await textBox.type('one two three');
+   await textBox.press('ArrowLeft', 6);
+   await textBox.press('Shift+ArrowLeft', 3);
+   await textBox.toolbar.toggleBold();
+   await textBox.toolbar.setBackgroundColor('#ffff00');
+
+   await dashboard.snapToGridButton.click();
+   await expect(dashboard.canvasContent).toBeVisible();
+   await dashboard.snapToGridButton.click();
+   await expect(dashboard.gridContent).toBeVisible();
+
+   const restored = dashboard.textBox(0);
+   await expect(restored.editor).toHaveText('one two three');
+   await expect(restored.editor.locator('strong')).toHaveText('two');
+   await expect(restored.tile).toHaveCSS('background-color', 'rgb(255, 255, 0)');
+});
+
+test('printing hides text box toolbar, frame and placeholder', async ({ page, dashboard }) => {
+   await dashboard.launcher.cancel();
+   const empty = await dashboard.addTextBox();
+   const filled = await dashboard.addTextBox();
+   await filled.focus();
+   await filled.type('printed');
+   expect(await filled.frameBorderStyle()).toBe('dashed');
+   expect(await empty.placeholderShown()).toBe(true);
+
+   await page.emulateMedia({ media: 'print' });
+
+   await expect(filled.toolbar.root).toBeHidden();
+   expect(await filled.frameBorderStyle()).toBe('none');
+   expect(await empty.placeholderShown()).toBe(false);
+});
+
+interface Spot {
+   x: number;
+   y: number;
+}
+
+async function addSummaryChartAndTextBox(dashboard: DashboardPage): Promise<TextBox> {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.close();
+   await dashboard.addChart();
+   await dashboard.sideBar.close();
+   return dashboard.addTextBox();
+}
+
+/**
+ * @returns the spot the text box was dropped at after snapping
+ */
+async function dropOnto(textBox: TextBox, tile: Locator, spot: Spot): Promise<Spot> {
+   const box = await textBox.tile.boundingBox();
+   const target = await tile.boundingBox();
+   await textBox.startMoveBy(target.x + spot.x * target.width - box.x, target.y + spot.y * target.height - box.y);
+   await textBox.release();
+   return spotOf(textBox, tile);
+}
+
+/**
+ * @returns the top left corner of the text box as fractions of the tile size
+ */
+async function spotOf(textBox: TextBox, tile: Locator): Promise<Spot> {
+   const box = await textBox.tile.boundingBox();
+   const anchor = await tile.boundingBox();
+   return { x: (box.x - anchor.x) / anchor.width, y: (box.y - anchor.y) / anchor.height };
+}
+
+function expectSameSpot(actual: Spot, expected: Spot): void {
+   expect(actual.x).toBeCloseTo(expected.x, 2);
+   expect(actual.y).toBeCloseTo(expected.y, 2);
+}
+
+/**
+ * @returns a point of the text box below its single empty line
+ */
+async function emptyPointOf(textBox: TextBox): Promise<Spot> {
+   const box = await textBox.tile.boundingBox();
+   return { x: box.x + box.width / 2, y: box.y + box.height - 20 };
+}
+
+function isHitAt(element: Locator, x: number, y: number): Promise<boolean> {
+   return element.evaluate((e: HTMLElement, point: Spot) => e.contains(document.elementFromPoint(point.x, point.y)), { x, y });
+}
+
+function printZoom(page: Page): Promise<number> {
+   return page.evaluate(() => Number(getComputedStyle(document.documentElement).getPropertyValue('--koia-print-zoom')));
 }

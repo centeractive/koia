@@ -1,4 +1,4 @@
-import { ElementContext, Query, Route, SummaryContext } from 'app/shared/model/';
+import { ElementContext, Query, Route, SummaryContext, TextBoxContext } from 'app/shared/model/';
 import { ChartContext, ScaleConfig } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
@@ -6,11 +6,12 @@ import { Chart } from './chart.type';
 import { queryToQueryDef } from './filter/query-to-filter-converter';
 import { Graph } from './graph.type';
 import { Summary } from './summary.type';
+import { TextBox } from './text-box.type';
 
 export class ModelToViewConverter {
 
    convert(route: Route, viewName: string, query: Query, elementContexts: ElementContext[]): View {
-      const configElements: ViewElement[] = elementContexts.map(c => this.toViewElement(c));
+      const configElements: ViewElement[] = elementContexts.map(c => this.toViewElement(c, elementContexts));
       return {
          route,
          name: viewName,
@@ -22,13 +23,15 @@ export class ModelToViewConverter {
       };
    }
 
-   private toViewElement(context: ElementContext): ViewElement {
+   private toViewElement(context: ElementContext, elementContexts: ElementContext[]): ViewElement {
       if (context instanceof ChartContext) {
          return this.toChart(context);
       } else if (context instanceof GraphContext) {
          return this.toGraph(context);
       } else if (context instanceof SummaryContext) {
          return this.toSummary(context);
+      } else if (context instanceof TextBoxContext) {
+         return this.toTextBox(context, elementContexts);
       }
       throw new Error('unknown context ' + context);
    }
@@ -101,5 +104,27 @@ export class ModelToViewConverter {
          colorOptions: context.colorProvider.options,
          empty: ''
       }
+   }
+
+   private toTextBox(context: TextBoxContext, elementContexts: ElementContext[]): TextBox {
+      return {
+         elementType: ElementType.TEXT_BOX,
+         title: context.title,
+         ...this.layoutOf(context),
+         dataColumns: context.dataColumns,
+         splitColumns: context.splitColumns,
+         groupByColumns: context.groupByColumns,
+         aggregations: context.aggregations,
+         valueGroupings: context.valueGroupings,
+         colorOptions: context.colorProvider.options,
+         content: context.content,
+         backgroundColor: context.backgroundColor,
+         ...this.anchorOf(context, elementContexts)
+      }
+   }
+
+   private anchorOf(context: TextBoxContext, elementContexts: ElementContext[]): Pick<TextBox, 'anchor' | 'anchorX' | 'anchorY'> {
+      const anchor = elementContexts.indexOf(context.anchor);
+      return anchor < 0 ? {} : { anchor, anchorX: context.anchorOffset.x, anchorY: context.anchorOffset.y };
    }
 }

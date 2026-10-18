@@ -1,7 +1,9 @@
-import { ElementContext, Query, Route, SummaryContext } from 'app/shared/model';
+import { Aggregation, ElementContext, Query, Route, SummaryContext, TextBoxContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
+import { ElementType } from 'app/shared/model/view-config';
 import { ModelToViewConverter } from './model-to-view-converter';
+import { TextBox } from './text-box.type';
 
 describe('ModelToViewConverter', () => {
 
@@ -22,7 +24,8 @@ describe('ModelToViewConverter', () => {
    it.each([
       { type: 'chart', create: () => new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 }) },
       { type: 'graph', create: () => new GraphContext([]) },
-      { type: 'summary', create: () => new SummaryContext([]) }
+      { type: 'summary', create: () => new SummaryContext([]) },
+      { type: 'text box', create: () => new TextBoxContext([]) }
    ])('#convert should map layout of $type', ({ create }) => {
 
       // given
@@ -49,5 +52,71 @@ describe('ModelToViewConverter', () => {
 
       // then
       expect([view.elements[0].x, view.elements[0].y, view.elements[0].z]).toEqual([undefined, undefined, undefined]);
+   });
+
+   it('#convert should map text box', () => {
+
+      // given
+      const context = new TextBoxContext([]);
+      context.title = 'Notes';
+      context.content = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }] };
+      context.backgroundColor = '#ffff00';
+
+      // when
+      const view = converter.convert(Route.GRID, 'test', new Query(), [context]);
+
+      // then
+      expect(view.elements[0]).toEqual({
+         elementType: ElementType.TEXT_BOX,
+         title: 'Notes',
+         gridColumnSpan: 1,
+         gridRowSpan: 1,
+         width: 300,
+         height: 150,
+         x: undefined,
+         y: undefined,
+         z: undefined,
+         dataColumns: [],
+         splitColumns: [],
+         groupByColumns: [],
+         aggregations: [Aggregation.COUNT],
+         valueGroupings: [],
+         colorOptions: context.colorProvider.options,
+         content: context.content,
+         backgroundColor: '#ffff00'
+      });
+   });
+
+   it('#convert should map anchor of text box to index of anchor element', () => {
+
+      // given
+      const summary = new SummaryContext([]);
+      const textBox = new TextBoxContext([]);
+      textBox.setAnchor(summary, { x: 0.25, y: 0.75 });
+
+      // when
+      const view = converter.convert(Route.GRID, 'test', new Query(), [textBox, new GraphContext([]), summary]);
+
+      // then
+      const element = view.elements[0] as TextBox;
+      expect([element.anchor, element.anchorX, element.anchorY]).toEqual([2, 0.25, 0.75]);
+   });
+
+   it.each([
+      { case: 'without anchor', anchor: undefined },
+      { case: 'with anchor not converted', anchor: new SummaryContext([]) }
+   ])('#convert should not map anchor of text box $case', ({ anchor }) => {
+
+      // given
+      const textBox = new TextBoxContext([]);
+      textBox.setAnchor(anchor, { x: 0.25, y: 0.75 });
+
+      // when
+      const view = converter.convert(Route.GRID, 'test', new Query(), [textBox]);
+
+      // then
+      expect(view.elements[0]).not.toHaveProperty('anchor');
+      expect(view.elements[0]).not.toHaveProperty('anchorX');
+      expect(view.elements[0]).not.toHaveProperty('anchorY');
    });
 });

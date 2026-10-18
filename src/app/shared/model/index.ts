@@ -12,6 +12,7 @@ export * from './column-pair.type';
 export * from './change-event.enum';
 export * from './element-context';
 export * from './summary-context';
+export * from './text-box-context';
 export * from './operator.enum';
 export * from './logical-operator.enum';
 export * from './property-filter';

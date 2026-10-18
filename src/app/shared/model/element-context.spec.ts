@@ -175,6 +175,24 @@ describe('ElementContext', () => {
       expect(eventHandlerSpy).not.toHaveBeenCalled();
    }));
 
+   it('#isConfigurable should return true', () => {
+
+      // when
+      const configurable = context.isConfigurable();
+
+      // then
+      expect(configurable).toBe(true);
+   });
+
+   it('#isOverlay should return false', () => {
+
+      // when
+      const overlay = context.isOverlay();
+
+      // then
+      expect(overlay).toBe(false);
+   });
+
    it('#splitColumns should replace missing value with empty array', () => {
 
       // when

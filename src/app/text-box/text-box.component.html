@@ -1,0 +1,7 @@
+<div #editorElement class="div_text_box_editor"></div>
+<ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="toolbarOrigin" [cdkConnectedOverlayOpen]="active"
+  [cdkConnectedOverlayPositions]="toolbarPositions" [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayViewportMargin]="toolbarViewportMargin" (detach)="active = false">
+  <koia-text-box-toolbar [editor]="editor" [state]="state" [backgroundColor]="context.backgroundColor"
+    (backgroundColorChange)="context.backgroundColor = $event" (remove)="remove.emit()" />
+</ng-template>

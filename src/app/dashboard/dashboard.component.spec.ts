@@ -1,6 +1,6 @@
-import { CdkDragDrop, CdkDragEnd } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
-import { ChangeDetectionStrategy, Component, ElementRef, NO_ERRORS_SCHEMA, QueryList } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostBinding, Input, NO_ERRORS_SCHEMA, Output, QueryList } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,7 +13,9 @@ import { provideRouter, Router } from '@angular/router';
 import { ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TimeUnit } from 'app/shared/model';
+import {
+  AnchorOffset, Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TextBoxContext, TimeUnit
+} from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { TabDef, View, ViewType } from 'app/shared/model/view-config';
@@ -28,9 +30,10 @@ import type { SummaryTableComponent as RealSummaryTableComponent } from 'app/sum
 import { Chart } from 'chart.js';
 import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
-import { FreeLayout } from './free-layout';
+import { DetachFromDropListDirective } from './detach-from-drop-list.directive';
+import { FreeLayout, Rect } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
@@ -57,8 +60,20 @@ class ChartComponent { }
 @Component({ selector: 'koia-graph', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
 class GraphComponent { }
 
+@Component({
+  selector: 'koia-text-box', template: '<p class="p_line" style="margin: 0; pointer-events: auto">line</p>',
+  changeDetection: ChangeDetectionStrategy.Eager, standalone: false
+})
+class TextBoxComponent {
+  @Input() context: TextBoxContext;
+  @Output() remove = new EventEmitter<void>();
+  @HostBinding('class.koia-text-box-active') active = false;
+}
+
 @Component({ selector: 'koia-element-header', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class ElementHeaderComponent { }
+class ElementHeaderComponent {
+  @Input() movable: boolean;
+}
 
 describe('DashboardComponent', () => {
 
@@ -106,9 +121,10 @@ describe('DashboardComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
-        SummaryTableComponent, ChartComponent, GraphComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent
+        SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent,
+        DetachFromDropListDirective
       ],
-      imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule],
+      imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
       providers: [
         provideRouter([]),
         MatBottomSheet,
@@ -220,6 +236,179 @@ describe('DashboardComponent', () => {
       const context = component.elementContexts[0];
       expect(component.isGraphContext(context)).toBe(true);
       expect(context instanceof GraphContext).toBe(true);
+    });
+
+    it('#addTextBox should add text box context without opening side bar', () => {
+
+      // when
+      component.addTextBox();
+
+      // then
+      expect(component.elementContexts.length).toBe(1);
+      expect(component.isTextBoxContext(component.elementContexts[0])).toBe(true);
+      expect(component.selectedContext).toBeUndefined();
+    });
+
+    it('#click on add text box button should add text box context', () => {
+
+      // given
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('#but_add_text_box');
+
+      // when
+      button.click();
+
+      // then
+      expect(component.elementContexts.length).toBe(1);
+      expect(component.elementContexts[0] instanceof TextBoxContext).toBe(true);
+    });
+
+    it('add text box button should show text fields icon and follow add summary button', () => {
+
+      // when
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('#but_add_text_box');
+
+      // then
+      expect(button.querySelector('mat-icon').textContent).toBe('text_fields');
+      expect(button.previousElementSibling.querySelector('mat-icon[svgicon="add_summary"]')).toBeTruthy();
+    });
+
+    it('should render text box in grid as detached frameless tile with background color', () => {
+
+      // given
+      const context = component.addTextBox();
+      context.backgroundColor = '#ff0000';
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const textBox = fixture.debugElement.query(By.css('#div_grid .div_drop_list_detached > .div_text_box_tile > .div_element > koia-text-box'));
+      expect(textBox.componentInstance.context).toBe(context);
+      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_grid .div_text_box_tile');
+      expect(tile.classList).toContain('div_canvas_tile');
+      expect(tile.classList).not.toContain('mat-elevation-z1');
+      expect(tile.querySelector('koia-element-header')).toBeNull();
+      expect(tile.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    });
+
+    it('should render text box in canvas as frameless tile with background color', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+      const context = component.addTextBox();
+      context.backgroundColor = '#00ff00';
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const textBox = fixture.debugElement.query(By.css('#div_canvas .div_canvas_page > .div_text_box_tile > .div_element > koia-text-box'));
+      expect(textBox.componentInstance.context).toBe(context);
+      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_canvas .div_text_box_tile');
+      expect(tile.classList).toContain('div_canvas_tile');
+      expect(tile.classList).not.toContain('mat-elevation-z1');
+      expect(tile.querySelector('koia-element-header')).toBeNull();
+      expect(tile.style.backgroundColor).toBe('rgb(0, 255, 0)');
+    });
+
+    it('should render text box without background color as transparent', () => {
+
+      // given
+      component.addTextBox();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_grid .div_text_box_tile');
+      expect(tile.style.backgroundColor).toBe('');
+      expect(getComputedStyle(tile).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    });
+
+    it.each([
+      { layout: Route.GRID },
+      { layout: Route.FLEX }
+    ])('should remove text box when it emits remove in $layout layout', ({ layout }) => {
+
+      // given
+      component.setLayout(layout);
+      component.addTextBox();
+      fixture.detectChanges();
+      const textBox = fixture.debugElement.query(By.directive(TextBoxComponent)).componentInstance as TextBoxComponent;
+
+      // when
+      textBox.remove.emit();
+
+      // then
+      expect(component.elementContexts).toEqual([]);
+    });
+
+    it('should render grid tile of other element with header and without text box class', () => {
+
+      // given
+      component.addGraph();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_grid .div_grid_cells > .div_tile');
+      expect(tile.classList).not.toContain('div_text_box_tile');
+      expect(tile.querySelector('koia-element-header')).toBeTruthy();
+      expect(tile.querySelector('koia-text-box')).toBeNull();
+    });
+
+    it('grid tile should be movable only when there is another tile, ignoring text boxes', () => {
+
+      // given
+      component.addGraph();
+      component.addTextBox();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.debugElement.query(By.directive(ElementHeaderComponent)).componentInstance.movable).toBe(false);
+      component.addGraph();
+      fixture.detectChanges();
+      expect(fixture.debugElement.query(By.directive(ElementHeaderComponent)).componentInstance.movable).toBe(true);
+    });
+
+    it('#anchorNameOf should return anchor name by element index', () => {
+
+      // given
+      component.addGraph();
+      const context = component.addSummaryTable();
+
+      // when
+      const anchorName = component.anchorNameOf(context);
+
+      // then
+      expect(anchorName).toBe('--koia-tile-1');
+    });
+
+    it('grid tiles should be named as anchors', () => {
+
+      // given
+      component.addGraph();
+      component.addTextBox();
+      component.addSummaryTable();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const tiles: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.div_grid_cells > .div_tile'));
+      expect(tiles.map(t => getComputedStyle(t).getPropertyValue('anchor-name'))).toEqual(['--koia-tile-0', '--koia-tile-2']);
+    });
+
+    it('#gridCellsStyle should combine grid style and page unit', () => {
+
+      // when
+      const style = component.gridCellsStyle();
+
+      // then
+      expect(style).toEqual({ ...component.gridLayout.gridStyle(), ...component.freeLayout.canvasStyle() });
     });
 
     it('#onFilterChanged should assign new query to each element context', () => {
@@ -1241,6 +1430,521 @@ describe('DashboardComponent', () => {
         expect([back.z, front.z]).toEqual([2, 1]);
         expect(persistSpy).toHaveBeenCalled();
       });
+
+      describe('text box', () => {
+
+        function cells(): HTMLElement {
+          return component.gridCellsRef.nativeElement;
+        }
+
+        function gridScale(): number {
+          return cells().clientWidth / FreeLayout.PAGE_WIDTH;
+        }
+
+        function addTextBoxContext(x: number, y: number, anchor?: ElementContext, offset?: AnchorOffset): TextBoxContext {
+          const context = new TextBoxContext(scene.columns);
+          context.setPosition(x, y);
+          context.z = 1;
+          context.setAnchor(anchor, offset);
+          component.elementContexts = component.elementContexts.concat([context]);
+          fixture.detectChanges();
+          return context;
+        }
+
+        function textBoxTile(): HTMLElement {
+          return fixture.nativeElement.querySelector('.div_text_box_tile');
+        }
+
+        function gridTiles(): HTMLElement[] {
+          return Array.from(fixture.nativeElement.querySelectorAll('.div_grid_cells > .div_tile'));
+        }
+
+        function pageUnitRectOf(element: HTMLElement): Rect {
+          const rect = element.getBoundingClientRect();
+          const cellsRect = cells().getBoundingClientRect();
+          return component.freeLayout.rectFromRendered(rect.left - cellsRect.left, rect.top - cellsRect.top, rect.width, rect.height,
+            gridScale());
+        }
+
+        function expectAnchoredAt(tile: HTMLElement, offset: AnchorOffset): void {
+          const tileRect = tile.getBoundingClientRect();
+          const boxRect = textBoxTile().getBoundingClientRect();
+          expect(boxRect.left).toBeCloseTo(tileRect.left + offset.x * tileRect.width, 0);
+          expect(boxRect.top).toBeCloseTo(tileRect.top + offset.y * tileRect.height, 0);
+        }
+
+        function expectAtFallback(context: TextBoxContext): void {
+          const cellsRect = cells().getBoundingClientRect();
+          const boxRect = textBoxTile().getBoundingClientRect();
+          expect(boxRect.left - cellsRect.left).toBeCloseTo(context.x * gridScale(), 0);
+          expect(boxRect.top - cellsRect.top).toBeCloseTo(context.y * gridScale(), 0);
+        }
+
+        function gridMoveTo(x: number, y: number): void {
+          const cellsRect = cells().getBoundingClientRect();
+          component.constrainFreeMove({ x: cellsRect.left + x * gridScale() + PICKUP.x, y: cellsRect.top + y * gridScale() + PICKUP.y },
+            null, null, PICKUP);
+        }
+
+        function expectCloseTo(actual: number, expected: number): void {
+          expect(Math.abs(actual - expected)).toBeLessThan(1);
+        }
+
+        it('should be absolutely positioned in grid above tiles without taking a grid cell', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const textBox = addTextBoxContext(100, 50);
+          component.elementContexts = [textBox, ...component.elementContexts.slice(0, 2)];
+
+          // when
+          fixture.detectChanges();
+
+          // then
+          const tile = textBoxTile();
+          expect(getComputedStyle(tile).position).toBe('absolute');
+          expect(getComputedStyle(tile).zIndex).toBe(String(FreeLayout.OVERLAY_Z_OFFSET + 1));
+          expect(tile.classList).not.toContain('div_anchored');
+          expect(gridTiles()[0].getBoundingClientRect().left).toBeCloseTo(cells().getBoundingClientRect().left, 0);
+          expect(gridTiles()[0].getBoundingClientRect().top).toBeCloseTo(cells().getBoundingClientRect().top, 0);
+          expectAtFallback(textBox);
+        });
+
+        it('should not register drag of text box with drop list of grid', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+
+          // when
+          addTextBoxContext(100, 50);
+
+          // then
+          const dropList = fixture.debugElement.query(By.directive(CdkDropList)).injector.get(CdkDropList);
+          const textBoxDrag = fixture.debugElement.query(By.css('.div_text_box_tile')).injector.get(CdkDrag);
+          expect(dropList.getSortedItems().length).toBe(2);
+          expect(dropList.getSortedItems()).not.toContain(textBoxDrag);
+          expect(textBoxDrag.dropContainer).toBeNull();
+        });
+
+        it('should follow its anchor tile when tiles are reordered or grid columns changed', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
+          const anchor = component.elementContexts[1];
+          const offset = { x: 0.25, y: 0.5 };
+          addTextBoxContext(0, 0, anchor, offset);
+          expect(textBoxTile().classList).toContain('div_anchored');
+          expectAnchoredAt(gridTiles()[1], offset);
+
+          // when
+          component.drop({ previousIndex: 1, currentIndex: 0 } as CdkDragDrop<object>);
+          fixture.detectChanges();
+
+          // then
+          expectAnchoredAt(gridTiles()[0], offset);
+
+          // when
+          component.setGridColumns(2);
+          fixture.detectChanges();
+
+          // then
+          expectAnchoredAt(gridTiles()[0], offset);
+        });
+
+        it('should follow placeholder of its anchor tile while the tile is dragged', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
+          const offset = { x: 0.5, y: 0.25 };
+          addTextBoxContext(0, 0, component.elementContexts[1], offset);
+          const tile = gridTiles()[1];
+          const tileRect = tile.getBoundingClientRect();
+          const pointer = { bubbles: true, button: 0, buttons: 1, detail: 1, clientX: tileRect.left + 20, clientY: tileRect.top + 20 };
+
+          // when
+          tile.dispatchEvent(new MouseEvent('mousedown', pointer));
+          document.dispatchEvent(new MouseEvent('mousemove', { ...pointer, clientX: pointer.clientX + 40 }));
+          fixture.detectChanges();
+
+          // then
+          const placeholder: HTMLElement = cells().querySelector('.div_tile.cdk-drag-placeholder');
+          expect(placeholder).toBeTruthy();
+          expect(cells().contains(tile)).toBe(false);
+          expectAnchoredAt(placeholder, offset);
+          document.dispatchEvent(new MouseEvent('mouseup', { ...pointer, clientX: pointer.clientX + 40 }));
+        });
+
+        it('should be placed at fallback position when its anchor is no tile of the grid', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1]]);
+
+          // when
+          const textBox = addTextBoxContext(200, 300, new SummaryContext([]), { x: 0.5, y: 0.5 });
+
+          // then
+          expect(textBoxTile().classList).toContain('div_anchored');
+          expectAtFallback(textBox);
+        });
+
+        it('should hide frame and resize handle and let pointer pass unless revealed', () => {
+
+          // when
+          addTextBoxContext(0, 0);
+
+          // then
+          const tile = textBoxTile();
+          expect(getComputedStyle(tile).pointerEvents).toBe('none');
+          expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('none');
+          expect(getComputedStyle(tile.querySelector('.resize-handle')).visibility).toBe('hidden');
+        });
+
+        it.each([
+          {
+            cause: 'text box is active',
+            reveal: (): void => { fixture.debugElement.query(By.directive(TextBoxComponent)).componentInstance.active = true; }
+          },
+          { cause: 'it is resized', reveal: (): void => textBoxTile().classList.add('resize-active') },
+          { cause: 'it is dragged', reveal: (): void => textBoxTile().classList.add('cdk-drag-dragging') }
+        ])('should show frame and resize handle and catch pointer when $cause', ({ reveal }) => {
+
+          // given
+          addTextBoxContext(0, 0);
+
+          // when
+          reveal();
+          fixture.detectChanges();
+
+          // then
+          expectRevealed(textBoxTile());
+        });
+
+        function expectRevealed(tile: HTMLElement): void {
+          expect(getComputedStyle(tile).pointerEvents).toBe('auto');
+          expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('dashed');
+          expect(getComputedStyle(tile, '::after').borderTopWidth).toBe('1px');
+          expect(getComputedStyle(tile.querySelector('.resize-handle')).visibility).toBe('visible');
+        }
+
+        it('should be revealed while text line is hovered', async () => {
+
+          // given
+          addTextBoxContext(0, 0);
+
+          // when
+          await userEvent.hover(textBoxTile().querySelector('.p_line'));
+
+          // then
+          expectRevealed(textBoxTile());
+          await userEvent.unhover(textBoxTile().querySelector('.p_line'));
+        });
+
+        it('should render guides in grid', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1]]);
+          component.canvasGuides = [{ axis: 'x', position: 700 }, { axis: 'y', position: 400 }];
+
+          // when
+          fixture.detectChanges();
+
+          // then
+          const cellsRect = cells().getBoundingClientRect();
+          const [vertical, horizontal] = rectsOf('.div_grid_cells > .div_canvas_guide');
+          expect(vertical.left - cellsRect.left).toBeCloseTo(700 * gridScale(), 0);
+          expect(horizontal.top - cellsRect.top).toBeCloseTo(400 * gridScale(), 0);
+        });
+
+        it('#onFreeResizing in grid should preview from drawn rect of anchored text box', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const textBox = addTextBoxContext(0, 0, component.elementContexts[1], { x: 0.5, y: 0.5 });
+          component.drop({ previousIndex: 1, currentIndex: 0 } as CdkDragDrop<object>);
+          fixture.detectChanges();
+          const drawn = textBoxTile().getBoundingClientRect();
+          const cellsRect = cells().getBoundingClientRect();
+          component.onFreeResizeStart(textBox);
+
+          // when
+          component.onFreeResizing(textBox, resizeEvent(drawn.width, drawn.height));
+
+          // then
+          expectCloseTo(component.resizePreview.left, drawn.left - cellsRect.left);
+          expectCloseTo(component.resizePreview.top, drawn.top - cellsRect.top);
+          expect([textBox.x, textBox.y]).toEqual([pageUnitRectOf(textBoxTile()).x, pageUnitRectOf(textBoxTile()).y]);
+        });
+
+        it('#onFreeMoving in grid should show guides of rendered tiles', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const textBox = addTextBoxContext(0, 600);
+          const tileRect = pageUnitRectOf(gridTiles()[1]);
+          component.onFreeMoveStarted(textBox);
+          gridMoveTo(tileRect.x + 2, 603);
+
+          // when
+          component.onFreeMoving();
+
+          // then
+          expect(component.canvasGuides.map(g => g.axis)).toEqual(['x']);
+          expectCloseTo(component.canvasGuides[0].position, tileRect.x);
+        });
+
+        it('#onFreeMoveEnded in grid should anchor text box to tile below its top left corner', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
+          const textBox = addTextBoxContext(0, 0, component.elementContexts[0], { x: 0, y: 0 });
+          const tile = component.elementContexts[1];
+          const tileRect = pageUnitRectOf(gridTiles()[1]);
+          component.onFreeMoveStarted(textBox);
+          gridMoveTo(tileRect.x + 0.3 * tileRect.width, 0.4 * tileRect.height);
+
+          // when
+          component.onFreeMoveEnded(textBox, dragEnd());
+
+          // then
+          expect(textBox.anchor).toBe(tile);
+          expect(textBox.x).toBeGreaterThan(tileRect.x);
+          expect(textBox.anchorOffset.x).toBeCloseTo((textBox.x - tileRect.x) / tileRect.width, 5);
+          expect(textBox.anchorOffset.y).toBeCloseTo((textBox.y - tileRect.y) / tileRect.height, 5);
+          expect(component.canvasGuides).toEqual([]);
+        });
+
+        it('#onFreeMoveEnded in grid should unanchor text box moved off tiles', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1]]);
+          const textBox = addTextBoxContext(0, 0, component.elementContexts[0], { x: 0, y: 0 });
+          component.onFreeMoveStarted(textBox);
+          gridMoveTo(1000, 50);
+
+          // when
+          component.onFreeMoveEnded(textBox, dragEnd());
+
+          // then
+          expect([textBox.x, textBox.y]).toEqual([1000, 50]);
+          expect(textBox.anchor).toBeUndefined();
+        });
+
+        it('#onFreeResizeEnd in grid should set size and keep anchor at drawn position', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const anchor = component.elementContexts[1];
+          const textBox = addTextBoxContext(0, 0, anchor, { x: 0.5, y: 0.5 });
+          component.onFreeResizeStart(textBox);
+          const scale = gridScale();
+
+          // when
+          component.onFreeResizeEnd(textBox, { ...resizeEvent(200 * scale, 100 * scale), edges: { right: 1, bottom: 1 } });
+
+          // then
+          expect(Math.abs(textBox.width - 200)).toBeLessThanOrEqual(FreeLayout.STEP);
+          expect(Math.abs(textBox.height - 100)).toBeLessThanOrEqual(FreeLayout.STEP);
+          expect(textBox.anchor).toBe(anchor);
+          expect(textBox.anchorOffset.x).toBeCloseTo(0.5, 1);
+          expect(textBox.anchorOffset.y).toBeCloseTo(0.5, 1);
+        });
+
+        it('#onFreeResizeEnd should limit text box to its minimum size', () => {
+
+          // given
+          const textBox = addTextBoxContext(0, 0);
+          component.onFreeResizeStart(textBox);
+          const scale = gridScale();
+
+          // when
+          component.onFreeResizeEnd(textBox, { ...resizeEvent(10 * scale, 10 * scale), edges: { right: -1, bottom: -1 } });
+
+          // then
+          expect([textBox.width, textBox.height]).toEqual([TextBoxContext.MIN_WIDTH, TextBoxContext.MIN_HEIGHT]);
+        });
+
+        it('#removeElement in grid should keep text box anchored to removed tile where it is drawn', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const removed = component.elementContexts[1];
+          const textBox = addTextBoxContext(0, 0, removed, { x: 0.5, y: 0.5 });
+          const drawn = pageUnitRectOf(textBoxTile());
+
+          // when
+          component.removeElement(removed);
+
+          // then
+          expect([textBox.x, textBox.y]).toEqual([drawn.x, drawn.y]);
+          expect(textBox.anchor).toBeUndefined();
+          expect(component.elementContexts).not.toContain(removed);
+        });
+
+        it('#removeElement in grid should not measure without text box anchored to removed tile', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const kept = component.elementContexts[0];
+          const textBox = addTextBoxContext(0, 0, kept, { x: 0.5, y: 0.5 });
+          const measureSpy = vi.spyOn(cells(), 'getBoundingClientRect');
+
+          // when
+          component.removeElement(component.elementContexts[1]);
+
+          // then
+          expect(measureSpy).not.toHaveBeenCalled();
+          expect([textBox.x, textBox.y, textBox.anchor]).toEqual([0, 0, kept]);
+        });
+
+        it('#removeElement in free layout should unanchor text box anchored to removed tile without moving it', () => {
+
+          // given
+          const [removed] = renderCanvasSummaries([[0, 0, 600, 400]]);
+          const textBox = new TextBoxContext(scene.columns);
+          textBox.setPosition(100, 100);
+          textBox.setAnchor(removed, { x: 0.5, y: 0.5 });
+          component.elementContexts = component.elementContexts.concat([textBox]);
+
+          // when
+          component.removeElement(removed);
+
+          // then
+          expect([textBox.x, textBox.y, textBox.anchor]).toEqual([100, 100, undefined]);
+        });
+
+        it('#setLayout to free canvas should keep offset of text box to its anchor tile', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          addTextBoxContext(0, 0, component.elementContexts[1], { x: 0.25, y: 0.5 });
+
+          // when
+          component.setLayout(Route.FLEX);
+
+          // then
+          const [, anchor, textBox] = component.elementContexts as [SummaryContext, SummaryContext, TextBoxContext];
+          expect(textBox.x).toBe(Math.round(anchor.x + 0.25 * anchor.width));
+          expect(textBox.y).toBe(Math.round(anchor.y + 0.5 * anchor.height));
+          expect(textBox.z).toBe(3);
+          expect(textBox.anchor).toBe(anchor);
+        });
+
+        it('#setLayout to free canvas should move text box into page of its anchor tile', () => {
+
+          // given
+          renderGridSummaries(1, [[1, 1]]);
+          addTextBoxContext(0, 0, component.elementContexts[0], { x: 0.9, y: 0.95 });
+
+          // when
+          component.setLayout(Route.FLEX);
+
+          // then
+          const textBox = component.elementContexts[1];
+          expect([textBox.x, textBox.y]).toEqual([FreeLayout.PAGE_WIDTH - 300, FreeLayout.PAGE_HEIGHT - 150]);
+        });
+
+        it('#setLayout to free canvas should keep drawn rect of unanchored text box within its page', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1]]);
+          addTextBoxContext(1000, 900);
+
+          // when
+          component.setLayout(Route.FLEX);
+
+          // then
+          const textBox = component.elementContexts[1];
+          expect([textBox.x, textBox.y]).toEqual([1000, FreeLayout.PAGE_HEIGHT - 150]);
+        });
+
+        it('#setLayout to free canvas should keep drawn rect of text box anchored to unrendered tile', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          addTextBoxContext(0, 0, component.elementContexts[1], { x: 0.5, y: 0.5 });
+          const drawn = pageUnitRectOf(textBoxTile());
+          vi.spyOn(gridTiles()[1], 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 0, 0));
+
+          // when
+          component.setLayout(Route.FLEX);
+
+          // then
+          const textBox = component.elementContexts[2];
+          expect([textBox.x, textBox.y]).toEqual([drawn.x, drawn.y]);
+        });
+
+        it('#setLayout to grid should anchor text boxes to tile below their top left corner in sorted order', () => {
+
+          // given
+          const [right, left] = renderCanvasSummaries([[700, 0, 600, 400], [0, 0, 600, 400]]);
+          [right.title, left.title] = ['right', 'left'];
+          const onTile = new TextBoxContext(scene.columns);
+          onTile.setPosition(750, 100);
+          onTile.title = 'on tile';
+          const offTile = new TextBoxContext(scene.columns);
+          offTile.setPosition(100, 500);
+          offTile.title = 'off tile';
+          component.elementContexts = [right, onTile, left, offTile];
+
+          // when
+          component.setLayout(Route.GRID);
+
+          // then
+          const contexts = component.elementContexts;
+          expect(contexts.map(c => c.title)).toEqual(['left', 'right', 'on tile', 'off tile']);
+          const [, restoredRight, restoredOnTile, restoredOffTile] = contexts as TextBoxContext[];
+          expect(restoredOnTile.anchor).toBe(restoredRight);
+          expect(restoredOnTile.anchorOffset.x).toBeCloseTo(50 / 600, 5);
+          expect(restoredOnTile.anchorOffset.y).toBeCloseTo(100 / 400, 5);
+          expect([restoredOnTile.x, restoredOnTile.y]).toEqual([750, 100]);
+          expect(restoredOffTile.anchor).toBeUndefined();
+        });
+
+        it('#addTextBox in grid should place text box at top of visible grid and anchor it to tile below', () => {
+
+          // given
+          renderGridSummaries(3, Array.from({ length: 9 }, () => [1, 1]));
+          const content = component.divContentRef.nativeElement;
+          const rowPitch = gridTiles()[3].getBoundingClientRect().top - gridTiles()[0].getBoundingClientRect().top;
+          content.scrollTop = 1.5 * rowPitch;
+          const visibleTop = (content.getBoundingClientRect().top - cells().getBoundingClientRect().top) / gridScale();
+
+          // when
+          const textBox = component.addTextBox();
+
+          // then
+          expect([textBox.x, textBox.y]).toEqual([0, Math.round(visibleTop / FreeLayout.STEP) * FreeLayout.STEP]);
+          expect(textBox.anchor).toBe(component.elementContexts[3]);
+          expect(textBox.anchorOffset.x).toBe(0);
+        });
+
+        it('#addTextBox in empty grid should cascade unanchored text boxes from top', () => {
+
+          // when
+          const first = component.addTextBox();
+          const second = component.addTextBox();
+
+          // then
+          expect([[first.x, first.y], [second.x, second.y]]).toEqual([[0, 0], [20, 20]]);
+          expect([first.z, second.z]).toEqual([1, 2]);
+          expect([first.anchor, second.anchor]).toEqual([undefined, undefined]);
+        });
+
+        it('#loadView of grid view while grid is not rendered should place text box at grid top', () => {
+
+          // given
+          component.setLayout(Route.FLEX);
+          fixture.detectChanges();
+          const textBox = new TextBoxContext(scene.columns);
+          textBox.title = 'Notes';
+
+          // when
+          component.loadView(viewOf(Route.GRID, [textBox]));
+
+          // then
+          expect([component.elementContexts[0].x, component.elementContexts[0].y]).toEqual([0, 0]);
+        });
+      });
     });
 
     it('#loadView should place tiles of legacy flex view in rows', () => {
@@ -1711,6 +2415,22 @@ describe('DashboardComponent', () => {
       expect(request.currentGrid).toEqual({ columns: 4, cellRatio: '3:2' });
       expect(request.columns().map(c => c.name)).toEqual(scene.columns.filter(c => c.indexed).map(c => c.name));
       expect(request.columns()[0]).not.toBe(request.columns()[0]);
+    }));
+
+    it('#generateDashboard should pass current elements without text boxes to generator', fakeAsync(() => {
+
+      // given
+      const context = component.addSummaryTable();
+      component.addTextBox();
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+      mockConfirmDialog(0);
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].currentContexts).toEqual([context]);
     }));
 
     it('#generateDashboard should pass grid scroller width without scrollbar to generator', fakeAsync(() => {

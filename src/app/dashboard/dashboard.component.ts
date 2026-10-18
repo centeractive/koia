@@ -6,15 +6,16 @@ import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { ViewController } from 'app/shared/controller';
 import { View, ViewElement } from 'app/shared/model/view-config';
+import { TextBox } from 'app/shared/services/view-persistence';
 import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 import { LanguageService } from 'app/shared/services/language';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { firstValueFrom } from 'rxjs';
-import { ElementContext, Route } from '../shared/model';
+import { ElementContext, Route, TextBoxContext } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
-import { FreeLayout } from './free-layout';
+import { FreeLayout, Rect, TileRect } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
@@ -27,6 +28,8 @@ interface CanvasInteraction {
   pagesRect: DOMRect;
   page: number;
   guides: SnapGuides;
+  /** rendered rects of the grid tiles an overlay may be anchored to, empty in free layout */
+  anchorTiles: TileRect<ElementContext>[];
   snap?: Snap;
 }
 
@@ -109,7 +112,7 @@ export class DashboardComponent extends ViewController {
     const result = this.dashboardGenerator.generate({
       columns: () => this.clonedColumns(),
       entries: this.entries,
-      currentContexts: this.elementContexts,
+      currentContexts: this.elementContexts.filter(c => !this.isTextBoxContext(c)),
       currentGrid: { columns: this.gridLayout.gridColumns, cellRatio: this.gridLayout.gridCellRatio },
       containerWidth: this.generationContainerWidth()
     });
@@ -134,30 +137,58 @@ export class DashboardComponent extends ViewController {
     return this.divContentRef.nativeElement.offsetWidth - DomMetrics.scrollbarWidth();
   }
 
+  /**
+   * fits the rendered tiles to pages, overlays keep their offset to the fitted anchor tile, all within its page
+   */
   private applyRenderedTilePositions(elements: ViewElement[]): void {
-    const cells = this.gridCellsRef?.nativeElement.getBoundingClientRect();
-    if (cells?.width > 0) {
-      const scale = cells.width / FreeLayout.PAGE_WIDTH;
-      const tiles = elements.map((element, i) =>
-        ({ element, rect: this.elementContainerDivRefs.get(i)?.nativeElement.parentElement.getBoundingClientRect() }));
-      const renderedTiles = tiles.filter(t => t.rect?.width > 0 && t.rect.height > 0);
-      const rects = this.freeLayout.fitToPages(renderedTiles.map(t =>
-        this.freeLayout.rectFromRendered(t.rect.left - cells.left, t.rect.top - cells.top, t.rect.width, t.rect.height, scale)));
-      tiles.forEach(t => t.element.x = t.element.y = undefined);
+    if (this.gridCellsRef?.nativeElement.getBoundingClientRect().width > 0) {
+      const rendered = this.renderedGridRects()
+        .map((r, i) => ({ element: elements[i], overlay: r.tile.isOverlay(), layerRect: r.rect }))
+        .filter(t => t.layerRect.width > 0 && t.layerRect.height > 0);
+      const renderedTiles = rendered.filter(t => !t.overlay);
+      const rects = this.freeLayout.fitToPages(renderedTiles.map(t => t.layerRect));
+      elements.forEach(element => element.x = element.y = undefined);
       renderedTiles.forEach((t, i) => Object.assign(t.element, rects[i], { z: i + 1 }));
+      rendered.filter(t => t.overlay).forEach((t, i) => {
+        const textBox = t.element as TextBox;
+        const anchorRect = rects[renderedTiles.findIndex(r => r.element === elements[textBox.anchor])];
+        const rect = anchorRect ? this.positionInAnchor(textBox, t.layerRect, anchorRect) : t.layerRect;
+        const pageTop = FreeLayout.pageTopOf((anchorRect ?? rect).y);
+        Object.assign(textBox, this.freeLayout.clampIntoPage(rect, pageTop), { z: renderedTiles.length + i + 1 });
+      });
     }
   }
 
+  private positionInAnchor(textBox: TextBox, rect: Rect, anchorRect: Rect): Rect {
+    return {
+      ...rect,
+      x: Math.round(anchorRect.x + textBox.anchorX * anchorRect.width),
+      y: Math.round(anchorRect.y + textBox.anchorY * anchorRect.height)
+    };
+  }
+
+  /**
+   * derives the spans of the tiles from their canvas size, overlays get anchored to the tile below their top left corner
+   */
   private applyGridSpans(elements: ViewElement[]): void {
     const canvasWidth = this.canvasPagesRef?.nativeElement.clientWidth;
     if (canvasWidth > 0) {
       const scale = canvasWidth / FreeLayout.PAGE_WIDTH;
+      const overlays = elements.filter((_element, i) => this.elementContexts[i].isOverlay()) as TextBox[];
       elements.sort((a, b) => a.y - b.y || a.x - b.x);
-      elements.forEach(element => {
+      const tiles = elements.filter(e => !overlays.includes(e as TextBox));
+      tiles.forEach(element => {
         const rect = this.freeLayout.rectOf(element);
         const spans = this.gridLayout.spansOf(rect.width * scale, rect.height * scale, this.contentWidth());
         element.gridColumnSpan = spans.columnSpan;
         element.gridRowSpan = spans.rowSpan;
+      });
+      const tileRects = tiles.map(tile => ({ tile, rect: this.freeLayout.rectOf(tile) }));
+      overlays.forEach(textBox => {
+        const anchoring = this.freeLayout.anchorAt(this.freeLayout.rectOf(textBox), tileRects);
+        textBox.anchor = anchoring && elements.indexOf(anchoring.tile);
+        textBox.anchorX = anchoring?.offset.x;
+        textBox.anchorY = anchoring?.offset.y;
       });
     }
   }
@@ -182,6 +213,17 @@ export class DashboardComponent extends ViewController {
   setGridCellRatio(gridCellRatio: string): void {
     this.gridLayout.setGridCellRatio(gridCellRatio, this.elementContexts);
     this.requestPersist();
+  }
+
+  gridCellsStyle(): object {
+    return { ...this.gridLayout.gridStyle(), ...this.freeLayout.canvasStyle() };
+  }
+
+  /**
+   * @returns the anchor name of the tile of the given context, unique within the grid
+   */
+  anchorNameOf(context: ElementContext): string {
+    return '--koia-tile-' + this.elementContexts.indexOf(context);
   }
 
   resizableEdgesOf(context: ElementContext): Edges {
@@ -216,14 +258,74 @@ export class DashboardComponent extends ViewController {
     return contexts;
   }
 
-  protected onElementContextAdded(): void {
+  protected onElementContextAdded(context: ElementContext): void {
     this.placeUnpositionedTiles(this.elementContexts);
+    if (this.isGridLayout() && context.isOverlay()) {
+      this.anchorToTileBelow(context as TextBoxContext, this.freeLayout.rectOf(context), this.renderedGridTileRects());
+    }
   }
 
   private placeUnpositionedTiles(contexts: ElementContext[]): void {
-    if (!this.isGridLayout()) {
+    if (this.isGridLayout()) {
+      this.freeLayout.placeUnpositionedOverlays(contexts, this.visibleGridTop());
+    } else {
       this.freeLayout.placeUnpositioned(contexts);
     }
+  }
+
+  /**
+   * @returns the top of the visible part of the grid in page units, 0 when the grid is not rendered
+   */
+  private visibleGridTop(): number {
+    const cells = this.gridCellsRef?.nativeElement.getBoundingClientRect();
+    if (!(cells?.width > 0)) {
+      return 0;
+    }
+    const scale = cells.width / FreeLayout.PAGE_WIDTH;
+    return Math.max(0, (this.divContentRef.nativeElement.getBoundingClientRect().top - cells.top) / scale);
+  }
+
+  private anchorToTileBelow(context: TextBoxContext, rect: Rect, tiles: TileRect<ElementContext>[]): void {
+    const anchoring = this.freeLayout.anchorAt(rect, tiles);
+    if (anchoring) {
+      context.setAnchor(anchoring.tile, anchoring.offset);
+    } else {
+      context.clearAnchor();
+    }
+  }
+
+  private renderedGridTileRects(): TileRect<ElementContext>[] {
+    return this.renderedGridRects().filter(r => !r.tile.isOverlay());
+  }
+
+  /**
+   * @returns the rendered rects of the grid's tiles and overlays in page units, relative to the grid cells
+   */
+  private renderedGridRects(): TileRect<ElementContext>[] {
+    const cellsRect = this.gridCellsRef.nativeElement.getBoundingClientRect();
+    const scale = cellsRect.width / FreeLayout.PAGE_WIDTH;
+    return this.elementContainerDivRefs.map((ref, i) => {
+      const r = ref.nativeElement.parentElement.getBoundingClientRect();
+      return {
+        tile: this.elementContexts[i],
+        rect: this.freeLayout.rectFromRendered(r.left - cellsRect.left, r.top - cellsRect.top, r.width, r.height, scale)
+      };
+    });
+  }
+
+  /**
+   * in grid layout, text boxes anchored to the removed tile stay where they are drawn
+   */
+  override removeElement(context: ElementContext): void {
+    const anchored = this.textBoxesAnchoredTo(context);
+    if (this.isGridLayout() && anchored.length) {
+      const rects = this.renderedGridRects();
+      anchored.forEach(textBox => {
+        const rect = rects.find(r => r.tile === textBox).rect;
+        textBox.setPosition(rect.x, rect.y);
+      });
+    }
+    super.removeElement(context);
   }
 
   onFreeMoveStarted(context: ElementContext): void {
@@ -232,7 +334,7 @@ export class DashboardComponent extends ViewController {
 
   readonly constrainFreeMove = (point: Point, _dragRef: DragRef, _dimensions: DOMRect, pickup: Point): Point => {
     const { context, scale, pagesRect, guides } = this.canvasInteraction;
-    const livePagesRect = this.canvasPagesRef.nativeElement.getBoundingClientRect();
+    const livePagesRect = this.layerElement().getBoundingClientRect();
     const snap = guides.snapMove({
       ...this.freeLayout.rectOf(context),
       x: (point.x - pickup.x - livePagesRect.left) / scale,
@@ -250,6 +352,7 @@ export class DashboardComponent extends ViewController {
     const { snap, page } = this.canvasInteraction;
     if (snap) {
       context.setPosition(snap.rect.x, snap.rect.y);
+      this.anchorInGrid(context, snap.rect);
       if (this.freeLayout.pageOf(context) !== page) {
         this.renderChartsOnceCreated([context]);
       }
@@ -279,6 +382,7 @@ export class DashboardComponent extends ViewController {
     if (Object.values(resizeEvent.edges).some(delta => delta !== 0)) {
       const snap = this.freeResizeSnapOf(context, resizeEvent);
       context.setSize(snap.rect.width, snap.rect.height);
+      this.anchorInGrid(context, snap.rect);
       this.bringToFront(context);
     }
     this.resizePreview = undefined;
@@ -291,22 +395,48 @@ export class DashboardComponent extends ViewController {
       ...this.freeLayout.rectOf(context),
       width: resizeEvent.rectangle.width / scale,
       height: resizeEvent.rectangle.height / scale
-    });
+    }, this.freeLayout.minSizeOf(context));
   }
 
+  private anchorInGrid(context: ElementContext, rect: Rect): void {
+    if (this.isGridLayout()) {
+      this.anchorToTileBelow(context as TextBoxContext, rect, this.canvasInteraction.anchorTiles);
+    }
+  }
+
+  /**
+   * in grid layout, the overlay's position is first taken from where it is drawn, as it follows its anchor tile
+   */
   private startCanvasInteraction(context: ElementContext): void {
-    const pages = this.canvasPagesRef.nativeElement;
-    const scale = pages.clientWidth / FreeLayout.PAGE_WIDTH;
-    const others = this.elementContexts
-      .filter(c => c !== context)
-      .map(c => this.freeLayout.rectOf(c));
+    const layer = this.layerElement();
+    const scale = layer.clientWidth / FreeLayout.PAGE_WIDTH;
+    const threshold = FreeLayout.SNAP_THRESHOLD_PX / scale;
+    let guides: SnapGuides;
+    let anchorTiles: TileRect<ElementContext>[] = [];
+    if (this.isGridLayout()) {
+      const rects = this.renderedGridRects();
+      const rect = rects.find(r => r.tile === context).rect;
+      context.setPosition(rect.x, rect.y);
+      guides = new SnapGuides(rects.filter(r => r.tile !== context).map(r => r.rect), 0, threshold, false);
+      anchorTiles = rects.filter(r => !r.tile.isOverlay());
+    } else {
+      const others = this.elementContexts
+        .filter(c => c !== context)
+        .map(c => this.freeLayout.rectOf(c));
+      guides = new SnapGuides(others, this.freeLayout.pageIndexes(this.elementContexts).length, threshold);
+    }
     this.canvasInteraction = {
       context,
       scale,
-      pagesRect: pages.getBoundingClientRect(),
+      pagesRect: layer.getBoundingClientRect(),
       page: this.freeLayout.pageOf(context),
-      guides: new SnapGuides(others, this.freeLayout.pageIndexes(this.elementContexts).length, FreeLayout.SNAP_THRESHOLD_PX / scale)
+      guides,
+      anchorTiles
     };
+  }
+
+  private layerElement(): HTMLDivElement {
+    return (this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef).nativeElement;
   }
 
   private endCanvasInteraction(): void {

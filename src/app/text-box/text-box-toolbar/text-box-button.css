@@ -1,0 +1,35 @@
+.button_tt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--koia-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.button_tt:hover {
+  background-color: var(--koia-hover-tint);
+}
+
+.button_tt.button_tt_active {
+  background-color: var(--koia-active-tint);
+  color: var(--koia-accent);
+}
+
+.button_tt:focus-visible {
+  outline: 2px solid var(--koia-accent);
+}
+
+.button_tt mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}

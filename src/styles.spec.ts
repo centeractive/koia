@@ -638,4 +638,33 @@ describe('global styles', () => {
     expect(rule.style.textDecoration).toBe('none');
     expect(rule.style.getPropertyPriority('text-decoration')).toBe('important');
   });
+
+  it('print styles should hide text box placeholder', () => {
+
+    // when
+    const rule = printRule('koia-text-box .is-editor-empty::before');
+
+    // then
+    expect(rule.style.content).toBe('none');
+    expect(rule.style.getPropertyPriority('content')).toBe('important');
+  });
+
+  it('print styles should print text box background color', () => {
+
+    // when
+    const rule = printRule('.div_text_box_tile');
+
+    // then
+    expect(rule.style.getPropertyValue('print-color-adjust')).toBe('exact');
+  });
+
+  it('print styles should hide text box frame', () => {
+
+    // when
+    const rule = printRule('.div_text_box_tile::after');
+
+    // then
+    expect(rule.style.borderStyle).toBe('none');
+    expect(rule.style.getPropertyPriority('border-style')).toBe('important');
+  });
 });

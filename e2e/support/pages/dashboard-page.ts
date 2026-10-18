@@ -1,14 +1,17 @@
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
 import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';
+import { TextBox } from '../components/text-box';
 import { ViewToolbar } from '../components/view-toolbar';
 
 export class DashboardPage {
 
    readonly tiles: Locator;
    readonly summaryTables: Locator;
+   readonly summaryTiles: Locator;
    readonly chartTiles: Locator;
+   readonly textBoxTiles: Locator;
    readonly launcher: ViewLauncherDialog;
    readonly sideBar: DashboardSideBar;
    readonly viewToolbar: ViewToolbar;
@@ -24,7 +27,9 @@ export class DashboardPage {
       this.root = page.locator('koia-dashboard');
       this.tiles = this.root.locator('.div_tile');
       this.summaryTables = this.tiles.locator('koia-summary-table');
+      this.summaryTiles = this.tiles.filter({ has: page.locator('koia-summary-table') });
       this.chartTiles = this.tiles.filter({ has: page.locator('koia-chart') });
+      this.textBoxTiles = this.tiles.filter({ has: page.locator('koia-text-box') });
       this.launcher = new ViewLauncherDialog(page);
       this.sideBar = new DashboardSideBar(this.root);
       this.toolbar = this.root.locator('koia-view-toolbar');
@@ -46,6 +51,20 @@ export class DashboardPage {
 
    async addSummary(): Promise<void> {
       await this.toolbar.locator(ADD_SUMMARY_BUTTON).click();
+   }
+
+   async addSummaries(count: number): Promise<void> {
+      for (let i = 0; i < count; i++) {
+         await this.addSummary();
+         await this.sideBar.close();
+      }
+   }
+
+   async addTextBox(): Promise<TextBox> {
+      const count = await this.textBoxTiles.count();
+      await this.toolbar.locator('#but_add_text_box').click();
+      await expect(this.textBoxTiles).toHaveCount(count + 1);
+      return this.textBox(count);
    }
 
    async setGridColumns(menuItem: string): Promise<void> {
@@ -71,6 +90,10 @@ export class DashboardPage {
 
    tile(index: number): DashboardTile {
       return new DashboardTile(this.tiles.nth(index));
+   }
+
+   textBox(index: number): TextBox {
+      return new TextBox(this.textBoxTiles.nth(index));
    }
 
    async regenerate(): Promise<void> {

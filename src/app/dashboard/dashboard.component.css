@@ -48,6 +48,63 @@
   z-index: 10;
 }
 
+.div_grid_cells > .div_tile {
+  anchor-name: var(--koia-anchor-name);
+}
+
+.div_drop_list_detached {
+  display: contents;
+}
+
+.div_tile.div_text_box_tile {
+  background-color: transparent;
+  padding: 6px;
+  cursor: move;
+  pointer-events: none;
+}
+
+.div_tile.div_text_box_tile::after {
+  border: none;
+}
+
+.div_text_box_tile > .resize-handle {
+  visibility: hidden;
+}
+
+.div_text_box_tile:hover,
+.div_text_box_tile:has(koia-text-box.koia-text-box-active),
+.div_text_box_tile.cdk-drag-dragging,
+.div_text_box_tile.resize-active {
+  pointer-events: auto;
+}
+
+.div_tile.div_text_box_tile:hover::after,
+.div_tile.div_text_box_tile:has(koia-text-box.koia-text-box-active)::after,
+.div_tile.div_text_box_tile.cdk-drag-dragging::after,
+.div_tile.div_text_box_tile.resize-active::after {
+  border: 1px dashed var(--koia-accent);
+}
+
+.div_text_box_tile:hover > .resize-handle,
+.div_text_box_tile:has(koia-text-box.koia-text-box-active) > .resize-handle,
+.div_text_box_tile.cdk-drag-dragging > .resize-handle,
+.div_text_box_tile.resize-active > .resize-handle {
+  visibility: visible;
+}
+
+.div_grid_cells .div_text_box_tile {
+  left: var(--koia-left);
+  top: var(--koia-top);
+}
+
+@supports (position-anchor: --a) {
+  .div_grid_cells .div_text_box_tile.div_anchored {
+    position-anchor: var(--koia-anchor);
+    left: anchor(var(--koia-anchor-fx), var(--koia-left));
+    top: anchor(var(--koia-anchor-fy), var(--koia-top));
+  }
+}
+
 #div_grid,
 #div_canvas {
   scrollbar-gutter: stable;

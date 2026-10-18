@@ -1,0 +1,17 @@
+<button type="button" class="button_tt but_select" cdkOverlayOrigin #origin="cdkOverlayOrigin"
+  (mousedown)="$event.preventDefault()" (click)="open = !open">
+  <span class="span_select_label">{{ label }}</span>
+  <mat-icon svgIcon="lucide_chevron_down" />
+</button>
+<ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="origin" [cdkConnectedOverlayOpen]="open"
+  [cdkConnectedOverlayPositions]="positions" [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop" (backdropClick)="open = false" (detach)="open = false">
+  <div class="div_select_list">
+    @for (option of options; track option.value) {
+      <button type="button" class="button_tt but_select_option" [class.button_tt_active]="option.value === value"
+        [style.font-family]="option.fontFamily" (mousedown)="$event.preventDefault()" (click)="select(option)">
+        {{ option.label }}
+      </button>
+    }
+  </div>
+</ng-template>
