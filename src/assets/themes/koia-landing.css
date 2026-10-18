@@ -108,7 +108,7 @@
   outline-offset: 2px;
 }
 
-:is(.landing-hero, .landing-cta) .landing-btn:focus-visible {
+.landing-hero .landing-btn:focus-visible {
   outline-color: var(--koia-on-color);
 }
 
@@ -188,10 +188,6 @@
   grid-template-columns: repeat(4, 1fr);
 }
 
-.landing-grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
 .landing-grid-4 > .landing-tile {
   display: grid;
   grid-template-rows: subgrid;
@@ -241,8 +237,7 @@
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
-  .landing-grid-4,
-  .landing-grid-3 {
+  .landing-grid-4 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -252,8 +247,7 @@
     display: none;
   }
 
-  .landing-grid-4,
-  .landing-grid-3 {
+  .landing-grid-4 {
     grid-template-columns: 1fr;
   }
 }

@@ -7,10 +7,10 @@
       "about": "About Koia"
     },
     "title": "Get started",
-    "lead": "Load your own CSV, Excel or JSON file, or explore Koia with sample data.",
+    "lead": "Load your own CSV, Excel or JSON file, or explore Koia with sample data. Your data is never sent to any third-party server.",
     "externalInvocationFailed": "cannot show raw data of scene with _id {{id}}",
     "storage": {
-      "storedIn": "Data is stored in",
+      "storedIn": "Data is stored only in",
       "thisBrowser": "this browser (IndexedDB)",
       "change": "Change storage",
       "group": "Data storage",
@@ -55,37 +55,6 @@
         "title": "Configure elements",
         "beforeIcon": "Press ",
         "afterIcon": " on an element to pick columns, chart type and colors."
-      }
-    },
-    "info": {
-      "title": "Reference",
-      "formats": {
-        "title": "Data formats",
-        "teaser": "CSV, Excel and JSON with full control over the import",
-        "loading": "Data is loaded from files to the backing data storage through Koia itself or it may be written to it by a third party program.",
-        "supported": "The following file types are supported.",
-        "control": "When importing a file, you're granted full control over which portions of the data should be imported. You're also in control over...",
-        "dataTypes": "The data types to be used for storing the values in the data storage",
-        "displayFormat": "The format to be applied for displaying certain values"
-      },
-      "scene": {
-        "title": "What is a scene?",
-        "teaser": "One scene per data set, switch between them at any time",
-        "text": "Once loaded to the data storage, individual datasets are each represented by a <b>Scene</b>. You can switch between different scenes as you please.",
-        "items": "Scenes can be given a user-defined name and description. They also contain the following items.",
-        "origin": "Information about the origin of the loaded data (i.e. file name and modification date).",
-        "link": "A link to the loaded raw data in the data storage.",
-        "columns": "The name, data type, width and format of individual data columns.",
-        "views": "View definitions that were saved by the user in order to be restored later on."
-      },
-      "views": {
-        "title": "Views",
-        "teaser": "Raw data table, pivot tables and dashboards",
-        "rawData": "The <b>Raw Data</b> table presents the data in an unprocessed form in pages of adjustable size. The table offers sorting and filtering of individual columns.",
-        "pivotBeforeLink": "The <b>Pivot Table</b> is a powerful tool to compute, summarize, and analyze data, with revealing patterns and trends. It's based on amazing ",
-        "pivotAfterLink": " that offers many different views (e.g. heatmaps and table barcharts) and lets you shape the pivot table through drag and drop of individual columns.",
-        "dashboard": "A <b>Dashboard</b> contains a variable number of elements (summary tables, charts, graphs and text boxes). In <b>grid</b> layout, the elements are held in a fixed grid of customizable dimension, they may fit into a single cell or spread over several columns and rows. When the window size changes, the element size also changes in order to always fit the allocated grid space. With <b>Snap to Grid</b> turned off, elements are placed and sized freely on pages that match the printed pages; alignment guides help to arrange them and the layout scales with the window width.",
-        "tabs": "Any number of pivot tables and dashboards may be opened as individual tabs next to the raw data table. Open tabs are kept with the scene."
       }
     },
     "connection": {

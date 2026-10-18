@@ -22,7 +22,6 @@ import type { Mock } from 'vitest';
 import { page } from 'vitest/browser';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { FrontGuideComponent } from './front-guide/front-guide.component';
-import { FrontInfoComponent } from './front-info/front-info.component';
 import { FrontComponent } from './front.component';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
@@ -49,7 +48,7 @@ let findSceneInfosSpy: Mock;
 
 function configureTestingModule(queryParams: QueryParams, ...providers: (Provider | EnvironmentProviders)[]): void {
   TestBed.configureTestingModule({
-    declarations: [FrontComponent, FrontInfoComponent, FrontGuideComponent, LanguageSelectComponent, DummyComponent],
+    declarations: [FrontComponent, FrontGuideComponent, LanguageSelectComponent, DummyComponent],
     imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDialogModule, DragDropModule,
       RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
     ],
@@ -543,7 +542,7 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    expect(textsOf(host, '.front-storage-line span')).toEqual(['Data is stored in this browser (IndexedDB)']);
+    expect(textsOf(host, '.front-storage-line span')).toEqual(['Data is stored only in this browser (IndexedDB)']);
   });
 
   it('should name CouchDB in storage line', () => {
@@ -555,7 +554,7 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    expect(textsOf(host, '.front-storage-line span')).toEqual(['Data is stored in CouchDB']);
+    expect(textsOf(host, '.front-storage-line span')).toEqual(['Data is stored only in CouchDB']);
   });
 
 
@@ -686,13 +685,22 @@ describe('FrontComponent', () => {
     expect(new URL(storageIcon(host).src).pathname).toBe('/assets/couchdb.png');
   });
 
-  it('should show sections in order', () => {
+  it('should show only the first views guide below hero', () => {
 
     // when
     const host = render();
 
     // then
-    expect(textsOf(host, '.landing-section h2')).toEqual(['Create your first views', 'Reference']);
+    expect(textsOf(host, '.landing-section h2')).toEqual(['Create your first views']);
+  });
+
+  it('should promise in lead that data is never sent to third-party servers', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(host.querySelector('.landing-lead').textContent).toContain('never sent to any third-party server');
   });
 
   it('should mark selected storage active and pressed', () => {
@@ -999,7 +1007,7 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    expect(stylesOf(host, '.landing-tile > :last-child').map(s => s.marginBottom)).toEqual(Array(6).fill('0px'));
+    expect(stylesOf(host, '.landing-tile > :last-child').map(s => s.marginBottom)).toEqual(Array(5).fill('0px'));
   });
 
   describe('on desktop', () => {

@@ -64,6 +64,7 @@
     "jquery-ui-dist": "~1.13.3",
     "lodash": "^4.18.1",
     "luxon": "^3.7.2",
+    "material-icons": "^1.13.14",
     "oboe": "~2.1.7",
     "papaparse": "~5.7.0",
     "pivottable": "~2.23.0",
