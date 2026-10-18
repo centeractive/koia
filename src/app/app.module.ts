@@ -43,7 +43,6 @@ import { DetachFromDropListDirective } from './dashboard/detach-from-drop-list.d
 import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { FrontGuideComponent } from './front/front-guide/front-guide.component';
-import { FrontInfoComponent } from './front/front-info/front-info.component';
 import { FrontComponent } from './front/front.component';
 import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.component';
 import { GraphComponent } from './graph/graph.component';
@@ -133,7 +132,6 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         ConnectionDialogComponent,
         FrontComponent,
         FrontGuideComponent,
-        FrontInfoComponent,
         InputDialogComponent,
         ConfirmDialogComponent,
         ValueFilterComponent,

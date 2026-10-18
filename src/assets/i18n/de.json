@@ -7,10 +7,10 @@
       "about": "Über Koia"
     },
     "title": "Loslegen",
-    "lead": "Laden Sie Ihre eigene CSV-, Excel- oder JSON-Datei oder erkunden Sie Koia mit Beispieldaten.",
+    "lead": "Laden Sie Ihre eigene CSV-, Excel- oder JSON-Datei oder erkunden Sie Koia mit Beispieldaten. Ihre Daten werden nie an fremde Server gesendet.",
     "externalInvocationFailed": "Rohdaten der Szene mit _id {{id}} können nicht angezeigt werden",
     "storage": {
-      "storedIn": "Daten werden gespeichert in",
+      "storedIn": "Daten werden ausschliesslich gespeichert in",
       "thisBrowser": "diesem Browser (IndexedDB)",
       "change": "Speicher wechseln",
       "group": "Datenspeicher",
@@ -55,37 +55,6 @@
         "title": "Elemente konfigurieren",
         "beforeIcon": "Klicken Sie bei einem Element auf ",
         "afterIcon": ", um Spalten, Diagrammtyp und Farben zu wählen."
-      }
-    },
-    "info": {
-      "title": "Referenz",
-      "formats": {
-        "title": "Datenformate",
-        "teaser": "CSV, Excel und JSON mit voller Kontrolle über den Import",
-        "loading": "Daten werden von Koia selbst aus Dateien in den Datenspeicher geladen oder von einem Drittprogramm dorthin geschrieben.",
-        "supported": "Die folgenden Dateitypen werden unterstützt.",
-        "control": "Beim Import einer Datei bestimmen Sie vollständig, welche Teile der Daten importiert werden. Ausserdem bestimmen Sie...",
-        "dataTypes": "Die Datentypen, mit denen die Werte im Datenspeicher abgelegt werden",
-        "displayFormat": "Das Format, mit dem bestimmte Werte angezeigt werden"
-      },
-      "scene": {
-        "title": "Was ist eine Szene?",
-        "teaser": "Eine Szene pro Datensatz, jederzeit zwischen ihnen wechseln",
-        "text": "Jeder in den Datenspeicher geladene Datensatz wird durch eine <b>Szene</b> repräsentiert. Sie können beliebig zwischen verschiedenen Szenen wechseln.",
-        "items": "Szenen können einen eigenen Namen und eine Beschreibung erhalten. Sie enthalten zudem folgende Elemente.",
-        "origin": "Informationen über die Herkunft der geladenen Daten (d. h. Dateiname und Änderungsdatum).",
-        "link": "Einen Verweis auf die geladenen Rohdaten im Datenspeicher.",
-        "columns": "Name, Datentyp, Breite und Format der einzelnen Datenspalten.",
-        "views": "Ansichtsdefinitionen, die vom Benutzer gespeichert wurden, um sie später wiederherzustellen."
-      },
-      "views": {
-        "title": "Ansichten",
-        "teaser": "Rohdatentabelle, Pivot-Tabellen und Dashboards",
-        "rawData": "Die <b>Rohdaten</b>-Tabelle zeigt die Daten unverarbeitet in Seiten einstellbarer Grösse. Die Tabelle bietet Sortieren und Filtern einzelner Spalten.",
-        "pivotBeforeLink": "Die <b>Pivot-Tabelle</b> ist ein leistungsfähiges Werkzeug, um Daten zu berechnen, zusammenzufassen und zu analysieren und dabei Muster und Trends aufzudecken. Sie basiert auf dem hervorragenden ",
-        "pivotAfterLink": ", das viele verschiedene Darstellungen bietet (z. B. Heatmaps und Tabellen-Balkendiagramme) und die Gestaltung der Pivot-Tabelle per Drag-and-Drop einzelner Spalten erlaubt.",
-        "dashboard": "Ein <b>Dashboard</b> enthält eine variable Anzahl Elemente (Übersichtstabellen, Diagramme, Graphen und Textfelder). Im <b>Raster</b>-Layout liegen die Elemente in einem festen Raster anpassbarer Grösse; sie belegen eine einzelne Zelle oder erstrecken sich über mehrere Spalten und Zeilen. Ändert sich die Fenstergrösse, passt sich auch die Grösse der Elemente an, damit sie stets den zugewiesenen Rasterplatz ausfüllen. Ist <b>Am Raster ausrichten</b> ausgeschaltet, werden die Elemente frei auf Seiten platziert und dimensioniert, die den gedruckten Seiten entsprechen; Hilfslinien unterstützen beim Ausrichten und das Layout passt sich der Fensterbreite an.",
-        "tabs": "Beliebig viele Pivot-Tabellen und Dashboards können als einzelne Tabs neben der Rohdatentabelle geöffnet werden. Offene Tabs bleiben mit der Szene erhalten."
       }
     },
     "connection": {

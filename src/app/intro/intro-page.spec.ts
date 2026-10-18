@@ -45,15 +45,51 @@ describe('intro page', () => {
     expect(doc.querySelectorAll('h1').length).toBe(1);
   });
 
-  it('should reference no scripts other than google tag', async () => {
+  it('should load no external scripts', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
-    const scripts = all(doc, 'script[src]') as HTMLScriptElement[];
-    expect(scripts.length).toBe(1);
-    expect(new URL(scripts[0].src).host).toBe('www.googletagmanager.com');
+    expect(all(doc, 'script[src]')).toEqual([]);
+  });
+
+  it('should show pivot tables and dashboards headline', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(doc.querySelector('h1').textContent).toBe('Pivot tables and dashboards from your data');
+  });
+
+  it('should promise in hero that data is never sent to third-party servers', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(doc.querySelector('.landing-lead').textContent).toContain('never sent to any third-party server');
+  });
+
+  it('should list privacy first and no sign-up last among why koia tiles', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(all(doc, '#why h3').map(h => h.textContent))
+      .toEqual(['Your data stays private', 'Open-source', 'CSV, Excel, JSON', 'No sign-up, nothing to install']);
+  });
+
+  it('should not show how it works section', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(doc.getElementById('how')).toBeNull();
+    expect(doc.querySelector('a[href="#how"]')).toBeNull();
   });
 
   it('should link every call to action to front', async () => {
@@ -66,13 +102,18 @@ describe('intro page', () => {
       .toEqual(['/front', '/front', '/front']);
   });
 
-  it('should lead new users to front page as main call to action', async () => {
+  it('should label every call to action open koia in strong accent', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
-    expect(all(doc, 'a.landing-btn-accent').map(l => l.textContent)).toEqual(['Get started', 'Get started']);
+    const buttons = all(doc, 'a.landing-btn');
+    expect(buttons.map(b => b.textContent)).toEqual(['Open Koia', 'Open Koia', 'Open Koia']);
+    buttons.forEach(b => {
+      expect(b.classList).toContain('landing-btn-accent');
+      expect(doc.defaultView.getComputedStyle(b).backgroundColor).toBe('rgb(46, 125, 50)');
+    });
   });
 
   it('should not link outdated video', async () => {
@@ -149,13 +190,13 @@ describe('intro page', () => {
     });
   });
 
-  it('should style primary button with shared koia primary token', async () => {
+  it('should style zoom close button with shared koia primary token', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
-    expect(styleOf(doc, 'header .landing-btn-primary').backgroundColor).toBe('rgb(48, 63, 159)');
+    expect(styleOf(doc, '.landing-zoom-close').backgroundColor).toBe('rgb(48, 63, 159)');
   });
 
   it('should style hero call to action with strong accent', async () => {
@@ -190,16 +231,14 @@ describe('intro page', () => {
     expect(backgroundImage).toContain('rgb(26, 35, 126)');
   });
 
-  it('should style call to action band with accent button on primary', async () => {
+  it('should close features with centered call to action', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
-    const button = styleOf(doc, '.landing-cta .landing-btn-accent');
-    expect(styleOf(doc, '.landing-cta').backgroundColor).toBe('rgb(48, 63, 159)');
-    expect(button.backgroundColor).toBe('rgb(46, 125, 50)');
-    expect(button.color).toBe('rgb(255, 255, 255)');
+    expect(doc.querySelector('#features > .landing-actions > a.landing-btn-accent').getAttribute('href')).toBe('/front');
+    expect(styleOf(doc, '#features > .landing-actions').justifyContent).toBe('center');
   });
 
   it('should outline focused button in contrasting color', async () => {
@@ -210,7 +249,7 @@ describe('intro page', () => {
 
     // when
     const rule = findStyleRule(sheets, '.landing-btn:focus-visible, .landing-zoom:focus-visible');
-    const onPrimaryRule = findStyleRule(sheets, ':is(.landing-hero, .landing-cta) .landing-btn:focus-visible');
+    const onPrimaryRule = findStyleRule(sheets, '.landing-hero .landing-btn:focus-visible');
 
     // then
     expect(rule.style.outlineWidth).toBe('2px');

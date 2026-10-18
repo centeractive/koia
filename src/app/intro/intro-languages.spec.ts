@@ -60,7 +60,7 @@ describe('intro page languages', () => {
          // then
          expect(doc.querySelector('.intro-languages a[aria-current="page"]').getAttribute('hreflang')).toBe(language);
          expect(doc.querySelector('.landing-header-inner > a').getAttribute('href')).toBe(url);
-         expect(doc.body.textContent).not.toContain('Get started');
+         expect(doc.body.textContent).not.toContain('Open Koia');
       });
    });
 

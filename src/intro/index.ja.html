@@ -20,24 +20,14 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeLanguages(null); } });
   </script>
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-66X1MBQRD9"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-
-    gtag('config', 'G-66X1MBQRD9');
-  </script>
-
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Koia データ分析</title>
   <meta name="description"
-    content="CSV、Excel、JSON のデータから、ブラウザー上でグラフ、ピボットテーブル、ダッシュボードを作成できます。オープンソースで登録不要、データは常にあなたの管理下にあります。">
+    content="CSV、Excel、JSON のデータから、ブラウザー上でピボットテーブルとダッシュボードを作成できます。オープンソースで登録不要。データが第三者のサーバーに送信されることはありません。">
   <meta name="theme-color" content="#303f9f">
   <meta property="og:title" content="Koia データ分析">
   <meta property="og:description"
-    content="CSV、Excel、JSON のデータから、ブラウザー上でグラフ、ピボットテーブル、ダッシュボードを作成できます。オープンソースで登録不要、データは常にあなたの管理下にあります。">
+    content="CSV、Excel、JSON のデータから、ブラウザー上でピボットテーブルとダッシュボードを作成できます。オープンソースで登録不要。データが第三者のサーバーに送信されることはありません。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://www.koia.io/intro/screenshots/dashboard.jpg">
   <link rel="alternate" hreflang="en" href="https://www.koia.io/intro/index.html">
@@ -59,7 +49,6 @@
       <nav class="landing-nav">
         <a class="landing-nav-secondary" href="#why">Koia を選ぶ理由</a>
         <a class="landing-nav-secondary" href="#features">機能</a>
-        <a class="landing-nav-secondary" href="#how">使い方</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank"
           rel="noopener">GitHub</a>
         <details class="intro-languages">
@@ -70,7 +59,7 @@
             <a href="/intro/index.ja.html" hreflang="ja" lang="ja" aria-current="page">日本語</a>
           </div>
         </details>
-        <a class="landing-btn landing-btn-primary" href="/front">Koia を開く</a>
+        <a class="landing-btn landing-btn-accent" href="/front">Koia を開く</a>
       </nav>
     </div>
   </header>
@@ -78,10 +67,10 @@
   <div class="landing-scroll">
     <section class="landing-hero">
       <div class="landing-container">
-        <h1>あなたのデータからグラフ、ピボットテーブル、ダッシュボードを</h1>
-        <p class="landing-lead">ブラウザーだけで。オープンソースで登録不要、データは常にあなたの管理下にあります。</p>
+        <h1>あなたのデータからピボットテーブルとダッシュボードを</h1>
+        <p class="landing-lead">ブラウザーだけで。データが第三者のサーバーに送信されることはなく、ブラウザーまたはご自身の CouchDB に保存されます。</p>
         <div class="landing-actions">
-          <a class="landing-btn landing-btn-accent" href="/front">はじめる</a>
+          <a class="landing-btn landing-btn-accent" href="/front">Koia を開く</a>
         </div>
         <figure class="landing-frame landing-hero-shot">
           <button class="landing-zoom" type="button" commandfor="zoom-hero" command="show-modal">
@@ -107,18 +96,18 @@
         <ul class="landing-grid landing-grid-4">
           <li class="landing-tile">
             <div class="landing-tile-head">
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <h3>データは非公開のまま</h3>
+            </div>
+            <p>Koia がデータを第三者のサーバーに送信することはありません。データはブラウザー内で処理され、ブラウザーまたはご自身の
+              CouchDB に保存されます。</p>
+          </li>
+          <li class="landing-tile">
+            <div class="landing-tile-head">
               <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
               <h3>オープンソース</h3>
             </div>
             <p>無料で公開されています。オンラインで使うことも、信頼できる自社環境にインストールすることもできます。</p>
-          </li>
-          <li class="landing-tile">
-            <div class="landing-tile-head">
-              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-              <h3>データは非公開のまま</h3>
-            </div>
-            <p>データがやり取りされるのは、ブラウザーと選択したストレージ（ブラウザー自体または独自の
-              CouchDB）の間だけです。</p>
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
@@ -129,10 +118,10 @@
           </li>
           <li class="landing-tile">
             <div class="landing-tile-head">
-              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-              <h3>ワンクリックで元データへ</h3>
+              <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              <h3>登録もインストールも不要</h3>
             </div>
-            <p>グラフの要素や集計値をクリックすると、その元になった行を表示できます。コンテキストが失われることはありません。</p>
+            <p>ブラウザーで Koia を開けば、すぐに始められます。アカウントもインストールもトラッキングもありません。</p>
           </li>
         </ul>
       </div>
@@ -230,17 +219,8 @@
           </dialog>
         </figure>
       </article>
-    </section>
-
-    <section id="how" class="landing-cta landing-section">
-      <div class="landing-container">
-        <h2>使い方</h2>
-        <ol class="landing-grid landing-grid-3 intro-steps">
-          <li><b>Koia を開く</b><span>登録不要。CouchDB を選ばない限り、データはブラウザー内に保存されます。</span></li>
-          <li><b>ファイルを読み込むかサンプルデータを試す</b><span>CSV、Excel、JSON をインポートするか、用意された果物の売上ビューを試せます。</span></li>
-          <li><b>ビューを作成</b><span>グラフ、関係グラフ、サマリーを含むピボットテーブルとダッシュボードを追加できます。</span></li>
-        </ol>
-        <a class="landing-btn landing-btn-accent" href="/front">はじめる</a>
+      <div class="landing-actions">
+        <a class="landing-btn landing-btn-accent" href="/front">Koia を開く</a>
       </div>
     </section>
 
