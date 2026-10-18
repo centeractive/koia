@@ -24,6 +24,15 @@ describe('AppRoutingModule', () => {
       expect(paths).not.toContain(Route.FLEX);
    });
 
+   it('#routes should not contain trial route', () => {
+
+      // when
+      const paths = routes.map(r => r.path);
+
+      // then
+      expect(paths).not.toContain('trial');
+   });
+
    it('#routes should redirect unknown paths to front page', () => {
 
       // when

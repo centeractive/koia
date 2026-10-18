@@ -2,9 +2,11 @@ import { ChangeDetectionStrategy, Component, provideZoneChangeDetection, SimpleC
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
+import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Column, DataType } from 'app/shared/model';
 import { DialogService } from 'app/shared/services/dialog.service';
 import { DomMetrics } from '../table-fit/dom-metrics';
+import { waitFrames, waitStable } from 'app/shared/test/animation-frames';
 import { ColumnAutoSizer } from './column-auto-sizer';
 import { ColumnWidthResolver } from './column-width-resolver';
 import { ColumnResize, VirtualTableSource } from './virtual-table-source';
@@ -143,7 +145,7 @@ describe('VirtualTableComponent', () => {
 
   async function settle(): Promise<void> {
     await fixture.whenStable();
-    await DomMetrics.waitStable(() => [table().gridHeight, table().gridWidth, table().totalSize, table().virtualItems.length,
+    await waitStable(() => [table().gridHeight, table().gridWidth, table().totalSize, table().virtualItems.length,
     fixture.nativeElement.querySelectorAll('.vt-row').length].join(), 3, FRAME_LIMIT);
   }
 
@@ -160,7 +162,7 @@ describe('VirtualTableComponent', () => {
 
   async function scrollToRow(index: number): Promise<void> {
     scroller().scrollTop = index * ROW_HEIGHT;
-    await DomMetrics.waitFrames(() => !!rowElement(index), FRAME_LIMIT);
+    await waitFrames(() => !!rowElement(index), FRAME_LIMIT);
     await settle();
   }
 
@@ -178,7 +180,7 @@ describe('VirtualTableComponent', () => {
 
       // when
       scroller().scrollTop = 600 * ROW_HEIGHT;
-      await DomMetrics.waitFrames(() => !!rowElement(600), FRAME_LIMIT);
+      await waitFrames(() => !!rowElement(600), FRAME_LIMIT);
 
       // then
       expect(rowElement(600).querySelector('.vt-loading').textContent).toBe('…');
@@ -536,6 +538,42 @@ describe('VirtualTableComponent', () => {
       expect(host.sorted).toEqual([]);
     });
 
+    it('#keydown enter on indexed header should emit sort when sortable', async () => {
+
+      // given
+      await render();
+
+      // when
+      header('Amount').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+
+      // then
+      expect(host.sorted).toEqual([host.columns[columnIndex('Amount')]]);
+    });
+
+    it('#keydown space on indexed header should emit sort when sortable', async () => {
+
+      // given
+      await render();
+      const event = new KeyboardEvent('keydown', { key: ' ', cancelable: true });
+
+      // when
+      header('Amount').dispatchEvent(event);
+
+      // then
+      expect(host.sorted).toEqual([host.columns[columnIndex('Amount')]]);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('not indexed header should not be focusable', async () => {
+
+      // when
+      await render();
+
+      // then
+      expect(header('Data').hasAttribute('tabindex')).toBe(false);
+      expect(header('Amount').getAttribute('tabindex')).toBe('0');
+    });
+
     it('should mark only indexed headers sortable when sortable', async () => {
 
       // when
@@ -616,6 +654,20 @@ describe('VirtualTableComponent', () => {
 
       // then
       expect(dialogService.showConfirmDialog).toHaveBeenCalledTimes(1);
+    });
+
+    it('#displayValue should show markup of object value as text', async () => {
+
+      // given
+      await render();
+      const column = host.columns[columnIndex('Nested')];
+
+      // when
+      table().displayValue(column, { Nested: '<b>"x" & y</b>' });
+
+      // then
+      const data: ConfirmDialogData = vi.mocked(dialogService.showConfirmDialog).mock.lastCall[0];
+      expect(data.htmlContent).toBe('<pre>&lt;b&gt;&quot;x&quot; &amp; y&lt;/b&gt;</pre>');
     });
 
     it('#displayValue should not display dialog when data type is not OBJECT', async () => {

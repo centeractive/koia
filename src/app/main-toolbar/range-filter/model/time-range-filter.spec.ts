@@ -371,6 +371,42 @@ describe('TimeRangeFilter', () => {
       expect(options.combineLabels('1 Jan 2008 05', '1 Jan 2008 06')).toBe('1 Jan 2008 05 - 1 Jan 2008 06');
    });
 
+   it('#onStepChanged should define slider ceil from start of step unit', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm', timeUnit: TimeUnit.YEAR };
+      const timeStart = toTime(2000) + 30 * 60_000;
+      const timeEnd = toTime(2000) + 10 * 3_600_000 + 15 * 60_000;
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
+
+      // when
+      filter.onStepChanged(TimeUnit.HOUR);
+
+      // then
+      const options = filter.sliderOptions;
+      expect(options.floor).toBe(0);
+      expect(options.ceil).toBe(11);
+      expect(options.translate(0, LabelType.Ceil)).toBe('1 Jan 2000 00');
+      expect(options.translate(11, LabelType.Ceil)).toBe('1 Jan 2000 11');
+   });
+
+   it('#sliderValueRange should select end without excluding when max is set to slider ceil', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm', timeUnit: TimeUnit.YEAR };
+      const timeStart = toTime(2000) + 30 * 60_000;
+      const timeEnd = toTime(2000) + 10 * 3_600_000 + 15 * 60_000;
+      const filter = new TimeRangeFilter(column, timeStart, timeEnd, null, false);
+      filter.onStepChanged(TimeUnit.HOUR);
+
+      // when
+      filter.sliderValueRange.max = filter.sliderOptions.ceil;
+
+      // then
+      expect(filter.selValueRange.max).toBe(timeEnd);
+      expect(filter.selValueRange.maxExcluding).toBe(false);
+   });
+
    it('#reset should reset selected start and end time', () => {
 
       // given

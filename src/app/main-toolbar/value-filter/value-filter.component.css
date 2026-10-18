@@ -9,22 +9,18 @@ button {
    z-index: 999;
 }
 
-.operator {
-   width: 80px;
-   padding-left: 5px;
-}
-
 .div_column_filter_value {
    display: flex;
    flex-direction: column;
 }
 
-.icon_remove_column_filter {
-   cursor: pointer;
+.but_remove_column_filter {
+   --mat-icon-button-state-layer-size: 28px;
+   padding: 2px;
    opacity: 0.8;
 }
 
-.icon_remove_column_filter:hover {
+.but_remove_column_filter:hover {
    opacity: 1;
 }
 

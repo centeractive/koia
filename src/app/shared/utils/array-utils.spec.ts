@@ -120,39 +120,6 @@ describe('ArrayUtils', () => {
     expect(ArrayUtils.distinctValues([1, 2, 1, 2, 3])).toEqual([1, 2, 3]);
   });
 
-  it('#compare should return false when arrays are different', () => {
-    expect(ArrayUtils.compare([], [''])).toBe(false);
-    expect(ArrayUtils.compare([1, 5], ['1', 5])).toBe(false);
-    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b', 'c'])).toBe(false);
-  });
-
-  it('#compare should return false when one array is null or undefined', () => {
-    expect(ArrayUtils.compare(null, [])).toBe(false);
-    expect(ArrayUtils.compare([], undefined)).toBe(false);
-    expect(ArrayUtils.compare(null, [1])).toBe(false);
-    expect(ArrayUtils.compare([1], undefined)).toBe(false);
-  });
-
-  it('#compare should return false when arrays are different', () => {
-    expect(ArrayUtils.compare([], [''])).toBe(false);
-    expect(ArrayUtils.compare([1, 5], ['1', 5])).toBe(false);
-    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b', 'c'])).toBe(false);
-  });
-
-  it('#compare should return true when arrays are both null or undefined', () => {
-    expect(ArrayUtils.compare(null, null)).toBe(true);
-    expect(ArrayUtils.compare(undefined, undefined)).toBe(true);
-    expect(ArrayUtils.compare(undefined, null)).toBe(true);
-    expect(ArrayUtils.compare(null, undefined)).toBe(true);
-  });
-
-  it('#compare should return true when arrays are identical', () => {
-    expect(ArrayUtils.compare([], [])).toBe(true);
-    expect(ArrayUtils.compare([1, 5], [1, 5])).toBe(true);
-    expect(ArrayUtils.compare(['a', 'b'], ['a', 'b'])).toBe(true);
-    expect(ArrayUtils.compare([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ a: 1, b: 2 }, { c: 3, d: 4 }])).toBe(true);
-  });
-
   it('#compareLoose should return false when one array is null or undefined', () => {
     expect(ArrayUtils.compareLoose(null, [])).toBe(false);
     expect(ArrayUtils.compareLoose([], undefined)).toBe(false);
@@ -649,6 +616,24 @@ describe('ArrayUtils', () => {
 
     // then
     expect(valueRange).toEqual({ min: -1.5, max: 2.5 });
+  });
+
+  it('#categoryDataToValueRange should ignore null values', () => {
+
+    // given
+    const categoryData = {
+      labels: ['a', 'b', 'c'],
+      dataSets: [
+        { label: 'X', values: [5, null, 7] },
+        { label: 'Y', values: [null, 3, 9] }
+      ]
+    };
+
+    // when
+    const valueRange = ArrayUtils.categoryDataToValueRange(categoryData);
+
+    // then
+    expect(valueRange).toEqual({ min: 3, max: 9 });
   });
 
   it('#convertAllDateToTime should return same when array is missing', () => {

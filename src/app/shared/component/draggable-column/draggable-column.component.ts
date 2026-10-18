@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Column, ElementContext, TimeUnit } from 'app/shared/model';
+import { Column, ElementContext, GROUPING_TIME_UNITS, TimeUnit } from 'app/shared/model';
+import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { DataTypeUtils } from 'app/shared/utils';
 
 @Component({
@@ -14,12 +15,16 @@ export class DraggableColumnComponent implements OnInit {
   @Input() column: Column;
   @Input() cssClass: string;
 
-  readonly selectableTimeUnits = [undefined, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];
+  readonly selectableTimeUnits = GROUPING_TIME_UNITS;
 
   icon: string;
 
   ngOnInit(): void {
     this.icon = DataTypeUtils.iconOf(this.column.dataType);
+  }
+
+  groupingTimeUnitKey(timeUnit: TimeUnit): string {
+    return timeUnit ? EnumLabelKeys.groupingTimeUnit(timeUnit) : 'ui.notGrouped';
   }
 
   groupingTimeUnitChanged(timeUnit: TimeUnit): void {

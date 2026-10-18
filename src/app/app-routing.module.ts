@@ -5,7 +5,6 @@ import { RawDataViewComponent } from './raw-data/raw-data-view.component';
 import { SceneComponent } from './scene/scene.component';
 import { ScenesComponent } from './scenes/scenes.component';
 import { Route } from './shared/model/route.enum';
-import { TrialComponent } from './testing/trial/trial.component';
 import { ViewTabComponent } from './view-tab/view-tab.component';
 
 export const routes: Routes = [
@@ -14,7 +13,6 @@ export const routes: Routes = [
   { path: Route.SCENE, component: SceneComponent },
   { path: Route.RAWDATA, component: RawDataViewComponent },
   { path: Route.VIEW + '/:id', component: ViewTabComponent },
-  { path: Route.TRIAL, component: TrialComponent },
   { path: '', redirectTo: '/' + Route.FRONT, pathMatch: 'full' },
   { path: '**', redirectTo: '/' + Route.FRONT }
 ];

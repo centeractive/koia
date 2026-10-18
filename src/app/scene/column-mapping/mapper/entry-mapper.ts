@@ -18,9 +18,10 @@ export class EntryMapper {
 
    constructor(private columnMapping: ColumnPair[], private locale: string) { }
 
-   mapRows(rows: string[][]): MappingResult[] {
+   mapRows(rows: string[][], sourceColumnNames: string[]): MappingResult[] {
+      const valueIndexes = this.columnMapping.map(cp => sourceColumnNames.lastIndexOf(cp.source.name));
       let id = this.reserveIDs(rows.length);
-      return this.sanitize(rows.map(row => this.mapRow(row, ++id)));
+      return this.sanitize(rows.map(row => this.mapRow(row, valueIndexes, ++id)));
    }
 
    mapObjects(sourceEntries: object[]): MappingResult[] {
@@ -51,12 +52,12 @@ export class EntryMapper {
       return mappingResult;
    }
 
-   private mapRow(values: string[], id: number): MappingResult {
+   private mapRow(values: string[], valueIndexes: number[], id: number): MappingResult {
       const mappingResult = this.newMappingResult(id);
       for (let i = 0; i < this.columnMapping.length; i++) {
          const columnPair = this.columnMapping[i];
          if (!columnPair.skip) {
-            this.mapValue(columnPair, values[i], mappingResult);
+            this.mapValue(columnPair, values[valueIndexes[i]], mappingResult);
          }
       }
       return mappingResult;

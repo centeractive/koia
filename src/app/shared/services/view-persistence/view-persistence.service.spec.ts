@@ -259,80 +259,135 @@ describe('ViewPersistenceService', () => {
     await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
   });
 
-  it('#updateRecords should remove deleted records and persist scene', () => {
+  it('#updateRecords should remove deleted records and update scene', async () => {
 
     // given
     const rawDataRecord = createRawDataRecord('raw');
     scene.config.records.push(rawDataRecord);
-    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = service.updateRecords(scene, [pivotTableRecord], []);
+    const status = await service.updateRecords(scene, [pivotTableRecord], []);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view' });
     expect(scene.config.records).toEqual([rawDataRecord]);
-    expect(dbService.persistScene).toHaveBeenCalledWith(scene, false);
+    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
   });
 
-  it('#updateRecords should report deleted and renamed records', () => {
+  it('#updateRecords should report deleted and renamed records', async () => {
 
     // given
     const rawDataRecords = [createRawDataRecord('raw1'), createRawDataRecord('raw2')];
     scene.config.records.push(...rawDataRecords);
-    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = service.updateRecords(scene, rawDataRecords, [pivotTableRecord, pivotTableRecord]);
+    const status = await service.updateRecords(scene, rawDataRecords, [pivotTableRecord, pivotTableRecord]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 2 views\nRenamed 2 views' });
     expect(scene.config.records).toEqual([pivotTableRecord]);
+    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
   });
 
-  it('#updateRecords should report renamed records only', () => {
+  it('#updateRecords should report renamed records only', async () => {
 
     // given
-    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = service.updateRecords(scene, [], [pivotTableRecord]);
+    const status = await service.updateRecords(scene, [], [pivotTableRecord]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Renamed 1 view' });
     expect(scene.config.records).toEqual([pivotTableRecord]);
-    expect(dbService.persistScene).toHaveBeenCalledWith(scene, false);
+    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
   });
 
-  it('#updateViews should remove deleted views and persist scene', () => {
+  it('#updateRecords should keep record of other route with same name', async () => {
+
+    // given
+    const rawDataRecord = createRawDataRecord(pivotTableRecord.name);
+    scene.config.records.push(rawDataRecord);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
+
+    // when
+    await service.updateRecords(scene, [pivotTableRecord], []);
+
+    // then
+    expect(scene.config.records).toEqual([rawDataRecord]);
+  });
+
+  it('#updateRecords should return error status when scene cannot be updated', async () => {
+
+    // given
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue('Scene cannot be updated');
+
+    // when
+    const status = await service.updateRecords(scene, [pivotTableRecord], []);
+
+    // then
+    expect(status).toEqual({ type: StatusType.ERROR, msg: 'Views cannot be updated: Scene cannot be updated' });
+  });
+
+  it('#updateViews should remove deleted views and update scene', async () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
     scene.config.views.push(flexView);
-    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = service.updateViews(scene, [gridView], []);
+    const status = await service.updateViews(scene, [gridView], []);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view' });
     expect(scene.config.views).toEqual([flexView]);
-    expect(dbService.persistScene).toHaveBeenCalledWith(scene, false);
+    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
   });
 
-  it('#updateViews should report deleted and renamed views', () => {
+  it('#updateViews should report deleted and renamed views', async () => {
 
     // given
     const flexView = createFlexView('flex', NOW, summary);
     scene.config.views.push(flexView);
-    vi.spyOn(dbService, 'persistScene').mockResolvedValue(scene);
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = service.updateViews(scene, [flexView], [gridView]);
+    const status = await service.updateViews(scene, [flexView], [gridView]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' });
     expect(scene.config.views).toEqual([gridView]);
+    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
+  });
+
+  it('#updateViews should keep view renamed to name of deleted view', async () => {
+
+    // given
+    const flexView = createFlexView('flex', NOW, summary);
+    scene.config.views.push(flexView);
+    flexView.name = gridView.name;
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
+
+    // when
+    await service.updateViews(scene, [gridView], [flexView]);
+
+    // then
+    expect(scene.config.views).toEqual([flexView]);
+  });
+
+  it('#updateViews should return error status when scene cannot be updated', async () => {
+
+    // given
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue({ message: 'Scene cannot be updated' });
+
+    // when
+    const status = await service.updateViews(scene, [gridView], []);
+
+    // then
+    expect(status).toEqual({ type: StatusType.ERROR, msg: 'Views cannot be updated: Scene cannot be updated' });
   });
 
   function createRawDataRecord(name: string): ConfigRecord {

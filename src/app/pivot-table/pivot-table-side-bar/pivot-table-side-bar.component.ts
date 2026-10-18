@@ -1,7 +1,6 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, Input, OnChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
-import { ArrayUtils, NumberUtils } from 'app/shared/utils';
+import { ArrayUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -70,24 +69,5 @@ export class PivotTableSideBarComponent implements OnChanges {
       min: series.min(),
       max: series.max(),
     };
-  }
-
-  addGroupingRange(valueGrouping: ValueGrouping): ValueRange {
-    const max = NumberUtils.roundUpBroad(valueGrouping.minMaxValues.min);
-    const range: ValueRange = { max: max, active: true };
-    valueGrouping.ranges.push(range);
-    return range;
-  }
-
-  dropGroupingRange(grouping: ValueGrouping, event: CdkDragDrop<string[]>) {
-    ArrayUtils.move(grouping.ranges, event.previousIndex, event.currentIndex);
-  }
-
-  isNumberKey(event: KeyboardEvent): boolean {
-    return NumberUtils.isNumberKey(event);
-  }
-
-  removeGroupingRange(grouping: ValueGrouping, range: ValueRange): void {
-    ArrayUtils.removeElement(grouping.ranges, range);
   }
 }

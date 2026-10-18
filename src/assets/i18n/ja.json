@@ -121,7 +121,7 @@
     "refresh": "データを更新",
     "tabs": {
       "rawData": "生データ",
-      "renameHint": "ダブルクリックで名前を変更",
+      "renameHint": "ダブルクリックまたはF2で名前を変更",
       "close": "閉じる",
       "addView": "ビューを追加",
       "newPivotTable": "新しいピボットテーブル",
@@ -285,7 +285,8 @@
       "jsonPath": "配列の JSONPath",
       "jsonPathDescription": "データを含むオブジェクト配列への JSONPath",
       "worksheetMissing": "シート \"{{sheet}}\" が存在しないか、解析できません"
-    }
+    },
+    "binaryDataNotShown": "*** バイナリデータは表示できません ***"
   },
   "scenes": {
     "title": "シーン",
@@ -349,6 +350,7 @@
     "noElements": "ビューに要素がありません",
     "saved": "ビュー \"{{name}}\" を保存しました",
     "notSaved": "ビュー \"{{name}}\" を保存できません: {{error}}",
+    "notUpdated": "ビューを更新できません: {{error}}",
     "deleted": "{{count}} 件のビューを削除しました",
     "deletedOne": "{{count}} 件のビューを削除しました",
     "renamed": "{{count}} 件のビューの名前を変更しました",
@@ -382,6 +384,13 @@
     "multiLineRows": "行を複数行で表示",
     "hideNestedObjects": "ネストされたオブジェクトを隠す",
     "showNestedObjects": "ネストされたオブジェクトを表示"
+  },
+  "valueGrouping": {
+    "max": "最大 {{value}}",
+    "min": "最小 {{value}}",
+    "addValueRange": "値の範囲を追加",
+    "upTo": "上限:",
+    "rangeMaxTooltip": "範囲の最大値（上限値は含まない）"
   },
   "chart": {
     "typeTooltip": "{{type}}チャート",
@@ -430,7 +439,8 @@
     "error": {
       "nameColumnUndefined": "名前の列が定義されていません",
       "axisUndefined": "{{axis}}が定義されていません",
-      "maxValuesExceeded": "{{chartType}}チャート：値の最大数 {{max}} を超えました。\n\nチャートを設定し直すか、データを絞り込んでください。"
+      "maxValuesExceeded": "{{chartType}}チャート：値の最大数 {{max}} を超えました。\n\nチャートを設定し直すか、データを絞り込んでください。",
+      "valueNotUnique": "値 '{{value}}' は一意ではありません"
     },
     "warning": {
       "sampledDown": "データが間引かれたため、チャートには使用可能な値の一部のみが含まれています。フィルターでデータを絞り込むと、選択した条件のすべての値が表示されます。"
@@ -466,7 +476,7 @@
     "gridCellRatio": "グリッドセルの比率（幅:高さ）",
     "manageViews": "ビューの管理",
     "snapToGrid": "グリッドに合わせる",
-    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます",
+    "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます。続行しますか？",
     "regenerate": "ダッシュボードを再生成",
     "regenerateQuestion": "このダッシュボードのすべての要素が新しく生成された要素に置き換えられます。続行しますか？",
     "nothingToGenerate": "データにダッシュボードの生成に適した列がありません"
@@ -553,12 +563,7 @@
     "sideBar": {
       "nonGroupedColumns": "グループ化されていない列",
       "addGroupingDefinition": "グループ化を追加",
-      "columnGrouping": "{{column}} のグループ化",
-      "max": "最大 {{value}}",
-      "min": "最小 {{value}}",
-      "addValueRange": "値の範囲を追加",
-      "upTo": "上限:",
-      "rangeMaxTooltip": "範囲の最大値（上限値は含まない）"
+      "columnGrouping": "{{column}} のグループ化"
     },
     "locale": {
       "renderError": "ピボットテーブルの結果を表示中にエラーが発生しました。",
@@ -647,11 +652,6 @@
       "countDistinctValues": "一意の値を数える",
       "aggregateValues": "値を集計",
       "columnGrouping": "{{column}} のグループ化",
-      "max": "最大 {{value}}",
-      "min": "最小 {{value}}",
-      "addValueRange": "値の範囲を追加",
-      "upTo": "上限:",
-      "rangeMaxTooltip": "範囲の最大値（上限値は含まない）",
       "hierarchy": "階層",
       "selectedColumns": "選択された列",
       "dragDropColumnsHelp": "利用可能な列をドラッグ＆ドロップして選択します",

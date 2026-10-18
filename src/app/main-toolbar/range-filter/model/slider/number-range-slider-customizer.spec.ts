@@ -40,22 +40,4 @@ describe('NumberRangeSliderCustomizer', () => {
       // then
       expect(label).toBe('9 excl.');
    });
-
-   it('#combineLabels should return single label when labels are equal', () => {
-
-      // when
-      const label = customizer.combineLabels('123', '123');
-
-      // then
-      expect(label).toBe('123');
-   });
-
-   it('#combineLabels should return combined label when labels are different', () => {
-
-      // when
-      const label = customizer.combineLabels('123', '456');
-
-      // then
-      expect(label).toBe('123 - 456');
-   });
 });

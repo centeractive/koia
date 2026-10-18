@@ -47,7 +47,7 @@
         @if (columnDefAssistant.canHaveDisplayFormat(mapping)) {
           <mat-form-field class="column_format">
             <mat-label>{{ 'scene.column.displayFormat' | translate }}</mat-label>
-            <mat-select class="select_display_format" [(value)]="mapping.target.format">
+            <mat-select class="select_display_format" [(value)]="mapping.target.format" (selectionChange)="onChange.emit()">
               @for (format of dateFormats; track format) {
                 <mat-option [value]="format">
                   {{ formattedNow(format) }}
@@ -58,6 +58,6 @@
         }
         @if (mapping.warning) {
           <img src="/assets/warning.png" [matTooltip]="warningOf(mapping) | translate"
-            matTooltipClass="tooltip_warning" />
+            matTooltipClass="koia-tooltip-warning" />
         }
       </div>

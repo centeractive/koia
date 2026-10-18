@@ -197,4 +197,42 @@ describe('RangeFilterComponent', () => {
     expect(selValueRange.max).toBe(10);
     expect(component.onChange.emit).toHaveBeenCalled();
   }));
+
+  it('reset button should be enabled when range filter is inverted only', () => {
+
+    // given
+    component.filter = new NumberRangeFilter(amountColumn, 1, 10, null, true);
+    component.ngOnChanges();
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const htmlButton: HTMLButtonElement = fixture.debugElement.query(By.css('.but_reset_range_filter')).nativeElement;
+    expect(htmlButton.disabled).toBe(false);
+  });
+
+  it('should not raise buttons outside of range filter', () => {
+
+    // given
+    const outsideButton = document.createElement('button');
+    document.body.appendChild(outsideButton);
+
+    // when
+    const zIndex = getComputedStyle(outsideButton).zIndex;
+
+    // then
+    expect(zIndex).toBe('auto');
+    outsideButton.remove();
+  });
+
+  it('range filter buttons should stay above slider', () => {
+
+    // when
+    const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.div_range_filter > button'));
+
+    // then
+    expect(buttons.length).toBe(3);
+    buttons.forEach(b => expect(getComputedStyle(b).zIndex).toBe('999'));
+  });
 });

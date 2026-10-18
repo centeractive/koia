@@ -16,7 +16,7 @@
       </button>
       @if (columns) {
         <koia-table-mode-toggles [columns]="columns" [multiLine]="multiLine" (multiLineChange)="toggleMultiLine()"
-          [(showNestedObjects)]="showNestedObjects" />
+          [showNestedObjects]="showNestedObjects" (showNestedObjectsChange)="toggleShowNestedObjects()" />
       }
       <button mat-icon-button [class.koia-toggle-active]="highlight"
         [matTooltip]="(highlight ? 'rawData.undoHighlight' : 'rawData.highlight') | translate" (click)="toggleHighlight()">

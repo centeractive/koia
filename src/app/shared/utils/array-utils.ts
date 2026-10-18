@@ -68,18 +68,6 @@ export class ArrayUtils {
   }
 
   /**
-   * @returns <true> if the specified arrays are equal, <false> otherwise
-   */
-  static compare(arr1: unknown[], arr2: unknown[]): boolean {
-    if (!arr1 && !arr2) {
-      return true;
-    } else if ((!arr1 && arr2) || (arr1 && !arr2) || arr1.length !== arr2.length) {
-      return false;
-    }
-    return JSON.stringify(arr1) === JSON.stringify(arr2);
-  }
-
-  /**
    * @returns <true> if the specified arrays contain equal elements regardless their position, <false> otherwise
    */
   static compareLoose(arr1: unknown[], arr2: unknown[]): boolean {
@@ -212,18 +200,15 @@ export class ArrayUtils {
     if (!array || array.length === 0) {
       return ArrayUtils.UNDEFINED_VALUE_RANGE;
     }
-    const numbers: number[] = array
-      .map(o => (o as Record<string, unknown>)[attributeName])
-      .filter(n => typeof n === 'number')
-      .filter(n => NumberUtils.isNumber(n, undefined));
-    return ArrayUtils.toValueRange(numbers);
+    return ArrayUtils.toValueRange(ArrayUtils.numbersOf(array.map(o => (o as Record<string, unknown>)[attributeName])));
   }
 
   static categoryDataToValueRange(categoryData: CategoryData): ValueRange {
-    const values = categoryData.dataSets
-      .map(ds => ds.values)
-      .reduce((acc, values) => acc.concat(values), []);
-    return ArrayUtils.toValueRange(values);
+    return ArrayUtils.toValueRange(ArrayUtils.numbersOf(categoryData.dataSets.flatMap(ds => ds.values)));
+  }
+
+  private static numbersOf(values: unknown[]): number[] {
+    return values.filter(v => typeof v === 'number' && !Number.isNaN(v)) as number[];
   }
 
   static toValueRange(values: number[]): ValueRange {

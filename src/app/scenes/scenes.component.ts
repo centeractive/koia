@@ -104,7 +104,8 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
         } else {
           this.router.navigateByUrl(Route.SCENE);
         }
-      });
+      })
+      .catch(err => this.notifyError(err));
   }
 
   private filterSceneInfos(): SceneInfo[] {

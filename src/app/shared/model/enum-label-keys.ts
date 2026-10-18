@@ -22,6 +22,10 @@ export class EnumLabelKeys {
       return 'enum.timeUnit.' + memberNameOf(TimeUnit, timeUnit);
    }
 
+   static groupingTimeUnit(timeUnit: TimeUnit): string {
+      return 'ui.per.' + timeUnit;
+   }
+
    static dataType(dataType: DataType): string {
       return 'enum.dataType.' + memberNameOf(DataType, dataType);
    }

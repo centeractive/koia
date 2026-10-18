@@ -1,10 +1,7 @@
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Directive, SimpleChange } from '@angular/core';
 import { fakeAsync, flush } from '@angular/core/testing';
 import { Aggregation, Column, DataType, ElementContext, ExportFormat, TimeUnit } from '../model';
 import { ContainerModel, DragDropEventFactory } from '../test';
-import { NumberUtils } from '../utils';
-import { ValueRange } from '../value-range/model/value-range.type';
 import { SideBarController } from './side-bar.controller';
 
 @Directive()
@@ -51,11 +48,6 @@ describe('SummaryTableSideBarComponent', () => {
 
       controller = new SideBarControllerTestable();
       controller.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
-   });
-
-   it('#ngOnChanges should identify non grouped columns', () => {
-      const expectedNonGroupedColumns = columns.filter(c => c.name === 'Amount' || c.name === 'Percent');
-      expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
    });
 
    it('#dropSplitColumn should re-position context split columns when moved inside selected columns', () => {
@@ -177,8 +169,6 @@ describe('SummaryTableSideBarComponent', () => {
       // then
       expect(context.hasValueGrouping('Amount')).toBeTruthy();
       expect(context.valueGroupings[0].columnName).toEqual('Amount');
-      const expectedNonGroupedColumns = columns.filter(c => c.name === 'Percent');
-      expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
    }));
 
    it('#removeValueGrouping should remove value grouping', () => {
@@ -194,119 +184,6 @@ describe('SummaryTableSideBarComponent', () => {
 
       // then
       expect(context.hasValueGrouping('Amount')).toBe(false);
-      const expectedNonGroupedColumns = columns.filter(c => c.name === 'Amount' || c.name === 'Percent');
-      expect(controller.nonGroupedColumns).toEqual(expectedNonGroupedColumns);
-   });
-
-   it('#addGroupingValueRange should add range', () => {
-
-      // given
-      const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries = entries;
-      controller.addValueGrouping('Amount');
-      const amountValueGrouping = context.valueGroupings[0];
-      const rangesCount = amountValueGrouping.ranges.length;
-
-      // when
-      const range = controller.addGroupingValueRange(amountValueGrouping);
-
-      // then
-      expect(context.valueGroupings[0]).toBe(amountValueGrouping);
-      expect(range).toBeTruthy();
-      expect(amountValueGrouping.ranges.includes(range)).toBe(true);
-      expect(amountValueGrouping.ranges.length).toEqual(rangesCount + 1);
-   });
-
-   it('#dropGroupingRange should move range to new position', () => {
-
-      // given
-      const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries = entries;
-      controller.addValueGrouping('Amount');
-      const amountValueGrouping = context.valueGroupings[0];
-      const rangesCount = amountValueGrouping.ranges.length;
-      const rangeFirst = amountValueGrouping.ranges[0];
-      const rangeSecond = amountValueGrouping.ranges[1];
-
-      // when
-      const dropEvent = { previousIndex: 0, currentIndex: 1 } as CdkDragDrop<string[]>;
-      controller.dropGroupingRange(amountValueGrouping, dropEvent);
-
-      // then
-      expect(context.valueGroupings[0]).toBe(amountValueGrouping);
-      expect(amountValueGrouping.ranges.length).toEqual(rangesCount);
-      expect(amountValueGrouping.ranges[0]).toBe(rangeSecond);
-      expect(amountValueGrouping.ranges[1]).toBe(rangeFirst);
-   });
-
-   it('#removeGroupingRange should remove range', () => {
-
-      // given
-      const entries = generateEntries('Amount', 1000, 0, 1000);
-      controller.entries = entries;
-      controller.addValueGrouping('Amount');
-      const amountValueGrouping = context.valueGroupings[0];
-      const rangesCount = amountValueGrouping.ranges.length;
-      const rangeToRemove = amountValueGrouping.ranges[0];
-
-      // when
-      controller.removeGroupingRange(amountValueGrouping, rangeToRemove);
-
-      // then
-      expect(context.valueGroupings[0]).toBe(amountValueGrouping);
-      expect(amountValueGrouping.ranges.includes(rangeToRemove)).toBe(false);
-      expect(amountValueGrouping.ranges.length).toEqual(rangesCount - 1);
-   });
-
-   it('#groupingRangeStateChanged should fire structure change when column in use', () => {
-
-      // given
-      context.dataColumns = [findColumn('Percent')];
-      context.groupByColumns = [];
-      const range: ValueRange = { max: 100, active: false };
-      const valueGrouping = { columnName: 'Percent', ranges: [range] };
-      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
-
-      // when
-      controller.groupingRangeStateChanged(valueGrouping, range, true);
-
-      // then
-      expect(range.active).toBe(true);
-      expect(context.fireStructureChanged).toHaveBeenCalled();
-   });
-
-   it('#groupingRangeStateChanged should fire structure change when grouped by column', () => {
-
-      // given
-      context.dataColumns = [findColumn('Level')];
-      context.groupByColumns = [findColumn('Percent')];
-      const range: ValueRange = { max: 100, active: true };
-      const valueGrouping = { columnName: 'Percent', ranges: [range] };
-      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
-
-      // when
-      controller.groupingRangeStateChanged(valueGrouping, range, false);
-
-      // then
-      expect(range.active).toBe(false);
-      expect(context.fireStructureChanged).toHaveBeenCalled();
-   });
-
-   it('#groupingRangeStateChanged should not fire structure change when column not in use', () => {
-
-      // given
-      context.dataColumns = [findColumn('Path')];
-      context.groupByColumns = [findColumn('Time')];
-      const range: ValueRange = { max: 100, active: true };
-      const valueGrouping = { columnName: 'Percent', ranges: [range] };
-      vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
-
-      // when
-      controller.groupingRangeStateChanged(valueGrouping, range, false);
-
-      // then
-      expect(range.active).toBe(false);
-      expect(context.fireStructureChanged).not.toHaveBeenCalled();
    });
 
    it('#ngOnChanges should keep element context when context did not change', () => {
@@ -318,36 +195,33 @@ describe('SummaryTableSideBarComponent', () => {
       expect(controller.elementContext).toBe(context);
    });
 
-   it('#addGroupingValueRange should not fire structure change when column not in use', () => {
+   it('#onValueGroupingRangesChanged should fire structure change when column is in use', () => {
 
       // given
-      context.dataColumns = [findColumn('Path')];
-      context.groupByColumns = [findColumn('Time')];
-      const valueGrouping = { columnName: 'Percent', ranges: [], minMaxValues: { min: 0, max: 100 } };
+      context.dataColumns = [findColumn('Percent')];
+      context.groupByColumns = [];
+      const valueGrouping = { columnName: 'Percent', ranges: [{ max: 100, active: true }] };
       vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
 
       // when
-      const range = controller.addGroupingValueRange(valueGrouping);
+      controller.onValueGroupingRangesChanged(valueGrouping);
 
       // then
-      expect(valueGrouping.ranges).toEqual([range]);
-      expect(context.fireStructureChanged).not.toHaveBeenCalled();
+      expect(context.fireStructureChanged).toHaveBeenCalled();
    });
 
-   it('#removeGroupingRange should not fire structure change when column not in use', () => {
+   it('#onValueGroupingRangesChanged should not fire structure change when column is not in use', () => {
 
       // given
       context.dataColumns = [findColumn('Path')];
       context.groupByColumns = [findColumn('Time')];
-      const range: ValueRange = { max: 100, active: true };
-      const valueGrouping = { columnName: 'Percent', ranges: [range] };
+      const valueGrouping = { columnName: 'Percent', ranges: [{ max: 100, active: true }] };
       vi.spyOn(context, 'fireStructureChanged').mockReturnValue(undefined);
 
       // when
-      controller.removeGroupingRange(valueGrouping, range);
+      controller.onValueGroupingRangesChanged(valueGrouping);
 
       // then
-      expect(valueGrouping.ranges).toEqual([]);
       expect(context.fireStructureChanged).not.toHaveBeenCalled();
    });
 
@@ -378,19 +252,6 @@ describe('SummaryTableSideBarComponent', () => {
    it('#isNumericColumn should return false when column is missing', () => {
       expect(controller.isNumericColumn(findColumn(undefined))).toBe(false);
       expect(controller.isNumericColumn(findColumn(null))).toBe(false);
-   });
-
-   it('#isNumberKey should invoke NumberUtils#isNumberKey', () => {
-
-      // given
-      vi.spyOn(NumberUtils, 'isNumberKey').mockReturnValue(undefined);
-
-      // when
-      const event = new KeyboardEvent('keydown', { key: '1' });
-      controller.isNumberKey(event);
-
-      // then
-      expect(NumberUtils.isNumberKey).toHaveBeenCalledWith(event);
    });
 
    function findColumn(name: string): Column {

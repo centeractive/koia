@@ -62,7 +62,7 @@
   </div>
   <div class="div_title">
     <textarea matInput class="textarea_title" type="text" [value]="context.getTitle()" [textareaMaxRows]="2"
-      (keyup)="titleChange.emit($any($event.target).value)"></textarea>
+      (input)="titleChange.emit($any($event.target).value)"></textarea>
   </div>
   @if (context.warning) {
     <button class="but_warning" mat-icon-button [matTooltip]="context.warning" color="warn">

@@ -1,4 +1,5 @@
 import { ValueRangeConverter } from './value-range-converter';
+import { NumberUtils } from '../utils/number-utils';
 
 describe('ValueRangeConverter', () => {
 
@@ -58,6 +59,30 @@ describe('ValueRangeConverter', () => {
       expect(ValueRangeConverter.toMaxValue(toRange(-1_000, 0))).toBe(0);
       expect(ValueRangeConverter.toMaxValue(toRange(0, 1_000))).toBe(1_000);
       expect(ValueRangeConverter.toMaxValue(toRange(1_000_000, 2_000_000))).toBe(2_000_000);
+   });
+
+   it('#toLabel should keep all fraction digits', () => {
+
+      // given
+      const ds = NumberUtils.decimalSeparator(undefined);
+
+      // when
+      const label = ValueRangeConverter.toLabel(0.0001, 0.00025);
+
+      // then
+      expect(label).toBe('0' + ds + '0001 - 0' + ds + '00025');
+   });
+
+   it('#toMinValue should return small fraction of label', () => {
+
+      // given
+      const label = ValueRangeConverter.toLabel(0.0001, 0.0002);
+
+      // when
+      const minValue = ValueRangeConverter.toMinValue(label);
+
+      // then
+      expect(minValue).toBe(0.0001);
    });
 
    function toRange(from: number, to: number): string {

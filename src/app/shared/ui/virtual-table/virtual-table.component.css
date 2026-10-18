@@ -58,6 +58,11 @@
   cursor: pointer;
 }
 
+.vt-th.sortable:focus-visible {
+  outline: 2px solid var(--koia-primary);
+  outline-offset: -2px;
+}
+
 .vt-th-label {
   flex: 1 1 auto;
   min-width: 0;

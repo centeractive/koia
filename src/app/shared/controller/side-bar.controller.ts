@@ -2,11 +2,10 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/dr
 import { Directive, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
 import { DataFrame } from 'data-forge';
-import { Column, DataType, ElementContext, TimeUnit } from '../model';
-import { ArrayUtils, DataTypeUtils, NumberUtils } from '../utils';
+import { Column, DataType, ElementContext, GROUPING_TIME_UNITS } from '../model';
+import { DataTypeUtils } from '../utils';
 import { ValueGroupingGenerator } from '../value-range';
 import { ValueGrouping } from '../value-range/model/value-grouping.type';
-import { ValueRange } from '../value-range/model/value-range.type';
 
 @Directive()
 export abstract class SideBarController implements OnChanges {
@@ -20,12 +19,11 @@ export abstract class SideBarController implements OnChanges {
    @ViewChild(MatAccordion) accordion: MatAccordion;
 
    multiExpandable = true;
-   readonly selectableTimeUnits = [undefined, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR, TimeUnit.DAY, TimeUnit.MONTH, TimeUnit.YEAR];
+   readonly selectableTimeUnits = GROUPING_TIME_UNITS;
 
    availableSplitColumns: Column[];
    selectedSplitColumns: Column[];
 
-   nonGroupedColumns: Column[];
    availableGroupByColumns: Column[];
    selectedGroupByColumns: Column[];
    elementContext: ElementContext;
@@ -34,15 +32,7 @@ export abstract class SideBarController implements OnChanges {
    ngOnChanges(changes: SimpleChanges): void {
       if (changes['context']) {
          this.elementContext = changes['context'].currentValue;
-         this.identifyNonGroupedColumns();
       }
-   }
-
-   private identifyNonGroupedColumns(): void {
-      const groupedColumns = this.elementContext.valueGroupings.map(g => g.columnName);
-      this.nonGroupedColumns = this.elementContext.columns
-         .filter(c => c.dataType === DataType.NUMBER)
-         .filter(c => !groupedColumns.includes(c.name));
    }
 
    protected defineSelectableItems(): void {
@@ -97,48 +87,20 @@ export abstract class SideBarController implements OnChanges {
       const data = new DataFrame(this.entries);
       const grouping = this.valueGroupingGenerator.createGrouping(data, columnName);
       this.elementContext.addValueGrouping(grouping);
-      this.identifyNonGroupedColumns();
    }
 
    removeValueGrouping(valueGrouping: ValueGrouping): void {
       this.elementContext.removeValueGrouping(valueGrouping);
-      this.identifyNonGroupedColumns();
    }
 
-   addGroupingValueRange(valueGrouping: ValueGrouping): ValueRange {
-      const max = NumberUtils.roundUpBroad(valueGrouping.minMaxValues.min);
-      const range: ValueRange = { max: max, active: true };
-      valueGrouping.ranges.push(range);
+   onValueGroupingRangesChanged(valueGrouping: ValueGrouping): void {
       if (this.elementContext.isColumnInUse(valueGrouping.columnName)) {
          this.elementContext.fireStructureChanged();
       }
-      return range;
-   }
-
-   dropGroupingRange(valueGrouping: ValueGrouping, event: CdkDragDrop<string[]>) {
-      ArrayUtils.move(valueGrouping.ranges, event.previousIndex, event.currentIndex);
-   }
-
-   removeGroupingRange(valueGrouping: ValueGrouping, range: ValueRange): void {
-      ArrayUtils.removeElement(valueGrouping.ranges, range);
-      if (this.elementContext.isColumnInUse(valueGrouping.columnName)) {
-         this.elementContext.fireStructureChanged();
-      }
-   }
-
-   groupingRangeStateChanged(valueGrouping: ValueGrouping, range: ValueRange, active: boolean): void {
-      range.active = active;
-      if (this.elementContext.isColumnInUse(valueGrouping.columnName)) {
-         this.elementContext.fireStructureChanged();
-      }
-   }
-
-   isNumberKey(event: KeyboardEvent): boolean {
-      return NumberUtils.isNumberKey(event);
    }
 
    isNumericColumn(column: Column): boolean {
-      return !!column && DataTypeUtils.isNumeric(column.dataType);
+      return DataTypeUtils.isNumericColumn(column);
    }
 
    setElementPosition(elementPosition: number): void {

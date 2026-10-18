@@ -509,4 +509,49 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[3].target).toEqual({ name: 'Updated', dataType: DataType.TIME, width: 13, indexed: true });
    });
 
+   it('#isValidColumnName should return true when name is valid', () => {
+
+      // when
+      const valid = ColumnMappingGenerator.isValidColumnName('Amount $');
+
+      // then
+      expect(valid).toBe(true);
+   });
+
+   it('#isValidColumnName should return false when name is empty', () => {
+
+      // when
+      const valid = ColumnMappingGenerator.isValidColumnName('');
+
+      // then
+      expect(valid).toBe(false);
+   });
+
+   it('#isValidColumnName should return false when name starts with $', () => {
+
+      // when
+      const valid = ColumnMappingGenerator.isValidColumnName('$Amount');
+
+      // then
+      expect(valid).toBe(false);
+   });
+
+   it('#isValidColumnName should return false when name is too long', () => {
+
+      // when
+      const valid = ColumnMappingGenerator.isValidColumnName('x'.repeat(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH + 1));
+
+      // then
+      expect(valid).toBe(false);
+   });
+
+   it('#isValidColumnName should return true when name has maximum length', () => {
+
+      // when
+      const valid = ColumnMappingGenerator.isValidColumnName('x'.repeat(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH));
+
+      // then
+      expect(valid).toBe(true);
+   });
+
 });

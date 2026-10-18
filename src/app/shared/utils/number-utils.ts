@@ -1,5 +1,7 @@
 export class NumberUtils {
 
+   private static readonly symbols = new Map<string, { group: string, decimal: string }>();
+
    /**
     * @returns [[true]], if the value is an integer or represents an integer (may contain thousands separators of the specified locale),
     * [[false]] otherwise (non-compliant string, boolean, object, array etc.). If the number contains the decimal separator, it is not
@@ -39,32 +41,7 @@ export class NumberUtils {
     * @returns [[true]], if the string represents a number (may contain thousands separators of the specified locale)
     */
    static representsNumber(str: string, locale: string): boolean {
-      if (!str) {
-         return false;
-      }
-      str = str.trim();
-      if (str === '') {
-         return false;
-      }
-      const decimalTokens = str.split(this.decimalSeparator(locale));
-      if (decimalTokens.length == 1) {
-         const thousandTokens = str.split(this.thousandsSeparator(locale));
-         if (!this.checkThousandTokens(thousandTokens)) {
-            return false;
-         }
-         str = thousandTokens.join('');
-      } else if (decimalTokens.length == 2) {
-         const thousandTokens = decimalTokens[0].split(this.thousandsSeparator(locale));
-         if (decimalTokens[0].length > 3) {
-            if (!this.checkThousandTokens(thousandTokens)) {
-               return false;
-            }
-         }
-         str = thousandTokens.join('') + '.' + decimalTokens[1];
-      } else {
-         return false;
-      }
-      return !isNaN(Number(str));
+      return this.parseNumber(str, locale) !== undefined;
    }
 
    /**
@@ -127,8 +104,7 @@ export class NumberUtils {
       } else if (typeof value === 'boolean') {
          return value ? 1 : 0;
       } else if (typeof value === 'string') {
-         const result = this.parseNumber(value as string, locale);
-         return isNaN(result) ? undefined : result;
+         return this.parseNumber(value, locale);
       }
       return undefined;
    }
@@ -140,31 +116,21 @@ export class NumberUtils {
     * @returns a number or [[undefined]] if the specified string does not represent a number
     */
    static parseNumber(str: string, locale: string): number {
-      if (!str || str.trim() === '') {
-         return undefined;
-      }
-      str = this.normalize(str, locale);
-      if (!str) {
-         return undefined;
-      }
-      return str.indexOf('.') >= 0 ? parseFloat(str) : parseInt(str);
+      const num = Number(this.normalize(str, locale));
+      return Number.isNaN(num) ? undefined : num;
    }
 
    /**
-    * converts a string to an integer
+    * converts a string produced by the application (locale independent, e.g. '1.5' or '1e-7') to a number
     *
-    * @param str  a number that may contain thousands separators of the specified locale
-    * @returns an integer or [[undefined]] if the specified string does not represent an integer
+    * @returns a number or [[undefined]] if the specified string is blank or does not represent a number
     */
-   static parseInt(str: string, locale: string): number {
+   static parseMachineNumber(str: string): number {
       if (!str || str.trim() === '') {
          return undefined;
-      } else if (!this.isNumber(str.slice(-1), locale) || str.indexOf(this.decimalSeparator(locale)) > 0) {
-         return undefined;
-      } else if (!this.representsNumber(str, locale)) {
-         return undefined;
       }
-      return parseInt(this.removeThousandsSeparators(str, locale), 10);
+      const num = Number(str);
+      return Number.isNaN(num) ? undefined : num;
    }
 
    /**
@@ -220,11 +186,24 @@ export class NumberUtils {
    }
 
    static thousandsSeparator(locale: string): string {
-      return Number(1_000).toLocaleString(locale).charAt(1);
+      return this.symbolsOf(locale).group;
    }
 
    static decimalSeparator(locale: string): string {
-      return Number(1.1).toLocaleString(locale).charAt(1);
+      return this.symbolsOf(locale).decimal;
+   }
+
+   private static symbolsOf(locale: string): { group: string, decimal: string } {
+      let symbols = this.symbols.get(locale);
+      if (!symbols) {
+         const parts = new Intl.NumberFormat(locale).formatToParts(1_000_000.1);
+         symbols = {
+            group: parts.find(p => p.type === 'group').value,
+            decimal: parts.find(p => p.type === 'decimal').value
+         };
+         this.symbols.set(locale, symbols);
+      }
+      return symbols;
    }
 
    /**
@@ -409,7 +388,7 @@ export class NumberUtils {
     */
    static startIndexAfterDecimalPoint(num: number): number {
       const abs = Math.abs(num);
-      if (abs >= 0.1 || abs <= -0.1) {
+      if (abs >= 0.1) {
          return 0;
       }
       return -Math.floor(Math.log(abs) / Math.log(10) + 1);
@@ -426,7 +405,7 @@ export class NumberUtils {
    }
 
    static isLocaleDecimalSeparator(char: string): boolean {
-      return char === (0.1).toLocaleString().substring(1, 2);
+      return char === this.decimalSeparator(undefined);
    }
 
 }

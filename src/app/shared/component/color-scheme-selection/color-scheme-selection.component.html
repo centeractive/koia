@@ -2,35 +2,39 @@
   {{ 'ui.color.categorical' | translate }}
   @for (s of categoricalSchemes; track s) {
     <div>
-      <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
-        [title]="s" (click)="selectCategoricalScheme(s)">
-        @if (s == colorOptions.scheme) {
-          <span>✔</span>
-        }
-      </div>
-    }
-    <br>
-      {{ 'ui.color.sequential' | translate }}
-      @for (s of sequentialSchemes; track s) {
-        <div>
-          <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'"
-            [title]="s" (click)="selectSequentialScheme(s)">
-            @if (s == colorOptions.scheme) {
-              <span>✔</span>
-            }
-          </div>
-        }
-        <br>
-          <div class="div_opacity">
-            {{ 'ui.color.bgOpacity' | translate }}
-            <mat-slider min="0" max="1" step="0.05">
-              <input matSliderThumb [(ngModel)]="colorOptions.bgColorOpacity" (dragEnd)="changeColorProvider()" />
-            </mat-slider>
-          </div>
-          <div class="div_opacity">
-            {{ 'ui.color.borderOpacity' | translate }}
-            <mat-slider min="0" max="1" step="0.05">
-              <input matSliderThumb [(ngModel)]="colorOptions.borderColorOpacity" (dragEnd)="changeColorProvider()" />
-            </mat-slider>
-          </div>
-        }
+      <button type="button" class="but_color_scheme" [attr.aria-label]="s" [attr.aria-pressed]="s == colorOptions.scheme"
+        (click)="selectCategoricalScheme(s)">
+        <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'" [title]="s" alt="">
+      </button>
+      @if (s == colorOptions.scheme) {
+        <span>✔</span>
+      }
+    </div>
+  }
+  <br>
+  {{ 'ui.color.sequential' | translate }}
+  @for (s of sequentialSchemes; track s) {
+    <div>
+      <button type="button" class="but_color_scheme" [attr.aria-label]="s" [attr.aria-pressed]="s == colorOptions.scheme"
+        (click)="selectSequentialScheme(s)">
+        <img [src]="imagesDir + s + '.png'" [class]="s == colorOptions.scheme ? 'selected' : 'unselected'" [title]="s" alt="">
+      </button>
+      @if (s == colorOptions.scheme) {
+        <span>✔</span>
+      }
+    </div>
+  }
+  <br>
+  <div class="div_opacity">
+    {{ 'ui.color.bgOpacity' | translate }}
+    <mat-slider min="0" max="1" step="0.05">
+      <input id="input_bg_opacity" matSliderThumb [(ngModel)]="colorOptions.bgColorOpacity" (change)="changeColorProvider()" />
+    </mat-slider>
+  </div>
+  <div class="div_opacity">
+    {{ 'ui.color.borderOpacity' | translate }}
+    <mat-slider min="0" max="1" step="0.05">
+      <input id="input_border_opacity" matSliderThumb [(ngModel)]="colorOptions.borderColorOpacity" (change)="changeColorProvider()" />
+    </mat-slider>
+  </div>
+}

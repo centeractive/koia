@@ -40,6 +40,18 @@ describe('JSONReader', () => {
       expect(attributes.length).toBe(1);
    });
 
+   it('#furnishAttributes should reset array path of previous import', () => {
+
+      // given
+      reader.furnishAttributes('')[0].value = '$.entries';
+
+      // when
+      const attributes = reader.furnishAttributes('');
+
+      // then
+      expect(attributes[0].value).toBe('');
+   });
+
    it('#furnishAttributes should set path of root object array', async () => {
 
       // given
@@ -205,5 +217,55 @@ describe('JSONReader', () => {
       // then
       expect(onEntries).toHaveBeenCalledTimes(1);
       expect(recorder.entries).toEqual(entries);
+   });
+
+   it('#readData should revoke object URL when parsing is done', async () => {
+
+      // given
+      const file = new File([JSON.stringify(entries)], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$';
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL');
+      const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 2, recorder);
+      await recorder.completion;
+
+      // then
+      expect(revokeObjectURL).toHaveBeenCalledWith(createObjectURL.mock.results[0].value);
+   });
+
+   it('#readData should revoke object URL when file is corrupt', async () => {
+
+      // given
+      const file = new File(['{ "entries": [{ "A": } ]'], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$.entries';
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL');
+      const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 2, recorder);
+
+      // then
+      await expect(recorder.completion).rejects.toBeDefined();
+      expect(revokeObjectURL).toHaveBeenCalledWith(createObjectURL.mock.results[0].value);
+   });
+
+   it('#readSample should revoke object URL when reading is canceled', async () => {
+
+      // given
+      const file = new File([JSON.stringify(entries)], 'Test.json');
+      reader.furnishAttributes('')[0].value = '$';
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL');
+      const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL');
+
+      // when
+      const sample = await reader.readSample(file, 2);
+
+      // then
+      expect(sample.entries).toEqual(entries.slice(0, 2));
+      await vi.waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith(createObjectURL.mock.results[0].value));
    });
 });

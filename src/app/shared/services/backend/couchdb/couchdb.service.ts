@@ -7,8 +7,7 @@ import { map } from 'rxjs/operators';
 import { DB } from '../db.type';
 import { DocChangeResponse } from '../doc-change-response.type';
 import { CouchDBConfig } from './couchdb-config';
-import { CouchDBConstants } from './couchdb-constants';
-import { sanitizeIndexQuery } from '../mango';
+import { deleteUnlessSystemDatabase, indexQueryOf } from '../db-utils';
 
 /**
  * CouchDB needs the following configuration ($COUCHDB_HOME/etc/local.ini)
@@ -80,24 +79,18 @@ export class CouchDBService implements DB {
   }
 
   createIndex(database: string, columnName: string): Promise<unknown> {
-    const query = sanitizeIndexQuery({
-      index: {
-        fields: [columnName]
-      },
-      ddoc: CouchDBConstants.INDEX_DDOC_PREFIX + columnName
-    });
+    const query = indexQueryOf(columnName);
     const url = this.url(database, '_index');
     LogUtils.logHttpRequest(HTTPMethod.POST, url, query);
     return lastValueFrom(this.http.post<unknown>(url, query, this.httpOptions));
   }
 
   deleteDatabase(database: string): Promise<unknown> {
-    if (database.startsWith('_')) {
-      return Promise.reject('You have no permission to delete the system database ' + database);
-    }
-    const url = this.url(database);
-    LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
-    return lastValueFrom(this.http.delete<unknown>(url, this.httpOptions));
+    return deleteUnlessSystemDatabase(database, () => {
+      const url = this.url(database);
+      LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
+      return lastValueFrom(this.http.delete<unknown>(url, this.httpOptions));
+    });
   }
 
   findById(database: string, id: string): Promise<Document> {

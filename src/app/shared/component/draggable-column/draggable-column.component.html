@@ -1,4 +1,4 @@
-<div [class]="'div_column_item ' + cssClass" mat-stroked-button cdkDrag>
+<div [class]="'div_column_item ' + cssClass" cdkDrag>
   <span>
     <mat-icon [class]="cssClass">{{ icon }}</mat-icon>
     <span [class]="cssClass">{{ column.name }}</span>
@@ -6,18 +6,13 @@
   @if (column.dataType === 'Time') {
     <span class="select_time_unit">
       <span [matMenuTriggerFor]="groupingTimeUnitMenu">
-        @if (!column.groupingTimeUnit) {
-          <span [class]="cssClass">{{ 'ui.notGrouped' | translate }}</span>
-        }
-        @if (column.groupingTimeUnit) {
-          <span [class]="cssClass">{{ 'ui.per.' + column.groupingTimeUnit | translate }}</span>
-        }
+        <span [class]="cssClass">{{ groupingTimeUnitKey(column.groupingTimeUnit) | translate }}</span>
         <mat-icon [class]="cssClass">more_vert</mat-icon>
       </span>
       <mat-menu #groupingTimeUnitMenu="matMenu">
         @for (timeUnit of selectableTimeUnits; track timeUnit) {
           <button mat-menu-item (click)="groupingTimeUnitChanged(timeUnit)">
-            {{ timeUnit ? ('ui.per.' + timeUnit | translate) : '' }}
+            {{ groupingTimeUnitKey(timeUnit) | translate }}
           </button>
         }
       </mat-menu>

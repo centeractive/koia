@@ -13,6 +13,7 @@ import { ChartDataService, ChartMarginService, defaultMargin } from 'app/shared/
 import { LanguageService } from 'app/shared/services/language';
 import { TabsPersister } from 'app/shared/services/view-tabs/tabs-persister';
 import { SceneFactory } from 'app/shared/test';
+import { CommonUtils } from 'app/shared/utils';
 import { ChartComponent } from './chart.component';
 import type { Mock } from 'vitest';
 
@@ -154,6 +155,38 @@ describe('ChartComponent', () => {
 
     // when
     const destroy = () => fixture.destroy();
+
+    // then
+    expect(destroy).not.toThrow();
+  });
+
+  it('#ngOnDestroy should stop refreshing on context changes', fakeAsync(() => {
+
+    // given
+    const sleep = vi.spyOn(CommonUtils, 'sleep');
+    const createData = vi.spyOn(TestBed.inject(ChartDataService), 'createData');
+
+    // when
+    fixture.destroy();
+
+    // then
+    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
+    flush();
+    expect(sleep).not.toHaveBeenCalled();
+    expect(createData).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not fail when no scene is active', () => {
+
+    // given
+    getActiveSceneSpy.mockReturnValue(null);
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockReturnValue(undefined);
+    const noSceneFixture = TestBed.createComponent(ChartComponent);
+    noSceneFixture.componentInstance.context = context;
+    noSceneFixture.detectChanges();
+
+    // when
+    const destroy = () => noSceneFixture.destroy();
 
     // then
     expect(destroy).not.toThrow();

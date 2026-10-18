@@ -5,10 +5,10 @@ import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/sce
 import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
-import { ManageConfigContext, ManageConfigDialogComponent } from '../component/manage-config-dialog';
-import { ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
+import { ManageConfigContext, ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
 import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
 import { Scene } from '../model';
+import { ConfigRecord, View } from '../model/view-config';
 
 @Injectable({
   providedIn: 'root'
@@ -41,11 +41,14 @@ export class DialogService {
     return this.dialogService.open(ConfigLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 
-  showManageConfigDialog(context: ManageConfigContext): MatDialogRef<ManageConfigDialogComponent> {
-    return this.dialogService.open(ManageConfigDialogComponent, { data: context, panelClass: 'dialog-container' });
+  showManageConfigDialog(context: ManageConfigContext): MatDialogRef<ManageViewDialogComponent<ConfigRecord>> {
+    return this.showManageViewDialog({
+      views: context.configRecords,
+      updateViews: (deletedRecords, renamedRecords) => context.updateConfigRecords(deletedRecords, renamedRecords)
+    });
   }
 
-  showManageViewDialog(context: ManageViewContext): MatDialogRef<ManageViewDialogComponent> {
-    return this.dialogService.open(ManageViewDialogComponent, { data: context, panelClass: 'dialog-container' });
+  showManageViewDialog<T extends { name: string, modifiedTime: number } = View>(context: ManageViewContext<T>): MatDialogRef<ManageViewDialogComponent<T>> {
+    return this.dialogService.open<ManageViewDialogComponent<T>, ManageViewContext<T>>(ManageViewDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 }

@@ -13,7 +13,6 @@ export class MangoQueryBuilder {
    static readonly LIMIT = 1_000_000;
 
    private operatorConverter = new OperatorConverter();
-   private whereCombineOperator: CombineOperator = CombineOperator.AND;
    private fullTextFilter: string;
    private propertyFilters: PropertyFilter[] = [];
    private invertedRangeFilters: ValueRangeFilter[] = [];
@@ -24,11 +23,6 @@ export class MangoQueryBuilder {
    private rowCount: number;
 
    constructor(private forPouchDB: boolean, private columns: Column[]) { }
-
-   combineWhereWith(whereCombineOperator: CombineOperator): MangoQueryBuilder {
-      this.whereCombineOperator = whereCombineOperator;
-      return this;
-   }
 
    whereAnyText(fullTextFilter: string): MangoQueryBuilder {
       this.fullTextFilter = fullTextFilter;
@@ -83,24 +77,9 @@ export class MangoQueryBuilder {
    private appendSelector(query: object): void {
       const selectors = this.propertyFilterSelectors();
       this.appendInvertedRangeFilterSelector(selectors);
-      const fullTextFilterSelectors = this.fullTextFilterSelectors();
-      if (fullTextFilterSelectors) {
-         if (selectors.length === 0) {
-            query['selector'] = fullTextFilterSelectors;
-            return;
-         }
-         selectors.push(fullTextFilterSelectors);
-      }
-      const pouchDBSelectors = this.pouchDBSortSelector();
-      if (pouchDBSelectors) {
-         if (selectors.length === 0) {
-            query['selector'] = pouchDBSelectors;
-            return;
-         }
-         selectors.push(pouchDBSelectors);
-      }
+      selectors.push(...[this.fullTextFilterSelectors(), this.pouchDBSortSelector()].filter(s => s));
       if (selectors.length > 0) {
-         query['selector'] = selectors.length === 1 ? selectors[0] : { [this.whereCombineOperator]: selectors };
+         query['selector'] = selectors.length === 1 ? selectors[0] : { $and: selectors };
       }
    }
 
@@ -122,6 +101,8 @@ export class MangoQueryBuilder {
             if (!selector) {
                selector = { [name]: {} };
                selectors.push(selector);
+            }
+            if (!selector[name][operator]) {
                selector[name][operator] = this.toCombinedContainsRegExp(pf.name);
             }
          } else {
@@ -234,9 +215,4 @@ export class MangoQueryBuilder {
    private appendRowCount(query: object): void {
       query['limit'] = this.rowCount > 0 ? this.rowCount : MangoQueryBuilder.LIMIT;
    }
-}
-
-export enum CombineOperator {
-   AND = '$and',
-   OR = '$or'
 }

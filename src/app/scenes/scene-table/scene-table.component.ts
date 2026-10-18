@@ -1,7 +1,9 @@
 import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Scene, SceneInfo } from 'app/shared/model';
-import { DialogService } from 'app/shared/services';
+import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
 
 @Component({
     selector: 'koia-scene-table',
@@ -10,7 +12,7 @@ import { DBService } from 'app/shared/services/backend';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class SceneTableComponent {
+export class SceneTableComponent extends AbstractComponent {
 
   @Input() sceneInfos: SceneInfo[] = [];
   @Input() activeScene: Scene;
@@ -21,7 +23,10 @@ export class SceneTableComponent {
 
   columns = ['actions', 'name', 'shortDescription', 'creationTime'];
 
-  constructor(private dbService: DBService, private dialogService: DialogService) { }
+  constructor(bottomSheet: MatBottomSheet, private dbService: DBService, private dialogService: DialogService,
+    notificationService: NotificationService) {
+    super(bottomSheet, notificationService);
+  }
 
   isActive(sceneInfo: SceneInfo): boolean {
     return !!this.activeScene && sceneInfo._id === this.activeScene._id;
@@ -29,6 +34,7 @@ export class SceneTableComponent {
 
   showSceneDetails(sceneID: string): void {
     this.dbService.findScene(sceneID)
-      .then(s => this.dialogService.showSceneDetailsDialog(s));
+      .then(s => this.dialogService.showSceneDetailsDialog(s))
+      .catch(err => this.notifyError(err));
   }
 }

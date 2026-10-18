@@ -1,14 +1,18 @@
 import { LanguageService } from '../../language';
 import * as XLSX from '@e965/xlsx';
 import { Attribute, DataType } from 'app/shared/model';
-import { DataHandler } from '../data-handler.type';
+import { EntryHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
 import { SourceName } from '../source-name.enum';
 
 export class ExcelReader implements DataReader {
 
-   private attrSheetName = new Attribute('scene.reader.excelSheetName', 'scene.reader.excelSheetNameDescription', DataType.TEXT, '');
+   private attrSheetName = ExcelReader.createSheetNameAttribute();
+
+   private static createSheetNameAttribute(): Attribute<string> {
+      return new Attribute('scene.reader.excelSheetName', 'scene.reader.excelSheetNameDescription', DataType.TEXT, '');
+   }
 
    getDescription(): string {
       return LanguageService.instant('scene.reader.excelDescription');
@@ -27,6 +31,7 @@ export class ExcelReader implements DataReader {
    }
 
    furnishAttributes(): Attribute[] {
+      this.attrSheetName = ExcelReader.createSheetNameAttribute();
       return [this.attrSheetName];
    }
 
@@ -38,7 +43,7 @@ export class ExcelReader implements DataReader {
       });
    }
 
-   readData(file: File, chunkSize: number, dataHandler: DataHandler): void {
+   readData(file: File, chunkSize: number, dataHandler: EntryHandler): void {
       this.readEntries(file, Number.MAX_SAFE_INTEGER)
          .then(entries => {
             dataHandler.onEntries(entries);
@@ -47,27 +52,19 @@ export class ExcelReader implements DataReader {
          .catch(err => dataHandler.onError(err));
    }
 
-   readEntries(file: File, rowCount: number): Promise<object[]> {
-      const url = URL.createObjectURL(file);
-      return new Promise<object[]>((resolve, reject) => {
-         return fetch(url)
-            .then(r => r.blob())
-            .then(b => this.read(b))
-            .then(data => {
-               const workbook = XLSX.read(data, this.parsingOptions(rowCount));
-               const sheetName = this.identifySheetName(workbook);
-               const sheet = workbook.Sheets[sheetName];
-               if (!sheet) {
-                  reject(LanguageService.instant('scene.reader.worksheetMissing', { sheet: sheetName }));
-               }
-               resolve(XLSX.utils.sheet_to_json(sheet));
-            });
-      });
+   async readEntries(file: File, rowCount: number): Promise<object[]> {
+      const workbook = XLSX.read(await file.arrayBuffer(), this.parsingOptions(rowCount));
+      const sheetName = this.identifySheetName(workbook);
+      const sheet = workbook.Sheets[sheetName];
+      if (!sheet) {
+         throw LanguageService.instant('scene.reader.worksheetMissing', { sheet: sheetName });
+      }
+      return XLSX.utils.sheet_to_json(sheet);
    }
 
    private parsingOptions(rowCount: number): XLSX.ParsingOptions {
       return {
-         type: 'binary',
+         type: 'array',
          sheetRows: rowCount,
          cellDates: true,
          cellText: false,
@@ -80,14 +77,5 @@ export class ExcelReader implements DataReader {
          return this.attrSheetName.value;
       }
       return workbook.SheetNames[0];
-   }
-
-   private read(blob: Blob): Promise<string> {
-      return new Promise<string>((resolve, reject) => {
-         const reader = new FileReader();
-         reader.onloadend = e => resolve(e.target.result as string);
-         reader.onerror = e => reject(e);
-         reader.readAsBinaryString(blob);
-      });
    }
 }

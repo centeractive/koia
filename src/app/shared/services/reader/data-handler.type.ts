@@ -1,6 +1,4 @@
-export interface DataHandler {
-
-   onValues(rows: string[][]): void;
+export interface EntryHandler {
 
    /**
     * @param entries flat (non-nested) objects that each contain attributes of JSON simple data types (string, number or boolean) only
@@ -12,4 +10,9 @@ export interface DataHandler {
    onComplete(): void;
 
    isCanceled(): boolean;
+}
+
+export interface DataHandler extends EntryHandler {
+
+   onValues(rows: string[][]): void;
 }

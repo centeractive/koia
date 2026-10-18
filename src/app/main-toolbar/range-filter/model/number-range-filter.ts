@@ -5,6 +5,7 @@ import { LanguageService } from 'app/shared/services/language';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Observable } from 'rxjs';
 import { NumberRangeSliderCustomizer } from './slider/number-range-slider-customizer';
+import { combineSliderLabels } from './slider/combine-slider-labels';
 import { LabelType, Options } from '@angular-slider/ngx-slider';
 
 export class NumberRangeFilter {
@@ -96,12 +97,12 @@ export class NumberRangeFilter {
          enforceStep: false,
          draggableRange: true,
          translate: (v: number, t: LabelType) => customizer.labelOf(v, t, this.selValueRange),
-         combineLabels: (l1: string, l2: string) => customizer.combineLabels(l1, l2)
+         combineLabels: combineSliderLabels
       };
    }
 
    isFiltered(): boolean {
-      return this.isStartFiltered() || this.isEndFiltered();
+      return this.inverted || this.isStartFiltered() || this.isEndFiltered();
    }
 
    isStartFiltered(): boolean {
@@ -116,5 +117,6 @@ export class NumberRangeFilter {
       this.selValueRange.min = this.start;
       this.selValueRange.max = this.end;
       this.selValueRange.maxExcluding = false;
+      this.inverted = false;
    }
 }

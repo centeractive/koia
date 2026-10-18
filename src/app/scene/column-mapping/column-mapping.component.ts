@@ -33,7 +33,7 @@ export class ColumnMappingComponent implements OnInit {
       .map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
     this.columnNameControl = new UntypedFormControl('', [
       Validators.required,
-      Validators.pattern(/^(?!\$).*/), // see https://github.com/apache/couchdb/issues/2028
+      Validators.pattern(ColumnMappingGenerator.COLUMN_NAME_PATTERN),
       Validators.maxLength(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH)
     ]);
     this.columnNameControl.setValue(this.mapping.target.name);

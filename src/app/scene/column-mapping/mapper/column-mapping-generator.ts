@@ -9,6 +9,7 @@ type SourceValue = string | number | boolean | object;
 export class ColumnMappingGenerator {
 
    static readonly COLUMN_NAME_MAX_LENGTH = 100;
+   static readonly COLUMN_NAME_PATTERN = /^(?!\$).*/; // see https://github.com/apache/couchdb/issues/2028
    static readonly INCOMPATIBLE_DATA_TYPES = 'Column contains values of incompatible data types';
 
    private static readonly MIN_WIDTH = 10;
@@ -19,6 +20,11 @@ export class ColumnMappingGenerator {
    private datePipe = new DatePipe('en-US');
    private dateTimeColumnDetector = new DateTimeColumnDetector();
    private timeGuesser = new TimeGuesser();
+
+   static isValidColumnName(name: string): boolean {
+      return !!name && name.length <= ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH &&
+         ColumnMappingGenerator.COLUMN_NAME_PATTERN.test(name);
+   }
 
    generate(entries: object[], locale: string): ColumnPair[] {
       if (!entries || entries.length === 0) {

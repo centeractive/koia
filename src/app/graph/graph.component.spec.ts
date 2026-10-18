@@ -1,4 +1,4 @@
-import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideRouter } from '@angular/router';
@@ -6,6 +6,7 @@ import { Column, DataType } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { SceneFactory } from 'app/shared/test';
+import { CommonUtils } from 'app/shared/utils';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
 import { GraphComponent } from './graph.component';
 
@@ -158,6 +159,40 @@ describe('GraphComponent', () => {
     // then
     expect(stop).toHaveBeenCalled();
   });
+
+  it('#ngOnDestroy should stop regenerating graph on context changes', fakeAsync(() => {
+
+    // given
+    const sleep = vi.spyOn(CommonUtils, 'sleep');
+    const createData = vi.spyOn(graphDataService, 'createData');
+
+    // when
+    fixture.destroy();
+
+    // then
+    context.setSize(120, 500);
+    flush();
+    expect(sleep).not.toHaveBeenCalled();
+    expect(createData).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not generate graph of context change pending before destroy', fakeAsync(() => {
+
+    // given
+    const sleep = vi.spyOn(CommonUtils, 'sleep');
+    const createData = vi.spyOn(graphDataService, 'createData');
+    context.setSize(120, 500);
+    tick();
+    expect(sleep).toHaveBeenCalledOnce();
+
+    // when
+    fixture.destroy();
+
+    // then
+    flush();
+    expect(createData).not.toHaveBeenCalled();
+    expect(component.loading).toBe(false);
+  }));
 
   it('should warn user when graph contains too many nodes', fakeAsync(() => {
 

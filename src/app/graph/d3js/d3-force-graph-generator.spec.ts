@@ -287,6 +287,39 @@ describe('D3ForceGraphGenerator', () => {
         expect(generator['simulation'].alpha()).toBeCloseTo(1);
     });
 
+    it('#generate should keep default velocity decay for default friction', () => {
+        // given
+        context.friction = 0.9;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].velocityDecay()).toBeCloseTo(0.4);
+    });
+
+    it('#generate should scale velocity decay from friction', () => {
+        // given
+        context.friction = 0.95;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].velocityDecay()).toBeCloseTo(0.2);
+    });
+
+    it('#generate should limit velocity decay to one for low friction', () => {
+        // given
+        context.friction = 0.5;
+
+        // when
+        generator.generate(graphData, div, context);
+
+        // then
+        expect(generator['simulation'].velocityDecay()).toBe(1);
+    });
+
     function graphOf(...childCounts: number[]): GraphData {
         const root: GraphNode = { parent: null, group: 0, name: '', value: '', info: null, count: childCounts.reduce((sum, c) => sum + c, 0) };
         const children: GraphNode[] = childCounts.map((count, i) =>

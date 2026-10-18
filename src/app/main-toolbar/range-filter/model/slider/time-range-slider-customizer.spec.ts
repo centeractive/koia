@@ -42,24 +42,6 @@ describe('TimeRangeSliderCustomizer', () => {
       expect(label).toBe('10 Apr 2021 excl.');
    });
 
-   it('#combineLabels should return single label when labels are equal', () => {
-
-      // when
-      const label = customizer(TimeUnit.YEAR).combineLabels('2023', '2023');
-
-      // then
-      expect(label).toBe('2023');
-   });
-
-   it('#combineLabels should return combined label when labels are different', () => {
-
-      // when
-      const label = customizer(TimeUnit.YEAR).combineLabels('2020', '2023');
-
-      // then
-      expect(label).toBe('2020 - 2023');
-   });
-
    function toTime(year: number): number {
       return new Date(year, 0).getTime();
    }

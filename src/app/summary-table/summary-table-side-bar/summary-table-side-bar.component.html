@@ -46,32 +46,8 @@
           @for (grouping of context.valueGroupings; track grouping) {
             <koia-expansion-panel [title]="'summary.sideBar.columnGrouping' | translate: { column: grouping.columnName }"
               [deletable]="true" (delete)="removeValueGrouping(grouping)">
-              <span class="span_left_to_right">
-                <label>{{ 'summary.sideBar.max' | translate: { value: grouping.minMaxValues.max } }}</label>
-                <button mat-icon-button [matTooltip]="'summary.sideBar.addValueRange' | translate" (click)="addGroupingValueRange(grouping)">
-                  <mat-icon>add_circle_outline</mat-icon>
-                </button>
-              </span>
-              <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
-                @for (range of grouping.ranges; track range) {
-                  <div class="div_group_value" mat-stroked-button cdkDrag>
-                    <mat-checkbox [checked]="range.active"
-                      (change)="groupingRangeStateChanged(grouping, range, $event.checked)">
-                    </mat-checkbox>
-                    <label>{{ 'summary.sideBar.upTo' | translate }}</label>
-                    <input matInput type="number" [(ngModel)]="range.max"
-                      [matTooltip]="'summary.sideBar.rangeMaxTooltip' | translate" (keypress)="isNumberKey($event)">
-                      @if (grouping.ranges.length > 1) {
-                        <mat-icon class="icon_remove"
-                          (click)="removeGroupingRange(grouping, range)">
-                          remove_circle_outline
-                        </mat-icon>
-                      }
-                    </div>
-                  }
-                </div>
-                <label>{{ 'summary.sideBar.min' | translate: { value: grouping.minMaxValues.min } }}</label>
-              </koia-expansion-panel>
+              <koia-value-grouping-ranges [grouping]="grouping" (rangesChange)="onValueGroupingRangesChanged(grouping)" />
+            </koia-expansion-panel>
             }
             <koia-expansion-panel [title]="'summary.sideBar.hierarchy' | translate">
               <span class="span_left_to_right">
@@ -111,7 +87,7 @@
                       class="div_column_list" (cdkDropListDropped)="dropAggregation($event)">
                       @for (aggregation of selectedAggregations; track aggregation) {
                         <div class="div_column_item accent" mat-stroked-button
-                          cdkDrag>
+                          cdkDrag [cdkDragDisabled]="selectedAggregations.length === 1">
                           <span class="accent">{{ 'summary.aggregation.' + aggregation | translate }}</span>
                         </div>
                       }

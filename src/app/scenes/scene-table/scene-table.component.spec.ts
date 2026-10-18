@@ -1,4 +1,5 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -7,14 +8,16 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { By } from '@angular/platform-browser';
 import { Scene } from 'app/shared/model';
-import { DialogService } from 'app/shared/services';
+import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { SceneTableComponent } from './scene-table.component';
 import type { Mock } from 'vitest';
 
 const dbService = new DBService(null);
 const dialogService = new DialogService(null);
+const notificationService = new NotificationServiceMock();
 
 let fixture: ComponentFixture<SceneTableComponent>;
 let component: SceneTableComponent;
@@ -151,6 +154,23 @@ describe('SceneTableComponent', () => {
     expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scenes[0]);
   }));
 
+  it('#selecting "Details" should notify error when scene cannot be read', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'findScene').mockRejectedValue('db error');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+    const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement;
+
+    // when
+    moreButton.click();
+    fixture.detectChanges();
+    fixture.debugElement.query(By.css('.menu_item_details')).nativeElement.click();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'db error');
+  }));
+
   it('#selecting "Delete" menu item should emit event', fakeAsync(() => {
 
     // given
@@ -175,10 +195,11 @@ describe('SceneTableComponent', () => {
 async function setup(): Promise<void> {
   await TestBed.configureTestingModule({
     declarations: [SceneTableComponent],
-    imports: [MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
+    imports: [MatBottomSheetModule, MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
     providers: [Location,
       { provide: DBService, useValue: dbService },
-      { provide: DialogService, useValue: dialogService }
+      { provide: DialogService, useValue: dialogService },
+      { provide: NotificationService, useValue: notificationService }
     ]
   }).compileComponents();
 

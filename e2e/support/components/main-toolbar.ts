@@ -21,7 +21,7 @@ export class MainToolbar {
    }
 
    async removeValueFilter(): Promise<void> {
-      await this.root.locator('mat-icon.icon_remove_column_filter').last().click();
+      await this.root.locator('button.but_remove_column_filter').last().click();
    }
 
    async addRangeFilter(column: string, valueRangeLabel: string): Promise<RangeFilter> {

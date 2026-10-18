@@ -9,7 +9,18 @@ img {
     width: 260px;
     border-style: solid;
     border-width: 2px;
+}
+
+.but_color_scheme {
+    padding: 0;
+    border: none;
+    background: none;
+    line-height: 0;
     cursor: pointer;
+}
+
+.but_color_scheme:focus-visible {
+    outline: 2px solid var(--koia-primary);
 }
 
 .selected {

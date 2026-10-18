@@ -1,25 +1,9 @@
 import { Column, DataType } from 'app/shared/model';
 import { CategoryData, ChartContext, DataPoint, LabeledValues } from 'app/shared/model/chart';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
+import { LanguageService } from '../language/language.service';
 
 export class ChartDataHelper {
-
-   /**
-    * @returns an array of entries where the specified time column value is formatted if it contains a valid time.
-    * entries that have no valid time are omitted, hence not contained in the result.
-    */
-   static convertTime(entries: object[], timeColumn: Column): object[] {
-      const result: object[] = [];
-      entries.forEach(entry => {
-         const date = DateTimeUtils.toBaseDate(entry[timeColumn.name], timeColumn.groupingTimeUnit);
-         if (date) {
-            const clone = Object.assign({}, entry);
-            clone[timeColumn.name] = DateTimeUtils.formatTime(date.getTime(), timeColumn.groupingTimeUnit);
-            result.push(clone);
-         }
-      });
-      return result;
-   }
 
    /**
     * @returns an array with [[DataPoint]]s for every distict value found in the selected column
@@ -96,7 +80,7 @@ export class ChartDataHelper {
       if (column.dataType == DataType.TIME) {
          value = DateTimeUtils.formatTime(value as number, column.groupingTimeUnit);
       }
-      throw new Error('Value \'' + value + '\' is not unique');
+      throw new Error(LanguageService.instant('chart.error.valueNotUnique', { value }));
    }
 
    static extractGroupingValue(entry: object, groupByColumn: Column): number {

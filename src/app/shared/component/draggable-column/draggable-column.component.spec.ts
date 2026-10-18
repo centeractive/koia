@@ -41,4 +41,28 @@ describe('DraggableColumnComponent', () => {
     expect(column.groupingTimeUnit).toBe(timeUnit);
     expect(context.fireStructureChanged).toHaveBeenCalled();
   });
+
+  it('#groupingTimeUnitKey should return per key for time unit', () => {
+
+    // when
+    const key = component.groupingTimeUnitKey(TimeUnit.HOUR);
+
+    // then
+    expect(key).toBe('ui.per.hour');
+  });
+
+  it('menu item for undefined time unit should show not grouped', () => {
+
+    // given
+    const trigger: HTMLElement = fixture.nativeElement.querySelector('.select_time_unit > span');
+
+    // when
+    trigger.click();
+    fixture.detectChanges();
+
+    // then
+    const menuItems = Array.from(document.querySelectorAll<HTMLButtonElement>('button[mat-menu-item]'));
+    expect(menuItems.length).toBe(component.selectableTimeUnits.length);
+    expect(menuItems[0].textContent.trim()).toBe('not grouped');
+  });
 });

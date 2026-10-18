@@ -211,7 +211,7 @@
             @if (isPreviewDirty()) {
               <img src="/assets/warning.png"
                 [matTooltip]="'scene.previewErrorsTooltip' | translate"
-                matTooltipClass="tooltip_preview_warning" />
+                matTooltipClass="koia-tooltip-warning" />
             }
             <button id="but_load_data" mat-flat-button color="primary" [matTooltip]="'scene.loadDataTooltip' | translate"
               [disabled]="maxItemsToLoadControl.invalid" (click)="persistScene()">

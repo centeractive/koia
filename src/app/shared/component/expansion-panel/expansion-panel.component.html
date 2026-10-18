@@ -3,7 +3,8 @@
     <mat-panel-title>{{ title }}</mat-panel-title>
     @if (deletable) {
       <mat-panel-description>
-        <mat-icon (click)="delete.emit()">delete_forever</mat-icon>
+        <button class="but_delete_panel" mat-icon-button [matTooltip]="'common.delete' | translate" [attr.aria-label]="'common.delete' | translate"
+          (click)="onDelete($event)" (keydown)="$event.stopPropagation()"><mat-icon>delete_forever</mat-icon></button>
       </mat-panel-description>
     }
   </mat-expansion-panel-header>
