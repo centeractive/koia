@@ -330,6 +330,86 @@ describe('FrontComponent', () => {
     expect(notificationService.onError).toHaveBeenCalledWith(bottomSheet, 'backend not available');
   }));
 
+  it('#onDataStorageChanged should notify error when scene infos cannot be read after switching to IndexedDB', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    vi.spyOn(dbService, 'useIndexedDb').mockResolvedValue(undefined);
+    findSceneInfosSpy.mockRejectedValue('backend not available');
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.indexedDB);
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'backend not available');
+  }));
+
+  it('#onDataStorageChanged should notify error and stay not ready when IndexedDB cannot be activated', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    vi.spyOn(dbService, 'useIndexedDb').mockRejectedValue('IndexedDB not available');
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.indexedDB);
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'IndexedDB not available');
+    expect(notificationService.onSuccess).not.toHaveBeenCalled();
+    expect(component.ready).toBe(false);
+  }));
+
+  it('#onDataStorageChanged should notify error when scene infos cannot be read after CouchDB connection failed', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.indexedDB;
+    vi.spyOn(couchDBService, 'getConnectionInfo').mockReturnValue(connectionInfo);
+    const dialogRef = createConnectionDialogRef();
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
+      data.connectionInfo.port = 999;
+      data.closedWithOK = true;
+      return dialogRef;
+    });
+    vi.spyOn(couchDBService, 'initConnection').mockRejectedValue('connection failed');
+    findSceneInfosSpy.mockRejectedValue('backend not available');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.couchDB);
+    flush();
+
+    // then
+    const bottomSheet = TestBed.inject(MatBottomSheet);
+    expect(notificationService.onError).toHaveBeenCalledWith(bottomSheet, 'connection failed');
+    expect(notificationService.onError).toHaveBeenCalledWith(bottomSheet, 'backend not available');
+  }));
+
+  it('#showCouchDBConnectionDialog should notify error when scene infos cannot be read after dialog was canceled', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    const dialogRef = createConnectionDialogRef();
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
+      data.closedWithOK = false;
+      return dialogRef;
+    });
+    findSceneInfosSpy.mockRejectedValue('backend not available');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.showCouchDBConnectionDialog();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'backend not available');
+  }));
+
   it('#showCouchDBConnectionDialog should not init connection when connection was not changed', fakeAsync(() => {
 
     // given
@@ -1032,6 +1112,22 @@ describe('FrontComponent (external invocation)', () => {
 
     // then
     expect(notificationService.onError).toHaveBeenCalled();
+  }));
+
+  it('#ngOnInit should notify error when CouchDB connection cannot be established', fakeAsync(() => {
+
+    // given
+    vi.mocked(couchDBService.initConnection).mockRejectedValue('connection refused');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+    vi.mocked(initBackendSpy).mockClear();
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), expect.stringContaining('connection refused'));
+    expect(dbService.initBackend).not.toHaveBeenCalled();
   }));
 
   function createQueryParams(): QueryParams {

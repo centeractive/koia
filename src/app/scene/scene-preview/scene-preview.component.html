@@ -1,10 +1,11 @@
 <div class="div_buttons">
-  <koia-table-mode-toggles [columns]="columns" [(multiLine)]="multiLine" [(showNestedObjects)]="showNestedObjects" />
+  <koia-table-mode-toggles [columns]="columns" [(multiLine)]="multiLine" [showNestedObjects]="showNestedObjects"
+    (showNestedObjectsChange)="toggleShowNestedObjects()" />
 </div>
 <koia-virtual-table [columns]="columns" [widths]="widths" [source]="source" [multiLine]="multiLine"
   [showNestedObjects]="showNestedObjects" [rowMarker]="warningMarker" (columnResize)="onColumnResize($event)" />
 <ng-template #warningMarker let-index>
   @if (errorsOf(index); as errors) {
-    <img class="img_row_warning" src="/assets/warning.png" [matTooltip]="errors" matTooltipClass="tooltip_preview_warning" />
+    <img class="img_row_warning" src="/assets/warning.png" [matTooltip]="errors" matTooltipClass="koia-tooltip-warning" />
   }
 </ng-template>

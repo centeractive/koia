@@ -96,6 +96,39 @@ describe('EntryPersister', () => {
       expect(monitor.onComplete).toHaveBeenCalledWith('data persisting aborted due to error: DB error');
    }));
 
+   it('#post should report error and completion only once when several batches fail', fakeAsync(() => {
+
+      // given
+      dbServiceWriteEtriesSpy.mockRejectedValue('DB error');
+
+      // when
+      persister.post(entries(batchSize * 2));
+      flush();
+
+      // then
+      expect(dbService.writeEntries).toHaveBeenCalledTimes(2);
+      expect(monitor.onError).toHaveBeenCalledTimes(1);
+      expect(monitor.onComplete).toHaveBeenCalledTimes(1);
+      expect(monitor.onComplete).toHaveBeenCalledWith('data persisting aborted due to error: DB error');
+   }));
+
+   it('#reset should report next error again', fakeAsync(() => {
+
+      // given
+      dbServiceWriteEtriesSpy.mockRejectedValue('DB error');
+      persister.post(entries(batchSize));
+      flush();
+      persister.reset();
+
+      // when
+      persister.post(entries(batchSize));
+      flush();
+
+      // then
+      expect(monitor.onError).toHaveBeenCalledTimes(2);
+      expect(monitor.onComplete).toHaveBeenCalledTimes(2);
+   }));
+
    it('#post should throw error when posting was complete before', fakeAsync(() => {
 
       // given

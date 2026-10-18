@@ -97,15 +97,20 @@ export class DashboardComponent extends ViewController {
     if (this.elementContexts.length === 0) {
       this.replaceByGeneratedElements();
     } else {
-      const data = new ConfirmDialogData(LanguageService.instant('dashboard.regenerate'),
-        '<p>' + LanguageService.instant('dashboard.regenerateQuestion') + '</p>', ConfirmDialogData.YES_NO);
-      firstValueFrom(this.dialogService.showConfirmDialog(data).afterClosed())
-        .then(() => {
-          if (data.closedWithButtonIndex === 0) {
+      this.confirm('dashboard.regenerate', 'dashboard.regenerateQuestion')
+        .then(ok => {
+          if (ok) {
             this.replaceByGeneratedElements();
           }
         });
     }
+  }
+
+  private async confirm(titleKey: string, questionKey: string): Promise<boolean> {
+    const data = new ConfirmDialogData(LanguageService.instant(titleKey),
+      '<p>' + LanguageService.instant(questionKey) + '</p>', ConfirmDialogData.YES_NO);
+    await firstValueFrom(this.dialogService.showConfirmDialog(data).afterClosed());
+    return data.closedWithButtonIndex === 0;
   }
 
   private replaceByGeneratedElements(): void {
@@ -206,6 +211,19 @@ export class DashboardComponent extends ViewController {
   }
 
   setGridColumns(gridColumns: number): void {
+    if (this.gridLayout.narrowsElements(gridColumns, this.elementContexts)) {
+      this.confirm('dashboard.gridColumns', 'dashboard.confirmResize')
+        .then(ok => {
+          if (ok) {
+            this.applyGridColumns(gridColumns);
+          }
+        });
+    } else {
+      this.applyGridColumns(gridColumns);
+    }
+  }
+
+  private applyGridColumns(gridColumns: number): void {
     this.gridLayout.setGridColumns(gridColumns, this.elementContexts);
     this.requestPersist();
   }

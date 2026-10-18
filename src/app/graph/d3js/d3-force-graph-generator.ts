@@ -17,6 +17,8 @@ const MIN_ALPHA = 0.01;
 const MAX_ALPHA = 0.1;
 // GraphContext#alpha keeps the d3 v3 scale where 0.1 was the initial alpha
 const ALPHA_SCALE = 10;
+// GraphContext#friction keeps the d3 v3 range, scaled so that the default friction 0.9 yields d3's default velocity decay 0.4
+const VELOCITY_DECAY_SCALE = 4;
 
 type NodeDragEvent = D3DragEvent<SVGGElement, GraphNode, GraphNode>;
 
@@ -102,6 +104,7 @@ export class D3ForceGraphGenerator {
             .force('y', forceY(div.clientHeight / 2).strength(context.gravity))
             .force('collide', forceCollide<GraphNode>(n => radiusOf(n) + 2))
             .alpha(Math.min(Math.max(context.alpha, MIN_ALPHA), MAX_ALPHA) * ALPHA_SCALE)
+            .velocityDecay(Math.min((1 - context.friction) * VELOCITY_DECAY_SCALE, 1))
             .on('tick', () => {
                 node.attr('transform', n => 'translate(' + n.x + ',' + n.y + ')');
                 link.each((l, i, lines) => {

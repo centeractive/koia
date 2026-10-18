@@ -15,6 +15,7 @@ export class EntryPersister {
   private posted = 0;
   private submitted = 0;
   private successful = 0;
+  private failed = false;
 
   constructor(private dbService: DBService, private database: string, private batchSize: number, private monitor: ProgressMonitor) { }
 
@@ -27,6 +28,7 @@ export class EntryPersister {
     this.posted = 0;
     this.submitted = 0;
     this.successful = 0;
+    this.failed = false;
   }
 
   /**
@@ -59,9 +61,12 @@ export class EntryPersister {
   }
 
   private onError(error: string | object): void {
-    this.monitor.onError(error);
-    this.monitor.onComplete(LanguageService.instant('scene.persistAborted', { error }));
-    this.postingComplete(false);
+    if (!this.failed) {
+      this.failed = true;
+      this.monitor.onError(error);
+      this.monitor.onComplete(LanguageService.instant('scene.persistAborted', { error }));
+      this.postingComplete(false);
+    }
   }
 
   /**

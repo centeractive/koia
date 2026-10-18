@@ -42,6 +42,11 @@ export class ScenePreviewComponent implements OnChanges, DoCheck {
     }
   }
 
+  toggleShowNestedObjects(): void {
+    this.showNestedObjects = !this.showNestedObjects;
+    this.widthsKey = undefined;
+  }
+
   onColumnResize(resize: ColumnResize): void {
     this.columns[resize.index].width = this.widthResolver.charsOf(resize.width);
   }

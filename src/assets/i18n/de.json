@@ -121,7 +121,7 @@
     "refresh": "Daten aktualisieren",
     "tabs": {
       "rawData": "Rohdaten",
-      "renameHint": "Doppelklick zum Umbenennen",
+      "renameHint": "Doppelklick oder F2 zum Umbenennen",
       "close": "Schliessen",
       "addView": "Ansicht hinzufügen",
       "newPivotTable": "Neue Pivot-Tabelle",
@@ -285,7 +285,8 @@
       "jsonPath": "Array-JSONPath",
       "jsonPathDescription": "JSONPath zum Objekt-Array mit den Daten",
       "worksheetMissing": "Tabellenblatt \"{{sheet}}\" existiert nicht oder kann nicht gelesen werden"
-    }
+    },
+    "binaryDataNotShown": "*** Binärdaten können nicht angezeigt werden ***"
   },
   "scenes": {
     "title": "Szenen",
@@ -349,6 +350,7 @@
     "noElements": "Ansicht enthält keine Elemente",
     "saved": "Ansicht \"{{name}}\" wurde gespeichert",
     "notSaved": "Ansicht \"{{name}}\" kann nicht gespeichert werden: {{error}}",
+    "notUpdated": "Ansichten können nicht aktualisiert werden: {{error}}",
     "deleted": "{{count}} Ansichten gelöscht",
     "deletedOne": "{{count}} Ansicht gelöscht",
     "renamed": "{{count}} Ansichten umbenannt",
@@ -382,6 +384,13 @@
     "multiLineRows": "Mehrzeilige Zeilen anzeigen",
     "hideNestedObjects": "Verschachtelte Objekte ausblenden",
     "showNestedObjects": "Verschachtelte Objekte anzeigen"
+  },
+  "valueGrouping": {
+    "max": "max. {{value}}",
+    "min": "min. {{value}}",
+    "addValueRange": "Wertebereich hinzufügen",
+    "upTo": "Bis:",
+    "rangeMaxTooltip": "Obergrenze des Bereichs, ohne den oberen Grenzwert"
   },
   "chart": {
     "typeTooltip": "Diagramm: {{type}}",
@@ -430,7 +439,8 @@
     "error": {
       "nameColumnUndefined": "Namensspalte ist nicht definiert",
       "axisUndefined": "{{axis}} ist nicht definiert",
-      "maxValuesExceeded": "Diagramm {{chartType}}: Maximale Anzahl von {{max}} Werten überschritten.\n\nBitte das Diagramm neu konfigurieren oder die Daten (genauer) filtern."
+      "maxValuesExceeded": "Diagramm {{chartType}}: Maximale Anzahl von {{max}} Werten überschritten.\n\nBitte das Diagramm neu konfigurieren oder die Daten (genauer) filtern.",
+      "valueNotUnique": "Wert '{{value}}' ist nicht eindeutig"
     },
     "warning": {
       "sampledDown": "Die Daten wurden reduziert, das Diagramm enthält nur einen Teil der verfügbaren Werte. Filter anwenden, um die Daten einzuschränken und alle Werte des gewählten Kontexts zu sehen."
@@ -467,7 +477,7 @@
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
     "manageViews": "Ansichten verwalten",
     "snapToGrid": "Am Raster ausrichten",
-    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst",
+    "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst. Fortfahren?",
     "regenerate": "Dashboard neu generieren",
     "regenerateQuestion": "Alle Elemente dieses Dashboards werden durch neu generierte ersetzt. Fortfahren?",
     "nothingToGenerate": "Die Daten enthalten keine Spalten, aus denen ein Dashboard generiert werden kann"
@@ -569,12 +579,7 @@
     "sideBar": {
       "nonGroupedColumns": "Nicht gruppierte Spalten",
       "addGroupingDefinition": "Gruppierung hinzufügen",
-      "columnGrouping": "Gruppierung {{column}}",
-      "max": "max. {{value}}",
-      "min": "min. {{value}}",
-      "addValueRange": "Wertebereich hinzufügen",
-      "upTo": "Bis:",
-      "rangeMaxTooltip": "Obergrenze des Bereichs, ohne den oberen Grenzwert"
+      "columnGrouping": "Gruppierung {{column}}"
     },
     "locale": {
       "renderError": "Beim Darstellen der Pivot-Tabelle ist ein Fehler aufgetreten.",
@@ -663,11 +668,6 @@
       "countDistinctValues": "Eindeutige Werte zählen",
       "aggregateValues": "Werte aggregieren",
       "columnGrouping": "Gruppierung {{column}}",
-      "max": "max. {{value}}",
-      "min": "min. {{value}}",
-      "addValueRange": "Wertebereich hinzufügen",
-      "upTo": "Bis:",
-      "rangeMaxTooltip": "Obergrenze des Bereichs, ohne den oberen Grenzwert",
       "hierarchy": "Hierarchie",
       "selectedColumns": "Ausgewählte Spalten",
       "dragDropColumnsHelp": "Verfügbare Spalten per Drag & Drop auswählen",

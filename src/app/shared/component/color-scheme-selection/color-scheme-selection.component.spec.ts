@@ -119,4 +119,57 @@ describe('ColorSchemeSelectionComponent', () => {
       borderColorOpacity: 0.6
     });
   });
+
+  function schemeButton(scheme: string): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('.but_color_scheme[aria-label="' + scheme + '"]');
+  }
+
+  function slide(selector: string, value: string): void {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(selector);
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new Event('change'));
+  }
+
+  it('#click on categorical scheme button should select scheme', () => {
+
+    // when
+    schemeButton(CategoricalColorScheme.SET_1).click();
+    fixture.detectChanges();
+
+    // then
+    expect(context.colorProvider.options.type).toBe(ColorSchemeType.CATEGORICAL);
+    expect(context.colorProvider.options.scheme).toBe(CategoricalColorScheme.SET_1);
+    expect(schemeButton(CategoricalColorScheme.SET_1).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('#click on sequential scheme button should select scheme', () => {
+
+    // when
+    schemeButton(SequentialColorScheme.VIRIDIS).click();
+    fixture.detectChanges();
+
+    // then
+    expect(context.colorProvider.options.type).toBe(ColorSchemeType.SEQUENTIAL);
+    expect(context.colorProvider.options.scheme).toBe(SequentialColorScheme.VIRIDIS);
+    expect(schemeButton(SequentialColorScheme.VIRIDIS).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('#change of background opacity slider should change color provider', () => {
+
+    // when
+    slide('#input_bg_opacity', '0.4');
+
+    // then
+    expect(context.colorProvider.options.bgColorOpacity).toBe(0.4);
+  });
+
+  it('#change of border opacity slider should change color provider', () => {
+
+    // when
+    slide('#input_border_opacity', '0.6');
+
+    // then
+    expect(context.colorProvider.options.borderColorOpacity).toBe(0.6);
+  });
 });

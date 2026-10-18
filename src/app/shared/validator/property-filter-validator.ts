@@ -1,6 +1,6 @@
 import { Column, PropertyFilter, Operator, DataType, EnumLabels } from '../model';
 import { LanguageService } from '../services/language/language.service';
-import { DataTypeUtils, ArrayUtils } from '../utils';
+import { DataTypeUtils, ArrayUtils, NumberUtils } from '../utils';
 
 export class PropertyFilterValidator {
 
@@ -17,20 +17,20 @@ export class PropertyFilterValidator {
          if (filter.operator === Operator.ANY_OF || filter.operator === Operator.NONE_OF) {
             return this.validateListedValues(dataType, value.toString());
          } else if (DataTypeUtils.toTypedValue(value, dataType, undefined) === undefined) {
-            return LanguageService.instant('filter.invalidValue', { type: EnumLabels.dataType(dataType) });
+            return this.invalidValueMessage(dataType);
          }
       }
       return null;
    }
 
    private validateListedValues(dataType: DataType, value: string): string | null {
-      try {
-         if (dataType === DataType.NUMBER) {
-            ArrayUtils.toNumberArray(value.toString());
-         }
-         return null;
-      } catch (e) {
-         return e.message;
+      if (dataType === DataType.NUMBER && ArrayUtils.toStringArray(value).some(v => NumberUtils.parseNumber(v, undefined) === undefined)) {
+         return this.invalidValueMessage(dataType);
       }
+      return null;
+   }
+
+   private invalidValueMessage(dataType: DataType): string {
+      return LanguageService.instant('filter.invalidValue', { type: EnumLabels.dataType(dataType) });
    }
 }

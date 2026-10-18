@@ -3,55 +3,32 @@ import { StringUtils } from 'app/shared/utils';
 
 const CHARS_TO_ESCAPE = '.';
 
-interface MangoFindQuery { fields?: string[]; selector?: Record<string, unknown>; sort?: object[]; }
+interface MangoFindQuery { fields?: string[]; selector?: object; sort?: object[]; }
 
 export function sanitizeIndexQuery<T extends { index: { fields: string[] } }>(query: T): T {
     query.index.fields = query.index.fields.map((f: string) => escape(f));
     return query;
 }
 
-export function sanitizeFindQuery(query: object): object {
-    sanitizeFields(query);
-    sanitizeSelector(query);
-    sanitizeSort(query);
-    return query;
-}
-
-function sanitizeFields(query: MangoFindQuery): void {
+export function sanitizeFindQuery(query: MangoFindQuery): object {
     if (query.fields) {
         query.fields = query.fields.map((f: string) => escape(f));
     }
-}
-
-function sanitizeSelector(query: MangoFindQuery): void {
     if (query.selector) {
-        Object.keys(query.selector).forEach(k => {
-            if (k.startsWith('$')) {
-                query.selector[k] = sanitizeFieldObjects(query.selector[k] as object[]);
-            } else {
-                const newKey = escape(k);
-                if (k !== newKey) {
-                    query.selector[newKey] = query.selector[k];
-                    delete query.selector[k];
-                }
-            }
-        });
+        query.selector = escapeFieldNames(query.selector);
     }
-}
-
-function sanitizeSort(query: MangoFindQuery): void {
     if (query.sort) {
-        query.sort = sanitizeFieldObjects(query.sort);
+        query.sort = query.sort.map(o => escapeFieldNames(o));
     }
+    return query;
 }
 
-function sanitizeFieldObjects(arr: object[]): object[] {
-    return arr.map((o: object) => {
-        const key = Object.keys(o)[0];
-        return {
-            [escape(key)]: o[key]
-        };
-    });
+/**
+ * escapes the field names of the specified object and of the objects nested in combination operators (i.e. '$and', '$or')
+ */
+function escapeFieldNames(obj: object): object {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) =>
+        key.startsWith('$') && Array.isArray(value) ? [key, value.map(o => escapeFieldNames(o))] : [escape(key), value]));
 }
 
 function escape(fieldName: string): string {

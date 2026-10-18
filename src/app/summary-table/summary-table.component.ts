@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, Inject, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { ExportDataProvider } from 'app/shared/controller';
@@ -6,6 +6,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ColumnNameConverter, CommonUtils } from 'app/shared/utils';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
+import { Subscription } from 'rxjs';
 import { ChangeEvent, DataType, Route, SummaryContext } from '../shared/model';
 import { AggregationService, RawDataRevealService } from '../shared/services';
 import { DataFrameSorter } from './data-frame-sorter';
@@ -21,7 +22,7 @@ import { SummaryValueFormatter } from './summary-value-formatter';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class SummaryTableComponent implements OnInit, ExportDataProvider {
+export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvider {
 
   @Input() context: SummaryContext;
 
@@ -39,6 +40,7 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
   private valueFormatter = new SummaryValueFormatter();
   private exportDataGenerator = new ExportDataGenerator();
   private dataComputer: SummaryDataComputer;
+  private contextSubscription: Subscription;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     aggregationService: AggregationService, valueRangeGroupingService: ValueRangeGroupingService,
@@ -52,7 +54,7 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
     } else {
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
-      this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
+      this.contextSubscription = this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
       this.createBaseDataFrame();
     }
   }
@@ -140,5 +142,9 @@ export class SummaryTableComponent implements OnInit, ExportDataProvider {
 
   createExportData(): object[] {
     return this.exportDataGenerator.generate(this.context, this.dataFrame, this.overalls);
+  }
+
+  ngOnDestroy(): void {
+    this.contextSubscription?.unsubscribe();
   }
 }

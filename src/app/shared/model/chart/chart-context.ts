@@ -170,7 +170,7 @@ export class ChartContext extends ElementContext {
    }
 
    override set groupByColumns(columns: Column[]) {
-      this._baseScaleRestorer.set(this.baseScale);
+      this._baseScaleRestorer.set(this.baseScale.toScale());
       if (columns.length) {
          this.baseScale = this._baseScaleRestorer.scaleConfig(columns[0]);
       }

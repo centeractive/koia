@@ -9,7 +9,7 @@ export function queryDefToQuery(queryDef: QueryDef): Query {
     query.setFullTextFilter(queryDef.fullTextFilter);
     query.setPropertyFilters(propertyFilters(queryDef.propertyFilters));
     query.setValueRangeFilter(valueRangeFilters(queryDef.valueRangeFilters));
-    query.setSort(queryDef.sort);
+    query.setSort(queryDef.sort && { ...queryDef.sort });
     query.setPageDefinition(queryDef.pageIndex, queryDef.rowsPerPage);
     return query;
 }
@@ -19,5 +19,5 @@ function propertyFilters(filterDefs: PropertyFilterDef[]): PropertyFilter[] {
 }
 
 function valueRangeFilters(filterDefs: ValueRangeFilterDef[]): ValueRangeFilter[] {
-    return filterDefs.map(f => new ValueRangeFilter(f.name, f.valueRange, f.inverted));
+    return filterDefs.map(f => new ValueRangeFilter(f.name, { ...f.valueRange }, f.inverted));
 }

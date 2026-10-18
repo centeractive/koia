@@ -372,41 +372,83 @@ describe('NumberUtils', () => {
     expect(NumberUtils.parseNumber('1,0,000.5', 'en-US')).toBeUndefined();
   });
 
-  it('#parseInt should return undefined when string is undefined', () => {
-    expect(NumberUtils.parseInt(undefined, 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt(null, 'en-US')).toBeUndefined();
+  it('#parseNumber should return number when string contains exponential notation', () => {
+    // given
+    const strings = ['1e5', '2E3', '-1e3', '1.5e3'];
+
+    // when
+    const numbers = strings.map(s => NumberUtils.parseNumber(s, 'en-US'));
+
+    // then
+    expect(numbers).toEqual([100_000, 2_000, -1_000, 1_500]);
   });
 
-  it('#parseInt should return undefined when string is blank', () => {
-    expect(NumberUtils.parseInt('', 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt('   ', 'en-US')).toBeUndefined();
+  it('#parseNumber should return undefined when decimal part is not numeric', () => {
+    // when
+    const num = NumberUtils.parseNumber('1.5abc', 'en-US');
+
+    // then
+    expect(num).toBeUndefined();
   });
 
-  it('#parseInt should return undefined when string is not a number', () => {
-    expect(NumberUtils.parseInt('X', 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt('1A', 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt('1-', 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt('1+', 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt('1.1.1', 'en-US')).toBeUndefined();
+  it('#parseNumber should parse grouped number when locale groups from five digits only', () => {
+    // when
+    const num = NumberUtils.parseNumber('1.234.567,5', 'es');
+
+    // then
+    expect(num).toBe(1_234_567.5);
   });
 
-  it('#parseInt should return integer when string contains no thousands separators', () => {
-    expect(NumberUtils.parseInt('-1', 'en-US')).toBe(-1);
-    expect(NumberUtils.parseInt('0', 'en-US')).toBe(0);
-    expect(NumberUtils.parseInt('1', 'en-US')).toBe(1);
-    expect(NumberUtils.parseInt('+1', 'en-US')).toBe(1);
-    expect(NumberUtils.parseInt('1000', 'en-US')).toBe(1_000);
-    expect(NumberUtils.parseInt('7111000', 'en-US')).toBe(7_111_000);
+  it('#asNumber should return number when value contains exponential notation', () => {
+    // when
+    const num = NumberUtils.asNumber('2E3', 'en-US');
+
+    // then
+    expect(num).toBe(2_000);
   });
 
-  it('#parseInt should return integer when string contains thousands separators', () => {
-    expect(NumberUtils.parseInt('1,000', 'en-US')).toBe(1_000);
-    expect(NumberUtils.parseInt('7,111,000', 'en-US')).toBe(7_111_000);
+  it('#parseMachineNumber should return number of exponential and fractional notation', () => {
+    // given
+    const strings = ['1e-7', '-2E3', '0.25', '-1.5', '42'];
+
+    // when
+    const numbers = strings.map(s => NumberUtils.parseMachineNumber(s));
+
+    // then
+    expect(numbers).toEqual([1e-7, -2_000, 0.25, -1.5, 42]);
   });
 
-  it('#parseInt should return undefined when string contains integer with misplaced thousands separators', () => {
-    expect(NumberUtils.parseInt('-1,0,000', 'en-US')).toBeUndefined();
-    expect(NumberUtils.parseInt('1,0,000', 'en-US')).toBeUndefined();
+  it('#parseMachineNumber should return undefined for blank or non-numeric string', () => {
+    // given
+    const strings = [undefined, null, '', '  ', 'abc', '1,000'];
+
+    // when
+    const numbers = strings.map(s => NumberUtils.parseMachineNumber(s));
+
+    // then
+    expect(numbers).toEqual([undefined, undefined, undefined, undefined, undefined, undefined]);
+  });
+
+  it('#thousandsSeparator should return group symbol when locale groups from five digits only', () => {
+    // when
+    const separators = ['es', 'pl', 'pt-PT'].map(l => NumberUtils.thousandsSeparator(l));
+
+    // then
+    expect(separators[0]).toBe('.');
+    expect(separators[1]).toMatch(/^\s$/u);
+    expect(separators[2]).toMatch(/^\s$/u);
+  });
+
+  it('#representsNumber should return true when locale groups from five digits only', () => {
+    // when
+    const results = [
+      NumberUtils.representsNumber('100', 'es'),
+      NumberUtils.representsNumber('1000', 'es'),
+      NumberUtils.representsNumber('10', 'pl')
+    ];
+
+    // then
+    expect(results).toEqual([true, true, true]);
   });
 
   it('#parseFloat should return undefined when string is undefined', () => {

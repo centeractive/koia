@@ -52,6 +52,7 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
 
   private destroyed = false;
   private textsOutdated = false;
+  private contextSubscription: Subscription;
   private languageSubscription: Subscription;
   private removePointerDownListener: () => void;
 
@@ -67,7 +68,7 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
     if (!this.dbService.getActiveScene()) {
       this.router.navigateByUrl(Route.SCENES);
     } else {
-      this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
+      this.contextSubscription = this.context.subscribeToChanges((e: ChangeEvent) => this.prepareChartAsync(e));
       this.languageSubscription = this.languageService.changed$.subscribe(() => this.onLanguageChanged());
     }
   }
@@ -143,6 +144,7 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   ngOnDestroy(): void {
     this.removePointerDownListener();
     this.destroyed = true;
+    this.contextSubscription?.unsubscribe();
     this.languageSubscription?.unsubscribe();
     this.context.chart?.destroy();
   }

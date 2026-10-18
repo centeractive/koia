@@ -1,4 +1,4 @@
-import { Operator, PropertyFilter, Query } from 'app/shared/model';
+import { PropertyFilter, Query } from 'app/shared/model';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 
 export class QueryBuilder {
@@ -14,15 +14,14 @@ export class QueryBuilder {
 
   propertyFilters(propertyFilters: PropertyFilter[]): QueryBuilder {
     propertyFilters
-      .filter(f => f.operator === Operator.EMPTY || f.operator === Operator.NOT_EMPTY
-        || (f.value !== undefined && f.value !== ''))
+      .filter(f => f.isApplicable())
       .forEach(f => this.query.addPropertyFilter(f.clone()));
     return this;
   }
 
   rangeFilters(rangeFilters: NumberRangeFilter[]): QueryBuilder {
     rangeFilters
-      .filter(f => f.inverted || f.isStartFiltered() || f.isEndFiltered())
+      .filter(f => f.isFiltered())
       .forEach(f => {
         const min = f.start === f.selValueRange.min ? undefined : f.selValueRange.min;
         const max = f.end === f.selValueRange.max ? undefined : f.selValueRange.max;

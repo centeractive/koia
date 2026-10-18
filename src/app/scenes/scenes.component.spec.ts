@@ -123,6 +123,18 @@ describe('ScenesComponent', () => {
     expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.FRONT);
   });
 
+  it('#ngOnInit should notify error when scene infos cannot be read', fakeAsync(() => {
+
+    // given
+    findSceneInfosSpy.mockRejectedValue('db error');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'db error');
+  }));
 
   it('butHome#click should navigate to front component', () => {
 

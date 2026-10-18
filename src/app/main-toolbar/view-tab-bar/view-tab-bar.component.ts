@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { ViewController } from 'app/shared/controller';
+import { VIEW_NAME_MAX_LENGTH } from 'app/shared/controller';
 import { Route } from 'app/shared/model';
 import { TabDef, ViewType } from 'app/shared/model/view-config';
 import { DialogService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
 import { hasContent, iconOf, tabUrl, ViewTabsService } from 'app/shared/services/view-tabs';
+import * as _ from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -41,7 +42,7 @@ export class ViewTabBarComponent {
 
   rename(tab: TabDef): void {
     const dialogData = new InputDialogData(this.languageService.instant('toolbar.tabs.renameTitle'),
-      this.languageService.instant('toolbar.tabs.tabName'), tab.title, ViewController.VIEW_NAME_MAX_LENGTH);
+      this.languageService.instant('toolbar.tabs.tabName'), tab.title, VIEW_NAME_MAX_LENGTH);
     firstValueFrom(this.dialogService.showInputDialog(dialogData).afterClosed())
       .then(() => {
         if (dialogData.closedWithOK) {
@@ -50,12 +51,12 @@ export class ViewTabBarComponent {
       });
   }
 
-  close(event: MouseEvent, tab: TabDef): void {
+  close(event: Event, tab: TabDef): void {
     event.stopPropagation();
     event.preventDefault();
     if (hasContent(this.viewTabsService.currentTab(tab))) {
       const data = new ConfirmDialogData(this.languageService.instant('toolbar.tabs.closeTitle'),
-        '<p>' + this.languageService.instant('toolbar.tabs.closeQuestion', { title: tab.title }) + '</p>', ConfirmDialogData.YES_NO);
+        '<p>' + this.languageService.instant('toolbar.tabs.closeQuestion', { title: _.escape(tab.title) }) + '</p>', ConfirmDialogData.YES_NO);
       firstValueFrom(this.dialogService.showConfirmDialog(data).afterClosed())
         .then(() => {
           if (data.closedWithButtonIndex === 0) {

@@ -1,0 +1,12 @@
+<h4>{{ 'dialog.restoreView' | translate }}</h4>
+<p>{{ 'dialog.restoreViewHint' | translate }}</p>
+<div id="div_saved_views">
+  @for (view of views; track view) {
+    <div class="div_row">
+      <button mat-icon-button (click)="viewSelected.emit(view)">
+        <mat-icon>monitor</mat-icon>
+      </button>
+      <span>&nbsp;{{ view.name }} <var>{{ view.modifiedTime | koiaDate:'short' }}</var></span>
+    </div>
+  }
+</div>

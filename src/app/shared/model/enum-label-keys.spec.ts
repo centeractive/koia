@@ -1,5 +1,6 @@
 import { DataType } from './data-type.enum';
 import { EnumLabelKeys } from './enum-label-keys';
+import { TimeUnit } from './time-unit.enum';
 
 describe('EnumLabelKeys', () => {
 
@@ -9,5 +10,14 @@ describe('EnumLabelKeys', () => {
 
    it('#dataType should return the key composed of the value when it is no enum member', () => {
       expect(EnumLabelKeys.dataType('unknown' as DataType)).toBe('enum.dataType.unknown');
+   });
+
+   it('#groupingTimeUnit should return per key of time unit', () => {
+
+      // when
+      const key = EnumLabelKeys.groupingTimeUnit(TimeUnit.DAY);
+
+      // then
+      expect(key).toBe('ui.per.day');
    });
 });

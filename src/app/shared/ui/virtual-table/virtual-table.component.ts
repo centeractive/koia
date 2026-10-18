@@ -146,7 +146,7 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
 
   displayValue(column: Column, entry: object): void {
     if (column.dataType === DataType.OBJECT) {
-      const data = new ConfirmDialogData(LanguageService.instant('ui.columnValue', { column: column.name }), '<pre>' + entry[column.name] + '</pre>',
+      const data = new ConfirmDialogData(LanguageService.instant('ui.columnValue', { column: column.name }), '<pre>' + _.escape(entry[column.name]) + '</pre>',
         [LanguageService.instant('common.close')]);
       this.dialogService.showConfirmDialog(data);
     }

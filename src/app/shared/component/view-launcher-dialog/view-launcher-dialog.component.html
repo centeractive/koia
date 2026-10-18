@@ -7,18 +7,7 @@
   <mat-card-content>
     @if (context.views?.length > 0) {
       <span>
-        <h4>{{ 'dialog.restoreView' | translate }}</h4>
-        <p>{{ 'dialog.restoreViewHint' | translate }}</p>
-        <div id="div_views">
-          @for (view of context.views; track view) {
-            <div class="div_row">
-              <button mat-icon-button (click)="context.loadView(view); dialogRef.close()">
-                <mat-icon>monitor</mat-icon>
-              </button>
-              <span>&nbsp;{{ view.name }} <var>{{ view.modifiedTime | koiaDate:'short' }}</var></span>
-            </div>
-          }
-        </div>
+        <koia-saved-view-list [views]="context.views" (viewSelected)="context.loadView($any($event)); dialogRef.close()" />
       </span>
     }
 

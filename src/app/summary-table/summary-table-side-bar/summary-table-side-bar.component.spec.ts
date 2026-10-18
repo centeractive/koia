@@ -1,4 +1,4 @@
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDrag, DragDropModule } from '@angular/cdk/drag-drop';
 import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
@@ -249,15 +249,6 @@ describe('SummaryTableSideBarComponent', () => {
     expect(component.onColumnChanged).toHaveBeenCalled();
   });
 
-  it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
-    const decimalSeparator = (0.1).toLocaleString().charAt(1);
-
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBe(true);
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBe(true);
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBe(true);
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBe(false);
-  });
-
   it('#dropAggregation should re-position context aggregations when moved inside selected aggregations', () => {
 
     // given
@@ -310,6 +301,37 @@ describe('SummaryTableSideBarComponent', () => {
     // then
     expect(context.aggregations).toEqual([Aggregation.MIN, Aggregation.AVG, Aggregation.MAX]);
   });
+
+  it('selected aggregation should not be draggable when it is the only one', () => {
+
+    // given
+    context.aggregations = [Aggregation.MAX];
+    component.ngOnChanges({ context: new SimpleChange(context, context, false) });
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const drags = selectedAggregationDrags();
+    expect(drags.length).toBe(1);
+    expect(drags[0].disabled).toBe(true);
+  });
+
+  it('selected aggregations should be draggable when several are selected', () => {
+
+    // when
+    const drags = selectedAggregationDrags();
+
+    // then
+    expect(drags.length).toBe(2);
+    expect(drags.every(d => !d.disabled)).toBe(true);
+  });
+
+  function selectedAggregationDrags(): CdkDrag[] {
+    return fixture.debugElement.query(By.css('#selectedAggregations'))
+      .queryAll(By.directive(CdkDrag))
+      .map(d => d.injector.get(CdkDrag));
+  }
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);

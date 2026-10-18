@@ -1,6 +1,8 @@
 import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NavigationEnd, Router } from '@angular/router';
-import { DialogService } from 'app/shared/services';
+import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
 import { PropertyFilterValidator } from 'app/shared/validator';
@@ -20,7 +22,7 @@ import { ValueFilterUtils } from './value-filter/value-filter-utils';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
+export class MainToolbarComponent extends AbstractComponent implements OnInit, OnChanges, AfterViewChecked, OnDestroy {
 
   @Input() dialogStyle: boolean;
   @Input() route: Route;
@@ -45,7 +47,9 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
   private justNavigatedToParentView: boolean;
   private navigationSubscription: Subscription;
 
-  constructor(public router: Router, private dbService: DBService, private dialogService: DialogService) {
+  constructor(public router: Router, private dbService: DBService, private dialogService: DialogService, bottomSheet: MatBottomSheet,
+    notificationService: NotificationService) {
+    super(bottomSheet, notificationService);
   }
 
   ngOnInit(): void {
@@ -101,12 +105,13 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
 
   retainInitialFilters(): void {
     if (this.query) {
-      this.fullTextFilter = this.query.getFullTextFilter();
+      const query = this.query.clone();
+      this.fullTextFilter = query.getFullTextFilter();
       this.showFullTextFilter = !!this.fullTextFilter;
-      this.propertyFilters = this.query.getPropertyFilters();
+      this.propertyFilters = query.getPropertyFilters();
       this.rangeFilters = [];
       this.showRangeFilters = false;
-      this.query.getValueRangeFilters().forEach(f => {
+      query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
         this.addRangeFilter(column, f.valueRange, f.inverted);
       })
@@ -127,7 +132,7 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
   }
 
   isNumericColumn(column: Column): boolean {
-    return column && DataTypeUtils.isNumeric(column.dataType);
+    return DataTypeUtils.isNumericColumn(column);
   }
 
   iconOf(dataType: DataType): string {
@@ -150,7 +155,8 @@ export class MainToolbarComponent implements OnInit, OnChanges, AfterViewChecked
           this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange, inverted));
         }
         this.showRangeFilters = true;
-      });
+      })
+      .catch(err => this.notifyError(err));
   }
 
   onFullTextFilterFieldKeyUp(event: KeyboardEvent): void {

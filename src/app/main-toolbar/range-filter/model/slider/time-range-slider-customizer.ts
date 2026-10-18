@@ -35,8 +35,4 @@ export class TimeRangeSliderCustomizer {
          && value !== this.ceil
          && this.min !== this.max;
    }
-
-   combineLabels(l1: string, l2: string): string {
-      return l1 === l2 ? l1 : l1 + ' - ' + l2;
-   }
 }

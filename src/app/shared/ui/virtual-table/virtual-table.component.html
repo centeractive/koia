@@ -3,7 +3,9 @@
     [style.height.px]="gridHeight" [style.width.px]="dialogStyle ? gridWidth : null">
     <div class="vt-header" [style.grid-template-columns]="templateColumns" [style.width.px]="contentWidth">
       @for (column of columns; track $index; let i = $index) {
-        <div class="vt-th" [class.sortable]="sortable && column.indexed" (click)="onHeaderClick(column)">
+        <div class="vt-th" [class.sortable]="sortable && column.indexed" [attr.tabindex]="sortable && column.indexed ? 0 : null"
+          (click)="onHeaderClick(column)" (keydown.enter)="onHeaderClick(column)"
+          (keydown.space)="$event.preventDefault(); onHeaderClick(column)">
           <span class="vt-th-label">{{ column.name }}</span><span class="vt-sort">{{ sortIndicatorOf(column) }}</span>
           <span class="vt-resize" koiaColumnResize (resizing)="onResizing(i, $event)" (resized)="onResized()"></span>
         </div>

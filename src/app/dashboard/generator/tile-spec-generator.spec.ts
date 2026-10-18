@@ -70,6 +70,15 @@ describe('TileSpecGenerator', () => {
     });
   });
 
+  it('#generate should create no distribution chart for category exceeding maximum horizontal bar categories', () => {
+
+    // when
+    const specs = generate([category('C', 31)]);
+
+    // then
+    expect(specs).toEqual([]);
+  });
+
   it('#generate should create crosstab charts for category pairs within series and axis limits', () => {
 
     // given

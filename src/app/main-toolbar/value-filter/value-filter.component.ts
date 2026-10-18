@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ValidationErrors } from '@angular/forms';
 import { Column, DataType, Operator, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { PropertyFilterValidator } from 'app/shared/validator';
@@ -23,8 +23,7 @@ export class ValueFilterComponent implements OnInit {
   readonly operators: Operator[];
   valueFilterCustomizer = new ValueFilterCustomizer();
   columns: Column[];
-  valueControl = new FormControl();
-  numberDataType: boolean;
+  valueControl = new FormControl(null, () => this.validationErrors());
 
   private validator: PropertyFilterValidator;
   private valueParser: FilterValueParser;
@@ -38,7 +37,10 @@ export class ValueFilterComponent implements OnInit {
     this.validator = new PropertyFilterValidator(this.columns);
     this.valueParser = new FilterValueParser(this.filter);
     this.valueControl.setValue(this.valueFilterCustomizer.formattedValueOf(this.filter));
-    this.numberDataType = this.filter.dataType === DataType.NUMBER;
+  }
+
+  get numberDataType(): boolean {
+    return this.filter.dataType === DataType.NUMBER;
   }
 
   availableOperators(): Operator[] {
@@ -86,8 +88,12 @@ export class ValueFilterComponent implements OnInit {
   }
 
   private validate(): void {
-    const error = this.validator.validate(this.filter);
-    this.valueControl.setErrors(error ? { error: error } : null);
+    this.valueControl.updateValueAndValidity();
     this.valueControl.markAsTouched();
+  }
+
+  private validationErrors(): ValidationErrors | null {
+    const error = this.validator?.validate(this.filter);
+    return error ? { error: error } : null;
   }
 }

@@ -5,7 +5,7 @@ import { Column, DataType, Scene } from '../model';
 import { DBService } from '../services/backend';
 import { CouchDBService } from '../services/backend/couchdb';
 import { CouchDBConfig } from '../services/backend/couchdb/couchdb-config';
-import { DomMetrics } from '../ui/table-fit/dom-metrics';
+import { waitFrames, waitStable } from './animation-frames';
 import { SceneFactory } from './scene-factory';
 
 export interface Backend {
@@ -94,6 +94,6 @@ export async function scrollTableTo(root: HTMLElement, offset: number): Promise<
          return rect.bottom > viewport.top && rect.top < viewport.bottom;
       });
    };
-   await DomMetrics.waitFrames(() => rowVisible() && !root.querySelector('.vt-loading') && !root.querySelector('mat-progress-bar'), 600);
-   await DomMetrics.waitStable(() => root.querySelectorAll('.vt-row').length, 3, 60);
+   await waitFrames(() => rowVisible() && !root.querySelector('.vt-loading') && !root.querySelector('mat-progress-bar'), 600);
+   await waitStable(() => root.querySelectorAll('.vt-row').length, 3, 60);
 }

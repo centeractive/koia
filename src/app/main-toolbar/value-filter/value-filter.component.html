@@ -22,14 +22,14 @@
     @if (!isEqualBoolean() && !filter.operator.endsWith('empty')) {
       <div class="div_column_filter_value">
         @if (numberDataType) {
-          <input class="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
+          <input class="column_filter_input" matInput type="text" [placeholder]="'filter.value.placeholder' | translate"
             [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
-            [formControl]="valueControl" formattedFloat (search)="onChange.emit()">
+            [formControl]="valueControl" formattedFloat (keyup.enter)="onChange.emit()">
         }
         @if (!numberDataType) {
-          <input class="column_filter_input" matInput type="search" [placeholder]="'filter.value.placeholder' | translate"
+          <input class="column_filter_input" matInput type="text" [placeholder]="'filter.value.placeholder' | translate"
             [matTooltip]="valueFilterCustomizer.tooltipOf(filter)" (input)="onValueChanged($any($event.target ).value)"
-            [formControl]="valueControl" (search)="onChange.emit()">
+            [formControl]="valueControl" (keyup.enter)="onChange.emit()">
         }
         @if (valueControl.invalid) {
           <mat-error>{{ valueControl.getError('error') }}</mat-error>
@@ -47,8 +47,9 @@
         <span>false</span>
       </button>
     </mat-menu>
-    <mat-icon class="icon_remove_column_filter" [matTooltip]="'filter.value.remove' | translate" (click)="onRemove.emit()">
-      remove_circle_outline
-    </mat-icon>
+    <button class="but_remove_column_filter" mat-icon-button [matTooltip]="'filter.value.remove' | translate"
+      [attr.aria-label]="'filter.value.remove' | translate" (click)="onRemove.emit()">
+      <mat-icon>remove_circle_outline</mat-icon>
+    </button>
   </div>
 }

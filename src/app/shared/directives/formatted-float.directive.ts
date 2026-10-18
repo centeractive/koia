@@ -1,6 +1,7 @@
 import { Directive, ElementRef, HostListener } from '@angular/core';
 import { NumberFormatter } from '../format';
-import { NumberUtils, StringUtils } from '../utils';
+import { NumberUtils } from '../utils';
+import { preventInvalidPaste } from '../utils/clipboard-events';
 import { isCopyEvent, isCutEvent, isDigitKey, isPasteEvent, isSelectAllEvent } from '../utils/keyboard-events';
 
 @Directive({
@@ -52,15 +53,7 @@ export class FormattedFloatDirective {
 
     @HostListener('paste', ['$event'])
     onPaste(event: ClipboardEvent): void {
-        const v = NumberUtils.removeThousandsSeparators(this.newValue(event), undefined);
-        if (!NumberUtils.isNumber(v, undefined)) {
-            event.preventDefault();
-        }
-    }
-
-    private newValue(event: ClipboardEvent): string {
-        const replacement = event.clipboardData.getData('text/plain');
-        return StringUtils.replace(this.inputElement.value, this.inputElement.selectionStart, this.inputElement.selectionEnd, replacement).text;
+        preventInvalidPaste(event, this.inputElement, v => NumberUtils.isNumber(NumberUtils.removeThousandsSeparators(v, undefined), undefined));
     }
 
     @HostListener('blur')

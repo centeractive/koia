@@ -1,6 +1,7 @@
 import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { EnumLabels, Scene } from 'app/shared/model';
+import { EnumLabels, Scene, TimeUnit } from 'app/shared/model';
+import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 
 @Component({
@@ -31,7 +32,7 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
                           <th class="row-header">{{ column.name }}</th>
                           <td>{{ dataTypeLabel(column.dataType) }}</td>
                           <td>{{ column.format }}</td>
-                          <td>{{ column.groupingTimeUnit }}</td>
+                          <td>@if (column.groupingTimeUnit) { {{ groupingTimeUnitKey(column.groupingTimeUnit) | translate }} }</td>
                           <td style="text-align: right">{{ column.width }}</td>
                         </tr>
                       }
@@ -72,6 +73,10 @@ export class SceneDetailsDialogComponent {
 
   constructor(public dialogRef: MatDialogRef<SceneDetailsDialogComponent>, @Inject(MAT_DIALOG_DATA) public scene: Scene) {
     this.colWidthMeasurement = colWidthMeasurementToDisplay(scene);
+  }
+
+  groupingTimeUnitKey(timeUnit: TimeUnit): string {
+    return EnumLabelKeys.groupingTimeUnit(timeUnit);
   }
 
 }

@@ -4,7 +4,7 @@ import PouchFind from 'pouchdb-find';
 import PouchDB from 'pouchdb';
 import { ArrayUtils } from 'app/shared/utils';
 import { Document } from 'app/shared/model';
-import { sanitizeIndexQuery } from '../mango';
+import { deleteUnlessSystemDatabase, indexQueryOf } from '../db-utils';
 
 PouchDB.plugin(PouchFind);
 
@@ -25,23 +25,17 @@ export class PouchDBAccess implements DB {
   }
 
   createIndex(database: string, columnName: string): Promise<PouchDB.Find.CreateIndexResponse<object>> {
-    const query = sanitizeIndexQuery({
-      index: {
-        fields: [columnName]
-      },
-      ddoc: 'index_' + columnName
-    });
+    const query = indexQueryOf(columnName);
     console.log('createIndex', database, query);
     return new PouchDB(database).createIndex(query);
   }
 
   deleteDatabase(database: string): Promise<void> {
-    if (database.startsWith('_')) {
-      return Promise.reject('You have no permission to delete the system database ' + database);
-    }
-    console.log('deleteDatabase', database);
-    ArrayUtils.removeElement(this.databases, database);
-    return new PouchDB(database).destroy();
+    return deleteUnlessSystemDatabase(database, () => {
+      console.log('deleteDatabase', database);
+      ArrayUtils.removeElement(this.databases, database);
+      return new PouchDB(database).destroy();
+    });
   }
 
   async findById(database: string, id: string): Promise<Document> {

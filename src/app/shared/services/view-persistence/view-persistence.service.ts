@@ -32,20 +32,10 @@ export class ViewPersistenceService {
     * invoking part to catch errors
     */
    saveRecord(scene: Scene, route: Route, viewName: string, query: Query, data: ConfigRecord['data']): Promise<Status> {
-      const prevRecord = this.findRecord(scene, route, viewName);
       const newRecord = createConfigRecord(route, viewName, query, data, new Date().getTime());
-      if (prevRecord) {
-         ArrayUtils.replaceElement(scene.config.records, prevRecord, newRecord);
-      } else {
-         scene.config.records.push(newRecord);
-      }
-      return this.updateScene(scene, viewName);
-   }
-
-   private findRecord(scene: Scene, route: Route, name: string): ConfigRecord {
-      return scene.config.records
-         .filter(v => v.route === route)
-         .find(v => v.name === name);
+      this.addOrReplace(scene.config.records, newRecord, r => r === route);
+      return this.updateScene(scene, LanguageService.instant('view.saved', { name: viewName }),
+         e => LanguageService.instant('view.notSaved', { name: viewName, error: e }));
    }
 
    /**
@@ -65,19 +55,18 @@ export class ViewPersistenceService {
     * invoking part to catch errors
     */
    saveView(scene: Scene, view: View): Promise<Status> {
-      const prevView = this.findView(scene, view.route, view.name);
-      if (prevView) {
-         ArrayUtils.replaceElement(scene.config.views, prevView, view);
-      } else {
-         scene.config.views.push(view);
-      }
-      return this.updateScene(scene, view.name);
+      this.addOrReplace(scene.config.views, view, r => this.isSameFamily(r, view.route));
+      return this.updateScene(scene, LanguageService.instant('view.saved', { name: view.name }),
+         e => LanguageService.instant('view.notSaved', { name: view.name, error: e }));
    }
 
-   private findView(scene: Scene, route: Route, name: string): View {
-      return scene.config.views
-         .filter(v => this.isSameFamily(v.route, route))
-         .find(v => v.name === name);
+   private addOrReplace<T extends { route: Route, name: string }>(items: T[], item: T, sameRoute: (route: Route) => boolean): void {
+      const prevItem = items.find(i => sameRoute(i.route) && i.name === item.name);
+      if (prevItem) {
+         ArrayUtils.replaceElement(items, prevItem, item);
+      } else {
+         items.push(item);
+      }
    }
 
    private isSameFamily(route1: Route, route2: Route): boolean {
@@ -86,28 +75,34 @@ export class ViewPersistenceService {
    }
 
    /**
-    * removes the deleted [[ConfigRecord]]s from the [[Scene]] and persists it, renamed records are expected to be renamed in place
+    * removes the deleted [[ConfigRecord]]s from the [[Scene]] and updates it in the backing datastore, renamed records are
+    * expected to be renamed in place
+    *
+    * @returns a promise that provides the resolved processing status (success or error)
     */
-   updateRecords(scene: Scene, deletedRecords: ConfigRecord[], renamedRecords: ConfigRecord[]): Status {
-      scene.config.records = this.withoutNamesOf(scene.config.records, deletedRecords);
-      return this.persistUpdate(scene, deletedRecords.length, renamedRecords.length);
+   updateRecords(scene: Scene, deletedRecords: ConfigRecord[], renamedRecords: ConfigRecord[]): Promise<Status> {
+      scene.config.records = this.without(scene.config.records, deletedRecords);
+      return this.updateScene(scene, this.updateMessage(deletedRecords.length, renamedRecords.length),
+         e => LanguageService.instant('view.notUpdated', { error: e }));
    }
 
    /**
-    * removes the deleted [[View]]s from the [[Scene]] and persists it, renamed views are expected to be renamed in place
+    * removes the deleted [[View]]s from the [[Scene]] and updates it in the backing datastore, renamed views are expected
+    * to be renamed in place
+    *
+    * @returns a promise that provides the resolved processing status (success or error)
     */
-   updateViews(scene: Scene, deletedViews: View[], renamedViews: View[]): Status {
-      scene.config.views = this.withoutNamesOf(scene.config.views, deletedViews);
-      return this.persistUpdate(scene, deletedViews.length, renamedViews.length);
+   updateViews(scene: Scene, deletedViews: View[], renamedViews: View[]): Promise<Status> {
+      scene.config.views = this.without(scene.config.views, deletedViews);
+      return this.updateScene(scene, this.updateMessage(deletedViews.length, renamedViews.length),
+         e => LanguageService.instant('view.notUpdated', { error: e }));
    }
 
-   private withoutNamesOf<T extends { name: string }>(items: T[], removedItems: T[]): T[] {
-      const removedNames = removedItems.map(i => i.name);
-      return items.filter(i => !removedNames.includes(i.name));
+   private without<T>(items: T[], removedItems: T[]): T[] {
+      return items.filter(i => !removedItems.includes(i));
    }
 
-   private persistUpdate(scene: Scene, deletedCount: number, renamedCount: number): Status {
-      this.dbService.persistScene(scene, false);
+   private updateMessage(deletedCount: number, renamedCount: number): string {
       const message: string[] = [];
       if (deletedCount) {
          message.push(LanguageService.instant(deletedCount === 1 ? 'view.deletedOne' : 'view.deleted', { count: deletedCount }));
@@ -115,17 +110,12 @@ export class ViewPersistenceService {
       if (renamedCount) {
          message.push(LanguageService.instant(renamedCount === 1 ? 'view.renamedOne' : 'view.renamed', { count: renamedCount }));
       }
-      return { type: StatusType.SUCCESS, msg: message.join('\n') };
+      return message.join('\n');
    }
 
-   private updateScene(scene: Scene, viewName: string): Promise<Status> {
-      return new Promise<Status>(resolve => {
-         this.dbService.updateScene(scene)
-            .then(() => resolve({ type: StatusType.SUCCESS, msg: LanguageService.instant('view.saved', { name: viewName }) }))
-            .catch(e => {
-               const message = typeof e === 'string' ? e : e.message;
-               resolve({ type: StatusType.ERROR, msg: LanguageService.instant('view.notSaved', { name: viewName, error: message }) });
-            });
-      });
+   private updateScene(scene: Scene, successMsg: string, errorMsg: (error: string) => string): Promise<Status> {
+      return this.dbService.updateScene(scene)
+         .then((): Status => ({ type: StatusType.SUCCESS, msg: successMsg }))
+         .catch((e): Status => ({ type: StatusType.ERROR, msg: errorMsg(typeof e === 'string' ? e : e.message) }));
    }
 }

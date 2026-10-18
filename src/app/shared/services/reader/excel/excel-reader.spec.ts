@@ -45,6 +45,18 @@ describe('ExcelReader', () => {
       expect(attributes[0].hasValueChoice()).toBe(false);
    });
 
+   it('#furnishAttributes should reset sheet name of previous import', () => {
+
+      // given
+      reader.furnishAttributes()[0].value = 'XYZ Sheet';
+
+      // when
+      const attributes = reader.furnishAttributes();
+
+      // then
+      expect(attributes[0].value).toBe('');
+   });
+
    it('#readSample should return sample data', async () => {
 
       // given
@@ -154,6 +166,19 @@ describe('ExcelReader', () => {
 
       // then
       await expect(recorder.completion).rejects.toBe('invalid data');
+   });
+
+   it('#readData should report error when file is corrupt', async () => {
+
+      // given
+      const file = new File([(await loadExcelFile()).slice(0, 1000)], 'test.xlsx');
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 100, recorder);
+
+      // then
+      await expect(recorder.completion).rejects.toBeDefined();
    });
 
    async function loadExcelFile(): Promise<File> {

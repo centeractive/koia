@@ -1,6 +1,8 @@
 import { DatePipe } from '@angular/common';
+import { TestBed } from '@angular/core/testing';
 import { DataFrame } from 'data-forge';
 import { Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
+import { LanguageService } from 'app/shared/services/language';
 import { ExportDataGenerator } from './export-data-generator';
 
 describe('ExportDataGenerator', () => {
@@ -35,6 +37,21 @@ describe('ExportDataGenerator', () => {
          { 'Time (per minute)': datePipe.transform(t1, format), Count: 1 },
          { 'Time (per minute)': 'Overall', Count: 3 }
       ]);
+   });
+
+   it('#generate should label overall row in current language', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      await TestBed.inject(LanguageService).use('de');
+      const dataFrame = new DataFrame([{ 'Time (per minute)': t0, Count: 2 }]);
+
+      // when
+      const data = generator.generate(context, dataFrame, [2]);
+
+      // then
+      expect(data[1]).toEqual({ 'Time (per minute)': 'Gesamt', Count: 2 });
+      document.documentElement.lang = 'en';
    });
 
    it('#generate should format time column values when time is missing in first row', () => {

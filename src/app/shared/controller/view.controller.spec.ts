@@ -156,69 +156,36 @@ describe('ViewController', () => {
       expect(div.scrollIntoView).not.toHaveBeenCalled();
    });
 
-   it('#ngAfterViewInit should scroll when element containers grew', () => {
+   it('#ngAfterViewInit should scroll last element container into view only once when added element flag is set', () => {
 
       // given
-      const controller = controllerWithContainers(document.createElement('div'));
-      const added = document.createElement('div');
-      vi.spyOn(added, 'scrollIntoView').mockReturnValue(undefined);
+      const div = document.createElement('div');
+      vi.spyOn(div, 'scrollIntoView').mockReturnValue(undefined);
+      const controller = controllerWithContainers(div);
+      controller['scrollToAddedElement'] = true;
 
       // when
-      controller.elementContainerDivRefs.reset([controller.elementContainerDivRefs.first, new ElementRef(added)]);
+      controller.elementContainerDivRefs.notifyOnChanges();
       controller.elementContainerDivRefs.notifyOnChanges();
 
       // then
-      expect(added.scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
+      expect(div.scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
    });
 
-   it('#ngAfterViewInit should not scroll when element containers are re-created with same count', () => {
+   it('#ngAfterViewInit should not scroll when text box was added', () => {
 
       // given
-      const controller = controllerWithContainers(document.createElement('div'));
-      const recreated = document.createElement('div');
-      vi.spyOn(recreated, 'scrollIntoView').mockReturnValue(undefined);
+      const div = document.createElement('div');
+      vi.spyOn(div, 'scrollIntoView').mockReturnValue(undefined);
+      const controller = controllerWithContainers(div);
+      controller['columns'] = [];
 
       // when
-      controller.elementContainerDivRefs.reset([new ElementRef(recreated)]);
+      controller.addTextBox();
       controller.elementContainerDivRefs.notifyOnChanges();
 
       // then
-      expect(recreated.scrollIntoView).not.toHaveBeenCalled();
-   });
-
-   it('#ngAfterViewInit should not scroll when grown element containers are re-created with same count', () => {
-
-      // given
-      const controller = controllerWithContainers(document.createElement('div'));
-      const added = document.createElement('div');
-      vi.spyOn(added, 'scrollIntoView').mockReturnValue(undefined);
-      controller.elementContainerDivRefs.reset([controller.elementContainerDivRefs.first, new ElementRef(added)]);
-      controller.elementContainerDivRefs.notifyOnChanges();
-      const recreated = document.createElement('div');
-      vi.spyOn(recreated, 'scrollIntoView').mockReturnValue(undefined);
-
-      // when
-      controller.elementContainerDivRefs.reset([new ElementRef(document.createElement('div')), new ElementRef(recreated)]);
-      controller.elementContainerDivRefs.notifyOnChanges();
-
-      // then
-      expect(recreated.scrollIntoView).not.toHaveBeenCalled();
-   });
-
-   it('#ngAfterViewInit should not scroll when element containers grew by overlay', () => {
-
-      // given
-      const controller = controllerWithContainers(document.createElement('div'));
-      controller.elementContexts = [new SummaryContext([]), new TextBoxContext([])];
-      const added = document.createElement('div');
-      vi.spyOn(added, 'scrollIntoView').mockReturnValue(undefined);
-
-      // when
-      controller.elementContainerDivRefs.reset([controller.elementContainerDivRefs.first, new ElementRef(added)]);
-      controller.elementContainerDivRefs.notifyOnChanges();
-
-      // then
-      expect(added.scrollIntoView).not.toHaveBeenCalled();
+      expect(div.scrollIntoView).not.toHaveBeenCalled();
    });
 
    function controllerWithContainers(...divs: HTMLDivElement[]): ViewControllerTestable {

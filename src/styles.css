@@ -13,12 +13,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.koia-logo {
-  background-image: url('/assets/koialogo_50x50.png');
-  background-repeat: no-repeat;
-  background-size: 36px 36px;
-}
-
 #image-scenes {
   background-image: url('/assets/mat-icons/scenes.png');
   background-repeat: no-repeat;
@@ -56,6 +50,22 @@ mat-sidenav-content.mat-drawer-content {
 
 .multi-line-tooltip {
   white-space: pre-line;
+}
+
+.koia-tooltip-warning {
+  color: red !important;
+  background-color: rgb(218, 196, 74);
+  white-space: pre-line;
+  max-width: 800px !important;
+}
+
+.page-language {
+  --koia-language-bg: rgba(255, 255, 255, 0.16);
+  --koia-language-bg-hover: rgba(255, 255, 255, 0.26);
+  --koia-language-color: white;
+  display: inline-flex;
+  padding-top: 2px;
+  float: right;
 }
 
 .sidenav {

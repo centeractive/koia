@@ -56,6 +56,22 @@ describe('ElementContext', () => {
       expect(context.dataColumns).toEqual([]);
    }));
 
+   it('#subscribeToChanges should stop notifying handler when returned subscription is unsubscribed', fakeAsync(() => {
+
+      // given
+      const handler = vi.fn();
+      const subscription = context.subscribeToChanges(handler);
+
+      // when
+      subscription.unsubscribe();
+      context.fireLookChanged();
+      flush();
+
+      // then
+      expect(handler).not.toHaveBeenCalled();
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
    it('#gridColumnSpan should not fire size change event when row span is not changed', fakeAsync(() => {
 
       // given
@@ -228,9 +244,12 @@ describe('ElementContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
    }));
 
-   it('#groupByColumns should return empty array when no group by columns are defined', () => {
+   it('#groupByColumns should replace missing value with empty array', () => {
+
+      // when
       context.groupByColumns = null;
 
+      // then
       expect(context.groupByColumns).toEqual([]);
    });
 

@@ -361,6 +361,28 @@ describe('ChartContext', () => {
       });
    }));
 
+   it('#groupByColumns should restore base scale as it was when group-by column was replaced', fakeAsync(() => {
+
+      // given
+      context.groupByColumns = [columns[1]];
+      const replacedBaseScale = context.baseScale;
+      replacedBaseScale.ticks.rotation = 45;
+      context.groupByColumns = [columns[0]];
+      replacedBaseScale.ticks.rotation = 90;
+
+      // when
+      context.groupByColumns = [columns[1]];
+
+      // then
+      expect(context.baseScale.toScale()).toEqual({
+         columnName: 'Location',
+         ticks: {
+            stepSize: undefined,
+            rotation: 45
+         }
+      });
+   }));
+
    it('#legendPosition should not fire look change event when legendPosition is not changed', fakeAsync(() => {
 
       // given

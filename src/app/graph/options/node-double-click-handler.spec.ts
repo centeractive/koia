@@ -83,6 +83,26 @@ describe('NodeDoubleClickHandler', () => {
       expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], [], [], graphContext);
    });
 
+   it('#onNodeDoubleClicked should reveal raw data of time node within time columns of its hierarchy level', () => {
+
+      // given
+      const endColumn = createColumn('End', DataType.TIME, TimeUnit.MINUTE);
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '', count: 0 };
+      const timeNode: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '25', count: 25 };
+      const levelNode: GraphNode = { parent: timeNode, group: 2, name: 'Level', value: 'ERROR', info: '10', count: 10 };
+      timeColumn.groupingTimeUnit = TimeUnit.HOUR;
+      graphContext = new GraphContext([timeColumn, levelColumn, endColumn]);
+      graphContext.groupByColumns = [timeColumn, levelColumn, endColumn];
+      graphContext.query = new Query();
+
+      // when
+      handler.onNodeDoubleClicked(levelNode, graphContext);
+
+      // then
+      expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'],
+         graphContext);
+   });
+
    function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {
       return {
          name: name,

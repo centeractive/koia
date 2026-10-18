@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -207,62 +207,5 @@ describe('PivotTableSideBarComponent', () => {
     // then
     expect(component.context.valueGroupings.includes(grouping)).toBe(false);
     expect(component.nonGroupedColumns[0].name).toEqual('Amount');
-  });
-
-  it('#addGroupingRange should add range', () => {
-
-    // given
-    const amountColumn = columns.filter(c => c.name === 'Amount')[0];
-    const grouping = component.addValueGrouping(amountColumn);
-    const initialRangesCount = grouping.ranges.length;
-
-    // when
-    component.addGroupingRange(grouping);
-
-    // then
-    expect(grouping.ranges.length).toBe(initialRangesCount + 1);
-  });
-
-  it('#removeGroupingRange should remove range', () => {
-
-    // given
-    const amountColumn = columns.filter(c => c.name === 'Amount')[0];
-    const grouping = component.addValueGrouping(amountColumn);
-    const range1 = { max: 10, active: true };
-    const range2 = { max: 20, active: true };
-    const range3 = { max: 30, active: true };
-    grouping.ranges = [range1, range2, range3];
-
-    // when
-    component.removeGroupingRange(grouping, range2);
-
-    // then
-    expect(grouping.ranges).toEqual([range1, range3]);
-  });
-
-  it('#dropGroupingRange should move range to new position', () => {
-
-    // given
-    const amountColumn = columns.filter(c => c.name === 'Amount')[0];
-    const grouping = component.addValueGrouping(amountColumn);
-    const range1 = { max: 10, active: true };
-    const range2 = { max: 20, active: true };
-    const range3 = { max: 30, active: true };
-    grouping.ranges = [range1, range2, range3];
-
-    // when
-    component.dropGroupingRange(grouping, { previousIndex: 2, currentIndex: 0 } as CdkDragDrop<string[]>);
-
-    // then
-    expect(grouping.ranges).toEqual([range3, range1, range2]);
-  });
-
-  it('#isNumberKey should return value obtained from NumberUtils#isNumberKey', () => {
-    const decimalSeparator = (0.1).toLocaleString().charAt(1);
-
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '1' }))).toBe(true);
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: '-' }))).toBe(true);
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: decimalSeparator }))).toBe(true);
-    expect(component.isNumberKey(new KeyboardEvent('keydown', { key: 'a' }))).toBe(false);
   });
 });

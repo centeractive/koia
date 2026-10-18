@@ -60,6 +60,21 @@ describe('ReaderService', () => {
     expect(header).toBe(text);
   });
 
+  it('#readHeader should reject when file cannot be read', async () => {
+
+    // given
+    const error = new ProgressEvent('error') as ProgressEvent<FileReader>;
+    vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+      this.onerror(error);
+    });
+
+    // when
+    const header = service.readHeader(file, 3);
+
+    // then
+    await expect(header).rejects.toBe(error);
+  });
+
   function createFile(data: string): File {
     return new File([data], 'test.txt', { type: 'text/plain' });
   }

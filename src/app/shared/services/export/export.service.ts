@@ -16,6 +16,7 @@ export class ExportService {
   private static readonly TYPE_CSV = 'text/csv;charset=UTF-8';
   private static readonly TYPE_EXCEL = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
   private static readonly TYPE_JSON = 'application/javascript;charset=UTF-8';
+  static readonly OBJECT_URL_LIFETIME_MS = 40_000;
 
   private newline = '\n';
   private datePipe = new DatePipe('en-US');
@@ -85,7 +86,9 @@ export class ExportService {
   }
 
   saveBlobAs(blob: Blob, filename: string): void {
-    this.saveUrlAs(URL.createObjectURL(blob), filename);
+    const url = URL.createObjectURL(blob);
+    this.saveUrlAs(url, filename);
+    setTimeout(() => URL.revokeObjectURL(url), ExportService.OBJECT_URL_LIFETIME_MS);
   }
 
   saveUrlAs(url: string, filename: string): void {

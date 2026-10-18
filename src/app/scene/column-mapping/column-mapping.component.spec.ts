@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
 import { ColumnPair, DataType } from 'app/shared/model';
 import { ColumnMappingComponent } from './column-mapping.component';
 import { ColumnMappingGenerator } from './mapper';
@@ -88,6 +89,22 @@ describe('ColumnMappingComponent', () => {
 
     // then
     expect(component.mapping.target.format).toBe('d MMM yyyy HH:mm');
+    expect(component.onChange.emit).toHaveBeenCalled();
+  });
+
+  it('#selectionChange of display format should emit change event', () => {
+
+    // given
+    component.mapping.target.dataType = DataType.TIME;
+    component.mapping.target.format = 'yyyy';
+    fixture.detectChanges();
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
+    const select = fixture.debugElement.query(By.css('.select_display_format'));
+
+    // when
+    select.triggerEventHandler('selectionChange', { value: 'MMM yyyy' });
+
+    // then
     expect(component.onChange.emit).toHaveBeenCalled();
   });
 

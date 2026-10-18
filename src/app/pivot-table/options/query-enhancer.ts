@@ -1,7 +1,8 @@
 import { ValueGrouping } from 'app/shared/value-range/model';
-import { ArrayUtils, DateTimeUtils, QuerySanitizer, ColumnNameConverter } from 'app/shared/utils';
+import { ArrayUtils, DateTimeUtils, QuerySanitizer, ColumnNameConverter, NumberUtils } from 'app/shared/utils';
 import { Operator, PropertyFilter, Column, Query, DataType } from 'app/shared/model';
 import { ValueRangeConverter } from 'app/shared/value-range';
+import { NumberFormatter } from 'app/shared/format';
 
 /**
  * responsible for enhancing the query used to request raw data of a specific pivot table cell
@@ -9,6 +10,7 @@ import { ValueRangeConverter } from 'app/shared/value-range';
 export class QueryEnhancer {
 
    private filterLabels: string[];
+   private readonly numberFormatter = new NumberFormatter();
 
    constructor(private query: Query, private columns: Column[], private valueGroupings: ValueGrouping[], private filters: object) {
       this.filterLabels = Object.keys(filters);
@@ -54,11 +56,26 @@ export class QueryEnhancer {
                } else if (this.hasValueGrouping(label)) {
                   exclusions[label].forEach(v => this.addValueGroupingFilter(column, v, true));
                } else {
-                  const values = exclusions[label].join(ArrayUtils.DEFAULT_SEPARATOR);
-                  this.query.addPropertyFilter(new PropertyFilter(label, Operator.NONE_OF, values, column.dataType));
+                  this.addValueExclusionFilters(label, column, exclusions[label]);
                }
             }
          }
+      }
+   }
+
+   /**
+    * 'null' is the label PivotTable.js shows for missing values
+    */
+   private addValueExclusionFilters(label: string, column: Column, excludedValues: string[]): void {
+      let values = excludedValues.filter(v => v !== 'null');
+      if (values.length < excludedValues.length) {
+         this.query.addPropertyFilter(new PropertyFilter(label, Operator.NOT_EMPTY, '', column.dataType));
+      }
+      if (values.length) {
+         if (column.dataType === DataType.NUMBER) {
+            values = values.map(v => this.numberFormatter.format(NumberUtils.parseMachineNumber(v)));
+         }
+         this.query.addPropertyFilter(new PropertyFilter(label, Operator.NONE_OF, values.join(ArrayUtils.DEFAULT_SEPARATOR), column.dataType));
       }
    }
 

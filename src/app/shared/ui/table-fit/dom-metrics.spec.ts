@@ -20,49 +20,4 @@ describe('DomMetrics', () => {
     expect(width).toBeGreaterThanOrEqual(0);
     expect(document.body.childElementCount).toBe(childCount);
   });
-
-
-
-  it('#waitFrames should resolve true as soon as condition holds', async () => {
-
-    // given
-    let checks = 0;
-
-    // when
-    const result = await DomMetrics.waitFrames(() => ++checks === 3, 10);
-
-    // then
-    expect(result).toBe(true);
-    expect(checks).toBe(3);
-  });
-
-  it('#waitFrames should resolve false when condition never holds', async () => {
-
-    // when
-    const result = await DomMetrics.waitFrames(() => false, 2);
-
-    // then
-    expect(result).toBe(false);
-  });
-
-  it('#waitStable should resolve true when value stays unchanged', async () => {
-
-    // when
-    const result = await DomMetrics.waitStable(() => 42, 3, 10);
-
-    // then
-    expect(result).toBe(true);
-  });
-
-  it('#waitStable should resolve false when value keeps changing', async () => {
-
-    // given
-    let value = 0;
-
-    // when
-    const result = await DomMetrics.waitStable(() => value++, 3, 5);
-
-    // then
-    expect(result).toBe(false);
-  });
 });

@@ -60,6 +60,18 @@ describe('QueryBuilder', () => {
       expect(query).toEqual(new Query());
    });
 
+   it('#getQuery should ignore property filter with null value', () => {
+
+      // given
+      const propertyFilters = [new PropertyFilter('Account', Operator.EQUAL, null)];
+
+      // when
+      const query = new QueryBuilder().propertyFilters(propertyFilters).getQuery();
+
+      // then
+      expect(query).toEqual(new Query());
+   });
+
    it('#getQuery when property filters are defined', () => {
 
       // given

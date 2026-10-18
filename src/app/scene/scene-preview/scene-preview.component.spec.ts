@@ -11,7 +11,7 @@ import { By } from '@angular/platform-browser';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
 import { Column, ColumnPair, DataType } from 'app/shared/model';
 import { DialogService } from 'app/shared/services/dialog.service';
-import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { waitStable } from 'app/shared/test/animation-frames';
 import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
 import { TableModeTogglesComponent } from 'app/shared/ui/virtual-table/table-mode-toggles.component';
 import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
@@ -102,7 +102,7 @@ describe('ScenePreviewComponent', () => {
 
   async function settle(): Promise<void> {
     await fixture.whenStable();
-    await DomMetrics.waitStable(() => [table().gridHeight, table().gridWidth, table().virtualItems.length,
+    await waitStable(() => [table().gridHeight, table().gridWidth, table().virtualItems.length,
     fixture.nativeElement.querySelectorAll('.vt-row').length].join(), 3, 120);
   }
 
@@ -295,6 +295,25 @@ describe('ScenePreviewComponent', () => {
 
     // then
     expect(cellTexts(0)[2]).toBe('{"x":1}');
+  });
+
+  it('#toggleShowNestedObjects should recompute widths of columns without width', async () => {
+
+    // given
+    const nested = pair('Nested', DataType.OBJECT, null);
+    host.pairs = [...host.pairs, nested];
+    host.results = [{ entry: { Name: 'a', Amount: 1, Nested: '{"x":"a nested value that is long"}' }, errors: [] }];
+    const entries = host.results.map(result => result.entry);
+    await render();
+    const resolver = new ColumnWidthResolver();
+    expect(headerWidth(2)).toBe(resolver.widthOf(nested.target, 'em', true, entries, false));
+
+    // when
+    await change(() => button('code').click());
+
+    // then
+    expect(headerWidth(2)).toBe(resolver.widthOf(nested.target, 'em', true, entries, true));
+    expect(headerWidth(2)).toBeGreaterThan(resolver.widthOf(nested.target, 'em', true, entries, false));
   });
 
   it('should render new mapping results', async () => {

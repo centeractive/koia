@@ -148,22 +148,7 @@ export class DateTimeUtils {
    * unit is found
    */
   static timeUnitFromNgFormat(ngFormat: string): TimeUnit {
-    switch (ngFormat) {
-      case 'd MMM yyyy HH:mm:ss':
-        return TimeUnit.SECOND;
-      case 'd MMM yyyy HH:mm':
-        return TimeUnit.MINUTE;
-      case 'd MMM yyyy HH':
-        return TimeUnit.HOUR;
-      case 'd MMM yyyy':
-        return TimeUnit.DAY;
-      case 'MMM yyyy':
-        return TimeUnit.MONTH;
-      case 'yyyy':
-        return TimeUnit.YEAR;
-      default:
-        return TimeUnit.MILLISECOND;
-    }
+    return DateTimeUtils.allTimeUnits('asc').find(timeUnit => DateTimeUtils.ngFormatOf(timeUnit) === ngFormat) ?? TimeUnit.MILLISECOND;
   }
 
   /**
@@ -192,28 +177,6 @@ export class DateTimeUtils {
         return 'yyyy';
       default:
         return 'd MMM yyyy HH:mm:ss SSS';
-    }
-  }
-
-  /**
-   * @returns the D3.js date/time format for the specified time unit
-   */
-  static d3FormatOf(timeUnit: TimeUnit): string {
-    switch (timeUnit) {
-      case (TimeUnit.SECOND):
-        return '%-d %b %Y %H:%M:%S';
-      case (TimeUnit.MINUTE):
-        return '%-d %b %Y %H:%M';
-      case (TimeUnit.HOUR):
-        return '%-d %b %Y %H';
-      case (TimeUnit.DAY):
-        return '%-d %b %Y';
-      case (TimeUnit.MONTH):
-        return '%b %Y';
-      case (TimeUnit.YEAR):
-        return '%Y';
-      default:
-        return '%-d %b %Y %H:%M:%S %L';
     }
   }
 

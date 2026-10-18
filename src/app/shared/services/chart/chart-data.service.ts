@@ -110,10 +110,7 @@ export class ChartDataService {
           hoverOffset: 10, // PIE & DOUGHNUT charts
           borderAlign: 'inner' // PIE & DOUGHNUT charts
         };
-        if (!!i && context.multiValueAxes && context.dataColumns.length > 1) {
-          const axis = context.isHorizontalChart() ? 'x' : 'y';
-          dataset[axis + 'AxisID'] = axis + (i + 1);
-        }
+        this.assignValueAxis(dataset, i, context);
         return dataset;
       })
     };
@@ -163,27 +160,29 @@ export class ChartDataService {
           borderWidth: 1,
           fill: chartType == ChartType.AREA
         };
-        if (!!i && context.multiValueAxes && context.dataColumns.length > 1) {
-          const axis = context.isHorizontalChart() ? 'x' : 'y';
-          dataset[axis + 'AxisID'] = axis + (i + 1);
-        }
+        this.assignValueAxis(dataset, i, context);
         return dataset;
       })
     };
+  }
+
+  private assignValueAxis(dataset: ChartDataset, index: number, context: ChartContext): void {
+    if (!!index && context.multiValueAxes && context.dataColumns.length > 1) {
+      const axis = context.isHorizontalChart() ? 'x' : 'y';
+      dataset[axis + 'AxisID'] = axis + (index + 1);
+    }
   }
 
   protected createValueCountData(chartType: ChartType, context: ChartContext): DataSet[] {
     if (!context.groupByColumns.length) {
       throw this.errorResultFactory.groupByColumnNotDefined(chartType);
     }
-    const distinctGroupingValues = new Set<number>();
     const datasets: DataSet[] = [];
     context.entries.map(entry => {
       const key = this.dataNameConverter.toGroupKey(entry, context.dataColumns[0], context.splitColumns);
       if (key !== undefined && key !== null) {
         const groupingValue = ChartDataHelper.extractGroupingValue(entry, context.groupByColumns[0]);
         if (groupingValue !== null && groupingValue !== undefined) {
-          distinctGroupingValues.add(groupingValue);
           this.addGroupValue(datasets, key as string, groupingValue);
         }
       }

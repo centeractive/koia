@@ -118,6 +118,15 @@ describe('SceneUtils', () => {
       expect(entries).toEqual(expected);
    });
 
+   it('#columnNamesFrom should return given and generated column names', () => {
+
+      // when
+      const columnNames = SceneUtils.columnNamesFrom({ columnNames: ['A', '', 'C'], tableData: tableData });
+
+      // then
+      expect(columnNames).toEqual(['A', 'Column 2', 'C']);
+   });
+
    it('#fileContextInfo should return entries with generated keys', () => {
 
       // when

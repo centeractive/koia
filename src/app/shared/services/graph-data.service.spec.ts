@@ -157,6 +157,57 @@ describe('GraphDataService', () => {
       expect(nodes[3].value).toEqual(3);
    });
 
+   it('#createData should keep 0 as node value', () => {
+
+      // given
+      context.groupByColumns = [findColumn('c2')];
+      context.entries = [{ c2: 0 }, { c2: 1 }];
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      const nodes: GraphNode[] = data['nodes'];
+      expect(nodes.length).toEqual(3);
+      expect(nodes[1].value).toBe(0);
+      expect(nodes[2].value).toBe(1);
+   });
+
+   it('#createData should keep false as node value', () => {
+
+      // given
+      const booleanColumn: Column = { name: 'b', dataType: DataType.BOOLEAN, width: 10, indexed: true };
+      context = new GraphContext([...columns, booleanColumn]);
+      context.entries = [{ b: false }, { b: true }, { b: false }];
+      context.groupByColumns = [booleanColumn];
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      const nodes: GraphNode[] = data['nodes'];
+      expect(nodes.length).toEqual(3);
+      expect(nodes[1].value).toBe(false);
+      expect(nodes[1].count).toBe(2);
+      expect(nodes[2].value).toBe(true);
+   });
+
+   it('#createData should return <empty> node value when column value is empty string', () => {
+
+      // given
+      context.groupByColumns = [findColumn('c1')];
+      context.entries = [{ c1: '' }, { c1: 'a' }];
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      const nodes: GraphNode[] = data['nodes'];
+      expect(nodes.length).toEqual(3);
+      expect(nodes[1].value).toEqual(PropertyFilter.EMPTY_VALUE);
+      expect(nodes[2].value).toEqual('a');
+   });
+
    it('#createData should group by time unit when time is missing in first entry', () => {
 
       // given

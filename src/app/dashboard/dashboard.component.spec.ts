@@ -22,6 +22,7 @@ import { TabDef, View, ViewType } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { LanguageService } from 'app/shared/services/language';
 import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
@@ -441,7 +442,7 @@ describe('DashboardComponent', () => {
       expect(dbService.findEntries).toHaveBeenCalledWith(query, true);
     });
 
-    it('#onFilterChanged should notify error when error occurs', fakeAsync(() => {
+    it('#onFilterChanged should notify error and stop loading when error occurs', fakeAsync(() => {
 
       // given
       findEntriesSpy.mockReturnValue(throwError(() => 'server error'));
@@ -453,6 +454,7 @@ describe('DashboardComponent', () => {
 
       // then
       expect(component.notifyError).toHaveBeenCalled();
+      expect(component.loading).toBe(false);
     }));
 
     it('#configure should open side bar', () => {
@@ -531,6 +533,119 @@ describe('DashboardComponent', () => {
       // then
       expect(component.gridLayout.gridColumns).toBe(2);
     });
+
+    it('#setGridColumns should narrow larger elements when user confirms', fakeAsync(() => {
+
+      // given
+      const context = component.addSummaryTable();
+      context.gridColumnSpan = 3;
+      mockConfirmDialog(0);
+
+      // when
+      component.setGridColumns(2);
+      flush();
+
+      // then
+      const data: ConfirmDialogData = vi.mocked(dialogService.showConfirmDialog).mock.lastCall[0];
+      expect(data.title).toBe(LanguageService.instant('dashboard.gridColumns'));
+      expect(data.htmlContent).toBe('<p>' + LanguageService.instant('dashboard.confirmResize') + '</p>');
+      expect(component.gridLayout.gridColumns).toBe(2);
+      expect(context.gridColumnSpan).toBe(2);
+    }));
+
+    it('#setGridColumns should keep grid columns when user declines narrowing larger elements', fakeAsync(() => {
+
+      // given
+      const context = component.addSummaryTable();
+      context.gridColumnSpan = 3;
+      mockConfirmDialog(1);
+
+      // when
+      component.setGridColumns(2);
+      flush();
+
+      // then
+      expect(component.gridLayout.gridColumns).toBe(3);
+      expect(context.gridColumnSpan).toBe(3);
+    }));
+
+    it('#setGridColumns should not ask for confirmation when all elements fit', () => {
+
+      // given
+      const context = component.addSummaryTable();
+      context.gridColumnSpan = 2;
+      vi.spyOn(dialogService, 'showConfirmDialog');
+
+      // when
+      component.setGridColumns(2);
+
+      // then
+      expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
+      expect(component.gridLayout.gridColumns).toBe(2);
+      expect(context.gridColumnSpan).toBe(2);
+    });
+
+    it('#ngOnInit should define time units of new elements from fetched entries', () => {
+
+      // when
+      const context = component.addSummaryTable();
+
+      // then
+      expect(findColumn('Time', context).groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+    });
+
+    it('#ngOnInit should not modify time unit of scene columns', () => {
+
+      // given
+      const otherScene = SceneFactory.createScene('2', scene.columns.map(c => ({ ...c, groupingTimeUnit: undefined })));
+      getActiveSceneSpy.mockReturnValue(otherScene);
+
+      // when
+      component.ngOnInit();
+
+      // then
+      expect(findColumn('Time', component.addSummaryTable()).groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+      otherScene.columns.forEach(c => expect(c.groupingTimeUnit).toBeUndefined());
+    });
+
+    it('#ngAfterViewInit should select view when no element containers exist', () => {
+
+      // given
+      vi.mocked(dialogService.showViewLauncherDialog).mockClear();
+
+      // when
+      component.ngAfterViewInit();
+
+      // then
+      expect(dialogService.showViewLauncherDialog).toHaveBeenCalledExactlyOnceWith(component);
+    });
+
+    it('#addSummaryTable should scroll added element into view when dashboard started empty', fakeAsync(() => {
+
+      // given
+      const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
+
+      // when
+      component.addSummaryTable();
+      fixture.detectChanges();
+
+      // then
+      expect(scrollIntoViewSpy).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
+    }));
+
+    it('#loadView should not scroll elements into view', fakeAsync(() => {
+
+      // given
+      const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
+
+      // when
+      component.loadView(viewOf(Route.GRID, [new SummaryContext(scene.columns), new SummaryContext(scene.columns)]));
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(scrollIntoViewSpy).not.toHaveBeenCalled();
+    }));
 
     it('#setGridCellRatio should change grid cell ratio', () => {
 
@@ -2322,8 +2437,11 @@ describe('DashboardComponent', () => {
       component.saveAs(summaryContext, ExportFormat.EXCEL);
 
       // then
-      const indexedColumns = scene.columns.filter(c => c.indexed);
+      const indexedColumns = scene.columns
+        .filter(c => c.indexed)
+        .map(c => c.dataType === DataType.TIME ? { ...c, groupingTimeUnit: TimeUnit.MILLISECOND } : c);
       expect(exportService.exportData).toHaveBeenCalledWith(exportData, indexedColumns, ExportFormat.EXCEL, 'Test');
+      expect(vi.mocked(exportService.exportData).mock.lastCall[1][0]).not.toBe(scene.columns[0]);
     });
 
     it('#saveAs should not export when graph context is provided', () => {
@@ -2341,18 +2459,18 @@ describe('DashboardComponent', () => {
       expect(exportService.exportData).not.toHaveBeenCalled();
     });
 
-    it('#updateViews should update views and notify user', () => {
+    it('#updateViews should update views and notify user', async () => {
 
       // given
       const converter = new ModelToViewConverter();
       const deleted = converter.convert(Route.GRID, 'deleted', new Query(), []);
       const renamed = converter.convert(Route.FLEX, 'renamed', new Query(), []);
       const status = { type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' };
-      vi.spyOn(viewPersistenceService, 'updateViews').mockReturnValue(status);
+      vi.spyOn(viewPersistenceService, 'updateViews').mockResolvedValue(status);
       vi.spyOn(viewPersistenceService, 'findViews').mockReturnValue([renamed]);
 
       // when
-      component.updateViews([deleted], [renamed]);
+      await component.updateViews([deleted], [renamed]);
 
       // then
       expect(viewPersistenceService.updateViews).toHaveBeenCalledWith(scene, [deleted], [renamed]);
@@ -2383,14 +2501,12 @@ describe('DashboardComponent', () => {
       component.addSummaryTable().gridColumnSpan = 5;
       vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard(3));
       mockConfirmDialog(0);
-      vi.spyOn(window, 'confirm');
 
       // when
       component.generateDashboard();
       flush();
 
       // then
-      expect(window.confirm).not.toHaveBeenCalled();
       expect(component.gridLayout.gridColumns).toBe(3);
       expect(component.gridLayout.gridCellRatio).toBe('1:1');
     }));
@@ -2705,14 +2821,14 @@ describe('DashboardComponent', () => {
       expect(JSON.stringify(view)).toBe(viewJson);
     }));
 
-    it('should scroll bottom of new element into view when tab with elements was restored', fakeAsync(() => {
+    it('#addChart should scroll added element into view when dashboard started with elements', fakeAsync(() => {
 
       // given
       init(dashboardTab(viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
       const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
 
       // when
-      component.addGraph();
+      component.addChart();
       fixture.detectChanges();
 
       // then
@@ -2779,7 +2895,8 @@ describe('DashboardComponent', () => {
       { change: 'setGridCellRatio', apply: (c: DashboardComponent) => c.setGridCellRatio('2:1') },
       { change: 'setLayout', apply: (c: DashboardComponent) => c.setLayout(Route.FLEX) },
       { change: 'toggleGridLayout', apply: (c: DashboardComponent) => c.toggleGridLayout() },
-      { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) }
+      { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) },
+      { change: 'loadView', apply: (c: DashboardComponent) => c.loadView(viewOf(Route.GRID, [])) }
     ])('#$change should request persisting', ({ apply }) => fakeAsync(() => {
 
       // given
@@ -2847,9 +2964,8 @@ describe('DashboardComponent', () => {
       flush();
 
       // then
-      expect(scrollIntoViewSpy).toHaveBeenCalled();
+      expect(scrollIntoViewSpy).not.toHaveBeenCalled();
       expect(scrollToSpy).toHaveBeenCalledExactlyOnceWith({ top: 0 });
-      expect(scrollToSpy.mock.invocationCallOrder[0]).toBeGreaterThan(scrollIntoViewSpy.mock.invocationCallOrder[0]);
     }));
 
     it('#generateDashboard should bind query and entries and request persisting', fakeAsync(() => {

@@ -1,4 +1,3 @@
-import { LanguageService } from 'app/shared/services/language/language.service';
 import { ElementContext } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { cellRatioToNumber } from './aspect-ratio';
@@ -79,15 +78,17 @@ export class GridLayout {
     };
   }
 
+  narrowsElements(gridColumns: number, elementContexts: ElementContext[]): boolean {
+    return elementContexts.some(c => c.gridColumnSpan > gridColumns);
+  }
+
   setGridColumns(gridColumns: number, elementContexts: ElementContext[]): void {
     const largerElementContexts = elementContexts.filter(c => c.gridColumnSpan > gridColumns);
-    if (largerElementContexts.length === 0 || confirm(LanguageService.instant('dashboard.confirmResize'))) {
-      largerElementContexts.forEach(c => c.gridColumnSpan = gridColumns);
-      this.gridColumns = gridColumns;
-      elementContexts
-        .filter(c => !largerElementContexts.includes(c))
-        .forEach(c => c.fireSizeChanged());
-    }
+    largerElementContexts.forEach(c => c.gridColumnSpan = gridColumns);
+    this.gridColumns = gridColumns;
+    elementContexts
+      .filter(c => !largerElementContexts.includes(c))
+      .forEach(c => c.fireSizeChanged());
   }
 
   setGridCellRatio(gridCellRatio: string, elementContexts: ElementContext[]): void {

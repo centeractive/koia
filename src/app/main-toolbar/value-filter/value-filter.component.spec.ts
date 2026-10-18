@@ -340,12 +340,101 @@ describe('ValueFilterComponent', () => {
     vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
 
     // when
-    const event = document.createEvent('Event');
-    event.initEvent('search');
-    htmlInput.dispatchEvent(event);
+    htmlInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
 
     // then
     expect(component.onChange.emit).toHaveBeenCalled();
+  });
+
+  it('pressing <enter> in text column filter field should emit change event', () => {
+
+    // given
+    component.filter = new PropertyFilter('Level', Operator.EQUAL, 'INFO', DataType.TEXT);
+    fixture.detectChanges();
+    const htmlInput = fixture.debugElement.query(By.css('.column_filter_input')).nativeElement;
+    htmlInput.value = 'ERROR';
+    htmlInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    vi.spyOn(component.onChange, 'emit').mockReturnValue(undefined);
+
+    // when
+    htmlInput.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter' }));
+
+    // then
+    expect(component.onChange.emit).toHaveBeenCalled();
+  });
+
+  it('#onNameChanged should apply number formatting when NUMBER column is chosen', () => {
+
+    // given
+    fixture = TestBed.createComponent(ValueFilterComponent);
+    component = fixture.componentInstance;
+    component.filter = new PropertyFilter('Level', Operator.EQUAL, 'INFO', DataType.TEXT);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.directive(FormattedFloatDirective))).toBeNull();
+
+    // when
+    component.onNameChanged(column('Amount'));
+    fixture.detectChanges();
+
+    // then
+    expect(component.numberDataType).toBe(true);
+    expect(fixture.debugElement.query(By.directive(FormattedFloatDirective))).not.toBeNull();
+  });
+
+  it('#onNameChanged should keep validation error when number input replaces text input', () => {
+
+    // given
+    fixture = TestBed.createComponent(ValueFilterComponent);
+    component = fixture.componentInstance;
+    component.filter = new PropertyFilter('Level', Operator.EQUAL, 'INFO', DataType.TEXT);
+    fixture.detectChanges();
+
+    // when
+    component.onNameChanged(column('Amount'));
+    fixture.detectChanges();
+
+    // then
+    expect(component.valueControl.getError('error')).toBe('Invalid Number');
+  });
+
+  it('#onNameChanged should remove number formatting when TEXT column is chosen', () => {
+
+    // given
+    expect(fixture.debugElement.query(By.directive(FormattedFloatDirective))).not.toBeNull();
+
+    // when
+    component.onNameChanged(column('Level'));
+    fixture.detectChanges();
+
+    // then
+    expect(component.numberDataType).toBe(false);
+    expect(fixture.debugElement.query(By.directive(FormattedFloatDirective))).toBeNull();
+    expect(fixture.debugElement.query(By.css('.column_filter_input'))).not.toBeNull();
+  });
+
+  it('#click on remove button should emit remove event', () => {
+
+    // given
+    vi.spyOn(component.onRemove, 'emit').mockReturnValue(undefined);
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button.but_remove_column_filter');
+
+    // when
+    button.click();
+
+    // then
+    expect(component.onRemove.emit).toHaveBeenCalled();
+  });
+
+  it('remove button should be compact', () => {
+
+    // when
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button.but_remove_column_filter');
+
+    // then
+    const height = button.getBoundingClientRect().height;
+    expect(height).toBeGreaterThan(0);
+    expect(height).toBeLessThanOrEqual(28);
   });
 
   function column(name: string): Column {

@@ -1,7 +1,7 @@
 import { LanguageService } from '../../language';
 import { Attribute, DataType } from 'app/shared/model';
 import oboe from 'oboe';
-import { DataHandler } from '../data-handler.type';
+import { EntryHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
 import { SourceName } from '../source-name.enum';
@@ -10,7 +10,11 @@ import { PathConverter } from './path-converter';
 export class JSONReader implements DataReader {
 
   private pathConverter = new PathConverter();
-  private attrArrayJSONPath = new Attribute('scene.reader.jsonPath', 'scene.reader.jsonPathDescription', DataType.TEXT, '');
+  private attrArrayJSONPath = JSONReader.createArrayJSONPathAttribute();
+
+  private static createArrayJSONPathAttribute(): Attribute<string> {
+    return new Attribute('scene.reader.jsonPath', 'scene.reader.jsonPathDescription', DataType.TEXT, '');
+  }
 
   getDescription(): string {
     return LanguageService.instant('scene.reader.jsonDescription');
@@ -29,13 +33,18 @@ export class JSONReader implements DataReader {
   }
 
   furnishAttributes(dataHeader: string): Attribute[] {
-    this.detectArrayJSONPaths(dataHeader);
+    this.attrArrayJSONPath = JSONReader.createArrayJSONPathAttribute();
+    this.detectArrayJSONPaths(dataHeader, this.attrArrayJSONPath);
     return [this.attrArrayJSONPath];
   }
 
-  private detectArrayJSONPaths(dataHeader: string): void {
+  private detectArrayJSONPaths(dataHeader: string, attr: Attribute<string>): void {
     const paths: string[] = [];
     const url = URL.createObjectURL(new Blob([dataHeader]));
+    const done = () => {
+      URL.revokeObjectURL(url);
+      this.defineArrayJSONPathAttribute(attr, paths);
+    };
     oboe(url)
       .node('!*..*', (node, path) => {
         if (typeof node === 'object' && typeof path[path.length - 1] === 'number') {
@@ -45,49 +54,43 @@ export class JSONReader implements DataReader {
           }
         }
       })
-      .fail(() => this.defineArrayJSONPathAttribute(paths))
-      .done(() => this.defineArrayJSONPathAttribute(paths));
+      .fail(done)
+      .done(done);
   }
 
-  private defineArrayJSONPathAttribute(paths: string[]): void {
+  private defineArrayJSONPathAttribute(attr: Attribute<string>, paths: string[]): void {
     if (paths.length > 0) {
-      this.attrArrayJSONPath.value = paths[0];
-      this.attrArrayJSONPath.valueChoice = paths;
+      attr.value = paths[0];
+      attr.valueChoice = paths;
     }
   }
 
   readSample(file: File, entriesCount: number): Promise<Sample> {
     return new Promise<Sample>((resolve, reject) => {
       let canceled = false;
-      const dataHandler: DataHandler = {
-        onValues: () => null,
+      const entryHandler: EntryHandler = {
         onEntries: entries => {
-          if (!canceled) {
-            canceled = true;
-            resolve({ entries: entries });
-          }
+          canceled = true;
+          resolve({ entries: entries });
         },
         onError: err => reject(err),
-        onComplete: () => {
-          if (!canceled) {
-            canceled = true;
-            resolve({ entries: [] });
-          }
-        },
+        onComplete: () => resolve({ entries: [] }),
         isCanceled: () => canceled
       }
-      this.readData(file, entriesCount, dataHandler);
+      this.readData(file, entriesCount, entryHandler);
     });
   }
 
-  readData(file: File, chunkSize: number, dataHandler: DataHandler): void {
+  readData(file: File, chunkSize: number, dataHandler: EntryHandler): void {
     const url = URL.createObjectURL(file);
+    const release = () => URL.revokeObjectURL(url);
     let entries = [];
     const parser = oboe(url)
       .node(this.pathConverter.toOboeMatchPattern(this.attrArrayJSONPath.value), entry => {
         if (dataHandler.isCanceled()) {
           entries = [];
           parser.abort();
+          release();
         } else {
           entries.push(entry);
           if (entries.length === chunkSize) {
@@ -97,8 +100,12 @@ export class JSONReader implements DataReader {
           return oboe.drop; // release parsed JSON objects in order to be garbage collected
         }
       })
-      .fail(err => dataHandler.onError(err))
+      .fail(err => {
+        release();
+        dataHandler.onError(err);
+      })
       .done(() => {
+        release();
         if (entries.length > 0) {
           dataHandler.onEntries(entries)
         }

@@ -6,6 +6,9 @@ export default defineConfig({
    },
    test: {
       fileParallelism: false,
-      silent: 'passed-only'
+      silent: 'passed-only',
+      coverage: {
+         provider: 'istanbul'
+      }
    }
 });

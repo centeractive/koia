@@ -266,10 +266,25 @@ describe('ElementHeaderComponent', () => {
     textarea.value = 'New Title';
 
     // when
-    textarea.dispatchEvent(new KeyboardEvent('keyup'));
+    textarea.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
 
     // then
     expect(titleChangeSpy).toHaveBeenCalledWith('New Title');
+  });
+
+  it('should emit title change when text is pasted into title', () => {
+
+    // given
+    render(new SummaryContext([]), null);
+    const titleChangeSpy = vi.spyOn(component.titleChange, 'emit');
+    const textarea = query('.textarea_title') as HTMLTextAreaElement;
+    textarea.value = 'Pasted Title';
+
+    // when
+    textarea.dispatchEvent(new InputEvent('input', { inputType: 'insertFromPaste' }));
+
+    // then
+    expect(titleChangeSpy).toHaveBeenCalledWith('Pasted Title');
   });
 
   it('should toggle resizable chart margin when margin button is clicked', () => {

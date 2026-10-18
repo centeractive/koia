@@ -4,7 +4,7 @@ import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
-import { DataType, Scene } from 'app/shared/model';
+import { DataType, Scene, TimeUnit } from 'app/shared/model';
 import { SceneFactory } from 'app/shared/test';
 import { DialogCloseButtonComponent } from 'app/shared/ui/dialog-close-button/dialog-close-button.component';
 import { SceneDetailsDialogComponent } from './scene-details-dialog.component';
@@ -20,7 +20,8 @@ describe('SceneDetailsDialogComponent', () => {
       const columns = [
          { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
          { name: 'Path', dataType: DataType.TEXT, width: 200, indexed: true },
-         { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true }
+         { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
+         { name: 'Time', dataType: DataType.TIME, width: 100, indexed: true, groupingTimeUnit: TimeUnit.MONTH }
       ];
       scene = SceneFactory.createScene('1', columns);
    });
@@ -48,4 +49,28 @@ describe('SceneDetailsDialogComponent', () => {
       const headerElement = fixture.debugElement.query(By.css('h2')).nativeElement;
       expect(headerElement.textContent).toBe(scene.name);
    });
+
+   it('should show translated grouping time unit', () => {
+
+      // when
+      const cell = groupingTimeUnitCell('Time');
+
+      // then
+      expect(cell.textContent.trim()).toBe('per month');
+   });
+
+   it('should show empty grouping time unit when column has none', () => {
+
+      // when
+      const cell = groupingTimeUnitCell('Amount');
+
+      // then
+      expect(cell.textContent.trim()).toBe('');
+   });
+
+   function groupingTimeUnitCell(columnName: string): HTMLElement {
+      const rows: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('tr'));
+      const row = rows.find(r => r.querySelector('th.row-header')?.textContent === columnName);
+      return row.querySelectorAll('td')[2];
+   }
 });

@@ -156,7 +156,7 @@
           <koia-expansion-panel [title]="(isCircularChart() ? 'chart.legendAndLabels' : 'chart.legendAndScales') | translate">
             <span class="span_legend">
               <mat-slide-toggle [(ngModel)]="context.showLegend">{{ 'chart.showLegend' | translate }}</mat-slide-toggle>
-              @if (context.showLegend && context.chartType !== 'scatterChart') {
+              @if (context.showLegend) {
                 <button mat-button
                 [matMenuTriggerFor]="menu" color="accent">{{ 'chart.legendPosition.' + context.legendPosition | translate }}</button>
               }

@@ -14,7 +14,7 @@ import { Operator, PropertyFilter, Query } from 'app/shared/model';
 import { NotificationService, RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
-import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { waitFrames, waitStable } from 'app/shared/test/animation-frames';
 import { TableModeTogglesComponent } from 'app/shared/ui/virtual-table/table-mode-toggles.component';
 import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { page } from 'vitest/browser';
@@ -56,7 +56,7 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
 
   afterEach(async () => {
     TestBed.inject(MatDialog).closeAll();
-    await DomMetrics.waitFrames(() => !pane(), 60);
+    await waitFrames(() => !pane(), 60);
     await tearDownBackend(run);
   }, TIMEOUT);
 
@@ -84,9 +84,9 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
     const query = new Query();
     query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'ERROR'));
     TestBed.inject(RawDataRevealService).show(query);
-    await DomMetrics.waitFrames(() => !!pane()?.querySelector('.vt-td'), 600);
-    await DomMetrics.waitFrames(() => !rawDataComponent().loading, 600);
-    await DomMetrics.waitStable(paneWidth, 3, 120);
+    await waitFrames(() => !!pane()?.querySelector('.vt-td'), 600);
+    await waitFrames(() => !rawDataComponent().loading, 600);
+    await waitStable(paneWidth, 3, 120);
   }
 
   async function resizeData(delta: number): Promise<void> {
@@ -94,7 +94,7 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
       table().onResizing(DATA_INDEX, delta);
       table().onResized();
     });
-    await DomMetrics.waitStable(paneWidth, 3, 120);
+    await waitStable(paneWidth, 3, 120);
   }
 
   async function widenUntilTableDecidesWidth(): Promise<void> {
@@ -130,7 +130,7 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
 
     // when
     pane().dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
-    await DomMetrics.waitFrames(() => !pane(), 60);
+    await waitFrames(() => !pane(), 60);
 
     // then
     expect(pane()).toBeNull();

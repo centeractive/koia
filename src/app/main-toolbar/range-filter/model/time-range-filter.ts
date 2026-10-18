@@ -5,6 +5,7 @@ import { DateTimeUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { NumberRangeFilter } from './number-range-filter';
 import { adjustTimeValueRange } from './slider/adjust-time-value-range';
+import { combineSliderLabels } from './slider/combine-slider-labels';
 import { SliderTimeValueRange } from './slider/slider-time-value-range';
 import { TimeRangeSliderCustomizer } from './slider/time-range-slider-customizer';
 
@@ -74,8 +75,9 @@ export class TimeRangeFilter extends NumberRangeFilter {
    }
 
    override defineSliderOptions(): void {
-      const ceil = Math.ceil(DateTimeUtils.diff(this.start, this.end, this.selectedStep));
-      const customizer = new TimeRangeSliderCustomizer(this.start, this.selectedStep, ceil);
+      const gridStart = DateTimeUtils.startOf(this.start, this.selectedStep);
+      const ceil = Math.ceil(DateTimeUtils.diff(gridStart, this.end, this.selectedStep));
+      const customizer = new TimeRangeSliderCustomizer(gridStart, this.selectedStep, ceil);
       this.sliderOptions = {
          floor: 0,
          ceil,
@@ -83,7 +85,7 @@ export class TimeRangeFilter extends NumberRangeFilter {
          enforceStep: false,
          draggableRange: true,
          translate: (v: number, t: LabelType) => customizer.labelOf(v, t),
-         combineLabels: (l1: string, l2: string) => customizer.combineLabels(l1, l2)
+         combineLabels: combineSliderLabels
       };
    }
 

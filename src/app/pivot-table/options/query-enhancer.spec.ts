@@ -4,6 +4,7 @@ import { ValueRange, ValueGrouping, ValueRangeFilter } from 'app/shared/value-ra
 import { DateTimeUtils } from 'app/shared/utils';
 import { TimeGroupingService } from 'app/shared/services';
 import { ValueRangeConverter } from 'app/shared/value-range';
+import { NumberFormatter } from 'app/shared/format';
 
 describe('QueryEnhancer', () => {
 
@@ -224,6 +225,53 @@ describe('QueryEnhancer', () => {
       // then
       const query = queryEnhancer.getQuery();
       expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Percent', Operator.NOT_EMPTY, '', DataType.NUMBER)]);
+      expect(query.getValueRangeFilters()).toEqual([]);
+   });
+
+   it('#addFiltersForValueChoices should format excluded numbers in browser locale', () => {
+
+      // given
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
+      const formatter = new NumberFormatter();
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Amount: ['1e-7', '1234.5'] }, {}, { colAttrs: ['Amount'], rowAttrs: [] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      const expectedValues = formatter.format(1e-7) + ';' + formatter.format(1234.5);
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.NONE_OF, expectedValues, DataType.NUMBER)]);
+   });
+
+   it('#addFiltersForValueChoices should add not-empty filter when null is excluded from number column', () => {
+
+      // given
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
+      const excludedValues = ['null', '5'];
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Amount: excludedValues }, {}, { colAttrs: ['Amount'], rowAttrs: [] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([
+         new PropertyFilter('Amount', Operator.NOT_EMPTY, '', DataType.NUMBER),
+         new PropertyFilter('Amount', Operator.NONE_OF, '5', DataType.NUMBER)
+      ]);
+      expect(excludedValues).toEqual(['null', '5']);
+   });
+
+   it('#addFiltersForValueChoices should add not-empty filter only when null is the only excluded text value', () => {
+
+      // given
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Level: ['null'] }, {}, { colAttrs: ['Level'], rowAttrs: [] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.NOT_EMPTY, '', DataType.TEXT)]);
       expect(query.getValueRangeFilters()).toEqual([]);
    });
 

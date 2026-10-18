@@ -2,6 +2,7 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { Component, NO_ERRORS_SCHEMA, ChangeDetectionStrategy, SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed, TestModuleMetadata, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,11 +16,12 @@ import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
-import { DialogService } from 'app/shared/services';
+import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { TabDef, ViewType } from 'app/shared/model/view-config';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
+import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
 import { MainToolbarComponent } from './main-toolbar.component';
@@ -41,13 +43,14 @@ function configureTestingModule(dbService: DBService, dialogService: DialogServi
     declarations: [MainToolbarComponent, DummyComponent, KoiaFormDirective, ...(extra.declarations ?? [])],
     imports: [
       MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
-      MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule,
+      MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, MatBottomSheetModule,
       RouterModule.forRoot([{ path: '**', component: DummyComponent }], {}),
       ...(extra.imports ?? [])
     ],
     providers: [
       { provide: DBService, useValue: dbService },
       { provide: DialogService, useValue: dialogService },
+      { provide: NotificationService, useValue: new NotificationServiceMock() },
       ...(extra.providers ?? [])
     ]
   })
@@ -312,8 +315,34 @@ describe('MainToolbarComponent', () => {
     expect(component.fullTextFilter).toBe('abc');
     expect(component.showFullTextFilter).toBe(true);
     expect(component.propertyFilters.length).toBe(2);
-    expect(component.propertyFilters[0]).toBe(levelFilter);
-    expect(component.propertyFilters[1]).toBe(amountFilter);
+    expect(component.propertyFilters[0]).toEqual(levelFilter);
+    expect(component.propertyFilters[0]).not.toBe(levelFilter);
+    expect(component.propertyFilters[1]).toEqual(amountFilter);
+    expect(component.propertyFilters[1]).not.toBe(amountFilter);
+  }));
+
+  it('#ngOnInit should not modify filters of injected query when filters are edited', fakeAsync(() => {
+
+    // given
+    const query = new Query();
+    query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'INFO'));
+    query.addValueRangeFilter('Amount', 20, 80);
+    component.query = query;
+    component.ngOnInit();
+    flush();
+
+    // when
+    component.propertyFilters[0].value = 'ERROR';
+    component.addValueFilter(column('Host'));
+    component.rangeFilters[0].selValueRange.min = 30;
+    component.rangeFilters[0].inverted = true;
+
+    // then
+    expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'INFO')]);
+    const valueRangeFilter = query.findValueRangeFilter('Amount');
+    expect(valueRangeFilter.valueRange.min).toBe(20);
+    expect(valueRangeFilter.valueRange.max).toBe(80);
+    expect(valueRangeFilter.inverted).toBe(false);
   }));
 
   it('#ngOnInit should hide full text filter when query has none', () => {
@@ -722,6 +751,21 @@ describe('MainToolbarComponent', () => {
     expect(numberRangeFilter.end).toBe(valueRange.max);
   }));
 
+  it('#addRangeFilter should notify error when value range cannot be read', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'numberRangeOf').mockRejectedValue('cannot read');
+    vi.spyOn(component, 'notifyError').mockReturnValue(undefined);
+
+    // when
+    component.addRangeFilter(column('Amount'), null, false);
+    flush();
+
+    // then
+    expect(component.notifyError).toHaveBeenCalledWith('cannot read');
+    expect(component.rangeFilters.length).toBe(0);
+  }));
+
   it('#onStepChanged should change time step when millisecond is selected', fakeAsync(() => {
 
     // given
@@ -785,6 +829,20 @@ describe('MainToolbarComponent', () => {
 
     // given
     const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
+    component.rangeFilters = [rangeFilter];
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.removeRangeFilter(rangeFilter);
+
+    // then
+    expect(component.refreshEntries).toHaveBeenCalled();
+  });
+
+  it('#removeRangeFilter should refresh entries when range filter was inverted only', () => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 1, max: 10 }, true);
     component.rangeFilters = [rangeFilter];
     vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
 

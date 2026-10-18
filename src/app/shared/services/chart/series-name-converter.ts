@@ -1,5 +1,6 @@
 import { Column } from 'app/shared/model';
 import { DataTypeUtils } from 'app/shared/utils/data-type-utils';
+import { NumberUtils } from 'app/shared/utils/number-utils';
 
 export class SeriesNameConverter {
 
@@ -55,7 +56,8 @@ export class SeriesNameConverter {
       const columns = splitColumns.concat(dataColumn);
       const tokens = groupKey.toString().split(SeriesNameConverter.SEPARATOR);
       for (let i = 0; i < columns.length; i++) {
-         values.push(DataTypeUtils.toTypedValue(tokens[i], columns[i].dataType, undefined));
+         const dataType = columns[i].dataType;
+         values.push(DataTypeUtils.isNumeric(dataType) ? NumberUtils.parseMachineNumber(tokens[i]) : DataTypeUtils.toTypedValue(tokens[i], dataType, undefined));
       }
       return values;
    }

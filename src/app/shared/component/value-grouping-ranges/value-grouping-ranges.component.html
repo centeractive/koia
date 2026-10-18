@@ -1,0 +1,20 @@
+<span class="span_left_to_right">
+  <label>{{ 'valueGrouping.max' | translate: { value: (grouping.minMaxValues.max | koiaNumber) } }}</label>
+  <button mat-icon-button class="but_add_range" [matTooltip]="'valueGrouping.addValueRange' | translate" (click)="addRange()">
+    <mat-icon>add_circle_outline</mat-icon>
+  </button>
+</span>
+<div class="div_group_values" cdkDropList (cdkDropListDropped)="dropRange($event)">
+  @for (range of grouping.ranges; track range) {
+    <div class="div_group_value" mat-stroked-button cdkDrag>
+      <mat-checkbox [checked]="range.active" (change)="onActiveChanged(range, $event.checked)"></mat-checkbox>
+      <label>{{ 'valueGrouping.upTo' | translate }}</label>
+      <input matInput type="number" [(ngModel)]="range.max" [matTooltip]="'valueGrouping.rangeMaxTooltip' | translate"
+        (keypress)="isNumberKey($event)" (change)="rangesChange.emit()">
+      @if (grouping.ranges.length > 1) {
+        <mat-icon class="icon_remove" (click)="removeRange(range)">remove_circle_outline</mat-icon>
+      }
+    </div>
+  }
+</div>
+<label>{{ 'valueGrouping.min' | translate: { value: (grouping.minMaxValues.min | koiaNumber) } }}</label>

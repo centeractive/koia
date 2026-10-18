@@ -5,12 +5,3 @@
 .filter {
   flex: 0 1 360px;
 }
-
-.page-language {
-  --koia-language-bg: rgba(255, 255, 255, 0.16);
-  --koia-language-bg-hover: rgba(255, 255, 255, 0.26);
-  --koia-language-color: white;
-  display: inline-flex;
-  padding-top: 2px;
-  float: right;
-}

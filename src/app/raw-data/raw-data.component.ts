@@ -132,6 +132,11 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     this.multiLine = !this.multiLine;
   }
 
+  toggleShowNestedObjects(): void {
+    this.showNestedObjects = !this.showNestedObjects;
+    this.applyWidths();
+  }
+
   toggleConsiderColumnWidths(): void {
     this.considerColumnWidths = !this.considerColumnWidths;
     this.customWidths = {};

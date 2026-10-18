@@ -79,39 +79,39 @@ describe('FormattedIntegerDirective', () => {
 
         // given
         const event = clipboardEvent('x123', 0);
-        const stopPropagationSpy = vi.spyOn(event, 'stopPropagation').mockReturnValue(undefined);
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
 
         // then
-        expect(stopPropagationSpy).toHaveBeenCalled();
+        expect(preventDefaultSpy).toHaveBeenCalled();
     });
 
     it('#onPaste should accept integer representation', () => {
 
         // given
         const event = clipboardEvent('1234', 0);
-        const stopPropagationSpy = vi.spyOn(event, 'stopPropagation').mockReturnValue(undefined);
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
 
         // then
-        expect(stopPropagationSpy).not.toHaveBeenCalled();
+        expect(preventDefaultSpy).not.toHaveBeenCalled();
     });
 
     it('#onPaste should accept formatted integer representation', () => {
 
         // given
         const event = clipboardEvent('1' + ts + '234', 0);
-        const stopPropagationSpy = vi.spyOn(event, 'stopPropagation').mockReturnValue(undefined);
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
 
         // when
         directive.onPaste(event);
 
         // then
-        expect(stopPropagationSpy).not.toHaveBeenCalled();
+        expect(preventDefaultSpy).not.toHaveBeenCalled();
     });
 
     it('input event on host element should format number', () => {
