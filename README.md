@@ -2,12 +2,12 @@
 
 ## What is Koia?
 
-<img align="left" src="./doc/koialogo.png">
+<img align="left" src="./.github/images/koialogo.png">
 
 Koia is an [angular-based](https://angular.io/), a **privacy-focused open-source web application for visualizing and analyzing table-like data structures**. It offers a modern and minimalistic approach for creating flat tables, pivot-tables, summaries, relationship graphs and charts while having total control over your data.
 
 Koia has originally been developed for analyzing and visualizing **log data** collected and structured with the [**Retrospective Log Analyzer**](https://retrospective.centeractive.com/)
-![alt text](./doc/retrospective.png "Retrospective Log Analyzer") from files (local and remote), [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/).
+![alt text](./src/assets/retrospective.png "Retrospective Log Analyzer") from files (local and remote), [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/).
 
 Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or continue reading.
 
@@ -25,7 +25,7 @@ The data can be viewed, filtered and sorted in a **raw data table** or it may be
 
 Besides simply visualizing data, Koia also features **time and value filters** to take a closer look at the data. Each view has its own filters. A time range slider, for instance, narrows the raw data table to the selected period (Picture 1).
 
- <img align="center" width="880" src="./doc/rawdata-filter.webp" alt="Raw data filtered by a time range slider">
+ <img align="center" width="880" src="./.github/images/rawdata-filter.webp" alt="Raw data filtered by a time range slider">
 
  **Picture 1:** Raw data table filtered by a time range slider on the date column.
 
