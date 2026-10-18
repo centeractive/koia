@@ -49,7 +49,7 @@ export class FreeLayout {
   }
 
   tileStyle(context: ElementContext): object {
-    const rect = this.rectOf(context);
+    const rect = this.drawnRectOf(context);
     return {
       left: this.pageUnits(rect.x),
       top: this.pageUnits(rect.y - FreeLayout.pageTopOf(rect.y)),
@@ -64,7 +64,7 @@ export class FreeLayout {
    * where supported, `--koia-left` and `--koia-top` serving as fallback
    */
   overlayStyle(context: TextBoxContext, anchorName: string): object {
-    const rect = this.rectOf(context);
+    const rect = this.drawnRectOf(context);
     const style = {
       '--koia-left': this.pageUnits(rect.x),
       '--koia-top': this.pageUnits(rect.y),
@@ -107,6 +107,17 @@ export class FreeLayout {
       width: Math.min(tile.width ?? ElementContext.DEFAULT_WIDTH, FreeLayout.PAGE_WIDTH - tile.x),
       height: Math.min(tile.height ?? ElementContext.DEFAULT_HEIGHT, FreeLayout.PAGE_HEIGHT)
     };
+  }
+
+  /**
+   * @returns the rect grown to the height a text box needs to show its whole content
+   */
+  grownRect(rect: Rect, context: ElementContext): Rect {
+    return context instanceof TextBoxContext && context.fitHeight > rect.height ? { ...rect, height: context.fitHeight } : rect;
+  }
+
+  drawnRectOf(context: ElementContext): Rect {
+    return this.grownRect(this.rectOf(context), context);
   }
 
   pageIndexes(contexts: ElementContext[]): number[] {
@@ -173,7 +184,7 @@ export class FreeLayout {
 
   private bottomOf(contexts: ElementContext[]): number {
     return Math.max(0, ...contexts.map(c => {
-      const rect = this.rectOf(c);
+      const rect = this.drawnRectOf(c);
       return rect.y + rect.height;
     }));
   }

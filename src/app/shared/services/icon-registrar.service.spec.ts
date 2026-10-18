@@ -57,8 +57,8 @@ describe('IconRegistrarService', () => {
     // then
     const registered = vi.mocked(iconRegistry.addSvgIcon).mock.calls.map(c => c[0]).filter(n => n.startsWith('lucide_'));
     expect(registered).toEqual(['lucide_baseline', 'lucide_bold', 'lucide_chevron_down', 'lucide_eraser', 'lucide_italic',
-      'lucide_paint_bucket', 'lucide_text_align_center', 'lucide_text_align_end', 'lucide_text_align_start', 'lucide_trash_2',
-      'lucide_underline']);
+      'lucide_paint_bucket', 'lucide_square', 'lucide_text_align_center', 'lucide_text_align_end', 'lucide_text_align_start',
+      'lucide_trash_2', 'lucide_underline']);
   });
 
   it('should provide an svg file for each registered icon', async () => {

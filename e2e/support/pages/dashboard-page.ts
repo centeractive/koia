@@ -60,9 +60,17 @@ export class DashboardPage {
       }
    }
 
-   async addTextBox(): Promise<TextBox> {
+   addTextTile(): Promise<TextBox> {
+      return this.addTextBox('#but_add_text_tile');
+   }
+
+   addNote(): Promise<TextBox> {
+      return this.addTextBox('#but_add_note');
+   }
+
+   private async addTextBox(button: string): Promise<TextBox> {
       const count = await this.textBoxTiles.count();
-      await this.toolbar.locator('#but_add_text_box').click();
+      await this.toolbar.locator(button).click();
       await expect(this.textBoxTiles).toHaveCount(count + 1);
       return this.textBox(count);
    }
@@ -86,6 +94,13 @@ export class DashboardPage {
     */
    canvasScale(): Promise<number> {
       return this.canvasContent.locator('.div_canvas_pages').evaluate((pages: HTMLElement) => pages.clientWidth / 1400);
+   }
+
+   /**
+    * @returns the screen pixels per page unit of the grid
+    */
+   gridScale(): Promise<number> {
+      return this.gridContent.locator('.div_grid_cells').evaluate((cells: HTMLElement) => cells.clientWidth / 1400);
    }
 
    tile(index: number): DashboardTile {

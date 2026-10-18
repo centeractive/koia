@@ -21,6 +21,8 @@ export class TextBoxToolbarComponent {
   @Input() state: TextStyleState;
   @Input() backgroundColor: string;
   @Output() backgroundColorChange = new EventEmitter<string>();
+  @Input() bordered: boolean;
+  @Output() borderedChange = new EventEmitter<boolean>();
   @Output() remove = new EventEmitter<void>();
 
   colorOf(event: Event): string {

@@ -441,7 +441,8 @@
     "addChart": "チャートを追加",
     "addGraph": "関係グラフを追加",
     "addSummary": "サマリーを追加",
-    "addTextBox": "テキストボックスを追加",
+    "addTextTile": "テキストタイルを追加",
+    "addNote": "メモを追加",
     "gridColumns": "グリッドの列数",
     "gridCellRatio": "グリッドセルの比率（幅:高さ）",
     "manageViews": "ビューの管理",
@@ -464,7 +465,8 @@
     "textColor": "文字色",
     "resetTextColor": "文字色をリセット",
     "backgroundColor": "背景色",
-    "resetBackgroundColor": "背景色をリセット"
+    "resetBackgroundColor": "背景色をリセット",
+    "border": "枠線"
   },
   "enum": {
     "chartType": {

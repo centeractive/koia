@@ -103,7 +103,7 @@ describe('TextBoxToolbarComponent', () => {
     // then
     expect(query('.mat-mdc-button-base')).toBeUndefined();
     const buttons = queryAll<HTMLButtonElement>('button');
-    expect(buttons.length).toBe(11);
+    expect(buttons.length).toBe(12);
     buttons.forEach(b => {
       const style = getComputedStyle(b);
       expect(b.type).toBe('button');
@@ -122,10 +122,10 @@ describe('TextBoxToolbarComponent', () => {
 
     // then
     expect(['.but_bold', '.but_italic', '.but_underline', '.but_align_left', '.but_align_center', '.but_align_right',
-      '.label_text_color', '.but_reset_text_color', '.label_background_color', '.but_reset_background_color', '.but_delete']
-      .map(s => iconOf(s))).toEqual(['lucide_bold', 'lucide_italic', 'lucide_underline', 'lucide_text_align_start',
+      '.label_text_color', '.but_reset_text_color', '.label_background_color', '.but_reset_background_color', '.but_border',
+      '.but_delete'].map(s => iconOf(s))).toEqual(['lucide_bold', 'lucide_italic', 'lucide_underline', 'lucide_text_align_start',
       'lucide_text_align_center', 'lucide_text_align_end', 'lucide_baseline', 'lucide_eraser', 'lucide_paint_bucket',
-      'lucide_eraser', 'lucide_trash_2']);
+      'lucide_eraser', 'lucide_square', 'lucide_trash_2']);
     expect(query('.but_bold mat-icon').getBoundingClientRect().width).toBe(18);
   });
 
@@ -391,6 +391,58 @@ describe('TextBoxToolbarComponent', () => {
 
     // then
     expect(emitted).toHaveBeenCalledWith(undefined);
+  });
+
+  it.each([false, true])('border button should be active when bordered is %s', bordered => {
+
+    // given
+    component.bordered = bordered;
+
+    // when
+    render();
+
+    // then
+    expect(query('.but_border').classList.contains('button_tt_active')).toBe(bordered);
+  });
+
+  it.each([
+    { bordered: false, emitted: true },
+    { bordered: true, emitted: false }
+  ])('should emit $emitted when border button is clicked while bordered is $bordered', ({ bordered, emitted }) => {
+
+    // given
+    component.bordered = bordered;
+    render();
+    const emittedSpy = vi.fn();
+    component.borderedChange.subscribe(emittedSpy);
+
+    // when
+    query('.but_border').click();
+
+    // then
+    expect(emittedSpy).toHaveBeenCalledExactlyOnceWith(emitted);
+  });
+
+  it('should prevent default of mousedown on border button', () => {
+
+    // given
+    render();
+    const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+
+    // when
+    query('.but_border').dispatchEvent(event);
+
+    // then
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('should separate border button from color controls by a separator', () => {
+
+    // when
+    render();
+
+    // then
+    expect(query('.but_border').previousElementSibling.classList).toContain('span_separator');
   });
 
   it('should emit remove when delete button is clicked', () => {

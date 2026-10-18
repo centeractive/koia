@@ -57,6 +57,12 @@
   </button>
 
   <span class="span_separator"></span>
+  <button type="button" class="button_tt but_border" [class.button_tt_active]="bordered" [matTooltip]="'textBox.border' | translate"
+    (mousedown)="$event.preventDefault()" (click)="borderedChange.emit(!bordered)">
+    <mat-icon svgIcon="lucide_square" />
+  </button>
+
+  <span class="span_separator"></span>
   <button type="button" class="button_tt but_delete" [matTooltip]="'element.delete' | translate" (click)="remove.emit()">
     <mat-icon svgIcon="lucide_trash_2" />
   </button>

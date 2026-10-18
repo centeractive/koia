@@ -424,6 +424,90 @@ describe('FreeLayout', () => {
     expect(Object.keys(style)).not.toContain('top');
   });
 
+  it.each([
+    { case: 'larger fit height', fitHeight: 400, height: 400 },
+    { case: 'fit height beyond page height', fitHeight: 1200, height: 1200 },
+    { case: 'smaller fit height', fitHeight: 100, height: 150 },
+    { case: 'no fit height', fitHeight: undefined, height: 150 }
+  ])('#grownRect should give height of text box with $case', ({ fitHeight, height }) => {
+
+    // given
+    const context = textBox(10, 20);
+    context.fitHeight = fitHeight;
+
+    // when
+    const rect = layout.grownRect(layout.rectOf(context), context);
+
+    // then
+    expect(rect).toEqual({ x: 10, y: 20, width: 300, height });
+  });
+
+  it('#grownRect should return rect of other element', () => {
+
+    // given
+    const context = tile(0, 0, 300, 200);
+    const rect = layout.rectOf(context);
+
+    // when
+    const grown = layout.grownRect(rect, context);
+
+    // then
+    expect(grown).toBe(rect);
+  });
+
+  it('#tileStyle should give grown height of text box', () => {
+
+    // given
+    const context = textBox(0, 0);
+    context.fitHeight = 400;
+
+    // when
+    const style = layout.tileStyle(context);
+
+    // then
+    expect(style['height']).toBe('calc(400 * var(--koia-pu))');
+  });
+
+  it('#overlayStyle should give grown height of text box', () => {
+
+    // given
+    const context = textBox(0, 0);
+    context.fitHeight = 400;
+
+    // when
+    const style = layout.overlayStyle(context, '--a');
+
+    // then
+    expect(style['height']).toBe('calc(400 * var(--koia-pu))');
+  });
+
+  it('#pageIndexes should count page a grown text box reaches into', () => {
+
+    // given
+    const context = textBox(0, 900);
+    context.fitHeight = 100;
+
+    // when
+    const pages = layout.pageIndexes([context]);
+
+    // then
+    expect(pages).toEqual([0, 1, 2]);
+  });
+
+  it('#placeUnpositioned should place below grown text box', () => {
+
+    // given
+    const grown = textBox(0, 0, 1);
+    grown.fitHeight = 300;
+    const placed = unpositioned(300, 200);
+
+    // when
+    layout.placeUnpositioned([grown, placed]);
+
+    // then
+    expect(positionsOf([placed])).toEqual([[0, 310]]);
+  });
+
   it('#minSizeOf should return text box minimum size for text box', () => {
 
     // when

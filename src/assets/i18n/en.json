@@ -441,7 +441,8 @@
     "addChart": "Add Chart",
     "addGraph": "Add Relationship Graph",
     "addSummary": "Add Summary",
-    "addTextBox": "Add Text Box",
+    "addTextTile": "Add Text Tile",
+    "addNote": "Add Note",
     "gridColumns": "Grid Columns",
     "gridCellRatio": "Grid Cell Ratio (width:height)",
     "manageViews": "Manage Views",
@@ -464,7 +465,8 @@
     "textColor": "Text Color",
     "resetTextColor": "Reset Text Color",
     "backgroundColor": "Background Color",
-    "resetBackgroundColor": "Reset Background Color"
+    "resetBackgroundColor": "Reset Background Color",
+    "border": "Border"
   },
   "enum": {
     "chartType": {

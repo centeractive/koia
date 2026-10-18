@@ -52,6 +52,13 @@ export class GridLayout {
     return { columnSpan, rowSpan };
   }
 
+  /**
+   * @returns the row span a tile needs to be at least of the given height, not limited to the row spans to choose from
+   */
+  rowSpanToFit(height: number, contentWidth: number): number {
+    return Math.max(1, Math.ceil((height + GridLayout.GAP_PX) / this.rowPitchOf(contentWidth)));
+  }
+
   tileSizeOf(spans: GridSpans, contentWidth: number): { width: number, height: number } {
     return {
       width: spans.columnSpan * this.columnPitchOf(contentWidth) - GridLayout.GAP_PX,
@@ -71,10 +78,10 @@ export class GridLayout {
     return Math.min(Math.max(span, 1), max);
   }
 
-  cellStyle(context: ElementContext): object {
+  cellStyle(context: ElementContext, rowSpan = context.gridRowSpan): object {
     return {
       'grid-column': 'auto / span ' + context.gridColumnSpan,
-      'grid-row': 'auto / span ' + context.gridRowSpan
+      'grid-row': 'auto / span ' + rowSpan
     };
   }
 

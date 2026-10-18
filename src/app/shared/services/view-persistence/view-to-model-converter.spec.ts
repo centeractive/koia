@@ -68,6 +68,7 @@ describe('ViewToModelConverter', () => {
       expect([context.gridColumnSpan, context.width, context.height, context.x, context.y, context.z]).toEqual([2, 400, 100, 10, 20, 3]);
       expect(context.content).toEqual(content);
       expect(context.backgroundColor).toBe('#ffff00');
+      expect([context.tiled, context.isOverlay(), context.bordered]).toEqual([false, true, false]);
       expect(context.columns.map(c => c.name)).toEqual(['Time', 'Level', 'Amount']);
       expect(context.columns[0]).not.toBe(columns[0]);
    });
@@ -90,6 +91,36 @@ describe('ViewToModelConverter', () => {
       const context = contexts[0] as TextBoxContext;
       expect(context).toBeInstanceOf(TextBoxContext);
       expect(new ModelToViewConverter().convert(Route.FLEX, 'test', new Query(), [context]).elements).toEqual(view.elements);
+   });
+
+   it('#convert should restore bordered text tile converted to view', () => {
+
+      // given
+      const textTile = new TextBoxContext(columns, true);
+      textTile.bordered = true;
+      const elements = viewElementsOf(textTile);
+
+      // when
+      const [context] = converter.convert(elements) as TextBoxContext[];
+
+      // then
+      expect([context.tiled, context.isOverlay(), context.bordered]).toEqual([true, false, true]);
+      expect(viewElementsOf(context)).toEqual(elements);
+   });
+
+   it('#convert should keep anchor of note on text tile', () => {
+
+      // given
+      const textTile = new TextBoxContext(columns, true);
+      const note = new TextBoxContext(columns);
+      note.setAnchor(textTile, { x: 0.5, y: 0.25 });
+
+      // when
+      const [restoredTextTile, restoredNote] = converter.convert(viewElementsOf(textTile, note)) as TextBoxContext[];
+
+      // then
+      expect(restoredNote.anchor).toBe(restoredTextTile);
+      expect(restoredNote.anchorOffset).toEqual({ x: 0.5, y: 0.25 });
    });
 
    function viewElementsOf(...contexts: ElementContext[]): ViewElement[] {

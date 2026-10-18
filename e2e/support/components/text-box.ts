@@ -34,6 +34,10 @@ export class TextBoxToolbar {
       return this.chooseOption('.select_font_family', label);
    }
 
+   async toggleBorder(): Promise<void> {
+      await this.root.locator('.but_border').click();
+   }
+
    async delete(): Promise<void> {
       await this.root.locator('.but_delete').click();
    }
@@ -106,6 +110,26 @@ export class TextBox {
 
    async release(): Promise<void> {
       await this.tile.page().mouse.up();
+   }
+
+   /**
+    * @returns the height of the editor text including its padding, as the editor itself is stretched to the tile
+    */
+   contentHeight(): Promise<number> {
+      return this.editor.evaluate((editor: HTMLElement) => editor.lastElementChild.getBoundingClientRect().bottom
+         - editor.getBoundingClientRect().top + parseFloat(getComputedStyle(editor).paddingBottom));
+   }
+
+   /**
+    * @returns whether the whole text is shown within the frame padding of the tile without being scrolled
+    */
+   fitsContent(): Promise<boolean> {
+      return this.tile.evaluate((tile: HTMLElement, padding: number) => {
+         const editorDiv = tile.querySelector('.div_text_box_editor');
+         const lastParagraph = tile.querySelector('.ProseMirror').lastElementChild;
+         return editorDiv.scrollTop === 0
+            && lastParagraph.getBoundingClientRect().bottom <= tile.getBoundingClientRect().bottom - padding;
+      }, FRAME_PADDING_PX);
    }
 
    frameBorderStyle(): Promise<string> {

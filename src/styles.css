@@ -353,8 +353,12 @@ koia-print-heading {
     -webkit-print-color-adjust: exact;
   }
 
-  .div_text_box_tile::after {
+  .div_text_box_tile:not(.div_text_box_bordered)::after {
     border: none !important;
+  }
+
+  .div_text_box_tile.div_text_box_bordered::after {
+    border: var(--koia-tile-border) !important;
   }
 
   .div_header > :not(koia-print-heading) {
