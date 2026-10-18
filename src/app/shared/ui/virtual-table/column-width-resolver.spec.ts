@@ -13,6 +13,15 @@ describe('ColumnWidthResolver', () => {
     return { name, dataType, width };
   }
 
+  it('#FONT should combine table font size and family', () => {
+
+    // when
+    const font = ColumnWidthResolver.FONT;
+
+    // then
+    expect(font).toBe('12px "Segoe UI", system-ui, -apple-system, sans-serif');
+  });
+
   it('#widthOf should convert em width to px', () => {
 
     // when

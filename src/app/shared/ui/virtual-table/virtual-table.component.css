@@ -107,7 +107,7 @@
 }
 
 .vt-row:hover {
-  background: #e5f3ff;
+  background: var(--koia-table-row-hover);
 }
 
 .vt-row.selected {

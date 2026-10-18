@@ -1,3 +1,10 @@
-#slide_auto_generate {
-  padding-left: 15px;
+.div_add_group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 10px;
+}
+
+.div_add_group mat-form-field {
+  flex: 1 1 auto;
 }

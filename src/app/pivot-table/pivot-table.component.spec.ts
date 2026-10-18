@@ -9,7 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
@@ -19,7 +20,7 @@ import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/que
 import { DialogService, ExportService, NotificationService, RawDataRevealService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
-import { SceneFactory } from 'app/shared/test';
+import { findStyleRule, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { LanguageService } from 'app/shared/services/language';
@@ -31,6 +32,7 @@ import { PivotTableComponent } from './pivot-table.component';
 import type { Mock } from 'vitest';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
+import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 
 @Injectable()
 export class MockElementRef {
@@ -82,7 +84,7 @@ describe('PivotTableComponent', () => {
       declarations: [PivotTableComponent, ViewToolbarComponent, PrintHeadingComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
-        MatMenuModule, MatBottomSheetModule, CdkScrollableModule
+        MatMenuModule, MatBottomSheetModule, CdkScrollableModule, MatBadgeModule
       ],
       providers: [
         provideRouter([]),
@@ -146,18 +148,17 @@ describe('PivotTableComponent', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.SCENES);
   }));
 
-  it('should render table container with thin frame and light shadow', () => {
+  it('should render pivot frameless on surface page', () => {
 
     // when
     const container: HTMLElement = fixture.nativeElement.querySelector('.div_table');
 
     // then
-    expect(container.classList).toContain('mat-elevation-z1');
-    expect(container.classList).not.toContain('mat-elevation-z8');
+    expect(container.classList).not.toContain('mat-elevation-z1');
     const style = getComputedStyle(container);
-    expect(style.borderTopWidth).toBe('1px');
-    expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
-    expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(style.borderTopStyle).toBe('none');
+    expect(style.boxShadow).toBe('none');
+    expect(getComputedStyle(fixture.nativeElement.querySelector('.div_content')).backgroundColor).toBe('rgb(255, 255, 255)');
   });
 
   it('should scroll tall table below header', () => {
@@ -337,6 +338,20 @@ describe('PivotTableComponent', () => {
     expect(component.timeColumns[0]).toBe(component.context.timeColumns[0]);
   });
 
+  it('#loadConfig should replace legacy heatmap colors', () => {
+
+    // given
+    const context: PivotContext = { ...pivotContext(), negativeColor: '#FF3333', positiveColor: '#00FF00' };
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
+
+    // when
+    component.loadConfig(configRecord);
+
+    // then
+    expect(component.context.negativeColor).toBe('#E57373');
+    expect(component.context.positiveColor).toBe('#81C784');
+  });
+
   it('#loadConfig should spice pivot options', () => {
 
     // given
@@ -389,6 +404,11 @@ describe('PivotTableComponent', () => {
       tabComponent = tabFixture.componentInstance;
       tabComponent.tab = { id: 'tab1', type: ViewType.PIVOT, title: 'Pivot Table 1', record };
     }
+
+    const sumRecord = (): ConfigRecord => ({
+      route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
+      data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Sum', vals: ['Amount'], cols: ['Level'], rows: [] } }
+    });
 
     afterEach(() => {
       scene.config.records = [];
@@ -651,12 +671,167 @@ describe('PivotTableComponent', () => {
       flush();
     })());
 
-    describe('language change', () => {
+    describe('styling', () => {
 
-      const sumRecord = (): ConfigRecord => ({
-        route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
-        data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Sum', vals: ['Amount'], cols: ['Level'], rows: [] } }
+      beforeEach(fakeAsync(() => {
+        const record = sumRecord();
+        const context = record.data as PivotContext;
+        context.pivotOptions = { ...context.pivotOptions, rows: ['Amount'] };
+        createTabComponent(record);
+        tabFixture.detectChanges();
+        flush();
+      }));
+
+      function styleOf(selector: string): CSSStyleDeclaration {
+        return getComputedStyle(tabFixture.nativeElement.querySelector(selector));
+      }
+
+      it('value cells should use dense table font without link decoration', () => {
+
+        // when
+        const style = styleOf('td.pvtVal');
+
+        // then
+        expect(style.fontFamily).toBe(TABLE_FONT_FAMILY);
+        expect(style.fontSize).toBe('11px');
+        expect(style.lineHeight).toBe('16px');
+        expect(style.paddingTop).toBe('2px');
+        expect(style.paddingLeft).toBe('5px');
+        expect(style.textDecorationLine).toBe('none');
+        expect(style.color).toBe('rgba(0, 0, 0, 0.87)');
+        expect(style.fontVariantNumeric).toBe('tabular-nums');
+        expect(style.cursor).toBe('pointer');
       });
+
+      it('label cells should be semibold on header surface with hairline', () => {
+
+        // when
+        const style = styleOf('th.pvtColLabel');
+
+        // then
+        expect(style.fontWeight).toBe('600');
+        expect(style.backgroundColor).toBe('rgb(245, 246, 248)');
+        expect(style.borderTopWidth).toBe('1px');
+        expect(style.borderTopColor).toBe('rgb(224, 224, 224)');
+        expect(style.whiteSpace).toBe('nowrap');
+        expect(style.paddingTop).toBe('2px');
+      });
+
+      it('configuration panel should use table font size', () => {
+
+        // when
+        const style = styleOf('.pvtUi');
+
+        // then
+        expect(style.fontSize).toBe('12px');
+      });
+
+      it('axis label cells should be secondary text', () => {
+
+        // when
+        const style = styleOf('th.pvtAxisLabel');
+
+        // then
+        expect(style.color).toBe('rgba(0, 0, 0, 0.6)');
+      });
+
+      it('grand total should be set apart by total lines', () => {
+
+        // when
+        const style = styleOf('td.pvtGrandTotal');
+
+        // then
+        expect(style.borderTopWidth).toBe('2px');
+        expect(style.borderLeftWidth).toBe('2px');
+        expect(style.borderTopColor).toBe('rgb(138, 148, 166)');
+        expect(style.fontWeight).toBe('600');
+      });
+
+      it('value cell hover should outline cell', () => {
+
+        // when
+        const rule = findStyleRule(document.styleSheets, '.pvtUi table.pvtTable tbody tr td:hover');
+
+        // then
+        expect(rule.style.outlineWidth).toBe('2px');
+        expect(rule.style.outlineStyle).toBe('solid');
+        expect(rule.style.getPropertyValue('outline-color')).toBe('var(--koia-primary)');
+        expect(rule.style.outlineOffset).toBe('-2px');
+      });
+
+      it('configuration selects should look like outlined fields', () => {
+
+        // when
+        const style = styleOf('select.pvtRenderer');
+
+        // then
+        expect(style.appearance).toBe('none');
+        expect(style.borderTopLeftRadius).toBe('6px');
+        expect(style.borderTopColor).toBe('rgb(138, 148, 166)');
+      });
+
+      it.each(['select.pvtRenderer', 'select.pvtAggregator', 'select.pvtAttrDropdown'])('configuration select %s should be as high as field chips', selector => {
+
+        // when
+        const selectHeight = tabFixture.nativeElement.querySelector(selector).getBoundingClientRect().height;
+        const chipHeight = tabFixture.nativeElement.querySelector('span.pvtAttr').getBoundingClientRect().height;
+
+        // then
+        expect(selectHeight).toBe(22);
+        expect(chipHeight).toBe(22);
+      });
+
+      it('available fields zone should be dashed neutral area', () => {
+
+        // when
+        const style = styleOf('td.pvtUnused');
+
+        // then
+        expect(style.borderTopStyle).toBe('dashed');
+        expect(style.backgroundColor).toBe('rgb(245, 246, 248)');
+        expect(style.borderTopLeftRadius).toBe('8px');
+      });
+
+      it.each(['td.pvtVals', 'td.pvtCols', 'td.pvtRows'])('selected fields zone %s should be solid tinted area', selector => {
+
+        // when
+        const style = styleOf(selector);
+
+        // then
+        expect(style.borderTopStyle).toBe('solid');
+        expect(style.borderTopColor).toBe('rgb(197, 202, 233)');
+        expect(style.backgroundColor).toBe('rgb(232, 234, 246)');
+        expect(style.borderTopLeftRadius).toBe('8px');
+      });
+
+      it('field chips should be rounded', () => {
+
+        // when
+        const style = styleOf('span.pvtAttr');
+
+        // then
+        expect(style.borderTopLeftRadius).toBe('12px');
+      });
+
+      it('filter popup should be elevated card with primary apply button', () => {
+
+        // given
+        tabFixture.nativeElement.querySelector('.pvtTriangle').click();
+
+        // when
+        const filterBox = Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll('.pvtFilterBox'))
+          .find(box => box.style.display !== 'none');
+
+        // then
+        const style = getComputedStyle(filterBox);
+        expect(style.borderTopLeftRadius).toBe('8px');
+        expect(style.boxShadow).not.toBe('none');
+        expect(style.textAlign).toBe('left');
+        expect(getComputedStyle(filterBox.querySelector('p:last-child > button:first-child')).backgroundColor).toBe('rgb(48, 63, 159)');
+      });
+    });
+
+    describe('language change', () => {
 
       function switchLanguage(language: 'en' | 'de' | 'ja'): void {
         TestBed.inject(LanguageService).use(language);
@@ -1216,8 +1391,110 @@ describe('PivotTableComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelectorAll('.view_toolbar .koia-toolbar-separator ~ .but_config').length).toBe(3);
+    expect(fixture.nativeElement.querySelectorAll('.view_toolbar .koia-toolbar-separator ~ .but_config').length).toBe(5);
   });
+
+  it.each([
+    { id: '#but_value_grouping', icon: 'linear_scale' },
+    { id: '#but_time_unit', icon: 'date_range' },
+    { id: '#but_row_totals', icon: 'view_column' },
+    { id: '#but_column_totals', icon: 'table_rows' },
+    { id: '#but_heatmap_colors', icon: 'color_lens' }
+  ])('toolbar button $id should show icon $icon', ({ id, icon }) => {
+
+    // when
+    const iconElement: HTMLElement = fixture.nativeElement.querySelector(id + ' mat-icon');
+
+    // then
+    expect(iconElement.firstChild.textContent.trim()).toBe(icon);
+  });
+
+  it('value grouping badge should be hidden without groupings', () => {
+
+    // given
+    component.context.valueGroupings = [];
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#but_value_grouping mat-icon').classList).toContain('mat-badge-hidden');
+  });
+
+  it('value grouping badge should show number of groupings', () => {
+
+    // given
+    component.context.valueGroupings = [{ columnName: 'Amount', ranges: [] }];
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const icon: HTMLElement = fixture.nativeElement.querySelector('#but_value_grouping mat-icon');
+    expect(icon.classList).not.toContain('mat-badge-hidden');
+    expect(icon.querySelector('.mat-badge-content').textContent).toBe('1');
+  });
+
+  it('row totals button should be active with hide tooltip while row totals are shown', () => {
+
+    // when
+    const button: HTMLElement = fixture.nativeElement.querySelector('#but_row_totals');
+
+    // then
+    expect(button.classList).toContain('koia-toggle-active');
+    expect(tooltipOf('#but_row_totals')).toBe('Hide Row Totals');
+  });
+
+  it('#click on row totals button should hide row totals and deactivate button', fakeAsync(() => {
+
+    // given
+    const button: HTMLElement = fixture.nativeElement.querySelector('#but_row_totals');
+
+    // when
+    button.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(component.context.showRowTotals).toBe(false);
+    expect(button.classList).not.toContain('koia-toggle-active');
+    expect(tooltipOf('#but_row_totals')).toBe('Show Row Totals');
+  }));
+
+  it('#click on column totals button should hide column totals and deactivate button', fakeAsync(() => {
+
+    // given
+    const button: HTMLElement = fixture.nativeElement.querySelector('#but_column_totals');
+
+    // when
+    button.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(component.context.showColumnTotals).toBe(false);
+    expect(button.classList).not.toContain('koia-toggle-active');
+    expect(tooltipOf('#but_column_totals')).toBe('Show Column Totals');
+  }));
+
+  it('more menu should offer only excel export and view management', fakeAsync(() => {
+
+    // given
+    const moreButton: HTMLElement = fixture.nativeElement.querySelector('.but_view_more');
+
+    // when
+    moreButton.click();
+    fixture.detectChanges();
+    flush();
+
+    // then
+    const texts = Array.from(document.querySelectorAll('.mat-mdc-menu-panel .mat-mdc-menu-item-text')).map(e => e.textContent.trim());
+    expect(texts).toEqual(['Save As Excel', 'Manage Views']);
+  }));
+
+  function tooltipOf(selector: string): string {
+    return fixture.debugElement.query(By.css(selector)).injector.get(MatTooltip).message;
+  }
 
   function pivotContext(): PivotContext {
     return {

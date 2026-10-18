@@ -56,6 +56,21 @@ export class DashboardTile {
       });
    }
 
+   /**
+    * @returns heights and background colors of the first two summary table rows
+    */
+   async tableRowStyles(): Promise<{ heights: number[]; backgrounds: string[] }> {
+      await this.waitForSummaryTable();
+      return this.root.locator('tr.mat-mdc-row').evaluateAll((rows: HTMLElement[]) => ({
+         heights: rows.slice(0, 2).map(r => r.getBoundingClientRect().height),
+         backgrounds: rows.slice(0, 2).map(r => getComputedStyle(r).backgroundColor)
+      }));
+   }
+
+   async hoverFirstTableRow(): Promise<void> {
+      await this.root.locator('tr.mat-mdc-row').first().hover();
+   }
+
    async tableCellStyles(): Promise<{ header: RenderedCellStyle; cell: RenderedCellStyle; footer: RenderedCellStyle;
       sortArrowWidth: number }> {
       await this.waitForSummaryTable();

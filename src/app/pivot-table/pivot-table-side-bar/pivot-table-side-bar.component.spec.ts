@@ -89,6 +89,27 @@ describe('PivotTableSideBarComponent', () => {
     expect(field.classList).toContain('mat-form-field-appearance-outline');
   });
 
+  it('side bar header should be a single toolbar line', () => {
+
+    // when
+    const header: HTMLElement = fixture.nativeElement.querySelector('koia-side-bar-header .div_accordion_options');
+
+    // then
+    expect(header.offsetHeight).toBe(48);
+  });
+
+  it('non grouped columns selection should precede accordion below header', () => {
+
+    // when
+    const addGroup: HTMLElement = fixture.nativeElement.querySelector('.div_add_group');
+
+    // then
+    expect(fixture.nativeElement.querySelector('koia-side-bar-header mat-select')).toBeNull();
+    expect(addGroup.querySelector('mat-select')).not.toBeNull();
+    const accordion = fixture.nativeElement.querySelector('mat-accordion');
+    expect(addGroup.compareDocumentPosition(accordion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('accordion panels should be separated by gap like new scene', () => {
 
     // when

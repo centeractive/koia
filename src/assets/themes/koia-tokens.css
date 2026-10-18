@@ -17,4 +17,15 @@
   --koia-header-surface: #e8eaf6;
   --koia-header-border: #c5cae9;
   --koia-header-line: 1px solid var(--koia-header-border);
+  --koia-table-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --koia-table-font-size: 12px;
+  --koia-table-line-height: 16px;
+  --koia-table-cell-padding: 3px 6px;
+  --koia-table-header-surface: #f5f6f8;
+  --koia-table-grid-line: 1px solid var(--koia-border-color);
+  --koia-table-total-line: 2px solid var(--koia-outline-color);
+  --koia-table-row-hover: #e5f3ff;
+  --koia-pivot-font-size: 11px;
+  --koia-pivot-cell-padding: 2px 5px;
+  --koia-pivot-field-height: 22px;
 }

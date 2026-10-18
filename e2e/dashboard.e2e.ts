@@ -432,6 +432,22 @@ test('summary table style matches width estimator constants', async ({ dashboard
    expect(styles.sortArrowWidth).toBe(SUMMARY_TABLE_STYLE.sortArrowWidth);
 });
 
+test('summary table rows are dense, unstriped and highlighted on hover', async ({ dashboard }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+
+   const { heights, backgrounds } = await tile.tableRowStyles();
+   await tile.hoverFirstTableRow();
+
+   for (const height of heights) {
+      expect(height).toBeLessThanOrEqual(23);
+   }
+   expect(backgrounds).toEqual(['rgb(255, 255, 255)', 'rgb(255, 255, 255)']);
+   expect((await tile.tableRowStyles()).backgrounds[0]).toBe('rgb(229, 243, 255)');
+});
+
 test('generated summary table spans one cell only when its content fits', async ({ dashboard }) => {
    await dashboard.launcher.generateDashboard();
 

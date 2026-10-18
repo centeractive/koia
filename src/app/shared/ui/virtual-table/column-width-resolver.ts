@@ -1,6 +1,7 @@
 import { LanguageService } from 'app/shared/services/language';
 import { ValueFormatter } from 'app/shared/format';
 import { Column } from 'app/shared/model';
+import { TABLE_FONT_FAMILY, TABLE_FONT_SIZE } from '../table-fit/table-font';
 import { TextMeasurer } from '../table-fit/text-measurer';
 import { ColumnAutoSizer } from './column-auto-sizer';
 
@@ -8,7 +9,7 @@ export class ColumnWidthResolver {
 
   static readonly EM_PX = 14;
   static readonly SORT_WIDTH = 12;
-  static readonly FONT = '12px "Segoe UI", system-ui, -apple-system, sans-serif';
+  static readonly FONT = `${TABLE_FONT_SIZE}px ${TABLE_FONT_FAMILY}`;
 
   private readonly measurer = new TextMeasurer(ColumnWidthResolver.FONT);
   private readonly valueFormatter = new ValueFormatter(LanguageService.localeId);

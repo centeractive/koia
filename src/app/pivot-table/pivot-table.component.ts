@@ -239,6 +239,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   private applyConfig(configRecord: ConfigRecord): void {
     this.context = CommonUtils.clone(configRecord.data as PivotContext);
+    this.contextFactory.adoptPalette(this.context);
     this.adoptRestoredTimeUnits();
     const pivotOptions = this.pivotOptionsProvider
       .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());

@@ -5,6 +5,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { findPageRule, findStyleRule } from 'app/shared/test';
+import { TABLE_FONT_FAMILY, TABLE_FONT_SIZE } from 'app/shared/ui/table-fit/table-font';
 
 @Component({
   template: `
@@ -382,6 +383,17 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-header-line').trim()).toBe('1px solid #c5cae9');
     expect(style.getPropertyValue('--koia-hover-tint').trim()).toBe('rgba(48, 63, 159, 0.1)');
     expect(style.getPropertyValue('--koia-primary-dark').trim()).toBe('#1a237e');
+    expect(style.getPropertyValue('--koia-table-font-family').replace(/\s+/g, ' ').trim()).toBe(TABLE_FONT_FAMILY);
+    expect(style.getPropertyValue('--koia-table-font-size').trim()).toBe(TABLE_FONT_SIZE + 'px');
+    expect(style.getPropertyValue('--koia-table-line-height').trim()).toBe('16px');
+    expect(style.getPropertyValue('--koia-table-cell-padding').trim()).toBe('3px 6px');
+    expect(style.getPropertyValue('--koia-table-header-surface').trim()).toBe('#f5f6f8');
+    expect(style.getPropertyValue('--koia-table-grid-line').trim()).toBe('1px solid #e0e0e0');
+    expect(style.getPropertyValue('--koia-table-total-line').trim()).toBe('2px solid #8a94a6');
+    expect(style.getPropertyValue('--koia-table-row-hover').trim()).toBe('#e5f3ff');
+    expect(style.getPropertyValue('--koia-pivot-font-size').trim()).toBe('11px');
+    expect(style.getPropertyValue('--koia-pivot-cell-padding').trim()).toBe('2px 5px');
+    expect(style.getPropertyValue('--koia-pivot-field-height').trim()).toBe('22px');
   });
 
   it('active toggle icon button should be accent tinted', () => {
