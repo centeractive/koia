@@ -57,14 +57,24 @@ export class DashboardTile {
    }
 
    /**
-    * @returns heights and background colors of the first two summary table rows
+    * @returns heights and first cell background colors of the first two summary table rows
     */
    async tableRowStyles(): Promise<{ heights: number[]; backgrounds: string[] }> {
       await this.waitForSummaryTable();
       return this.root.locator('tr.mat-mdc-row').evaluateAll((rows: HTMLElement[]) => ({
          heights: rows.slice(0, 2).map(r => r.getBoundingClientRect().height),
-         backgrounds: rows.slice(0, 2).map(r => getComputedStyle(r).backgroundColor)
+         backgrounds: rows.slice(0, 2).map(r => getComputedStyle(r.querySelector('td')).backgroundColor)
       }));
+   }
+
+   /**
+    * @returns bottom of the summary table scroller and top of the resize handle
+    */
+   async tableScrollerBottomAndHandleTop(): Promise<{ scrollerBottom: number; handleTop: number }> {
+      await this.waitForSummaryTable();
+      const scroller = await this.root.locator('.div_summary_table').boundingBox();
+      const handle = await this.root.locator('img.resize-handle').boundingBox();
+      return { scrollerBottom: scroller.y + scroller.height, handleTop: handle.y };
    }
 
    async hoverFirstTableRow(): Promise<void> {

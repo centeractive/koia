@@ -32,4 +32,16 @@ describe('ValueRangeFilterSorter', () => {
       // then
       expect(filters).toEqual(sortedFilters);
    });
+
+   it.each([
+      { case: 'inverted first', filters: [sortedFilters[4], sortedFilters[3]] },
+      { case: 'non-inverted first', filters: [sortedFilters[3], sortedFilters[4]] }
+   ])('#sort should put inverted filter after non-inverted filter when $case', ({ filters }) => {
+
+      // when
+      const sorted = sorter.sort(filters.slice(0));
+
+      // then
+      expect(sorted).toEqual([sortedFilters[3], sortedFilters[4]]);
+   });
 })

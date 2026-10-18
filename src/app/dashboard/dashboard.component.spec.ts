@@ -2196,6 +2196,19 @@ describe('DashboardComponent', () => {
       expect(fixture.nativeElement.querySelector('#div_grid .div_tile > img.resize-handle')).toBeTruthy();
     });
 
+    it('resize handle should have token size', () => {
+
+      // given
+      component.addSummaryTable();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const handle: HTMLImageElement = fixture.nativeElement.querySelector('.div_tile img.resize-handle');
+      expect([handle.offsetWidth, handle.offsetHeight]).toEqual([16, 16]);
+    });
+
     it.each([
       { layout: Route.GRID, type: 'mousedown' },
       { layout: Route.GRID, type: 'touchstart' },

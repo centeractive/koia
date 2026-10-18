@@ -391,6 +391,8 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-table-grid-line').trim()).toBe('1px solid #e0e0e0');
     expect(style.getPropertyValue('--koia-table-total-line').trim()).toBe('2px solid #8a94a6');
     expect(style.getPropertyValue('--koia-table-row-hover').trim()).toBe('#e5f3ff');
+    expect(style.getPropertyValue('--koia-table-row-stripe').trim()).toBe('#efefef');
+    expect(style.getPropertyValue('--koia-resize-handle-size').trim()).toBe('16px');
     expect(style.getPropertyValue('--koia-pivot-font-size').trim()).toBe('11px');
     expect(style.getPropertyValue('--koia-pivot-cell-padding').trim()).toBe('2px 5px');
     expect(style.getPropertyValue('--koia-pivot-field-height').trim()).toBe('22px');

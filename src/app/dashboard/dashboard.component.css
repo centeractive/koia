@@ -164,6 +164,9 @@ mwlResizable {
   position: absolute;
   right: 0px;
   bottom: 0px;
+  box-sizing: border-box;
+  width: var(--koia-resize-handle-size);
+  height: var(--koia-resize-handle-size);
   padding: 2px;
   cursor: se-resize;
 }

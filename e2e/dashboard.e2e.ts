@@ -432,7 +432,7 @@ test('summary table style matches width estimator constants', async ({ dashboard
    expect(styles.sortArrowWidth).toBe(SUMMARY_TABLE_STYLE.sortArrowWidth);
 });
 
-test('summary table rows are dense, unstriped and highlighted on hover', async ({ dashboard }) => {
+test('summary table rows are dense, striped and highlighted on hover', async ({ dashboard }) => {
    await dashboard.launcher.addSummary();
    await dashboard.sideBar.selectColumn(column);
    await dashboard.sideBar.close();
@@ -444,8 +444,18 @@ test('summary table rows are dense, unstriped and highlighted on hover', async (
    for (const height of heights) {
       expect(height).toBeLessThanOrEqual(23);
    }
-   expect(backgrounds).toEqual(['rgb(255, 255, 255)', 'rgb(255, 255, 255)']);
+   expect(backgrounds).toEqual(['rgb(239, 239, 239)', 'rgba(0, 0, 0, 0)']);
    expect((await tile.tableRowStyles()).backgrounds[0]).toBe('rgb(229, 243, 255)');
+});
+
+test('summary table scrollbar stays above resize handle', async ({ dashboard }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.close();
+
+   const { scrollerBottom, handleTop } = await dashboard.tile(0).tableScrollerBottomAndHandleTop();
+
+   expect(scrollerBottom).toBeLessThanOrEqual(handleTop);
 });
 
 test('generated summary table spans one cell only when its content fits', async ({ dashboard }) => {
