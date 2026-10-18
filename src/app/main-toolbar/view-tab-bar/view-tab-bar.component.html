@@ -8,7 +8,8 @@
   </a>
   @for (tab of viewTabsService.tabs; track tab.id) {
     <a [id]="'tab-' + tab.id" mat-tab-link [routerLink]="[urlOf(tab)]" [active]="currUrl === urlOf(tab)"
-      [matTooltip]="'toolbar.tabs.renameHint' | translate" (dblclick)="rename(tab)">
+      [matTooltip]="'toolbar.tabs.renameHint' | translate" (dblclick)="rename(tab)" (keydown.f2)="rename(tab)"
+      (keydown.delete)="close($event, tab)">
       <span class="tab_label">
         <mat-icon [svgIcon]="iconFor(tab)"></mat-icon>
         <span>{{ tab.title }}</span>

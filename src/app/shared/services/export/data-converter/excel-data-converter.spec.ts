@@ -1,3 +1,4 @@
+import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
 import { ExcelDataConverter } from './excel-data-converter';
 
@@ -150,6 +151,19 @@ describe('ExcelDataConverter', () => {
         // then
         expect(worksheet['B2'].z).toBe('d MMM yyyy HH:mm:ss');
         expect(worksheet['B3']).toBeUndefined();
+    });
+
+    it('#toWorksheet should apply default date time format when time column has no format', () => {
+
+        // given
+        const data: object[] = [{ Time: new Date('2019-01-18 12:00:00.000') }];
+        const columns: Column[] = [{ name: 'Time', dataType: DataType.TIME, width: 16 }];
+
+        // when
+        const worksheet = converter.toWorksheet(data, columns);
+
+        // then
+        expect(worksheet['A2'].z).toBe(ValueFormatter.DEFAULT_DATETIME_FORMAT);
     });
 
     it('#toWorksheet should use default width when column is unknown', () => {

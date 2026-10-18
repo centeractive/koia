@@ -1,6 +1,7 @@
 import { Directive, ElementRef, HostListener } from '@angular/core';
 import { NumberFormatter } from '../format';
-import { NumberUtils, StringUtils } from '../utils';
+import { NumberUtils } from '../utils';
+import { preventInvalidPaste } from '../utils/clipboard-events';
 
 @Directive({
     selector: 'input[formattedInteger]',
@@ -26,15 +27,7 @@ export class FormattedIntegerDirective {
 
     @HostListener('paste', ['$event'])
     onPaste(event: ClipboardEvent): void {
-        const v = NumberUtils.removeThousandsSeparators(this.newValue(event), undefined);
-        if (!NumberUtils.isInteger(v, undefined)) {
-            event.stopPropagation();
-        }
-    }
-
-    private newValue(event: ClipboardEvent): string {
-        const replacement = event.clipboardData.getData('text/plain');
-        return StringUtils.replace(this.inputElement.value, this.inputElement.selectionStart, this.inputElement.selectionEnd, replacement).text;
+        preventInvalidPaste(event, this.inputElement, v => NumberUtils.isInteger(NumberUtils.removeThousandsSeparators(v, undefined), undefined));
     }
 
     private digitsInFrontOfCared(): number {

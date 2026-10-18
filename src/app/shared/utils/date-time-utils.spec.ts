@@ -1,5 +1,4 @@
 import { DatePipe } from '@angular/common';
-import { timeFormat } from 'd3';
 import { DateTime, Settings } from 'luxon';
 import { Column, DataType, TimeUnit } from '../model';
 import { DateTimeUtils } from './date-time-utils';
@@ -504,19 +503,6 @@ describe('DateTimeUtils', () => {
     expect(ngFormatter(TimeUnit.DAY)).toBe(luxonFormatter(TimeUnit.DAY));
     expect(ngFormatter(TimeUnit.MONTH)).toBe(luxonFormatter(TimeUnit.MONTH));
     expect(ngFormatter(TimeUnit.YEAR)).toBe(luxonFormatter(TimeUnit.YEAR));
-  });
-
-  it('#d3FormatOf and #ngFormatOf should return compatible date/time format each', () => {
-    const d3Formatter = (timeunit: TimeUnit) => timeFormat(DateTimeUtils.d3FormatOf(timeunit))(new Date(now));
-    const ngFormatter = (timeunit: TimeUnit) => datePipe.transform(now, DateTimeUtils.ngFormatOf(timeunit));
-
-    expect(d3Formatter(TimeUnit.MILLISECOND)).toBe(ngFormatter(TimeUnit.MILLISECOND));
-    expect(d3Formatter(TimeUnit.SECOND)).toBe(ngFormatter(TimeUnit.SECOND));
-    expect(d3Formatter(TimeUnit.MINUTE)).toBe(ngFormatter(TimeUnit.MINUTE));
-    expect(d3Formatter(TimeUnit.HOUR)).toBe(ngFormatter(TimeUnit.HOUR));
-    expect(d3Formatter(TimeUnit.DAY)).toBe(ngFormatter(TimeUnit.DAY));
-    expect(d3Formatter(TimeUnit.MONTH)).toBe(ngFormatter(TimeUnit.MONTH));
-    expect(d3Formatter(TimeUnit.YEAR)).toBe(ngFormatter(TimeUnit.YEAR));
   });
 
   it('#sortTimeUnits should return same when array is missing', () => {

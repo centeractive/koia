@@ -5,6 +5,7 @@ describe('EntryMapper', () => {
 
    const now = new Date().getTime();
    const dateTimeFormat = 'yyyy.MM.dd HH:mm:ss SSS';
+   const sourceColumnNames = ['Text', 'Number', 'Time', 'Boolean'];
    let columnPairs: ColumnPair[];
    let mapper: EntryMapper;
 
@@ -22,7 +23,7 @@ describe('EntryMapper', () => {
    it('#mapRows should return entry with initial _id attribute', () => {
 
       // when
-      const actual = mapper.mapRows([['A']]);
+      const actual = mapper.mapRows([['A']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -33,11 +34,11 @@ describe('EntryMapper', () => {
    it('#mapRows should return entry with incremented _id attribute', () => {
 
       // given
-      mapper.mapRows(rows(10));
-      mapper.mapRows(rows(10));
+      mapper.mapRows(rows(10), sourceColumnNames);
+      mapper.mapRows(rows(10), sourceColumnNames);
 
       // when
-      const actual = mapper.mapRows([['C']]);
+      const actual = mapper.mapRows([['C']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -48,7 +49,7 @@ describe('EntryMapper', () => {
    it('#mapRows should return empty array when row is empty', () => {
 
       // when
-      const actual = mapper.mapRows([[]]);
+      const actual = mapper.mapRows([[]], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(0);
@@ -57,7 +58,7 @@ describe('EntryMapper', () => {
    it('#mapRows should return empty array when all values  are null', () => {
 
       // when
-      const actual = mapper.mapRows([[null, null]]);
+      const actual = mapper.mapRows([[null, null]], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(0);
@@ -66,7 +67,7 @@ describe('EntryMapper', () => {
    it('#mapRows should return empty array when all values are undefined', () => {
 
       // when
-      const actual = mapper.mapRows([[undefined, undefined]]);
+      const actual = mapper.mapRows([[undefined, undefined]], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(0);
@@ -75,7 +76,7 @@ describe('EntryMapper', () => {
    it('#mapRows TEXT to TEXT', () => {
 
       // when
-      const actual = mapper.mapRows([['test']]);
+      const actual = mapper.mapRows([['test']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -91,7 +92,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.NUMBER;
 
       // when
-      const actual = mapper.mapRows([['12.5']]);
+      const actual = mapper.mapRows([['12.5']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -107,7 +108,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.BOOLEAN;
 
       // when
-      const actual = mapper.mapRows([['true']]);
+      const actual = mapper.mapRows([['true']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -122,7 +123,7 @@ describe('EntryMapper', () => {
       cp.target.name = 'Pct.';
 
       // when
-      const actual = mapper.mapRows([[undefined, '12.5']]);
+      const actual = mapper.mapRows([[undefined, '12.5']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -139,7 +140,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.TIME;
 
       // when
-      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']]);
+      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -164,7 +165,7 @@ describe('EntryMapper', () => {
       cp.target.format = 'd MMM yyyy'
 
       // when
-      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']]);
+      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -189,7 +190,7 @@ describe('EntryMapper', () => {
       cp.target.format = 'MMM yyyy'
 
       // when
-      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']]);
+      const actual = mapper.mapRows([['2019.05.06 11:22:33 444']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -212,7 +213,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.TEXT;
 
       // when
-      const actual = mapper.mapRows([[undefined, '123']]);
+      const actual = mapper.mapRows([[undefined, '123']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -229,7 +230,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.TIME;
 
       // when
-      const actual = mapper.mapRows([[undefined, '2019']]);
+      const actual = mapper.mapRows([[undefined, '2019']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -247,7 +248,7 @@ describe('EntryMapper', () => {
    it('#mapRows should return entry with all values mapped', () => {
 
       // when
-      const actual = mapper.mapRows([['A', '1', now.toString(), 'false']]);
+      const actual = mapper.mapRows([['A', '1', now.toString(), 'false']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -262,7 +263,7 @@ describe('EntryMapper', () => {
    it('#mapRows should return no value but error for invalid number', () => {
 
       // when
-      const actual = mapper.mapRows([['A', 'X']]);
+      const actual = mapper.mapRows([['A', 'X']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -277,7 +278,7 @@ describe('EntryMapper', () => {
       columnPairs[0].target.dataType = DataType.TIME;
 
       // when
-      const actual = mapper.mapRows([['X']]);
+      const actual = mapper.mapRows([['X']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -293,7 +294,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.TIME;
 
       // when
-      const actual = mapper.mapRows([['18/02/2019']]);
+      const actual = mapper.mapRows([['18/02/2019']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -310,7 +311,7 @@ describe('EntryMapper', () => {
       cp.target.dataType = DataType.TIME;
 
       // when
-      const actual = mapper.mapRows([['18/02/2019']]);
+      const actual = mapper.mapRows([['18/02/2019']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
@@ -324,12 +325,54 @@ describe('EntryMapper', () => {
       columnPairs[0].target.dataType = DataType.BOOLEAN;
 
       // when
-      const actual = mapper.mapRows([['X']]);
+      const actual = mapper.mapRows([['X']], sourceColumnNames);
 
       // then
       expect(actual.length).toBe(1);
       expect(actual[0].entry).toBeUndefined();
       expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "X" to Boolean']);
+   });
+
+   it('#mapRows should map values by source column name when column mapping is in different order', () => {
+
+      // given
+      mapper = new EntryMapper([columnPair('Number'), columnPair('Text')], 'en');
+
+      // when
+      const actual = mapper.mapRows([['A', '1']], ['Text', 'Number']);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'A', Number: 1 });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows should not map value when source column is missing', () => {
+
+      // given
+      mapper = new EntryMapper([columnPair('Text'), columnPair('Number')], 'en');
+
+      // when
+      const actual = mapper.mapRows([['A', '1']], ['Text', 'Skipped']);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'A' });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows should map value of last column when source column names are duplicate', () => {
+
+      // given
+      mapper = new EntryMapper([columnPair('Text')], 'en');
+
+      // when
+      const actual = mapper.mapRows([['A', 'B']], ['Text', 'Text']);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'B' });
+      expect(actual[0].errors).toEqual([]);
    });
 
    it('#mapObjects should return entry with initial _id attribute', () => {

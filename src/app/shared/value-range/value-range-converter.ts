@@ -1,4 +1,5 @@
 import { NumberUtils } from '../utils/number-utils';
+import { NumberFormatter } from '../format/number-formatter';
 
 export class ValueRangeConverter {
 
@@ -7,12 +8,14 @@ export class ValueRangeConverter {
    static readonly MAX = 'max';
    static readonly DELIMITER = ' - ';
 
+   private static readonly numberFormatter = new NumberFormatter();
+
    static toLabel(min: number, max: number): string {
       if (min == undefined && max == undefined) {
          return ValueRangeConverter.EMPTY;
       }
-      const minString = min == undefined ? ValueRangeConverter.MIN : min.toLocaleString();
-      const maxString = max == undefined ? ValueRangeConverter.MAX : max.toLocaleString();
+      const minString = min == undefined ? ValueRangeConverter.MIN : ValueRangeConverter.numberFormatter.format(min);
+      const maxString = max == undefined ? ValueRangeConverter.MAX : ValueRangeConverter.numberFormatter.format(max);
       return minString + ValueRangeConverter.DELIMITER + maxString;
    }
 

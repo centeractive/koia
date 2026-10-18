@@ -261,6 +261,19 @@ describe('SeriesNameConverter', () => {
       expect(values).toEqual(['a', 4, 1]);
    });
 
+   it('#toValues should convert number in exponential notation', () => {
+
+      // given
+      const dataColumn = createColumn('a', DataType.NUMBER);
+      const splitColumns = [createColumn('x', DataType.TEXT)];
+
+      // when
+      const values = converter.toValues('a ⯈ 1e-7', dataColumn, splitColumns);
+
+      // then
+      expect(values).toEqual(['a', 1e-7]);
+   });
+
    function createColumn(name: string, dataType: DataType): Column {
       return {
          name: name,

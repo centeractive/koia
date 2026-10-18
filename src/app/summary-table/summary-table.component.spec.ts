@@ -245,6 +245,37 @@ describe('SummaryTableComponent', () => {
     expect(component.refreshDataFrameAsync).toHaveBeenCalledTimes(2);
   }));
 
+  it('#ngOnDestroy should stop refreshing on context changes', fakeAsync(() => {
+
+    // given
+    fixture.detectChanges();
+    flush();
+    vi.spyOn(component, 'refreshDataFrameAsync').mockReturnValue(undefined);
+
+    // when
+    fixture.destroy();
+
+    // then
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [findColumn('Time')];
+    flush();
+    expect(component.refreshDataFrameAsync).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not fail when no scene is active', () => {
+
+    // given
+    getActiveSceneSpy.mockReturnValue(null);
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockReturnValue(undefined);
+    fixture.detectChanges();
+
+    // when
+    const destroy = () => fixture.destroy();
+
+    // then
+    expect(destroy).not.toThrow();
+  });
+
   it('context entries change should refresh frame data', fakeAsync(() => {
 
     // given

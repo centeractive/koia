@@ -23,30 +23,8 @@
         @for (grouping of context.valueGroupings; track grouping) {
           <koia-expansion-panel [title]="'pivot.sideBar.columnGrouping' | translate: { column: grouping.columnName }"
             [deletable]="true" (delete)="removeValueGrouping(grouping)">
-            <span class="span_left_to_right">
-              <label>{{ 'pivot.sideBar.max' | translate: { value: (grouping.minMaxValues.max | koiaNumber) } }}</label>
-              <button mat-icon-button [matTooltip]="'pivot.sideBar.addValueRange' | translate" (click)="addGroupingRange(grouping)">
-                <mat-icon>add_circle_outline</mat-icon>
-              </button>
-            </span>
-            <div class="div_group_values" cdkDropList (cdkDropListDropped)="dropGroupingRange(grouping, $event)">
-              @for (range of grouping.ranges; track range) {
-                <div class="div_group_value" mat-stroked-button cdkDrag>
-                  <mat-checkbox [(ngModel)]="range.active"></mat-checkbox>
-                  <label>{{ 'pivot.sideBar.upTo' | translate }}</label>
-                  <input matInput type="number" [(ngModel)]="range.max"
-                    [matTooltip]="'pivot.sideBar.rangeMaxTooltip' | translate" (keypress)="isNumberKey($event)">
-                    @if (grouping.ranges.length > 1) {
-                      <mat-icon class="icon_remove"
-                        (click)="removeGroupingRange(grouping, range)">
-                        remove_circle_outline
-                      </mat-icon>
-                    }
-                  </div>
-                }
-              </div>
-              <label>{{ 'pivot.sideBar.min' | translate: { value: (grouping.minMaxValues.min | koiaNumber) } }}</label>
-            </koia-expansion-panel>
+            <koia-value-grouping-ranges [grouping]="grouping" />
+          </koia-expansion-panel>
           }
         </mat-accordion>
       }

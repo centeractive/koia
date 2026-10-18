@@ -107,4 +107,41 @@ describe('mango-query-sanitizer', () => {
 
     });
 
+    it('#sanitizeFindQuery should escape field names in $or nested in $and', () => {
+        // given
+        const query = {
+            selector: {
+                $and: [
+                    { 'Proz.': { $eq: 90 } },
+                    {
+                        $or: [
+                            { 'a.b': { $regex: '(?i).*x.*' } },
+                            { Name: { $regex: '(?i).*x.*' } }
+                        ]
+                    }
+                ]
+            },
+            limit: 1000000
+        };
+
+        // when
+        const result = sanitizeFindQuery(query);
+
+        // then
+        expect(result).toEqual({
+            selector: {
+                $and: [
+                    { 'Proz\\.': { $eq: 90 } },
+                    {
+                        $or: [
+                            { 'a\\.b': { $regex: '(?i).*x.*' } },
+                            { Name: { $regex: '(?i).*x.*' } }
+                        ]
+                    }
+                ]
+            },
+            limit: 1000000
+        });
+    });
+
 });

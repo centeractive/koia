@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { By } from '@angular/platform-browser';
 import { Route } from 'app/shared/model';
 import { View } from 'app/shared/model/view-config';
-import { ManageViewContext } from './manage-view-context.type.';
+import { ManageViewContext } from './manage-view-context.type';
 import { ManageViewDialogComponent } from './manage-view-dialog.component';
 import type { Mock } from 'vitest';
 
@@ -17,6 +17,7 @@ describe('ManageViewDialogComponent', () => {
   let component: ManageViewDialogComponent;
   let fixture: ComponentFixture<ManageViewDialogComponent>;
   let updateViewsSpy: Mock;
+  let closeSpy: Mock;
 
   beforeEach(waitForAsync(() => {
     ctx = context();
@@ -32,8 +33,9 @@ describe('ManageViewDialogComponent', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ManageViewDialogComponent);
+    fixture = TestBed.createComponent<ManageViewDialogComponent>(ManageViewDialogComponent);
     component = fixture.componentInstance;
+    closeSpy = vi.spyOn(component.dialogRef, 'close');
     fixture.detectChanges();
   });
 
@@ -45,15 +47,15 @@ describe('ManageViewDialogComponent', () => {
     expect(leanItems()).toEqual([
       {
         name: 'A',
-        deleted: undefined
+        deleted: false
       },
       {
         name: 'B',
-        deleted: undefined
+        deleted: false
       },
       {
         name: 'C',
-        deleted: undefined
+        deleted: false
       }
     ]);
     expect(button('but_ok').disabled).toBe(true);
@@ -68,7 +70,7 @@ describe('ManageViewDialogComponent', () => {
     expect(leanItems()).toEqual([
       {
         name: 'A',
-        deleted: undefined
+        deleted: false
       },
       {
         name: 'B',
@@ -76,7 +78,7 @@ describe('ManageViewDialogComponent', () => {
       },
       {
         name: 'C',
-        deleted: undefined
+        deleted: false
       }
     ]);
     fixture.detectChanges();
@@ -109,7 +111,7 @@ describe('ManageViewDialogComponent', () => {
     expect(component.items[1].view.name).toBe('X');
   });
 
-  it('butOK#click when view was renamed and then deleted', () => {
+  it('butOK#click should not rename view when view was renamed and then deleted', () => {
 
     // given
     rename(1, 'X');
@@ -120,7 +122,75 @@ describe('ManageViewDialogComponent', () => {
     button('but_ok').click();
 
     // then
-    expect(updateViewsSpy).toHaveBeenCalledWith([component.items[1].view], []);
+    expect(updateViewsSpy).toHaveBeenCalledWith([ctx.views[1]], []);
+    expect(ctx.views[1].name).toBe('B');
+  });
+
+  it('butOK#click should apply trimmed name when view was renamed', () => {
+
+    // given
+    rename(1, '  X  ');
+    fixture.detectChanges();
+
+    // when
+    button('but_ok').click();
+
+    // then
+    expect(updateViewsSpy).toHaveBeenCalledWith([], [ctx.views[1]]);
+    expect(ctx.views[1].name).toBe('X');
+  });
+
+  it('butOK#click should allow name of deleted view to be reused', () => {
+
+    // given
+    rename(1, 'A');
+    button('butDelete-0').click();
+    fixture.detectChanges();
+
+    // when
+    button('but_ok').click();
+
+    // then
+    const [viewA, viewB] = ctx.views;
+    expect(updateViewsSpy).toHaveBeenCalledWith([viewA], [viewB]);
+    expect(viewB.name).toBe('A');
+  });
+
+  it('butCancel#click should keep view names when view was renamed', () => {
+
+    // given
+    rename(1, 'X');
+    fixture.detectChanges();
+
+    // when
+    button('but_cancel').click();
+
+    // then
+    expect(updateViewsSpy).not.toHaveBeenCalled();
+    expect(closeSpy).toHaveBeenCalled();
+    expect(ctx.views.map(v => v.name)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('should disable OK when name is blank', () => {
+
+    // when
+    rename(1, '  ');
+    fixture.detectChanges();
+
+    // then
+    expect(component.changed).toBe(true);
+    expect(button('but_ok').disabled).toBe(true);
+  });
+
+  it('should disable OK when names are duplicate', () => {
+
+    // when
+    rename(1, 'A ');
+    fixture.detectChanges();
+
+    // then
+    expect(component.changed).toBe(true);
+    expect(button('but_ok').disabled).toBe(true);
   });
 
   function rename(index: number, name: string): void {
@@ -158,7 +228,7 @@ describe('ManageViewDialogComponent', () => {
 
   function leanItems(): { name: string, deleted: boolean }[] {
     return component.items.map(item => ({
-      name: item.view.name,
+      name: item.name,
       deleted: item.deleted
     }));
   }

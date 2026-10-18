@@ -274,4 +274,31 @@ describe('NumberRangeFilter', () => {
       expect(filter.selValueRange.max).toBe(end);
       expect(filter.isFiltered()).toBe(false);
    });
+
+   it('#isFiltered should return true when inverted with full range', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+      const filter = new NumberRangeFilter(column, 0, 10, null, true);
+
+      // when
+      const filtered = filter.isFiltered();
+
+      // then
+      expect(filtered).toBe(true);
+   });
+
+   it('#reset should clear inverted', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+      const filter = new NumberRangeFilter(column, 0, 10, { min: 2, max: 8 }, true);
+
+      // when
+      filter.reset();
+
+      // then
+      expect(filter.inverted).toBe(false);
+      expect(filter.isFiltered()).toBe(false);
+   });
 });

@@ -19,7 +19,7 @@ import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, scrollTableTo, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
 import { ValueFormatter } from 'app/shared/format';
-import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { waitFrames, waitStable } from 'app/shared/test/animation-frames';
 import { TableModeTogglesComponent } from 'app/shared/ui/virtual-table/table-mode-toggles.component';
 import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { page } from 'vitest/browser';
@@ -98,8 +98,8 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
   }
 
   async function settle(): Promise<void> {
-    await DomMetrics.waitFrames(() => !component.loading && !!rowElement(0)?.querySelector('.vt-td'), 600);
-    await DomMetrics.waitStable(() => [table().gridHeight, table().gridWidth, root().querySelectorAll('.vt-loading').length].join(), 3, 120);
+    await waitFrames(() => !component.loading && !!rowElement(0)?.querySelector('.vt-td'), 600);
+    await waitStable(() => [table().gridHeight, table().gridWidth, root().querySelectorAll('.vt-loading').length].join(), 3, 120);
   }
 
   async function render(): Promise<void> {
@@ -111,7 +111,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
 
   async function reloaded(action: () => void): Promise<void> {
     action();
-    await DomMetrics.waitFrames(() => component.loading, 60);
+    await waitFrames(() => component.loading, 60);
     await settle();
   }
 
@@ -166,7 +166,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
 
     // when
     TestBed.inject(NgZone).run(() => component.toggleMultiLine());
-    await DomMetrics.waitStable(() => rowElement(4).getBoundingClientRect().height, 3, 120);
+    await waitStable(() => rowElement(4).getBoundingClientRect().height, 3, 120);
 
     // then
     expect(rowElement(4).getBoundingClientRect().height).toBeGreaterThan(rowElement(3).getBoundingClientRect().height);
@@ -284,7 +284,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
 
     // when
     component.saveAs(ExportFormat.CSV);
-    await DomMetrics.waitFrames(() => exportSpy.mock.calls.length > 0, 600);
+    await waitFrames(() => exportSpy.mock.calls.length > 0, 600);
 
     // then
     expect(exportSpy.mock.calls[0][0].length).toBe(ENTRY_COUNT);

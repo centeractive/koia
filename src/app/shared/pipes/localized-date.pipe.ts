@@ -13,7 +13,7 @@ export class LocalizedDatePipe implements PipeTransform {
 
    constructor(private languageService: LanguageService) { }
 
-   transform(value: Date | string | number | null | undefined, format = 'mediumDate'): string | null {
+   transform(value: Date | string | number | null | undefined, format: string): string | null {
       if (value === null || value === undefined || value === '') {
          return null;
       }

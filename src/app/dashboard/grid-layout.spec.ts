@@ -242,12 +242,35 @@ describe('GridLayout', () => {
     contexts.forEach(c => expect(c.fireSizeChanged).toHaveBeenCalledTimes(1));
   });
 
-  it('#setGridColumns should reduce column span of larger elements when user confirms', () => {
+  it('#narrowsElements should return true when element spans more columns than grid columns', () => {
+
+    // given
+    contexts[0].gridColumnSpan = 3;
+
+    // when
+    const narrows = gridLayout.narrowsElements(2, contexts);
+
+    // then
+    expect(narrows).toBe(true);
+  });
+
+  it('#narrowsElements should return false when all elements fit into grid columns', () => {
+
+    // given
+    contexts[0].gridColumnSpan = 2;
+
+    // when
+    const narrows = gridLayout.narrowsElements(2, contexts);
+
+    // then
+    expect(narrows).toBe(false);
+  });
+
+  it('#setGridColumns should reduce column span of larger elements', () => {
 
     // given
     contexts[0].gridColumnSpan = 3;
     vi.mocked(contexts[0].fireSizeChanged).mockClear();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     // when
     gridLayout.setGridColumns(2, contexts);
@@ -256,22 +279,6 @@ describe('GridLayout', () => {
     expect(gridLayout.gridColumns).toBe(2);
     expect(contexts[0].gridColumnSpan).toBe(2);
     contexts.forEach(c => expect(c.fireSizeChanged).toHaveBeenCalledTimes(1));
-  });
-
-  it('#setGridColumns should be ignored when user declines resizing larger elements', () => {
-
-    // given
-    contexts[0].gridColumnSpan = 3;
-    vi.mocked(contexts[0].fireSizeChanged).mockClear();
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-
-    // when
-    gridLayout.setGridColumns(2, contexts);
-
-    // then
-    expect(gridLayout.gridColumns).toBe(3);
-    expect(contexts[0].gridColumnSpan).toBe(3);
-    contexts.forEach(c => expect(c.fireSizeChanged).not.toHaveBeenCalled());
   });
 
   it('#setGridCellRatio should resize all elements', () => {

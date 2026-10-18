@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { IDataFrame } from 'data-forge';
 import { SummaryContext, DataType } from 'app/shared/model';
+import { LanguageService } from 'app/shared/services/language';
 import { DateTimeUtils, ColumnNameConverter, DataFrameUtils } from 'app/shared/utils';
 
 export class ExportDataGenerator {
@@ -26,7 +27,7 @@ export class ExportDataGenerator {
          const iOverall = overalls.length - columnNames.length + iCol;
          let value: string | number = '';
          if (iOverall === - 1) {
-            value = 'Overall';
+            value = LanguageService.instant('summary.overall');
          } else if (iOverall >= 0) {
             value = overalls[iOverall];
          }

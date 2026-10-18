@@ -2,6 +2,8 @@ import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType, DataPoint } from 'app/shared/model/chart';
 import { shuffle } from 'd3';
 import { DateTime } from 'luxon';
+import { TestBed } from '@angular/core/testing';
+import { LanguageService } from 'app/shared/services/language';
 import { ChartDataHelper } from './chart-data-helper';
 
 describe('ChartDataHelper', () => {
@@ -23,27 +25,7 @@ describe('ChartDataHelper', () => {
       now = date.getTime();
    });
 
-   it('#convertTime should return entries with formatted time', () => {
-
-      // given
-      const entries = [
-         { _id: 1, x: now + 1_000, y: 10 },
-         { _id: 2, x: now + 2_000, y: 20 },
-         { _id: 3, x: undefined, y: 30 },
-         { _id: 4, x: now + 3_000, y: 40 }
-      ];
-
-      // when
-      const convertedEntries = ChartDataHelper.convertTime(entries, createColumn('x', DataType.TIME, TimeUnit.SECOND));
-
-      // then
-      const expectedEntries = [
-         { _id: 1, x: formatTime(now + 1_000), y: 10 },
-         { _id: 2, x: formatTime(now + 2_000), y: 20 },
-         { _id: 4, x: formatTime(now + 3_000), y: 40 }
-      ];
-      expect(convertedEntries).toEqual(expectedEntries);
-   });
+   afterEach(() => document.documentElement.lang = 'en');
 
    it('#countDistinctValues should return data points', () => {
 
@@ -195,6 +177,26 @@ describe('ChartDataHelper', () => {
 
       // then
       expect(extraction).toThrow(expect.objectContaining({ message: 'Value \'' + formatTime(now) + '\' is not unique' }));
+   });
+
+   it('#categoryData should throw non-unique value error in current language', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      await TestBed.inject(LanguageService).use('de');
+      const context = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('y', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('x', DataType.TEXT)];
+      context.entries = [
+         { x: 'a', y: 1 },
+         { x: 'a', y: 2 }
+      ];
+
+      // when
+      const extraction = () => ChartDataHelper.categoryData(context);
+
+      // then
+      expect(extraction).toThrow(expect.objectContaining({ message: 'Wert \'a\' ist nicht eindeutig' }));
    });
 
    it('#categoryData should keep name zero', () => {

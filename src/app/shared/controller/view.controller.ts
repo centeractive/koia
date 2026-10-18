@@ -6,9 +6,8 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
 import { ChartComponent } from 'app/chart/chart.component';
 import { SummaryTableComponent } from 'app/summary-table/summary-table.component';
-import { Subscription, lastValueFrom } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AbstractComponent } from '../component/abstract.component';
-import { InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ManageViewContext } from '../component/manage-view-dialog';
 import { ViewLauncherContext } from '../component/view-launcher-dialog';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext } from '../model';
@@ -23,12 +22,12 @@ import { ModelToViewConverter, ViewToModelConverter } from '../services/view-per
 import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
 import { TabContentProvider, ViewTabsService } from '../services/view-tabs';
 import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
+import { promptViewName } from './view-name-prompt';
 
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, OnDestroy, ViewLauncherContext,
    ManageViewContext, TabContentProvider {
 
-   static readonly VIEW_NAME_MAX_LENGTH = 40;
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 380; // keep in sync with .sidenav in styles.css
    static readonly ALL_EXPORT_FORMATS = Object.keys(ExportFormat).map(key => ExportFormat[key]);
@@ -60,6 +59,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private query: Query;
    private entriesSubscription: Subscription;
    private destroyed = false;
+   private scrollToAddedElement = false;
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
       protected dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
@@ -75,8 +75,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       } else {
          this.refreshViews();
          this.elementContexts = [];
-         this.queryData(new Query());
          this.identifyColumns();
+         this.queryData(new Query());
          if (this.tab) {
             if (this.tab.view) {
                this.applyView(this.tab.view);
@@ -94,15 +94,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       if (this.scene) {
          if (this.elementContainerDivRefs.length === 0) {
             this.selectView();
-         } else {
-            let containerCount = this.elementContainerDivRefs.length;
-            this.elementContainerDivRefs.changes.subscribe(() => {
-               if (this.elementContainerDivRefs.length > containerCount) {
-                  this.elementContainerDivRefs.last.nativeElement.scrollIntoView({ block: 'end' });
-               }
-               containerCount = this.elementContainerDivRefs.length;
-            });
          }
+         this.elementContainerDivRefs.changes.subscribe(() => {
+            if (this.scrollToAddedElement) {
+               this.scrollToAddedElement = false;
+               this.elementContainerDivRefs.last.nativeElement.scrollIntoView({ block: 'end' });
+            }
+         });
       }
    }
 
@@ -122,11 +120,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private identifyColumns(): void {
       this.columns = this.scene.columns
          .filter(c => c.indexed)
-         .filter(c => c.name !== CouchDBConstants._ID);
+         .filter(c => c.name !== CouchDBConstants._ID)
+         .map(c => <Column>CommonUtils.clone(c));
       this.viewToModelConverter = new ViewToModelConverter(this.columns);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
-      DateTimeUtils.defineTimeUnits(this.timeColumns, this.entries);
    }
 
    addSummaryTable(): SummaryContext {
@@ -153,6 +151,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       context.query = this.query;
       context.entries = this.entries;
       this.observeChanges(context);
+      this.scrollToAddedElement = true;
       this.elementContexts = this.elementContexts.concat([context]);
       this.onElementContextAdded(context);
       this.configure(null, context);
@@ -183,9 +182,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.entriesSubscription = this.dbService.findEntries(query, true).subscribe({
          next: (data) => {
             this.entries = data;
+            DateTimeUtils.defineTimeUnits(this.timeColumns, data);
             this.elementContexts.forEach(c => c.entries = data);
          },
-         error: (err) => this.notifyError(err),
+         error: (err) => {
+            this.loading = false;
+            this.notifyError(err);
+         },
          complete: () => this.loading = false
       });
    }
@@ -244,6 +247,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    loadView(view: View): void {
       this.currentViewName = view.name;
       this.applyView(view);
+      this.requestPersist();
    }
 
    protected applyView(view: View): void {
@@ -278,14 +282,11 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.notifyWarning(LanguageService.instant('view.noElements'));
          return;
       }
-      const dialogData = new InputDialogData(LanguageService.instant('view.saveTitle'), LanguageService.instant('view.name'),
-         this.currentViewName, ViewController.VIEW_NAME_MAX_LENGTH);
-      const dialogRef = this.dialogService.showInputDialog(dialogData);
-      lastValueFrom(dialogRef.afterClosed())
-         .then(() => {
-            if (dialogData.closedWithOK) {
-               this.currentViewName = dialogData.input;
-               this.viewPersistenceService.saveView(this.scene, this.toView(dialogData.input))
+      promptViewName(this.dialogService, this.currentViewName)
+         .then(name => {
+            if (name !== undefined) {
+               this.currentViewName = name;
+               this.viewPersistenceService.saveView(this.scene, this.toView(name))
                   .then(s => {
                      this.showStatus(s);
                      this.refreshViews();
@@ -330,8 +331,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.dialogService.showManageViewDialog(this);
    }
 
-   updateViews(deletedViews: View[], renamedViews: View[]): void {
-      const status = this.viewPersistenceService.updateViews(this.scene, deletedViews, renamedViews);
+   async updateViews(deletedViews: View[], renamedViews: View[]): Promise<void> {
+      const status = await this.viewPersistenceService.updateViews(this.scene, deletedViews, renamedViews);
       this.refreshViews();
       this.showStatus(status);
    }

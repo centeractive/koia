@@ -121,7 +121,7 @@
     "refresh": "Refresh data",
     "tabs": {
       "rawData": "Raw Data",
-      "renameHint": "Double-click to rename",
+      "renameHint": "Double-click or press F2 to rename",
       "close": "Close",
       "addView": "Add view",
       "newPivotTable": "New Pivot Table",
@@ -285,7 +285,8 @@
       "jsonPath": "Array JSONPath",
       "jsonPathDescription": "JSONPath to the object array that contains the data",
       "worksheetMissing": "Worksheet \"{{sheet}}\" does not exist or cannot be parsed"
-    }
+    },
+    "binaryDataNotShown": "*** binary data cannot be displayed ***"
   },
   "scenes": {
     "title": "Scenes",
@@ -349,6 +350,7 @@
     "noElements": "View contains no elements",
     "saved": "View \"{{name}}\" has been saved",
     "notSaved": "View \"{{name}}\" cannot be saved: {{error}}",
+    "notUpdated": "Views cannot be updated: {{error}}",
     "deleted": "Deleted {{count}} views",
     "deletedOne": "Deleted {{count}} view",
     "renamed": "Renamed {{count}} views",
@@ -382,6 +384,13 @@
     "multiLineRows": "Show multi-line rows",
     "hideNestedObjects": "Hide nested objects",
     "showNestedObjects": "Show nested objects"
+  },
+  "valueGrouping": {
+    "max": "max. {{value}}",
+    "min": "min. {{value}}",
+    "addValueRange": "Add Value Range",
+    "upTo": "Up to:",
+    "rangeMaxTooltip": "Range max. value, excluding upper value boundary"
   },
   "chart": {
     "typeTooltip": "{{type}} Chart",
@@ -430,7 +439,8 @@
     "error": {
       "nameColumnUndefined": "Name column is not defined",
       "axisUndefined": "{{axis}} is not defined",
-      "maxValuesExceeded": "{{chartType}} chart: Maximum number of {{max}} values exceeded.\n\nPlease re-configure the chart or apply/refine data filtering."
+      "maxValuesExceeded": "{{chartType}} chart: Maximum number of {{max}} values exceeded.\n\nPlease re-configure the chart or apply/refine data filtering.",
+      "valueNotUnique": "Value '{{value}}' is not unique"
     },
     "warning": {
       "sampledDown": "Data has been down-sampled and the chart contains part of available values only. Apply filters to limit the data and see all values of the chosen context."
@@ -466,7 +476,7 @@
     "gridCellRatio": "Grid Cell Ratio (width:height)",
     "manageViews": "Manage Views",
     "snapToGrid": "Snap to Grid",
-    "confirmResize": "Larger elements will be resized to fit the new setting",
+    "confirmResize": "Larger elements will be resized to fit the new setting. Continue?",
     "regenerate": "Regenerate Dashboard",
     "regenerateQuestion": "All elements of this dashboard will be replaced by newly generated ones. Continue?",
     "nothingToGenerate": "The data contains no columns suitable for generating a dashboard"
@@ -554,12 +564,7 @@
     "sideBar": {
       "nonGroupedColumns": "Non Grouped Columns",
       "addGroupingDefinition": "Add Grouping Definition",
-      "columnGrouping": "{{column}} Grouping",
-      "max": "max. {{value}}",
-      "min": "min. {{value}}",
-      "addValueRange": "Add Value Range",
-      "upTo": "Up to:",
-      "rangeMaxTooltip": "Range max. value, excluding upper value boundary"
+      "columnGrouping": "{{column}} Grouping"
     },
     "locale": {
       "renderError": "An error occurred rendering the PivotTable results.",
@@ -648,11 +653,6 @@
       "countDistinctValues": "Count Distinct Values",
       "aggregateValues": "Aggregate Values",
       "columnGrouping": "{{column}} Grouping",
-      "max": "max. {{value}}",
-      "min": "min. {{value}}",
-      "addValueRange": "Add Value Range",
-      "upTo": "Up to:",
-      "rangeMaxTooltip": "Range max. value, excluding upper value boundary",
       "hierarchy": "Hierarchy",
       "selectedColumns": "Selected Columns",
       "dragDropColumnsHelp": "Drag & Drop available columns to make them selected",

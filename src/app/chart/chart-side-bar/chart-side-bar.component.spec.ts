@@ -933,6 +933,28 @@ describe('ChartSideBarComponent - data includes time column', () => {
     expect(options).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent']);
   });
 
+  it('#timeUnitKey should return not grouped key when time unit is undefined', () => {
+
+    // when
+    const key = component.timeUnitKey(undefined);
+
+    // then
+    expect(key).toBe('ui.notGrouped');
+  });
+
+  it('legend position button should be shown for SCATTER chart when legend is shown', () => {
+
+    // given
+    context.chartType = ChartType.SCATTER.type;
+    context.showLegend = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.span_legend button[mat-button]')).toBeTruthy();
+  });
+
 });
 
 const REPEATING_ENTRIES = [

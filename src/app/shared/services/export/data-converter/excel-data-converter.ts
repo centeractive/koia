@@ -2,6 +2,7 @@ import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
 import * as XLSX from '@e965/xlsx';
 import { propertyNamesOf } from './property-names';
+import { convertTimeValues } from './convert-time-values';
 
 export class ExcelDataConverter {
 
@@ -13,19 +14,8 @@ export class ExcelDataConverter {
      * - to formatted string if the format contains a milliseconds letter pattern (because Excel does not know about such pattern)
      */
     convertTime(data: object[], columns: Column[]): void {
-        const timeColumns = columns.filter(c => c.dataType === DataType.TIME);
-        for (const column of timeColumns) {
-            for (const item of data) {
-                const value = item[column.name];
-                if (value !== null && value !== undefined) {
-                    if (column.format?.includes('S')) {
-                        item[column.name] = this.valueFormatter.formatValue(column, value);
-                    } else {
-                        item[column.name] = new Date(value);
-                    }
-                }
-            }
-        }
+        convertTimeValues(data, columns, (column, value) =>
+            column.format?.includes('S') ? this.valueFormatter.formatValue(column, value) : new Date(value));
     }
 
     toWorksheet(data: object[], columns: Column[]): XLSX.WorkSheet {
@@ -35,7 +25,7 @@ export class ExcelDataConverter {
         colNames.forEach((colName, i) => {
             const column = this.column(colName, columns);
             if (column && column.dataType === DataType.TIME) {
-                this.formatTimeCells(ws, i, column.format);
+                this.formatTimeCells(ws, i, column.format || ValueFormatter.DEFAULT_DATETIME_FORMAT);
             }
         });
         return ws;

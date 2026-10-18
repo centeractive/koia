@@ -103,6 +103,18 @@ test('column span widens the tile of the element', async ({ dashboard }) => {
    await expect(dashboard.tile(0).root).toHaveCSS('grid-column-end', 'span 2');
 });
 
+test('narrowing grid columns below a tile span asks for confirmation and narrows the tile', async ({ dashboard, confirmDialog }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.close();
+   await dashboard.tile(0).setColumnSpan(en.get('element.columns', { count: 3 }));
+
+   await dashboard.setGridColumns(en.get('element.columns', { count: 2 }));
+   const question = await confirmDialog.confirm();
+
+   expect(question).toBe(en.get('dashboard.confirmResize'));
+   await expect.poll(async () => (await dashboard.tile(0).spans()).columns).toBe(2);
+});
+
 test('snap to grid button switches between grid and free canvas', async ({ dashboard }) => {
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();

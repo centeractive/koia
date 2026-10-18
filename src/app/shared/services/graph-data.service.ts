@@ -45,7 +45,8 @@ export class GraphDataService {
       data.forEach(entry => {
          groupByColumns.reduce((nodes, column, i) => {
             const lastGroupByColumns = i + 1 === groupByColumns.length;
-            const value = entry[column] || PropertyFilter.EMPTY_VALUE;
+            const columnValue = entry[column];
+            const value = columnValue === undefined || columnValue === null || columnValue === '' ? PropertyFilter.EMPTY_VALUE : columnValue;
             let node: TreeNode = nodes.find(n => n.key === value);
             if (node) {
                if (lastGroupByColumns) {

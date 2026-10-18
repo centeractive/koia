@@ -9,7 +9,7 @@ export function queryToQueryDef(query: Query): QueryDef {
         fullTextFilter: query.getFullTextFilter(),
         propertyFilters: propertyFilterDefs(query.getPropertyFilters()),
         valueRangeFilters: valueRangeFilterDefs(query.getValueRangeFilters()),
-        sort: query.getSort(),
+        sort: query.getSort() && { ...query.getSort() },
         pageIndex: query.getPageIndex(),
         rowsPerPage: query.getRowsPerPage()
     };
@@ -27,7 +27,7 @@ function propertyFilterDefs(filters: PropertyFilter[]): PropertyFilterDef[] {
 function valueRangeFilterDefs(filters: ValueRangeFilter[]): ValueRangeFilterDef[] {
     return filters.map(f => ({
         name: f.name,
-        valueRange: f.valueRange,
+        valueRange: { ...f.valueRange },
         inverted: f.inverted
     }));
 }

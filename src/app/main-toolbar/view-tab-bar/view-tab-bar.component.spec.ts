@@ -259,6 +259,35 @@ describe('ViewTabBarComponent', () => {
     expect(viewTabsService.renameTab).not.toHaveBeenCalled();
   }));
 
+  it('#keydown F2 on tab should open rename dialog', fakeAsync(() => {
+
+    // given
+    vi.mocked(dialogService.showInputDialog).mockReturnValue(dialogRef() as never);
+
+    // when
+    element('#tab-tab1').dispatchEvent(new KeyboardEvent('keydown', { key: 'F2' }));
+    flush();
+
+    // then
+    const dialogData: InputDialogData = vi.mocked(dialogService.showInputDialog).mock.lastCall[0];
+    expect(dialogData.title).toBe('Rename Tab');
+    expect(dialogData.input).toBe('Pivot Table 1');
+  }));
+
+  it('#keydown Delete on tab should close tab', fakeAsync(() => {
+
+    // given
+    const event = new KeyboardEvent('keydown', { key: 'Delete', cancelable: true });
+
+    // when
+    element('#tab-tab1').dispatchEvent(event);
+    flush();
+
+    // then
+    expect(viewTabsService.closeTab).toHaveBeenCalledWith(pivotTab, '/view/tab2');
+    expect(event.defaultPrevented).toBe(true);
+  }));
+
   it('click on close icon should close tab without content and without navigating to it', fakeAsync(() => {
 
     // given
@@ -294,6 +323,23 @@ describe('ViewTabBarComponent', () => {
     expect(dialogData.title).toBe('Close Tab');
     expect(dialogData.htmlContent).toContain('Dashboard 2');
     expect(viewTabsService.closeTab).toHaveBeenCalledWith(dashboardTab, '/view/tab2');
+  }));
+
+  it('#close should show markup of tab title as text', fakeAsync(() => {
+
+    // given
+    const tab = { ...dashboardTab, title: '<b>Sales</b>' };
+    vi.mocked(viewTabsService.currentTab).mockReturnValue({ ...tab, view: viewWithElement() });
+    vi.mocked(dialogService.showConfirmDialog).mockReturnValue(dialogRef() as never);
+
+    // when
+    component.close(new MouseEvent('click'), tab);
+    flush();
+
+    // then
+    const dialogData: ConfirmDialogData = vi.mocked(dialogService.showConfirmDialog).mock.lastCall[0];
+    expect(dialogData.htmlContent).toContain('&lt;b&gt;Sales&lt;/b&gt;');
+    expect(dialogData.htmlContent).not.toContain('<b>');
   }));
 
   it('#close should keep tab with content when user declines', fakeAsync(() => {

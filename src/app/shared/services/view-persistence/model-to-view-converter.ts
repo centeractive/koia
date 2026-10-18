@@ -33,30 +33,30 @@ export class ModelToViewConverter {
       throw new Error('unknown context ' + context);
    }
 
-   private layoutOf(context: ElementContext): Pick<ViewElement, 'gridColumnSpan' | 'gridRowSpan' | 'width' | 'height' | 'x' | 'y' | 'z'> {
+   private viewElementOf(context: ElementContext, elementType: ElementType): ViewElement {
       return {
+         elementType,
+         title: context.title,
          gridColumnSpan: context.gridColumnSpan,
          gridRowSpan: context.gridRowSpan,
          width: context.width,
          height: context.height,
          x: context.x,
          y: context.y,
-         z: context.z
-      };
-   }
-
-   private toChart(context: ChartContext): Chart {
-      return {
-         elementType: ElementType.CHART,
-         title: context.title,
-         ...this.layoutOf(context),
+         z: context.z,
          dataColumns: context.dataColumns,
          splitColumns: context.splitColumns,
          groupByColumns: context.groupByColumns,
          aggregations: context.aggregations,
          valueGroupings: context.valueGroupings,
+         colorOptions: context.colorProvider.options
+      };
+   }
+
+   private toChart(context: ChartContext): Chart {
+      return {
+         ...this.viewElementOf(context, ElementType.CHART),
          chartType: context.chartType,
-         colorOptions: context.colorProvider.options,
          margin: context.margin,
          showLegend: context.showLegend,
          legendPosition: context.legendPosition,
@@ -69,15 +69,7 @@ export class ModelToViewConverter {
 
    private toGraph(context: GraphContext): Graph {
       return {
-         elementType: ElementType.GRAPH,
-         title: context.title,
-         ...this.layoutOf(context),
-         dataColumns: context.dataColumns,
-         splitColumns: context.splitColumns,
-         groupByColumns: context.groupByColumns,
-         aggregations: context.aggregations,
-         valueGroupings: context.valueGroupings,
-         colorOptions: context.colorProvider.options,
+         ...this.viewElementOf(context, ElementType.GRAPH),
          linkStrength: context.linkStrength,
          friction: context.friction,
          linkDist: context.linkDist,
@@ -90,15 +82,7 @@ export class ModelToViewConverter {
 
    private toSummary(context: SummaryContext): Summary {
       return {
-         elementType: ElementType.SUMMARY,
-         title: context.title,
-         ...this.layoutOf(context),
-         dataColumns: context.dataColumns,
-         splitColumns: context.splitColumns,
-         groupByColumns: context.groupByColumns,
-         aggregations: context.aggregations,
-         valueGroupings: context.valueGroupings,
-         colorOptions: context.colorProvider.options,
+         ...this.viewElementOf(context, ElementType.SUMMARY),
          empty: ''
       }
    }

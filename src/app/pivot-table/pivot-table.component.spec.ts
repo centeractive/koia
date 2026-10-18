@@ -14,7 +14,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { Column, DataType, Query, Route, Scene, StatusType, TimeUnit } from 'app/shared/model';
+import { Column, DataType, Document, Query, Route, Scene, StatusType, TimeUnit } from 'app/shared/model';
 import { ConfigRecord, ViewType } from 'app/shared/model/view-config';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { DialogService, ExportService, NotificationService, RawDataRevealService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
@@ -26,7 +26,7 @@ import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { LanguageService } from 'app/shared/services/language';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model';
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
 import type { Mock } from 'vitest';
@@ -1086,17 +1086,17 @@ describe('PivotTableComponent', () => {
     expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
   }));
 
-  it('#updateConfigRecords should update records and notify user', () => {
+  it('#updateConfigRecords should update records and notify user', async () => {
 
     // given
     const deleted: ConfigRecord = { route: Route.PIVOT, name: 'deleted', modifiedTime: NOW, query: null, data: {} };
     const renamed: ConfigRecord = { route: Route.PIVOT, name: 'renamed', modifiedTime: NOW, query: null, data: {} };
     const status = { type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' };
-    vi.spyOn(viewPersistenceService, 'updateRecords').mockReturnValue(status);
+    vi.spyOn(viewPersistenceService, 'updateRecords').mockResolvedValue(status);
     vi.spyOn(viewPersistenceService, 'findRecords').mockReturnValue([renamed]);
 
     // when
-    component.updateConfigRecords([deleted], [renamed]);
+    await component.updateConfigRecords([deleted], [renamed]);
 
     // then
     expect(viewPersistenceService.updateRecords).toHaveBeenCalledWith(scene, [deleted], [renamed]);
@@ -1222,6 +1222,78 @@ describe('PivotTableComponent', () => {
     expect(component.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
     expect(component.context.timeColumns[0]).toBe(component.timeColumns[0]);
   });
+
+  it('#loadConfig should fetch data with query of loaded record', fakeAsync(() => {
+
+    // given
+    const query = new Query();
+    query.setFullTextFilter('WARN');
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: queryToQueryDef(query), data: pivotContext() };
+    vi.mocked(dbService.findEntries).mockClear();
+
+    // when
+    component.loadConfig(configRecord);
+    flush();
+
+    // then
+    const fetchQuery: Query = vi.mocked(dbService.findEntries).mock.lastCall[0];
+    expect(fetchQuery.getFullTextFilter()).toBe('WARN');
+    expect(component.restoredQuery.getFullTextFilter()).toBe('WARN');
+  }));
+
+  it('#loadConfig should restore loaded record with query once its data was fetched', fakeAsync(() => {
+
+    // given
+    const entries$ = new Subject<Document[]>();
+    vi.mocked(dbService.findEntries).mockReturnValue(entries$);
+    const query = new Query();
+    query.setFullTextFilter('INFO');
+    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: queryToQueryDef(query), data: pivotContext() };
+    component.loadConfig(configRecord);
+    const colorBeforeData = component.context.negativeColor;
+
+    // when
+    entries$.next(entries as Document[]);
+    flush();
+
+    // then
+    expect(colorBeforeData).not.toBe('yellow');
+    expect(component.context.negativeColor).toBe('yellow');
+    expect(component.getPivotOptions()['cols']).toEqual(['Level']);
+  }));
+
+  it('#fetchData should stop loading and notify error when entries cannot be fetched', () => {
+
+    // given
+    vi.mocked(dbService.findEntries).mockReturnValue(throwError(() => 'failure'));
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.fetchData(new Query());
+
+    // then
+    expect(component.loading).toBe(false);
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'failure');
+  });
+
+  it('#onTimeUnitChanged should change time unit without refreshing when no data was fetched yet', fakeAsync(() => {
+
+    // given
+    vi.mocked(dbService.findEntries).mockReturnValue(new Subject());
+    const pendingFixture = TestBed.createComponent(PivotTableComponent);
+    const pendingComponent = pendingFixture.componentInstance;
+    pendingFixture.detectChanges();
+    flush();
+    const timeColumn = pendingComponent.timeColumns[0];
+
+    // when
+    pendingComponent.onTimeUnitChanged(timeColumn, TimeUnit.YEAR);
+    flush();
+
+    // then
+    expect(timeColumn.groupingTimeUnit).toBe(TimeUnit.YEAR);
+    expect(pendingComponent.dataFrame).toBeUndefined();
+  }));
 
   it('should set computing when pivot renderer area starts refreshing', async () => {
 

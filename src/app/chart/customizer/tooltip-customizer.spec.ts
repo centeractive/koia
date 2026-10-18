@@ -40,6 +40,34 @@ describe('TooltipCustomizer', () => {
         expect(opts.plugins.tooltip.callbacks.title.call(null, [tooltipItem])).toBe('Name: a');
     });
 
+    it('#customize should define plain title of individual values', () => {
+        // given
+        const ctx = context(ChartType.BAR, [colAmount]);
+        ctx.aggregations = [];
+        ctx.groupByColumns = [colName];
+        const opts = options();
+
+        // when
+        customizer.customize(ctx, opts);
+
+        // then
+        const tooltipItem = { chart: { data: { labels: ['a'] } }, dataIndex: 0 } as TooltipItem<'bar'>;
+        expect(opts.plugins.tooltip.callbacks.title.call(null, [tooltipItem])).toBe('a');
+    });
+
+    it('#customize should define count label', () => {
+        // given
+        const ctx = context(ChartType.BAR, [colName]);
+        const opts = options();
+
+        // when
+        customizer.customize(ctx, opts);
+
+        // then
+        const tooltipItem = { formattedValue: '3' } as TooltipItem<'bar'>;
+        expect(opts.plugins.tooltip.callbacks.label.call(null, tooltipItem)).toBe('Count: 3');
+    });
+
     it('#customize should define PIE label with percentage', () => {
         // given
         const ctx = context(ChartType.PIE, [colAmount]);

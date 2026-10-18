@@ -15,7 +15,7 @@
               <mat-icon>delete_forever</mat-icon>
             </button>
             <mat-icon>monitor</mat-icon>&nbsp;
-            <input [(ngModel)]="item.view.name" (ngModelChange)="onChange()" required [maxlength]="viewNameMaxLength" />
+            <input [(ngModel)]="item.name" (ngModelChange)="onChange()" required [maxlength]="viewNameMaxLength" />
             <var>{{ item.view.modifiedTime | koiaDate:'short' }}</var>
           </div>
         }
@@ -24,7 +24,7 @@
     <div id="div_buttons">
       <button id="but_cancel" mat-raised-button [color]="changed ? null : 'primary'"
       (click)="dialogRef.close()">{{ 'common.cancel' | translate }}</button>
-      <button id="but_ok" mat-raised-button [color]="changed ? 'primary' : null" [disabled]="!changed"
+      <button id="but_ok" mat-raised-button [color]="changed ? 'primary' : null" [disabled]="!changed || !valid"
       (click)="butOkPressed()">{{ 'common.ok' | translate }}</button>
     </div>
   </mat-card-content>

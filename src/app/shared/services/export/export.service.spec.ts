@@ -217,6 +217,23 @@ describe('ExportService', () => {
     expect(anchor.download).toBe('testfile.csv');
   });
 
+  it('#saveBlobAs should revoke object URL after download started', () => {
+
+    // given
+    vi.useFakeTimers();
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:http://localhost/123');
+    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockReturnValue(undefined);
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockReturnValue(undefined);
+
+    // when
+    exportService.saveBlobAs(new Blob(['x']), 'testfile.csv');
+
+    // then
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(ExportService.OBJECT_URL_LIFETIME_MS);
+    expect(revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:http://localhost/123');
+  });
+
   it('#exportImage should throw error when format is not supported', () => {
     expect(() => exportService.exportImage('base64Image...', ExportFormat.JSON, 'testfile')).toThrow(expect.objectContaining({ message: 'export format JSON is not supported' }));
   });

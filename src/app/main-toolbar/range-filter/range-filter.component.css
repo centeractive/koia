@@ -4,7 +4,7 @@
    width: 100%;
 }
 
-button {
+.div_range_filter > button {
    z-index: 999;
 }
 
@@ -72,10 +72,6 @@ button {
 }
 
 .but_remove_range_filter {
-   vertical-align: bottom;
-}
-
-.but_add_range_filter {
    vertical-align: bottom;
 }
 

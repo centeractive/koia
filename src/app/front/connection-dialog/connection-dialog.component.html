@@ -6,9 +6,9 @@
     <div class="field-row">
       <mat-form-field class="form_field_protocol">
         <mat-label>{{ 'front.connection.protocol' | translate }}</mat-label>
-        <mat-select id="protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px">
+        <mat-select id="protocol" [(ngModel)]="data.connectionInfo.protocol" width="50px" (selectionChange)="onProtocolChanged($event.value)">
           @for (protocol of protocols; track protocol) {
-            <mat-option [value]="protocol" (click)="onProtocolChanged(protocol)">
+            <mat-option [value]="protocol">
               {{ protocol }}
             </mat-option>
           }

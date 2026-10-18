@@ -23,7 +23,7 @@ import { Summary } from 'app/shared/services/view-persistence';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
-import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { waitFrames } from 'app/shared/test/animation-frames';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { page } from 'vitest/browser';
 
@@ -69,7 +69,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
 
   async function readyTabsService(): Promise<ViewTabsService> {
     const service = TestBed.inject(ViewTabsService);
-    await DomMetrics.waitFrames(() => service.ready, 600);
+    await waitFrames(() => service.ready, 600);
     return service;
   }
 
@@ -175,11 +175,11 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     const fixture = TestBed.createComponent(PivotTableComponent);
     fixture.autoDetectChanges();
     const pivotTable = fixture.componentInstance;
-    await DomMetrics.waitFrames(() => !!pivotTable.dataFrame, 600);
+    await waitFrames(() => !!pivotTable.dataFrame, 600);
 
     // when
     pivotTable.loadConfig(pivotTable.configRecords.find(r => r.name === 'legacy pivot'));
-    await DomMetrics.waitFrames(() => !!fixture.nativeElement.querySelector('.pvtColLabel') && !pivotTable.computing, 600);
+    await waitFrames(() => !!fixture.nativeElement.querySelector('.pvtColLabel') && !pivotTable.computing, 600);
 
     // then
     const headers = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.pvtColLabel')).map(e => e.textContent);
@@ -242,12 +242,12 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
       const fixture = TestBed.createComponent(DashboardComponent);
       fixture.autoDetectChanges();
       const dashboard = fixture.componentInstance;
-      expect(await DomMetrics.waitFrames(() => !!dashboard.entries && !dashboard.loading, 600)).toBe(true);
+      expect(await waitFrames(() => !!dashboard.entries && !dashboard.loading, 600)).toBe(true);
       const context = dashboard.addChart();
       fixture.detectChanges();
       context.aggregations = [Aggregation.COUNT];
       context.dataColumns = [context.columns.find(c => c.name === 'Level')];
-      expect(await DomMetrics.waitFrames(() => !!context.chart, 600)).toBe(true);
+      expect(await waitFrames(() => !!context.chart, 600)).toBe(true);
 
       // when
       dashboard.setLayout(Route.FLEX);
@@ -255,7 +255,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
 
       // then
       const flexContext = dashboard.elementContexts[0] as ChartContext;
-      await DomMetrics.waitFrames(() => !!flexContext.chart, 600);
+      await waitFrames(() => !!flexContext.chart, 600);
       expect(flexContext.chart).toBeDefined();
       fixture.destroy();
     }, TIMEOUT);
@@ -281,7 +281,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
 
     // when
     fixture.autoDetectChanges();
-    await DomMetrics.waitFrames(() => !!fixture.nativeElement.querySelector('.pvtTable') && !fixture.componentInstance.computing, 600);
+    await waitFrames(() => !!fixture.nativeElement.querySelector('.pvtTable') && !fixture.componentInstance.computing, 600);
 
     // then
     const headers = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.pvtColLabel')).map(e => e.textContent);

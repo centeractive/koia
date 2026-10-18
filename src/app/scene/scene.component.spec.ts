@@ -1,5 +1,5 @@
 import { DatePipe, Location } from '@angular/common';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, reflectComponentType } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -96,6 +96,10 @@ describe('SceneComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should have own selector', () => {
+    expect(reflectComponentType(SceneComponent).selector).toBe('koia-scene');
+  });
+
   it('should offer language selection at the right', () => {
     const host = fixture.nativeElement.querySelector('koia-language-select.page-language');
     expect(host).toBeTruthy();
@@ -127,6 +131,33 @@ describe('SceneComponent', () => {
     // then
     expect(component.columnMappingsSourceCandidates).toEqual(sceneInfos);
     expect(component.columnMappingsSource).toBe(sceneInfos[0]);
+  }));
+
+  it('#ngOnInit should read scene infos once', fakeAsync(() => {
+
+    // given
+    findSceneInfos.mockClear();
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(findSceneInfos).toHaveBeenCalledTimes(1);
+    expect(component.scenesExist).toBe(true);
+  }));
+
+  it('#ngOnInit should notify error when scene infos cannot be read', fakeAsync(() => {
+
+    // given
+    findSceneInfos.mockRejectedValue('db error');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'db error');
   }));
 
   it('butHome#click should navigate to front component', () => {
@@ -703,6 +734,59 @@ describe('SceneComponent', () => {
       { _id: '1000003', 'Column 1': 'C' }
     ]);
     expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.SCENES);
+  }));
+
+  it('#click on "Load Data" should import values by source column name when adopted column mappings lack skipped columns', fakeAsync(() => {
+
+    // given
+    const sceneInfo = createSceneInfos(1)[0];
+    sceneInfo.columnMappings = [
+      { source: { name: 'Name', dataType: DataType.TEXT, width: 10 }, target: { name: 'Name', dataType: DataType.TEXT, width: 10 } },
+      { source: { name: 'Amount', dataType: DataType.NUMBER, width: 10 }, target: { name: 'Amount', dataType: DataType.NUMBER, width: 10 } }
+    ];
+    component.columnMappingsSource = sceneInfo;
+    component.adoptColumnsFromExistingScene = true;
+    initUpToDetectColumns({ columnNames: ['Name', 'Skipped', 'Amount'], tableData: [['A', 'x', '1']] });
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues([['B', 'y', '2']]);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls).toEqual([['data_1', [{ _id: '1000001', Name: 'B', Amount: 2 }]]]);
+  }));
+
+  it('#onColumnChanged should invalidate column mappings when target name starts with $', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.columnMappings[0].target.name = '$Name';
+
+    // when
+    component.onColumnChanged();
+
+    // then
+    expect(component.columnMappingsValid).toBe(false);
+  }));
+
+  it('#click on cancel button while scene is being persisted should not read data', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(component.selectedReader, 'readData').mockReturnValue(undefined);
+    let resolvePersist: (scene: Scene) => void;
+    vi.spyOn(dbService, 'persistScene').mockReturnValue(new Promise<Scene>(resolve => resolvePersist = resolve));
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+
+    // when
+    component.cancel();
+    resolvePersist(component.scene);
+    flush();
+
+    // then
+    expect(component.selectedReader.readData).not.toHaveBeenCalled();
   }));
 
   it('#click on cancel button should cancel ongoing data load and not submit pending items', () => {

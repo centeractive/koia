@@ -22,21 +22,6 @@ mat-form-field {
   min-width: 7em;
 }
 
-input {
-  text-align: right;
-  width: 50%;
-}
-
-.icon_remove {
-  margin-left: 5px;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.icon_remove:hover {
-  opacity: 1;
-}
-
 button {
   margin: 2px;
 }

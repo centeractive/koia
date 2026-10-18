@@ -1,5 +1,6 @@
 import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
+import { convertTimeValues } from './convert-time-values';
 
 export class ExportDataConverter {
 
@@ -24,14 +25,6 @@ export class ExportDataConverter {
      * converts the number values of all [[DataType.TIME]] columns to formatted strings
      */
     timeToFormattedString(data: object[], columns: Column[]): void {
-        const timeColumns = columns.filter(c => c.dataType === DataType.TIME);
-        for (const column of timeColumns) {
-            for (const item of data) {
-                const value = item[column.name];
-                if (value !== null && value !== undefined) {
-                    item[column.name] = this.valueFormatter.formatValue(column, value);
-                }
-            }
-        }
+        convertTimeValues(data, columns, (column, value) => this.valueFormatter.formatValue(column, value));
     }
 }

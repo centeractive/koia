@@ -19,6 +19,7 @@ import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/que
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import { waitFrames, waitStable } from 'app/shared/test/animation-frames';
 import { TextMeasurer } from 'app/shared/ui/table-fit/text-measurer';
 import { ColumnAutoSizer } from 'app/shared/ui/virtual-table/column-auto-sizer';
 import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
@@ -145,7 +146,7 @@ describe('RawDataComponent', () => {
 
   async function settle(): Promise<void> {
     await fixture.whenStable();
-    await DomMetrics.waitStable(() => [table().gridHeight, table().gridWidth, table().virtualItems.length,
+    await waitStable(() => [table().gridHeight, table().gridWidth, table().virtualItems.length,
     fixture.nativeElement.querySelectorAll('.vt-loading').length, requestEntriesPageSpy.mock.calls.length].join(), 3, FRAME_LIMIT);
   }
 
@@ -162,7 +163,7 @@ describe('RawDataComponent', () => {
 
   async function scrollToRow(index: number): Promise<void> {
     scroller().scrollTop = index * ROW_HEIGHT;
-    await DomMetrics.waitFrames(() => !!rowElement(index), FRAME_LIMIT);
+    await waitFrames(() => !!rowElement(index), FRAME_LIMIT);
     await settle();
   }
 
@@ -514,6 +515,24 @@ describe('RawDataComponent', () => {
       expect(component.widths[columnIndex('Host')]).toBe(ColumnAutoSizer.width([LONG_HOST], t => measurer.width(t)));
     });
 
+    it('#toggleShowNestedObjects should recompute auto widths', async () => {
+
+      // given
+      await render();
+      component.toggleConsiderColumnWidths();
+      const widthOfSpy = vi.spyOn(ColumnWidthResolver.prototype, 'widthOf');
+      const loadedRows = component['cache'].loadedRows();
+
+      // when
+      await change(() => toolbarButton('code').click());
+
+      // then
+      expect(component.showNestedObjects).toBe(true);
+      expect(widthOfSpy).toHaveBeenCalledWith(columns[columnIndex('Nested')], component.colWidthMeasurement, false, loadedRows, true);
+      const resolver = new ColumnWidthResolver();
+      expect(component.widths).toEqual(columns.map(c => resolver.widthOf(c, component.colWidthMeasurement, false, loadedRows, true)));
+    });
+
     it('should auto size column without scene width when widths considered', async () => {
 
       // given
@@ -702,6 +721,27 @@ describe('RawDataComponent', () => {
       expect(component.widths.length).toBe(columns.length);
       expect(requestedQuery(-1).getSort()).toEqual({ active: 'Amount', direction: 'desc' });
       expect(requestedQuery(-1).getPageIndex()).toBe(0);
+    });
+
+    it('#loadConfig should not share value ranges with config record', async () => {
+
+      // given
+      await render();
+      const query = new Query();
+      query.addValueRangeFilter('Amount', 0, 10);
+      const record: ConfigRecord = {
+        route: Route.RAWDATA, name: 'my view', modifiedTime: now, query: queryToQueryDef(query),
+        data: { considerColumnWidths: true, highlight: false }
+      };
+
+      // when
+      component.loadConfig(record);
+      await settle();
+
+      // then
+      const valueRange = component.query.findValueRangeFilter('Amount').valueRange;
+      expect(valueRange).toEqual(record.query.valueRangeFilters[0].valueRange);
+      expect(valueRange).not.toBe(record.query.valueRangeFilters[0].valueRange);
     });
 
     it('#loadConfig should default multiLine to false and widths to scene widths for old records', async () => {

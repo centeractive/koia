@@ -92,7 +92,8 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
     this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
     this.pendingRecord = this.tab?.record;
-    this.fetchData(this.pendingRecord?.query ? queryDefToQuery(this.pendingRecord.query) : new Query());
+    this.restoredQuery = this.pendingRecord?.query ? queryDefToQuery(this.pendingRecord.query) : undefined;
+    this.fetchData(this.restoredQuery ?? new Query());
     if (this.tab) {
       this.viewTabsService.register(this.tab.id, this);
     }
@@ -152,7 +153,13 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
       this.entriesSubscription.unsubscribe();
     }
     this.entriesSubscription = this.dbService.findEntries(query, true)
-      .subscribe(entries => this.onData(entries));
+      .subscribe({
+        next: entries => this.onData(entries),
+        error: err => {
+          this.loading = false;
+          this.notifyError(err);
+        }
+      });
     this.requestPersist();
   }
 
@@ -162,7 +169,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     this.defineGroupingTimeUnits(entries);
     const firstTimeInvoked = !this.baseDataFrame;
     this.baseDataFrame = new DataFrame(entries);
-    if (firstTimeInvoked && this.pendingRecord) {
+    if (this.pendingRecord) {
       const record = this.pendingRecord;
       this.pendingRecord = undefined;
       this.applyConfig(record);
@@ -185,9 +192,14 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   }
 
   onTimeUnitChanged(column: Column, timeUnit: TimeUnit): void {
-    this.pivotOptionsProvider.replaceTimeColumnsInUse(this.getPivotOptions(), column, column.groupingTimeUnit, timeUnit);
+    const pivotOptions = this.getPivotOptions();
+    if (pivotOptions) {
+      this.pivotOptionsProvider.replaceTimeColumnsInUse(pivotOptions, column, column.groupingTimeUnit, timeUnit);
+    }
     column.groupingTimeUnit = timeUnit;
-    this.refreshDataFrameAsync();
+    if (this.baseDataFrame) {
+      this.refreshDataFrameAsync();
+    }
   }
 
   private refreshDataFrameAsync(): void {
@@ -216,17 +228,19 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
 
   loadConfig(configRecord: ConfigRecord): void {
     this.currentViewName = configRecord.name;
-    this.applyConfig(configRecord);
+    if (configRecord.query) {
+      this.restoredQuery = queryDefToQuery(configRecord.query);
+      this.pendingRecord = configRecord;
+      this.fetchData(this.restoredQuery);
+    } else {
+      this.applyConfig(configRecord);
+    }
   }
 
   private applyConfig(configRecord: ConfigRecord): void {
     this.context = CommonUtils.clone(configRecord.data as PivotContext);
     this.contextFactory.adoptPalette(this.context);
     this.adoptRestoredTimeUnits();
-    if (configRecord.query) {
-      this.restoredQuery = queryDefToQuery(configRecord.query);
-      this.query = this.restoredQuery;
-    }
     const pivotOptions = this.pivotOptionsProvider
       .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
     this.refreshDataFrame(pivotOptions);

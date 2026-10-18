@@ -30,7 +30,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { TranslatePipe } from '@ngx-translate/core';
 import { RouteReuseStrategy } from '@angular/router';
 import { ResizableDirective, ResizeHandleDirective } from 'angular-resizable-element';
-import 'd3';
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -68,8 +67,9 @@ import { DraggableColumnComponent } from './shared/component/draggable-column/dr
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
 import { SideBarHeaderComponent } from './shared/component/side-bar-header/side-bar-header.component';
-import { ManageConfigDialogComponent } from './shared/component/manage-config-dialog';
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
+import { SavedViewListComponent } from './shared/component/saved-view-list/saved-view-list.component';
+import { ValueGroupingRangesComponent } from './shared/component/value-grouping-ranges/value-grouping-ranges.component';
 import { StatusComponent } from './shared/component/status/status.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
 import { LocalizedDatePipe, LocalizedNumberPipe } from './shared/pipes';
@@ -90,11 +90,9 @@ import { PrintHeadingComponent } from './shared/ui/print-heading/print-heading.c
 import { ViewToolbarComponent } from './shared/ui/view-toolbar/view-toolbar.component';
 import { DialogCloseButtonComponent } from './shared/ui/dialog-close-button/dialog-close-button.component';
 import { VirtualTableComponent } from './shared/ui/virtual-table/virtual-table.component';
-import { MatIconModuleMock } from './shared/test';
 import { ValueRangeGroupingService } from './shared/value-range';
 import { SummaryTableSideBarComponent } from './summary-table/summary-table-side-bar/summary-table-side-bar.component';
 import { SummaryTableComponent } from './summary-table/summary-table.component';
-import { TrialComponent } from './testing/trial/trial.component';
 import { ViewTabComponent } from './view-tab/view-tab.component';
 
 @NgModule({
@@ -121,7 +119,6 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         PivotTableComponent,
         PivotTableSideBarComponent,
         StatusComponent,
-        MatIconModuleMock,
         TextareaMaxRowsDirective,
         FormattedFloatDirective,
         FormattedIntegerDirective,
@@ -145,13 +142,13 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         SideBarHeaderComponent,
         ViewLauncherDialogComponent,
         ConfigLauncherDialogComponent,
-        ManageConfigDialogComponent,
         ManageViewDialogComponent,
+        SavedViewListComponent,
+        ValueGroupingRangesComponent,
         ColorSchemeSelectionComponent,
         ExpansionPanelComponent,
         SceneTableComponent,
         DraggableColumnComponent,
-        TrialComponent,
         ViewTabComponent,
         LanguageSelectComponent
     ],

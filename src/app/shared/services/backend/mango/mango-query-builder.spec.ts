@@ -1,6 +1,6 @@
 import { Column, DataType, Operator } from 'app/shared/model';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
-import { CombineOperator, MangoQueryBuilder } from './mango-query-builder';
+import { MangoQueryBuilder } from './mango-query-builder';
 
 describe('MangoQueryBuilder', () => {
 
@@ -528,21 +528,78 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
-   it('OR selector', () => {
+   it('selector should keep contains filter when other filter on same field precedes it (PouchDB)', () => {
 
       // when
-      const query = new MangoQueryBuilder(false, columns)
-         .combineWhereWith(CombineOperator.OR)
-         .where('a', Operator.EQUAL, 'b')
-         .where('b', Operator.NOT_EMPTY, '')
+      const query = new MangoQueryBuilder(true, columns)
+         .where('a', Operator.NOT_EQUAL, 'b')
+         .where('a', Operator.CONTAINS, 'x')
          .toQuery();
 
       // then
       const expected = {
          selector: {
-            $or: [
-               { a: { $eq: 'b' } },
-               { b: { $gt: null } }
+            a: { $ne: 'b', $regex: /.*x.*/i }
+         },
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('full text selector & sort for PouchDB', () => {
+
+      // when
+      const query = new MangoQueryBuilder(true, columns)
+         .whereAnyText('abc')
+         .sortBy({ active: 'x', direction: 'asc' })
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               {
+                  $or: [
+                     { Level: { $regex: /.*abc.*/i } },
+                     { Data: { $regex: /.*abc.*/i } },
+                     { Host: { $regex: /.*abc.*/i } },
+                     { Path: { $regex: /.*abc.*/i } }
+                  ]
+               },
+               { x: { $gte: null } }
+            ]
+         },
+         sort: [{ x: 'asc' }],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(query).toEqual(expected);
+   });
+
+   it('full text selector combined with property filter should escape dotted column names', () => {
+
+      // given
+      const dottedColumns: Column[] = [
+         { name: 'a.b', dataType: DataType.TEXT, width: 10 },
+         { name: 'c.d', dataType: DataType.TEXT, width: 10 }
+      ];
+
+      // when
+      const query = new MangoQueryBuilder(false, dottedColumns)
+         .whereAnyText('abc')
+         .where('c.d', Operator.EQUAL, 'x')
+         .toQuery();
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { 'c\\.d': { $eq: 'x' } },
+               {
+                  $or: [
+                     { 'a\\.b': { $regex: '(?i).*abc.*' } },
+                     { 'c\\.d': { $regex: '(?i).*abc.*' } }
+                  ]
+               }
             ]
          },
          limit: MangoQueryBuilder.LIMIT

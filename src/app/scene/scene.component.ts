@@ -22,7 +22,7 @@ import { EntryPersister, ProgressMonitor } from './persister';
 import { SceneUtils } from './utils';
 
 @Component({
-  selector: 'koia-front',
+  selector: 'koia-scene',
   templateUrl: './scene.component.html',
   styleUrls: ['./scene.component.css'],
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -74,11 +74,12 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private generatedSceneName: string;
   private generatedSceneShortDesc: string;
   private sampleEntries: object[];
+  private sourceColumnNames: string[];
   private columnFactory = new ColumnMappingGenerator();
   private mappingErrors = new ConfinedStringSet(10);
   private fileDialogOpen = false;
   private loadFailed = false;
-  private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[] } | undefined;
+  private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[]; sourceColumnNames: string[] } | undefined;
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
@@ -93,9 +94,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       this.selectedReader = this.readers[0];
       this.currSourceName = this.selectedReader.getSourceName();
       this.defineLocales();
-      this.collectColumnMappingSources();
+      this.collectSceneInfos();
       this.initScene();
-      this.detectIfScenesExist();
     }
   }
 
@@ -119,18 +119,16 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
   }
 
-  private detectIfScenesExist(): void {
+  private collectSceneInfos(): void {
     this.dbService.findSceneInfos()
-      .then(sceneInfos => this.scenesExist = sceneInfos && sceneInfos.length > 0);
-  }
-
-  private collectColumnMappingSources(): void {
-    this.dbService.findSceneInfos().then(sceneInfos => {
-      this.columnMappingsSourceCandidates = sceneInfos.filter(si => si.columnMappings);
-      if (this.columnMappingsSourceCandidates.length > 0) {
-        this.columnMappingsSource = this.columnMappingsSourceCandidates[0];
-      }
-    });
+      .then(sceneInfos => {
+        this.scenesExist = sceneInfos.length > 0;
+        this.columnMappingsSourceCandidates = sceneInfos.filter(si => si.columnMappings);
+        if (this.columnMappingsSourceCandidates.length > 0) {
+          this.columnMappingsSource = this.columnMappingsSourceCandidates[0];
+        }
+      })
+      .catch(err => this.notifyError(err));
   }
 
   private initScene(): void {
@@ -197,7 +195,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     if (this.fileDialogOpen) {
       this.fileDialogOpen = false;
       this.previousContext = { file: this.file, fileHeader: this.fileHeader, sampleEntries: this.sampleEntries,
-        columnMappings: this.columnMappings, feedback: this.feedback };
+        sourceColumnNames: this.sourceColumnNames, columnMappings: this.columnMappings, feedback: this.feedback };
       this.initContext();
       this.readingSample = true;
     }
@@ -253,7 +251,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     if (this.selectedReader.expectsPlainTextData()) {
       this.fileHeader = data + (this.file.size > SceneComponent.HEADER_SIZE ? '...' : '');
     } else {
-      this.fileHeader = '*** binary data cannot be displayed ***';
+      this.fileHeader = LanguageService.instant('scene.binaryDataNotShown');
     }
     this.readerAttributes = this.selectedReader.furnishAttributes(this.fileHeader, this.selectedLocale);
   }
@@ -264,6 +262,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     }
     this.fileHeader = undefined;
     this.sampleEntries = undefined;
+    this.sourceColumnNames = undefined;
     this.columnMappings = undefined;
     this.feedback = undefined;
   }
@@ -275,6 +274,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       .then(sample => {
         this.collapsePanelsAbove(SceneComponent.COLUMN_DEFINITIONS_STEP);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
+        this.sourceColumnNames = sample.entries ? undefined : SceneUtils.columnNamesFrom(sample);
         this.columnMappings = this.adoptColumnsFromExistingScene ? CommonUtils.clone(this.columnMappingsSource.columnMappings) :
           this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
         this.onColumnChanged();
@@ -295,8 +295,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private validateColumnMappings(): void {
-    this.columnMappingsValid = this.targetColumnNames.length > 0 && this.targetColumnNames
-      .find(n => !n || n.length > ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH) == undefined;
+    this.columnMappingsValid = this.targetColumnNames.length > 0 &&
+      this.targetColumnNames.every(n => ColumnMappingGenerator.isValidColumnName(n));
   }
 
   isPreviewDirty(): boolean {
@@ -325,7 +325,11 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     });
 
     this.dbService.persistScene(this.scene, false, progressMonitor)
-      .then(() => this.loadData())
+      .then(() => {
+        if (!this.canceled) {
+          this.loadData();
+        }
+      })
       .catch(err => {
         this.notifyError(err);
         this.scene.creationTime = undefined;
@@ -340,14 +344,14 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.mappingErrors.clear();
     this.entryPersister.reset();
     const entryMapper = new EntryMapper(this.columnMappings, this.selectedLocale);
-    const dataHandler = this.createDataHandler(entryMapper);
+    const dataHandler = this.createDataHandler(entryMapper, this.sourceColumnNames);
     console.log('start loading file ' + this.file.name + ' of type ' + this.file.type);
     setTimeout(() => this.selectedReader.readData(this.file, SceneComponent.BATCH_SIZE * 160, dataHandler, this.encoding), 500); // let UI update itself
   }
 
-  private createDataHandler(entryMapper: EntryMapper): DataHandler {
+  private createDataHandler(entryMapper: EntryMapper, sourceColumnNames: string[]): DataHandler {
     return {
-      onValues: rows => this.persistEntries(entryMapper.mapRows(rows)),
+      onValues: rows => this.persistEntries(entryMapper.mapRows(rows, sourceColumnNames)),
       onEntries: entries => this.persistEntries(entryMapper.mapObjects(entries)),
       onError: err => {
         this.loadFailed = true;

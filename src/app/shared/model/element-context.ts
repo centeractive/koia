@@ -1,5 +1,6 @@
 import { EventEmitter } from '@angular/core';
 import * as _ from 'lodash';
+import { Subscription } from 'rxjs';
 import { ColorProvider, ColorProviderFactory } from '../color';
 import { ArrayUtils } from '../utils/array-utils';
 import { ValueGrouping } from '../value-range/model/value-grouping.type';
@@ -327,8 +328,8 @@ export abstract class ElementContext {
      *
      * @param eventHandler custom handler for emitted events of type <ChangeEvent>
     */
-   subscribeToChanges(eventHandler: (changeEvent: ChangeEvent) => void): void {
-      this.changeEventEmitter.subscribe(eventHandler);
+   subscribeToChanges(eventHandler: (changeEvent: ChangeEvent) => void): Subscription {
+      return this.changeEventEmitter.subscribe(eventHandler);
    }
 
    fireLookChanged(): void {

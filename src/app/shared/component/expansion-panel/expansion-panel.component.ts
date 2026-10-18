@@ -15,4 +15,9 @@ export class ExpansionPanelComponent {
 
   @Output() delete = new EventEmitter<void>();
 
+  onDelete(event: Event): void {
+    event.stopPropagation();
+    this.delete.emit();
+  }
+
 }

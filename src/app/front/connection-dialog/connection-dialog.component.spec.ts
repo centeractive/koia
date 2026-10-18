@@ -70,6 +70,18 @@ describe('ConnectionDialogComponent', () => {
     expect(component.data.connectionInfo.port).toBe(CouchDBConfig.DEFAULT_HTTPS_PORT);
   });
 
+  it('#selectionChange of protocol should define default port', () => {
+
+    // given
+    const select = fixture.debugElement.query(By.css('#protocol'));
+
+    // when
+    select.triggerEventHandler('selectionChange', { value: Protocol.HTTPS });
+
+    // then
+    expect(component.data.connectionInfo.port).toBe(CouchDBConfig.DEFAULT_HTTPS_PORT);
+  });
+
   it('#click on cancel button should close dialog', () => {
 
     // given

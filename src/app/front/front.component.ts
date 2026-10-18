@@ -60,12 +60,12 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    * web-app was invoked externally with a query string that carries CouchDB connection information and a [[Scene]] _id
    */
   private handleExternalInvocation(queryParamExtractor: QueryParamExtractor): void {
+    const sceneID = queryParamExtractor.getSceneID();
     this.couchDBService.initConnection(queryParamExtractor.getCouchDBConnectionInfo())
-      .then(() => this.dbService.initBackend(true)
-        .then(() => this.dbService.activateScene(queryParamExtractor.getSceneID())
-          .then(() => this.router.navigateByUrl(Route.RAWDATA)))
-        .catch(err => this.notifyError(this.languageService.instant('front.externalInvocationFailed', { id: queryParamExtractor.getSceneID() })
-          + ':\n\n' + err)));
+      .then(() => this.dbService.initBackend(true))
+      .then(() => this.dbService.activateScene(sceneID))
+      .then(() => this.router.navigateByUrl(Route.RAWDATA))
+      .catch(err => this.notifyError(this.languageService.instant('front.externalInvocationFailed', { id: sceneID }) + ':\n\n' + err));
   }
 
   onDataStorageChanged(dataStorage: string): void {
@@ -77,10 +77,11 @@ export class FrontComponent extends AbstractComponent implements OnInit {
       } else {
         this.dbService.useIndexedDb()
           .then(() => {
-            this.init().catch(err => this.notifyError(err));
             this.notifySuccess(this.languageService.instant('front.storage.switchedTo', { storage: this.indexedDB }));
             this.ready = true;
-          });
+            return this.init();
+          })
+          .catch(err => this.notifyError(err));
       }
     }
   }
@@ -128,7 +129,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
         this.initCouchDBConnection(data.connectionInfo);
       }
     } else if (this.dbService.isIndexedDbInUse()) {
-      this.init().catch(err => this.notifyError(err));
+      this.initOrNotifyError();
     }
   }
 
@@ -145,14 +146,14 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   private couchDBConnectionSucceeded(msg: string): void {
     this.ready = true;
     this.notifySuccess(msg);
-    this.init().catch(err => this.notifyError(err));
+    this.initOrNotifyError();
   }
 
   private couchDBConnectionFailed(error: string | object): void {
     this.ready = false;
     this.notifyError(error);
     if (this.dbService.isIndexedDbInUse()) {
-      this.init().catch(err => this.notifyError(err));
+      this.initOrNotifyError();
     }
   }
 
@@ -178,6 +179,10 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  private initOrNotifyError(): void {
+    this.init().catch(err => this.notifyError(err));
   }
 
   private init(): Promise<void> {

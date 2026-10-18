@@ -75,6 +75,19 @@ describe('ColumnProfiler', () => {
     expect(profiles).toEqual([]);
   });
 
+  it('#profile should exclude text column with more distinct values than collected categories', () => {
+
+    // given
+    const values = Array.from({ length: 40 }, (_, i) => 'v' + i);
+    const entries = entriesOf('Name', values);
+
+    // when
+    const profiles = profiler.profile([column('Name', DataType.TEXT)], entries);
+
+    // then
+    expect(profiles).toEqual([]);
+  });
+
   it('#profile should exclude column with less than half of values present', () => {
 
     // given
@@ -234,6 +247,19 @@ describe('ColumnProfiler', () => {
 
     // then
     expect(profiles[0].presentCount).toBe(4);
+  });
+
+  it('#profile should not count missing values of number column as present', () => {
+
+    // given
+    const entries = entriesOf('Amount', [1.5, null, 2.5, undefined, 3.5, 1.5]);
+
+    // when
+    const profiles = profiler.profile([column('Amount', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles[0].presentCount).toBe(4);
+    expect(profiles[0].distinctCount).toBe(3);
   });
 
   it('#profile should exclude number column with less than half of values numeric', () => {

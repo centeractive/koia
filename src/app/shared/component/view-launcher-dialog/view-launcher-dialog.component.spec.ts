@@ -4,6 +4,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { By } from '@angular/platform-browser';
+import { Route } from 'app/shared/model';
+import { View } from 'app/shared/model/view-config';
+import { SavedViewListComponent } from '../saved-view-list/saved-view-list.component';
 import { ViewLauncherContext } from './view-launcher-context.type.';
 import { ViewLauncherDialogComponent } from './view-launcher-dialog.component';
 
@@ -19,11 +23,12 @@ describe('ViewLauncherDialogComponent', () => {
       views: [],
       loading: false,
       canGenerateDashboard: () => true,
+      loadView: vi.fn(),
       generateDashboard: vi.fn()
     } as unknown as ViewLauncherContext;
     dialogRef = { close: vi.fn() };
     TestBed.configureTestingModule({
-      declarations: [ViewLauncherDialogComponent],
+      declarations: [ViewLauncherDialogComponent, SavedViewListComponent],
       imports: [MatCardModule, MatButtonModule, MatIconModule],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
@@ -89,5 +94,20 @@ describe('ViewLauncherDialogComponent', () => {
 
     // then
     expect(fixture.nativeElement.querySelector('var')).toBeNull();
+  });
+
+  it('#viewSelected should load view and close dialog', () => {
+
+    // given
+    const view: View = { route: Route.GRID, name: 'A', modifiedTime: 1, query: null, gridColumns: 2, gridCellRatio: '1:1', elements: [] };
+    dialogData.views = [view];
+    fixture.detectChanges();
+
+    // when
+    fixture.debugElement.query(By.directive(SavedViewListComponent)).triggerEventHandler('viewSelected', view);
+
+    // then
+    expect(dialogData.loadView).toHaveBeenCalledWith(view);
+    expect(dialogRef.close).toHaveBeenCalled();
   });
 });

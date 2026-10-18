@@ -16,6 +16,7 @@ import { GraphContext } from 'app/shared/model/graph';
 import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils } from 'app/shared/utils';
+import { Subscription } from 'rxjs';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
 
 @Component({
@@ -39,6 +40,8 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   loading: boolean;
 
   private graphGenerator: D3ForceGraphGenerator;
+  private contextSubscription: Subscription;
+  private destroyed = false;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private graphDataService: GraphDataService,
     rawDataRevealService: RawDataRevealService) {
@@ -46,7 +49,7 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   }
 
   ngOnInit(): void {
-    this.context.subscribeToChanges(() => this.prepareGraphAsync());
+    this.contextSubscription = this.context.subscribeToChanges(() => this.prepareGraphAsync());
     this.prepareGraphAsync()
   }
 
@@ -62,7 +65,9 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   private async prepareGraph(): Promise<void> {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
-    this.buildGraphData();
+    if (!this.destroyed) {
+      this.buildGraphData();
+    }
     this.loading = false;
   }
 
@@ -89,6 +94,8 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    this.contextSubscription.unsubscribe();
     this.graphGenerator.stop();
   }
 }

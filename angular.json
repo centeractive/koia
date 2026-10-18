@@ -126,7 +126,6 @@
               "src/test-setup.ts"
             ],
             "coverageExclude": [
-              "src/app/testing/**",
               "src/app/shared/test/**"
             ],
             "coverageReporters": [

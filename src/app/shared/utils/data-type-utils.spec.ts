@@ -64,6 +64,36 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.isNumeric(DataType.BOOLEAN)).toBe(false);
    });
 
+   it('#isNumericColumn should return true when column is NUMBER', () => {
+      // given
+      const column: Column = { name: 'x', dataType: DataType.NUMBER, width: 10 };
+
+      // when
+      const numeric = DataTypeUtils.isNumericColumn(column);
+
+      // then
+      expect(numeric).toBe(true);
+   });
+
+   it('#isNumericColumn should return false when column is TEXT', () => {
+      // given
+      const column: Column = { name: 'x', dataType: DataType.TEXT, width: 10 };
+
+      // when
+      const numeric = DataTypeUtils.isNumericColumn(column);
+
+      // then
+      expect(numeric).toBe(false);
+   });
+
+   it('#isNumericColumn should return false when column is missing', () => {
+      // when
+      const numeric = DataTypeUtils.isNumericColumn(undefined);
+
+      // then
+      expect(numeric).toBe(false);
+   });
+
    it('#toTypedValue should return undefined when value is missing', () => {
       expect(DataTypeUtils.toTypedValue(undefined, DataType.BOOLEAN, 'en-US')).toBeUndefined();
       expect(DataTypeUtils.toTypedValue(null, DataType.BOOLEAN, 'en-US')).toBeUndefined();

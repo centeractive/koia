@@ -50,7 +50,7 @@ export class SceneUtils {
       return entry;
    }
 
-   private static columnNamesFrom(sample: Sample): string[] {
+   static columnNamesFrom(sample: Sample): string[] {
       const columnCount = sample.columnNames ? sample.columnNames.length : sample.tableData[0].length;
       const columns: string[] = [];
       for (let i = 0; i < columnCount; i++) {
