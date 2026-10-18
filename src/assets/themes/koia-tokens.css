@@ -25,6 +25,8 @@
   --koia-table-grid-line: 1px solid var(--koia-border-color);
   --koia-table-total-line: 2px solid var(--koia-outline-color);
   --koia-table-row-hover: #e5f3ff;
+  --koia-table-row-stripe: #efefef;
+  --koia-resize-handle-size: 16px;
   --koia-pivot-font-size: 11px;
   --koia-pivot-cell-padding: 2px 5px;
   --koia-pivot-field-height: 22px;

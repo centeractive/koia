@@ -2,7 +2,7 @@
   overflow: auto;
   margin-right: 1px;
   /* to have resize-cursor displayed when vertical scrollbar is shown */
-  height: calc(100% - var(--koia-tile-header-height));
+  height: calc(100% - var(--koia-tile-header-height) - var(--koia-resize-handle-size));
 }
 
 .mat-mdc-table {
@@ -63,7 +63,11 @@ a:hover {
   height: auto;
 }
 
-.mat-mdc-row:hover {
+.mat-mdc-row:nth-child(odd) td {
+  background-color: var(--koia-table-row-stripe);
+}
+
+.mat-mdc-row:hover td {
   background-color: var(--koia-table-row-hover);
 }
 

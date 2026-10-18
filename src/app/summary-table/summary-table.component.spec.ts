@@ -81,7 +81,7 @@ describe('SummaryTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('table container should leave room for tile header', () => {
+  it('table container should leave room for tile header and resize handle', () => {
 
     // given
     fixture.detectChanges();
@@ -91,7 +91,7 @@ describe('SummaryTableComponent', () => {
     fixture.nativeElement.style.height = '300px';
 
     // then
-    expect(fixture.nativeElement.querySelector('.div_summary_table').offsetHeight).toBe(252);
+    expect(fixture.nativeElement.querySelector('.div_summary_table').offsetHeight).toBe(236);
   });
 
   describe('styling', () => {
@@ -170,15 +170,30 @@ describe('SummaryTableComponent', () => {
       expect(styleOf('tr.mat-mdc-row td:last-child').borderTopStyle).toBe('none');
     }));
 
-    it('rows should not be striped', fakeAsync(() => {
+    it('odd row cells should be striped', fakeAsync(() => {
 
       // when
       render();
 
       // then
-      const [first, second] = rows().map(r => getComputedStyle(r).backgroundColor);
-      expect(first).toBe('rgba(0, 0, 0, 0)');
-      expect(second).toBe(first);
+      const [first, second] = rows().map(r => getComputedStyle(r.querySelector('td')).backgroundColor);
+      expect(first).toBe('rgb(239, 239, 239)');
+      expect(second).toBe('rgba(0, 0, 0, 0)');
+    }));
+
+    it('spanned cell should carry stripe of its starting row', fakeAsync(() => {
+
+      // given
+      context.dataColumns = [findColumn('t2')];
+      context.groupByColumns = [findColumn('t1')];
+
+      // when
+      render();
+
+      // then
+      const spanned: HTMLTableCellElement = rows()[0].querySelector('td');
+      expect(spanned.rowSpan).toBe(2);
+      expect(getComputedStyle(spanned).backgroundColor).toBe('rgb(239, 239, 239)');
     }));
 
     it('rows should be dense single lines', fakeAsync(() => {
