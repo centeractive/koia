@@ -117,6 +117,52 @@ mat-panel-description {
   font-size: 20px;
 }
 
+.koia-data-table th.mat-mdc-header-cell,
+.koia-data-table td {
+  padding: var(--koia-table-cell-padding);
+  color: var(--koia-text-primary);
+  font-family: var(--koia-table-font-family);
+  font-size: var(--koia-table-font-size);
+  line-height: var(--koia-table-line-height);
+  letter-spacing: normal;
+  vertical-align: top;
+  /* column line as shadow, a border would widen the table beyond the width estimate */
+  box-shadow: inset -1px 0 0 var(--koia-border-color);
+}
+
+.koia-data-table th.mat-mdc-header-cell:last-child,
+.koia-data-table td:last-child {
+  box-shadow: none;
+}
+
+.koia-data-table th.mat-mdc-header-cell {
+  font-weight: 600;
+  background-color: var(--koia-table-header-surface);
+  border-bottom: var(--koia-table-grid-line);
+}
+
+.koia-data-table td {
+  border-top: var(--koia-table-grid-line);
+}
+
+.koia-data-table tr.mat-mdc-row:first-child td {
+  border-top: none;
+}
+
+.koia-data-table .mat-mdc-header-row,
+.koia-data-table .mat-mdc-row,
+.koia-data-table .mat-mdc-footer-row {
+  height: auto;
+}
+
+.koia-data-table .mat-mdc-row:nth-child(odd) td {
+  background-color: var(--koia-table-row-stripe);
+}
+
+.koia-data-table .mat-mdc-row:hover td {
+  background-color: var(--koia-table-row-hover);
+}
+
 .mat-mdc-menu-panel.mat-mdc-menu-panel {
   min-width: unset !important;
   max-width: unset !important;

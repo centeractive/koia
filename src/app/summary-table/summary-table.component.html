@@ -3,7 +3,7 @@
 }
 <div class="div_summary_table">
   @if (frameData && rowSpans) {
-    <table mat-table [dataSource]="frameData" matSort (matSortChange)="sort($event)"
+    <table mat-table class="koia-data-table" [dataSource]="frameData" matSort (matSortChange)="sort($event)"
       [matSortActive]="currentSort.active" [matSortDirection]="currentSort.direction">
       @for (column of frameColumns.slice(0, - overalls.length); track column; let iCol = $index) {
         <ng-container [matColumnDef]="column"

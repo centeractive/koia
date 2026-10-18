@@ -1,0 +1,48 @@
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>{{ scene.name }}</mat-card-title>
+    @if (scene.shortDescription) {
+      <mat-card-subtitle>{{ scene.shortDescription }}</mat-card-subtitle>
+    }
+  </mat-card-header>
+  <mat-card-content>
+    @if (scene.context?.length) {
+      <h3 class="section-title">{{ 'scenes.details.sourceContext' | translate }}</h3>
+      <table mat-table id="context_table" [dataSource]="scene.context">
+        <ng-container matColumnDef="ctxName">
+          <td mat-cell *matCellDef="let contextInfo" class="ctx-name">{{ contextInfo.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="ctxValue">
+          <td mat-cell *matCellDef="let contextInfo" class="ctx-value">{{ contextInfo.value }}</td>
+        </ng-container>
+        <tr mat-row *matRowDef="let row; columns: contextColumns;"></tr>
+      </table>
+    }
+    <h3 class="section-title">{{ 'scenes.details.columns' | translate }}</h3>
+    <table mat-table id="columns_table" class="koia-data-table" [dataSource]="scene.columns">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>{{ 'scenes.details.name' | translate }}</th>
+        <td mat-cell *matCellDef="let column" class="column-name">{{ column.name }}</td>
+      </ng-container>
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>{{ 'scenes.details.type' | translate }}</th>
+        <td mat-cell *matCellDef="let column">{{ dataTypeLabel(column.dataType) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="format">
+        <th mat-header-cell *matHeaderCellDef>{{ 'scenes.details.format' | translate }}</th>
+        <td mat-cell *matCellDef="let column">{{ column.format }}</td>
+      </ng-container>
+      <ng-container matColumnDef="groupBy">
+        <th mat-header-cell *matHeaderCellDef>{{ 'scenes.details.groupBy' | translate }}</th>
+        <td mat-cell *matCellDef="let column">@if (column.groupingTimeUnit) { {{ groupingTimeUnitKey(column.groupingTimeUnit) | translate }} }</td>
+      </ng-container>
+      <ng-container matColumnDef="width">
+        <th mat-header-cell *matHeaderCellDef class="numeric">{{ 'scenes.details.width' | translate: { unit: ('scenes.details.unit.' + colWidthMeasurement | translate) } }}</th>
+        <td mat-cell *matCellDef="let column" class="numeric">{{ column.width }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columnColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnColumns;"></tr>
+    </table>
+  </mat-card-content>
+</mat-card>
+<koia-dialog-close-button />

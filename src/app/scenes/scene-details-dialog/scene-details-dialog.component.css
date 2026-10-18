@@ -1,0 +1,43 @@
+mat-card-title {
+  padding-right: 32px;
+}
+
+.section-title {
+  font: 500 16px Roboto, sans-serif;
+  margin: 16px 0 8px;
+}
+
+.ctx-name,
+.column-name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+#context_table .mat-mdc-row {
+  height: auto;
+}
+
+/* top aligned to keep the name on the first value line, evenly padded to center a single line */
+.ctx-name,
+.ctx-value {
+  vertical-align: top;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+/* bottom line on the last row only, as rows are separated by the top grid line */
+#columns_table td.mat-mdc-cell {
+  border-bottom: none;
+}
+
+#columns_table tr.mat-mdc-row:last-child td.mat-mdc-cell {
+  border-bottom: var(--koia-table-grid-line);
+}
+
+.ctx-value {
+  white-space: pre-wrap;
+}
+
+.numeric {
+  text-align: right;
+}
