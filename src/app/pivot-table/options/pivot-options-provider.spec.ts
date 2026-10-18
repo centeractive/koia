@@ -376,6 +376,21 @@ describe('PivotOptionsProvider', () => {
       expect(options).toEqual([['Heatmap', 'ヒートマップ'], ['Custom', 'Custom'], ['Sum', '合計']]);
       document.documentElement.lang = 'en';
    });
+
+   it('#addCellTooltips should show data hint on non-empty value and total cells only', () => {
+
+      // given
+      const element = document.createElement('div');
+      element.innerHTML = '<table class="pvtTable"><thead><tr><th>Level</th></tr></thead><tbody><tr>'
+         + '<td class="pvtVal">1</td><td class="pvtVal"></td><td class="pvtTotal">1</td><td class="pvtGrandTotal">1</td></tr></tbody></table>';
+
+      // when
+      optionsProvider.addCellTooltips(element);
+
+      // then
+      const titles = Array.from(element.querySelectorAll('th, td')).map(c => c.getAttribute('title'));
+      expect(titles).toEqual([null, 'Show Data...', null, 'Show Data...', 'Show Data...']);
+   });
 });
 
 function createOptions(): object {

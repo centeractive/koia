@@ -44,7 +44,7 @@
       "pivot": {
         "title": "Pivot-Tabelle",
         "beforeIcon": "Klicken Sie neben den Tabs auf ",
-        "afterIcon": ", wählen Sie <b>Neue Pivot-Tabelle</b> und ziehen Sie die Spalten an ihren Platz."
+        "afterIcon": ", wählen Sie <b>Neue Pivot-Tabelle</b> und ziehen Sie die Spalten an ihren Platz. Klicken Sie auf einen Wert, um seine Zeilen zu sehen."
       },
       "dashboard": {
         "title": "Dashboard",
@@ -556,6 +556,7 @@
     }
   },
   "pivot": {
+    "showData": "Daten anzeigen...",
     "loadingData": "Daten werden geladen...",
     "defineValueGrouping": "Wertgruppierung definieren...",
     "timeUnitGrouping": "Gruppierung nach Zeiteinheit",

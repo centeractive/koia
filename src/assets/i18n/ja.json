@@ -44,7 +44,7 @@
       "pivot": {
         "title": "ピボットテーブル",
         "beforeIcon": "タブの横の ",
-        "afterIcon": " を押して <b>新しいピボットテーブル</b> を選び、列をドラッグして配置します。"
+        "afterIcon": " を押して <b>新しいピボットテーブル</b> を選び、列をドラッグして配置します。値をクリックすると、その行が表示されます。"
       },
       "dashboard": {
         "title": "ダッシュボード",
@@ -556,6 +556,7 @@
     }
   },
   "pivot": {
+    "showData": "データを表示...",
     "loadingData": "データを読み込み中...",
     "defineValueGrouping": "値のグループ化を定義...",
     "timeUnitGrouping": "時間単位でグループ化",

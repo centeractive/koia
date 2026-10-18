@@ -89,6 +89,14 @@ export class PivotOptionsProvider {
       this.localizeOptions(pivotElement, 'select.pvtAggregator option', PivotOptionsProvider.AGGREGATOR_KEYS, 'pivot.aggregator.');
    }
 
+   /**
+    * reveals that a click on a non-empty pivot table cell shows its raw data, the table is re-rendered on each refresh
+    */
+   addCellTooltips(pivotElement: HTMLElement): void {
+      const title = LanguageService.instant('pivot.showData');
+      pivotElement.querySelectorAll<HTMLTableCellElement>('table.pvtTable td:not(:empty)').forEach(cell => cell.title = title);
+   }
+
    private localizeOptions(pivotElement: HTMLElement, selector: string, keys: Record<string, string>, keyPrefix: string): void {
       pivotElement.querySelectorAll<HTMLOptionElement>(selector).forEach(option => {
          const key = keys[option.value];

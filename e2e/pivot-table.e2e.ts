@@ -85,6 +85,15 @@ test('pivot table uses the shared table font compact and without underlined valu
    expect(style).toEqual({ fontFamily: TABLE_FONT_FAMILY, fontSize: '11px', textDecorationLine: 'none' });
 });
 
+test('hovered pivot table value is underlined and hints at showing its data', async ({ pivot }) => {
+   const cell = pivot.valueCells.filter({ hasText: /\S/ }).first();
+
+   await cell.hover();
+
+   await expect(cell).toHaveAttribute('title', en.get('pivot.showData'));
+   await expect(cell).toHaveCSS('text-decoration-line', 'underline');
+});
+
 test('sample heatmap uses the muted palette', async ({ pivot }) => {
    await pivot.heatmapCells.first().waitFor();
 

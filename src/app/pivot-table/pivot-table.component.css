@@ -204,10 +204,14 @@
   padding: var(--koia-pivot-cell-padding);
   color: var(--koia-text-primary);
   border: var(--koia-table-grid-line);
+}
+
+.pvtUi table.pvtTable tbody tr td:not(:empty) {
   cursor: pointer;
 }
 
-.pvtUi table.pvtTable tbody tr td:hover {
+.pvtUi table.pvtTable tbody tr td:not(:empty):hover {
+  text-decoration: underline;
   outline-width: 2px;
   outline-style: solid;
   outline-color: var(--koia-primary);

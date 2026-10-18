@@ -79,6 +79,15 @@ describe('FrontGuideComponent', () => {
     expect(text).toContain('New Dashboard');
   });
 
+  it('should hint that a click on a pivot table value shows its rows', () => {
+
+    // when
+    const text = render().textContent;
+
+    // then
+    expect(text).toContain('Click a value to see its rows.');
+  });
+
   it('should align inline icons with text', () => {
 
     // when

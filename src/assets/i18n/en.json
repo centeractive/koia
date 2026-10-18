@@ -44,7 +44,7 @@
       "pivot": {
         "title": "Pivot table",
         "beforeIcon": "Press ",
-        "afterIcon": " next to the tabs, choose <b>New Pivot Table</b> and drag columns into place."
+        "afterIcon": " next to the tabs, choose <b>New Pivot Table</b> and drag columns into place. Click a value to see its rows."
       },
       "dashboard": {
         "title": "Dashboard",
@@ -556,6 +556,7 @@
     }
   },
   "pivot": {
+    "showData": "Show Data...",
     "loadingData": "Loading Data...",
     "defineValueGrouping": "Define Value Grouping...",
     "timeUnitGrouping": "Time Unit Grouping",

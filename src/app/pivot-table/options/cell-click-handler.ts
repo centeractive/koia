@@ -19,8 +19,9 @@ export class CellClickHandler {
   }
 
   private isTotalCell(mouseEvent: MouseEvent) {
+    const cell = (mouseEvent.target as Element).closest('td');
     for (const totalCellClass of CellClickHandler.TOTAL_CELL_CLASSES) {
-      if ((mouseEvent.srcElement as Element).classList.contains(totalCellClass)) {
+      if (cell.classList.contains(totalCellClass)) {
         return true;
       }
     }

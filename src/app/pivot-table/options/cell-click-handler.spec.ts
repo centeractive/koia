@@ -186,6 +186,26 @@ describe('CellClickHandler', () => {
       expect(query.getValueRangeFilters()).toEqual([]);
    }));
 
+   it.each([
+      { case: 'total cell', cssClass: 'pvtTotal', expected: [new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG;INFO', DataType.TEXT)] },
+      { case: 'value cell', cssClass: 'pvtVal', expected: [] }
+   ])('#onCellClicked should consider value choices only when bar chart $case is clicked', ({ cssClass, expected }) => {
+
+      // given
+      const cell = document.createElement('TD');
+      cell.classList.add(cssClass);
+      const bar = cell.appendChild(document.createElement('DIV'));
+      const mouseEvent = { target: bar } as Partial<MouseEvent> as MouseEvent;
+      const pivotData = { colAttrs: ['Amount'], rowAttrs: ['Level'] };
+
+      // when
+      cellClickHandler.onCellClicked([], mouseEvent, {}, { Level: ['DEBUG', 'INFO'] }, {}, pivotData);
+
+      // then
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
+      expect(query.getPropertyFilters()).toEqual(expected);
+   });
+
    function createValueGrouping(columnName: string): ValueGrouping {
       const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }, { max: 30, active: true }]
       return { columnName: columnName, ranges: ranges };
@@ -194,6 +214,6 @@ describe('CellClickHandler', () => {
    function createMouseEvent(cssClass: string): MouseEvent {
       const cell = document.createElement('TD');
       cell.classList.add(cssClass);
-      return { srcElement: cell } as Partial<MouseEvent> as MouseEvent;
+      return { target: cell } as Partial<MouseEvent> as MouseEvent;
    }
 });

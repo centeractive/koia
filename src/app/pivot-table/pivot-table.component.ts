@@ -343,6 +343,7 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
    */
   private onPivotTableRefreshEnd(): void {
     this.computing = false;
+    this.pivotOptionsProvider.addCellTooltips(this.divPivot.nativeElement);
     this.observePivotTableRefreshStart();
     if (this.languageRefresh) {
       this.languageRefresh = false;

@@ -458,7 +458,7 @@ describe('PivotTableComponent', () => {
       function clickFirstCell(): Query {
         const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
         const cell: HTMLTableCellElement = tabFixture.nativeElement.querySelector('td.pvtVal');
-        (cell.onclick as (e: unknown) => void)({ srcElement: cell });
+        (cell.onclick as (e: unknown) => void)({ target: cell });
         return showSpy.mock.lastCall[0];
       }
 
@@ -703,6 +703,31 @@ describe('PivotTableComponent', () => {
         expect(style.cursor).toBe('pointer');
       });
 
+      it('empty value cells should not look clickable', () => {
+
+        // when
+        const style = getComputedStyle(emptyValueCell());
+
+        // then
+        expect(style.cursor).toBe('auto');
+      });
+
+      it('non-empty cells should hint at showing data after refresh', () => {
+
+        // when
+        const valueCell: HTMLElement = tabFixture.nativeElement.querySelector('td.pvtVal');
+
+        // then
+        expect(valueCell.textContent).not.toBe('');
+        expect(valueCell.title).toBe('Show Data...');
+        expect(tabFixture.nativeElement.querySelector('td.pvtGrandTotal').title).toBe('Show Data...');
+        expect(emptyValueCell().title).toBe('');
+      });
+
+      function emptyValueCell(): HTMLElement {
+        return Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll('td.pvtVal')).find(c => c.textContent === '');
+      }
+
       it('label cells should be semibold on header surface with hairline', () => {
 
         // when
@@ -747,12 +772,13 @@ describe('PivotTableComponent', () => {
         expect(style.fontWeight).toBe('600');
       });
 
-      it('value cell hover should outline cell', () => {
+      it('non-empty value cell hover should underline and outline cell', () => {
 
         // when
-        const rule = findStyleRule(document.styleSheets, '.pvtUi table.pvtTable tbody tr td:hover');
+        const rule = findStyleRule(document.styleSheets, '.pvtUi table.pvtTable tbody tr td:not(:empty):hover');
 
         // then
+        expect(rule.style.textDecoration).toBe('underline');
         expect(rule.style.outlineWidth).toBe('2px');
         expect(rule.style.outlineStyle).toBe('solid');
         expect(rule.style.getPropertyValue('outline-color')).toBe('var(--koia-primary)');
@@ -966,7 +992,7 @@ describe('PivotTableComponent', () => {
 
         // when
         const cell: HTMLTableCellElement = tabFixture.nativeElement.querySelector('td.pvtVal');
-        (cell.onclick as (e: unknown) => void)({ srcElement: cell });
+        (cell.onclick as (e: unknown) => void)({ target: cell });
 
         // then
         const monthStart = new Date(now);
