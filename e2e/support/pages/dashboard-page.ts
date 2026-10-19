@@ -115,6 +115,11 @@ export class DashboardPage {
       await this.root.locator('#but_regenerate_dashboard').click();
    }
 
+   async generatedGridColumns(): Promise<number> {
+      await this.tiles.first().waitFor();
+      return (await this.gridTracks()).columnWidths.length;
+   }
+
    async occupiedCellCount(): Promise<number> {
       const spans = await Promise.all((await this.tiles.all()).map(t => new DashboardTile(t).spans()));
       return spans.reduce((sum, s) => sum + s.columns * s.rows, 0);

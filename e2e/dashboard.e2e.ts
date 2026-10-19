@@ -350,7 +350,7 @@ test('margin button hides the shown chart margin', async ({ dashboard }) => {
 test('generated dashboard fills the grid with painted charts and one summary table without warning', async ({ dashboard, notifications }) => {
    await dashboard.launcher.generateDashboard();
 
-   const columns = await generatedGridColumns(dashboard);
+   const columns = await dashboard.generatedGridColumns();
    expect(columns).not.toBe(3);
    expect([4, 5]).toContain(columns);
    await expect.poll(() => dashboard.occupiedCellCount()).toBe(columns * rowsOf(columns));
@@ -365,7 +365,7 @@ test('generated dashboard fills the grid with painted charts and one summary tab
 test('generated dashboard starts with a time chart spanning the full first row', async ({ dashboard }) => {
    await dashboard.launcher.generateDashboard();
 
-   const columns = await generatedGridColumns(dashboard);
+   const columns = await dashboard.generatedGridColumns();
    expect(await dashboard.tile(0).spans()).toEqual({ columns, rows: 1 });
    await expect(dashboard.tile(0).root.locator('koia-chart')).toHaveCount(1);
 });
@@ -373,7 +373,7 @@ test('generated dashboard starts with a time chart spanning the full first row',
 test('generated dashboard uses square cells up to the vertical scrollbar share of container width units', async ({ dashboard }) => {
    await dashboard.launcher.generateDashboard();
 
-   const columns = await generatedGridColumns(dashboard);
+   const columns = await dashboard.generatedGridColumns();
    const { rowHeight, columnWidths, scrollbarWidth } = await dashboard.gridTracks();
    const excess = scrollbarWidth / columns;
    for (const columnWidth of columnWidths) {
@@ -390,7 +390,7 @@ test('generated dashboard uses square cells up to the vertical scrollbar share o
 
 test('regeneration asks for confirmation and replaces tiles and grid resolution', async ({ dashboard, confirmDialog }) => {
    await dashboard.launcher.generateDashboard();
-   const previousColumns = await generatedGridColumns(dashboard);
+   const previousColumns = await dashboard.generatedGridColumns();
    const previousTile = await dashboard.tiles.first().elementHandle();
 
    await dashboard.regenerate();
@@ -405,7 +405,7 @@ test('regeneration asks for confirmation and replaces tiles and grid resolution'
 
 test('declining regeneration keeps tiles and grid resolution', async ({ dashboard, confirmDialog }) => {
    await dashboard.launcher.generateDashboard();
-   const previousColumns = await generatedGridColumns(dashboard);
+   const previousColumns = await dashboard.generatedGridColumns();
    const previousTileCount = await dashboard.tiles.count();
    const previousTile = await dashboard.tiles.first().elementHandle();
 
@@ -464,7 +464,7 @@ test('summary table scrollbar stays above resize handle', async ({ dashboard }) 
 test('generated summary table spans one cell only when its content fits', async ({ dashboard }) => {
    await dashboard.launcher.generateDashboard();
 
-   const columns = await generatedGridColumns(dashboard);
+   const columns = await dashboard.generatedGridColumns();
    const tile = new DashboardTile(dashboard.summaryTiles);
    const { rendered, maxContent, columnCount } = await tile.tableWidths();
    const { offsetWidth, scrollbarWidth } = await dashboard.scrollerWidth();
@@ -475,11 +475,6 @@ test('generated summary table spans one cell only when its content fits', async 
       expect(maxContent + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth + columnCount).toBeGreaterThanOrEqual(cellWidth - 1);
    }
 });
-
-async function generatedGridColumns(dashboard: DashboardPage): Promise<number> {
-   await dashboard.tiles.first().waitFor();
-   return (await dashboard.gridTracks()).columnWidths.length;
-}
 
 test('enter and shift enter split text box text into two paragraphs and a line break', async ({ dashboard }) => {
    await dashboard.launcher.cancel();

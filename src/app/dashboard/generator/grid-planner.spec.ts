@@ -13,10 +13,11 @@ describe('GridPlanner', () => {
   }
 
   function cellsOf(gridColumns: number, sizes: TileSize[]): boolean[][] {
-    return occupiedCells(gridColumns, sizes.map(s => ({
-      columns: s === TileSize.FEATURE ? gridColumns : s === TileSize.WIDE ? 2 : 1,
-      rows: 1
-    })));
+    return occupiedCells(gridColumns, GridPlanner.columnSpansOf(sizes, gridColumns).map(columns => ({ columns, rows: 1 })));
+  }
+
+  function unwidenedWidthOf(sizes: TileSize[]): number {
+    return sizes.reduce((sum, s) => sum + (s === TileSize.WIDE ? 2 : 1), 0);
   }
 
   function wideCountsPerRow(gridColumns: number, sizes: TileSize[]): number[] {
@@ -29,7 +30,7 @@ describe('GridPlanner', () => {
       if (size === TileSize.WIDE) {
         counts[counts.length - 1]++;
       }
-      width += size === TileSize.WIDE ? 2 : 1;
+      width += unwidenedWidthOf([size]);
     }
     return counts;
   }
@@ -91,13 +92,65 @@ describe('GridPlanner', () => {
     expect(cells.flat().every(c => c)).toBe(true);
   });
 
-  it('#plan should plan feature only when no row can be filled', () => {
+  it('#plan should plan feature and a row of all tiles when no row can be filled', () => {
 
     // when
-    const sizes = plannerOf([0.5]).plan(5, 3, true, 0, 4);
+    const sizes = plannerOf([0.5]).plan(5, 3, true, 1, 2);
+
+    // then
+    expect(sizes).toEqual([TileSize.FEATURE, TileSize.WIDE, TileSize.SMALL, TileSize.SMALL]);
+    const cells = cellsOf(5, sizes);
+    expect(cells.length).toBe(2);
+    expect(cells.flat().every(c => c)).toBe(true);
+  });
+
+  it('#plan should plan feature only without stock', () => {
+
+    // when
+    const sizes = plannerOf([0.5]).plan(5, 3, true, 0, 0);
 
     // then
     expect(sizes).toEqual([TileSize.FEATURE]);
+  });
+
+  it('#plan should plan feature only when feature fills all rows', () => {
+
+    // when
+    const sizes = plannerOf([0.5]).plan(3, 1, true, 2, 3);
+
+    // then
+    expect(sizes).toEqual([TileSize.FEATURE]);
+  });
+
+  it('#plan should plan nothing without stock', () => {
+
+    // when
+    const sizes = plannerOf([0.5]).plan(4, 3, false, 0, 0);
+
+    // then
+    expect(sizes).toEqual([]);
+  });
+
+  it('#plan should fill rows without holes for any stock', () => {
+    for (const gridColumns of [3, 4, 5]) {
+      for (let rows = 1; rows <= 4; rows++) {
+        for (let wideStock = 0; wideStock <= 5; wideStock++) {
+          for (let smallStock = 0; smallStock <= 8; smallStock++) {
+            for (const hasFeature of [false, true]) {
+              for (const values of SEQUENCES) {
+
+                // when
+                const sizes = plannerOf(values).plan(gridColumns, rows, hasFeature, wideStock, smallStock);
+
+                // then
+                expect(cellsOf(gridColumns, sizes).flat().every(c => c)).toBe(true);
+                expect(sizes.length > 0).toBe(hasFeature || wideStock + smallStock > 0);
+              }
+            }
+          }
+        }
+      }
+    }
   });
 
   it('#plan should count unused wide tiles toward small slots', () => {
@@ -192,8 +245,8 @@ describe('GridPlanner', () => {
             const canFill = planner.canFill(gridColumns, rows, wideStock, smallStock);
 
             // then
-            const cells = cellsOf(gridColumns, planner.plan(gridColumns, rows, false, wideStock, smallStock));
-            expect(canFill).toBe(cells.length === rows);
+            const sizes = planner.plan(gridColumns, rows, false, wideStock, smallStock);
+            expect(canFill).toBe(unwidenedWidthOf(sizes) === gridColumns * rows);
           }
         }
       }
@@ -204,5 +257,36 @@ describe('GridPlanner', () => {
     expect(planner.canFill(5, 1, 3, 0)).toBe(true);
     expect(planner.canFill(4, 1, 2, 0)).toBe(true);
     expect(planner.canFill(4, 1, 0, 3)).toBe(false);
+  });
+
+  it('#columnSpansOf should map feature, wide and small to full row, two columns and one column', () => {
+
+    // when
+    const spans = GridPlanner.columnSpansOf([TileSize.FEATURE, TileSize.WIDE, TileSize.SMALL, TileSize.SMALL], 4);
+
+    // then
+    expect(spans).toEqual([4, 2, 1, 1]);
+  });
+
+  it('#columnSpansOf should widen narrowest tiles of underfilled last row from left', () => {
+
+    // when
+    const spans = [
+      GridPlanner.columnSpansOf([TileSize.FEATURE, TileSize.SMALL, TileSize.SMALL, TileSize.SMALL], 5),
+      GridPlanner.columnSpansOf([TileSize.SMALL, TileSize.WIDE], 4),
+      GridPlanner.columnSpansOf([TileSize.SMALL], 3)
+    ];
+
+    // then
+    expect(spans).toEqual([[5, 2, 2, 1], [2, 2], [3]]);
+  });
+
+  it('#columnSpansOf should return no spans without sizes', () => {
+
+    // when
+    const spans = GridPlanner.columnSpansOf([], 4);
+
+    // then
+    expect(spans).toEqual([]);
   });
 });

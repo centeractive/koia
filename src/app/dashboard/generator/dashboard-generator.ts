@@ -113,9 +113,6 @@ export class DashboardGenerator {
     const wides = withTable(TileSize.WIDE, wideCharts);
     const smalls = withTable(TileSize.SMALL, smallCharts);
     const plan = this.planner.plan(grid.columns, rows, !!feature, wides.length, smalls.length, table?.size === TileSize.SMALL);
-    if (!plan.length) {
-      return undefined;
-    }
     const elementContexts = this.assign(plan, feature, wides, smalls, grid.columns);
     this.applyColors(elementContexts, request.currentContexts);
     return { grid, elementContexts };
@@ -140,7 +137,8 @@ export class DashboardGenerator {
   }
 
   /**
-   * creates the summary table that spans one cell when its estimated content width fits a cell, otherwise two cells
+   * creates the summary table that spans one cell when its estimated content width fits a cell, otherwise two cells, unless
+   * widened to fill an underfilled last row
    */
   private createTable(ranked: TileSpec[], request: GenerationRequest, accepted: Set<string>, gridColumns: number):
     GeneratedTable | undefined {
@@ -157,16 +155,17 @@ export class DashboardGenerator {
 
   /**
    * assigns the contexts to the planned sizes in DOM order, wide contexts left over by wide slots fill small slots after the
-   * small contexts
+   * small contexts, widened to fill an underfilled last row
    */
   private assign(plan: TileSize[], feature: ChartContext | undefined, wides: ElementContext[], smalls: ElementContext[],
     gridColumns: number): ElementContext[] {
     const wideSlots = plan.filter(s => s === TileSize.WIDE).length;
     const wideQueue = wides.slice(0, wideSlots);
     const smallQueue = [...smalls, ...wides.slice(wideSlots)];
-    return plan.map(size => {
+    const spans = GridPlanner.columnSpansOf(plan, gridColumns);
+    return plan.map((size, i) => {
       const context = size === TileSize.FEATURE ? feature : size === TileSize.WIDE ? wideQueue.shift() : smallQueue.shift();
-      this.factory.applySize(context, size, gridColumns);
+      this.factory.applyColumnSpan(context, spans[i]);
       return context;
     });
   }

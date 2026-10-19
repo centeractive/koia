@@ -27,6 +27,19 @@ describe('DashboardGenerator', () => {
   const ENTRIES = monthsOf(24).flatMap((time, m) => ['INFO', 'WARN', 'ERROR'].flatMap((level, l) => ['North', 'South']
     .map((region, r) => ({ Level: level, Region: region, Time: time, Amount: ((m + l * 7 + r * 3) % 9) * 10 + 5 }))));
   const MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
+  const HOUR = 3_600_000;
+  const LOG_TIME: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
+  const PATH: Column = { name: 'Path', dataType: DataType.TEXT, width: 10 };
+  const DATA: Column = { name: 'Data', dataType: DataType.TEXT, width: 10 };
+  const HOST: Column = { name: 'Host', dataType: DataType.TEXT, width: 10 };
+  const LOG_COLUMNS = [LOG_TIME, LEVEL, DATA, HOST, PATH];
+  const LOG_ENTRIES = Array.from({ length: 40 }, (_, i) => ({
+    'Date/Time': new Date(2024, 0, 1).getTime() + Math.round(i * 29 / 39) * HOUR,
+    Level: ['ERROR', 'INFO', 'WARN', 'DEBUG'][i % 4],
+    Path: '/p' + (i % 7),
+    Data: 'message ' + i,
+    Host: 'host'
+  }));
 
   afterEach(() => vi.restoreAllMocks());
 
@@ -472,7 +485,7 @@ describe('DashboardGenerator', () => {
     expect(isTimeChart(result.elementContexts[0] as ChartContext)).toBe(true);
   });
 
-  it('#generate should return undefined when no row can be filled and no time chart is valid', () => {
+  it('#generate should fill a row with the summary table alone when no chart is valid', () => {
 
     // given
     const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
@@ -483,7 +496,43 @@ describe('DashboardGenerator', () => {
 
     // then
     expect(createSummarySpy).toHaveBeenCalledTimes(1);
-    expect(result).toBeUndefined();
+    expect(result.elementContexts.length).toBe(1);
+    expect(result.elementContexts[0]).toBeInstanceOf(SummaryContext);
+    expect([result.elementContexts[0].gridColumnSpan, result.elementContexts[0].gridRowSpan]).toEqual([result.grid.columns, 1]);
+  });
+
+  it('#generate should place time chart and all three small charts of sparse log data for every grid', () => {
+    const expectedSpans = new Map([[3, [3, 1, 1, 1]], [4, [4, 2, 1, 1]], [5, [5, 2, 2, 1]]]);
+    for (const columns of [3, 4, 5]) {
+      for (const values of SEQUENCES) {
+
+        // given
+        vi.restoreAllMocks();
+        chooseGridOf(columns);
+
+        // when
+        const result = generatorOf(values).generate(requestOf(LOG_COLUMNS, LOG_ENTRIES));
+
+        // then
+        expect(result.elementContexts.length).toBe(4);
+        expect(isTimeChart(result.elementContexts[0] as ChartContext)).toBe(true);
+        expect(result.elementContexts.map(c => c.gridColumnSpan)).toEqual(expectedSpans.get(columns));
+        const cells = cellsOf(result);
+        expect(cells.length).toBe(2);
+        expect(cells.flat().every(c => c)).toBe(true);
+      }
+    }
+  });
+
+  it('#generate should unstack time chart of series with different time buckets', () => {
+
+    // when
+    const result = generatorOf([0]).generate(requestOf(LOG_COLUMNS, LOG_ENTRIES));
+
+    // then
+    const first = result.elementContexts[0] as ChartContext;
+    expect(isTimeChart(first)).toBe(true);
+    expect(first.stacked).toBe(false);
   });
 
   it('#generate should not revalidate time charts found invalid in feature search', () => {

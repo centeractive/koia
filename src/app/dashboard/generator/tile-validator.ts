@@ -4,7 +4,7 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartDataset } from 'chart.js';
 
 /**
- * accepts charts that render data without error, warning or sampling
+ * accepts charts that render data without error, warning or sampling, and unstacks time series that cannot be stacked
  */
 export class TileValidator {
 
@@ -12,10 +12,13 @@ export class TileValidator {
 
   isValid(context: ChartContext): boolean {
     const result = this.chartDataService.createData(context);
-    return !result.error
-      && result.data.datasets.some(ds => ds.data.length > 0)
-      && !context.dataSampledDown
-      && this.isStackable(context, result.data.datasets);
+    if (result.error || !result.data.datasets.some(ds => ds.data.length > 0) || context.dataSampledDown) {
+      return false;
+    }
+    if (!this.isStackable(context, result.data.datasets)) {
+      context.stacked = false;
+    }
+    return true;
   }
 
   /**
