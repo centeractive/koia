@@ -75,6 +75,15 @@ export class DashboardPage {
       return this.textBox(count);
    }
 
+   /**
+    * presses the empty bottom right corner of the shown content, which ends editing of any text box
+    */
+   async pressOutsideTextBoxes(): Promise<void> {
+      const content = (await this.gridContent.isVisible()) ? this.gridContent : this.canvasContent;
+      const box = await content.boundingBox();
+      await content.click({ position: { x: box.width - 20, y: box.height - 20 } });
+   }
+
    async setGridColumns(menuItem: string): Promise<void> {
       await this.chooseMoreMenuItem('#menuItemGridColumns', menuItem);
    }

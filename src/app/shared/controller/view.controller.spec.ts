@@ -259,6 +259,36 @@ describe('ViewController', () => {
       expect(controller.selectedContext).toBe(selectedContext);
    });
 
+   it('#addTextTile should add bordered text tile requested to be edited', () => {
+
+      // given
+      const controller = controllerWith();
+      controller['columns'] = [];
+
+      // when
+      const context = controller.addTextTile();
+
+      // then
+      expect(context.bordered).toBe(true);
+      expect(context.backgroundColor).toBeUndefined();
+      expect(context.editRequested).toBe(true);
+   });
+
+   it('#addNote should add translucent yellow note requested to be edited', () => {
+
+      // given
+      const controller = controllerWith();
+      controller['columns'] = [];
+
+      // when
+      const context = controller.addNote();
+
+      // then
+      expect(context.backgroundColor).toBe(TextBoxContext.NOTE_BACKGROUND_COLOR);
+      expect(context.bordered).toBe(false);
+      expect(context.editRequested).toBe(true);
+   });
+
    it('#isTextBoxContext should return true when text box context', () => {
       expect(viewController.isTextBoxContext(new TextBoxContext([]))).toBe(true);
    });

@@ -81,6 +81,8 @@ export class ViewToModelConverter {
       context.content = textBox.content;
       context.backgroundColor = textBox.backgroundColor;
       context.bordered = textBox.bordered === true;
+      context.borderWidth = textBox.borderWidth ?? TextBoxContext.DEFAULT_BORDER_WIDTH;
+      context.borderColor = textBox.borderColor;
       return context;
    }
 

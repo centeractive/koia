@@ -50,6 +50,24 @@ export class TextBoxToolbar {
       await this.pickColor(this.backgroundColorInput, color);
    }
 
+   setBorderWidth(label: string): Promise<void> {
+      return this.chooseOption('.select_border_width', label);
+   }
+
+   async setBorderColor(color: string): Promise<void> {
+      await this.pickColor(this.root.locator('.input_border_color'), color);
+   }
+
+   /**
+    * picks the colour as the native picker does before it is closed, without the change event of its closing
+    */
+   async inputColor(input: Locator, color: string): Promise<void> {
+      await input.evaluate((element: HTMLInputElement, value: string) => {
+         element.value = value;
+         element.dispatchEvent(new Event('input', { bubbles: true }));
+      }, color);
+   }
+
    /**
     * the colour input is hidden within its toolbar button
     */
@@ -68,12 +86,16 @@ export class TextBox {
    readonly editor: Locator;
    readonly paragraphs: Locator;
    readonly resizeHandle: Locator;
+   readonly moveZone: Locator;
+   readonly moveButton: Locator;
    readonly toolbar: TextBoxToolbar;
 
    constructor(readonly tile: Locator) {
       this.editor = tile.locator('koia-text-box .ProseMirror');
       this.paragraphs = this.editor.locator('p');
       this.resizeHandle = tile.locator('.resize-handle');
+      this.moveZone = tile.locator('.div_move_zone');
+      this.moveButton = this.moveZone.locator('.but_text_box_move');
       this.toolbar = new TextBoxToolbar(tile.page().locator('.cdk-overlay-container koia-text-box-toolbar .div_text_box_toolbar'));
    }
 
@@ -101,6 +123,11 @@ export class TextBox {
       await this.hover();
       const box = await this.tile.boundingBox();
       await pressAndMoveBy(this.tile.page(), box.x + FRAME_PADDING_PX / 2, box.y + FRAME_PADDING_PX / 2, dx, dy);
+   }
+
+   async startMoveByButton(dx: number, dy: number): Promise<void> {
+      await this.moveZone.hover();
+      await pressCenterAndMoveBy(this.moveButton, dx, dy);
    }
 
    async startResizeBy(dx: number, dy: number): Promise<void> {
@@ -134,6 +161,21 @@ export class TextBox {
 
    frameBorderStyle(): Promise<string> {
       return this.tile.evaluate((tile: HTMLElement) => getComputedStyle(tile, '::after').borderTopStyle);
+   }
+
+   frameBorderWidth(): Promise<string> {
+      return this.tile.evaluate((tile: HTMLElement) => getComputedStyle(tile, '::after').borderTopWidth);
+   }
+
+   frameBorderColor(): Promise<string> {
+      return this.tile.evaluate((tile: HTMLElement) => getComputedStyle(tile, '::after').borderTopColor);
+   }
+
+   /**
+    * @returns the style of the outline revealing the text box while it is edited, hovered, moved or resized
+    */
+   frameOutlineStyle(): Promise<string> {
+      return this.tile.evaluate((tile: HTMLElement) => getComputedStyle(tile).outlineStyle);
    }
 
    async type(text: string): Promise<void> {

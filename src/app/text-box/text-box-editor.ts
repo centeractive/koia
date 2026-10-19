@@ -78,12 +78,23 @@ export class TextBoxEditor {
       this.editor.chain().focus().setColor(color).run();
    }
 
+   /**
+    * applies the colour without focusing the editor, so that an open colour picker keeps its focus
+    */
+   applyColor(color: string): void {
+      this.editor.chain().setColor(color).run();
+   }
+
    unsetColor(): void {
       this.editor.chain().focus().unsetColor().run();
    }
 
    setTextAlign(textAlign: TextAlignment): void {
       this.editor.chain().focus().setTextAlign(textAlign).run();
+   }
+
+   focusEnd(): void {
+      this.editor.commands.focus('end');
    }
 
    refreshPlaceholder(): void {

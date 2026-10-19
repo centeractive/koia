@@ -1,8 +1,9 @@
 <div #editorElement class="div_text_box_editor"></div>
 <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="toolbarOrigin" [cdkConnectedOverlayOpen]="active"
   [cdkConnectedOverlayPositions]="toolbarPositions" [cdkConnectedOverlayPush]="true"
-  [cdkConnectedOverlayViewportMargin]="toolbarViewportMargin" (detach)="active = false">
+  [cdkConnectedOverlayViewportMargin]="toolbarViewportMargin" (detach)="onToolbarDetached()">
   <koia-text-box-toolbar [editor]="editor" [state]="state" [backgroundColor]="context.backgroundColor"
     (backgroundColorChange)="context.backgroundColor = $event" [bordered]="context.bordered"
-    (borderedChange)="context.bordered = $event" (remove)="remove.emit()" />
+    (borderedChange)="context.bordered = $event" [borderWidth]="context.borderWidth" (borderWidthChange)="setBorderWidth($event)"
+    [borderColor]="context.borderColor" (borderColorChange)="setBorderColor($event)" (remove)="remove.emit()" />
 </ng-template>

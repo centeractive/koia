@@ -85,8 +85,24 @@ describe('ModelToViewConverter', () => {
          content: context.content,
          backgroundColor: '#ffff00',
          tiled: false,
-         bordered: false
+         bordered: false,
+         borderWidth: 1
       });
+   });
+
+   it('#convert should map border width and color of text box', () => {
+
+      // given
+      const context = new TextBoxContext([]);
+      context.borderWidth = 3;
+      context.borderColor = '#ff0000';
+
+      // when
+      const view = converter.convert(Route.GRID, 'test', new Query(), [context]);
+
+      // then
+      const element = view.elements[0] as TextBox;
+      expect([element.borderWidth, element.borderColor]).toEqual([3, '#ff0000']);
    });
 
    it('#convert should map tiled and bordered of text tile', () => {

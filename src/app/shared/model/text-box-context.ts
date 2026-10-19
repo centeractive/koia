@@ -18,10 +18,16 @@ export class TextBoxContext extends ElementContext {
    static readonly TEXT_BOX_HEIGHT = 150;
    static readonly MIN_WIDTH = 40;
    static readonly MIN_HEIGHT = 30;
+   /** width a note keeps when shrunk to a shorter text, leaving room for the text beside the move button */
+   static readonly MIN_FIT_WIDTH = 120;
+   static readonly NOTE_BACKGROUND_COLOR = '#fff9c4cc';
+   static readonly DEFAULT_BORDER_WIDTH = 1;
 
    private _content: JSONContent;
    private _backgroundColor: string;
    private _bordered = false;
+   private _borderWidth = TextBoxContext.DEFAULT_BORDER_WIDTH;
+   private _borderColor: string;
    private _anchor: ElementContext;
    private _anchorOffset: AnchorOffset;
 
@@ -29,6 +35,11 @@ export class TextBoxContext extends ElementContext {
     * height in page units the text box needs to show its whole content at the current scale, transient
     */
    fitHeight: number;
+
+   /**
+    * set when added, the text box then starts editing once rendered, not persisted
+    */
+   editRequested = false;
 
    /**
     * @param tiled [[true]] if the text box takes a tile of its own, [[false]] if it is a note drawn above the tiles
@@ -67,6 +78,28 @@ export class TextBoxContext extends ElementContext {
    set bordered(bordered: boolean) {
       if (this._bordered !== bordered) {
          this._bordered = bordered;
+         this.fireLookChanged();
+      }
+   }
+
+   get borderWidth(): number {
+      return this._borderWidth;
+   }
+
+   set borderWidth(borderWidth: number) {
+      if (this._borderWidth !== borderWidth) {
+         this._borderWidth = borderWidth;
+         this.fireLookChanged();
+      }
+   }
+
+   get borderColor(): string {
+      return this._borderColor;
+   }
+
+   set borderColor(borderColor: string) {
+      if (this._borderColor !== borderColor) {
+         this._borderColor = borderColor;
          this.fireLookChanged();
       }
    }

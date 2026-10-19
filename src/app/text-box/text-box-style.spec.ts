@@ -1,6 +1,24 @@
-import { DEFAULT_TEXT_COLOR, fontFamilyLabel, toHexColor } from './text-box-style';
+import { colorInputValue, DEFAULT_TEXT_COLOR, fontFamilyLabel, toHexColor } from './text-box-style';
 
 describe('text-box-style', () => {
+
+  describe('colorInputValue', () => {
+
+    it.each([
+      { color: '#a1b2c3', expected: '#a1b2c3' },
+      { color: '#FFF9C4CC', expected: '#FFF9C4' },
+      { color: '#a1b2c3zz', expected: '#000001' },
+      { color: undefined, expected: '#000001' },
+      { color: 'red', expected: '#000001' }
+    ])('should return $expected for $color', ({ color, expected }) => {
+
+      // when
+      const value = colorInputValue(color, '#000001');
+
+      // then
+      expect(value).toBe(expected);
+    });
+  });
 
   describe('fontFamilyLabel', () => {
 

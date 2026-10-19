@@ -1,69 +1,80 @@
 <div class="div_text_box_toolbar">
-  <koia-text-box-select class="select_font_family" [options]="FONT_FAMILY_OPTIONS" [value]="state.fontFamily"
-    [label]="fontFamilyLabel(state.fontFamily)" [matTooltip]="'textBox.fontFamily' | translate"
-    (selected)="editor.setFontFamily($event)" />
-  <koia-text-box-select class="select_font_size" [options]="FONT_SIZE_OPTIONS" [value]="state.fontSize"
-    [label]="state.fontSize" [matTooltip]="'textBox.fontSize' | translate" (selected)="editor.setFontSize($event)" />
+  <div class="div_toolbar_row">
+    <koia-text-box-select class="select_font_family" [options]="FONT_FAMILY_OPTIONS" [value]="state.fontFamily"
+      [label]="fontFamilyLabel(state.fontFamily)" [matTooltip]="'textBox.fontFamily' | translate"
+      (selected)="editor.setFontFamily($event)" />
+    <koia-text-box-select class="select_font_size" [options]="FONT_SIZE_OPTIONS" [value]="state.fontSize"
+      [label]="state.fontSize" [matTooltip]="'textBox.fontSize' | translate" (selected)="editor.setFontSize($event)" />
 
-  <span class="span_separator"></span>
-  <button type="button" class="button_tt but_bold" [class.button_tt_active]="state.bold" [matTooltip]="'textBox.bold' | translate"
-    (mousedown)="$event.preventDefault()" (click)="editor.toggleBold()">
-    <mat-icon svgIcon="lucide_bold" />
-  </button>
-  <button type="button" class="button_tt but_italic" [class.button_tt_active]="state.italic" [matTooltip]="'textBox.italic' | translate"
-    (mousedown)="$event.preventDefault()" (click)="editor.toggleItalic()">
-    <mat-icon svgIcon="lucide_italic" />
-  </button>
-  <button type="button" class="button_tt but_underline" [class.button_tt_active]="state.underline"
-    [matTooltip]="'textBox.underline' | translate" (mousedown)="$event.preventDefault()" (click)="editor.toggleUnderline()">
-    <mat-icon svgIcon="lucide_underline" />
-  </button>
+    <span class="span_separator"></span>
+    <button type="button" class="button_tt but_bold" [class.button_tt_active]="state.bold" [matTooltip]="'textBox.bold' | translate"
+      (mousedown)="$event.preventDefault()" (click)="editor.toggleBold()">
+      <mat-icon svgIcon="lucide_bold" />
+    </button>
+    <button type="button" class="button_tt but_italic" [class.button_tt_active]="state.italic" [matTooltip]="'textBox.italic' | translate"
+      (mousedown)="$event.preventDefault()" (click)="editor.toggleItalic()">
+      <mat-icon svgIcon="lucide_italic" />
+    </button>
+    <button type="button" class="button_tt but_underline" [class.button_tt_active]="state.underline"
+      [matTooltip]="'textBox.underline' | translate" (mousedown)="$event.preventDefault()" (click)="editor.toggleUnderline()">
+      <mat-icon svgIcon="lucide_underline" />
+    </button>
 
-  <span class="span_separator"></span>
-  <button type="button" class="button_tt but_align_left" [class.button_tt_active]="state.textAlign === 'left'"
-    [matTooltip]="'textBox.alignLeft' | translate" (mousedown)="$event.preventDefault()" (click)="editor.setTextAlign('left')">
-    <mat-icon svgIcon="lucide_text_align_start" />
-  </button>
-  <button type="button" class="button_tt but_align_center" [class.button_tt_active]="state.textAlign === 'center'"
-    [matTooltip]="'textBox.alignCenter' | translate" (mousedown)="$event.preventDefault()" (click)="editor.setTextAlign('center')">
-    <mat-icon svgIcon="lucide_text_align_center" />
-  </button>
-  <button type="button" class="button_tt but_align_right" [class.button_tt_active]="state.textAlign === 'right'"
-    [matTooltip]="'textBox.alignRight' | translate" (mousedown)="$event.preventDefault()" (click)="editor.setTextAlign('right')">
-    <mat-icon svgIcon="lucide_text_align_end" />
-  </button>
+    <span class="span_separator"></span>
+    <button type="button" class="button_tt but_align_left" [class.button_tt_active]="state.textAlign === 'left'"
+      [matTooltip]="'textBox.alignLeft' | translate" (mousedown)="$event.preventDefault()" (click)="editor.setTextAlign('left')">
+      <mat-icon svgIcon="lucide_text_align_start" />
+    </button>
+    <button type="button" class="button_tt but_align_center" [class.button_tt_active]="state.textAlign === 'center'"
+      [matTooltip]="'textBox.alignCenter' | translate" (mousedown)="$event.preventDefault()" (click)="editor.setTextAlign('center')">
+      <mat-icon svgIcon="lucide_text_align_center" />
+    </button>
+    <button type="button" class="button_tt but_align_right" [class.button_tt_active]="state.textAlign === 'right'"
+      [matTooltip]="'textBox.alignRight' | translate" (mousedown)="$event.preventDefault()" (click)="editor.setTextAlign('right')">
+      <mat-icon svgIcon="lucide_text_align_end" />
+    </button>
+  </div>
 
-  <span class="span_separator"></span>
-  <label class="button_tt label_color label_text_color" [matTooltip]="'textBox.textColor' | translate">
-    <mat-icon svgIcon="lucide_baseline" />
-    <span class="span_color_bar" [style.background-color]="state.color"></span>
-    <input class="input_text_color" type="color" [value]="state.color" (change)="editor.setColor(colorOf($event))">
-  </label>
-  <button type="button" class="button_tt but_reset_text_color" [matTooltip]="'textBox.resetTextColor' | translate"
-    (mousedown)="$event.preventDefault()" (click)="editor.unsetColor()">
-    <mat-icon svgIcon="lucide_eraser" />
-  </button>
+  <div class="div_toolbar_row">
+    <label class="button_tt label_color label_text_color" [matTooltip]="'textBox.textColor' | translate">
+      <mat-icon svgIcon="lucide_baseline" />
+      <span class="span_color_bar" [style.background-color]="state.color"></span>
+      <input class="input_text_color" type="color" [value]="state.color" (input)="editor.applyColor(colorOf($event))"
+        (change)="editor.setColor(colorOf($event))">
+    </label>
+    <button type="button" class="button_tt but_reset_text_color" [matTooltip]="'textBox.resetTextColor' | translate"
+      (mousedown)="$event.preventDefault()" (click)="editor.unsetColor()">
+      <mat-icon svgIcon="lucide_eraser" />
+    </button>
 
-  <span class="span_separator"></span>
-  <label class="button_tt label_color label_background_color" [matTooltip]="'textBox.backgroundColor' | translate">
-    <mat-icon svgIcon="lucide_paint_bucket" />
-    <span class="span_color_bar" [class.span_color_bar_unset]="!backgroundColor" [style.background-color]="backgroundColor"></span>
-    <input class="input_background_color" type="color" [value]="backgroundColor ?? DEFAULT_BACKGROUND_COLOR"
-      (change)="backgroundColorChange.emit(colorOf($event))">
-  </label>
-  <button type="button" class="button_tt but_reset_background_color" [matTooltip]="'textBox.resetBackgroundColor' | translate"
-    (click)="backgroundColorChange.emit(undefined)">
-    <mat-icon svgIcon="lucide_eraser" />
-  </button>
+    <span class="span_separator"></span>
+    <label class="button_tt label_color label_background_color" [matTooltip]="'textBox.backgroundColor' | translate">
+      <mat-icon svgIcon="lucide_paint_bucket" />
+      <span class="span_color_bar" [class.span_color_bar_unset]="!backgroundColor" [style.background-color]="backgroundColor"></span>
+      <input class="input_background_color" type="color" [value]="colorInputValue(backgroundColor, DEFAULT_BACKGROUND_COLOR)"
+        (input)="backgroundColorChange.emit(colorOf($event))">
+    </label>
+    <button type="button" class="button_tt but_reset_background_color" [matTooltip]="'textBox.resetBackgroundColor' | translate"
+      (click)="backgroundColorChange.emit(undefined)">
+      <mat-icon svgIcon="lucide_eraser" />
+    </button>
 
-  <span class="span_separator"></span>
-  <button type="button" class="button_tt but_border" [class.button_tt_active]="bordered" [matTooltip]="'textBox.border' | translate"
-    (mousedown)="$event.preventDefault()" (click)="borderedChange.emit(!bordered)">
-    <mat-icon svgIcon="lucide_square" />
-  </button>
+    <span class="span_separator"></span>
+    <button type="button" class="button_tt but_border" [class.button_tt_active]="bordered" [matTooltip]="'textBox.border' | translate"
+      (mousedown)="$event.preventDefault()" (click)="borderedChange.emit(!bordered)">
+      <mat-icon svgIcon="lucide_square" />
+    </button>
+    <koia-text-box-select class="select_border_width" [options]="BORDER_WIDTH_OPTIONS" [value]="'' + borderWidth"
+      [label]="borderWidth + 'px'" [matTooltip]="'textBox.borderWidth' | translate" (selected)="borderWidthChange.emit(+$event)" />
+    <label class="button_tt label_color label_border_color" [matTooltip]="'textBox.borderColor' | translate">
+      <span class="span_color_swatch" [style.background-color]="borderColor ?? DEFAULT_BORDER_COLOR"></span>
+      <input class="input_border_color" type="color" [value]="colorInputValue(borderColor, DEFAULT_BORDER_COLOR)"
+        (input)="borderColorChange.emit(colorOf($event))">
+    </label>
 
-  <span class="span_separator"></span>
-  <button type="button" class="button_tt but_delete" [matTooltip]="'element.delete' | translate" (click)="remove.emit()">
-    <mat-icon svgIcon="lucide_trash_2" />
-  </button>
+    <span class="span_separator span_separator_end"></span>
+    <button type="button" class="button_tt but_delete" [matTooltip]="'element.delete' | translate" (click)="remove.emit()">
+      <mat-icon svgIcon="lucide_trash_2" />
+    </button>
+  </div>
 </div>

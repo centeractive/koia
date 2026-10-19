@@ -157,6 +157,97 @@ describe('TextFit', () => {
     expect(onFitHeight).not.toHaveBeenCalled();
   });
 
+  describe('#fitWidth', () => {
+
+    beforeEach(() => {
+      content.style.padding = '4px 8px';
+    });
+
+    function spanWidth(index = 0): number {
+      return content.querySelectorAll('span')[index].getBoundingClientRect().width;
+    }
+
+    it('should return width of single line text plus paddings and slack', () => {
+
+      // given
+      content.innerHTML = '<p style="margin: 0"><span>Hi</span></p>';
+      createTextFit();
+
+      // when
+      const width = textFit.fitWidth();
+
+      // then
+      expect(width).toBe(Math.ceil(spanWidth() + 2 * 8 + 2 * 6) + TextFit.SLACK_PX);
+    });
+
+    it('should return width of widest line', () => {
+
+      // given
+      content.innerHTML = '<p style="margin: 0"><span>short</span></p><p style="margin: 0"><span>much longer line</span></p>';
+      createTextFit();
+
+      // when
+      const width = textFit.fitWidth();
+
+      // then
+      expect(width).toBe(Math.ceil(spanWidth(1) + 2 * 8 + 2 * 6) + TextFit.SLACK_PX);
+    });
+
+    it('should return width of widest centered line', () => {
+
+      // given
+      content.innerHTML = '<p style="margin: 0; text-align: center"><span>ab</span></p>'
+        + '<p style="margin: 0; text-align: center"><span>abcdef</span></p>';
+      createTextFit();
+
+      // when
+      const width = textFit.fitWidth();
+
+      // then
+      expect(width).toBe(Math.ceil(spanWidth(1) + 2 * 8 + 2 * 6) + TextFit.SLACK_PX);
+    });
+
+    it('should ignore empty text node', () => {
+
+      // given
+      content.innerHTML = '<p style="margin: 0"><span>abc</span></p><p style="margin: 0; text-align: right"></p>';
+      content.lastElementChild.appendChild(document.createTextNode(''));
+      createTextFit();
+
+      // when
+      const width = textFit.fitWidth();
+
+      // then
+      expect(width).toBe(Math.ceil(spanWidth() + 2 * 8 + 2 * 6) + TextFit.SLACK_PX);
+    });
+
+    it('should return 0 without text', () => {
+
+      // given
+      createTextFit();
+
+      // when
+      const width = textFit.fitWidth();
+
+      // then
+      expect(width).toBe(0);
+    });
+  });
+
+  it('#fitExtent should return fit width and height', () => {
+
+    // given
+    content.innerHTML = '<p style="margin: 0; height: 20px"><span>Hi</span></p>';
+    createTextFit();
+
+    // when
+    const extent = textFit.fitExtent();
+
+    // then
+    expect(extent).toEqual({ width: textFit.fitWidth(), height: textFit.fitHeight() });
+    expect(extent.width).toBeGreaterThan(0);
+  });
+
   it('#disconnect should stop reporting including pending frame', async () => {
 
     // given

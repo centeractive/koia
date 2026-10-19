@@ -10,11 +10,13 @@ import { firstValueFrom, Subject } from 'rxjs';
 import { userEvent } from 'vitest/browser';
 import { TextBoxComponent } from './text-box.component';
 import { TextBoxEditor } from './text-box-editor';
+import { TextExtent } from './text-fit';
+import { TileRelease } from './tile-release';
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, DEFAULT_TEXT_COLOR, TextStyleState } from './text-box-style';
 
 @Component({
   selector: 'koia-text-box-toolbar',
-  template: '<div style="width: 360px; height: 40px"></div>',
+  template: '<div style="width: 360px; height: 74px"></div>',
   standalone: false
 })
 class TextBoxToolbarStubComponent {
@@ -24,6 +26,10 @@ class TextBoxToolbarStubComponent {
   @Output() backgroundColorChange = new EventEmitter<string>();
   @Input() bordered: boolean;
   @Output() borderedChange = new EventEmitter<boolean>();
+  @Input() borderWidth: number;
+  @Output() borderWidthChange = new EventEmitter<number>();
+  @Input() borderColor: string;
+  @Output() borderColorChange = new EventEmitter<string>();
   @Output() remove = new EventEmitter<void>();
 }
 
@@ -66,7 +72,7 @@ class NestedScrollContainersHostComponent {
 @Component({
   template: `
     <div class="div_tile" style="padding: 6px; box-sizing: border-box" [style.width.px]="tileWidth" [style.height.px]="tileHeight">
-      <koia-text-box [context]="context" (fitHeightChange)="fitHeights.push($event)" />
+      <koia-text-box [context]="context" (fitHeightChange)="fitHeights.push($event)" (textEdited)="textEdits.push($event)" />
     </div>`,
   standalone: false
 })
@@ -75,6 +81,7 @@ class FitHostComponent {
   tileHeight = 150;
   context = new TextBoxContext([]);
   fitHeights: number[] = [];
+  textEdits: TextExtent[] = [];
   @ViewChild(TextBoxComponent) textBox: TextBoxComponent;
 }
 
@@ -580,6 +587,345 @@ describe('TextBoxComponent', () => {
 
       // then
       expect(fixture.componentInstance.context.backgroundColor).toBe(emitted);
+    });
+  });
+
+  describe('border', () => {
+
+    let fixture: ComponentFixture<TextBoxComponent>;
+
+    beforeEach(async () => {
+      fixture = await createTextBox(initialContent);
+      focusIn(fixture);
+      await vi.waitFor(() => expect(toolbar()).toBeTruthy());
+    });
+
+    function toolbarStub(): TextBoxToolbarStubComponent {
+      return fixture.debugElement.query(By.directive(TextBoxToolbarStubComponent)).componentInstance;
+    }
+
+    it('should pass border width and color to toolbar', () => {
+
+      // when
+      fixture.componentInstance.context.borderWidth = 3;
+      fixture.componentInstance.context.borderColor = '#ff0000';
+      fixture.detectChanges();
+
+      // then
+      expect([toolbarStub().borderWidth, toolbarStub().borderColor]).toEqual([3, '#ff0000']);
+    });
+
+    it('should set border width emitted by toolbar and show border', () => {
+
+      // when
+      toolbarStub().borderWidthChange.emit(4);
+
+      // then
+      expect([fixture.componentInstance.context.borderWidth, fixture.componentInstance.context.bordered]).toEqual([4, true]);
+    });
+
+    it('should set border color emitted by toolbar and show border', () => {
+
+      // when
+      toolbarStub().borderColorChange.emit('#00ff00');
+
+      // then
+      expect([fixture.componentInstance.context.borderColor, fixture.componentInstance.context.bordered]).toEqual(['#00ff00', true]);
+    });
+  });
+
+  describe('edit request', () => {
+
+    function createRequestedTextBox(editRequested: boolean): ComponentFixture<TextBoxComponent> {
+      const fixture = TestBed.createComponent(TextBoxComponent);
+      fixture.componentInstance.context = new TextBoxContext([]);
+      fixture.componentInstance.context.content = initialContent;
+      fixture.componentInstance.context.editRequested = editRequested;
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('should start editing once rendered when requested', async () => {
+
+      // when
+      const fixture = createRequestedTextBox(true);
+
+      // then
+      expect(fixture.componentInstance.context.editRequested).toBe(false);
+      await vi.waitFor(() => expect(document.activeElement).toBe(proseMirrorOf(fixture.nativeElement)));
+      expect(fixture.componentInstance.active).toBe(true);
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(toolbar()).toBeTruthy());
+    });
+
+    it('#startEditing should focus editor and open toolbar', async () => {
+
+      // given
+      const fixture = createRequestedTextBox(false);
+      await fixture.whenStable();
+
+      // when
+      fixture.componentInstance.startEditing();
+
+      // then
+      await vi.waitFor(() => expect(document.activeElement).toBe(proseMirrorOf(fixture.nativeElement)));
+      expect(fixture.componentInstance.active).toBe(true);
+    });
+
+    it('should not start editing when not requested', async () => {
+
+      // when
+      const fixture = createRequestedTextBox(false);
+      await fixture.whenStable();
+
+      // then
+      expect(fixture.componentInstance.active).toBe(false);
+      expect(document.activeElement).not.toBe(proseMirrorOf(fixture.nativeElement));
+    });
+
+    it('should not start editing when destroyed before rendered', () => {
+
+      // given
+      const fixture = createRequestedTextBox(true);
+      const focusEndSpy = vi.spyOn(fixture.componentInstance.editor, 'focusEnd');
+
+      // when
+      fixture.destroy();
+
+      // then
+      return new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => {
+        expect(focusEndSpy).not.toHaveBeenCalled();
+        resolve();
+      })));
+    });
+  });
+
+  describe('text edited', () => {
+
+    async function createFitHost(): Promise<ComponentFixture<FitHostComponent>> {
+      const fixture = TestBed.createComponent(FitHostComponent);
+      fixture.componentInstance.context.content = initialContent;
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await vi.waitFor(() => expect(proseMirrorOf(hostOf(fixture))).toBeTruthy());
+      return fixture;
+    }
+
+    async function type(fixture: ComponentFixture<unknown>, text: string): Promise<void> {
+      await userEvent.click(proseMirrorOf(hostOf(fixture)));
+      await userEvent.keyboard(text);
+      fixture.detectChanges();
+    }
+
+    function release(): Promise<void> {
+      document.dispatchEvent(new Event('pointerup'));
+      return new Promise(resolve => setTimeout(resolve));
+    }
+
+    function textBoxOf(fixture: ComponentFixture<FitHostComponent>): TextBoxComponent {
+      return fixture.componentInstance.textBox;
+    }
+
+    it('should emit fit extent when pressed outside after text was changed', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+
+      // when
+      pressPointerOn(fixture, document.body);
+
+      // then
+      expect(fixture.componentInstance.textEdits.length).toBe(1);
+      const extent = fixture.componentInstance.textEdits[0];
+      expect(extent.width).toBeGreaterThan(0);
+      expect(extent.width).toBeLessThan(300);
+      expect(extent.height).toBeGreaterThan(0);
+    });
+
+    it('should not emit when text was not changed', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      focusIn(fixture);
+
+      // when
+      pressPointerOn(fixture, document.body);
+
+      // then
+      expect(fixture.componentInstance.textEdits).toEqual([]);
+    });
+
+    it('should not emit when edited text has no width', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, '{Control>}a{/Control}{Backspace}{Shift>}{Enter}{/Shift}');
+
+      // when
+      pressPointerOn(fixture, document.body);
+
+      // then
+      expect(fixture.componentInstance.textEdits).toEqual([]);
+    });
+
+    it('should not emit when fit is not observed', async () => {
+
+      // given
+      const fixture = await createTextBox(initialContent);
+      const emitSpy = vi.spyOn(fixture.componentInstance.textEdited, 'emit');
+      await type(fixture, ' text');
+
+      // when
+      pressPointerOn(fixture, document.body);
+
+      // then
+      expect(emitSpy).not.toHaveBeenCalled();
+      expect(fixture.componentInstance.active).toBe(false);
+    });
+
+    it('should emit once when toolbar is detached after deactivation', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      const overlayRef = textBoxOf(fixture).connectedOverlay.overlayRef;
+
+      // when
+      pressPointerOn(fixture, document.body);
+      overlayRef.detach();
+
+      // then
+      expect(fixture.componentInstance.textEdits.length).toBe(1);
+    });
+
+    it('should emit when toolbar is closed by escape after text was changed', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+
+      // when
+      await userEvent.keyboard('{Escape}');
+      fixture.detectChanges();
+
+      // then
+      expect(textBoxOf(fixture).active).toBe(false);
+      expect(fixture.componentInstance.textEdits.length).toBe(1);
+    });
+
+    it('should emit on focusout to outside after text was changed', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+
+      // when
+      focusOut(fixture, document.body);
+
+      // then
+      expect(fixture.componentInstance.textEdits.length).toBe(1);
+    });
+
+    it('should ignore focusout while inactive', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      const deactivateSpy = vi.spyOn(textBoxOf(fixture), 'deactivate');
+
+      // when
+      focusOut(fixture, document.body);
+
+      // then
+      expect(deactivateSpy).not.toHaveBeenCalled();
+    });
+
+    it('should deactivate without emitting on press in own tile followed by focusout into tile', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      const button = document.createElement('button');
+      tileOf(fixture).appendChild(button);
+
+      // when
+      pressPointerOn(fixture, tileOf(fixture));
+      focusOut(fixture, button);
+
+      // then
+      expect(textBoxOf(fixture).active).toBe(false);
+      expect(fixture.componentInstance.textEdits).toEqual([]);
+    });
+
+    it('should deactivate inside Angular zone on press in own tile', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      vi.spyOn(zone, 'run').mockReturnValue(undefined);
+
+      // when
+      pressPointerOn(fixture, tileOf(fixture));
+
+      // then
+      expect(textBoxOf(fixture).active).toBe(true);
+    });
+
+    it('should emit after release of press in own tile', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      pressPointerOn(fixture, tileOf(fixture));
+
+      // when
+      await release();
+
+      // then
+      expect(fixture.componentInstance.textEdits.length).toBe(1);
+    });
+
+    it('should not emit after release of press resizing own tile, neither on later deactivation', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      pressPointerOn(fixture, tileOf(fixture));
+      tileOf(fixture).classList.add(TileRelease.RESIZE_ACTIVE_CLASS);
+
+      // when
+      await release();
+      textBoxOf(fixture).deactivate();
+
+      // then
+      expect(fixture.componentInstance.textEdits).toEqual([]);
+    });
+
+    it('should cancel pending release on destroy', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      const cancelSpy = vi.spyOn(TileRelease.prototype, 'cancel');
+
+      // when
+      fixture.destroy();
+
+      // then
+      expect(cancelSpy).toHaveBeenCalled();
+    });
+
+    it('should not emit when edited box is destroyed while active', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      const emitSpy = vi.spyOn(textBoxOf(fixture).textEdited, 'emit');
+
+      // when
+      fixture.destroy();
+
+      // then
+      expect(emitSpy).not.toHaveBeenCalled();
     });
   });
 

@@ -105,6 +105,16 @@
       }
     </ng-template>
 
+    <ng-template #textBoxBody let-context>
+      <koia-text-box #textBox [context]="context" (remove)="removeElement(context)" (fitHeightChange)="onTextFitHeight(context, $event)"
+        (textEdited)="shrinkNoteToText(context, $event)" />
+      <div class="div_move_zone" koiaClickWithoutDrag (clickWithoutDrag)="textBox.startEditing()">
+        <button type="button" class="but_text_box_move" mat-icon-button tabindex="-1" [matTooltip]="'element.move' | translate">
+          <mat-icon svgIcon="move"></mat-icon>
+        </button>
+      </div>
+    </ng-template>
+
     <ng-template #resizePreviewTemplate>
       @if (resizePreview; as preview) {
         <div class="div_resize_preview" [style.left.px]="preview.left" [style.top.px]="preview.top"
@@ -126,15 +136,14 @@
             @if (context.isOverlay()) {
               <div class="div_drop_list_detached" koiaDetachFromDropList>
                 <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_anchored]="!!$any(context).anchor"
-                  [class.div_text_box_bordered]="$any(context).bordered" [style.background-color]="$any(context).backgroundColor"
+                  [class.div_text_box_bordered]="$any(context).bordered" [style]="textBoxTileStyle($any(context))"
                   [ngStyle]="freeLayout.overlayStyle($any(context), anchorNameOf($any(context).anchor))"
                   mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                   (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                   cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
                   (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                   <div #elementContainer class="div_element">
-                    <koia-text-box [context]="$any(context)" (remove)="removeElement(context)"
-                      (fitHeightChange)="onTextFitHeight($any(context), $event)" />
+                    <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                   </div>
                   <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
                     (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
@@ -142,12 +151,11 @@
               </div>
             } @else if (isTextBoxContext(context)) {
               <div class="div_tile div_text_box_tile div_text_tile" [class.div_text_box_bordered]="$any(context).bordered"
-                [style.--koia-anchor-name]="anchorNameOf(context)" [style.background-color]="$any(context).backgroundColor"
+                [style.--koia-anchor-name]="anchorNameOf(context)" [style]="textBoxTileStyle($any(context))"
                 [ngStyle]="gridCellStyleOf(context)" mwlResizable ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart()"
                 (resizing)="onGridResizing(context, $event)" (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
                 <div #elementContainer class="div_element">
-                  <koia-text-box [context]="$any(context)" (remove)="removeElement(context)"
-                    (fitHeightChange)="onTextFitHeight($any(context), $event)" />
+                  <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                 </div>
                 <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
                   (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
@@ -179,15 +187,14 @@
               @for (context of freeLayout.contextsOnPage(elementContexts, page); track context) {
                 @if (isTextBoxContext(context)) {
                   <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_text_tile]="!context.isOverlay()"
-                    [class.div_text_box_bordered]="$any(context).bordered" [style.background-color]="$any(context).backgroundColor"
+                    [class.div_text_box_bordered]="$any(context).bordered" [style]="textBoxTileStyle($any(context))"
                     [ngStyle]="freeLayout.tileStyle(context)"
                     mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                     (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                     cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
                     (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                     <div #elementContainer class="div_element">
-                      <koia-text-box [context]="$any(context)" (remove)="removeElement(context)"
-                        (fitHeightChange)="onTextFitHeight($any(context), $event)" />
+                      <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                     </div>
                     <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
                       (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
