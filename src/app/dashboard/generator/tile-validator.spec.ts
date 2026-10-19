@@ -87,7 +87,7 @@ describe('TileValidator', () => {
     expect(valid).toBe(false);
   });
 
-  it('#isValid should reject stacked time chart whose series have different time buckets', () => {
+  it('#isValid should accept and unstack stacked time chart whose series have different time buckets', () => {
 
     // given
     const context = stackedCountOverTime([
@@ -98,7 +98,8 @@ describe('TileValidator', () => {
     const valid = validator.isValid(context);
 
     // then
-    expect(valid).toBe(false);
+    expect(valid).toBe(true);
+    expect(context.stacked).toBe(false);
   });
 
   it('#isValid should accept stacked time chart whose series have same time buckets', () => {
@@ -113,5 +114,6 @@ describe('TileValidator', () => {
 
     // then
     expect(valid).toBe(true);
+    expect(context.stacked).toBe(true);
   });
 });

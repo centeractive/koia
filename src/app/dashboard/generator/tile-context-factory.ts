@@ -4,7 +4,7 @@ import { ChartMarginService } from 'app/shared/services/chart/chart-margin.servi
 import { ValueGroupingGenerator } from 'app/shared/value-range/value-grouping-generator';
 import { DataFrame } from 'data-forge';
 import { ColumnProfile } from './column-profile';
-import { TileSize, TileSpec } from './tile-spec';
+import { TileSpec } from './tile-spec';
 
 /**
  * creates the element contexts of tile specs on fresh column clones
@@ -40,8 +40,8 @@ export class TileContextFactory {
     return context;
   }
 
-  applySize(context: ElementContext, size: TileSize, gridColumns: number): void {
-    context.gridColumnSpan = size === TileSize.FEATURE ? gridColumns : size === TileSize.WIDE ? 2 : 1;
+  applyColumnSpan(context: ElementContext, columnSpan: number): void {
+    context.gridColumnSpan = columnSpan;
     context.gridRowSpan = 1;
   }
 

@@ -3,7 +3,7 @@ import { Randomizer } from './randomizer';
 import { TileSize } from './tile-spec';
 
 /**
- * plans the tile sizes of completely filled grid rows in DOM order
+ * plans the tile sizes in DOM order of completely filled grid rows, or of a single row of all tiles when the stock cannot fill one
  */
 export class GridPlanner {
 
@@ -15,7 +15,8 @@ export class GridPlanner {
   plan(gridColumns: number, rows: number, hasFeature: boolean, wideStock: number, smallStock: number, keepSmallSlot = false):
     TileSize[] {
     const sizes = hasFeature ? [TileSize.FEATURE] : [];
-    for (let r = hasFeature ? rows - 1 : rows; r >= 1; r--) {
+    const freeRows = hasFeature ? rows - 1 : rows;
+    for (let r = freeRows; r >= 1; r--) {
       const lo = this.minWideCount(gridColumns, r, wideStock, smallStock);
       const hi = this.maxWideCount(gridColumns, r, wideStock);
       if (lo <= hi) {
@@ -24,7 +25,31 @@ export class GridPlanner {
         return sizes.concat(this.planRows(gridColumns, r, k));
       }
     }
-    return sizes;
+    return freeRows > 0 ? sizes.concat(this.randomizer.shuffled([
+      ...new Array<TileSize>(wideStock).fill(TileSize.WIDE),
+      ...new Array<TileSize>(smallStock).fill(TileSize.SMALL)
+    ])) : sizes;
+  }
+
+  /**
+   * @returns the column spans of the specified tile sizes, the free columns of an underfilled last row given one at a time to
+   * its narrowest tile, leftmost first
+   */
+  static columnSpansOf(sizes: TileSize[], gridColumns: number): number[] {
+    const spans = sizes.map(s => s === TileSize.FEATURE ? gridColumns : s === TileSize.WIDE ? 2 : 1);
+    let lastRowStart = 0;
+    let width = 0;
+    spans.forEach((span, i) => {
+      if (width % gridColumns === 0) {
+        lastRowStart = i;
+      }
+      width += span;
+    });
+    for (let free = (gridColumns - width % gridColumns) % gridColumns; free > 0; free--) {
+      const lastRow = spans.slice(lastRowStart);
+      spans[lastRowStart + lastRow.indexOf(Math.min(...lastRow))]++;
+    }
+    return spans;
   }
 
   canFill(gridColumns: number, rows: number, wideStock: number, smallStock: number): boolean {

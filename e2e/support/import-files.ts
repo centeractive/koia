@@ -28,6 +28,9 @@ export const DELIVERIES_JSON = jsonFile(resolve(E2E_DATA_DIR, 'deliveries.json')
 
 export const IMPORT_FILES = [ORDERS_CSV, READER_TEST_XLSX, DELIVERIES_JSON];
 
+export const LOG_LEVELS_JSON = jsonFile(resolve(E2E_DATA_DIR, 'log-levels.json'),
+   [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.TEXT]);
+
 export const SEMICOLON_ORDERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-semicolon.csv'), [DataType.TEXT, DataType.NUMBER, DataType.TIME], ';');
 
 function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFile {

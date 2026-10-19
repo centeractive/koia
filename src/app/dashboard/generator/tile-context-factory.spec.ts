@@ -194,7 +194,7 @@ describe('TileContextFactory', () => {
     expect(context.entries).toBe(ENTRIES);
   });
 
-  it('#applySize should span single cell for small tile', () => {
+  it('#applyColumnSpan should span given columns of one row', () => {
 
     // given
     const context = new SummaryContext(columns);
@@ -202,41 +202,13 @@ describe('TileContextFactory', () => {
     context.gridRowSpan = 2;
 
     // when
-    factory.applySize(context, TileSize.SMALL, 4);
+    factory.applyColumnSpan(context, 4);
 
     // then
-    expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([1, 1]);
+    expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([4, 1]);
   });
 
-  it('#applySize should span two columns of one row for wide tile', () => {
-
-    // given
-    const context = new SummaryContext(columns);
-    context.gridRowSpan = 2;
-
-    // when
-    factory.applySize(context, TileSize.WIDE, 4);
-
-    // then
-    expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([2, 1]);
-  });
-
-  it('#applySize should span full grid row for feature tile', () => {
-    for (const gridColumns of [3, 4, 5]) {
-
-      // given
-      const context = new SummaryContext(columns);
-      context.gridRowSpan = 2;
-
-      // when
-      factory.applySize(context, TileSize.FEATURE, gridColumns);
-
-      // then
-      expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([gridColumns, 1]);
-    }
-  });
-
-  it('#applySize should not change size', () => {
+  it('#applyColumnSpan should not change size', () => {
 
     // given
     const context = new SummaryContext(columns);
@@ -244,7 +216,7 @@ describe('TileContextFactory', () => {
     const setSizeSpy = vi.spyOn(context, 'setSize');
 
     // when
-    [TileSize.SMALL, TileSize.WIDE, TileSize.FEATURE].forEach(s => factory.applySize(context, s, 5));
+    factory.applyColumnSpan(context, 5);
 
     // then
     expect(setSizeSpy).not.toHaveBeenCalled();
