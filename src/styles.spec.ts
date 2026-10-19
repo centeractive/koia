@@ -6,6 +6,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { findPageRule, findStyleRule } from 'app/shared/test';
 import { TABLE_FONT_FAMILY, TABLE_FONT_SIZE } from 'app/shared/ui/table-fit/table-font';
+import { DEFAULT_BORDER_COLOR } from 'app/text-box/text-box-style';
 
 @Component({
   template: `
@@ -682,13 +683,42 @@ describe('global styles', () => {
     expect(rule.style.getPropertyPriority('border-style')).toBe('important');
   });
 
-  it('print styles should print border of bordered text box as tile border', () => {
+  it('print styles should print border of bordered text box with its width and color', () => {
 
     // when
     const rule = printRule('.div_text_box_tile.div_text_box_bordered::after');
 
     // then
-    expect(rule.style.border).toBe('var(--koia-tile-border)');
+    expect(rule.style.border).toBe('var(--koia-text-box-border-width, 1px) solid var(--koia-text-box-border-color, var(--koia-border-color))');
     expect(rule.style.getPropertyPriority('border')).toBe('important');
+  });
+
+  it('print styles should hide outline of revealed text box', () => {
+
+    // when
+    const rule = printRule('.div_text_box_tile');
+
+    // then
+    expect(rule.style.outlineStyle).toBe('none');
+    expect(rule.style.getPropertyPriority('outline-style')).toBe('important');
+  });
+
+  it('print styles should hide move button of text box', () => {
+
+    // when
+    const rule = printRule('.but_config, .but_move, .but_text_box_move, .but_close');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('border color token should equal default border color of text box', () => {
+
+    // when
+    const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--koia-border-color').trim();
+
+    // then
+    expect(borderColor).toBe(DEFAULT_BORDER_COLOR);
   });
 });

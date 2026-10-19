@@ -23,6 +23,8 @@ const SNAP_TOLERANCE_PX = 6;
 /** minimum width of 40 page units of a text box added with 300 page units */
 const TEXT_BOX_MIN_WIDTH_RATIO = 40 / 300;
 const TEXT_BOX_MIN_HEIGHT = 30;
+/** width in page units a note keeps when shrunk to a shorter text */
+const NOTE_MIN_FIT_WIDTH = 120;
 /** padding of the text box frame around its editor */
 const TEXT_BOX_FRAME_PADDING_PX = 2 * 6;
 const BOTTOM_RIGHT_QUADRANT = { x: 0.7, y: 0.7 };
@@ -558,9 +560,8 @@ test('text box toolbar closes after clicking outside the text box', async ({ das
    await dashboard.launcher.cancel();
    const textBox = await dashboard.addNote();
    await textBox.focus();
-   const grid = await dashboard.gridContent.boundingBox();
 
-   await dashboard.gridContent.click({ position: { x: grid.width - 20, y: grid.height - 20 } });
+   await dashboard.pressOutsideTextBoxes();
 
    await expect(textBox.toolbar.root).toBeHidden();
 });
@@ -581,7 +582,7 @@ test('text box toolbar of a text box with room above it is shown above the text 
 
 test('text box toolbar of a first row text box is shown below the text box within the grid', async ({ dashboard }) => {
    await dashboard.launcher.cancel();
-   const textBox = await dashboard.addNote();
+   const textBox = await dashboard.addTextTile();
 
    await textBox.focus();
 
@@ -594,7 +595,7 @@ test('text box toolbar of a first row text box is shown below the text box withi
 
 test('scrolling the text box out of view closes its toolbar', async ({ dashboard }) => {
    await dashboard.launcher.cancel();
-   await dashboard.addSummaries((await dashboard.gridTracks()).columnWidths.length * 3);
+   await dashboard.addSummaries((await dashboard.gridTracks()).columnWidths.length * 6);
    await dashboard.gridContent.evaluate((e: HTMLElement) => e.scrollTop = 0);
    const textBox = await dashboard.addNote();
    await textBox.focus();
@@ -657,7 +658,7 @@ test('resizing a grid text box shrinks it down to its minimum size, but not belo
    const textBox = await dashboard.addNote();
    const tile = await textBox.tile.boundingBox();
 
-   await textBox.startResizeBy(1 - tile.width, 1 - tile.height);
+   await textBox.startResizeBy(5 - tile.width, 5 - tile.height);
    await textBox.release();
 
    const resized = await textBox.tile.boundingBox();
@@ -731,6 +732,7 @@ test('note grows with its text', async ({ dashboard }) => {
 test('empty text tile shows its placeholder only while hovered', async ({ page, dashboard }) => {
    await dashboard.launcher.cancel();
    const textTile = await dashboard.addTextTile();
+   await dashboard.pressOutsideTextBoxes();
    await page.mouse.move(0, 0);
    expect(await textTile.placeholderShown()).toBe(false);
 
@@ -745,8 +747,7 @@ test('border of a text box is solid, also when printed while focused', async ({ 
    await note.focus();
 
    await note.toolbar.toggleBorder();
-   const grid = await dashboard.gridContent.boundingBox();
-   await dashboard.gridContent.click({ position: { x: grid.width - 20, y: grid.height - 20 } });
+   await dashboard.pressOutsideTextBoxes();
 
    await expect.poll(() => note.frameBorderStyle()).toBe('solid');
    await note.focus();
@@ -754,17 +755,205 @@ test('border of a text box is solid, also when printed while focused', async ({ 
    expect(await note.frameBorderStyle()).toBe('solid');
 });
 
-test('new text box is transparent and shows its frame only while its text is hovered', async ({ dashboard }) => {
+test('new note is translucent yellow, starts editing and shows its frame while edited or hovered', async ({ dashboard }) => {
    await dashboard.launcher.cancel();
    const textBox = await dashboard.addNote();
-   await expect(textBox.tile).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
-   expect(await textBox.frameBorderStyle()).toBe('none');
+   await expect(textBox.tile).toHaveCSS('background-color', 'rgba(255, 249, 196, 0.8)');
+   await expect(textBox.editor).toBeFocused();
+   await expect(textBox.toolbar.root).toBeVisible();
+   expect(await textBox.frameOutlineStyle()).toBe('dashed');
+   await dashboard.pressOutsideTextBoxes();
+   await expect.poll(() => textBox.frameOutlineStyle()).toBe('none');
    await expect(textBox.resizeHandle).toBeHidden();
 
    await textBox.hover();
 
-   await expect.poll(() => textBox.frameBorderStyle()).toBe('dashed');
+   await expect.poll(() => textBox.frameOutlineStyle()).toBe('dashed');
    await expect(textBox.resizeHandle).toBeVisible();
+});
+
+test('new text tile has a light solid border and starts editing', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+
+   const textTile = await dashboard.addTextTile();
+
+   await expect(textTile.editor).toBeFocused();
+   expect(await textTile.frameBorderStyle()).toBe('solid');
+   expect(await textTile.frameBorderWidth()).toBe('1px');
+   expect(await textTile.frameBorderColor()).toBe('rgb(224, 224, 224)');
+});
+
+test('new text tile in free layout is in view and starts editing', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   await dashboard.addSummaries((await dashboard.gridTracks()).columnWidths.length * 4);
+   await dashboard.snapToGridButton.click();
+
+   const textTile = await dashboard.addTextTile();
+
+   await expect(textTile.editor).toBeFocused();
+   await expect(textTile.tile).toBeInViewport();
+});
+
+test('new note is centred in the visible grid', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   await dashboard.addSummaries((await dashboard.gridTracks()).columnWidths.length * 4);
+   await dashboard.gridContent.evaluate((e: HTMLElement) => e.scrollTop = 200);
+
+   const textBox = await dashboard.addNote();
+
+   await expectCentredIn(textBox, dashboard.gridContent);
+});
+
+test('new note is centred in the visible canvas', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   await dashboard.addSummary();
+   await dashboard.sideBar.close();
+   await dashboard.snapToGridButton.click();
+
+   const textBox = await dashboard.addNote();
+
+   await expectCentredIn(textBox, dashboard.canvasContent);
+});
+
+test('picked background and text colours are kept when the picker is closed by pressing elsewhere', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await textBox.type('coloured');
+   await textBox.press('Control+a');
+
+   await textBox.toolbar.inputColor(textBox.toolbar.backgroundColorInput, '#00ffff');
+   await textBox.toolbar.inputColor(textBox.toolbar.textColorInput, '#ff0000');
+   await dashboard.pressOutsideTextBoxes();
+
+   await expect(textBox.tile).toHaveCSS('background-color', 'rgb(0, 255, 255)');
+   expect((await textBox.styleOf('coloured')).color).toBe('rgb(255, 0, 0)');
+});
+
+test('border width and colour are applied and switch the border on', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+
+   await textBox.toolbar.setBorderWidth('4px');
+   await textBox.toolbar.setBorderColor('#0000ff');
+
+   expect(await textBox.frameBorderStyle()).toBe('solid');
+   expect(await textBox.frameBorderWidth()).toBe('4px');
+   expect(await textBox.frameBorderColor()).toBe('rgb(0, 0, 255)');
+});
+
+test('note shrinks to its one line text after editing', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   const initial = await textBox.tile.boundingBox();
+   await textBox.type('Hi');
+   const lineHeight = await textBox.paragraphs.first().evaluate((p: HTMLElement) => p.getBoundingClientRect().height);
+
+   await dashboard.pressOutsideTextBoxes();
+
+   const minFitWidth = NOTE_MIN_FIT_WIDTH * await dashboard.gridScale();
+   await expect.poll(async () => (await textBox.tile.boundingBox()).width).toBeLessThan(initial.width / 2);
+   expect(Math.abs((await textBox.tile.boundingBox()).width - minFitWidth)).toBeLessThanOrEqual(1);
+   expect((await textBox.tile.boundingBox()).height).toBeLessThan(initial.height);
+   expect(await textBox.fitsContent()).toBe(true);
+   expect(await textBox.paragraphs.first().evaluate((p: HTMLElement) => p.getBoundingClientRect().height)).toBe(lineHeight);
+});
+
+test('note without text keeps its size after editing ends', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   const initial = await textBox.tile.boundingBox();
+   await textBox.type('x');
+   await textBox.press('Backspace');
+
+   await dashboard.pressOutsideTextBoxes();
+
+   await expect(textBox.toolbar.root).toBeHidden();
+   expect(await textBox.tile.boundingBox()).toEqual(initial);
+});
+
+test('move button appears only while the upper right corner is hovered and moves the note', async ({ page, dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await dashboard.pressOutsideTextBoxes();
+   await page.mouse.move(0, 0);
+   await expect(textBox.moveButton).toBeHidden();
+   const before = await textBox.tile.boundingBox();
+
+   await textBox.moveZone.hover();
+   await expect(textBox.moveButton).toBeVisible();
+   await textBox.startMoveByButton(100, 50);
+   await textBox.release();
+
+   const after = await textBox.tile.boundingBox();
+   expect(Math.abs(after.x - before.x - 100)).toBeLessThan(10);
+   expect(Math.abs(after.y - before.y - 50)).toBeLessThan(10);
+});
+
+test('edited note moved by its move button follows the pointer and shrinks after release', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await textBox.type('Hi');
+   const before = await textBox.tile.boundingBox();
+
+   await textBox.startMoveByButton(100, 50);
+   const moving = await textBox.tile.boundingBox();
+   await textBox.release();
+
+   expect(moving.width).toBe(before.width);
+   expect(Math.abs(moving.x - before.x - 100)).toBeLessThan(10);
+   await expect.poll(async () => (await textBox.tile.boundingBox()).width).toBeLessThan(before.width / 2);
+   const after = await textBox.tile.boundingBox();
+   expect(Math.abs(after.x - before.x - 100)).toBeLessThan(10);
+});
+
+test('edited note resized right after editing keeps the resized size', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await textBox.type('Hi');
+   const before = await textBox.tile.boundingBox();
+
+   await textBox.startResizeBy(50, 30);
+   await textBox.release();
+
+   await expect.poll(async () => (await textBox.tile.boundingBox()).width).toBeGreaterThan(before.width + 30);
+   await dashboard.pressOutsideTextBoxes();
+   expect((await textBox.tile.boundingBox()).width).toBeGreaterThan(before.width + 30);
+});
+
+test('shrunk one line note is still resized by its handle', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await textBox.type('Hi');
+   const initialWidth = (await textBox.tile.boundingBox()).width;
+   await dashboard.pressOutsideTextBoxes();
+   await expect.poll(async () => (await textBox.tile.boundingBox()).width).toBeLessThan(initialWidth);
+   const shrunk = await textBox.tile.boundingBox();
+
+   await textBox.startResizeBy(50, 50);
+   await textBox.release();
+
+   await expect.poll(async () => (await textBox.tile.boundingBox()).width).toBeGreaterThan(shrunk.width + 30);
+});
+
+test('click on the move zone of a note without moving starts editing its text', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await textBox.type('Hi');
+   await dashboard.pressOutsideTextBoxes();
+   await expect(textBox.toolbar.root).toBeHidden();
+
+   await textBox.moveZone.click();
+
+   await expect(textBox.editor).toBeFocused();
+   await expect(textBox.toolbar.root).toBeVisible();
+});
+
+test('tile delete button shows the trash icon of the text box toolbar', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+
+   await dashboard.addSummary();
+
+   await expect(dashboard.summaryTiles.first().locator('.but_close mat-icon')).toHaveAttribute('svgicon', 'lucide_trash_2');
 });
 
 test('empty text box area entered from outside lets the pointer reach the tile below', async ({ page, dashboard }) => {
@@ -872,16 +1061,16 @@ test('switching layout back and forth keeps formatted text box content and backg
 test('printing hides text box toolbar, frame and placeholder', async ({ page, dashboard }) => {
    await dashboard.launcher.cancel();
    const empty = await dashboard.addNote();
+   await dashboard.pressOutsideTextBoxes();
    const filled = await dashboard.addNote();
-   await filled.focus();
    await filled.type('printed');
-   expect(await filled.frameBorderStyle()).toBe('dashed');
+   expect(await filled.frameOutlineStyle()).toBe('dashed');
    expect(await empty.placeholderShown()).toBe(true);
 
    await page.emulateMedia({ media: 'print' });
 
    await expect(filled.toolbar.root).toBeHidden();
-   expect(await filled.frameBorderStyle()).toBe('none');
+   expect(await filled.frameOutlineStyle()).toBe('none');
    expect(await empty.placeholderShown()).toBe(false);
 });
 
@@ -897,12 +1086,27 @@ async function typeLines(textBox: TextBox, count: number): Promise<void> {
    }
 }
 
+/**
+ * the note is dropped onto the summary, which also ends its editing
+ */
 async function addSummaryChartAndTextBox(dashboard: DashboardPage): Promise<TextBox> {
    await dashboard.launcher.addSummary();
    await dashboard.sideBar.close();
    await dashboard.addChart();
    await dashboard.sideBar.close();
-   return dashboard.addNote();
+   const textBox = await dashboard.addNote();
+   await dropOnto(textBox, dashboard.summaryTiles.first(), { x: 0.1, y: 0.1 });
+   return textBox;
+}
+
+async function expectCentredIn(textBox: TextBox, content: Locator): Promise<void> {
+   const tile = await textBox.tile.boundingBox();
+   const center = await content.evaluate((e: HTMLElement) => {
+      const rect = e.getBoundingClientRect();
+      return { x: rect.left + e.clientLeft + e.clientWidth / 2, y: rect.top + e.clientTop + e.clientHeight / 2 };
+   });
+   expect(Math.abs(tile.x + tile.width / 2 - center.x)).toBeLessThanOrEqual(2);
+   expect(Math.abs(tile.y + tile.height / 2 - center.y)).toBeLessThanOrEqual(2);
 }
 
 /**

@@ -18,7 +18,9 @@ export const DEFAULT_FONT_FAMILY = FONT_FAMILIES[0].value;
 export const DEFAULT_FONT_SIZE = '14px';
 export const DEFAULT_TEXT_COLOR = '#000000';
 export const DEFAULT_BACKGROUND_COLOR = '#ffffff';
-export const TOOLBAR_HEIGHT_PX = 40;
+export const DEFAULT_BORDER_COLOR = '#e0e0e0';
+export const BORDER_WIDTHS = [1, 2, 3, 4, 6];
+export const TOOLBAR_HEIGHT_PX = 74;
 
 export type TextAlignment = 'left' | 'center' | 'right';
 
@@ -37,6 +39,13 @@ export interface TextStyleState {
 export function fontFamilyLabel(value: string): string {
    const fontFamily = FONT_FAMILIES.find(f => f.value === value);
    return fontFamily ? fontFamily.label : value.split(',')[0].replace(/["']/g, '').trim();
+}
+
+/**
+ * @returns the #rrggbb part of a #rrggbb or #rrggbbaa colour as needed by a colour input, the fallback otherwise
+ */
+export function colorInputValue(color: string, fallback: string): string {
+   return /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i.test(color ?? '') ? color.slice(0, 7) : fallback;
 }
 
 export function toHexColor(value: string): string {

@@ -145,11 +145,20 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    addTextTile(): TextBoxContext {
-      return this.addElementContext(new TextBoxContext(this.clonedColumns(), true));
+      const textTile = new TextBoxContext(this.clonedColumns(), true);
+      textTile.bordered = true;
+      return this.addTextBox(textTile);
    }
 
    addNote(): TextBoxContext {
-      return this.addElementContext(new TextBoxContext(this.clonedColumns()));
+      const note = new TextBoxContext(this.clonedColumns());
+      note.backgroundColor = TextBoxContext.NOTE_BACKGROUND_COLOR;
+      return this.addTextBox(note);
+   }
+
+   private addTextBox(textBox: TextBoxContext): TextBoxContext {
+      textBox.editRequested = true;
+      return this.addElementContext(textBox);
    }
 
    abstract generateDashboard(): void;

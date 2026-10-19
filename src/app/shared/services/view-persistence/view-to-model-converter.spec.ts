@@ -69,6 +69,7 @@ describe('ViewToModelConverter', () => {
       expect(context.content).toEqual(content);
       expect(context.backgroundColor).toBe('#ffff00');
       expect([context.tiled, context.isOverlay(), context.bordered]).toEqual([false, true, false]);
+      expect([context.borderWidth, context.borderColor]).toEqual([1, undefined]);
       expect(context.columns.map(c => c.name)).toEqual(['Time', 'Level', 'Amount']);
       expect(context.columns[0]).not.toBe(columns[0]);
    });
@@ -105,6 +106,23 @@ describe('ViewToModelConverter', () => {
 
       // then
       expect([context.tiled, context.isOverlay(), context.bordered]).toEqual([true, false, true]);
+      expect(viewElementsOf(context)).toEqual(elements);
+   });
+
+   it('#convert should restore border width and color of text box converted to view', () => {
+
+      // given
+      const textTile = new TextBoxContext(columns, true);
+      textTile.bordered = true;
+      textTile.borderWidth = 4;
+      textTile.borderColor = '#0000ff';
+      const elements = viewElementsOf(textTile);
+
+      // when
+      const [context] = converter.convert(elements) as TextBoxContext[];
+
+      // then
+      expect([context.borderWidth, context.borderColor]).toEqual([4, '#0000ff']);
       expect(viewElementsOf(context)).toEqual(elements);
    });
 

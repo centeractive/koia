@@ -466,7 +466,9 @@
     "resetTextColor": "文字色をリセット",
     "backgroundColor": "背景色",
     "resetBackgroundColor": "背景色をリセット",
-    "border": "枠線"
+    "border": "枠線",
+    "borderWidth": "枠線の太さ",
+    "borderColor": "枠線の色"
   },
   "enum": {
     "chartType": {

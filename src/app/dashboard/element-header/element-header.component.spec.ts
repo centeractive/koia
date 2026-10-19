@@ -257,6 +257,15 @@ describe('ElementHeaderComponent', () => {
     expect(removeSpy).toHaveBeenCalled();
   });
 
+  it('should show trash icon of text box toolbar on delete button', () => {
+
+    // when
+    render(new SummaryContext([]), null);
+
+    // then
+    expect(query('.but_close mat-icon').getAttribute('svgIcon')).toBe('lucide_trash_2');
+  });
+
   it('should emit title change when title is typed', () => {
 
     // given

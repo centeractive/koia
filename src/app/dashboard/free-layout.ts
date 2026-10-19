@@ -1,5 +1,7 @@
+import { Point } from '@angular/cdk/drag-drop';
 import { AnchorOffset, ElementContext, TextBoxContext } from 'app/shared/model';
 import { ViewElement } from 'app/shared/model/view-config';
+import type { TextExtent } from 'app/text-box/text-fit';
 import * as _ from 'lodash';
 import { GridLayout } from './grid-layout';
 import type { Guide } from './snap-guides';
@@ -176,6 +178,43 @@ export class FreeLayout {
         c.z = ++z;
         slot++;
       });
+  }
+
+  /**
+   * centres the overlay at the given centre, cascading it past overlays at the same spot
+   *
+   * @param withinPage [[true]] to keep the overlay within the page of the centre
+   */
+  placeCentered(context: ElementContext, center: Point, contexts: ElementContext[], withinPage: boolean): void {
+    const pageTop = withinPage ? FreeLayout.pageTopOf(center.y) : undefined;
+    const size = this.rectOf({ x: 0, y: 0, width: context.width, height: context.height });
+    let rect = this.clampCentered({ ...size, x: Math.round(center.x - size.width / 2), y: Math.round(center.y - size.height / 2) }, pageTop);
+    while (contexts.some(c => c !== context && c.isOverlay() && c.x === rect.x && c.y === rect.y)) {
+      const cascaded = this.clampCentered({ ...rect, x: rect.x + FreeLayout.OVERLAY_CASCADE, y: rect.y + FreeLayout.OVERLAY_CASCADE }, pageTop);
+      if (cascaded.x === rect.x && cascaded.y === rect.y) {
+        break;
+      }
+      rect = cascaded;
+    }
+    context.setPosition(rect.x, rect.y);
+    context.z = this.maxZOf(contexts) + 1;
+  }
+
+  private clampCentered(rect: Rect, pageTop: number): Rect {
+    const clamped = { ...rect, x: _.clamp(rect.x, 0, FreeLayout.PAGE_WIDTH - rect.width), y: Math.max(0, rect.y) };
+    return pageTop === undefined ? clamped : this.clampIntoPage(clamped, pageTop);
+  }
+
+  /**
+   * @param extent size in pixels the text box needs for its text
+   * @param scale pixels per page unit
+   * @returns the size in page units, not wider than the current one
+   */
+  fitSizeOf(context: ElementContext, extent: TextExtent, scale: number): Size {
+    return {
+      width: Math.min(Math.max(Math.ceil(extent.width / scale), TextBoxContext.MIN_FIT_WIDTH), this.rectOf(context).width),
+      height: _.clamp(Math.ceil(extent.height / scale), TextBoxContext.MIN_HEIGHT, FreeLayout.PAGE_HEIGHT)
+    };
   }
 
   private maxZOf(contexts: ElementContext[]): number {

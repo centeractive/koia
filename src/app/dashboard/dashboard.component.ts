@@ -21,6 +21,9 @@ import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
 import { resizableEdges } from './resizable-edges';
 import { Guide, Snap, SnapGuides } from './snap-guides';
+import { textBoxTileStyle } from './text-box-tile-style';
+import { visibleCenterOf } from './visible-center';
+import type { TextExtent } from 'app/text-box/text-fit';
 
 interface CanvasInteraction {
   context: ElementContext;
@@ -46,6 +49,7 @@ export class DashboardComponent extends ViewController {
   readonly gridCellRatioChoices = GridLayout.CELL_RATIO_CHOICES;
   readonly gridLayout = new GridLayout();
   readonly freeLayout = new FreeLayout();
+  readonly textBoxTileStyle = textBoxTileStyle;
   @ViewChild('gridCells') gridCellsRef: ElementRef<HTMLDivElement>;
   @ViewChild('canvasPages') canvasPagesRef: ElementRef<HTMLDivElement>;
   resizePreview: { left: number, top: number, width: number, height: number };
@@ -342,9 +346,34 @@ export class DashboardComponent extends ViewController {
   }
 
   protected onElementContextAdded(context: ElementContext): void {
+    if (context.isOverlay()) {
+      this.placeAtVisibleCenter(context);
+    }
     this.placeUnpositionedTiles(this.elementContexts);
     if (this.isGridLayout() && context.isOverlay()) {
       this.anchorToTileBelow(context as TextBoxContext, this.freeLayout.rectOf(context), this.renderedGridTileRects());
+    }
+  }
+
+  /**
+   * leaves the overlay unpositioned while the layer is not rendered
+   */
+  private placeAtVisibleCenter(context: ElementContext): void {
+    const layer = this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef;
+    const center = layer && visibleCenterOf(this.divContentRef.nativeElement, layer.nativeElement);
+    if (center) {
+      this.freeLayout.placeCentered(context, center, this.elementContexts, !this.isGridLayout());
+    }
+  }
+
+  /**
+   * @param extent size in pixels the note needs for its text
+   */
+  shrinkNoteToText(context: TextBoxContext, extent: TextExtent): void {
+    const scale = this.layerScale();
+    if (context.isOverlay() && scale > 0) {
+      const size = this.freeLayout.fitSizeOf(context, extent, scale);
+      context.setSize(size.width, size.height);
     }
   }
 

@@ -6,7 +6,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { TextBoxEditor } from '../text-box-editor';
 import { TextBoxSelectComponent } from '../text-box-select/text-box-select.component';
-import { DEFAULT_BACKGROUND_COLOR, FONT_FAMILIES, FONT_SIZES, TextStyleState } from '../text-box-style';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_BORDER_COLOR, FONT_FAMILIES, FONT_SIZES, TextStyleState, TOOLBAR_HEIGHT_PX } from '../text-box-style';
 import { TextBoxToolbarComponent } from './text-box-toolbar.component';
 
 describe('TextBoxToolbarComponent', () => {
@@ -42,6 +42,7 @@ describe('TextBoxToolbarComponent', () => {
       setFontFamily: vi.fn(),
       setFontSize: vi.fn(),
       setColor: vi.fn(),
+      applyColor: vi.fn(),
       unsetColor: vi.fn(),
       setTextAlign: vi.fn()
     } as unknown as TextBoxEditor;
@@ -80,7 +81,12 @@ describe('TextBoxToolbarComponent', () => {
     input.dispatchEvent(new Event('change'));
   }
 
-  it('should render a rounded shadowed toolbar of fixed height on a single row', () => {
+  function inputColor(input: HTMLInputElement, color: string): void {
+    input.value = color;
+    input.dispatchEvent(new Event('input'));
+  }
+
+  it('should render a rounded shadowed toolbar of fixed height on two rows', () => {
 
     // when
     render();
@@ -88,8 +94,10 @@ describe('TextBoxToolbarComponent', () => {
     // then
     const toolbar = query('.div_text_box_toolbar');
     const style = getComputedStyle(toolbar);
-    expect(toolbar.getBoundingClientRect().height).toBe(40);
-    expect(style.flexWrap).toBe('nowrap');
+    expect(toolbar.getBoundingClientRect().height).toBe(TOOLBAR_HEIGHT_PX);
+    const rows = queryAll('.div_toolbar_row');
+    expect(rows.map(r => r.getBoundingClientRect().height)).toEqual([32, 32]);
+    rows.forEach(r => expect(getComputedStyle(r).flexWrap).toBe('nowrap'));
     expect(style.borderRadius).toBe('10px');
     expect(style.borderTopWidth).toBe('1px');
     expect(style.boxShadow).not.toBe('none');
@@ -103,7 +111,7 @@ describe('TextBoxToolbarComponent', () => {
     // then
     expect(query('.mat-mdc-button-base')).toBeUndefined();
     const buttons = queryAll<HTMLButtonElement>('button');
-    expect(buttons.length).toBe(12);
+    expect(buttons.length).toBe(13);
     buttons.forEach(b => {
       const style = getComputedStyle(b);
       expect(b.type).toBe('button');
@@ -365,7 +373,21 @@ describe('TextBoxToolbarComponent', () => {
     expect(style.borderTopWidth).toBe('0px');
   });
 
-  it('should emit background color when background color is changed', () => {
+  it('should emit background color while background color is picked', () => {
+
+    // given
+    render();
+    const emitted = vi.fn();
+    component.backgroundColorChange.subscribe(emitted);
+
+    // when
+    inputColor(query('.input_background_color'), '#abcdef');
+
+    // then
+    expect(emitted).toHaveBeenCalledWith('#abcdef');
+  });
+
+  it('should not emit background color when picker is closed', () => {
 
     // given
     render();
@@ -376,7 +398,99 @@ describe('TextBoxToolbarComponent', () => {
     changeColor(query('.input_background_color'), '#abcdef');
 
     // then
-    expect(emitted).toHaveBeenCalledWith('#abcdef');
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('should show opaque part of translucent background color in color input', () => {
+
+    // when
+    render({}, '#fff9c4cc');
+
+    // then
+    expect(query<HTMLInputElement>('.input_background_color').value).toBe('#fff9c4');
+  });
+
+  it('should apply text color while text color is picked', () => {
+
+    // given
+    render();
+
+    // when
+    inputColor(query('.input_text_color'), '#00ff00');
+
+    // then
+    expect(editor.applyColor).toHaveBeenCalledWith('#00ff00');
+    expect(editor.setColor).not.toHaveBeenCalled();
+  });
+
+  it('should list border widths with current one active', () => {
+
+    // given
+    component.borderWidth = 2;
+    render();
+
+    // when
+    openSelect('.select_border_width');
+
+    // then
+    expect(query('.select_border_width .but_select').textContent.trim()).toBe('2px');
+    expect(selectOptions().map(o => o.textContent.trim())).toEqual(['1px', '2px', '3px', '4px', '6px']);
+    expect(selectOptions().filter(o => o.classList.contains('button_tt_active')).map(o => o.textContent.trim())).toEqual(['2px']);
+  });
+
+  it('should emit chosen border width as number', () => {
+
+    // given
+    component.borderWidth = 1;
+    render();
+    const emitted = vi.fn();
+    component.borderWidthChange.subscribe(emitted);
+    openSelect('.select_border_width');
+
+    // when
+    selectOptions()[3].click();
+
+    // then
+    expect(emitted).toHaveBeenCalledExactlyOnceWith(4);
+  });
+
+  it('should show default border color in swatch and color input when border color is undefined', () => {
+
+    // when
+    render();
+
+    // then
+    expect(query<HTMLInputElement>('.input_border_color').value).toBe(DEFAULT_BORDER_COLOR);
+    const swatch = query('.label_border_color .span_color_swatch');
+    expect(getComputedStyle(swatch).backgroundColor).toBe('rgb(224, 224, 224)');
+    expect([swatch.getBoundingClientRect().width, swatch.getBoundingClientRect().height]).toEqual([14, 14]);
+  });
+
+  it('should show border color in swatch and color input', () => {
+
+    // given
+    component.borderColor = '#123456';
+
+    // when
+    render();
+
+    // then
+    expect(query<HTMLInputElement>('.input_border_color').value).toBe('#123456');
+    expect(getComputedStyle(query('.label_border_color .span_color_swatch')).backgroundColor).toBe('rgb(18, 52, 86)');
+  });
+
+  it('should emit border color while border color is picked', () => {
+
+    // given
+    render();
+    const emitted = vi.fn();
+    component.borderColorChange.subscribe(emitted);
+
+    // when
+    inputColor(query('.input_border_color'), '#abcdef');
+
+    // then
+    expect(emitted).toHaveBeenCalledExactlyOnceWith('#abcdef');
   });
 
   it('should emit undefined when reset background color button is clicked', () => {
@@ -469,5 +583,28 @@ describe('TextBoxToolbarComponent', () => {
     expect(separator.classList).toContain('span_separator');
     expect(separator.getBoundingClientRect().width).toBe(1);
     expect(separator.getBoundingClientRect().height).toBe(20);
+  });
+
+  it('should place delete button with its separator at end of second row', () => {
+
+    // when
+    render();
+
+    // then
+    const rows = queryAll('.div_toolbar_row');
+    const deleteButton = query('.but_delete');
+    expect(rows[1].lastElementChild).toBe(deleteButton);
+    expect(deleteButton.previousElementSibling.classList).toContain('span_separator_end');
+    expect(deleteButton.getBoundingClientRect().right).toBe(rows[1].getBoundingClientRect().right);
+  });
+
+  it('should place font, style and alignment controls in first row', () => {
+
+    // when
+    render();
+
+    // then
+    const firstRow = queryAll('.div_toolbar_row')[0];
+    ['.select_font_family', '.select_font_size', ...toggleSelectors].forEach(s => expect(firstRow.querySelector(s)).toBeTruthy());
   });
 });

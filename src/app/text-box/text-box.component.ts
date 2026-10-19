@@ -26,7 +26,8 @@ import * as _ from 'lodash';
 import { Subscription } from 'rxjs';
 import { TextBoxEditor } from './text-box-editor';
 import { TextStyleState, TOOLBAR_HEIGHT_PX } from './text-box-style';
-import { TextFit } from './text-fit';
+import { TextExtent, TextFit } from './text-fit';
+import { TileRelease } from './tile-release';
 
 const ABOVE_START: ConnectedPosition = { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom' };
 const ABOVE_END: ConnectedPosition = { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom' };
@@ -50,6 +51,8 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
   @Output() remove = new EventEmitter<void>();
   /** emits the height in pixels the enclosing tile needs to show the whole text, measured only while observed */
   @Output() fitHeightChange = new EventEmitter<number>();
+  /** emits the size in pixels the enclosing tile needs for its text once editing ended after the text was changed */
+  @Output() textEdited = new EventEmitter<TextExtent>();
 
   @ViewChild('editorElement') editorElementRef: ElementRef<HTMLDivElement>;
   @ViewChild(CdkConnectedOverlay) connectedOverlay: CdkConnectedOverlay;
@@ -69,6 +72,9 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
   private readonly languageService = inject(LanguageService);
   private readonly subscriptions = new Subscription();
   private textFit: TextFit;
+  private tileRelease: TileRelease;
+  private edited = false;
+  private focusFrame: number;
 
   /**
    * the enclosing dashboard tile
@@ -84,7 +90,7 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
         () => this.languageService.instant('textBox.placeholder'),
         content => this.onContentChange(content),
         state => this.onStateChange(state));
-      if (this.fitHeightChange.observed) {
+      if (this.fitHeightChange.observed || this.textEdited.observed) {
         this.textFit = new TextFit(this.toolbarOrigin, this.elementRef.nativeElement, this.editor.dom,
           height => this.zone.run(() => this.fitHeightChange.emit(height)));
       }
@@ -92,11 +98,30 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
         .subscribe(scrollable => this.onAncestorScrolled(scrollable)));
     });
     this.state = this.editor.state();
+    this.tileRelease = new TileRelease(this.zone, this.renderer, this.toolbarOrigin);
     this.subscriptions.add(() => this.editor.destroy());
     this.subscriptions.add(() => this.textFit?.disconnect());
+    this.subscriptions.add(() => this.tileRelease.cancel());
+    this.subscriptions.add(() => cancelAnimationFrame(this.focusFrame));
     this.subscriptions.add(this.languageService.changed$.subscribe(() => this.editor.refreshPlaceholder()));
     this.subscriptions.add(listenToDocumentOutsideAngular(this.zone, this.renderer, 'pointerdown',
       event => this.deactivateWhenPressedElsewhere(event.target as Node)));
+    this.startEditingWhenRequested();
+  }
+
+  startEditing(): void {
+    this.editor.focusEnd();
+  }
+
+  /**
+   * focuses within an own frame, as the editor focuses synchronously on some platforms, which would change the active
+   * state within this hook
+   */
+  private startEditingWhenRequested(): void {
+    if (this.context.editRequested) {
+      this.context.editRequested = false;
+      this.focusFrame = requestAnimationFrame(() => this.startEditing());
+    }
   }
 
   @HostListener('focusin')
@@ -108,14 +133,49 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
 
   /**
    * a focus change without related target (e.g. click on toolbar padding or window blur) keeps the toolbar,
-   * real outside clicks are handled by the document pointerdown listener
+   * real outside clicks are handled by the document pointerdown listener, which already deactivates on a press
+   * that moves the focus
    */
   @HostListener('focusout', ['$event'])
   onFocusOut(event: FocusEvent): void {
     const relatedTarget = event.relatedTarget as Node;
-    if (relatedTarget && !this.isInsideHostOrOverlay(relatedTarget)) {
-      this.active = false;
+    if (this.active && relatedTarget && !this.isInsideHostOrOverlay(relatedTarget)) {
+      this.deactivate();
     }
+  }
+
+  /**
+   * the own deactivations close the toolbar while already inactive, other closes such as escape deactivate
+   */
+  onToolbarDetached(): void {
+    if (this.active) {
+      this.deactivate();
+    }
+  }
+
+  deactivate(): void {
+    this.active = false;
+    if (this.edited) {
+      this.edited = false;
+      this.emitTextEdited();
+    }
+  }
+
+  private emitTextEdited(): void {
+    const extent = this.textFit?.fitExtent();
+    if (extent?.width > 0) {
+      this.textEdited.emit(extent);
+    }
+  }
+
+  setBorderWidth(borderWidth: number): void {
+    this.context.borderWidth = borderWidth;
+    this.context.bordered = true;
+  }
+
+  setBorderColor(borderColor: string): void {
+    this.context.borderColor = borderColor;
+    this.context.bordered = true;
   }
 
   /**
@@ -133,6 +193,7 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
   private onContentChange(content: JSONContent): void {
     this.zone.run(() => {
       this.context.content = content;
+      this.edited = true;
       this.textFit?.update();
     });
   }
@@ -143,9 +204,28 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * a press within the own tile starts moving or resizing it, which must not be disturbed by a shrinking tile
+   */
   private deactivateWhenPressedElsewhere(target: Node): void {
     if (this.active && !this.isInsideHostOrOverlay(target)) {
-      this.zone.run(() => this.active = false);
+      this.zone.run(() => this.toolbarOrigin.contains(target) ? this.deactivateOnRelease() : this.deactivate());
+    }
+  }
+
+  private deactivateOnRelease(): void {
+    this.active = false;
+    this.tileRelease.awaitRelease(resized => this.endEditOnRelease(resized));
+  }
+
+  /**
+   * a resize keeps the size chosen by the user
+   */
+  private endEditOnRelease(resized: boolean): void {
+    if (resized) {
+      this.edited = false;
+    } else {
+      this.deactivate();
     }
   }
 
@@ -160,7 +240,7 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
     const tile = this.toolbarOrigin.getBoundingClientRect();
     const container = scrollable.getElementRef().nativeElement.getBoundingClientRect();
     if (tile.bottom <= container.top || tile.top >= container.bottom) {
-      this.zone.run(() => this.active = false);
+      this.zone.run(() => this.deactivate());
       return;
     }
     const positions = this.toolbarPositionsFor(this.containerTop());

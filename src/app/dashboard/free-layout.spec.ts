@@ -654,4 +654,141 @@ describe('FreeLayout', () => {
     // then
     expect(rect).toEqual({ x: 0, y: 950, width: 1400, height: 950 });
   });
+
+  describe('#placeCentered', () => {
+
+    it('should centre overlay at centre and put it in front', () => {
+
+      // given
+      const note = textBox();
+      const contexts = [tile(0, 0, 600, 400, 4), note];
+
+      // when
+      layout.placeCentered(note, { x: 700.4, y: 500.6 }, contexts, false);
+
+      // then
+      expect([note.x, note.y, note.z]).toEqual([550, 426, 5]);
+    });
+
+    it('should cascade overlay past overlays at its spot', () => {
+
+      // given
+      const note = textBox();
+      const contexts = [textBox(550, 425), textBox(570, 445), tile(570, 445, 600, 400), note];
+
+      // when
+      layout.placeCentered(note, { x: 700, y: 500 }, contexts, false);
+
+      // then
+      expect([note.x, note.y]).toEqual([590, 465]);
+    });
+
+    it('should cascade overlay clamped at top past overlay at clamped spot', () => {
+
+      // given
+      const note = textBox();
+      const contexts = [textBox(550, 0), note];
+
+      // when
+      layout.placeCentered(note, { x: 700, y: 10 }, contexts, false);
+
+      // then
+      expect([note.x, note.y]).toEqual([570, 20]);
+    });
+
+    it('should stop cascading when clamped overlay cannot move further', () => {
+
+      // given
+      const note = textBox();
+      const bottomRight = { x: FreeLayout.PAGE_WIDTH - 300, y: FreeLayout.PAGE_HEIGHT - 150 };
+      const contexts = [textBox(bottomRight.x, bottomRight.y), note];
+
+      // when
+      layout.placeCentered(note, { x: FreeLayout.PAGE_WIDTH, y: FreeLayout.PAGE_HEIGHT - 1 }, contexts, true);
+
+      // then
+      expect([note.x, note.y]).toEqual([bottomRight.x, bottomRight.y]);
+    });
+
+    it('should clamp overlay into width and below top', () => {
+
+      // given
+      const left = textBox();
+      const right = textBox();
+
+      // when
+      layout.placeCentered(left, { x: 10, y: -50 }, [left], false);
+      layout.placeCentered(right, { x: FreeLayout.PAGE_WIDTH, y: 2000 }, [right], false);
+
+      // then
+      expect([[left.x, left.y], [right.x, right.y]]).toEqual([[0, 0], [FreeLayout.PAGE_WIDTH - 300, 1925]]);
+    });
+
+    it('should clamp overlay into page of centre when within page', () => {
+
+      // given
+      const note = textBox();
+
+      // when
+      layout.placeCentered(note, { x: 700, y: FreeLayout.PAGE_HEIGHT + 20 }, [note], true);
+
+      // then
+      expect([note.x, note.y]).toEqual([550, FreeLayout.PAGE_HEIGHT]);
+    });
+
+    it('should not compare overlay with itself', () => {
+
+      // given
+      const note = textBox(550, 425);
+
+      // when
+      layout.placeCentered(note, { x: 700, y: 500 }, [note], false);
+
+      // then
+      expect([note.x, note.y]).toEqual([550, 425]);
+    });
+  });
+
+  describe('#fitSizeOf', () => {
+
+    it('should convert extent to page units rounding up', () => {
+
+      // when
+      const size = layout.fitSizeOf(textBox(0, 0), { width: 101, height: 61 }, 0.5);
+
+      // then
+      expect(size).toEqual({ width: 202, height: 122 });
+    });
+
+    it('should not shrink below minimum fit width nor minimum height', () => {
+
+      // when
+      const size = layout.fitSizeOf(textBox(0, 0), { width: 1, height: 1 }, 1);
+
+      // then
+      expect(size).toEqual({ width: TextBoxContext.MIN_FIT_WIDTH, height: TextBoxContext.MIN_HEIGHT });
+    });
+
+    it('should keep current width narrower than minimum fit width', () => {
+
+      // given
+      const narrow = textBox(0, 0);
+      narrow.setSize(80, 100);
+
+      // when
+      const size = layout.fitSizeOf(narrow, { width: 1, height: 50 }, 1);
+
+      // then
+      expect(size).toEqual({ width: 80, height: 50 });
+    });
+
+    it('should not grow beyond current width nor page height', () => {
+
+      // when
+      const size = layout.fitSizeOf(textBox(0, 0), { width: 400, height: 2000 }, 1);
+
+      // then
+      expect(size).toEqual({ width: 300, height: FreeLayout.PAGE_HEIGHT });
+    });
+  });
 });

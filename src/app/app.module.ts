@@ -39,6 +39,7 @@ import { ScaleComponent } from './chart/chart-side-bar/scale/scale.component';
 import { TicksComponent } from './chart/chart-side-bar/scale/ticks/ticks.component';
 import { ChartComponent } from './chart/chart.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { ClickWithoutDragDirective } from './dashboard/click-without-drag.directive';
 import { DetachFromDropListDirective } from './dashboard/detach-from-drop-list.directive';
 import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
@@ -110,6 +111,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         DashboardComponent,
         ElementHeaderComponent,
         DetachFromDropListDirective,
+        ClickWithoutDragDirective,
         RawDataComponent,
         RawDataViewComponent,
         RawDataDialogComponent,
