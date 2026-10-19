@@ -344,6 +344,7 @@ koia-print-heading {
 
   .but_config,
   .but_move,
+  .but_text_box_move,
   .but_close {
     display: none !important;
   }
@@ -396,6 +397,7 @@ koia-print-heading {
   .div_text_box_tile {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    outline: none !important;
   }
 
   .div_text_box_tile:not(.div_text_box_bordered)::after {
@@ -403,7 +405,7 @@ koia-print-heading {
   }
 
   .div_text_box_tile.div_text_box_bordered::after {
-    border: var(--koia-tile-border) !important;
+    border: var(--koia-text-box-border-width, 1px) solid var(--koia-text-box-border-color, var(--koia-border-color)) !important;
   }
 
   .div_header > :not(koia-print-heading) {

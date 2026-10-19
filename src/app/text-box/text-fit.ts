@@ -1,7 +1,14 @@
+export interface TextExtent {
+  width: number;
+  height: number;
+}
+
 /**
  * reports the height in pixels the enclosing tile needs to show the whole editor content
  */
 export class TextFit {
+
+  static readonly SLACK_PX = 1;
 
   private readonly observer = new ResizeObserver(() => this.scheduleUpdate());
   private frame: number;
@@ -38,6 +45,35 @@ export class TextFit {
     const textBottom = this.content.lastElementChild.getBoundingClientRect().bottom - this.content.getBoundingClientRect().top;
     const paddingBottom = parseFloat(getComputedStyle(this.content).paddingBottom);
     return Math.ceil(textBottom + paddingBottom + this.tile.clientHeight - this.host.clientHeight);
+  }
+
+  /**
+   * measures each text node on its own, as a range over the content would include the full width paragraphs,
+   * 0 when there is no text
+   */
+  fitWidth(): number {
+    const range = document.createRange();
+    const walker = document.createTreeWalker(this.content, NodeFilter.SHOW_TEXT);
+    let left = Infinity;
+    let right = -Infinity;
+    while (walker.nextNode()) {
+      range.selectNodeContents(walker.currentNode);
+      const rect = range.getBoundingClientRect();
+      if (rect.width > 0) {
+        left = Math.min(left, rect.left);
+        right = Math.max(right, rect.right);
+      }
+    }
+    if (right < left) {
+      return 0;
+    }
+    const style = getComputedStyle(this.content);
+    const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    return Math.ceil(right - left + padding + this.tile.clientWidth - this.host.clientWidth) + TextFit.SLACK_PX;
+  }
+
+  fitExtent(): TextExtent {
+    return { width: this.fitWidth(), height: this.fitHeight() };
   }
 
   disconnect(): void {

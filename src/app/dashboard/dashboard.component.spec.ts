@@ -33,6 +33,7 @@ import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
+import { ClickWithoutDragDirective } from './click-without-drag.directive';
 import { DetachFromDropListDirective } from './detach-from-drop-list.directive';
 import { FreeLayout, Rect } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
@@ -42,6 +43,7 @@ import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.c
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
+import type { TextExtent } from 'app/text-box/text-fit';
 
 @Component({ selector: 'koia-main-toolbar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
 class MainToolbarComponent { }
@@ -72,7 +74,9 @@ class TextBoxComponent {
   @Input() context: TextBoxContext;
   @Output() remove = new EventEmitter<void>();
   @Output() fitHeightChange = new EventEmitter<number>();
+  @Output() textEdited = new EventEmitter<TextExtent>();
   @HostBinding('class.koia-text-box-active') active = false;
+  startEditing = vi.fn();
 }
 
 @Component({ selector: 'koia-element-header', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
@@ -127,7 +131,7 @@ describe('DashboardComponent', () => {
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
         SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent,
-        PageHeadingComponent, DetachFromDropListDirective
+        PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
       providers: [
@@ -391,7 +395,7 @@ describe('DashboardComponent', () => {
       { layout: Route.GRID, add: (): TextBoxContext => component.addNote() },
       { layout: Route.FLEX, add: (): TextBoxContext => component.addTextTile() },
       { layout: Route.FLEX, add: (): TextBoxContext => component.addNote() }
-    ])('should render bordered text box with solid frame in $layout layout, dashed while revealed', ({ layout, add }) => {
+    ])('should render bordered text box with solid frame in $layout layout, kept while revealed by outline', ({ layout, add }) => {
 
       // given
       component.setLayout(layout);
@@ -406,13 +410,51 @@ describe('DashboardComponent', () => {
       expect(tile.classList).toContain('div_text_box_bordered');
       expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('solid');
       tile.classList.add('resize-active');
-      expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('dashed');
+      expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('solid');
+      expect(getComputedStyle(tile).outlineStyle).toBe('dashed');
+    });
+
+    it.each([Route.GRID, Route.FLEX])('should render border width and color of text box in %s layout', layout => {
+
+      // given
+      component.setLayout(layout);
+      const context = component.addTextTile();
+      context.borderWidth = 3;
+      context.borderColor = '#ff0000';
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const frame = getComputedStyle(fixture.nativeElement.querySelector('.div_text_box_tile'), '::after');
+      expect([frame.borderTopStyle, frame.borderTopWidth, frame.borderTopColor]).toEqual(['solid', '3px', 'rgb(255, 0, 0)']);
+    });
+
+    it('should render frame of added text tile in light border color', () => {
+
+      // when
+      component.addTextTile();
+      fixture.detectChanges();
+
+      // then
+      const frame = getComputedStyle(fixture.nativeElement.querySelector('.div_text_box_tile'), '::after');
+      expect([frame.borderTopStyle, frame.borderTopWidth, frame.borderTopColor]).toEqual(['solid', '1px', 'rgb(224, 224, 224)']);
+    });
+
+    it('should render added text tile as bordered', () => {
+
+      // when
+      component.addTextTile();
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.nativeElement.querySelector('.div_text_box_tile').classList).toContain('div_text_box_bordered');
     });
 
     it('should render unbordered text box without bordered class', () => {
 
       // given
-      component.addTextTile();
+      component.addTextTile().bordered = false;
 
       // when
       fixture.detectChanges();
@@ -575,10 +617,21 @@ describe('DashboardComponent', () => {
       expect(tile.style.backgroundColor).toBe('rgb(0, 255, 0)');
     });
 
+    it('should render added note translucent light yellow', () => {
+
+      // when
+      component.addNote();
+      fixture.detectChanges();
+
+      // then
+      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_grid .div_text_box_tile');
+      expect(getComputedStyle(tile).backgroundColor).toBe('rgba(255, 249, 196, 0.8)');
+    });
+
     it('should render text box without background color as transparent', () => {
 
       // given
-      component.addNote();
+      component.addNote().backgroundColor = undefined;
 
       // when
       fixture.detectChanges();
@@ -2235,6 +2288,7 @@ describe('DashboardComponent', () => {
           const tile = textBoxTile();
           expect(getComputedStyle(tile).pointerEvents).toBe('none');
           expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('none');
+          expect(getComputedStyle(tile).outlineStyle).toBe('none');
           expect(getComputedStyle(tile.querySelector('.resize-handle')).visibility).toBe('hidden');
         });
 
@@ -2260,8 +2314,8 @@ describe('DashboardComponent', () => {
 
         function expectRevealed(tile: HTMLElement): void {
           expect(getComputedStyle(tile).pointerEvents).toBe('auto');
-          expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('dashed');
-          expect(getComputedStyle(tile, '::after').borderTopWidth).toBe('1px');
+          expect(getComputedStyle(tile).outlineStyle).toBe('dashed');
+          expect(getComputedStyle(tile).outlineWidth).toBe('1px');
           expect(getComputedStyle(tile.querySelector('.resize-handle')).visibility).toBe('visible');
         }
 
@@ -2539,34 +2593,235 @@ describe('DashboardComponent', () => {
           expect(restoredOffTile.anchor).toBeUndefined();
         });
 
-        it('#addNote in grid should place text box at top of visible grid and anchor it to tile below', () => {
+        /**
+         * @returns the position in page units of a note of default size centred in the visible part of the layer
+         */
+        function visiblyCenteredPositionIn(layer: HTMLElement, layoutYOf = (y: number) => y): number[] {
+          const content = component.divContentRef.nativeElement;
+          const contentRect = content.getBoundingClientRect();
+          const layerRect = layer.getBoundingClientRect();
+          const scale = layerRect.width / component.freeLayout.pageFormat.width;
+          const x = (contentRect.left + content.clientLeft + content.clientWidth / 2 - layerRect.left) / scale;
+          const y = (contentRect.top + content.clientTop + content.clientHeight / 2 - layerRect.top) / scale;
+          return [Math.round(x - TextBoxContext.TEXT_BOX_WIDTH / 2), Math.round(layoutYOf(y) - TextBoxContext.TEXT_BOX_HEIGHT / 2)];
+        }
+
+        it('#addNote in grid should centre note in visible grid and anchor it to tile below', () => {
 
           // given
           renderGridSummaries(3, Array.from({ length: 9 }, () => [1, 1]));
           const content = component.divContentRef.nativeElement;
           const rowPitch = gridTiles()[3].getBoundingClientRect().top - gridTiles()[0].getBoundingClientRect().top;
           content.scrollTop = 1.5 * rowPitch;
-          const visibleTop = (content.getBoundingClientRect().top - cells().getBoundingClientRect().top) / gridScale();
+          const expected = visiblyCenteredPositionIn(cells());
 
           // when
           const textBox = component.addNote();
 
           // then
-          expect([textBox.x, textBox.y]).toEqual([0, Math.round(visibleTop / FreeLayout.STEP) * FreeLayout.STEP]);
-          expect(textBox.anchor).toBe(component.elementContexts[3]);
-          expect(textBox.anchorOffset.x).toBe(0);
+          expect([textBox.x, textBox.y]).toEqual(expected);
+          expect(textBox.anchor).toBeInstanceOf(SummaryContext);
+          const anchorRect = pageUnitRectOf(gridTiles()[component.elementContexts.indexOf(textBox.anchor)]);
+          expect(textBox.x).toBeGreaterThanOrEqual(anchorRect.x - 1);
+          expect(textBox.x).toBeLessThan(anchorRect.x + anchorRect.width + 1);
+          expect(textBox.y).toBeGreaterThanOrEqual(anchorRect.y - 1);
+          expect(textBox.y).toBeLessThan(anchorRect.y + anchorRect.height + 1);
         });
 
-        it('#addNote in empty grid should cascade unanchored text boxes from top', () => {
+        it('#addNote in empty grid should centre first note and cascade second one, both unanchored', () => {
+
+          // given
+          const [x, y] = visiblyCenteredPositionIn(cells());
 
           // when
           const first = component.addNote();
           const second = component.addNote();
 
           // then
-          expect([[first.x, first.y], [second.x, second.y]]).toEqual([[0, 0], [20, 20]]);
+          expect([[first.x, first.y], [second.x, second.y]]).toEqual([[x, y], [x + FreeLayout.OVERLAY_CASCADE, y + FreeLayout.OVERLAY_CASCADE]]);
           expect([first.z, second.z]).toEqual([1, 2]);
           expect([first.anchor, second.anchor]).toEqual([undefined, undefined]);
+        });
+
+        it('#addNote in free layout should centre note in visible canvas within its page', () => {
+
+          // given
+          renderCanvasSummaries([[0, 0, 600, 400]]);
+          const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement, y => component.freeLayout.layoutYOf(y));
+
+          // when
+          const textBox = component.addNote();
+
+          // then
+          expect([textBox.x, textBox.y]).toEqual(expected);
+          expect(textBox.y + textBox.height).toBeLessThanOrEqual(PageFormat.LANDSCAPE.height);
+          expect(textBox.z).toBe(2);
+        });
+
+        it('#addNote on portrait pages should centre note in visible portrait sheet below its heading', () => {
+
+          // given
+          renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+          const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement, y => component.freeLayout.layoutYOf(y));
+
+          // when
+          const textBox = component.addNote();
+
+          // then
+          expect([textBox.x, textBox.y]).toEqual(expected);
+          expect(textBox.x + textBox.width).toBeLessThanOrEqual(PageFormat.PORTRAIT.width);
+        });
+
+        it('#addNote should cascade note from top while grid has no width', () => {
+
+          // given
+          vi.spyOn(cells(), 'getBoundingClientRect').mockReturnValue(new DOMRect());
+
+          // when
+          const textBox = component.addNote();
+
+          // then
+          expect([textBox.x, textBox.y]).toEqual([0, 0]);
+        });
+
+        it('#addNote should place note below tiles while canvas is not rendered', () => {
+
+          // given
+          component.setLayout(Route.FLEX);
+
+          // when
+          const textBox = component.addNote();
+
+          // then
+          expect(component.canvasPagesRef).toBeUndefined();
+          expect([textBox.x, textBox.y]).toEqual([0, 0]);
+        });
+
+        it('#shrinkNoteToText should size note to text extent in page units of layer', () => {
+
+          // given
+          const note = addTextBoxContext(0, 0);
+
+          // when
+          component.shrinkNoteToText(note, { width: 200, height: 50 });
+
+          // then
+          expect([note.width, note.height]).toEqual([Math.ceil(200 / gridScale()), Math.ceil(50 / gridScale())]);
+        });
+
+        it('#shrinkNoteToText should ignore text tile', () => {
+
+          // given
+          const textTile = addTextTileContext(1);
+
+          // when
+          component.shrinkNoteToText(textTile, { width: 100, height: 50 });
+
+          // then
+          expect([textTile.width, textTile.height]).toEqual([TextBoxContext.TEXT_BOX_WIDTH, TextBoxContext.TEXT_BOX_HEIGHT]);
+        });
+
+        it('#shrinkNoteToText should ignore note while layer is not rendered', () => {
+
+          // given
+          const note = addTextBoxContext(0, 0);
+          component.gridCellsRef = undefined;
+
+          // when
+          component.shrinkNoteToText(note, { width: 100, height: 50 });
+
+          // then
+          expect([note.width, note.height]).toEqual([TextBoxContext.TEXT_BOX_WIDTH, TextBoxContext.TEXT_BOX_HEIGHT]);
+        });
+
+        it('should shrink note when its text box emits text edited', () => {
+
+          // given
+          const note = addTextBoxContext(0, 0);
+          const textBox = fixture.debugElement.query(By.directive(TextBoxComponent)).componentInstance as TextBoxComponent;
+
+          // when
+          textBox.textEdited.emit({ width: 200, height: 50 });
+
+          // then
+          expect(note.width).toBe(Math.ceil(200 / gridScale()));
+        });
+
+        it.each([
+          { layout: 'grid note', add: (): void => { addTextBoxContext(0, 0); } },
+          { layout: 'grid text tile', add: (): void => { addTextTileContext(1); } },
+          {
+            layout: 'canvas note',
+            add: (): void => {
+              renderCanvasSummaries([]);
+              component.addNote();
+              fixture.detectChanges();
+            }
+          }
+        ])('should show move button of $layout only while its zone is hovered', async ({ add }) => {
+
+          // given
+          add();
+          const zone: HTMLElement = textBoxTile().querySelector('.div_element > .div_move_zone');
+          const button: HTMLElement = zone.querySelector('.but_text_box_move');
+          expect(getComputedStyle(zone).pointerEvents).toBe('auto');
+          expect(getComputedStyle(button).visibility).toBe('hidden');
+
+          // when
+          await userEvent.hover(zone);
+
+          // then
+          expect(getComputedStyle(button).visibility).toBe('visible');
+          await userEvent.unhover(zone);
+        });
+
+        it('should start moving note when its move button is dragged', () => {
+
+          // given
+          addTextBoxContext(0, 0);
+          const moveStartedSpy = vi.spyOn(component, 'onFreeMoveStarted');
+          const buttonRect = textBoxTile().querySelector('.but_text_box_move').getBoundingClientRect();
+          const pointer = { bubbles: true, button: 0, buttons: 1, detail: 1, clientX: buttonRect.left + 5, clientY: buttonRect.top + 5 };
+
+          // when
+          textBoxTile().querySelector('.but_text_box_move').dispatchEvent(new MouseEvent('mousedown', pointer));
+          document.dispatchEvent(new MouseEvent('mousemove', { ...pointer, clientX: pointer.clientX + 20 }));
+          fixture.detectChanges();
+
+          // then
+          expect(moveStartedSpy).toHaveBeenCalled();
+          document.dispatchEvent(new MouseEvent('mouseup', { ...pointer, clientX: pointer.clientX + 20 }));
+        });
+
+        it('should start editing note when its move zone is clicked without dragging', () => {
+
+          // given
+          addTextBoxContext(0, 0);
+          const textBox = fixture.debugElement.query(By.directive(TextBoxComponent)).componentInstance as TextBoxComponent;
+          const zone = textBoxTile().querySelector('.div_move_zone');
+
+          // when
+          zone.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 100 }));
+          zone.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 100, clientY: 100 }));
+
+          // then
+          expect(textBox.startEditing).toHaveBeenCalled();
+        });
+
+        it('should keep resize handle above move zone of small note', () => {
+
+          // given
+          const note = addTextBoxContext(0, 0);
+          note.setSize(300, TextBoxContext.MIN_HEIGHT);
+          textBoxTile().classList.add('resize-active');
+          fixture.detectChanges();
+
+          // when
+          const handleRect = textBoxTile().querySelector('.resize-handle').getBoundingClientRect();
+          const hit = document.elementFromPoint(handleRect.left + handleRect.width / 2, handleRect.top + handleRect.height / 2);
+
+          // then
+          expect(hit.classList).toContain('resize-handle');
         });
 
         it('#loadView of grid view while grid is not rendered should place text box at grid top', () => {
@@ -2604,11 +2859,13 @@ describe('DashboardComponent', () => {
           return Math.ceil((component.gridLayout.tileSizeOf({ columnSpan: 1, rowSpan: rows }, contentWidth()).height + 5) / gridScale());
         }
 
-        it('should anchor note added onto text tile', () => {
+        it('should anchor note added onto text tile below visible centre', () => {
 
           // given
           component.elementContexts = [];
-          const tile = addTextTileContext(1);
+          const tile = addTextTileContext(3);
+          tile.gridColumnSpan = component.gridLayout.gridColumns;
+          fixture.detectChanges();
 
           // when
           const note = component.addNote();

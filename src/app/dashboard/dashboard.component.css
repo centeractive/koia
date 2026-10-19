@@ -72,7 +72,30 @@
 }
 
 .div_tile.div_text_box_tile.div_text_box_bordered::after {
-  border: var(--koia-tile-border);
+  border: var(--koia-text-box-border-width, 1px) solid var(--koia-text-box-border-color, var(--koia-border-color));
+}
+
+/* no z-index, the later resize handle must stay above the zone of small tiles */
+.div_move_zone {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  pointer-events: auto;
+  cursor: move;
+}
+
+.but_text_box_move {
+  --mat-icon-button-state-layer-size: 32px;
+  --mat-icon-button-touch-target-display: none;
+  padding: 4px;
+  visibility: hidden;
+  cursor: move;
+}
+
+.div_move_zone:hover > .but_text_box_move {
+  visibility: visible;
 }
 
 .div_text_box_tile > .resize-handle {
@@ -86,11 +109,12 @@
   pointer-events: auto;
 }
 
-.div_tile.div_text_box_tile:hover::after,
-.div_tile.div_text_box_tile:has(koia-text-box.koia-text-box-active)::after,
-.div_tile.div_text_box_tile.cdk-drag-dragging::after,
-.div_tile.div_text_box_tile.resize-active::after {
-  border: 1px dashed var(--koia-accent);
+.div_tile.div_text_box_tile:hover,
+.div_tile.div_text_box_tile:has(koia-text-box.koia-text-box-active),
+.div_tile.div_text_box_tile.cdk-drag-dragging,
+.div_tile.div_text_box_tile.resize-active {
+  outline: 1px dashed var(--koia-accent);
+  outline-offset: 0;
 }
 
 .div_text_box_tile:hover > .resize-handle,

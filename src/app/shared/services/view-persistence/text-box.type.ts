@@ -7,6 +7,8 @@ export interface TextBox extends ViewElement {
    /** absent in views saved before text tiles existed, these restore as notes */
    tiled?: boolean;
    bordered?: boolean;
+   borderWidth?: number;
+   borderColor?: string;
    /** index of the anchor tile in the view's elements */
    anchor?: number;
    anchorX?: number;

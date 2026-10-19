@@ -30,7 +30,38 @@ describe('TextBoxContext', () => {
       expect(textBoxContext.tiled).toBe(false);
       expect(textBoxContext.bordered).toBe(false);
       expect(textBoxContext.fitHeight).toBeUndefined();
+      expect(textBoxContext.borderWidth).toBe(1);
+      expect(textBoxContext.borderColor).toBeUndefined();
+      expect(textBoxContext.editRequested).toBe(false);
    });
+
+   it.each([
+      { property: 'borderWidth', value: 3 },
+      { property: 'borderColor', value: '#ff0000' }
+   ] as const)('#$property should fire look change event once when changed', fakeAsync(({ property, value }) => {
+
+      // when
+      Object.assign(context, { [property]: value });
+      flush();
+
+      // then
+      expect(context[property]).toBe(value);
+      expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
+      expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.LOOK);
+   }));
+
+   it.each([
+      { property: 'borderWidth', value: 1 },
+      { property: 'borderColor', value: undefined }
+   ] as const)('#$property should not fire change event when unchanged', fakeAsync(({ property, value }) => {
+
+      // when
+      Object.assign(context, { [property]: value });
+      flush();
+
+      // then
+      expect(eventHandlerSpy).not.toHaveBeenCalled();
+   }));
 
    it('should define minimum size smaller than tile minimum size', () => {
       expect([TextBoxContext.MIN_WIDTH, TextBoxContext.MIN_HEIGHT]).toEqual([40, 30]);

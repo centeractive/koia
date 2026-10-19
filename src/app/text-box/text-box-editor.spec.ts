@@ -48,7 +48,7 @@ describe('TextBoxEditor', () => {
     return vi.mocked(onContentChange).mock.lastCall[0];
   }
 
-  async function focusEnd(): Promise<void> {
+  async function moveCaretToEnd(): Promise<void> {
     await userEvent.click(proseMirror());
     await userEvent.keyboard('{Control>}{End}{/Control}');
   }
@@ -81,7 +81,7 @@ describe('TextBoxEditor', () => {
 
     // given
     createEditor(doc(paragraph(text('a'))));
-    await focusEnd();
+    await moveCaretToEnd();
 
     // when
     await userEvent.keyboard('{Enter}b');
@@ -94,7 +94,7 @@ describe('TextBoxEditor', () => {
 
     // given
     createEditor(doc(paragraph(text('a'))));
-    await focusEnd();
+    await moveCaretToEnd();
 
     // when
     await userEvent.keyboard('{Shift>}{Enter}{/Shift}b');
@@ -187,6 +187,39 @@ describe('TextBoxEditor', () => {
     expect(editor.state().color).toBe('#ff0000');
   });
 
+  it('should apply color to selected text without focusing editor', async () => {
+
+    // given
+    createEditor(doc(paragraph(text('a'))));
+    await selectAll();
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+    input.focus();
+
+    // when
+    editor.applyColor('#00ff00');
+
+    // then
+    expect(lastContent()).toEqual(doc(paragraph(text('a', [{ type: 'textStyle', attrs: expect.objectContaining({ color: '#00ff00' }) }]))));
+    expect(document.activeElement).toBe(input);
+    input.remove();
+  });
+
+  it('should focus editor with caret at end of text', async () => {
+
+    // given
+    createEditor(doc(paragraph(text('first')), paragraph(text('last'))));
+
+    // when
+    editor.focusEnd();
+
+    // then
+    await vi.waitFor(() => expect(document.activeElement).toBe(proseMirror()));
+    const selection = document.getSelection();
+    expect(selection.focusNode.textContent).toBe('last');
+    expect(selection.focusOffset).toBe(4);
+  });
+
   it('should unset color of selected text', async () => {
 
     // given
@@ -255,7 +288,7 @@ describe('TextBoxEditor', () => {
 
     // given
     createEditor(null);
-    await focusEnd();
+    await moveCaretToEnd();
 
     // when
     await userEvent.keyboard('**x**');
@@ -268,7 +301,7 @@ describe('TextBoxEditor', () => {
 
     // given
     createEditor(null);
-    await focusEnd();
+    await moveCaretToEnd();
     const dt = new DataTransfer();
     dt.setData('text/html', '<span style="background-color: rgb(255, 0, 0); line-height: 3">x</span>');
 

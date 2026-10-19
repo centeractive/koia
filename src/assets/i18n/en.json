@@ -470,7 +470,9 @@
     "resetTextColor": "Reset Text Color",
     "backgroundColor": "Background Color",
     "resetBackgroundColor": "Reset Background Color",
-    "border": "Border"
+    "border": "Border",
+    "borderWidth": "Border Width",
+    "borderColor": "Border Color"
   },
   "enum": {
     "chartType": {

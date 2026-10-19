@@ -1,16 +1,37 @@
 .div_text_box_toolbar {
   display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 2px;
   box-sizing: border-box;
-  height: 40px;
+  width: max-content;
+  height: 74px;
   padding: 3px;
   border: 1px solid var(--koia-border-color);
   border-radius: 10px;
   white-space: nowrap;
   background-color: var(--koia-surface);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.div_toolbar_row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+}
+
+.span_separator.span_separator_end {
+  margin-left: auto;
+}
+
+.span_color_swatch {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 1px solid var(--koia-border-color);
+  border-radius: 3px;
 }
 
 .span_separator {

@@ -97,6 +97,8 @@ export class ModelToViewConverter {
          backgroundColor: context.backgroundColor,
          tiled: context.tiled,
          bordered: context.bordered,
+         borderWidth: context.borderWidth,
+         borderColor: context.borderColor,
          ...this.anchorOf(context, elementContexts)
       }
    }
