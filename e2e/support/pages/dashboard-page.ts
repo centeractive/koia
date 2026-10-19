@@ -16,6 +16,10 @@ export class DashboardPage {
    readonly sideBar: DashboardSideBar;
    readonly viewToolbar: ViewToolbar;
    readonly snapToGridButton: Locator;
+   readonly freeCanvasButton: Locator;
+   readonly landscapePagesButton: Locator;
+   readonly portraitPagesButton: Locator;
+   readonly sheets: Locator;
    readonly gridContent: Locator;
    readonly canvasContent: Locator;
    readonly canvasGuide: Locator;
@@ -35,6 +39,10 @@ export class DashboardPage {
       this.toolbar = this.root.locator('koia-view-toolbar');
       this.viewToolbar = new ViewToolbar(this.toolbar);
       this.snapToGridButton = this.root.locator('#but_snap_to_grid');
+      this.freeCanvasButton = this.root.locator('#but_free_canvas');
+      this.landscapePagesButton = this.root.locator('#but_landscape_pages');
+      this.portraitPagesButton = this.root.locator('#but_portrait_pages');
+      this.sheets = this.root.locator('.div_canvas_sheet');
       this.gridContent = this.root.locator('#div_grid');
       this.canvasContent = this.root.locator('#div_canvas');
       this.canvasGuide = this.root.locator('.div_canvas_guide');

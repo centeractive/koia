@@ -312,6 +312,7 @@
   "view": {
     "print": "現在のビューを印刷",
     "printScene": "シーン: {{name}}",
+    "printPage": "{{page}} / {{count}} ページ",
     "save": "現在のビューを保存",
     "restore": "保存したビューを復元",
     "saveTitle": "ビューを保存",
@@ -447,6 +448,9 @@
     "gridCellRatio": "グリッドセルの比率（幅:高さ）",
     "manageViews": "ビューの管理",
     "snapToGrid": "グリッドに合わせる",
+    "freeCanvas": "自由配置",
+    "landscapePages": "横向きページ",
+    "portraitPages": "縦向きページ",
     "confirmResize": "大きい要素は新しい設定に合わせてサイズが変更されます。続行しますか？",
     "regenerate": "ダッシュボードを再生成",
     "regenerateQuestion": "このダッシュボードのすべての要素が新しく生成された要素に置き換えられます。続行しますか？",

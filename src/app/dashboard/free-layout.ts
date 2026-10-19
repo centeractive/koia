@@ -2,6 +2,7 @@ import { AnchorOffset, ElementContext, TextBoxContext } from 'app/shared/model';
 import { ViewElement } from 'app/shared/model/view-config';
 import * as _ from 'lodash';
 import { GridLayout } from './grid-layout';
+import { PageFormat } from './page-format';
 import type { Guide } from './snap-guides';
 
 export interface Rect {
@@ -28,31 +29,51 @@ export interface Anchoring<T> {
  */
 export class FreeLayout {
 
-  static readonly PAGE_WIDTH = 1400;
-  static readonly PAGE_HEIGHT = 950;
   static readonly STEP = 10;
   static readonly MIN_SIZE = 100;
   static readonly SNAP_THRESHOLD_PX = 6;
   static readonly OVERLAY_Z_OFFSET = 10000;
   static readonly OVERLAY_CASCADE = 20;
+  static readonly SHEET_HEADER = 56;
+  static readonly SHEET_FOOTER = 28;
+  static readonly SHEET_GAP = 20;
 
-  static pageTopOf(y: number): number {
-    return Math.floor(y / FreeLayout.PAGE_HEIGHT) * FreeLayout.PAGE_HEIGHT;
-  }
+  constructor(public pageFormat = PageFormat.LANDSCAPE) { }
 
   canvasStyle(): object {
-    return { '--koia-pu': 'calc(100cqw / ' + FreeLayout.PAGE_WIDTH + ')' };
+    return { '--koia-pu': 'calc(100cqw / ' + this.pageFormat.width + ')' };
+  }
+
+  pagesStyle(): object {
+    return {
+      ...this.canvasStyle(),
+      width: 'calc(100% * ' + this.pageFormat.width + ' / ' + PageFormat.LANDSCAPE.width + ')',
+      '--koia-print-width': this.pageFormat.printWidthPx + 'px'
+    };
   }
 
   pageStyle(): object {
-    return { height: this.pageUnits(FreeLayout.PAGE_HEIGHT) };
+    return this.pageFormat.paged ? { 'margin-bottom': this.pageUnits(FreeLayout.SHEET_GAP) } : {};
+  }
+
+  pageContentStyle(page: number, contexts: ElementContext[]): object {
+    const height = this.pageFormat.paged || page > 0 ? this.pageFormat.height : this.bottomOf(contexts);
+    return { height: this.pageUnits(height) };
+  }
+
+  sheetHeaderStyle(): object {
+    return { height: this.pageUnits(FreeLayout.SHEET_HEADER) };
+  }
+
+  sheetFooterStyle(): object {
+    return { height: this.pageUnits(FreeLayout.SHEET_FOOTER) };
   }
 
   tileStyle(context: ElementContext): object {
     const rect = this.drawnRectOf(context);
     return {
       left: this.pageUnits(rect.x),
-      top: this.pageUnits(rect.y - FreeLayout.pageTopOf(rect.y)),
+      top: this.pageUnits(rect.y - this.pageFormat.pageTopOf(rect.y)),
       width: this.pageUnits(rect.width),
       height: this.pageUnits(rect.height),
       'z-index': this.zIndexOf(context)
@@ -100,12 +121,37 @@ export class FreeLayout {
     return 'calc(' + value + ' * var(--koia-pu))';
   }
 
+  /**
+   * @returns the y on the rendered pages, including the header, footer and gap of the sheets above
+   */
+  layerYOf(y: number): number {
+    if (!this.pageFormat.paged) {
+      return y;
+    }
+    const sheetFrame = FreeLayout.SHEET_HEADER + FreeLayout.SHEET_FOOTER + FreeLayout.SHEET_GAP;
+    return y + this.pageFormat.pageIndexOf(y) * sheetFrame + FreeLayout.SHEET_HEADER;
+  }
+
+  /**
+   * @returns the y of the layout at the given y on the rendered pages, a sheet's header, footer and gap map to the
+   * nearest page edge
+   */
+  layoutYOf(layerY: number): number {
+    if (!this.pageFormat.paged) {
+      return layerY;
+    }
+    const height = this.pageFormat.height;
+    const pitch = FreeLayout.SHEET_HEADER + height + FreeLayout.SHEET_FOOTER + FreeLayout.SHEET_GAP;
+    const page = Math.max(0, Math.floor(layerY / pitch));
+    return page * height + _.clamp(layerY - page * pitch - FreeLayout.SHEET_HEADER, 0, height);
+  }
+
   rectOf(tile: Pick<ViewElement, 'x' | 'y' | 'width' | 'height'>): Rect {
     return {
       x: tile.x,
       y: tile.y,
-      width: Math.min(tile.width ?? ElementContext.DEFAULT_WIDTH, FreeLayout.PAGE_WIDTH - tile.x),
-      height: Math.min(tile.height ?? ElementContext.DEFAULT_HEIGHT, FreeLayout.PAGE_HEIGHT)
+      width: Math.min(tile.width ?? ElementContext.DEFAULT_WIDTH, this.pageFormat.width - tile.x),
+      height: Math.min(tile.height ?? ElementContext.DEFAULT_HEIGHT, this.pageFormat.height)
     };
   }
 
@@ -121,12 +167,12 @@ export class FreeLayout {
   }
 
   pageIndexes(contexts: ElementContext[]): number[] {
-    const usedPages = Math.max(1, Math.ceil(this.bottomOf(contexts) / FreeLayout.PAGE_HEIGHT));
+    const usedPages = this.pageFormat.paged ? Math.max(1, Math.ceil(this.bottomOf(contexts) / this.pageFormat.height)) : 1;
     return Array.from({ length: usedPages + 1 }, (_, i) => i);
   }
 
   pageOf(context: ElementContext): number {
-    return Math.floor(context.y / FreeLayout.PAGE_HEIGHT);
+    return this.pageFormat.pageIndexOf(context.y);
   }
 
   contextsOnPage(contexts: ElementContext[], page: number): ElementContext[] {
@@ -137,13 +183,27 @@ export class FreeLayout {
     const positioned = contexts.filter(c => c.x != null);
     const unpositioned = contexts.filter(c => c.x == null);
     const positionedBottom = this.bottomOf(positioned);
+    const sizes = unpositioned.map(c => ({ width: c.width ?? ElementContext.DEFAULT_WIDTH, height: c.height ?? ElementContext.DEFAULT_HEIGHT }));
+    const rects = this.packRows(sizes, positioned.length ? positionedBottom + GridLayout.GAP_PX : 0);
+    let z = this.maxZOf(contexts);
+    this.fitToPages(rects, positionedBottom).forEach((rect, i) => {
+      unpositioned[i].setPosition(rect.x, rect.y);
+      unpositioned[i].setSize(rect.width, rect.height);
+      unpositioned[i].z = ++z;
+    });
+  }
+
+  /**
+   * places tiles of the given sizes in rows from the given top on, a row ends where the next tile exceeds the page width
+   */
+  packRows(sizes: Size[], top: number): Rect[] {
     let x = 0;
-    let y = positioned.length ? positionedBottom + GridLayout.GAP_PX : 0;
-    let rowBottom = y;
-    const rects = unpositioned.map(c => {
-      const width = Math.min(c.width ?? ElementContext.DEFAULT_WIDTH, FreeLayout.PAGE_WIDTH);
-      const height = Math.min(c.height ?? ElementContext.DEFAULT_HEIGHT, FreeLayout.PAGE_HEIGHT);
-      if (x > 0 && x + width > FreeLayout.PAGE_WIDTH) {
+    let y = top;
+    let rowBottom = top;
+    return sizes.map(size => {
+      const width = Math.min(size.width, this.pageFormat.width);
+      const height = Math.min(size.height, this.pageFormat.height);
+      if (x > 0 && x + width > this.pageFormat.width) {
         x = 0;
         y = rowBottom + GridLayout.GAP_PX;
       }
@@ -151,12 +211,6 @@ export class FreeLayout {
       rowBottom = Math.max(rowBottom, y + height);
       x += width + GridLayout.GAP_PX;
       return rect;
-    });
-    let z = this.maxZOf(contexts);
-    this.fitToPages(rects, positionedBottom).forEach((rect, i) => {
-      unpositioned[i].setPosition(rect.x, rect.y);
-      unpositioned[i].setSize(rect.width, rect.height);
-      unpositioned[i].z = ++z;
     });
   }
 
@@ -190,20 +244,25 @@ export class FreeLayout {
   }
 
   /**
-   * moves rows that would cross a page boundary to a page top, rows below are moved along by the same distance
+   * moves rows that would cross a page boundary to a page top, rows below are moved along by the same distance;
+   * without pages, only the heights are capped
    *
    * @param fittedBottom bottom of the tiles already placed on the canvas
    */
   fitToPages(rects: Rect[], fittedBottom = 0): Rect[] {
-    const fitted = rects.map(r => ({ ...r, height: Math.min(r.height, FreeLayout.PAGE_HEIGHT) }));
+    const height = this.pageFormat.height;
+    const fitted = rects.map(r => ({ ...r, height: Math.min(r.height, height) }));
+    if (!this.pageFormat.paged) {
+      return fitted;
+    }
     const rowTops = [...new Set(rects.map(r => r.y))].sort((a, b) => a - b);
     let offset = 0;
     rowTops.forEach(rowTop => {
       const row = fitted.filter((_, i) => rects[i].y === rowTop);
       const top = rowTop + offset;
-      const pageTop = FreeLayout.pageTopOf(top);
-      if (row.some(r => top + r.height > pageTop + FreeLayout.PAGE_HEIGHT)) {
-        offset += (pageTop >= fittedBottom ? pageTop : pageTop + FreeLayout.PAGE_HEIGHT) - top;
+      const pageTop = this.pageFormat.pageTopOf(top);
+      if (row.some(r => top + r.height > pageTop + height)) {
+        offset += (pageTop >= fittedBottom ? pageTop : pageTop + height) - top;
       }
       row.forEach(r => r.y = rowTop + offset);
       fittedBottom = Math.max(fittedBottom, ...row.map(r => r.y + r.height));
@@ -221,13 +280,25 @@ export class FreeLayout {
   }
 
   clampIntoPage(rect: Rect, pageTop: number): Rect {
-    const width = Math.min(rect.width, FreeLayout.PAGE_WIDTH);
-    const height = Math.min(rect.height, FreeLayout.PAGE_HEIGHT);
+    const { width: pageWidth, height: pageHeight, paged } = this.pageFormat;
+    const width = Math.min(rect.width, pageWidth);
+    const height = Math.min(rect.height, pageHeight);
     return {
-      x: _.clamp(rect.x, 0, FreeLayout.PAGE_WIDTH - width),
-      y: _.clamp(rect.y, pageTop, pageTop + FreeLayout.PAGE_HEIGHT - height),
+      x: _.clamp(rect.x, 0, pageWidth - width),
+      y: paged ? _.clamp(rect.y, pageTop, pageTop + pageHeight - height) : Math.max(rect.y, 0),
       width,
       height
+    };
+  }
+
+  /**
+   * @returns the rect moved to its offset relative to the anchor rect
+   */
+  anchoredRect(rect: Rect, anchorRect: Rect, offset: AnchorOffset): Rect {
+    return {
+      ...rect,
+      x: Math.round(anchorRect.x + offset.x * anchorRect.width),
+      y: Math.round(anchorRect.y + offset.y * anchorRect.height)
     };
   }
 

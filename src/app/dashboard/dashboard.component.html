@@ -33,9 +33,22 @@
       <koia-view-toolbar [moreMenu]="moreMenu" [hasContent]="!!elementContexts?.length" [savedViews]="views" (save)="saveView()"
         (restore)="loadView($event)">
         <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
-          [matTooltip]="'dashboard.snapToGrid' | translate" (click)="toggleGridLayout()">
+          [matTooltip]="'dashboard.snapToGrid' | translate" (click)="snapToGrid()">
           <mat-icon svgIcon="snap_grid"></mat-icon>
         </button>
+        <button id="but_free_canvas" mat-icon-button [class.koia-toggle-active]="isCanvasPaging(CanvasPaging.NONE)"
+          [matTooltip]="'dashboard.freeCanvas' | translate" (click)="showCanvas(CanvasPaging.NONE)">
+          <mat-icon svgIcon="flex_view"></mat-icon>
+        </button>
+        <button id="but_landscape_pages" mat-icon-button [class.koia-toggle-active]="isCanvasPaging(CanvasPaging.LANDSCAPE)"
+          [matTooltip]="'dashboard.landscapePages' | translate" (click)="showCanvas(CanvasPaging.LANDSCAPE)">
+          <mat-icon>crop_landscape</mat-icon>
+        </button>
+        <button id="but_portrait_pages" mat-icon-button [class.koia-toggle-active]="isCanvasPaging(CanvasPaging.PORTRAIT)"
+          [matTooltip]="'dashboard.portraitPages' | translate" (click)="showCanvas(CanvasPaging.PORTRAIT)">
+          <mat-icon>crop_portrait</mat-icon>
+        </button>
+        <span class="koia-toolbar-separator"></span>
         <button mat-icon-button [matTooltip]="'dashboard.addChart' | translate" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
         </button>
@@ -85,7 +98,8 @@
           <button mat-menu-item [disabled]="ratio === gridLayout.gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
         }
       </mat-menu>
-      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" />
+      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" [portrait]="isCanvasPaging(CanvasPaging.PORTRAIT)"
+        [class.koia-print-heading-in-sheets]="isPagedCanvas()" (printStart)="onPrintStart($event)" />
     </div>
 
     <ng-template #elementBody let-context>
@@ -173,41 +187,58 @@
       </div>
     } @else {
       <div #content id="div_canvas" class="div_content" style="padding: 5px;" cdkScrollable>
-        <div #canvasPages class="div_canvas_pages printable" [ngStyle]="freeLayout.canvasStyle()">
-          @for (page of freeLayout.pageIndexes(elementContexts); track page) {
-            <div class="div_canvas_page" [class.div_canvas_page_spare]="$last" [ngStyle]="freeLayout.pageStyle()">
-              @for (context of freeLayout.contextsOnPage(elementContexts, page); track context) {
-                @if (isTextBoxContext(context)) {
-                  <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_text_tile]="!context.isOverlay()"
-                    [class.div_text_box_bordered]="$any(context).bordered" [style.background-color]="$any(context).backgroundColor"
-                    [ngStyle]="freeLayout.tileStyle(context)"
-                    mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
-                    (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
-                    cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
-                    (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
-                    <div #elementContainer class="div_element">
-                      <koia-text-box [context]="$any(context)" (remove)="removeElement(context)"
-                        (fitHeightChange)="onTextFitHeight($any(context), $event)" />
+        <div #canvasPages class="div_canvas_pages printable" [ngStyle]="freeLayout.pagesStyle()">
+          @for (page of freeLayout.pageIndexes(elementContexts); track page; let last = $last, count = $count) {
+            <div class="div_canvas_page" [class.div_canvas_sheet]="freeLayout.pageFormat.paged" [class.div_canvas_page_spare]="last"
+              [ngStyle]="freeLayout.pageStyle()">
+              @if (freeLayout.pageFormat.paged) {
+                <div class="div_canvas_sheet_header" [ngStyle]="freeLayout.sheetHeaderStyle()">
+                  @if (!last) {
+                    <koia-page-heading [title]="tab?.title" [sceneName]="scene?.name" [printedAt]="printedAt" />
+                  }
+                </div>
+              }
+              <div class="div_canvas_page_content" [ngStyle]="freeLayout.pageContentStyle(page, elementContexts)">
+                @for (context of freeLayout.contextsOnPage(elementContexts, page); track context) {
+                  @if (isTextBoxContext(context)) {
+                    <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_text_tile]="!context.isOverlay()"
+                      [class.div_text_box_bordered]="$any(context).bordered" [style.background-color]="$any(context).backgroundColor"
+                      [ngStyle]="freeLayout.tileStyle(context)"
+                      mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
+                      (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                      cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
+                      (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                      <div #elementContainer class="div_element">
+                        <koia-text-box [context]="$any(context)" (remove)="removeElement(context)"
+                          (fitHeightChange)="onTextFitHeight($any(context), $event)" />
+                      </div>
+                      <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                        (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
                     </div>
-                    <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                      (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
-                  </div>
-                } @else {
-                  <div class="div_tile div_canvas_tile mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
-                    mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
-                    (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
-                    cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
-                    (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
-                    <div #elementContainer class="div_element">
-                      <koia-element-header [context]="context" [gridLayout]="null" [movable]="true" [stackable]="true"
-                        (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
-                        (titleChange)="onTitleChanged(context, $event)" (bringToFront)="bringToFront(context)" (sendToBack)="sendToBack(context)" />
-                      <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                  } @else {
+                    <div class="div_tile div_canvas_tile mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
+                      mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
+                      (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                      cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
+                      (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                      <div #elementContainer class="div_element">
+                        <koia-element-header [context]="context" [gridLayout]="null" [movable]="true" [stackable]="true"
+                          (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
+                          (titleChange)="onTitleChanged(context, $event)" (bringToFront)="bringToFront(context)" (sendToBack)="sendToBack(context)" />
+                        <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                      </div>
+                      <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
+                        (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
                     </div>
-                    <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                      (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
-                  </div>
+                  }
                 }
+              </div>
+              @if (freeLayout.pageFormat.paged) {
+                <div class="div_canvas_sheet_footer" [ngStyle]="freeLayout.sheetFooterStyle()">
+                  @if (!last) {
+                    {{ 'view.printPage' | translate: { page: page + 1, count: count - 1 } }}
+                  }
+                </div>
               }
             </div>
           }

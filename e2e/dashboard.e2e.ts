@@ -125,18 +125,39 @@ test('narrowing grid columns below a tile span asks for confirmation and narrows
    await expect.poll(async () => (await dashboard.tile(0).spans()).columns).toBe(2);
 });
 
-test('snap to grid button switches between grid and free canvas', async ({ dashboard }) => {
+test('layout buttons switch like radio buttons between grid, free canvas, landscape and portrait pages', async ({ dashboard }) => {
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
-   await expect(dashboard.snapToGridButton).toHaveClass(/\bkoia-toggle-active\b/);
+   const buttons = [dashboard.snapToGridButton, dashboard.freeCanvasButton, dashboard.landscapePagesButton, dashboard.portraitPagesButton];
+   const expectActive = async (active: Locator) => {
+      for (const button of buttons) {
+         await expect(button).toHaveClass(button === active ? /\bkoia-toggle-active\b/ : /^(?!.*\bkoia-toggle-active\b)/);
+      }
+   };
+   await expectActive(dashboard.snapToGridButton);
    await expect(dashboard.snapToGridButton.locator('svg path')).toHaveCount(2);
    await expect(dashboard.gridContent).toBeVisible();
 
    await dashboard.snapToGridButton.click();
+   await expectActive(dashboard.snapToGridButton);
+   await expect(dashboard.gridContent).toBeVisible();
+
+   await dashboard.freeCanvasButton.click();
+   await expectActive(dashboard.freeCanvasButton);
    await expect(dashboard.canvasContent).toBeVisible();
-   await expect(dashboard.snapToGridButton).not.toHaveClass(/\bkoia-toggle-active\b/);
+   await expect(dashboard.sheets).toHaveCount(0);
+
+   await dashboard.landscapePagesButton.click();
+   await expectActive(dashboard.landscapePagesButton);
+   await expect(dashboard.sheets).toHaveCount(2);
+
+   await dashboard.portraitPagesButton.click();
+   await expectActive(dashboard.portraitPagesButton);
+   const sheet = await dashboard.sheets.first().boundingBox();
+   expect(sheet.height / sheet.width).toBeCloseTo((56 + 1400 + 28) / 950, 1);
 
    await dashboard.snapToGridButton.click();
+   await expectActive(dashboard.snapToGridButton);
    await expect(dashboard.gridContent).toBeVisible();
 });
 
@@ -197,29 +218,50 @@ async function expectGridResizeBy(dashboard: DashboardPage, offset: number, expe
    await expect(dashboard.resizePreview).toHaveCount(0);
 }
 
-test('switching to free canvas keeps tile positions and sizes', async ({ page, dashboard }) => {
-   await page.setViewportSize({ width: 1512, height: 1400 });
-   await dashboard.launcher.addChart();
-   await dashboard.sideBar.close();
-   await dashboard.setGridColumns(en.get('element.columns', { count: 2 }));
-   await dashboard.setGridCellRatio('2:1');
-   await dashboard.tile(0).setRowSpan(en.get('element.rows', { count: 2 }));
-   await dashboard.addSummary();
-   await dashboard.sideBar.close();
-   await dashboard.addGraph();
-   await dashboard.sideBar.close();
-   const gridBoxes = await tileBoxes(dashboard);
+test.describe('switching from grid', () => {
 
-   await dashboard.snapToGridButton.click();
-   await expect(dashboard.canvasContent).toBeVisible();
+   async function gridBoxesOfThreeTiles(page: Page, dashboard: DashboardPage): Promise<{ x: number; y: number; width: number; height: number }[]> {
+      await page.setViewportSize({ width: 1512, height: 1400 });
+      await dashboard.launcher.addChart();
+      await dashboard.sideBar.close();
+      await dashboard.setGridColumns(en.get('element.columns', { count: 2 }));
+      await dashboard.setGridCellRatio('2:1');
+      await dashboard.tile(0).setRowSpan(en.get('element.rows', { count: 2 }));
+      await dashboard.addSummary();
+      await dashboard.sideBar.close();
+      await dashboard.addGraph();
+      await dashboard.sideBar.close();
+      return tileBoxes(dashboard);
+   }
 
-   const canvasBoxes = await tileBoxes(dashboard);
-   expect(canvasBoxes.length).toBe(3);
-   canvasBoxes.forEach((box, i) => {
-      expect(Math.abs(box.x - gridBoxes[i].x)).toBeLessThanOrEqual(1);
-      expect(Math.abs(box.y - gridBoxes[i].y)).toBeLessThanOrEqual(1);
-      expect(Math.abs(box.width - gridBoxes[i].width)).toBeLessThanOrEqual(1);
-      expect(Math.abs(box.height - gridBoxes[i].height)).toBeLessThanOrEqual(1);
+   async function expectBoxesShiftedBy(dashboard: DashboardPage, gridBoxes: { x: number; y: number; width: number; height: number }[],
+      dy: number): Promise<void> {
+      const canvasBoxes = await tileBoxes(dashboard);
+      expect(canvasBoxes.length).toBe(3);
+      canvasBoxes.forEach((box, i) => {
+         expect(Math.abs(box.x - gridBoxes[i].x)).toBeLessThanOrEqual(1);
+         expect(Math.abs(box.y - gridBoxes[i].y - dy)).toBeLessThanOrEqual(1);
+         expect(Math.abs(box.width - gridBoxes[i].width)).toBeLessThanOrEqual(1);
+         expect(Math.abs(box.height - gridBoxes[i].height)).toBeLessThanOrEqual(1);
+      });
+   }
+
+   test('to free canvas keeps tile positions and sizes', async ({ page, dashboard }) => {
+      const gridBoxes = await gridBoxesOfThreeTiles(page, dashboard);
+
+      await dashboard.freeCanvasButton.click();
+      await expect(dashboard.canvasContent).toBeVisible();
+
+      await expectBoxesShiftedBy(dashboard, gridBoxes, 0);
+   });
+
+   test('to landscape pages keeps tile positions and sizes below the sheet header', async ({ page, dashboard }) => {
+      const gridBoxes = await gridBoxesOfThreeTiles(page, dashboard);
+
+      await dashboard.landscapePagesButton.click();
+      await expect(dashboard.canvasContent).toBeVisible();
+
+      await expectBoxesShiftedBy(dashboard, gridBoxes, 56 * await dashboard.canvasScale());
    });
 });
 
@@ -269,10 +311,10 @@ test('canvas tile brought to front is stacked above other tile', async ({ dashbo
    expect(await dashboard.tile(0).zIndex()).toBeGreaterThan(await dashboard.tile(1).zIndex());
 });
 
-test('free canvas prints one sheet per page', async ({ page, dashboard }) => {
+test('landscape pages print one landscape sheet per page', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
-   await dashboard.snapToGridButton.click();
+   await dashboard.landscapePagesButton.click();
    await dashboard.addChart();
    await dashboard.sideBar.selectColumn(column);
    await dashboard.sideBar.close();
@@ -281,17 +323,72 @@ test('free canvas prints one sheet per page', async ({ page, dashboard }) => {
    const scale = await dashboard.canvasScale();
    const sheetsOfOnePage = await printedSheets(page);
 
-   await tile.startMoveBy(0, 950 * scale + 2);
+   await tile.startMoveBy(0, (56 + 950 + 28 + 20) * scale + 2);
    await tile.release();
 
    await tile.expectChartPainted();
-   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1 });
-   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2 });
+   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1, orientation: 'landscape' });
+   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2, orientation: 'landscape' });
+});
+
+test('portrait pages print one portrait sheet per page', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.portraitPagesButton.click();
+   await dashboard.addSummaries(1);
+   const sheetsOfOnePage = await printedSheets(page);
+
+   await dashboard.addSummaries(3);
+
+   await expect(dashboard.sheets).toHaveCount(3);
+   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1, orientation: 'portrait' });
+   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2, orientation: 'portrait' });
+});
+
+test('page sheets show heading and page number', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   await dashboard.landscapePagesButton.click();
+   await dashboard.addSummaries(1);
+
+   const sheet = dashboard.sheets.first();
+
+   await expect(sheet.locator('.div_canvas_sheet_header img')).toBeVisible();
+   await expect(sheet.locator('.div_canvas_sheet_header .span_print_details')).toContainText(en.get('view.printScene', { name: '' }).trim());
+   await expect(sheet.locator('.div_canvas_sheet_footer')).toHaveText(en.get('view.printPage', { page: 1, count: 1 }));
+});
+
+test('switching from landscape to portrait pages wraps side by side tiles into rows', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 2);
+
+   await dashboard.portraitPagesButton.click();
+
+   await expect(dashboard.sheets.first()).toBeVisible();
+   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   expect(Math.abs(secondBox.x - firstBox.x)).toBeLessThanOrEqual(1);
+   expect(secondBox.y).toBeGreaterThan(firstBox.y + firstBox.height);
+});
+
+test('free canvas moves a tile across the landscape page boundary', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.freeCanvasButton.click();
+   await dashboard.addSummaries(1);
+   const tile = dashboard.tile(0);
+   const scale = await dashboard.canvasScale();
+   const box = await tile.root.boundingBox();
+
+   await tile.startMoveBy(0, 800 * scale);
+   await tile.release();
+
+   const moved = await tile.root.boundingBox();
+   expect(Math.abs(moved.y - box.y - 800 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+   await expect(dashboard.sheets).toHaveCount(0);
 });
 
 async function startCanvasWithCharts(dashboard: DashboardPage, chartCount: number): Promise<number> {
    await dashboard.launcher.cancel();
-   await dashboard.snapToGridButton.click();
+   await dashboard.landscapePagesButton.click();
    for (let i = 0; i < chartCount; i++) {
       await dashboard.addChart();
       await dashboard.sideBar.close();
@@ -304,13 +401,21 @@ async function tileBoxes(dashboard: DashboardPage): Promise<{ x: number; y: numb
    return Promise.all((await dashboard.tiles.all()).map(tile => tile.boundingBox()));
 }
 
-async function printedSheets(page: Page): Promise<{ A4: number; Letter: number }> {
+/**
+ * @returns the number of sheets printed on A4 and Letter in the orientation the page's CSS gives, together with the
+ * orientation of all sheets
+ */
+async function printedSheets(page: Page): Promise<{ A4: number; Letter: number; orientation: string }> {
    await dispatchWindowEvent(page, 'beforeprint');
+   const orientations = new Set<string>();
    const sheetsOf = async (format: string) => {
-      const pdf = await page.pdf({ format, landscape: true, margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' } });
-      return pdf.toString('latin1').match(/\/Type\s*\/Page(?!s)/g).length;
+      const pdf = (await page.pdf({ format, preferCSSPageSize: true })).toString('latin1');
+      pdf.match(/\/MediaBox\s*\[[^\]]*\]/g)
+         .map(box => box.match(/[\d.]+/g).map(Number))
+         .forEach(([, , width, height]) => orientations.add(width > height ? 'landscape' : 'portrait'));
+      return pdf.match(/\/Type\s*\/Page(?!s)/g).length;
    };
-   const sheets = { A4: await sheetsOf('A4'), Letter: await sheetsOf('Letter') };
+   const sheets = { A4: await sheetsOf('A4'), Letter: await sheetsOf('Letter'), orientation: [...orientations].join() };
    await dispatchWindowEvent(page, 'afterprint');
    return sheets;
 }
@@ -838,7 +943,7 @@ test('switching layout back and forth keeps a text box on its spot of the tile',
    const textBox = await addSummaryChartAndTextBox(dashboard);
    const spot = await dropOnto(textBox, dashboard.chartTiles, BOTTOM_RIGHT_QUADRANT);
 
-   await dashboard.snapToGridButton.click();
+   await dashboard.landscapePagesButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
    const canvasSpot = await spotOf(textBox, dashboard.chartTiles);
    await dashboard.snapToGridButton.click();
@@ -858,7 +963,7 @@ test('switching layout back and forth keeps formatted text box content and backg
    await textBox.toolbar.toggleBold();
    await textBox.toolbar.setBackgroundColor('#ffff00');
 
-   await dashboard.snapToGridButton.click();
+   await dashboard.landscapePagesButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
    await dashboard.snapToGridButton.click();
    await expect(dashboard.gridContent).toBeVisible();

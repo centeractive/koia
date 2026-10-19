@@ -1,5 +1,5 @@
 import { CdkDragEnd, DragRef, Point } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
@@ -13,12 +13,14 @@ import { LanguageService } from 'app/shared/services/language';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { firstValueFrom } from 'rxjs';
-import { ElementContext, Route, TextBoxContext } from '../shared/model';
+import { CanvasPaging, ElementContext, Route, TextBoxContext } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 import { FreeLayout, Rect, TileRect } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
+import { PageFormat } from './page-format';
+import { PageReflow } from './page-reflow';
 import { resizableEdges } from './resizable-edges';
 import { Guide, Snap, SnapGuides } from './snap-guides';
 
@@ -42,6 +44,7 @@ interface CanvasInteraction {
 })
 export class DashboardComponent extends ViewController {
 
+  readonly CanvasPaging = CanvasPaging;
   readonly gridColumnChoices = GridLayout.COLUMN_CHOICES;
   readonly gridCellRatioChoices = GridLayout.CELL_RATIO_CHOICES;
   readonly gridLayout = new GridLayout();
@@ -50,6 +53,8 @@ export class DashboardComponent extends ViewController {
   @ViewChild('canvasPages') canvasPagesRef: ElementRef<HTMLDivElement>;
   resizePreview: { left: number, top: number, width: number, height: number };
   canvasGuides: Guide[] = [];
+  printedAt = new Date();
+  private readonly cdr = inject(ChangeDetectorRef);
   private gridResizeContentWidth: number;
   private canvasInteraction: CanvasInteraction;
 
@@ -67,24 +72,56 @@ export class DashboardComponent extends ViewController {
     return this.route === Route.GRID;
   }
 
-  toggleGridLayout(): void {
-    this.setLayout(this.isGridLayout() ? Route.FLEX : Route.GRID);
+  isCanvasPaging(paging: CanvasPaging): boolean {
+    return !this.isGridLayout() && this.freeLayout.pageFormat.paging === paging;
   }
 
-  setLayout(route: Route): void {
-    if (route !== this.route) {
+  isPagedCanvas(): boolean {
+    return !this.isGridLayout() && this.freeLayout.pageFormat.paged;
+  }
+
+  snapToGrid(): void {
+    this.setLayout(Route.GRID);
+  }
+
+  showCanvas(paging: CanvasPaging): void {
+    this.setLayout(Route.FLEX, PageFormat.of(paging));
+  }
+
+  /**
+   * @param pageFormat format of the canvas pages, the grid is laid out in landscape page units
+   */
+  setLayout(route: Route, pageFormat = PageFormat.LANDSCAPE): void {
+    if (route !== this.route || pageFormat !== this.freeLayout.pageFormat) {
       const view = this.toView('');
       if (route === Route.FLEX) {
-        this.applyRenderedTilePositions(view.elements);
+        this.applyCanvasPositions(view.elements, pageFormat);
       } else {
         this.applyGridSpans(view.elements);
       }
       this.closeSideBar();
       this.route = route;
+      this.freeLayout.pageFormat = pageFormat;
       this.elementContexts = this.restoreElementContexts(view.elements);
       this.renderChartsOnceCreated(this.elementContexts);
       this.requestPersist();
     }
+  }
+
+  private applyCanvasPositions(elements: ViewElement[], pageFormat: PageFormat): void {
+    let source = this.freeLayout;
+    if (this.isGridLayout()) {
+      source = new FreeLayout(pageFormat.paged ? PageFormat.LANDSCAPE : PageFormat.UNPAGED);
+      this.applyRenderedTilePositions(elements, source);
+    }
+    if (pageFormat.paged && source.pageFormat !== pageFormat) {
+      new PageReflow(source, new FreeLayout(pageFormat)).reflow(elements, this.elementContexts);
+    }
+  }
+
+  onPrintStart(printedAt: Date): void {
+    this.printedAt = printedAt;
+    this.cdr.detectChanges();
   }
 
   private closeSideBar(): void {
@@ -127,6 +164,7 @@ export class DashboardComponent extends ViewController {
     }
     this.closeSideBar();
     this.route = Route.GRID;
+    this.freeLayout.pageFormat = PageFormat.LANDSCAPE;
     this.gridLayout.gridColumns = result.grid.columns;
     this.gridLayout.gridCellRatio = result.grid.cellRatio;
     this.elementContexts = this.bindElementContexts(result.elementContexts);
@@ -146,22 +184,22 @@ export class DashboardComponent extends ViewController {
    * fits the rendered tiles to pages, overlays keep their offset to the fitted anchor tile, all within its page,
    * text boxes grown to their content keep their own height
    */
-  private applyRenderedTilePositions(elements: ViewElement[]): void {
+  private applyRenderedTilePositions(elements: ViewElement[], layout: FreeLayout): void {
     if (this.gridCellsRef?.nativeElement.getBoundingClientRect().width > 0) {
       const { scale, rects: renderedRects } = this.renderedGridRects();
       const rendered = renderedRects
         .map((r, i) => ({ element: elements[i], context: r.tile, overlay: r.tile.isOverlay(), layerRect: r.rect }))
         .filter(t => t.layerRect.width > 0 && t.layerRect.height > 0);
       const renderedTiles = rendered.filter(t => !t.overlay);
-      const rects = this.freeLayout.fitToPages(renderedTiles.map(t => t.layerRect));
+      const rects = layout.fitToPages(renderedTiles.map(t => t.layerRect));
       elements.forEach(element => element.x = element.y = undefined);
       renderedTiles.forEach((t, i) => Object.assign(t.element, rects[i], { z: i + 1 }));
       rendered.filter(t => t.overlay).forEach((t, i) => {
         const textBox = t.element as TextBox;
         const anchorRect = rects[renderedTiles.findIndex(r => r.element === elements[textBox.anchor])];
-        const rect = anchorRect ? this.positionInAnchor(textBox, t.layerRect, anchorRect) : t.layerRect;
-        const pageTop = FreeLayout.pageTopOf((anchorRect ?? rect).y);
-        Object.assign(textBox, this.freeLayout.clampIntoPage(rect, pageTop), { z: renderedTiles.length + i + 1 });
+        const rect = anchorRect ? layout.anchoredRect(t.layerRect, anchorRect, { x: textBox.anchorX, y: textBox.anchorY }) : t.layerRect;
+        const pageTop = layout.pageFormat.pageTopOf((anchorRect ?? rect).y);
+        Object.assign(textBox, layout.clampIntoPage(rect, pageTop), { z: renderedTiles.length + i + 1 });
       });
       rendered
         .filter(t => this.isGridGrown(t.context))
@@ -193,14 +231,6 @@ export class DashboardComponent extends ViewController {
     }
     const spans = { columnSpan: context.gridColumnSpan, rowSpan: context.gridRowSpan };
     return Math.round(this.gridLayout.tileSizeOf(spans, this.contentWidth()).height / scale);
-  }
-
-  private positionInAnchor(textBox: TextBox, rect: Rect, anchorRect: Rect): Rect {
-    return {
-      ...rect,
-      x: Math.round(anchorRect.x + textBox.anchorX * anchorRect.width),
-      y: Math.round(anchorRect.y + textBox.anchorY * anchorRect.height)
-    };
   }
 
   /**
@@ -398,7 +428,7 @@ export class DashboardComponent extends ViewController {
   }
 
   private gridCellsScale(cellsRect: DOMRect): number {
-    return cellsRect.width / FreeLayout.PAGE_WIDTH;
+    return cellsRect.width / this.freeLayout.pageFormat.width;
   }
 
   /**
@@ -426,14 +456,31 @@ export class DashboardComponent extends ViewController {
     const snap = guides.snapMove({
       ...this.freeLayout.rectOf(context),
       x: (point.x - pickup.x - livePagesRect.left) / scale,
-      y: (point.y - pickup.y - livePagesRect.top) / scale
+      y: this.layoutYOf((point.y - pickup.y - livePagesRect.top) / scale)
     });
     this.canvasInteraction.snap = snap;
-    return { x: pagesRect.left + snap.rect.x * scale, y: pagesRect.top + snap.rect.y * scale };
+    return { x: pagesRect.left + snap.rect.x * scale, y: pagesRect.top + this.layerYOf(snap.rect.y) * scale };
   };
 
   onFreeMoving(): void {
-    this.canvasGuides = this.visibleGuidesOf(this.canvasInteraction.context, this.canvasInteraction.snap?.guides ?? []);
+    const { context, snap } = this.canvasInteraction;
+    this.canvasGuides = snap ? this.layerGuidesOf(context, snap) : [];
+  }
+
+  /**
+   * @returns the y on the rendered layer in page units
+   */
+  private layerYOf(y: number): number {
+    return this.isGridLayout() ? y : this.freeLayout.layerYOf(y);
+  }
+
+  private layoutYOf(layerY: number): number {
+    return this.isGridLayout() ? layerY : this.freeLayout.layoutYOf(layerY);
+  }
+
+  private layerGuidesOf(context: ElementContext, snap: Snap): Guide[] {
+    const offset = this.layerYOf(snap.rect.y) - snap.rect.y;
+    return this.visibleGuidesOf(context, snap.guides).map(g => g.axis === 'y' ? { ...g, position: g.position + offset } : g);
   }
 
   /**
@@ -467,11 +514,11 @@ export class DashboardComponent extends ViewController {
     const drawn = this.freeLayout.grownRect(snap.rect, context);
     this.resizePreview = {
       left: drawn.x * scale,
-      top: drawn.y * scale,
+      top: this.layerYOf(drawn.y) * scale,
       width: drawn.width * scale,
       height: drawn.height * scale
     };
-    this.canvasGuides = this.visibleGuidesOf(context, snap.guides);
+    this.canvasGuides = this.layerGuidesOf(context, snap);
   }
 
   onFreeResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
@@ -516,13 +563,14 @@ export class DashboardComponent extends ViewController {
       const rects = this.renderedGridRects().rects;
       const rect = rects.find(r => r.tile === context).rect;
       context.setPosition(rect.x, rect.y);
-      guides = new SnapGuides(rects.filter(r => r.tile !== context).map(r => r.rect), 0, threshold, false);
+      guides = new SnapGuides(rects.filter(r => r.tile !== context).map(r => r.rect), this.freeLayout.pageFormat, 0, threshold, false);
       anchorTiles = rects.filter(r => !r.tile.isOverlay());
     } else {
       const others = this.elementContexts
         .filter(c => c !== context)
         .map(c => this.freeLayout.drawnRectOf(c));
-      guides = new SnapGuides(others, this.freeLayout.pageIndexes(this.elementContexts).length, threshold);
+      const pageFormat = this.freeLayout.pageFormat;
+      guides = new SnapGuides(others, pageFormat, this.freeLayout.pageIndexes(this.elementContexts).length, threshold, pageFormat.paged);
     }
     this.canvasInteraction = {
       context,
@@ -543,7 +591,7 @@ export class DashboardComponent extends ViewController {
    */
   private layerScale(): number {
     const layer = (this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef)?.nativeElement;
-    return (layer?.clientWidth ?? 0) / FreeLayout.PAGE_WIDTH;
+    return (layer?.clientWidth ?? 0) / this.freeLayout.pageFormat.width;
   }
 
   private endCanvasInteraction(): void {
@@ -563,6 +611,7 @@ export class DashboardComponent extends ViewController {
 
   protected onPreRestoreView(view: View): void {
     this.route = view.route;
+    this.freeLayout.pageFormat = PageFormat.of(view.canvasPaging);
     if (view.gridColumns) {
       this.gridLayout.gridColumns = view.gridColumns;
     }
@@ -574,5 +623,9 @@ export class DashboardComponent extends ViewController {
   protected onPreSaveView(view: View): void {
     view.gridColumns = this.gridLayout.gridColumns;
     view.gridCellRatio = this.gridLayout.gridCellRatio;
+    const paging = this.freeLayout.pageFormat.paging;
+    if (paging !== CanvasPaging.LANDSCAPE) {
+      view.canvasPaging = paging;
+    }
   }
 }

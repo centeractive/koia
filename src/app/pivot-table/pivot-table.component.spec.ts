@@ -30,6 +30,7 @@ import { Observable, of, Subject, throwError } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
 import type { Mock } from 'vitest';
+import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
@@ -81,7 +82,7 @@ describe('PivotTableComponent', () => {
     viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn() } as unknown as ViewTabsService;
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [PivotTableComponent, ViewToolbarComponent, PrintHeadingComponent],
+      declarations: [PivotTableComponent, ViewToolbarComponent, PageHeadingComponent, PrintHeadingComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
         MatMenuModule, MatBottomSheetModule, CdkScrollableModule, MatBadgeModule

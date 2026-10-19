@@ -186,44 +186,87 @@ describe('global styles', () => {
     expect(rule.style.getPropertyPriority('break-inside')).toBe('important');
   });
 
-  it('print styles should print canvas as wide as page', () => {
+  it('print styles should print canvas as wide as its print width, unshifted', () => {
 
     // when
     const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_pages', 'print');
 
     // then
-    expect(rule.style.maxWidth).toBe('calc(970px / var(--koia-print-zoom, 1))');
-    expect(rule.style.getPropertyPriority('max-width')).toBe('important');
+    expect(rule.style.maxWidth).toBe('calc(var(--koia-print-width) / var(--koia-print-zoom, 1))');
+    expect(rule.style.width).toBe('auto');
+    expect(rule.style.margin).toBe('0px');
+    expect(['max-width', 'width', 'margin-left', 'margin-top'].map(p => rule.style.getPropertyPriority(p))).toEqual(['important', 'important', 'important', 'important']);
   });
 
-  it('print styles should cut canvas page content at page bottom', () => {
+  it('print styles should cut canvas page content at page bottom and print sheets without gap and shadow', () => {
 
     // when
     const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page', 'print');
 
     // then
     expect(rule.style.overflow).toBe('hidden');
-    expect(rule.style.getPropertyPriority('overflow')).toBe('important');
+    expect(rule.style.margin).toBe('0px');
+    expect(rule.style.boxShadow).toBe('none');
+    expect(['overflow', 'margin-bottom', 'box-shadow'].map(p => rule.style.getPropertyPriority(p))).toEqual(['important', 'important', 'important']);
   });
 
-  it('print styles should print each canvas page on a new sheet below heading band', () => {
+  it('print styles should print each canvas page on a new sheet', () => {
 
     // when
     const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page + .div_canvas_page', 'print');
 
     // then
     expect(rule.style.breakBefore).toBe('page');
-    expect(rule.style.borderTop).toBe('calc(44px / var(--koia-print-zoom, 1)) solid transparent');
+    expect(rule.style.borderTop).toBe('');
   });
 
-  it('print styles should hide page boundary and spare page', () => {
+  it('print styles should hide spare page', () => {
 
     // when
-    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page::after, .div_canvas_page_spare', 'print');
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_page_spare', 'print');
 
     // then
     expect(rule.style.display).toBe('none');
     expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should hide view heading of canvas sheets carrying their own heading', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), 'koia-print-heading.koia-print-heading-in-sheets', 'print');
+
+    // then
+    expect(rule.style.display).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should print portrait pages on portrait sheets', () => {
+
+    // when
+    const pageRule = findPageRule(Array.from(document.styleSheets), 'print', 'koia-portrait');
+    const bodyRule = findStyleRule(Array.from(document.styleSheets), 'html.koia-print-portrait body', 'print');
+
+    // then
+    expect(pageRule.style.getPropertyValue('size')).toBe('portrait');
+    expect(pageRule.style.getPropertyValue('margin')).toBe('10mm');
+    expect(bodyRule.style.getPropertyValue('page')).toBe('koia-portrait');
+  });
+
+  it.each([
+    { selector: '.div_canvas_sheet_header', property: 'gap', value: 'calc(14 * var(--koia-pu))' },
+    { selector: '.div_canvas_sheet_header', property: 'padding-bottom', value: 'calc(8 * var(--koia-pu))' },
+    { selector: '.div_canvas_sheet_header img', property: 'height', value: 'calc(40 * var(--koia-pu))' },
+    { selector: '.div_canvas_sheet_header .span_print_title', property: 'font-size', value: 'calc(26 * var(--koia-pu))' },
+    { selector: '.div_canvas_sheet_header .span_print_details', property: 'font-size', value: 'calc(16 * var(--koia-pu))' },
+    { selector: '.div_canvas_sheet_footer', property: 'font-size', value: 'calc(16 * var(--koia-pu))' },
+    { selector: '.div_canvas_sheet_footer', property: 'justify-content', value: 'flex-end' }
+  ])('$selector should define $property as printed', ({ selector, property, value }) => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), selector);
+
+    // then
+    expect(rule.style.getPropertyValue(property)).toBe(value);
   });
 
   function createPanelHost(): HTMLElement {

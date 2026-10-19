@@ -110,6 +110,32 @@ describe('findPageRule', () => {
     expect(rule).toBeUndefined();
   });
 
+  it('should find named page rule by name', () => {
+
+    // given
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('@page wide { size: landscape } @page { margin: 1mm } @page narrow { size: portrait }');
+
+    // when
+    const rule = findPageRule([sheet], undefined, 'narrow');
+
+    // then
+    expect(rule.style.getPropertyValue('size')).toBe('portrait');
+  });
+
+  it('should find unnamed page rule by default', () => {
+
+    // given
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('@page wide { size: landscape } @page { margin: 1mm }');
+
+    // when
+    const rule = findPageRule([sheet]);
+
+    // then
+    expect(rule.style.getPropertyValue('margin')).toBe('1mm');
+  });
+
   it('should return undefined when no page rule exists', () => {
 
     // given

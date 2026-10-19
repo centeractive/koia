@@ -1,4 +1,4 @@
-import { FreeLayout } from './free-layout';
+import { PageFormat } from './page-format';
 import { SnapGuides } from './snap-guides';
 
 describe('SnapGuides', () => {
@@ -6,7 +6,7 @@ describe('SnapGuides', () => {
   const other = { x: 200, y: 100, width: 400, height: 300 };
 
   function guidesOf(threshold = 5): SnapGuides {
-    return new SnapGuides([other], 2, threshold);
+    return new SnapGuides([other], PageFormat.LANDSCAPE, 2, threshold);
   }
 
   it.each([
@@ -162,7 +162,7 @@ describe('SnapGuides', () => {
   describe('unpaged', () => {
 
     function unpagedGuidesOf(): SnapGuides {
-      return new SnapGuides([other], 0, 5, false);
+      return new SnapGuides([other], PageFormat.LANDSCAPE, 0, 5, false);
     }
 
     it('#snapMove should not snap to page boundary', () => {
@@ -219,7 +219,52 @@ describe('SnapGuides', () => {
       const snap = unpagedGuidesOf().snapResize({ x: 1000, y: 0, width: 150, height: 1203 });
 
       // then
-      expect(snap.rect.height).toBe(FreeLayout.PAGE_HEIGHT);
+      expect(snap.rect.height).toBe(PageFormat.LANDSCAPE.height);
+    });
+  });
+
+  describe('portrait', () => {
+
+    function portraitGuidesOf(): SnapGuides {
+      return new SnapGuides([], PageFormat.PORTRAIT, 2, 5);
+    }
+
+    it('#snapMove should keep tile within portrait page width', () => {
+
+      // when
+      const snap = portraitGuidesOf().snapMove({ x: 900, y: 200, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect.x).toBe(800);
+    });
+
+    it('#snapMove should snap bottom edge to portrait page boundary', () => {
+
+      // when
+      const snap = portraitGuidesOf().snapMove({ x: 100, y: 1297, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect.y).toBe(1300);
+      expect(snap.guides).toEqual([{ axis: 'y', position: 1400 }]);
+    });
+
+    it('#snapMove should snap center edge to portrait page center', () => {
+
+      // when
+      const snap = portraitGuidesOf().snapMove({ x: 402, y: 200, width: 150, height: 100 });
+
+      // then
+      expect(snap.rect.x).toBe(400);
+      expect(snap.guides).toEqual([{ axis: 'x', position: 475 }]);
+    });
+
+    it('#snapResize should cap height at portrait page bottom', () => {
+
+      // when
+      const snap = portraitGuidesOf().snapResize({ x: 100, y: 1500, width: 150, height: 1500 });
+
+      // then
+      expect(snap.rect.height).toBe(1300);
     });
   });
 });

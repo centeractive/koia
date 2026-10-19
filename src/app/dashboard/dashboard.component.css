@@ -120,6 +120,7 @@
 
 .div_canvas_pages {
   position: relative;
+  margin: 0 auto;
   container-type: inline-size;
 }
 
@@ -127,14 +128,17 @@
   position: relative;
 }
 
-.div_canvas_page::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-bottom: 1px dashed var(--koia-outline-color);
-  pointer-events: none;
+.div_canvas_page_content {
+  position: relative;
+}
+
+.div_canvas_sheet {
+  background-color: var(--koia-surface);
+  box-shadow: var(--koia-header-shadow);
+}
+
+.div_canvas_sheet.div_canvas_page_spare {
+  opacity: 0.5;
 }
 
 .div_canvas_guide {

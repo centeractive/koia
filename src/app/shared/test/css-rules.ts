@@ -5,8 +5,11 @@ export function findStyleRule(sheets: Iterable<CSSStyleSheet>, selectorText: str
   return rulesOf(sheets, mediaText).find(r => isStyleRule(r) && r.selectorText === selectorText) as CSSStyleRule;
 }
 
-export function findPageRule(sheets: Iterable<CSSStyleSheet>, mediaText?: string): CSSPageRule | undefined {
-  return rulesOf(sheets, mediaText).find(r => r.type === CSSRule.PAGE_RULE) as CSSPageRule;
+/**
+ * @param name name of the page rule, the unnamed rule by default
+ */
+export function findPageRule(sheets: Iterable<CSSStyleSheet>, mediaText?: string, name = ''): CSSPageRule | undefined {
+  return rulesOf(sheets, mediaText).find(r => r.type === CSSRule.PAGE_RULE && (r as CSSPageRule).selectorText === name) as CSSPageRule;
 }
 
 function rulesOf(sheets: Iterable<CSSStyleSheet>, mediaText: string | undefined): CSSRule[] {

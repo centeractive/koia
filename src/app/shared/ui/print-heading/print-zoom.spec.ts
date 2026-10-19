@@ -1,4 +1,4 @@
-import { fitPrintableContentToPage, PRINT_ZOOM_PROPERTY, resetPrintZoom } from './print-zoom';
+import { fitPrintableContentToPage, PRINT_WIDTH_PROPERTY, PRINT_ZOOM_PROPERTY, resetPrintZoom } from './print-zoom';
 
 describe('print zoom', () => {
 
@@ -102,6 +102,20 @@ describe('print zoom', () => {
     // then
     expect(viewRoot.scrollLeft).toBe(300);
     expect(printZoom()).toBe(String(980 / 3000));
+  });
+
+  it('should zoom printable content defining its print width to exactly that width', () => {
+
+    // given
+    const element = printable(1200, wrapper('padding: 0 10px'));
+    element.style.margin = '0 auto';
+    element.style.setProperty(PRINT_WIDTH_PROPERTY, '600px');
+
+    // when
+    fitPrintableContentToPage(viewRoot);
+
+    // then
+    expect(printZoom()).toBe('0.5');
   });
 
   it('should zoom margins of printable content', () => {

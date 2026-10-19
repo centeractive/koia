@@ -87,6 +87,7 @@ import { CouchDBService } from './shared/services/backend/couchdb/couchdb.servic
 import { DialogService } from './shared/services/dialog.service';
 import { ReaderService } from './shared/services/reader';
 import { TableModeTogglesComponent } from './shared/ui/virtual-table/table-mode-toggles.component';
+import { PageHeadingComponent } from './shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from './shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from './shared/ui/view-toolbar/view-toolbar.component';
 import { DialogCloseButtonComponent } from './shared/ui/dialog-close-button/dialog-close-button.component';
@@ -141,6 +142,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         VirtualTableComponent,
         TableModeTogglesComponent,
         ViewToolbarComponent,
+        PageHeadingComponent,
         PrintHeadingComponent,
         DialogCloseButtonComponent,
         SideBarHeaderComponent,

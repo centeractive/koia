@@ -1,4 +1,5 @@
 export const PRINT_ZOOM_PROPERTY = '--koia-print-zoom';
+export const PRINT_WIDTH_PROPERTY = '--koia-print-width';
 
 /** printable width of landscape Letter with 10mm page margins, landscape A4 is wider */
 export const PRINTABLE_PAGE_WIDTH_PX = 980;
@@ -16,8 +17,15 @@ export function resetPrintZoom(document: Document): void {
   document.documentElement.style.removeProperty(PRINT_ZOOM_PROPERTY);
 }
 
+/**
+ * an element defining its print width prints exactly that wide
+ */
 function zoomFitting(element: HTMLElement, viewRoot: HTMLElement): number {
   const style = getComputedStyle(element);
+  const printWidth = parseFloat(style.getPropertyValue(PRINT_WIDTH_PROPERTY));
+  if (printWidth > 0) {
+    return printWidth / element.scrollWidth;
+  }
   const marginLeft = parseFloat(style.marginLeft);
   const marginRight = parseFloat(style.marginRight);
   const offset = unscrolledLeft(element, viewRoot) - marginLeft;

@@ -14,7 +14,7 @@ import { ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import {
-  AnchorOffset, Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TextBoxContext, TimeUnit
+  AnchorOffset, CanvasPaging, Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TextBoxContext, TimeUnit
 } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
@@ -36,7 +36,9 @@ import { DashboardComponent } from './dashboard.component';
 import { DetachFromDropListDirective } from './detach-from-drop-list.directive';
 import { FreeLayout, Rect } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
+import { PageFormat } from './page-format';
 import { Guide, SnapGuides } from './snap-guides';
+import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
@@ -125,7 +127,7 @@ describe('DashboardComponent', () => {
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
         SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent,
-        DetachFromDropListDirective
+        PageHeadingComponent, DetachFromDropListDirective
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
       providers: [
@@ -364,7 +366,7 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_canvas .div_canvas_page > .div_text_tile');
+      const tile: HTMLElement = fixture.nativeElement.querySelector('#div_canvas .div_canvas_page_content > .div_text_tile');
       expect(tile.classList).toContain('div_canvas_tile');
       expect(tile.classList).toContain('div_text_box_tile');
       expect(getComputedStyle(tile).zIndex).toBe(String(context.z));
@@ -436,7 +438,23 @@ describe('DashboardComponent', () => {
       textBox.fitHeightChange.emit(100);
 
       // then
-      expect(context.fitHeight).toBe(Math.ceil(100 / (layer.clientWidth / FreeLayout.PAGE_WIDTH)));
+      expect(context.fitHeight).toBe(Math.ceil(100 / (layer.clientWidth / component.freeLayout.pageFormat.width)));
+    });
+
+    it('should set fit height in page units of portrait pages when text box emits it', () => {
+
+      // given
+      component.showCanvas(CanvasPaging.PORTRAIT);
+      const context = component.addTextTile();
+      fixture.detectChanges();
+      const pages: HTMLElement = fixture.nativeElement.querySelector('.div_canvas_pages');
+      const textBox = fixture.debugElement.query(By.directive(TextBoxComponent)).componentInstance as TextBoxComponent;
+
+      // when
+      textBox.fitHeightChange.emit(100);
+
+      // then
+      expect(context.fitHeight).toBe(Math.ceil(100 / (pages.clientWidth / 950)));
     });
 
     it('#onTextFitHeight should follow scale of layer', () => {
@@ -548,7 +566,7 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      const textBox = fixture.debugElement.query(By.css('#div_canvas .div_canvas_page > .div_text_box_tile > .div_element > koia-text-box'));
+      const textBox = fixture.debugElement.query(By.css('#div_canvas .div_canvas_page_content > .div_text_box_tile > .div_element > koia-text-box'));
       expect(textBox.componentInstance.context).toBe(context);
       const tile: HTMLElement = fixture.nativeElement.querySelector('#div_canvas .div_text_box_tile');
       expect(tile.classList).toContain('div_canvas_tile');
@@ -1268,7 +1286,21 @@ describe('DashboardComponent', () => {
         });
       }
 
-      it('#setLayout to free canvas should keep rendered tile rects', () => {
+      it('#showCanvas without pages should keep rendered tile rects', () => {
+
+        // given
+        renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
+        const gridRects = rectsOf('#div_grid .div_tile');
+
+        // when
+        component.showCanvas(CanvasPaging.NONE);
+        fixture.detectChanges();
+
+        // then
+        expectSameRects(rectsOf('.div_canvas_tile'), gridRects);
+      });
+
+      it('#setLayout to free canvas should keep rendered tile rects below sheet header', () => {
 
         // given
         renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
@@ -1279,7 +1311,8 @@ describe('DashboardComponent', () => {
         fixture.detectChanges();
 
         // then
-        expectSameRects(rectsOf('.div_canvas_tile'), gridRects);
+        const headerHeight = FreeLayout.SHEET_HEADER * canvasScale();
+        expectSameRects(rectsOf('.div_canvas_tile'), gridRects.map(r => new DOMRect(r.x, r.y + headerHeight, r.width, r.height)));
       });
 
       it('#setLayout to free canvas should push tiles crossing page to next page', () => {
@@ -1293,8 +1326,8 @@ describe('DashboardComponent', () => {
         // then
         const tops = component.elementContexts.map(c => c.y);
         expect(tops.slice(0, 3)).toEqual([0, 0, 0]);
-        expect(tops[3] + component.elementContexts[3].height).toBeLessThanOrEqual(FreeLayout.PAGE_HEIGHT);
-        expect(tops[6]).toBe(FreeLayout.PAGE_HEIGHT);
+        expect(tops[3] + component.elementContexts[3].height).toBeLessThanOrEqual(PageFormat.LANDSCAPE.height);
+        expect(tops[6]).toBe(PageFormat.LANDSCAPE.height);
       });
 
       it('#setLayout to free canvas should place tile with zero-sized rect below converted tiles', () => {
@@ -1358,7 +1391,7 @@ describe('DashboardComponent', () => {
         renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
 
         // then
-        const secondPage: HTMLElement = fixture.nativeElement.querySelectorAll('.div_canvas_page')[1];
+        const secondPage: HTMLElement = fixture.nativeElement.querySelectorAll('.div_canvas_page_content')[1];
         const tileRect = secondPage.querySelector('.div_canvas_tile').getBoundingClientRect();
         expect(tileRect.top - secondPage.getBoundingClientRect().top).toBeCloseTo(10 * canvasScale(), 0);
       });
@@ -1372,7 +1405,7 @@ describe('DashboardComponent', () => {
         const [tileRect] = rectsOf('.div_canvas_tile');
         expect(getComputedStyle(fixture.nativeElement.querySelector('.div_canvas_tile')).position).toBe('absolute');
         expect(tileRect.left - pagesRect().left).toBeCloseTo(100 * canvasScale(), 0);
-        expect(tileRect.top - pagesRect().top).toBeCloseTo(50 * canvasScale(), 0);
+        expect(tileRect.top - pagesRect().top).toBeCloseTo((50 + FreeLayout.SHEET_HEADER) * canvasScale(), 0);
         expect(tileRect.width).toBeCloseTo(600 * canvasScale(), 0);
       });
 
@@ -1407,6 +1440,251 @@ describe('DashboardComponent', () => {
         expect(previewRect.left - pagesRect().left).toBeCloseTo(10, 0);
         expect(previewRect.top - pagesRect().top).toBeCloseTo(20, 0);
         expect([previewRect.width, previewRect.height]).toEqual([100, 50]);
+      });
+
+      describe('canvas pages', () => {
+
+        function canvasContentWidth(): number {
+          return fixture.nativeElement.querySelector('#div_canvas').clientWidth - 10;
+        }
+
+        function sheets(): HTMLElement[] {
+          return Array.from(fixture.nativeElement.querySelectorAll('.div_canvas_page'));
+        }
+
+        it('portrait pages should be centred at the scale of landscape pages', () => {
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+
+          // then
+          const canvasLeft = fixture.nativeElement.querySelector('#div_canvas').getBoundingClientRect().left + 5;
+          const pages = pagesRect();
+          expect(pages.width).toBeCloseTo(canvasContentWidth() * 950 / 1400, 0);
+          expect(pages.left - canvasLeft).toBeCloseTo((canvasContentWidth() - pages.width) / 2, 0);
+          expect(canvasScale()).toBeCloseTo(canvasContentWidth() / 1400, 2);
+        });
+
+        it('portrait sheet should consist of header, page content and footer in page units', () => {
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+
+          // then
+          const [header, content, footer] = Array.from(sheets()[0].children).map(c => c.getBoundingClientRect().height);
+          expect(header).toBeCloseTo(FreeLayout.SHEET_HEADER * canvasScale(), 0);
+          expect(Math.abs(content - 1400 * canvasScale())).toBeLessThan(1);
+          expect(footer).toBeCloseTo(FreeLayout.SHEET_FOOTER * canvasScale(), 0);
+        });
+
+        it('sheets should be separated by gap', () => {
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+
+          // then
+          const [first, second] = sheets().map(s => s.getBoundingClientRect());
+          expect(second.top - first.bottom).toBeCloseTo(FreeLayout.SHEET_GAP * canvasScale(), 0);
+        });
+
+        it('sheets should show heading and page number, the spare sheet neither', () => {
+
+          // given
+          component.tab = dashboardTab();
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+
+          // then
+          const [first, second, spare] = sheets();
+          expect(first.querySelector('.div_canvas_sheet_header img')).toBeTruthy();
+          expect(first.querySelector('.div_canvas_sheet_header .span_print_title').textContent).toBe('Dashboard 1');
+          expect(first.querySelector('.div_canvas_sheet_header .span_print_details').textContent).toContain('Scene: Scene 1');
+          expect(first.querySelector('.div_canvas_sheet_footer').textContent.trim()).toBe('Page 1 of 2');
+          expect(second.querySelector('.div_canvas_sheet_footer').textContent.trim()).toBe('Page 2 of 2');
+          expect(spare.querySelector('.div_canvas_sheet_header').children.length).toBe(0);
+          expect(spare.querySelector('.div_canvas_sheet_footer').textContent.trim()).toBe('');
+        });
+
+        it('sheets should be drawn as paper, the spare sheet faded', () => {
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400]]);
+
+          // then
+          const [sheet, spare] = sheets();
+          expect(sheet.classList).toContain('div_canvas_sheet');
+          expect(getComputedStyle(sheet).boxShadow).not.toBe('none');
+          expect(getComputedStyle(sheet).opacity).toBe('1');
+          expect(getComputedStyle(spare).opacity).toBe('0.5');
+        });
+
+        it('free canvas should show one page as high as its tiles, without sheet, heading or footer', () => {
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400], [0, 900, 600, 400]], CanvasPaging.NONE);
+
+          // then
+          const [page, spare] = sheets();
+          expect(page.querySelector('.div_canvas_page_content').getBoundingClientRect().height).toBeCloseTo(1300 * canvasScale(), 0);
+          expect(page.querySelectorAll('.div_canvas_page_content > .div_canvas_tile').length).toBe(2);
+          expect(sheets().some(s => s.classList.contains('div_canvas_sheet'))).toBe(false);
+          expect(fixture.nativeElement.querySelector('.div_canvas_sheet_header, .div_canvas_sheet_footer')).toBeNull();
+          expect(getComputedStyle(spare).opacity).toBe('1');
+        });
+
+        it.each([
+          { layout: 'grid', show: (): void => component.snapToGrid(), portrait: false, inSheets: false },
+          { layout: 'free canvas', show: (): void => component.showCanvas(CanvasPaging.NONE), portrait: false, inSheets: false },
+          { layout: 'landscape pages', show: (): void => component.showCanvas(CanvasPaging.LANDSCAPE), portrait: false, inSheets: true },
+          { layout: 'portrait pages', show: (): void => component.showCanvas(CanvasPaging.PORTRAIT), portrait: true, inSheets: true }
+        ])('print heading of $layout should print portrait $portrait and in sheets $inSheets', ({ show, portrait, inSheets }) => {
+
+          // when
+          show();
+          fixture.detectChanges();
+
+          // then
+          const heading = fixture.debugElement.query(By.directive(PrintHeadingComponent));
+          expect((heading.componentInstance as PrintHeadingComponent).portrait).toBe(portrait);
+          expect(heading.nativeElement.classList.contains('koia-print-heading-in-sheets')).toBe(inSheets);
+        });
+
+        it('#onPrintStart should show print time on sheets', () => {
+
+          // given
+          renderCanvasSummaries([[0, 0, 600, 400]]);
+
+          // when
+          component.onPrintStart(new Date(2026, 9, 16, 13, 25, 26));
+
+          // then
+          expect(sheets()[0].querySelector('.span_print_details').textContent).toContain('Oct 16, 2026');
+        });
+
+        it('print heading should pass print time to sheets when printing starts', () => {
+
+          // given
+          renderCanvasSummaries([[0, 0, 600, 400]]);
+          const printedAt = new Date(2026, 9, 16, 13, 25, 26);
+
+          // when
+          fixture.debugElement.query(By.directive(PrintHeadingComponent)).componentInstance.printStart.emit(printedAt);
+
+          // then
+          expect(component.printedAt).toBe(printedAt);
+        });
+
+        it('#constrainFreeMove should map pointer on second sheet to page and back', () => {
+
+          // given
+          const [moved] = renderCanvasSummaries([[0, 0, 600, 400], [700, 960, 600, 400]]);
+          component.onFreeMoveStarted(moved);
+
+          // when
+          const point = constrainMoveTo(0, 1100);
+          component.onFreeMoveEnded(moved, dragEnd());
+
+          // then
+          expect(point.y).toBeCloseTo(pagesRect().top + (1100 + 104 + 56) * canvasScale(), 5);
+          expect(moved.y).toBe(1100);
+        });
+
+        it('#onFreeMoving should show guides on second sheet below its header', () => {
+
+          // given
+          const [moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+          component.onFreeMoveStarted(moved);
+          constrainMoveTo(603, 963);
+
+          // when
+          component.onFreeMoving();
+
+          // then
+          expect(component.canvasGuides).toEqual([{ axis: 'x', position: 600 }, { axis: 'y', position: 960 + 104 + 56 }]);
+        });
+
+        it('#onFreeResizing should preview size on second sheet below its header', () => {
+
+          // given
+          const [resized] = renderCanvasSummaries([[0, 960, 600, 400]]);
+          component.onFreeResizeStart(resized);
+          const scale = canvasScale();
+
+          // when
+          component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
+
+          // then
+          expect(component.resizePreview.top).toBeCloseTo((960 + 104 + 56) * scale, 5);
+        });
+
+        it('#onFreeMoveEnded should leave tile across former page boundary on free canvas', () => {
+
+          // given
+          const [moved] = renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.NONE);
+          component.onFreeMoveStarted(moved);
+          constrainMoveTo(0, 803);
+
+          // when
+          component.onFreeMoveEnded(moved, dragEnd());
+
+          // then
+          expect(moved.y).toBe(800);
+        });
+
+        it('#showCanvas with portrait pages should pack grid tiles into portrait page width', () => {
+
+          // given
+          renderGridSummaries(2, [[1, 1], [1, 1]]);
+
+          // when
+          component.showCanvas(CanvasPaging.PORTRAIT);
+
+          // then
+          const [first, second] = component.elementContexts;
+          expect(component.elementContexts.every(c => c.x + c.width <= 950)).toBe(true);
+          expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
+        });
+
+        it('#showCanvas should keep tile sizes switching from landscape to portrait and back', () => {
+
+          // given
+          renderCanvasSummaries([[0, 0, 600, 400], [610, 0, 600, 400]]);
+          component.showCanvas(CanvasPaging.PORTRAIT);
+
+          // when
+          component.showCanvas(CanvasPaging.LANDSCAPE);
+
+          // then
+          expect(component.elementContexts.map(c => [c.x, c.y, c.width, c.height])).toEqual([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        });
+
+        it('#showCanvas without pages should keep positions of paged tiles', () => {
+
+          // given
+          renderCanvasSummaries([[100, 960, 600, 400]], CanvasPaging.PORTRAIT);
+
+          // when
+          component.showCanvas(CanvasPaging.NONE);
+
+          // then
+          expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[100, 960]]);
+        });
+
+        it('#showCanvas should keep tiles without persisting when showing the shown pages', () => {
+
+          // given
+          const contexts = renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+          const persist = requestPersistSpy();
+
+          // when
+          component.showCanvas(CanvasPaging.PORTRAIT);
+
+          // then
+          expect(component.elementContexts).toEqual(contexts);
+          expect(component.elementContexts[0]).toBe(contexts[0]);
+          expect(persist).not.toHaveBeenCalled();
+        });
       });
 
       it('guides and resize preview should be stacked above tiles', () => {
@@ -1544,8 +1822,8 @@ describe('DashboardComponent', () => {
         expect(context.gridColumnSpan).toBe(1);
       });
 
-      function renderCanvasSummaries(rects: number[][]): SummaryContext[] {
-        component.setLayout(Route.FLEX);
+      function renderCanvasSummaries(rects: number[][], paging = CanvasPaging.LANDSCAPE): SummaryContext[] {
+        component.showCanvas(paging);
         component.elementContexts = rects.map(([x, y, width, height], i) => {
           const context = new SummaryContext(scene.columns);
           context.setPosition(x, y);
@@ -1558,7 +1836,7 @@ describe('DashboardComponent', () => {
       }
 
       function canvasScale(): number {
-        return component.canvasPagesRef.nativeElement.clientWidth / FreeLayout.PAGE_WIDTH;
+        return component.canvasPagesRef.nativeElement.clientWidth / component.freeLayout.pageFormat.width;
       }
 
       function pagesRect(): DOMRect {
@@ -1569,7 +1847,8 @@ describe('DashboardComponent', () => {
 
       function constrainMoveTo(x: number, y: number, pages = pagesRect()): { x: number, y: number } {
         const scale = canvasScale();
-        return component.constrainFreeMove({ x: pages.left + x * scale + PICKUP.x, y: pages.top + y * scale + PICKUP.y }, null, null, PICKUP);
+        const layerY = component.freeLayout.layerYOf(y);
+        return component.constrainFreeMove({ x: pages.left + x * scale + PICKUP.x, y: pages.top + layerY * scale + PICKUP.y }, null, null, PICKUP);
       }
 
       function dragEnd(): CdkDragEnd {
@@ -1591,7 +1870,7 @@ describe('DashboardComponent', () => {
 
         // then
         expect(point.x).toBeCloseTo(pagesRect().left + 600 * canvasScale(), 5);
-        expect(point.y).toBeCloseTo(pagesRect().top, 5);
+        expect(point.y).toBeCloseTo(pagesRect().top + FreeLayout.SHEET_HEADER * canvasScale(), 5);
       });
 
       it('#constrainFreeMove should follow scrolled canvas', () => {
@@ -1608,7 +1887,7 @@ describe('DashboardComponent', () => {
 
         // then
         expect(point.x).toBeCloseTo(startRect.left + 600 * canvasScale(), 5);
-        expect(point.y).toBeCloseTo(startRect.top, 5);
+        expect(point.y).toBeCloseTo(startRect.top + FreeLayout.SHEET_HEADER * canvasScale(), 5);
       });
 
       it('#onFreeMoving should show guides of snap', () => {
@@ -1622,7 +1901,7 @@ describe('DashboardComponent', () => {
         component.onFreeMoving();
 
         // then
-        expect(component.canvasGuides).toEqual([{ axis: 'x', position: 600 }, { axis: 'y', position: 0 }]);
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: 600 }, { axis: 'y', position: FreeLayout.SHEET_HEADER }]);
       });
 
       it('#onFreeMoving should show no guides before first move', () => {
@@ -1680,7 +1959,7 @@ describe('DashboardComponent', () => {
         chartContext.dataColumns = [findColumn('Amount', chartContext)];
         fixture.detectChanges();
         component.onFreeMoveStarted(chartContext);
-        constrainMoveTo(0, FreeLayout.PAGE_HEIGHT + 2);
+        constrainMoveTo(0, PageFormat.LANDSCAPE.height + 2);
         vi.spyOn(chartContext, 'fireStructureChanged');
 
         // when
@@ -1688,7 +1967,7 @@ describe('DashboardComponent', () => {
         tick();
 
         // then
-        expect(chartContext.y).toBe(FreeLayout.PAGE_HEIGHT);
+        expect(chartContext.y).toBe(PageFormat.LANDSCAPE.height);
         expect(chartContext.fireStructureChanged).toHaveBeenCalledTimes(1);
       }));
 
@@ -1724,7 +2003,7 @@ describe('DashboardComponent', () => {
 
         // then
         expect(component.resizePreview.left).toBe(0);
-        expect(component.resizePreview.top).toBe(0);
+        expect(component.resizePreview.top).toBeCloseTo(FreeLayout.SHEET_HEADER * scale, 5);
         expect(component.resizePreview.width).toBeCloseTo(700 * scale, 5);
         expect(component.resizePreview.height).toBeCloseTo(400 * scale, 5);
         expect(component.canvasGuides).toEqual([{ axis: 'x', position: 700 }]);
@@ -1798,7 +2077,7 @@ describe('DashboardComponent', () => {
         }
 
         function gridScale(): number {
-          return cells().clientWidth / FreeLayout.PAGE_WIDTH;
+          return cells().clientWidth / PageFormat.LANDSCAPE.width;
         }
 
         function addTextBoxContext(x: number, y: number, anchor?: ElementContext, offset?: AnchorOffset): TextBoxContext {
@@ -2200,7 +2479,7 @@ describe('DashboardComponent', () => {
 
           // then
           const textBox = component.elementContexts[1];
-          expect([textBox.x, textBox.y]).toEqual([FreeLayout.PAGE_WIDTH - 300, FreeLayout.PAGE_HEIGHT - 150]);
+          expect([textBox.x, textBox.y]).toEqual([PageFormat.LANDSCAPE.width - 300, PageFormat.LANDSCAPE.height - 150]);
         });
 
         it('#setLayout to free canvas should keep drawn rect of unanchored text box within its page', () => {
@@ -2214,7 +2493,7 @@ describe('DashboardComponent', () => {
 
           // then
           const textBox = component.elementContexts[1];
-          expect([textBox.x, textBox.y]).toEqual([1000, FreeLayout.PAGE_HEIGHT - 150]);
+          expect([textBox.x, textBox.y]).toEqual([1000, PageFormat.LANDSCAPE.height - 150]);
         });
 
         it('#setLayout to free canvas should keep drawn rect of text box anchored to unrendered tile', () => {
@@ -2437,7 +2716,7 @@ describe('DashboardComponent', () => {
           component.setLayout(Route.FLEX);
 
           // then
-          expect(component.elementContexts[1].height).toBe(FreeLayout.PAGE_HEIGHT);
+          expect(component.elementContexts[1].height).toBe(PageFormat.LANDSCAPE.height);
         });
 
         it('#setLayout to free canvas should keep offset of note to drawn rect of grown text tile', () => {
@@ -2579,7 +2858,7 @@ describe('DashboardComponent', () => {
           component.onFreeMoving();
 
           // then
-          expect(component.canvasGuides).toContainEqual({ axis: 'y', position: 300 });
+          expect(component.canvasGuides).toContainEqual({ axis: 'y', position: 300 + FreeLayout.SHEET_HEADER });
         });
 
         it('#setLayout to grid should anchor note on grown part of text tile', () => {
@@ -2680,38 +2959,93 @@ describe('DashboardComponent', () => {
       expect(snapToGridButton().querySelector('mat-icon').getAttribute('svgicon')).toBe('snap_grid');
     });
 
-    it('snap to grid button should follow separator in front of add buttons', () => {
+    const LAYOUT_BUTTON_IDS = ['but_snap_to_grid', 'but_free_canvas', 'but_landscape_pages', 'but_portrait_pages'];
+
+    function layoutButton(id: string): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('#' + id);
+    }
+
+    function activeLayoutButtons(): string[] {
+      return LAYOUT_BUTTON_IDS.filter(id => layoutButton(id).classList.contains('koia-toggle-active'));
+    }
+
+    it('layout buttons should follow separator and precede separator in front of add buttons', () => {
 
       // when
-      const button = snapToGridButton();
+      const buttons = LAYOUT_BUTTON_IDS.map(layoutButton);
 
       // then
-      expect(button.previousElementSibling.classList).toContain('koia-toolbar-separator');
-      expect(button.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
+      expect(buttons[0].previousElementSibling.classList).toContain('koia-toolbar-separator');
+      buttons.slice(1).forEach((button, i) => expect(button.previousElementSibling).toBe(buttons[i]));
+      const separator = buttons[3].nextElementSibling;
+      expect(separator.classList).toContain('koia-toolbar-separator');
+      expect(separator.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
     });
 
-    it('snap to grid button should switch to flex layout', () => {
+    it('canvas buttons should show free canvas, landscape and portrait icons', () => {
 
       // when
-      snapToGridButton().click();
+      const icons = LAYOUT_BUTTON_IDS.slice(1).map(id => layoutButton(id).querySelector('mat-icon'));
+
+      // then
+      expect(icons[0].getAttribute('svgicon')).toBe('flex_view');
+      expect(icons.slice(1).map(icon => icon.textContent)).toEqual(['crop_landscape', 'crop_portrait']);
+    });
+
+    it.each([
+      { id: 'but_free_canvas', paging: CanvasPaging.NONE },
+      { id: 'but_landscape_pages', paging: CanvasPaging.LANDSCAPE },
+      { id: 'but_portrait_pages', paging: CanvasPaging.PORTRAIT }
+    ])('$id should switch to canvas and be the only active layout button', ({ id, paging }) => {
+
+      // when
+      layoutButton(id).click();
       fixture.detectChanges();
 
       // then
       expect(component.isGridLayout()).toBe(false);
-      expect(snapToGridButton().classList).not.toContain('koia-toggle-active');
+      expect(component.freeLayout.pageFormat).toBe(PageFormat.of(paging));
+      expect(activeLayoutButtons()).toEqual([id]);
     });
 
-    it('snap to grid button should switch back to grid layout', () => {
+    it('snap to grid button should be the only active layout button in grid layout', () => {
+
+      // when
+      const active = activeLayoutButtons();
+
+      // then
+      expect(active).toEqual(['but_snap_to_grid']);
+    });
+
+    it('snap to grid button should keep grid layout without persisting when clicked again', () => {
 
       // given
-      component.setLayout(Route.FLEX);
-      fixture.detectChanges();
+      const contexts = component.elementContexts;
+      vi.mocked(viewTabsService.requestPersist).mockClear();
 
       // when
       snapToGridButton().click();
 
       // then
       expect(component.isGridLayout()).toBe(true);
+      expect(component.elementContexts).toBe(contexts);
+      expect(viewTabsService.requestPersist).not.toHaveBeenCalled();
+    });
+
+    it('snap to grid button should switch back to grid layout', () => {
+
+      // given
+      component.showCanvas(CanvasPaging.PORTRAIT);
+      fixture.detectChanges();
+
+      // when
+      snapToGridButton().click();
+      fixture.detectChanges();
+
+      // then
+      expect(component.isGridLayout()).toBe(true);
+      expect(component.freeLayout.pageFormat).toBe(PageFormat.LANDSCAPE);
+      expect(activeLayoutButtons()).toEqual(['but_snap_to_grid']);
     });
 
     it('more menu should offer grid settings but no layout menu', fakeAsync(() => {
@@ -3047,6 +3381,21 @@ describe('DashboardComponent', () => {
       // then
       expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
       expectElementContexts(result.elementContexts);
+    }));
+
+    it('#generateDashboard should lay out generated grid in landscape page units', fakeAsync(() => {
+
+      // given
+      component.showCanvas(CanvasPaging.PORTRAIT);
+      vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(component.isGridLayout()).toBe(true);
+      expect(component.freeLayout.pageFormat).toBe(PageFormat.LANDSCAPE);
     }));
 
     it('#generateDashboard should apply grid of generated dashboard', fakeAsync(() => {
@@ -3455,6 +3804,69 @@ describe('DashboardComponent', () => {
       expect(content.view.elements.length).toBe(1);
     }));
 
+    it.each([CanvasPaging.NONE, CanvasPaging.PORTRAIT])('#tabContent should save canvas paging %s', paging => fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      component.addSummaryTable();
+      component.showCanvas(paging);
+
+      // when
+      const content = component.tabContent();
+
+      // then
+      expect(content.view.canvasPaging).toBe(paging);
+    })());
+
+    it.each([
+      { layout: 'grid', show: (): void => component.snapToGrid() },
+      { layout: 'landscape pages', show: (): void => component.showCanvas(CanvasPaging.LANDSCAPE) }
+    ])('#tabContent should not save canvas paging of $layout', ({ show }) => fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      component.addSummaryTable();
+      show();
+
+      // when
+      const content = component.tabContent();
+
+      // then
+      expect(content.view).not.toHaveProperty('canvasPaging');
+    })());
+
+    it.each([
+      { paging: CanvasPaging.NONE, format: PageFormat.UNPAGED },
+      { paging: CanvasPaging.PORTRAIT, format: PageFormat.PORTRAIT },
+      { paging: undefined, format: PageFormat.LANDSCAPE }
+    ])('#ngOnInit should restore canvas paging $paging of tab view', ({ paging, format }) => fakeAsync(() => {
+
+      // given
+      const view = viewOf(Route.FLEX, [new SummaryContext(scene.columns)]);
+      view.canvasPaging = paging;
+
+      // when
+      init(dashboardTab(view));
+
+      // then
+      expect(component.freeLayout.pageFormat).toBe(format);
+    })());
+
+    it('#snapToGrid should request persisting when leaving canvas', fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      component.addGraph();
+      component.showCanvas(CanvasPaging.PORTRAIT);
+      vi.mocked(viewTabsService.requestPersist).mockClear();
+
+      // when
+      component.snapToGrid();
+
+      // then
+      expect(viewTabsService.requestPersist).toHaveBeenCalled();
+    }));
+
     it.each([
       { change: 'addChart', apply: (c: DashboardComponent) => c.addChart() },
       { change: 'addGraph', apply: (c: DashboardComponent) => c.addGraph() },
@@ -3466,7 +3878,7 @@ describe('DashboardComponent', () => {
       { change: 'setGridColumns', apply: (c: DashboardComponent) => c.setGridColumns(2) },
       { change: 'setGridCellRatio', apply: (c: DashboardComponent) => c.setGridCellRatio('2:1') },
       { change: 'setLayout', apply: (c: DashboardComponent) => c.setLayout(Route.FLEX) },
-      { change: 'toggleGridLayout', apply: (c: DashboardComponent) => c.toggleGridLayout() },
+      { change: 'showCanvas', apply: (c: DashboardComponent) => c.showCanvas(CanvasPaging.PORTRAIT) },
       { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) },
       { change: 'loadView', apply: (c: DashboardComponent) => c.loadView(viewOf(Route.GRID, [])) }
     ])('#$change should request persisting', ({ apply }) => fakeAsync(() => {

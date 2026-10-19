@@ -2,6 +2,7 @@ export * from './data-type.enum';
 export * from './time-unit.enum';
 export * from './attribute';
 export * from './route.enum';
+export * from './canvas-paging.enum';
 export * from './document.type';
 export * from './scene-info.type';
 export * from './scene.type';

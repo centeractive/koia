@@ -29,6 +29,7 @@ import { of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { RawDataBlockCache } from './raw-data-block-cache';
 import { RawDataComponent } from './raw-data.component';
+import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
@@ -69,7 +70,7 @@ describe('RawDataComponent', () => {
     scene = SceneFactory.createScene('1', columns);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PrintHeadingComponent,
+      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PageHeadingComponent, PrintHeadingComponent,
         ColumnResizeDirective],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [

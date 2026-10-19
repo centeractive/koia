@@ -312,6 +312,7 @@
   "view": {
     "print": "Aktuelle Ansicht drucken",
     "printScene": "Szene: {{name}}",
+    "printPage": "Seite {{page}} von {{count}}",
     "save": "Aktuelle Ansicht speichern",
     "restore": "Gespeicherte Ansicht wiederherstellen",
     "saveTitle": "Ansicht speichern",
@@ -447,6 +448,9 @@
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
     "manageViews": "Ansichten verwalten",
     "snapToGrid": "Am Raster ausrichten",
+    "freeCanvas": "Freie Anordnung",
+    "landscapePages": "Seiten im Querformat",
+    "portraitPages": "Seiten im Hochformat",
     "confirmResize": "Größere Elemente werden an die neue Einstellung angepasst. Fortfahren?",
     "regenerate": "Dashboard neu generieren",
     "regenerateQuestion": "Alle Elemente dieses Dashboards werden durch neu generierte ersetzt. Fortfahren?",

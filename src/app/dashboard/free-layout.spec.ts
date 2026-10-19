@@ -1,5 +1,6 @@
 import { ElementContext, SummaryContext, TextBoxContext } from 'app/shared/model';
 import { FreeLayout } from './free-layout';
+import { PageFormat } from './page-format';
 
 describe('FreeLayout', () => {
 
@@ -32,13 +33,22 @@ describe('FreeLayout', () => {
     expect(result).toEqual({ '--koia-pu': 'calc(100cqw / 1400)' });
   });
 
-  it('#pageStyle should give page height in page units', () => {
+  it('#pageStyle should separate sheets by gap', () => {
 
     // when
     const result = layout.pageStyle();
 
     // then
-    expect(result).toEqual({ height: 'calc(950 * var(--koia-pu))' });
+    expect(result).toEqual({ 'margin-bottom': 'calc(20 * var(--koia-pu))' });
+  });
+
+  it('#pageStyle should be empty without pages', () => {
+
+    // when
+    const result = new FreeLayout(PageFormat.UNPAGED).pageStyle();
+
+    // then
+    expect(result).toEqual({});
   });
 
   it('#tileStyle should position tile relative to its page', () => {
@@ -631,7 +641,7 @@ describe('FreeLayout', () => {
   it('#clampIntoPage should keep rect within page', () => {
 
     // when
-    const rect = layout.clampIntoPage({ x: 100, y: 1000, width: 300, height: 200 }, FreeLayout.PAGE_HEIGHT);
+    const rect = layout.clampIntoPage({ x: 100, y: 1000, width: 300, height: 200 }, PageFormat.LANDSCAPE.height);
 
     // then
     expect(rect).toEqual({ x: 100, y: 1000, width: 300, height: 200 });
@@ -640,7 +650,7 @@ describe('FreeLayout', () => {
   it('#clampIntoPage should move rect crossing page edges into page', () => {
 
     // when
-    const rect = layout.clampIntoPage({ x: 1300, y: 1800, width: 300, height: 200 }, FreeLayout.PAGE_HEIGHT);
+    const rect = layout.clampIntoPage({ x: 1300, y: 1800, width: 300, height: 200 }, PageFormat.LANDSCAPE.height);
 
     // then
     expect(rect).toEqual({ x: 1100, y: 1700, width: 300, height: 200 });
@@ -649,9 +659,255 @@ describe('FreeLayout', () => {
   it('#clampIntoPage should move rect above page to page top and cap size', () => {
 
     // when
-    const rect = layout.clampIntoPage({ x: -10, y: 900, width: 2000, height: 1000 }, FreeLayout.PAGE_HEIGHT);
+    const rect = layout.clampIntoPage({ x: -10, y: 900, width: 2000, height: 1000 }, PageFormat.LANDSCAPE.height);
 
     // then
     expect(rect).toEqual({ x: 0, y: 950, width: 1400, height: 950 });
+  });
+
+  describe('page formats', () => {
+
+    const portrait = new FreeLayout(PageFormat.PORTRAIT);
+    const unpaged = new FreeLayout(PageFormat.UNPAGED);
+
+    it('should lay out landscape pages by default', () => {
+
+      // when
+      const format = new FreeLayout().pageFormat;
+
+      // then
+      expect(format).toBe(PageFormat.LANDSCAPE);
+    });
+
+    it('#canvasStyle should define page unit as share of portrait page width', () => {
+
+      // when
+      const result = portrait.canvasStyle();
+
+      // then
+      expect(result).toEqual({ '--koia-pu': 'calc(100cqw / 950)' });
+    });
+
+    it.each([
+      { layout, width: 'calc(100% * 1400 / 1400)', printWidth: '950px', pu: 'calc(100cqw / 1400)' },
+      { layout: portrait, width: 'calc(100% * 950 / 1400)', printWidth: '600px', pu: 'calc(100cqw / 950)' },
+      { layout: unpaged, width: 'calc(100% * 1400 / 1400)', printWidth: '970px', pu: 'calc(100cqw / 1400)' }
+    ])('#pagesStyle should size pages to $width of canvas and print them $printWidth wide', ({ layout, width, printWidth, pu }) => {
+
+      // when
+      const result = layout.pagesStyle();
+
+      // then
+      expect(result).toEqual({ '--koia-pu': pu, width, '--koia-print-width': printWidth });
+    });
+
+    it.each([
+      { layout, page: 0, height: 'calc(950 * var(--koia-pu))' },
+      { layout: portrait, page: 1, height: 'calc(1400 * var(--koia-pu))' },
+      { layout: unpaged, page: 0, height: 'calc(810 * var(--koia-pu))' },
+      { layout: unpaged, page: 1, height: 'calc(950 * var(--koia-pu))' }
+    ])('#pageContentStyle should give height $height to page $page of $layout.pageFormat.paging layout', ({ layout, page, height }) => {
+
+      // when
+      const result = layout.pageContentStyle(page, [tile(0, 0, 600, 400), tile(0, 410, 600, 400)]);
+
+      // then
+      expect(result).toEqual({ height });
+    });
+
+    it('#sheetHeaderStyle should give header height in page units', () => {
+
+      // when
+      const result = layout.sheetHeaderStyle();
+
+      // then
+      expect(result).toEqual({ height: 'calc(56 * var(--koia-pu))' });
+    });
+
+    it('#sheetFooterStyle should give footer height in page units', () => {
+
+      // when
+      const result = layout.sheetFooterStyle();
+
+      // then
+      expect(result).toEqual({ height: 'calc(28 * var(--koia-pu))' });
+    });
+
+    it.each([
+      { case: 'first page', y: 100, layerY: 156 },
+      { case: 'second page top', y: 950, layerY: 1110 },
+      { case: 'third page', y: 2000, layerY: 2264 }
+    ])('#layerYOf should add sheet header, footer and gap above y on $case', ({ y, layerY }) => {
+
+      // when
+      const result = layout.layerYOf(y);
+
+      // then
+      expect(result).toBe(layerY);
+    });
+
+    it('#layerYOf should add sheet frames of portrait pages', () => {
+
+      // when
+      const result = portrait.layerYOf(1500);
+
+      // then
+      expect(result).toBe(1500 + 104 + 56);
+    });
+
+    it.each([
+      { case: 'first page', layerY: 156, y: 100 },
+      { case: 'second page', layerY: 1110, y: 950 },
+      { case: 'header of first sheet', layerY: 30, y: 0 },
+      { case: 'footer of first sheet', layerY: 1020, y: 950 },
+      { case: 'gap between sheets', layerY: 1045, y: 950 },
+      { case: 'header of second sheet', layerY: 1080, y: 950 },
+      { case: 'point above first sheet', layerY: -200, y: 0 }
+    ])('#layoutYOf should map $case to y $y', ({ layerY, y }) => {
+
+      // when
+      const result = layout.layoutYOf(layerY);
+
+      // then
+      expect(result).toBe(y);
+    });
+
+    it('#layerYOf and #layoutYOf should keep y without pages', () => {
+
+      // when
+      const result = [unpaged.layerYOf(2000), unpaged.layoutYOf(2000)];
+
+      // then
+      expect(result).toEqual([2000, 2000]);
+    });
+
+    it('#rectOf should limit size to portrait page', () => {
+
+      // when
+      const rect = portrait.rectOf({ x: 400, y: 0, width: 800, height: 1600 });
+
+      // then
+      expect(rect).toEqual({ x: 400, y: 0, width: 550, height: 1400 });
+    });
+
+    it('#pageIndexes should count portrait pages', () => {
+
+      // when
+      const pages = portrait.pageIndexes([tile(0, 1300, 600, 400)]);
+
+      // then
+      expect(pages).toEqual([0, 1, 2]);
+    });
+
+    it('#pageIndexes should provide content and spare page without pages', () => {
+
+      // when
+      const pages = unpaged.pageIndexes([tile(0, 3000, 600, 400)]);
+
+      // then
+      expect(pages).toEqual([0, 1]);
+    });
+
+    it('#pageOf should place every tile on first page without pages', () => {
+
+      // when
+      const page = unpaged.pageOf(tile(0, 3000, 600, 400));
+
+      // then
+      expect(page).toBe(0);
+    });
+
+    it('#fitToPages should push row crossing portrait page to next page top', () => {
+
+      // when
+      const rects = portrait.fitToPages([{ x: 0, y: 0, width: 600, height: 400 }, { x: 0, y: 1200, width: 600, height: 400 }]);
+
+      // then
+      expect(rects.map(r => r.y)).toEqual([0, 1400]);
+    });
+
+    it('#fitToPages should only cap heights without pages', () => {
+
+      // when
+      const rects = unpaged.fitToPages([{ x: 0, y: 900, width: 600, height: 1200 }]);
+
+      // then
+      expect(rects).toEqual([{ x: 0, y: 900, width: 600, height: 950 }]);
+    });
+
+    it('#placeUnpositioned should wrap tiles at portrait page width', () => {
+
+      // given
+      const contexts = [unpositioned(), unpositioned()];
+
+      // when
+      portrait.placeUnpositioned(contexts);
+
+      // then
+      expect(positionsOf(contexts)).toEqual([[0, 0], [0, 410]]);
+    });
+
+    it('#placeUnpositioned should place tiles across former page boundary without pages', () => {
+
+      // given
+      const contexts = [unpositioned(600, 900), unpositioned(1400, 400)];
+
+      // when
+      unpaged.placeUnpositioned(contexts);
+
+      // then
+      expect(positionsOf(contexts)).toEqual([[0, 0], [0, 910]]);
+    });
+
+    it('#clampIntoPage should keep rect within portrait page', () => {
+
+      // when
+      const rect = portrait.clampIntoPage({ x: 800, y: 1300, width: 300, height: 200 }, 0);
+
+      // then
+      expect(rect).toEqual({ x: 650, y: 1200, width: 300, height: 200 });
+    });
+
+    it('#clampIntoPage should only keep rect below top without pages', () => {
+
+      // when
+      const rects = [unpaged.clampIntoPage({ x: 1300, y: 2000, width: 300, height: 200 }, 0),
+        unpaged.clampIntoPage({ x: 0, y: -50, width: 300, height: 200 }, 0)];
+
+      // then
+      expect(rects).toEqual([{ x: 1100, y: 2000, width: 300, height: 200 }, { x: 0, y: 0, width: 300, height: 200 }]);
+    });
+
+    it('#packRows should start rows at given top and wrap at page width', () => {
+
+      // when
+      const rects = layout.packRows([{ width: 700, height: 300 }, { width: 700, height: 200 }, { width: 600, height: 100 }], 100);
+
+      // then
+      expect(rects).toEqual([
+        { x: 0, y: 100, width: 700, height: 300 },
+        { x: 0, y: 410, width: 700, height: 200 },
+        { x: 710, y: 410, width: 600, height: 100 }
+      ]);
+    });
+
+    it('#packRows should cap sizes at page size', () => {
+
+      // when
+      const rects = portrait.packRows([{ width: 1200, height: 1500 }], 0);
+
+      // then
+      expect(rects).toEqual([{ x: 0, y: 0, width: 950, height: 1400 }]);
+    });
+
+    it('#anchoredRect should move rect to rounded offset within anchor rect keeping its size', () => {
+
+      // when
+      const rect = layout.anchoredRect({ x: 5, y: 5, width: 300, height: 150 }, { x: 100, y: 200, width: 333, height: 101 },
+        { x: 0.5, y: 0.25 });
+
+      // then
+      expect(rect).toEqual({ x: 267, y: 225, width: 300, height: 150 });
+    });
   });
 });

@@ -312,6 +312,7 @@
   "view": {
     "print": "Print current view",
     "printScene": "Scene: {{name}}",
+    "printPage": "Page {{page}} of {{count}}",
     "save": "Save current view",
     "restore": "Restore saved view",
     "saveTitle": "Save View",
@@ -447,6 +448,9 @@
     "gridCellRatio": "Grid Cell Ratio (width:height)",
     "manageViews": "Manage Views",
     "snapToGrid": "Snap to Grid",
+    "freeCanvas": "Free Canvas",
+    "landscapePages": "Landscape Pages",
+    "portraitPages": "Portrait Pages",
     "confirmResize": "Larger elements will be resized to fit the new setting. Continue?",
     "regenerate": "Regenerate Dashboard",
     "regenerateQuestion": "All elements of this dashboard will be replaced by newly generated ones. Continue?",

@@ -1,3 +1,4 @@
+import { CanvasPaging } from '../canvas-paging.enum';
 import { Route } from '../route.enum';
 import { QueryDef } from './query/query-def.type';
 import { ViewElement } from './view-element.type';
@@ -9,5 +10,6 @@ export interface View {
    query: QueryDef,
    gridColumns: number;
    gridCellRatio: string;
+   canvasPaging?: CanvasPaging;
    elements: ViewElement[];
 }
