@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
+import { COLUMN_NAME_MAX_LENGTH, COLUMN_NAME_PATTERN } from 'app/shared/validator/column-name-validation';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 import { TimeGuesser } from './time-guesser';
 
@@ -8,8 +9,8 @@ type SourceValue = string | number | boolean | object;
 
 export class ColumnMappingGenerator {
 
-   static readonly COLUMN_NAME_MAX_LENGTH = 100;
-   static readonly COLUMN_NAME_PATTERN = /^(?!\$).*/; // see https://github.com/apache/couchdb/issues/2028
+   static readonly COLUMN_NAME_MAX_LENGTH = COLUMN_NAME_MAX_LENGTH;
+   static readonly COLUMN_NAME_PATTERN = COLUMN_NAME_PATTERN;
    static readonly INCOMPATIBLE_DATA_TYPES = 'Column contains values of incompatible data types';
 
    private static readonly MIN_WIDTH = 10;

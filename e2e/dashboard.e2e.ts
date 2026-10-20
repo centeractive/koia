@@ -69,14 +69,15 @@ test('double click on the graph root node reveals all rows', async ({ dashboard,
    await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(fruitSalesOf('en').entries.length));
 });
 
-test('saved view restores the removed element', async ({ dashboard, notifications }) => {
+test('saved view restores the removed element', async ({ dashboard, notifications, confirmDialog }) => {
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
 
-   await dashboard.viewToolbar.saveView(VIEW_NAME);
+   await dashboard.mainToolbar.saveView(VIEW_NAME);
    const message = await notifications.dismiss(StatusType.SUCCESS);
    await dashboard.tile(0).remove();
-   await dashboard.viewToolbar.restoreView(VIEW_NAME);
+   await dashboard.mainToolbar.restoreView(VIEW_NAME);
+   await confirmDialog.confirm();
 
    expect(message).toBe(en.get('view.saved', { name: VIEW_NAME }));
    await expect(dashboard.tiles).toHaveCount(1);

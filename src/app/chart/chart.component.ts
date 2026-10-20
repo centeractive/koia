@@ -51,7 +51,7 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   validateMarginResize: (resizeEvent: ResizeEvent) => boolean;
 
   private destroyed = false;
-  private textsOutdated = false;
+  private outdated = false;
   private contextSubscription: Subscription;
   private languageSubscription: Subscription;
   private removePointerDownListener: () => void;
@@ -76,22 +76,22 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   /**
    * re-creates an existing chart in order to show its texts in the new language; the context is not changed, hence no change
    * event is fired and nothing gets persisted. A chart that is not visible (e.g. its view is detached) is re-created once it becomes
-   * visible again, Chart.js would otherwise render it with zero size.
+   * visible again, Chart.js would otherwise render it with zero size; the same applies to context changes of a rendered chart.
    */
   private onLanguageChanged(): void {
     if (this.context.chart) {
-      this.textsOutdated = true;
-      this.refreshOutdatedTexts();
+      this.outdated = true;
+      this.refreshOutdated();
     }
   }
 
   ngDoCheck(): void {
-    this.refreshOutdatedTexts();
+    this.refreshOutdated();
   }
 
-  private refreshOutdatedTexts(): void {
-    if (this.textsOutdated && !this.destroyed && this.isVisible()) {
-      this.textsOutdated = false;
+  private refreshOutdated(): void {
+    if (this.outdated && !this.destroyed && this.isVisible()) {
+      this.outdated = false;
       this.prepareChartAsync(ChangeEvent.LOOK);
     }
   }
@@ -119,7 +119,11 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     try {
       if (!this.destroyed && (changeEvent === ChangeEvent.LOOK || changeEvent === ChangeEvent.STRUCTURE)) {
-        this.updateChart();
+        if (this.context.chart && !this.isVisible()) {
+          this.outdated = true;
+        } else {
+          this.updateChart();
+        }
       }
     } finally {
       this.loading = false;

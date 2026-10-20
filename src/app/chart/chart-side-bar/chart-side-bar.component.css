@@ -11,6 +11,11 @@
   gap: 0.5em;
 }
 
+.span_data_column {
+  display: inline-flex;
+  align-items: center;
+}
+
 button {
   margin: 2px;
 }

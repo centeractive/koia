@@ -3,8 +3,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { DataType, Scene, TimeUnit } from 'app/shared/model';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
+import { ComputeOperator, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { SceneFactory, textsOf } from 'app/shared/test';
 import { DialogCloseButtonComponent } from 'app/shared/ui/dialog-close-button/dialog-close-button.component';
 import { SceneDetailsDialogComponent } from './scene-details-dialog.component';
@@ -106,6 +107,26 @@ describe('SceneDetailsDialogComponent', () => {
       // then
       expect(textsOf(host, '#columns_table .mat-mdc-header-cell')).toEqual(['Name', 'Type', 'Format', 'Group By', 'Width (pixel)']);
       expect(textsOf(host, '#columns_table .column-name')).toEqual(['Level', 'Path', 'Amount', 'Time']);
+   });
+
+   it('should show functions icon with formula tooltip for computed column only', () => {
+
+      // given
+      scene.columns.push({
+         name: 'Share', dataType: DataType.NUMBER, width: 10, indexed: false,
+         computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+      });
+
+      // when
+      const host = render();
+
+      // then
+      const icons = fixture.debugElement.queryAll(By.css('.icon_computed_column'));
+      expect(icons.length).toBe(1);
+      expect(icons[0].nativeElement.closest('.column-name').firstChild.textContent).toBe('Share');
+      expect(icons[0].nativeElement.textContent).toBe('functions');
+      expect(icons[0].injector.get(MatTooltip).message).toBe('Amount as % of Amount');
+      expect(textsOf(host, '#columns_table .column-name').slice(0, 4)).toEqual(['Level', 'Path', 'Amount', 'Time']);
    });
 
    it('should show semi-bold column names and right aligned widths', () => {

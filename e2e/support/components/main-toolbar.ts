@@ -1,15 +1,18 @@
 import { Locator } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
+import { InputDialog } from './dialogs';
 import { RangeFilter } from './range-filter';
 
 export class MainToolbar {
 
    readonly addFilterButton: Locator;
    readonly rangeFilterPanel: Locator;
+   readonly restoreViewButton: Locator;
 
    constructor(private readonly root: Locator) {
       this.addFilterButton = root.locator('.but_add_col_filter');
       this.rangeFilterPanel = root.locator('.div_range_filters');
+      this.restoreViewButton = root.locator('#but_restore_view');
    }
 
    async addValueFilter(column: string, value: string): Promise<void> {
@@ -36,6 +39,21 @@ export class MainToolbar {
    async openScenes(): Promise<void> {
       await this.root.locator('#butScenes').click();
       await this.root.page().waitForURL('**/' + Route.SCENES);
+   }
+
+   async saveView(name: string): Promise<void> {
+      await this.root.locator('#but_save_view').click();
+      await new InputDialog(this.root.page()).submit(name);
+   }
+
+   async restoreView(name: string): Promise<void> {
+      await this.restoreViewButton.click();
+      await this.root.page().locator('.menu_item_details').filter({ hasText: name }).click();
+   }
+
+   async manageViews(): Promise<void> {
+      await this.restoreViewButton.click();
+      await this.root.page().locator('#menuItemManageViews').click();
    }
 
    async addScene(): Promise<void> {

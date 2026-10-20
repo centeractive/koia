@@ -1,0 +1,66 @@
+<mat-card appearance="outlined" koiaForm>
+  <mat-card-header>
+    <mat-card-title>{{ titleKey | translate }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content [formGroup]="form">
+    <div class="field-row">
+      <mat-form-field class="form_field_name">
+        <mat-label>{{ 'scene.column.name' | translate }}</mat-label>
+        <input id="input_name" matInput type="text" formControlName="name">
+        @if (form.controls.name.invalid) {
+          <mat-error>{{ nameErrorMessage() }}</mat-error>
+        }
+      </mat-form-field>
+    </div>
+    <div class="field-row">
+      <mat-form-field class="form_field_column">
+        <mat-label>{{ 'computedColumn.leftColumn' | translate }}</mat-label>
+        <mat-select id="select_left_column" formControlName="leftColumn" (selectionChange)="onSelectionChanged()">
+          @for (column of operands; track column.name) {
+            <mat-option [value]="column.name">{{ column.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button id="but_swap_operands" mat-icon-button type="button" [matTooltip]="'computedColumn.swapOperands' | translate"
+        [attr.aria-label]="'computedColumn.swapOperands' | translate" (click)="swapOperands()">
+        <mat-icon>swap_horiz</mat-icon>
+      </button>
+    </div>
+    <div class="field-row">
+      <mat-form-field class="form_field_operator">
+        <mat-label>{{ 'computedColumn.operator' | translate }}</mat-label>
+        <mat-select id="select_operator" formControlName="operator" (selectionChange)="onSelectionChanged()">
+          @for (operator of operators; track operator) {
+            <mat-option [value]="operator">{{ operatorKey(operator) | translate }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="field-row">
+      <mat-form-field class="form_field_column">
+        <mat-label>{{ 'computedColumn.rightColumn' | translate }}</mat-label>
+        <mat-select id="select_right_column" formControlName="rightColumn" (selectionChange)="onSelectionChanged()">
+          @for (column of operands; track column.name) {
+            <mat-option [value]="column.name">{{ column.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="div_preview">
+      <span id="span_formula">{{ formula }}</span>
+      <span id="span_example">{{ example }}</span>
+    </div>
+    @if (errorMessage) {
+      <div id="error_message" class="div_error">{{ errorMessage }}</div>
+    }
+    <div class="div_buttons">
+      <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
+      @if (data.column) {
+        <button id="but_delete" mat-flat-button color="warn" (click)="delete()">{{ 'common.delete' | translate }}</button>
+      }
+      <button id="but_ok" mat-flat-button color="primary" [disabled]="form.invalid || saving" (click)="save()">
+        {{ 'common.ok' | translate }}
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,447 +1,262 @@
-import { CategoricalColorScheme, ColorSchemeType } from 'app/shared/color';
-import { ScaleConfig } from 'app/shared/model/chart';
-import { ElementType, View, ViewElement } from 'app/shared/model/view-config';
-import { Aggregation, Column, DataType, Query, Route, Scene, StatusType } from '../../model';
-import { ConfigRecord } from '../../model/view-config/config-record.type';
-import { SceneFactory } from '../../test';
+import { ConfigRecord, View, ViewType } from 'app/shared/model/view-config';
+import { Route, Scene, StatusType } from '../../model';
+import { savedViewOf, SceneFactory } from '../../test';
 import { DBService } from '../backend';
-import { Chart } from '../view-persistence/chart.type';
-import { Summary } from './summary.type';
 import { ViewPersistenceService } from './view-persistence.service';
 
 describe('ViewPersistenceService', () => {
 
   const NOW = new Date().getTime();
   const A_MINUTE_AGO = NOW - 60_000;
+  const AN_HOUR_AGO = NOW - 3_600_000;
 
-  let pivotTableRecord: ConfigRecord;
-  let summary: Summary;
-  let chart: Chart;
-  let gridView: View;
   let scene: Scene;
   let dbService: DBService;
   let service: ViewPersistenceService;
 
-  beforeAll(() => {
-    const amountColum = createColumn('Amount', DataType.NUMBER);
-    const levelColumn = createColumn('Level', DataType.TEXT);
-    const timeColumn = createColumn('Time', DataType.TIME);
-    const baseScale = scaleConfig('X', undefined, -12);
-    const valueScales = [scaleConfig('Y', 1, -90)];
-    summary = {
-      elementType: ElementType.SUMMARY, title: 'Test Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
-      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
-      valueGroupings: [], empty: '', colorOptions: undefined
-    };
-    chart = {
-      elementType: ElementType.CHART, title: 'Test Chart', gridColumnSpan: 2, gridRowSpan: 1, width: 600, height: 600,
-      dataColumns: [amountColum], splitColumns: [levelColumn], groupByColumns: [timeColumn], aggregations: [Aggregation.COUNT],
-      valueGroupings: [], chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true,
-      legendPosition: 'top', baseScale, valueScales, stacked: false, multiValueAxes: false,
-      colorOptions: {
-        type: ColorSchemeType.CATEGORICAL,
-        scheme: CategoricalColorScheme.PAIRED,
-        bgColorOpacity: 0.7,
-        borderColorOpacity: 1
-      }
-    };
-  });
-
   beforeEach(() => {
     scene = SceneFactory.createScene('1', []);
-    pivotTableRecord = {
-      route: Route.PIVOT,
-      name: 'pivot',
-      modifiedTime: NOW,
-      query: null,
-      data: { a: 1, b: 2, c: 3 }
-    };
-    gridView = createGridView('grid', A_MINUTE_AGO, chart);
-    scene.config = {
-      records: [pivotTableRecord],
-      views: [gridView]
-    };
     dbService = new DBService(null);
     service = new ViewPersistenceService(dbService);
   });
 
-  it('#findRecords should return empty array when no matching records exists', () => {
-
-    // when
-    const records = service.findRecords(scene, Route.RAWDATA);
-
-    // then
-    expect(records).toEqual([]);
-  });
-
-  it('#findRecords should return record when matching record exists', () => {
-
-    // when
-    const records = service.findRecords(scene, Route.PIVOT);
-
-    // then
-    expect(records).toEqual([pivotTableRecord]);
-  });
-
-  it('#saveRecord should insert record when no one with same name exists', async () => {
+  it('#findSavedViews should return saved views descending sorted by modified time', () => {
 
     // given
-    const data = { x: 'one', y: 'two' };
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
+    const older = savedViewOf('older', [], AN_HOUR_AGO);
+    const newer = savedViewOf('newer', [], NOW);
+    scene.config = { savedViews: [older, newer] };
 
     // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, 'new', new Query(), data);
+    const views = service.findSavedViews(scene);
 
     // then
-    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
-    const recordNames = service.findRecords(scene, Route.PIVOT).map(r => r.name);
-    expect(recordNames).toEqual(['new', pivotTableRecord.name]);
+    expect(views).toEqual([newer, older]);
+    expect(views[0]).toBe(newer);
   });
 
-  it('#saveRecord should update record when record with same name exists', async () => {
-
-    // given
-    const data = { x: 'one', y: 'two' };
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
+  it('#findSavedViews should return no views when scene has none', () => {
 
     // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, pivotTableRecord.name, new Query(), data);
-
-    // then
-    const expectedMsg = 'View "' + pivotTableRecord.name + '" has been saved';
-    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
-    const records = service.findRecords(scene, Route.PIVOT);
-    expect(records.length).toBe(1);
-    expect(records[0].route).toBe(Route.PIVOT);
-    expect(records[0].name).toBe(pivotTableRecord.name);
-    expect(records[0].data).toBe(data);
-    expect(records[0].modifiedTime).toBeGreaterThan(NOW);
-  });
-
-  it('#saveRecord should return error status when server returns error message', async () => {
-
-    // given
-    vi.spyOn(dbService, 'updateScene').mockRejectedValue('Scene cannot be updated');
-
-    // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', new Query(), {});
-
-    // then
-    const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
-    await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
-  });
-
-  it('#saveRecord should return error status when server returns error object', async () => {
-
-    // given
-    vi.spyOn(dbService, 'updateScene').mockRejectedValue({ message: 'Scene cannot be updated' });
-
-    // when
-    const status$ = service.saveRecord(scene, Route.PIVOT, 'test', new Query(), {});
-
-    // then
-    const expectedMsg = 'View "test" cannot be saved: Scene cannot be updated';
-    await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
-  });
-
-  it('#findViews should return empty array when no matching view exists', () => {
-
-    // when
-    const views = service.findViews(scene, Route.RAWDATA);
+    const views = service.findSavedViews(scene);
 
     // then
     expect(views).toEqual([]);
   });
 
-  it('#findViews should return view when matching view exists', () => {
-
-    // when
-    const views = service.findViews(scene, Route.GRID);
-
-    // then
-    expect(views).toEqual([gridView]);
-  });
-
-  it('#findViews should return grid and flex views as one family', () => {
+  it('#findSavedViews should convert legacy views when saved views are undefined', () => {
 
     // given
-    const flexView = createFlexView('flex', NOW, summary);
-    scene.config.views.push(flexView);
+    scene.config = { views: [legacyView('dashboard', NOW)], records: [pivotRecord('pivot', A_MINUTE_AGO)] };
 
     // when
-    const gridFamilyViews = service.findViews(scene, Route.GRID);
-    const flexFamilyViews = service.findViews(scene, Route.FLEX);
+    const views = service.findSavedViews(scene);
 
     // then
-    expect(gridFamilyViews).toEqual([flexView, gridView]);
-    expect(flexFamilyViews).toEqual([flexView, gridView]);
+    expect(views.map(v => v.name)).toEqual(['dashboard', 'pivot']);
+    expect(views.map(v => v.tabs[0].type)).toEqual([ViewType.DASHBOARD, ViewType.PIVOT]);
   });
 
-  it('#findViews should not return views of other routes', () => {
+  it('#findSavedViews should convert legacy views and records and remove them from config', () => {
 
     // given
-    const otherView = { ...createGridView('other', NOW, summary), route: Route.RAWDATA };
-    scene.config.views.push(otherView);
+    const existing = savedViewOf('pivot', [], AN_HOUR_AGO);
+    scene.config = { savedViews: [existing], views: [legacyView('dashboard', NOW)], records: [pivotRecord('pivot', A_MINUTE_AGO)] };
 
     // when
-    const views = service.findViews(scene, Route.FLEX);
+    service.findSavedViews(scene);
 
     // then
-    expect(views).toEqual([gridView]);
+    expect(scene.config.savedViews[0]).toBe(existing);
+    expect(scene.config.savedViews.map(v => v.name)).toEqual(['pivot', 'dashboard', 'pivot (2)']);
+    expect(scene.config.views).toBeUndefined();
+    expect(scene.config.records).toBeUndefined();
   });
 
-  it('#saveView should add view when none with same name exists in family', async () => {
+  it('#findSavedViews should convert legacy records only', () => {
 
     // given
-    const flexView = createFlexView('flex', NOW, summary);
+    scene.config = { savedViews: [], records: [pivotRecord('pivot', NOW)] };
+
+    // when
+    const views = service.findSavedViews(scene);
+
+    // then
+    expect(views.map(v => v.name)).toEqual(['pivot']);
+    expect(scene.config.records).toBeUndefined();
+  });
+
+  it('#findSavedViews should keep already converted views', () => {
+
+    // given
+    const a = savedViewOf('a', [], NOW);
+    const b = savedViewOf('b', [], A_MINUTE_AGO);
+    const savedViews = [a, b];
+    scene.config = { savedViews };
+
+    // when
+    service.findSavedViews(scene);
+
+    // then
+    expect(scene.config.savedViews).toBe(savedViews);
+    expect(scene.config.savedViews[0]).toBe(a);
+    expect(scene.config.savedViews[1]).toBe(b);
+  });
+
+  it('#findSavedViews should not update scene when converting', () => {
+
+    // given
+    scene.config = { views: [legacyView('dashboard', NOW)] };
+    vi.spyOn(dbService, 'updateScene');
+
+    // when
+    service.findSavedViews(scene);
+
+    // then
+    expect(dbService.updateScene).not.toHaveBeenCalled();
+  });
+
+  it('#saveView should add view and update scene', async () => {
+
+    // given
+    const existing = savedViewOf('existing', [], A_MINUTE_AGO);
+    scene.config = { savedViews: [existing] };
+    const view = savedViewOf('new', [], NOW);
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status$ = service.saveView(scene, flexView);
+    const status = await service.saveView(scene, view);
 
     // then
-    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "flex" has been saved' }));
-    expect(service.findViews(scene, Route.FLEX)).toEqual([flexView, gridView]);
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' });
+    expect(scene.config.savedViews).toEqual([existing, view]);
+    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
   });
 
-  it('#saveView should add view when none with same name exists', async () => {
+  it('#saveView should replace view with same name', async () => {
 
     // given
-    const newGridView = createGridView('new', NOW, summary);
+    const other = savedViewOf('other', [], AN_HOUR_AGO);
+    scene.config = { savedViews: [savedViewOf('x', [], A_MINUTE_AGO), other] };
+    const view = savedViewOf('x', [], NOW);
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status$ = service.saveView(scene, newGridView);
+    await service.saveView(scene, view);
 
     // then
-    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: 'View "new" has been saved' }));
-    expect(service.findViews(scene, Route.GRID)).toEqual([newGridView, gridView]);
+    expect(scene.config.savedViews).toEqual([view, other]);
+    expect(scene.config.savedViews[0]).toBe(view);
   });
 
-  it('#saveView should update view when view with same name exists', async () => {
+  it('#saveView should persist converted legacy views with saved view', async () => {
 
     // given
-    const newGridView = createGridView(gridView.name, NOW, summary);
+    scene.config = { savedViews: [], views: [legacyView('dashboard', A_MINUTE_AGO)] };
+    const view = savedViewOf('new', [], NOW);
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status$ = service.saveView(scene, newGridView);
+    await service.saveView(scene, view);
 
     // then
-    const expectedMsg = 'View "' + gridView.name + '" has been saved';
-    await status$.then(s => expect(s).toEqual({ type: StatusType.SUCCESS, msg: expectedMsg }));
-    expect(service.findViews(scene, Route.GRID)).toEqual([newGridView]);
+    const persistedScene = vi.mocked(dbService.updateScene).mock.calls[0][0];
+    expect(persistedScene.config.savedViews.map(v => v.name)).toEqual(['dashboard', 'new']);
+    expect(persistedScene.config.views).toBeUndefined();
   });
 
-  it('#saveView should replace grid view with flex view of same name', async () => {
-
-    // given
-    const flexView = createFlexView(gridView.name, NOW, summary);
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
-
-    // when
-    await service.saveView(scene, flexView);
-
-    // then
-    expect(scene.config.views).toEqual([flexView]);
-  });
-
-  it('#saveView should return error status when server returns error', async () => {
+  it('#saveView should return error status when update fails with string error', async () => {
 
     // given
     vi.spyOn(dbService, 'updateScene').mockRejectedValue('Scene cannot be updated');
 
     // when
-    const status$ = service.saveView(scene, gridView);
+    const status = await service.saveView(scene, savedViewOf('test', [], NOW));
 
     // then
-    const expectedMsg = 'View "' + gridView.name + '" cannot be saved: Scene cannot be updated';
-    await status$.then(s => expect(s).toEqual({ type: StatusType.ERROR, msg: expectedMsg }));
-  });
-
-  it('#updateRecords should remove deleted records and update scene', async () => {
-
-    // given
-    const rawDataRecord = createRawDataRecord('raw');
-    scene.config.records.push(rawDataRecord);
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
-
-    // when
-    const status = await service.updateRecords(scene, [pivotTableRecord], []);
-
-    // then
-    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view' });
-    expect(scene.config.records).toEqual([rawDataRecord]);
-    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
-  });
-
-  it('#updateRecords should report deleted and renamed records', async () => {
-
-    // given
-    const rawDataRecords = [createRawDataRecord('raw1'), createRawDataRecord('raw2')];
-    scene.config.records.push(...rawDataRecords);
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
-
-    // when
-    const status = await service.updateRecords(scene, rawDataRecords, [pivotTableRecord, pivotTableRecord]);
-
-    // then
-    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 2 views\nRenamed 2 views' });
-    expect(scene.config.records).toEqual([pivotTableRecord]);
-    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
-  });
-
-  it('#updateRecords should report renamed records only', async () => {
-
-    // given
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
-
-    // when
-    const status = await service.updateRecords(scene, [], [pivotTableRecord]);
-
-    // then
-    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Renamed 1 view' });
-    expect(scene.config.records).toEqual([pivotTableRecord]);
-    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
-  });
-
-  it('#updateRecords should keep record of other route with same name', async () => {
-
-    // given
-    const rawDataRecord = createRawDataRecord(pivotTableRecord.name);
-    scene.config.records.push(rawDataRecord);
-    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
-
-    // when
-    await service.updateRecords(scene, [pivotTableRecord], []);
-
-    // then
-    expect(scene.config.records).toEqual([rawDataRecord]);
-  });
-
-  it('#updateRecords should return error status when scene cannot be updated', async () => {
-
-    // given
-    vi.spyOn(dbService, 'updateScene').mockRejectedValue('Scene cannot be updated');
-
-    // when
-    const status = await service.updateRecords(scene, [pivotTableRecord], []);
-
-    // then
-    expect(status).toEqual({ type: StatusType.ERROR, msg: 'Views cannot be updated: Scene cannot be updated' });
+    expect(status).toEqual({ type: StatusType.ERROR, msg: 'View "test" cannot be saved: Scene cannot be updated' });
   });
 
   it('#updateViews should remove deleted views and update scene', async () => {
 
     // given
-    const flexView = createFlexView('flex', NOW, summary);
-    scene.config.views.push(flexView);
+    const kept = savedViewOf('kept', [], NOW);
+    const deleted = savedViewOf('deleted', [], NOW);
+    scene.config = { savedViews: [kept, deleted] };
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = await service.updateViews(scene, [gridView], []);
+    const status = await service.updateViews(scene, [deleted], []);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view' });
-    expect(scene.config.views).toEqual([flexView]);
+    expect(scene.config.savedViews).toEqual([kept]);
     expect(dbService.updateScene).toHaveBeenCalledWith(scene);
   });
 
-  it('#updateViews should report deleted and renamed views', async () => {
+  it('#updateViews should report single deleted and renamed view', async () => {
 
     // given
-    const flexView = createFlexView('flex', NOW, summary);
-    scene.config.views.push(flexView);
+    const renamed = savedViewOf('renamed', [], NOW);
+    const deleted = savedViewOf('deleted', [], NOW);
+    scene.config = { savedViews: [renamed, deleted] };
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = await service.updateViews(scene, [flexView], [gridView]);
+    const status = await service.updateViews(scene, [deleted], [renamed]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' });
-    expect(scene.config.views).toEqual([gridView]);
-    expect(dbService.updateScene).toHaveBeenCalledWith(scene);
+    expect(scene.config.savedViews).toEqual([renamed]);
   });
 
-  it('#updateViews should keep view renamed to name of deleted view', async () => {
+  it('#updateViews should report multiple deleted and renamed views', async () => {
 
     // given
-    const flexView = createFlexView('flex', NOW, summary);
-    scene.config.views.push(flexView);
-    flexView.name = gridView.name;
+    const views = [savedViewOf('a', [], NOW), savedViewOf('b', [], NOW), savedViewOf('c', [], NOW), savedViewOf('d', [], NOW)];
+    scene.config = { savedViews: [...views] };
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    await service.updateViews(scene, [gridView], [flexView]);
+    const status = await service.updateViews(scene, [views[0], views[1]], [views[2], views[3]]);
 
     // then
-    expect(scene.config.views).toEqual([flexView]);
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 2 views\nRenamed 2 views' });
+    expect(scene.config.savedViews).toEqual([views[2], views[3]]);
   });
 
-  it('#updateViews should return error status when scene cannot be updated', async () => {
+  it('#updateViews should report renamed views only', async () => {
+
+    // given
+    const renamed = savedViewOf('renamed', [], NOW);
+    scene.config = { savedViews: [renamed] };
+    vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
+
+    // when
+    const status = await service.updateViews(scene, [], [renamed]);
+
+    // then
+    expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Renamed 1 view' });
+    expect(scene.config.savedViews).toEqual([renamed]);
+  });
+
+  it('#updateViews should return error status when update fails with error object', async () => {
 
     // given
     vi.spyOn(dbService, 'updateScene').mockRejectedValue({ message: 'Scene cannot be updated' });
 
     // when
-    const status = await service.updateViews(scene, [gridView], []);
+    const status = await service.updateViews(scene, [], []);
 
     // then
     expect(status).toEqual({ type: StatusType.ERROR, msg: 'Views cannot be updated: Scene cannot be updated' });
   });
 
-  function createRawDataRecord(name: string): ConfigRecord {
-    return {
-      route: Route.RAWDATA,
-      name,
-      modifiedTime: NOW,
-      query: null,
-      data: {}
-    };
+  function legacyView(name: string, modifiedTime: number): View {
+    return { route: Route.GRID, name, modifiedTime, query: null, gridColumns: 2, gridCellRatio: '1:1', elements: [] };
   }
 
-  function scaleConfig(columnName: string, stepSize?: number, rotation?: number): ScaleConfig {
-    return new ScaleConfig(() => null, {
-      columnName,
-      ticks: {
-        stepSize,
-        rotation
-      }
-    });
+  function pivotRecord(name: string, modifiedTime: number): ConfigRecord {
+    return { route: Route.PIVOT, name, modifiedTime, query: null, data: {} };
   }
-
-  function createColumn(name: string, dataType: DataType): Column {
-    return {
-      name: name,
-      dataType: dataType,
-      width: 10
-    };
-  }
-
-  function createFlexView(name: string, modifiedTime: number, element: ViewElement): View {
-    return {
-      route: Route.FLEX,
-      name,
-      modifiedTime,
-      query: null,
-      gridColumns: null,
-      gridCellRatio: null,
-      elements: [element]
-    };
-  }
-
-  function createGridView(name: string, modifiedTime: number, element: ViewElement): View {
-    return {
-      route: Route.GRID,
-      name,
-      modifiedTime,
-      query: null,
-      gridColumns: 3,
-      gridCellRatio: '1:1',
-      elements: [element]
-    };
-  }
-
 });
-
-

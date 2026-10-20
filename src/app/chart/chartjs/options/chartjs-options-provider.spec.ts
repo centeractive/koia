@@ -13,7 +13,7 @@ const COLUMNS: Column[] = [
   { name: 'Percent', dataType: DataType.NUMBER, width: 1 },
 ];
 
-const provider = new ChartJsOptionsProvider(new RawDataRevealService(null, null));
+const provider = new ChartJsOptionsProvider(new RawDataRevealService(null, null, null, null));
 
 describe('ChartJsOptionsProvider - PIE', () => {
   it('#provide', () => {
@@ -195,7 +195,7 @@ describe('ChartJsOptionsProvider - interaction', () => {
   it('#provide should not reveal raw data when clicking no elements', () => {
 
     // given
-    const rawDataRevealService = new RawDataRevealService(null, null);
+    const rawDataRevealService = new RawDataRevealService(null, null, null, null);
     vi.spyOn(rawDataRevealService, 'ofID');
     vi.spyOn(rawDataRevealService, 'ofQuery');
     vi.spyOn(rawDataRevealService, 'ofTimeUnit');

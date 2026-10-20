@@ -7,8 +7,7 @@
     @if (loading) {
       <mat-progress-bar mode="indeterminate" [matTooltip]="'rawData.loading' | translate" />
     }
-    <koia-view-toolbar [class.dialog_top_row]="dialogStyle && hideToolbar" [moreMenu]="moreMenu" [persistable]="!dialogStyle" [savedViews]="configRecords" (save)="saveConfig()"
-      (restore)="loadConfig($event)">
+    <koia-view-toolbar [class.dialog_top_row]="dialogStyle && hideToolbar" [moreMenu]="moreMenu" [printable]="!dialogStyle">
       <button mat-icon-button [class.koia-toggle-active]="considerColumnWidths"
         [matTooltip]="(considerColumnWidths ? 'rawData.ignoreColumnWidths' : 'rawData.observeColumnWidths') | translate"
         (click)="toggleConsiderColumnWidths()">
@@ -30,12 +29,6 @@
           <span>{{ 'rawData.saveAs' | translate: { format: exportFormat } }}</span>
         </button>
       }
-      @if (!dialogStyle) {
-        <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
-          <mat-icon>monitor</mat-icon>
-          <span>{{ 'rawData.manageViews' | translate }}</span>
-        </button>
-      }
     </mat-menu>
     @if (!dialogStyle) {
       <koia-print-heading [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" />
@@ -45,6 +38,6 @@
   @if (columns) {
     <koia-virtual-table [columns]="columns" [widths]="widths" [source]="source" [multiLine]="multiLine"
       [showNestedObjects]="showNestedObjects" [dialogStyle]="dialogStyle" [sortable]="true" [sortIndicatorOf]="sortIndicator"
-      [rowStyleOf]="rowStyleOf" (sort)="sortBy($event)" (columnResize)="onColumnResize($event)" />
+      [headerTooltipOf]="headerTooltip" [rowStyleOf]="rowStyleOf" (sort)="sortBy($event)" (columnResize)="onColumnResize($event)" />
   }
 </div>

@@ -1,6 +1,7 @@
 import { Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartDataHelper } from 'app/shared/services/chart/chart-data-helper';
+import { isComputedColumn } from 'app/shared/utils/column-utils';
 
 export class GroupByColumnSelector {
 
@@ -29,7 +30,7 @@ export class GroupByColumnSelector {
 
    private findValidColumn(countSelected: boolean, dataColumns: Column[]): Column {
       return this.preferredDataTypes()
-         .flatMap(dataType => this.context.columns.filter(c => c.dataType === dataType))
+         .flatMap(dataType => this.context.columns.filter(c => c.dataType === dataType && !isComputedColumn(c)))
          .find(c => this.isValid(c, countSelected, dataColumns));
    }
 

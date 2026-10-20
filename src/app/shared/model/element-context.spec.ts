@@ -5,9 +5,11 @@ import { ValueRange } from '../value-range/model/value-range.type';
 import { Aggregation } from './aggregation.enum';
 import { ChangeEvent } from './change-event.enum';
 import { Column } from './column.type';
+import { ComputeOperator } from './compute-operator.enum';
 import { DataType } from './data-type.enum';
 import { ElementContext } from './element-context';
 import { ExportFormat } from './export-format.enum';
+import { TimeUnit } from './time-unit.enum';
 import { ElementType, ViewElement } from './view-config';
 import type { Mock } from 'vitest';
 
@@ -348,6 +350,181 @@ describe('ElementContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledTimes(1);
       expect(context.hasValueGrouping('Amount')).toBe(false);
    }));
+
+   it('#copyAttributes should drop columns that do not exist', () => {
+
+      // given
+      const time: Column = { name: 'Time', dataType: DataType.TIME, width: 1, groupingTimeUnit: TimeUnit.MONTH };
+      const testContext = new TestContext([...columns, time]);
+      const missingTime: Column = { name: 'Missing', dataType: DataType.TIME, width: 1, groupingTimeUnit: TimeUnit.DAY };
+
+      // when
+      testContext.copyAttributes({
+         ...viewElement(1, 1),
+         dataColumns: [column('Amount'), { name: 'Unknown', dataType: DataType.NUMBER, width: 1 }],
+         splitColumns: [missingTime, column('Name')],
+         groupByColumns: [{ ...time, groupingTimeUnit: TimeUnit.YEAR }, missingTime]
+      });
+
+      // then
+      expect(testContext.dataColumns).toEqual([column('Amount')]);
+      expect(testContext.splitColumns).toEqual([column('Name')]);
+      expect(testContext.groupByColumns).toHaveLength(1);
+      expect(testContext.groupByColumns[0]).toBe(time);
+      expect(time.groupingTimeUnit).toBe(TimeUnit.YEAR);
+   });
+
+   describe('updateColumns', () => {
+
+      let name: Column;
+      let amount: Column;
+      let share: Column;
+      let testContext: ElementContext;
+      let changeHandler: Mock;
+
+      beforeEach(fakeAsync(() => {
+         name = { name: 'Name', dataType: DataType.TEXT, width: 1 };
+         amount = { name: 'Amount', dataType: DataType.NUMBER, width: 1 };
+         share = computedColumn('Share', ComputeOperator.PERCENTAGE);
+         testContext = new TestContext([name, amount, share]);
+         testContext.valueGroupings = [valueGrouping('Share')];
+         flush();
+         changeHandler = vi.fn();
+         testContext.subscribeToChanges(changeHandler);
+      }));
+
+      function computedColumn(columnName: string, operator: ComputeOperator): Column {
+         return {
+            name: columnName, dataType: DataType.NUMBER, width: 1, indexed: false,
+            computation: { leftColumn: 'Amount', operator, rightColumn: 'Amount' }
+         };
+      }
+
+      it('#updateColumns should keep own instances and add new columns', fakeAsync(() => {
+
+         // given
+         const added = computedColumn('Sum', ComputeOperator.ADD);
+
+         // when
+         testContext.updateColumns([{ ...name }, { ...amount }, { ...share }, added]);
+         flush();
+
+         // then
+         expect(testContext.columns).toHaveLength(4);
+         expect(testContext.columns[0]).toBe(name);
+         expect(testContext.columns[1]).toBe(amount);
+         expect(testContext.columns[2]).toBe(share);
+         expect(testContext.columns[3]).toBe(added);
+      }));
+
+      it('#updateColumns should not fire a change when only a new column was added', fakeAsync(() => {
+
+         // given
+         testContext.dataColumns = [share];
+         flush();
+         changeHandler.mockClear();
+
+         // when
+         testContext.updateColumns([name, amount, share, computedColumn('Sum', ComputeOperator.ADD)]);
+         flush();
+
+         // then
+         expect(changeHandler).not.toHaveBeenCalled();
+      }));
+
+      it('#updateColumns should not fire a change when an unused computed column changed', fakeAsync(() => {
+
+         // given
+         testContext.dataColumns = [amount];
+         flush();
+         changeHandler.mockClear();
+
+         // when
+         testContext.updateColumns([name, amount, computedColumn('Share', ComputeOperator.DIVIDE)]);
+         flush();
+
+         // then
+         expect(changeHandler).not.toHaveBeenCalled();
+         expect(share.computation.operator).toBe(ComputeOperator.DIVIDE);
+      }));
+
+      it('#updateColumns should fire a structure change when a used column was removed', fakeAsync(() => {
+
+         // given
+         testContext.dataColumns = [amount, share];
+         testContext.splitColumns = [share];
+         testContext.groupByColumns = [share];
+         flush();
+         changeHandler.mockClear();
+
+         // when
+         testContext.updateColumns([name, amount]);
+         flush();
+
+         // then
+         expect(testContext.columns).toEqual([name, amount]);
+         expect(testContext.dataColumns).toEqual([amount]);
+         expect(testContext.splitColumns).toEqual([]);
+         expect(testContext.groupByColumns).toEqual([]);
+         expect(testContext.valueGroupings).toEqual([valueGrouping('Share')]);
+         expect(changeHandler).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+      }));
+
+      it('#updateColumns should fire a structure change when a used column was renamed', fakeAsync(() => {
+
+         // given
+         testContext.dataColumns = [share];
+         flush();
+         changeHandler.mockClear();
+
+         // when
+         testContext.updateColumns([name, amount, { ...share, name: 'Ratio' }], new Map([['Ratio', 'Share']]));
+         flush();
+
+         // then
+         expect(testContext.columns[2]).toBe(share);
+         expect(share.name).toBe('Ratio');
+         expect(testContext.dataColumns).toEqual([share]);
+         expect(testContext.valueGroupings).toEqual([valueGrouping('Share')]);
+         expect(changeHandler).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+      }));
+
+      it('#updateColumns should fire a structure change when a used column had its computation changed', fakeAsync(() => {
+
+         // given
+         testContext.groupByColumns = [share];
+         flush();
+         changeHandler.mockClear();
+         const changed = computedColumn('Share', ComputeOperator.MULTIPLY);
+
+         // when
+         testContext.updateColumns([name, amount, changed]);
+         flush();
+
+         // then
+         expect(testContext.columns[2]).toBe(share);
+         expect(share.computation).toEqual(changed.computation);
+         expect(testContext.groupByColumns).toEqual([share]);
+         expect(changeHandler).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+      }));
+
+      it('#updateColumns should not take over attributes of stored columns', fakeAsync(() => {
+
+         // given
+         testContext.dataColumns = [amount];
+         flush();
+         changeHandler.mockClear();
+
+         // when
+         testContext.updateColumns([name, { ...amount, width: 99 }, share]);
+         flush();
+
+         // then
+         expect(testContext.columns[1]).toBe(amount);
+         expect(amount.width).toBe(1);
+         expect(changeHandler).not.toHaveBeenCalled();
+      }));
+   });
 
    function column(name: string): Column {
       return columns.find(c => c.name === name);

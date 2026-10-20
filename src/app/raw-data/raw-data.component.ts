@@ -1,19 +1,25 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { ConfigController } from 'app/shared/controller/config.controller';
-import { ConfigRecord } from 'app/shared/model/view-config';
-import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
+import { RawDataState } from 'app/shared/model/view-config';
+import { DialogService, ExportService, NotificationService } from 'app/shared/services';
+import { ComputedColumnChange, ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { LanguageService } from 'app/shared/services/language';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
+import { RawDataStateProvider, RawDataStateService } from 'app/shared/services/saved-views';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
+import { ViewColumnRenamer } from 'app/shared/services/view-persistence/view-column-renamer';
+import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
+import { createDefaultRawDataState } from 'app/shared/services/view-persistence/raw-data-state-factory';
 import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
 import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { ColumnResize, VirtualTableSource } from 'app/shared/ui/virtual-table/virtual-table-source';
+import { computedColumnTooltipOf } from 'app/shared/utils/computation-utils';
 import { colWidthMeasurementOf } from 'app/shared/utils/source-system';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, Subscription } from 'rxjs';
 import { Column, ExportFormat, Page, Query, Route } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { RawDataBlockCache } from './raw-data-block-cache';
@@ -26,7 +32,7 @@ import { SORT_INDICATORS } from './sort-indicators';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class RawDataComponent extends ConfigController implements OnInit, AfterViewInit, OnDestroy {
+export class RawDataComponent extends ConfigController implements OnInit, OnDestroy, RawDataStateProvider {
 
   @Input() dialogStyle: boolean;
   @Input() query: Query;
@@ -42,7 +48,7 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
   considerColumnWidths: boolean;
   showNestedObjects: boolean;
   highlight: boolean;
-  multiLine = false;
+  multiLine: boolean;
   exportFormats: ExportFormat[] = [ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON];
 
   colWidthMeasurement: 'em' | 'px';
@@ -58,17 +64,25 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
 
   private cache: RawDataBlockCache;
   private readonly widthResolver = new ColumnWidthResolver();
+  private readonly computedColumnService = inject(ComputedColumnService);
+  private computedColumnsSubscription: Subscription;
 
-  constructor(bottomSheet: MatBottomSheet, router: Router, public override dbService: DBService, public override viewPersistenceService: ViewPersistenceService,
-    public override dialogService: DialogService, notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar) {
-    super(Route.RAWDATA, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
-    this.considerColumnWidths = true;
+  constructor(bottomSheet: MatBottomSheet, router: Router, public override dbService: DBService, public dialogService: DialogService,
+    notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar,
+    private rawDataStateService: RawDataStateService) {
+    super(Route.RAWDATA, router, bottomSheet, dbService, notificationService);
+    const defaults = createDefaultRawDataState().data;
+    this.considerColumnWidths = defaults.considerColumnWidths;
     this.showNestedObjects = false;
-    this.highlight = true;
+    this.highlight = defaults.highlight;
+    this.multiLine = defaults.multiLine;
   }
 
   init(): void {
-    if (!this.query) {
+    const state = this.dialogStyle ? undefined : this.rawDataStateService.register(this);
+    if (state) {
+      this.adopt(state);
+    } else if (!this.query) {
       this.query = new Query();
     }
     this.columns = this.scene.columns;
@@ -80,16 +94,22 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     });
     this.applyWidths();
     this.cache.reset();
+    this.computedColumnsSubscription = this.computedColumnService.changed$.subscribe(c => this.onComputedColumnsChanged(c));
   }
 
-  ngAfterViewInit(): void {
-    if (!this.dialogStyle && this.scene?.config.records.filter(r => r.route === this.route).length) {
-      this.selectConfig();
+  private onComputedColumnsChanged(change: ComputedColumnChange): void {
+    if (change.name !== undefined && change.name !== change.previousName) {
+      new ViewColumnRenamer(change.previousName, change.name).renameKey(this.customWidths);
     }
+    this.columns = this.scene.columns;
+    this.applyWidths();
+    this.reload();
   }
 
   ngOnDestroy(): void {
     this.cache?.cancel();
+    this.computedColumnsSubscription?.unsubscribe();
+    this.rawDataStateService.unregister(this);
   }
 
   onFilterChanged(query: Query): void {
@@ -121,7 +141,9 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     return sort.direction === 'asc' ? SORT_INDICATORS.asc : sort.direction === 'desc' ? SORT_INDICATORS.desc : '';
   };
 
-  readonly rowStyleOf = (entry: object): object | null => this.highlight ? { background: entry['bgcolor'], color: entry['fgcolor'] } : null;
+  readonly headerTooltip = (column: Column): string => computedColumnTooltipOf(column);
+
+  readonly rowStyleOf =(entry: object): object | null => this.highlight ? { background: entry['bgcolor'], color: entry['fgcolor'] } : null;
 
   onColumnResize(resize: ColumnResize): void {
     this.customWidths[this.columns[resize.index].name] = resize.width;
@@ -152,14 +174,14 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     const message = LanguageService.instant(query.hasFilter() ? 'rawData.exportFiltered' : 'rawData.exportComplete', { format: exportFormat });
     this.snackBar.open(message, undefined, { duration: 4000 });
     query.clearPageDefinition();
-    lastValueFrom(this.dbService.findEntries(query, false))
+    lastValueFrom(this.dbService.findEntriesWithComputedValues(query, false))
       .then(entries => this.exportService.exportData(entries, this.columns, exportFormat, RAW_DATA_FILE_BASE_NAME))
       .catch(error => this.notifyError(error));
   }
 
-  configToBeSaved(): { query: Query, data: ConfigRecordData } {
+  rawDataState(): RawDataState {
     return {
-      query: this.query,
+      query: queryToQueryDef(this.query),
       data: {
         considerColumnWidths: this.considerColumnWidths,
         highlight: this.highlight,
@@ -169,17 +191,19 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     };
   }
 
-  loadConfig(configRecord: ConfigRecord): void {
-    this.currentViewName = configRecord.name;
-    this.query = queryDefToQuery(configRecord.query);
-    this.restoredQuery = this.query;
-    const configRecordData = configRecord.data as ConfigRecordData;
-    this.considerColumnWidths = configRecordData.considerColumnWidths;
-    this.highlight = configRecordData.highlight;
-    this.multiLine = configRecordData.multiLine ?? false;
-    this.customWidths = { ...(configRecordData.columnWidths ?? {}) };
+  applyRawDataState(state: RawDataState): void {
+    this.adopt(state);
     this.applyWidths();
     this.reload();
+  }
+
+  private adopt(state: RawDataState): void {
+    this.query = queryDefToQuery(state.query);
+    this.restoredQuery = this.query;
+    this.considerColumnWidths = state.data.considerColumnWidths;
+    this.highlight = state.data.highlight;
+    this.multiLine = state.data.multiLine ?? false;
+    this.customWidths = { ...(state.data.columnWidths ?? {}) };
   }
 
   private reload(): void {
@@ -201,11 +225,4 @@ export class RawDataComponent extends ConfigController implements OnInit, AfterV
     this.widths = this.columns.map(column => this.customWidths[column.name] ??
       this.widthResolver.widthOf(column, this.colWidthMeasurement, this.considerColumnWidths, this.cache.loadedRows(), this.showNestedObjects));
   }
-}
-
-interface ConfigRecordData {
-  considerColumnWidths: boolean,
-  highlight: boolean,
-  multiLine?: boolean,
-  columnWidths?: Record<string, number>
 }

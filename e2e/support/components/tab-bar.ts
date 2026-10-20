@@ -27,6 +27,11 @@ export class TabBar {
       await this.page.waitForURL('**/' + Route.VIEW + '/' + id);
    }
 
+   async openRawData(): Promise<void> {
+      await this.page.locator('#tabRawData').click();
+      await this.page.waitForURL('**/' + Route.RAWDATA);
+   }
+
    addPivotTable(): Promise<void> {
       return this.addTab('#menuItemNewPivotTable');
    }

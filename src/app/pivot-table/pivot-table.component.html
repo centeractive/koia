@@ -10,7 +10,7 @@
       @if (loading) {
         <mat-progress-bar mode="indeterminate" [matTooltip]="'pivot.loadingData' | translate" />
       }
-      <koia-view-toolbar [moreMenu]="moreMenu" [savedViews]="configRecords" (save)="saveConfig()" (restore)="loadConfig($event)">
+      <koia-view-toolbar [moreMenu]="moreMenu">
         @if (allowsForValueGrouping) {
           <button id="but_value_grouping" class="but_config" mat-icon-button
             [matTooltip]="'pivot.defineValueGrouping' | translate" (click)="sidenav.open()">
@@ -41,10 +41,6 @@
         <button mat-menu-item (click)="exportToExcel()">
           <mat-icon>insert_drive_file</mat-icon>
           <span>{{ 'pivot.saveAsExcel' | translate }}</span>
-        </button>
-        <button mat-menu-item (click)="manageViews()" [disabled]="configRecords.length === 0">
-          <mat-icon>monitor</mat-icon>
-          <span>{{ 'pivot.manageViews' | translate }}</span>
         </button>
       </mat-menu>
 

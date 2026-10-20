@@ -20,7 +20,7 @@ describe('D3ForceGraphGenerator', () => {
         document.body.appendChild(div);
         graphData = { nodes: [{ parent: null, group: 0, name: '', value: '', info: null, count: 1 }], links: [] };
         context = new GraphContext([]);
-        generator = new D3ForceGraphGenerator(new RawDataRevealService(null, null));
+        generator = new D3ForceGraphGenerator(new RawDataRevealService(null, null, null, null));
         vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(100);
         vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(40);
     });

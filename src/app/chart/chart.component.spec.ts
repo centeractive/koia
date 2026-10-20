@@ -576,6 +576,69 @@ describe('ChartComponent', () => {
     }));
   });
 
+  describe('deferred rendering', () => {
+
+    function createCountBarChart(): void {
+      context.chartType = ChartType.BAR.type;
+      context.dataColumns = [createColumn('t1', DataType.TEXT)];
+      fixture.detectChanges();
+      flush();
+    }
+
+    it('#prepareChart should defer a structure change while the rendered chart is not visible', fakeAsync(() => {
+
+      // given
+      createCountBarChart();
+      const chart = context.chart;
+      const data = context.data;
+      fixture.nativeElement.style.display = 'none';
+
+      // when
+      context.dataColumns = [createColumn('t2', DataType.TEXT)];
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(context.chart).toBe(chart);
+      expect(context.data).toBe(data);
+      expect(component.loading).toBe(false);
+    }));
+
+    it('#ngDoCheck should apply a deferred structure change once visible', fakeAsync(() => {
+
+      // given
+      createCountBarChart();
+      const chart = context.chart;
+      const data = context.data;
+      fixture.nativeElement.style.display = 'none';
+      context.dataColumns = [createColumn('t2', DataType.TEXT)];
+      fixture.detectChanges();
+      flush();
+
+      // when
+      fixture.nativeElement.style.display = 'block';
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(context.chart).not.toBe(chart);
+      expect(context.data).not.toBe(data);
+    }));
+
+    it('#prepareChart should render a chart that was never rendered, even when it is not visible', fakeAsync(() => {
+
+      // given
+      context.chart = undefined;
+      fixture.nativeElement.style.display = 'none';
+
+      // when
+      createCountBarChart();
+
+      // then
+      expect(context.chart).toBeTruthy();
+    }));
+  });
+
   it('#createExportData should throw error', () => {
     expect(() => component.createExportData()).toThrow(expect.objectContaining({ message: 'Method not implemented.' }));
   });

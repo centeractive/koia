@@ -2,6 +2,7 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/dr
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { SideBarController } from 'app/shared/controller';
 import { Aggregation, Column, DataType, SummaryContext } from '../../shared/model';
+import { isComputedColumn } from 'app/shared/utils/column-utils';
 
 @Component({
   selector: 'koia-summary-table-side-bar',
@@ -38,7 +39,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
   }
 
   addValueGroupingFor(column: Column): void {
-    if (this.context.isAggregationCountSelected()) {
+    if (this.context.isAggregationCountSelected() || !this.isCountDistinctValuesEnabled()) {
       super.addValueGrouping(column.name);
     } else {
       this.context.silent = true;
@@ -46,6 +47,17 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
       this.context.silent = false;
       this.context.aggregations = [Aggregation.COUNT];
     }
+  }
+
+  onComputedColumnCreated(column: Column): void {
+    this.onColumnChanged(this.contextColumnOf(column));
+  }
+
+  /**
+   * counting distinct values groups by the data column, which is not supported for computed columns
+   */
+  isCountDistinctValuesEnabled(): boolean {
+    return !this.context.dataColumns.some(isComputedColumn);
   }
 
   isAggregateValuesEnabled(): boolean {

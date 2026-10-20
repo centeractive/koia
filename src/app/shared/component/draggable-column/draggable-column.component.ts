@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Column, ElementContext, GROUPING_TIME_UNITS, TimeUnit } from 'app/shared/model';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
-import { DataTypeUtils } from 'app/shared/utils';
+import { iconOfColumn } from 'app/shared/utils/column-utils';
 
 @Component({
     selector: 'koia-draggable-column',
@@ -20,7 +20,7 @@ export class DraggableColumnComponent implements OnInit {
   icon: string;
 
   ngOnInit(): void {
-    this.icon = DataTypeUtils.iconOf(this.column.dataType);
+    this.icon = iconOfColumn(this.column);
   }
 
   groupingTimeUnitKey(timeUnit: TimeUnit): string {

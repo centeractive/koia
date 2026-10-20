@@ -9,6 +9,13 @@ export interface RenderedCellStyle {
    horizontalPadding: number;
 }
 
+interface CenterColumnScan {
+   width: number;
+   height: number;
+   clientWidth: number;
+   paintedRow: number;
+}
+
 export class DashboardTile {
 
    readonly title: Locator;
@@ -31,6 +38,24 @@ export class DashboardTile {
 
    async expectChartPainted(): Promise<void> {
       await expect.poll(() => this.paintedPixelCount()).toBeGreaterThan(0);
+   }
+
+   /**
+    * clicks 10 px above the lowest painted pixel of the canvas centre column, once two consecutive scans agree,
+    * because Chart.js animates and redraws when the closing side bar resizes the content
+    */
+   async clickChartNearBottomCenter(): Promise<void> {
+      let previous: string;
+      let scan: CenterColumnScan;
+      await expect.poll(async () => {
+         scan = await this.scanCenterColumn();
+         const current = JSON.stringify(scan);
+         const stable = scan.paintedRow >= 0 && current === previous;
+         previous = current;
+         return stable;
+      }).toBe(true);
+      const scale = scan.width / scan.clientWidth;
+      await this.root.locator('canvas').click({ position: { x: scan.clientWidth / 2, y: scan.paintedRow / scale - 10 } });
    }
 
    spans(): Promise<{ columns: number; rows: number }> {
@@ -174,6 +199,22 @@ export class DashboardTile {
             }
          }
          return count;
+      });
+   }
+
+   /**
+    * @returns the canvas size and the lowest painted row of the canvas centre column in canvas pixels, -1 when unpainted
+    */
+   private scanCenterColumn(): Promise<CenterColumnScan> {
+      return this.root.locator('canvas').evaluate((c: HTMLCanvasElement) => {
+         const { data } = c.getContext('2d').getImageData(Math.floor(c.width / 2), 0, 1, c.height);
+         let paintedRow = -1;
+         for (let y = c.height - 1; y >= 0 && paintedRow < 0; y--) {
+            if (data[y * 4 + 3] > 0) {
+               paintedRow = y;
+            }
+         }
+         return { width: c.width, height: c.height, clientWidth: c.clientWidth, paintedRow };
       });
    }
 }

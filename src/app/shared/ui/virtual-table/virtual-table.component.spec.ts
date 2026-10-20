@@ -608,6 +608,29 @@ describe('VirtualTableComponent', () => {
       expect(header('Level').querySelector('.vt-sort').textContent).toBe('▲');
       expect(header('Amount').querySelector('.vt-sort').textContent).toBe('');
     });
+
+    it('#headerTooltipOf should show no header title by default', async () => {
+
+      // when
+      await render();
+
+      // then
+      expect(header('Level').hasAttribute('title')).toBe(false);
+    });
+
+    it('#headerTooltipOf should show header title of column', async () => {
+
+      // given
+      fixture.detectChanges();
+      table().headerTooltipOf = column => column.name === 'Level' ? 'tooltip' : '';
+
+      // when
+      await render();
+
+      // then
+      expect(header('Level').getAttribute('title')).toBe('tooltip');
+      expect(header('Amount').hasAttribute('title')).toBe(false);
+    });
   });
 
   describe('interaction', () => {

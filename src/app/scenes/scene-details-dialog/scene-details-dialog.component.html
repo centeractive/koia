@@ -22,7 +22,8 @@
     <table mat-table id="columns_table" class="koia-data-table" [dataSource]="scene.columns">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>{{ 'scenes.details.name' | translate }}</th>
-        <td mat-cell *matCellDef="let column" class="column-name">{{ column.name }}</td>
+        <td mat-cell *matCellDef="let column" class="column-name">{{ column.name }}@if (isComputedColumn(column)) {<mat-icon
+            class="icon_computed_column" [matTooltip]="computedColumnTooltip(column)">functions</mat-icon>}</td>
       </ng-container>
       <ng-container matColumnDef="type">
         <th mat-header-cell *matHeaderCellDef>{{ 'scenes.details.type' | translate }}</th>

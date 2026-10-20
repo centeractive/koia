@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { StatusType } from 'app/shared/model/status-type.enum';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { DASHBOARD_TAB_TITLES, PIVOT_TABLE_TAB_TITLES } from 'app/shared/services/view-tabs/tab-titles';
 import { TabBar } from './support/components/tab-bar';
@@ -33,6 +34,45 @@ test('closing a tab with content asks for confirmation', async ({ tabBar, confir
 
    expect(question).toBe(en.get('toolbar.tabs.closeQuestion', { title: tab.title }));
    await expect(tabBar.tab(tab.id)).toHaveCount(0);
+});
+
+test('restoring saved view brings back closed tab after confirmation', async ({ rawData, tabBar, notifications, confirmDialog }) => {
+   await rawData.mainToolbar.saveView('All');
+   await notifications.dismiss(StatusType.SUCCESS);
+   await tabBar.close(tabBar.tab('tab1'));
+   await confirmDialog.confirm();
+
+   await rawData.mainToolbar.restoreView('All');
+   const question = await confirmDialog.confirm();
+
+   expect(question).toBe(en.get('view.restoreQuestion', { name: 'All' }));
+   await expect(tabBar.tab('tab1')).toHaveCount(1);
+});
+
+test('restoring saved view needs no confirmation when open tabs have no content', async ({ rawData, pivot, tabBar, notifications, confirmDialog }) => {
+   await tabBar.close(tabBar.tab('tab1'));
+   await confirmDialog.confirm();
+   await tabBar.close(tabBar.tab('tab2'));
+   await confirmDialog.confirm();
+   await rawData.mainToolbar.saveView('Empty');
+   await notifications.dismiss(StatusType.SUCCESS);
+   await tabBar.addPivotTable();
+
+   await pivot.mainToolbar.restoreView('Empty');
+
+   await expect(tabBar.viewTabs).toHaveCount(0);
+   await expect(confirmDialog.root).toHaveCount(0);
+});
+
+test('deleted saved view is no longer offered for restoring', async ({ rawData, notifications, manageViewsDialog }) => {
+   await rawData.mainToolbar.saveView('Gone');
+   await notifications.dismiss(StatusType.SUCCESS);
+
+   await rawData.mainToolbar.manageViews();
+   await manageViewsDialog.delete(0);
+   await notifications.dismiss(StatusType.SUCCESS);
+
+   await expect(rawData.mainToolbar.restoreViewButton).toBeDisabled();
 });
 
 test('renamed tab is restored when its scene is activated in a new browser tab', async ({ context, tabBar }) => {

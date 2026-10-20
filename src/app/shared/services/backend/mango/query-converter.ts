@@ -5,7 +5,7 @@ import { SortLimitationWorkaround } from '../couchdb';
 
 export class QueryConverter {
 
-   private static readonly TABLE_STYLE_FIELDS = ['fgcolor', 'bgcolor'];
+   static readonly TABLE_STYLE_FIELDS = ['fgcolor', 'bgcolor'];
 
    constructor(private forPouchDB: boolean) { }
 

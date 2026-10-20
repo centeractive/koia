@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, DoCheck, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
@@ -16,11 +16,10 @@ import { DataFrame, IDataFrame } from 'data-forge';
 import { Subscription } from 'rxjs';
 import { Column, DataType, Document, Query, Route, TimeUnit } from '../shared/model';
 import {
-  DialogService,
   ExportService,
   NotificationService,
   RawDataRevealService,
-  TimeGroupingService, ViewPersistenceService
+  TimeGroupingService
 } from '../shared/services';
 import { PivotContext, PivotContextFactory } from './model';
 import { CellClickHandler } from './options/cell-click-handler';
@@ -38,7 +37,7 @@ declare let jQuery: any;
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class PivotTableComponent extends ConfigController implements AfterViewInit, DoCheck, OnDestroy, TabContentProvider {
+export class PivotTableComponent extends ConfigController implements DoCheck, OnDestroy, TabContentProvider {
 
   @Input() tab: TabDef;
 
@@ -74,11 +73,10 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
   private mutationObserver: MutationObserver;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
-    public override dbService: DBService, public override dialogService: DialogService, public override viewPersistenceService: ViewPersistenceService,
-    private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
+    public override dbService: DBService, private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
     notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService,
     private viewTabsService: ViewTabsService, private languageService: LanguageService) {
-    super(Route.PIVOT, router, bottomSheet, dbService, dialogService, viewPersistenceService, notificationService);
+    super(Route.PIVOT, router, bottomSheet, dbService, notificationService);
   }
 
   init(): void {
@@ -98,12 +96,6 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
       this.viewTabsService.register(this.tab.id, this);
     }
     this.languageSubscription = this.languageService.changed$.subscribe(() => this.languageChanged = true);
-  }
-
-  ngAfterViewInit(): void {
-    if (!this.tab?.record && this.scene.config.records.filter(r => r.route === this.route).length) {
-      this.selectConfig();
-    }
   }
 
   /**
@@ -224,17 +216,6 @@ export class PivotTableComponent extends ConfigController implements AfterViewIn
     const context = CommonUtils.clone(this.context) as PivotContext;
     context.valueGroupings.forEach(vg => vg.minMaxValues = null);
     return { query: this.query, data: context };
-  }
-
-  loadConfig(configRecord: ConfigRecord): void {
-    this.currentViewName = configRecord.name;
-    if (configRecord.query) {
-      this.restoredQuery = queryDefToQuery(configRecord.query);
-      this.pendingRecord = configRecord;
-      this.fetchData(this.restoredQuery);
-    } else {
-      this.applyConfig(configRecord);
-    }
   }
 
   private applyConfig(configRecord: ConfigRecord): void {

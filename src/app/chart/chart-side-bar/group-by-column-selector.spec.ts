@@ -1,4 +1,4 @@
-import { Aggregation, Column, DataType } from 'app/shared/model';
+import { Aggregation, Column, ComputeOperator, DataType } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GroupByColumnSelector } from './group-by-column-selector';
 
@@ -306,6 +306,25 @@ describe('GroupByColumnSelector', () => {
 
       // then
       expect(valid).toBe(false);
+   });
+
+   it('#select should never choose a computed column', () => {
+
+      // given
+      const share: Column = {
+         name: 'Share', dataType: DataType.NUMBER, width: 1, indexed: false,
+         computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
+      };
+      columns = [share, column('Amount'), column('Percent')];
+      context = new ChartContext(columns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.entries = UNIQUE_NAME_ENTRIES;
+      setup(ChartType.LINE, [], ['Amount'], []);
+
+      // when
+      const groupByColumns = new GroupByColumnSelector(context).select();
+
+      // then
+      expect(groupByColumns).toEqual([column('Percent')]);
    });
 
    function setup(chartType: ChartType, aggregations: Aggregation[], dataColumnNames: string[], groupByColumnNames: string[]): void {

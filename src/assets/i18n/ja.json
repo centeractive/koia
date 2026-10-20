@@ -154,7 +154,6 @@
     "undoHighlight": "行の強調表示を解除",
     "highlight": "行を強調表示",
     "saveAs": "{{format}} として保存",
-    "manageViews": "ビューを管理",
     "exportFiltered": "フィルター後のデータを収集し、バックグラウンドで {{format}} として保存しています",
     "exportComplete": "すべてのデータを収集し、バックグラウンドで {{format}} として保存しています"
   },
@@ -236,7 +235,8 @@
       "nameRequired": "名前は必須です",
       "nameDollar": "名前を $ で始めることはできません",
       "nameTooLong": "名前は {{max}} 文字以内にしてください",
-      "incompatibleTypes": "列に互換性のないデータ型の値が含まれています"
+      "incompatibleTypes": "列に互換性のないデータ型の値が含まれています",
+      "nameInUse": "この名前は既に使用されています"
     },
     "mapping": {
       "columnError": "列 '{{column}}': {{error}}",
@@ -290,14 +290,10 @@
     }
   },
   "dialog": {
-    "selectView": "ビューを選択",
-    "restoreView": "保存したビューを復元",
-    "restoreViewHint": "以前に保存したビューを読み込みます。",
     "manageViews": "ビューの管理",
     "manageSavedViews": "保存したビューの管理",
     "manageSavedViewsHint": "以前に保存したビューを削除または名前変更します。",
     "createView": "ビューを作成",
-    "createNewView": "新しいビューを作成",
     "chooseInitialElement": "新しいビューに最初に追加する要素を選択してください。",
     "chart": "チャート",
     "graph": "関係グラフ",
@@ -314,11 +310,12 @@
     "print": "現在のビューを印刷",
     "printScene": "シーン: {{name}}",
     "printPage": "{{page}} / {{count}} ページ",
-    "save": "現在のビューを保存",
+    "save": "すべてのタブをビューとして保存",
     "restore": "保存したビューを復元",
+    "restoreTitle": "ビューを復元",
+    "restoreQuestion": "「{{name}}」を復元すると、開いているすべてのタブが置き換えられます。続行しますか?",
     "saveTitle": "ビューを保存",
     "name": "ビュー名",
-    "noElements": "ビューに要素がありません",
     "saved": "ビュー \"{{name}}\" を保存しました",
     "notSaved": "ビュー \"{{name}}\" を保存できません: {{error}}",
     "notUpdated": "ビューを更新できません: {{error}}",
@@ -447,7 +444,6 @@
     "addNote": "メモを追加",
     "gridColumns": "グリッドの列数",
     "gridCellRatio": "グリッドセルの比率（幅:高さ）",
-    "manageViews": "ビューの管理",
     "snapToGrid": "グリッドに合わせる",
     "freeCanvas": "自由配置",
     "landscapePages": "横向きページ",
@@ -531,6 +527,13 @@
       "JSON": "JSON",
       "EXCEL": "Excel",
       "PNG": "PNG"
+    },
+    "computeOperator": {
+      "ADD": "+（加算）",
+      "SUBTRACT": "−（減算）",
+      "MULTIPLY": "×（乗算）",
+      "DIVIDE": "÷（除算）",
+      "PERCENTAGE": "÷（割合 %）"
     }
   },
   "pivot": {
@@ -544,7 +547,6 @@
     "showColumnTotals": "列の合計を表示",
     "hideColumnTotals": "列の合計を非表示",
     "saveAsExcel": "Excel 形式で保存",
-    "manageViews": "ビューを管理",
     "negativeValues": "負の値",
     "positiveValues": "正の値",
     "timeUnit": {
@@ -657,5 +659,31 @@
       "dragDropAggregationsHelp": "利用可能な集計をドラッグ＆ドロップして選択します",
       "availableAggregations": "利用可能な集計"
     }
+  },
+  "computedColumn": {
+    "formula": {
+      "ADD": "{{left}} + {{right}}",
+      "SUBTRACT": "{{left}} − {{right}}",
+      "MULTIPLY": "{{left}} × {{right}}",
+      "DIVIDE": "{{left}} ÷ {{right}}",
+      "PERCENTAGE": "{{right}}に対する{{left}}の割合 (%)"
+    },
+    "create": "計算列",
+    "createTooltip": "2つの数値列から計算される列（例：割合）を作成します",
+    "edit": "計算列 {{name}} を編集",
+    "createTitle": "新しい計算列",
+    "editTitle": "計算列の編集",
+    "leftColumn": "1番目の列",
+    "operator": "演算",
+    "rightColumn": "2番目の列",
+    "swapOperands": "列を入れ替える",
+    "formulaLabel": "式: {{formula}}",
+    "example": "{{row}}行目: {{formula}} = {{result}}",
+    "noExample": "例なし: 両方の列に数値を含む行がありません",
+    "notSaved": "計算列を保存できません: {{error}}",
+    "notDeleted": "計算列を削除できません: {{error}}",
+    "deleteTitle": "計算列の削除",
+    "deleteQuestion": "「{{name}}」を削除しますか？この列は、すべてのダッシュボードと保存済みビューで、この列を使用しているすべてのグラフと表から削除されます。",
+    "noRawData": "計算列「{{column}}」の値では生データを表示できません"
   }
 }

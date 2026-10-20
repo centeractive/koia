@@ -1,6 +1,6 @@
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { Column, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneTabs, ViewType } from 'app/shared/model/view-config';
 import { SceneFactory } from 'app/shared/test';
 import { lastValueFrom, throwError } from 'rxjs';
@@ -735,6 +735,83 @@ describe('DBService', () => {
       });
   });
 
+  it('#findEntries should not include computed columns in fields of query', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
+    initialScene.columns.push(computedColumn());
+    const findSpy = vi.spyOn(couchDBService, 'find');
+
+    // when
+    const docs = await lastValueFrom(dbService.findEntries(new Query(), false));
+
+    // then
+    expect(findSpy.mock.calls[0][1]['fields']).toEqual(['_id', 'ID', 'Time', 'Level', 'Data', 'Host', 'Path', 'Amount']);
+    expect(docs.length).toBe(5);
+    expect(docs[0]['Share']).toBeUndefined();
+  });
+
+  it('#findEntriesWithComputedValues should add values of computed columns', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
+    initialScene.columns.push(computedColumn());
+
+    // when
+    const docs = await lastValueFrom(dbService.findEntriesWithComputedValues(new Query(), true));
+
+    // then
+    expect(docs.map(d => d['Share'])).toEqual([12, 24, 36, 48, 60]);
+  });
+
+  it('#requestEntriesPage should return values of computed columns', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
+    initialScene.columns.push(computedColumn());
+    const query = new Query();
+    query.setPageDefinition(0, 2);
+    const firstPage = await dbService.requestEntriesPage(query);
+    query.setPageDefinition(1, 2);
+
+    // when
+    const secondPage = await dbService.requestEntriesPage(query, firstPage);
+
+    // then
+    expect(firstPage.entries.map(e => e['Share'])).toEqual([12, 24]);
+    expect(secondPage.entries.map(e => e['Share'])).toEqual([36, 48]);
+  });
+
+  it('#requestEntriesPage should count full text filtered entries when computed column exists', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
+    initialScene.columns.push(computedColumn());
+    const query = new Query();
+    query.setFullTextFilter('error');
+    query.setPageDefinition(0, 2);
+
+    // when
+    const page = await dbService.requestEntriesPage(query);
+
+    // then
+    expect(page.totalRowCount).toBe(3);
+    expect(page.entries.map(e => e['Share'])).toEqual([36, 48]);
+  });
+
+  it('#countEntriesOfActiveScene should ignore computed columns', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries).then(() => null);
+    initialScene.columns.push(computedColumn());
+
+    // when
+    const count = await dbService.countEntriesOfActiveScene();
+
+    // then
+    expect(count).toBe(5);
+  });
+
   it('#numberRangeOf should return undefined time range when no entries exist', async () => {
 
     // when
@@ -764,6 +841,13 @@ describe('DBService', () => {
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);
+  }
+
+  function computedColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 10, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.ADD, rightColumn: 'ID' }
+    };
   }
 
   function sceneTabs(scene: Scene, ...tabIds: string[]): SceneTabs {

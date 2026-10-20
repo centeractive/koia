@@ -2,6 +2,7 @@ import { NgxSliderModule } from '@angular-slider/ngx-slider';
 import { Component, NO_ERRORS_SCHEMA, ChangeDetectionStrategy, SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed, TestModuleMetadata, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -15,16 +16,18 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
+import { Column, ComputeOperator, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { TabDef, ViewType } from 'app/shared/model/view-config';
+import { SavedViewsService } from 'app/shared/services/saved-views';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
 import { MainToolbarComponent } from './main-toolbar.component';
+import { SavedViewButtonsComponent } from './saved-view-buttons/saved-view-buttons.component';
 import { ViewTabBarComponent } from './view-tab-bar/view-tab-bar.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
@@ -67,10 +70,11 @@ describe('MainToolbarComponent with many tabs', () => {
   beforeEach(async () => {
     const tabs: TabDef[] = Array.from({ length: 30 }, (_, i) => ({ id: 'tab' + (i + 1), type: ViewType.DASHBOARD, title: 'Dashboard ' + (i + 1) }));
     const viewTabsService = { tabs, ready: true, layoutOf: vi.fn() } as unknown as ViewTabsService;
+    const savedViewsService = { ready: true, findAll: () => [] } as unknown as SavedViewsService;
     await configureTestingModule(dbService, dialogService, {
-      declarations: [ViewTabBarComponent],
-      imports: [MatTabsModule],
-      providers: [{ provide: ViewTabsService, useValue: viewTabsService }]
+      declarations: [ViewTabBarComponent, SavedViewButtonsComponent],
+      imports: [MatTabsModule, MatBadgeModule],
+      providers: [{ provide: ViewTabsService, useValue: viewTabsService }, { provide: SavedViewsService, useValue: savedViewsService }]
     });
     vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', [{ name: 'Level', dataType: DataType.TEXT, width: 60 }]));
     vi.spyOn(dbService, 'findEntries').mockReturnValue(of([]));
@@ -131,6 +135,19 @@ describe('MainToolbarComponent with many tabs', () => {
 
     // then
     expect(rightOf('#butAddTab')).toBeLessThanOrEqual(toolbarRight);
+  });
+
+  it('saved view buttons should get tab of toolbar as active tab', () => {
+
+    // given
+    fixture.componentRef.setInput('tabId', 'tab3');
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const buttons: SavedViewButtonsComponent = fixture.debugElement.query(By.directive(SavedViewButtonsComponent)).componentInstance;
+    expect(buttons.activeTabId).toBe('tab3');
   });
 });
 
@@ -208,13 +225,23 @@ describe('MainToolbarComponent', () => {
     expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('navigation buttons should be separated from tab bar by divider', () => {
+  it('add scene button should be separated from saved view buttons by divider', () => {
 
     // when
-    const separator: HTMLElement = fixture.nativeElement.querySelector('.span_navigation > .koia-toolbar-separator');
+    const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[0];
 
     // then
     expect(separator.previousElementSibling.id).toBe('butScene');
+    expect(separator.nextElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
+  });
+
+  it('saved view buttons should be separated from tab bar by divider', () => {
+
+    // when
+    const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[1];
+
+    // then
+    expect(separator.previousElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
     expect(separator.nextElementSibling.tagName).toBe('KOIA-VIEW-TAB-BAR');
   });
 
@@ -898,6 +925,42 @@ describe('MainToolbarComponent', () => {
     expect(component.showRangeFilters).toBe(true);
   });
 
+  it('#filterableColumns should exclude computed columns', () => {
+
+    // given
+    component.scene = { ...scene, columns: [...scene.columns, computedColumn()] };
+
+    // when
+    const columns = component.filterableColumns();
+
+    // then
+    expect(columns).toEqual(scene.columns);
+  });
+
+  it('add filter menu should not list computed columns', fakeAsync(() => {
+
+    // given
+    component.scene = { ...scene, columns: [...scene.columns, computedColumn()] };
+    fixture.detectChanges();
+
+    // when
+    fixture.debugElement.query(By.css('.but_add_col_filter')).nativeElement.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    const names = fixture.debugElement.queryAll(By.css('.mat-mdc-menu-content > span > button > span'))
+      .map(e => e.nativeElement.textContent.trim());
+    expect(names).toEqual(['Time', 'Level', 'Host', 'Path', 'Amount', 'Paid']);
+  }));
+
+  function computedColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 10, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+  }
+
   function createScene(id: string, context: ContextInfo[], columns: Column[]): Scene {
     return {
       _id: id,
@@ -909,8 +972,7 @@ describe('MainToolbarComponent', () => {
       database: 'test_data_' + id,
       columnMappings: undefined,
       config: {
-        records: [],
-        views: []
+        savedViews: []
       }
     };
   }

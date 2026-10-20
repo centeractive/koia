@@ -1,9 +1,0 @@
-#div_saved_views {
-   overflow: auto;
-}
-
-.div_row {
-   display: flex;
-   align-items: center;
-   overflow-y: hidden;
-}

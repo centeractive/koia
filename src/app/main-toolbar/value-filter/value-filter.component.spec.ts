@@ -8,7 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { FormattedFloatDirective } from 'app/shared/directives/formatted-float.directive';
-import { Column, DataType, Operator, PropertyFilter } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, Operator, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
 import { ValueFilterComponent } from './value-filter.component';
@@ -82,6 +82,42 @@ describe('ValueFilterComponent', () => {
     expect(style.borderTopColor).toBe('rgb(138, 148, 166)');
     expect(style.backgroundColor).toBe('rgb(255, 255, 255)');
   });
+
+  it('#ngOnInit should exclude computed columns', () => {
+
+    // given
+    const storedColumns = columns.slice(0);
+    columns.push(computedColumn());
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.columns).toEqual(storedColumns);
+  });
+
+  it('column menu should not list computed columns', () => {
+
+    // given
+    columns.push(computedColumn());
+    component.ngOnInit();
+    fixture.detectChanges();
+
+    // when
+    fixture.nativeElement.querySelector('.span_menu_trigger').click();
+    fixture.detectChanges();
+
+    // then
+    const names = Array.from(document.querySelectorAll('.mat-mdc-menu-content button')).map(e => e.textContent.trim());
+    expect(names).toEqual(['Time', 'Level', 'Host', 'Path', 'Amount', 'Address', 'Valid', 'Signed Off']);
+  });
+
+  function computedColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 10, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+  }
 
   it('#availableOperators should return all operators when column has TEXT data type', () => {
 

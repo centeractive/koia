@@ -154,7 +154,6 @@
     "undoHighlight": "Zeilenhervorhebung aufheben",
     "highlight": "Zeilen hervorheben",
     "saveAs": "Speichern als {{format}}",
-    "manageViews": "Ansichten verwalten",
     "exportFiltered": "gefilterte Daten werden gesammelt und im Hintergrund als {{format}} gespeichert",
     "exportComplete": "alle Daten werden gesammelt und im Hintergrund als {{format}} gespeichert"
   },
@@ -236,7 +235,8 @@
       "nameRequired": "Name ist erforderlich",
       "nameDollar": "Name darf nicht mit $ beginnen",
       "nameTooLong": "Name darf höchstens {{max}} Zeichen lang sein",
-      "incompatibleTypes": "Spalte enthält Werte mit unverträglichen Datentypen"
+      "incompatibleTypes": "Spalte enthält Werte mit unverträglichen Datentypen",
+      "nameInUse": "Name wird bereits verwendet"
     },
     "mapping": {
       "columnError": "Spalte '{{column}}': {{error}}",
@@ -290,14 +290,10 @@
     }
   },
   "dialog": {
-    "selectView": "Ansicht auswählen",
-    "restoreView": "Gespeicherte Ansicht wiederherstellen",
-    "restoreViewHint": "Eine zuvor gespeicherte Ansicht laden.",
     "manageViews": "Ansichten verwalten",
     "manageSavedViews": "Gespeicherte Ansichten verwalten",
     "manageSavedViewsHint": "Zuvor gespeicherte Ansichten löschen oder umbenennen.",
     "createView": "Ansicht erstellen",
-    "createNewView": "Neue Ansicht erstellen",
     "chooseInitialElement": "Wählen Sie das erste Element der neuen Ansicht.",
     "chart": "Diagramm",
     "graph": "Beziehungsgraph",
@@ -314,11 +310,12 @@
     "print": "Aktuelle Ansicht drucken",
     "printScene": "Szene: {{name}}",
     "printPage": "Seite {{page}} von {{count}}",
-    "save": "Aktuelle Ansicht speichern",
+    "save": "Alle Tabs als Ansicht speichern",
     "restore": "Gespeicherte Ansicht wiederherstellen",
+    "restoreTitle": "Ansicht wiederherstellen",
+    "restoreQuestion": "Das Wiederherstellen von \"{{name}}\" ersetzt alle offenen Tabs. Möchten Sie fortfahren?",
     "saveTitle": "Ansicht speichern",
     "name": "Name der Ansicht",
-    "noElements": "Ansicht enthält keine Elemente",
     "saved": "Ansicht \"{{name}}\" wurde gespeichert",
     "notSaved": "Ansicht \"{{name}}\" kann nicht gespeichert werden: {{error}}",
     "notUpdated": "Ansichten können nicht aktualisiert werden: {{error}}",
@@ -447,7 +444,6 @@
     "addNote": "Notiz hinzufügen",
     "gridColumns": "Rasterspalten",
     "gridCellRatio": "Seitenverhältnis Rasterzelle (Breite:Höhe)",
-    "manageViews": "Ansichten verwalten",
     "snapToGrid": "Am Raster ausrichten",
     "freeCanvas": "Freie Anordnung",
     "landscapePages": "Seiten im Querformat",
@@ -531,6 +527,13 @@
       "JSON": "JSON",
       "EXCEL": "Excel",
       "PNG": "PNG"
+    },
+    "computeOperator": {
+      "ADD": "+ (addieren)",
+      "SUBTRACT": "− (subtrahieren)",
+      "MULTIPLY": "× (multiplizieren)",
+      "DIVIDE": "÷ (dividieren)",
+      "PERCENTAGE": "in % von"
     }
   },
   "pivot": {
@@ -544,7 +547,6 @@
     "showColumnTotals": "Spaltensummen anzeigen",
     "hideColumnTotals": "Spaltensummen ausblenden",
     "saveAsExcel": "Als Excel speichern",
-    "manageViews": "Ansichten verwalten",
     "negativeValues": "Negative Werte",
     "positiveValues": "Positive Werte",
     "timeUnit": {
@@ -657,5 +659,31 @@
       "dragDropAggregationsHelp": "Verfügbare Aggregationen per Drag & Drop auswählen",
       "availableAggregations": "Verfügbare Aggregationen"
     }
+  },
+  "computedColumn": {
+    "formula": {
+      "ADD": "{{left}} + {{right}}",
+      "SUBTRACT": "{{left}} − {{right}}",
+      "MULTIPLY": "{{left}} × {{right}}",
+      "DIVIDE": "{{left}} ÷ {{right}}",
+      "PERCENTAGE": "{{left}} in % von {{right}}"
+    },
+    "create": "Berechnete Spalte",
+    "createTooltip": "Spalte erstellen, die aus zwei Zahlenspalten berechnet wird, z. B. ein Prozentsatz",
+    "edit": "Berechnete Spalte {{name}} bearbeiten",
+    "createTitle": "Neue berechnete Spalte",
+    "editTitle": "Berechnete Spalte bearbeiten",
+    "leftColumn": "Erste Spalte",
+    "operator": "Operation",
+    "rightColumn": "Zweite Spalte",
+    "swapOperands": "Spalten tauschen",
+    "formulaLabel": "Formel: {{formula}}",
+    "example": "Zeile {{row}}: {{formula}} = {{result}}",
+    "noExample": "Kein Beispiel: Keine Zeile enthält Zahlen in beiden Spalten",
+    "notSaved": "Berechnete Spalte kann nicht gespeichert werden: {{error}}",
+    "notDeleted": "Berechnete Spalte kann nicht gelöscht werden: {{error}}",
+    "deleteTitle": "Berechnete Spalte löschen",
+    "deleteQuestion": "Soll \"{{name}}\" wirklich gelöscht werden? Die Spalte wird aus allen Diagrammen und Tabellen entfernt, die sie verwenden, in allen Dashboards und gespeicherten Ansichten.",
+    "noRawData": "Rohdaten können nicht nach Werten der berechneten Spalte \"{{column}}\" angezeigt werden"
   }
 }

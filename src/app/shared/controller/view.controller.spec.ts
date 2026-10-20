@@ -41,10 +41,6 @@ describe('ViewController', () => {
       viewController.sidenav = sidenav as MatSidenav;
    });
 
-   it('#views should be empty when scene is undefined', () => {
-      expect(viewController.views).toEqual([]);
-   });
-
    it('#isShowResizableMargin should return false when not chart context', () => {
 
       // when

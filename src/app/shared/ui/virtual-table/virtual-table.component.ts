@@ -37,6 +37,7 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
   @Input() dialogStyle = false;
   @Input() sortable = false;
   @Input() sortIndicatorOf: (column: Column) => string = () => '';
+  @Input() headerTooltipOf: (column: Column) => string = () => '';
   @Input() rowStyleOf: (entry: object) => object | null = () => null;
   @Input() rowMarker: TemplateRef<{ $implicit: number }>;
   @Output() sort = new EventEmitter<Column>();

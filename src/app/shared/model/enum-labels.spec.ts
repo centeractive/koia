@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { LanguageService } from 'app/shared/services/language';
 import { Aggregation } from './aggregation.enum';
 import { ChartType } from './chart/chart-type';
+import { ComputeOperator } from './compute-operator.enum';
 import { DataType } from './data-type.enum';
 import { EnumLabels } from './enum-labels';
 import { ExportFormat } from './export-format.enum';
@@ -73,5 +74,34 @@ describe('EnumLabels', () => {
       // then
       Object.values(Aggregation).forEach(a => expect(EnumLabels.aggregation(a)).not.toBe(EnumLabels.aggregationKey(a)));
       ChartType.ALL.forEach(t => expect(EnumLabels.chartType(t.type)).not.toBe(t.name));
+   });
+
+   it('#computeOperatorKey should return the key composed of the enum member name', () => {
+      expect(EnumLabels.computeOperatorKey(ComputeOperator.MULTIPLY)).toBe('enum.computeOperator.MULTIPLY');
+   });
+
+   it('#computeOperator should return the English label', () => {
+      expect(EnumLabels.computeOperator(ComputeOperator.PERCENTAGE)).toBe('as % of');
+   });
+
+   it('#computeOperator should return the translated label', async () => {
+
+      // given
+      await useLanguage('de');
+
+      // when
+      const label = EnumLabels.computeOperator(ComputeOperator.ADD);
+
+      // then
+      expect(label).toBe('+ (addieren)');
+   });
+
+   it('#computeOperator should translate all operators into Japanese', async () => {
+
+      // when
+      await useLanguage('ja');
+
+      // then
+      Object.values(ComputeOperator).forEach(o => expect(EnumLabels.computeOperator(o)).not.toBe(o));
    });
 });

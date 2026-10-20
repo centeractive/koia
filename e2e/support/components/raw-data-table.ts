@@ -32,7 +32,7 @@ export class RawDataTable {
       return this.root.locator(`.vt-row[data-index="${rowIndex}"] .vt-td`).nth(columnIndex);
    }
 
-   private header(column: string): Locator {
+   header(column: string): Locator {
       return this.root.locator('.vt-th').filter({ has: this.root.page().getByText(column, { exact: true }) });
    }
 }

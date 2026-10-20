@@ -18,7 +18,7 @@ describe('NodeDoubleClickHandler', () => {
 
    beforeEach(() => {
       graphContext = new GraphContext([timeColumn, levelColumn]);
-      rawDataRevealService = new RawDataRevealService(null, null);
+      rawDataRevealService = new RawDataRevealService(null, null, null, null);
       handler = new NodeDoubleClickHandler(rawDataRevealService);
       vi.spyOn(rawDataRevealService, 'ofTimeUnit').mockReturnValue(undefined);
       vi.spyOn(rawDataRevealService, 'ofQuery').mockReturnValue(undefined);

@@ -149,4 +149,31 @@ describe('StringUtils', () => {
       expect(StringUtils.escape('.abc.', '.', '_')).toBe('_.abc_.');
       expect(StringUtils.escape('abc', 'abc', '_')).toBe('_a_b_c');
    });
+
+   it('#uniqueName should return name when name does not exist', () => {
+
+      // when
+      const name = StringUtils.uniqueName('x', new Set(['y']));
+
+      // then
+      expect(name).toBe('x');
+   });
+
+   it('#uniqueName should append (2) when name exists', () => {
+
+      // when
+      const name = StringUtils.uniqueName('x', new Set(['x']));
+
+      // then
+      expect(name).toBe('x (2)');
+   });
+
+   it('#uniqueName should append next free number when numbered names exist', () => {
+
+      // when
+      const name = StringUtils.uniqueName('x', new Set(['x', 'x (2)']));
+
+      // then
+      expect(name).toBe('x (3)');
+   });
 });

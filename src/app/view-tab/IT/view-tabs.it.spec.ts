@@ -16,7 +16,7 @@ import { ChartComponent } from 'app/chart/chart.component';
 import { PivotTableComponent } from 'app/pivot-table/pivot-table.component';
 import { Aggregation, Query, Route, Scene } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
-import { ConfigRecord, ElementType, SceneTabs, View, ViewType } from 'app/shared/model/view-config';
+import { ConfigRecord, ElementType, SceneTabs, TabDef, View, ViewType } from 'app/shared/model/view-config';
 import { DialogService, NotificationService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { Summary } from 'app/shared/services/view-persistence';
@@ -24,6 +24,7 @@ import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/que
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
 import { waitFrames } from 'app/shared/test/animation-frames';
+import { savedViewOf } from 'app/shared/test/saved-view-factory';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { page } from 'vitest/browser';
 
@@ -60,7 +61,6 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     const dialogService = TestBed.inject(DialogService);
     vi.spyOn(dialogService, 'showViewLauncherDialog').mockReturnValue(undefined);
-    vi.spyOn(dialogService, 'showConfigLauncherDialog').mockReturnValue(undefined);
   }, TIMEOUT);
 
   afterEach(async () => {
@@ -96,6 +96,20 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     return { route, name, modifiedTime: 1, query: null, gridColumns, gridCellRatio: gridColumns ? '1:1' : null, elements: [element] };
   }
 
+  function legacyPivotRecord(): ConfigRecord {
+    return {
+      route: Route.PIVOT, name: 'legacy pivot', modifiedTime: 1, query: null,
+      data: {
+        timeColumns: [], negativeColor: '#FF3333', positiveColor: '#00FF00', showRowTotals: true, showColumnTotals: true,
+        valueGroupings: [], pivotOptions: { rendererName: 'Table', cols: ['Level'], rows: [] }
+      }
+    };
+  }
+
+  function convertedTab(): TabDef {
+    return TestBed.inject(ViewPersistenceService).findSavedViews(scene)[0].tabs[0];
+  }
+
   it('should persist open tabs numbered per type and restore them after scene was activated again', async () => {
 
     // given
@@ -119,18 +133,17 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     ]);
   }, TIMEOUT);
 
-  it('should open legacy flex view in dashboard with flex layout and default spans', async () => {
+  it('should restore legacy flex view converted to tab in dashboard with flex layout and default spans', async () => {
 
     // given
-    const flexView = legacyView(Route.FLEX, 'legacy flex', null, summaryElement(null, null));
-    scene.config.views.push(flexView);
+    scene.config.views = [legacyView(Route.FLEX, 'legacy flex', null, summaryElement(null, null))];
     await run.db.updateScene(scene);
     const fixture = TestBed.createComponent(DashboardComponent);
-    fixture.detectChanges();
-    const dashboard = fixture.componentInstance;
+    fixture.componentRef.setInput('tab', convertedTab());
 
     // when
-    dashboard.loadView(dashboard.views.find(v => v.name === 'legacy flex'));
+    fixture.detectChanges();
+    const dashboard = fixture.componentInstance;
 
     // then
     expect(dashboard.isGridLayout()).toBe(false);
@@ -140,18 +153,17 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     fixture.destroy();
   }, TIMEOUT);
 
-  it('should open legacy grid view in dashboard with grid layout and settings', async () => {
+  it('should restore legacy grid view converted to tab in dashboard with grid layout and settings', async () => {
 
     // given
-    scene.config.views.push(legacyView(Route.GRID, 'legacy grid', 2, summaryElement(2, 1)));
+    scene.config.views = [legacyView(Route.GRID, 'legacy grid', 2, summaryElement(2, 1))];
     await run.db.updateScene(scene);
     const fixture = TestBed.createComponent(DashboardComponent);
-    fixture.detectChanges();
-    const dashboard = fixture.componentInstance;
-    dashboard.setLayout(Route.FLEX);
+    fixture.componentRef.setInput('tab', convertedTab());
 
     // when
-    dashboard.loadView(dashboard.views.find(v => v.name === 'legacy grid'));
+    fixture.detectChanges();
+    const dashboard = fixture.componentInstance;
 
     // then
     expect(dashboard.isGridLayout()).toBe(true);
@@ -160,25 +172,17 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     fixture.destroy();
   }, TIMEOUT);
 
-  it('should open legacy pivot record in pivot table', async () => {
+  it('should restore legacy pivot record converted to tab in pivot table', async () => {
 
     // given
-    const record: ConfigRecord = {
-      route: Route.PIVOT, name: 'legacy pivot', modifiedTime: 1, query: null,
-      data: {
-        timeColumns: [], negativeColor: '#FF3333', positiveColor: '#00FF00', showRowTotals: true, showColumnTotals: true,
-        valueGroupings: [], pivotOptions: { rendererName: 'Table', cols: ['Level'], rows: [] }
-      }
-    };
-    scene.config.records.push(record);
+    scene.config.records = [legacyPivotRecord()];
     await run.db.updateScene(scene);
     const fixture = TestBed.createComponent(PivotTableComponent);
-    fixture.autoDetectChanges();
+    fixture.componentRef.setInput('tab', convertedTab());
     const pivotTable = fixture.componentInstance;
-    await waitFrames(() => !!pivotTable.dataFrame, 600);
 
     // when
-    pivotTable.loadConfig(pivotTable.configRecords.find(r => r.name === 'legacy pivot'));
+    fixture.autoDetectChanges();
     await waitFrames(() => !!fixture.nativeElement.querySelector('.pvtColLabel') && !pivotTable.computing, 600);
 
     // then
@@ -187,19 +191,23 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     fixture.destroy();
   }, TIMEOUT);
 
-  it('should keep single view when dashboard is saved under same name in flex and grid layout', async () => {
+  it('should replace saved view with same name and drop legacy views when saved', async () => {
 
     // given
+    scene.config.views = [legacyView(Route.FLEX, 'legacy flex', 3, summaryElement(1, 1))];
+    scene.config.records = [legacyPivotRecord()];
     const viewPersistenceService = TestBed.inject(ViewPersistenceService);
-    const flexView = legacyView(Route.FLEX, 'x', 3, summaryElement(1, 1));
-    await viewPersistenceService.saveView(scene, flexView);
+    await viewPersistenceService.saveView(scene, savedViewOf('x', [], 2));
 
     // when
-    await viewPersistenceService.saveView(scene, legacyView(Route.GRID, 'x', 3, summaryElement(1, 1)));
+    await viewPersistenceService.saveView(scene, savedViewOf('x', [], 3));
 
     // then
     const persistedScene = await run.db.findScene(scene._id);
-    expect(persistedScene.config.views.map(v => v.name + ':' + v.route)).toEqual(['x:' + Route.GRID]);
+    expect(persistedScene.config.savedViews.map(v => v.name)).toEqual(['legacy flex', 'legacy pivot', 'x']);
+    expect(persistedScene.config.savedViews[2].modifiedTime).toBe(3);
+    expect(persistedScene.config.views).toBeUndefined();
+    expect(persistedScene.config.records).toBeUndefined();
   }, TIMEOUT);
 
   it('should save open tabs with stale revision', async () => {

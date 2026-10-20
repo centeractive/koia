@@ -2,13 +2,12 @@ import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
-import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
+import { ComputedColumnDialogComponent, ComputedColumnDialogData } from '../component/computed-column-dialog/computed-column-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
-import { ManageConfigContext, ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
+import { ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
 import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
 import { Scene } from '../model';
-import { ConfigRecord, View } from '../model/view-config';
 
 @Injectable({
   providedIn: 'root'
@@ -37,18 +36,11 @@ export class DialogService {
     return this.dialogService.open(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 
-  showConfigLauncherDialog(context: ConfigLauncherContext): MatDialogRef<ConfigLauncherDialogComponent> {
-    return this.dialogService.open(ConfigLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  showComputedColumnDialog(data: ComputedColumnDialogData): MatDialogRef<ComputedColumnDialogComponent> {
+    return this.dialogService.open(ComputedColumnDialogComponent, { data: data, panelClass: 'dialog-container' });
   }
 
-  showManageConfigDialog(context: ManageConfigContext): MatDialogRef<ManageViewDialogComponent<ConfigRecord>> {
-    return this.showManageViewDialog({
-      views: context.configRecords,
-      updateViews: (deletedRecords, renamedRecords) => context.updateConfigRecords(deletedRecords, renamedRecords)
-    });
-  }
-
-  showManageViewDialog<T extends { name: string, modifiedTime: number } = View>(context: ManageViewContext<T>): MatDialogRef<ManageViewDialogComponent<T>> {
+  showManageViewDialog<T extends { name: string, modifiedTime: number }>(context: ManageViewContext<T>): MatDialogRef<ManageViewDialogComponent<T>> {
     return this.dialogService.open<ManageViewDialogComponent<T>, ManageViewContext<T>>(ManageViewDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 }

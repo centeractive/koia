@@ -41,3 +41,11 @@ mat-card-title {
 .numeric {
   text-align: right;
 }
+
+.icon_computed_column {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  vertical-align: middle;
+}

@@ -15,8 +15,7 @@ export class SceneUtils {
          columns: undefined,
          database: db,
          config: {
-            records: [],
-            views: []
+            savedViews: []
          }
       }
    }
@@ -27,14 +26,6 @@ export class SceneUtils {
          name += ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate');
       }
       return name;
-   }
-
-   static uniqueSceneName(name: string, existingNames: Set<string>): string {
-      let uniqueName = name;
-      for (let i = 2; existingNames.has(uniqueName); i++) {
-         uniqueName = name + ' (' + i + ')';
-      }
-      return uniqueName;
    }
 
    static generateSceneDescription(reader: DataReader, file: File) {

@@ -1,5 +1,6 @@
 import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ArrayUtils, CommonUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
+import { isComputedColumn } from 'app/shared/utils/column-utils';
 import { ColumnProfile, ColumnRole } from './column-profile';
 
 interface NumberCounts {
@@ -26,6 +27,7 @@ export class ColumnProfiler {
       return [];
     }
     return columns
+      .filter(c => !isComputedColumn(c))
       .map(c => this.profileColumn(c, entries))
       .filter(p => p !== undefined);
   }

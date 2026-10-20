@@ -3,7 +3,7 @@ import { MatBottomSheet, MatBottomSheetConfig } from '@angular/material/bottom-s
 import { StatusComponent } from 'app/shared/component/status/status.component';
 import { Status, StatusType } from '../model';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class NotificationService {
 
   onSuccess(bottomSheet: MatBottomSheet, message: string | object): void {

@@ -12,8 +12,7 @@ export class SceneFactory {
       columns: columns,
       database: 'test_data_' + id,
       config: {
-        records: [],
-        views: []
+        savedViews: []
       }
     };
   }
