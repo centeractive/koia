@@ -11,7 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSliderModule } from '@angular/material/slider';
 import { By } from '@angular/platform-browser';
-import { Aggregation, ChangeEvent, Column, DataType, TimeUnit } from 'app/shared/model';
+import { Aggregation, ChangeEvent, Column, ComputeOperator, DataType, TimeUnit } from 'app/shared/model';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { MatIconModuleMock } from 'app/shared/test';
@@ -955,6 +955,113 @@ describe('ChartSideBarComponent - data includes time column', () => {
     expect(fixture.nativeElement.querySelector('.span_legend button[mat-button]')).toBeTruthy();
   });
 
+});
+
+describe('ChartSideBarComponent - computed columns', () => {
+
+  const COLUMNS: Column[] = [
+    { name: 'Name', dataType: DataType.TEXT, width: 60, indexed: true },
+    { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
+    { name: 'Percent', dataType: DataType.NUMBER, width: 20, indexed: true },
+    { name: 'Comment', dataType: DataType.TEXT, width: 100, indexed: false },
+    computedColumn('Share', ComputeOperator.PERCENTAGE),
+    computedColumn('Sum', ComputeOperator.ADD)
+  ];
+
+  beforeEach(waitForAsync(() => {
+    const columns = COLUMNS.map(c => ({ ...c }));
+    setup(columns, columns[0], columns[1]);
+  }));
+
+  it('#defineSelectableItems should offer computed and indexed columns as data columns', () => {
+    expect(component.selectableDataColumns.map(c => c.name)).toEqual(['Name', 'Amount', 'Percent', 'Share', 'Sum']);
+  });
+
+  it('#defineSelectableItems should not offer computed columns as group-by columns', () => {
+    expect(component.selectableGroupByColumns.map(c => c.name)).toEqual(['Name', 'Percent', 'Comment']);
+  });
+
+  it('#onComputedColumnCreated should select the context column of the created column', () => {
+
+    // when
+    component.onComputedColumnCreated(computedColumn('Share', ComputeOperator.PERCENTAGE));
+
+    // then
+    expect(context.dataColumns).toContain(findColumn('Share'));
+  });
+
+  it('#ngDoCheck should refresh the columns and aggregation options when the context columns were replaced', () => {
+
+    // given
+    component.countDistinctValuesEnabled = false;
+    const columns = context.columns.filter(c => c.name !== 'Sum');
+
+    // when
+    context.updateColumns(columns);
+    fixture.detectChanges();
+
+    // then
+    expect(component.selectableDataColumns.map(c => c.name)).toEqual(['Name', 'Amount', 'Percent', 'Share']);
+    expect(component.countDistinctValuesEnabled).toBe(true);
+  });
+
+  it('data column buttons should list the renamed and not the deleted computed column', () => {
+
+    // given
+    const columns = context.columns
+      .filter(c => c.name !== 'Sum')
+      .map(c => c.name === 'Share' ? { ...c, name: 'Quota' } : c);
+
+    // when
+    context.updateColumns(columns, new Map([['Quota', 'Share']]));
+    fixture.detectChanges();
+
+    // then
+    expect(dataColumnButtonTexts()).toEqual(['Name', 'Amount', 'Percent', 'Quota']);
+  });
+
+  it('data column button should show functions icon and formula tooltip of computed column', () => {
+
+    // when
+    const button = fixture.debugElement.queryAll(By.css('.but_column'))[3];
+
+    // then
+    expect(button.nativeElement.querySelector('mat-icon').textContent.trim()).toBe('functions');
+    expect(button.properties['matTooltip']).toBe('Amount as % of Percent');
+  });
+
+  it('edit launcher should only exist for computed columns', () => {
+
+    // when
+    const launchers = fixture.debugElement.queryAll(By.css('.span_data_column koia-computed-column-launcher'));
+
+    // then
+    expect(launchers.map(l => l.parent.query(By.css('.but_column')).nativeElement.textContent.trim().split(/\s+/).pop()))
+      .toEqual(['Share', 'Sum']);
+  });
+
+  it('#columnSaved of create launcher should select the created column', () => {
+
+    // given
+    const launcher = fixture.debugElement.query(By.css('#div_sel_data_columns > koia-computed-column-launcher'));
+
+    // when
+    launcher.triggerEventHandler('columnSaved', computedColumn('Sum', ComputeOperator.ADD));
+
+    // then
+    expect(context.dataColumns).toContain(findColumn('Sum'));
+  });
+
+  function computedColumn(name: string, operator: ComputeOperator): Column {
+    return {
+      name, dataType: DataType.NUMBER, width: 70, indexed: false,
+      computation: { leftColumn: 'Amount', operator, rightColumn: 'Percent' }
+    };
+  }
+
+  function dataColumnButtonTexts(): string[] {
+    return fixture.debugElement.queryAll(By.css('.but_column')).map(b => b.nativeElement.textContent.trim().split(/\s+/).pop());
+  }
 });
 
 const REPEATING_ENTRIES = [

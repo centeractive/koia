@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DraggableColumnComponent } from './draggable-column.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
-import { Column, DataType, ElementContext, TimeUnit } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, ElementContext, TimeUnit } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 
 describe('DraggableColumnComponent', () => {
@@ -27,6 +27,25 @@ describe('DraggableColumnComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('#ngOnInit should define data type icon when column is stored', () => {
+    expect(component.icon).toBe('access_time');
+  });
+
+  it('#ngOnInit should define functions icon when column is computed', () => {
+
+    // given
+    component.column = {
+      name: 'Sum', dataType: DataType.NUMBER, width: 50, indexed: false,
+      computation: { leftColumn: 'a', operator: ComputeOperator.ADD, rightColumn: 'b' }
+    };
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.icon).toBe('functions');
   });
 
   it.each([TimeUnit.DAY, undefined])('#groupingTimeUnitChanged should set time unit %s and fire structure change', timeUnit => {

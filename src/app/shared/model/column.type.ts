@@ -1,3 +1,4 @@
+import { Computation } from './computation.type';
 import { DataType } from './data-type.enum';
 import { TimeUnit } from './time-unit.enum';
 
@@ -8,4 +9,5 @@ export interface Column {
   format?: string;
   groupingTimeUnit?: TimeUnit;
   indexed?: boolean;
+  computation?: Computation;
 }

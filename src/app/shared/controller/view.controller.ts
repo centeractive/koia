@@ -18,10 +18,13 @@ import { DialogService, ExportService, NotificationService, ViewPersistenceServi
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { ChartMarginService } from '../services/chart';
+import { ComputedColumnChange, ComputedColumnService } from '../services/computed-column.service';
 import { ModelToViewConverter, ViewToModelConverter } from '../services/view-persistence';
 import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
 import { TabContentProvider, ViewTabsService } from '../services/view-tabs';
 import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
+import { isAnalyzableColumn } from '../utils/column-utils';
+import { withComputedValues } from '../utils/computation-utils';
 import { promptViewName } from './view-name-prompt';
 
 @Directive()
@@ -58,13 +61,14 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private columns: Column[];
    private query: Query;
    private entriesSubscription: Subscription;
+   private computedColumnsSubscription: Subscription;
    private destroyed = false;
    private scrollToAddedElement = false;
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
       protected dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
       private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService,
-      private viewTabsService: ViewTabsService) {
+      private viewTabsService: ViewTabsService, private computedColumnService: ComputedColumnService) {
       super(bottomSheet, notificationService);
    }
 
@@ -83,6 +87,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
             }
             this.viewTabsService.register(this.tab.id, this);
          }
+         this.computedColumnsSubscription = this.computedColumnService.changed$.subscribe(c => this.onComputedColumnsChanged(c));
       }
    }
 
@@ -110,6 +115,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          this.viewTabsService.unregister(this.tab.id, this);
       }
       this.entriesSubscription?.unsubscribe();
+      this.computedColumnsSubscription?.unsubscribe();
    }
 
    /**
@@ -122,12 +128,26 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    private identifyColumns(): void {
       this.columns = this.scene.columns
-         .filter(c => c.indexed)
+         .filter(isAnalyzableColumn)
          .filter(c => c.name !== CouchDBConstants._ID)
          .map(c => <Column>CommonUtils.clone(c));
       this.viewToModelConverter = new ViewToModelConverter(this.columns);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
+   }
+
+   private onComputedColumnsChanged(change: ComputedColumnChange): void {
+      this.identifyColumns();
+      if (this.entries) {
+         withComputedValues(this.entries, this.columns);
+      }
+      const renamedFrom = new Map<string, string>();
+      if (change.name !== undefined && change.name !== change.previousName) {
+         renamedFrom.set(change.name, change.previousName);
+      }
+      this.elementContexts.forEach(c => c.updateColumns(this.clonedColumns(), renamedFrom));
+      this.refreshViews();
+      this.requestPersist();
    }
 
    addSummaryTable(): SummaryContext {
@@ -201,7 +221,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       if (this.entriesSubscription) {
          this.entriesSubscription.unsubscribe();
       }
-      this.entriesSubscription = this.dbService.findEntries(query, true).subscribe({
+      this.entriesSubscription = this.dbService.findEntriesWithComputedValues(query, true).subscribe({
          next: (data) => {
             this.entries = data;
             DateTimeUtils.defineTimeUnits(this.timeColumns, data);

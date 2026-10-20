@@ -50,7 +50,7 @@
             <span>{{ 'toolbar.addFilter' | translate }}</span>
           </button>
           <mat-menu #columnFilterMenu="matMenu">
-            @for (column of scene.columns; track column) {
+            @for (column of filterableColumns(); track column) {
               <span>
                 @if (!isNumericColumn(column)) {
                   <button class="menu_item_add_text_filter" mat-menu-item (click)="addValueFilter(column)">

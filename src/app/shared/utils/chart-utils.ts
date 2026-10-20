@@ -1,5 +1,6 @@
 import { Column, DataType } from '../model';
 import { ChartContext } from '../model/chart';
+import { isComputedColumn } from './column-utils';
 
 export class ChartUtils {
 
@@ -11,7 +12,7 @@ export class ChartUtils {
                return textColumns.slice(0, 1);
             }
          }
-         const numericNonDataCols = context.getNumericColumns().filter(c => !context.dataColumns?.includes(c));
+         const numericNonDataCols = context.getNumericColumns().filter(c => !isComputedColumn(c) && !context.dataColumns?.includes(c));
          if (numericNonDataCols.length > 0) {
             const timeColumn = numericNonDataCols.find(c => c.dataType === DataType.TIME);
             return timeColumn ? [timeColumn] : numericNonDataCols.slice(0, 1);

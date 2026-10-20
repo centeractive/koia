@@ -3,6 +3,7 @@ import { FormControl, ValidationErrors } from '@angular/forms';
 import { Column, DataType, Operator, PropertyFilter } from 'app/shared/model';
 import { DBService } from 'app/shared/services/backend';
 import { PropertyFilterValidator } from 'app/shared/validator';
+import { filterableColumnsOf } from 'app/shared/utils/column-utils';
 import { FilterValueParser } from './filter-value-parser';
 import { ValueFilterCustomizer } from './value-filter-customizer';
 import { ValueFilterUtils } from './value-filter-utils';
@@ -33,7 +34,7 @@ export class ValueFilterComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.columns = this.dbService.getActiveScene().columns;
+    this.columns = filterableColumnsOf(this.dbService.getActiveScene().columns);
     this.validator = new PropertyFilterValidator(this.columns);
     this.valueParser = new FilterValueParser(this.filter);
     this.valueControl.setValue(this.valueFilterCustomizer.formattedValueOf(this.filter));

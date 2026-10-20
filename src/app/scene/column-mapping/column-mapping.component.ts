@@ -1,9 +1,9 @@
-import { LanguageService } from 'app/shared/services/language';
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { ColumnPair, DataType, EnumLabels } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
+import { columnNameErrorMessage, columnNameValidators } from 'app/shared/validator/column-name-validation';
 import { ColumnDefinitionAssistant } from '../utils';
 import { ColumnMappingGenerator } from './mapper';
 
@@ -31,11 +31,7 @@ export class ColumnMappingComponent implements OnInit {
   ngOnInit() {
     this.dateFormats = DateTimeUtils.allTimeUnits('desc')
       .map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
-    this.columnNameControl = new UntypedFormControl('', [
-      Validators.required,
-      Validators.pattern(ColumnMappingGenerator.COLUMN_NAME_PATTERN),
-      Validators.maxLength(ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH)
-    ]);
+    this.columnNameControl = new UntypedFormControl('', columnNameValidators());
     this.columnNameControl.setValue(this.mapping.target.name);
     this.columnNameControl.markAsTouched();
   }
@@ -46,15 +42,7 @@ export class ColumnMappingComponent implements OnInit {
   }
 
   getColumnNameErrorMessage(): string {
-    if (this.columnNameControl.hasError('required')) {
-      return LanguageService.instant('scene.column.nameRequired');
-    } else if (this.columnNameControl.hasError('pattern')) {
-      return LanguageService.instant('scene.column.nameDollar');
-    } else if (this.columnNameControl.hasError('maxlength')) {
-      return LanguageService.instant('scene.column.nameTooLong', { max: ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH });
-    } else {
-      return '';
-    }
+    return columnNameErrorMessage(this.columnNameControl);
   }
 
   /**

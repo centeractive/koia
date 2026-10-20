@@ -5,6 +5,7 @@ import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
+import { filterableColumnsOf } from 'app/shared/utils/column-utils';
 import { PropertyFilterValidator } from 'app/shared/validator';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Subscription } from 'rxjs';
@@ -116,6 +117,10 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
         this.addRangeFilter(column, f.valueRange, f.inverted);
       })
     }
+  }
+
+  filterableColumns(): Column[] {
+    return filterableColumnsOf(this.scene.columns);
   }
 
   showSceneDetails(): void {

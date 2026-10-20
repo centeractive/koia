@@ -1,0 +1,12 @@
+@if (column) {
+  <button class="but_edit_computed_column" mat-icon-button [matTooltip]="'computedColumn.edit' | translate: { name: column.name }"
+    [attr.aria-label]="'computedColumn.edit' | translate: { name: column.name }" (click)="openDialog()">
+    <mat-icon>edit</mat-icon>
+  </button>
+} @else {
+  <button class="but_create_computed_column" mat-stroked-button [matTooltip]="'computedColumn.createTooltip' | translate"
+    [disabled]="!creatable" (click)="openDialog()">
+    <mat-icon>functions</mat-icon>
+    {{ 'computedColumn.create' | translate }}
+  </button>
+}

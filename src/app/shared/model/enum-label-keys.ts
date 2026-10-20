@@ -1,4 +1,5 @@
 import { Aggregation } from './aggregation.enum';
+import { ComputeOperator } from './compute-operator.enum';
 import { DataType } from './data-type.enum';
 import { ExportFormat } from './export-format.enum';
 import { Operator } from './operator.enum';
@@ -32,6 +33,14 @@ export class EnumLabelKeys {
 
    static exportFormat(exportFormat: ExportFormat): string {
       return 'enum.exportFormat.' + memberNameOf(ExportFormat, exportFormat);
+   }
+
+   static computeOperator(operator: ComputeOperator): string {
+      return 'enum.computeOperator.' + memberNameOf(ComputeOperator, operator);
+   }
+
+   static computeOperatorFormula(operator: ComputeOperator): string {
+      return 'computedColumn.formula.' + memberNameOf(ComputeOperator, operator);
    }
 
    /**

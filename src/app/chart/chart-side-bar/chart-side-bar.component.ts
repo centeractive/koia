@@ -3,6 +3,7 @@ import { SideBarController } from 'app/shared/controller';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { CommonUtils, DataTypeUtils } from 'app/shared/utils';
+import { isAnalyzableColumn, isComputedColumn } from 'app/shared/utils/column-utils';
 import { LanguageService } from 'app/shared/services/language';
 import { Aggregation, Column, DataType, EnumLabels, TimeUnit } from '../../shared/model';
 import { GroupByColumnSelector } from './group-by-column-selector';
@@ -39,10 +40,20 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   protected override defineSelectableItems() {
     this.selectableDataColumns = this.context.columns
-      .filter(c => c.indexed)
+      .filter(isAnalyzableColumn)
       .filter(c => c.dataType !== DataType.TIME);
-    this.selectableGroupByColumns = this.context.columns.filter(c => !this.context.dataColumns.includes(c));
+    this.selectableGroupByColumns = this.context.columns
+      .filter(c => !isComputedColumn(c) && !this.context.dataColumns.includes(c));
     super.defineSelectableItems();
+  }
+
+  protected override onComputedColumnsChanged(): void {
+    this.defineAggregationOptions();
+    super.onComputedColumnsChanged();
+  }
+
+  onComputedColumnCreated(column: Column): void {
+    this.onColumnChanged(this.contextColumnOf(column));
   }
 
   get groupByTimeColumn(): Column {

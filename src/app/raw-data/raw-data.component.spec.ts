@@ -10,12 +10,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
-import { Column, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
 import { ConfigRecord } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
+import { ComputedColumnService } from 'app/shared/services/computed-column.service';
+import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
@@ -79,7 +81,8 @@ describe('RawDataComponent', () => {
         MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
-        { provide: NotificationService, useValue: notificationService }
+        { provide: NotificationService, useValue: notificationService },
+        { provide: ViewTabsService, useValue: { renameColumn: vi.fn(), requestPersist: vi.fn() } }
       ]
     });
     vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
@@ -815,7 +818,7 @@ describe('RawDataComponent', () => {
     it.each([ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON])('#saveAs should save complete data as %s file', async exportFormat => {
 
       // given
-      vi.spyOn(dbService, 'findEntries').mockReturnValue(of([entryAt(0)]));
+      vi.spyOn(dbService, 'findEntriesWithComputedValues').mockReturnValue(of([entryAt(0)]));
       vi.spyOn(component.snackBar, 'open');
       vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
 
@@ -832,7 +835,7 @@ describe('RawDataComponent', () => {
     it.each([ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON])('#saveAs should save filtered data as %s file', async exportFormat => {
 
       // given
-      vi.spyOn(dbService, 'findEntries').mockReturnValue(of([entryAt(0)]));
+      vi.spyOn(dbService, 'findEntriesWithComputedValues').mockReturnValue(of([entryAt(0)]));
       vi.spyOn(component.snackBar, 'open');
       vi.spyOn(exportService, 'exportData').mockImplementation(() => null);
       component.query.setFullTextFilter('x');
@@ -850,7 +853,7 @@ describe('RawDataComponent', () => {
     it('#saveAs should notify error', async () => {
 
       // given
-      vi.spyOn(dbService, 'findEntries').mockReturnValue(throwError(() => ({ status: 404 })));
+      vi.spyOn(dbService, 'findEntriesWithComputedValues').mockReturnValue(throwError(() => ({ status: 404 })));
       vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
       // when
@@ -934,6 +937,110 @@ describe('RawDataComponent', () => {
       // then
       expect(component.showNestedObjects).toBe(true);
       expect(cellOf(0, 'Nested').textContent).toBe('{ "a": 1 }');
+    });
+  });
+
+  describe('computed columns', () => {
+
+    let computedColumnService: ComputedColumnService;
+
+    beforeEach(() => {
+      vi.spyOn(dbService, 'updateScene').mockImplementation(s => Promise.resolve(s));
+      computedColumnService = TestBed.inject(ComputedColumnService);
+    });
+
+    function computedColumn(name: string): Column {
+      return {
+        name, dataType: DataType.NUMBER, width: 6, indexed: false,
+        computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+      };
+    }
+
+    function header(columnName: string): HTMLDivElement {
+      return fixture.nativeElement.querySelectorAll('.vt-th')[component.columns.findIndex(c => c.name === columnName)];
+    }
+
+    it('#onComputedColumnsChanged should show column and reload first block when column was saved', async () => {
+
+      // given
+      await render();
+      requestEntriesPageSpy.mockClear();
+
+      // when
+      await computedColumnService.save(computedColumn('Share'));
+      await render();
+
+      // then
+      expect(component.columns.map(c => c.name)).toEqual(['Time', 'Level', 'Data', 'Host', 'Nested', 'Amount', 'Share']);
+      expect(component.widths.length).toBe(7);
+      expect(header('Share').textContent).toContain('Share');
+      expect(requestedQuery(0).getPageIndex()).toBe(0);
+    });
+
+    it('#onComputedColumnsChanged should keep custom width and refresh records when column was renamed', async () => {
+
+      // given
+      scene.columns.push(computedColumn('Share'));
+      await render();
+      component.onColumnResize({ index: component.columns.findIndex(c => c.name === 'Share'), width: 123 });
+      scene.config.records = [{
+        route: Route.RAWDATA, name: 'v', modifiedTime: now, query: queryToQueryDef(new Query()), data: { columnWidths: { Share: 50 } }
+      }];
+
+      // when
+      await computedColumnService.save(computedColumn('Pct'), 'Share');
+      await render();
+
+      // then
+      expect(component.customWidths).toEqual({ Pct: 123 });
+      expect(component.widths[component.columns.findIndex(c => c.name === 'Pct')]).toBe(123);
+      expect(component.configRecords).toEqual(scene.config.records);
+      expect(component.configRecords[0].data).toEqual({ columnWidths: { Pct: 50 } });
+    });
+
+    it('#onComputedColumnsChanged should not rename custom width when column was removed', async () => {
+
+      // given
+      scene.columns.push(computedColumn('Share'));
+      await render();
+      component.onColumnResize({ index: component.columns.findIndex(c => c.name === 'Share'), width: 123 });
+
+      // when
+      await computedColumnService.remove('Share');
+      await render();
+
+      // then
+      expect(component.customWidths).toEqual({ Share: 123 });
+      expect(component.columns.map(c => c.name)).toEqual(['Time', 'Level', 'Data', 'Host', 'Nested', 'Amount']);
+    });
+
+    it('header should show formula as tooltip of computed column', async () => {
+
+      // given
+      scene.columns.push(computedColumn('Share'));
+
+      // when
+      await render();
+
+      // then
+      expect(header('Share').getAttribute('title')).toBe('Amount as % of Amount');
+      expect(header('Amount').hasAttribute('title')).toBe(false);
+    });
+
+    it('#onComputedColumnsChanged should be ignored after destroy', async () => {
+
+      // given
+      await render();
+      const loadedColumns = component.columns;
+      fixture.destroy();
+      requestEntriesPageSpy.mockClear();
+
+      // when
+      await computedColumnService.save(computedColumn('Share'));
+
+      // then
+      expect(component.columns).toBe(loadedColumns);
+      expect(requestEntriesPageSpy).not.toHaveBeenCalled();
     });
   });
 });

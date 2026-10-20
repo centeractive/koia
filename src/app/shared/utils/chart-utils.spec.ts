@@ -1,4 +1,4 @@
-import { DataType, Column } from '../model';
+import { DataType, Column, ComputeOperator } from '../model';
 import { ChartUtils } from './chart-utils';
 import { ChartContext, ChartType } from '../model/chart';
 
@@ -113,6 +113,26 @@ describe('ChartUtils', () => {
 
       // then
       expect(groupByColumns).toEqual([column(columns, 'Time')]);
+   });
+
+   it('#identifyGroupByColumns should ignore computed column', () => {
+
+      // given
+      const columns: Column[] = [
+         {
+            name: 'Share', dataType: DataType.NUMBER, width: 1, indexed: false,
+            computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
+         },
+         { name: 'Amount', dataType: DataType.NUMBER, width: 1 },
+         { name: 'Percent', dataType: DataType.NUMBER, width: 1 }
+      ];
+      const context = new ChartContext(columns, ChartType.LINE.type, null);
+
+      // when
+      const groupByColumns = ChartUtils.identifyGroupByColumns(context);
+
+      // then
+      expect(groupByColumns).toEqual([column(columns, 'Amount')]);
    });
 
    function column(columns: Column[], name: string): Column {

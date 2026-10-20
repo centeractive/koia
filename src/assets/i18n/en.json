@@ -235,7 +235,8 @@
       "nameRequired": "Name is required",
       "nameDollar": "Name must not start with $",
       "nameTooLong": "Name must not exceed {{max}} characters",
-      "incompatibleTypes": "Column contains values of incompatible data types"
+      "incompatibleTypes": "Column contains values of incompatible data types",
+      "nameInUse": "Name is already in use"
     },
     "mapping": {
       "columnError": "Column '{{column}}': {{error}}",
@@ -530,6 +531,13 @@
       "JSON": "JSON",
       "EXCEL": "Excel",
       "PNG": "PNG"
+    },
+    "computeOperator": {
+      "ADD": "+ (add)",
+      "SUBTRACT": "− (subtract)",
+      "MULTIPLY": "× (multiply)",
+      "DIVIDE": "÷ (divide)",
+      "PERCENTAGE": "as % of"
     }
   },
   "pivot": {
@@ -656,5 +664,31 @@
       "dragDropAggregationsHelp": "Drag & Drop available aggregations to make them selected",
       "availableAggregations": "Available Aggregations"
     }
+  },
+  "computedColumn": {
+    "formula": {
+      "ADD": "{{left}} + {{right}}",
+      "SUBTRACT": "{{left}} − {{right}}",
+      "MULTIPLY": "{{left}} × {{right}}",
+      "DIVIDE": "{{left}} ÷ {{right}}",
+      "PERCENTAGE": "{{left}} as % of {{right}}"
+    },
+    "create": "Computed Column",
+    "createTooltip": "Create a column computed from two number columns, e.g. a percentage",
+    "edit": "Edit computed column {{name}}",
+    "createTitle": "New Computed Column",
+    "editTitle": "Edit Computed Column",
+    "leftColumn": "First Column",
+    "operator": "Operation",
+    "rightColumn": "Second Column",
+    "swapOperands": "Swap columns",
+    "formulaLabel": "Formula: {{formula}}",
+    "example": "Row {{row}}: {{formula}} = {{result}}",
+    "noExample": "No example: no row contains numbers in both columns",
+    "notSaved": "Computed column cannot be saved: {{error}}",
+    "notDeleted": "Computed column cannot be deleted: {{error}}",
+    "deleteTitle": "Delete Computed Column",
+    "deleteQuestion": "Do you really want to delete \"{{name}}\"? It will be removed from all charts and tables using it, in all dashboards and saved views.",
+    "noRawData": "Raw data cannot be revealed by values of the computed column \"{{column}}\""
   }
 }

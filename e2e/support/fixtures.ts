@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { ComputedColumnDialog } from './components/computed-column-dialog';
 import { ConfirmDialog, RawDataDialog } from './components/dialogs';
 import { LanguageSelect } from './components/language-select';
 import { Notifications } from './components/notifications';
@@ -22,6 +23,7 @@ interface PageObjects {
    languageSelect: LanguageSelect;
    notifications: Notifications;
    confirmDialog: ConfirmDialog;
+   computedColumnDialog: ComputedColumnDialog;
 }
 
 /**
@@ -43,7 +45,8 @@ export const test = base.extend<PageObjects>({
    dashboard: async ({ page }, use) => use(new DashboardPage(page)),
    languageSelect: async ({ page }, use) => use(new LanguageSelect(page)),
    notifications: async ({ page }, use) => use(new Notifications(page)),
-   confirmDialog: async ({ page }, use) => use(new ConfirmDialog(page))
+   confirmDialog: async ({ page }, use) => use(new ConfirmDialog(page)),
+   computedColumnDialog: async ({ page }, use) => use(new ComputedColumnDialog(page))
 });
 
 export { expect } from '@playwright/test';

@@ -1,4 +1,4 @@
-import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, TimeUnit } from 'app/shared/model';
 import { ColumnRole } from './column-profile';
 import { ColumnProfiler } from './column-profiler';
 
@@ -20,6 +20,22 @@ describe('ColumnProfiler', () => {
   function entriesOf(name: string, values: unknown[]): object[] {
     return values.map(v => ({ [name]: v }));
   }
+
+  it('#profile should ignore computed columns', () => {
+
+    // given
+    const share: Column = {
+      ...column('Share', DataType.NUMBER), indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+    const entries = entriesOf('Share', [1, 2, 3, 4, 5]);
+
+    // when
+    const profiles = profiler.profile([share], entries);
+
+    // then
+    expect(profiles).toEqual([]);
+  });
 
   it('#profile should classify text column with few distinct values as category', () => {
 

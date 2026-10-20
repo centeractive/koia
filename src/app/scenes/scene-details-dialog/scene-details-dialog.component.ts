@@ -2,6 +2,8 @@ import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { EnumLabels, Scene, TimeUnit } from 'app/shared/model';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
+import { isComputedColumn } from 'app/shared/utils/column-utils';
+import { computedColumnTooltipOf } from 'app/shared/utils/computation-utils';
 import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 
 @Component({
@@ -14,6 +16,8 @@ import { colWidthMeasurementToDisplay } from 'app/shared/utils/source-system';
 export class SceneDetailsDialogComponent {
 
   readonly dataTypeLabel = EnumLabels.dataType;
+  readonly isComputedColumn = isComputedColumn;
+  readonly computedColumnTooltip = computedColumnTooltipOf;
   readonly contextColumns = ['ctxName', 'ctxValue'];
   readonly columnColumns = ['name', 'type', 'format', 'groupBy', 'width'];
 

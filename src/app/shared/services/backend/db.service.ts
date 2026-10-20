@@ -4,9 +4,11 @@ import { SortDirection } from '@angular/material/sort';
 import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivation, SceneInfo } from 'app/shared/model';
 import { SceneTabs } from 'app/shared/model/view-config';
 import { QueryUtils } from 'app/shared/utils';
+import { storedColumnsOf } from 'app/shared/utils/column-utils';
+import { withComputedValues } from 'app/shared/utils/computation-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { Observable, lastValueFrom } from 'rxjs';
+import { Observable, lastValueFrom, map } from 'rxjs';
 import { CouchDBService, SortLimitationWorkaround } from './couchdb';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
 import { DB } from './db.type';
@@ -264,7 +266,7 @@ export class DBService {
   async requestEntriesPage(query: Query, prevPage?: Page): Promise<Page> {
     if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query) &&
       !SortLimitationWorkaround.isCouchDbWithChangedSort(this, query, prevPage)) {
-      return lastValueFrom(this.findEntries(query, false))
+      return lastValueFrom(this.findEntriesWithComputedValues(query, false))
         .then(entries => this.toPage(query, entries, prevPage.totalRowCount));
     } else {
       return this.countMatchingEntries(query)
@@ -272,7 +274,7 @@ export class DBService {
           if (cnt === 0) {
             return this.toPage(query, [], cnt);
           } else {
-            return lastValueFrom(this.findEntries(query, false))
+            return lastValueFrom(this.findEntriesWithComputedValues(query, false))
               .then(entries => this.toPage(query, entries, cnt));
           }
         });
@@ -289,7 +291,7 @@ export class DBService {
 
   private async countMatchingEntries(query: Query): Promise<number> {
     if (query.hasFilter() || SortLimitationWorkaround.isCouchDbWithSort(this, query)) {
-      const mangoQuery = this.queryConverter.queryForAllMatchingIds(this.activeScene.columns, query);
+      const mangoQuery = this.queryConverter.queryForAllMatchingIds(storedColumnsOf(this.activeScene.columns), query);
       const objects = await lastValueFrom(this.db.find(this.activeScene.database, mangoQuery));
       return objects.length;
     } else {
@@ -306,9 +308,17 @@ export class DBService {
   }
 
   findEntries(query: Query, indexedColumnsOnly: boolean): Observable<Document[]> {
-    const columns = indexedColumnsOnly ? this.activeScene.columns.filter(c => c.indexed) : this.activeScene.columns;
+    const columns = indexedColumnsOnly ? this.activeScene.columns.filter(c => c.indexed) : storedColumnsOf(this.activeScene.columns);
     const mangoQuery = this.queryConverter.toMango(columns, query);
     return this.db.find(this.activeScene.database, mangoQuery);
+  }
+
+  /**
+   * @returns the entries found by [[findEntries]] including the values of the computed columns of the active scene
+   */
+  findEntriesWithComputedValues(query: Query, indexedColumnsOnly: boolean): Observable<Document[]> {
+    return this.findEntries(query, indexedColumnsOnly)
+      .pipe(map(entries => withComputedValues(entries, this.activeScene.columns)));
   }
 
   private scenesDbName(): string {

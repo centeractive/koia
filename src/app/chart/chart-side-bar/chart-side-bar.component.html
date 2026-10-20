@@ -20,12 +20,18 @@
       <koia-expansion-panel [title]="dataPanelName()" [expanded]="true">
         <div id="div_sel_data_columns">
           @for (column of selectableDataColumns; track column) {
-            <button class="but_column" mat-raised-button
-              [color]="context.dataColumns.includes(column) ? 'accent' : ''" (click)="onColumnChanged(column)">
-              <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-              {{ column.name }}
-            </button>
+            <span class="span_data_column">
+              <button class="but_column" mat-raised-button [color]="context.dataColumns.includes(column) ? 'accent' : ''"
+                [matTooltip]="computedColumnTooltip(column)" (click)="onColumnChanged(column)">
+                <mat-icon>{{ iconOfColumn(column) }}</mat-icon>
+                {{ column.name }}
+              </button>
+              @if (isComputedColumn(column)) {
+                <koia-computed-column-launcher [column]="column" [entries]="entries" />
+              }
+            </span>
           }
+          <koia-computed-column-launcher [entries]="entries" (columnSaved)="onComputedColumnCreated($event)" />
         </div>
         <br>
           <div>

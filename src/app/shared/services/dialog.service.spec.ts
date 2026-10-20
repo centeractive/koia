@@ -4,6 +4,7 @@ import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/conne
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
 import { Protocol, Route } from 'app/shared/model';
 import { ConfigRecord } from 'app/shared/model/view-config';
+import { ComputedColumnDialogComponent, ComputedColumnDialogData } from '../component/computed-column-dialog/computed-column-dialog.component';
 import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
@@ -40,6 +41,18 @@ describe('DialogService', () => {
 
     // then
     expect(matDialogService.open).toHaveBeenCalledWith(ConfirmDialogComponent, { data: dialogData, panelClass: 'dialog-container' });
+  });
+
+  it('#showComputedColumnDialog should open dialog', () => {
+
+    // given
+    const dialogData = new ComputedColumnDialogData([]);
+
+    // when
+    service.showComputedColumnDialog(dialogData);
+
+    // then
+    expect(matDialogService.open).toHaveBeenCalledWith(ComputedColumnDialogComponent, { data: dialogData, panelClass: 'dialog-container' });
   });
 
   it('#showInputDialog should open dialog', () => {

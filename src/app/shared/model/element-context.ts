@@ -58,9 +58,9 @@ export abstract class ElementContext {
 
    copyAttributes(from: ViewElement): void {
       this._title = from.title;
-      this._dataColumns = from.dataColumns.map(c => this.targetColumn(c));
-      this._splitColumns = from.splitColumns.map(c => this.targetColumn(c));
-      this._groupByColumns = from.groupByColumns.map(c => this.targetColumn(c));
+      this._dataColumns = this.targetColumns(from.dataColumns);
+      this._splitColumns = this.targetColumns(from.splitColumns);
+      this._groupByColumns = this.targetColumns(from.groupByColumns);
       this._gridColumnSpan = from.gridColumnSpan ?? 1;
       this._gridRowSpan = from.gridRowSpan ?? 1;
       if (from.width < Number.MAX_SAFE_INTEGER) { // requred for backward compatibility
@@ -75,12 +75,53 @@ export abstract class ElementContext {
       this._colorProvider = ColorProviderFactory.create(from.colorOptions);
    }
 
+   /**
+    * replaces the available columns, keeping own instances and dropping used columns that no longer exist
+    *
+    * @param renamedFrom maps the new name to the previous name of each renamed column
+    */
+   updateColumns(columns: Column[], renamedFrom = new Map<string, string>()): void {
+      const used = [...this._dataColumns, ...this._splitColumns, ...this._groupByColumns];
+      const changed: Column[] = [];
+      this._columns = columns.map(c => this.adoptColumn(c, renamedFrom.get(c.name) ?? c.name, changed));
+      const affected = used.some(c => changed.includes(c) || !this._columns.includes(c));
+      this._dataColumns.filter(c => !this._columns.includes(c)).forEach(c => this.removeDataColumn(c));
+      this._splitColumns = this._splitColumns.filter(c => this._columns.includes(c));
+      this._groupByColumns = this._groupByColumns.filter(c => this._columns.includes(c));
+      if (affected) {
+         this.fireStructureChanged();
+      }
+   }
+
+   private adoptColumn(column: Column, previousName: string, changed: Column[]): Column {
+      const ownColumn = this.findColumn(previousName);
+      if (!ownColumn) {
+         return column;
+      }
+      if (column.computation && (ownColumn.name !== column.name || !_.isEqual(ownColumn.computation, column.computation))) {
+         changed.push(ownColumn);
+         ownColumn.name = column.name;
+         ownColumn.computation = column.computation;
+      }
+      return ownColumn;
+   }
+
+   private targetColumns(sourceColumns: Column[]): Column[] {
+      return sourceColumns
+         .map(c => this.targetColumn(c))
+         .filter(c => c);
+   }
+
    private targetColumn(sourceColumn: Column): Column {
-      const targetColumn = this.columns.find(c => sourceColumn.name === c.name);
-      if (sourceColumn.dataType === DataType.TIME) {
+      const targetColumn = this.findColumn(sourceColumn.name);
+      if (targetColumn && sourceColumn.dataType === DataType.TIME) {
          targetColumn.groupingTimeUnit = sourceColumn.groupingTimeUnit;
       }
       return targetColumn;
+   }
+
+   private findColumn(name: string): Column {
+      return this._columns.find(c => c.name === name);
    }
 
    public get title(): string {

@@ -14,7 +14,7 @@ import { ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import {
-  AnchorOffset, CanvasPaging, Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TextBoxContext, TimeUnit
+  AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TextBoxContext, TimeUnit
 } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
@@ -22,6 +22,7 @@ import { TabDef, View, ViewType } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
+import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
 import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
@@ -127,7 +128,7 @@ describe('DashboardComponent', () => {
   });
 
   beforeEach(waitForAsync(() => {
-    viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn() } as unknown as ViewTabsService;
+    viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn(), renameColumn: vi.fn() } as unknown as ViewTabsService;
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
@@ -158,7 +159,7 @@ describe('DashboardComponent', () => {
     vi.spyOn(dialogService, 'showViewLauncherDialog').mockReturnValue(undefined);
     vi.spyOn(notificationService, 'showStatus').mockReturnValue(undefined);
     getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
-    findEntriesSpy = vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries.slice(0)));
+    findEntriesSpy = vi.spyOn(dbService, 'findEntriesWithComputedValues').mockReturnValue(of(entries.slice(0)));
   }));
 
   function init(tab?: TabDef): void {
@@ -212,7 +213,7 @@ describe('DashboardComponent', () => {
     }));
 
     it('should load initial entries', () => {
-      expect(dbService.findEntries).toHaveBeenCalled();
+      expect(dbService.findEntriesWithComputedValues).toHaveBeenCalled();
       expect(component.entries).toEqual(entries);
     });
 
@@ -766,7 +767,7 @@ describe('DashboardComponent', () => {
       component.onFilterChanged(query);
 
       // then
-      expect(dbService.findEntries).toHaveBeenCalledWith(query, true);
+      expect(dbService.findEntriesWithComputedValues).toHaveBeenCalledWith(query, true);
     });
 
     it('#onFilterChanged should notify error and stop loading when error occurs', fakeAsync(() => {
@@ -3559,7 +3560,7 @@ describe('DashboardComponent', () => {
 
       // then
       expect(component.restoredQuery.getFullTextFilter()).toBe('abc');
-      expect(dbService.findEntries).toHaveBeenLastCalledWith(component.restoredQuery, true);
+      expect(dbService.findEntriesWithComputedValues).toHaveBeenLastCalledWith(component.restoredQuery, true);
     });
 
     it('#loadView should not modify loaded view when elements are changed', () => {
@@ -4370,6 +4371,179 @@ describe('DashboardComponent', () => {
 
       // then
       expect(viewTabsService.requestPersist).toHaveBeenCalled();
+    }));
+  });
+
+  describe('computed columns', () => {
+
+    let computedScene: Scene;
+    let computedEntries: object[];
+    let computedColumnService: ComputedColumnService;
+
+    beforeEach(() => {
+      computedScene = SceneFactory.createScene('3', [
+        { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
+        { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true },
+        { name: 'Count', dataType: DataType.NUMBER, width: 50, indexed: true }
+      ]);
+      computedEntries = [
+        { Level: 'INFO', Amount: 10, Count: 4 },
+        { Level: 'WARN', Amount: 20, Count: 0 }
+      ];
+      getActiveSceneSpy.mockReturnValue(computedScene);
+      findEntriesSpy.mockReturnValue(of(computedEntries));
+      vi.spyOn(dbService, 'updateScene').mockImplementation(s => Promise.resolve(s));
+      computedColumnService = TestBed.inject(ComputedColumnService);
+    });
+
+    function computedColumn(name: string, operator: ComputeOperator): Column {
+      return {
+        name, dataType: DataType.NUMBER, width: 70, indexed: false,
+        computation: { leftColumn: 'Amount', operator, rightColumn: 'Count' }
+      };
+    }
+
+    function addChartOf(columnName: string): ChartContext {
+      const context = component.addChart();
+      context.dataColumns = [findColumn(columnName, context)];
+      return context;
+    }
+
+    it('#addChart should offer a computed column', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      init();
+
+      // when
+      const context = component.addChart();
+
+      // then
+      expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count', 'Diff']);
+    }));
+
+    it('#onComputedColumnsChanged should update element columns and recompute entries in memory when column was saved', fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      const context = component.addChart();
+      findEntriesSpy.mockClear();
+      vi.mocked(viewTabsService.requestPersist).mockClear();
+
+      // when
+      computedColumnService.save(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      flush();
+
+      // then
+      expect(findColumn('Diff', context).computation.operator).toBe(ComputeOperator.SUBTRACT);
+      expect(component.entries).toEqual([
+        { Level: 'INFO', Amount: 10, Count: 4, Diff: 6 },
+        { Level: 'WARN', Amount: 20, Count: 0, Diff: 20 }
+      ]);
+      expect(context.entries).toBe(component.entries);
+      expect(findEntriesSpy).not.toHaveBeenCalled();
+      expect(viewTabsService.requestPersist).toHaveBeenCalled();
+    }));
+
+    it('#onComputedColumnsChanged should update element columns while entries are still loading', fakeAsync(() => {
+
+      // given
+      findEntriesSpy.mockReturnValue(new Observable<object[]>());
+      init();
+      const context = component.addChart();
+
+      // when
+      computedColumnService.save(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      flush();
+
+      // then
+      expect(component.entries).toBeUndefined();
+      expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count', 'Diff']);
+    }));
+
+    it('#onComputedColumnsChanged should replace values and remove undefined ones when formula was edited', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push(computedColumn('Ratio', ComputeOperator.SUBTRACT));
+      init();
+      computedEntries.forEach(e => e['Ratio'] = e['Amount'] - e['Count']);
+      const context = addChartOf('Ratio');
+
+      // when
+      computedColumnService.save(computedColumn('Ratio', ComputeOperator.DIVIDE));
+      flush();
+
+      // then
+      expect(component.entries).toEqual([
+        { Level: 'INFO', Amount: 10, Count: 4, Ratio: 2.5 },
+        { Level: 'WARN', Amount: 20, Count: 0 }
+      ]);
+      expect(context.dataColumns[0].computation.operator).toBe(ComputeOperator.DIVIDE);
+    }));
+
+    it('#onComputedColumnsChanged should rename data column of element when column was renamed', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      init();
+      const context = addChartOf('Diff');
+
+      // when
+      computedColumnService.save(computedColumn('Delta', ComputeOperator.SUBTRACT), 'Diff');
+      flush();
+
+      // then
+      expect(context.dataColumns.map(c => c.name)).toEqual(['Delta']);
+      expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count', 'Delta']);
+      expect(viewTabsService.renameColumn).toHaveBeenCalledWith('Diff', 'Delta');
+    }));
+
+    it('#loadView should restore renamed column of saved view when column was renamed', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      init();
+      computedScene.config.views.push(viewOf(Route.GRID, [addChartOf('Diff')]));
+      component.elementContexts = [];
+      computedColumnService.save(computedColumn('Delta', ComputeOperator.SUBTRACT), 'Diff');
+      flush();
+
+      // when
+      component.loadView(component.views[0]);
+
+      // then
+      expect(component.elementContexts[0].dataColumns.map(c => c.name)).toEqual(['Delta']);
+    }));
+
+    it('#onComputedColumnsChanged should remove data column of element when column was removed', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      init();
+      const context = addChartOf('Diff');
+
+      // when
+      computedColumnService.remove('Diff');
+      flush();
+
+      // then
+      expect(context.dataColumns).toEqual([]);
+      expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count']);
+    }));
+
+    it('#onComputedColumnsChanged should be ignored after destroy', fakeAsync(() => {
+
+      // given
+      init();
+      const context = component.addChart();
+      fixture.destroy();
+
+      // when
+      computedColumnService.save(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      flush();
+
+      // then
+      expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count']);
     }));
   });
 

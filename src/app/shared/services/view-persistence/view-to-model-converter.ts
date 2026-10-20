@@ -49,10 +49,13 @@ export class ViewToModelConverter {
       context.legendPosition = chart.legendPosition;
       context.baseScale = context.baseScaleStore.toScaleConfig(chart.baseScale);
       if (chart.valueScales) {
-         context.valueScales = chart.valueScales.map(s => context.valueScaleStore.toScaleConfig(s));
+         const dataColumnNames = context.dataColumns.map(c => c.name);
+         const valueScales = chart.valueScales.filter(s => !s.columnName || dataColumnNames.includes(s.columnName));
+         context.valueScales = valueScales.length ? valueScales.map(s => context.valueScaleStore.toScaleConfig(s)) :
+            [context.valueScaleStore.toScaleConfig(undefined)];
       }
       context.stacked = chart.stacked;
-      context.multiValueAxes = chart.multiValueAxes;
+      context.multiValueAxes = chart.multiValueAxes && context.dataColumns.length > 1;
       return context;
    }
 

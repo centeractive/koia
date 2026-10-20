@@ -1,11 +1,16 @@
 import { Directive, SimpleChange } from '@angular/core';
 import { fakeAsync, flush } from '@angular/core/testing';
-import { Aggregation, Column, DataType, ElementContext, ExportFormat, TimeUnit } from '../model';
+import { Aggregation, Column, ComputeOperator, DataType, ElementContext, ExportFormat, TimeUnit } from '../model';
 import { ContainerModel, DragDropEventFactory } from '../test';
 import { SideBarController } from './side-bar.controller';
 
 @Directive()
-class SideBarControllerTestable extends SideBarController { }
+class SideBarControllerTestable extends SideBarController {
+
+   columnOf(column: Column): Column {
+      return this.contextColumnOf(column);
+   }
+}
 
 class ContextTestable extends ElementContext {
 
@@ -27,7 +32,7 @@ describe('SummaryTableSideBarComponent', () => {
    const dragDropEventFactory = new DragDropEventFactory<Column>();
    let columns: Column[];
    let context: ElementContext;
-   let controller: SideBarController;
+   let controller: SideBarControllerTestable;
 
    beforeAll(() => {
       columns = [
@@ -253,6 +258,101 @@ describe('SummaryTableSideBarComponent', () => {
       expect(controller.isNumericColumn(findColumn(undefined))).toBe(false);
       expect(controller.isNumericColumn(findColumn(null))).toBe(false);
    });
+
+   it('#ngDoCheck should define selectable items without computed split and group-by columns', () => {
+
+      // given
+      context = new ContextTestable([...columns, shareColumn()]);
+      context.dataColumns = [findColumn('Amount')];
+      controller.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+
+      // when
+      controller.ngDoCheck();
+
+      // then
+      expect(controller.availableSplitColumns.map(c => c.name)).toEqual(['Level', 'Host', 'Path', 'Percent']);
+      expect(controller.availableGroupByColumns.map(c => c.name)).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent']);
+   });
+
+   it('#ngDoCheck should refresh the selectable columns when the context columns were replaced', () => {
+
+      // given
+      controller.ngDoCheck();
+      const region: Column = { name: 'Region', dataType: DataType.TEXT, width: 50 };
+
+      // when
+      context.updateColumns([...columns, region]);
+      controller.ngDoCheck();
+
+      // then
+      expect(controller.availableGroupByColumns).toContain(region);
+      expect(controller.availableSplitColumns).toContain(region);
+   });
+
+   it('#ngDoCheck should not refresh when the columns are unchanged', () => {
+
+      // given
+      controller.ngDoCheck();
+      controller.availableGroupByColumns = [];
+
+      // when
+      controller.ngDoCheck();
+
+      // then
+      expect(controller.availableGroupByColumns).toEqual([]);
+   });
+
+   it('#ngDoCheck should not refresh when no context exists', () => {
+
+      // given
+      controller = new SideBarControllerTestable();
+
+      // when
+      controller.ngDoCheck();
+
+      // then
+      expect(controller.availableGroupByColumns).toBeUndefined();
+   });
+
+   it('#iconOfColumn should return functions icon when column is computed', () => {
+      expect(controller.iconOfColumn(shareColumn())).toBe('functions');
+   });
+
+   it('#iconOfColumn should return data type icon when column is stored', () => {
+      expect(controller.iconOfColumn(findColumn('Level'))).toBe('title');
+   });
+
+   it('#isComputedColumn should return true when column is computed', () => {
+      expect(controller.isComputedColumn(shareColumn())).toBe(true);
+   });
+
+   it('#isComputedColumn should return false when column is stored', () => {
+      expect(controller.isComputedColumn(findColumn('Amount'))).toBe(false);
+   });
+
+   it('#computedColumnTooltip should return formula when column is computed', () => {
+      expect(controller.computedColumnTooltip(shareColumn())).toBe('Amount as % of Percent');
+   });
+
+   it('#computedColumnTooltip should return empty string when column is stored', () => {
+      expect(controller.computedColumnTooltip(findColumn('Amount'))).toBe('');
+   });
+
+   it('#contextColumnOf should return context column of same name', () => {
+
+      // when
+      const column = controller.columnOf({ ...findColumn('Host') });
+
+      // then
+      expect(column).toBe(findColumn('Host'));
+   });
+
+   function shareColumn(): Column {
+      return {
+         name: 'Share', dataType: DataType.NUMBER, width: 30, indexed: false,
+         computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
+      };
+   }
 
    function findColumn(name: string): Column {
       return columns.find(c => c.name === name);

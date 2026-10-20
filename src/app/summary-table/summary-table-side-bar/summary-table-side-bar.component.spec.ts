@@ -6,12 +6,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatRadioModule } from '@angular/material/radio';
+import { MatRadioButton, MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { Aggregation, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, ComputeOperator, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
 import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
@@ -326,6 +326,145 @@ describe('SummaryTableSideBarComponent', () => {
     expect(drags.length).toBe(2);
     expect(drags.every(d => !d.disabled)).toBe(true);
   });
+
+  it('#onComputedColumnCreated should aggregate the created column with average', () => {
+
+    // given
+    initWithComputedColumn();
+    context.aggregations = [Aggregation.COUNT];
+
+    // when
+    component.onComputedColumnCreated(shareColumn());
+
+    // then
+    expect(context.dataColumns).toEqual([findContextColumn('Share')]);
+    expect(context.aggregations).toEqual([Aggregation.AVG]);
+  });
+
+  it('#isCountDistinctValuesEnabled should return false when a computed column is selected', () => {
+
+    // given
+    initWithComputedColumn();
+    context.dataColumns = [findContextColumn('Share')];
+
+    // when
+    const enabled = component.isCountDistinctValuesEnabled();
+
+    // then
+    expect(enabled).toBe(false);
+  });
+
+  it('#isCountDistinctValuesEnabled should return true when a stored column is selected while a computed column exists', () => {
+
+    // given
+    initWithComputedColumn();
+    context.dataColumns = [findContextColumn('Amount')];
+
+    // when
+    const enabled = component.isCountDistinctValuesEnabled();
+
+    // then
+    expect(enabled).toBe(true);
+  });
+
+  it('count distinct values radio button should be disabled when a computed column is selected', () => {
+
+    // given
+    initWithComputedColumn();
+
+    // when
+    component.onColumnChanged(findContextColumn('Share'));
+    fixture.detectChanges();
+
+    // then
+    const radioButtons = fixture.debugElement.queryAll(By.directive(MatRadioButton)).map(r => r.componentInstance as MatRadioButton);
+    expect(radioButtons[0].disabled).toBe(true);
+    expect(radioButtons[1].disabled).toBe(false);
+  });
+
+  it('value grouping icon should be hidden for computed column', () => {
+
+    // when
+    initWithComputedColumn();
+
+    // then
+    expect(fixture.debugElement.queryAll(By.css('.icon_define_value_grouping')).length).toBe(2);
+  });
+
+  it('data column button should show functions icon and formula tooltip of computed column', () => {
+
+    // given
+    initWithComputedColumn();
+
+    // when
+    const button = fixture.debugElement.queryAll(By.css('.but_column')).pop();
+
+    // then
+    expect(button.nativeElement.querySelector('mat-icon').textContent.trim()).toBe('functions');
+    expect(button.properties['matTooltip']).toBe('Amount as % of Percent');
+  });
+
+  it('#addValueGroupingFor should keep the aggregation when a computed column is selected', fakeAsync(() => {
+
+    // given
+    initWithComputedColumn();
+    context.dataColumns = [findContextColumn('Share')];
+    context.aggregations = [Aggregation.AVG];
+
+    // when
+    component.addValueGroupingFor(findContextColumn('Amount'));
+    flush();
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.AVG]);
+    expect(context.valueGroupings.map(g => g.columnName)).toEqual(['Amount']);
+  }));
+
+  it('edit launcher should only exist for computed columns', () => {
+
+    // given
+    initWithComputedColumn();
+
+    // when
+    const launchers = fixture.debugElement.queryAll(By.css('.div_col_value_grouping koia-computed-column-launcher'));
+
+    // then
+    expect(launchers.map(l => l.parent.query(By.css('.but_column')).nativeElement.textContent.trim().split(/\s+/).pop()))
+      .toEqual(['Share']);
+  });
+
+  it('#columnSaved of create launcher should select the created column', () => {
+
+    // given
+    initWithComputedColumn();
+    const launcher = fixture.debugElement.query(By.css('#div_sel_data_columns > koia-computed-column-launcher'));
+
+    // when
+    launcher.triggerEventHandler('columnSaved', shareColumn());
+
+    // then
+    expect(context.dataColumns).toEqual([findContextColumn('Share')]);
+  });
+
+  function initWithComputedColumn(): void {
+    context = new SummaryContext([...columns, shareColumn()]);
+    context.dataColumns = [findContextColumn('Amount')];
+    context.aggregations = [Aggregation.AVG];
+    component.context = context;
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+    fixture.detectChanges();
+  }
+
+  function shareColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 30, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
+    };
+  }
+
+  function findContextColumn(name: string): Column {
+    return context.columns.find(c => c.name === name);
+  }
 
   function selectedAggregationDrags(): CdkDrag[] {
     return fixture.debugElement.query(By.css('#selectedAggregations'))

@@ -1,7 +1,7 @@
 import { Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
-import { Route, Scene } from '../../model';
-import { ConfigRecord, SceneTabs, TabContent, TabDef, ViewType } from '../../model/view-config';
+import { Aggregation, Column, DataType, Route, Scene } from '../../model';
+import { ConfigRecord, ElementType, SceneTabs, TabContent, TabDef, View, ViewType } from '../../model/view-config';
 import { SceneFactory } from '../../test';
 import { DBService } from '../backend';
 import { TabContentProvider } from './tab-content-provider.type';
@@ -409,6 +409,23 @@ describe('ViewTabsService', () => {
       expect(tab.record).toBe(record);
    });
 
+   it('#renameColumn should rename column in views of tabs and request persist', async () => {
+
+      // given
+      const dashboardTab: TabDef = { ...createTabDef(ViewType.DASHBOARD, 1), view: dashboardView() };
+      const pivotTab = createTabDef(ViewType.PIVOT, 2);
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(dashboardTab, pivotTab));
+      await loaded();
+
+      // when
+      service.renameColumn('Share', 'Ratio');
+
+      // then
+      expect(dashboardTab.view.elements[0].dataColumns.map(c => c.name)).toEqual(['Ratio', 'Amount']);
+      expect(pivotTab.view).toBeUndefined();
+      expect(persister.request).toHaveBeenCalled();
+   });
+
    it('#evict should evict route of tab', () => {
 
       // when
@@ -434,6 +451,19 @@ describe('ViewTabsService', () => {
 
    function sceneTabs(...tabs: TabDef[]): SceneTabs {
       return { _id: 's1_tabs', _rev: '1-a', tabs };
+   }
+
+   function dashboardView(): View {
+      const element = {
+         elementType: ElementType.SUMMARY, title: 'Summary', gridColumnSpan: 1, gridRowSpan: 1, width: 300, height: 300,
+         dataColumns: [numberColumn('Share'), numberColumn('Amount')], splitColumns: [], groupByColumns: [],
+         aggregations: [Aggregation.AVG], valueGroupings: [], colorOptions: undefined
+      };
+      return { route: Route.GRID, name: 'Dashboard', modifiedTime: 0, query: null, gridColumns: 2, gridCellRatio: '1:1', elements: [element] };
+   }
+
+   function numberColumn(name: string): Column {
+      return { name, dataType: DataType.NUMBER, width: 10 };
    }
 
    function pivotRecord(): ConfigRecord {

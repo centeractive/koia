@@ -3,6 +3,7 @@ import { LanguageService } from 'app/shared/services/language';
 import { Aggregation } from '../aggregation.enum';
 import { ChangeEvent } from '../change-event.enum';
 import { Column } from '../column.type';
+import { ComputeOperator } from '../compute-operator.enum';
 import { DataType } from '../data-type.enum';
 import { ExportFormat } from '../export-format.enum';
 import { ChartContext } from './chart-context';
@@ -243,6 +244,71 @@ describe('ChartContext', () => {
          }
       ]);
    }));
+
+   it('#updateColumns should remove the scale of a removed data column with multi axes selected', fakeAsync(() => {
+
+      // given
+      const testColumns = computedTestColumns();
+      const testContext = new ChartContext(testColumns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      testContext.multiValueAxes = true;
+      testContext.dataColumns = testColumns.slice(0, 3);
+
+      // when
+      testContext.updateColumns(testColumns.slice(0, 2));
+
+      // then
+      expect(testContext.dataColumns).toEqual(testColumns.slice(0, 2));
+      expect(testContext.multiValueAxes).toBe(true);
+      expect(testContext.valueScales.map(s => s.columnName)).toEqual(['Amount', 'Percent']);
+   }));
+
+   it('#updateColumns should rename the scale of a renamed data column', fakeAsync(() => {
+
+      // given
+      const testColumns = computedTestColumns();
+      const testContext = new ChartContext(testColumns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      testContext.multiValueAxes = true;
+      testContext.dataColumns = testColumns.slice(1, 3);
+      testContext.valueScales[1].ticks.stepSize = 5;
+      flush();
+
+      // when
+      testContext.updateColumns([testColumns[0], testColumns[1], { ...testColumns[2], name: 'Ratio' }], new Map([['Ratio', 'Share']]));
+      flush();
+
+      // then
+      expect(testContext.dataColumns.map(c => c.name)).toEqual(['Percent', 'Ratio']);
+      expect(ScaleConfig.toScales(testContext.valueScales)).toEqual([
+         { columnName: 'Percent', ticks: { stepSize: undefined, rotation: undefined } },
+         { columnName: 'Ratio', ticks: { stepSize: 5, rotation: undefined } }
+      ]);
+   }));
+
+   it('#updateColumns should not change scales when no column was renamed', fakeAsync(() => {
+
+      // given
+      const testColumns = computedTestColumns();
+      const testContext = new ChartContext(testColumns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      testContext.dataColumns = [testColumns[2]];
+      const valueScales = testContext.valueScales;
+
+      // when
+      testContext.updateColumns(testColumns);
+
+      // then
+      expect(testContext.valueScales).toBe(valueScales);
+   }));
+
+   function computedTestColumns(): Column[] {
+      return [
+         { name: 'Amount', dataType: DataType.NUMBER, width: 1 },
+         { name: 'Percent', dataType: DataType.NUMBER, width: 1 },
+         {
+            name: 'Share', dataType: DataType.NUMBER, width: 1, indexed: false,
+            computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
+         }
+      ];
+   }
 
    it('#dataColumns should unset multiValueAxes option when single column is set', () => {
 

@@ -1,16 +1,21 @@
 import { Injectable, NgZone } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
 import { Column, DataType, ElementContext, Operator, PropertyFilter, Query } from '../model';
 import { DateTimeUtils, QuerySanitizer } from '../utils';
+import { isComputedColumn } from '../utils/column-utils';
 import { CouchDBConstants } from './backend/couchdb';
+import { LanguageService } from './language/language.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RawDataRevealService {
 
-  constructor(private dialogService: MatDialog, private zone: NgZone) { }
+  constructor(private dialogService: MatDialog, private zone: NgZone, private bottomSheet: MatBottomSheet,
+    private notificationService: NotificationService) { }
 
   /**
    * displays raw data of a single entry identified by its ID
@@ -50,6 +55,12 @@ export class RawDataRevealService {
    * column names and their values
    */
   ofQuery(baseQuery: Query, columnNames: string[], columnValues: unknown[], context: ElementContext): void {
+    const computedColumn = context.columns.find(c => isComputedColumn(c) && columnNames.includes(c.name));
+    if (computedColumn) {
+      this.zone.run(() => this.notificationService.onWarning(this.bottomSheet,
+        LanguageService.instant('computedColumn.noRawData', { column: computedColumn.name })));
+      return;
+    }
     const query = baseQuery.clone();
     for (let i = 0; i < columnNames.length; i++) {
       const dataType = context.columns.find(c => c.name === columnNames[i]).dataType;

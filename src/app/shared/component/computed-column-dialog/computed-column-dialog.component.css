@@ -1,0 +1,25 @@
+.form_field_name {
+  width: 28em;
+}
+
+.form_field_column, .form_field_operator {
+  width: 16em;
+}
+
+.div_preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  margin-bottom: 1em;
+}
+
+.div_error {
+  color: var(--mat-sys-error);
+  margin-bottom: 1em;
+}
+
+.div_buttons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}

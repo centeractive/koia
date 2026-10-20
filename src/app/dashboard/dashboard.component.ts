@@ -3,16 +3,15 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inje
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
 import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
-import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
-import { ViewController } from 'app/shared/controller';
+import { confirmYesNo, ViewController } from 'app/shared/controller';
 import { View, ViewElement } from 'app/shared/model/view-config';
 import { TextBox } from 'app/shared/services/view-persistence';
 import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
+import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
-import { firstValueFrom } from 'rxjs';
 import { CanvasPaging, ElementContext, Route, TextBoxContext } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
 import { DragAutoScroll } from './drag-auto-scroll';
@@ -69,9 +68,10 @@ export class DashboardComponent extends ViewController {
 
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
     viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
-    exportService: ExportService, viewTabsService: ViewTabsService, chartDataService: ChartDataService) {
+    exportService: ExportService, viewTabsService: ViewTabsService, chartDataService: ChartDataService,
+    computedColumnService: ComputedColumnService) {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
-      exportService, viewTabsService);
+      exportService, viewTabsService, computedColumnService);
     this.dashboardGenerator = new DashboardGenerator(chartMarginService, chartDataService, new MathRandomSource());
   }
 
@@ -164,11 +164,8 @@ export class DashboardComponent extends ViewController {
     }
   }
 
-  private async confirm(titleKey: string, questionKey: string): Promise<boolean> {
-    const data = new ConfirmDialogData(LanguageService.instant(titleKey),
-      '<p>' + LanguageService.instant(questionKey) + '</p>', ConfirmDialogData.YES_NO);
-    await firstValueFrom(this.dialogService.showConfirmDialog(data).afterClosed());
-    return data.closedWithButtonIndex === 0;
+  private confirm(titleKey: string, questionKey: string): Promise<boolean> {
+    return confirmYesNo(this.dialogService, LanguageService.instant(titleKey), LanguageService.instant(questionKey));
   }
 
   private replaceByGeneratedElements(): void {

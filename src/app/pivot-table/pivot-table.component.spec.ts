@@ -55,7 +55,7 @@ describe('PivotTableComponent', () => {
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
-  const rawDataRevealService = new RawDataRevealService(null, null);
+  const rawDataRevealService = new RawDataRevealService(null, null, null, null);
   let locatePivotTable: () => Element;
   let getActiveSceneSpy: Mock;
   let viewTabsService: ViewTabsService;

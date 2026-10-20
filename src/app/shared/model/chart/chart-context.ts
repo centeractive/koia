@@ -162,6 +162,15 @@ export class ChartContext extends ElementContext {
       }
    }
 
+   override updateColumns(columns: Column[], renamedFrom = new Map<string, string>()): void {
+      renamedFrom.forEach((oldName, newName) => {
+         this._valueScales = this._valueScales.map(s => s.columnName === oldName
+            ? this._valueScaleRestorer.toScaleConfig({ ...s.toScale(), columnName: newName })
+            : s);
+      });
+      super.updateColumns(columns, renamedFrom);
+   }
+
    /**
     * @see https://stackoverflow.com/a/28951055/2358409
     */

@@ -21,8 +21,12 @@ export function dashboardTabOf(sample: SampleData): TabDef {
    return sample.tabs.find(tab => tab.view);
 }
 
+export function columnsOf(sample: SampleData, dataType: DataType): string[] {
+   return sample.scene.columns.filter(column => column.dataType === dataType).map(column => column.name);
+}
+
 export function firstColumnOf(sample: SampleData, dataType: DataType): string {
-   return sample.scene.columns.find(column => column.dataType === dataType).name;
+   return columnsOf(sample, dataType)[0];
 }
 
 export function columnValuesOf<T>(sample: SampleData, column: string): T[] {

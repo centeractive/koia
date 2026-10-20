@@ -1,3 +1,4 @@
+import { ComputeOperator } from './compute-operator.enum';
 import { DataType } from './data-type.enum';
 import { EnumLabelKeys } from './enum-label-keys';
 import { TimeUnit } from './time-unit.enum';
@@ -19,5 +20,13 @@ describe('EnumLabelKeys', () => {
 
       // then
       expect(key).toBe('ui.per.day');
+   });
+
+   it('#computeOperator should return the key composed of the enum member name', () => {
+      expect(EnumLabelKeys.computeOperator(ComputeOperator.PERCENTAGE)).toBe('enum.computeOperator.PERCENTAGE');
+   });
+
+   it('#computeOperatorFormula should return the formula key composed of the enum member name', () => {
+      expect(EnumLabelKeys.computeOperatorFormula(ComputeOperator.DIVIDE)).toBe('computedColumn.formula.DIVIDE');
    });
 });

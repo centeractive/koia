@@ -5,6 +5,7 @@ import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Route, Scene } from '../../model';
 import { TabDef, ViewType } from '../../model/view-config';
 import { DBService } from '../backend';
+import { ViewColumnRenamer } from '../view-persistence/view-column-renamer';
 import { TabContentProvider } from './tab-content-provider.type';
 import { createTabDef, maxTabSeq, tabPath, tabUrl } from './tab-defs';
 import { TabsPersister } from './tabs-persister';
@@ -93,6 +94,15 @@ export class ViewTabsService {
 
    layoutOf(tab: TabDef): Route {
       return this.providers.get(tab.id)?.layout();
+   }
+
+   /**
+    * renames the column in the views of all tabs and requests persisting them
+    */
+   renameColumn(previousName: string, name: string): void {
+      const renamer = new ViewColumnRenamer(previousName, name);
+      this.tabs.filter(t => t.view).forEach(t => renamer.renameInView(t.view));
+      this.requestPersist();
    }
 
    requestPersist(): void {

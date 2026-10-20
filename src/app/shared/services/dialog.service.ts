@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
+import { ComputedColumnDialogComponent, ComputedColumnDialogData } from '../component/computed-column-dialog/computed-column-dialog.component';
 import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
@@ -39,6 +40,10 @@ export class DialogService {
 
   showConfigLauncherDialog(context: ConfigLauncherContext): MatDialogRef<ConfigLauncherDialogComponent> {
     return this.dialogService.open(ConfigLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
+  }
+
+  showComputedColumnDialog(data: ComputedColumnDialogData): MatDialogRef<ComputedColumnDialogComponent> {
+    return this.dialogService.open(ComputedColumnDialogComponent, { data: data, panelClass: 'dialog-container' });
   }
 
   showManageConfigDialog(context: ManageConfigContext): MatDialogRef<ManageViewDialogComponent<ConfigRecord>> {

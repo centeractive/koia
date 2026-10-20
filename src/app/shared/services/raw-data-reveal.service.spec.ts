@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
-import { Column, DataType, ElementContext, Operator, PropertyFilter, Query, SummaryContext, TimeUnit } from '../model';
+import { Column, ComputeOperator, DataType, ElementContext, Operator, PropertyFilter, Query, SummaryContext, TimeUnit } from '../model';
 import { ValueRangeFilter } from '../value-range/model';
 import { CouchDBConstants } from './backend/couchdb';
+import { NotificationService } from './notification.service';
 import { RawDataRevealService } from './raw-data-reveal.service';
 import type { Mock } from 'vitest';
 
@@ -300,6 +302,56 @@ describe('RawDataRevealService', () => {
       new ValueRangeFilter('Time', { min: oneHourAgo, max: now, maxExcluding: undefined })
     ]);
   });
+
+  it('#ofQuery should show warning instead of raw data dialog when computed column is involved', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    context = new SummaryContext([levelColumn, amountColumn, shareColumn()]);
+
+    // when
+    service.ofQuery(query, ['Level', 'Share'], ['WARN', 17.86], context);
+
+    // then
+    expect(onWarningSpy).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'Raw data cannot be revealed by values of the computed column "Share"');
+    expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
+  });
+
+  it('#ofQuery should show raw data dialog when no computed column is involved', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    context = new SummaryContext([levelColumn, amountColumn, shareColumn()]);
+
+    // when
+    service.ofQuery(query, ['Level'], ['WARN'], context);
+
+    // then
+    expect(onWarningSpy).not.toHaveBeenCalled();
+    expect(dialogServiceOpenSpy).toHaveBeenCalled();
+  });
+
+  it('#ofTimeUnit should show warning instead of raw data dialog when computed column is involved', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    context = new SummaryContext([timeColumn, amountColumn, shareColumn()]);
+
+    // when
+    service.ofTimeUnit(query, [timeColumn], [oneHourAgo], ['Share'], [17.86], context);
+
+    // then
+    expect(onWarningSpy).toHaveBeenCalled();
+    expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
+  });
+
+  function shareColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 10, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+  }
 
   function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {
     return {

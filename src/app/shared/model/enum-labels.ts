@@ -1,5 +1,6 @@
 import { LanguageService } from 'app/shared/services/language/language.service';
 import { Aggregation } from './aggregation.enum';
+import { ComputeOperator } from './compute-operator.enum';
 import { DataType } from './data-type.enum';
 import { EnumLabelKeys } from './enum-label-keys';
 import { ExportFormat } from './export-format.enum';
@@ -50,6 +51,14 @@ export class EnumLabels {
 
    static exportFormat(exportFormat: ExportFormat): string {
       return translate(EnumLabels.exportFormatKey(exportFormat), exportFormat);
+   }
+
+   static computeOperatorKey(operator: ComputeOperator): string {
+      return EnumLabelKeys.computeOperator(operator);
+   }
+
+   static computeOperator(operator: ComputeOperator): string {
+      return translate(EnumLabels.computeOperatorKey(operator), operator);
    }
 
    /**

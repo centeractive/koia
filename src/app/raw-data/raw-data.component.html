@@ -45,6 +45,6 @@
   @if (columns) {
     <koia-virtual-table [columns]="columns" [widths]="widths" [source]="source" [multiLine]="multiLine"
       [showNestedObjects]="showNestedObjects" [dialogStyle]="dialogStyle" [sortable]="true" [sortIndicatorOf]="sortIndicator"
-      [rowStyleOf]="rowStyleOf" (sort)="sortBy($event)" (columnResize)="onColumnResize($event)" />
+      [headerTooltipOf]="headerTooltip" [rowStyleOf]="rowStyleOf" (sort)="sortBy($event)" (columnResize)="onColumnResize($event)" />
   }
 </div>

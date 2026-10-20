@@ -15,7 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { Column, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
+import { Column, ComputeOperator, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { TabDef, ViewType } from 'app/shared/model/view-config';
@@ -897,6 +897,42 @@ describe('MainToolbarComponent', () => {
     // then
     expect(component.showRangeFilters).toBe(true);
   });
+
+  it('#filterableColumns should exclude computed columns', () => {
+
+    // given
+    component.scene = { ...scene, columns: [...scene.columns, computedColumn()] };
+
+    // when
+    const columns = component.filterableColumns();
+
+    // then
+    expect(columns).toEqual(scene.columns);
+  });
+
+  it('add filter menu should not list computed columns', fakeAsync(() => {
+
+    // given
+    component.scene = { ...scene, columns: [...scene.columns, computedColumn()] };
+    fixture.detectChanges();
+
+    // when
+    fixture.debugElement.query(By.css('.but_add_col_filter')).nativeElement.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    const names = fixture.debugElement.queryAll(By.css('.mat-mdc-menu-content > span > button > span'))
+      .map(e => e.nativeElement.textContent.trim());
+    expect(names).toEqual(['Time', 'Level', 'Host', 'Path', 'Amount', 'Paid']);
+  }));
+
+  function computedColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 10, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+  }
 
   function createScene(id: string, context: ContextInfo[], columns: Column[]): Scene {
     return {

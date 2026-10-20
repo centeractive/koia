@@ -235,7 +235,8 @@
       "nameRequired": "名前は必須です",
       "nameDollar": "名前を $ で始めることはできません",
       "nameTooLong": "名前は {{max}} 文字以内にしてください",
-      "incompatibleTypes": "列に互換性のないデータ型の値が含まれています"
+      "incompatibleTypes": "列に互換性のないデータ型の値が含まれています",
+      "nameInUse": "この名前は既に使用されています"
     },
     "mapping": {
       "columnError": "列 '{{column}}': {{error}}",
@@ -530,6 +531,13 @@
       "JSON": "JSON",
       "EXCEL": "Excel",
       "PNG": "PNG"
+    },
+    "computeOperator": {
+      "ADD": "+（加算）",
+      "SUBTRACT": "−（減算）",
+      "MULTIPLY": "×（乗算）",
+      "DIVIDE": "÷（除算）",
+      "PERCENTAGE": "÷（割合 %）"
     }
   },
   "pivot": {
@@ -656,5 +664,31 @@
       "dragDropAggregationsHelp": "利用可能な集計をドラッグ＆ドロップして選択します",
       "availableAggregations": "利用可能な集計"
     }
+  },
+  "computedColumn": {
+    "formula": {
+      "ADD": "{{left}} + {{right}}",
+      "SUBTRACT": "{{left}} − {{right}}",
+      "MULTIPLY": "{{left}} × {{right}}",
+      "DIVIDE": "{{left}} ÷ {{right}}",
+      "PERCENTAGE": "{{right}}に対する{{left}}の割合 (%)"
+    },
+    "create": "計算列",
+    "createTooltip": "2つの数値列から計算される列（例：割合）を作成します",
+    "edit": "計算列 {{name}} を編集",
+    "createTitle": "新しい計算列",
+    "editTitle": "計算列の編集",
+    "leftColumn": "1番目の列",
+    "operator": "演算",
+    "rightColumn": "2番目の列",
+    "swapOperands": "列を入れ替える",
+    "formulaLabel": "式: {{formula}}",
+    "example": "{{row}}行目: {{formula}} = {{result}}",
+    "noExample": "例なし: 両方の列に数値を含む行がありません",
+    "notSaved": "計算列を保存できません: {{error}}",
+    "notDeleted": "計算列を削除できません: {{error}}",
+    "deleteTitle": "計算列の削除",
+    "deleteQuestion": "「{{name}}」を削除しますか？この列は、すべてのダッシュボードと保存済みビューで、この列を使用しているすべてのグラフと表から削除されます。",
+    "noRawData": "計算列「{{column}}」の値では生データを表示できません"
   }
 }

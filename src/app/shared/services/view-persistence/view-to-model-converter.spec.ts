@@ -13,6 +13,7 @@ describe('ViewToModelConverter', () => {
       { name: 'Level', dataType: DataType.TEXT, width: 60 },
       { name: 'Amount', dataType: DataType.NUMBER, width: 70 }
    ];
+   const gone: Column = { name: 'Gone', dataType: DataType.NUMBER, width: 70 };
    const converter = new ViewToModelConverter(columns);
 
    it('#convert should throw error when element type is unknown', () => {
@@ -46,6 +47,56 @@ describe('ViewToModelConverter', () => {
       expect(context).toBeInstanceOf(ChartContext);
       expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
       expect(context.valueScales).toBeUndefined();
+   });
+
+   it('#convert should drop value scales of missing data columns', () => {
+
+      // given
+      const chart = chartOf([columns[2], gone], ['Amount', 'Gone', undefined], false);
+
+      // when
+      const [context] = converter.convert([chart]) as ChartContext[];
+
+      // then
+      expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
+      expect(context.valueScales.map(s => s.toScale().columnName)).toEqual(['Amount', undefined]);
+   });
+
+   it('#convert should restore one default value scale when no value scale remains', () => {
+
+      // given
+      const chart = chartOf([columns[2]], ['Gone'], false);
+
+      // when
+      const [context] = converter.convert([chart]) as ChartContext[];
+
+      // then
+      expect(context.valueScales.map(s => s.toScale())).toEqual([{ columnName: undefined, ticks: { stepSize: undefined, rotation: undefined } }]);
+   });
+
+   it('#convert should switch off multiple value axes when less than two data columns remain', () => {
+
+      // given
+      const chart = chartOf([columns[2], gone], ['Amount', 'Gone'], true);
+
+      // when
+      const [context] = converter.convert([chart]) as ChartContext[];
+
+      // then
+      expect(context.multiValueAxes).toBe(false);
+      expect(context.valueScales.map(s => s.toScale().columnName)).toEqual(['Amount']);
+   });
+
+   it('#convert should keep multiple value axes when two data columns remain', () => {
+
+      // given
+      const chart = chartOf([columns[2], columns[0]], ['Amount', 'Time'], true);
+
+      // when
+      const [context] = converter.convert([chart]) as ChartContext[];
+
+      // then
+      expect(context.multiValueAxes).toBe(true);
    });
 
    it('#convert should create text box context', () => {
@@ -192,4 +243,14 @@ describe('ViewToModelConverter', () => {
       expect(viewElementsOf(...contexts)).toEqual(elements);
       expect((contexts[1] as TextBoxContext).anchor).toBe(contexts[0]);
    });
+
+   function chartOf(dataColumns: Column[], scaleColumnNames: string[], multiValueAxes: boolean): Chart {
+      return {
+         elementType: ElementType.CHART, title: 'Chart', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 600,
+         dataColumns, splitColumns: [], groupByColumns: [], aggregations: [Aggregation.SUM], valueGroupings: [],
+         chartType: 'lineChart', margin: { top: 1, right: 2, bottom: 3, left: 4 }, showLegend: true, legendPosition: 'top',
+         baseScale: undefined, valueScales: scaleColumnNames.map(columnName => ({ columnName, ticks: { stepSize: undefined, rotation: undefined } })),
+         stacked: false, multiValueAxes, colorOptions: undefined
+      };
+   }
 });
