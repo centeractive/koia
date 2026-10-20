@@ -71,7 +71,7 @@ test('computed column is not offered as a filter', async ({ page, dashboard, com
    await dashboard.sideBar.close();
    await tabBar.openRawData();
 
-   await rawData.toolbar.addFilterButton.click();
+   await rawData.mainToolbar.addFilterButton.click();
 
    await expect(page.getByRole('menuitem', { name: quantity, exact: true })).toBeVisible();
    await expect(page.getByRole('menuitem', { name: defaultName, exact: true })).toHaveCount(0);
@@ -92,12 +92,12 @@ test('editing the operator of a computed column changes its formula', async ({ d
    await computedColumnDialog.cancel();
 });
 
-test('renaming a computed column updates the element and the saved view', async ({ dashboard, computedColumnDialog, notifications }) => {
+test('renaming a computed column updates the element and the saved view', async ({ dashboard, computedColumnDialog, notifications, confirmDialog }) => {
    await dashboard.launcher.addChart();
    await dashboard.sideBar.createComputedColumn();
    await computedColumnDialog.ok();
    await dashboard.sideBar.close();
-   await dashboard.viewToolbar.saveView(VIEW_NAME);
+   await dashboard.mainToolbar.saveView(VIEW_NAME);
    await notifications.dismiss(StatusType.SUCCESS);
 
    await dashboard.tile(0).configure();
@@ -109,7 +109,8 @@ test('renaming a computed column updates the element and the saved view', async 
    await expect(dashboard.sideBar.dataColumnButton(RENAMED_COLUMN)).toBeVisible();
    await dashboard.sideBar.close();
    await dashboard.tile(0).remove();
-   await dashboard.viewToolbar.restoreView(VIEW_NAME);
+   await dashboard.mainToolbar.restoreView(VIEW_NAME);
+   await confirmDialog.confirm();
    await expect(dashboard.tile(0).title).toHaveValue(en.get('chart.title.countDistinctValuesOf', { columns: RENAMED_COLUMN }));
 });
 

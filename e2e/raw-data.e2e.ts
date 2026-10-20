@@ -36,7 +36,7 @@ test('value filter reduces the rows to the matching ones', async ({ rawData }) =
    const value: string = sample.entries[0][column];
    const matching = columnValuesOf<string>(sample, column).filter(v => v.toLowerCase().includes(value.toLowerCase()));
 
-   await rawData.toolbar.addValueFilter(column, value);
+   await rawData.mainToolbar.addValueFilter(column, value);
 
    await expect(rawData.table.rowCount).toHaveText(en.rows(matching.length));
 });
@@ -44,26 +44,27 @@ test('value filter reduces the rows to the matching ones', async ({ rawData }) =
 test('range filter at the maximum shows its rows, removing it shows all rows and hides the range filter panel', async ({ rawData }) => {
    const column = firstColumnOf(sample, DataType.NUMBER);
    const max = Math.max(...columnValuesOf<number>(sample, column));
-   const rangeFilter = await rawData.toolbar.addRangeFilter(column, en.get('toolbar.valueRange'));
+   const rangeFilter = await rawData.mainToolbar.addRangeFilter(column, en.get('toolbar.valueRange'));
 
    await rangeFilter.moveMinToMax();
    await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] === max)));
    await rangeFilter.remove();
 
    await expect(rawData.table.rowCount).toHaveText(en.rows(sample.entries.length));
-   await expect(rawData.toolbar.rangeFilterPanel).toHaveCount(0);
+   await expect(rawData.mainToolbar.rangeFilterPanel).toHaveCount(0);
 });
 
-test('saved view restores the removed value filter', async ({ rawData, notifications }) => {
+test('saved view restores the removed value filter', async ({ rawData, notifications, confirmDialog }) => {
    const column = firstColumnOf(sample, DataType.TEXT);
    const value: string = sample.entries[0][column];
-   await rawData.toolbar.addValueFilter(column, value);
-   await rawData.viewToolbar.saveView(VIEW_NAME);
+   await rawData.mainToolbar.addValueFilter(column, value);
+   await rawData.mainToolbar.saveView(VIEW_NAME);
    await notifications.dismiss(StatusType.SUCCESS);
 
-   await rawData.toolbar.removeValueFilter();
+   await rawData.mainToolbar.removeValueFilter();
    await expect(rawData.table.rowCount).toHaveText(en.rows(sample.entries.length));
-   await rawData.viewToolbar.restoreView(VIEW_NAME);
+   await rawData.mainToolbar.restoreView(VIEW_NAME);
+   await confirmDialog.confirm();
 
    await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column].toLowerCase().includes(value.toLowerCase()))));
 });
@@ -81,7 +82,7 @@ test('raw data is exported as CSV file with a header and all rows', async ({ pag
 });
 
 test('raw data without matching rows is exported as CSV file with the column names only', async ({ page, rawData, notifications }) => {
-   await rawData.toolbar.addValueFilter(firstColumnOf(sample, DataType.TEXT), NO_MATCH);
+   await rawData.mainToolbar.addValueFilter(firstColumnOf(sample, DataType.TEXT), NO_MATCH);
    await expect(rawData.table.rowCount).toHaveText(en.rows(0));
 
    const download = await downloadOf(page, () => rawData.viewToolbar.chooseMoreMenuItem(en.get('rawData.saveAs', { format: ExportFormat.CSV })));
@@ -101,14 +102,14 @@ test('raw data is exported as JSON and Excel files', async ({ page, rawData }) =
 test('switching to German translates the toolbar, the raw data tab and the row count', async ({ rawData, tabBar, languageSelect }) => {
    await languageSelect.switchTo('de');
 
-   await expect(rawData.toolbar.addFilterButton).toHaveAccessibleName(de.get('toolbar.addFilter'));
+   await expect(rawData.mainToolbar.addFilterButton).toHaveAccessibleName(de.get('toolbar.addFilter'));
    await expect(tabBar.rawDataTitle).toHaveText(de.get('toolbar.tabs.rawData'));
    await expect(rawData.table.rowCount).toHaveText(de.rows(sample.entries.length));
 });
 
 test('Japanese chosen on raw data is kept when the front page is opened without language', async ({ rawData, languageSelect, front }) => {
    await languageSelect.switchTo('ja');
-   await expect(rawData.toolbar.addFilterButton).toHaveAccessibleName(ja.get('toolbar.addFilter'));
+   await expect(rawData.mainToolbar.addFilterButton).toHaveAccessibleName(ja.get('toolbar.addFilter'));
    await expect(rawData.table.rowCount).toHaveText(ja.rows(sample.entries.length));
 
    await front.open();

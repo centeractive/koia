@@ -4,7 +4,6 @@ import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injectable } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -13,11 +12,10 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
-import { Column, DataType, Document, Query, Route, Scene, StatusType, TimeUnit } from 'app/shared/model';
+import { Column, DataType, Document, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { ConfigRecord, ViewType } from 'app/shared/model/view-config';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
-import { DialogService, ExportService, NotificationService, RawDataRevealService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
+import { ExportService, NotificationService, RawDataRevealService, TimeGroupingService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { findStyleRule, SceneFactory } from 'app/shared/test';
@@ -26,7 +24,7 @@ import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { LanguageService } from 'app/shared/services/language';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model';
-import { Observable, of, Subject, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
 import type { Mock } from 'vitest';
@@ -41,7 +39,6 @@ export class MockElementRef {
 }
 describe('PivotTableComponent', () => {
 
-  const NOW = new Date().getTime();
   const datePipe = new DatePipe('en-US');
 
   let now: number;
@@ -51,8 +48,6 @@ describe('PivotTableComponent', () => {
   let component: PivotTableComponent;
   let fixture: ComponentFixture<PivotTableComponent>;
   const dbService = new DBService(null);
-  const viewPersistenceService = new ViewPersistenceService(dbService);
-  const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   const rawDataRevealService = new RawDataRevealService(null, null, null, null);
@@ -92,8 +87,6 @@ describe('PivotTableComponent', () => {
         { provide: ElementRef, useClass: MockElementRef },
         { provide: MatBottomSheet, useClass: MatBottomSheet },
         { provide: DBService, useValue: dbService },
-        { provide: DialogService, useValue: dialogService },
-        { provide: ViewPersistenceService, useValue: viewPersistenceService },
         { provide: TimeGroupingService, useClass: TimeGroupingService },
         { provide: ValueRangeGroupingService, useClass: ValueRangeGroupingService },
         { provide: NotificationService, useValue: notificationService },
@@ -315,86 +308,6 @@ describe('PivotTableComponent', () => {
     expect(component.dataFrame.toArray()).toEqual(expectedData);
   }));
 
-  it('#loadConfig should restore selected values from config', () => {
-
-    // given
-    const context: PivotContext = {
-      timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.MONTH }],
-      negativeColor: 'yellow',
-      positiveColor: 'red',
-      showRowTotals: true,
-      showColumnTotals: true,
-      valueGroupings: [],
-      pivotOptions: { a: 1, b: 2 }
-    };
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
-
-    // when
-    component.loadConfig(configRecord);
-
-    // then
-    expect(component.context.negativeColor).toBe('yellow');
-    expect(component.context.positiveColor).toBe('red');
-    expect(component.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
-    expect(component.timeColumns[0]).toBe(component.context.timeColumns[0]);
-  });
-
-  it('#loadConfig should replace legacy heatmap colors', () => {
-
-    // given
-    const context: PivotContext = { ...pivotContext(), negativeColor: '#FF3333', positiveColor: '#00FF00' };
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
-
-    // when
-    component.loadConfig(configRecord);
-
-    // then
-    expect(component.context.negativeColor).toBe('#E57373');
-    expect(component.context.positiveColor).toBe('#81C784');
-  });
-
-  it('#loadConfig should spice pivot options', () => {
-
-    // given
-    const context: PivotContext = {
-      timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.YEAR }],
-      negativeColor: 'yellow',
-      positiveColor: 'red',
-      showRowTotals: true,
-      showColumnTotals: true,
-      valueGroupings: [],
-      pivotOptions: { a: 1, b: 2 }
-    };
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
-
-    // when
-    component.loadConfig(configRecord);
-
-    // then
-    expect(component.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.YEAR);
-    expect(component.context.pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
-    expect(component.context.pivotOptions['rendererOptions']).not.toBeUndefined();
-    expect(component.context.pivotOptions['onRefresh']).not.toBeUndefined();
-  });
-
-  it('#loadConfig should not modify data of loaded record when pivot table is changed', fakeAsync(() => {
-
-    // given
-    const context = pivotContext();
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
-    const recordJson = JSON.stringify(configRecord);
-    component.loadConfig(configRecord);
-    flush();
-
-    // when
-    component.onNegativeColorChanged('green');
-    component.onShowRowTotalsChanged();
-    flush();
-
-    // then
-    expect(JSON.stringify(configRecord)).toBe(recordJson);
-  }));
-
   describe('with tab', () => {
 
     let tabFixture: ComponentFixture<PivotTableComponent>;
@@ -409,10 +322,6 @@ describe('PivotTableComponent', () => {
     const sumRecord = (): ConfigRecord => ({
       route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
       data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Sum', vals: ['Amount'], cols: ['Level'], rows: [] } }
-    });
-
-    afterEach(() => {
-      scene.config.records = [];
     });
 
     it('should register as content provider of tab', fakeAsync(() => {
@@ -548,38 +457,126 @@ describe('PivotTableComponent', () => {
       expect(tabComponent.context.negativeColor).toBe('yellow');
     }));
 
-    it('should neither show config launcher nor propose tab title as view name when record of tab was restored', fakeAsync(() => {
+    it('restoring record of tab should restore selected values', fakeAsync(() => {
 
       // given
-      scene.config.records = [{ route: Route.PIVOT, name: 'saved', modifiedTime: 0, query: null, data: pivotContext() }];
-      vi.spyOn(dialogService, 'showConfigLauncherDialog').mockReturnValue(undefined);
-      const showInputDialogSpy = vi.spyOn(dialogService, 'showInputDialog').mockReturnValue(createInputDialogRef());
-      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: pivotContext() });
+      const context: PivotContext = {
+        timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.MONTH }],
+        negativeColor: 'yellow',
+        positiveColor: 'red',
+        showRowTotals: true,
+        showColumnTotals: true,
+        valueGroupings: [],
+        pivotOptions: { a: 1, b: 2 }
+      };
+      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: context });
+
+      // when
       tabFixture.detectChanges();
       flush();
 
-      // when
-      tabComponent.saveConfig();
-
       // then
-      expect(dialogService.showConfigLauncherDialog).not.toHaveBeenCalled();
-      const dialogData: InputDialogData = showInputDialogSpy.mock.lastCall[0];
-      expect(dialogData.input).toBe('');
+      expect(tabComponent.context.negativeColor).toBe('yellow');
+      expect(tabComponent.context.positiveColor).toBe('red');
+      expect(tabComponent.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
+      expect(tabComponent.timeColumns[0]).toBe(tabComponent.context.timeColumns[0]);
     }));
 
-    it('should show config launcher when new tab is opened and pivot records exist', fakeAsync(() => {
+    it('restoring record of tab should replace legacy heatmap colors', fakeAsync(() => {
 
       // given
-      scene.config.records = [{ route: Route.PIVOT, name: 'saved', modifiedTime: 0, query: null, data: pivotContext() }];
-      vi.spyOn(dialogService, 'showConfigLauncherDialog').mockReturnValue(undefined);
-      createTabComponent();
+      const context: PivotContext = { ...pivotContext(), negativeColor: '#FF3333', positiveColor: '#00FF00' };
+      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: context });
 
       // when
       tabFixture.detectChanges();
       flush();
 
       // then
-      expect(dialogService.showConfigLauncherDialog).toHaveBeenCalledWith(tabComponent);
+      expect(tabComponent.context.negativeColor).toBe('#E57373');
+      expect(tabComponent.context.positiveColor).toBe('#81C784');
+    }));
+
+    it('restoring record of tab should spice pivot options', fakeAsync(() => {
+
+      // given
+      const context: PivotContext = {
+        timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.YEAR }],
+        negativeColor: 'yellow',
+        positiveColor: 'red',
+        showRowTotals: true,
+        showColumnTotals: true,
+        valueGroupings: [],
+        pivotOptions: { a: 1, b: 2 }
+      };
+      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: context });
+
+      // when
+      tabFixture.detectChanges();
+      flush();
+
+      // then
+      expect(tabComponent.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.YEAR);
+      expect(tabComponent.context.pivotOptions['hiddenAttributes']).toEqual([CouchDBConstants._ID]);
+      expect(tabComponent.context.pivotOptions['rendererOptions']).not.toBeUndefined();
+      expect(tabComponent.context.pivotOptions['onRefresh']).not.toBeUndefined();
+    }));
+
+    it('restoring record of tab should not modify record when pivot table is changed', fakeAsync(() => {
+
+      // given
+      const record: ConfigRecord = { route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: pivotContext() };
+      const recordJson = JSON.stringify(record);
+      createTabComponent(record);
+      tabFixture.detectChanges();
+      flush();
+
+      // when
+      tabComponent.onNegativeColorChanged('green');
+      tabComponent.onShowRowTotalsChanged();
+      flush();
+
+      // then
+      expect(JSON.stringify(record)).toBe(recordJson);
+    }));
+
+    it('restoring record of tab should keep time unit of time column when restored time column has no time unit', fakeAsync(() => {
+
+      // given
+      const context: PivotContext = {
+        ...pivotContext(),
+        timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100 }]
+      };
+      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: context });
+
+      // when
+      tabFixture.detectChanges();
+      flush();
+
+      // then
+      expect(tabComponent.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+      expect(tabComponent.context.timeColumns[0]).toBe(tabComponent.timeColumns[0]);
+    }));
+
+    it('restoring record of tab should apply record with query once its data was fetched', fakeAsync(() => {
+
+      // given
+      const entries$ = new Subject<Document[]>();
+      vi.mocked(dbService.findEntries).mockReturnValue(entries$);
+      const query = new Query();
+      query.setFullTextFilter('INFO');
+      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: queryToQueryDef(query), data: pivotContext() });
+      tabFixture.detectChanges();
+      const colorBeforeData = tabComponent.context.negativeColor;
+
+      // when
+      entries$.next(entries as Document[]);
+      flush();
+
+      // then
+      expect(colorBeforeData).not.toBe('yellow');
+      expect(tabComponent.context.negativeColor).toBe('yellow');
+      expect(tabComponent.getPivotOptions()['cols']).toEqual(['Level']);
     }));
 
     it('#tabContent should provide record of tab while restoring is pending', fakeAsync(() => {
@@ -1034,103 +1031,6 @@ describe('PivotTableComponent', () => {
     expect(viewTabsService.unregister).not.toHaveBeenCalled();
   }));
 
-  it('#saveConfig should not save view when input dialog is cancled', () => {
-
-    // given
-    const dialogRef = createInputDialogRef();
-    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
-      data.closedWithOK = false;
-      return dialogRef;
-    });
-    vi.spyOn(viewPersistenceService, 'saveRecord').mockReturnValue(undefined);
-
-    // when
-    component.saveConfig();
-
-    // then
-    expect(notificationService.showStatus).not.toHaveBeenCalled();
-  });
-
-  it('#saveConfig should should save context without value grouping minMaxValues', fakeAsync(() => {
-
-    // given
-    component.context.valueGroupings = [
-      {
-        columnName: 'Amount',
-        ranges: [
-          { min: 30, max: 50, active: true },
-          { min: 0, max: 30, active: true }
-        ],
-        minMaxValues: { min: 10, max: 40 }
-      }];
-    const dialogRef = createInputDialogRef();
-    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
-      data.input = 'test';
-      data.closedWithOK = true;
-      return dialogRef;
-    });
-    const saveRecordSpy = vi.spyOn(viewPersistenceService, 'saveRecord').mockReturnValue(undefined);
-    const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    saveRecordSpy.mockResolvedValue(status);
-
-    // when
-    component.saveConfig();
-    tick();
-
-    // then
-    expect(viewPersistenceService.saveRecord).toHaveBeenCalled();
-    const context = vi.mocked(saveRecordSpy).mock.lastCall[4] as PivotContext;
-    const expectedValueGroupings = [
-      {
-        columnName: 'Amount',
-        ranges: [
-          { min: 30, max: 50, active: true },
-          { min: 0, max: 30, active: true }
-        ],
-        minMaxValues: null
-      }];
-    expect(context.valueGroupings).toEqual(expectedValueGroupings);
-  }));
-
-  it('#saveConfig should notify user about success', fakeAsync(() => {
-
-    // given
-    const dialogRef = createInputDialogRef();
-    vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
-      data.input = 'test';
-      data.closedWithOK = true;
-      return dialogRef;
-    });
-    const status = { type: StatusType.SUCCESS, msg: 'Data has been saved' };
-    vi.spyOn(viewPersistenceService, 'saveRecord').mockResolvedValue(status);
-
-    // when
-    component.saveConfig();
-    flush();
-
-    // then
-    const bootomSheet = TestBed.inject(MatBottomSheet);
-    expect(notificationService.showStatus).toHaveBeenCalledWith(bootomSheet, status);
-  }));
-
-  it('#updateConfigRecords should update records and notify user', async () => {
-
-    // given
-    const deleted: ConfigRecord = { route: Route.PIVOT, name: 'deleted', modifiedTime: NOW, query: null, data: {} };
-    const renamed: ConfigRecord = { route: Route.PIVOT, name: 'renamed', modifiedTime: NOW, query: null, data: {} };
-    const status = { type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' };
-    vi.spyOn(viewPersistenceService, 'updateRecords').mockResolvedValue(status);
-    vi.spyOn(viewPersistenceService, 'findRecords').mockReturnValue([renamed]);
-
-    // when
-    await component.updateConfigRecords([deleted], [renamed]);
-
-    // then
-    expect(viewPersistenceService.updateRecords).toHaveBeenCalledWith(scene, [deleted], [renamed]);
-    expect(component.configRecords).toEqual([renamed]);
-    expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), status);
-  });
-
   it('#onNegativeColorChanged should not refresh pivot table when no heatmap', fakeAsync(() => {
 
     // given
@@ -1233,62 +1133,6 @@ describe('PivotTableComponent', () => {
     expect(component.context.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
   }));
 
-  it('#loadConfig should keep time unit of time column when restored time column has no time unit', () => {
-
-    // given
-    const context: PivotContext = {
-      ...pivotContext(),
-      timeColumns: [{ name: 'Time', dataType: DataType.TIME, width: 100 }]
-    };
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: null, data: context };
-
-    // when
-    component.loadConfig(configRecord);
-
-    // then
-    expect(component.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
-    expect(component.context.timeColumns[0]).toBe(component.timeColumns[0]);
-  });
-
-  it('#loadConfig should fetch data with query of loaded record', fakeAsync(() => {
-
-    // given
-    const query = new Query();
-    query.setFullTextFilter('WARN');
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: queryToQueryDef(query), data: pivotContext() };
-    vi.mocked(dbService.findEntries).mockClear();
-
-    // when
-    component.loadConfig(configRecord);
-    flush();
-
-    // then
-    const fetchQuery: Query = vi.mocked(dbService.findEntries).mock.lastCall[0];
-    expect(fetchQuery.getFullTextFilter()).toBe('WARN');
-    expect(component.restoredQuery.getFullTextFilter()).toBe('WARN');
-  }));
-
-  it('#loadConfig should restore loaded record with query once its data was fetched', fakeAsync(() => {
-
-    // given
-    const entries$ = new Subject<Document[]>();
-    vi.mocked(dbService.findEntries).mockReturnValue(entries$);
-    const query = new Query();
-    query.setFullTextFilter('INFO');
-    const configRecord: ConfigRecord = { route: Route.PIVOT, name: 'test', modifiedTime: NOW, query: queryToQueryDef(query), data: pivotContext() };
-    component.loadConfig(configRecord);
-    const colorBeforeData = component.context.negativeColor;
-
-    // when
-    entries$.next(entries as Document[]);
-    flush();
-
-    // then
-    expect(colorBeforeData).not.toBe('yellow');
-    expect(component.context.negativeColor).toBe('yellow');
-    expect(component.getPivotOptions()['cols']).toEqual(['Level']);
-  }));
-
   it('#fetchData should stop loading and notify error when entries cannot be fetched', () => {
 
     // given
@@ -1374,18 +1218,6 @@ describe('PivotTableComponent', () => {
     expect(connectedObserversAfterRefreshes).toBe(1);
     expect(connectedObservers().length).toBe(0);
   }));
-
-  it('#manageViews should open manage config dialog', () => {
-
-    // given
-    vi.spyOn(dialogService, 'showManageConfigDialog').mockReturnValue(undefined);
-
-    // when
-    component.manageViews();
-
-    // then
-    expect(dialogService.showManageConfigDialog).toHaveBeenCalledWith(component);
-  });
 
   it('#exportToExcel should export pivot table to Excel', () => {
 
@@ -1504,7 +1336,7 @@ describe('PivotTableComponent', () => {
     expect(tooltipOf('#but_column_totals')).toBe('Show Column Totals');
   }));
 
-  it('more menu should offer only excel export and view management', fakeAsync(() => {
+  it('more menu should offer only excel export', fakeAsync(() => {
 
     // given
     const moreButton: HTMLElement = fixture.nativeElement.querySelector('.but_view_more');
@@ -1516,7 +1348,7 @@ describe('PivotTableComponent', () => {
 
     // then
     const texts = Array.from(document.querySelectorAll('.mat-mdc-menu-panel .mat-mdc-menu-item-text')).map(e => e.textContent.trim());
-    expect(texts).toEqual(['Save As Excel', 'Manage Views']);
+    expect(texts).toEqual(['Save As Excel']);
   }));
 
   function tooltipOf(selector: string): string {
@@ -1532,14 +1364,6 @@ describe('PivotTableComponent', () => {
       showColumnTotals: true,
       valueGroupings: [],
       pivotOptions: { rendererName: 'Table', cols: ['Level'], rows: [] }
-    };
-  }
-
-  function createInputDialogRef(): MatDialogRef<InputDialogComponent> {
-    return <MatDialogRef<InputDialogComponent>>{
-      afterClosed(): Observable<boolean> {
-        return of(true);
-      }
     };
   }
 

@@ -49,6 +49,7 @@ import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.com
 import { GraphComponent } from './graph/graph.component';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { ViewTabBarComponent } from './main-toolbar/view-tab-bar/view-tab-bar.component';
+import { SavedViewButtonsComponent } from './main-toolbar/saved-view-buttons/saved-view-buttons.component';
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
@@ -63,7 +64,6 @@ import { SceneDetailsDialogComponent } from './scenes/scene-details-dialog/scene
 import { SceneTableComponent } from './scenes/scene-table/scene-table.component';
 import { ScenesComponent } from './scenes/scenes.component';
 import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-selection/color-scheme-selection.component';
-import { ConfigLauncherDialogComponent } from './shared/component/config-launcher-dialog';
 import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { ComputedColumnDialogComponent } from './shared/component/computed-column-dialog/computed-column-dialog.component';
 import { ComputedColumnLauncherComponent } from './shared/component/computed-column-launcher/computed-column-launcher.component';
@@ -72,7 +72,6 @@ import { ExpansionPanelComponent } from './shared/component/expansion-panel/expa
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
 import { SideBarHeaderComponent } from './shared/component/side-bar-header/side-bar-header.component';
 import { ManageViewDialogComponent } from './shared/component/manage-view-dialog';
-import { SavedViewListComponent } from './shared/component/saved-view-list/saved-view-list.component';
 import { ValueGroupingRangesComponent } from './shared/component/value-grouping-ranges/value-grouping-ranges.component';
 import { StatusComponent } from './shared/component/status/status.component';
 import { ViewLauncherDialogComponent } from './shared/component/view-launcher-dialog/view-launcher-dialog.component';
@@ -108,6 +107,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         AppComponent,
         MainToolbarComponent,
         ViewTabBarComponent,
+        SavedViewButtonsComponent,
         ScenesComponent,
         SceneDetailsDialogComponent,
         SceneComponent,
@@ -151,9 +151,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         DialogCloseButtonComponent,
         SideBarHeaderComponent,
         ViewLauncherDialogComponent,
-        ConfigLauncherDialogComponent,
         ManageViewDialogComponent,
-        SavedViewListComponent,
         ValueGroupingRangesComponent,
         ColorSchemeSelectionComponent,
         ExpansionPanelComponent,

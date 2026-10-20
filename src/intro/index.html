@@ -41,6 +41,16 @@
     })();
   </script>
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-66X1MBQRD9"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-66X1MBQRD9');
+  </script>
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Koia Data Analysis</title>
   <meta name="description"
@@ -140,9 +150,10 @@
           <li class="landing-tile">
             <div class="landing-tile-head">
               <svg class="landing-tile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-              <h3>No sign-up, nothing to install</h3>
+              <h3>Data never leaves your environment</h3>
             </div>
-            <p>Open Koia in your browser and start right away. No account, no installation, no tracking.</p>
+            <p>No sign-up needed. Your data never leaves your trusted environment.
+              Optionally, store it in your own CouchDB over HTTPS.</p>
           </li>
         </ul>
       </div>

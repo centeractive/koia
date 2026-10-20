@@ -426,6 +426,89 @@ describe('ViewTabsService', () => {
       expect(persister.request).toHaveBeenCalled();
    });
 
+   it('#replaceTabs should replace tabs and persist them', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 1)));
+      await loaded();
+      const tabs = [createTabDef(ViewType.DASHBOARD, 2)];
+
+      // when
+      service.replaceTabs(tabs);
+
+      // then
+      expect(service.tabs).toBe(tabs);
+      expect(persistedSnapshot()).toBe(tabs);
+   });
+
+   it('#replaceTabs should evict routes of replaced and new tabs once', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 1), createTabDef(ViewType.PIVOT, 2)));
+      await loaded();
+
+      // when
+      service.replaceTabs([createTabDef(ViewType.DASHBOARD, 2), createTabDef(ViewType.DASHBOARD, 3)]);
+
+      // then
+      expect(vi.mocked(routeReuseStrategy.evict).mock.calls).toEqual([['view/tab1'], ['view/tab2'], ['view/tab3']]);
+   });
+
+   it('#replaceTabs should not let unregistered provider of replaced tab overwrite new tab of same id', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 1)));
+      await loaded();
+      const provider = contentProvider({ record: pivotRecord() });
+      service.register('tab1', provider);
+      const newTab = createTabDef(ViewType.DASHBOARD, 1);
+
+      // when
+      service.replaceTabs([newTab]);
+      service.unregister('tab1', provider);
+
+      // then
+      expect(newTab.record).toBeUndefined();
+      expect(service.currentTab(newTab)).toEqual(newTab);
+   });
+
+   it('#replaceTabs should continue sequence after highest restored tab', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 1)));
+      await loaded();
+
+      // when
+      service.replaceTabs([createTabDef(ViewType.DASHBOARD, 5)]);
+
+      // then
+      await service.addTab(ViewType.PIVOT);
+      expect(service.tabs[1].id).toBe('tab6');
+   });
+
+   it('#replaceTabs should keep sequence when restored tabs have lower numbers', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 4)));
+      await loaded();
+
+      // when
+      service.replaceTabs([createTabDef(ViewType.DASHBOARD, 1)]);
+
+      // then
+      await service.addTab(ViewType.PIVOT);
+      expect(service.tabs[1].id).toBe('tab5');
+   });
+
+   it('#replaceTabs should not persist when tabs are not ready', () => {
+
+      // when
+      service.replaceTabs([createTabDef(ViewType.DASHBOARD, 1)]);
+
+      // then
+      expect(persister.persistNow).not.toHaveBeenCalled();
+   });
+
    it('#evict should evict route of tab', () => {
 
       // when

@@ -88,6 +88,17 @@ export class StringUtils {
       return text.substring(0, selStart) + text.substring(selEnd);
    }
 
+   /**
+    * @returns the specified name or, when it exists, the name with the next free number appended (e.g. "name (2)")
+    */
+   static uniqueName(name: string, existingNames: Set<string>): string {
+      let uniqueName = name;
+      for (let i = 2; existingNames.has(uniqueName); i++) {
+         uniqueName = name + ' (' + i + ')';
+      }
+      return uniqueName;
+   }
+
    static escape(s: string, charsToEscape: string, escaper = '\\'): string {
       if (!s || !charsToEscape) {
          return s;

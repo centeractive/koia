@@ -45,13 +45,15 @@ describe('intro page', () => {
     expect(doc.querySelectorAll('h1').length).toBe(1);
   });
 
-  it('should load no external scripts', async () => {
+  it('should reference no scripts other than google tag', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
-    expect(all(doc, 'script[src]')).toEqual([]);
+    const scripts = all(doc, 'script[src]') as HTMLScriptElement[];
+    expect(scripts.length).toBe(1);
+    expect(new URL(scripts[0].src).host).toBe('www.googletagmanager.com');
   });
 
   it('should show pivot tables and dashboards headline', async () => {
@@ -72,14 +74,37 @@ describe('intro page', () => {
     expect(doc.querySelector('.landing-lead').textContent).toContain('never sent to any third-party server');
   });
 
-  it('should list privacy first and no sign-up last among why koia tiles', async () => {
+  it('should list privacy first and environment last among why koia tiles', async () => {
 
     // when
     const doc = await loadIntro(DESKTOP);
 
     // then
     expect(all(doc, '#why h3').map(h => h.textContent))
-      .toEqual(['Your data stays private', 'Open-source', 'CSV, Excel, JSON', 'No sign-up, nothing to install']);
+      .toEqual(['Your data stays private', 'Open-source', 'CSV, Excel, JSON', 'Data never leaves your environment']);
+  });
+
+  it('should fit last why koia tile heading on two lines', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const range = doc.createRange();
+    range.selectNodeContents(doc.querySelector('#why li:last-child h3'));
+    expect(new Set(Array.from(range.getClientRects()).map(r => Math.round(r.top))).size).toBeLessThanOrEqual(2);
+  });
+
+  it('should promise in last why koia tile that data never leaves trusted environment', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const text = doc.querySelector('#why li:last-child p').textContent;
+    expect(text).toContain('never leaves your trusted environment');
+    expect(text).toContain('Optionally, store it in your own CouchDB over HTTPS.');
+    expect(text).not.toContain('no tracking');
   });
 
   it('should not show how it works section', async () => {

@@ -3,6 +3,7 @@ import { PageFormat } from 'app/dashboard/page-format';
 import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
 import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';
+import { MainToolbar } from '../components/main-toolbar';
 import { TextBox } from '../components/text-box';
 import { ViewToolbar } from '../components/view-toolbar';
 
@@ -15,6 +16,7 @@ export class DashboardPage {
    readonly textBoxTiles: Locator;
    readonly launcher: ViewLauncherDialog;
    readonly sideBar: DashboardSideBar;
+   readonly mainToolbar: MainToolbar;
    readonly viewToolbar: ViewToolbar;
    readonly snapToGridButton: Locator;
    readonly freeCanvasButton: Locator;
@@ -37,6 +39,7 @@ export class DashboardPage {
       this.textBoxTiles = this.tiles.filter({ has: page.locator('koia-text-box') });
       this.launcher = new ViewLauncherDialog(page);
       this.sideBar = new DashboardSideBar(this.root);
+      this.mainToolbar = new MainToolbar(this.root.locator('koia-main-toolbar'));
       this.toolbar = this.root.locator('koia-view-toolbar');
       this.viewToolbar = new ViewToolbar(this.toolbar);
       this.snapToGridButton = this.root.locator('#but_snap_to_grid');

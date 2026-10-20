@@ -1,5 +1,4 @@
-import { Route } from 'app/shared/model';
-import { Config, View } from 'app/shared/model/view-config';
+import { SavedView, View } from 'app/shared/model/view-config';
 import { Chart } from './chart.type';
 
 interface Change {
@@ -10,23 +9,23 @@ interface Change {
 }
 
 /**
- * renames a column in persisted views and raw data config records
+ * renames a column in persisted views and raw data column widths
  */
 export class ViewColumnRenamer {
 
    constructor(private previousName: string, private name: string) { }
 
    /**
-    * renames the column in place in the views and raw data column widths of the specified config
+    * renames the column in place in the dashboard tabs and raw data column widths of the specified saved views
     *
     * @returns a function that restores exactly the values changed by the rename
     */
-   renameInConfig(config: Config): () => void {
+   renameInSavedViews(views: SavedView[]): () => void {
       const changes: Change[] = [];
-      config.views.forEach(v => this.renameView(v, changes));
-      config.records
-         .filter(r => r.route === Route.RAWDATA)
-         .forEach(r => this.renameWidthKey((r.data as { columnWidths?: Record<string, number> }).columnWidths, changes));
+      views.forEach(v => {
+         v.tabs.filter(t => t.view).forEach(t => this.renameView(t.view, changes));
+         this.renameWidthKey(v.rawData.data.columnWidths, changes);
+      });
       return () => changes.reverse().forEach(c => {
          if (c.absent) {
             delete c.target[c.key];

@@ -1,4 +1,3 @@
-import { LanguageService } from '../services/language';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { AfterViewInit, Directive, ElementRef, Input, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -8,13 +7,12 @@ import { ChartComponent } from 'app/chart/chart.component';
 import { SummaryTableComponent } from 'app/summary-table/summary-table.component';
 import { Subscription } from 'rxjs';
 import { AbstractComponent } from '../component/abstract.component';
-import { ManageViewContext } from '../component/manage-view-dialog';
 import { ViewLauncherContext } from '../component/view-launcher-dialog';
 import { Column, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext } from '../model';
 import { ChartContext, ChartType } from '../model/chart';
 import { GraphContext } from '../model/graph';
 import { TabContent, TabDef, View, ViewElement } from '../model/view-config';
-import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../services';
+import { DialogService, ExportService, NotificationService } from '../services';
 import { DBService } from '../services/backend';
 import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { ChartMarginService } from '../services/chart';
@@ -25,11 +23,10 @@ import { TabContentProvider, ViewTabsService } from '../services/view-tabs';
 import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
 import { isAnalyzableColumn } from '../utils/column-utils';
 import { withComputedValues } from '../utils/computation-utils';
-import { promptViewName } from './view-name-prompt';
 
 @Directive()
 export abstract class ViewController extends AbstractComponent implements OnInit, AfterViewInit, OnDestroy, ViewLauncherContext,
-   ManageViewContext, TabContentProvider {
+   TabContentProvider {
 
    static readonly MARGIN_TOP = 10;
    static readonly SIDENAV_WIDTH = 380; // keep in sync with .sidenav in styles.css
@@ -50,10 +47,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    entries: object[];
    loading: boolean;
    restoredQuery: Query;
-   views: View[] = [];
 
    protected scene: Scene;
-   protected currentViewName = '';
 
    private timeColumns: Column[];
    private viewToModelConverter: ViewToModelConverter;
@@ -66,8 +61,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    private scrollToAddedElement = false;
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
-      protected dialogService: DialogService, private viewPersistenceService: ViewPersistenceService,
-      private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService,
+      protected dialogService: DialogService, private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService,
       private viewTabsService: ViewTabsService, private computedColumnService: ComputedColumnService) {
       super(bottomSheet, notificationService);
    }
@@ -77,7 +71,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       if (!this.scene) {
          this.router.navigateByUrl(Route.SCENES);
       } else {
-         this.refreshViews();
          this.elementContexts = [];
          this.identifyColumns();
          this.queryData(new Query());
@@ -89,10 +82,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          }
          this.computedColumnsSubscription = this.computedColumnService.changed$.subscribe(c => this.onComputedColumnsChanged(c));
       }
-   }
-
-   private refreshViews(): void {
-      this.views = this.viewPersistenceService.findViews(this.scene, this.route);
    }
 
    ngAfterViewInit(): void {
@@ -146,7 +135,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          renamedFrom.set(change.name, change.previousName);
       }
       this.elementContexts.forEach(c => c.updateColumns(this.clonedColumns(), renamedFrom));
-      this.refreshViews();
       this.requestPersist();
    }
 
@@ -310,13 +298,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.dialogService.showViewLauncherDialog(this);
    }
 
-   loadView(view: View): void {
-      this.currentViewName = view.name;
-      this.applyView(view);
-      this.requestPersist();
-   }
-
-   protected applyView(view: View): void {
+   applyView(view: View): void {
       const clonedView: View = CommonUtils.clone(view);
       this.onPreRestoreView(clonedView);
       if (clonedView.query) {
@@ -342,24 +324,6 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    protected abstract onPreRestoreView(view: View): void;
 
    protected abstract onElementContextAdded(context: ElementContext): void;
-
-   saveView(): void {
-      if (this.elementContexts.length === 0) {
-         this.notifyWarning(LanguageService.instant('view.noElements'));
-         return;
-      }
-      promptViewName(this.dialogService, this.currentViewName)
-         .then(name => {
-            if (name !== undefined) {
-               this.currentViewName = name;
-               this.viewPersistenceService.saveView(this.scene, this.toView(name))
-                  .then(s => {
-                     this.showStatus(s);
-                     this.refreshViews();
-                  });
-            }
-         });
-   }
 
    protected toView(name: string): View {
       const view = this.modelToViewConverter.convert(this.route, name, this.query, this.elementContexts);
@@ -391,15 +355,5 @@ export abstract class ViewController extends AbstractComponent implements OnInit
          const sumTableComponent = this.sumTableComponents.find(cmp => cmp.context === context);
          this.exportService.exportData(sumTableComponent.createExportData(), this.columns, exportFormat, context.getTitle());
       }
-   }
-
-   manageViews(): void {
-      this.dialogService.showManageViewDialog(this);
-   }
-
-   async updateViews(deletedViews: View[], renamedViews: View[]): Promise<void> {
-      const status = await this.viewPersistenceService.updateViews(this.scene, deletedViews, renamedViews);
-      this.refreshViews();
-      this.showStatus(status);
    }
 }

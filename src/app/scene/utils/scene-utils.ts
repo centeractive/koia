@@ -15,8 +15,7 @@ export class SceneUtils {
          columns: undefined,
          database: db,
          config: {
-            records: [],
-            views: []
+            savedViews: []
          }
       }
    }

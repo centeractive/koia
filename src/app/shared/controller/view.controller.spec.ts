@@ -14,7 +14,7 @@ class ViewControllerTestable extends ViewController {
    readonly addedContexts: ElementContext[] = [];
 
    constructor() {
-      super(null, null, null, null, null, null, null, null, null, null, null);
+      super(null, null, null, null, null, null, null, null, null, null);
    }
 
    generateDashboard(): void { }
@@ -39,10 +39,6 @@ describe('ViewController', () => {
       };
       viewController = new ViewControllerTestable();
       viewController.sidenav = sidenav as MatSidenav;
-   });
-
-   it('#views should be empty when scene is undefined', () => {
-      expect(viewController.views).toEqual([]);
    });
 
    it('#isShowResizableMargin should return false when not chart context', () => {

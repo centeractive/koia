@@ -12,21 +12,20 @@ import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
-import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import {
-  AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, Status, StatusType, SummaryContext, TextBoxContext, TimeUnit
+  AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
 } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { TabDef, View, ViewType } from 'app/shared/model/view-config';
-import { DialogService, ExportService, NotificationService, ViewPersistenceService } from 'app/shared/services';
+import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartMarginService } from 'app/shared/services/chart';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
 import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
-import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
+import { MatIconModuleMock, savedViewOf, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import type { SummaryTableComponent as RealSummaryTableComponent } from 'app/summary-table/summary-table.component';
 import { Chart } from 'chart.js';
@@ -96,7 +95,6 @@ describe('DashboardComponent', () => {
   let component: DashboardComponent;
   const dbService = new DBService(null);
   const dialogService = new DialogService(null);
-  const viewPersistenceService = new ViewPersistenceService(dbService);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   let viewTabsService: ViewTabsService;
@@ -142,7 +140,6 @@ describe('DashboardComponent', () => {
         MatBottomSheet,
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
-        { provide: ViewPersistenceService, useValue: viewPersistenceService },
         { provide: ChartMarginService, useClass: ChartMarginService },
         { provide: NotificationService, useValue: notificationService },
         { provide: ExportService, useValue: exportService },
@@ -961,13 +958,13 @@ describe('DashboardComponent', () => {
       expect(scrollIntoViewSpy).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
     }));
 
-    it('#loadView should not scroll elements into view', fakeAsync(() => {
+    it('#applyView should not scroll elements into view', fakeAsync(() => {
 
       // given
       const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
 
       // when
-      component.loadView(viewOf(Route.GRID, [new SummaryContext(scene.columns), new SummaryContext(scene.columns)]));
+      component.applyView(viewOf(Route.GRID, [new SummaryContext(scene.columns), new SummaryContext(scene.columns)]));
       fixture.detectChanges();
       flush();
 
@@ -2947,7 +2944,7 @@ describe('DashboardComponent', () => {
           expect(hit.classList).toContain('resize-handle');
         });
 
-        it('#loadView of grid view while grid is not rendered should place text box at grid top', () => {
+        it('#applyView of grid view while grid is not rendered should place text box at grid top', () => {
 
           // given
           component.setLayout(Route.FLEX);
@@ -2956,7 +2953,7 @@ describe('DashboardComponent', () => {
           textBox.title = 'Notes';
 
           // when
-          component.loadView(viewOf(Route.GRID, [textBox]));
+          component.applyView(viewOf(Route.GRID, [textBox]));
 
           // then
           expect([component.elementContexts[0].x, component.elementContexts[0].y]).toEqual([0, 0]);
@@ -3263,7 +3260,7 @@ describe('DashboardComponent', () => {
       });
     });
 
-    it('#loadView should place tiles of legacy flex view in rows', () => {
+    it('#applyView should place tiles of legacy flex view in rows', () => {
 
       // given
       component.addSummaryTable();
@@ -3271,13 +3268,13 @@ describe('DashboardComponent', () => {
       const view = viewOf(Route.FLEX, component.elementContexts);
 
       // when
-      component.loadView(view);
+      component.applyView(view);
 
       // then
       expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[0, 0], [610, 0]]);
     });
 
-    it('#loadView should size legacy flex tiles without size by default', () => {
+    it('#applyView should size legacy flex tiles without size by default', () => {
 
       // given
       component.addSummaryTable();
@@ -3286,7 +3283,7 @@ describe('DashboardComponent', () => {
       view.elements[0].height = null;
 
       // when
-      component.loadView(view);
+      component.applyView(view);
 
       // then
       expect([component.elementContexts[0].width, component.elementContexts[0].height]).toEqual([600, 400]);
@@ -3486,7 +3483,7 @@ describe('DashboardComponent', () => {
       expect(tileListener).not.toHaveBeenCalled();
     });
 
-    it('#loadView should load grid view', () => {
+    it('#applyView should load grid view', () => {
 
       // given
       const chartContext = component.addChart();
@@ -3504,7 +3501,7 @@ describe('DashboardComponent', () => {
       component.elementContexts = [];
 
       // when
-      component.loadView(view);
+      component.applyView(view);
 
       // then
       expect(component.isGridLayout()).toBe(true);
@@ -3513,7 +3510,7 @@ describe('DashboardComponent', () => {
       expect(elementsOf(component.elementContexts)).toEqual(elementsOf(elementContexts));
     });
 
-    it('#loadView should switch to flex layout and keep grid settings of legacy flex view', () => {
+    it('#applyView should switch to flex layout and keep grid settings of legacy flex view', () => {
 
       // given
       const summaryContext = component.addSummaryTable();
@@ -3523,7 +3520,7 @@ describe('DashboardComponent', () => {
       component.gridLayout.gridCellRatio = '2:1';
 
       // when
-      component.loadView(view);
+      component.applyView(view);
 
       // then
       expect(component.isGridLayout()).toBe(false);
@@ -3531,7 +3528,7 @@ describe('DashboardComponent', () => {
       expect(component.gridLayout.gridCellRatio).toBe('2:1');
     });
 
-    it('#loadView should restore summary context column hierarchy', () => {
+    it('#applyView should restore summary context column hierarchy', () => {
 
       // given
       const summaryContext = component.addSummaryTable();
@@ -3541,14 +3538,14 @@ describe('DashboardComponent', () => {
       component.elementContexts = [];
 
       // when
-      component.loadView(view);
+      component.applyView(view);
 
       // then
       expect(component.elementContexts.length).toBe(1);
       expect(component.elementContexts[0].groupByColumns.map(c => c.name)).toEqual(['Path', 'Time', 'Amount']);
     });
 
-    it('#loadView should restore and fetch query of view', () => {
+    it('#applyView should restore and fetch query of view', () => {
 
       // given
       const query = new Query();
@@ -3556,21 +3553,21 @@ describe('DashboardComponent', () => {
       const view = new ModelToViewConverter().convert(Route.GRID, 'test', query, []);
 
       // when
-      component.loadView(view);
+      component.applyView(view);
 
       // then
       expect(component.restoredQuery.getFullTextFilter()).toBe('abc');
       expect(dbService.findEntriesWithComputedValues).toHaveBeenLastCalledWith(component.restoredQuery, true);
     });
 
-    it('#loadView should not modify loaded view when elements are changed', () => {
+    it('#applyView should not modify loaded view when elements are changed', () => {
 
       // given
       const summaryContext = component.addSummaryTable();
       summaryContext.dataColumns = [findColumn('Level', summaryContext)];
       const view = viewOf(Route.GRID, component.elementContexts);
       const viewJson = JSON.stringify(view);
-      component.loadView(view);
+      component.applyView(view);
 
       // when
       component.elementContexts[0].title = 'changed';
@@ -3579,62 +3576,6 @@ describe('DashboardComponent', () => {
       // then
       expect(JSON.stringify(view)).toBe(viewJson);
     });
-
-    it('#saveView should not save view when input dialog is canceled', () => {
-
-      // given
-      component.addSummaryTable();
-      vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
-        data.closedWithOK = false;
-        return createInputDialogRef();
-      });
-      vi.spyOn(viewPersistenceService, 'saveView').mockReturnValue(undefined);
-
-      // when
-      component.saveView();
-
-      // then
-      expect(viewPersistenceService.saveView).not.toHaveBeenCalled();
-    });
-
-    it('#saveView should warn user when view contains no elements', () => {
-
-      // given
-      component.elementContexts = [];
-
-      // when
-      component.saveView();
-
-      // then
-      expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
-        { type: StatusType.WARNING, msg: 'View contains no elements' });
-    });
-
-    it('#saveView should save view with current layout and notify user about success', fakeAsync(() => {
-
-      // given
-      component.setLayout(Route.FLEX);
-      component.addSummaryTable();
-      vi.spyOn(dialogService, 'showInputDialog').mockImplementation((data: InputDialogData) => {
-        data.input = 'test';
-        data.closedWithOK = true;
-        return createInputDialogRef();
-      });
-      const status: Status = { type: StatusType.SUCCESS, msg: 'View has been saved' };
-      const saveViewSpy = vi.spyOn(viewPersistenceService, 'saveView').mockResolvedValue(status);
-
-      // when
-      component.saveView();
-      tick();
-
-      // then
-      const savedView: View = saveViewSpy.mock.lastCall[1];
-      expect(savedView.route).toBe(Route.FLEX);
-      expect(savedView.name).toBe('test');
-      expect(savedView.gridColumns).toBe(component.gridLayout.gridColumns);
-      expect(savedView.gridCellRatio).toBe(component.gridLayout.gridCellRatio);
-      expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), status);
-    }));
 
     it('#click on print button should print window', () => {
 
@@ -3650,21 +3591,7 @@ describe('DashboardComponent', () => {
       expect(window.print).toHaveBeenCalled();
     });
 
-    it('#click on save button should save view', () => {
-
-      // given
-      component.addGraph();
-      fixture.detectChanges();
-      vi.spyOn(component, 'saveView').mockReturnValue(undefined);
-
-      // when
-      fixture.debugElement.query(By.css('#but_save_view')).nativeElement.click();
-
-      // then
-      expect(component.saveView).toHaveBeenCalled();
-    });
-
-    it('print and save buttons should be disabled without elements', () => {
+    it('print button should be disabled without elements', () => {
 
       // given
       component.elementContexts = [];
@@ -3674,7 +3601,18 @@ describe('DashboardComponent', () => {
 
       // then
       expect(fixture.debugElement.query(By.css('#but_print')).nativeElement.disabled).toBe(true);
-      expect(fixture.debugElement.query(By.css('#but_save_view')).nativeElement.disabled).toBe(true);
+    });
+
+    it('more button should be hidden when grid layout is not shown', () => {
+
+      // given
+      component.setLayout(Route.FLEX);
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(fixture.debugElement.query(By.css('.but_view_more'))).toBeNull();
     });
 
     it('#saveAs should export image', () => {
@@ -3726,25 +3664,6 @@ describe('DashboardComponent', () => {
       // then
       expect(exportService.exportImage).not.toHaveBeenCalled();
       expect(exportService.exportData).not.toHaveBeenCalled();
-    });
-
-    it('#updateViews should update views and notify user', async () => {
-
-      // given
-      const converter = new ModelToViewConverter();
-      const deleted = converter.convert(Route.GRID, 'deleted', new Query(), []);
-      const renamed = converter.convert(Route.FLEX, 'renamed', new Query(), []);
-      const status = { type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' };
-      vi.spyOn(viewPersistenceService, 'updateViews').mockResolvedValue(status);
-      vi.spyOn(viewPersistenceService, 'findViews').mockReturnValue([renamed]);
-
-      // when
-      await component.updateViews([deleted], [renamed]);
-
-      // then
-      expect(viewPersistenceService.updateViews).toHaveBeenCalledWith(scene, [deleted], [renamed]);
-      expect(component.views).toEqual([renamed]);
-      expect(notificationService.showStatus).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), status);
     });
 
     it('#generateDashboard should replace empty dashboard with generated elements without confirmation', fakeAsync(() => {
@@ -4093,20 +4012,6 @@ describe('DashboardComponent', () => {
       expect(dialogService.showViewLauncherDialog).not.toHaveBeenCalled();
     }));
 
-    it('#ngOnInit should not take tab title as name for saving view', fakeAsync(() => {
-
-      // given
-      init(dashboardTab(viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
-      const showInputDialogSpy = vi.spyOn(dialogService, 'showInputDialog').mockReturnValue(createInputDialogRef());
-
-      // when
-      component.saveView();
-
-      // then
-      const dialogData: InputDialogData = showInputDialogSpy.mock.lastCall[0];
-      expect(dialogData.input).toBe('');
-    }));
-
     it('#ngOnInit should not modify view of tab when elements are changed', fakeAsync(() => {
 
       // given
@@ -4134,19 +4039,6 @@ describe('DashboardComponent', () => {
 
       // then
       expect(scrollIntoViewSpy).toHaveBeenCalledExactlyOnceWith({ block: 'end' });
-    }));
-
-    it('#manageViews should show manage view dialog', fakeAsync(() => {
-
-      // given
-      init(dashboardTab());
-      vi.spyOn(dialogService, 'showManageViewDialog').mockReturnValue(undefined);
-
-      // when
-      component.manageViews();
-
-      // then
-      expect(dialogService.showManageViewDialog).toHaveBeenCalledWith(component);
     }));
 
     it('#ngOnDestroy should unregister and stop requesting persisting', fakeAsync(() => {
@@ -4182,6 +4074,23 @@ describe('DashboardComponent', () => {
       expect(content.view.name).toBe('Dashboard 1');
       expect(content.view.modifiedTime).toBe(0);
       expect(content.view.elements.length).toBe(1);
+    }));
+
+    it('#tabContent should provide grid settings of current layout', fakeAsync(() => {
+
+      // given
+      init(dashboardTab());
+      component.setGridColumns(2);
+      component.setGridCellRatio('2:1');
+      component.setLayout(Route.FLEX);
+
+      // when
+      const content = component.tabContent();
+
+      // then
+      expect(content.view.route).toBe(Route.FLEX);
+      expect(content.view.gridColumns).toBe(2);
+      expect(content.view.gridCellRatio).toBe('2:1');
     }));
 
     it.each([CanvasPaging.NONE, CanvasPaging.PORTRAIT])('#tabContent should save canvas paging %s', paging => fakeAsync(() => {
@@ -4259,8 +4168,7 @@ describe('DashboardComponent', () => {
       { change: 'setGridCellRatio', apply: (c: DashboardComponent) => c.setGridCellRatio('2:1') },
       { change: 'setLayout', apply: (c: DashboardComponent) => c.setLayout(Route.FLEX) },
       { change: 'showCanvas', apply: (c: DashboardComponent) => c.showCanvas(CanvasPaging.PORTRAIT) },
-      { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) },
-      { change: 'loadView', apply: (c: DashboardComponent) => c.loadView(viewOf(Route.GRID, [])) }
+      { change: 'removeElement', apply: (c: DashboardComponent) => c.removeElement(c.elementContexts[0]) }
     ])('#$change should request persisting', ({ apply }) => fakeAsync(() => {
 
       // given
@@ -4498,18 +4406,19 @@ describe('DashboardComponent', () => {
       expect(viewTabsService.renameColumn).toHaveBeenCalledWith('Diff', 'Delta');
     }));
 
-    it('#loadView should restore renamed column of saved view when column was renamed', fakeAsync(() => {
+    it('#applyView should restore renamed column of saved view when column was renamed', fakeAsync(() => {
 
       // given
       computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
       init();
-      computedScene.config.views.push(viewOf(Route.GRID, [addChartOf('Diff')]));
+      const view = viewOf(Route.GRID, [addChartOf('Diff')]);
+      computedScene.config.savedViews = [savedViewOf('all', [{ id: 'tab9', type: ViewType.DASHBOARD, title: 'Diff', view }])];
       component.elementContexts = [];
       computedColumnService.save(computedColumn('Delta', ComputeOperator.SUBTRACT), 'Diff');
       flush();
 
       // when
-      component.loadView(component.views[0]);
+      component.applyView(computedScene.config.savedViews[0].tabs[0].view);
 
       // then
       expect(component.elementContexts[0].dataColumns.map(c => c.name)).toEqual(['Delta']);
@@ -4568,14 +4477,6 @@ describe('DashboardComponent', () => {
 
   function findColumn(name: string, context: ElementContext): Column {
     return context.columns.find(c => c.name === name);
-  }
-
-  function createInputDialogRef(): MatDialogRef<InputDialogComponent> {
-    return <MatDialogRef<InputDialogComponent>>{
-      afterClosed(): Observable<boolean> {
-        return of(true);
-      }
-    };
   }
 
   function mockConfirmDialog(closedWithButtonIndex: number): void {

@@ -18,7 +18,7 @@ describe('SceneUtils', () => {
 
       // then
       expect(scene.database).toBe('data_1');
-      expect(scene.config).toEqual({ records: [], views: [] })
+      expect(scene.config).toEqual({ savedViews: [] })
 
    });
 

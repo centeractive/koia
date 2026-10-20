@@ -1,9 +1,11 @@
 import { Aggregation, Column, ComputeOperator, DataType, Route, Scene } from 'app/shared/model';
-import { ConfigRecord, ElementType, View } from 'app/shared/model/view-config';
-import { SceneFactory } from 'app/shared/test';
+import { ElementType, SavedView, View, ViewType } from 'app/shared/model/view-config';
+import { savedViewOf, SceneFactory } from 'app/shared/test';
 import type { Mock } from 'vitest';
 import { DBService } from './backend/db.service';
 import { ComputedColumnChange, ComputedColumnService } from './computed-column.service';
+import { RawDataStateService } from './saved-views/raw-data-state.service';
+import { ViewPersistenceService } from './view-persistence/view-persistence.service';
 import { ViewTabsService } from './view-tabs/view-tabs.service';
 
 describe('ComputedColumnService', () => {
@@ -18,6 +20,7 @@ describe('ComputedColumnService', () => {
   let dbService: DBService;
   let updateSceneSpy: Mock;
   let viewTabsService: ViewTabsService;
+  let rawDataStateService: RawDataStateService;
   let service: ComputedColumnService;
   let changes: ComputedColumnChange[];
 
@@ -33,7 +36,9 @@ describe('ComputedColumnService', () => {
     vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
     updateSceneSpy = vi.spyOn(dbService, 'updateScene').mockImplementation(s => Promise.resolve(s));
     viewTabsService = { renameColumn: vi.fn() } as unknown as ViewTabsService;
-    service = new ComputedColumnService(dbService, viewTabsService);
+    rawDataStateService = new RawDataStateService(dbService);
+    vi.spyOn(rawDataStateService, 'renameColumn');
+    service = new ComputedColumnService(dbService, viewTabsService, new ViewPersistenceService(dbService), rawDataStateService);
     changes = [];
     service.changed$.subscribe(c => changes.push(c));
   });
@@ -112,12 +117,12 @@ describe('ComputedColumnService', () => {
     expect(viewTabsService.renameColumn).not.toHaveBeenCalled();
   });
 
-  it('#save should rename column, views and tabs in place and emit previous name', async () => {
+  it('#save should rename column, saved views and tabs in place and emit previous name', async () => {
 
     // given
     const view = viewOf('Share');
-    const record = rawDataRecordOf({ Share: 40 });
-    scene.config = { views: [view], records: [record] };
+    const savedView = savedViewWith(view, { Share: 40 });
+    scene.config = { savedViews: [savedView] };
     const renamed = computedColumn('Ratio', ComputeOperator.PERCENTAGE);
 
     // when
@@ -125,12 +130,38 @@ describe('ComputedColumnService', () => {
 
     // then
     expect(scene.columns).toEqual([time, level, amount, price, comment, renamed]);
-    expect(scene.config.views[0]).toBe(view);
-    expect(scene.config.records[0]).toBe(record);
+    expect(scene.config.savedViews[0]).toBe(savedView);
+    expect(savedView.tabs[0].view).toBe(view);
     expect(view.elements[0].dataColumns[0].name).toBe('Ratio');
-    expect(record.data).toEqual({ columnWidths: { Ratio: 40 } });
+    expect(savedView.rawData.data.columnWidths).toEqual({ Ratio: 40 });
     expect(viewTabsService.renameColumn).toHaveBeenCalledWith('Share', 'Ratio');
     expect(changes).toEqual([{ name: 'Ratio', previousName: 'Share' }]);
+  });
+
+  it('#save should convert legacy views and rename column in converted saved view', async () => {
+
+    // given
+    scene.config = { views: [viewOf('Share')] };
+
+    // when
+    await service.save(computedColumn('Ratio', ComputeOperator.PERCENTAGE), 'Share');
+
+    // then
+    expect(scene.config.views).toBeUndefined();
+    expect(scene.config.savedViews[0].tabs[0].view.elements[0].dataColumns[0].name).toBe('Ratio');
+  });
+
+  it('#save should rename column width of pending raw data state when column was renamed', async () => {
+
+    // given
+    const state = savedViewWith(viewOf('Share'), { Share: 40 }).rawData;
+    rawDataStateService.apply(state);
+
+    // when
+    await service.save(computedColumn('Ratio', ComputeOperator.PERCENTAGE), 'Share');
+
+    // then
+    expect(state.data.columnWidths).toEqual({ Ratio: 40 });
   });
 
   it.each(['Amount', 'Comment', '_id', 'fgcolor'])('#save should reject name "%s" without updating scene', async name => {
@@ -176,8 +207,8 @@ describe('ComputedColumnService', () => {
 
     // given
     const view = viewOf('Share');
-    const record = rawDataRecordOf({ Share: 40 });
-    scene.config = { views: [view], records: [record] };
+    const savedView = savedViewWith(view, { Share: 40 });
+    scene.config = { savedViews: [savedView] };
     const columns = scene.columns;
     updateSceneSpy.mockRejectedValue(new Error('offline'));
 
@@ -188,8 +219,9 @@ describe('ComputedColumnService', () => {
     await expect(save).rejects.toThrow('offline');
     expect(scene.columns).toBe(columns);
     expect(view.elements[0].dataColumns[0].name).toBe('Share');
-    expect(record.data).toEqual({ columnWidths: { Share: 40 } });
+    expect(savedView.rawData.data.columnWidths).toEqual({ Share: 40 });
     expect(viewTabsService.renameColumn).not.toHaveBeenCalled();
+    expect(rawDataStateService.renameColumn).not.toHaveBeenCalled();
     expect(changes).toEqual([]);
   });
 
@@ -197,8 +229,8 @@ describe('ComputedColumnService', () => {
 
     // given
     const view = viewOf('Ratio');
-    const record = rawDataRecordOf({ Share: 40, Ratio: 30 });
-    scene.config = { views: [view], records: [record] };
+    const savedView = savedViewWith(view, { Share: 40, Ratio: 30 });
+    scene.config = { savedViews: [savedView] };
     updateSceneSpy.mockRejectedValue(new Error('offline'));
 
     // when
@@ -207,7 +239,7 @@ describe('ComputedColumnService', () => {
     // then
     await expect(save).rejects.toThrow('offline');
     expect(view.elements[0].dataColumns[0].name).toBe('Ratio');
-    expect(record.data).toEqual({ columnWidths: { Share: 40, Ratio: 30 } });
+    expect(savedView.rawData.data.columnWidths).toEqual({ Share: 40, Ratio: 30 });
   });
 
   it('#remove should remove computed column and emit change', async () => {
@@ -262,7 +294,9 @@ describe('ComputedColumnService', () => {
     };
   }
 
-  function rawDataRecordOf(columnWidths: Record<string, number>): ConfigRecord {
-    return { route: Route.RAWDATA, name: 'Record', modifiedTime: 1, query: undefined, data: { columnWidths } };
+  function savedViewWith(view: View, columnWidths: Record<string, number>): SavedView {
+    const savedView = savedViewOf('all', [{ id: 'tab1', type: ViewType.DASHBOARD, title: 'Dashboard', view }]);
+    savedView.rawData.data.columnWidths = columnWidths;
+    return savedView;
   }
 });

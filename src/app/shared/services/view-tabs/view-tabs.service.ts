@@ -67,6 +67,18 @@ export class ViewTabsService {
       this.evict(tab.id);
    }
 
+   /**
+    * replaces all tabs, cached components of the replaced tabs are destroyed without taking over their content
+    */
+   replaceTabs(tabs: TabDef[]): void {
+      const ids = this.tabs.map(t => t.id).concat(tabs.map(t => t.id));
+      this.providers.clear();
+      this._tabs = tabs;
+      this.seq = Math.max(this.seq, maxTabSeq(tabs));
+      new Set(ids).forEach(id => this.evict(id));
+      this.persistNow();
+   }
+
    evict(id: string): void {
       (this.router.routeReuseStrategy as AppRouteReuseStrategy).evict(tabPath(id));
    }

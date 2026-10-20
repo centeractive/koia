@@ -30,8 +30,7 @@
       @if (loading) {
         <mat-progress-bar mode="indeterminate" [matTooltip]="'dashboard.loadingData' | translate"></mat-progress-bar>
       }
-      <koia-view-toolbar [moreMenu]="moreMenu" [hasContent]="!!elementContexts?.length" [savedViews]="views" (save)="saveView()"
-        (restore)="loadView($event)">
+      <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined" [hasContent]="!!elementContexts?.length">
         <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
           [matTooltip]="'dashboard.snapToGrid' | translate" (click)="snapToGrid()">
           <mat-icon svgIcon="snap_grid"></mat-icon>
@@ -80,10 +79,6 @@
             <span>{{ 'dashboard.gridCellRatio' | translate }}</span>
           </button>
         }
-        <button mat-menu-item (click)="manageViews()" [disabled]="views.length === 0">
-          <mat-icon>monitor</mat-icon>
-          <span>{{ 'dashboard.manageViews' | translate }}</span>
-        </button>
       </mat-menu>
 
       <mat-menu #gridColumnsMenu="matMenu">

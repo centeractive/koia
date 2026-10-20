@@ -1,5 +1,6 @@
 import { Aggregation, Column, DataType, Route } from 'app/shared/model';
-import { Config, ConfigRecord, ElementType, View, ViewElement } from 'app/shared/model/view-config';
+import { ConfigRecord, ElementType, TabDef, View, ViewElement, ViewType } from 'app/shared/model/view-config';
+import { savedViewOf } from 'app/shared/test';
 import { Chart } from './chart.type';
 import { ViewColumnRenamer } from './view-column-renamer';
 
@@ -38,64 +39,64 @@ describe('ViewColumnRenamer', () => {
       expect(view).toEqual(expected);
    });
 
-   it('#renameInConfig should rename views and raw data column widths but not pivot records', () => {
+   it('#renameInSavedViews should rename dashboard tabs and raw data column widths but not pivot tabs', () => {
 
       // given
       const chart = chartOf([column('Share')], [], [], ['Share']);
       const view = viewOf(chart);
-      const rawDataRecord = recordOf(Route.RAWDATA, { columnWidths: { Share: 50, Amount: 20 } });
-      const pivotRecord = recordOf(Route.PIVOT, { Share: 10 });
-      const config: Config = { views: [view], records: [rawDataRecord, pivotRecord] };
+      const record = pivotRecordOf({ Share: 10 });
+      const savedView = savedViewOf('all', [dashboardTabOf(view), { id: 'tab2', type: ViewType.PIVOT, title: 'Pivot', record }]);
+      savedView.rawData.data.columnWidths = { Share: 50, Amount: 20 };
 
       // when
-      renamer.renameInConfig(config);
+      renamer.renameInSavedViews([savedView]);
 
       // then
-      expect(config.views[0]).toBe(view);
+      expect(savedView.tabs[0].view).toBe(view);
       expect(chart.dataColumns[0].name).toBe('Ratio');
       expect(chart.valueScales[0].columnName).toBe('Ratio');
-      expect(rawDataRecord.data).toEqual({ columnWidths: { Amount: 20, Ratio: 50 } });
-      expect(pivotRecord.data).toEqual({ Share: 10 });
+      expect(savedView.rawData.data.columnWidths).toEqual({ Amount: 20, Ratio: 50 });
+      expect(record.data).toEqual({ Share: 10 });
    });
 
-   it('#renameInConfig should ignore raw data records without column widths', () => {
+   it('#renameInSavedViews should ignore raw data state without column widths', () => {
 
       // given
-      const record = recordOf(Route.RAWDATA, { highlight: true });
-      const config: Config = { views: [], records: [record] };
+      const savedView = savedViewOf('all');
+      delete savedView.rawData.data.columnWidths;
+      const expected = structuredClone(savedView);
 
       // when
-      renamer.renameInConfig(config);
+      renamer.renameInSavedViews([savedView]);
 
       // then
-      expect(record.data).toEqual({ highlight: true });
+      expect(savedView).toEqual(expected);
    });
 
-   it('#renameInConfig should return undo restoring the changed values', () => {
+   it('#renameInSavedViews should return undo restoring the changed values', () => {
 
       // given
       const chart = chartOf([column('Share')], [column('Share')], [column('Share')], ['Share']);
-      const config: Config = { views: [viewOf(chart)], records: [recordOf(Route.RAWDATA, { columnWidths: { Share: 50 } })] };
-      const expected = structuredClone(config);
-      const undo = renamer.renameInConfig(config);
+      const savedView = savedViewOf('all', [dashboardTabOf(viewOf(chart))]);
+      savedView.rawData.data.columnWidths = { Share: 50 };
+      const expected = structuredClone(savedView);
+      const undo = renamer.renameInSavedViews([savedView]);
 
       // when
       undo();
 
       // then
-      expect(config).toEqual(expected);
-      expect(Object.keys(config.records[0].data['columnWidths'])).toEqual(['Share']);
+      expect(savedView).toEqual(expected);
+      expect(Object.keys(savedView.rawData.data.columnWidths)).toEqual(['Share']);
    });
 
-   it('#renameInConfig should return undo leaving references that already had the new name untouched', () => {
+   it('#renameInSavedViews should return undo leaving references that already had the new name untouched', () => {
 
       // given
       const chart = chartOf([column('Share'), column('Ratio')], [], [], ['Share', 'Ratio']);
-      const config: Config = {
-         views: [viewOf(chart)],
-         records: [recordOf(Route.RAWDATA, { columnWidths: { Share: 50, Ratio: 30 } })]
-      };
-      const undo = renamer.renameInConfig(config);
+      const savedView = savedViewOf('all', [dashboardTabOf(viewOf(chart))]);
+      savedView.rawData.data.columnWidths = { Share: 50, Ratio: 30 };
+      const undo = renamer.renameInSavedViews([savedView]);
 
       // when
       undo();
@@ -103,7 +104,7 @@ describe('ViewColumnRenamer', () => {
       // then
       expect(chart.dataColumns.map(c => c.name)).toEqual(['Share', 'Ratio']);
       expect(chart.valueScales.map(s => s.columnName)).toEqual(['Share', 'Ratio']);
-      expect(config.records[0].data).toEqual({ columnWidths: { Share: 50, Ratio: 30 } });
+      expect(savedView.rawData.data.columnWidths).toEqual({ Share: 50, Ratio: 30 });
    });
 
    it('#renameKey should move key', () => {
@@ -166,7 +167,11 @@ describe('ViewColumnRenamer', () => {
       return { route: Route.GRID, name: 'View', modifiedTime: 1, query: undefined, gridColumns: 2, gridCellRatio: '1:1', elements };
    }
 
-   function recordOf(route: Route, data: object): ConfigRecord {
-      return { route, name: 'Record', modifiedTime: 1, query: undefined, data };
+   function dashboardTabOf(view: View): TabDef {
+      return { id: 'tab1', type: ViewType.DASHBOARD, title: 'Dashboard', view };
+   }
+
+   function pivotRecordOf(data: object): ConfigRecord {
+      return { route: Route.PIVOT, name: 'Pivot', modifiedTime: 1, query: undefined, data };
    }
 });

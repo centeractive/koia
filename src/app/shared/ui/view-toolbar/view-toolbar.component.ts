@@ -1,10 +1,5 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatMenu } from '@angular/material/menu';
-
-export interface SavedView {
-  name: string;
-  modifiedTime: number;
-}
 
 @Component({
   selector: 'koia-view-toolbar',
@@ -13,14 +8,11 @@ export interface SavedView {
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class ViewToolbarComponent<T extends SavedView> {
+export class ViewToolbarComponent {
 
   @Input() moreMenu: MatMenu;
-  @Input() persistable = true;
+  @Input() printable = true;
   @Input() hasContent = true;
-  @Input() savedViews: T[] = [];
-  @Output() save = new EventEmitter<void>();
-  @Output() restore = new EventEmitter<T>();
 
   printView(): void {
     window.print();

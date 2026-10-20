@@ -35,7 +35,7 @@ Dashboards combine summary tables, charts, relationship graphs and formatted tex
 
  **Picture 2:** Dashboard on a five column grid with a summary table of revenue grouped by region, channel and product (average, sum, max), a scatter chart of units and revenue over time, and bar, doughnut and polar area charts.
 
-When satisfied with the outcome, users can **save** the current view or **export** data to use it elsewhere.
+When satisfied with the outcome, users can **save** all open tabs as a view or **export** data to use it elsewhere.
 
 ## Getting Started
 
