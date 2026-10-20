@@ -1,4 +1,4 @@
-import { CdkDragEnd, DragRef, Point } from '@angular/cdk/drag-drop';
+import { CdkDragEnd, CdkDragMove, DragRef, Point } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
@@ -15,6 +15,7 @@ import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { firstValueFrom } from 'rxjs';
 import { CanvasPaging, ElementContext, Route, TextBoxContext } from '../shared/model';
 import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
+import { DragAutoScroll } from './drag-auto-scroll';
 import { FreeLayout, Rect, TileRect } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
@@ -36,6 +37,8 @@ interface CanvasInteraction {
   /** rendered rects of the grid tiles an overlay may be anchored to, empty in free layout */
   anchorTiles: TileRect<ElementContext>[];
   snap?: Snap;
+  /** scrolls the content while a tile is moved, none while resizing */
+  autoScroll?: DragAutoScroll;
 }
 
 @Component({
@@ -82,6 +85,20 @@ export class DashboardComponent extends ViewController {
 
   isPagedCanvas(): boolean {
     return !this.isGridLayout() && this.freeLayout.pageFormat.paged;
+  }
+
+  /**
+   * @returns the padding of the content, the paged canvas lies on a desk around its sheets
+   */
+  contentPaddingPx(): number {
+    return this.isPagedCanvas() ? PageFormat.DESK_GUTTER_PX : GridLayout.PADDING_PX;
+  }
+
+  /**
+   * @returns the paging of the sheets to print, [[undefined]] unless the canvas is paged
+   */
+  printSheets(): CanvasPaging {
+    return this.isPagedCanvas() ? this.freeLayout.pageFormat.paging : undefined;
   }
 
   snapToGrid(): void {
@@ -242,8 +259,8 @@ export class DashboardComponent extends ViewController {
    * as drawn
    */
   private applyGridSpans(elements: ViewElement[]): void {
-    const scale = this.layerScale();
-    if (scale > 0) {
+    if (this.layerScale() > 0) {
+      const scale = (this.contentWidth() - 2 * GridLayout.PADDING_PX) / PageFormat.LANDSCAPE.width;
       const contextOf = new Map(elements.map((element, i) => [element, this.elementContexts[i]]));
       const overlays = elements.filter(element => contextOf.get(element).isOverlay()) as TextBox[];
       elements.sort((a, b) => a.y - b.y || a.x - b.x);
@@ -390,9 +407,10 @@ export class DashboardComponent extends ViewController {
    */
   private placeAtVisibleCenter(context: ElementContext): void {
     const layer = this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef;
-    const center = layer && visibleCenterOf(this.divContentRef.nativeElement, layer.nativeElement, this.freeLayout.pageFormat.width);
+    const center = layer && visibleCenterOf(this.divContentRef.nativeElement, layer.nativeElement, this.layerWidthUnits());
     if (center) {
-      this.freeLayout.placeCentered(context, { ...center, y: this.layoutYOf(center.y) }, this.elementContexts, !this.isGridLayout());
+      const layoutCenter = { x: this.layoutXOf(center.x), y: this.layoutYOf(center.y, this.layerScale()) };
+      this.freeLayout.placeCentered(context, layoutCenter, this.elementContexts, !this.isGridLayout());
     }
   }
 
@@ -477,6 +495,7 @@ export class DashboardComponent extends ViewController {
 
   onFreeMoveStarted(context: ElementContext): void {
     this.startCanvasInteraction(context);
+    this.canvasInteraction.autoScroll = new DragAutoScroll(this.divContentRef.nativeElement);
   }
 
   readonly constrainFreeMove = (point: Point, _dragRef: DragRef, _dimensions: DOMRect, pickup: Point): Point => {
@@ -484,32 +503,46 @@ export class DashboardComponent extends ViewController {
     const livePagesRect = this.layerElement().getBoundingClientRect();
     const snap = guides.snapMove({
       ...this.freeLayout.rectOf(context),
-      x: (point.x - pickup.x - livePagesRect.left) / scale,
-      y: this.layoutYOf((point.y - pickup.y - livePagesRect.top) / scale)
+      x: this.layoutXOf((point.x - pickup.x - livePagesRect.left) / scale),
+      y: this.layoutYOf((point.y - pickup.y - livePagesRect.top) / scale, scale)
     });
     this.canvasInteraction.snap = snap;
-    return { x: pagesRect.left + snap.rect.x * scale, y: pagesRect.top + this.layerYOf(snap.rect.y) * scale };
+    return { x: pagesRect.left + this.layerXOf(snap.rect.x) * scale, y: pagesRect.top + this.layerYOf(snap.rect.y, scale) * scale };
   };
 
-  onFreeMoving(): void {
-    const { context, snap } = this.canvasInteraction;
-    this.canvasGuides = snap ? this.layerGuidesOf(context, snap) : [];
+  onFreeMoving(event: CdkDragMove): void {
+    const { context, snap, scale, autoScroll } = this.canvasInteraction;
+    autoScroll.follow(event.event);
+    this.canvasGuides = snap ? this.layerGuidesOf(context, snap, scale) : [];
   }
 
   /**
+   * @returns the x on the rendered layer in page units
+   */
+  private layerXOf(x: number): number {
+    return this.isGridLayout() ? x : this.freeLayout.layerXOf(x);
+  }
+
+  private layoutXOf(layerX: number): number {
+    return this.isGridLayout() ? layerX : this.freeLayout.layoutXOf(layerX);
+  }
+
+  /**
+   * @param scale pixels per page unit, the sheets are separated by a gap of fixed pixels
    * @returns the y on the rendered layer in page units
    */
-  private layerYOf(y: number): number {
-    return this.isGridLayout() ? y : this.freeLayout.layerYOf(y);
+  private layerYOf(y: number, scale: number): number {
+    return this.isGridLayout() ? y : this.freeLayout.layerYOf(y, PageFormat.DESK_GUTTER_PX / scale);
   }
 
-  private layoutYOf(layerY: number): number {
-    return this.isGridLayout() ? layerY : this.freeLayout.layoutYOf(layerY);
+  private layoutYOf(layerY: number, scale: number): number {
+    return this.isGridLayout() ? layerY : this.freeLayout.layoutYOf(layerY, PageFormat.DESK_GUTTER_PX / scale);
   }
 
-  private layerGuidesOf(context: ElementContext, snap: Snap): Guide[] {
-    const offset = this.layerYOf(snap.rect.y) - snap.rect.y;
-    return this.visibleGuidesOf(context, snap.guides).map(g => g.axis === 'y' ? { ...g, position: g.position + offset } : g);
+  private layerGuidesOf(context: ElementContext, snap: Snap, scale: number): Guide[] {
+    const offsetX = this.layerXOf(snap.rect.x) - snap.rect.x;
+    const offsetY = this.layerYOf(snap.rect.y, scale) - snap.rect.y;
+    return this.visibleGuidesOf(context, snap.guides).map(g => ({ ...g, position: g.position + (g.axis === 'x' ? offsetX : offsetY) }));
   }
 
   /**
@@ -542,12 +575,12 @@ export class DashboardComponent extends ViewController {
     const scale = this.canvasInteraction.scale;
     const drawn = this.freeLayout.grownRect(snap.rect, context);
     this.resizePreview = {
-      left: drawn.x * scale,
-      top: this.layerYOf(drawn.y) * scale,
+      left: this.layerXOf(drawn.x) * scale,
+      top: this.layerYOf(drawn.y, scale) * scale,
       width: drawn.width * scale,
       height: drawn.height * scale
     };
-    this.canvasGuides = this.layerGuidesOf(context, snap);
+    this.canvasGuides = this.layerGuidesOf(context, snap, scale);
   }
 
   onFreeResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
@@ -620,10 +653,18 @@ export class DashboardComponent extends ViewController {
    */
   private layerScale(): number {
     const layer = (this.isGridLayout() ? this.gridCellsRef : this.canvasPagesRef)?.nativeElement;
-    return (layer?.clientWidth ?? 0) / this.freeLayout.pageFormat.width;
+    return (layer?.clientWidth ?? 0) / this.layerWidthUnits();
+  }
+
+  /**
+   * @returns the width of the rendered layer in page units, the canvas shows whole sheets
+   */
+  private layerWidthUnits(): number {
+    return this.isGridLayout() ? this.freeLayout.pageFormat.width : this.freeLayout.pageFormat.sheetWidth;
   }
 
   private endCanvasInteraction(): void {
+    this.canvasInteraction.autoScroll?.stop();
     this.canvasInteraction = undefined;
     this.canvasGuides = [];
   }

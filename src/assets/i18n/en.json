@@ -177,6 +177,7 @@
     "title": "New Scene",
     "subtitle": "Create a new scene of data from a file",
     "name": "Scene Name",
+    "nameExists": "Scene name already exists",
     "shortDescription": "Short Description",
     "dataSource": "Data Source",
     "sourceType": "Source Type",

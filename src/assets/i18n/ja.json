@@ -177,6 +177,7 @@
     "title": "新しいシーン",
     "subtitle": "ファイルからデータの新しいシーンを作成します",
     "name": "シーン名",
+    "nameExists": "シーン名は既に存在します",
     "shortDescription": "短い説明",
     "dataSource": "データソース",
     "sourceType": "ソースの種類",

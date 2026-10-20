@@ -98,7 +98,7 @@
           <button mat-menu-item [disabled]="ratio === gridLayout.gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
         }
       </mat-menu>
-      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" [portrait]="isCanvasPaging(CanvasPaging.PORTRAIT)"
+      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" [printSheets]="printSheets()"
         [class.koia-print-heading-in-sheets]="isPagedCanvas()" (printStart)="onPrintStart($event)" />
     </div>
 
@@ -143,7 +143,7 @@
     </ng-template>
 
     @if (isGridLayout()) {
-      <div #content id="div_grid" class="div_content printable" style="padding: 5px;" cdkScrollable cdkDropList cdkDropListOrientation="mixed"
+      <div #content id="div_grid" class="div_content printable" [style.padding.px]="contentPaddingPx()" cdkScrollable cdkDropList cdkDropListOrientation="mixed"
         (cdkDropListDropped)="drop($event)">
         <div #gridCells class="div_grid_cells" [ngStyle]="gridCellsStyle()">
           @for (context of elementContexts; track context) {
@@ -155,7 +155,7 @@
                   mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                   (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                   cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
-                  (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                  (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                   <div #elementContainer class="div_element">
                     <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                   </div>
@@ -194,11 +194,12 @@
         </div>
       </div>
     } @else {
-      <div #content id="div_canvas" class="div_content" style="padding: 5px;" cdkScrollable>
+      <div #content id="div_canvas" class="div_content" [class.div_canvas_desk]="isPagedCanvas()" [style.padding.px]="contentPaddingPx()"
+        cdkScrollable>
         <div #canvasPages class="div_canvas_pages printable" [ngStyle]="freeLayout.pagesStyle()">
           @for (page of freeLayout.pageIndexes(elementContexts); track page; let last = $last, count = $count) {
             <div class="div_canvas_page" [class.div_canvas_sheet]="freeLayout.pageFormat.paged" [class.div_canvas_page_spare]="last"
-              [ngStyle]="freeLayout.pageStyle()">
+              [ngStyle]="freeLayout.pageStyle(page)">
               @if (freeLayout.pageFormat.paged) {
                 <div class="div_canvas_sheet_header" [ngStyle]="freeLayout.sheetHeaderStyle()">
                   @if (!last) {
@@ -215,7 +216,7 @@
                       mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                       (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                       cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
-                      (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                      (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                       <div #elementContainer class="div_element">
                         <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                       </div>
@@ -227,7 +228,7 @@
                       mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                       (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                       cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
-                      (cdkDragMoved)="onFreeMoving()" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
+                      (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                       <div #elementContainer class="div_element">
                         <koia-element-header [context]="context" [gridLayout]="null" [movable]="true" [stackable]="true"
                           (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"

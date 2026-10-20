@@ -1,4 +1,4 @@
-import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDragMove, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostBinding, Input, NO_ERRORS_SCHEMA, Output, QueryList } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
@@ -35,8 +35,10 @@ import { page, userEvent } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
 import { ClickWithoutDragDirective } from './click-without-drag.directive';
 import { DetachFromDropListDirective } from './detach-from-drop-list.directive';
+import { DragAutoScroll } from './drag-auto-scroll';
 import { FreeLayout, Rect } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
+import { GridLayout } from './grid-layout';
 import { PageFormat } from './page-format';
 import { Guide, SnapGuides } from './snap-guides';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
@@ -163,6 +165,14 @@ describe('DashboardComponent', () => {
     component.tab = tab;
     fixture.detectChanges();
     flush();
+  }
+
+  /**
+   * @returns a move of a dragged pointer in the middle of the content, far from the edges that scroll it
+   */
+  function moveEventInMiddle(): CdkDragMove {
+    const rect = component.divContentRef.nativeElement.getBoundingClientRect();
+    return { event: new MouseEvent('mousemove', { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 }) } as CdkDragMove;
   }
 
   function dashboardTab(view?: View): TabDef {
@@ -480,7 +490,8 @@ describe('DashboardComponent', () => {
       textBox.fitHeightChange.emit(100);
 
       // then
-      expect(context.fitHeight).toBe(Math.ceil(100 / (layer.clientWidth / component.freeLayout.pageFormat.width)));
+      const layerWidth = layout === Route.GRID ? component.freeLayout.pageFormat.width : component.freeLayout.pageFormat.sheetWidth;
+      expect(context.fitHeight).toBe(Math.ceil(100 / (layer.clientWidth / layerWidth)));
     });
 
     it('should set fit height in page units of portrait pages when text box emits it', () => {
@@ -496,7 +507,7 @@ describe('DashboardComponent', () => {
       textBox.fitHeightChange.emit(100);
 
       // then
-      expect(context.fitHeight).toBe(Math.ceil(100 / (pages.clientWidth / 950)));
+      expect(context.fitHeight).toBe(Math.ceil(100 / (pages.clientWidth / PageFormat.PORTRAIT.sheetWidth)));
     });
 
     it('#onTextFitHeight should follow scale of layer', () => {
@@ -1353,19 +1364,29 @@ describe('DashboardComponent', () => {
         expectSameRects(rectsOf('.div_canvas_tile'), gridRects);
       });
 
-      it('#setLayout to free canvas should keep rendered tile rects below sheet header', () => {
+      /**
+       * @returns the rects of the tiles in page units relative to the given layer origin
+       */
+      function pageUnitRectsOf(selector: string, origin: Element, scale: number): DOMRect[] {
+        const originRect = origin.getBoundingClientRect();
+        return rectsOf(selector).map(r => new DOMRect((r.left - originRect.left) / scale, (r.top - originRect.top) / scale, r.width / scale,
+          r.height / scale));
+      }
+
+      it('#setLayout to free canvas should keep tile rects of grid in page units below sheet header', () => {
 
         // given
         renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
-        const gridRects = rectsOf('#div_grid .div_tile');
+        const cells = component.gridCellsRef.nativeElement;
+        const gridRects = pageUnitRectsOf('#div_grid .div_tile', cells, cells.clientWidth / PageFormat.LANDSCAPE.width);
 
         // when
         component.setLayout(Route.FLEX);
         fixture.detectChanges();
 
         // then
-        const headerHeight = FreeLayout.SHEET_HEADER * canvasScale();
-        expectSameRects(rectsOf('.div_canvas_tile'), gridRects.map(r => new DOMRect(r.x, r.y + headerHeight, r.width, r.height)));
+        const firstPageContent = fixture.nativeElement.querySelector('.div_canvas_page_content');
+        expectSameRects(pageUnitRectsOf('.div_canvas_tile', firstPageContent, canvasScale()), gridRects);
       });
 
       it('#setLayout to free canvas should push tiles crossing page to next page', () => {
@@ -1398,12 +1419,12 @@ describe('DashboardComponent', () => {
         expect([unrendered.x, unrendered.y]).toEqual([0, converted.y + converted.height + 10]);
       });
 
-      it('#setLayout to grid should derive spans from canvas size', () => {
+      it.each([CanvasPaging.LANDSCAPE, CanvasPaging.NONE])('#setLayout to grid should derive spans from size on %s canvas', paging => {
 
         // given
         component.gridLayout.gridColumns = 4;
         component.gridLayout.gridCellRatio = '1:1';
-        renderCanvasSummaries([[0, 0, 690, 340], [0, 350, 1390, 340]]);
+        renderCanvasSummaries([[0, 0, 690, 340], [0, 350, 1390, 340]], paging);
 
         // when
         component.setLayout(Route.GRID);
@@ -1457,8 +1478,8 @@ describe('DashboardComponent', () => {
         // then
         const [tileRect] = rectsOf('.div_canvas_tile');
         expect(getComputedStyle(fixture.nativeElement.querySelector('.div_canvas_tile')).position).toBe('absolute');
-        expect(tileRect.left - pagesRect().left).toBeCloseTo(100 * canvasScale(), 0);
-        expect(tileRect.top - pagesRect().top).toBeCloseTo((50 + FreeLayout.SHEET_HEADER) * canvasScale(), 0);
+        expect(tileRect.left - pagesRect().left).toBeCloseTo(layerX(100) * canvasScale(), 0);
+        expect(tileRect.top - pagesRect().top).toBeCloseTo(layerY(50) * canvasScale(), 0);
         expect(tileRect.width).toBeCloseTo(600 * canvasScale(), 0);
       });
 
@@ -1497,8 +1518,12 @@ describe('DashboardComponent', () => {
 
       describe('canvas pages', () => {
 
+        function canvas(): HTMLElement {
+          return fixture.nativeElement.querySelector('#div_canvas');
+        }
+
         function canvasContentWidth(): number {
-          return fixture.nativeElement.querySelector('#div_canvas').clientWidth - 10;
+          return canvas().clientWidth - 2 * PageFormat.DESK_GUTTER_PX;
         }
 
         function sheets(): HTMLElement[] {
@@ -1511,33 +1536,66 @@ describe('DashboardComponent', () => {
           renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
 
           // then
-          const canvasLeft = fixture.nativeElement.querySelector('#div_canvas').getBoundingClientRect().left + 5;
+          const canvasLeft = canvas().getBoundingClientRect().left + PageFormat.DESK_GUTTER_PX;
           const pages = pagesRect();
-          expect(pages.width).toBeCloseTo(canvasContentWidth() * 950 / 1400, 0);
+          expect(pages.width).toBeCloseTo(canvasContentWidth() * PageFormat.PORTRAIT.sheetWidth / PageFormat.LANDSCAPE.sheetWidth, 0);
           expect(pages.left - canvasLeft).toBeCloseTo((canvasContentWidth() - pages.width) / 2, 0);
-          expect(canvasScale()).toBeCloseTo(canvasContentWidth() / 1400, 2);
+          expect(canvasScale()).toBeCloseTo(canvasContentWidth() / PageFormat.LANDSCAPE.sheetWidth, 2);
         });
 
-        it('portrait sheet should consist of header, page content and footer in page units', () => {
+        it('portrait sheet should consist of header, page content and footer in page units within paper margins', () => {
 
           // when
           renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
 
           // then
-          const [header, content, footer] = Array.from(sheets()[0].children).map(c => c.getBoundingClientRect().height);
-          expect(header).toBeCloseTo(FreeLayout.SHEET_HEADER * canvasScale(), 0);
-          expect(Math.abs(content - 1400 * canvasScale())).toBeLessThan(1);
-          expect(footer).toBeCloseTo(FreeLayout.SHEET_FOOTER * canvasScale(), 0);
+          const sheet = sheets()[0];
+          const [header, content, footer] = Array.from(sheet.children).map(c => c.getBoundingClientRect());
+          const scale = canvasScale();
+          expect(header.height).toBeCloseTo(PageFormat.SHEET_HEADER * scale, 0);
+          expect(Math.abs(content.height - 1400 * scale)).toBeLessThan(1);
+          expect(footer.height).toBeCloseTo(PageFormat.SHEET_FOOTER * scale, 0);
+          expect(Math.abs(sheet.getBoundingClientRect().height - PageFormat.PORTRAIT.sheetHeight * scale)).toBeLessThan(1);
+          expect(header.left - sheet.getBoundingClientRect().left).toBeCloseTo(PageFormat.PORTRAIT.marginX * scale, 0);
+          expect(header.top - sheet.getBoundingClientRect().top).toBeCloseTo(PageFormat.PORTRAIT.marginY * scale, 0);
         });
 
-        it('sheets should be separated by gap', () => {
+        it('sheets should lie on desk within gutter', () => {
+
+          // when
+          renderCanvasSummaries([[0, 0, 600, 400]]);
+
+          // then
+          const style = getComputedStyle(canvas());
+          expect(canvas().classList).toContain('div_canvas_desk');
+          expect(style.paddingTop).toBe(PageFormat.DESK_GUTTER_PX + 'px');
+          expect(style.paddingLeft).toBe(PageFormat.DESK_GUTTER_PX + 'px');
+          expect(style.backgroundColor).toBe('rgb(217, 220, 225)');
+        });
+
+        it.each([
+          { layout: 'grid', show: (): void => component.snapToGrid(), selector: '#div_grid' },
+          { layout: 'free canvas', show: (): void => component.showCanvas(CanvasPaging.NONE), selector: '#div_canvas' }
+        ])('$layout should keep content padding without desk', ({ show, selector }) => {
+
+          // when
+          show();
+          fixture.detectChanges();
+
+          // then
+          const content: HTMLElement = fixture.nativeElement.querySelector(selector);
+          expect(content.classList).not.toContain('div_canvas_desk');
+          expect(getComputedStyle(content).paddingTop).toBe(GridLayout.PADDING_PX + 'px');
+        });
+
+        it('sheets should be separated by desk gutter', () => {
 
           // when
           renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
 
           // then
           const [first, second] = sheets().map(s => s.getBoundingClientRect());
-          expect(second.top - first.bottom).toBeCloseTo(FreeLayout.SHEET_GAP * canvasScale(), 0);
+          expect(second.top - first.bottom).toBeCloseTo(PageFormat.DESK_GUTTER_PX, 0);
         });
 
         it('sheets should show heading and page number, the spare sheet neither', () => {
@@ -1587,11 +1645,11 @@ describe('DashboardComponent', () => {
         });
 
         it.each([
-          { layout: 'grid', show: (): void => component.snapToGrid(), portrait: false, inSheets: false },
-          { layout: 'free canvas', show: (): void => component.showCanvas(CanvasPaging.NONE), portrait: false, inSheets: false },
-          { layout: 'landscape pages', show: (): void => component.showCanvas(CanvasPaging.LANDSCAPE), portrait: false, inSheets: true },
-          { layout: 'portrait pages', show: (): void => component.showCanvas(CanvasPaging.PORTRAIT), portrait: true, inSheets: true }
-        ])('print heading of $layout should print portrait $portrait and in sheets $inSheets', ({ show, portrait, inSheets }) => {
+          { layout: 'grid', show: (): void => component.snapToGrid(), sheets: undefined, inSheets: false },
+          { layout: 'free canvas', show: (): void => component.showCanvas(CanvasPaging.NONE), sheets: undefined, inSheets: false },
+          { layout: 'landscape pages', show: (): void => component.showCanvas(CanvasPaging.LANDSCAPE), sheets: CanvasPaging.LANDSCAPE, inSheets: true },
+          { layout: 'portrait pages', show: (): void => component.showCanvas(CanvasPaging.PORTRAIT), sheets: CanvasPaging.PORTRAIT, inSheets: true }
+        ])('print heading of $layout should print sheets $sheets and in sheets $inSheets', ({ show, sheets, inSheets }) => {
 
           // when
           show();
@@ -1599,7 +1657,7 @@ describe('DashboardComponent', () => {
 
           // then
           const heading = fixture.debugElement.query(By.directive(PrintHeadingComponent));
-          expect((heading.componentInstance as PrintHeadingComponent).portrait).toBe(portrait);
+          expect((heading.componentInstance as PrintHeadingComponent).printSheets).toBe(sheets);
           expect(heading.nativeElement.classList.contains('koia-print-heading-in-sheets')).toBe(inSheets);
         });
 
@@ -1639,7 +1697,7 @@ describe('DashboardComponent', () => {
           component.onFreeMoveEnded(moved, dragEnd());
 
           // then
-          expect(point.y).toBeCloseTo(pagesRect().top + (1100 + 104 + 56) * canvasScale(), 5);
+          expect(point.y).toBeCloseTo(pagesRect().top + layerY(1100) * canvasScale(), 5);
           expect(moved.y).toBe(1100);
         });
 
@@ -1651,10 +1709,10 @@ describe('DashboardComponent', () => {
           constrainMoveTo(603, 963);
 
           // when
-          component.onFreeMoving();
+          component.onFreeMoving(moveEventInMiddle());
 
           // then
-          expect(component.canvasGuides).toEqual([{ axis: 'x', position: 600 }, { axis: 'y', position: 960 + 104 + 56 }]);
+          expect(component.canvasGuides).toEqual([{ axis: 'x', position: layerX(600) }, { axis: 'y', position: layerY(960) }]);
         });
 
         it('#onFreeResizing should preview size on second sheet below its header', () => {
@@ -1668,7 +1726,7 @@ describe('DashboardComponent', () => {
           component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
 
           // then
-          expect(component.resizePreview.top).toBeCloseTo((960 + 104 + 56) * scale, 5);
+          expect(component.resizePreview.top).toBeCloseTo(layerY(960) * scale, 5);
         });
 
         it('#onFreeMoveEnded should leave tile across former page boundary on free canvas', () => {
@@ -1889,7 +1947,21 @@ describe('DashboardComponent', () => {
       }
 
       function canvasScale(): number {
-        return component.canvasPagesRef.nativeElement.clientWidth / component.freeLayout.pageFormat.width;
+        return component.canvasPagesRef.nativeElement.clientWidth / component.freeLayout.pageFormat.sheetWidth;
+      }
+
+      /**
+       * @returns the x on the rendered sheets in page units
+       */
+      function layerX(x: number): number {
+        return component.freeLayout.layerXOf(x);
+      }
+
+      /**
+       * @returns the y on the rendered sheets in page units, the sheets separated by the desk gutter
+       */
+      function layerY(y: number): number {
+        return component.freeLayout.layerYOf(y, PageFormat.DESK_GUTTER_PX / canvasScale());
       }
 
       function pagesRect(): DOMRect {
@@ -1900,8 +1972,8 @@ describe('DashboardComponent', () => {
 
       function constrainMoveTo(x: number, y: number, pages = pagesRect()): { x: number, y: number } {
         const scale = canvasScale();
-        const layerY = component.freeLayout.layerYOf(y);
-        return component.constrainFreeMove({ x: pages.left + x * scale + PICKUP.x, y: pages.top + layerY * scale + PICKUP.y }, null, null, PICKUP);
+        return component.constrainFreeMove({ x: pages.left + layerX(x) * scale + PICKUP.x, y: pages.top + layerY(y) * scale + PICKUP.y }, null, null,
+          PICKUP);
       }
 
       function dragEnd(): CdkDragEnd {
@@ -1922,8 +1994,8 @@ describe('DashboardComponent', () => {
         const point = constrainMoveTo(603, 3);
 
         // then
-        expect(point.x).toBeCloseTo(pagesRect().left + 600 * canvasScale(), 5);
-        expect(point.y).toBeCloseTo(pagesRect().top + FreeLayout.SHEET_HEADER * canvasScale(), 5);
+        expect(point.x).toBeCloseTo(pagesRect().left + layerX(600) * canvasScale(), 5);
+        expect(point.y).toBeCloseTo(pagesRect().top + layerY(0) * canvasScale(), 5);
       });
 
       it('#constrainFreeMove should follow scrolled canvas', () => {
@@ -1939,8 +2011,8 @@ describe('DashboardComponent', () => {
         const point = constrainMoveTo(603, 3, scrolledRect);
 
         // then
-        expect(point.x).toBeCloseTo(startRect.left + 600 * canvasScale(), 5);
-        expect(point.y).toBeCloseTo(startRect.top + FreeLayout.SHEET_HEADER * canvasScale(), 5);
+        expect(point.x).toBeCloseTo(startRect.left + layerX(600) * canvasScale(), 5);
+        expect(point.y).toBeCloseTo(startRect.top + layerY(0) * canvasScale(), 5);
       });
 
       it('#onFreeMoving should show guides of snap', () => {
@@ -1951,10 +2023,10 @@ describe('DashboardComponent', () => {
         constrainMoveTo(603, 3);
 
         // when
-        component.onFreeMoving();
+        component.onFreeMoving(moveEventInMiddle());
 
         // then
-        expect(component.canvasGuides).toEqual([{ axis: 'x', position: 600 }, { axis: 'y', position: FreeLayout.SHEET_HEADER }]);
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: layerX(600) }, { axis: 'y', position: layerY(0) }]);
       });
 
       it('#onFreeMoving should show no guides before first move', () => {
@@ -1964,7 +2036,7 @@ describe('DashboardComponent', () => {
         component.onFreeMoveStarted(moved);
 
         // when
-        component.onFreeMoving();
+        component.onFreeMoving(moveEventInMiddle());
 
         // then
         expect(component.canvasGuides).toEqual([]);
@@ -1976,7 +2048,7 @@ describe('DashboardComponent', () => {
         const [moved, other] = renderCanvasSummaries([[0, 410, 600, 400], [0, 0, 600, 400]]);
         component.onFreeMoveStarted(moved);
         constrainMoveTo(603, 3);
-        component.onFreeMoving();
+        component.onFreeMoving(moveEventInMiddle());
         const event = dragEnd();
 
         // when
@@ -2055,11 +2127,55 @@ describe('DashboardComponent', () => {
         component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
 
         // then
-        expect(component.resizePreview.left).toBe(0);
-        expect(component.resizePreview.top).toBeCloseTo(FreeLayout.SHEET_HEADER * scale, 5);
+        expect(component.resizePreview.left).toBeCloseTo(layerX(0) * scale, 5);
+        expect(component.resizePreview.top).toBeCloseTo(layerY(0) * scale, 5);
         expect(component.resizePreview.width).toBeCloseTo(700 * scale, 5);
         expect(component.resizePreview.height).toBeCloseTo(400 * scale, 5);
-        expect(component.canvasGuides).toEqual([{ axis: 'x', position: 700 }]);
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: layerX(700) }]);
+      });
+
+      it('#onFreeMoving should let content follow pointer of moved tile', () => {
+
+        // given
+        const [moved] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const follow = vi.spyOn(DragAutoScroll.prototype, 'follow');
+        component.onFreeMoveStarted(moved);
+        const move = moveEventInMiddle();
+
+        // when
+        component.onFreeMoving(move);
+
+        // then
+        expect(follow).toHaveBeenCalledWith(move.event);
+        expect(follow.mock.contexts[0]['scroller']).toBe(component.divContentRef.nativeElement);
+      });
+
+      it('#onFreeMoveEnded should stop scrolling content', () => {
+
+        // given
+        const [moved] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const stop = vi.spyOn(DragAutoScroll.prototype, 'stop');
+        component.onFreeMoveStarted(moved);
+
+        // when
+        component.onFreeMoveEnded(moved, dragEnd());
+
+        // then
+        expect(stop).toHaveBeenCalledTimes(1);
+      });
+
+      it('#onFreeResizeEnd should end resizing without scrolling content', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const stop = vi.spyOn(DragAutoScroll.prototype, 'stop');
+        component.onFreeResizeStart(resized);
+
+        // when
+        component.onFreeResizeEnd(resized, { ...resizeEvent(600, 400), edges: { top: 0, left: 0, right: 0, bottom: 0 } });
+
+        // then
+        expect(stop).not.toHaveBeenCalled();
       });
 
       it('#onFreeResizeEnd should set snapped size and bring tile to front', () => {
@@ -2378,7 +2494,7 @@ describe('DashboardComponent', () => {
           gridMoveTo(tileRect.x + 2, 603);
 
           // when
-          component.onFreeMoving();
+          component.onFreeMoving(moveEventInMiddle());
 
           // then
           expect(component.canvasGuides.map(g => g.axis)).toEqual(['x']);
@@ -2596,14 +2712,20 @@ describe('DashboardComponent', () => {
         /**
          * @returns the position in page units of a note of default size centred in the visible part of the layer
          */
-        function visiblyCenteredPositionIn(layer: HTMLElement, layoutYOf = (y: number) => y): number[] {
+        function visiblyCenteredPositionIn(layer: HTMLElement): number[] {
           const content = component.divContentRef.nativeElement;
           const contentRect = content.getBoundingClientRect();
           const layerRect = layer.getBoundingClientRect();
-          const scale = layerRect.width / component.freeLayout.pageFormat.width;
+          const grid = component.isGridLayout();
+          const { width, sheetWidth } = component.freeLayout.pageFormat;
+          const scale = layerRect.width / (grid ? width : sheetWidth);
           const x = (contentRect.left + content.clientLeft + content.clientWidth / 2 - layerRect.left) / scale;
           const y = (contentRect.top + content.clientTop + content.clientHeight / 2 - layerRect.top) / scale;
-          return [Math.round(x - TextBoxContext.TEXT_BOX_WIDTH / 2), Math.round(layoutYOf(y) - TextBoxContext.TEXT_BOX_HEIGHT / 2)];
+          const layout = grid ? { x, y } : {
+            x: component.freeLayout.layoutXOf(x),
+            y: component.freeLayout.layoutYOf(y, PageFormat.DESK_GUTTER_PX / scale)
+          };
+          return [Math.round(layout.x - TextBoxContext.TEXT_BOX_WIDTH / 2), Math.round(layout.y - TextBoxContext.TEXT_BOX_HEIGHT / 2)];
         }
 
         it('#addNote in grid should centre note in visible grid and anchor it to tile below', () => {
@@ -2647,7 +2769,7 @@ describe('DashboardComponent', () => {
 
           // given
           renderCanvasSummaries([[0, 0, 600, 400]]);
-          const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement, y => component.freeLayout.layoutYOf(y));
+          const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement);
 
           // when
           const textBox = component.addNote();
@@ -2662,7 +2784,7 @@ describe('DashboardComponent', () => {
 
           // given
           renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
-          const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement, y => component.freeLayout.layoutYOf(y));
+          const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement);
 
           // when
           const textBox = component.addNote();
@@ -3081,7 +3203,7 @@ describe('DashboardComponent', () => {
           constrainMoveTo(100, 100);
 
           // when
-          component.onFreeMoving();
+          component.onFreeMoving(moveEventInMiddle());
 
           // then
           expect(component.canvasGuides.map(g => g.axis)).toEqual(axes);
@@ -3112,10 +3234,10 @@ describe('DashboardComponent', () => {
           constrainMoveTo(0, 102);
 
           // when
-          component.onFreeMoving();
+          component.onFreeMoving(moveEventInMiddle());
 
           // then
-          expect(component.canvasGuides).toContainEqual({ axis: 'y', position: 300 + FreeLayout.SHEET_HEADER });
+          expect(component.canvasGuides).toContainEqual({ axis: 'y', position: layerY(300) });
         });
 
         it('#setLayout to grid should anchor note on grown part of text tile', () => {

@@ -177,6 +177,7 @@
     "title": "Neue Szene",
     "subtitle": "Neue Datenszene aus einer Datei erstellen",
     "name": "Szenenname",
+    "nameExists": "Szenenname existiert bereits",
     "shortDescription": "Kurzbeschreibung",
     "dataSource": "Datenquelle",
     "sourceType": "Quelltyp",

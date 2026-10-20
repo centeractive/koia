@@ -53,4 +53,25 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scenes.rows).toHaveCount(1);
       await expect(scenes.rows).toContainText(fruitSalesSampleOf('en').sceneName);
    });
+
+   test('new scene with file of existing scene gets numbered name and rejects existing name', async ({ scenes, rawData, scene }) => {
+      await scenes.activate(ORDERS_CSV.name);
+      await rawData.toolbar.addScene();
+      await scene.selectFile(ORDERS_CSV);
+
+      await expect(scene.nameInput).toHaveValue(/ \(2\)$/);
+      await expect(scene.nameError).toBeHidden();
+      await expect(scene.detectColumnsButton).toBeEnabled();
+
+      const existingName = (await scene.nameInput.inputValue()).replace(/ \(2\)$/, '');
+      await scene.nameInput.fill(existingName);
+
+      await expect(scene.nameError).toHaveText(en.get('scene.nameExists'));
+      await expect(scene.detectColumnsButton).toBeDisabled();
+
+      await scene.nameInput.fill('unique name');
+
+      await expect(scene.nameError).toBeHidden();
+      await expect(scene.detectColumnsButton).toBeEnabled();
+   });
 });

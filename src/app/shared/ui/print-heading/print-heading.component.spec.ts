@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PageHeadingComponent } from './page-heading.component';
 import { PrintHeadingComponent } from './print-heading.component';
-import { PORTRAIT_PRINT_CLASS, resetPrintOrientation } from './print-orientation';
+import { CanvasPaging } from 'app/shared/model';
+import { resetPrintSheets, SHEET_PRINT_CLASSES } from './print-sheets';
 import { PRINT_ZOOM_PROPERTY, resetPrintZoom } from './print-zoom';
 
 @Component({
   template: `
     <div class="view_root">
-      <div class="div_header"><koia-print-heading [title]="title" [sceneName]="sceneName" [portrait]="portrait"
+      <div class="div_header"><koia-print-heading [title]="title" [sceneName]="sceneName" [printSheets]="printSheets"
         (printStart)="printStarts.push($event)" /></div>
       <div class="printable" style="width: 1960px"></div>
     </div>`,
@@ -18,7 +19,7 @@ import { PRINT_ZOOM_PROPERTY, resetPrintZoom } from './print-zoom';
 class HostComponent {
   title = 'Sales';
   sceneName = 'Fruits';
-  portrait = false;
+  printSheets: CanvasPaging;
   printStarts: Date[] = [];
 }
 
@@ -38,7 +39,7 @@ describe('PrintHeadingComponent', () => {
 
   afterEach(() => {
     resetPrintZoom(document);
-    resetPrintOrientation(document);
+    resetPrintSheets(document);
     vi.useRealTimers();
   });
 
@@ -109,26 +110,26 @@ describe('PrintHeadingComponent', () => {
   });
 
   function isPortraitPrint(): boolean {
-    return document.documentElement.classList.contains(PORTRAIT_PRINT_CLASS);
+    return document.documentElement.classList.contains(SHEET_PRINT_CLASSES[CanvasPaging.PORTRAIT]);
   }
 
-  it('should print portrait sheets when printing portrait view starts', () => {
+  it.each([CanvasPaging.LANDSCAPE, CanvasPaging.PORTRAIT])('should print %s sheets when printing view of such sheets starts', paging => {
 
     // given
-    fixture.componentInstance.portrait = true;
+    fixture.componentInstance.printSheets = paging;
     fixture.detectChanges();
 
     // when
     window.dispatchEvent(new Event('beforeprint'));
 
     // then
-    expect(isPortraitPrint()).toBe(true);
+    expect(document.documentElement.classList.contains(SHEET_PRINT_CLASSES[paging])).toBe(true);
   });
 
-  it('should print landscape sheets when printing landscape view starts', () => {
+  it('should print unnamed pages when printing view without sheets starts', () => {
 
     // given
-    document.documentElement.classList.add(PORTRAIT_PRINT_CLASS);
+    document.documentElement.classList.add(SHEET_PRINT_CLASSES[CanvasPaging.PORTRAIT]);
 
     // when
     window.dispatchEvent(new Event('beforeprint'));
@@ -137,10 +138,10 @@ describe('PrintHeadingComponent', () => {
     expect(isPortraitPrint()).toBe(false);
   });
 
-  it('should keep print orientation when its view is not displayed', () => {
+  it('should keep printed sheets when its view is not displayed', () => {
 
     // given
-    fixture.componentInstance.portrait = true;
+    fixture.componentInstance.printSheets = CanvasPaging.PORTRAIT;
     fixture.detectChanges();
     element('.div_header').style.display = 'none';
 
@@ -152,10 +153,10 @@ describe('PrintHeadingComponent', () => {
     expect(fixture.componentInstance.printStarts).toEqual([]);
   });
 
-  it('should reset print orientation when printing ends', () => {
+  it('should reset printed sheets when printing ends', () => {
 
     // given
-    fixture.componentInstance.portrait = true;
+    fixture.componentInstance.printSheets = CanvasPaging.PORTRAIT;
     fixture.detectChanges();
     window.dispatchEvent(new Event('beforeprint'));
 

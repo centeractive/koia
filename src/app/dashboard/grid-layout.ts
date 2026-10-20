@@ -12,8 +12,9 @@ export interface GridSpans {
  */
 export class GridLayout {
 
-  /** must equal twice the grid padding (5px) */
+  /** twice the content padding */
   static readonly GAP_PX = 10;
+  static readonly PADDING_PX = GridLayout.GAP_PX / 2;
   static readonly ROW_SPANS = [1, 2, 3, 4];
   static readonly COLUMN_CHOICES = [1, 2, 3, 4, 5];
   static readonly CELL_RATIO_CHOICES = ['1:1', '3:2', '2:1', '2:3', '1:2'];

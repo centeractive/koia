@@ -20,7 +20,10 @@
       <div class="field-row">
         <mat-form-field class="scene_name">
           <mat-label>{{ 'scene.name' | translate }}</mat-label>
-          <input matInput required [(ngModel)]="scene.name">
+          <input matInput required [(ngModel)]="scene.name" [errorStateMatcher]="sceneNameErrorStateMatcher">
+          @if (isSceneNameTaken()) {
+            <mat-error>{{ 'scene.nameExists' | translate }}</mat-error>
+          }
         </mat-form-field>
         <mat-form-field class="scene_short_desc">
           <mat-label>{{ 'scene.shortDescription' | translate }}</mat-label>
@@ -163,7 +166,7 @@
                 </mat-form-field>
               }
             }
-            <button id="but_detect_columns" mat-flat-button color="primary"
+            <button id="but_detect_columns" mat-flat-button color="primary" [disabled]="isSceneNameTaken()"
               [matTooltip]="adoptColumnsFromExistingScene ? '' : ('scene.detectColumnsTooltip' | translate)"
               (click)="readSample()">{{ (adoptColumnsFromExistingScene ? 'scene.adoptColumnsButton' : 'scene.detectColumnsButton') | translate }}</button>
           </div>
@@ -206,7 +209,7 @@
         @if (!canceled) {
           <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
         }
-        @if (scene.name && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
+        @if (scene.name && !isSceneNameTaken() && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
           <span class="span_load">
             @if (isPreviewDirty()) {
               <img src="/assets/warning.png"

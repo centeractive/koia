@@ -241,16 +241,31 @@ describe('global styles', () => {
     expect(rule.style.getPropertyPriority('display')).toBe('important');
   });
 
-  it('print styles should print portrait pages on portrait sheets', () => {
+  it.each([
+    { orientation: 'landscape', size: 'a4 landscape' },
+    { orientation: 'portrait', size: 'a4' }
+  ])('print styles should print $orientation sheets on A4 paper without page margins', ({ orientation, size }) => {
 
     // when
-    const pageRule = findPageRule(Array.from(document.styleSheets), 'print', 'koia-portrait');
-    const bodyRule = findStyleRule(Array.from(document.styleSheets), 'html.koia-print-portrait body', 'print');
+    const pageRule = findPageRule(Array.from(document.styleSheets), 'print', 'koia-sheet-' + orientation);
+    const bodyRule = findStyleRule(Array.from(document.styleSheets), 'html.koia-print-sheet-' + orientation + ' body', 'print');
 
     // then
-    expect(pageRule.style.getPropertyValue('size')).toBe('portrait');
-    expect(pageRule.style.getPropertyValue('margin')).toBe('10mm');
-    expect(bodyRule.style.getPropertyValue('page')).toBe('koia-portrait');
+    expect(pageRule.style.getPropertyValue('size')).toBe(size);
+    expect(pageRule.style.getPropertyValue('margin')).toBe('0px');
+    expect(bodyRule.style.getPropertyValue('page')).toBe('koia-sheet-' + orientation);
+  });
+
+  it('print styles should print canvas sheets without desk', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '#div_canvas.div_canvas_desk', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('padding')).toBe('0px');
+    expect(rule.style.getPropertyPriority('padding')).toBe('important');
+    expect(rule.style.getPropertyValue('background')).toBe('none');
+    expect(rule.style.getPropertyPriority('background')).toBe('important');
   });
 
   it.each([
@@ -421,6 +436,7 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-toolbar-height').trim()).toBe('48px');
     expect(style.getPropertyValue('--koia-tile-header-height').trim()).toBe('48px');
     expect(style.getPropertyValue('--koia-canvas').trim()).toBe('#eceff1');
+    expect(style.getPropertyValue('--koia-desk').trim()).toBe('#d9dce1');
     expect(style.getPropertyValue('--koia-header-shadow').trim()).toBe('0 2px 4px rgba(0, 0, 0, 0.2)');
     expect(style.getPropertyValue('--koia-header-surface').trim()).toBe('#e8eaf6');
     expect(style.getPropertyValue('--koia-header-border').trim()).toBe('#c5cae9');
