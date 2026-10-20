@@ -15,7 +15,7 @@
           <button id="but_value_grouping" class="but_config" mat-icon-button
             [matTooltip]="'pivot.defineValueGrouping' | translate" (click)="sidenav.open()">
             <mat-icon [matBadge]="context.valueGroupings.length" [matBadgeHidden]="context.valueGroupings.length === 0"
-              matBadgeSize="small" matBadgeColor="accent">linear_scale</mat-icon>
+              matBadgeSize="small" matBadgeColor="accent">group_work</mat-icon>
           </button>
         }
         <button id="but_time_unit" class="but_config" mat-icon-button [matMenuTriggerFor]="timeColumnMenu"
@@ -25,12 +25,12 @@
         <button id="but_row_totals" class="but_config" mat-icon-button [class.koia-toggle-active]="context.showRowTotals"
           [matTooltip]="(context.showRowTotals ? 'pivot.hideRowTotals' : 'pivot.showRowTotals') | translate"
           (click)="onShowRowTotalsChanged()">
-          <mat-icon>view_column</mat-icon>
+          <mat-icon svgIcon="row_totals" />
         </button>
         <button id="but_column_totals" class="but_config" mat-icon-button [class.koia-toggle-active]="context.showColumnTotals"
           [matTooltip]="(context.showColumnTotals ? 'pivot.hideColumnTotals' : 'pivot.showColumnTotals') | translate"
           (click)="onShowColumnTotalsChanged()">
-          <mat-icon>table_rows</mat-icon>
+          <mat-icon svgIcon="column_totals" />
         </button>
         <button id="but_heatmap_colors" class="but_config" mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
           [matTooltip]="'pivot.heatmapColors' | translate">

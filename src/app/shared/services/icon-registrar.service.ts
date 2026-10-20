@@ -11,6 +11,7 @@ export class IconRegistrarService {
     'add_chart',
     'add_summary',
     'area_chart',
+    'column_totals',
     'add_graph',
     'flex_view',
     'grid_view',
@@ -33,6 +34,7 @@ export class IconRegistrarService {
     'pivot_table',
     'polar_area_chart',
     'raw_data_view',
+    'row_totals',
     'snap_grid',
     'zoomable_line_chart'
   ];

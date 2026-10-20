@@ -5,13 +5,13 @@ import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, wai
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
+import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
-import { By } from '@angular/platform-browser';
+import { By, DomSanitizer } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { InputDialogComponent, InputDialogData } from 'app/shared/component/input-dialog/input-dialog.component';
 import { Column, DataType, Document, Query, Route, Scene, StatusType, TimeUnit } from 'app/shared/model';
@@ -102,6 +102,9 @@ describe('PivotTableComponent', () => {
         { provide: ViewTabsService, useValue: viewTabsService }
       ]
     }).compileComponents();
+    const sanitizer = TestBed.inject(DomSanitizer);
+    ['row_totals', 'column_totals'].forEach(icon =>
+      TestBed.inject(MatIconRegistry).addSvgIconLiteral(icon, sanitizer.bypassSecurityTrustHtml('<svg></svg>')));
   }));
 
   beforeEach(fakeAsync(() => {
@@ -1422,10 +1425,8 @@ describe('PivotTableComponent', () => {
   });
 
   it.each([
-    { id: '#but_value_grouping', icon: 'linear_scale' },
+    { id: '#but_value_grouping', icon: 'group_work' },
     { id: '#but_time_unit', icon: 'date_range' },
-    { id: '#but_row_totals', icon: 'view_column' },
-    { id: '#but_column_totals', icon: 'table_rows' },
     { id: '#but_heatmap_colors', icon: 'color_lens' }
   ])('toolbar button $id should show icon $icon', ({ id, icon }) => {
 
@@ -1434,6 +1435,18 @@ describe('PivotTableComponent', () => {
 
     // then
     expect(iconElement.firstChild.textContent.trim()).toBe(icon);
+  });
+
+  it.each([
+    { id: '#but_row_totals', icon: 'row_totals' },
+    { id: '#but_column_totals', icon: 'column_totals' }
+  ])('toolbar button $id should show svg icon $icon', ({ id, icon }) => {
+
+    // when
+    const iconElement: HTMLElement = fixture.nativeElement.querySelector(id + ' mat-icon');
+
+    // then
+    expect(iconElement.getAttribute('svgicon')).toBe(icon);
   });
 
   it('value grouping badge should be hidden without groupings', () => {
