@@ -2,12 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
-import { Protocol, Route } from 'app/shared/model';
-import { ConfigRecord } from 'app/shared/model/view-config';
-import { ConfigLauncherContext, ConfigLauncherDialogComponent } from '../component/config-launcher-dialog';
+import { Protocol } from 'app/shared/model';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
-import { ManageConfigContext } from '../component/manage-view-dialog';
 import { ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
 import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
 import { SceneFactory } from '../test';
@@ -85,35 +82,6 @@ describe('DialogService', () => {
 
     // then
     expect(matDialogService.open).toHaveBeenCalledWith(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
-  });
-
-  it('#showConfigLauncherDialog should open dialog', () => {
-
-    // when
-    const context = {} as ConfigLauncherContext;
-    service.showConfigLauncherDialog(context);
-
-    // then
-    expect(matDialogService.open).toHaveBeenCalledWith(ConfigLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
-  });
-
-  it('#showManageConfigDialog should open manage view dialog with config records', () => {
-
-    // given
-    const configRecords = [{ route: Route.PIVOT, name: 'A', modifiedTime: 0, query: null, data: null }];
-    const context: ManageConfigContext = { configRecords, updateConfigRecords: vi.fn() };
-    service.showManageConfigDialog(context);
-    const data = vi.mocked(matDialogService.open).mock.lastCall[1].data as ManageViewContext<ConfigRecord>;
-    const deleted: ConfigRecord[] = [];
-    const renamed = [...configRecords];
-
-    // when
-    data.updateViews(deleted, renamed);
-
-    // then
-    expect(matDialogService.open).toHaveBeenCalledWith(ManageViewDialogComponent, { data, panelClass: 'dialog-container' });
-    expect(data.views).toBe(configRecords);
-    expect(context.updateConfigRecords).toHaveBeenCalledWith(deleted, renamed);
   });
 
   it('#showManageViewDialog should open dialog', () => {

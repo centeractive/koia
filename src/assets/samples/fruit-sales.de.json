@@ -124,8 +124,7 @@
     }
   ],
   "config": {
-    "records": [],
-    "views": []
+    "savedViews": []
   }
 },
 "tabs": [

@@ -7,7 +7,7 @@ const ja = new Texts('ja');
 test('scenes page is translated when switching to German', async ({ front, rawData, scenes, languageSelect }) => {
    await front.open('en');
    await front.openSample();
-   await rawData.toolbar.openScenes();
+   await rawData.mainToolbar.openScenes();
 
    await languageSelect.switchTo('de');
 

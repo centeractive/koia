@@ -18,7 +18,7 @@ export class InputDialog {
 
 export class ConfirmDialog {
 
-   private readonly root: Locator;
+   readonly root: Locator;
 
    constructor(page: Page) {
       this.root = page.locator('koia-confirm-dialog');
@@ -43,6 +43,21 @@ export class ConfirmDialog {
       await this.root.locator('#div_buttons button').nth(buttonIndex).click();
       await this.root.waitFor({ state: 'detached' });
       return question.trim();
+   }
+}
+
+export class ManageViewsDialog {
+
+   private readonly root: Locator;
+
+   constructor(page: Page) {
+      this.root = page.locator('koia-manageView-dialog');
+   }
+
+   async delete(index: number): Promise<void> {
+      await this.root.locator('#butDelete-' + index).click();
+      await this.root.locator('#but_ok').click();
+      await this.root.waitFor({ state: 'detached' });
    }
 }
 

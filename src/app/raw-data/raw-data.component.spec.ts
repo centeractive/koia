@@ -11,10 +11,11 @@ import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
 import { Column, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
-import { ConfigRecord } from 'app/shared/model/view-config';
+import { RawDataState } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
+import { RawDataStateService } from 'app/shared/services/saved-views';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
@@ -595,7 +596,7 @@ describe('RawDataComponent', () => {
       expect(scroller().getBoundingClientRect().width).toBe(expected);
     });
 
-    it('dialog style should hide print, save and restore buttons', async () => {
+    it('dialog style should hide print button', async () => {
 
       // given
       component.dialogStyle = true;
@@ -605,8 +606,6 @@ describe('RawDataComponent', () => {
 
       // then
       expect(fixture.nativeElement.querySelector('#but_print')).toBeNull();
-      expect(fixture.nativeElement.querySelector('#but_save_view')).toBeNull();
-      expect(fixture.nativeElement.querySelector('#but_restore_view')).toBeNull();
       expect(fixture.nativeElement.querySelector('.but_view_more')).not.toBeNull();
     });
 
@@ -655,7 +654,6 @@ describe('RawDataComponent', () => {
       // given
       vi.mocked(dbService.getActiveScene).mockReturnValue(null);
       vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockReturnValue(undefined);
-      vi.spyOn(dialogService, 'showConfigLauncherDialog').mockReturnValue(null);
 
       // when
       const detectChanges = () => fixture.detectChanges();
@@ -664,7 +662,6 @@ describe('RawDataComponent', () => {
       expect(detectChanges).not.toThrow();
       expect(fixture.nativeElement.querySelector('koia-virtual-table')).toBeNull();
       expect(fixture.nativeElement.querySelector('koia-table-mode-toggles')).toBeNull();
-      expect(dialogService.showConfigLauncherDialog).not.toHaveBeenCalled();
     });
 
     it('#ngOnInit should not define new query when query is defined', async () => {
@@ -680,7 +677,56 @@ describe('RawDataComponent', () => {
       expect(component.query).toBe(query);
     });
 
-    it('#configToBeSaved should include flags, sort and custom column widths', async () => {
+    it('#ngOnInit should register as raw data state provider', async () => {
+
+      // given
+      const rawDataStateService = TestBed.inject(RawDataStateService);
+      vi.spyOn(rawDataStateService, 'register');
+
+      // when
+      await render();
+
+      // then
+      expect(rawDataStateService.register).toHaveBeenCalledWith(component);
+    });
+
+    it('#ngOnInit should not register in dialog style', async () => {
+
+      // given
+      const rawDataStateService = TestBed.inject(RawDataStateService);
+      vi.spyOn(rawDataStateService, 'register');
+      component.dialogStyle = true;
+
+      // when
+      await render();
+
+      // then
+      expect(rawDataStateService.register).not.toHaveBeenCalled();
+    });
+
+    it('#ngOnInit should adopt pending raw data state before first block is requested', async () => {
+
+      // given
+      const query = new Query();
+      query.setSort({ active: 'Amount', direction: 'desc' });
+      TestBed.inject(RawDataStateService).apply({
+        query: queryToQueryDef(query),
+        data: { considerColumnWidths: false, highlight: false, multiLine: true, columnWidths: { Level: 99 } }
+      });
+
+      // when
+      await render();
+
+      // then
+      expect(requestedQuery(0).getSort()).toEqual({ active: 'Amount', direction: 'desc' });
+      expect(component.restoredQuery).toBe(component.query);
+      expect(component.considerColumnWidths).toBe(false);
+      expect(component.highlight).toBe(false);
+      expect(component.multiLine).toBe(true);
+      expect(component.widths[columnIndex('Level')]).toBe(99);
+    });
+
+    it('#rawDataState should provide flags, sort and copy of custom column widths', async () => {
 
       // given
       await render();
@@ -690,29 +736,29 @@ describe('RawDataComponent', () => {
       component.onColumnResize({ index: columnIndex('Data'), width: 20 * EM_PX + 10 });
 
       // when
-      const config = component.configToBeSaved();
+      const state = component.rawDataState();
 
       // then
-      expect(config.query.getSort()).toEqual({ active: 'Level', direction: 'asc' });
-      expect(config.data).toEqual({
+      expect(state.query.sort).toEqual({ active: 'Level', direction: 'asc' });
+      expect(state.data).toEqual({
         considerColumnWidths: true, highlight: false, multiLine: true, columnWidths: { Data: 20 * EM_PX + 10 }
       });
-      expect(config.data.columnWidths).not.toBe(component.customWidths);
+      expect(state.data.columnWidths).not.toBe(component.customWidths);
     });
 
-    it('#loadConfig should restore flags, custom column widths and sort and reload', async () => {
+    it('#applyRawDataState should restore flags, custom column widths and sort and reload', async () => {
 
       // given
       await render();
       const query = new Query();
       query.setSort({ active: 'Amount', direction: 'desc' });
-      const record: ConfigRecord = {
-        route: Route.RAWDATA, name: 'my view', modifiedTime: now, query: queryToQueryDef(query),
+      const state: RawDataState = {
+        query: queryToQueryDef(query),
         data: { considerColumnWidths: true, highlight: false, multiLine: true, columnWidths: { Level: 99, Unknown: 5 } }
       };
 
       // when
-      component.loadConfig(record);
+      component.applyRawDataState(state);
       await settle();
 
       // then
@@ -724,39 +770,53 @@ describe('RawDataComponent', () => {
       expect(requestedQuery(-1).getPageIndex()).toBe(0);
     });
 
-    it('#loadConfig should not share value ranges with config record', async () => {
+    it('#applyRawDataState should not share value ranges with state', async () => {
 
       // given
       await render();
       const query = new Query();
       query.addValueRangeFilter('Amount', 0, 10);
-      const record: ConfigRecord = {
-        route: Route.RAWDATA, name: 'my view', modifiedTime: now, query: queryToQueryDef(query),
-        data: { considerColumnWidths: true, highlight: false }
-      };
+      const state: RawDataState = { query: queryToQueryDef(query), data: { considerColumnWidths: true, highlight: false } };
 
       // when
-      component.loadConfig(record);
+      component.applyRawDataState(state);
       await settle();
 
       // then
       const valueRange = component.query.findValueRangeFilter('Amount').valueRange;
-      expect(valueRange).toEqual(record.query.valueRangeFilters[0].valueRange);
-      expect(valueRange).not.toBe(record.query.valueRangeFilters[0].valueRange);
+      expect(valueRange).toEqual(state.query.valueRangeFilters[0].valueRange);
+      expect(valueRange).not.toBe(state.query.valueRangeFilters[0].valueRange);
     });
 
-    it('#loadConfig should default multiLine to false and widths to scene widths for old records', async () => {
+    it('#applyRawDataState should not share column widths with state', async () => {
+
+      // given
+      await render();
+      const state: RawDataState = {
+        query: queryToQueryDef(new Query()), data: { considerColumnWidths: true, highlight: true, columnWidths: { Level: 99 } }
+      };
+      component.applyRawDataState(state);
+      await settle();
+
+      // when
+      component.onColumnResize({ index: columnIndex('Level'), width: 50 });
+
+      // then
+      expect(state.data.columnWidths).toEqual({ Level: 99 });
+    });
+
+    it('#applyRawDataState should default multiLine to false and widths to scene widths for legacy state', async () => {
 
       // given
       await render();
       component.toggleMultiLine();
-      const record: ConfigRecord = {
-        route: Route.RAWDATA, name: 'old view', modifiedTime: now, query: queryToQueryDef(new Query()),
+      const state = {
+        query: queryToQueryDef(new Query()),
         data: { pageDef: { queryDef: queryToQueryDef(new Query()), totalRowCount: 9 }, considerColumnWidths: true, highlight: true }
-      };
+      } as RawDataState;
 
       // when
-      component.loadConfig(record);
+      component.applyRawDataState(state);
       await settle();
 
       // then
@@ -765,17 +825,18 @@ describe('RawDataComponent', () => {
       expect(component.widths[columnIndex('Level')]).toBe(70);
     });
 
-    it('#ngAfterViewInit should open view launcher when records exist', async () => {
+    it('#ngOnDestroy should unregister as raw data state provider', async () => {
 
       // given
-      scene.config.records = [{ route: Route.RAWDATA, name: 'v', modifiedTime: now, query: queryToQueryDef(new Query()), data: {} }];
-      vi.spyOn(dialogService, 'showConfigLauncherDialog').mockReturnValue(null);
+      await render();
+      const rawDataStateService = TestBed.inject(RawDataStateService);
+      vi.spyOn(rawDataStateService, 'unregister');
 
       // when
-      await render();
+      fixture.destroy();
 
       // then
-      expect(dialogService.showConfigLauncherDialog).toHaveBeenCalledWith(component);
+      expect(rawDataStateService.unregister).toHaveBeenCalledWith(component);
     });
 
     it('#ngOnDestroy should cancel cache', async () => {

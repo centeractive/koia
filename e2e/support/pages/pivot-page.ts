@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import { MainToolbar } from '../components/main-toolbar';
 import { ViewToolbar } from '../components/view-toolbar';
 
 export class PivotPage {
@@ -14,6 +15,7 @@ export class PivotPage {
    readonly fieldChips: Locator;
    readonly availableFieldsZone: Locator;
    readonly selectedFieldsZones: Locator;
+   readonly mainToolbar: MainToolbar;
    readonly viewToolbar: ViewToolbar;
    private readonly root: Locator;
 
@@ -30,6 +32,7 @@ export class PivotPage {
       this.fieldChips = this.root.locator('span.pvtAttr');
       this.availableFieldsZone = this.root.locator('td.pvtUnused');
       this.selectedFieldsZones = this.root.locator('td.pvtVals, td.pvtCols, td.pvtRows');
+      this.mainToolbar = new MainToolbar(this.root.locator('koia-main-toolbar'));
       this.viewToolbar = new ViewToolbar(this.root.locator('koia-view-toolbar'));
    }
 

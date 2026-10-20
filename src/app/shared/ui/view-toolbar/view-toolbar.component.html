@@ -1,28 +1,13 @@
 <div class="view_toolbar">
-  <button class="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu" [attr.aria-label]="'common.more' | translate">
-    <mat-icon>more_vert</mat-icon>
-  </button>
-  @if (persistable) {
+  @if (moreMenu) {
+    <button class="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu" [attr.aria-label]="'common.more' | translate">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  }
+  @if (printable) {
     <button id="but_print" mat-icon-button [matTooltip]="'view.print' | translate" [disabled]="!hasContent" (click)="printView()">
       <mat-icon>print</mat-icon>
     </button>
-    <button id="but_save_view" mat-icon-button [matTooltip]="'view.save' | translate" [disabled]="!hasContent" (click)="save.emit()">
-      <mat-icon>save_alt</mat-icon>
-    </button>
-    <button id="but_restore_view" class="but_more" mat-icon-button [matTooltip]="'view.restore' | translate" [disabled]="!savedViews.length"
-      [matMenuTriggerFor]="restoreViewMenu">
-      <mat-icon [matBadge]="savedViews.length" [matBadgeHidden]="!savedViews.length" matBadgeSize="small" matBadgeColor="accent">
-        open_in_browser
-      </mat-icon>
-    </button>
-    <mat-menu #restoreViewMenu="matMenu">
-      @for (view of savedViews; track view) {
-        <button class="menu_item_details" mat-menu-item (click)="restore.emit(view)">
-          <mat-icon>monitor</mat-icon>
-          <span>{{ view.name }} <var>{{ view.modifiedTime | koiaDate:'short' }}</var></span>
-        </button>
-      }
-    </mat-menu>
   }
   <span class="koia-toolbar-separator"></span>
   <ng-content />

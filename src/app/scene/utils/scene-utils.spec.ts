@@ -18,7 +18,7 @@ describe('SceneUtils', () => {
 
       // then
       expect(scene.database).toBe('data_1');
-      expect(scene.config).toEqual({ records: [], views: [] })
+      expect(scene.config).toEqual({ savedViews: [] })
 
    });
 
@@ -47,33 +47,6 @@ describe('SceneUtils', () => {
 
       // then
       expect(name).toBe('test');
-   });
-
-   it('#uniqueSceneName should return name when name does not exist', () => {
-
-      // when
-      const name = SceneUtils.uniqueSceneName('x', new Set(['y']));
-
-      // then
-      expect(name).toBe('x');
-   });
-
-   it('#uniqueSceneName should append (2) when name exists', () => {
-
-      // when
-      const name = SceneUtils.uniqueSceneName('x', new Set(['x']));
-
-      // then
-      expect(name).toBe('x (2)');
-   });
-
-   it('#uniqueSceneName should append next free number when numbered names exist', () => {
-
-      // when
-      const name = SceneUtils.uniqueSceneName('x', new Set(['x', 'x (2)']));
-
-      // then
-      expect(name).toBe('x (3)');
    });
 
    it('#generateSceneDescription should return description when file modification date is available', () => {

@@ -17,6 +17,8 @@
           <mat-icon>add_photo_alternate</mat-icon>
         </button>
         <span class="koia-toolbar-separator"></span>
+        <koia-saved-view-buttons [activeTabId]="tabId" />
+        <span class="koia-toolbar-separator"></span>
         <koia-view-tab-bar [currUrl]="currURL" />
       </span>
     }

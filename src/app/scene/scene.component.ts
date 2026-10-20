@@ -10,7 +10,7 @@ import { Attribute, ColumnPair, Route, Scene, SceneInfo } from 'app/shared/model
 import { NotificationService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
 import { DBService } from 'app/shared/services/backend';
-import { CommonUtils, NumberUtils } from 'app/shared/utils';
+import { CommonUtils, NumberUtils, StringUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
@@ -245,7 +245,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   private onDataSample(data: string): void {
     if (!this.scene.name || this.scene.name === this.generatedSceneName) {
-      this.generatedSceneName = SceneUtils.uniqueSceneName(SceneUtils.generateSceneName(this.selectedReader, this.file), this.existingSceneNames);
+      this.generatedSceneName = StringUtils.uniqueName(SceneUtils.generateSceneName(this.selectedReader, this.file), this.existingSceneNames);
       this.scene.name = this.generatedSceneName;
     }
     if (!this.scene.shortDescription || this.scene.shortDescription === this.generatedSceneShortDesc) {

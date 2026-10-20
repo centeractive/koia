@@ -11,12 +11,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
-import { Column, DataType, ExportFormat, Operator, PropertyFilter, Query, Route } from 'app/shared/model';
-import { ConfigRecord } from 'app/shared/model/view-config';
+import { Column, DataType, ExportFormat, Operator, PropertyFilter, Query } from 'app/shared/model';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
-import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, scrollTableTo, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
 import { ValueFormatter } from 'app/shared/format';
 import { waitFrames, waitStable } from 'app/shared/test/animation-frames';
@@ -302,8 +300,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
       table().onResized();
     });
     const dataWidth = component.widths[3];
-    const saved = component.configToBeSaved();
-    const record: ConfigRecord = { route: Route.RAWDATA, name: 'sorted', modifiedTime: 0, query: queryToQueryDef(saved.query), data: saved.data };
+    const saved = component.rawDataState();
     await reloaded(() => component.sortBy(column('Amount')));
     TestBed.inject(NgZone).run(() => {
       component.toggleMultiLine();
@@ -311,7 +308,7 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
     });
 
     // when
-    await reloaded(() => component.loadConfig(record));
+    await reloaded(() => component.applyRawDataState(saved));
 
     // then
     expect(component.query.getSort()).toEqual({ active: 'Amount', direction: 'desc' });

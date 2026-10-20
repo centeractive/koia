@@ -14,7 +14,7 @@ import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { firstValueFrom } from 'rxjs';
 import { CanvasPaging, ElementContext, Route, TextBoxContext } from '../shared/model';
-import { DialogService, ExportService, NotificationService, ViewPersistenceService } from '../shared/services';
+import { DialogService, ExportService, NotificationService } from '../shared/services';
 import { DragAutoScroll } from './drag-auto-scroll';
 import { FreeLayout, Rect, TileRect } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
@@ -68,10 +68,10 @@ export class DashboardComponent extends ViewController {
   private readonly dashboardGenerator: DashboardGenerator;
 
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
-    viewPersistenceService: ViewPersistenceService, chartMarginService: ChartMarginService, notificationService: NotificationService,
-    exportService: ExportService, viewTabsService: ViewTabsService, chartDataService: ChartDataService) {
-    super(Route.GRID, router, bottomSheet, dbService, dialogService, viewPersistenceService, chartMarginService, notificationService,
-      exportService, viewTabsService);
+    chartMarginService: ChartMarginService, notificationService: NotificationService, exportService: ExportService,
+    viewTabsService: ViewTabsService, chartDataService: ChartDataService) {
+    super(Route.GRID, router, bottomSheet, dbService, dialogService, chartMarginService, notificationService, exportService,
+      viewTabsService);
     this.dashboardGenerator = new DashboardGenerator(chartMarginService, chartDataService, new MathRandomSource());
   }
 
