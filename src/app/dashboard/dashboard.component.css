@@ -142,6 +142,10 @@
   scrollbar-gutter: stable;
 }
 
+#div_canvas.div_canvas_desk {
+  background-color: var(--koia-desk);
+}
+
 .div_canvas_pages {
   position: relative;
   margin: 0 auto;

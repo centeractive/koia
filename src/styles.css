@@ -318,13 +318,22 @@ koia-print-heading {
     margin: 10mm;
   }
 
-  @page koia-portrait {
-    size: portrait;
-    margin: 10mm;
+  @page koia-sheet-landscape {
+    size: A4 landscape;
+    margin: 0;
   }
 
-  html.koia-print-portrait body {
-    page: koia-portrait;
+  @page koia-sheet-portrait {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html.koia-print-sheet-landscape body {
+    page: koia-sheet-landscape;
+  }
+
+  html.koia-print-sheet-portrait body {
+    page: koia-sheet-portrait;
   }
 
   html {
@@ -453,6 +462,11 @@ koia-print-heading {
 
   koia-print-heading.koia-print-heading-in-sheets {
     display: none !important;
+  }
+
+  #div_canvas.div_canvas_desk {
+    padding: 0 !important;
+    background: none !important;
   }
 
   .div_canvas_pages {

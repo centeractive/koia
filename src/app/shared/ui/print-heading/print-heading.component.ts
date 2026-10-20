@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
-import { applyPrintOrientation, resetPrintOrientation } from './print-orientation';
+import { CanvasPaging } from 'app/shared/model/canvas-paging.enum';
+import { applyPrintSheets, resetPrintSheets } from './print-sheets';
 import { fitPrintableContentToPage, resetPrintZoom } from './print-zoom';
 
 @Component({
@@ -12,7 +13,8 @@ export class PrintHeadingComponent {
 
   @Input() title: string;
   @Input() sceneName: string;
-  @Input() portrait = false;
+  /** paging of the printed sheets, [[undefined]] to print the view on unnamed pages */
+  @Input() printSheets: CanvasPaging;
   @Output() readonly printStart = new EventEmitter<Date>();
 
   printedAt: Date;
@@ -24,7 +26,7 @@ export class PrintHeadingComponent {
     const header = this.elementRef.nativeElement.parentElement;
     if (header.getClientRects().length > 0) {
       this.printedAt = new Date();
-      applyPrintOrientation(document, this.portrait);
+      applyPrintSheets(document, this.printSheets);
       fitPrintableContentToPage(header.parentElement);
       this.cdr.detectChanges();
       this.printStart.emit(this.printedAt);
@@ -34,6 +36,6 @@ export class PrintHeadingComponent {
   @HostListener('window:afterprint')
   onAfterPrint(): void {
     resetPrintZoom(document);
-    resetPrintOrientation(document);
+    resetPrintSheets(document);
   }
 }

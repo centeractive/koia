@@ -1,4 +1,5 @@
 import { rowsOf } from 'app/dashboard/generator/generated-grid';
+import { PageFormat } from 'app/dashboard/page-format';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { DataType } from 'app/shared/model/data-type.enum';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
@@ -156,7 +157,7 @@ test('layout buttons switch like radio buttons between grid, free canvas, landsc
    await dashboard.portraitPagesButton.click();
    await expectActive(dashboard.portraitPagesButton);
    const sheet = await dashboard.sheets.first().boundingBox();
-   expect(sheet.height / sheet.width).toBeCloseTo((56 + 1400 + 28) / 950, 1);
+   expect(sheet.height / sheet.width).toBeCloseTo(297 / 210, 2);
 
    await dashboard.snapToGridButton.click();
    await expectActive(dashboard.snapToGridButton);
@@ -257,13 +258,19 @@ test.describe('switching from grid', () => {
       await expectBoxesShiftedBy(dashboard, gridBoxes, 0);
    });
 
-   test('to landscape pages keeps tile positions and sizes below the sheet header', async ({ page, dashboard }) => {
+   test('to landscape pages keeps tile positions and sizes in page units below the sheet header', async ({ page, dashboard }) => {
       const gridBoxes = await gridBoxesOfThreeTiles(page, dashboard);
+      const gridUnitBoxes = pageUnitBoxesOf(gridBoxes, await dashboard.gridContent.locator('.div_grid_cells').boundingBox(),
+         await dashboard.gridScale());
 
       await dashboard.landscapePagesButton.click();
       await expect(dashboard.canvasContent).toBeVisible();
 
-      await expectBoxesShiftedBy(dashboard, gridBoxes, 56 * await dashboard.canvasScale());
+      const pageContent = await dashboard.canvasContent.locator('.div_canvas_page_content').first().boundingBox();
+      const canvasUnitBoxes = pageUnitBoxesOf(await tileBoxes(dashboard), pageContent, await dashboard.canvasScale());
+      expect(canvasUnitBoxes.length).toBe(3);
+      canvasUnitBoxes.forEach((box, i) => ['x', 'y', 'width', 'height'].forEach(key =>
+         expect(Math.abs(box[key] - gridUnitBoxes[i][key])).toBeLessThanOrEqual(1)));
    });
 });
 
@@ -325,12 +332,12 @@ test('landscape pages print one landscape sheet per page', async ({ page, dashbo
    const scale = await dashboard.canvasScale();
    const sheetsOfOnePage = await printedSheets(page);
 
-   await tile.startMoveBy(0, (56 + 950 + 28 + 20) * scale + 2);
+   await tile.startMoveBy(0, PageFormat.LANDSCAPE.sheetHeight * scale + PageFormat.DESK_GUTTER_PX + 2);
    await tile.release();
 
    await tile.expectChartPainted();
-   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1, orientation: 'landscape' });
-   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2, orientation: 'landscape' });
+   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1, paper: 'A4 landscape' });
+   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2, paper: 'A4 landscape' });
 });
 
 test('portrait pages print one portrait sheet per page', async ({ page, dashboard }) => {
@@ -343,8 +350,8 @@ test('portrait pages print one portrait sheet per page', async ({ page, dashboar
    await dashboard.addSummaries(3);
 
    await expect(dashboard.sheets).toHaveCount(3);
-   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1, orientation: 'portrait' });
-   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2, orientation: 'portrait' });
+   expect(sheetsOfOnePage).toEqual({ A4: 1, Letter: 1, paper: 'A4 portrait' });
+   expect(await printedSheets(page)).toEqual({ A4: 2, Letter: 2, paper: 'A4 portrait' });
 });
 
 test('page sheets show heading and page number', async ({ dashboard }) => {
@@ -403,28 +410,142 @@ async function tileBoxes(dashboard: DashboardPage): Promise<{ x: number; y: numb
    return Promise.all((await dashboard.tiles.all()).map(tile => tile.boundingBox()));
 }
 
+interface Box {
+   x: number;
+   y: number;
+   width: number;
+   height: number;
+}
+
 /**
- * @returns the number of sheets printed on A4 and Letter in the orientation the page's CSS gives, together with the
- * orientation of all sheets
+ * @returns the boxes in page units relative to the given origin
  */
-async function printedSheets(page: Page): Promise<{ A4: number; Letter: number; orientation: string }> {
+function pageUnitBoxesOf(boxes: Box[], origin: Box, scale: number): Box[] {
+   return boxes.map(box => ({ x: (box.x - origin.x) / scale, y: (box.y - origin.y) / scale, width: box.width / scale, height: box.height / scale }));
+}
+
+/**
+ * @returns the number of sheets printed when A4 and Letter are requested and the page's CSS size is preferred, together
+ * with the paper of all sheets
+ */
+async function printedSheets(page: Page): Promise<{ A4: number; Letter: number; paper: string }> {
    await dispatchWindowEvent(page, 'beforeprint');
-   const orientations = new Set<string>();
+   const papers = new Set<string>();
    const sheetsOf = async (format: string) => {
       const pdf = (await page.pdf({ format, preferCSSPageSize: true })).toString('latin1');
       pdf.match(/\/MediaBox\s*\[[^\]]*\]/g)
          .map(box => box.match(/[\d.]+/g).map(Number))
-         .forEach(([, , width, height]) => orientations.add(width > height ? 'landscape' : 'portrait'));
+         .forEach(([, , width, height]) => papers.add(paperOf(width, height)));
       return pdf.match(/\/Type\s*\/Page(?!s)/g).length;
    };
-   const sheets = { A4: await sheetsOf('A4'), Letter: await sheetsOf('Letter'), orientation: [...orientations].join() };
+   const sheets = { A4: await sheetsOf('A4'), Letter: await sheetsOf('Letter'), paper: [...papers].join() };
    await dispatchWindowEvent(page, 'afterprint');
    return sheets;
+}
+
+/**
+ * @param width width of a PDF MediaBox in points
+ * @param height height of a PDF MediaBox in points
+ */
+function paperOf(width: number, height: number): string {
+   const [long, short] = [Math.max(width, height), Math.min(width, height)].map(Math.round);
+   const size = long === 842 && short === 595 ? 'A4' : long + 'x' + short;
+   return size + ' ' + (width > height ? 'landscape' : 'portrait');
 }
 
 async function dispatchWindowEvent(page: Page, type: string): Promise<void> {
    await page.evaluate((t: string) => window.dispatchEvent(new Event(t)), type);
 }
+
+test('page sheets lie on a grey desk within its gutter', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.landscapePagesButton.click();
+   await dashboard.addSummaries(1);
+
+   const desk = await dashboard.canvasContent.evaluate((canvas: HTMLElement) => {
+      const sheets = Array.from(canvas.querySelectorAll('.div_canvas_sheet')).map(s => s.getBoundingClientRect());
+      const canvasRect = canvas.getBoundingClientRect();
+      const contentBottom = canvasRect.top + canvas.clientTop - canvas.scrollTop + canvas.scrollHeight;
+      return {
+         background: getComputedStyle(canvas).backgroundColor,
+         top: sheets[0].top - canvasRect.top - canvas.clientTop,
+         left: sheets[0].left - canvasRect.left - canvas.clientLeft,
+         gap: sheets[1].top - sheets[0].bottom,
+         bottom: contentBottom - sheets[sheets.length - 1].bottom,
+         ratio: sheets[0].height / sheets[0].width
+      };
+   });
+
+   expect(desk.background).toBe('rgb(217, 220, 225)');
+   [desk.top, desk.left, desk.gap, desk.bottom].forEach(gutter => expect(Math.abs(gutter - PageFormat.DESK_GUTTER_PX)).toBeLessThanOrEqual(1));
+   expect(desk.ratio).toBeCloseTo(210 / 297, 2);
+});
+
+/**
+ * @returns the positions of heading, footer and first tile relative to the width and height of the first sheet
+ */
+function sheetProportionsOf(dashboard: DashboardPage): Promise<{ width: number; proportions: number[] }> {
+   return dashboard.sheets.first().evaluate((sheet: HTMLElement) => {
+      const rect = sheet.getBoundingClientRect();
+      const relativeX = (x: number) => (x - rect.left) / rect.width;
+      const relativeY = (y: number) => (y - rect.top) / rect.height;
+      const boxOf = (selector: string) => sheet.querySelector(selector).getBoundingClientRect();
+      return {
+         width: rect.width,
+         proportions: [
+            relativeX(boxOf('.span_print_title').left),
+            relativeY(boxOf('.span_print_title').top),
+            relativeX(boxOf('.span_print_details').right),
+            relativeX(boxOf('.div_canvas_sheet_footer').right),
+            relativeY(boxOf('.div_canvas_sheet_footer').bottom),
+            relativeX(boxOf('.div_canvas_tile').left),
+            relativeY(boxOf('.div_canvas_tile').top)
+         ]
+      };
+   });
+}
+
+[
+   { paging: 'landscape', printWidth: PageFormat.LANDSCAPE.printWidthPx },
+   { paging: 'portrait', printWidth: PageFormat.PORTRAIT.printWidthPx }
+].forEach(({ paging, printWidth }) => {
+   test(`printed ${paging} sheet keeps the proportions shown on screen`, async ({ page, dashboard }) => {
+      await dashboard.launcher.cancel();
+      await (paging === 'landscape' ? dashboard.landscapePagesButton : dashboard.portraitPagesButton).click();
+      await dashboard.addSummaries(1);
+      const onScreen = await sheetProportionsOf(dashboard);
+
+      await dispatchWindowEvent(page, 'beforeprint');
+      await page.emulateMedia({ media: 'print' });
+      const printed = await sheetProportionsOf(dashboard);
+      await page.emulateMedia({ media: null });
+      await dispatchWindowEvent(page, 'afterprint');
+
+      expect(Math.abs(printed.width - printWidth)).toBeLessThanOrEqual(1);
+      printed.proportions.forEach((proportion, i) => expect(Math.abs(proportion - onScreen.proportions[i])).toBeLessThanOrEqual(0.004));
+   });
+});
+
+test('dragging a tile to the bottom edge scrolls to the next page', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 812 });
+   await dashboard.launcher.cancel();
+   await dashboard.landscapePagesButton.click();
+   await dashboard.addSummaries(1);
+   const tile = dashboard.tile(0);
+   const canvas = await dashboard.canvasContent.boundingBox();
+   const grip = await tile.root.locator('.but_move').boundingBox();
+   const scale = await dashboard.canvasScale();
+
+   await tile.startMoveBy(0, canvas.y + canvas.height - 10 - (grip.y + grip.height / 2));
+   await expect.poll(() => dashboard.canvasContent.evaluate((c: HTMLElement) => c.scrollTop)).toBeGreaterThan(PageFormat.LANDSCAPE.sheetHeight * scale);
+   await tile.release();
+
+   await expect(dashboard.sheets).toHaveCount(3);
+   const [tileBox, secondSheet] = [await tile.root.boundingBox(), await dashboard.sheets.nth(1).boundingBox()];
+   expect(tileBox.y).toBeGreaterThan(secondSheet.y);
+   expect(tileBox.y + tileBox.height).toBeLessThan(secondSheet.y + secondSheet.height);
+});
 
 test('pressing outside the shown chart margin hides it and resets the margin button', async ({ dashboard }) => {
    await dashboard.launcher.addChart();

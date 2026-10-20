@@ -1,4 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { PageFormat } from 'app/dashboard/page-format';
 import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
 import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';
@@ -107,10 +108,11 @@ export class DashboardPage {
    }
 
    /**
-    * @returns the screen pixels per page unit of the free canvas
+    * @returns the screen pixels per page unit of the free canvas, measured at the content of its first page
     */
-   canvasScale(): Promise<number> {
-      return this.canvasContent.locator('.div_canvas_pages').evaluate((pages: HTMLElement) => pages.clientWidth / 1400);
+   async canvasScale(pageFormat = PageFormat.LANDSCAPE): Promise<number> {
+      const content = await this.canvasContent.locator('.div_canvas_page_content').first().boundingBox();
+      return content.width / pageFormat.width;
    }
 
    /**

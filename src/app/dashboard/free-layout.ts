@@ -36,9 +36,6 @@ export class FreeLayout {
   static readonly SNAP_THRESHOLD_PX = 6;
   static readonly OVERLAY_Z_OFFSET = 10000;
   static readonly OVERLAY_CASCADE = 20;
-  static readonly SHEET_HEADER = 56;
-  static readonly SHEET_FOOTER = 28;
-  static readonly SHEET_GAP = 20;
 
   constructor(public pageFormat = PageFormat.LANDSCAPE) { }
 
@@ -46,16 +43,24 @@ export class FreeLayout {
     return { '--koia-pu': 'calc(100cqw / ' + this.pageFormat.width + ')' };
   }
 
+  /**
+   * sizes the sheets, portrait ones at the scale of landscape ones
+   */
   pagesStyle(): object {
+    const { sheetWidth, paged, printWidthPx } = this.pageFormat;
     return {
-      ...this.canvasStyle(),
-      width: 'calc(100% * ' + this.pageFormat.width + ' / ' + PageFormat.LANDSCAPE.width + ')',
-      '--koia-print-width': this.pageFormat.printWidthPx + 'px'
+      '--koia-pu': 'calc(100cqw / ' + sheetWidth + ')',
+      width: paged ? 'calc(100% * ' + sheetWidth + ' / ' + PageFormat.LANDSCAPE.sheetWidth + ')' : '100%',
+      '--koia-print-width': printWidthPx + 'px'
     };
   }
 
-  pageStyle(): object {
-    return this.pageFormat.paged ? { 'margin-bottom': this.pageUnits(FreeLayout.SHEET_GAP) } : {};
+  pageStyle(page: number): object {
+    if (!this.pageFormat.paged) {
+      return {};
+    }
+    const style = { padding: this.pageUnits(this.pageFormat.marginY) + ' ' + this.pageUnits(this.pageFormat.marginX) };
+    return page > 0 ? { ...style, 'margin-top': PageFormat.DESK_GUTTER_PX + 'px' } : style;
   }
 
   pageContentStyle(page: number, contexts: ElementContext[]): object {
@@ -64,11 +69,11 @@ export class FreeLayout {
   }
 
   sheetHeaderStyle(): object {
-    return { height: this.pageUnits(FreeLayout.SHEET_HEADER) };
+    return { height: this.pageUnits(PageFormat.SHEET_HEADER) };
   }
 
   sheetFooterStyle(): object {
-    return { height: this.pageUnits(FreeLayout.SHEET_FOOTER) };
+    return { height: this.pageUnits(PageFormat.SHEET_FOOTER) };
   }
 
   tileStyle(context: ElementContext): object {
@@ -124,28 +129,41 @@ export class FreeLayout {
   }
 
   /**
-   * @returns the y on the rendered pages, including the header, footer and gap of the sheets above
+   * @returns the x on the rendered sheets
    */
-  layerYOf(y: number): number {
-    if (!this.pageFormat.paged) {
-      return y;
-    }
-    const sheetFrame = FreeLayout.SHEET_HEADER + FreeLayout.SHEET_FOOTER + FreeLayout.SHEET_GAP;
-    return y + this.pageFormat.pageIndexOf(y) * sheetFrame + FreeLayout.SHEET_HEADER;
+  layerXOf(x: number): number {
+    return x + this.pageFormat.marginX;
+  }
+
+  layoutXOf(layerX: number): number {
+    return layerX - this.pageFormat.marginX;
   }
 
   /**
-   * @returns the y of the layout at the given y on the rendered pages, a sheet's header, footer and gap map to the
-   * nearest page edge
+   * @param gap gap between the sheets in page units
+   * @returns the y on the rendered sheets, including the margins, header, footer and gap of the sheets above
    */
-  layoutYOf(layerY: number): number {
-    if (!this.pageFormat.paged) {
+  layerYOf(y: number, gap: number): number {
+    const { paged, sheetHeight, height, marginY } = this.pageFormat;
+    if (!paged) {
+      return y;
+    }
+    return y + this.pageFormat.pageIndexOf(y) * (sheetHeight - height + gap) + marginY + PageFormat.SHEET_HEADER;
+  }
+
+  /**
+   * @param gap gap between the sheets in page units
+   * @returns the y of the layout at the given y on the rendered sheets, a sheet's margins, header, footer and gap map to
+   * the nearest page edge
+   */
+  layoutYOf(layerY: number, gap: number): number {
+    const { paged, sheetHeight, height, marginY } = this.pageFormat;
+    if (!paged) {
       return layerY;
     }
-    const height = this.pageFormat.height;
-    const pitch = FreeLayout.SHEET_HEADER + height + FreeLayout.SHEET_FOOTER + FreeLayout.SHEET_GAP;
+    const pitch = sheetHeight + gap;
     const page = Math.max(0, Math.floor(layerY / pitch));
-    return page * height + _.clamp(layerY - page * pitch - FreeLayout.SHEET_HEADER, 0, height);
+    return page * height + _.clamp(layerY - page * pitch - marginY - PageFormat.SHEET_HEADER, 0, height);
   }
 
   rectOf(tile: Pick<ViewElement, 'x' | 'y' | 'width' | 'height'>): Rect {

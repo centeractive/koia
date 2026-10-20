@@ -33,19 +33,28 @@ describe('FreeLayout', () => {
     expect(result).toEqual({ '--koia-pu': 'calc(100cqw / 1400)' });
   });
 
-  it('#pageStyle should separate sheets by gap', () => {
+  it('#pageStyle should give first sheet its paper margins', () => {
 
     // when
-    const result = layout.pageStyle();
+    const result = layout.pageStyle(0);
 
     // then
-    expect(result).toEqual({ 'margin-bottom': 'calc(20 * var(--koia-pu))' });
+    expect(result).toEqual({ padding: 'calc(' + PageFormat.LANDSCAPE.marginY + ' * var(--koia-pu)) calc(' + PageFormat.LANDSCAPE.marginX + ' * var(--koia-pu))' });
+  });
+
+  it('#pageStyle should separate further sheets by desk gutter', () => {
+
+    // when
+    const result = layout.pageStyle(1);
+
+    // then
+    expect(result).toEqual({ ...layout.pageStyle(0), 'margin-top': '32px' });
   });
 
   it('#pageStyle should be empty without pages', () => {
 
     // when
-    const result = new FreeLayout(PageFormat.UNPAGED).pageStyle();
+    const result = new FreeLayout(PageFormat.UNPAGED).pageStyle(1);
 
     // then
     expect(result).toEqual({});
@@ -688,11 +697,14 @@ describe('FreeLayout', () => {
       expect(result).toEqual({ '--koia-pu': 'calc(100cqw / 950)' });
     });
 
+    const landscapeSheet = PageFormat.LANDSCAPE.sheetWidth;
+    const portraitSheet = PageFormat.PORTRAIT.sheetWidth;
+
     it.each([
-      { layout, width: 'calc(100% * 1400 / 1400)', printWidth: '950px', pu: 'calc(100cqw / 1400)' },
-      { layout: portrait, width: 'calc(100% * 950 / 1400)', printWidth: '600px', pu: 'calc(100cqw / 950)' },
-      { layout: unpaged, width: 'calc(100% * 1400 / 1400)', printWidth: '970px', pu: 'calc(100cqw / 1400)' }
-    ])('#pagesStyle should size pages to $width of canvas and print them $printWidth wide', ({ layout, width, printWidth, pu }) => {
+      { layout, width: 'calc(100% * ' + landscapeSheet + ' / ' + landscapeSheet + ')', printWidth: '1120px', pu: 'calc(100cqw / ' + landscapeSheet + ')' },
+      { layout: portrait, width: 'calc(100% * ' + portraitSheet + ' / ' + landscapeSheet + ')', printWidth: '791px', pu: 'calc(100cqw / ' + portraitSheet + ')' },
+      { layout: unpaged, width: '100%', printWidth: '970px', pu: 'calc(100cqw / 1400)' }
+    ])('#pagesStyle should size sheets to $width of canvas and print them $printWidth wide', ({ layout, width, printWidth, pu }) => {
 
       // when
       const result = layout.pagesStyle();
@@ -733,49 +745,72 @@ describe('FreeLayout', () => {
       expect(result).toEqual({ height: 'calc(28 * var(--koia-pu))' });
     });
 
-    it.each([
-      { case: 'first page', y: 100, layerY: 156 },
-      { case: 'second page top', y: 950, layerY: 1110 },
-      { case: 'third page', y: 2000, layerY: 2264 }
-    ])('#layerYOf should add sheet header, footer and gap above y on $case', ({ y, layerY }) => {
-
-      // when
-      const result = layout.layerYOf(y);
-
-      // then
-      expect(result).toBe(layerY);
-    });
-
-    it('#layerYOf should add sheet frames of portrait pages', () => {
-
-      // when
-      const result = portrait.layerYOf(1500);
-
-      // then
-      expect(result).toBe(1500 + 104 + 56);
-    });
+    const GAP = 40;
+    const contentTop = PageFormat.LANDSCAPE.marginY + PageFormat.SHEET_HEADER;
+    const pitch = PageFormat.LANDSCAPE.sheetHeight + GAP;
 
     it.each([
-      { case: 'first page', layerY: 156, y: 100 },
-      { case: 'second page', layerY: 1110, y: 950 },
-      { case: 'header of first sheet', layerY: 30, y: 0 },
-      { case: 'footer of first sheet', layerY: 1020, y: 950 },
-      { case: 'gap between sheets', layerY: 1045, y: 950 },
-      { case: 'header of second sheet', layerY: 1080, y: 950 },
+      { case: 'first page', y: 100, layerY: contentTop + 100 },
+      { case: 'second page top', y: 950, layerY: pitch + contentTop },
+      { case: 'third page', y: 2000, layerY: 2 * pitch + contentTop + 100 }
+    ])('#layerYOf should add sheet margins, header, footer and gap above y on $case', ({ y, layerY }) => {
+
+      // when
+      const result = layout.layerYOf(y, GAP);
+
+      // then
+      expect(result).toBeCloseTo(layerY, 10);
+    });
+
+    it('#layerYOf should add sheets of portrait pages', () => {
+
+      // when
+      const result = portrait.layerYOf(1500, GAP);
+
+      // then
+      expect(result).toBeCloseTo(PageFormat.PORTRAIT.sheetHeight + GAP + PageFormat.PORTRAIT.marginY + PageFormat.SHEET_HEADER + 100, 10);
+    });
+
+    it.each([
+      { case: 'first page', layerY: contentTop + 100, y: 100 },
+      { case: 'second page', layerY: pitch + contentTop, y: 950 },
+      { case: 'top margin of first sheet', layerY: 10, y: 0 },
+      { case: 'header of first sheet', layerY: contentTop - 10, y: 0 },
+      { case: 'footer of first sheet', layerY: contentTop + 960, y: 950 },
+      { case: 'gap between sheets', layerY: PageFormat.LANDSCAPE.sheetHeight + 20, y: 950 },
+      { case: 'header of second sheet', layerY: pitch + contentTop - 10, y: 950 },
       { case: 'point above first sheet', layerY: -200, y: 0 }
     ])('#layoutYOf should map $case to y $y', ({ layerY, y }) => {
 
       // when
-      const result = layout.layoutYOf(layerY);
+      const result = layout.layoutYOf(layerY, GAP);
 
       // then
-      expect(result).toBe(y);
+      expect(result).toBeCloseTo(y, 10);
+    });
+
+    it('#layerXOf and #layoutXOf should add and remove side margin of sheet', () => {
+
+      // when
+      const result = [layout.layerXOf(100), layout.layoutXOf(100)];
+
+      // then
+      expect(result).toEqual([100 + PageFormat.LANDSCAPE.marginX, 100 - PageFormat.LANDSCAPE.marginX]);
+    });
+
+    it('#layerXOf and #layoutXOf should keep x without pages', () => {
+
+      // when
+      const result = [unpaged.layerXOf(100), unpaged.layoutXOf(100)];
+
+      // then
+      expect(result).toEqual([100, 100]);
     });
 
     it('#layerYOf and #layoutYOf should keep y without pages', () => {
 
       // when
-      const result = [unpaged.layerYOf(2000), unpaged.layoutYOf(2000)];
+      const result = [unpaged.layerYOf(2000, GAP), unpaged.layoutYOf(2000, GAP)];
 
       // then
       expect(result).toEqual([2000, 2000]);
