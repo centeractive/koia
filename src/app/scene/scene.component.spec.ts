@@ -395,6 +395,138 @@ describe('SceneComponent', () => {
     expect(component.scene.shortDescription.startsWith('CSV Test.csv (modified on')).toBe(true);
   }));
 
+  it('#onFileSelChange should append (2) to generated scene name when it exists', fakeAsync(() => {
+
+    // given
+    const fileList = createFileList('dummy data');
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
+    const existingName = 'Test / ' + datePipe.transform(fileList[0].lastModified, 'mediumDate');
+    findSceneInfos.mockResolvedValue([{ ...createSceneInfos(1)[0], name: existingName }]);
+    component.ngOnInit();
+    flush();
+
+    // when
+    component.onFileSelChange(fileList);
+    flush();
+
+    // then
+    expect(component.scene.name).toBe(existingName + ' (2)');
+  }));
+
+  it('#isSceneNameTaken should return true when name exists', () => {
+
+    // given
+    component.scene.name = 'Scene 1';
+
+    // when
+    const taken = component.isSceneNameTaken();
+
+    // then
+    expect(taken).toBe(true);
+  });
+
+  it('#isSceneNameTaken should return true when trimmed name exists', () => {
+
+    // given
+    component.scene.name = ' Scene 1 ';
+
+    // when
+    const taken = component.isSceneNameTaken();
+
+    // then
+    expect(taken).toBe(true);
+  });
+
+  it('#isSceneNameTaken should return false when name does not exist', () => {
+
+    // given
+    component.scene.name = 'Scene X';
+
+    // when
+    const taken = component.isSceneNameTaken();
+
+    // then
+    expect(taken).toBe(false);
+  });
+
+  it('#isSceneNameTaken should return false when name is undefined', () => {
+
+    // when
+    const taken = component.isSceneNameTaken();
+
+    // then
+    expect(taken).toBe(false);
+  });
+
+  it('scene name field should show error when name exists', () => {
+
+    // given
+    component.scene.name = 'Scene 1';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const formField: HTMLElement = fixture.nativeElement.querySelector('.scene_name');
+    expect(formField.querySelector('mat-error').textContent.trim()).toBe('Scene name already exists');
+    expect(formField.classList).toContain('mat-form-field-invalid');
+  });
+
+  it('scene name field should not show error when name is unique', () => {
+
+    // given
+    component.scene.name = 'Scene X';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const formField: HTMLElement = fixture.nativeElement.querySelector('.scene_name');
+    expect(formField.querySelector('mat-error')).toBeNull();
+    expect(formField.classList).not.toContain('mat-form-field-invalid');
+  });
+
+  it('"Detect Columns" button should be disabled when scene name exists', fakeAsync(() => {
+
+    // given
+    loadSample();
+    component.scene.name = 'Scene 1';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const detectColumnsButton: HTMLButtonElement = fixture.nativeElement.querySelector('#but_detect_columns');
+    expect(detectColumnsButton.disabled).toBe(true);
+  }));
+
+  it('"Detect Columns" button should be enabled when scene name is unique', fakeAsync(() => {
+
+    // given
+    loadSample();
+    component.scene.name = 'Scene X';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const detectColumnsButton: HTMLButtonElement = fixture.nativeElement.querySelector('#but_detect_columns');
+    expect(detectColumnsButton.disabled).toBe(false);
+  }));
+
+  it('"Load Data" button should be hidden when scene name exists', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.scene.name = 'Scene 1';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#but_load_data')).toBeNull();
+  }));
+
   it('#onFileSelChange should notify error when file header cannot be read', fakeAsync(() => {
 
     // given

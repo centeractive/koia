@@ -29,6 +29,14 @@ export class SceneUtils {
       return name;
    }
 
+   static uniqueSceneName(name: string, existingNames: Set<string>): string {
+      let uniqueName = name;
+      for (let i = 2; existingNames.has(uniqueName); i++) {
+         uniqueName = name + ' (' + i + ')';
+      }
+      return uniqueName;
+   }
+
    static generateSceneDescription(reader: DataReader, file: File) {
       let name = reader.getSourceName() + ' ' + file.name;
       if (file.lastModified) {

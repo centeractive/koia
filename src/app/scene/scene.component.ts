@@ -14,6 +14,7 @@ import { CommonUtils, NumberUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
+import { ConditionalErrorStateMatcher } from 'app/shared/validator/conditional-error-state-matcher';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
 import { SourceName } from '../shared/services/reader/source-name.enum';
@@ -38,6 +39,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
   readonly csvSourceName = SourceName.CSV;
+  readonly sceneNameErrorStateMatcher = new ConditionalErrorStateMatcher(() => this.isSceneNameTaken());
 
   @ViewChild(MatAccordion) accordion: MatAccordion;
   @ViewChild('fileInput') fileInputRef: ElementRef<HTMLInputElement>;
@@ -73,6 +75,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   private generatedSceneName: string;
   private generatedSceneShortDesc: string;
+  private existingSceneNames = new Set<string>();
   private sampleEntries: object[];
   private sourceColumnNames: string[];
   private columnFactory = new ColumnMappingGenerator();
@@ -123,6 +126,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.dbService.findSceneInfos()
       .then(sceneInfos => {
         this.scenesExist = sceneInfos.length > 0;
+        this.existingSceneNames = new Set(sceneInfos.map(si => si.name));
         this.columnMappingsSourceCandidates = sceneInfos.filter(si => si.columnMappings);
         if (this.columnMappingsSourceCandidates.length > 0) {
           this.columnMappingsSource = this.columnMappingsSourceCandidates[0];
@@ -241,7 +245,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   private onDataSample(data: string): void {
     if (!this.scene.name || this.scene.name === this.generatedSceneName) {
-      this.generatedSceneName = SceneUtils.generateSceneName(this.selectedReader, this.file);
+      this.generatedSceneName = SceneUtils.uniqueSceneName(SceneUtils.generateSceneName(this.selectedReader, this.file), this.existingSceneNames);
       this.scene.name = this.generatedSceneName;
     }
     if (!this.scene.shortDescription || this.scene.shortDescription === this.generatedSceneShortDesc) {
@@ -254,6 +258,10 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       this.fileHeader = LanguageService.instant('scene.binaryDataNotShown');
     }
     this.readerAttributes = this.selectedReader.furnishAttributes(this.fileHeader, this.selectedLocale);
+  }
+
+  isSceneNameTaken(): boolean {
+    return !!this.scene.name && this.existingSceneNames.has(this.scene.name.trim());
   }
 
   initContext(keepFile = false): void {
