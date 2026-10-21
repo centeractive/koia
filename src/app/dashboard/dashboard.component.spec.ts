@@ -1906,16 +1906,28 @@ describe('DashboardComponent', () => {
         expect(component.resizePreview.width).toBeCloseTo(3 * pitch - 10, 0);
       });
 
-      it('#onGridResizing should preview covered cells', () => {
+      it('#onGridResizing should preview cells whose middle the edge reaches', () => {
 
         // given
         const pitch = renderGridSummariesForResize([[1, 1]]);
 
         // when
-        component.onGridResizing(component.elementContexts[0], resizeEvent(pitch + 5, pitch + 5));
+        component.onGridResizing(component.elementContexts[0], resizeEvent(1.5 * pitch - 4, 1.5 * pitch - 4));
 
         // then
         expectPreview({ left: 0, top: 0, width: 2 * pitch - 10, height: 2 * pitch - 10 });
+      });
+
+      it('#onGridResizing should preview shrunk tile as soon as edge passes back before middle of its last cell', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[2, 2]]);
+
+        // when
+        component.onGridResizing(component.elementContexts[0], resizeEvent(1.5 * pitch - 6, 1.5 * pitch - 6));
+
+        // then
+        expectPreview({ left: 0, top: 0, width: pitch - 10, height: pitch - 10 });
       });
 
       it('#onGridResizing should limit preview to grid columns', () => {
@@ -1934,7 +1946,7 @@ describe('DashboardComponent', () => {
 
         // given
         const pitch = renderGridSummariesForResize([[1, 1]]);
-        component.onGridResizing(component.elementContexts[0], resizeEvent(pitch + 5, pitch + 5));
+        component.onGridResizing(component.elementContexts[0], resizeEvent(1.5 * pitch - 4, 1.5 * pitch - 4));
 
         // when
         fixture.detectChanges();
@@ -1948,7 +1960,7 @@ describe('DashboardComponent', () => {
         expect(previewRect.height).toBeCloseTo(2 * pitch - 10, 0);
       });
 
-      it('#onGridResizeEnd should snap tile to covered grid cells', () => {
+      it('#onGridResizeEnd should snap tile to cells whose middle the edges reach', () => {
 
         // given
         renderGridSummariesForResize([[1, 1], [1, 1]]);

@@ -165,38 +165,48 @@ test('layout buttons switch like radio buttons between grid, free canvas, landsc
    await expect(dashboard.gridContent).toBeVisible();
 });
 
-test('resizing a lone grid tile snaps it to the covered grid cells', async ({ page, dashboard }) => {
+test('resizing a lone grid tile snaps it to the cells whose middle the pointer reaches', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
 
-   await expectGridResizeBy(dashboard, 50, 2);
+   await expectGridResizeBy(dashboard, pitch => pitch / 2 + 10, 2);
 });
 
-test('resizing one of two grid tiles snaps it to the covered grid cells', async ({ page, dashboard }) => {
+test('resizing one of two grid tiles snaps it to the cells whose middle the pointer reaches', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
    await dashboard.addSummary();
    await dashboard.sideBar.close();
 
-   await expectGridResizeBy(dashboard, 50, 2);
+   await expectGridResizeBy(dashboard, pitch => pitch / 2 + 10, 2);
 });
 
-test('resizing a grid tile within the gap keeps its cells', async ({ page, dashboard }) => {
+test('resizing a grid tile before the middle of the next cell keeps its cells', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
 
-   await expectGridResizeBy(dashboard, 5, 1);
+   await expectGridResizeBy(dashboard, pitch => pitch / 2 - 10, 1);
+});
+
+test('shrinking a grid tile releases its last cell as soon as the pointer passes back before its middle', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.close();
+   await expectGridResizeBy(dashboard, pitch => pitch / 2 + 10, 2);
+
+   await expectGridResizeBy(dashboard, pitch => -(pitch / 2 + 10), 1, 2);
 });
 
 test('grid tile grows by a row in the default window', async ({ dashboard }) => {
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
    const tile = dashboard.tile(0);
+   const box = await tile.root.boundingBox();
 
-   await tile.startResizeBy(0, 50);
+   await tile.startResizeBy(0, (box.height + 10) / 2 + 10);
    await tile.release();
 
    await expect(tile.root).toHaveCSS('grid-row-end', 'span 2');
@@ -208,8 +218,9 @@ test('resizing a grid tile by its left edge widens its column span', async ({ pa
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
    const tile = dashboard.tile(0);
+   const box = await tile.root.boundingBox();
 
-   await tile.startResizeBy(-50, 0, 'left');
+   await tile.startResizeBy(-((box.width + 10) / 2 + 10), 0, 'left');
    await tile.release();
 
    await expect(tile.root).toHaveCSS('grid-column-end', 'span 2');
@@ -256,10 +267,12 @@ test('clicking a pie slice reveals raw data without selecting the tile', async (
    await expect(tile.resizeHandles).toHaveCount(0);
 });
 
-async function expectGridResizeBy(dashboard: DashboardPage, offset: number, expectedSpan: number): Promise<void> {
+async function expectGridResizeBy(dashboard: DashboardPage, offsetOf: (pitch: number) => number, expectedSpan: number,
+   startSpan = 1): Promise<void> {
    const tile = dashboard.tile(0);
    const box = await tile.root.boundingBox();
-   const pitch = box.width + 10;
+   const pitch = (box.width + 10) / startSpan;
+   const offset = offsetOf(pitch);
 
    await tile.startResizeBy(offset, offset);
    const preview = await dashboard.resizePreview.boundingBox();

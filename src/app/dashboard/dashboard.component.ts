@@ -418,7 +418,7 @@ export class DashboardComponent extends ViewController {
     const drawnSpans = { ...spans, rowSpan: this.gridRowSpanOf(context, spans.rowSpan, cw) };
     const growth = this.gridLayout.tileSizeOf(drawnSpans, cw).height - this.gridLayout.tileSizeOf(spans, cw).height;
     const column = this.gridLayout.columnOf(this.resizeOriginOf(resizeEvent).left, cw);
-    return this.gridLayout.coveredSpansOf(rect.width, rect.height - growth, column, cw);
+    return this.gridLayout.resizedSpansOf(rect.width, rect.height - growth, column, cw);
   }
 
   /**

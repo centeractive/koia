@@ -38,8 +38,8 @@ export class GridLayout {
   }
 
   spansOf(width: number, height: number, contentWidth: number): GridSpans {
-    const columnSpan = this.clamp(Math.round((width + GridLayout.GAP_PX) / this.columnPitchOf(contentWidth)), this.gridColumns);
-    const rowSpan = this.clamp(Math.round((height + GridLayout.GAP_PX) / this.rowPitchOf(contentWidth)), GridLayout.MAX_ROW_SPAN);
+    const columnSpan = this.spanOf(width + GridLayout.GAP_PX, this.columnPitchOf(contentWidth), this.gridColumns);
+    const rowSpan = this.spanOf(height + GridLayout.GAP_PX, this.rowPitchOf(contentWidth), GridLayout.MAX_ROW_SPAN);
     return { columnSpan, rowSpan };
   }
 
@@ -47,9 +47,12 @@ export class GridLayout {
     return Math.round(left / this.columnPitchOf(contentWidth));
   }
 
-  coveredSpansOf(width: number, height: number, column: number, contentWidth: number): GridSpans {
-    const columnSpan = this.clamp(Math.ceil(width / this.columnPitchOf(contentWidth)), this.gridColumns - column);
-    const rowSpan = this.clamp(Math.ceil(height / this.rowPitchOf(contentWidth)), GridLayout.MAX_ROW_SPAN);
+  /**
+   * @returns the spans of the cells whose middle the resized edges reach
+   */
+  resizedSpansOf(width: number, height: number, column: number, contentWidth: number): GridSpans {
+    const columnSpan = this.spanOf(width + GridLayout.PADDING_PX, this.columnPitchOf(contentWidth), this.gridColumns - column);
+    const rowSpan = this.spanOf(height + GridLayout.PADDING_PX, this.rowPitchOf(contentWidth), GridLayout.MAX_ROW_SPAN);
     return { columnSpan, rowSpan };
   }
 
@@ -73,6 +76,10 @@ export class GridLayout {
 
   private rowPitchOf(contentWidth: number): number {
     return (this.columnPitchOf(contentWidth) - GridLayout.GAP_PX) / cellRatioToNumber(this.gridCellRatio) + GridLayout.GAP_PX;
+  }
+
+  private spanOf(extent: number, pitch: number, max: number): number {
+    return this.clamp(Math.round(extent / pitch), max);
   }
 
   private clamp(span: number, max: number): number {
