@@ -312,7 +312,7 @@ test.describe('switching from grid', () => {
       await expectBoxesShiftedBy(dashboard, gridBoxes, 0);
    });
 
-   test('to landscape pages keeps tile positions and sizes in page units below the sheet header', async ({ page, dashboard }) => {
+   test('to landscape pages keeps tile positions and sizes in page units below the sheet header and its top padding', async ({ page, dashboard }) => {
       const gridBoxes = await gridBoxesOfThreeTiles(page, dashboard);
       const gridUnitBoxes = pageUnitBoxesOf(gridBoxes, await dashboard.gridContent.locator('.div_grid_cells').boundingBox(),
          await dashboard.gridScale());
@@ -323,8 +323,10 @@ test.describe('switching from grid', () => {
       const pageContent = await dashboard.canvasContent.locator('.div_canvas_page_content').first().boundingBox();
       const canvasUnitBoxes = pageUnitBoxesOf(await tileBoxes(dashboard), pageContent, await dashboard.canvasScale());
       expect(canvasUnitBoxes.length).toBe(3);
-      canvasUnitBoxes.forEach((box, i) => ['x', 'y', 'width', 'height'].forEach(key =>
-         expect(Math.abs(box[key] - gridUnitBoxes[i][key])).toBeLessThanOrEqual(1)));
+      canvasUnitBoxes.forEach((box, i) => {
+         const expected = { ...gridUnitBoxes[i], y: gridUnitBoxes[i].y + PageFormat.TOP_PADDING };
+         ['x', 'y', 'width', 'height'].forEach(key => expect(Math.abs(box[key] - expected[key])).toBeLessThanOrEqual(1));
+      });
    });
 });
 

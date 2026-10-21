@@ -5,10 +5,10 @@
     </button>
   }
   @if (printable) {
-    <button id="but_print" mat-icon-button [matTooltip]="'view.print' | translate" [disabled]="!hasContent" (click)="printView()">
-      <mat-icon>print</mat-icon>
-    </button>
+    <koia-print-button />
   }
-  <span class="koia-toolbar-separator"></span>
+  @if (moreMenu || printable) {
+    <span class="koia-toolbar-separator"></span>
+  }
   <ng-content />
 </div>

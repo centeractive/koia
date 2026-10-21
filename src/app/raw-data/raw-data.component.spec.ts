@@ -34,6 +34,7 @@ import { RawDataBlockCache } from './raw-data-block-cache';
 import { RawDataComponent } from './raw-data.component';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
+import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 describe('RawDataComponent', () => {
@@ -73,8 +74,8 @@ describe('RawDataComponent', () => {
     scene = SceneFactory.createScene('1', columns);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PageHeadingComponent, PrintHeadingComponent,
-        ColumnResizeDirective],
+      declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent,
+        PrintHeadingComponent, ColumnResizeDirective],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),

@@ -7,6 +7,8 @@ export class PageFormat {
 
   static readonly SHEET_HEADER = 56;
   static readonly SHEET_FOOTER = 28;
+  /** page units kept free below the sheet header by automatic layout */
+  static readonly TOP_PADDING = 10;
   /** screen pixels around and between the sheets */
   static readonly DESK_GUTTER_PX = 32;
   private static readonly PRINT_MARGIN_MM = 10;
