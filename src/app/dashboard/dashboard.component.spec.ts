@@ -44,6 +44,7 @@ import { Guide, SnapGuides } from './snap-guides';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
+import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import type { TextExtent } from 'app/text-box/text-fit';
 
@@ -131,7 +132,8 @@ describe('DashboardComponent', () => {
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
-        SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent,
+        SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintButtonComponent,
+        PrintHeadingComponent,
         PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
@@ -1166,7 +1168,7 @@ describe('DashboardComponent', () => {
       expect(component.isGridLayout()).toBe(false);
       expect(component.elementContexts[0]).not.toBe(previousContexts[0]);
       expect(unplacedElementsOf(component.elementContexts)).toEqual(elementsOf(previousContexts));
-      expect(component.elementContexts.map(c => [c.x, c.y, c.z])).toEqual([[0, 0, 1], [610, 0, 2]]);
+      expect(component.elementContexts.map(c => [c.x, c.y, c.z])).toEqual([[0, 10, 1], [610, 10, 2]]);
     });
 
     it('#setLayout should close side bar and clear selection', () => {
@@ -1371,7 +1373,7 @@ describe('DashboardComponent', () => {
           r.height / scale));
       }
 
-      it('#setLayout to free canvas should keep tile rects of grid in page units below sheet header', () => {
+      it('#setLayout to free canvas should keep tile rects of grid in page units below sheet header and top padding', () => {
 
         // given
         renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
@@ -1384,7 +1386,8 @@ describe('DashboardComponent', () => {
 
         // then
         const firstPageContent = fixture.nativeElement.querySelector('.div_canvas_page_content');
-        expectSameRects(pageUnitRectsOf('.div_canvas_tile', firstPageContent, canvasScale()), gridRects);
+        expectSameRects(pageUnitRectsOf('.div_canvas_tile', firstPageContent, canvasScale()),
+          gridRects.map(r => new DOMRect(r.x, r.y + PageFormat.TOP_PADDING, r.width, r.height)));
       });
 
       it('#setLayout to free canvas should push tiles crossing page to next page', () => {
@@ -1397,9 +1400,9 @@ describe('DashboardComponent', () => {
 
         // then
         const tops = component.elementContexts.map(c => c.y);
-        expect(tops.slice(0, 3)).toEqual([0, 0, 0]);
+        expect(tops.slice(0, 3)).toEqual([10, 10, 10]);
         expect(tops[3] + component.elementContexts[3].height).toBeLessThanOrEqual(PageFormat.LANDSCAPE.height);
-        expect(tops[6]).toBe(PageFormat.LANDSCAPE.height);
+        expect(tops[6]).toBe(PageFormat.LANDSCAPE.height + PageFormat.TOP_PADDING);
       });
 
       it('#setLayout to free canvas should place tile with zero-sized rect below converted tiles', () => {
@@ -1765,7 +1768,7 @@ describe('DashboardComponent', () => {
           component.showCanvas(CanvasPaging.LANDSCAPE);
 
           // then
-          expect(component.elementContexts.map(c => [c.x, c.y, c.width, c.height])).toEqual([[0, 0, 600, 400], [0, 410, 600, 400]]);
+          expect(component.elementContexts.map(c => [c.x, c.y, c.width, c.height])).toEqual([[0, 10, 600, 400], [0, 420, 600, 400]]);
         });
 
         it('#showCanvas without pages should keep positions of paged tiles', () => {
@@ -2814,7 +2817,7 @@ describe('DashboardComponent', () => {
 
           // then
           expect(component.canvasPagesRef).toBeUndefined();
-          expect([textBox.x, textBox.y]).toEqual([0, 0]);
+          expect([textBox.x, textBox.y]).toEqual([0, 10]);
         });
 
         it('#shrinkNoteToText should size note to text extent in page units of layer', () => {
@@ -3083,7 +3086,7 @@ describe('DashboardComponent', () => {
           expect(Math.abs(tile.height - summary.height)).toBeLessThanOrEqual(1);
         });
 
-        it('#setLayout to free canvas should limit height of grown text tile to page', () => {
+        it('#setLayout to free canvas should limit height of grown text tile to page below top padding', () => {
 
           // given
           renderGridSummaries(1, [[1, 1]], '1:2');
@@ -3093,7 +3096,7 @@ describe('DashboardComponent', () => {
           component.setLayout(Route.FLEX);
 
           // then
-          expect(component.elementContexts[1].height).toBe(PageFormat.LANDSCAPE.height);
+          expect(component.elementContexts[1].height).toBe(PageFormat.LANDSCAPE.height - PageFormat.TOP_PADDING);
         });
 
         it('#setLayout to free canvas should keep offset of note to drawn rect of grown text tile', () => {
@@ -3271,7 +3274,7 @@ describe('DashboardComponent', () => {
       component.applyView(view);
 
       // then
-      expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[0, 0], [610, 0]]);
+      expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[0, 10], [610, 10]]);
     });
 
     it('#applyView should size legacy flex tiles without size by default', () => {
@@ -3299,7 +3302,7 @@ describe('DashboardComponent', () => {
       const context = component.addChart();
 
       // then
-      expect([context.x, context.y]).toEqual([0, 410]);
+      expect([context.x, context.y]).toEqual([0, 420]);
     });
 
     it('#addChart should not place new tile in grid layout', () => {
@@ -3346,7 +3349,7 @@ describe('DashboardComponent', () => {
       return LAYOUT_BUTTON_IDS.filter(id => layoutButton(id).classList.contains('koia-toggle-active'));
     }
 
-    it('layout buttons should follow separator and precede separator in front of add buttons', () => {
+    it('layout buttons should follow separator and precede print button and separator in front of add buttons', () => {
 
       // when
       const buttons = LAYOUT_BUTTON_IDS.map(layoutButton);
@@ -3354,9 +3357,24 @@ describe('DashboardComponent', () => {
       // then
       expect(buttons[0].previousElementSibling.classList).toContain('koia-toolbar-separator');
       buttons.slice(1).forEach((button, i) => expect(button.previousElementSibling).toBe(buttons[i]));
-      const separator = buttons[3].nextElementSibling;
+      const printButton = buttons[3].nextElementSibling;
+      expect(printButton.tagName).toBe('KOIA-PRINT-BUTTON');
+      expect(printButton.querySelector('#but_print')).not.toBeNull();
+      const separator = printButton.nextElementSibling;
       expect(separator.classList).toContain('koia-toolbar-separator');
       expect(separator.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
+    });
+
+    it('layout buttons should lead canvas toolbar without separator', () => {
+
+      // given
+      component.showCanvas(CanvasPaging.NONE);
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(layoutButton('but_snap_to_grid').previousElementSibling).toBeNull();
     });
 
     it('canvas buttons should show free canvas, landscape and portrait icons', () => {
@@ -3577,30 +3595,65 @@ describe('DashboardComponent', () => {
       expect(JSON.stringify(view)).toBe(viewJson);
     });
 
-    it('#click on print button should print window', () => {
+    function printButton(): HTMLButtonElement {
+      return fixture.debugElement.query(By.css('#but_print')).nativeElement;
+    }
+
+    it('#click on print button should print window on pages', () => {
 
       // given
+      component.showCanvas(CanvasPaging.LANDSCAPE);
       component.addGraph();
       fixture.detectChanges();
       vi.spyOn(window, 'print').mockReturnValue(undefined);
 
       // when
-      fixture.debugElement.query(By.css('#but_print')).nativeElement.click();
+      printButton().click();
 
       // then
       expect(window.print).toHaveBeenCalled();
     });
 
-    it('print button should be disabled without elements', () => {
+    it.each([
+      { layout: 'grid', show: (): void => component.snapToGrid() },
+      { layout: 'free canvas', show: (): void => component.showCanvas(CanvasPaging.NONE) }
+    ])('print button should be disabled in $layout', ({ show }) => {
 
       // given
+      show();
+      component.addGraph();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(printButton().disabled).toBe(true);
+    });
+
+    it.each([CanvasPaging.LANDSCAPE, CanvasPaging.PORTRAIT])('print button should be enabled on %s pages', paging => {
+
+      // given
+      component.showCanvas(paging);
+      component.addGraph();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(printButton().disabled).toBe(false);
+    });
+
+    it('print button should be disabled on pages without elements', () => {
+
+      // given
+      component.showCanvas(CanvasPaging.LANDSCAPE);
       component.elementContexts = [];
 
       // when
       fixture.detectChanges();
 
       // then
-      expect(fixture.debugElement.query(By.css('#but_print')).nativeElement.disabled).toBe(true);
+      expect(printButton().disabled).toBe(true);
     });
 
     it('more button should be hidden when grid layout is not shown', () => {

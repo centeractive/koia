@@ -159,7 +159,7 @@ describe('FreeLayout', () => {
     expect(contexts).toEqual([second]);
   });
 
-  it('#fitToPages should keep rects within pages', () => {
+  it('#fitToPages should keep rects within pages below top padding', () => {
 
     // given
     const rects = [{ x: 0, y: 0, width: 400, height: 400 }, { x: 410, y: 0, width: 400, height: 400 }];
@@ -168,16 +168,46 @@ describe('FreeLayout', () => {
     const fitted = layout.fitToPages(rects);
 
     // then
-    expect(fitted).toEqual(rects);
+    expect(fitted).toEqual(rects.map(r => ({ ...r, y: 10 })));
   });
 
-  it('#fitToPages should push row crossing page to next page top', () => {
+  it('#fitToPages should push row crossing page to top padding of next page', () => {
 
     // when
     const fitted = layout.fitToPages([{ x: 0, y: 0, width: 100, height: 900 }, { x: 0, y: 910, width: 100, height: 400 }]);
 
     // then
-    expect(fitted.map(r => r.y)).toEqual([0, 950]);
+    expect(fitted.map(r => r.y)).toEqual([10, 960]);
+  });
+
+  it('#fitToPages should move row within top padding of its page below it', () => {
+
+    // when
+    const fitted = layout.fitToPages([{ x: 0, y: 955, width: 100, height: 100 }]);
+
+    // then
+    expect(fitted.map(r => r.y)).toEqual([960]);
+  });
+
+  it('#fitToPages should keep row at top padding of its page', () => {
+
+    // given
+    const rects = [{ x: 0, y: 10, width: 100, height: 100 }];
+
+    // when
+    const fitted = layout.fitToPages(rects);
+
+    // then
+    expect(fitted).toEqual(rects);
+  });
+
+  it('#fitToPages should push row filling page bottom to next page after top padding', () => {
+
+    // when
+    const fitted = layout.fitToPages([{ x: 0, y: 0, width: 100, height: 900 }, { x: 700, y: 50, width: 100, height: 900 }]);
+
+    // then
+    expect(fitted.map(r => r.y)).toEqual([10, 960]);
   });
 
   it('#fitToPages should shift rows below pushed row', () => {
@@ -191,25 +221,25 @@ describe('FreeLayout', () => {
     ]);
 
     // then
-    expect(fitted.map(r => r.y)).toEqual([0, 950, 950, 1360]);
+    expect(fitted.map(r => r.y)).toEqual([10, 960, 960, 1370]);
   });
 
-  it('#fitToPages should cap height at page height', () => {
+  it('#fitToPages should cap height at page height less top padding', () => {
 
     // when
     const fitted = layout.fitToPages([{ x: 0, y: 0, width: 100, height: 1400 }]);
 
     // then
-    expect(fitted).toEqual([{ x: 0, y: 0, width: 100, height: 950 }]);
+    expect(fitted).toEqual([{ x: 0, y: 10, width: 100, height: 940 }]);
   });
 
-  it('#fitToPages should pull row to top of its page after capped tile', () => {
+  it('#fitToPages should pull row to top padding of its page after capped tile', () => {
 
     // when
     const fitted = layout.fitToPages([{ x: 0, y: 0, width: 100, height: 1400 }, { x: 0, y: 1410, width: 100, height: 1400 }]);
 
     // then
-    expect(fitted).toEqual([{ x: 0, y: 0, width: 100, height: 950 }, { x: 0, y: 950, width: 100, height: 950 }]);
+    expect(fitted).toEqual([{ x: 0, y: 10, width: 100, height: 940 }, { x: 0, y: 960, width: 100, height: 940 }]);
   });
 
   it('#fitToPages should not pull row above fitted bottom', () => {
@@ -218,7 +248,7 @@ describe('FreeLayout', () => {
     const fitted = layout.fitToPages([{ x: 0, y: 910, width: 100, height: 400 }], 900);
 
     // then
-    expect(fitted.map(r => r.y)).toEqual([950]);
+    expect(fitted.map(r => r.y)).toEqual([960]);
   });
 
   it('#placeUnpositioned should flow tiles in rows', () => {
@@ -230,7 +260,7 @@ describe('FreeLayout', () => {
     layout.placeUnpositioned(contexts);
 
     // then
-    expect(positionsOf(contexts)).toEqual([[0, 0], [610, 0]]);
+    expect(positionsOf(contexts)).toEqual([[0, 10], [610, 10]]);
   });
 
   it('#placeUnpositioned should wrap tile exceeding page width', () => {
@@ -242,7 +272,7 @@ describe('FreeLayout', () => {
     layout.placeUnpositioned(contexts);
 
     // then
-    expect(positionsOf(contexts)).toEqual([[0, 0], [0, 310]]);
+    expect(positionsOf(contexts)).toEqual([[0, 10], [0, 320]]);
   });
 
   it('#placeUnpositioned should not wrap first tile of row', () => {
@@ -254,11 +284,11 @@ describe('FreeLayout', () => {
     layout.placeUnpositioned(contexts);
 
     // then
-    expect(positionsOf(contexts)).toEqual([[0, 0]]);
+    expect(positionsOf(contexts)).toEqual([[0, 10]]);
     expect(contexts[0].width).toBe(1400);
   });
 
-  it('#placeUnpositioned should wrap below tile capped at page height', () => {
+  it('#placeUnpositioned should wrap below tile capped at page height less top padding', () => {
 
     // given
     const contexts = [unpositioned(1400, 1200), unpositioned()];
@@ -267,8 +297,8 @@ describe('FreeLayout', () => {
     layout.placeUnpositioned(contexts);
 
     // then
-    expect(positionsOf(contexts)).toEqual([[0, 0], [0, 960]]);
-    expect(contexts[0].height).toBe(950);
+    expect(positionsOf(contexts)).toEqual([[0, 10], [0, 960]]);
+    expect(contexts[0].height).toBe(940);
   });
 
   it('#placeUnpositioned should place below positioned tiles', () => {
@@ -292,7 +322,7 @@ describe('FreeLayout', () => {
     layout.placeUnpositioned(contexts);
 
     // then
-    expect(positionsOf(contexts)).toEqual([[0, 500], [0, 950]]);
+    expect(positionsOf(contexts)).toEqual([[0, 500], [0, 960]]);
   });
 
   it('#placeUnpositioned should default missing size', () => {
@@ -852,13 +882,25 @@ describe('FreeLayout', () => {
       expect(page).toBe(0);
     });
 
-    it('#fitToPages should push row crossing portrait page to next page top', () => {
+    it('#fitToPages should push row crossing portrait page to top padding of next page', () => {
 
       // when
       const rects = portrait.fitToPages([{ x: 0, y: 0, width: 600, height: 400 }, { x: 0, y: 1200, width: 600, height: 400 }]);
 
       // then
-      expect(rects.map(r => r.y)).toEqual([0, 1400]);
+      expect(rects.map(r => r.y)).toEqual([10, 1410]);
+    });
+
+    it('#fitToPages should not pad page top without pages', () => {
+
+      // given
+      const rects = [{ x: 0, y: 0, width: 600, height: 400 }];
+
+      // when
+      const fitted = unpaged.fitToPages(rects);
+
+      // then
+      expect(fitted).toEqual(rects);
     });
 
     it('#fitToPages should only cap heights without pages', () => {
@@ -879,7 +921,7 @@ describe('FreeLayout', () => {
       portrait.placeUnpositioned(contexts);
 
       // then
-      expect(positionsOf(contexts)).toEqual([[0, 0], [0, 410]]);
+      expect(positionsOf(contexts)).toEqual([[0, 10], [0, 420]]);
     });
 
     it('#placeUnpositioned should place tiles across former page boundary without pages', () => {
@@ -926,13 +968,22 @@ describe('FreeLayout', () => {
       ]);
     });
 
-    it('#packRows should cap sizes at page size', () => {
+    it('#packRows should cap sizes at page size less top padding', () => {
 
       // when
       const rects = portrait.packRows([{ width: 1200, height: 1500 }], 0);
 
       // then
-      expect(rects).toEqual([{ x: 0, y: 0, width: 950, height: 1400 }]);
+      expect(rects).toEqual([{ x: 0, y: 0, width: 950, height: 1390 }]);
+    });
+
+    it('#packRows should cap height at page height without pages', () => {
+
+      // when
+      const rects = unpaged.packRows([{ width: 600, height: 1200 }], 0);
+
+      // then
+      expect(rects).toEqual([{ x: 0, y: 0, width: 600, height: 950 }]);
     });
 
     it('#anchoredRect should move rect to rounded offset within anchor rect keeping its size', () => {

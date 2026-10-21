@@ -92,6 +92,7 @@ import { TableModeTogglesComponent } from './shared/ui/virtual-table/table-mode-
 import { PageHeadingComponent } from './shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from './shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from './shared/ui/view-toolbar/view-toolbar.component';
+import { PrintButtonComponent } from './shared/ui/print-button/print-button.component';
 import { DialogCloseButtonComponent } from './shared/ui/dialog-close-button/dialog-close-button.component';
 import { VirtualTableComponent } from './shared/ui/virtual-table/virtual-table.component';
 import { ValueRangeGroupingService } from './shared/value-range';
@@ -146,6 +147,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         VirtualTableComponent,
         TableModeTogglesComponent,
         ViewToolbarComponent,
+        PrintButtonComponent,
         PageHeadingComponent,
         PrintHeadingComponent,
         DialogCloseButtonComponent,

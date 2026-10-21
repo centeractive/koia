@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { PrintButtonComponent } from '../print-button/print-button.component';
 import { ViewToolbarComponent } from './view-toolbar.component';
 
 @Component({
   template: `
-    <koia-view-toolbar [moreMenu]="withMoreMenu ? moreMenu : undefined" [printable]="printable" [hasContent]="hasContent">
+    <koia-view-toolbar [moreMenu]="withMoreMenu ? moreMenu : undefined" [printable]="printable">
       <button id="but_custom" mat-icon-button>x</button>
     </koia-view-toolbar>
     <mat-menu #moreMenu="matMenu"><button id="menuItemCustom" mat-menu-item>Custom</button></mat-menu>`,
@@ -18,7 +19,6 @@ import { ViewToolbarComponent } from './view-toolbar.component';
 class HostComponent {
   withMoreMenu = true;
   printable = true;
-  hasContent = true;
 }
 
 describe('ViewToolbarComponent', () => {
@@ -28,7 +28,7 @@ describe('ViewToolbarComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [HostComponent, ViewToolbarComponent],
+      declarations: [HostComponent, ViewToolbarComponent, PrintButtonComponent],
       imports: [MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule]
     });
     fixture = TestBed.createComponent(HostComponent);
@@ -89,29 +89,18 @@ describe('ViewToolbarComponent', () => {
     expect(element('#but_custom')).not.toBeNull();
   });
 
-  it('#click on print button should print window', () => {
+  it('should omit separator without more menu and print button', () => {
 
     // given
-    fixture.detectChanges();
-    vi.spyOn(window, 'print').mockReturnValue(undefined);
-
-    // when
-    element('#but_print').click();
-
-    // then
-    expect(window.print).toHaveBeenCalled();
-  });
-
-  it('print button should be disabled without content', () => {
-
-    // given
-    host.hasContent = false;
+    host.withMoreMenu = false;
+    host.printable = false;
 
     // when
     fixture.detectChanges();
 
     // then
-    expect(element<HTMLButtonElement>('#but_print').disabled).toBe(true);
+    expect(element('.koia-toolbar-separator')).toBeNull();
+    expect(element('#but_custom')).not.toBeNull();
   });
 
   it('should project custom buttons after separator', () => {

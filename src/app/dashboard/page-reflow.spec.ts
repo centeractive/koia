@@ -39,7 +39,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 410, 600, 400], [0, 0, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 420, 600, 400], [0, 10, 600, 400]]);
   });
 
   it('should keep arrangement fitting portrait page width', () => {
@@ -63,7 +63,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 950, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 950, 400]]);
   });
 
   it('should start tiles of each former page on a new page', () => {
@@ -75,7 +75,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 600, 400], [0, 1410, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 1410, 600, 400]]);
   });
 
   it('should push packed tiles overflowing portrait page to next page', () => {
@@ -87,10 +87,10 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 700, 600], [0, 610, 690, 600], [0, 1400, 700, 300]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 700, 600], [0, 620, 690, 600], [0, 1410, 700, 300]]);
   });
 
-  it('should cap tile height at landscape page height', () => {
+  it('should cap tile height at landscape page height less top padding', () => {
 
     // given
     const elements = [element(0, 0, 600, 1300)];
@@ -99,7 +99,7 @@ describe('PageReflow', () => {
     reflow(portrait, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 600, 950]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 940]]);
   });
 
   it('should push row crossing landscape page boundary below fitted row to next page', () => {
@@ -111,10 +111,10 @@ describe('PageReflow', () => {
     reflow(portrait, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 600, 400], [0, 950, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 960, 600, 400]]);
   });
 
-  it('should pull lone row crossing landscape page boundary to its page top', () => {
+  it('should pull lone row crossing landscape page boundary to top padding of its page', () => {
 
     // given
     const elements = [element(0, 800, 600, 300)];
@@ -123,7 +123,7 @@ describe('PageReflow', () => {
     reflow(portrait, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 600, 300]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 300]]);
   });
 
   it('should fit all tiles of unpaged canvas onto pages as one group', () => {
@@ -135,7 +135,7 @@ describe('PageReflow', () => {
     reflow(unpaged, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 600, 400], [0, 950, 600, 400], [0, 2150, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 960, 600, 400], [0, 2160, 600, 400]]);
   });
 
   it('should keep offset of note to tile below its top left corner', () => {
@@ -147,7 +147,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [...tiles(2), note()]);
 
     // then
-    expect(rectsOf(elements)[2]).toEqual([300, 510, 200, 100]);
+    expect(rectsOf(elements)[2]).toEqual([300, 520, 200, 100]);
   });
 
   it('should anchor note to topmost of overlapping tiles', () => {
@@ -160,8 +160,8 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [...tiles(3), note()]);
 
     // then
-    expect(rectsOf(elements)[2]).toEqual([0, 820, 600, 300]);
-    expect(rectsOf(elements)[3]).toEqual([100, 870, 100, 100]);
+    expect(rectsOf(elements)[2]).toEqual([0, 830, 600, 300]);
+    expect(rectsOf(elements)[3]).toEqual([100, 880, 100, 100]);
   });
 
   it('should keep offset of note without tile below to its page top', () => {
@@ -223,7 +223,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [textTile, ...tiles(1)]);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 0, 600, 200], [0, 610, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 200], [0, 620, 600, 400]]);
   });
 
   it('should keep z-order', () => {

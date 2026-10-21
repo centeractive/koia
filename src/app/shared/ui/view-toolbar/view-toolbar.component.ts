@@ -12,9 +12,4 @@ export class ViewToolbarComponent {
 
   @Input() moreMenu: MatMenu;
   @Input() printable = true;
-  @Input() hasContent = true;
-
-  printView(): void {
-    window.print();
-  }
 }

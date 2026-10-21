@@ -222,7 +222,7 @@ export class FreeLayout {
     let rowBottom = top;
     return sizes.map(size => {
       const width = Math.min(size.width, this.pageFormat.width);
-      const height = Math.min(size.height, this.pageFormat.height);
+      const height = Math.min(size.height, this.maxLaidOutHeight());
       if (x > 0 && x + width > this.pageFormat.width) {
         x = 0;
         y = rowBottom + GridLayout.GAP_PX;
@@ -301,14 +301,14 @@ export class FreeLayout {
   }
 
   /**
-   * moves rows that would cross a page boundary to a page top, rows below are moved along by the same distance;
-   * without pages, only the heights are capped
+   * moves rows that would cross a page boundary to a page top, rows below are moved along by the same distance,
+   * rows keep the top padding of their page; without pages, only the heights are capped
    *
    * @param fittedBottom bottom of the tiles already placed on the canvas
    */
   fitToPages(rects: Rect[], fittedBottom = 0): Rect[] {
     const height = this.pageFormat.height;
-    const fitted = rects.map(r => ({ ...r, height: Math.min(r.height, height) }));
+    const fitted = rects.map(r => ({ ...r, height: Math.min(r.height, this.maxLaidOutHeight()) }));
     if (!this.pageFormat.paged) {
       return fitted;
     }
@@ -316,15 +316,21 @@ export class FreeLayout {
     let offset = 0;
     rowTops.forEach(rowTop => {
       const row = fitted.filter((_, i) => rects[i].y === rowTop);
-      const top = rowTop + offset;
+      let top = rowTop + offset;
       const pageTop = this.pageFormat.pageTopOf(top);
       if (row.some(r => top + r.height > pageTop + height)) {
-        offset += (pageTop >= fittedBottom ? pageTop : pageTop + height) - top;
+        top = pageTop >= fittedBottom ? pageTop : pageTop + height;
       }
-      row.forEach(r => r.y = rowTop + offset);
+      top = Math.max(top, this.pageFormat.pageTopOf(top) + PageFormat.TOP_PADDING);
+      offset = top - rowTop;
+      row.forEach(r => r.y = top);
       fittedBottom = Math.max(fittedBottom, ...row.map(r => r.y + r.height));
     });
     return fitted;
+  }
+
+  private maxLaidOutHeight(): number {
+    return this.pageFormat.paged ? this.pageFormat.height - PageFormat.TOP_PADDING : this.pageFormat.height;
   }
 
   rectFromRendered(left: number, top: number, width: number, height: number, scale: number): Rect {

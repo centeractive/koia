@@ -30,7 +30,7 @@
       @if (loading) {
         <mat-progress-bar mode="indeterminate" [matTooltip]="'dashboard.loadingData' | translate"></mat-progress-bar>
       }
-      <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined" [hasContent]="!!elementContexts?.length">
+      <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined" [printable]="false">
         <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
           [matTooltip]="'dashboard.snapToGrid' | translate" (click)="snapToGrid()">
           <mat-icon svgIcon="snap_grid"></mat-icon>
@@ -47,6 +47,7 @@
           [matTooltip]="'dashboard.portraitPages' | translate" (click)="showCanvas(CanvasPaging.PORTRAIT)">
           <mat-icon>crop_portrait</mat-icon>
         </button>
+        <koia-print-button [disabled]="!isPagedCanvas() || !elementContexts?.length" />
         <span class="koia-toolbar-separator"></span>
         <button mat-icon-button [matTooltip]="'dashboard.addChart' | translate" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
