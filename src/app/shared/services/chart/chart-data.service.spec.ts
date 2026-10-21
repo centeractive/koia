@@ -758,6 +758,31 @@ describe('ChartDataService', () => {
       expect(result.data.datasets[0].data).toEqual([1, 2]);
    });
 
+   it('#createData should create LINEAR_BAR chart data of values counted by text column and split by column without missing values', () => {
+
+      // given
+      context.chartType = ChartType.LINEAR_BAR.type;
+      context.aggregations = [Aggregation.COUNT];
+      context.dataColumns = [createColumn('Level', DataType.TEXT)];
+      context.groupByColumns = [createColumn('Region', DataType.TEXT)];
+      context.splitColumns = [createColumn('Host', DataType.TEXT)];
+      context.entries = [
+         { Level: 'INFO', Region: 'North', Host: 'h1' },
+         { Level: 'INFO', Region: 'North', Host: 'h1' },
+         { Level: null, Region: 'North', Host: 'h1' },
+         { Region: 'South', Host: 'h2' },
+         { Level: 'WARN', Region: 'South', Host: 'h2' }
+      ];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.error).toBeUndefined();
+      expect(result.data.datasets.map(ds => ds.label)).toEqual(['h1 ⯈ INFO', 'h2 ⯈ WARN']);
+      expect(result.data.datasets.map(ds => ds.data)).toEqual([[{ x: 'North', y: 2 }], [{ x: 'South', y: 1 }]]);
+   });
+
    function createColumn(name: string, dataType: DataType, groupingTimeUnit?: TimeUnit): Column {
       const column: Column = {
          name: name,

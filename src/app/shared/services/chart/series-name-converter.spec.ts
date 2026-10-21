@@ -333,6 +333,32 @@ describe('SeriesNameConverter', () => {
       expect(values).toEqual([]);
    });
 
+   it('#toGroupKey should return undefined when data value is null with split columns', () => {
+
+      // given
+      const entry = { x: 'a', y: null };
+      const dataColumn = createColumn('y', DataType.TEXT);
+
+      // when
+      const id = converter.toGroupKey(entry, dataColumn, [createColumn('x', DataType.TEXT)]);
+
+      // then
+      expect(id).toBeUndefined();
+   });
+
+   it('#toGroupKey should return undefined when data value is missing with split columns', () => {
+
+      // given
+      const entry = { x: 'a' };
+      const dataColumn = createColumn('y', DataType.TEXT);
+
+      // when
+      const id = converter.toGroupKey(entry, dataColumn, [createColumn('x', DataType.TEXT)]);
+
+      // then
+      expect(id).toBeUndefined();
+   });
+
    function createColumn(name: string, dataType: DataType): Column {
       return {
          name: name,

@@ -1,6 +1,7 @@
 import { CategoricalColorProvider, CategoricalColorScheme, ColorOptions, ColorProviderFactory, ColorSchemeType } from 'app/shared/color';
 import { Aggregation, Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
+import { GraphContext } from 'app/shared/model/graph';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleData, toEntries } from 'app/shared/samples/sample-data';
 import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
@@ -34,6 +35,16 @@ describe('DashboardGenerator', () => {
   const DATA: Column = { name: 'Data', dataType: DataType.TEXT, width: 10 };
   const HOST: Column = { name: 'Host', dataType: DataType.TEXT, width: 10 };
   const LOG_COLUMNS = [LOG_TIME, LEVEL, DATA, HOST, PATH];
+  const FOOD: Column = { name: 'Food', dataType: DataType.TEXT, width: 10 };
+  const RATING: Column = { name: 'Rating', dataType: DataType.NUMBER, width: 10 };
+  const RESTAURANT_COLUMNS: Column[] = [{ name: 'Name', dataType: DataType.TEXT, width: 10 }, { name: 'City', dataType: DataType.TEXT, width: 10 },
+    FOOD, RATING];
+  const RESTAURANT_ENTRIES = Array.from({ length: 240 }, (_, i) => ({
+    Name: 'n' + i,
+    City: 'c' + (i % 100),
+    Food: i % 40 === 39 ? null : 'F' + (i % 12),
+    Rating: (i % 12 + Math.floor(i / 12) % 4) % 6
+  }));
   const LOG_ENTRIES = Array.from({ length: 40 }, (_, i) => ({
     'Date/Time': new Date(2024, 0, 1).getTime() + Math.round(i * 29 / 39) * HOUR,
     Level: ['ERROR', 'INFO', 'WARN', 'DEBUG'][i % 4],
@@ -103,6 +114,10 @@ describe('DashboardGenerator', () => {
 
   function charts(result: GeneratedDashboard): ChartContext[] {
     return result.elementContexts.filter(c => c instanceof ChartContext);
+  }
+
+  function graphsOf(result: GeneratedDashboard): GraphContext[] {
+    return result.elementContexts.filter(c => c instanceof GraphContext);
   }
 
   function spyIsValid(valid: (context: ChartContext, isValid: () => boolean) => boolean): ChartContext[] {
@@ -534,11 +549,11 @@ describe('DashboardGenerator', () => {
       // then
       expect(createSummarySpy).toHaveBeenCalledTimes(2);
       expect(result.elementContexts.filter(c => c instanceof SummaryContext).length).toBe(1);
-      expect(charts(result).length).toBe(columns - 2);
+      expect(charts(result).length).toBe(rowsOf(columns) * columns - 2);
     }
   });
 
-  it('#generate should drop wide second summary table that cannot get a wide slot', () => {
+  it('#generate should drop wide second summary table that cannot get a wide slot and fill its cell with small relationship graph', () => {
 
     // given
     chooseGridOf(3);
@@ -550,14 +565,18 @@ describe('DashboardGenerator', () => {
 
     // then
     expect(createSummarySpy).toHaveBeenCalledTimes(2);
-    expect(result.elementContexts.length).toBe(1);
-    expect(result.elementContexts[0]).toBeInstanceOf(SummaryContext);
+    expect(result.elementContexts.length).toBe(2);
+    expect(tableOf(result).gridColumnSpan).toBe(2);
+    const graphs = graphsOf(result);
+    expect(graphs.map(g => [g.gridColumnSpan, g.gridRowSpan])).toEqual([[1, 1]]);
+    expect(graphs[0].groupByColumns.map(c => c.name)).toEqual(['Region', 'Level']);
+    expect(cellsOf(result).flat().every(c => c)).toBe(true);
   });
 
   it('#generate should not widen lone summary table', () => {
 
     // given
-    chooseGridOf(3);
+    chooseGridOf(5);
     spyIsValid(() => false);
 
     // when
@@ -573,6 +592,7 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(5);
+    vi.spyOn(TileSpecGenerator.prototype, 'graphGroupings').mockReturnValue([]);
     spyIsValid((context, isValid) => context.chartType === ChartType.PIE.type && context.dataColumns[0].name === 'Level' && isValid());
 
     // when
@@ -595,8 +615,9 @@ describe('DashboardGenerator', () => {
 
       // then
       const chartTypes = validated.map(c => c.chartType);
-      expect(chartTypes.length).toBe(3);
-      expect(new Set(chartTypes).size).toBe(chartTypes.length);
+      const distinctCount = new Set(chartTypes).size;
+      expect(chartTypes.length).toBeGreaterThan(distinctCount);
+      expect(new Set(chartTypes.slice(0, distinctCount)).size).toBe(distinctCount);
     }
   });
 
@@ -628,11 +649,10 @@ describe('DashboardGenerator', () => {
   it('#generate should chart ordinal number column as category without combining it with itself', () => {
 
     // given
-    const rating: Column = { name: 'Rating', dataType: DataType.NUMBER, width: 10 };
     const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: i % 6 }));
 
     // when
-    const result = generatorOf().generate(requestOf([rating], entries));
+    const result = generatorOf().generate(requestOf([RATING], entries));
 
     // then
     expect(charts(result).length).toBeGreaterThan(0);
@@ -644,8 +664,7 @@ describe('DashboardGenerator', () => {
     expect(result.elementContexts.some(c => c instanceof SummaryContext)).toBe(false);
   });
 
-  it('#generate should place time chart, summary table and charts of sparse log data filling rows for every grid', () => {
-    const expectedRows = new Map([[3, 3], [4, 2], [5, 2]]);
+  it('#generate should place time chart, summary table and charts of sparse log data filling the grid of every resolution', () => {
     for (const columns of [3, 4, 5]) {
       for (const values of SEQUENCES) {
 
@@ -663,9 +682,7 @@ describe('DashboardGenerator', () => {
         const tables = result.elementContexts.filter(c => c instanceof SummaryContext);
         expect(tables.map(t => t.gridColumnSpan)).toEqual([2]);
         expect(charts(result).length).toBeGreaterThan(1);
-        const cells = cellsOf(result);
-        expect(cells.length).toBe(expectedRows.get(columns));
-        expect(cells.flat().every(c => c)).toBe(true);
+        expectFilled(result);
       }
     }
   });
@@ -802,4 +819,164 @@ describe('DashboardGenerator', () => {
       });
     }
   }));
+
+  it('#generate should fill grid of food types and ratings with other chart types of the same columns', () => {
+    for (const columns of [3, 4]) {
+      for (const values of SEQUENCES) {
+
+        // given
+        vi.restoreAllMocks();
+        chooseGridOf(columns);
+
+        // when
+        const result = generatorOf(values).generate(requestOf(RESTAURANT_COLUMNS, RESTAURANT_ENTRIES));
+
+        // then
+        expectFilled(result);
+        const signatures = charts(result).map(c => TileSignature.ofContext(c));
+        expect(new Set(signatures).size).toBeLessThan(signatures.length);
+        const keys = charts(result).map(c => TileSignature.keyOfContext(c));
+        expect(new Set(keys).size).toBe(keys.length);
+        expect(graphsOf(result)).toEqual([]);
+      }
+    }
+  });
+
+  it('#generate should fill last cells with wide relationship graph of category pair when charts run out', () => {
+    for (const values of SEQUENCES) {
+
+      // given
+      vi.restoreAllMocks();
+      chooseGridOf(5);
+
+      // when
+      const result = generatorOf(values, estimatorOf(100)).generate(requestOf(RESTAURANT_COLUMNS, RESTAURANT_ENTRIES, [], undefined, 1000));
+
+      // then
+      const graphs = graphsOf(result);
+      expect(graphs.length).toBe(1);
+      expect([graphs[0].gridColumnSpan, graphs[0].gridRowSpan]).toEqual([2, 1]);
+      expect(graphs[0].groupByColumns.map(c => c.name)).toEqual(['Rating', 'Food']);
+      expect(graphs[0].entries).toBe(RESTAURANT_ENTRIES);
+      expect(charts(result).length).toBe(11);
+      expectFilled(result);
+    }
+  });
+
+  it('#generate should add second summary table dropped before other chart types when it completes the grid after them', () => {
+    for (const values of SEQUENCES) {
+
+      // given
+      vi.restoreAllMocks();
+      chooseGridOf(5);
+
+      // when
+      const result = generatorOf(values).generate(requestOf(RESTAURANT_COLUMNS, RESTAURANT_ENTRIES));
+
+      // then
+      expect(result.elementContexts.filter(c => c instanceof SummaryContext).map(t => t.gridColumnSpan)).toEqual([2, 2]);
+      expect(charts(result).length).toBe(11);
+      expect(graphsOf(result)).toEqual([]);
+      expectFilled(result);
+    }
+  });
+
+  it('#generate should complete underfilled row with wide relationship graph instead of widening charts', () => {
+
+    // given
+    chooseGridOf(5);
+    spyIsValid((context, isValid) => context.chartType === ChartType.PIE.type && context.dataColumns[0].name === 'Level' && isValid());
+
+    // when
+    const result = generatorOf().generate(requestOf([LEVEL, REGION], ENTRIES));
+
+    // then
+    expect(tableOf(result).gridColumnSpan).toBe(2);
+    expect(charts(result).map(c => c.gridColumnSpan)).toEqual([1]);
+    const graphs = graphsOf(result);
+    expect(graphs.map(g => g.gridColumnSpan)).toEqual([2]);
+    expect(graphs[0].groupByColumns.map(c => c.name)).toEqual(['Region', 'Level']);
+    expect(cellsOf(result).length).toBe(1);
+    expect(cellsOf(result).flat().every(c => c)).toBe(true);
+  });
+
+  it('#generate should fill last cells with relationship graph of single category without category pair', () => {
+
+    // given
+    chooseGridOf(4);
+    const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: i % 6 }));
+
+    // when
+    const result = generatorOf().generate(requestOf([RATING], entries));
+
+    // then
+    const graphs = graphsOf(result);
+    expect(graphs.length).toBe(1);
+    expect(graphs[0].groupByColumns.map(c => c.name)).toEqual(['Rating']);
+    expect(graphs[0].gridColumnSpan).toBe(2);
+    expect(charts(result).length).toBe(6);
+    expect(cellsOf(result).length).toBe(2);
+    expect(cellsOf(result).flat().every(c => c)).toBe(true);
+  });
+
+  it('#generate should validate other chart types of accepted signatures within the same validation budget', () => {
+
+    // given
+    chooseGridOf(5);
+    const generate = TileSpecGenerator.prototype.generate;
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
+      return generate.call(this, profiles, randomizer, combinations).filter(s => s.chartType && !s.groupByColumns.length);
+    });
+    const signatures = new Set<string>();
+    const validated = spyIsValid(context => {
+      const signature = TileSignature.ofContext(context);
+      const first = !signatures.has(signature);
+      signatures.add(signature);
+      return first;
+    });
+
+    // when
+    generatorOf().generate(requestOf(categoryColumns(8), categoryEntries(8, [])));
+
+    // then
+    expect(validated.length).toBe(DashboardGenerator.MAX_VALIDATIONS);
+  });
+
+  it('#generate should not add relationship graph without category column', () => {
+
+    // given
+    chooseGridOf(5);
+    const graphGroupings = vi.spyOn(TileSpecGenerator.prototype, 'graphGroupings');
+
+    // when
+    const result = generatorOf().generate(requestOf([TIME, AMOUNT], ENTRIES));
+
+    // then
+    expect(graphGroupings).toHaveReturnedWith([]);
+    expect(graphsOf(result)).toEqual([]);
+    expect(cellsOf(result).length).toBeLessThan(rowsOf(5));
+  });
+
+  it('#generate should not repeat time chart feature in other chart type', () => {
+    const fixtures: [Column[], object[]][] = [[[TIME, AMOUNT], ENTRIES], [LOG_COLUMNS, LOG_ENTRIES]];
+    for (const [columns, entries] of fixtures) {
+      for (const gridColumns of [3, 4, 5]) {
+        for (const values of SEQUENCES) {
+
+          // given
+          vi.restoreAllMocks();
+          chooseGridOf(gridColumns);
+
+          // when
+          const result = generatorOf(values).generate(requestOf(columns, entries));
+
+          // then
+          const [feature, ...others] = result.elementContexts.map(c => TileSignature.ofContext(c));
+          expect(isTimeChart(result.elementContexts[0] as ChartContext)).toBe(true);
+          expect(others).not.toContain(feature);
+        }
+      }
+    }
+  });
+
 });

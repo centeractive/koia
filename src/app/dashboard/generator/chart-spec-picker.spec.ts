@@ -77,4 +77,62 @@ describe('ChartSpecPicker', () => {
     // then
     expect(next).toBeUndefined();
   });
+  it('#nextVariant should pick first ranked spec of unused chart type with accepted signature', () => {
+
+    // given
+    const pieA = spec(ChartType.PIE, 'A');
+    const doughnutA = spec(ChartType.DOUGHNUT, 'A');
+    const barA = spec(ChartType.BAR, 'A');
+    const pieB = spec(ChartType.PIE, 'B');
+
+    // when
+    const next = picker.nextVariant([pieB, pieA, doughnutA, barA], new Set([pieA.signature]), new Set([pieA.key]), new Set(),
+      new Set([ChartType.PIE, ChartType.DOUGHNUT]));
+
+    // then
+    expect(next).toBe(barA);
+  });
+
+  it('#nextVariant should pick first ranked spec of used chart type when no other chart type is left', () => {
+
+    // given
+    const pieA = spec(ChartType.PIE, 'A');
+    const doughnutA = spec(ChartType.DOUGHNUT, 'A');
+
+    // when
+    const next = picker.nextVariant([pieA, doughnutA], new Set([pieA.signature]), new Set([pieA.key]), new Set(),
+      new Set([ChartType.PIE, ChartType.DOUGHNUT]));
+
+    // then
+    expect(next).toBe(doughnutA);
+  });
+
+  it('#nextVariant should skip rejected and table specs', () => {
+
+    // given
+    const table = spec(undefined, 'A');
+    const pieA = spec(ChartType.PIE, 'A');
+    const doughnutA = spec(ChartType.DOUGHNUT, 'A');
+    const barA = spec(ChartType.BAR, 'A');
+
+    // when
+    const next = picker.nextVariant([table, doughnutA, barA], new Set([pieA.signature, table.signature]), new Set([pieA.key]),
+      new Set([doughnutA]), new Set([ChartType.PIE]));
+
+    // then
+    expect(next).toBe(barA);
+  });
+
+  it('#nextVariant should return undefined when only accepted keys remain', () => {
+
+    // given
+    const pieA = spec(ChartType.PIE, 'A');
+
+    // when
+    const next = picker.nextVariant([pieA], new Set([pieA.signature]), new Set([pieA.key]), new Set(), new Set());
+
+    // then
+    expect(next).toBeUndefined();
+  });
+
 });

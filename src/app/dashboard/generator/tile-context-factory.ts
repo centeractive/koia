@@ -1,5 +1,6 @@
 import { Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
+import { GraphContext } from 'app/shared/model/graph';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { ValueGroupingGenerator } from 'app/shared/value-range/value-grouping-generator';
 import { DataFrame } from 'data-forge';
@@ -7,7 +8,7 @@ import { ColumnProfile } from './column-profile';
 import { TileSpec } from './tile-spec';
 
 /**
- * creates the element contexts of tile specs on fresh column clones
+ * creates the element contexts of tile specs and relationship graphs on fresh column clones
  */
 export class TileContextFactory {
 
@@ -36,6 +37,13 @@ export class TileContextFactory {
     if (spec.valueGroupingColumn) {
       context.valueGroupings = [this.valueGroupingGenerator.createGrouping(new DataFrame(entries), spec.valueGroupingColumn.name)];
     }
+    context.entries = entries;
+    return context;
+  }
+
+  createGraph(groupByColumns: ColumnProfile[], columns: Column[], entries: object[]): GraphContext {
+    const context = new GraphContext(columns);
+    context.groupByColumns = this.columnsOf(groupByColumns, columns);
     context.entries = entries;
     return context;
   }
