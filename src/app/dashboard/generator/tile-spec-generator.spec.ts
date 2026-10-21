@@ -483,4 +483,61 @@ describe('TileSpecGenerator', () => {
     // then
     expect(specs).toEqual([]);
   });
+  it('#generate should create crosstab charts split by each other category whose combinations with series category fit series limit', () => {
+
+    // given
+    const profiles = [category('A', 2), category('B', 4), category('C', 3)];
+
+    // when
+    const specs = generate(profiles).filter(s => [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR].includes(s.chartType));
+
+    // then
+    const splitSpecs = specs.filter(s => s.splitColumns.length);
+    expect(splitSpecs.map(s => describeSpec(s))).toEqual([
+      'linearBar A by B split C', 'linearHorizontalBar A by B split C', 'linearBar C by B split A', 'linearHorizontalBar C by B split A'
+    ]);
+    splitSpecs.forEach(s => {
+      expect(s.aggregations).toEqual([Aggregation.COUNT]);
+      expect(s.showLegend).toBe(true);
+      expect(s.size).toBe(TileSize.SMALL);
+    });
+    expect(specs.filter(s => !s.splitColumns.length).length).toBe(12);
+  });
+
+  it('#graphGroupings should return first table category pair', () => {
+
+    // given
+    const profiles = [measure('N'), category('A', 6), category('B', 4), category('C', 5)];
+
+    // when
+    const groupings = generator.graphGroupings(profiles, productCounter(profiles));
+
+    // then
+    expect(namesOf(groupings)).toBe('B,A');
+  });
+
+  it('#graphGroupings should return first category without table category pair', () => {
+
+    // given
+    const profiles = [category('A', 6), category('B', 4)];
+
+    // when
+    const groupings = generator.graphGroupings(profiles, counterOf(() => TileSpecGenerator.MAX_HIERARCHY_ROWS + 1));
+
+    // then
+    expect(namesOf(groupings)).toBe('A');
+  });
+
+  it('#graphGroupings should return no column without category', () => {
+
+    // given
+    const profiles = [measure('N'), time('T', 1)];
+
+    // when
+    const groupings = generator.graphGroupings(profiles, productCounter(profiles));
+
+    // then
+    expect(groupings).toEqual([]);
+  });
+
 });

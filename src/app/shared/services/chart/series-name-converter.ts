@@ -15,10 +15,11 @@ export class SeriesNameConverter {
          return entry[dataColumn.name];
       }
       const name = this.fromSplitColumns(entry, splitColumns);
-      if (!name) {
+      const value = entry[dataColumn.name];
+      if (!name || value === undefined || value === null) {
          return undefined;
       }
-      return name + SeriesNameConverter.SEPARATOR + entry[dataColumn.name];
+      return name + SeriesNameConverter.SEPARATOR + value;
    }
 
    /**

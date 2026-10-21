@@ -1,5 +1,6 @@
 import { Aggregation, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ChartType, Margin } from 'app/shared/model/chart';
+import { GraphContext } from 'app/shared/model/graph';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { ValueGroupingGenerator } from 'app/shared/value-range/value-grouping-generator';
 import { DataFrame } from 'data-forge';
@@ -260,4 +261,18 @@ describe('TileContextFactory', () => {
     expect(setSizeSpy).not.toHaveBeenCalled();
     expect([context.width, context.height]).toEqual([700, 300]);
   });
+  it('#createGraph should create graph context with group-by columns and entries', () => {
+
+    // when
+    const context = factory.createGraph([REGION, LEVEL], columns, ENTRIES);
+
+    // then
+    expect(context).toBeInstanceOf(GraphContext);
+    expect(context.columns).toBe(columns);
+    expect(namesOf(context.groupByColumns)).toEqual(['Region', 'Level']);
+    context.groupByColumns.forEach(c => expect(columns).toContain(c));
+    expect(context.dataColumns).toEqual([]);
+    expect(context.entries).toBe(ENTRIES);
+  });
+
 });
