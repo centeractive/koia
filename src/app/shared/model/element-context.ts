@@ -273,8 +273,9 @@ export abstract class ElementContext {
    }
 
    set aggregations(aggregations: Aggregation[]) {
-      if (aggregations?.length > 1 && aggregations.find(a => a === Aggregation.COUNT)) {
-         throw new Error(Aggregation.COUNT + ' must not be combined with other aggregations');
+      const exclusiveAggregation = [Aggregation.COUNT, Aggregation.ROW_COUNT].find(a => aggregations?.includes(a));
+      if (aggregations?.length > 1 && exclusiveAggregation) {
+         throw new Error(exclusiveAggregation + ' must not be combined with other aggregations');
       }
       this._aggregations = aggregations || [];
       this.fireStructureChanged();

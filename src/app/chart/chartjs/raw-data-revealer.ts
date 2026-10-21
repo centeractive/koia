@@ -19,12 +19,14 @@ export class RawDataRevealer {
       }
       const element = elements[0];
       const groupByColumnDataType = context.groupByColumns[0]?.dataType;
-      if (context.isCategoryChart() || (groupByColumnDataType === DataType.TEXT && !context.isAggregationCountSelected())) {
+      if (context.isCategoryChart() || (groupByColumnDataType === DataType.TEXT && !context.isAggregationCountSelected() && !context.isAggregatedChart())) {
          this.fromFlatData(elements, data, context);
       } else if (element.element instanceof PointElement || element.element instanceof BarElement) {
          const point = this.findDataPoint(data.datasets, element.datasetIndex, element.index);
          if (point['id']) {
             this.rawDataRevealService.ofID(point['id']);
+         } else if (context.isAggregatedChart()) {
+            this.fromAggregatedDataPoint(point, data.datasets[element.datasetIndex], context);
          } else {
             this.fromDataPoint(point, data.datasets, element.datasetIndex, context);
          }
@@ -49,6 +51,16 @@ export class RawDataRevealer {
       }
       const columnNames = context.splitColumns.map(c => c.name).concat(dataColumn.name);
       const values = this.seriesNameConverter.toValues(groupKey, dataColumn, context.splitColumns);
+      this.revealGroup(point, columnNames, values, context);
+   }
+
+   private fromAggregatedDataPoint(point: Point, dataset: ChartDataset, context: ChartContext): void {
+      const columnNames = context.splitColumns.map(c => c.name);
+      const values = this.seriesNameConverter.toSplitValues(dataset.label, context.splitColumns);
+      this.revealGroup(point, columnNames, values, context);
+   }
+
+   private revealGroup(point: Point, columnNames: string[], values: (string | number | boolean)[], context: ChartContext): void {
       const groupByColumn = context.groupByColumns[0];
       if (groupByColumn.dataType === DataType.TIME) {
          const timeStart: number = point.x;

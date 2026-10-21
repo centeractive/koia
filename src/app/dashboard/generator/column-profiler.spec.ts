@@ -133,10 +133,114 @@ describe('ColumnProfiler', () => {
   it('#profile should exclude number column with distinct integer values only as identifier', () => {
 
     // given
-    const entries = entriesOf('ID', [1, 2, 3, 4, 5]);
+    const values = Array.from({ length: ColumnProfiler.MIN_IDENTIFIER_DISTINCT }, (_, i) => i + 1);
+    const entries = entriesOf('ID', values);
 
     // when
     const profiles = profiler.profile([column('ID', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles).toEqual([]);
+  });
+
+  it('#profile should classify distinct integer values of small table as measure', () => {
+
+    // given
+    const entries = entriesOf('Children', [10, 25, 37, 42, 58]);
+
+    // when
+    const profiles = profiler.profile([column('Children', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles).toEqual([{
+      name: 'Children', dataType: DataType.NUMBER, role: ColumnRole.MEASURE, distinctCount: 5, presentCount: 5
+    }]);
+  });
+
+  it('#profile should classify integer column of small range as measure and ordinal category', () => {
+
+    // given
+    const entries = entriesOf('Rating', [0, 1, 2, 3, 4, 5, 5, 4, 4, 5]);
+
+    // when
+    const profiles = profiler.profile([column('Rating', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles).toEqual([
+      { name: 'Rating', dataType: DataType.NUMBER, role: ColumnRole.MEASURE, distinctCount: 6, presentCount: 10 },
+      { name: 'Rating', dataType: DataType.NUMBER, role: ColumnRole.CATEGORY, distinctCount: 6, presentCount: 10, maxValueCount: 3 }
+    ]);
+  });
+
+  it('#profile should classify two-valued integer column as ordinal category only', () => {
+
+    // given
+    const entries = entriesOf('Flag', [0, 1, 1, 0, 1]);
+
+    // when
+    const profiles = profiler.profile([column('Flag', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles).toEqual([
+      { name: 'Flag', dataType: DataType.NUMBER, role: ColumnRole.CATEGORY, distinctCount: 2, presentCount: 5, maxValueCount: 3 }
+    ]);
+  });
+
+  it('#profile should classify integer column of maximum ordinal range as ordinal category', () => {
+
+    // given
+    const entries = entriesOf('Month', [1, ColumnProfiler.MAX_ORDINAL_RANGE, 1, 6]);
+
+    // when
+    const profiles = profiler.profile([column('Month', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles.map(p => p.role)).toEqual([ColumnRole.MEASURE, ColumnRole.CATEGORY]);
+  });
+
+  it('#profile should not classify integer column exceeding maximum ordinal range as ordinal category', () => {
+
+    // given
+    const entries = entriesOf('Month', [1, ColumnProfiler.MAX_ORDINAL_RANGE + 1, 1, 6]);
+
+    // when
+    const profiles = profiler.profile([column('Month', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles.map(p => p.role)).toEqual([ColumnRole.MEASURE]);
+  });
+
+  it('#profile should not classify non-integer number column as ordinal category', () => {
+
+    // given
+    const entries = entriesOf('Amount', [1, 2.5, 3, 1]);
+
+    // when
+    const profiles = profiler.profile([column('Amount', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles.map(p => p.role)).toEqual([ColumnRole.MEASURE]);
+  });
+
+  it('#profile should not classify integer column with non-numeric present value as ordinal category', () => {
+
+    // given
+    const entries = entriesOf('Rating', [1, 2, 3, 1, 'n/a']);
+
+    // when
+    const profiles = profiler.profile([column('Rating', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles.map(p => p.role)).toEqual([ColumnRole.MEASURE]);
+  });
+
+  it('#profile should exclude ordinal column with less than half of values present', () => {
+
+    // given
+    const entries = entriesOf('Flag', [0, 1, null, undefined, null]);
+
+    // when
+    const profiles = profiler.profile([column('Flag', DataType.NUMBER)], entries);
 
     // then
     expect(profiles).toEqual([]);

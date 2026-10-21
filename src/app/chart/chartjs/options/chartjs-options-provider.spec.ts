@@ -1,4 +1,4 @@
-import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { Chart, ChartData, Scale, ScaleOptions, registerables } from 'chart.js';
@@ -514,6 +514,71 @@ describe('ChartJsOptionsProvider - LINE scales', () => {
     // then
     expect(options.scales['x']['time'].tooltipFormat).toBe('d.M.yyyy');
   });
+});
+
+describe('ChartJsOptionsProvider - aggregated value scale titles', () => {
+
+  const discountColumn: Column = { name: 'Discount', dataType: DataType.NUMBER, width: 1 };
+
+  beforeAll(() => Chart.register(...registerables));
+
+  it('#provide should define row count value axis title', () => {
+
+    // given
+    const context = aggregatedContext([], Aggregation.ROW_COUNT);
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y']['title'].text).toBe('Row Count');
+  });
+
+  it('#provide should define value aggregation of column as value axis title', () => {
+
+    // given
+    const context = aggregatedContext([COLUMNS[3]], Aggregation.SUM);
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y']['title'].text).toBe('Sum of Amount');
+  });
+
+  it('#provide should define value aggregation as title of value axis shared by columns', () => {
+
+    // given
+    const context = aggregatedContext([COLUMNS[3], discountColumn], Aggregation.SUM);
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y']['title'].text).toBe('Sum');
+  });
+
+  it('#provide should define value aggregation of column as title of additional value axis', () => {
+
+    // given
+    const context = aggregatedContext([COLUMNS[3], discountColumn], Aggregation.SUM);
+    context.multiValueAxes = true;
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y2']['title'].text).toBe('Sum of Discount');
+  });
+
+  function aggregatedContext(dataColumns: Column[], aggregation: Aggregation): ChartContext {
+    const context = new ChartContext(COLUMNS.concat(discountColumn), ChartType.LINE.type, margin());
+    context.dataColumns = dataColumns;
+    context.groupByColumns = [{ ...COLUMNS[0], groupingTimeUnit: TimeUnit.DAY }];
+    context.aggregations = [aggregation];
+    context.data = data();
+    return context;
+  }
 });
 
 function chartContext(chartType: ChartType, groupByColumn: Column): ChartContext {

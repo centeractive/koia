@@ -4,5 +4,9 @@ export enum Aggregation {
    MEDIAN = 'Median',
    MAX = 'Max',
    MIN = 'Min',
-   SUM = 'Sum'
+   SUM = 'Sum',
+   ROW_COUNT = 'Row Count'
 }
+
+export const VALUE_AGGREGATIONS: readonly Aggregation[] = [Aggregation.AVG, Aggregation.MEDIAN, Aggregation.MAX, Aggregation.MIN,
+   Aggregation.SUM];

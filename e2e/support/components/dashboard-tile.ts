@@ -102,6 +102,22 @@ export class DashboardTile {
       return { scrollerBottom: scroller.y + scroller.height, handleTop: handle.y };
    }
 
+   /**
+    * @returns the aria-sort attribute of the first summary table header cell
+    */
+   async firstHeaderSort(): Promise<string> {
+      await this.waitForSummaryTable();
+      return this.root.locator('th.mat-mdc-header-cell').first().getAttribute('aria-sort');
+   }
+
+   /**
+    * @returns the values of the first summary table column of all rows, including those of spanned cells
+    */
+   async firstColumnValues(): Promise<string[]> {
+      await this.waitForSummaryTable();
+      return (await this.root.locator('tr.mat-mdc-row td:first-child').allTextContents()).map(t => t.trim());
+   }
+
    async hoverFirstTableRow(): Promise<void> {
       await this.root.locator('tr.mat-mdc-row').first().hover();
    }

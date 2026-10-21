@@ -6,6 +6,7 @@ import { Column } from '../column.type';
 import { ComputeOperator } from '../compute-operator.enum';
 import { DataType } from '../data-type.enum';
 import { ExportFormat } from '../export-format.enum';
+import { TimeUnit } from '../time-unit.enum';
 import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
 import { ScaleConfig } from './scale-config';
@@ -787,6 +788,241 @@ describe('ChartContext', () => {
       expect(eventHandlerSpy).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
    }));
 
+   it('#isRowCountSelected should return true when row count is selected', () => {
+
+      // given
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const selected = context.isRowCountSelected();
+
+      // then
+      expect(selected).toBe(true);
+   });
+
+   it('#isRowCountSelected should return false when count is selected', () => {
+
+      // given
+      context.aggregations = [Aggregation.COUNT];
+
+      // when
+      const selected = context.isRowCountSelected();
+
+      // then
+      expect(selected).toBe(false);
+   });
+
+   it('#getValueAggregation should return single value aggregation', () => {
+
+      // given
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const aggregation = context.getValueAggregation();
+
+      // then
+      expect(aggregation).toBe(Aggregation.SUM);
+   });
+
+   it('#getValueAggregation should return undefined when no aggregation is selected', () => {
+
+      // given
+      context.aggregations = [];
+
+      // when
+      const aggregation = context.getValueAggregation();
+
+      // then
+      expect(aggregation).toBeUndefined();
+   });
+
+   it('#getValueAggregation should return undefined when count is selected', () => {
+
+      // given
+      context.aggregations = [Aggregation.COUNT];
+
+      // when
+      const aggregation = context.getValueAggregation();
+
+      // then
+      expect(aggregation).toBeUndefined();
+   });
+
+   it('#getValueAggregation should return undefined when multiple aggregations are selected', () => {
+
+      // given
+      context.aggregations = [Aggregation.SUM, Aggregation.AVG];
+
+      // when
+      const aggregation = context.getValueAggregation();
+
+      // then
+      expect(aggregation).toBeUndefined();
+   });
+
+   it('#isAggregatedChart should return true for LINE chart with value aggregation', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const aggregated = context.isAggregatedChart();
+
+      // then
+      expect(aggregated).toBe(true);
+   });
+
+   it('#isAggregatedChart should return false for BAR chart with value aggregation', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const aggregated = context.isAggregatedChart();
+
+      // then
+      expect(aggregated).toBe(false);
+   });
+
+   it('#isDataDefined should return true for row count LINE chart without data column', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const defined = context.isDataDefined();
+
+      // then
+      expect(defined).toBe(true);
+   });
+
+   it('#isDataDefined should return false for row count PIE chart without data column', () => {
+
+      // given
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const defined = context.isDataDefined();
+
+      // then
+      expect(defined).toBe(false);
+   });
+
+   it('#isDataDefined should return true when data column is defined', () => {
+
+      // given
+      context.dataColumns = [column('Amount')];
+
+      // when
+      const defined = context.isDataDefined();
+
+      // then
+      expect(defined).toBe(true);
+   });
+
+   it('#dataColumns should reset row count', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [column('Time')];
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      context.dataColumns = [column('Amount')];
+
+      // then
+      expect(context.aggregations).toEqual([]);
+   });
+
+   it('#addDataColumn should reset row count', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [column('Time')];
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      context.addDataColumn(column('Amount'));
+
+      // then
+      expect(context.aggregations).toEqual([]);
+      expect(context.dataColumns).toEqual([column('Amount')]);
+   });
+
+   it('#getTitle when value aggregation grouped by time unit', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [column('Amount')];
+      context.groupByColumns = [timeColumn(TimeUnit.DAY)];
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const title = context.getTitle();
+
+      // then
+      expect(title).toBe('Sum of Amount by Time per day');
+   });
+
+   it('#getTitle when row count grouped by time unit', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [timeColumn(TimeUnit.HOUR)];
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const title = context.getTitle();
+
+      // then
+      expect(title).toBe('Row Count by Time per hour');
+   });
+
+   it('#getTitle when row count grouped by time without time unit', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [timeColumn(undefined)];
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const title = context.getTitle();
+
+      // then
+      expect(title).toBe('Row Count by Time');
+   });
+
+   it('#getTitle when row count grouped by time unit with split column', () => {
+
+      // given
+      context.chartType = ChartType.AREA.type;
+      context.groupByColumns = [timeColumn(TimeUnit.DAY)];
+      context.splitColumns = [column('Name')];
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const title = context.getTitle();
+
+      // then
+      expect(title).toBe('Row Count by Time per day\nsplit by Name');
+   });
+
+   it('#getTitle when row count of BAR chart', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const title = context.getTitle();
+
+      // then
+      expect(title).toBe('Data: to be defined');
+   });
+
    it('#getTitle when no data column defined', () => {
       expect(context.getTitle()).toBe('Data: to be defined');
    });
@@ -905,6 +1141,23 @@ describe('ChartContext', () => {
       document.documentElement.lang = 'en';
    });
 
+   it('#getTitle of value aggregation should follow current language', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [column('Amount')];
+      context.groupByColumns = [timeColumn(TimeUnit.DAY)];
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      await TestBed.inject(LanguageService).use('de');
+
+      // then
+      expect(context.getTitle()).toBe('Summe von Amount nach Time pro Tag');
+      document.documentElement.lang = 'en';
+   });
+
    it('#getSupportedExportFormats should return PNG', () => {
       expect(context.getSupportedExportFormats()).toEqual([ExportFormat.PNG]);
    });
@@ -918,5 +1171,9 @@ describe('ChartContext', () => {
 
    function column(name: string): Column {
       return columns.find(c => c.name === name);
+   }
+
+   function timeColumn(groupingTimeUnit: TimeUnit): Column {
+      return { ...column('Time'), groupingTimeUnit };
    }
 });

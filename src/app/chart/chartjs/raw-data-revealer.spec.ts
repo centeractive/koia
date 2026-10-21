@@ -469,6 +469,109 @@ describe('RawDataRevealer - LINE', () => {
         expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Amount', 'Rank'], [900, 'A'], context);
     });
 
+    it('#reveal - sum of values by time split by column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'London' + SeriesNameConverter.SEPARATOR + 'Amount', data: [{ x: 1734994800000, y: 1800 }] }]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colCity = textColumn('City');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colCity, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colTimestamp];
+        context.splitColumns = [colCity];
+        context.aggregations = [Aggregation.SUM];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(undefined, [colTimestamp], [1734994800000], ['City'], ['London'], context);
+    });
+
+    it('#reveal - row count by time', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Row Count', data: [{ x: 1734994800000, y: 2 }, { x: 1735081200000, y: 3 }] }]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const context = new ChartContext([colTimestamp], ChartType.LINE.type, null);
+        context.groupByColumns = [colTimestamp];
+        context.aggregations = [Aggregation.ROW_COUNT];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(undefined, [colTimestamp], [1735081200000], [], [], context);
+    });
+
+    it('#reveal - row count by time split by column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: barElement(), datasetIndex: 1, index: 0 }];
+        const data: ChartData = {
+            datasets: [
+                { label: '1', data: [{ x: 1734994800000, y: 2 }] },
+                { label: '2', data: [{ x: 1734994800000, y: 5 }] }
+            ]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colLevel = numberColumn('Level');
+        const context = new ChartContext([colTimestamp, colLevel], ChartType.LINEAR_BAR.type, null);
+        context.groupByColumns = [colTimestamp];
+        context.splitColumns = [colLevel];
+        context.aggregations = [Aggregation.ROW_COUNT];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(undefined, [colTimestamp], [1734994800000], ['Level'], [2], context);
+    });
+
+    it('#reveal - sum of values by number', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Amount', data: [{ x: 3, y: 1800 }] }]
+        };
+        const colRank = numberColumn('Rank');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colRank, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colRank];
+        context.aggregations = [Aggregation.SUM];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Rank'], [3], context);
+    });
+
+    it('#reveal - sum of values by text', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Amount', data: [{ x: 'Burger', y: 900 }, { x: 'Pizza', y: 1800 }] }]
+        } as unknown as ChartData;
+        const colFood = textColumn('Food');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colFood, colAmount], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colFood];
+        context.aggregations = [Aggregation.SUM];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Food'], ['Pizza'], context);
+    });
+
 });
 
 describe('RawDataRevealer - SCATTER', () => {

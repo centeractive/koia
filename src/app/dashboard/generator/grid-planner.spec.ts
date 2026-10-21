@@ -234,6 +234,54 @@ describe('GridPlanner', () => {
     }
   });
 
+  it('#plan should plan at least minimum wide count of wide tiles', () => {
+
+    // when
+    const unconstrained = plannerOf([0]).plan(4, 2, false, 3, 4);
+    const sizes = plannerOf([0]).plan(4, 2, false, 3, 4, false, 2);
+
+    // then
+    expect(count(unconstrained, TileSize.WIDE)).toBe(1);
+    expect(count(sizes, TileSize.WIDE)).toBe(2);
+    expect(unwidenedWidthOf(sizes)).toBe(8);
+  });
+
+  it('#canFill should require wide slots for minimum wide count', () => {
+
+    // given
+    const planner = plannerOf([0]);
+
+    // when
+    const canFill = [planner.canFill(3, 1, 2, 0, 2), planner.canFill(4, 1, 2, 0, 2)];
+
+    // then
+    expect(canFill).toEqual([false, true]);
+  });
+
+  it('#fillableRows should return largest number of rows the stock can fill', () => {
+
+    // given
+    const planner = plannerOf([0]);
+
+    // when
+    const rows = [planner.fillableRows(4, 3, 0, 9), planner.fillableRows(5, 3, 1, 2)];
+
+    // then
+    expect(rows).toEqual([2, 0]);
+  });
+
+  it('#fillableRows should respect minimum wide count', () => {
+
+    // given
+    const planner = plannerOf([0]);
+
+    // when
+    const rows = planner.fillableRows(3, 1, 2, 0, 2);
+
+    // then
+    expect(rows).toBe(0);
+  });
+
   it('#canFill should match feasibility of plan', () => {
     const planner = plannerOf([0.4, 0.8]);
     for (const gridColumns of [3, 4, 5]) {
@@ -279,6 +327,33 @@ describe('GridPlanner', () => {
 
     // then
     expect(spans).toEqual([[5, 2, 2, 1], [2, 2], [3]]);
+  });
+
+  it('#columnSpansOf should widen widenable tiles only', () => {
+
+    // when
+    const spans = GridPlanner.columnSpansOf([TileSize.SMALL, TileSize.SMALL, TileSize.SMALL], 4, [false, true, true]);
+
+    // then
+    expect(spans).toEqual([1, 2, 1]);
+  });
+
+  it('#columnSpansOf should leave free cells empty without widenable tile', () => {
+
+    // when
+    const spans = GridPlanner.columnSpansOf([TileSize.WIDE], 4, [false]);
+
+    // then
+    expect(spans).toEqual([2]);
+  });
+
+  it('#columnSpansOf should give free cells to narrowest widenable tile from left', () => {
+
+    // when
+    const spans = GridPlanner.columnSpansOf([TileSize.SMALL, TileSize.WIDE, TileSize.SMALL], 6, [true, true, false]);
+
+    // then
+    expect(spans).toEqual([3, 2, 1]);
   });
 
   it('#columnSpansOf should return no spans without sizes', () => {

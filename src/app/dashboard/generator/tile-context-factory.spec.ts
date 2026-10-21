@@ -38,8 +38,8 @@ describe('TileContextFactory', () => {
   function specOf(fields: Partial<TileSpec> & Pick<TileSpec, 'dataColumns' | 'aggregations'>): TileSpec {
     const groupByColumns = fields.groupByColumns ?? [];
     const splitColumns = fields.splitColumns ?? [];
-    const signature = TileSignature.of(fields.chartType ? 'chart' : 'table',
-      [...fields.dataColumns, ...groupByColumns, ...splitColumns].map(c => c.name));
+    const kind = fields.chartType ? 'chart' : TileSignature.summaryKind(fields.aggregations.join() === Aggregation.COUNT);
+    const signature = TileSignature.of(kind, [...fields.dataColumns, ...groupByColumns, ...splitColumns].map(c => c.name));
     return {
       signature,
       key: TileSignature.keyOf(signature, fields.chartType?.type),
@@ -109,6 +109,44 @@ describe('TileContextFactory', () => {
     // then
     expect(context.groupByColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
     expect(columns.find(c => c.name === 'Time').groupingTimeUnit).toBe(TimeUnit.MONTH);
+  });
+
+  it('#createChart should create row count chart context without data column', () => {
+
+    // given
+    const spec = specOf({
+      chartType: ChartType.LINE, dataColumns: [], groupByColumns: [TIME], aggregations: [Aggregation.ROW_COUNT], timeChart: true
+    });
+
+    // when
+    const context = factory.createChart(spec, columns, ENTRIES);
+
+    // then
+    expect(context.dataColumns).toEqual([]);
+    expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+    expect(context.isRowCountSelected()).toBe(true);
+    expect(context.isAggregatedChart()).toBe(true);
+    expect(context.isDataDefined()).toBe(true);
+    expect(context.groupByColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
+  });
+
+  it('#createChart should create aggregated time chart context of value aggregation', () => {
+
+    // given
+    const spec = specOf({
+      chartType: ChartType.AREA, dataColumns: [AMOUNT], groupByColumns: [TIME], splitColumns: [LEVEL], aggregations: [Aggregation.SUM],
+      showLegend: true, timeChart: true
+    });
+
+    // when
+    const context = factory.createChart(spec, columns, ENTRIES);
+
+    // then
+    expect(namesOf(context.dataColumns)).toEqual(['Amount']);
+    expect(namesOf(context.splitColumns)).toEqual(['Level']);
+    expect(context.getValueAggregation()).toBe(Aggregation.SUM);
+    expect(context.isAggregatedChart()).toBe(true);
+    expect(context.groupByColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
   });
 
   it('#createChart should take chart margin of chart type', () => {

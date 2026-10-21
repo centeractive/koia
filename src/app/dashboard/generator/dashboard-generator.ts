@@ -1,11 +1,13 @@
 import { ColorProviderFactory } from 'app/shared/color';
 import { Column, ElementContext, SummaryContext } from 'app/shared/model';
-import { ChartContext } from 'app/shared/model/chart';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { TableFitter } from 'app/shared/ui/table-fit/table-fitter';
 import { SummaryTableWidthEstimator } from 'app/summary-table/summary-table-width-estimator';
 import { GridLayout } from '../grid-layout';
+import { CategoryCombinationCounter } from './category-combination-counter';
+import { ChartSpecPicker } from './chart-spec-picker';
 import { ColorOptionsChooser } from './color-options-chooser';
 import { ColumnProfiler } from './column-profiler';
 import { GridChooser, GridDef, rowsOf } from './generated-grid';
@@ -39,7 +41,7 @@ export interface GeneratedDashboard {
 }
 
 /**
- * composes a dashboard of valid charts and a summary table that fill the rows of a newly chosen grid
+ * composes a dashboard of valid charts and up to two summary tables that fill the rows of a newly chosen grid
  */
 export class DashboardGenerator {
 
@@ -49,6 +51,7 @@ export class DashboardGenerator {
   private readonly profiler = new ColumnProfiler();
   private readonly specGenerator = new TileSpecGenerator();
   private readonly ranker = new TileSpecRanker();
+  private readonly picker = new ChartSpecPicker();
   private readonly factory: TileContextFactory;
   private readonly validator: TileValidator;
   private readonly gridChooser: GridChooser;
@@ -73,7 +76,7 @@ export class DashboardGenerator {
     if (!profiles.length) {
       return undefined;
     }
-    const specs = this.specGenerator.generate(profiles, this.randomizer);
+    const specs = this.specGenerator.generate(profiles, this.randomizer, new CategoryCombinationCounter(request.entries));
     if (!specs.length) {
       return undefined;
     }
@@ -84,35 +87,48 @@ export class DashboardGenerator {
     const invalidSpecs = new Set<TileSpec>();
 
     const feature = this.findFeature(ranked, request, accepted, invalidSpecs);
-    const table = this.createTable(ranked, request, accepted, grid.columns);
-    const tableCount = (size: TileSize) => table?.size === size ? 1 : 0;
+    const tables = [this.createTable(ranked, request, accepted, grid.columns)].filter(t => t !== undefined);
     const wideCharts: ChartContext[] = [];
     const smallCharts: ChartContext[] = [];
     const remainingRows = rows - (feature ? 1 : 0);
+    const tablesOf = (withTables: GeneratedTable[], size: TileSize) => withTables.filter(t => t.size === size).map(t => t.context);
+    const fillableRows = (withTables: GeneratedTable[]) => {
+      const wideTables = tablesOf(withTables, TileSize.WIDE).length;
+      return this.planner.fillableRows(grid.columns, remainingRows, wideTables + wideCharts.length,
+        withTables.length - wideTables + smallCharts.length, wideTables);
+    };
+    const usedChartTypes = new Set<ChartType>(feature ? [ChartType.fromType(feature.chartType)] : []);
     let validations = 0;
-    for (const spec of ranked) {
-      if (validations >= DashboardGenerator.MAX_VALIDATIONS || this.planner.canFill(grid.columns, remainingRows,
-        tableCount(TileSize.WIDE) + wideCharts.length, tableCount(TileSize.SMALL) + smallCharts.length)) {
+    while (validations < DashboardGenerator.MAX_VALIDATIONS && fillableRows(tables) < remainingRows) {
+      const spec = this.picker.next(ranked, accepted, invalidSpecs, usedChartTypes);
+      if (!spec) {
         break;
       }
-      if (spec.chartType && !accepted.has(spec.signature) && !invalidSpecs.has(spec)) {
-        const context = this.factory.createChart(spec, request.columns(), request.entries);
-        validations++;
-        if (this.validator.isValid(context)) {
-          accepted.add(spec.signature);
-          (spec.size === TileSize.SMALL ? smallCharts : wideCharts).push(context);
-        }
+      const context = this.factory.createChart(spec, request.columns(), request.entries);
+      validations++;
+      if (this.validator.isValid(context)) {
+        accepted.add(spec.signature);
+        usedChartTypes.add(spec.chartType);
+        (spec.size === TileSize.SMALL ? smallCharts : wideCharts).push(context);
+      } else {
+        invalidSpecs.add(spec);
       }
     }
-    if (!feature && !table && !wideCharts.length && !smallCharts.length) {
+    if (fillableRows(tables) < remainingRows) {
+      const secondTable = this.createTable(ranked, request, accepted, grid.columns);
+      if (secondTable && fillableRows([...tables, secondTable]) > fillableRows(tables)) {
+        tables.push(secondTable);
+      }
+    }
+    if (!feature && !tables.length && !wideCharts.length && !smallCharts.length) {
       return undefined;
     }
 
-    const withTable = (size: TileSize, charts: ChartContext[]): ElementContext[] =>
-      table?.size === size ? [table.context, ...charts] : charts;
-    const wides = withTable(TileSize.WIDE, wideCharts);
-    const smalls = withTable(TileSize.SMALL, smallCharts);
-    const plan = this.planner.plan(grid.columns, rows, !!feature, wides.length, smalls.length, table?.size === TileSize.SMALL);
+    const wideTables = tablesOf(tables, TileSize.WIDE);
+    const wides = [...wideTables, ...wideCharts];
+    const smalls = [...tablesOf(tables, TileSize.SMALL), ...smallCharts];
+    const plan = this.planner.plan(grid.columns, rows, !!feature, wides.length, smalls.length, tables[0]?.size === TileSize.SMALL,
+      wideTables.length);
     const elementContexts = this.assign(plan, feature, wides, smalls, grid.columns);
     this.applyColors(elementContexts, request.currentContexts);
     return { grid, elementContexts };
@@ -137,8 +153,7 @@ export class DashboardGenerator {
   }
 
   /**
-   * creates the summary table that spans one cell when its estimated content width fits a cell, otherwise two cells, unless
-   * widened to fill an underfilled last row
+   * creates the summary table that spans one cell when its estimated content width fits a cell, otherwise two cells
    */
   private createTable(ranked: TileSpec[], request: GenerationRequest, accepted: Set<string>, gridColumns: number):
     GeneratedTable | undefined {
@@ -155,19 +170,18 @@ export class DashboardGenerator {
 
   /**
    * assigns the contexts to the planned sizes in DOM order, wide contexts left over by wide slots fill small slots after the
-   * small contexts, widened to fill an underfilled last row
+   * small contexts, charts widened to fill an underfilled last row
    */
   private assign(plan: TileSize[], feature: ChartContext | undefined, wides: ElementContext[], smalls: ElementContext[],
     gridColumns: number): ElementContext[] {
     const wideSlots = plan.filter(s => s === TileSize.WIDE).length;
     const wideQueue = wides.slice(0, wideSlots);
     const smallQueue = [...smalls, ...wides.slice(wideSlots)];
-    const spans = GridPlanner.columnSpansOf(plan, gridColumns);
-    return plan.map((size, i) => {
-      const context = size === TileSize.FEATURE ? feature : size === TileSize.WIDE ? wideQueue.shift() : smallQueue.shift();
-      this.factory.applyColumnSpan(context, spans[i]);
-      return context;
-    });
+    const contexts = plan.map(size =>
+      size === TileSize.FEATURE ? feature : size === TileSize.WIDE ? wideQueue.shift() : smallQueue.shift());
+    const spans = GridPlanner.columnSpansOf(plan, gridColumns, contexts.map(c => c instanceof ChartContext));
+    contexts.forEach((c, i) => this.factory.applyColumnSpan(c, spans[i]));
+    return contexts;
   }
 
   private applyColors(elementContexts: ElementContext[], currentContexts: ElementContext[]): void {

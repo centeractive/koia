@@ -72,11 +72,41 @@ describe('TileValidator', () => {
     expect(valid).toBe(false);
   });
 
-  it('#isValid should reject sampled down chart', () => {
+  it('#isValid should reject sampled down scatter chart', () => {
 
     // given
     const entries = Array.from({ length: ChartDataService.MAX_DATA_POINTS + 1 }, (_, i) => ({ Amount: i % 7, Time: T0 + i * DAY }));
     const context = chartOf(ChartType.SCATTER, [AMOUNT], [TIME], entries);
+    context.aggregations = [];
+
+    // when
+    const valid = validator.isValid(context);
+
+    // then
+    expect(context.dataSampledDown).toBe(true);
+    expect(valid).toBe(false);
+  });
+
+  it('#isValid should accept sampled down line and area charts over time', () => {
+
+    // given
+    const entries = Array.from({ length: ChartDataService.MAX_DATA_POINTS + 1 }, (_, i) => ({ Amount: i % 7, Time: T0 + i * DAY }));
+    const contexts = [ChartType.LINE, ChartType.AREA].map(chartType => chartOf(chartType, [AMOUNT], [TIME], entries));
+    contexts.forEach(c => c.aggregations = []);
+
+    // when
+    const valid = contexts.map(c => validator.isValid(c));
+
+    // then
+    expect(contexts.map(c => c.dataSampledDown)).toEqual([true, true]);
+    expect(valid).toEqual([true, true]);
+  });
+
+  it('#isValid should reject sampled down line chart not grouped by time', () => {
+
+    // given
+    const entries = Array.from({ length: ChartDataService.MAX_DATA_POINTS + 1 }, (_, i) => ({ Amount: i % 7, Level: i }));
+    const context = chartOf(ChartType.LINE, [AMOUNT], [{ ...AMOUNT, name: 'Level' }], entries);
     context.aggregations = [];
 
     // when

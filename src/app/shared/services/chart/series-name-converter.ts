@@ -36,6 +36,14 @@ export class SeriesNameConverter {
       return name + SeriesNameConverter.SEPARATOR + dataColumn.name;
    }
 
+   /**
+    * @returns the data series name from the entry by considering split column(s) value only,
+    * [[undefined]] if no split column is defined or any split column value is empty
+    */
+   toSplitName(entry: object, splitColumns: Column[]): string | undefined {
+      return this.fromSplitColumns(entry, splitColumns) || undefined;
+   }
+
    private fromSplitColumns(entry: object, splitColumns: Column[]): string | undefined {
       const splitColumnValues = [];
       for (const splitColumn of splitColumns) {
@@ -52,13 +60,18 @@ export class SeriesNameConverter {
     * @returns values extracted from the specified group ID
     */
    toValues(groupKey: string | number | boolean, dataColumn: Column, splitColumns: Column[]): (string | number | boolean)[] {
-      const values: (string | number | boolean)[] = [];
-      const columns = splitColumns.concat(dataColumn);
-      const tokens = groupKey.toString().split(SeriesNameConverter.SEPARATOR);
-      for (let i = 0; i < columns.length; i++) {
-         const dataType = columns[i].dataType;
-         values.push(DataTypeUtils.isNumeric(dataType) ? NumberUtils.parseMachineNumber(tokens[i]) : DataTypeUtils.toTypedValue(tokens[i], dataType, undefined));
-      }
-      return values;
+      return this.typedValues(groupKey.toString().split(SeriesNameConverter.SEPARATOR), splitColumns.concat(dataColumn));
+   }
+
+   /**
+    * @returns split column values extracted from the leading tokens of the specified series name
+    */
+   toSplitValues(seriesName: string, splitColumns: Column[]): (string | number | boolean)[] {
+      return this.typedValues(seriesName.split(SeriesNameConverter.SEPARATOR), splitColumns);
+   }
+
+   private typedValues(tokens: string[], columns: Column[]): (string | number | boolean)[] {
+      return columns.map((c, i) => DataTypeUtils.isNumeric(c.dataType) ?
+         NumberUtils.parseMachineNumber(tokens[i]) : DataTypeUtils.toTypedValue(tokens[i], c.dataType, undefined));
    }
 }

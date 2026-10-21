@@ -365,6 +365,7 @@
     "countDistinctValues": "異なる値を数える",
     "uniqueNamedValues": "一意な名前付きの値",
     "individualValues": "個別の値",
+    "countRows": "行数を数える",
     "stacked": "積み上げ",
     "showDistinctScales": "個別のスケールを表示",
     "values": "値",
@@ -400,6 +401,7 @@
     },
     "title": {
       "countDistinctValuesOf": "{{columns}} の異なる値の数",
+      "aggregationOf": "{{columns}}の{{aggregation}}",
       "groupedBy": "{{title}}（{{columns}} 別）",
       "sample": "{{title}}（サンプル）",
       "splitBy": "{{title}}\n{{columns}} で分割"
@@ -491,7 +493,8 @@
       "MEDIAN": "中央値",
       "MAX": "最大",
       "MIN": "最小",
-      "SUM": "合計"
+      "SUM": "合計",
+      "ROW_COUNT": "行数"
     },
     "operator": {
       "CONTAINS": "含む",

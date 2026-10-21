@@ -1,6 +1,8 @@
 import { Aggregation, DataType, TimeUnit } from 'app/shared/model';
 import { ChartType } from 'app/shared/model/chart';
+import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { SequenceRandomSource } from 'app/shared/test';
+import { CategoryCombinationCounter } from './category-combination-counter';
 import { ColumnProfile, ColumnRole } from './column-profile';
 import { Randomizer } from './randomizer';
 import { TileSignature } from './tile-signature';
@@ -30,8 +32,19 @@ describe('TileSpecGenerator', () => {
     };
   }
 
-  function generate(profiles: ColumnProfile[], randomValues = [0]): TileSpec[] {
-    return generator.generate(profiles, new Randomizer(new SequenceRandomSource(randomValues)));
+  function counterOf(count: (name1: string, name2: string) => number): CategoryCombinationCounter {
+    const counter = new CategoryCombinationCounter([]);
+    vi.spyOn(counter, 'count').mockImplementation(count);
+    return counter;
+  }
+
+  function productCounter(profiles: ColumnProfile[]): CategoryCombinationCounter {
+    const distinctCount = (name: string) => profiles.find(p => p.name === name).distinctCount;
+    return counterOf((name1, name2) => distinctCount(name1) * distinctCount(name2));
+  }
+
+  function generate(profiles: ColumnProfile[], randomValues = [0], combinations = productCounter(profiles)): TileSpec[] {
+    return generator.generate(profiles, new Randomizer(new SequenceRandomSource(randomValues)), combinations);
   }
 
   function namesOf(profiles: ColumnProfile[]): string {
@@ -119,7 +132,7 @@ describe('TileSpecGenerator', () => {
     const profiles = [category('A', 3), category('B', 7), time('T', 2)];
 
     // when
-    const specs = generate(profiles, [0.9]).filter(s => s.timeChart);
+    const specs = generate(profiles, [0.9]).filter(s => s.timeChart && s.aggregations.includes(Aggregation.COUNT));
 
     // then
     expect(specs.map(s => describeSpec(s))).toEqual(['line A by T split ', 'area A by T split ']);
@@ -138,7 +151,7 @@ describe('TileSpecGenerator', () => {
     const profiles = [measure('N1'), measure('N2'), time('T', 1)];
 
     // when
-    const specs = generate(profiles).filter(s => s.timeChart);
+    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length === 0);
 
     // then
     expect(specs.map(s => describeSpec(s))).toEqual([
@@ -191,20 +204,16 @@ describe('TileSpecGenerator', () => {
     });
   });
 
-  it('#generate should not create values over time and scatter specs whose series may exceed maximum data points', () => {
+  it('#generate should not create scatter specs whose series may exceed maximum data points', () => {
 
     // given
     const profiles = [measure('N1', 1001), measure('N2', 500), time('T', 1), category('S1', 3, 1000), category('S2', 4, 1001)];
 
     // when
-    const specs = generate(profiles).filter(s => !isTable(s) && s.aggregations.length === 0);
+    const specs = generate(profiles).filter(s => s.chartType === ChartType.SCATTER);
 
     // then
     expect(specs.map(s => describeSpec(s))).toEqual([
-      'line N1 by T split S1', 'area N1 by T split S1',
-      'line N2 by T split ', 'area N2 by T split ',
-      'line N2 by T split S1', 'area N2 by T split S1',
-      'line N2 by T split S2', 'area N2 by T split S2',
       'scatter N1 by T split S1', 'scatter N1 by N2 split S1',
       'scatter N2 by T split ', 'scatter N2 by T split S1', 'scatter N2 by T split S2',
       'scatter N2 by N1 split ', 'scatter N2 by N1 split S1', 'scatter N2 by N1 split S2'
@@ -271,11 +280,149 @@ describe('TileSpecGenerator', () => {
     const specs = generate(profiles).filter(s => isTable(s));
 
     // then
-    expect(specs.map(s => describeSpec(s))).toEqual(['table A by B split ', 'table C by B split ']);
+    expect(specs.map(s => describeSpec(s))).toEqual(['table A by B split ', 'table A by C split ', 'table C by B split ']);
     specs.forEach(s => {
       expect(s.aggregations).toEqual([Aggregation.COUNT]);
       expect(s.size).toBe(TileSize.WIDE);
     });
+  });
+
+  it('#generate should create category crosstab summary table of combinations within limit although product exceeds it', () => {
+
+    // given
+    const profiles = [category('A', 10), category('B', 10)];
+
+    // when
+    const specs = generate(profiles, [0], counterOf(() => TileSpecGenerator.MAX_HIERARCHY_ROWS)).filter(s => isTable(s));
+
+    // then
+    expect(specs.map(s => describeSpec(s))).toEqual(['table B by A split ']);
+  });
+
+  it('#generate should not create hierarchy summary tables of combinations exceeding limit', () => {
+
+    // given
+    const profiles = [measure('N'), category('A', 4), category('B', 5)];
+
+    // when
+    const specs = generate(profiles, [0], counterOf(() => TileSpecGenerator.MAX_HIERARCHY_ROWS + 1)).filter(s => isTable(s));
+
+    // then
+    expect(specs.map(s => describeSpec(s))).toEqual([
+      'table N by A split ', 'table N by B split ', 'table N by A split ', 'table N by B split '
+    ]);
+  });
+
+  it('#generate should never combine column with itself', () => {
+
+    // given
+    const profiles = [measure('R'), category('R', 6, 10, DataType.NUMBER), category('C', 3), time('T', 1)];
+
+    // when
+    const specs = generate(profiles);
+
+    // then
+    expect(specs.length).toBeGreaterThan(0);
+    specs.forEach(s => {
+      const names = [...s.dataColumns, ...s.groupByColumns, ...s.splitColumns].map(c => c.name);
+      expect(new Set(names).size).toBe(names.length);
+    });
+  });
+
+  it('#generate should create distribution and crosstab charts of ordinal category', () => {
+
+    // given
+    const profiles = [category('Rating', 6, 50, DataType.NUMBER), category('Food', 5)];
+
+    // when
+    const specs = generate(profiles).filter(s => !isTable(s) && s.dataColumns[0].name === 'Rating');
+
+    // then
+    expect(specs.map(s => describeSpec(s))).toEqual([
+      'pie Rating by  split ', 'doughnut Rating by  split ', 'polarArea Rating by  split ', 'radar Rating by  split ',
+      'bar Rating by  split ', 'horizontalBar Rating by  split ',
+      'linearBar Rating by Food split ', 'linearHorizontalBar Rating by Food split '
+    ]);
+  });
+
+  it('#generate should create values over time charts regardless of their data points', () => {
+
+    // given
+    const profiles = [measure('N1', 5000), measure('N2', 5000), time('T', 1)];
+
+    // when
+    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length === 0);
+
+    // then
+    expect(specs.map(s => describeSpec(s))).toEqual([
+      'line N1 by T split ', 'area N1 by T split ',
+      'line N2 by T split ', 'area N2 by T split ',
+      'line N1,N2 by T split ', 'area N1,N2 by T split '
+    ]);
+  });
+
+  it('#generate should create aggregated values over time charts unsplit and split by categories within time series limit', () => {
+
+    // given
+    const profiles = [measure('N'), time('T', 3), category('S1', TileSpecGenerator.MAX_TIME_SERIES),
+      category('S2', TileSpecGenerator.MAX_TIME_SERIES + 1)];
+
+    // when
+    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.includes(Aggregation.SUM));
+
+    // then
+    expect(specs.map(s => describeSpec(s))).toEqual([
+      'line N by T split ', 'area N by T split ',
+      'line N by T split S1', 'area N by T split S1'
+    ]);
+    expect(specs.map(s => s.showLegend)).toEqual([false, false, true, true]);
+    specs.forEach(s => {
+      expect(s.aggregations).toEqual([Aggregation.SUM]);
+      expect(s.multiValueAxes).toBe(false);
+      expect(s.size).toBe(TileSize.WIDE);
+    });
+  });
+
+  it('#generate should create row count over time charts with signature of time column', () => {
+
+    // given
+    const profiles = [time('T', 3)];
+
+    // when
+    const specs = generate(profiles);
+
+    // then
+    expect(specs.map(s => describeSpec(s))).toEqual(['line  by T split ', 'area  by T split ']);
+    specs.forEach(s => {
+      expect(s.aggregations).toEqual([Aggregation.ROW_COUNT]);
+      expect(s.signature).toBe('chart:T');
+      expect(s.showLegend).toBe(false);
+      expect(s.timeChart).toBe(true);
+    });
+  });
+
+  it('#generate should not create aggregating time charts when time buckets equal rows', () => {
+
+    // given
+    const profiles = [measure('N'), time('T', 1, 100)];
+
+    // when
+    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length > 0);
+
+    // then
+    expect(specs).toEqual([]);
+  });
+
+  it('#generate should not create aggregating time charts beyond maximum data points of time buckets', () => {
+
+    // given
+    const profiles = [measure('N'), { ...time('T', 2, ChartDataService.MAX_DATA_POINTS + 1), presentCount: 5000 }];
+
+    // when
+    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length > 0);
+
+    // then
+    expect(specs).toEqual([]);
   });
 
   it('#generate should create value range summary table', () => {
@@ -321,7 +468,8 @@ describe('TileSpecGenerator', () => {
     expect(specs.length).toBeGreaterThan(0);
     specs.forEach(s => {
       const columnNames = [...s.dataColumns, ...s.groupByColumns, ...s.splitColumns].map(c => c.name);
-      const signature = TileSignature.of(isTable(s) ? 'table' : 'chart', columnNames);
+      const kind = isTable(s) ? s.aggregations.join() === Aggregation.COUNT ? 'count' : 'table' : 'chart';
+      const signature = TileSignature.of(kind, columnNames);
       expect(s.signature).toBe(signature);
       expect(s.key).toBe(TileSignature.keyOf(signature, s.chartType?.type));
     });

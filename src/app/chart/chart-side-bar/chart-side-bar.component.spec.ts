@@ -1,5 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { DebugElement, NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -955,6 +955,323 @@ describe('ChartSideBarComponent - data includes time column', () => {
     expect(fixture.nativeElement.querySelector('.span_legend button[mat-button]')).toBeTruthy();
   });
 
+});
+
+describe('ChartSideBarComponent - time aggregation', () => {
+
+  const COLUMNS: Column[] = [
+    { name: 'Time', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.DAY, indexed: true },
+    { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
+    { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true }
+  ];
+
+  beforeEach(waitForAsync(() => {
+    const columns = COLUMNS.map(c => ({ ...c }));
+    setup(columns, columns[0], columns[2]);
+    switchContextTo(ChartType.LINE);
+  }));
+
+  it('time aggregation options should be shown for LINE chart grouped by time column', () => {
+    expect(radioButton('.radio_aggregate_values')).toBeTruthy();
+    expect(radioButton('.radio_count_rows')).toBeTruthy();
+  });
+
+  it('time aggregation options should be hidden for LINE chart grouped by text column', () => {
+
+    // when
+    context.groupByColumns = [findColumn('Level')];
+    fixture.detectChanges();
+
+    // then
+    expect(radioButton('.radio_aggregate_values')).toBeNull();
+    expect(radioButton('.radio_count_rows')).toBeNull();
+  });
+
+  it('time aggregation options should be hidden for BAR chart', () => {
+
+    // when
+    switchContextTo(ChartType.BAR);
+    context.groupByColumns = [findColumn('Time')];
+    fixture.detectChanges();
+
+    // then
+    expect(radioButton('.radio_aggregate_values')).toBeNull();
+    expect(radioButton('.radio_count_rows')).toBeNull();
+  });
+
+  it('aggregate values option should be disabled when text data column is selected', () => {
+
+    // given
+    context.dataColumns = [findColumn('Level')];
+    context.groupByColumns = [findColumn('Time')];
+
+    // when
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+    fixture.detectChanges();
+
+    // then
+    expect(radioButton('.radio_aggregate_values').properties['disabled']).toBe(true);
+  });
+
+  it('#change of aggregate values option should select SUM', () => {
+
+    // when
+    radioButton('.radio_aggregate_values').triggerEventHandler('change');
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.SUM]);
+  });
+
+  it('#change of count rows option should select row count', () => {
+
+    // when
+    radioButton('.radio_count_rows').triggerEventHandler('change');
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+    expect(context.dataColumns).toEqual([]);
+  });
+
+  it('value aggregation field should show selected aggregation', () => {
+
+    // when
+    component.onAggregateValuesSelected();
+    fixture.detectChanges();
+
+    // then
+    const field = fixture.debugElement.query(By.css('.field_value_aggregation'));
+    expect(field.query(By.css('mat-label')).nativeElement.textContent.trim()).toBe('Aggregation');
+    expect(field.query(By.css('mat-select')).componentInstance.value).toBe(Aggregation.SUM);
+  });
+
+  it('#click on value aggregation option should change value aggregation', () => {
+
+    // given
+    component.onAggregateValuesSelected();
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.field_value_aggregation .mat-mdc-select-trigger').click();
+    fixture.detectChanges();
+    const options: HTMLElement[] = Array.from(document.querySelectorAll('mat-option'));
+
+    // when
+    options.find(o => o.textContent.trim() === 'Max').click();
+
+    // then
+    expect(options.map(o => o.textContent.trim())).toEqual(['Average', 'Median', 'Max', 'Min', 'Sum']);
+    expect(context.aggregations).toEqual([Aggregation.MAX]);
+  });
+
+  it('value aggregation field should be hidden when individual values are selected', () => {
+    expect(fixture.nativeElement.querySelector('.field_value_aggregation')).toBeNull();
+  });
+
+  it('time unit field should be shown for chart with value aggregation', () => {
+
+    // when
+    component.onAggregateValuesSelected();
+    fixture.detectChanges();
+
+    // then
+    expect(formFieldLabels()).toContain('Time Unit Grouping');
+  });
+
+  it('time unit field should be shown for row count chart', () => {
+
+    // when
+    component.onRowCountSelected();
+    fixture.detectChanges();
+
+    // then
+    expect(formFieldLabels()).toContain('Time Unit Grouping');
+  });
+
+  it('time unit field should be hidden for individual values', () => {
+    expect(formFieldLabels()).not.toContain('Time Unit Grouping');
+  });
+
+  it('#onRowCountSelected should fire single structure change event', fakeAsync(() => {
+
+    // given
+    const changeListener = vi.fn();
+    context.subscribeToChanges(changeListener);
+
+    // when
+    component.onRowCountSelected();
+
+    // then
+    flush();
+    expect(changeListener).toHaveBeenCalledTimes(1);
+    expect(changeListener).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
+    expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+    expect(context.groupByColumns).toEqual([findColumn('Time')]);
+  }));
+
+  it('#click on number data column should select individual values when row count is selected', () => {
+
+    // given
+    component.onRowCountSelected();
+    fixture.detectChanges();
+
+    // when
+    findDataColumnButton('Amount').click();
+
+    // then
+    expect(context.dataColumns).toEqual([findColumn('Amount')]);
+    expect(context.aggregations).toEqual([]);
+  });
+
+  it('#click on text data column should select count distinct values when row count is selected', () => {
+
+    // given
+    component.onRowCountSelected();
+    fixture.detectChanges();
+
+    // when
+    findDataColumnButton('Level').click();
+
+    // then
+    expect(context.dataColumns).toEqual([findColumn('Level')]);
+    expect(context.aggregations).toEqual([Aggregation.COUNT]);
+  });
+
+  it('#click on BAR chart button should reset value aggregation', () => {
+
+    // given
+    component.onAggregateValuesSelected();
+
+    // when
+    findChartButton(ChartType.BAR).click();
+
+    // then
+    expect(context.getValueAggregation()).toBeUndefined();
+  });
+
+  it('#click on BAR chart button should reset row count', () => {
+
+    // given
+    component.onRowCountSelected();
+
+    // when
+    findChartButton(ChartType.BAR).click();
+
+    // then
+    expect(context.isRowCountSelected()).toBe(false);
+  });
+
+  it('#click on AREA chart button should keep row count', () => {
+
+    // given
+    component.onRowCountSelected();
+
+    // when
+    findChartButton(ChartType.AREA).click();
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+  });
+
+  it('#click on PIE chart button should reset row count and shrink width like undefined chart', () => {
+
+    // given
+    component.onRowCountSelected();
+    context.gridColumnSpan = 2;
+    const initialWidth = context.width;
+
+    // when
+    findChartButton(ChartType.PIE).click();
+
+    // then
+    expect(context.isRowCountSelected()).toBe(false);
+    expect(context.gridColumnSpan).toBe(1);
+    expect(context.width).toBe(initialWidth / 2);
+  });
+
+  it('#click on LINEAR_BAR chart button should keep size of row count LINE chart', () => {
+
+    // given
+    component.onRowCountSelected();
+    context.gridColumnSpan = 2;
+    const initialWidth = context.width;
+
+    // when
+    findChartButton(ChartType.LINEAR_BAR).click();
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+    expect(context.gridColumnSpan).toBe(2);
+    expect(context.width).toBe(initialWidth);
+  });
+
+  it('#onAggregateValuesSelected should select default value aggregation', () => {
+
+    // when
+    component.onAggregateValuesSelected();
+
+    // then
+    expect(context.aggregations).toEqual([ChartSideBarComponent.DEFAULT_VALUE_AGGREGATION]);
+    expect(ChartSideBarComponent.DEFAULT_VALUE_AGGREGATION).toBe(Aggregation.SUM);
+  });
+
+  it('#onGroupByColumnChanged should reset value aggregation when text group-by column is selected', () => {
+
+    // given
+    component.onAggregateValuesSelected();
+
+    // when
+    component.onGroupByColumnChanged(findColumn('Level'));
+
+    // then
+    expect(context.aggregations).toEqual([]);
+  });
+
+  it('#onGroupByColumnChanged should keep row count when time group-by column is selected', () => {
+
+    // given
+    component.onRowCountSelected();
+
+    // when
+    component.onGroupByColumnChanged(findColumn('Time'));
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+  });
+
+  it.each([
+    { aggregations: [Aggregation.COUNT], mode: 'count' },
+    { aggregations: [], mode: 'individual' },
+    { aggregations: [Aggregation.AVG], mode: 'aggregate' },
+    { aggregations: [Aggregation.ROW_COUNT], mode: 'rowCount' }
+  ])('#aggregationMode should return $mode when aggregations are $aggregations', ({ aggregations, mode }) => {
+
+    // given
+    context.aggregations = aggregations;
+
+    // when
+    const aggregationMode = component.aggregationMode();
+
+    // then
+    expect(aggregationMode).toBe(mode);
+  });
+
+  it('#aggregationLabel should return label of aggregation', () => {
+
+    // when
+    const label = component.aggregationLabel(Aggregation.AVG);
+
+    // then
+    expect(label).toBe('Average');
+  });
+
+  function switchContextTo(chartType: ChartType): void {
+    context.chartType = chartType.type;
+    component.selectedChartType = chartType;
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+    fixture.detectChanges();
+  }
+
+  function radioButton(selector: string): DebugElement {
+    return fixture.debugElement.query(By.css(selector));
+  }
 });
 
 describe('ChartSideBarComponent - computed columns', () => {

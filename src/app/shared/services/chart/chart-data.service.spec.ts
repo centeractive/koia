@@ -1,4 +1,4 @@
-import { Column, DataType, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { TestUtils } from 'app/shared/test';
 import { ChartDataService } from './chart-data.service';
@@ -623,6 +623,139 @@ describe('ChartDataService', () => {
       expect(result.error).toBe('X-Axis is not defined');
       expect(result.data).toBeUndefined();
       expect(context.valueRange).toBeUndefined();
+   });
+
+   it('#createData should create aggregated LINE chart data with colors and value range', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.dataColumns = [createColumn('c3', DataType.NUMBER)];
+      context.splitColumns = [createColumn('c1', DataType.TEXT)];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets.map(ds => ds.label)).toEqual(['b ⯈ c3', 'a ⯈ c3']);
+      expect(result.data.datasets[0].data).toEqual([{ x: now, y: 0 }, { x: now + min, y: 3 }]);
+      expect(result.data.datasets[1].data).toEqual([{ x: now, y: -2 }]);
+      expect(result.data.datasets.map(ds => ds.backgroundColor)).toEqual(context.colorProvider.bgColors(2));
+      expect(result.data.datasets.map(ds => ds.borderColor)).toEqual(context.colorProvider.borderColors(2));
+      expect(result.data.datasets[0]['fill']).toBe(false);
+      expect(context.valueRange).toEqual({ min: -2, max: 3 });
+      expect(result.error).toBeUndefined();
+   });
+
+   it('#createData should fill aggregated AREA chart data', () => {
+
+      // given
+      context.chartType = ChartType.AREA.type;
+      context.dataColumns = [createColumn('c3', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [Aggregation.AVG];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0].data).toEqual([{ x: now, y: -1 }, { x: now + min, y: 1.5 }]);
+      expect(result.data.datasets[0]['fill']).toBe(true);
+   });
+
+   it('#createData should assign y-axis IDs to aggregated LINE chart data when multi value axes selected', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.multiValueAxes = true;
+      context.dataColumns = [createColumn('c2', DataType.NUMBER), createColumn('c3', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [Aggregation.MAX];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0]['yAxisID']).toBeUndefined();
+      expect(result.data.datasets[1]['yAxisID']).toBe('y2');
+   });
+
+   it('#createData should count rows of LINE chart without data column', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets.length).toBe(1);
+      expect(result.data.datasets[0].label).toBe('Row Count');
+      expect(result.data.datasets[0].data).toEqual([{ x: now, y: 2 }, { x: now + min, y: 2 }]);
+      expect(context.valueRange).toEqual({ min: 2, max: 2 });
+   });
+
+   it('#createData should return error when no X-Axis is defined for row count LINE chart', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.aggregations = [Aggregation.ROW_COUNT];
+      context.groupByColumns = [];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.error).toBe('X-Axis is not defined');
+      expect(result.data).toBeUndefined();
+      expect(context.valueRange).toBeUndefined();
+   });
+
+   it('#createData should return empty data for value aggregation without data column', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data).toEqual({ labels: [], datasets: [] });
+   });
+
+   it('#createData should return empty data for row count of BAR chart', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data).toEqual({ labels: [], datasets: [] });
+   });
+
+   it('#createData should ignore value aggregation of BAR chart', () => {
+
+      // given
+      context.chartType = ChartType.BAR.type;
+      context.entries = [{ name: 'a', c2: 1 }, { name: 'b', c2: 2 }];
+      context.dataColumns = [createColumn('c2', DataType.NUMBER)];
+      context.aggregations = [Aggregation.SUM];
+      context.groupByColumns = [createColumn('name', DataType.TEXT)];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.labels).toEqual(['a', 'b']);
+      expect(result.data.datasets[0].data).toEqual([1, 2]);
    });
 
    function createColumn(name: string, dataType: DataType, groupingTimeUnit?: TimeUnit): Column {

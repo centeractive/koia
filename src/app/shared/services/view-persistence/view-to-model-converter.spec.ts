@@ -1,5 +1,5 @@
-import { Aggregation, Column, DataType, ElementContext, Query, Route, SummaryContext, TextBoxContext } from 'app/shared/model';
-import { ChartContext } from 'app/shared/model/chart';
+import { Aggregation, Column, DataType, ElementContext, Query, Route, SummaryContext, TextBoxContext, TimeUnit } from 'app/shared/model';
+import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ElementType, ViewElement } from 'app/shared/model/view-config';
 import { Chart } from './chart.type';
 import { ModelToViewConverter } from './model-to-view-converter';
@@ -97,6 +97,38 @@ describe('ViewToModelConverter', () => {
 
       // then
       expect(context.multiValueAxes).toBe(true);
+   });
+
+   it('#convert should persist row count of chart without data column', () => {
+
+      // given
+      const chart = new ChartContext(columns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      chart.groupByColumns = [columns[0]];
+      chart.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      const [context] = converter.convert(viewElementsOf(chart)) as ChartContext[];
+
+      // then
+      expect(context.dataColumns).toEqual([]);
+      expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
+      expect(context.isDataDefined()).toBe(true);
+   });
+
+   it('#convert should restore value aggregation and time unit of group-by column', () => {
+
+      // given
+      const chart = new ChartContext(columns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      chart.dataColumns = [columns[2]];
+      chart.groupByColumns = [{ ...columns[0], groupingTimeUnit: TimeUnit.MONTH }];
+      chart.aggregations = [Aggregation.AVG];
+
+      // when
+      const [context] = converter.convert(viewElementsOf(chart)) as ChartContext[];
+
+      // then
+      expect(context.getValueAggregation()).toBe(Aggregation.AVG);
+      expect(context.groupByColumns.map(c => [c.name, c.groupingTimeUnit])).toEqual([['Time', TimeUnit.MONTH]]);
    });
 
    it('#convert should create text box context', () => {

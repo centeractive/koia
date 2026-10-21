@@ -365,6 +365,7 @@
     "countDistinctValues": "Count Distinct Values",
     "uniqueNamedValues": "Unique Named Values",
     "individualValues": "Individual Values",
+    "countRows": "Count Rows",
     "stacked": "Stacked",
     "showDistinctScales": "Show Distinct Scales",
     "values": "Values",
@@ -400,6 +401,7 @@
     },
     "title": {
       "countDistinctValuesOf": "Count distinct values of {{columns}}",
+      "aggregationOf": "{{aggregation}} of {{columns}}",
       "groupedBy": "{{title}} by {{columns}}",
       "sample": "{{title}} (Sample)",
       "splitBy": "{{title}}\nsplit by {{columns}}"
@@ -491,7 +493,8 @@
       "MEDIAN": "Median",
       "MAX": "Max",
       "MIN": "Min",
-      "SUM": "Sum"
+      "SUM": "Sum",
+      "ROW_COUNT": "Row Count"
     },
     "operator": {
       "CONTAINS": "contains",

@@ -1,4 +1,4 @@
-import { Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
+import { Aggregation, Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { SequenceRandomSource } from 'app/shared/test';
 import { ColumnProfile, ColumnRole } from './column-profile';
@@ -29,6 +29,7 @@ describe('TileSpecRanker', () => {
     const summary = new SummaryContext([LEVEL, REGION]);
     summary.dataColumns = [LEVEL];
     summary.groupByColumns = [REGION];
+    summary.aggregations = [Aggregation.SUM];
     currentContexts = [pie, summary];
     samePieKey = spec(ChartType.PIE, ['Level']);
     otherChartType = spec(ChartType.BAR, ['Level']);

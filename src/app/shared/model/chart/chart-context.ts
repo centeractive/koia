@@ -6,9 +6,12 @@ import { ValueRange } from 'app/shared/value-range/model';
 import { Chart, ChartData } from 'chart.js';
 import * as _ from 'lodash';
 import { ChartType, Margin, ScaleConfig, ScaleRestorer } from '.';
-import { Aggregation } from '../aggregation.enum';
+import { Aggregation, VALUE_AGGREGATIONS } from '../aggregation.enum';
 import { Column } from '../column.type';
+import { DataType } from '../data-type.enum';
 import { ElementContext } from '../element-context';
+import { EnumLabelKeys } from '../enum-label-keys';
+import { EnumLabels } from '../enum-labels';
 import { ExportFormat } from '../export-format.enum';
 
 export class ChartContext extends ElementContext {
@@ -107,6 +110,7 @@ export class ChartContext extends ElementContext {
    }
 
    override set dataColumns(columns: Column[]) {
+      this.resetRowCount();
       if (DataTypeUtils.containsNonNumericColumns(columns)) {
          this._aggregations = [Aggregation.COUNT];
          if (this.isCategoryChart()) {
@@ -131,6 +135,7 @@ export class ChartContext extends ElementContext {
    }
 
    override addDataColumn(dataColumn: Column): void {
+      this.resetRowCount();
       if (this.multiValueAxes) {
          this._valueScales.push(this._valueScaleRestorer.scaleConfig(dataColumn));
       } else if (this.dataColumns.length == 1) {
@@ -140,6 +145,12 @@ export class ChartContext extends ElementContext {
          this._valueScales = [this._valueScaleRestorer.scaleConfig(dataColumn)];
       }
       super.addDataColumn(dataColumn);
+   }
+
+   private resetRowCount(): void {
+      if (this.isRowCountSelected()) {
+         this._aggregations = [];
+      }
    }
 
    override removeDataColumn(dataColumn: Column): void {
@@ -214,6 +225,28 @@ export class ChartContext extends ElementContext {
          this._groupByColumns = ChartUtils.identifyGroupByColumns(this);
       }
       super.aggregations = aggregations;
+   }
+
+   isRowCountSelected(): boolean {
+      return this._aggregations.length === 1 && this._aggregations[0] === Aggregation.ROW_COUNT;
+   }
+
+   /**
+    * @returns the single selected value aggregation (e.g. SUM) or [[undefined]] if none is selected
+    */
+   getValueAggregation(): Aggregation | undefined {
+      return this._aggregations.length === 1 && VALUE_AGGREGATIONS.includes(this._aggregations[0]) ? this._aggregations[0] : undefined;
+   }
+
+   /**
+    * @returns [[true]] if the chart aggregates values or counts rows per group-by value
+    */
+   isAggregatedChart(): boolean {
+      return !this.isCategoryChart() && (this.isRowCountSelected() || !!this.getValueAggregation());
+   }
+
+   isDataDefined(): boolean {
+      return this.hasDataColumn() || (this.isRowCountSelected() && !this.isCategoryChart());
    }
 
    get showLegend(): boolean {
@@ -351,14 +384,13 @@ export class ChartContext extends ElementContext {
       if (this.title) {
          return this.title;
       }
-      if (this.dataColumns.length === 0) {
+      if (!this.isDataDefined()) {
          return LanguageService.instant('element.title.dataUndefined');
       }
-      const dataColumns = this.dataColumns.map(c => c.name).join(', ');
-      let title = this.isAggregationCountSelected() ?
-         LanguageService.instant('chart.title.countDistinctValuesOf', { columns: dataColumns }) : dataColumns;
+      let title = this.baseTitle();
       if (this.groupByColumns.length > 0 && (!this.isCategoryChart() || !this.isAggregationCountSelected())) {
-         title = LanguageService.instant('chart.title.groupedBy', { title, columns: this.groupByColumns.map(c => c.name).join(', ') });
+         const columns = this.groupByColumns.map(c => this.groupByLabel(c)).join(', ');
+         title = LanguageService.instant('chart.title.groupedBy', { title, columns });
       }
       if (this.dataSampledDown) {
          title = LanguageService.instant('chart.title.sample', { title });
@@ -368,6 +400,25 @@ export class ChartContext extends ElementContext {
          title = LanguageService.instant('chart.title.splitBy', { title, columns });
       }
       return title;
+   }
+
+   private baseTitle(): string {
+      const dataColumns = this.dataColumns.map(c => c.name).join(', ');
+      if (this.isRowCountSelected()) {
+         return EnumLabels.aggregation(Aggregation.ROW_COUNT);
+      } else if (this.isAggregatedChart()) {
+         return LanguageService.instant('chart.title.aggregationOf',
+            { aggregation: EnumLabels.aggregation(this.getValueAggregation()), columns: dataColumns });
+      }
+      return this.isAggregationCountSelected() ?
+         LanguageService.instant('chart.title.countDistinctValuesOf', { columns: dataColumns }) : dataColumns;
+   }
+
+   private groupByLabel(column: Column): string {
+      if (this.isAggregatedChart() && column.dataType === DataType.TIME && column.groupingTimeUnit) {
+         return column.name + ' ' + LanguageService.instant(EnumLabelKeys.groupingTimeUnit(column.groupingTimeUnit));
+      }
+      return column.name;
    }
 
    getSupportedExportFormats(): ExportFormat[] {

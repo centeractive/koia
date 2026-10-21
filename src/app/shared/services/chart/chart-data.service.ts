@@ -8,6 +8,7 @@ import { ChartData, ChartDataset } from 'chart.js';
 import { largestTriangleThreeBucket } from 'd3fc-sample';
 import { CouchDBConstants } from '../backend/couchdb';
 import { LanguageService } from '../language/language.service';
+import { AggregatedSeriesFactory } from './aggregated-series-factory';
 import { ChartDataHelper } from './chart-data-helper';
 import { ErrorResultFactory } from './error-result-factory';
 import { SeriesNameConverter } from './series-name-converter';
@@ -21,18 +22,21 @@ export class ChartDataService {
 
   private dataNameConverter = new SeriesNameConverter();
   private errorResultFactory = new ErrorResultFactory();
+  private aggregatedSeriesFactory = new AggregatedSeriesFactory();
 
   createData(context: ChartContext): ChartDataResult {
     context.dataSampledDown = false;
     context.valueRange = undefined;
     context.warning = undefined;
-    if (!context.dataColumns.length) {
+    if (!context.isDataDefined()) {
       return this.emptyResult();
     }
     try {
       const chartType = ChartType.fromType(context.chartType);
       const groupByColDataType = context.groupByColumns[0]?.dataType;
-      if (context.isAggregationCountSelected()) {
+      if (context.isAggregatedChart()) {
+        return { data: this.aggregatedData(chartType, context) };
+      } else if (context.isAggregationCountSelected()) {
         if (context.isCategoryChart()) {
           return { data: this.countDistinctValuesData(chartType, context) };
         } else {
@@ -146,8 +150,20 @@ export class ChartDataService {
     };
   }
 
+  private aggregatedData(chartType: ChartType, context: ChartContext): ChartData {
+    if (!context.groupByColumns.length) {
+      throw this.errorResultFactory.groupByColumnNotDefined(chartType);
+    }
+    const datasets = this.aggregatedSeriesFactory.create(context);
+    context.valueRange = ArrayUtils.overallValueRange(datasets.map(ds => ArrayUtils.numberValueRange(ds.values, 'y')));
+    return this.seriesData(chartType, datasets, context);
+  }
+
   private individualValuesData(chartType: ChartType, context: ChartContext): ChartData {
-    const datasets = this.createIndividualValuesData(chartType, context);
+    return this.seriesData(chartType, this.createIndividualValuesData(chartType, context), context);
+  }
+
+  private seriesData(chartType: ChartType, datasets: DataSet[], context: ChartContext): ChartData {
     const bgColors = context.colorProvider.bgColors(datasets.length);
     const borderColors = context.colorProvider.borderColors(datasets.length);
     return {
