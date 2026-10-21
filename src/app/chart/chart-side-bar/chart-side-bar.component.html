@@ -33,27 +33,26 @@
           }
           <koia-computed-column-launcher [entries]="entries" (columnSaved)="onComputedColumnCreated($event)" />
         </div>
-        <br>
-          <div>
-            <mat-radio-group [value]="aggregationMode()">
-              <mat-radio-button value="count" [disabled]="!countDistinctValuesEnabled"
-                (change)="onAggregationTypeChanged(true)">
-                {{ 'chart.countDistinctValues' | translate }}
-              </mat-radio-button>
-              <mat-radio-button value="individual" [disabled]="!individualValuesEnabled"
-                (change)="onAggregationTypeChanged(false)">
-                {{ (context.isCircularChart() ? 'chart.uniqueNamedValues' : 'chart.individualValues') | translate }}
-              </mat-radio-button>
-              @if (isTimeAggregationAvailable()) {
-                <mat-radio-button class="radio_aggregate_values" value="aggregate" [disabled]="!individualValuesEnabled"
-                  (change)="onAggregateValuesSelected()">
-                  {{ 'summary.sideBar.aggregateValues' | translate }}
-                </mat-radio-button>
-                <mat-radio-button class="radio_count_rows" value="rowCount" (change)="onRowCountSelected()">
-                  {{ 'chart.countRows' | translate }}
-                </mat-radio-button>
-              }
-            </mat-radio-group>&nbsp;&nbsp;&nbsp;
+          <div class="field-row">
+            <mat-form-field class="field_aggregation_mode">
+              <mat-label>{{ 'chart.valueMode' | translate }}</mat-label>
+              <mat-select [value]="aggregationMode()" (selectionChange)="onAggregationModeChanged($event.value)">
+                <mat-option value="count" [disabled]="!countDistinctValuesEnabled">
+                  {{ 'chart.countDistinctValues' | translate }}
+                </mat-option>
+                <mat-option value="individual" [disabled]="!individualValuesEnabled">
+                  {{ (context.isCircularChart() ? 'chart.uniqueNamedValues' : 'chart.individualValues') | translate }}
+                </mat-option>
+                @if (isTimeAggregationAvailable()) {
+                  <mat-option value="aggregate" [disabled]="!individualValuesEnabled">
+                    {{ 'summary.sideBar.aggregateValues' | translate }}
+                  </mat-option>
+                  <mat-option value="rowCount">
+                    {{ 'chart.countRows' | translate }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
             @if (!context.isCircularChart()) {
               <mat-checkbox [(ngModel)]="context.stacked">
                 {{ 'chart.stacked' | translate }}
@@ -142,7 +141,7 @@
             <koia-expansion-panel
               [title]="groupingPanelName()">
               <div class="field-row">
-                <mat-form-field>
+                <mat-form-field class="field_group_by">
                   <mat-label>{{ (context.isCategoryChart() ? 'chart.columnName' : 'chart.groupBy') | translate }}</mat-label>
                   <mat-select [value]="getSingleGroupByColumn()">
                     <mat-select-trigger>

@@ -369,6 +369,7 @@
     "stacked": "Stacked",
     "showDistinctScales": "Show Distinct Scales",
     "values": "Values",
+    "valueMode": "Value Mode",
     "valuesOnAxis": "Values ({{axis}})",
     "name": "Name",
     "names": "Names",

@@ -369,6 +369,7 @@
     "stacked": "Gestapelt",
     "showDistinctScales": "Separate Skalen anzeigen",
     "values": "Werte",
+    "valueMode": "Wertemodus",
     "valuesOnAxis": "Werte ({{axis}})",
     "name": "Name",
     "names": "Namen",

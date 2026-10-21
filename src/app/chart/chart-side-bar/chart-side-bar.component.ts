@@ -8,6 +8,8 @@ import { LanguageService } from 'app/shared/services/language';
 import { Aggregation, Column, DataType, EnumLabels, TimeUnit, VALUE_AGGREGATIONS } from '../../shared/model';
 import { GroupByColumnSelector } from './group-by-column-selector';
 
+export type AggregationMode = 'count' | 'individual' | 'aggregate' | 'rowCount';
+
 @Component({
   selector: 'koia-chart-side-bar',
   templateUrl: './chart-side-bar.component.html',
@@ -142,13 +144,29 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     this.adjustGroupByColumns();
   }
 
-  aggregationMode(): 'count' | 'individual' | 'aggregate' | 'rowCount' {
+  aggregationMode(): AggregationMode {
     if (this.context.isAggregationCountSelected()) {
       return 'count';
     } else if (this.context.isRowCountSelected()) {
       return 'rowCount';
     }
     return this.context.getValueAggregation() ? 'aggregate' : 'individual';
+  }
+
+  onAggregationModeChanged(mode: AggregationMode): void {
+    switch (mode) {
+      case 'count':
+        this.onAggregationTypeChanged(true);
+        break;
+      case 'individual':
+        this.onAggregationTypeChanged(false);
+        break;
+      case 'aggregate':
+        this.onAggregateValuesSelected();
+        break;
+      default:
+        this.onRowCountSelected();
+    }
   }
 
   /**
