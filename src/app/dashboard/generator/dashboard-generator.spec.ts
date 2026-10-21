@@ -1,5 +1,5 @@
 import { CategoricalColorProvider, CategoricalColorScheme, ColorOptions, ColorProviderFactory, ColorSchemeType } from 'app/shared/color';
-import { Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
+import { Aggregation, Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleData, toEntries } from 'app/shared/samples/sample-data';
@@ -8,11 +8,12 @@ import { ChartMarginService } from 'app/shared/services/chart/chart-margin.servi
 import { LANGUAGES } from 'app/shared/services/language';
 import { occupiedCells, SequenceRandomSource } from 'app/shared/test';
 import { SummaryTableWidthEstimator } from 'app/summary-table/summary-table-width-estimator';
+import { ColumnProfiler } from './column-profiler';
 import { DashboardGenerator, GeneratedDashboard, GenerationRequest } from './dashboard-generator';
 import { GENERATED_GRID_COLUMNS, GridChooser, GridDef, rowsOf } from './generated-grid';
 import { TileContextFactory } from './tile-context-factory';
 import { TileSignature } from './tile-signature';
-import { TileSize } from './tile-spec';
+import { TileSize, TileSpec } from './tile-spec';
 import { TileSpecGenerator } from './tile-spec-generator';
 import { TileValidator } from './tile-validator';
 
@@ -138,7 +139,7 @@ describe('DashboardGenerator', () => {
 
     // given
     const columns: Column[] = [{ name: 'Id', dataType: DataType.NUMBER, width: 10 }, { name: 'Kind', dataType: DataType.TEXT, width: 10 }];
-    const entries = Array.from({ length: 10 }, (_, i) => ({ Id: i, Kind: 'same' }));
+    const entries = Array.from({ length: ColumnProfiler.MIN_IDENTIFIER_DISTINCT }, (_, i) => ({ Id: i, Kind: 'same' }));
 
     // when
     const result = generatorOf().generate(requestOf(columns, entries));
@@ -150,7 +151,7 @@ describe('DashboardGenerator', () => {
   it('#generate should return undefined when qualifying columns allow no tile', () => {
 
     // given
-    const entries = Array.from({ length: 10 }, (_, i) => ({ Amount: i % 4 }));
+    const entries = Array.from({ length: 10 }, (_, i) => ({ Amount: (i % 4) * 10 }));
 
     // when
     const result = generatorOf().generate(requestOf([AMOUNT], entries));
@@ -217,8 +218,8 @@ describe('DashboardGenerator', () => {
 
     // given
     const generate = TileSpecGenerator.prototype.generate;
-    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer) {
-      return generate.call(this, profiles, randomizer).filter(s => s.size !== TileSize.SMALL || ChartType.CIRCULAR.includes(s.chartType));
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
+      return generate.call(this, profiles, randomizer, combinations).filter(s => s.size !== TileSize.SMALL || ChartType.CIRCULAR.includes(s.chartType));
     });
     const circularCharts: ChartContext[] = [];
 
@@ -355,11 +356,11 @@ describe('DashboardGenerator', () => {
     expect(validated.length).toBe(DashboardGenerator.MAX_VALIDATIONS);
   });
 
-  it('#generate should find time chart and table beyond validation budget of other specs', () => {
+  it('#generate should find time chart feature and summary table within the validation budget', () => {
 
     // given
     const categories = categoryColumns(8);
-    const columns = [...categories, TIME, AMOUNT];
+    const columns = [...categories, TIME];
     const currentContexts = categories.map(c => chartContextOf(ChartType.LINE, [c], [TIME]));
     const validated = spyIsValid((context, isValid) => isTimeChart(context) && isValid());
     const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
@@ -368,13 +369,12 @@ describe('DashboardGenerator', () => {
     const result = generatorOf().generate(requestOf(columns, categoryEntries(8, [TIME]), currentContexts));
 
     // then
-    expect(validated.length).toBe(1 + DashboardGenerator.MAX_VALIDATIONS);
-    expect(validated.slice(1).some(c => isTimeChart(c))).toBe(false);
+    expect(validated.length).toBeLessThanOrEqual(1 + DashboardGenerator.MAX_VALIDATIONS);
     const first = result.elementContexts[0] as ChartContext;
     expect(isTimeChart(first)).toBe(true);
     expect(first.gridColumnSpan).toBe(result.grid.columns);
-    expect(createSummarySpy).toHaveBeenCalledTimes(1);
-    expect(createSummarySpy.mock.results[0].value).toBeInstanceOf(SummaryContext);
+    expect(result.elementContexts.filter(c => c instanceof SummaryContext).length).toBeGreaterThan(0);
+    createSummarySpy.mock.results.forEach(r => expect(r.value).toBeInstanceOf(SummaryContext));
   });
 
   it('#generate should stop feature search after maximum validations', () => {
@@ -473,11 +473,10 @@ describe('DashboardGenerator', () => {
   it('#generate should generate without summary table when no table spec exists', () => {
 
     // given
-    const code: Column = { name: 'Code', dataType: DataType.TEXT, width: 10 };
-    const entries = monthsOf(24).flatMap(time => Array.from({ length: 30 }, (_, k) => ({ Level: 'L' + (k % 5), Code: 'C' + (k % 6), Time: time })));
+    const entries = monthsOf(24).flatMap(time => Array.from({ length: 30 }, (_, k) => ({ Level: 'L' + (k % 5), Time: time })));
 
     // when
-    const result = generatorOf().generate(requestOf([LEVEL, code, TIME], entries));
+    const result = generatorOf().generate(requestOf([LEVEL, TIME], entries));
 
     // then
     expect(result.elementContexts.length).toBeGreaterThan(0);
@@ -485,9 +484,10 @@ describe('DashboardGenerator', () => {
     expect(isTimeChart(result.elementContexts[0] as ChartContext)).toBe(true);
   });
 
-  it('#generate should fill a row with the summary table alone when no chart is valid', () => {
+  it('#generate should fill a row with two wide summary tables when no chart is valid', () => {
 
     // given
+    chooseGridOf(4);
     const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
     spyIsValid(() => false);
 
@@ -495,14 +495,157 @@ describe('DashboardGenerator', () => {
     const result = generatorOf().generate(requestOf(COLUMNS, ENTRIES));
 
     // then
-    expect(createSummarySpy).toHaveBeenCalledTimes(1);
-    expect(result.elementContexts.length).toBe(1);
-    expect(result.elementContexts[0]).toBeInstanceOf(SummaryContext);
-    expect([result.elementContexts[0].gridColumnSpan, result.elementContexts[0].gridRowSpan]).toEqual([result.grid.columns, 1]);
+    expect(createSummarySpy).toHaveBeenCalledTimes(2);
+    expect(result.elementContexts.every(c => c instanceof SummaryContext)).toBe(true);
+    expect(result.elementContexts.map(c => [c.gridColumnSpan, c.gridRowSpan])).toEqual([[2, 1], [2, 1]]);
+    expect(new Set(result.elementContexts.map(c => TileSignature.ofContext(c))).size).toBe(2);
   });
 
-  it('#generate should place time chart and all three small charts of sparse log data for every grid', () => {
-    const expectedSpans = new Map([[3, [3, 1, 1, 1]], [4, [4, 2, 1, 1]], [5, [5, 2, 2, 1]]]);
+  it('#generate should add second summary table of its own width when it fills more rows', () => {
+
+    // given
+    chooseGridOf(3);
+    const estimator = new SummaryTableWidthEstimator();
+    vi.spyOn(estimator, 'estimate').mockReturnValueOnce(400).mockReturnValueOnce(100);
+    const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
+    spyIsValid(() => false);
+
+    // when
+    const result = generatorOf([0.3], estimator).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+
+    // then
+    expect(result.elementContexts.every(c => c instanceof SummaryContext)).toBe(true);
+    expect(createSummarySpy.mock.results.map(r => (r.value as SummaryContext).gridColumnSpan)).toEqual([2, 1]);
+    expect(cellsOf(result).flat().every(c => c)).toBe(true);
+  });
+
+  it('#generate should not add second summary table when it would only replace charts', () => {
+    for (const columns of [4, 5]) {
+
+      // given
+      vi.restoreAllMocks();
+      chooseGridOf(columns);
+      const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
+      spyIsValid((context, isValid) => !isTimeChart(context) && context.chartType !== ChartType.SCATTER.type && isValid());
+
+      // when
+      const result = generatorOf().generate(requestOf(COLUMNS, ENTRIES));
+
+      // then
+      expect(createSummarySpy).toHaveBeenCalledTimes(2);
+      expect(result.elementContexts.filter(c => c instanceof SummaryContext).length).toBe(1);
+      expect(charts(result).length).toBe(columns - 2);
+    }
+  });
+
+  it('#generate should drop wide second summary table that cannot get a wide slot', () => {
+
+    // given
+    chooseGridOf(3);
+    const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
+    spyIsValid(() => false);
+
+    // when
+    const result = generatorOf().generate(requestOf(COLUMNS, ENTRIES));
+
+    // then
+    expect(createSummarySpy).toHaveBeenCalledTimes(2);
+    expect(result.elementContexts.length).toBe(1);
+    expect(result.elementContexts[0]).toBeInstanceOf(SummaryContext);
+  });
+
+  it('#generate should not widen lone summary table', () => {
+
+    // given
+    chooseGridOf(3);
+    spyIsValid(() => false);
+
+    // when
+    const result = generatorOf().generate(requestOf([LEVEL, REGION], ENTRIES));
+
+    // then
+    expect(result.elementContexts.length).toBe(1);
+    expect(result.elementContexts[0]).toBeInstanceOf(SummaryContext);
+    expect([result.elementContexts[0].gridColumnSpan, result.elementContexts[0].gridRowSpan]).toEqual([2, 1]);
+  });
+
+  it('#generate should widen charts but not summary table of underfilled row', () => {
+
+    // given
+    chooseGridOf(5);
+    spyIsValid((context, isValid) => context.chartType === ChartType.PIE.type && context.dataColumns[0].name === 'Level' && isValid());
+
+    // when
+    const result = generatorOf().generate(requestOf([LEVEL, REGION], ENTRIES));
+
+    // then
+    expect(tableOf(result).gridColumnSpan).toBe(2);
+    expect(charts(result).map(c => c.gridColumnSpan)).toEqual([3]);
+  });
+
+  it('#generate should prefer unused chart types', () => {
+    for (const values of SEQUENCES) {
+
+      // given
+      vi.restoreAllMocks();
+      const validated = spyIsValid((_context, isValid) => isValid());
+
+      // when
+      generatorOf(values).generate(requestOf([LEVEL, REGION], ENTRIES));
+
+      // then
+      const chartTypes = validated.map(c => c.chartType);
+      expect(chartTypes.length).toBe(3);
+      expect(new Set(chartTypes).size).toBe(chartTypes.length);
+    }
+  });
+
+  it('#generate should reuse chart type when no other chart type is valid', () => {
+
+    // given
+    spyIsValid((context, isValid) => context.chartType === ChartType.PIE.type && isValid());
+
+    // when
+    const result = generatorOf().generate(requestOf(COLUMNS, ENTRIES));
+
+    // then
+    expect(charts(result).map(c => c.chartType)).toEqual([ChartType.PIE.type, ChartType.PIE.type]);
+  });
+
+  it('#generate should stop validating before maximum validations when candidates run out', () => {
+
+    // given
+    const validated = spyIsValid(() => false);
+
+    // when
+    generatorOf().generate(requestOf([LEVEL], ENTRIES));
+
+    // then
+    expect(validated.length).toBe(6);
+    expect(validated.length).toBeLessThan(DashboardGenerator.MAX_VALIDATIONS);
+  });
+
+  it('#generate should chart ordinal number column as category without combining it with itself', () => {
+
+    // given
+    const rating: Column = { name: 'Rating', dataType: DataType.NUMBER, width: 10 };
+    const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: i % 6 }));
+
+    // when
+    const result = generatorOf().generate(requestOf([rating], entries));
+
+    // then
+    expect(charts(result).length).toBeGreaterThan(0);
+    charts(result).forEach(c => {
+      expect(c.dataColumns.map(col => col.name)).toEqual(['Rating']);
+      expect(c.groupByColumns).toEqual([]);
+      expect(c.aggregations).toEqual([Aggregation.COUNT]);
+    });
+    expect(result.elementContexts.some(c => c instanceof SummaryContext)).toBe(false);
+  });
+
+  it('#generate should place time chart, summary table and charts of sparse log data filling rows for every grid', () => {
+    const expectedRows = new Map([[3, 3], [4, 2], [5, 2]]);
     for (const columns of [3, 4, 5]) {
       for (const values of SEQUENCES) {
 
@@ -514,15 +657,19 @@ describe('DashboardGenerator', () => {
         const result = generatorOf(values).generate(requestOf(LOG_COLUMNS, LOG_ENTRIES));
 
         // then
-        expect(result.elementContexts.length).toBe(4);
-        expect(isTimeChart(result.elementContexts[0] as ChartContext)).toBe(true);
-        expect(result.elementContexts.map(c => c.gridColumnSpan)).toEqual(expectedSpans.get(columns));
+        const first = result.elementContexts[0] as ChartContext;
+        expect(isTimeChart(first)).toBe(true);
+        expect(first.gridColumnSpan).toBe(columns);
+        const tables = result.elementContexts.filter(c => c instanceof SummaryContext);
+        expect(tables.map(t => t.gridColumnSpan)).toEqual([2]);
+        expect(charts(result).length).toBeGreaterThan(1);
         const cells = cellsOf(result);
-        expect(cells.length).toBe(2);
+        expect(cells.length).toBe(expectedRows.get(columns));
         expect(cells.flat().every(c => c)).toBe(true);
       }
     }
   });
+
 
   it('#generate should unstack time chart of series with different time buckets', () => {
 
@@ -538,6 +685,12 @@ describe('DashboardGenerator', () => {
   it('#generate should not revalidate time charts found invalid in feature search', () => {
 
     // given
+    const generate = TileSpecGenerator.prototype.generate;
+    const specs: TileSpec[] = [];
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
+      specs.push(...generate.call(this, profiles, randomizer, combinations));
+      return specs;
+    });
     const validated = spyIsValid((context, isValid) => !isTimeChart(context) && isValid());
 
     // when
@@ -545,7 +698,7 @@ describe('DashboardGenerator', () => {
 
     // then
     const timeChartKeys = validated.filter(c => isTimeChart(c)).map(c => TileSignature.keyOfContext(c));
-    expect(timeChartKeys.length).toBe(4);
+    expect(timeChartKeys.length).toBe(specs.filter(s => s.timeChart).length);
     expect(new Set(timeChartKeys).size).toBe(timeChartKeys.length);
   });
 
@@ -593,8 +746,8 @@ describe('DashboardGenerator', () => {
       vi.restoreAllMocks();
       chooseGridOf(4);
       const generate = TileSpecGenerator.prototype.generate;
-      vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer) {
-        return generate.call(this, profiles, randomizer).filter(s => s.size !== TileSize.SMALL || !s.chartType);
+      vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
+        return generate.call(this, profiles, randomizer, combinations).filter(s => s.size !== TileSize.SMALL || !s.chartType);
       });
 
       // when

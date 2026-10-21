@@ -5,7 +5,7 @@ import { ChartMarginService } from 'app/shared/services/chart/chart-margin.servi
 import { CommonUtils, DataTypeUtils } from 'app/shared/utils';
 import { isAnalyzableColumn, isComputedColumn } from 'app/shared/utils/column-utils';
 import { LanguageService } from 'app/shared/services/language';
-import { Aggregation, Column, DataType, EnumLabels, TimeUnit } from '../../shared/model';
+import { Aggregation, Column, DataType, EnumLabels, TimeUnit, VALUE_AGGREGATIONS } from '../../shared/model';
 import { GroupByColumnSelector } from './group-by-column-selector';
 
 @Component({
@@ -17,6 +17,8 @@ import { GroupByColumnSelector } from './group-by-column-selector';
 })
 export class ChartSideBarComponent extends SideBarController implements OnChanges {
 
+  static readonly DEFAULT_VALUE_AGGREGATION = Aggregation.SUM;
+
   @Input() context: ChartContext;
 
   selectedChartType: ChartType;
@@ -26,6 +28,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   individualValuesEnabled: boolean;
   readonly chartTypes = ChartType.ALL;
   readonly legendPositions = ['top', 'right', 'bottom', 'left'];
+  readonly valueAggregations = VALUE_AGGREGATIONS;
 
   constructor(private chartMarginService: ChartMarginService, private languageService: LanguageService) {
     super();
@@ -66,6 +69,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   }
 
   switchTo(chartType: ChartType): void {
+    this.resetUnavailableTimeAggregation(chartType.type);
     if (this.context.isCircularChart() && !DataTypeUtils.containsNonNumericColumns(this.context.dataColumns)) {
       this.context.aggregations = [];
     }
@@ -101,6 +105,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
   }
 
   private adjustAggregation(): void {
+    this.resetUnavailableTimeAggregation();
     this.defineAggregationOptions();
     if (!this.individualValuesEnabled && !this.countDistinctValuesEnabled) {
       this.context.dataColumns = this.context.dataColumns.slice(0, 1);
@@ -123,6 +128,13 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     if (!CommonUtils.compare(groupByColumns, this.context.groupByColumns)) {
       this.context.groupByColumns = groupByColumns;
     }
+    this.resetUnavailableTimeAggregation();
+  }
+
+  private resetUnavailableTimeAggregation(chartType = this.context.chartType): void {
+    if ((this.context.isRowCountSelected() || this.context.getValueAggregation()) && !this.isTimeAggregationAvailable(chartType)) {
+      this.context.aggregations = [];
+    }
   }
 
   onAggregationTypeChanged(countDistinctValues: boolean): void {
@@ -130,8 +142,47 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
     this.adjustGroupByColumns();
   }
 
+  aggregationMode(): 'count' | 'individual' | 'aggregate' | 'rowCount' {
+    if (this.context.isAggregationCountSelected()) {
+      return 'count';
+    } else if (this.context.isRowCountSelected()) {
+      return 'rowCount';
+    }
+    return this.context.getValueAggregation() ? 'aggregate' : 'individual';
+  }
+
+  /**
+   * values can be aggregated and rows counted per time unit on non-category charts grouped by a time column
+   */
+  isTimeAggregationAvailable(chartType = this.context.chartType): boolean {
+    return !ChartType.isCategoryChart(ChartType.fromType(chartType)) && !!this.groupByTimeColumn;
+  }
+
+  aggregationLabel(aggregation: Aggregation): string {
+    return EnumLabels.aggregation(aggregation);
+  }
+
+  onValueAggregationChanged(aggregation: Aggregation): void {
+    this.context.aggregations = [aggregation];
+    this.adjustGroupByColumns();
+  }
+
+  onAggregateValuesSelected(): void {
+    this.onValueAggregationChanged(ChartSideBarComponent.DEFAULT_VALUE_AGGREGATION);
+  }
+
+  onRowCountSelected(): void {
+    this.context.silent = true;
+    this.context.dataColumns = [];
+    this.context.silent = false;
+    this.context.aggregations = [Aggregation.ROW_COUNT];
+    this.adjustGroupByColumns();
+    this.defineAggregationOptions();
+    this.defineSelectableItems();
+  }
+
   private adjustInitialChartWidth(newChartType: ChartType): void {
-    if (!this.context.hasDataColumn()) {
+    if (!this.context.isDataDefined()) {
       const isNewTypeLarge = this.isLargeChartType(newChartType);
       if (this.isLargeChartType(this.selectedChartType) !== isNewTypeLarge) {
         this.context.gridColumnSpan = Math.min(this.gridColumns, isNewTypeLarge ? 2 : 1);
@@ -179,5 +230,6 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
 
   onGroupByColumnChanged(column: Column): void {
     this.context.groupByColumns = [column];
+    this.resetUnavailableTimeAggregation();
   }
 }

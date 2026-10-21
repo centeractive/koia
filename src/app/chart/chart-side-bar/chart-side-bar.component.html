@@ -35,15 +35,24 @@
         </div>
         <br>
           <div>
-            <mat-radio-group [value]="context.isAggregationCountSelected()">
-              <mat-radio-button [value]="true" [disabled]="!countDistinctValuesEnabled"
+            <mat-radio-group [value]="aggregationMode()">
+              <mat-radio-button value="count" [disabled]="!countDistinctValuesEnabled"
                 (change)="onAggregationTypeChanged(true)">
                 {{ 'chart.countDistinctValues' | translate }}
               </mat-radio-button>
-              <mat-radio-button [value]="false" [disabled]="!individualValuesEnabled"
+              <mat-radio-button value="individual" [disabled]="!individualValuesEnabled"
                 (change)="onAggregationTypeChanged(false)">
                 {{ (context.isCircularChart() ? 'chart.uniqueNamedValues' : 'chart.individualValues') | translate }}
               </mat-radio-button>
+              @if (isTimeAggregationAvailable()) {
+                <mat-radio-button class="radio_aggregate_values" value="aggregate" [disabled]="!individualValuesEnabled"
+                  (change)="onAggregateValuesSelected()">
+                  {{ 'summary.sideBar.aggregateValues' | translate }}
+                </mat-radio-button>
+                <mat-radio-button class="radio_count_rows" value="rowCount" (change)="onRowCountSelected()">
+                  {{ 'chart.countRows' | translate }}
+                </mat-radio-button>
+              }
             </mat-radio-group>&nbsp;&nbsp;&nbsp;
             @if (!context.isCircularChart()) {
               <mat-checkbox [(ngModel)]="context.stacked">
@@ -51,6 +60,18 @@
               </mat-checkbox>
             }
           </div>
+          @if (aggregationMode() === 'aggregate') {
+            <mat-form-field class="field_value_aggregation">
+              <mat-label>{{ 'summary.sideBar.aggregation' | translate }}</mat-label>
+              <mat-select [value]="context.getValueAggregation()">
+                @for (aggregation of valueAggregations; track aggregation) {
+                  <mat-option [value]="aggregation" (click)="onValueAggregationChanged(aggregation)">
+                    {{ aggregationLabel(aggregation) }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
           @if (!context.isCircularChart() && context.dataColumns.length > 1 && !context.splitColumns.length) {
             <mat-slide-toggle
               style="margin-top: 1em;" [(ngModel)]="context.multiValueAxes">{{ 'chart.showDistinctScales' | translate }}
@@ -140,8 +161,8 @@
                     }
                   </mat-select>
                 </mat-form-field>
-                @if (context.isAggregationCountSelected() && groupByTimeColumn) {
-                  <mat-form-field>
+                @if ((context.isAggregationCountSelected() || context.isAggregatedChart()) && groupByTimeColumn) {
+                  <mat-form-field class="field_time_unit">
                     <mat-label>{{ 'chart.timeUnitGrouping' | translate }}</mat-label>
                     <mat-select [(ngModel)]="groupByTimeColumn.groupingTimeUnit">
                       @for (timeUnit of selectableTimeUnits; track timeUnit) {

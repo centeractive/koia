@@ -365,6 +365,7 @@
     "countDistinctValues": "Unterschiedliche Werte zählen",
     "uniqueNamedValues": "Eindeutig benannte Werte",
     "individualValues": "Einzelwerte",
+    "countRows": "Zeilen zählen",
     "stacked": "Gestapelt",
     "showDistinctScales": "Separate Skalen anzeigen",
     "values": "Werte",
@@ -400,6 +401,7 @@
     },
     "title": {
       "countDistinctValuesOf": "Anzahl unterschiedlicher Werte von {{columns}}",
+      "aggregationOf": "{{aggregation}} von {{columns}}",
       "groupedBy": "{{title}} nach {{columns}}",
       "sample": "{{title}} (Stichprobe)",
       "splitBy": "{{title}}\naufgeteilt nach {{columns}}"
@@ -491,7 +493,8 @@
       "MEDIAN": "Median",
       "MAX": "Max",
       "MIN": "Min",
-      "SUM": "Summe"
+      "SUM": "Summe",
+      "ROW_COUNT": "Zeilenanzahl"
     },
     "operator": {
       "CONTAINS": "enthält",

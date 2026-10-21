@@ -274,6 +274,65 @@ describe('SeriesNameConverter', () => {
       expect(values).toEqual(['a', 1e-7]);
    });
 
+   it('#toSplitName should join split column values', () => {
+
+      // given
+      const entry = { _id: 1, x: 'a', y: 1, z: 4 };
+      const splitColumns = [createColumn('x', DataType.TEXT), createColumn('z', DataType.NUMBER)];
+
+      // when
+      const name = converter.toSplitName(entry, splitColumns);
+
+      // then
+      expect(name).toEqual('a ⯈ 4');
+   });
+
+   it('#toSplitName should return undefined when split column value is empty', () => {
+
+      // given
+      const entry = { _id: 1, x: '', y: 1, z: 4 };
+      const splitColumns = [createColumn('x', DataType.TEXT)];
+
+      // when
+      const name = converter.toSplitName(entry, splitColumns);
+
+      // then
+      expect(name).toBeUndefined();
+   });
+
+   it('#toSplitName should return undefined when no split column is defined', () => {
+
+      // given
+      const entry = { _id: 1, x: 'a', y: 1, z: 4 };
+
+      // when
+      const name = converter.toSplitName(entry, []);
+
+      // then
+      expect(name).toBeUndefined();
+   });
+
+   it('#toSplitValues should return typed values of leading series name tokens', () => {
+
+      // given
+      const splitColumns = [createColumn('x', DataType.TEXT), createColumn('z', DataType.NUMBER)];
+
+      // when
+      const values = converter.toSplitValues('a ⯈ 4 ⯈ y', splitColumns);
+
+      // then
+      expect(values).toEqual(['a', 4]);
+   });
+
+   it('#toSplitValues should return empty array when no split column is defined', () => {
+
+      // when
+      const values = converter.toSplitValues('Row Count', []);
+
+      // then
+      expect(values).toEqual([]);
+   });
+
    function createColumn(name: string, dataType: DataType): Column {
       return {
          name: name,

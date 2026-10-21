@@ -1,4 +1,4 @@
-import { Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
+import { Aggregation, Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { TileSignature } from './tile-signature';
@@ -14,6 +14,12 @@ describe('TileSignature', () => {
     context.dataColumns = data;
     context.groupByColumns = groupBy;
     context.splitColumns = split;
+    return context;
+  }
+
+  function summaryContext(aggregations: Aggregation[]): SummaryContext {
+    const context = withColumns(new SummaryContext(COLUMNS), [LEVEL], [REGION], []);
+    context.aggregations = aggregations;
     return context;
   }
 
@@ -41,6 +47,38 @@ describe('TileSignature', () => {
     // then
     expect(tableSignature).toBe('table:a|b');
     expect(tableSignature).not.toBe(chartSignature);
+  });
+
+  it('#of should distinguish count table from summary table', () => {
+
+    // when
+    const countSignature = TileSignature.of('count', ['a', 'b']);
+    const tableSignature = TileSignature.of('table', ['a', 'b']);
+
+    // then
+    expect(countSignature).toBe('count:a|b');
+    expect(countSignature).not.toBe(tableSignature);
+  });
+
+  it('#summaryKind should be count when count is selected only', () => {
+
+    // when
+    const kinds = [true, false].map(countSelected => TileSignature.summaryKind(countSelected));
+
+    // then
+    expect(kinds).toEqual(['count', 'table']);
+  });
+
+  it('#ofContext should derive count kind from summary context counting values', () => {
+
+    // given
+    const context = summaryContext([Aggregation.COUNT]);
+
+    // when
+    const signature = TileSignature.ofContext(context);
+
+    // then
+    expect(signature).toBe('count:Level|Region');
   });
 
   it('#ofContext should equal signature of spec with same columns', () => {
@@ -71,7 +109,7 @@ describe('TileSignature', () => {
 
     // given
     const contexts = [
-      withColumns(new SummaryContext(COLUMNS), [LEVEL], [REGION], []),
+      summaryContext([Aggregation.SUM]),
       withColumns(chartContext(ChartType.LINE), [LEVEL], [REGION], []),
       withColumns(new GraphContext(COLUMNS), [LEVEL], [REGION], [])
     ];
@@ -99,7 +137,7 @@ describe('TileSignature', () => {
   it('#keyOfContext should end without chart type for summary context', () => {
 
     // given
-    const context = withColumns(new SummaryContext(COLUMNS), [LEVEL], [REGION], []);
+    const context = summaryContext([Aggregation.SUM]);
 
     // when
     const key = TileSignature.keyOfContext(context);

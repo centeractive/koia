@@ -2,6 +2,7 @@ import { TooltipCustomizer } from 'app/chart/customizer/tooltip-customizer';
 import { Aggregation, Column, DataType, EnumLabels, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
 import { Chart, ChartOptions, LayoutPosition, ScaleOptions } from 'chart.js';
 import { ChartJsUtils } from '../chart-js-utils';
@@ -163,10 +164,15 @@ export class ChartJsOptionsProvider {
     private valueScaleTitle(context: ChartContext, columnIdx: number): string {
         if (context.isAggregationCountSelected()) {
             return EnumLabels.aggregation(Aggregation.COUNT);
-        } else if (context.dataColumns.length == 1 || context.multiValueAxes) {
-            return context.dataColumns[columnIdx].name;
+        } else if (context.isRowCountSelected()) {
+            return EnumLabels.aggregation(Aggregation.ROW_COUNT);
+        }
+        const aggregation = context.isAggregatedChart() ? EnumLabels.aggregation(context.getValueAggregation()) : undefined;
+        if (context.dataColumns.length == 1 || context.multiValueAxes) {
+            const columns = context.dataColumns[columnIdx].name;
+            return aggregation ? LanguageService.instant('chart.title.aggregationOf', { aggregation, columns }) : columns;
         } else {
-            return null;
+            return aggregation ?? null;
         }
     }
 

@@ -1,5 +1,6 @@
 import { expect, Locator } from '@playwright/test';
 import { ChartType } from 'app/shared/model/chart/chart-type';
+import { pressCenterAndMoveBy } from '../pointer';
 
 export class DashboardSideBar {
 
@@ -42,12 +43,66 @@ export class DashboardSideBar {
     * expands the panel unless it is expanded already, a click on the header of an expanded panel collapses it
     */
    async toggle(panelTitle: string, label: string): Promise<void> {
-      const header = this.sidenav.locator('mat-expansion-panel-header')
-         .filter({ has: this.sidenav.page().getByText(panelTitle, { exact: true }) });
+      await this.expand(this.sidenav.locator('mat-expansion-panel-header')
+         .filter({ has: this.sidenav.page().getByText(panelTitle, { exact: true }) }));
+      await this.sidenav.getByRole('switch', { name: label, exact: true }).click();
+   }
+
+   private async expand(header: Locator): Promise<void> {
       if (await header.getAttribute('aria-expanded') !== 'true') {
          await header.click();
       }
-      await this.sidenav.getByRole('switch', { name: label, exact: true }).click();
+   }
+
+   /**
+    * the group-by select of the chart, its text is available while its panel is collapsed
+    */
+   groupByField(): Locator {
+      return this.sidenav.locator('.field-row mat-select').first();
+   }
+
+   /**
+    * @param label the label of the aggregation radio button (e.g. 'Count Rows')
+    */
+   async chooseAggregation(label: string): Promise<void> {
+      await this.sidenav.getByRole('radio', { name: label, exact: true }).check();
+   }
+
+   async selectValueAggregation(label: string): Promise<void> {
+      await this.selectOption(this.sidenav.locator('.field_value_aggregation'), label);
+   }
+
+   /**
+    * expands the panel of the time unit field unless it is expanded already
+    */
+   async selectTimeUnit(label: string): Promise<void> {
+      const panel = this.sidenav.locator('mat-expansion-panel').filter({ has: this.sidenav.page().locator('.field_time_unit') });
+      await this.expand(panel.locator('mat-expansion-panel-header'));
+      await this.selectOption(panel.locator('.field_time_unit'), label);
+   }
+
+   private async selectOption(field: Locator, label: string): Promise<void> {
+      await field.locator('mat-select').click();
+      await this.sidenav.page().getByRole('option', { name: label, exact: true }).click();
+   }
+
+   /**
+    * expands the hierarchy panel of the summary table unless it is expanded already and drops the available column into the
+    * selected group-by columns
+    */
+   async dragGroupByColumn(name: string): Promise<void> {
+      const page = this.sidenav.page();
+      const selected = this.sidenav.locator('#selectedGroupByColumns');
+      const panel = this.sidenav.locator('mat-expansion-panel').filter({ has: page.locator('#selectedGroupByColumns') });
+      await this.expand(panel.locator('mat-expansion-panel-header'));
+      const column = panel.locator('.div_column_list:not(#selectedGroupByColumns) koia-draggable-column')
+         .filter({ has: page.getByText(name, { exact: true }) });
+      const from = await column.boundingBox();
+      const to = await selected.boundingBox();
+      await pressCenterAndMoveBy(column, to.x + to.width / 2 - (from.x + from.width / 2),
+         to.y + to.height / 2 - (from.y + from.height / 2));
+      await page.mouse.up();
+      await expect(selected.getByText(name, { exact: true })).toBeVisible();
    }
 
    async switchChartType(chartType: ChartType): Promise<void> {

@@ -311,7 +311,7 @@ export class DashboardComponent extends ViewController {
   private renderChartsOnceCreated(contexts: ElementContext[]): void {
     if (this.entries) {
       setTimeout(() => contexts
-        .filter(c => this.isChartContext(c) && c.hasDataColumn())
+        .filter(c => this.isChartContext(c) && this.asChartContext(c).isDataDefined())
         .forEach(c => c.fireStructureChanged()));
     }
   }

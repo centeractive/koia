@@ -184,6 +184,7 @@ describe('SummaryTableComponent', () => {
     it('spanned cell should carry stripe of its starting row', fakeAsync(() => {
 
       // given
+      context.entries = entries.filter(e => e['t1'] === 'b');
       context.dataColumns = [findColumn('t2')];
       context.groupByColumns = [findColumn('t1')];
 
@@ -339,7 +340,7 @@ describe('SummaryTableComponent', () => {
 
     // then
     const expected = [
-      [{ span: 2 }, { span: 0 }, { span: 1 }],
+      [{ span: 1 }, { span: 2 }, { span: 0 }],
       [{ span: 1 }, { span: 1 }, { span: 1 }]
     ];
     expect(component.rowSpans).toEqual(expected);
@@ -377,6 +378,70 @@ describe('SummaryTableComponent', () => {
 
     // then
     expect(component.frameData).toBe(prevFrameData);
+  }));
+
+  it('should sort count table by first group-by column', fakeAsync(() => {
+
+    // given
+    context.entries = [entries[2], entries[0], entries[1]];
+    context.dataColumns = [findColumn('t2')];
+    context.groupByColumns = [findColumn('t1'), findColumn('n1')];
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.currentSort).toEqual({ active: 't1', direction: 'asc' });
+    expect(component.frameData.map(r => r['t1'])).toEqual(['a', 'b', 'b']);
+  }));
+
+  it('should sort count table by time label of first group-by column', fakeAsync(() => {
+
+    // given
+    context.entries = [entries[3], entries[0]];
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [findColumn('Time')];
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.currentSort).toEqual({ active: 'Time (per minute)', direction: 'asc' });
+    expect(component.frameData.map(r => r['Time (per minute)'])).toEqual([now, now + 60 * sec]);
+  }));
+
+  it('should sort value table by data column and keep order of computed groups', fakeAsync(() => {
+
+    // given
+    context.entries = [entries[2], entries[1], entries[3]];
+    context.dataColumns = [findColumn('n1')];
+    context.groupByColumns = [findColumn('t2')];
+    context.aggregations = [Aggregation.SUM];
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(component.currentSort).toEqual({ active: 'n1', direction: 'asc' });
+    expect(component.frameData.map(r => r['t2'])).toEqual(['x', 'y']);
+  }));
+
+  it('should keep initial sort when group-by column is added after opening', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('t2')];
+    fixture.detectChanges();
+    flush();
+
+    // when
+    context.groupByColumns = [findColumn('t1')];
+    flush();
+
+    // then
+    expect(component.currentSort).toEqual({ active: 't2', direction: 'asc' });
   }));
 
   it('#onAggregationCellClick should open raw data view for matching columns', () => {

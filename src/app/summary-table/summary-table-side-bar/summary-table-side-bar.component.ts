@@ -1,7 +1,7 @@
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { SideBarController } from 'app/shared/controller';
-import { Aggregation, Column, DataType, SummaryContext } from '../../shared/model';
+import { Aggregation, Column, DataType, SummaryContext, VALUE_AGGREGATIONS } from '../../shared/model';
 import { isComputedColumn } from 'app/shared/utils/column-utils';
 
 @Component({
@@ -13,7 +13,6 @@ import { isComputedColumn } from 'app/shared/utils/column-utils';
 })
 export class SummaryTableSideBarComponent extends SideBarController implements OnChanges {
 
-  static readonly VALUE_AGGREGATIONS = [Aggregation.AVG, Aggregation.MEDIAN, Aggregation.MAX, Aggregation.MIN, Aggregation.SUM];
 
   @Input() context: SummaryContext;
 
@@ -30,7 +29,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
     this.context.dataColumns = [column];
     if (this.isNumericColumn(column) && !this.context.hasValueGrouping(column.name)) {
       if (this.context.isAggregationCountSelected()) {
-        this.context.aggregations = SummaryTableSideBarComponent.VALUE_AGGREGATIONS.slice(0, 1);
+        this.context.aggregations = VALUE_AGGREGATIONS.slice(0, 1);
       }
     } else {
       this.context.aggregations = [Aggregation.COUNT];
@@ -71,7 +70,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
     if (countDistinctValues) {
       this.context.aggregations = [Aggregation.COUNT];
     } else {
-      this.context.aggregations = [SummaryTableSideBarComponent.VALUE_AGGREGATIONS[0]];
+      this.context.aggregations = [VALUE_AGGREGATIONS[0]];
       this.initSelectedAndAvailableAggregations();
     }
   }
@@ -85,7 +84,7 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
 
   private initSelectedAndAvailableAggregations() {
     this.selectedAggregations = this.context.aggregations;
-    this.availableAggregations = SummaryTableSideBarComponent.VALUE_AGGREGATIONS
+    this.availableAggregations = VALUE_AGGREGATIONS
       .filter(a => !this.selectedAggregations.includes(a));
   }
 

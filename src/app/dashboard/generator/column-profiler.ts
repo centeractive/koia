@@ -18,6 +18,8 @@ export class ColumnProfiler {
   static readonly MIN_CATEGORIES = 2;
   static readonly MAX_CATEGORIES = 30;
   static readonly MIN_MEASURE_DISTINCT = 3;
+  static readonly MAX_ORDINAL_RANGE = 12;
+  static readonly MIN_IDENTIFIER_DISTINCT = 20;
 
   /**
    * @returns the profiles of the qualifying columns in column order
@@ -28,25 +30,24 @@ export class ColumnProfiler {
     }
     return columns
       .filter(c => !isComputedColumn(c))
-      .map(c => this.profileColumn(c, entries))
-      .filter(p => p !== undefined);
+      .flatMap(c => this.profileColumn(c, entries));
   }
 
-  private profileColumn(column: Column, entries: object[]): ColumnProfile | undefined {
+  private profileColumn(column: Column, entries: object[]): ColumnProfile[] {
     switch (column.dataType) {
       case DataType.TEXT:
       case DataType.BOOLEAN:
         return this.profileCategory(column, entries);
       case DataType.NUMBER:
-        return this.profileMeasure(column, entries);
+        return this.profileNumber(column, entries);
       case DataType.TIME:
         return this.profileTime(column, entries);
       default:
-        return undefined;
+        return [];
     }
   }
 
-  private profileCategory(column: Column, entries: object[]): ColumnProfile | undefined {
+  private profileCategory(column: Column, entries: object[]): ColumnProfile[] {
     const valueCounts = new Map<string, number>();
     let presentCount = 0;
     for (const entry of entries) {
@@ -65,53 +66,81 @@ export class ColumnProfiler {
     const distinctCount = valueCounts.size;
     if (!this.hasMinRatio(presentCount, entries) || distinctCount < ColumnProfiler.MIN_CATEGORIES
       || distinctCount > ColumnProfiler.MAX_CATEGORIES) {
-      return undefined;
+      return [];
     }
-    return {
+    return [{
       name: column.name,
       dataType: column.dataType,
       role: ColumnRole.CATEGORY,
       distinctCount,
       presentCount,
       maxValueCount: this.maxOf(valueCounts.values())
-    };
+    }];
   }
 
-  private profileMeasure(column: Column, entries: object[]): ColumnProfile | undefined {
+  /**
+   * @returns the measure profile and the ordinal category profile of the number column, each when it qualifies
+   */
+  private profileNumber(column: Column, entries: object[]): ColumnProfile[] {
     const counts = this.countNumbers(column, entries);
-    const distinctCount = counts.valueCounts.size;
-    if (!this.hasMinRatio(counts.numericCount, entries) || distinctCount < ColumnProfiler.MIN_MEASURE_DISTINCT
-      || this.isIdentifier(counts)) {
-      return undefined;
+    if (!this.hasMinRatio(counts.numericCount, entries) || this.isIdentifier(counts)) {
+      return [];
     }
-    return {
-      name: column.name,
-      dataType: column.dataType,
-      role: ColumnRole.MEASURE,
-      distinctCount,
-      presentCount: counts.presentCount
-    };
+    const distinctCount = counts.valueCounts.size;
+    const profiles: ColumnProfile[] = [];
+    if (distinctCount >= ColumnProfiler.MIN_MEASURE_DISTINCT) {
+      profiles.push({
+        name: column.name,
+        dataType: column.dataType,
+        role: ColumnRole.MEASURE,
+        distinctCount,
+        presentCount: counts.presentCount
+      });
+    }
+    if (this.isOrdinal(counts)) {
+      profiles.push({
+        name: column.name,
+        dataType: column.dataType,
+        role: ColumnRole.CATEGORY,
+        distinctCount,
+        presentCount: counts.presentCount,
+        maxValueCount: this.maxOf(counts.valueCounts.values())
+      });
+    }
+    return profiles;
+  }
+
+  private isOrdinal(counts: NumberCounts): boolean {
+    if (!this.isIntegral(counts) || counts.valueCounts.size < ColumnProfiler.MIN_CATEGORIES) {
+      return false;
+    }
+    const values = [...counts.valueCounts.keys()];
+    return Math.max(...values) - Math.min(...values) + 1 <= ColumnProfiler.MAX_ORDINAL_RANGE;
   }
 
   private isIdentifier(counts: NumberCounts): boolean {
-    return counts.numericCount === counts.presentCount
+    return this.isIntegral(counts)
       && counts.valueCounts.size === counts.numericCount
-      && [...counts.valueCounts.keys()].every(v => Number.isInteger(v));
+      && counts.valueCounts.size >= ColumnProfiler.MIN_IDENTIFIER_DISTINCT;
   }
 
-  private profileTime(column: Column, entries: object[]): ColumnProfile | undefined {
+  private isIntegral(counts: NumberCounts): boolean {
+    return counts.numericCount === counts.presentCount && [...counts.valueCounts.keys()].every(v => Number.isInteger(v));
+  }
+
+  private profileTime(column: Column, entries: object[]): ColumnProfile[] {
     const counts = this.countNumbers(column, entries);
     if (!this.hasMinRatio(counts.numericCount, entries)) {
-      return undefined;
+      return [];
     }
     const clone = CommonUtils.clone(column);
     DateTimeUtils.defineTimeUnits([clone], entries);
     const timeUnit = clone.groupingTimeUnit;
     if (!timeUnit || timeUnit === TimeUnit.MILLISECOND) {
-      return undefined;
+      return [];
     }
     const valueRange = ArrayUtils.numberValueRange(entries, column.name);
-    return {
+    return [{
       name: column.name,
       dataType: column.dataType,
       role: ColumnRole.TIME,
@@ -120,7 +149,7 @@ export class ColumnProfiler {
       maxValueCount: this.maxOf(counts.valueCounts.values()),
       groupingTimeUnit: timeUnit,
       timeBucketCount: Math.floor(DateTimeUtils.countTimeUnits(valueRange.max - valueRange.min, timeUnit)) + 1
-    };
+    }];
   }
 
   private countNumbers(column: Column, entries: object[]): NumberCounts {

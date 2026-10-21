@@ -11,7 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { By } from '@angular/platform-browser';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { Aggregation, Column, ComputeOperator, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, ComputeOperator, DataType, SummaryContext, TimeUnit, VALUE_AGGREGATIONS } from 'app/shared/model';
 import { ContainerModel, DragDropEventFactory } from 'app/shared/test';
 import { SummaryTableSideBarComponent } from './summary-table-side-bar.component';
 import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
@@ -123,7 +123,7 @@ describe('SummaryTableSideBarComponent', () => {
     component.onAggregationTypeChanged(false);
 
     // then
-    expect(context.aggregations).toEqual(SummaryTableSideBarComponent.VALUE_AGGREGATIONS.slice(0, 1));
+    expect(context.aggregations).toEqual(VALUE_AGGREGATIONS.slice(0, 1));
   });
 
   it('#onColumnChanged should define aggregation COUNT when text column', () => {
@@ -144,7 +144,7 @@ describe('SummaryTableSideBarComponent', () => {
     component.onColumnChanged(findColumn('Amount'));
 
     // then
-    expect(context.aggregations).toEqual(SummaryTableSideBarComponent.VALUE_AGGREGATIONS.slice(0, 1));
+    expect(context.aggregations).toEqual(VALUE_AGGREGATIONS.slice(0, 1));
   });
 
   it('#onColumnChanged should keep aggregation when number column and previous aggreation was not COUNT', () => {

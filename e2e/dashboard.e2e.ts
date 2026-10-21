@@ -660,14 +660,16 @@ test('margin button hides the shown chart margin', async ({ dashboard }) => {
    await expect(tile.marginButton).not.toHaveClass(/\bkoia-toggle-active\b/);
 });
 
-test('generated dashboard fills the grid with painted charts and one summary table without warning', async ({ dashboard, notifications }) => {
+test('generated dashboard fills the grid with painted charts and one or two summary tables without warning', async ({ dashboard, notifications }) => {
    await dashboard.launcher.generateDashboard();
 
    const columns = await dashboard.generatedGridColumns();
    expect(columns).not.toBe(3);
    expect([4, 5]).toContain(columns);
    await expect.poll(() => dashboard.occupiedCellCount()).toBe(columns * rowsOf(columns));
-   await expect(dashboard.summaryTables).toHaveCount(1);
+   const tableCount = await dashboard.summaryTables.count();
+   expect(tableCount).toBeGreaterThanOrEqual(1);
+   expect(tableCount).toBeLessThanOrEqual(2);
    for (const tile of await dashboard.chartTiles.all()) {
       await new DashboardTile(tile).expectChartPainted();
    }
@@ -774,19 +776,42 @@ test('summary table scrollbar stays above resize handle', async ({ dashboard }) 
    expect(scrollerBottom).toBeLessThanOrEqual(handleTop);
 });
 
-test('generated summary table spans one cell only when its content fits', async ({ dashboard }) => {
+test('generated summary tables span one cell only when their content fits and never more than two cells', async ({ dashboard }) => {
    await dashboard.launcher.generateDashboard();
 
    const columns = await dashboard.generatedGridColumns();
-   const tile = new DashboardTile(dashboard.summaryTiles);
-   const { rendered, maxContent, columnCount } = await tile.tableWidths();
+   await expect(dashboard.summaryTiles.first()).toBeVisible();
    const { offsetWidth, scrollbarWidth } = await dashboard.scrollerWidth();
-   if ((await tile.spans()).columns === 1) {
-      expect(Math.abs(rendered - maxContent)).toBeLessThanOrEqual(0.5);
-   } else {
-      const cellWidth = (offsetWidth - scrollbarWidth) / columns - GRID_GAP_PX;
-      expect(maxContent + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth + columnCount).toBeGreaterThanOrEqual(cellWidth - 1);
+   for (const summaryTile of await dashboard.summaryTiles.all()) {
+      const tile = new DashboardTile(summaryTile);
+      const { rendered, maxContent, columnCount } = await tile.tableWidths();
+      const spans = await tile.spans();
+      expect(spans.columns).toBeLessThanOrEqual(2);
+      if (spans.columns === 1) {
+         expect(Math.abs(rendered - maxContent)).toBeLessThanOrEqual(0.5);
+      } else {
+         const cellWidth = (offsetWidth - scrollbarWidth) / columns - GRID_GAP_PX;
+         expect(maxContent + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth + columnCount).toBeGreaterThanOrEqual(cellWidth - 1);
+      }
    }
+});
+
+test('count table grouped by a column opens sorted by that column', async ({ dashboard, notifications, confirmDialog }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn('Product');
+   await dashboard.sideBar.dragGroupByColumn('Region');
+   await dashboard.sideBar.close();
+   await dashboard.mainToolbar.saveView(VIEW_NAME);
+   await notifications.dismiss(StatusType.SUCCESS);
+
+   await dashboard.mainToolbar.restoreView(VIEW_NAME);
+   await confirmDialog.confirm();
+
+   const tile = dashboard.tile(0);
+   await expect.poll(() => tile.firstHeaderSort()).toBe('ascending');
+   const regions = await tile.firstColumnValues();
+   expect(new Set(regions).size).toBeGreaterThan(1);
+   expect(regions).toEqual([...regions].sort());
 });
 
 test('enter and shift enter split text box text into two paragraphs and a line break', async ({ dashboard }) => {

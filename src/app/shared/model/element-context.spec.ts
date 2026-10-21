@@ -265,6 +265,10 @@ describe('ElementContext', () => {
       expect(() => context.aggregations = [Aggregation.COUNT, Aggregation.MAX]).toThrow(expect.objectContaining({ message: 'Count must not be combined with other aggregations' }));
    });
 
+   it('#aggregations should throw when row count is combined with other aggregations', () => {
+      expect(() => context.aggregations = [Aggregation.SUM, Aggregation.ROW_COUNT]).toThrow(expect.objectContaining({ message: 'Row Count must not be combined with other aggregations' }));
+   });
+
    it('#valueGroupings should return empty array when no value groupings are defined', () => {
       context.valueGroupings = null;
 

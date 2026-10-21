@@ -89,8 +89,17 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
     }
   }
 
+  /**
+   * sorts count tables by their first group-by column, other tables by their data column
+   */
   private initSort(): void {
-    const active = this.context.hasDataColumn() ? this.context.dataColumns[0].name : undefined;
+    const firstGroupByColumn = this.context.groupByColumns[0];
+    let active: string;
+    if (this.context.isAggregationCountSelected() && firstGroupByColumn) {
+      active = ColumnNameConverter.toLabel(firstGroupByColumn, firstGroupByColumn.groupingTimeUnit);
+    } else {
+      active = this.context.hasDataColumn() ? this.context.dataColumns[0].name : undefined;
+    }
     this.currentSort = { active: active, direction: 'asc' };
   }
 

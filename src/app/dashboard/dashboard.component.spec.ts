@@ -13,7 +13,7 @@ import { provideRouter, Router } from '@angular/router';
 import { Edges, ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import {
-  AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
+  Aggregation, AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
 } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
@@ -1303,6 +1303,24 @@ describe('DashboardComponent', () => {
 
       // then
       expect(newChartContext.fireStructureChanged).not.toHaveBeenCalled();
+    }));
+
+    it('#setLayout should fire structure change for row count chart without data column', fakeAsync(() => {
+
+      // given
+      const chartContext = component.addChart();
+      chartContext.chartType = ChartType.LINE.type;
+      chartContext.aggregations = [Aggregation.ROW_COUNT];
+
+      // when
+      component.setLayout(Route.FLEX);
+      fixture.detectChanges();
+      const newChartContext = component.elementContexts[0];
+      vi.spyOn(newChartContext, 'fireStructureChanged');
+      tick();
+
+      // then
+      expect(newChartContext.fireStructureChanged).toHaveBeenCalledTimes(1);
     }));
 
     describe('with rendered tiles', () => {
