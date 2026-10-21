@@ -103,4 +103,40 @@ describe('PageFormat', () => {
     // then
     expect(result).toEqual([index, top]);
   });
+
+  it('#pageTopOfBottom should return top of page containing bottom', () => {
+
+    // when
+    const top = PageFormat.LANDSCAPE.pageTopOfBottom(1200);
+
+    // then
+    expect(top).toBe(950);
+  });
+
+  it('#pageTopOfBottom should assign bottom on page boundary to page above', () => {
+
+    // when
+    const top = PageFormat.LANDSCAPE.pageTopOfBottom(1900);
+
+    // then
+    expect(top).toBe(950);
+  });
+
+  it('#pageTopOfBottom should return 0 when unpaged', () => {
+
+    // when
+    const top = PageFormat.UNPAGED.pageTopOfBottom(5000);
+
+    // then
+    expect(top).toBe(0);
+  });
+
+  it('#pageTopOfBottom should return 0 for bottom at 0', () => {
+
+    // when
+    const top = PageFormat.LANDSCAPE.pageTopOfBottom(0);
+
+    // then
+    expect(top).toBe(0);
+  });
 });

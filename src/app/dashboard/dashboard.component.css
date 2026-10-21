@@ -39,6 +39,12 @@
   z-index: 100000 !important;
 }
 
+/* below the overlays, the notes on a selected tile stay visible */
+.div_tile.div_tile_selected {
+  z-index: 9999 !important;
+  outline: 1px solid var(--koia-accent);
+}
+
 .div_tile::after {
   content: '';
   position: absolute;
@@ -75,7 +81,7 @@
   border: var(--koia-text-box-border-width, 1px) solid var(--koia-text-box-border-color, var(--koia-border-color));
 }
 
-/* no z-index, the later resize handle must stay above the zone of small tiles */
+/* no z-index, the later resize handles must stay above the zone of small tiles */
 .div_move_zone {
   position: absolute;
   top: 0;
@@ -98,7 +104,7 @@
   visibility: visible;
 }
 
-.div_text_box_tile > .resize-handle {
+.div_text_box_tile > koia-resize-handles {
   visibility: hidden;
 }
 
@@ -117,10 +123,9 @@
   outline-offset: 0;
 }
 
-.div_text_box_tile:hover > .resize-handle,
-.div_text_box_tile:has(koia-text-box.koia-text-box-active) > .resize-handle,
-.div_text_box_tile.cdk-drag-dragging > .resize-handle,
-.div_text_box_tile.resize-active > .resize-handle {
+.div_text_box_tile:has(koia-text-box.koia-text-box-active) > koia-resize-handles,
+.div_text_box_tile.cdk-drag-dragging > koia-resize-handles,
+.div_text_box_tile.resize-active > koia-resize-handles {
   visibility: visible;
 }
 
@@ -198,17 +203,6 @@ span {
 
 mwlResizable {
   box-sizing: border-box;
-}
-
-.resize-handle {
-  position: absolute;
-  right: 0px;
-  bottom: 0px;
-  box-sizing: border-box;
-  width: var(--koia-resize-handle-size);
-  height: var(--koia-resize-handle-size);
-  padding: 2px;
-  cursor: se-resize;
 }
 
 .cdk-drag-preview {

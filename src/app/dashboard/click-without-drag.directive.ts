@@ -12,13 +12,16 @@ export class ClickWithoutDragDirective {
   /** the default drag start threshold of the CDK */
   static readonly DRAG_THRESHOLD_PX = 5;
 
-  @Output() clickWithoutDrag = new EventEmitter<void>();
+  @Output() clickWithoutDrag = new EventEmitter<MouseEvent>();
 
   private pressX: number;
   private pressY: number;
 
-  @HostListener('mousedown', ['$event'])
-  onMouseDown(event: MouseEvent): void {
+  /**
+   * the press is taken from the pointer event, as content within the handle may stop the mouse event
+   */
+  @HostListener('pointerdown', ['$event'])
+  onPointerDown(event: PointerEvent): void {
     this.pressX = event.clientX;
     this.pressY = event.clientY;
   }
@@ -27,7 +30,7 @@ export class ClickWithoutDragDirective {
   onClick(event: MouseEvent): void {
     const distance = Math.max(Math.abs(event.clientX - this.pressX), Math.abs(event.clientY - this.pressY));
     if (distance < ClickWithoutDragDirective.DRAG_THRESHOLD_PX) {
-      this.clickWithoutDrag.emit();
+      this.clickWithoutDrag.emit(event);
     }
   }
 }

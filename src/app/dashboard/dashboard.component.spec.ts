@@ -10,7 +10,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { ResizeEvent } from 'angular-resizable-element';
+import { Edges, ResizeEvent } from 'angular-resizable-element';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import {
   AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
@@ -27,12 +27,14 @@ import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { MatIconModuleMock, savedViewOf, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { claimClick } from 'app/shared/ui/claimed-click';
 import type { SummaryTableComponent as RealSummaryTableComponent } from 'app/summary-table/summary-table.component';
 import { Chart } from 'chart.js';
 import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
+import { ResizeHandlesComponent } from './resize-handles/resize-handles.component';
 import { ClickWithoutDragDirective } from './click-without-drag.directive';
 import { DetachFromDropListDirective } from './detach-from-drop-list.directive';
 import { DragAutoScroll } from './drag-auto-scroll';
@@ -132,7 +134,7 @@ describe('DashboardComponent', () => {
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
         SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintHeadingComponent,
-        PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective
+        PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective, ResizeHandlesComponent
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
       providers: [
@@ -981,26 +983,40 @@ describe('DashboardComponent', () => {
       expect(component.gridLayout.gridCellRatio).toBe('4:5');
     });
 
-    it('#resizableEdgesOf should return bottom/right-resizable when no chart margin is shown', () => {
+    it('#showsResizeHandles should be true for selected tile', () => {
+
+      // given
+      const graphContext = new GraphContext(scene.columns);
+      component.tileSelection.select(graphContext);
 
       // when
-      const edges = component.resizableEdgesOf(new GraphContext(scene.columns));
+      const shows = component.showsResizeHandles(graphContext);
 
       // then
-      expect(edges).toEqual({ bottom: true, right: true, top: false, left: false });
+      expect(shows).toBe(true);
     });
 
-    it('#resizableEdgesOf should return non-resizable when chart context shows margin', () => {
+    it('#showsResizeHandles should be false for unselected tile', () => {
+
+      // when
+      const shows = component.showsResizeHandles(new GraphContext(scene.columns));
+
+      // then
+      expect(shows).toBe(false);
+    });
+
+    it('#showsResizeHandles should be false for selected chart showing its margin', () => {
 
       // given
       const chartContext = new ChartContext(scene.columns, ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      component.tileSelection.select(chartContext);
       chartContext.toggleShowResizableMargin();
 
       // when
-      const edges = component.resizableEdgesOf(chartContext);
+      const shows = component.showsResizeHandles(chartContext);
 
       // then
-      expect(edges).toEqual({ bottom: false, right: false, top: false, left: false });
+      expect(shows).toBe(false);
     });
 
     it('should render grid layout markup', () => {
@@ -1727,6 +1743,20 @@ describe('DashboardComponent', () => {
           expect(component.resizePreview.top).toBeCloseTo(layerY(960) * scale, 5);
         });
 
+        it('#onFreeResizeEnd by top edge on second sheet should stay within its page', () => {
+
+          // given
+          const [resized] = renderCanvasSummaries([[0, 1000, 600, 400]]);
+          component.onFreeResizeStart(resized);
+          const scale = canvasScale();
+
+          // when
+          component.onFreeResizeEnd(resized, resizeEvent(600 * scale, 500 * scale, 0, 0, { top: -100 * scale }));
+
+          // then
+          expect([resized.y, resized.height]).toEqual([950, 450]);
+        });
+
         it('#onFreeMoveEnded should leave tile across former page boundary on free canvas', () => {
 
           // given
@@ -1926,6 +1956,57 @@ describe('DashboardComponent', () => {
 
         // when
         component.onGridResizeEnd(context, resizeEvent(3 * pitch, pitch - 10, 3 * pitch));
+
+        // then
+        expect(context.gridColumnSpan).toBe(1);
+      });
+
+      it('#onGridResizing by left edge should preview widened tile at its origin', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+
+        // when
+        component.onGridResizing(component.elementContexts[0], resizeEvent(2 * pitch - 10, pitch - 10, -pitch, 0, { left: -pitch }));
+
+        // then
+        expectPreview({ left: 0, top: 0, width: 2 * pitch - 10, height: pitch - 10 });
+      });
+
+      it('#onGridResizeEnd by left edge should widen column span', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+        const context = component.elementContexts[0];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(2 * pitch - 10, pitch - 10, -pitch, 0, { left: -pitch }));
+
+        // then
+        expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([2, 1]);
+      });
+
+      it('#onGridResizeEnd by top edge should heighten row span', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1]]);
+        const context = component.elementContexts[0];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(pitch - 10, 2 * pitch - 10, 0, -pitch, { top: -pitch }));
+
+        // then
+        expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([1, 2]);
+      });
+
+      it('#onGridResizeEnd by left edge should limit column span to columns right of tile column', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
+        const context = component.elementContexts[3];
+
+        // when
+        component.onGridResizeEnd(context, resizeEvent(2 * pitch - 10, pitch - 10, 2 * pitch, 0, { left: -pitch }));
 
         // then
         expect(context.gridColumnSpan).toBe(1);
@@ -2170,7 +2251,7 @@ describe('DashboardComponent', () => {
         component.onFreeResizeStart(resized);
 
         // when
-        component.onFreeResizeEnd(resized, { ...resizeEvent(600, 400), edges: { top: 0, left: 0, right: 0, bottom: 0 } });
+        component.onFreeResizeEnd(resized, { ...resizeEvent(600, 400), edges: { right: 0, bottom: 0 } });
 
         // then
         expect(stop).not.toHaveBeenCalled();
@@ -2185,7 +2266,7 @@ describe('DashboardComponent', () => {
         component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
 
         // when
-        component.onFreeResizeEnd(resized, { ...resizeEvent(697 * scale, 397 * scale), edges: { top: 0, left: 0, right: 97, bottom: -3 } });
+        component.onFreeResizeEnd(resized, { ...resizeEvent(697 * scale, 397 * scale), edges: { right: 97, bottom: -3 } });
 
         // then
         expect([resized.width, resized.height]).toEqual([700, 400]);
@@ -2202,11 +2283,84 @@ describe('DashboardComponent', () => {
         const scale = canvasScale();
 
         // when
-        component.onFreeResizeEnd(resized, { ...resizeEvent(447 * scale, 333 * scale), edges: { top: 0, left: 0, right: 0, bottom: 0 } });
+        component.onFreeResizeEnd(resized, { ...resizeEvent(447 * scale, 333 * scale), edges: { right: 0, bottom: 0 } });
 
         // then
         expect([resized.width, resized.height]).toEqual([447, 333]);
         expect(component.resizePreview).toBeUndefined();
+      });
+
+      it('#onFreeResizeEnd by left edge should move left edge and keep right edge', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[100, 0, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizeEnd(resized, resizeEvent(497 * scale, 400 * scale, 0, 0, { left: 103 * scale }));
+
+        // then
+        expect([resized.x, resized.y, resized.width, resized.height]).toEqual([200, 0, 500, 400]);
+      });
+
+      it('#onFreeResizeEnd by top edge should move top edge and keep bottom edge', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[0, 100, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizeEnd(resized, resizeEvent(600 * scale, 303 * scale, 0, 0, { top: 97 * scale }));
+
+        // then
+        expect([resized.x, resized.y, resized.width, resized.height]).toEqual([0, 200, 600, 300]);
+      });
+
+      it('#onFreeResizing by top left corner should preview moved corner', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[100, 100, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizing(resized, resizeEvent(650 * scale, 450 * scale, 0, 0, { left: -50 * scale, top: -50 * scale }));
+
+        // then
+        expect(component.resizePreview.left).toBeCloseTo(layerX(50) * scale, 5);
+        expect(component.resizePreview.top).toBeCloseTo(layerY(50) * scale, 5);
+        expect(component.resizePreview.width).toBeCloseTo(650 * scale, 5);
+        expect(component.resizePreview.height).toBeCloseTo(450 * scale, 5);
+      });
+
+      it('#onFreeResizeEnd by top edge should keep model width despite rounded rectangle', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[0, 100, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizeEnd(resized, resizeEvent(600 * scale + 0.4, 300 * scale, 0, 0, { top: 100 * scale }));
+
+        // then
+        expect([resized.y, resized.width, resized.height]).toEqual([200, 600, 300]);
+      });
+
+      it('#onFreeResizeEnd by left edge should keep right edge despite rounded rectangle', () => {
+
+        // given
+        const [resized] = renderCanvasSummaries([[100, 0, 600, 400]]);
+        component.onFreeResizeStart(resized);
+        const scale = canvasScale();
+
+        // when
+        component.onFreeResizeEnd(resized, resizeEvent(500 * scale - 0.4, 400 * scale, 0, 0, { left: 100 * scale }));
+
+        // then
+        expect([resized.x, resized.x + resized.width]).toEqual([200, 700]);
       });
 
       it('#bringToFront should rank tile first and request persisting', () => {
@@ -2393,7 +2547,7 @@ describe('DashboardComponent', () => {
           expectAtFallback(textBox);
         });
 
-        it('should hide frame and resize handle and let pointer pass unless revealed', () => {
+        it('should hide frame and resize handles and let pointer pass unless revealed', () => {
 
           // when
           addTextBoxContext(0, 0);
@@ -2403,7 +2557,17 @@ describe('DashboardComponent', () => {
           expect(getComputedStyle(tile).pointerEvents).toBe('none');
           expect(getComputedStyle(tile, '::after').borderTopStyle).toBe('none');
           expect(getComputedStyle(tile).outlineStyle).toBe('none');
-          expect(getComputedStyle(tile.querySelector('.resize-handle')).visibility).toBe('hidden');
+          expect(getComputedStyle(tile.querySelector('.div_resize_handle')).visibility).toBe('hidden');
+        });
+
+        it('should render squares only resize handles', () => {
+
+          // when
+          addTextBoxContext(0, 0);
+
+          // then
+          expect(textBoxTile().querySelector('koia-resize-handles').classList).toContain('koia-squares-only');
+          expect(textBoxTile().querySelectorAll('.div_resize_handle').length).toBe(8);
         });
 
         it.each([
@@ -2413,7 +2577,7 @@ describe('DashboardComponent', () => {
           },
           { cause: 'it is resized', reveal: (): void => textBoxTile().classList.add('resize-active') },
           { cause: 'it is dragged', reveal: (): void => textBoxTile().classList.add('cdk-drag-dragging') }
-        ])('should show frame and resize handle and catch pointer when $cause', ({ reveal }) => {
+        ])('should show frame and resize handles and catch pointer when $cause', ({ reveal }) => {
 
           // given
           addTextBoxContext(0, 0);
@@ -2430,10 +2594,10 @@ describe('DashboardComponent', () => {
           expect(getComputedStyle(tile).pointerEvents).toBe('auto');
           expect(getComputedStyle(tile).outlineStyle).toBe('dashed');
           expect(getComputedStyle(tile).outlineWidth).toBe('1px');
-          expect(getComputedStyle(tile.querySelector('.resize-handle')).visibility).toBe('visible');
+          expect(getComputedStyle(tile.querySelector('.div_resize_handle')).visibility).toBe('visible');
         }
 
-        it('should be revealed while text line is hovered', async () => {
+        it('should show frame and catch pointer while text line is hovered', async () => {
 
           // given
           addTextBoxContext(0, 0);
@@ -2442,7 +2606,21 @@ describe('DashboardComponent', () => {
           await userEvent.hover(textBoxTile().querySelector('.p_line'));
 
           // then
-          expectRevealed(textBoxTile());
+          expect(getComputedStyle(textBoxTile()).pointerEvents).toBe('auto');
+          expect(getComputedStyle(textBoxTile()).outlineStyle).toBe('dashed');
+          await userEvent.unhover(textBoxTile().querySelector('.p_line'));
+        });
+
+        it('resize handles should stay hidden while text box is only hovered', async () => {
+
+          // given
+          addTextBoxContext(0, 0);
+
+          // when
+          await userEvent.hover(textBoxTile().querySelector('.p_line'));
+
+          // then
+          expect(getComputedStyle(textBoxTile().querySelector('.div_resize_handle')).visibility).toBe('hidden');
           await userEvent.unhover(textBoxTile().querySelector('.p_line'));
         });
 
@@ -2553,6 +2731,26 @@ describe('DashboardComponent', () => {
           expect(Math.abs(textBox.height - 100)).toBeLessThanOrEqual(FreeLayout.STEP);
           expect(textBox.anchor).toBe(anchor);
           expect(textBox.anchorOffset.x).toBeCloseTo(0.5, 1);
+          expect(textBox.anchorOffset.y).toBeCloseTo(0.5, 1);
+        });
+
+        it('#onFreeResizeEnd by left edge in grid should re-anchor note', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          const anchor = component.elementContexts[1];
+          const textBox = addTextBoxContext(0, 0, anchor, { x: 0.5, y: 0.5 });
+          component.onFreeResizeStart(textBox);
+          const right = textBox.x + component.freeLayout.rectOf(textBox).width;
+          const scale = gridScale();
+
+          // when
+          component.onFreeResizeEnd(textBox, resizeEvent(400 * scale, 150 * scale, 0, 0, { left: -100 * scale }));
+
+          // then
+          expect(textBox.x + textBox.width).toBe(right);
+          expect(textBox.anchor).toBe(anchor);
+          expect(textBox.anchorOffset.x).toBeLessThan(0.4);
           expect(textBox.anchorOffset.y).toBeCloseTo(0.5, 1);
         });
 
@@ -2921,14 +3119,14 @@ describe('DashboardComponent', () => {
           const zone = textBoxTile().querySelector('.div_move_zone');
 
           // when
-          zone.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 100 }));
+          zone.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 }));
           zone.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 100, clientY: 100 }));
 
           // then
           expect(textBox.startEditing).toHaveBeenCalled();
         });
 
-        it('should keep resize handle above move zone of small note', () => {
+        it.each(['top_right', 'bottom_right'])('should keep %s resize handle above move zone of small note', name => {
 
           // given
           const note = addTextBoxContext(0, 0);
@@ -2937,11 +3135,38 @@ describe('DashboardComponent', () => {
           fixture.detectChanges();
 
           // when
-          const handleRect = textBoxTile().querySelector('.resize-handle').getBoundingClientRect();
+          const handleRect = textBoxTile().querySelector('.div_resize_handle_' + name).getBoundingClientRect();
           const hit = document.elementFromPoint(handleRect.left + handleRect.width / 2, handleRect.top + handleRect.height / 2);
 
           // then
-          expect(hit.classList).toContain('resize-handle');
+          expect(hit.classList).toContain('div_resize_handle');
+        });
+
+        it('press on a text box tile should clear selection of other tile', () => {
+
+          // given
+          renderGridSummaries(3, [[1, 1]]);
+          addTextBoxContext(500, 0);
+          component.tileSelection.select(component.elementContexts[0]);
+
+          // when
+          textBoxTile().dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+          // then
+          expect(component.tileSelection.isSelected(component.elementContexts[0])).toBe(false);
+        });
+
+        it('click on a text box tile should not select it', () => {
+
+          // given
+          const textBox = addTextBoxContext(0, 0);
+
+          // when
+          textBoxTile().dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+          textBoxTile().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+          // then
+          expect(component.tileSelection.isSelected(textBox)).toBe(false);
         });
 
         it('#applyView of grid view while grid is not rendered should place text box at grid top', () => {
@@ -3166,6 +3391,38 @@ describe('DashboardComponent', () => {
 
           // then
           expect(note.height).toBe(TextBoxContext.TEXT_BOX_HEIGHT);
+        });
+
+        it('#onFreeResizeEnd by top edge of grown note should shrink own height and keep text height', () => {
+
+          // given
+          renderCanvasSummaries([]);
+          const note = addNoteContext(100, 100, 400);
+          component.onFreeResizeStart(note);
+          const scale = canvasScale();
+
+          // when
+          component.onFreeResizeEnd(note, resizeEvent(300 * scale, 380 * scale, 0, 0, { top: 20 * scale }));
+
+          // then
+          expect([note.y, note.height]).toEqual([120, TextBoxContext.TEXT_BOX_HEIGHT - 20]);
+          expect(component.freeLayout.drawnRectOf(note).height).toBe(400);
+        });
+
+        it('#onFreeResizeEnd by right edge of a note fitting its text should keep it ungrown', () => {
+
+          // given
+          renderCanvasSummaries([]);
+          const note = addNoteContext(100, 100, TextBoxContext.TEXT_BOX_HEIGHT);
+          component.onFreeResizeStart(note);
+          const scale = canvasScale();
+
+          // when
+          component.onFreeResizeEnd(note, resizeEvent(350 * scale, TextBoxContext.TEXT_BOX_HEIGHT * scale - 0.4, 0, 0, { right: 50 * scale }));
+
+          // then
+          expect([note.width, note.height]).toEqual([350, TextBoxContext.TEXT_BOX_HEIGHT]);
+          expect(component.freeLayout.drawnRectOf(note).height).toBe(TextBoxContext.TEXT_BOX_HEIGHT);
         });
 
         it.each([
@@ -3437,50 +3694,244 @@ describe('DashboardComponent', () => {
       expect(document.querySelector('#menuItemLayout')).toBeNull();
     }));
 
-    it('should render resize handle on grid tiles', () => {
+    describe('tile selection', () => {
 
-      // given
-      component.addSummaryTable();
+      function summaryTile(): HTMLElement {
+        return fixture.nativeElement.querySelector('.div_tile');
+      }
 
-      // when
-      fixture.detectChanges();
+      function handlesOf(tile: HTMLElement): HTMLElement[] {
+        return Array.from(tile.querySelectorAll('.div_resize_handle'));
+      }
 
-      // then
-      expect(fixture.nativeElement.querySelector('#div_grid .div_tile > img.resize-handle')).toBeTruthy();
-    });
+      function clickTile(target: Element, dx = 0): void {
+        const rect = target.getBoundingClientRect();
+        const point = { bubbles: true, clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 };
+        target.dispatchEvent(new PointerEvent('pointerdown', point));
+        target.dispatchEvent(new MouseEvent('click', { ...point, clientX: point.clientX + dx }));
+        fixture.detectChanges();
+      }
 
-    it('resize handle should have token size', () => {
+      function addSelectedSummary(layout = Route.GRID): SummaryContext {
+        component.addSummaryTable();
+        component.setLayout(layout);
+        fixture.detectChanges();
+        clickTile(summaryTile().querySelector('.div_element'));
+        return component.elementContexts[0] as SummaryContext;
+      }
 
-      // given
-      component.addSummaryTable();
+      it('should render no resize handles on unselected tile', () => {
 
-      // when
-      fixture.detectChanges();
+        // given
+        component.addSummaryTable();
 
-      // then
-      const handle: HTMLImageElement = fixture.nativeElement.querySelector('.div_tile img.resize-handle');
-      expect([handle.offsetWidth, handle.offsetHeight]).toEqual([16, 16]);
-    });
+        // when
+        fixture.detectChanges();
 
-    it.each([
-      { layout: Route.GRID, type: 'mousedown' },
-      { layout: Route.GRID, type: 'touchstart' },
-      { layout: Route.FLEX, type: 'mousedown' },
-      { layout: Route.FLEX, type: 'touchstart' }
-    ])('resize handle should not propagate $type to tile in $layout layout', ({ layout, type }) => {
+        // then
+        expect(handlesOf(summaryTile())).toEqual([]);
+        expect(summaryTile().classList).not.toContain('div_tile_selected');
+      });
 
-      // given
-      component.addSummaryTable();
-      component.setLayout(layout);
-      fixture.detectChanges();
-      const tileListener = vi.fn();
-      fixture.nativeElement.querySelector('.div_tile').addEventListener(type, tileListener);
+      it.each([Route.GRID, Route.FLEX])('click without drag on empty tile area should select tile in %s layout', layout => {
 
-      // when
-      fixture.nativeElement.querySelector('.div_tile img.resize-handle').dispatchEvent(new Event(type, { bubbles: true }));
+        // given
+        component.addSummaryTable();
+        component.setLayout(layout);
+        fixture.detectChanges();
 
-      // then
-      expect(tileListener).not.toHaveBeenCalled();
+        // when
+        clickTile(summaryTile().querySelector('.div_element'));
+
+        // then
+        expect(component.tileSelection.isSelected(component.elementContexts[0])).toBe(true);
+        expect(handlesOf(summaryTile()).length).toBe(8);
+        expect(summaryTile().querySelector('koia-resize-handles').classList).not.toContain('koia-squares-only');
+      });
+
+      it('selected tile should be outlined and raised below notes', () => {
+
+        // given
+        addSelectedSummary(Route.FLEX);
+        component.addNote();
+        fixture.detectChanges();
+
+        // when
+        const style = getComputedStyle(summaryTile());
+
+        // then
+        expect(style.outlineStyle).toBe('solid');
+        expect(style.zIndex).toBe('9999');
+        const noteZ = Number(getComputedStyle(fixture.nativeElement.querySelector('.div_text_box_tile')).zIndex);
+        expect(noteZ).toBeGreaterThan(9999);
+      });
+
+      it('click on control of selected tile should clear selection', () => {
+
+        // given
+        const context = addSelectedSummary();
+        const button = document.createElement('button');
+        summaryTile().querySelector('.div_element').appendChild(button);
+
+        // when
+        clickTile(button);
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(false);
+        expect(handlesOf(summaryTile())).toEqual([]);
+      });
+
+      it('claimed click on selected tile should clear selection', () => {
+
+        // given
+        const context = addSelectedSummary();
+        const element = summaryTile().querySelector('.div_element');
+        element.addEventListener('click', event => claimClick(event));
+
+        // when
+        clickTile(element);
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(false);
+      });
+
+      it('click on resize handle should keep selection', () => {
+
+        // given
+        const context = addSelectedSummary();
+
+        // when
+        clickTile(summaryTile().querySelector('.div_resize_handle_bottom_right'));
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(true);
+      });
+
+      it('click after drag should keep previous selection', () => {
+
+        // given
+        const context = addSelectedSummary();
+        const button = document.createElement('button');
+        summaryTile().querySelector('.div_element').appendChild(button);
+
+        // when
+        clickTile(button, 10);
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(true);
+      });
+
+      it('press outside of selected tile should clear selection and render it', () => {
+
+        // given
+        const context = addSelectedSummary();
+
+        // when
+        document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(false);
+        expect(handlesOf(summaryTile())).toEqual([]);
+      });
+
+      it('press on selected tile should keep selection', () => {
+
+        // given
+        const context = addSelectedSummary();
+
+        // when
+        summaryTile().dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(true);
+      });
+
+      it('escape should clear selection and render it', () => {
+
+        // given
+        const context = addSelectedSummary();
+
+        // when
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(false);
+        expect(handlesOf(summaryTile())).toEqual([]);
+      });
+
+      it('other key should keep selection', () => {
+
+        // given
+        const context = addSelectedSummary();
+
+        // when
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+        // then
+        expect(component.tileSelection.isSelected(context)).toBe(true);
+      });
+
+      it('press outside without selection should not render', () => {
+
+        // given
+        component.addSummaryTable();
+        fixture.detectChanges();
+        const detectChanges = vi.spyOn(component['cdr'], 'detectChanges');
+
+        // when
+        document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+
+        // then
+        expect(detectChanges).not.toHaveBeenCalled();
+      });
+
+      it('destroyed dashboard should stop listening to document', () => {
+
+        // given
+        addSelectedSummary();
+        const clear = vi.spyOn(component.tileSelection, 'clear');
+        fixture.destroy();
+
+        // when
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+        // then
+        expect(clear).not.toHaveBeenCalled();
+      });
+
+      it('selected chart tile showing margin should hide resize handles', () => {
+
+        // given
+        const chartContext = component.addChart();
+        fixture.detectChanges();
+        component.tileSelection.select(chartContext);
+
+        // when
+        chartContext.toggleShowResizableMargin();
+        fixture.detectChanges();
+
+        // then
+        expect(handlesOf(summaryTile())).toEqual([]);
+      });
+
+      it.each([
+        { layout: Route.GRID, type: 'mousedown' },
+        { layout: Route.GRID, type: 'touchstart' },
+        { layout: Route.FLEX, type: 'mousedown' },
+        { layout: Route.FLEX, type: 'touchstart' }
+      ])('resize handle should not propagate $type to tile in $layout layout', ({ layout, type }) => {
+
+        // given
+        addSelectedSummary(layout);
+        const tileListener = vi.fn();
+        summaryTile().addEventListener(type, tileListener);
+
+        // when
+        summaryTile().querySelector('.div_resize_handle_bottom_right').dispatchEvent(new Event(type, { bubbles: true }));
+
+        // then
+        expect(tileListener).not.toHaveBeenCalled();
+      });
     });
 
     it('#applyView should load grid view', () => {
@@ -4468,10 +4919,10 @@ describe('DashboardComponent', () => {
     });
   }
 
-  function resizeEvent(width: number, height: number, left = 0, top = 0): ResizeEvent {
+  function resizeEvent(width: number, height: number, left = 0, top = 0, edges: Edges = { right: 0, bottom: 0 }): ResizeEvent {
     return {
       rectangle: { top, bottom: top + height, left, right: left + width, width, height },
-      edges: null
+      edges
     };
   }
 

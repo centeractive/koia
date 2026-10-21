@@ -22,9 +22,25 @@ interface Match {
   edge: number;
 }
 
+export interface MovedEdges {
+  left: boolean;
+  top: boolean;
+  right: boolean;
+  bottom: boolean;
+}
+
+/** the snapped start and size along an axis, with the match of the moved edge unless it was clamped */
+interface AxisSnap {
+  start: number;
+  size: number;
+  match: Match;
+}
+
 const ALL_EDGES = [0, 0.5, 1];
 const OUTER_EDGES = [0, 1];
+const START_EDGE = [0];
 const END_EDGE = [1];
+const END_EDGES: MovedEdges = { left: false, top: false, right: true, bottom: true };
 
 /**
  * snaps the edges of a moved or resized tile to the edges of other tiles and pages, otherwise to the snap step;
@@ -64,18 +80,46 @@ export class SnapGuides {
     };
   }
 
-  snapResize(rect: Rect, minSize: Size = { width: FreeLayout.MIN_SIZE, height: FreeLayout.MIN_SIZE }): Snap {
-    const xMatch = this.match(rect.x, rect.width, this.xTargets, END_EDGE);
-    const yMatch = this.match(rect.y, rect.height, this.yTargets, END_EDGE);
-    const snappedWidth = xMatch ? xMatch.target - rect.x : this.roundToStep(rect.x + rect.width) - rect.x;
-    const snappedHeight = yMatch ? yMatch.target - rect.y : this.roundToStep(rect.y + rect.height) - rect.y;
+  /**
+   * a moved start edge keeps the end edge, the other edges stay unless moved
+   */
+  snapResize(rect: Rect, minSize: Size = { width: FreeLayout.MIN_SIZE, height: FreeLayout.MIN_SIZE }, moved = END_EDGES): Snap {
+    const x = this.snapAxis(rect.x, rect.width, this.xTargets, moved.left, moved.right, 0, minSize.width, this.page.width - rect.x);
+    const bottom = rect.y + rect.height;
+    const minY = this.paged ? this.page.pageTopOfBottom(bottom) : Math.max(0, bottom - this.page.height);
     const maxHeight = this.paged ? this.page.pageTopOf(rect.y) + this.page.height - rect.y : this.page.height;
-    const width = this.clamp(snappedWidth, minSize.width, this.page.width - rect.x);
-    const height = this.clamp(snappedHeight, minSize.height, maxHeight);
+    const y = this.snapAxis(rect.y, rect.height, this.yTargets, moved.top, moved.bottom, minY, minSize.height, maxHeight);
     return {
-      rect: { ...rect, width, height },
-      guides: this.guidesOf(width === snappedWidth ? xMatch : undefined, height === snappedHeight ? yMatch : undefined)
+      rect: { x: x.start, y: y.start, width: x.size, height: y.size },
+      guides: this.guidesOf(x.match, y.match)
     };
+  }
+
+  /**
+   * @param minStart the least start a moved start edge may get
+   * @param maxSize the largest size a moved end edge may give
+   */
+  private snapAxis(start: number, size: number, targets: Target[], startMoved: boolean, endMoved: boolean, minStart: number,
+    minSize: number, maxSize: number): AxisSnap {
+    if (startMoved) {
+      return this.snapStart(start, size, targets, minStart, minSize);
+    }
+    return endMoved ? this.snapEnd(start, size, targets, minSize, maxSize) : { start, size, match: undefined };
+  }
+
+  private snapStart(start: number, size: number, targets: Target[], minStart: number, minSize: number): AxisSnap {
+    const end = start + size;
+    const match = this.match(start, size, targets, START_EDGE);
+    const snapped = match ? match.target : this.roundToStep(start);
+    const clamped = this.clamp(snapped, minStart, end - minSize);
+    return { start: clamped, size: end - clamped, match: clamped === snapped ? match : undefined };
+  }
+
+  private snapEnd(start: number, size: number, targets: Target[], minSize: number, maxSize: number): AxisSnap {
+    const match = this.match(start, size, targets, END_EDGE);
+    const snapped = match ? match.target - start : this.roundToStep(start + size) - start;
+    const clamped = this.clamp(snapped, minSize, maxSize);
+    return { start, size: clamped, match: clamped === snapped ? match : undefined };
   }
 
   private match(start: number, size: number, targets: Target[], edges: number[]): Match {

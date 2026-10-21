@@ -147,40 +147,43 @@
                 <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_anchored]="!!$any(context).anchor"
                   [class.div_text_box_bordered]="$any(context).bordered" [style]="textBoxTileStyle($any(context))"
                   [ngStyle]="freeLayout.overlayStyle($any(context), anchorNameOf($any(context).anchor))"
-                  mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
-                  (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                  mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute"
+                  (resizeStart)="onFreeResizeStart(context)" (resizing)="onFreeResizing(context, $event)"
+                  (resizeEnd)="onFreeResizeEnd(context, $event)"
                   cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
                   (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                   <div #elementContainer class="div_element">
                     <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                   </div>
-                  <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                    (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                  <koia-resize-handles [squaresOnly]="true" />
                 </div>
               </div>
             } @else if (isTextBoxContext(context)) {
               <div class="div_tile div_text_box_tile div_text_tile" [class.div_text_box_bordered]="$any(context).bordered"
                 [style.--koia-anchor-name]="anchorNameOf(context)" [style]="textBoxTileStyle($any(context))"
-                [ngStyle]="gridCellStyleOf(context)" mwlResizable ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart()"
-                (resizing)="onGridResizing(context, $event)" (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
+                [ngStyle]="gridCellStyleOf(context)" mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute"
+                (resizeStart)="onGridResizeStart()" (resizing)="onGridResizing(context, $event)"
+                (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
                 <div #elementContainer class="div_element">
                   <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                 </div>
-                <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                  (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                <koia-resize-handles [squaresOnly]="true" />
               </div>
             } @else {
               <div class="div_tile mat-elevation-z1" [style.--koia-anchor-name]="anchorNameOf(context)" [ngStyle]="gridLayout.cellStyle(context)"
-                mwlResizable ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart()" (resizing)="onGridResizing(context, $event)"
-                (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
+                [class.div_tile_selected]="tileSelection.isSelected(context)" (pointerdown)="tileSelection.press(context)"
+                koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
+                mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart()"
+                (resizing)="onGridResizing(context, $event)" (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
                 <div #elementContainer class="div_element">
                   <koia-element-header [context]="context" [gridLayout]="gridLayout" [movable]="tileCount() > 1"
                     (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
                     (titleChange)="onTitleChanged(context, $event)" />
                   <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
                 </div>
-                <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                  (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                @if (showsResizeHandles(context)) {
+                  <koia-resize-handles />
+                }
               </div>
             }
           }
@@ -208,19 +211,21 @@
                     <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_text_tile]="!context.isOverlay()"
                       [class.div_text_box_bordered]="$any(context).bordered" [style]="textBoxTileStyle($any(context))"
                       [ngStyle]="freeLayout.tileStyle(context)"
-                      mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
-                      (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
+                      mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute"
+                      (resizeStart)="onFreeResizeStart(context)" (resizing)="onFreeResizing(context, $event)"
+                      (resizeEnd)="onFreeResizeEnd(context, $event)"
                       cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
                       (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                       <div #elementContainer class="div_element">
                         <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                       </div>
-                      <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                        (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                      <koia-resize-handles [squaresOnly]="true" />
                     </div>
                   } @else {
                     <div class="div_tile div_canvas_tile mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
-                      mwlResizable ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
+                      [class.div_tile_selected]="tileSelection.isSelected(context)" (pointerdown)="tileSelection.press(context)"
+                      koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
+                      mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                       (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                       cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
                       (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
@@ -230,8 +235,9 @@
                           (titleChange)="onTitleChanged(context, $event)" (bringToFront)="bringToFront(context)" (sendToBack)="sendToBack(context)" />
                         <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
                       </div>
-                      <img src="./assets/resize-handle.gif" class="resize-handle" mwlResizeHandle [resizeEdges]="resizableEdgesOf(context)"
-                        (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()">
+                      @if (showsResizeHandles(context)) {
+                        <koia-resize-handles />
+                      }
                     </div>
                   }
                 }

@@ -93,7 +93,7 @@ export class TextBox {
    constructor(readonly tile: Locator) {
       this.editor = tile.locator('koia-text-box .ProseMirror');
       this.paragraphs = this.editor.locator('p');
-      this.resizeHandle = tile.locator('.resize-handle');
+      this.resizeHandle = tile.locator('.div_resize_handle_bottom_right');
       this.moveZone = tile.locator('.div_move_zone');
       this.moveButton = this.moveZone.locator('.but_text_box_move');
       this.toolbar = new TextBoxToolbar(tile.page().locator('.cdk-overlay-container koia-text-box-toolbar .div_text_box_toolbar'));
@@ -119,10 +119,13 @@ export class TextBox {
       await this.paragraphs.first().hover();
    }
 
+   /**
+    * presses the top frame between the resize handles of its corner and middle
+    */
    async startMoveBy(dx: number, dy: number): Promise<void> {
       await this.hover();
       const box = await this.tile.boundingBox();
-      await pressAndMoveBy(this.tile.page(), box.x + FRAME_PADDING_PX / 2, box.y + FRAME_PADDING_PX / 2, dx, dy);
+      await pressAndMoveBy(this.tile.page(), box.x + box.width / 4, box.y + FRAME_PADDING_PX / 2, dx, dy);
    }
 
    async startMoveByButton(dx: number, dy: number): Promise<void> {
@@ -130,8 +133,11 @@ export class TextBox {
       await pressCenterAndMoveBy(this.moveButton, dx, dy);
    }
 
+   /**
+    * the resize handles are shown while the text is edited
+    */
    async startResizeBy(dx: number, dy: number): Promise<void> {
-      await this.hover();
+      await this.focus();
       await pressCenterAndMoveBy(this.resizeHandle, dx, dy);
    }
 

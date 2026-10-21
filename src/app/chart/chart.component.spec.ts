@@ -13,7 +13,9 @@ import { ChartDataService, ChartMarginService, defaultMargin } from 'app/shared/
 import { LanguageService } from 'app/shared/services/language';
 import { TabsPersister } from 'app/shared/services/view-tabs/tabs-persister';
 import { SceneFactory } from 'app/shared/test';
+import { isClickClaimed } from 'app/shared/ui/claimed-click';
 import { CommonUtils } from 'app/shared/utils';
+import { Chart } from 'chart.js';
 import { ChartComponent } from './chart.component';
 import type { Mock } from 'vitest';
 
@@ -637,6 +639,69 @@ describe('ChartComponent', () => {
       // then
       expect(context.chart).toBeTruthy();
     }));
+  });
+
+  describe('click', () => {
+
+    function chartHitting(elements: unknown[]): Chart {
+      const canvas = fixture.nativeElement.querySelector('canvas');
+      return { canvas, options: { hover: { mode: 'nearest' } }, getElementsAtEventForMode: () => elements, destroy: () => undefined } as unknown as Chart;
+    }
+
+    function clickOn(element: Element): MouseEvent {
+      const event = new MouseEvent('click', { bubbles: true });
+      element.dispatchEvent(event);
+      return event;
+    }
+
+    it('click on chart item should be claimed', () => {
+
+      // given
+      context.chart = chartHitting([{ index: 0 }]);
+
+      // when
+      const event = clickOn(fixture.nativeElement.querySelector('canvas'));
+
+      // then
+      expect(isClickClaimed(event)).toBe(true);
+    });
+
+    it('click beside chart items should not be claimed', () => {
+
+      // given
+      context.chart = chartHitting([]);
+
+      // when
+      const event = clickOn(fixture.nativeElement.querySelector('canvas'));
+
+      // then
+      expect(isClickClaimed(event)).toBe(false);
+    });
+
+    it('click before chart is created should not be claimed', () => {
+
+      // given
+      context.chart = undefined;
+
+      // when
+      const event = clickOn(fixture.nativeElement.querySelector('canvas'));
+
+      // then
+      expect(isClickClaimed(event)).toBe(false);
+    });
+
+    it('click on margin overlay should be claimed', () => {
+
+      // given
+      context.chart = undefined;
+      showResizableMargin();
+
+      // when
+      const event = clickOn(fixture.nativeElement.querySelector('.div_margins'));
+
+      // then
+      expect(isClickClaimed(event)).toBe(true);
+    });
   });
 
   it('#createExportData should throw error', () => {

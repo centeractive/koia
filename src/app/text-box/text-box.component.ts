@@ -219,11 +219,12 @@ export class TextBoxComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * a resize keeps the size chosen by the user
+   * a resize keeps the size chosen by the user and the text box active
    */
   private endEditOnRelease(resized: boolean): void {
     if (resized) {
       this.edited = false;
+      this.activate();
     } else {
       this.deactivate();
     }

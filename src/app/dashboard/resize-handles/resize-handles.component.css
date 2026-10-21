@@ -1,0 +1,116 @@
+:host {
+  display: contents;
+}
+
+/* above the border of the tile and the margins of a chart */
+.div_resize_handle {
+  position: absolute;
+  z-index: 11;
+}
+
+.div_resize_handle::after {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+  width: var(--koia-resize-grip-size);
+  height: var(--koia-resize-grip-size);
+  border: 1px solid var(--koia-accent);
+  background-color: var(--koia-surface);
+}
+
+.div_resize_handle_top,
+.div_resize_handle_bottom {
+  left: var(--koia-resize-grip-size);
+  right: var(--koia-resize-grip-size);
+  height: var(--koia-resize-grip-size);
+  cursor: ns-resize;
+}
+
+.div_resize_handle_top {
+  top: 0;
+}
+
+.div_resize_handle_bottom {
+  bottom: 0;
+}
+
+.div_resize_handle_top::after,
+.div_resize_handle_bottom::after {
+  top: 0;
+  left: calc(50% - var(--koia-resize-grip-size) / 2);
+}
+
+.div_resize_handle_left,
+.div_resize_handle_right {
+  top: var(--koia-resize-grip-size);
+  bottom: var(--koia-resize-grip-size);
+  width: var(--koia-resize-grip-size);
+  cursor: ew-resize;
+}
+
+.div_resize_handle_left {
+  left: 0;
+}
+
+.div_resize_handle_right {
+  right: 0;
+}
+
+.div_resize_handle_left::after,
+.div_resize_handle_right::after {
+  left: 0;
+  top: calc(50% - var(--koia-resize-grip-size) / 2);
+}
+
+.div_resize_handle_top_left,
+.div_resize_handle_top_right,
+.div_resize_handle_bottom_right,
+.div_resize_handle_bottom_left {
+  width: var(--koia-resize-grip-size);
+  height: var(--koia-resize-grip-size);
+}
+
+.div_resize_handle_top_left::after,
+.div_resize_handle_top_right::after,
+.div_resize_handle_bottom_right::after,
+.div_resize_handle_bottom_left::after {
+  inset: 0;
+}
+
+.div_resize_handle_top_left {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+
+.div_resize_handle_top_right {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+
+.div_resize_handle_bottom_right {
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+}
+
+.div_resize_handle_bottom_left {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+:host(.koia-squares-only) .div_resize_handle_top,
+:host(.koia-squares-only) .div_resize_handle_bottom {
+  left: calc(50% - var(--koia-resize-grip-size) / 2);
+  right: auto;
+  width: var(--koia-resize-grip-size);
+}
+
+:host(.koia-squares-only) .div_resize_handle_left,
+:host(.koia-squares-only) .div_resize_handle_right {
+  top: calc(50% - var(--koia-resize-grip-size) / 2);
+  bottom: auto;
+  height: var(--koia-resize-grip-size);
+}

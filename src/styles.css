@@ -409,6 +409,14 @@ koia-print-heading {
     outline: none !important;
   }
 
+  koia-resize-handles {
+    display: none !important;
+  }
+
+  .div_tile_selected {
+    outline: none !important;
+  }
+
   .div_text_box_tile:not(.div_text_box_bordered)::after {
     border: none !important;
   }

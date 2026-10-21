@@ -3,11 +3,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClickWithoutDragDirective } from './click-without-drag.directive';
 
 @Component({
-  template: '<div koiaClickWithoutDrag (clickWithoutDrag)="clicks = clicks + 1"></div>',
+  template: '<div koiaClickWithoutDrag (clickWithoutDrag)="clicks = clicks + 1; lastClick = $event"></div>',
   standalone: false
 })
 class HostComponent {
   clicks = 0;
+  lastClick: MouseEvent;
 }
 
 describe('ClickWithoutDragDirective', () => {
@@ -22,9 +23,14 @@ describe('ClickWithoutDragDirective', () => {
     element = fixture.nativeElement.querySelector('div');
   });
 
-  function pressAndClick(dx: number, dy: number): void {
-    element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100, clientY: 100 }));
-    element.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 100 + dx, clientY: 100 + dy }));
+  function press(): void {
+    element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 }));
+  }
+
+  function click(dx: number, dy: number): MouseEvent {
+    const event = new MouseEvent('click', { bubbles: true, clientX: 100 + dx, clientY: 100 + dy });
+    element.dispatchEvent(event);
+    return event;
   }
 
   it.each([
@@ -32,8 +38,11 @@ describe('ClickWithoutDragDirective', () => {
     { dx: 4, dy: -4 }
   ])('should emit click moved by $dx, $dy', ({ dx, dy }) => {
 
+    // given
+    press();
+
     // when
-    pressAndClick(dx, dy);
+    click(dx, dy);
 
     // then
     expect(fixture.componentInstance.clicks).toBe(1);
@@ -44,8 +53,32 @@ describe('ClickWithoutDragDirective', () => {
     { dx: 0, dy: -5 }
   ])('should not emit click ending drag moved by $dx, $dy', ({ dx, dy }) => {
 
+    // given
+    press();
+
     // when
-    pressAndClick(dx, dy);
+    click(dx, dy);
+
+    // then
+    expect(fixture.componentInstance.clicks).toBe(0);
+  });
+
+  it('should emit click', () => {
+
+    // given
+    press();
+
+    // when
+    const event = click(0, 0);
+
+    // then
+    expect(fixture.componentInstance.lastClick).toBe(event);
+  });
+
+  it('should not emit click without press', () => {
+
+    // when
+    click(0, 0);
 
     // then
     expect(fixture.componentInstance.clicks).toBe(0);

@@ -203,6 +203,59 @@ test('grid tile grows by a row in the default window', async ({ dashboard }) => 
    await expect(tile.root).toHaveCSS('grid-column-end', 'span 1');
 });
 
+test('resizing a grid tile by its left edge widens its column span', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+
+   await tile.startResizeBy(-50, 0, 'left');
+   await tile.release();
+
+   await expect(tile.root).toHaveCSS('grid-column-end', 'span 2');
+   await expect(tile.root).toHaveCSS('grid-row-end', 'span 1');
+});
+
+test('clicking empty area of a chart tile shows its resize handles until pressing outside', async ({ dashboard }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+   await expect(tile.resizeHandles).toHaveCount(0);
+
+   await tile.select();
+
+   await expect(tile.resizeHandles).toHaveCount(8);
+   await expect(tile.resizeHandle()).toBeVisible();
+   await dashboard.pressOutsideTextBoxes();
+   await expect(tile.resizeHandles).toHaveCount(0);
+});
+
+test('escape hides resize handles', async ({ page, dashboard }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+   await tile.select();
+   await expect(tile.resizeHandles).toHaveCount(8);
+
+   await page.keyboard.press('Escape');
+
+   await expect(tile.resizeHandles).toHaveCount(0);
+});
+
+test('clicking a pie slice reveals raw data without selecting the tile', async ({ dashboard, rawDataDialog }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.switchChartType(ChartType.PIE);
+   await dashboard.sideBar.toggle(en.get('chart.legendAndLabels'), en.get('chart.showLegend'));
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+
+   await tile.clickChartNearBottomCenter();
+
+   await expect(rawDataDialog.table.headers.first()).toBeVisible();
+   await expect(tile.resizeHandles).toHaveCount(0);
+});
+
 async function expectGridResizeBy(dashboard: DashboardPage, offset: number, expectedSpan: number): Promise<void> {
    const tile = dashboard.tile(0);
    const box = await tile.root.boundingBox();
@@ -303,6 +356,37 @@ test('resizing a canvas tile snaps its right edge to the page center', async ({ 
    const box = await tile.root.boundingBox();
    expect(Math.abs(box.width - 700 * scale)).toBeLessThanOrEqual(1);
    await expect(dashboard.resizePreview).toHaveCount(0);
+});
+
+test('resizing a canvas tile by its left edge keeps its right edge', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 1);
+   const tile = dashboard.tile(0);
+   const before = await tile.root.boundingBox();
+
+   await tile.startResizeBy(100 * scale, 0, 'left');
+   await tile.release();
+
+   const after = await tile.root.boundingBox();
+   expect(Math.abs(after.x - before.x - 100 * scale)).toBeLessThanOrEqual(1);
+   expect(Math.abs(after.x + after.width - before.x - before.width)).toBeLessThanOrEqual(1);
+   expect(Math.abs(after.height - before.height)).toBeLessThanOrEqual(1);
+});
+
+test('resizing a canvas tile by its top left corner keeps its bottom right corner', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 1);
+   const tile = dashboard.tile(0);
+   const before = await tile.root.boundingBox();
+
+   await tile.startResizeBy(50 * scale, 50 * scale, 'top_left');
+   await tile.release();
+
+   const after = await tile.root.boundingBox();
+   expect(Math.abs(after.x - before.x - 50 * scale)).toBeLessThanOrEqual(1);
+   expect(Math.abs(after.y - before.y - 50 * scale)).toBeLessThanOrEqual(1);
+   expect(Math.abs(after.x + after.width - before.x - before.width)).toBeLessThanOrEqual(1);
+   expect(Math.abs(after.y + after.height - before.y - before.height)).toBeLessThanOrEqual(1);
 });
 
 test('canvas tile sent to back is stacked below other tile', async ({ dashboard }) => {
@@ -991,7 +1075,23 @@ test('new note is translucent yellow, starts editing and shows its frame while e
    await textBox.hover();
 
    await expect.poll(() => textBox.frameOutlineStyle()).toBe('dashed');
-   await expect(textBox.resizeHandle).toBeVisible();
+   await expect(textBox.resizeHandle).toBeHidden();
+});
+
+test('focused note shows its 8 resize handles as squares', async ({ dashboard }) => {
+   await dashboard.launcher.cancel();
+   const textBox = await dashboard.addNote();
+   await dashboard.pressOutsideTextBoxes();
+
+   await textBox.focus();
+
+   const handles = textBox.tile.locator('.div_resize_handle');
+   await expect(handles).toHaveCount(8);
+   for (const handle of await handles.all()) {
+      await expect(handle).toBeVisible();
+      const box = await handle.boundingBox();
+      expect([box.width, box.height]).toEqual([8, 8]);
+   }
 });
 
 test('new text tile has a light solid border and starts editing', async ({ dashboard }) => {
@@ -1196,7 +1296,7 @@ test('empty text box area entered from its text keeps the text box revealed', as
 
    await page.mouse.move(x, y, { steps: 5 });
 
-   await expect(textBox.resizeHandle).toBeVisible();
+   await expect.poll(() => textBox.frameOutlineStyle()).toBe('dashed');
    expect(await isHitAt(textBox.tile, x, y)).toBe(true);
 });
 

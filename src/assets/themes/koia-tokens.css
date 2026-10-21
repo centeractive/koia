@@ -28,6 +28,7 @@
   --koia-table-row-hover: #e5f3ff;
   --koia-table-row-stripe: #efefef;
   --koia-resize-handle-size: 16px;
+  --koia-resize-grip-size: 8px;
   --koia-pivot-font-size: 11px;
   --koia-pivot-cell-padding: 2px 5px;
   --koia-pivot-field-height: 22px;

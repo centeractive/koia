@@ -1,0 +1,4 @@
+@for (handle of handles; track handle.name) {
+  <div class="div_resize_handle" [ngClass]="'div_resize_handle_' + handle.name" mwlResizeHandle [resizeEdges]="handle.edges"
+    (mousedown)="$event.stopPropagation()" (touchstart)="$event.stopPropagation()"></div>
+}

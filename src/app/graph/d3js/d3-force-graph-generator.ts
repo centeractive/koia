@@ -1,5 +1,6 @@
 import { GraphContext, GraphLink, GraphNode } from 'app/shared/model/graph';
 import { GraphData, RawDataRevealService } from 'app/shared/services';
+import { claimClick } from 'app/shared/ui/claimed-click';
 import {
     D3DragEvent, Simulation, drag, forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, forceX, forceY, max,
     scaleSqrt, select
@@ -61,7 +62,8 @@ export class D3ForceGraphGenerator {
             .call(drag<SVGGElement, GraphNode, GraphNode>()
                 .on('start', event => this.dragStarted(event))
                 .on('drag', event => this.dragged(event))
-                .on('end', event => this.dragEnded(event)));
+                .on('end', event => this.dragEnded(event)))
+            .on('click', (event: MouseEvent) => claimClick(event));
 
         node.append('circle')
             .attr('r', n => radiusOf(n))

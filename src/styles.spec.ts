@@ -256,6 +256,26 @@ describe('global styles', () => {
     expect(bodyRule.style.getPropertyValue('page')).toBe('koia-sheet-' + orientation);
   });
 
+  it('print styles should hide resize handles', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), 'koia-resize-handles', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('display')).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should hide selection outline', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_tile_selected', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('outline')).toBe('none');
+    expect(rule.style.getPropertyPriority('outline')).toBe('important');
+  });
+
   it('print styles should print canvas sheets without desk', () => {
 
     // when
@@ -453,6 +473,7 @@ describe('global styles', () => {
     expect(style.getPropertyValue('--koia-table-row-hover').trim()).toBe('#e5f3ff');
     expect(style.getPropertyValue('--koia-table-row-stripe').trim()).toBe('#efefef');
     expect(style.getPropertyValue('--koia-resize-handle-size').trim()).toBe('16px');
+    expect(style.getPropertyValue('--koia-resize-grip-size').trim()).toBe('8px');
     expect(style.getPropertyValue('--koia-pivot-font-size').trim()).toBe('11px');
     expect(style.getPropertyValue('--koia-pivot-cell-padding').trim()).toBe('2px 5px');
     expect(style.getPropertyValue('--koia-pivot-field-height').trim()).toBe('22px');

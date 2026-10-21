@@ -61,4 +61,11 @@ export class PageFormat {
   pageTopOf(y: number): number {
     return this.pageIndexOf(y) * this.height;
   }
+
+  /**
+   * @returns the top of the page a tile ending at the given bottom lies on, a bottom on a page boundary belongs to the page above
+   */
+  pageTopOfBottom(bottom: number): number {
+    return this.paged ? Math.max(0, Math.ceil(bottom / this.height) - 1) * this.height : 0;
+  }
 }

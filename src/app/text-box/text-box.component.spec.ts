@@ -901,6 +901,21 @@ describe('TextBoxComponent', () => {
       expect(fixture.componentInstance.textEdits).toEqual([]);
     });
 
+    it('should stay active after release of press resizing own tile', async () => {
+
+      // given
+      const fixture = await createFitHost();
+      await type(fixture, ' text');
+      pressPointerOn(fixture, tileOf(fixture));
+      tileOf(fixture).classList.add(TileRelease.RESIZE_ACTIVE_CLASS);
+
+      // when
+      await release();
+
+      // then
+      expect(textBoxOf(fixture).active).toBe(true);
+    });
+
     it('should cancel pending release on destroy', async () => {
 
       // given

@@ -9,6 +9,9 @@ export interface RenderedCellStyle {
    horizontalPadding: number;
 }
 
+/** gap between the top of the tile and its header buttons and title, which are centered in the taller header */
+const HEADER_GAP_PX = 3;
+
 interface CenterColumnScan {
    width: number;
    height: number;
@@ -23,6 +26,7 @@ export class DashboardTile {
    readonly graphRootNode: Locator;
    readonly marginButton: Locator;
    readonly margin: Locator;
+   readonly resizeHandles: Locator;
 
    constructor(readonly root: Locator) {
       this.title = root.locator('textarea.textarea_title');
@@ -30,6 +34,7 @@ export class DashboardTile {
       this.graphRootNode = root.locator('koia-graph svg g.nodes > g > circle').first();
       this.marginButton = root.locator('.but_element_margin');
       this.margin = root.locator('.div_margins');
+      this.resizeHandles = root.locator('.div_resize_handle');
    }
 
    async configure(): Promise<void> {
@@ -98,7 +103,8 @@ export class DashboardTile {
    async tableScrollerBottomAndHandleTop(): Promise<{ scrollerBottom: number; handleTop: number }> {
       await this.waitForSummaryTable();
       const scroller = await this.root.locator('.div_summary_table').boundingBox();
-      const handle = await this.root.locator('img.resize-handle').boundingBox();
+      await this.select();
+      const handle = await this.resizeHandle('bottom').boundingBox();
       return { scrollerBottom: scroller.y + scroller.height, handleTop: handle.y };
    }
 
@@ -167,8 +173,21 @@ export class DashboardTile {
       return this.root.evaluate((e: HTMLElement) => Number(getComputedStyle(e).zIndex));
    }
 
-   startResizeBy(dx: number, dy: number): Promise<void> {
-      return pressCenterAndMoveBy(this.root.locator('.resize-handle'), dx, dy);
+   /**
+    * clicks the empty gap above the header, which selects the tile and keeps a selected tile selected
+    */
+   async select(): Promise<void> {
+      const box = await this.root.boundingBox();
+      await this.root.click({ position: { x: box.width / 2, y: HEADER_GAP_PX } });
+   }
+
+   resizeHandle(name = 'bottom_right'): Locator {
+      return this.root.locator('.div_resize_handle_' + name);
+   }
+
+   async startResizeBy(dx: number, dy: number, handle = 'bottom_right'): Promise<void> {
+      await this.select();
+      await pressCenterAndMoveBy(this.resizeHandle(handle), dx, dy);
    }
 
    startMoveBy(dx: number, dy: number): Promise<void> {

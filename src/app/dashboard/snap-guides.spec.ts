@@ -1,5 +1,5 @@
 import { PageFormat } from './page-format';
-import { SnapGuides } from './snap-guides';
+import { MovedEdges, SnapGuides } from './snap-guides';
 
 describe('SnapGuides', () => {
 
@@ -7,6 +7,10 @@ describe('SnapGuides', () => {
 
   function guidesOf(threshold = 5): SnapGuides {
     return new SnapGuides([other], PageFormat.LANDSCAPE, 2, threshold);
+  }
+
+  function moved(...edges: (keyof MovedEdges)[]): MovedEdges {
+    return { left: edges.includes('left'), top: edges.includes('top'), right: edges.includes('right'), bottom: edges.includes('bottom') };
   }
 
   it.each([
@@ -159,6 +163,111 @@ describe('SnapGuides', () => {
     expect([snap.rect.width, snap.rect.height]).toEqual([40, 30]);
   });
 
+  it('#snapResize should snap left edge to other tile and keep right edge', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 613, y: 500, width: 387, height: 100 }, undefined, moved('left'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 610, y: 500, width: 390, height: 100 });
+    expect(snap.guides).toEqual([{ axis: 'x', position: 610 }]);
+  });
+
+  it('#snapResize should round left edge to step and drop guide', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1003, y: 500, width: 197, height: 100 }, undefined, moved('left'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 1000, y: 500, width: 200, height: 100 });
+    expect(snap.guides).toEqual([]);
+  });
+
+  it('#snapResize should clamp left edge to page left', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: -23, y: 500, width: 323, height: 100 }, undefined, moved('left'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 0, y: 500, width: 300, height: 100 });
+    expect(snap.guides).toEqual([]);
+  });
+
+  it('#snapResize should clamp left edge to minimum width', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 960, y: 500, width: 40, height: 100 }, undefined, moved('left'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 900, y: 500, width: 100, height: 100 });
+  });
+
+  it('#snapResize should snap top edge to other tile and keep bottom edge', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1000, y: 412, width: 150, height: 188 }, undefined, moved('top'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 1000, y: 410, width: 150, height: 190 });
+    expect(snap.guides).toEqual([{ axis: 'y', position: 410 }]);
+  });
+
+  it('#snapResize should clamp top edge to page top', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1000, y: 937, width: 150, height: 263 }, undefined, moved('top'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 1000, y: 950, width: 150, height: 250 });
+    expect(snap.guides).toEqual([]);
+  });
+
+  it('#snapResize should clamp top edge to page top of tile ending at page boundary', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1000, y: 937, width: 150, height: 963 }, undefined, moved('top'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 1000, y: 950, width: 150, height: 950 });
+  });
+
+  it('#snapResize should clamp top edge to minimum height', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1000, y: 560, width: 150, height: 40 }, undefined, moved('top'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 1000, y: 500, width: 150, height: 100 });
+  });
+
+  it('#snapResize should keep width when no horizontal edge moved', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 1003, y: 412, width: 147, height: 188 }, undefined, moved('top'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 1003, y: 410, width: 147, height: 190 });
+  });
+
+  it('#snapResize should keep height when no vertical edge moved', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 613, y: 503, width: 387, height: 97 }, undefined, moved('left'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 610, y: 503, width: 390, height: 97 });
+  });
+
+  it('#snapResize should snap top left corner to both axes', () => {
+
+    // when
+    const snap = guidesOf().snapResize({ x: 613, y: 412, width: 387, height: 188 }, undefined, moved('top', 'left'));
+
+    // then
+    expect(snap.rect).toEqual({ x: 610, y: 410, width: 390, height: 190 });
+    expect(snap.guides).toEqual([{ axis: 'x', position: 610 }, { axis: 'y', position: 410 }]);
+  });
+
   describe('unpaged', () => {
 
     function unpagedGuidesOf(): SnapGuides {
@@ -211,6 +320,25 @@ describe('SnapGuides', () => {
       // then
       expect(snap.rect.height).toBe(200);
       expect(snap.guides).toEqual([]);
+    });
+
+    it('#snapResize should clamp top edge to page height above bottom', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapResize({ x: 1000, y: 100, width: 150, height: 1100 }, undefined, moved('top'));
+
+      // then
+      expect(snap.rect).toEqual({ x: 1000, y: 250, width: 150, height: 950 });
+      expect(snap.guides).toEqual([]);
+    });
+
+    it('#snapResize should clamp top edge to 0', () => {
+
+      // when
+      const snap = unpagedGuidesOf().snapResize({ x: 1000, y: -33, width: 150, height: 233 }, undefined, moved('top'));
+
+      // then
+      expect(snap.rect).toEqual({ x: 1000, y: 0, width: 150, height: 200 });
     });
 
     it('#snapResize should clamp height to page height', () => {

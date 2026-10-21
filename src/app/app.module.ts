@@ -42,6 +42,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { ClickWithoutDragDirective } from './dashboard/click-without-drag.directive';
 import { DetachFromDropListDirective } from './dashboard/detach-from-drop-list.directive';
 import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
+import { ResizeHandlesComponent } from './dashboard/resize-handles/resize-handles.component';
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { FrontGuideComponent } from './front/front-guide/front-guide.component';
 import { FrontComponent } from './front/front.component';
@@ -113,6 +114,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         SceneComponent,
         DashboardComponent,
         ElementHeaderComponent,
+        ResizeHandlesComponent,
         DetachFromDropListDirective,
         ClickWithoutDragDirective,
         RawDataComponent,

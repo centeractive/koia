@@ -1,5 +1,6 @@
 import { GraphContext, GraphNode } from 'app/shared/model/graph';
 import { GraphData, RawDataRevealService } from 'app/shared/services';
+import { isClickClaimed } from 'app/shared/ui/claimed-click';
 import { CommonUtils } from 'app/shared/utils';
 import { ForceManyBody } from 'd3';
 import { NodeDoubleClickHandler } from '../options/node-double-click-handler';
@@ -158,6 +159,18 @@ describe('D3ForceGraphGenerator', () => {
 
         // then
         expect(onNodeDoubleClicked).toHaveBeenCalledWith(graphData.nodes[0], context);
+    });
+
+    it.each(['circle', 'text'])('#generate should claim click on node %s', selector => {
+        // given
+        generator.generate(graphData, div, context);
+        const event = new MouseEvent('click', { bubbles: true });
+
+        // when
+        div.querySelector(selector).dispatchEvent(event);
+
+        // then
+        expect(isClickClaimed(event)).toBe(true);
     });
 
     it('#generate should fill root node black and others with group color', () => {

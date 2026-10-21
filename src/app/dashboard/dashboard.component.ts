@@ -1,8 +1,8 @@
 import { CdkDragEnd, CdkDragMove, DragRef, Point } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, NgZone, Renderer2, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Router } from '@angular/router';
-import { BoundingRectangle, Edges, ResizeEvent } from 'angular-resizable-element';
+import { Edges, ResizeEvent } from 'angular-resizable-element';
 import { confirmYesNo, ViewController } from 'app/shared/controller';
 import { View, ViewElement } from 'app/shared/model/view-config';
 import { TextBox } from 'app/shared/services/view-persistence';
@@ -11,6 +11,7 @@ import { ChartDataService, ChartMarginService } from 'app/shared/services/chart'
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { listenToDocumentOutsideAngular } from 'app/shared/ui/document-listener';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { CanvasPaging, ElementContext, Route, TextBoxContext } from '../shared/model';
 import { DialogService, ExportService, NotificationService } from '../shared/services';
@@ -21,9 +22,11 @@ import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
 import { PageFormat } from './page-format';
 import { PageReflow } from './page-reflow';
-import { resizableEdges } from './resizable-edges';
-import { Guide, Snap, SnapGuides } from './snap-guides';
+import { RESIZE_CURSORS } from './resize-handles/resize-handles.component';
+import { isSelectingClick } from './selecting-click';
+import { Guide, MovedEdges, Snap, SnapGuides } from './snap-guides';
 import { textBoxTileStyle } from './text-box-tile-style';
+import { TileSelection } from './tile-selection';
 import { visibleCenterOf } from './visible-center';
 import type { TextExtent } from 'app/text-box/text-fit';
 
@@ -55,12 +58,17 @@ export class DashboardComponent extends ViewController {
   readonly gridLayout = new GridLayout();
   readonly freeLayout = new FreeLayout();
   readonly textBoxTileStyle = textBoxTileStyle;
+  readonly resizeCursors = RESIZE_CURSORS;
+  readonly tileSelection = new TileSelection<ElementContext>();
   @ViewChild('gridCells') gridCellsRef: ElementRef<HTMLDivElement>;
   @ViewChild('canvasPages') canvasPagesRef: ElementRef<HTMLDivElement>;
   resizePreview: { left: number, top: number, width: number, height: number };
   canvasGuides: Guide[] = [];
   printedAt = new Date();
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly zone = inject(NgZone);
+  private readonly renderer = inject(Renderer2);
+  private readonly removeDocumentListeners: (() => void)[];
   private gridResizeContentWidth: number;
   private canvasInteraction: CanvasInteraction;
 
@@ -72,6 +80,25 @@ export class DashboardComponent extends ViewController {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, chartMarginService, notificationService, exportService,
       viewTabsService, computedColumnService);
     this.dashboardGenerator = new DashboardGenerator(chartMarginService, chartDataService, new MathRandomSource());
+    this.removeDocumentListeners = [
+      listenToDocumentOutsideAngular(this.zone, this.renderer, 'pointerdown', () => this.renderIf(this.tileSelection.endPress())),
+      listenToDocumentOutsideAngular(this.zone, this.renderer, 'keydown',
+        event => this.renderIf((event as KeyboardEvent).key === 'Escape' && this.tileSelection.clear()))
+    ];
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    this.removeDocumentListeners.forEach(remove => remove());
+  }
+
+  /**
+   * the document listeners run outside Angular, as every cached dashboard listens
+   */
+  private renderIf(changed: boolean): void {
+    if (changed) {
+      this.cdr.detectChanges();
+    }
   }
 
   isGridLayout(): boolean {
@@ -349,8 +376,19 @@ export class DashboardComponent extends ViewController {
     }
   }
 
-  resizableEdgesOf(context: ElementContext): Edges {
-    return resizableEdges(this.isShowResizableMargin(context));
+  onTileClick(context: ElementContext, event: MouseEvent): void {
+    if (isSelectingClick(event)) {
+      this.tileSelection.select(context);
+    } else {
+      this.tileSelection.clear();
+    }
+  }
+
+  /**
+   * the margin of a chart has resize handles of its own
+   */
+  showsResizeHandles(context: ElementContext): boolean {
+    return this.tileSelection.isSelected(context) && !this.isShowResizableMargin(context);
   }
 
   onGridResizeStart(): void {
@@ -358,14 +396,13 @@ export class DashboardComponent extends ViewController {
   }
 
   onGridResizing(context: ElementContext, resizeEvent: ResizeEvent): void {
-    const rect = resizeEvent.rectangle;
-    const spans = this.resizedGridSpansOf(context, rect);
+    const spans = this.resizedGridSpansOf(context, resizeEvent);
     const drawnSpans = { ...spans, rowSpan: this.gridRowSpanOf(context, spans.rowSpan, this.gridResizeContentWidth) };
-    this.resizePreview = { left: rect.left, top: rect.top, ...this.gridLayout.tileSizeOf(drawnSpans, this.gridResizeContentWidth) };
+    this.resizePreview = { ...this.resizeOriginOf(resizeEvent), ...this.gridLayout.tileSizeOf(drawnSpans, this.gridResizeContentWidth) };
   }
 
   onGridResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
-    const spans = this.resizedGridSpansOf(context, resizeEvent.rectangle);
+    const spans = this.resizedGridSpansOf(context, resizeEvent);
     context.gridColumnSpan = spans.columnSpan;
     context.gridRowSpan = spans.rowSpan;
     this.resizePreview = undefined;
@@ -374,12 +411,29 @@ export class DashboardComponent extends ViewController {
   /**
    * the resized rect is drawn, the rows a text box is grown by to show its whole content are hence taken off
    */
-  private resizedGridSpansOf(context: ElementContext, rect: BoundingRectangle): GridSpans {
+  private resizedGridSpansOf(context: ElementContext, resizeEvent: ResizeEvent): GridSpans {
+    const rect = resizeEvent.rectangle;
     const cw = this.gridResizeContentWidth;
     const spans = { columnSpan: context.gridColumnSpan, rowSpan: context.gridRowSpan };
     const drawnSpans = { ...spans, rowSpan: this.gridRowSpanOf(context, spans.rowSpan, cw) };
     const growth = this.gridLayout.tileSizeOf(drawnSpans, cw).height - this.gridLayout.tileSizeOf(spans, cw).height;
-    return this.gridLayout.coveredSpansOf(rect.width, rect.height - growth, this.gridLayout.columnOf(rect.left, cw), cw);
+    const column = this.gridLayout.columnOf(this.resizeOriginOf(resizeEvent).left, cw);
+    return this.gridLayout.coveredSpansOf(rect.width, rect.height - growth, column, cw);
+  }
+
+  /**
+   * @returns the top left corner of the tile at resize start, the grid keeps the tile there whichever edge is moved
+   */
+  private resizeOriginOf(resizeEvent: ResizeEvent): { left: number, top: number } {
+    const rect = resizeEvent.rectangle;
+    return { left: rect.left - this.edgeDelta(resizeEvent, 'left'), top: rect.top - this.edgeDelta(resizeEvent, 'top') };
+  }
+
+  /**
+   * @returns the pixels the edge was moved by, 0 for an edge the handle does not move
+   */
+  private edgeDelta(resizeEvent: ResizeEvent, edge: keyof Edges): number {
+    return Number(resizeEvent.edges[edge] ?? 0);
   }
 
   protected override restoreElementContexts(elements: ViewElement[]): ElementContext[] {
@@ -582,6 +636,7 @@ export class DashboardComponent extends ViewController {
   onFreeResizeEnd(context: ElementContext, resizeEvent: ResizeEvent): void {
     if (Object.values(resizeEvent.edges).some(delta => delta !== 0)) {
       const snap = this.freeResizeSnapOf(context, resizeEvent);
+      context.setPosition(snap.rect.x, snap.rect.y);
       context.setSize(snap.rect.width, snap.rect.height);
       this.anchorInGrid(context, snap.rect);
       this.bringToFront(context);
@@ -591,15 +646,31 @@ export class DashboardComponent extends ViewController {
   }
 
   /**
-   * the resized rect is drawn, the height a text box is grown by to show its whole content is hence taken off
+   * the resized rect is drawn, the height a text box is grown by to show its whole content is hence taken off; the rect is
+   * measured in whole pixels, hence the sizes kept by a moved start edge or an unmoved axis are taken from the tile
    */
   private freeResizeSnapOf(context: ElementContext, resizeEvent: ResizeEvent): Snap {
     const { scale, guides } = this.canvasInteraction;
+    const rect = this.freeLayout.rectOf(context);
+    const moved = this.movedEdgesOf(resizeEvent);
+    const left = this.edgeDelta(resizeEvent, 'left') / scale;
+    const top = this.edgeDelta(resizeEvent, 'top') / scale;
     return guides.snapResize({
-      ...this.freeLayout.rectOf(context),
-      width: resizeEvent.rectangle.width / scale,
-      height: resizeEvent.rectangle.height / scale - this.growthOf(context)
-    }, this.freeLayout.minSizeOf(context));
+      x: rect.x + left,
+      y: rect.y + top,
+      width: moved.left ? rect.width - left : moved.right ? resizeEvent.rectangle.width / scale : rect.width,
+      height: moved.top ? rect.height - top : moved.bottom ? resizeEvent.rectangle.height / scale - this.growthOf(context) : rect.height
+    }, this.freeLayout.minSizeOf(context), moved);
+  }
+
+  private movedEdgesOf(resizeEvent: ResizeEvent): MovedEdges {
+    const edges = resizeEvent.edges;
+    return {
+      left: edges.left !== undefined,
+      top: edges.top !== undefined,
+      right: edges.right !== undefined,
+      bottom: edges.bottom !== undefined
+    };
   }
 
   private anchorInGrid(context: ElementContext, rect: Rect): void {

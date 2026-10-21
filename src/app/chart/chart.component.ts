@@ -5,6 +5,7 @@ import {
   DoCheck,
   ElementRef,
   EventEmitter,
+  HostListener,
   Inject,
   Input,
   NgZone,
@@ -25,10 +26,12 @@ import { RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 import { LanguageService } from 'app/shared/services/language';
+import { claimClick } from 'app/shared/ui/claimed-click';
 import { listenToDocumentOutsideAngular } from 'app/shared/ui/document-listener';
 import { CommonUtils } from 'app/shared/utils';
 import { Subscription } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';
+import { hitsChartItem } from './chartjs/chart-item-hit';
 import { ChartJs } from './chartjs/chartjs';
 
 @Component({
@@ -156,6 +159,18 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   private hideResizableMarginWhenPressedElsewhere(target: Node): void {
     if (this.context.isShowResizableMargin() && !this.isResizableMarginControl(target)) {
       this.zone.run(() => this.context.toggleShowResizableMargin());
+    }
+  }
+
+  /**
+   * the margin overlay belongs to the margin resizing, not to the tile
+   */
+  @HostListener('click', ['$event'])
+  onClick(event: MouseEvent): void {
+    const chart = this.context.chart;
+    const inMargins = !!(event.target as Element).closest('.div_margins');
+    if (inMargins || (chart && hitsChartItem(chart, event, this.canvasRef.nativeElement.getBoundingClientRect()))) {
+      claimClick(event);
     }
   }
 
