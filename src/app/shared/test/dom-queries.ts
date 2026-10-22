@@ -9,3 +9,7 @@ export function rowCountOf(root: ParentNode, selector: string): number {
 export function stylesOf(root: ParentNode, selector: string): CSSStyleDeclaration[] {
   return Array.from(root.querySelectorAll(selector)).map(e => getComputedStyle(e));
 }
+
+export function rightInsetOf(element: Element, container: Element): number {
+  return container.getBoundingClientRect().right - element.getBoundingClientRect().right;
+}

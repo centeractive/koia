@@ -13,12 +13,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-#image-scenes {
-  background-image: url('/assets/mat-icons/scenes.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
 mat-sidenav-content.mat-drawer-content {
   background-color: var(--koia-canvas);
   display: flex;
@@ -57,15 +51,6 @@ mat-sidenav-content.mat-drawer-content {
   background-color: rgb(218, 196, 74);
   white-space: pre-line;
   max-width: 800px !important;
-}
-
-.page-language {
-  --koia-language-bg: rgba(255, 255, 255, 0.16);
-  --koia-language-bg-hover: rgba(255, 255, 255, 0.26);
-  --koia-language-color: white;
-  display: inline-flex;
-  padding-top: 2px;
-  float: right;
 }
 
 .sidenav {

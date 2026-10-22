@@ -1,4 +1,4 @@
-import { findStyleRule, findUnsafeExternalLinks } from 'app/shared/test';
+import { findStyleRule, findUnsafeExternalLinks, rightInsetOf } from 'app/shared/test';
 
 describe('intro page', () => {
 
@@ -322,6 +322,16 @@ describe('intro page', () => {
 
     // then
     expect(styleOf(doc, '.landing-container').maxWidth).toBe('1200px');
+  });
+
+  it('should show language menu at right end of header', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(doc.querySelector('.landing-nav').lastElementChild.matches('details.intro-languages')).toBe(true);
+    expect(rightInsetOf(doc.querySelector('.intro-languages summary'), doc.querySelector('.landing-header'))).toBe(8);
   });
 
   it('should frame screenshots with rounded shadowed border', async () => {

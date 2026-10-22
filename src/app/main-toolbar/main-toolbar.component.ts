@@ -32,10 +32,6 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   @Input() restoredQuery: Query;
   @Output() onFilterChange = new EventEmitter<Query>();
 
-  readonly urlFront = '/' + Route.FRONT;
-  readonly urlScenes = '/' + Route.SCENES;
-  readonly urlScene = '/' + Route.SCENE;
-
   currURL: string;
   scene: Scene;
   showFullTextFilter: boolean;

@@ -11,6 +11,7 @@
   --koia-hover-tint: rgba(48, 63, 159, 0.1);
   --koia-active-tint: rgba(56, 142, 60, 0.12);
   --koia-toolbar-height: 48px;
+  --koia-header-padding-inline: 8px;
   --koia-tile-header-height: 48px;
   --koia-canvas: #eceff1;
   --koia-desk: #d9dce1;

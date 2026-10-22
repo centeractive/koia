@@ -1,0 +1,15 @@
+<button id="butHome" mat-icon-button [matTooltip]="'toolbar.home' | translate" [attr.aria-label]="'toolbar.home' | translate"
+  [routerLink]="[urlFront]">
+  <mat-icon>home</mat-icon>
+</button>
+<ng-content />
+<button id="butScenes" mat-icon-button [matTooltip]="'toolbar.scenes' | translate" [attr.aria-label]="'toolbar.scenes' | translate"
+  [class.koia-toggle-active]="active === routes.SCENES" [attr.aria-current]="active === routes.SCENES ? 'page' : null"
+  [disabled]="!scenesExist" [routerLink]="[urlScenes]">
+  <mat-icon>collections</mat-icon>
+</button>
+<button id="butScene" mat-icon-button [matTooltip]="'toolbar.addScene' | translate" [attr.aria-label]="'toolbar.addScene' | translate"
+  [class.koia-toggle-active]="active === routes.SCENE" [attr.aria-current]="active === routes.SCENE ? 'page' : null"
+  [routerLink]="[urlScene]">
+  <mat-icon>add_photo_alternate</mat-icon>
+</button>

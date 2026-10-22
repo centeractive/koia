@@ -26,6 +26,10 @@ import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
+import { rightInsetOf } from 'app/shared/test/dom-queries';
+import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
+import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
+import { page } from 'vitest/browser';
 import { MainToolbarComponent } from './main-toolbar.component';
 import { SavedViewButtonsComponent } from './saved-view-buttons/saved-view-buttons.component';
 import { ViewTabBarComponent } from './view-tab-bar/view-tab-bar.component';
@@ -43,7 +47,7 @@ class DummyComponent { }
 function configureTestingModule(dbService: DBService, dialogService: DialogService, extra: TestModuleMetadata = {}): Promise<void> {
   return TestBed.configureTestingModule({
     schemas: [NO_ERRORS_SCHEMA],
-    declarations: [MainToolbarComponent, DummyComponent, KoiaFormDirective, ...(extra.declarations ?? [])],
+    declarations: [MainToolbarComponent, DummyComponent, KoiaFormDirective, NavButtonsComponent, ...(extra.declarations ?? [])],
     imports: [
       MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, ReactiveFormsModule,
       MatFormFieldModule, MatSelectModule, MatInputModule, MatMenuModule, NgxSliderModule, MatBottomSheetModule,
@@ -195,7 +199,7 @@ describe('MainToolbarComponent', () => {
     valueRange = { min: timeMin, max: timeMax };
   });
 
-  beforeEach(waitForAsync(() => configureTestingModule(dbService, dialogService)));
+  beforeEach(waitForAsync(() => configureTestingModule(dbService, dialogService, { declarations: [LanguageSelectComponent] })));
 
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(MainToolbarComponent);
@@ -225,14 +229,39 @@ describe('MainToolbarComponent', () => {
     expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('add scene button should be separated from saved view buttons by divider', () => {
+  it('navigation buttons should be separated from saved view buttons by divider', () => {
 
     // when
     const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[0];
 
     // then
-    expect(separator.previousElementSibling.id).toBe('butScene');
+    expect(separator.previousElementSibling.tagName).toBe('KOIA-NAV-BUTTONS');
     expect(separator.nextElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
+  });
+
+  it('scene details button should be shown between home and scenes buttons', () => {
+
+    // when
+    const buttons: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('koia-nav-buttons > button'));
+
+    // then
+    expect(buttons.map(b => b.id)).toEqual(['butHome', 'butShowSceneDetails', 'butScenes', 'butScene']);
+  });
+
+  describe('on desktop', () => {
+
+    beforeAll(() => page.viewport(1280, 800));
+
+    afterAll(() => page.viewport(414, 896));
+
+    it('language selection should be at right end of toolbar', () => {
+
+      // when
+      const inset = rightInsetOf(fixture.nativeElement.querySelector('#but_language'), fixture.nativeElement.querySelector('.div_toolbar'));
+
+      // then
+      expect(inset).toBe(8);
+    });
   });
 
   it('saved view buttons should be separated from tab bar by divider', () => {

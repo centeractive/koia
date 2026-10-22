@@ -15,7 +15,7 @@ import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
-import { Router, RouterModule, UrlTree } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { RawDataComponent } from 'app/raw-data/raw-data.component';
 import { Attribute, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
@@ -23,12 +23,14 @@ import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { DataHandler, ReaderService, Sample } from 'app/shared/services/reader';
 import { SceneFactory } from 'app/shared/test';
+import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
 import { EntryPersister } from './persister/entry-persister';
 import { SceneComponent } from './scene.component';
+import { page } from 'vitest/browser';
 import type { Mock } from 'vitest';
 
 describe('SceneComponent', () => {
@@ -59,7 +61,7 @@ describe('SceneComponent', () => {
     dbService = new DBService(null);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [SceneComponent, ColumnMappingComponent, KoiaFormDirective],
+      declarations: [SceneComponent, ColumnMappingComponent, KoiaFormDirective, PageFrameComponent],
       imports: [RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {}), MatBottomSheetModule, MatExpansionModule,
         MatCardModule, FormsModule, MatFormFieldModule, ReactiveFormsModule, MatInputModule, MatSelectModule, MatProgressBarModule,
         MatSlideToggleModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule
@@ -100,11 +102,31 @@ describe('SceneComponent', () => {
     expect(reflectComponentType(SceneComponent).selector).toBe('koia-scene');
   });
 
-  it('should offer language selection at the right', () => {
-    const host = fixture.nativeElement.querySelector('koia-language-select.page-language');
-    expect(host).toBeTruthy();
-    expect(getComputedStyle(host).float).toBe('right');
+  it('should frame page as new scene page', () => {
+
+    // when
+    const frame: PageFrameComponent = fixture.debugElement.query(By.directive(PageFrameComponent)).componentInstance;
+
+    // then
+    expect(frame.active).toBe(Route.SCENE);
+    expect(frame.heading).toBe('New Scene');
+    expect(frame.scenesExist).toBe(true);
   });
+
+  it('should tell page frame that no scenes exist when there are no scene infos', fakeAsync(() => {
+
+    // given
+    findSceneInfos.mockResolvedValue([]);
+
+    // when
+    component.ngOnInit();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    const frame: PageFrameComponent = fixture.debugElement.query(By.directive(PageFrameComponent)).componentInstance;
+    expect(frame.scenesExist).toBe(false);
+  }));
 
   it('#ngOnInit should navigate to front page when backend is not initialized', () => {
 
@@ -159,32 +181,6 @@ describe('SceneComponent', () => {
     // then
     expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'db error');
   }));
-
-  it('butHome#click should navigate to front component', () => {
-
-    // given
-    const butHome: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
-
-    // when
-    butHome.click();
-
-    // then
-    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
-    expect(urlTree.toString()).toBe('/' + Route.FRONT);
-  });
-
-  it('butScenes#click should navigate to scenes component', () => {
-
-    // given
-    const butScenes: HTMLButtonElement = fixture.debugElement.query(By.css('#butScenes')).nativeElement;
-
-    // when
-    butScenes.click();
-
-    // then    
-    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
-    expect(urlTree.toString()).toBe('/' + Route.SCENES);
-  });
 
   it('#onSourceTypeChange should init context', fakeAsync(() => {
 
@@ -636,34 +632,75 @@ describe('SceneComponent', () => {
     formFields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
   }));
 
-  it('adopt columns toggle, scene select and detect button should share one row', fakeAsync(() => {
-
-    // given
-    fixture.nativeElement.style.display = 'block';
-    fixture.nativeElement.style.width = '1200px';
-    initUpToDetectColumns();
-    component.accordion.openAll();
-    const sceneInfos = createSceneInfos(1);
-    component.columnMappingsSourceCandidates = sceneInfos;
-    component.columnMappingsSource = sceneInfos[0];
-    fixture.detectChanges();
+  it('adopt columns toggle, scene select and detect button should wrap on narrow screen', fakeAsync(() => {
 
     // when
-    fixture.nativeElement.querySelector('#div_detect_columns mat-slide-toggle button').click();
-    fixture.detectChanges();
+    initUpToDetectColumns();
 
     // then
-    const row: HTMLElement = fixture.nativeElement.querySelector('#div_detect_columns');
-    expect(getComputedStyle(row).display).toBe('flex');
-    const toggle = row.querySelector('mat-slide-toggle').getBoundingClientRect();
-    const select = row.querySelector('#column_mapping_source').getBoundingClientRect();
-    const button = row.querySelector('#but_detect_columns').getBoundingClientRect();
-    const centerOf = (r: DOMRect) => r.top + r.height / 2;
-    expect(Math.abs(centerOf(select) - centerOf(toggle))).toBeLessThanOrEqual(1);
-    expect(Math.abs(centerOf(button) - centerOf(toggle))).toBeLessThanOrEqual(1);
-    expect(toggle.right).toBeLessThan(select.left);
-    expect(select.right).toBeLessThan(button.left);
+    expect(getComputedStyle(fixture.nativeElement.querySelector('#div_detect_columns')).flexWrap).toBe('wrap');
   }));
+
+  describe('on desktop', () => {
+
+    beforeAll(() => page.viewport(1280, 800));
+
+    afterAll(() => page.viewport(414, 896));
+
+    function expectOnOneLineInOrder(selectors: string[]): void {
+      const rects = selectors.map(s => fixture.nativeElement.querySelector(s).getBoundingClientRect());
+      const centerOf = (r: DOMRect) => r.top + r.height / 2;
+      rects.forEach(r => expect(Math.abs(centerOf(r) - centerOf(rects[0]))).toBeLessThanOrEqual(1));
+      rects.slice(1).forEach((r, i) => expect(rects[i].right).toBeLessThan(r.left));
+    }
+
+    it('source type, select file button, file name and encoding should share one row', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+
+      // when
+      component.accordion.openAll();
+      fixture.detectChanges();
+
+      // then
+      expectOnOneLineInOrder(['.form_field_source_type', '#select_file_button', '.file_name', '.form_field_encoding']);
+    }));
+
+    it('language, source attributes and detect button should share one row', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+      component.columnMappingsSource = undefined;
+
+      // when
+      component.accordion.openAll();
+      fixture.detectChanges();
+
+      // then
+      expectOnOneLineInOrder(['.form_field_language', '#div_source_attributes > mat-slide-toggle', '.form_field_separator',
+        '#but_detect_columns']);
+    }));
+
+    it('adopt columns toggle, scene select and detect button should share one row', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+      component.accordion.openAll();
+      const sceneInfos = createSceneInfos(1);
+      component.columnMappingsSourceCandidates = sceneInfos;
+      component.columnMappingsSource = sceneInfos[0];
+      fixture.detectChanges();
+
+      // when
+      fixture.nativeElement.querySelector('#div_detect_columns mat-slide-toggle button').click();
+      fixture.detectChanges();
+
+      // then
+      expect(getComputedStyle(fixture.nativeElement.querySelector('#div_detect_columns')).display).toBe('flex');
+      expectOnOneLineInOrder(['#div_detect_columns mat-slide-toggle', '#column_mapping_source', '#but_detect_columns']);
+    }));
+  });
 
   it('panel titles should show step numbers', fakeAsync(() => {
 

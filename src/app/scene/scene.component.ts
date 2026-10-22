@@ -36,8 +36,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private static readonly BATCH_SIZE = 1_000;
   private static readonly COLUMN_DEFINITIONS_STEP = 3;
 
-  readonly urlFront = '/' + Route.FRONT;
-  readonly urlScenes = '/' + Route.SCENES;
+  readonly route = Route.SCENE;
   readonly csvSourceName = SourceName.CSV;
   readonly sceneNameMaxLength = SceneUtils.SCENE_NAME_MAX_LENGTH;
   readonly sceneNameErrorStateMatcher = new ConditionalErrorStateMatcher(() => this.isSceneNameTaken());

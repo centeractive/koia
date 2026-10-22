@@ -3,19 +3,12 @@
   <div class="div_toolbar">
     @if (!dialogStyle) {
       <span class="span_buttons span_navigation">
-        <button id="butHome" mat-icon-button [matTooltip]="'toolbar.home' | translate" [routerLink]="[urlFront]">
-          <mat-icon>home</mat-icon>
-        </button>
-        <button id="butShowSceneDetails" mat-icon-button [matTooltip]="'toolbar.sceneDetails' | translate"
-          (click)="showSceneDetails()">
-          <mat-icon>info_outlined</mat-icon>
-        </button>
-        <button id="butScenes" mat-icon-button [matTooltip]="'toolbar.scenes' | translate" [routerLink]="[urlScenes]">
-          <mat-icon>collections</mat-icon>
-        </button>
-        <button id="butScene" mat-icon-button [matTooltip]="'toolbar.addScene' | translate" [routerLink]="[urlScene]">
-          <mat-icon>add_photo_alternate</mat-icon>
-        </button>
+        <koia-nav-buttons>
+          <button id="butShowSceneDetails" mat-icon-button [matTooltip]="'toolbar.sceneDetails' | translate"
+            (click)="showSceneDetails()">
+            <mat-icon>info_outlined</mat-icon>
+          </button>
+        </koia-nav-buttons>
         <span class="koia-toolbar-separator"></span>
         <koia-saved-view-buttons [activeTabId]="tabId" />
         <span class="koia-toolbar-separator"></span>

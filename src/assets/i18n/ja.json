@@ -161,20 +161,16 @@
     "loadFailed": "サンプルデータを読み込めません: {{reason}}"
   },
   "common": {
-    "addScene": "シーンを追加",
     "cancel": "キャンセル",
     "close": "閉じる",
     "delete": "削除",
-    "frontPage": "トップページ",
     "more": "その他...",
     "no": "いいえ",
     "ok": "OK",
-    "scenes": "シーン",
     "yes": "はい"
   },
   "scene": {
     "title": "新しいシーン",
-    "subtitle": "ファイルからデータの新しいシーンを作成します",
     "name": "シーン名",
     "nameExists": "シーン名は既に存在します",
     "shortDescription": "短い説明",
@@ -260,7 +256,6 @@
   },
   "scenes": {
     "title": "シーン",
-    "subtitle": "既存のシーンを管理します。シーンをアクティブにするとグラフィックを作成できます。",
     "filter": "シーンを絞り込む",
     "deleteFiltered": "絞り込み結果を削除",
     "deleteAll": "すべて削除",

@@ -14,7 +14,8 @@
 
 .form_field_source_type,
 .form_field_language,
-.form_field_separator {
+.form_field_separator,
+.form_field_encoding {
   flex: 0 0 180px;
 }
 
@@ -57,12 +58,6 @@ p {
   text-align: center;
 }
 
-#newscene-image {
-  background-image: url('/assets/mat-icons/new_scene.png');
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
 .div_actions,
 .span_load {
   display: flex;
@@ -76,4 +71,15 @@ p {
 
 .span_load {
   gap: 16px;
+}
+
+#div_detect_columns {
+  margin: 0;
+}
+
+/* a wrapping flex item is sized by its widest child, so the adopt controls would wrap even where they fit in one line */
+@media (min-width: 1024px) {
+  #div_detect_columns {
+    flex-wrap: nowrap;
+  }
 }

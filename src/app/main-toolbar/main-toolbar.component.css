@@ -12,7 +12,7 @@ button {
   flex-wrap: nowrap;
   box-sizing: border-box;
   width: 100%;
-  padding: 0 8px;
+  padding: 0 var(--koia-header-padding-inline);
 }
 
 .span_buttons {

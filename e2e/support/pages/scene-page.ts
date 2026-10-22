@@ -15,7 +15,7 @@ export class ScenePage {
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
-      this.title = page.locator('mat-card-title');
+      this.title = page.locator('koia-page-frame .page_title');
       this.separator = page.locator('.form_field_separator input');
       this.panels = page.locator('mat-accordion mat-expansion-panel');
       this.nameInput = page.locator('.scene_name input');

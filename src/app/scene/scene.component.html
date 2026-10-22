@@ -1,249 +1,232 @@
-<button id="butHome" mat-icon-button [matTooltip]="'common.frontPage' | translate" [routerLink]="[urlFront]">
-  <mat-icon style="color: white;">home</mat-icon>
-</button>
-@if (scenesExist) {
-  <button id="butScenes" mat-icon-button [matTooltip]="'common.scenes' | translate" [routerLink]="[urlScenes]">
-    <mat-icon style="color: white;">collections</mat-icon>
-  </button>
-}
-<koia-language-select class="page-language" />
-<mat-card appearance="outlined" koiaForm>
-  <mat-card-header>
-    <div mat-card-avatar id="newscene-image"></div>
-    <mat-card-title>{{ 'scene.title' | translate }}</mat-card-title>
-    <mat-card-subtitle>{{ 'scene.subtitle' | translate }}</mat-card-subtitle>
-  </mat-card-header>
+<koia-page-frame [heading]="'scene.title' | translate" [active]="route" [scenesExist]="scenesExist">
+  <mat-card appearance="outlined" koiaForm>
+    <mat-card-content>
 
-  <mat-card-content>
-
-    @if (scene) {
-      <div class="field-row">
-        <mat-form-field class="scene_name">
-          <mat-label>{{ 'scene.name' | translate }}</mat-label>
-          <input matInput required [maxlength]="sceneNameMaxLength" [(ngModel)]="scene.name" [errorStateMatcher]="sceneNameErrorStateMatcher">
-          @if (isSceneNameTaken()) {
-            <mat-error>{{ 'scene.nameExists' | translate }}</mat-error>
-          }
-        </mat-form-field>
-        <mat-form-field class="scene_short_desc">
-          <mat-label>{{ 'scene.shortDescription' | translate }}</mat-label>
-          <input matInput required [(ngModel)]="scene.shortDescription">
-        </mat-form-field>
-      </div>
-    }
-
-    <mat-accordion multi="true">
-      <mat-expansion-panel expanded="true">
-        <mat-expansion-panel-header color="accent">
-          <mat-panel-title>
-            <span class="step">1</span><h4>{{ 'scene.dataSource' | translate }}</h4>
-          </mat-panel-title>
-        </mat-expansion-panel-header>
+      @if (scene) {
         <div class="field-row">
-          <mat-form-field class="form_field_source_type">
-            <mat-label>{{ 'scene.sourceType' | translate }}</mat-label>
-            <mat-select [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
-              @for (reader of readers; track reader) {
-                <mat-option [value]="reader">
-                  {{ reader.getSourceName() }}
-                </mat-option>
-              }
-            </mat-select>
+          <mat-form-field class="scene_name">
+            <mat-label>{{ 'scene.name' | translate }}</mat-label>
+            <input matInput required [maxlength]="sceneNameMaxLength" [(ngModel)]="scene.name" [errorStateMatcher]="sceneNameErrorStateMatcher">
+            @if (isSceneNameTaken()) {
+              <mat-error>{{ 'scene.nameExists' | translate }}</mat-error>
+            }
           </mat-form-field>
-          <button id="select_file_button" mat-flat-button color="primary" (click)="selectFile()">
-            <mat-icon>folder</mat-icon>
-            <span>&nbsp;{{ 'scene.selectFile' | translate }}</span>
-          </button>
-          <input #fileInput id="fileInput" hidden type="file"
-            [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
-          @if (file) {
-            <mat-form-field class="file_name">
-              <mat-label>{{ 'scene.fileName' | translate }}</mat-label>
-              <input matInput readonly [value]="file.name">
+          <mat-form-field class="scene_short_desc">
+            <mat-label>{{ 'scene.shortDescription' | translate }}</mat-label>
+            <input matInput required [(ngModel)]="scene.shortDescription">
+          </mat-form-field>
+        </div>
+      }
+
+      <mat-accordion multi="true">
+        <mat-expansion-panel expanded="true">
+          <mat-expansion-panel-header color="accent">
+            <mat-panel-title>
+              <span class="step">1</span><h4>{{ 'scene.dataSource' | translate }}</h4>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="field-row">
+            <mat-form-field class="form_field_source_type">
+              <mat-label>{{ 'scene.sourceType' | translate }}</mat-label>
+              <mat-select [(value)]="selectedReader" (selectionChange)="onSourceTypeChange()">
+                @for (reader of readers; track reader) {
+                  <mat-option [value]="reader">
+                    {{ reader.getSourceName() }}
+                  </mat-option>
+                }
+              </mat-select>
             </mat-form-field>
+            <button id="select_file_button" mat-flat-button color="primary" (click)="selectFile()">
+              <mat-icon>folder</mat-icon>
+              <span>&nbsp;{{ 'scene.selectFile' | translate }}</span>
+            </button>
+            <input #fileInput id="fileInput" hidden type="file"
+              [accept]="selectedReader ? selectedReader.getFileExtension() : ''">
+            @if (file) {
+              <mat-form-field class="file_name">
+                <mat-label>{{ 'scene.fileName' | translate }}</mat-label>
+                <input matInput readonly [value]="file.name">
+              </mat-form-field>
+            }
+            @if (currSourceName === csvSourceName) {
+              <mat-form-field class="form_field_encoding">
+                <mat-label>{{ 'scene.encoding' | translate }}</mat-label>
+                <mat-select [(value)]="encoding" (selectionChange)="onCharacterEncodingChange()"
+                  [matTooltip]="'scene.encodingTooltip' | translate">
+                  @for (charSet of characterSets; track charSet) {
+                    <mat-option [value]="charSet">
+                      {{ charSet }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            }
+          </div>
+          @if (selectedReader) {
+            <p>{{ selectedReader.getDescription() }}</p>
+          }
+          @if (fileHeader) {
+            <div>
+              {{ 'scene.dataSample' | translate }}
+              <textarea id="textarea_data_sample" readonly>{{ fileHeader }}</textarea>
+            </div>
+          }
+          @if (readingSample) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          }
+        </mat-expansion-panel>
+
+        @if (fileHeader) {
+          <mat-expansion-panel expanded="true">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span class="step">2</span><h4>{{ 'scene.sourceAttributes' | translate: { source: selectedReader.getSourceName() } }}</h4>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div id="div_source_attributes" class="field-row">
+              <mat-form-field class="form_field_language">
+                <mat-label>{{ 'scene.language' | translate }}</mat-label>
+                <mat-select [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
+                  [matTooltip]="'scene.languageTooltip' | translate">
+                  @for (locale of locales; track locale) {
+                    <mat-option [value]="locale">
+                      {{ locale }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              @for (attr of readerAttributes; track attr) {
+                @if (attr.isBoolean()) {
+                  <mat-slide-toggle color="primary" (change)="columnMappings = null"
+                    [(ngModel)]="attr.value" [matTooltip]="attr.description | translate">
+                    {{ attr.name | translate }}
+                  </mat-slide-toggle>
+                }
+                @if (!attr.isBoolean()) {
+                  <mat-form-field class="form_field_separator">
+                    <mat-label>{{ attr.name | translate }}</mat-label>
+                    <input matInput
+                      [type]="attr.isNumber() ? 'number' : 'text'" [(ngModel)]="attr.value" [matTooltip]="attr.description | translate"
+                      (change)="columnMappings = null">
+                    @if (attr.hasValueChoice()) {
+                      <button matSuffix class="but_value_choice" mat-icon-button [matMenuTriggerFor]="valueChoiceMenu">
+                        <mat-icon>expand_more</mat-icon>
+                      </button>
+                    }
+                  </mat-form-field>
+                  <mat-menu #valueChoiceMenu="matMenu">
+                    @for (choice of attr.valueChoice; track choice) {
+                      <button mat-menu-item [disabled]="choice === attr.value"
+                        (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
+                    }
+                  </mat-menu>
+                }
+              }
+              <div id="div_detect_columns" class="field-row">
+                @if (columnMappingsSource) {
+                  <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">{{ 'scene.adoptColumns' | translate }}</mat-slide-toggle>
+                  @if (adoptColumnsFromExistingScene) {
+                    <mat-form-field id="column_mapping_source">
+                      <mat-label>{{ 'scene.scene' | translate }}</mat-label>
+                      <mat-select [(ngModel)]="columnMappingsSource">
+                        <mat-select-trigger>
+                          {{ columnMappingsSource.name }}
+                          <var class="scene_info_creation_time">
+                            ({{ 'scene.created' | translate: { time: (columnMappingsSource.creationTime | koiaDate:'medium') } }})
+                          </var>
+                        </mat-select-trigger>
+                        @for (sceneInfo of columnMappingsSourceCandidates; track sceneInfo) {
+                          <mat-option [value]="sceneInfo">
+                            {{ sceneInfo.name }}
+                            <var class="scene_info_creation_time">
+                              ({{ 'scene.created' | translate: { time: (sceneInfo.creationTime | koiaDate:'medium') } }})
+                            </var>
+                          </mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  }
+                }
+                <button id="but_detect_columns" mat-flat-button color="primary" [disabled]="isSceneNameTaken()"
+                  [matTooltip]="adoptColumnsFromExistingScene ? '' : ('scene.detectColumnsTooltip' | translate)"
+                  (click)="readSample()">{{ (adoptColumnsFromExistingScene ? 'scene.adoptColumnsButton' : 'scene.detectColumnsButton') | translate }}</button>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        }
+
+        @if (columnMappings) {
+          <mat-expansion-panel expanded="true">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span class="step">3</span><h4>{{ 'scene.columnDefinitions' | translate }}</h4>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            @for (columnPair of columnMappings; track columnPair) {
+              <div>
+                @if (!columnPair.skip) {
+                  <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
+                    (onRemove)="deleteColumnMapping(columnPair)">
+                  </koia-column-mapping>
+                }
+              </div>
+            }
+          </mat-expansion-panel>
+        }
+
+        @if (columnMappings) {
+          <mat-expansion-panel expanded="true">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span class="step">4</span><h4>{{ 'scene.preview' | translate }}</h4>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <koia-scene-preview [columnPairs]="columnMappings" [mappingResults]="previewData" />
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+
+      @if (scene) {
+        <div class="div_actions">
+          @if (!canceled) {
+            <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
+          }
+          @if (scene.name && !isSceneNameTaken() && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
+            <span class="span_load">
+              @if (isPreviewDirty()) {
+                <img src="/assets/warning.png"
+                  [matTooltip]="'scene.previewErrorsTooltip' | translate"
+                  matTooltipClass="koia-tooltip-warning" />
+              }
+              <button id="but_load_data" mat-flat-button color="primary" [matTooltip]="'scene.loadDataTooltip' | translate"
+                [disabled]="maxItemsToLoadControl.invalid" (click)="persistScene()">
+                {{ 'scene.loadData' | translate }}
+              </button>
+              <mat-form-field class="max_items">
+                <mat-label>{{ 'scene.maxItems' | translate }}</mat-label>
+                <input matInput type="text" required [formControl]="maxItemsToLoadControl"
+                  [matTooltip]="'scene.maxItemsTooltip' | translate: { max: (maxItemsPerScene | koiaNumber) }"
+                  formattedInteger matTooltipClass="multi-line-tooltip">
+                @if (maxItemsToLoadControl.invalid) {
+                  <mat-error>{{ 'scene.maxItemsError' | translate: { max: maxItemsPerScene } }}</mat-error>
+                }
+              </mat-form-field>
+              <mat-slide-toggle [(ngModel)]="abortDataloadOnError"
+                [matTooltip]="'scene.abortOnErrorTooltip' | translate">
+                {{ 'scene.abortOnError' | translate }}
+              </mat-slide-toggle>
+            </span>
           }
         </div>
-        @if (selectedReader) {
-          <p>{{ selectedReader.getDescription() }}</p>
-        }
-        @if (currSourceName === csvSourceName) {
-          <div class="field-row">
-            <mat-form-field class="form_field_encoding">
-              <mat-label>{{ 'scene.encoding' | translate }}</mat-label>
-              <mat-select [(value)]="encoding" (selectionChange)="onCharacterEncodingChange()"
-                [matTooltip]="'scene.encodingTooltip' | translate">
-                @for (charSet of characterSets; track charSet) {
-                  <mat-option [value]="charSet">
-                    {{ charSet }}
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-        }
-        @if (fileHeader) {
-          <div>
-            {{ 'scene.dataSample' | translate }}
-            <textarea id="textarea_data_sample" readonly>{{ fileHeader }}</textarea>
-          </div>
-        }
-        @if (readingSample) {
-          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        }
-      </mat-expansion-panel>
-
-      @if (fileHeader) {
-        <mat-expansion-panel expanded="true">
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              <span class="step">2</span><h4>{{ 'scene.sourceAttributes' | translate: { source: selectedReader.getSourceName() } }}</h4>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          <div class="field-row">
-            <mat-form-field class="form_field_language">
-              <mat-label>{{ 'scene.language' | translate }}</mat-label>
-              <mat-select [(value)]="selectedLocale" (selectionChange)="columnMappings = null"
-                [matTooltip]="'scene.languageTooltip' | translate">
-                @for (locale of locales; track locale) {
-                  <mat-option [value]="locale">
-                    {{ locale }}
-                  </mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-          @for (attr of readerAttributes; track attr) {
-            <div class="field-row">
-              @if (attr.isBoolean()) {
-                <mat-slide-toggle color="primary" (change)="columnMappings = null"
-                  [(ngModel)]="attr.value" [matTooltip]="attr.description | translate">
-                  {{ attr.name | translate }}
-                </mat-slide-toggle>
-              }
-              @if (!attr.isBoolean()) {
-                <mat-form-field class="form_field_separator">
-                  <mat-label>{{ attr.name | translate }}</mat-label>
-                  <input matInput
-                    [type]="attr.isNumber() ? 'number' : 'text'" [(ngModel)]="attr.value" [matTooltip]="attr.description | translate"
-                    (change)="columnMappings = null">
-                  @if (attr.hasValueChoice()) {
-                    <button matSuffix class="but_value_choice" mat-icon-button [matMenuTriggerFor]="valueChoiceMenu">
-                      <mat-icon>expand_more</mat-icon>
-                    </button>
-                  }
-                </mat-form-field>
-                <mat-menu #valueChoiceMenu="matMenu">
-                  @for (choice of attr.valueChoice; track choice) {
-                    <button mat-menu-item [disabled]="choice === attr.value"
-                      (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
-                  }
-                </mat-menu>
-              }
-            </div>
-          }
-          <div id="div_detect_columns" class="field-row">
-            @if (columnMappingsSource) {
-              <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">{{ 'scene.adoptColumns' | translate }}</mat-slide-toggle>
-              @if (adoptColumnsFromExistingScene) {
-                <mat-form-field id="column_mapping_source">
-                  <mat-label>{{ 'scene.scene' | translate }}</mat-label>
-                  <mat-select [(ngModel)]="columnMappingsSource">
-                    <mat-select-trigger>
-                      {{ columnMappingsSource.name }}
-                      <var class="scene_info_creation_time">
-                        ({{ 'scene.created' | translate: { time: (columnMappingsSource.creationTime | koiaDate:'medium') } }})
-                      </var>
-                    </mat-select-trigger>
-                    @for (sceneInfo of columnMappingsSourceCandidates; track sceneInfo) {
-                      <mat-option [value]="sceneInfo">
-                        {{ sceneInfo.name }}
-                        <var class="scene_info_creation_time">
-                          ({{ 'scene.created' | translate: { time: (sceneInfo.creationTime | koiaDate:'medium') } }})
-                        </var>
-                      </mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-              }
-            }
-            <button id="but_detect_columns" mat-flat-button color="primary" [disabled]="isSceneNameTaken()"
-              [matTooltip]="adoptColumnsFromExistingScene ? '' : ('scene.detectColumnsTooltip' | translate)"
-              (click)="readSample()">{{ (adoptColumnsFromExistingScene ? 'scene.adoptColumnsButton' : 'scene.detectColumnsButton') | translate }}</button>
-          </div>
-        </mat-expansion-panel>
       }
-
-      @if (columnMappings) {
-        <mat-expansion-panel expanded="true">
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              <span class="step">3</span><h4>{{ 'scene.columnDefinitions' | translate }}</h4>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          @for (columnPair of columnMappings; track columnPair) {
-            <div>
-              @if (!columnPair.skip) {
-                <koia-column-mapping [mapping]="columnPair" (onChange)="onColumnChanged()"
-                  (onRemove)="deleteColumnMapping(columnPair)">
-                </koia-column-mapping>
-              }
-            </div>
-          }
-        </mat-expansion-panel>
+      @if (progressBarMode) {
+        <div id="div_progress">
+          {{ feedback }}
+          <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
+            [color]="progressBarMode === 'determinate' ? 'accent' : ''">
+          </mat-progress-bar>
+        </div>
       }
-
-      @if (columnMappings) {
-        <mat-expansion-panel expanded="true">
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              <span class="step">4</span><h4>{{ 'scene.preview' | translate }}</h4>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          <koia-scene-preview [columnPairs]="columnMappings" [mappingResults]="previewData" />
-        </mat-expansion-panel>
-      }
-    </mat-accordion>
-
-    @if (scene) {
-      <div class="div_actions">
-        @if (!canceled) {
-          <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
-        }
-        @if (scene.name && !isSceneNameTaken() && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
-          <span class="span_load">
-            @if (isPreviewDirty()) {
-              <img src="/assets/warning.png"
-                [matTooltip]="'scene.previewErrorsTooltip' | translate"
-                matTooltipClass="koia-tooltip-warning" />
-            }
-            <button id="but_load_data" mat-flat-button color="primary" [matTooltip]="'scene.loadDataTooltip' | translate"
-              [disabled]="maxItemsToLoadControl.invalid" (click)="persistScene()">
-              {{ 'scene.loadData' | translate }}
-            </button>
-            <mat-form-field class="max_items">
-              <mat-label>{{ 'scene.maxItems' | translate }}</mat-label>
-              <input matInput type="text" required [formControl]="maxItemsToLoadControl"
-                [matTooltip]="'scene.maxItemsTooltip' | translate: { max: (maxItemsPerScene | koiaNumber) }"
-                formattedInteger matTooltipClass="multi-line-tooltip">
-              @if (maxItemsToLoadControl.invalid) {
-                <mat-error>{{ 'scene.maxItemsError' | translate: { max: maxItemsPerScene } }}</mat-error>
-              }
-            </mat-form-field>
-            <mat-slide-toggle [(ngModel)]="abortDataloadOnError"
-              [matTooltip]="'scene.abortOnErrorTooltip' | translate">
-              {{ 'scene.abortOnError' | translate }}
-            </mat-slide-toggle>
-          </span>
-        }
-      </div>
-    }
-    @if (progressBarMode) {
-      <div id="div_progress">
-        {{ feedback }}
-        <mat-progress-bar [mode]="progressBarMode" [value]="percentPersisted"
-          [color]="progressBarMode === 'determinate' ? 'accent' : ''">
-        </mat-progress-bar>
-      </div>
-    }
-  </mat-card-content>
-</mat-card>
+    </mat-card-content>
+  </mat-card>
+</koia-page-frame>
