@@ -20,7 +20,7 @@
       <div class="field-row">
         <mat-form-field class="scene_name">
           <mat-label>{{ 'scene.name' | translate }}</mat-label>
-          <input matInput required [(ngModel)]="scene.name" [errorStateMatcher]="sceneNameErrorStateMatcher">
+          <input matInput required [maxlength]="sceneNameMaxLength" [(ngModel)]="scene.name" [errorStateMatcher]="sceneNameErrorStateMatcher">
           @if (isSceneNameTaken()) {
             <mat-error>{{ 'scene.nameExists' | translate }}</mat-error>
           }

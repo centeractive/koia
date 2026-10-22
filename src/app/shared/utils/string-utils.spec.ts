@@ -176,4 +176,22 @@ describe('StringUtils', () => {
       // then
       expect(name).toBe('x (3)');
    });
+
+   it('#uniqueNameOf should return name without suffix when name is not taken', () => {
+
+      // when
+      const name = StringUtils.uniqueNameOf(s => 'x' + s, new Set());
+
+      // then
+      expect(name).toBe('x');
+   });
+
+   it('#uniqueNameOf should create name with next free number suffix when names are taken', () => {
+
+      // when
+      const name = StringUtils.uniqueNameOf(s => '[' + s + ']', new Set(['[]', '[ (2)]']));
+
+      // then
+      expect(name).toBe('[ (3)]');
+   });
 });

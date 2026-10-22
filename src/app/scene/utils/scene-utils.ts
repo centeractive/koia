@@ -1,8 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { ContextInfo, Scene } from 'app/shared/model';
 import { DataReader, Sample } from 'app/shared/services/reader';
+import { StringUtils } from 'app/shared/utils';
 
 export class SceneUtils {
+
+   static readonly SCENE_NAME_MAX_LENGTH = 40;
 
    private static readonly DATE_PIPE = new DatePipe('en-US');
 
@@ -20,12 +23,11 @@ export class SceneUtils {
       }
    }
 
-   static generateSceneName(reader: DataReader, file: File) {
-      let name = file.name.replace(reader.getFileExtension(), '');
-      if (file.lastModified) {
-         name += ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate');
-      }
-      return name;
+   static generateSceneName(reader: DataReader, file: File, existingNames: Set<string>): string {
+      const fileName = file.name.replace(reader.getFileExtension(), '');
+      const date = file.lastModified ? ' / ' + SceneUtils.DATE_PIPE.transform(file.lastModified, 'mediumDate') : '';
+      return StringUtils.uniqueNameOf(suffix =>
+         StringUtils.abbreviate(fileName, SceneUtils.SCENE_NAME_MAX_LENGTH - date.length - suffix.length) + date + suffix, existingNames);
    }
 
    static generateSceneDescription(reader: DataReader, file: File) {

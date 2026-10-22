@@ -1,4 +1,5 @@
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
+import { copyFileSync } from 'fs';
 import { expect, test } from './support/fixtures';
 import { ORDERS_CSV } from './support/import-files';
 import { Texts } from './support/texts';
@@ -73,5 +74,31 @@ test.describe('scenes of the sample and the imported orders', () => {
 
       await expect(scene.nameError).toBeHidden();
       await expect(scene.detectColumnsButton).toBeEnabled();
+   });
+});
+
+test.describe('new scene name', () => {
+
+   test.beforeEach(async ({ front, rawData }) => {
+      await front.open('en');
+      await front.openSample();
+      await rawData.mainToolbar.addScene();
+   });
+
+   test('typed scene name is cut at 40 characters', async ({ scene }) => {
+      await scene.nameInput.fill('');
+      await scene.nameInput.pressSequentially('x'.repeat(41));
+
+      await expect(scene.nameInput).toHaveValue('x'.repeat(40));
+   });
+
+   test('scene name generated from long file name keeps 40 characters', async ({ scene }, testInfo) => {
+      const longPath = testInfo.outputPath('orders with a file name exceeding the scene name limit.csv');
+      copyFileSync(ORDERS_CSV.path, longPath);
+
+      await scene.selectFile({ ...ORDERS_CSV, path: longPath });
+
+      await expect(scene.nameInput).toHaveValue(/^orders with a file .+\.\.\. \/ [A-Z][a-z]{2} \d{1,2}, \d{4}$/);
+      expect((await scene.nameInput.inputValue()).length).toBe(40);
    });
 });
