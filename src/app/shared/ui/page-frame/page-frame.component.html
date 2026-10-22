@@ -1,0 +1,8 @@
+<header class="div_header page_header">
+  <koia-nav-buttons [active]="active" [scenesExist]="scenesExist" />
+  <h1 class="page_title">{{ heading }}</h1>
+  <koia-language-select />
+</header>
+<main class="page_content" cdkScrollable>
+  <ng-content />
+</main>

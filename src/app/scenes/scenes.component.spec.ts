@@ -12,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { By } from '@angular/platform-browser';
-import { Router, RouteReuseStrategy, RouterModule, UrlTree } from '@angular/router';
+import { Router, RouteReuseStrategy, RouterModule } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Route, Scene } from 'app/shared/model';
@@ -20,6 +20,8 @@ import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
+import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
+import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
@@ -58,7 +60,8 @@ describe('ScenesComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective, LanguageSelectComponent],
+      declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective, LanguageSelectComponent, PageFrameComponent,
+        NavButtonsComponent],
       imports: [MatBottomSheetModule, MatDialogModule, MatCardModule, MatTooltipModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
@@ -96,12 +99,6 @@ describe('ScenesComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should offer language selection at the right', () => {
-    const host = fixture.nativeElement.querySelector('koia-language-select.page-language');
-    expect(host.querySelector('#but_language')).toBeTruthy();
-    expect(getComputedStyle(host).float).toBe('right');
-  });
-
   it('should find active scene', () => {
     expect(component.activeScene).toBe(scenes[0]);
   });
@@ -135,33 +132,6 @@ describe('ScenesComponent', () => {
     // then
     expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'db error');
   }));
-
-  it('butHome#click should navigate to front component', () => {
-
-    // given
-    const butHome: HTMLButtonElement = fixture.debugElement.query(By.css('#butHome')).nativeElement;
-
-    // when
-    butHome.click();
-
-    // then
-    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
-    expect(urlTree.toString()).toBe('/' + Route.FRONT);
-  });
-
-
-  it('butScene#click should navigate to scene component', () => {
-
-    // given
-    const butScene: HTMLButtonElement = fixture.debugElement.query(By.css('#butScene')).nativeElement;
-
-    // when
-    butScene.click();
-
-    // then
-    const urlTree: UrlTree = vi.mocked(navigateByUrlSpy).mock.lastCall[0];
-    expect(urlTree.toString()).toBe('/' + Route.SCENE);
-  });
 
   it('#onFilterChange should not filter scene infos when filter is blank', () => {
 
@@ -216,14 +186,24 @@ describe('ScenesComponent', () => {
     expect(component.filteredSceneInfos.length).toBe(1);
   });
 
-  it('card title should be "Scenes"', () => {
+  it('page title should be "Scenes"', () => {
 
     // when
-    const title: HTMLElement = fixture.nativeElement.querySelector('#mat_card_scenes mat-card-title');
+    const title: HTMLElement = fixture.nativeElement.querySelector('koia-page-frame .page_title');
 
     // then
     expect(title.textContent).toBe('Scenes');
     expect(fixture.nativeElement.querySelectorAll('mat-card').length).toBe(1);
+  });
+
+  it('should frame page as scenes page', () => {
+
+    // when
+    const frame: PageFrameComponent = fixture.debugElement.query(By.directive(PageFrameComponent)).componentInstance;
+
+    // then
+    expect(frame.active).toBe(Route.SCENES);
+    expect(frame.scenesExist).toBe(true);
   });
 
   it('should list active scene on top, others by activation time', () => {

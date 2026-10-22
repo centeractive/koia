@@ -161,20 +161,16 @@
     "loadFailed": "cannot load sample data: {{reason}}"
   },
   "common": {
-    "addScene": "Add Scene",
     "cancel": "Cancel",
     "close": "Close",
     "delete": "Delete",
-    "frontPage": "Front Page",
     "more": "more...",
     "no": "No",
     "ok": "OK",
-    "scenes": "Scenes",
     "yes": "Yes"
   },
   "scene": {
     "title": "New Scene",
-    "subtitle": "Create a new scene of data from a file",
     "name": "Scene Name",
     "nameExists": "Scene name already exists",
     "shortDescription": "Short Description",
@@ -260,7 +256,6 @@
   },
   "scenes": {
     "title": "Scenes",
-    "subtitle": "Manage your existing scenes. Activate one to start creating graphics.",
     "filter": "Filter scenes",
     "deleteFiltered": "Delete filtered",
     "deleteAll": "Delete all",

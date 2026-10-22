@@ -79,6 +79,8 @@ import { ViewLauncherDialogComponent } from './shared/component/view-launcher-di
 import { LocalizedDatePipe, LocalizedNumberPipe } from './shared/pipes';
 import { provideTranslation } from './shared/services/language';
 import { LanguageSelectComponent } from './shared/ui/language-select/language-select.component';
+import { NavButtonsComponent } from './shared/ui/nav-buttons/nav-buttons.component';
+import { PageFrameComponent } from './shared/ui/page-frame/page-frame.component';
 import { ColumnResizeDirective } from './shared/directives/column-resize.directive';
 import { KoiaFormDirective } from './shared/directives/koia-form.directive';
 import { FormattedFloatDirective } from './shared/directives/formatted-float.directive';
@@ -173,6 +175,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         ComputedColumnDialogComponent,
         ViewTabComponent,
         LanguageSelectComponent,
+        NavButtonsComponent,
+        PageFrameComponent,
         TextBoxComponent,
         TextBoxToolbarComponent,
         TextBoxSelectComponent

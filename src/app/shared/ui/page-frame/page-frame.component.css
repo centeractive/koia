@@ -1,0 +1,28 @@
+:host {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--koia-canvas);
+}
+
+/* same row height as the main toolbar of the view pages, so that their buttons stay in place */
+.page_header {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 2px var(--koia-header-padding-inline) 0;
+}
+
+.page_title {
+  flex: 1;
+  margin: 0 8px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.page_content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}

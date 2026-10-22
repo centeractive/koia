@@ -21,8 +21,7 @@ import { orderSceneInfos } from './scene-order';
 })
 export class ScenesComponent extends AbstractComponent implements OnInit {
 
-  readonly urlFront = '/' + Route.FRONT;
-  readonly urlScene = '/' + Route.SCENE;
+  readonly route = Route.SCENES;
   activeScene: Scene;
   filter = '';
   filteredSceneInfos: SceneInfo[] = [];

@@ -14,7 +14,7 @@ import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
+import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, rightInsetOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { QueryParamExtractor } from 'app/shared/utils';
 import { Observable, of } from 'rxjs';
@@ -1023,6 +1023,16 @@ describe('FrontComponent', () => {
 
       // then
       expect(startButton(host).getBoundingClientRect().bottom).toBeLessThanOrEqual(800);
+    });
+
+    it('should show language selection at right end of header', () => {
+
+      // when
+      const host = render();
+
+      // then
+      expect(host.querySelector('.landing-nav').lastElementChild.tagName).toBe('KOIA-LANGUAGE-SELECT');
+      expect(rightInsetOf(host.querySelector('#but_language'), host.querySelector('.landing-header'))).toBe(8);
     });
   });
 

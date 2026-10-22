@@ -161,20 +161,16 @@
     "loadFailed": "Beispieldaten können nicht geladen werden: {{reason}}"
   },
   "common": {
-    "addScene": "Szene hinzufügen",
     "cancel": "Abbrechen",
     "close": "Schließen",
     "delete": "Löschen",
-    "frontPage": "Startseite",
     "more": "mehr...",
     "no": "Nein",
     "ok": "OK",
-    "scenes": "Szenen",
     "yes": "Ja"
   },
   "scene": {
     "title": "Neue Szene",
-    "subtitle": "Neue Datenszene aus einer Datei erstellen",
     "name": "Szenenname",
     "nameExists": "Szenenname existiert bereits",
     "shortDescription": "Kurzbeschreibung",
@@ -260,7 +256,6 @@
   },
   "scenes": {
     "title": "Szenen",
-    "subtitle": "Verwalten Sie Ihre Szenen. Aktivieren Sie eine, um Grafiken zu erstellen.",
     "filter": "Szenen filtern",
     "deleteFiltered": "Gefilterte löschen",
     "deleteAll": "Alle löschen",

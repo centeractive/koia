@@ -10,7 +10,7 @@ export class ScenesPage {
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
-      this.title = page.locator('#mat_card_scenes mat-card-title');
+      this.title = page.locator('koia-page-frame .page_title');
       this.rows = page.locator('#mat_card_scenes tr.mat-mdc-row');
       this.notifications = new Notifications(page);
    }
