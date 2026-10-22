@@ -1,4 +1,4 @@
-import { Query } from '../../model';
+import { CanvasPaging, Query } from '../../model';
 import { queryToQueryDef } from './filter/query-to-filter-converter';
 import { createDefaultRawDataState } from './raw-data-state-factory';
 
@@ -12,7 +12,7 @@ describe('createDefaultRawDataState', () => {
       // then
       expect(state).toEqual({
          query: queryToQueryDef(new Query()),
-         data: { considerColumnWidths: true, highlight: true, multiLine: false, columnWidths: {} }
+         data: { considerColumnWidths: true, highlight: true, multiLine: false, columnWidths: {}, paging: CanvasPaging.NONE }
       });
    });
 });

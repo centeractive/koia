@@ -11,6 +11,7 @@
         <mat-progress-bar mode="indeterminate" [matTooltip]="'pivot.loadingData' | translate" />
       }
       <koia-view-toolbar [moreMenu]="moreMenu">
+        <koia-paging-toggles [paging]="paging" (pagingChange)="onPagingChange($event)" />
         @if (allowsForValueGrouping) {
           <button id="but_value_grouping" class="but_config" mat-icon-button
             [matTooltip]="'pivot.defineValueGrouping' | translate" (click)="sidenav.open()">
@@ -81,17 +82,28 @@
           </button>
         }
       </mat-menu>
-      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" />
+      <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" [printSheets]="paging"
+        [class.koia-print-heading-in-sheets]="isPaged()" />
+      @if (computing) {
+        <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+      }
     </div>
 
-    <div #content class="div_content div_pivot_content" cdkScrollable>
+    @if (isPaged()) {
+      <koia-table-sheets [paging]="paging" [title]="tab?.title" [sceneName]="scene?.name" [rows]="pivotSheetTable?.rows"
+        [naturalHeight]="pivotSheetTable?.height" [gridLine]="pivotSheetTable?.gridLine"
+        [pageTemplate]="pivotPage" />
+    }
+    <div #content class="div_content div_pivot_content" [class.div_pivot_offstage]="isPaged()" cdkScrollable>
       <div class="div_table">
-        @if (computing) {
-          <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
-        }
-        <div class="printable" #pivot id="pivot"></div>
+        <div #pivot id="pivot" [class.printable]="!isPaged()"></div>
       </div>
     </div>
+    <ng-template #pivotPage let-start let-height="height">
+      <div class="pvtUi div_pivot_page" [style.height.px]="height">
+        <div [koiaClone]="pivotSheetTable?.element" [style.transform]="'translateY(' + -start + 'px)'"></div>
+      </div>
+    </ng-template>
 
   </mat-sidenav-content>
 </mat-sidenav-container>

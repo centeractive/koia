@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, DoCheck, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation
+} from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Router } from '@angular/router';
@@ -10,11 +12,13 @@ import { createConfigRecord } from 'app/shared/services/view-persistence/config-
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
 import { LanguageService } from 'app/shared/services/language';
 import { TabContentProvider, ViewTabsService } from 'app/shared/services/view-tabs';
+import { MeasuredTable, measureTable } from 'app/shared/ui/sheets/measured-table';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Subscription } from 'rxjs';
-import { Column, DataType, Document, Query, Route, TimeUnit } from '../shared/model';
+import { CanvasPaging, Column, DataType, Document, Query, Route, TimeUnit } from '../shared/model';
 import {
   ExportService,
   NotificationService,
@@ -37,7 +41,7 @@ declare let jQuery: any;
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class PivotTableComponent extends ConfigController implements DoCheck, OnDestroy, TabContentProvider {
+export class PivotTableComponent extends ConfigController implements DoCheck, AfterViewInit, OnDestroy, TabContentProvider {
 
   @Input() tab: TabDef;
 
@@ -59,6 +63,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, On
   dataFrame: IDataFrame<number, any>;
   allowsForValueGrouping: boolean;
   restoredQuery: Query;
+  pivotSheetTable: MeasuredTable;
 
   private query: Query;
   private entriesSubscription: Subscription;
@@ -71,11 +76,12 @@ export class PivotTableComponent extends ConfigController implements DoCheck, On
   private pendingRecord: ConfigRecord;
   private destroyed = false;
   private mutationObserver: MutationObserver;
+  private resizeObserver: ResizeObserver;
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
     public override dbService: DBService, private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
     notificationService: NotificationService, private exportService: ExportService, private rawDataRevealService: RawDataRevealService,
-    private viewTabsService: ViewTabsService, private languageService: LanguageService) {
+    private viewTabsService: ViewTabsService, private languageService: LanguageService, private cdr: ChangeDetectorRef) {
     super(Route.PIVOT, router, bottomSheet, dbService, notificationService);
   }
 
@@ -96,6 +102,14 @@ export class PivotTableComponent extends ConfigController implements DoCheck, On
       this.viewTabsService.register(this.tab.id, this);
     }
     this.languageSubscription = this.languageService.changed$.subscribe(() => this.languageChanged = true);
+  }
+
+  /**
+   * re-measures the pivot table when its size changes, e.g. when the route of a pivot table measured while detached is attached again
+   */
+  ngAfterViewInit(): void {
+    this.resizeObserver = new ResizeObserver(() => this.measurePivotTable());
+    this.resizeObserver.observe(this.divPivot.nativeElement);
   }
 
   /**
@@ -122,6 +136,36 @@ export class PivotTableComponent extends ConfigController implements DoCheck, On
     }
     this.entriesSubscription?.unsubscribe();
     this.mutationObserver?.disconnect();
+    this.resizeObserver?.disconnect();
+  }
+
+  get paging(): CanvasPaging {
+    return this.context.paging ?? CanvasPaging.NONE;
+  }
+
+  isPaged(): boolean {
+    return PageFormat.isPaged(this.paging);
+  }
+
+  /**
+   * shows the pivot table on pages measured once it is laid out unconstrained offstage
+   */
+  onPagingChange(paging: CanvasPaging): void {
+    this.context.paging = paging;
+    this.cdr.detectChanges();
+    this.measurePivotTable();
+    this.requestPersist();
+  }
+
+  /**
+   * a pivot table not displayed, e.g. while printed or detached, keeps its measures
+   */
+  private measurePivotTable(): void {
+    const table = this.divPivot.nativeElement.querySelector<HTMLTableElement>('table.pvtTable');
+    if (this.isPaged() && !this.destroyed && table?.getClientRects().length !== 0) {
+      this.pivotSheetTable = table ? measureTable(table) : undefined;
+      this.cdr.detectChanges();
+    }
   }
 
   onSidenavOpening(): void {
@@ -326,6 +370,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, On
     this.computing = false;
     this.pivotOptionsProvider.addCellTooltips(this.divPivot.nativeElement);
     this.observePivotTableRefreshStart();
+    this.measurePivotTable();
     if (this.languageRefresh) {
       this.languageRefresh = false;
     } else {

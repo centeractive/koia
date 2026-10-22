@@ -1,10 +1,14 @@
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { PIVOT_TABLE_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
+import { Locator } from '@playwright/test';
 import { downloadOf, exportFileName } from './support/downloads';
 import { expect, test } from './support/fixtures';
 import { countOf, distinctValuesOf, fruitSalesOf, pivotRowColumnOf, pivotTabOf, pivotTimeColumnOf } from './support/fruit-sales-sample';
+import { contentOffsetOf, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { Texts } from './support/texts';
+import { expectOnlyActive } from './support/toggles';
 
 const TABLE_RENDERER = 'Table';
 const en = new Texts('en');
@@ -129,3 +133,138 @@ test('available and selected field zones are visually distinct', async ({ pivot 
    expect(available).toEqual({ borderTopStyle: 'dashed', backgroundColor: 'rgb(245, 246, 248)' });
    expect(selected).toEqual(Array(3).fill({ borderTopStyle: 'solid', borderTopColor: 'rgb(197, 202, 233)', backgroundColor: 'rgb(232, 234, 246)' }));
 });
+
+test('page view buttons switch like radio buttons between screen view and pages, print enabled on pages only', async ({ pivot }) => {
+   const toggles = pivot.pagingToggles;
+   await expectOnlyActive(toggles.buttons, toggles.monitorButton);
+   await expect(toggles.printButton).toBeDisabled();
+   await expect(pivot.sheets).toHaveCount(0);
+
+   await toggles.landscapeButton.click();
+   await expectOnlyActive(toggles.buttons, toggles.landscapeButton);
+   await expect(toggles.printButton).toBeEnabled();
+   await expect(pivot.sheets.first()).toBeVisible();
+
+   await toggles.portraitButton.click();
+   await expectOnlyActive(toggles.buttons, toggles.portraitButton);
+   const sheet = await pivot.sheets.first().boundingBox();
+   expect(sheet.height / sheet.width).toBeCloseTo(297 / 210, 2);
+
+   await toggles.monitorButton.click();
+   await expectOnlyActive(toggles.buttons, toggles.monitorButton);
+   await expect(toggles.printButton).toBeDisabled();
+   await expect(pivot.sheets).toHaveCount(0);
+   await expect(pivot.valueCells.first()).toBeVisible();
+});
+
+test('landscape sheets show heading, page number and pivot table', async ({ pivot }) => {
+   await pivot.pagingToggles.landscapeButton.click();
+   const sheet = pivot.sheets.first();
+   await expect(sheet).toBeVisible();
+   const count = await pivot.sheets.count();
+
+   await expect(sheet.locator('.div_canvas_sheet_header .span_print_title')).toHaveText(pivotTab.title);
+   await expect(sheet.locator('.div_canvas_sheet_footer')).toHaveText(en.get('view.printPage', { page: 1, count }));
+   await expect(sheet.locator('.div_pivot_page table.pvtTable td.pvtVal').first()).toBeVisible();
+});
+
+test('portrait pages print as many portrait sheets as shown', async ({ page, pivot }) => {
+   await pivot.pagingToggles.portraitButton.click();
+   await expect(pivot.sheets.first()).toBeVisible();
+   const shown = await pivot.sheets.count();
+
+   const printed = await printedSheets(page);
+
+   expect(printed).toEqual({ A4: shown, Letter: shown, paper: 'A4 portrait' });
+});
+
+test('printed landscape sheet keeps the proportions shown on a narrow screen', async ({ page, pivot }) => {
+   await page.setViewportSize({ width: 1150, height: 812 });
+   await pivot.pagingToggles.landscapeButton.click();
+   const sheet = pivot.sheets.first();
+   const onScreen = await sheetProportionsOf(sheet, '.div_pivot_page table.pvtTable');
+
+   const printed = await whilePrinted(page, () => sheetProportionsOf(sheet, '.div_pivot_page table.pvtTable'));
+
+   expect(onScreen.width).toBeLessThan(PageFormat.LANDSCAPE.printWidthPx);
+   expect(Math.abs(printed.width - PageFormat.LANDSCAPE.printWidthPx)).toBeLessThanOrEqual(1);
+   printed.proportions.forEach((proportion, i) => expect(Math.abs(proportion - onScreen.proportions[i])).toBeLessThanOrEqual(0.004));
+});
+
+test('printed landscape sheet shows wide pivot table at its natural size clipped at the sheet width', async ({ page, pivot }) => {
+   await pivot.pagingToggles.landscapeButton.click();
+   const sheet = pivot.sheets.first();
+   await expect(sheet.locator('.div_pivot_page table.pvtTable')).toBeVisible();
+
+   const printed = await whilePrinted(page, () => sheet.evaluate((element: HTMLElement) => {
+      const window = element.querySelector('.div_sheet_window').getBoundingClientRect();
+      const table = element.querySelector<HTMLElement>('.div_pivot_page table.pvtTable');
+      return { windowWidth: window.width, tableWidth: table.getBoundingClientRect().width, naturalWidth: table.offsetWidth };
+   }));
+
+   expect(printed.tableWidth).toBeCloseTo(printed.naturalWidth, 0);
+   expect(printed.tableWidth).toBeGreaterThan(printed.windowWidth);
+});
+
+test('landscape sheet shows pivot table at its monitor size on a wide screen', async ({ page, pivot }) => {
+   await page.setViewportSize({ width: 1920, height: 1200 });
+   const monitorWidth = (await pivot.table.boundingBox()).width;
+
+   await pivot.pagingToggles.landscapeButton.click();
+   const sheet = pivot.sheets.first();
+   const table = sheet.locator('.div_pivot_page table.pvtTable');
+   await expect(table).toBeVisible();
+
+   expect(Math.abs((await sheet.boundingBox()).width - PageFormat.LANDSCAPE.printWidthPx)).toBeLessThanOrEqual(1);
+   expect(Math.abs((await table.boundingBox()).width - monitorWidth)).toBeLessThanOrEqual(1);
+});
+
+test('printed landscape sheet shows pivot table below the top padding', async ({ page, pivot }) => {
+   await pivot.pagingToggles.landscapeButton.click();
+   const sheet = pivot.sheets.first();
+   await expect(sheet.locator('.div_pivot_page table.pvtTable')).toBeVisible();
+
+   const offset = await whilePrinted(page, () => contentOffsetOf(sheet, '.div_pivot_page table.pvtTable'));
+
+   expect(Math.abs(offset.top - PageFormat.LANDSCAPE.printTopPadding)).toBeLessThanOrEqual(0.5);
+   expect(Math.abs(offset.left)).toBeLessThanOrEqual(0.5);
+});
+
+test('printed landscape sheet keeps heatmap colors', async ({ page, pivot }) => {
+   await pivot.pagingToggles.landscapeButton.click();
+   const cell = pivot.sheetHeatmapCells.first();
+   await expect(cell).toBeVisible();
+
+   const printColorAdjust = await whilePrinted(page, () => cell.evaluate(td => getComputedStyle(td).printColorAdjust));
+
+   expect(printColorAdjust).toBe('exact');
+});
+
+test('rows at a page break show their shared grid line on both sheets', async ({ pivot }) => {
+   await pivot.mainToolbar.addValueFilter(rowColumn, firstRowValue);
+   await pivot.setTimeUnit(timeColumn, en.get('pivot.timeUnit.day'));
+   await expect.poll(() => pivot.rowLabels.count()).toBeGreaterThan(100);
+
+   await pivot.pagingToggles.landscapeButton.click();
+   await expect(pivot.sheets.nth(1)).toBeVisible();
+
+   expect(await gridLineMarginOf(pivot.sheets.nth(0), 'bottom')).toBeGreaterThanOrEqual(-0.5);
+   expect(await gridLineMarginOf(pivot.sheets.nth(1), 'top')).toBeGreaterThanOrEqual(-0.5);
+});
+
+/**
+ * @returns the space between the grid line of the last row fully shown on the sheet and the bottom of its clip, or between the top of
+ * the clip and the grid line of the first row starting within the clip, negative when the line is cut off
+ */
+function gridLineMarginOf(sheet: Locator, edge: 'top' | 'bottom'): Promise<number> {
+   return sheet.evaluate((element: HTMLElement, clipEdge: string) => {
+      const clip = element.querySelector<HTMLElement>('.div_pivot_page');
+      const clipRect = clip.getBoundingClientRect();
+      const halfLine = parseFloat(getComputedStyle(clip.querySelector('td, th')).borderTopWidth) * clipRect.width / clip.offsetWidth / 2;
+      const rows = Array.from(clip.querySelectorAll('tr')).map(row => row.getBoundingClientRect());
+      if (clipEdge === 'top') {
+         return rows.find(row => row.top >= clipRect.top).top - halfLine - clipRect.top;
+      }
+      return clipRect.bottom - rows.filter(row => row.bottom <= clipRect.bottom).at(-1).bottom - halfLine;
+   }, edge);
+}

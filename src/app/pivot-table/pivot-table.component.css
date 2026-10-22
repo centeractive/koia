@@ -234,3 +234,20 @@
 .pvtUi table.pvtTable tr td.pvtGrandTotal {
   border-left: var(--koia-table-total-line);
 }
+
+.div_content.div_pivot_offstage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.div_pivot_page {
+  flex-shrink: 0;
+  overflow: hidden;
+  pointer-events: none;
+}

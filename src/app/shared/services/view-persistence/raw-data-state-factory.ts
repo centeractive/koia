@@ -1,4 +1,4 @@
-import { Query } from '../../model';
+import { CanvasPaging, Query } from '../../model';
 import { RawDataState } from '../../model/view-config';
 import { queryToQueryDef } from './filter/query-to-filter-converter';
 
@@ -12,7 +12,8 @@ export function createDefaultRawDataState(): RawDataState {
          considerColumnWidths: true,
          highlight: true,
          multiLine: false,
-         columnWidths: {}
+         columnWidths: {},
+         paging: CanvasPaging.NONE
       }
    };
 }

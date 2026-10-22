@@ -22,6 +22,11 @@ export class PageFormat {
   readonly sheetHeight: number;
   readonly marginX: number;
   readonly marginY: number;
+  /** size of the page content in printed CSS pixels */
+  readonly printContentWidth: number;
+  readonly printContentHeight: number;
+  /** gap below the sheet header in printed CSS pixels */
+  readonly printTopPadding: number;
 
   /**
    * @param height page height, the maximum tile height when unpaged
@@ -47,6 +52,13 @@ export class PageFormat {
       this.marginX = 0;
       this.marginY = 0;
     }
+    this.printContentWidth = width * printWidthPx / this.sheetWidth;
+    this.printContentHeight = height * printWidthPx / this.sheetWidth;
+    this.printTopPadding = PageFormat.TOP_PADDING * printWidthPx / this.sheetWidth;
+  }
+
+  static isPaged(paging: CanvasPaging | undefined): boolean {
+    return paging === CanvasPaging.LANDSCAPE || paging === CanvasPaging.PORTRAIT;
   }
 
   static of(paging: CanvasPaging): PageFormat {

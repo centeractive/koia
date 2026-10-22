@@ -279,13 +279,70 @@ describe('global styles', () => {
   it('print styles should print canvas sheets without desk', () => {
 
     // when
-    const rule = findStyleRule(Array.from(document.styleSheets), '#div_canvas.div_canvas_desk', 'print');
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_canvas_desk', 'print');
 
     // then
     expect(rule.style.getPropertyValue('padding')).toBe('0px');
     expect(rule.style.getPropertyPriority('padding')).toBe('important');
     expect(rule.style.getPropertyValue('background')).toBe('none');
     expect(rule.style.getPropertyPriority('background')).toBe('important');
+  });
+
+  it.each([
+    { selector: '.div_canvas_desk', property: 'background-color', value: 'var(--koia-desk)' },
+    { selector: '.div_canvas_pages', property: 'container-type', value: 'inline-size' },
+    { selector: '.div_canvas_sheet', property: 'box-shadow', value: 'var(--koia-header-shadow)' },
+    { selector: '.div_canvas_sheet.div_canvas_page_spare', property: 'opacity', value: '0.5' },
+    { selector: '.div_sheet_window', property: 'overflow', value: 'hidden' },
+    { selector: '.div_sheet_scale', property: 'flex-direction', value: 'column' },
+    { selector: '.div_sheet_scale', property: 'transform-origin', value: '0px 0px' }
+  ])('sheets of all views should define $property of $selector', ({ selector, property, value }) => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), selector);
+
+    // then
+    expect(rule.style.getPropertyValue(property)).toBe(value);
+  });
+
+  it('print styles should cut content of sheet windows, pivot pages and scrolled tables on sheets', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_sheet_window, .div_sheet_window .vt, .div_pivot_page', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('overflow')).toBe('hidden');
+    expect(rule.style.getPropertyPriority('overflow')).toBe('important');
+  });
+
+  it('print styles should print content of sheet windows unscaled', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_sheet_scale', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('transform')).toBe('none');
+    expect(rule.style.getPropertyPriority('transform')).toBe('important');
+  });
+
+  it('print styles should keep layout of virtual table on sheet', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_sheet_window .div_virtual_table', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('display')).toBe('flex');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
+  });
+
+  it('print styles should not print pivot table measured offstage', () => {
+
+    // when
+    const rule = findStyleRule(Array.from(document.styleSheets), '.div_pivot_offstage', 'print');
+
+    // then
+    expect(rule.style.getPropertyValue('display')).toBe('none');
+    expect(rule.style.getPropertyPriority('display')).toBe('important');
   });
 
   it.each([
@@ -723,15 +780,24 @@ describe('global styles', () => {
     expect(rule.style.getPropertyPriority('display')).toBe('important');
   });
 
-  it('print styles should print pivot cells as plain text', () => {
+  it('print styles should print pivot cells and their pages as plain text', () => {
 
     // when
-    const rule = printRule('#pivot table.pvtTable td');
+    const rule = printRule('#pivot table.pvtTable td, .div_pivot_page table.pvtTable td');
 
     // then
     expect(rule.style.color).toBe('inherit');
     expect(rule.style.textDecoration).toBe('none');
     expect(rule.style.getPropertyPriority('text-decoration')).toBe('important');
+  });
+
+  it('print styles should print heatmap colors of pivot cells and their pages', () => {
+
+    // when
+    const rule = printRule('#pivot table.pvtTable td, .div_pivot_page table.pvtTable td');
+
+    // then
+    expect(rule.style.getPropertyValue('print-color-adjust')).toBe('exact');
   });
 
   it('print styles should hide text box placeholder', () => {

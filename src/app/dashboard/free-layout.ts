@@ -4,7 +4,8 @@ import { ViewElement } from 'app/shared/model/view-config';
 import type { TextExtent } from 'app/text-box/text-fit';
 import * as _ from 'lodash';
 import { GridLayout } from './grid-layout';
-import { PageFormat } from './page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
+import { SheetLayout } from 'app/shared/ui/sheets/sheet-layout';
 import type { Guide } from './snap-guides';
 
 export interface Rect {
@@ -29,7 +30,7 @@ export interface Anchoring<T> {
 /**
  * lays out elements at free positions on pages of fixed size, measured in page units that scale with the canvas width
  */
-export class FreeLayout {
+export class FreeLayout extends SheetLayout {
 
   static readonly STEP = 10;
   static readonly MIN_SIZE = 100;
@@ -37,43 +38,13 @@ export class FreeLayout {
   static readonly OVERLAY_Z_OFFSET = 10000;
   static readonly OVERLAY_CASCADE = 20;
 
-  constructor(public pageFormat = PageFormat.LANDSCAPE) { }
-
   canvasStyle(): object {
     return { '--koia-pu': 'calc(100cqw / ' + this.pageFormat.width + ')' };
-  }
-
-  /**
-   * sizes the sheets, portrait ones at the scale of landscape ones
-   */
-  pagesStyle(): object {
-    const { sheetWidth, paged, printWidthPx } = this.pageFormat;
-    return {
-      '--koia-pu': 'calc(100cqw / ' + sheetWidth + ')',
-      width: paged ? 'calc(100% * ' + sheetWidth + ' / ' + PageFormat.LANDSCAPE.sheetWidth + ')' : '100%',
-      '--koia-print-width': printWidthPx + 'px'
-    };
-  }
-
-  pageStyle(page: number): object {
-    if (!this.pageFormat.paged) {
-      return {};
-    }
-    const style = { padding: this.pageUnits(this.pageFormat.marginY) + ' ' + this.pageUnits(this.pageFormat.marginX) };
-    return page > 0 ? { ...style, 'margin-top': PageFormat.DESK_GUTTER_PX + 'px' } : style;
   }
 
   pageContentStyle(page: number, contexts: ElementContext[]): object {
     const height = this.pageFormat.paged || page > 0 ? this.pageFormat.height : this.bottomOf(contexts);
     return { height: this.pageUnits(height) };
-  }
-
-  sheetHeaderStyle(): object {
-    return { height: this.pageUnits(PageFormat.SHEET_HEADER) };
-  }
-
-  sheetFooterStyle(): object {
-    return { height: this.pageUnits(PageFormat.SHEET_FOOTER) };
   }
 
   tileStyle(context: ElementContext): object {
@@ -122,10 +93,6 @@ export class FreeLayout {
 
   guideStyle(guide: Guide): object {
     return guide.axis === 'x' ? { left: this.pageUnits(guide.position) } : { top: this.pageUnits(guide.position) };
-  }
-
-  private pageUnits(value: number): string {
-    return 'calc(' + value + ' * var(--koia-pu))';
   }
 
   /**

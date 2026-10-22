@@ -1,0 +1,15 @@
+@if (layout.pageFormat.paged) {
+  <div class="div_canvas_sheet_header" [ngStyle]="layout.sheetHeaderStyle()">
+    @if (!spare) {
+      <koia-page-heading [title]="title" [sceneName]="sceneName" [printedAt]="printedAt" />
+    }
+  </div>
+}
+<ng-content />
+@if (layout.pageFormat.paged) {
+  <div class="div_canvas_sheet_footer" [ngStyle]="layout.sheetFooterStyle()">
+    @if (!spare) {
+      {{ 'view.printPage' | translate: { page: page + 1, count: count } }}
+    }
+  </div>
+}

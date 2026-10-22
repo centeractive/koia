@@ -3,11 +3,6 @@
     <button class="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu" [attr.aria-label]="'common.more' | translate">
       <mat-icon>more_vert</mat-icon>
     </button>
-  }
-  @if (printable) {
-    <koia-print-button />
-  }
-  @if (moreMenu || printable) {
     <span class="koia-toolbar-separator"></span>
   }
   <ng-content />

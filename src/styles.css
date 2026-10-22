@@ -275,6 +275,43 @@ koia-print-heading {
   display: none;
 }
 
+.div_canvas_desk {
+  background-color: var(--koia-desk);
+}
+
+.div_canvas_pages {
+  position: relative;
+  margin: 0 auto;
+  container-type: inline-size;
+}
+
+.div_canvas_page {
+  position: relative;
+}
+
+.div_canvas_page_content {
+  position: relative;
+}
+
+.div_canvas_sheet {
+  background-color: var(--koia-surface);
+  box-shadow: var(--koia-header-shadow);
+}
+
+.div_canvas_sheet.div_canvas_page_spare {
+  opacity: 0.5;
+}
+
+.div_sheet_window {
+  overflow: hidden;
+}
+
+.div_sheet_scale {
+  display: flex;
+  flex-direction: column;
+  transform-origin: 0 0;
+}
+
 /* the sheets of the canvas show their heading and footer in page units, as printed */
 .div_canvas_sheet_header {
   display: flex;
@@ -472,7 +509,7 @@ koia-print-heading {
     display: none !important;
   }
 
-  #div_canvas.div_canvas_desk {
+  .div_canvas_desk {
     padding: 0 !important;
     background: none !important;
   }
@@ -497,6 +534,24 @@ koia-print-heading {
     display: none !important;
   }
 
+  .div_sheet_window,
+  .div_sheet_window .vt,
+  .div_pivot_page {
+    overflow: hidden !important;
+  }
+
+  .div_sheet_scale {
+    transform: none !important;
+  }
+
+  .div_sheet_window .div_virtual_table {
+    display: flex !important;
+  }
+
+  .div_pivot_offstage {
+    display: none !important;
+  }
+
   .cdk-visually-hidden,
   .cdk-overlay-container {
     display: none !important;
@@ -508,9 +563,12 @@ koia-print-heading {
     display: none !important;
   }
 
-  #pivot table.pvtTable td {
+  #pivot table.pvtTable td,
+  .div_pivot_page table.pvtTable td {
     color: inherit !important;
     text-decoration: none !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
 }

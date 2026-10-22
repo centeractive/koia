@@ -4,10 +4,12 @@ export class RawDataTable {
 
    readonly rowCount: Locator;
    readonly headers: Locator;
+   readonly headerCells: Locator;
 
    constructor(private readonly root: Locator) {
       this.rowCount = root.locator('.row-count');
       this.headers = root.locator('.vt-th-label');
+      this.headerCells = root.locator('.vt-th');
    }
 
    /**
@@ -33,6 +35,6 @@ export class RawDataTable {
    }
 
    header(column: string): Locator {
-      return this.root.locator('.vt-th').filter({ has: this.root.page().getByText(column, { exact: true }) });
+      return this.headerCells.filter({ has: this.root.page().getByText(column, { exact: true }) });
    }
 }

@@ -7,7 +7,10 @@
     @if (loading) {
       <mat-progress-bar mode="indeterminate" [matTooltip]="'rawData.loading' | translate" />
     }
-    <koia-view-toolbar [class.dialog_top_row]="dialogStyle && hideToolbar" [moreMenu]="moreMenu" [printable]="!dialogStyle">
+    <koia-view-toolbar [class.dialog_top_row]="dialogStyle && hideToolbar" [moreMenu]="moreMenu">
+      @if (!dialogStyle) {
+        <koia-paging-toggles [paging]="paging" (pagingChange)="onPagingChange($event)" />
+      }
       <button mat-icon-button [class.koia-toggle-active]="considerColumnWidths"
         [matTooltip]="(considerColumnWidths ? 'rawData.ignoreColumnWidths' : 'rawData.observeColumnWidths') | translate"
         (click)="toggleConsiderColumnWidths()">
@@ -31,13 +34,23 @@
       }
     </mat-menu>
     @if (!dialogStyle) {
-      <koia-print-heading [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" />
+      <koia-print-heading [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" [printSheets]="paging"
+        [class.koia-print-heading-in-sheets]="isPaged()" />
     }
   </div>
 
+  @if (isPaged()) {
+    <koia-table-sheets [paging]="paging" [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" [pageTemplate]="tableTemplate" />
+  } @else {
+    <ng-container *ngTemplateOutlet="tableTemplate" />
+  }
+</div>
+
+<ng-template #tableTemplate>
   @if (columns) {
     <koia-virtual-table [columns]="columns" [widths]="widths" [source]="source" [multiLine]="multiLine"
       [showNestedObjects]="showNestedObjects" [dialogStyle]="dialogStyle" [sortable]="true" [sortIndicatorOf]="sortIndicator"
-      [headerTooltipOf]="headerTooltip" [rowStyleOf]="rowStyleOf" (sort)="sortBy($event)" (columnResize)="onColumnResize($event)" />
+      [headerTooltipOf]="headerTooltip" [rowStyleOf]="rowStyleOf" [printable]="!isPaged()" (sort)="sortBy($event)"
+      (columnResize)="onColumnResize($event)" />
   }
-</div>
+</ng-template>

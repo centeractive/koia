@@ -4,12 +4,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { PrintButtonComponent } from '../print-button/print-button.component';
 import { ViewToolbarComponent } from './view-toolbar.component';
 
 @Component({
   template: `
-    <koia-view-toolbar [moreMenu]="withMoreMenu ? moreMenu : undefined" [printable]="printable">
+    <koia-view-toolbar [moreMenu]="withMoreMenu ? moreMenu : undefined">
       <button id="but_custom" mat-icon-button>x</button>
     </koia-view-toolbar>
     <mat-menu #moreMenu="matMenu"><button id="menuItemCustom" mat-menu-item>Custom</button></mat-menu>`,
@@ -18,7 +17,6 @@ import { ViewToolbarComponent } from './view-toolbar.component';
 })
 class HostComponent {
   withMoreMenu = true;
-  printable = true;
 }
 
 describe('ViewToolbarComponent', () => {
@@ -28,7 +26,7 @@ describe('ViewToolbarComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [HostComponent, ViewToolbarComponent, PrintButtonComponent],
+      declarations: [HostComponent, ViewToolbarComponent],
       imports: [MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule]
     });
     fixture = TestBed.createComponent(HostComponent);
@@ -66,34 +64,10 @@ describe('ViewToolbarComponent', () => {
     expect(element('#but_custom')).not.toBeNull();
   });
 
-  it('should show print button when printable', () => {
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    expect(element('#but_print')).not.toBeNull();
-  });
-
-  it('should hide print button when not printable', () => {
-
-    // given
-    host.printable = false;
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    expect(element('#but_print')).toBeNull();
-    expect(element('.but_view_more')).not.toBeNull();
-    expect(element('#but_custom')).not.toBeNull();
-  });
-
-  it('should omit separator without more menu and print button', () => {
+  it('should omit separator without more menu', () => {
 
     // given
     host.withMoreMenu = false;
-    host.printable = false;
 
     // when
     fixture.detectChanges();

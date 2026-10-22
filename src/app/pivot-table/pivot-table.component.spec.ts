@@ -12,7 +12,7 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { By, DomSanitizer } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { Column, DataType, Document, Query, Route, Scene, TimeUnit } from 'app/shared/model';
+import { CanvasPaging, Column, DataType, Document, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { ConfigRecord, ViewType } from 'app/shared/model/view-config';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { ExportService, NotificationService, RawDataRevealService, TimeGroupingService } from 'app/shared/services';
@@ -31,6 +31,10 @@ import type { Mock } from 'vitest';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
+import { CloneDirective } from 'app/shared/ui/sheets/clone.directive';
+import { PagingTogglesComponent } from 'app/shared/ui/sheets/paging-toggles.component';
+import { SheetComponent } from 'app/shared/ui/sheets/sheet.component';
+import { TableSheetsComponent } from 'app/shared/ui/sheets/table-sheets.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 
@@ -78,7 +82,8 @@ describe('PivotTableComponent', () => {
     viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn() } as unknown as ViewTabsService;
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [PivotTableComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent, PrintHeadingComponent],
+      declarations: [PivotTableComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent, PrintHeadingComponent,
+        PagingTogglesComponent, TableSheetsComponent, SheetComponent, CloneDirective],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
         MatMenuModule, MatBottomSheetModule, CdkScrollableModule, MatBadgeModule
@@ -632,6 +637,39 @@ describe('PivotTableComponent', () => {
       expect(content.record.query).toEqual(queryToQueryDef(new Query()));
       expect((content.record.data as PivotContext).pivotOptions['rendererName']).toBeDefined();
       expect((content.record.data as PivotContext).valueGroupings[0].minMaxValues).toBeNull();
+    }));
+
+    it('#onPagingChange should request persisting paging of tab', fakeAsync(() => {
+
+      // given
+      createTabComponent();
+      tabFixture.detectChanges();
+      flush();
+      vi.mocked(viewTabsService.requestPersist).mockClear();
+
+      // when
+      tabComponent.onPagingChange(CanvasPaging.PORTRAIT);
+
+      // then
+      expect(viewTabsService.requestPersist).toHaveBeenCalled();
+      expect((tabComponent.tabContent().record.data as PivotContext).paging).toBe(CanvasPaging.PORTRAIT);
+    }));
+
+    it('should restore pages of tab', fakeAsync(() => {
+
+      // given
+      const record = sumRecord();
+      createTabComponent({ ...record, data: { ...(record.data as PivotContext), paging: CanvasPaging.PORTRAIT } });
+
+      // when
+      tabFixture.detectChanges();
+      flush();
+      tabFixture.detectChanges();
+
+      // then
+      expect(tabFixture.nativeElement.querySelector('#but_portrait_pages').classList).toContain('koia-toggle-active');
+      expect(tabComponent.pivotSheetTable.element).toBe(tabComponent.divPivot.nativeElement.querySelector('table.pvtTable'));
+      expect(tabFixture.nativeElement.querySelector('koia-table-sheets .div_pivot_page table.pvtTable')).not.toBeNull();
     }));
 
     it('should request persisting when pivot table was rendered', fakeAsync(() => {
@@ -1238,6 +1276,7 @@ describe('PivotTableComponent', () => {
   it('#click on print button should print window', fakeAsync(() => {
 
     // given
+    showPages(CanvasPaging.LANDSCAPE);
     const okButton: HTMLSelectElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
     vi.spyOn(window, 'print').mockReturnValue(undefined);
 
@@ -1364,6 +1403,205 @@ describe('PivotTableComponent', () => {
     const texts = Array.from(document.querySelectorAll('.mat-mdc-menu-panel .mat-mdc-menu-item-text')).map(e => e.textContent.trim());
     expect(texts).toEqual(['Save As Excel']);
   }));
+
+  describe('page views', () => {
+
+    function element<T extends HTMLElement>(selector: string): T {
+      return fixture.nativeElement.querySelector(selector);
+    }
+
+    function clonedTables(): HTMLTableElement[] {
+      return Array.from(fixture.nativeElement.querySelectorAll('koia-table-sheets .div_pivot_page table.pvtTable'));
+    }
+
+    async function frames(): Promise<void> {
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+
+    it('screen view should be active by default, without sheets and with print disabled', () => {
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      expect(element('#but_monitor_view').classList).toContain('koia-toggle-active');
+      expect(element<HTMLButtonElement>('#but_print').disabled).toBe(true);
+      expect(element('koia-table-sheets')).toBeNull();
+      expect(element('#pivot').classList).toContain('printable');
+      expect(component.pivotSheetTable).toBeUndefined();
+    });
+
+    it('landscape pages should show copy of pivot table on sheets and keep pivot table offstage', () => {
+
+      // when
+      element('#but_landscape_pages').click();
+      fixture.detectChanges();
+
+      // then
+      expect(component.paging).toBe(CanvasPaging.LANDSCAPE);
+      expect(element('#but_landscape_pages').classList).toContain('koia-toggle-active');
+      expect(element<HTMLButtonElement>('#but_print').disabled).toBe(false);
+      expect(component.pivotSheetTable.element).toBe(locatePivotTable());
+      expect(clonedTables().length).toBe(1);
+      expect(clonedTables()[0]).not.toBe(locatePivotTable());
+      expect(clonedTables()[0].innerHTML).toBe(locatePivotTable().innerHTML);
+      expect(element('.div_pivot_content').classList).toContain('div_pivot_offstage');
+      expect(element('#pivot').classList).not.toContain('printable');
+    });
+
+    it('pivot table should be laid out unconstrained but invisible offstage', () => {
+
+      // when
+      showPages(CanvasPaging.LANDSCAPE);
+
+      // then
+      const style = getComputedStyle(element('.div_pivot_content'));
+      expect([style.position, style.visibility, style.height, style.pointerEvents]).toEqual(['absolute', 'hidden', '0px', 'none']);
+      expect(component.pivotSheetTable.height).toBeGreaterThan(0);
+      expect(component.pivotSheetTable.rows.length).toBe((locatePivotTable() as HTMLTableElement).rows.length);
+    });
+
+    it('page should clip pivot table at its start and height', () => {
+
+      // when
+      showPages(CanvasPaging.PORTRAIT);
+
+      // then
+      const page = element('.div_pivot_page');
+      expect(page.style.height).toBe(component.pivotSheetTable.height + 'px');
+      expect((page.firstElementChild as HTMLElement).style.transform).toBe('translateY(0px)');
+      expect(getComputedStyle(page).overflow).toBe('hidden');
+      expect(getComputedStyle(page).pointerEvents).toBe('none');
+    });
+
+    it('print heading should print sheets of pages instead of its own heading', () => {
+
+      // when
+      showPages(CanvasPaging.PORTRAIT);
+
+      // then
+      const heading = fixture.debugElement.query(By.directive(PrintHeadingComponent));
+      expect(heading.componentInstance.printSheets).toBe(CanvasPaging.PORTRAIT);
+      expect(heading.nativeElement.classList).toContain('koia-print-heading-in-sheets');
+    });
+
+    it('screen view should show pivot table again', () => {
+
+      // given
+      showPages(CanvasPaging.LANDSCAPE);
+
+      // when
+      showPages(CanvasPaging.NONE);
+
+      // then
+      expect(element('koia-table-sheets')).toBeNull();
+      expect(element('.div_pivot_content').classList).not.toContain('div_pivot_offstage');
+      expect(element('#pivot').classList).toContain('printable');
+    });
+
+    it('re-rendered pivot table should be copied onto pages', fakeAsync(() => {
+
+      // given
+      showPages(CanvasPaging.LANDSCAPE);
+
+      // when
+      component.onShowRowTotalsChanged();
+      flush();
+      fixture.detectChanges();
+
+      // then
+      expect(component.pivotSheetTable.element).toBe(locatePivotTable());
+      expect(clonedTables()[0].innerHTML).toBe(locatePivotTable().innerHTML);
+      expect(clonedTables()[0].querySelector('.rowTotal')).toBeNull();
+    }));
+
+    it('should measure no pivot table while it is missing', () => {
+
+      // given
+      locatePivotTable().remove();
+
+      // when
+      showPages(CanvasPaging.LANDSCAPE);
+
+      // then
+      expect(component.pivotSheetTable).toBeUndefined();
+      expect(fixture.nativeElement.querySelectorAll('koia-table-sheets .div_canvas_sheet').length).toBe(1);
+      expect(clonedTables()).toEqual([]);
+    });
+
+    it('should re-measure pivot table on pages when it resizes', async () => {
+
+      // given
+      showPages(CanvasPaging.LANDSCAPE);
+      await frames();
+      const measured = component.pivotSheetTable;
+
+      // when
+      component.divPivot.nativeElement.style.height = '5000px';
+      await frames();
+
+      // then
+      expect(component.pivotSheetTable).not.toBe(measured);
+    });
+
+    it('should not measure pivot table refreshed after being destroyed', () => {
+
+      // given
+      showPages(CanvasPaging.LANDSCAPE);
+      const measured = component.pivotSheetTable;
+      fixture.destroy();
+
+      // when
+      component['onPivotTableRefreshEnd']();
+
+      // then
+      expect(component.pivotSheetTable).toBe(measured);
+    });
+
+    it('should keep measures of pivot table while it is not displayed', () => {
+
+      // given
+      showPages(CanvasPaging.LANDSCAPE);
+      const measured = component.pivotSheetTable;
+      element('.div_pivot_content').style.display = 'none';
+
+      // when
+      component['onPivotTableRefreshEnd']();
+
+      // then
+      expect(component.pivotSheetTable).toBe(measured);
+    });
+
+    it('should stop observing size of pivot table when destroyed', () => {
+
+      // given
+      const disconnect = vi.spyOn(ResizeObserver.prototype, 'disconnect');
+
+      // when
+      fixture.destroy();
+
+      // then
+      expect(disconnect).toHaveBeenCalled();
+    });
+
+    it('progress bar should show in header while computing', () => {
+
+      // given
+      showPages(CanvasPaging.LANDSCAPE);
+
+      // when
+      component.computing = true;
+      fixture.detectChanges();
+
+      // then
+      expect(element('.div_header > mat-progress-bar[color="accent"]')).not.toBeNull();
+    });
+  });
+
+  function showPages(paging: CanvasPaging): void {
+    component.onPagingChange(paging);
+    fixture.detectChanges();
+  }
 
   function tooltipOf(selector: string): string {
     return fixture.debugElement.query(By.css(selector)).injector.get(MatTooltip).message;

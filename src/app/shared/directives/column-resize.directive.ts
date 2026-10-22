@@ -10,19 +10,22 @@ export class ColumnResizeDirective {
   @Output() resized = new EventEmitter<void>();
 
   private startX: number | undefined;
+  private scale = 1;
 
   constructor(private elementRef: ElementRef<HTMLElement>) { }
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent): void {
-    this.elementRef.nativeElement.setPointerCapture(event.pointerId);
+    const handle = this.elementRef.nativeElement;
+    handle.setPointerCapture(event.pointerId);
     this.startX = event.clientX;
+    this.scale = handle.offsetWidth ? handle.getBoundingClientRect().width / handle.offsetWidth : 1;
   }
 
   @HostListener('pointermove', ['$event'])
   onPointerMove(event: PointerEvent): void {
     if (this.startX !== undefined) {
-      this.resizing.emit(event.clientX - this.startX);
+      this.resizing.emit((event.clientX - this.startX) / this.scale);
     }
   }
 

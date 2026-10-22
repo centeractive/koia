@@ -67,6 +67,19 @@ describe('PageFormat', () => {
     expect(block[1]).toBeCloseTo(format.sheetHeight, 10);
   });
 
+  it.each([
+    { format: PageFormat.LANDSCAPE, expected: 6.929 },
+    { format: PageFormat.PORTRAIT, expected: 7.031 },
+    { format: PageFormat.UNPAGED, expected: 6.929 }
+  ])('should keep $expected printed pixels free below header of $format.paging sheet', ({ format, expected }) => {
+
+    // when
+    const result = format.printTopPadding;
+
+    // then
+    expect(result).toBeCloseTo(expected, 3);
+  });
+
   it('should draw unpaged canvas without sheet margins', () => {
 
     // when
@@ -138,5 +151,31 @@ describe('PageFormat', () => {
 
     // then
     expect(top).toBe(0);
+  });
+
+  it.each([
+    { format: PageFormat.LANDSCAPE, width: 1400 * 1120 / PageFormat.LANDSCAPE.sheetWidth, height: 950 * 1120 / PageFormat.LANDSCAPE.sheetWidth },
+    { format: PageFormat.PORTRAIT, width: 950 * 791 / PageFormat.PORTRAIT.sheetWidth, height: 1400 * 791 / PageFormat.PORTRAIT.sheetWidth }
+  ])('should define printed content size of $format.paging format', ({ format, width, height }) => {
+
+    // when
+    const result = [format.printContentWidth, format.printContentHeight];
+
+    // then
+    expect(result).toEqual([width, height]);
+  });
+
+  it.each([
+    { paging: CanvasPaging.LANDSCAPE, paged: true },
+    { paging: CanvasPaging.PORTRAIT, paged: true },
+    { paging: CanvasPaging.NONE, paged: false },
+    { paging: undefined, paged: false }
+  ])('#isPaged should be $paged for paging $paging', ({ paging, paged }) => {
+
+    // when
+    const result = PageFormat.isPaged(paging);
+
+    // then
+    expect(result).toBe(paged);
   });
 });

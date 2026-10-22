@@ -94,6 +94,10 @@ import { PageHeadingComponent } from './shared/ui/print-heading/page-heading.com
 import { PrintHeadingComponent } from './shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from './shared/ui/view-toolbar/view-toolbar.component';
 import { PrintButtonComponent } from './shared/ui/print-button/print-button.component';
+import { CloneDirective } from './shared/ui/sheets/clone.directive';
+import { PagingTogglesComponent } from './shared/ui/sheets/paging-toggles.component';
+import { SheetComponent } from './shared/ui/sheets/sheet.component';
+import { TableSheetsComponent } from './shared/ui/sheets/table-sheets.component';
 import { DialogCloseButtonComponent } from './shared/ui/dialog-close-button/dialog-close-button.component';
 import { VirtualTableComponent } from './shared/ui/virtual-table/virtual-table.component';
 import { ValueRangeGroupingService } from './shared/value-range';
@@ -150,6 +154,10 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         TableModeTogglesComponent,
         ViewToolbarComponent,
         PrintButtonComponent,
+        PagingTogglesComponent,
+        SheetComponent,
+        TableSheetsComponent,
+        CloneDirective,
         PageHeadingComponent,
         PrintHeadingComponent,
         DialogCloseButtonComponent,

@@ -1,7 +1,7 @@
 import { ElementContext, SummaryContext, TextBoxContext } from 'app/shared/model';
 import { ViewElement } from 'app/shared/model/view-config';
 import { FreeLayout } from './free-layout';
-import { PageFormat } from './page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { PageReflow } from './page-reflow';
 
 describe('PageReflow', () => {

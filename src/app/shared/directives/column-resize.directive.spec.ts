@@ -48,6 +48,21 @@ describe('ColumnResizeDirective', () => {
     expect(host.deltas).toEqual([30, -20]);
   });
 
+  it('should emit delta in unscaled pixels of scaled handle', () => {
+
+    // given
+    handle.style.display = 'inline-block';
+    handle.style.width = '10px';
+    handle.parentElement.style.transform = 'scale(2)';
+    pointer('pointerdown', 100);
+
+    // when
+    pointer('pointermove', 130);
+
+    // then
+    expect(host.deltas).toEqual([15]);
+  });
+
   it('should not emit when moving without drag', () => {
 
     // when

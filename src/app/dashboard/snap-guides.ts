@@ -1,5 +1,5 @@
 import { FreeLayout, Rect, Size } from './free-layout';
-import { PageFormat } from './page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { GridLayout } from './grid-layout';
 
 export interface Guide {

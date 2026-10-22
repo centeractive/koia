@@ -54,10 +54,10 @@ class TestSource implements VirtualTableSource {
 }
 
 @Component({
-  template: `<div [style.height]="height" [style.width]="width" style="display: flex; flex-direction: column;">
+  template: `<div [style.height]="height" [style.width]="width" [class.div_sheet_window]="onSheet" style="display: flex; flex-direction: column;">
                <koia-virtual-table [columns]="columns" [widths]="widths" [source]="source" [multiLine]="multiLine"
                  [showNestedObjects]="showNestedObjects" [dialogStyle]="dialogStyle" [sortable]="sortable"
-                 [sortIndicatorOf]="sortIndicatorOf" [rowStyleOf]="rowStyleOf" [rowMarker]="withMarker ? marker : undefined"
+                 [sortIndicatorOf]="sortIndicatorOf" [rowStyleOf]="rowStyleOf" [rowMarker]="withMarker ? marker : undefined" [printable]="printable"
                  (sort)="sorted.push($event)" (columnResize)="onColumnResize($event)" />
              </div>
              <ng-template #marker let-index><span class="marker">#{{ index }}</span></ng-template>`,
@@ -68,6 +68,7 @@ class HostComponent {
 
   height = '400px';
   width = '1200px';
+  onSheet = false;
   columns: Column[] = [
     { name: 'Time', dataType: DataType.TIME, width: 12, format: 'yyyy-MM-dd HH:mm:ss SSS' },
     { name: 'Level', dataType: DataType.TEXT, width: 5, indexed: true },
@@ -83,6 +84,7 @@ class HostComponent {
   dialogStyle = false;
   sortable = true;
   withMarker = false;
+  printable = true;
   sorted: Column[] = [];
   resizes: ColumnResize[] = [];
   sortIndicatorOf: (column: Column) => string = () => '';
@@ -171,6 +173,53 @@ describe('VirtualTableComponent', () => {
   }
 
   describe('rendering', () => {
+
+    it('should be printable by default', async () => {
+
+      // when
+      await render();
+
+      // then
+      expect(fixture.nativeElement.querySelector('.div_virtual_table').classList).toContain('printable');
+    });
+
+    it('should not be printable when printed with its sheet', async () => {
+
+      // given
+      host.printable = false;
+
+      // when
+      await render();
+
+      // then
+      expect(fixture.nativeElement.querySelector('.div_virtual_table').classList).not.toContain('printable');
+    });
+
+    it('should keep margin and padding around table off sheet', async () => {
+
+      // when
+      await render();
+
+      // then
+      expect(spacingOf(fixture.nativeElement.querySelector('.div_virtual_table'))).toEqual(['10px', '10px', '10px', '10px', '5px', '5px']);
+    });
+
+    it('should show table on sheet without margin and padding', async () => {
+
+      // given
+      host.onSheet = true;
+
+      // when
+      await render();
+
+      // then
+      expect(spacingOf(fixture.nativeElement.querySelector('.div_virtual_table'))).toEqual(['0px', '0px', '0px', '0px', '0px', '0px']);
+    });
+
+    function spacingOf(element: HTMLElement): string[] {
+      const style = getComputedStyle(element);
+      return [style.marginTop, style.marginRight, style.marginBottom, style.marginLeft, style.paddingLeft, style.paddingRight];
+    }
 
     it('should render placeholder for rows not loaded', async () => {
 

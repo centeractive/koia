@@ -1,0 +1,11 @@
+<div #pagesElement class="div_canvas_pages printable" [ngStyle]="pagesStyle">
+  @for (page of pages; track $index; let i = $index) {
+    <div koiaSheet [layout]="layout" [page]="i" [count]="pages.length" [title]="title" [sceneName]="sceneName" [printedAt]="printedAt">
+      <div class="div_canvas_page_content div_sheet_window" [ngStyle]="layout.sheetContentStyle()">
+        <div class="div_sheet_scale" [ngStyle]="layout.windowStyle(pagesWidthPx)">
+          <ng-container *ngTemplateOutlet="pageTemplate; context: page" />
+        </div>
+      </div>
+    </div>
+  }
+</div>

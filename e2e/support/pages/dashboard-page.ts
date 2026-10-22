@@ -1,5 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { PageFormat } from 'app/dashboard/page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
 import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';

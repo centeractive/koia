@@ -1,4 +1,4 @@
-import { PageFormat } from './page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { visibleCenterOf } from './visible-center';
 
 describe('visibleCenterOf', () => {

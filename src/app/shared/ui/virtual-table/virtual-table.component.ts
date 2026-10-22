@@ -40,6 +40,8 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
   @Input() headerTooltipOf: (column: Column) => string = () => '';
   @Input() rowStyleOf: (entry: object) => object | null = () => null;
   @Input() rowMarker: TemplateRef<{ $implicit: number }>;
+  /** a table shown on sheets is printed with them */
+  @Input() printable = true;
   @Output() sort = new EventEmitter<Column>();
   @Output() columnResize = new EventEmitter<ColumnResize>();
 

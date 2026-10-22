@@ -1,0 +1,16 @@
+@if (showMonitor) {
+  <button id="but_monitor_view" mat-icon-button [class.koia-toggle-active]="paging === CanvasPaging.NONE"
+    [matTooltip]="'view.monitorView' | translate" (click)="pagingChange.emit(CanvasPaging.NONE)">
+    <mat-icon>monitor</mat-icon>
+  </button>
+}
+<button id="but_landscape_pages" mat-icon-button [class.koia-toggle-active]="paging === CanvasPaging.LANDSCAPE"
+  [matTooltip]="'view.landscapePages' | translate" (click)="pagingChange.emit(CanvasPaging.LANDSCAPE)">
+  <mat-icon>crop_landscape</mat-icon>
+</button>
+<button id="but_portrait_pages" mat-icon-button [class.koia-toggle-active]="paging === CanvasPaging.PORTRAIT"
+  [matTooltip]="'view.portraitPages' | translate" (click)="pagingChange.emit(CanvasPaging.PORTRAIT)">
+  <mat-icon>crop_portrait</mat-icon>
+</button>
+<koia-print-button [disabled]="printDisabled || !isPaged()" />
+<span class="koia-toolbar-separator"></span>

@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
-import { Column, ComputeOperator, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
+import { CanvasPaging, Column, ComputeOperator, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
 import { RawDataState } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -35,6 +35,9 @@ import { RawDataComponent } from './raw-data.component';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
+import { PagingTogglesComponent } from 'app/shared/ui/sheets/paging-toggles.component';
+import { SheetComponent } from 'app/shared/ui/sheets/sheet.component';
+import { TableSheetsComponent } from 'app/shared/ui/sheets/table-sheets.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 
 describe('RawDataComponent', () => {
@@ -75,7 +78,7 @@ describe('RawDataComponent', () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent,
-        PrintHeadingComponent, ColumnResizeDirective],
+        PrintHeadingComponent, ColumnResizeDirective, PagingTogglesComponent, TableSheetsComponent, SheetComponent],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),
@@ -637,6 +640,74 @@ describe('RawDataComponent', () => {
     });
   });
 
+  describe('page views', () => {
+
+    function element<T extends HTMLElement>(selector: string): T {
+      return fixture.nativeElement.querySelector(selector);
+    }
+
+    it('screen view should be active by default, without sheets and with print disabled', async () => {
+
+      // when
+      await render();
+
+      // then
+      expect(element('#but_monitor_view').classList).toContain('koia-toggle-active');
+      expect(element<HTMLButtonElement>('#but_print').disabled).toBe(true);
+      expect(element('koia-table-sheets')).toBeNull();
+      expect(element('.div_virtual_table').classList).toContain('printable');
+    });
+
+    it('landscape pages should show table on one sheet, printed with it', async () => {
+
+      // given
+      await render();
+      const screenTable = component.table;
+
+      // when
+      element('#but_landscape_pages').click();
+      fixture.detectChanges();
+      await settle();
+
+      // then
+      expect(element('#but_landscape_pages').classList).toContain('koia-toggle-active');
+      expect(element<HTMLButtonElement>('#but_print').disabled).toBe(false);
+      expect(fixture.nativeElement.querySelectorAll('koia-table-sheets .div_canvas_sheet').length).toBe(1);
+      expect(element('koia-table-sheets .div_sheet_scale koia-virtual-table')).not.toBeNull();
+      expect(element('.div_virtual_table').classList).not.toContain('printable');
+      expect(component.table).not.toBe(screenTable);
+      expect(component.table).toBe(table());
+      expect(rowElement(0)).not.toBeNull();
+    });
+
+    it('print heading should print sheets of pages instead of its own heading', async () => {
+
+      // given
+      await render();
+
+      // when
+      component.onPagingChange(CanvasPaging.PORTRAIT);
+      fixture.detectChanges();
+
+      // then
+      const heading = fixture.debugElement.query(By.directive(PrintHeadingComponent));
+      expect(heading.componentInstance.printSheets).toBe(CanvasPaging.PORTRAIT);
+      expect(heading.nativeElement.classList).toContain('koia-print-heading-in-sheets');
+    });
+
+    it('dialog style should offer no page views', async () => {
+
+      // given
+      component.dialogStyle = true;
+
+      // when
+      await render();
+
+      // then
+      expect(element('koia-paging-toggles')).toBeNull();
+    });
+  });
+
   describe('config and lifecycle', () => {
 
     it('#ngOnInit should navigate to scenes view when no scene is active', async () => {
@@ -745,7 +816,7 @@ describe('RawDataComponent', () => {
       // then
       expect(state.query.sort).toEqual({ active: 'Level', direction: 'asc' });
       expect(state.data).toEqual({
-        considerColumnWidths: true, highlight: false, multiLine: true, columnWidths: { Data: 20 * EM_PX + 10 }
+        considerColumnWidths: true, highlight: false, multiLine: true, columnWidths: { Data: 20 * EM_PX + 10 }, paging: CanvasPaging.NONE
       });
       expect(state.data.columnWidths).not.toBe(component.customWidths);
     });
@@ -772,6 +843,37 @@ describe('RawDataComponent', () => {
       expect(component.widths.length).toBe(columns.length);
       expect(requestedQuery(-1).getSort()).toEqual({ active: 'Amount', direction: 'desc' });
       expect(requestedQuery(-1).getPageIndex()).toBe(0);
+    });
+
+    it('#rawDataState should provide paging', async () => {
+
+      // given
+      await render();
+      component.onPagingChange(CanvasPaging.PORTRAIT);
+
+      // when
+      const state = component.rawDataState();
+
+      // then
+      expect(state.data.paging).toBe(CanvasPaging.PORTRAIT);
+    });
+
+    it('#applyRawDataState should restore pages', async () => {
+
+      // given
+      await render();
+      const state: RawDataState = {
+        query: queryToQueryDef(new Query()), data: { considerColumnWidths: true, highlight: true, paging: CanvasPaging.LANDSCAPE }
+      };
+
+      // when
+      component.applyRawDataState(state);
+      fixture.detectChanges();
+      await settle();
+
+      // then
+      expect(component.paging).toBe(CanvasPaging.LANDSCAPE);
+      expect(fixture.nativeElement.querySelector('koia-table-sheets koia-virtual-table')).not.toBeNull();
     });
 
     it('#applyRawDataState should not share value ranges with state', async () => {
@@ -814,6 +916,7 @@ describe('RawDataComponent', () => {
       // given
       await render();
       component.toggleMultiLine();
+      component.onPagingChange(CanvasPaging.LANDSCAPE);
       const state = {
         query: queryToQueryDef(new Query()),
         data: { pageDef: { queryDef: queryToQueryDef(new Query()), totalRowCount: 9 }, considerColumnWidths: true, highlight: true }
@@ -825,6 +928,7 @@ describe('RawDataComponent', () => {
 
       // then
       expect(component.multiLine).toBe(false);
+      expect(component.paging).toBe(CanvasPaging.NONE);
       expect(component.customWidths).toEqual({});
       expect(component.widths[columnIndex('Level')]).toBe(70);
     });
@@ -929,6 +1033,8 @@ describe('RawDataComponent', () => {
     it('#click on print button should print window', () => {
 
       // given
+      component.onPagingChange(CanvasPaging.LANDSCAPE);
+      fixture.detectChanges();
       const printButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_print')).nativeElement;
       vi.spyOn(window, 'print').mockReturnValue(undefined);
 

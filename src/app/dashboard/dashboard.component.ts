@@ -20,7 +20,7 @@ import { FreeLayout, Rect, TileRect } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
-import { PageFormat } from './page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { PageReflow } from './page-reflow';
 import { RESIZE_CURSORS } from './resize-handles/resize-handles.component';
 import { isSelectingClick } from './selecting-click';

@@ -4,10 +4,14 @@ import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { LANGUAGE_ABBREVIATIONS } from 'app/shared/services/language/language';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { contentOf, downloadOf, exportDayOf, exportFileName, localDayOf } from './support/downloads';
 import { expect, test } from './support/fixtures';
 import { columnValuesOf, countOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { contentOffsetOf, printedSheets, whilePrinted } from './support/print';
 import { Texts } from './support/texts';
+import { expectOnlyActive } from './support/toggles';
+import { Locator } from '@playwright/test';
 
 const NO_MATCH = 'no match';
 const VIEW_NAME = 'East only';
@@ -116,3 +120,77 @@ test('Japanese chosen on raw data is kept when the front page is opened without 
 
    await expect(languageSelect.code).toHaveText(LANGUAGE_ABBREVIATIONS.ja);
 });
+
+test('page view buttons switch like radio buttons between screen view and pages, print enabled on pages only', async ({ rawData }) => {
+   const toggles = rawData.pagingToggles;
+   await expectOnlyActive(toggles.buttons, toggles.monitorButton);
+   await expect(toggles.printButton).toBeDisabled();
+   await expect(rawData.sheets).toHaveCount(0);
+
+   await toggles.landscapeButton.click();
+   await expectOnlyActive(toggles.buttons, toggles.landscapeButton);
+   await expect(toggles.printButton).toBeEnabled();
+   await expect(rawData.sheets).toHaveCount(1);
+   await expect(rawData.sheets.locator('.vt-row').first()).toBeVisible();
+
+   await toggles.portraitButton.click();
+   await expectOnlyActive(toggles.buttons, toggles.portraitButton);
+   const sheet = await rawData.sheets.first().boundingBox();
+   expect(sheet.height / sheet.width).toBeCloseTo(297 / 210, 2);
+
+   await toggles.monitorButton.click();
+   await expectOnlyActive(toggles.buttons, toggles.monitorButton);
+   await expect(toggles.printButton).toBeDisabled();
+   await expect(rawData.sheets).toHaveCount(0);
+});
+
+test('landscape page prints the rows scrolled to within its sheet on one sheet', async ({ page, rawData }) => {
+   await rawData.pagingToggles.landscapeButton.click();
+   const scroller = rawData.sheets.first().locator('.vt');
+   await expect(scroller.locator('.vt-row[data-index="0"]')).toBeVisible();
+   await scroller.evaluate((element: HTMLElement) => element.scrollTop = 50 * 22);
+   await expect(scroller.locator('.vt-row[data-index="50"]')).toBeVisible();
+   const onScreen = await firstShownRowOf(scroller);
+
+   const printed = await whilePrinted(page, () => firstShownRowOf(scroller));
+
+   expect(onScreen.index).toBeGreaterThan(0);
+   expect(printed).toEqual(onScreen);
+   expect(await printedSheets(page)).toEqual({ A4: 1, Letter: 1, paper: 'A4 landscape' });
+});
+
+test('landscape sheet shows table at its monitor size on a wide screen', async ({ page, rawData }) => {
+   await page.setViewportSize({ width: 1920, height: 1200 });
+   const headerCell = rawData.table.headerCells.first();
+   const monitorWidth = (await headerCell.boundingBox()).width;
+
+   await rawData.pagingToggles.landscapeButton.click();
+   await expect(rawData.sheets.first().locator('.vt-row').first()).toBeVisible();
+
+   expect(Math.abs((await rawData.sheets.first().boundingBox()).width - PageFormat.LANDSCAPE.printWidthPx)).toBeLessThanOrEqual(1);
+   expect(Math.abs((await headerCell.boundingBox()).width - monitorWidth)).toBeLessThanOrEqual(1);
+});
+
+test('printed landscape sheet shows table below the top padding without side padding', async ({ page, rawData }) => {
+   await rawData.pagingToggles.landscapeButton.click();
+   const sheet = rawData.sheets.first();
+   await expect(sheet.locator('.vt-row').first()).toBeVisible();
+
+   const offset = await whilePrinted(page, () => contentOffsetOf(sheet, '.vt'));
+
+   expect(Math.abs(offset.top - PageFormat.LANDSCAPE.printTopPadding)).toBeLessThanOrEqual(0.5);
+   expect(Math.abs(offset.left)).toBeLessThanOrEqual(0.5);
+});
+
+/**
+ * @returns the scroll offset of the table and the index of the first row shown below its header
+ */
+function firstShownRowOf(scroller: Locator): Promise<{ scrollTop: number; index: number }> {
+   return scroller.evaluate((element: HTMLElement) => {
+      const headerBottom = element.querySelector('.vt-header').getBoundingClientRect().bottom;
+      const indexes = Array.from(element.querySelectorAll<HTMLElement>('.vt-row'))
+         .filter(row => row.getBoundingClientRect().bottom > headerBottom + 1)
+         .map(row => Number(row.dataset['index']));
+      return { scrollTop: element.scrollTop, index: Math.min(...indexes) };
+   });
+}

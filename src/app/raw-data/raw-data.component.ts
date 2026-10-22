@@ -20,7 +20,8 @@ import { ColumnResize, VirtualTableSource } from 'app/shared/ui/virtual-table/vi
 import { computedColumnTooltipOf } from 'app/shared/utils/computation-utils';
 import { colWidthMeasurementOf } from 'app/shared/utils/source-system';
 import { lastValueFrom, Subscription } from 'rxjs';
-import { Column, ExportFormat, Page, Query, Route } from '../shared/model';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
+import { CanvasPaging, Column, ExportFormat, Page, Query, Route } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { RawDataBlockCache } from './raw-data-block-cache';
 import { SORT_INDICATORS } from './sort-indicators';
@@ -49,6 +50,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   showNestedObjects: boolean;
   highlight: boolean;
   multiLine: boolean;
+  paging: CanvasPaging;
   exportFormats: ExportFormat[] = [ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON];
 
   colWidthMeasurement: 'em' | 'px';
@@ -76,6 +78,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
     this.showNestedObjects = false;
     this.highlight = defaults.highlight;
     this.multiLine = defaults.multiLine;
+    this.paging = defaults.paging;
   }
 
   init(): void {
@@ -169,6 +172,14 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
     this.highlight = !this.highlight;
   }
 
+  isPaged(): boolean {
+    return PageFormat.isPaged(this.paging);
+  }
+
+  onPagingChange(paging: CanvasPaging): void {
+    this.paging = paging;
+  }
+
   saveAs(exportFormat: ExportFormat): void {
     const query = this.query.clone();
     const message = LanguageService.instant(query.hasFilter() ? 'rawData.exportFiltered' : 'rawData.exportComplete', { format: exportFormat });
@@ -186,7 +197,8 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
         considerColumnWidths: this.considerColumnWidths,
         highlight: this.highlight,
         multiLine: this.multiLine,
-        columnWidths: { ...this.customWidths }
+        columnWidths: { ...this.customWidths },
+        paging: this.paging
       }
     };
   }
@@ -204,6 +216,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
     this.highlight = state.data.highlight;
     this.multiLine = state.data.multiLine ?? false;
     this.customWidths = { ...(state.data.columnWidths ?? {}) };
+    this.paging = state.data.paging ?? CanvasPaging.NONE;
   }
 
   private reload(): void {

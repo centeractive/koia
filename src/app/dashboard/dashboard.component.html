@@ -30,7 +30,7 @@
       @if (loading) {
         <mat-progress-bar mode="indeterminate" [matTooltip]="'dashboard.loadingData' | translate"></mat-progress-bar>
       }
-      <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined" [printable]="false">
+      <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined">
         <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
           [matTooltip]="'dashboard.snapToGrid' | translate" (click)="snapToGrid()">
           <mat-icon svgIcon="snap_grid"></mat-icon>
@@ -39,16 +39,8 @@
           [matTooltip]="'dashboard.freeCanvas' | translate" (click)="showCanvas(CanvasPaging.NONE)">
           <mat-icon svgIcon="flex_view"></mat-icon>
         </button>
-        <button id="but_landscape_pages" mat-icon-button [class.koia-toggle-active]="isCanvasPaging(CanvasPaging.LANDSCAPE)"
-          [matTooltip]="'dashboard.landscapePages' | translate" (click)="showCanvas(CanvasPaging.LANDSCAPE)">
-          <mat-icon>crop_landscape</mat-icon>
-        </button>
-        <button id="but_portrait_pages" mat-icon-button [class.koia-toggle-active]="isCanvasPaging(CanvasPaging.PORTRAIT)"
-          [matTooltip]="'dashboard.portraitPages' | translate" (click)="showCanvas(CanvasPaging.PORTRAIT)">
-          <mat-icon>crop_portrait</mat-icon>
-        </button>
-        <koia-print-button [disabled]="!isPagedCanvas() || !elementContexts?.length" />
-        <span class="koia-toolbar-separator"></span>
+        <koia-paging-toggles [paging]="isGridLayout() ? undefined : freeLayout.pageFormat.paging" [showMonitor]="false"
+          [printDisabled]="!elementContexts?.length" (pagingChange)="showCanvas($event)" />
         <button mat-icon-button [matTooltip]="'dashboard.addChart' | translate" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
         </button>
@@ -197,15 +189,8 @@
         cdkScrollable>
         <div #canvasPages class="div_canvas_pages printable" [ngStyle]="freeLayout.pagesStyle()">
           @for (page of freeLayout.pageIndexes(elementContexts); track page; let last = $last, count = $count) {
-            <div class="div_canvas_page" [class.div_canvas_sheet]="freeLayout.pageFormat.paged" [class.div_canvas_page_spare]="last"
-              [ngStyle]="freeLayout.pageStyle(page)">
-              @if (freeLayout.pageFormat.paged) {
-                <div class="div_canvas_sheet_header" [ngStyle]="freeLayout.sheetHeaderStyle()">
-                  @if (!last) {
-                    <koia-page-heading [title]="tab?.title" [sceneName]="scene?.name" [printedAt]="printedAt" />
-                  }
-                </div>
-              }
+            <div koiaSheet [layout]="freeLayout" [page]="page" [count]="count - 1" [spare]="last" [title]="tab?.title"
+              [sceneName]="scene?.name" [printedAt]="printedAt">
               <div class="div_canvas_page_content" [ngStyle]="freeLayout.pageContentStyle(page, elementContexts)">
                 @for (context of freeLayout.contextsOnPage(elementContexts, page); track context) {
                   @if (isTextBoxContext(context)) {
@@ -243,13 +228,6 @@
                   }
                 }
               </div>
-              @if (freeLayout.pageFormat.paged) {
-                <div class="div_canvas_sheet_footer" [ngStyle]="freeLayout.sheetFooterStyle()">
-                  @if (!last) {
-                    {{ 'view.printPage' | translate: { page: page + 1, count: count - 1 } }}
-                  }
-                </div>
-              }
             </div>
           }
           <ng-container *ngTemplateOutlet="canvasGuidesTemplate" />

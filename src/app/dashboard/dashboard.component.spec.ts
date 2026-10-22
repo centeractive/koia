@@ -41,12 +41,14 @@ import { DragAutoScroll } from './drag-auto-scroll';
 import { FreeLayout, Rect } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
 import { GridLayout } from './grid-layout';
-import { PageFormat } from './page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { Guide, SnapGuides } from './snap-guides';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
+import { PagingTogglesComponent } from 'app/shared/ui/sheets/paging-toggles.component';
+import { SheetComponent } from 'app/shared/ui/sheets/sheet.component';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import type { TextExtent } from 'app/text-box/text-fit';
 
@@ -135,7 +137,8 @@ describe('DashboardComponent', () => {
       declarations: [
         DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
         SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintButtonComponent,
-        PrintHeadingComponent, PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective, ResizeHandlesComponent
+        PrintHeadingComponent, PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective, ResizeHandlesComponent,
+        PagingTogglesComponent, SheetComponent
       ],
       imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
       providers: [
@@ -3626,17 +3629,18 @@ describe('DashboardComponent', () => {
     it('layout buttons should follow separator and precede print button and separator in front of add buttons', () => {
 
       // when
-      const buttons = LAYOUT_BUTTON_IDS.map(layoutButton);
+      const [grid, canvas, landscape, portrait] = LAYOUT_BUTTON_IDS.map(layoutButton);
 
       // then
-      expect(buttons[0].previousElementSibling.classList).toContain('koia-toolbar-separator');
-      buttons.slice(1).forEach((button, i) => expect(button.previousElementSibling).toBe(buttons[i]));
-      const printButton = buttons[3].nextElementSibling;
-      expect(printButton.tagName).toBe('KOIA-PRINT-BUTTON');
-      expect(printButton.querySelector('#but_print')).not.toBeNull();
-      const separator = printButton.nextElementSibling;
-      expect(separator.classList).toContain('koia-toolbar-separator');
-      expect(separator.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
+      expect(grid.previousElementSibling.classList).toContain('koia-toolbar-separator');
+      expect(canvas.previousElementSibling).toBe(grid);
+      const toggles = canvas.nextElementSibling;
+      expect(toggles.tagName).toBe('KOIA-PAGING-TOGGLES');
+      expect(Array.from(toggles.children)).toEqual([landscape, portrait, toggles.querySelector('koia-print-button'),
+        toggles.querySelector('.koia-toolbar-separator')]);
+      expect(toggles.querySelector('koia-print-button #but_print')).not.toBeNull();
+      expect(toggles.querySelector('#but_monitor_view')).toBeNull();
+      expect(toggles.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
     });
 
     it('layout buttons should lead canvas toolbar without separator', () => {

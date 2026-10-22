@@ -147,33 +147,6 @@
   scrollbar-gutter: stable;
 }
 
-#div_canvas.div_canvas_desk {
-  background-color: var(--koia-desk);
-}
-
-.div_canvas_pages {
-  position: relative;
-  margin: 0 auto;
-  container-type: inline-size;
-}
-
-.div_canvas_page {
-  position: relative;
-}
-
-.div_canvas_page_content {
-  position: relative;
-}
-
-.div_canvas_sheet {
-  background-color: var(--koia-surface);
-  box-shadow: var(--koia-header-shadow);
-}
-
-.div_canvas_sheet.div_canvas_page_spare {
-  opacity: 0.5;
-}
-
 .div_canvas_guide {
   position: absolute;
   z-index: 100001;

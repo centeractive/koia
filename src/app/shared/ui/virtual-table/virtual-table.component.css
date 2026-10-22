@@ -154,3 +154,8 @@
   border: 1px solid #d4d4d4;
   border-top: none;
 }
+
+:host-context(.div_sheet_window) .div_virtual_table {
+  margin: 0;
+  padding: 0;
+}

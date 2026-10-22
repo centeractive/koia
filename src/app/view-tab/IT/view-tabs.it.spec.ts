@@ -1,3 +1,4 @@
+import { SheetComponent } from 'app/shared/ui/sheets/sheet.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, provideZoneChangeDetection } from '@angular/core';
@@ -41,7 +42,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      declarations: [DashboardComponent, PivotTableComponent, ChartComponent, DummyComponent],
+      declarations: [DashboardComponent, PivotTableComponent, ChartComponent, DummyComponent, SheetComponent],
       imports: [MatSidenavModule, MatMenuModule, MatTooltipModule, MatDialogModule, MatBottomSheetModule, MatProgressBarModule, ResizableDirective, ResizeHandleDirective,
         DragDropModule],
       providers: [

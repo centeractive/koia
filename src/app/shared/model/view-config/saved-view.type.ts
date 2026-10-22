@@ -1,3 +1,4 @@
+import { CanvasPaging } from '../canvas-paging.enum';
 import { QueryDef } from './query/query-def.type';
 import { TabDef } from './tab-def.type';
 
@@ -6,6 +7,7 @@ export interface RawDataSettings {
    highlight: boolean;
    multiLine?: boolean;
    columnWidths?: Record<string, number>;
+   paging?: CanvasPaging;
 }
 
 export interface RawDataState {

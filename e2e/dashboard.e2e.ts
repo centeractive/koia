@@ -1,5 +1,5 @@
 import { rowsOf } from 'app/dashboard/generator/generated-grid';
-import { PageFormat } from 'app/dashboard/page-format';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { DataType } from 'app/shared/model/data-type.enum';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
@@ -12,10 +12,12 @@ import { Locator, Page } from '@playwright/test';
 import { DashboardTile } from './support/components/dashboard-tile';
 import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
+import { dispatchWindowEvent, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { expect, test } from './support/fixtures';
 import { firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
 import { DashboardPage } from './support/pages/dashboard-page';
 import { Texts } from './support/texts';
+import { expectOnlyActive } from './support/toggles';
 
 const VIEW_NAME = 'Regions overview';
 const GRID_GAP_PX = 10;
@@ -133,11 +135,7 @@ test('layout buttons switch like radio buttons between grid, free canvas, landsc
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
    const buttons = [dashboard.snapToGridButton, dashboard.freeCanvasButton, dashboard.landscapePagesButton, dashboard.portraitPagesButton];
-   const expectActive = async (active: Locator) => {
-      for (const button of buttons) {
-         await expect(button).toHaveClass(button === active ? /\bkoia-toggle-active\b/ : /^(?!.*\bkoia-toggle-active\b)/);
-      }
-   };
+   const expectActive = (active: Locator) => expectOnlyActive(buttons, active);
    await expectActive(dashboard.snapToGridButton);
    await expect(dashboard.snapToGridButton.locator('svg path')).toHaveCount(2);
    await expect(dashboard.gridContent).toBeVisible();
@@ -511,39 +509,6 @@ function pageUnitBoxesOf(boxes: Box[], origin: Box, scale: number): Box[] {
    return boxes.map(box => ({ x: (box.x - origin.x) / scale, y: (box.y - origin.y) / scale, width: box.width / scale, height: box.height / scale }));
 }
 
-/**
- * @returns the number of sheets printed when A4 and Letter are requested and the page's CSS size is preferred, together
- * with the paper of all sheets
- */
-async function printedSheets(page: Page): Promise<{ A4: number; Letter: number; paper: string }> {
-   await dispatchWindowEvent(page, 'beforeprint');
-   const papers = new Set<string>();
-   const sheetsOf = async (format: string) => {
-      const pdf = (await page.pdf({ format, preferCSSPageSize: true })).toString('latin1');
-      pdf.match(/\/MediaBox\s*\[[^\]]*\]/g)
-         .map(box => box.match(/[\d.]+/g).map(Number))
-         .forEach(([, , width, height]) => papers.add(paperOf(width, height)));
-      return pdf.match(/\/Type\s*\/Page(?!s)/g).length;
-   };
-   const sheets = { A4: await sheetsOf('A4'), Letter: await sheetsOf('Letter'), paper: [...papers].join() };
-   await dispatchWindowEvent(page, 'afterprint');
-   return sheets;
-}
-
-/**
- * @param width width of a PDF MediaBox in points
- * @param height height of a PDF MediaBox in points
- */
-function paperOf(width: number, height: number): string {
-   const [long, short] = [Math.max(width, height), Math.min(width, height)].map(Math.round);
-   const size = long === 842 && short === 595 ? 'A4' : long + 'x' + short;
-   return size + ' ' + (width > height ? 'landscape' : 'portrait');
-}
-
-async function dispatchWindowEvent(page: Page, type: string): Promise<void> {
-   await page.evaluate((t: string) => window.dispatchEvent(new Event(t)), type);
-}
-
 test('page sheets lie on a grey desk within its gutter', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
@@ -569,30 +534,6 @@ test('page sheets lie on a grey desk within its gutter', async ({ page, dashboar
    expect(desk.ratio).toBeCloseTo(210 / 297, 2);
 });
 
-/**
- * @returns the positions of heading, footer and first tile relative to the width and height of the first sheet
- */
-function sheetProportionsOf(dashboard: DashboardPage): Promise<{ width: number; proportions: number[] }> {
-   return dashboard.sheets.first().evaluate((sheet: HTMLElement) => {
-      const rect = sheet.getBoundingClientRect();
-      const relativeX = (x: number) => (x - rect.left) / rect.width;
-      const relativeY = (y: number) => (y - rect.top) / rect.height;
-      const boxOf = (selector: string) => sheet.querySelector(selector).getBoundingClientRect();
-      return {
-         width: rect.width,
-         proportions: [
-            relativeX(boxOf('.span_print_title').left),
-            relativeY(boxOf('.span_print_title').top),
-            relativeX(boxOf('.span_print_details').right),
-            relativeX(boxOf('.div_canvas_sheet_footer').right),
-            relativeY(boxOf('.div_canvas_sheet_footer').bottom),
-            relativeX(boxOf('.div_canvas_tile').left),
-            relativeY(boxOf('.div_canvas_tile').top)
-         ]
-      };
-   });
-}
-
 [
    { paging: 'landscape', printWidth: PageFormat.LANDSCAPE.printWidthPx },
    { paging: 'portrait', printWidth: PageFormat.PORTRAIT.printWidthPx }
@@ -601,13 +542,9 @@ function sheetProportionsOf(dashboard: DashboardPage): Promise<{ width: number; 
       await dashboard.launcher.cancel();
       await (paging === 'landscape' ? dashboard.landscapePagesButton : dashboard.portraitPagesButton).click();
       await dashboard.addSummaries(1);
-      const onScreen = await sheetProportionsOf(dashboard);
+      const onScreen = await sheetProportionsOf(dashboard.sheets.first(), '.div_canvas_tile');
 
-      await dispatchWindowEvent(page, 'beforeprint');
-      await page.emulateMedia({ media: 'print' });
-      const printed = await sheetProportionsOf(dashboard);
-      await page.emulateMedia({ media: null });
-      await dispatchWindowEvent(page, 'afterprint');
+      const printed = await whilePrinted(page, () => sheetProportionsOf(dashboard.sheets.first(), '.div_canvas_tile'));
 
       expect(Math.abs(printed.width - printWidth)).toBeLessThanOrEqual(1);
       printed.proportions.forEach((proportion, i) => expect(Math.abs(proportion - onScreen.proportions[i])).toBeLessThanOrEqual(0.004));
