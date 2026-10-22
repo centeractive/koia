@@ -74,6 +74,25 @@ describe('intro page', () => {
     expect(doc.querySelector('.landing-lead').textContent).toContain('never sent to any third-party server');
   });
 
+  it('should promise in hero one click from chart element to its rows', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(doc.querySelector('.landing-lead').textContent).toContain('One click on a chart element shows the rows behind it.');
+  });
+
+  it('should name every clickable element in raw data showcase', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const row = all(doc, '.landing-showcase-row').find(r => r.querySelector('h3').textContent === 'Drill into raw data');
+    expect(row.querySelector('p').textContent).toContain('chart element, pivot table value or summary table count');
+  });
+
   it('should list privacy first and environment last among why koia tiles', async () => {
 
     // when

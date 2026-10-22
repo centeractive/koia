@@ -13,7 +13,7 @@ Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or cont
 
 ## Why Koia?
 
-Koia differs from similar programs mainly in that the **context to the original data** is never lost. You are always only a mouseclick apart from seeing the raw data on which the displayed element or value is based.
+Koia keeps the **context to the original data**. A single click on a chart element, pivot table value or summary table count, or a double-click on a graph node, shows the raw data rows behind it, right in your browser with no install or account.
 
 Next to this, Koia enables the **switch between multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
