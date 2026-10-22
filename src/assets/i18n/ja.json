@@ -372,6 +372,7 @@
     "stacked": "積み上げ",
     "showDistinctScales": "個別のスケールを表示",
     "values": "値",
+    "valueMode": "値モード",
     "valuesOnAxis": "値（{{axis}}）",
     "name": "名前",
     "names": "名前",

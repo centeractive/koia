@@ -64,6 +64,23 @@ describe('intro page languages', () => {
       });
    });
 
+   [
+      ['de', '/intro/index.de.html', 'Ein Klick auf ein Diagrammelement zeigt die zugrunde liegenden Zeilen.',
+         'Diagrammelement, einen Pivot-Tabellenwert oder eine Anzahl in der Übersichtstabelle'],
+      ['ja', '/intro/index.ja.html', 'グラフの要素をクリックするだけで、その元になった行を表示できます。', 'グラフの要素、ピボットテーブルの値、集計表の件数']
+   ].forEach(([language, url, lead, showcase]) => {
+
+      it(language + ' copy should promise one click from chart element to its rows', async () => {
+
+         // when
+         const doc = await load(url);
+
+         // then
+         expect(doc.querySelector('.landing-lead').textContent).toContain(lead);
+         expect(Array.from(doc.querySelectorAll('.landing-showcase-row')).pop().querySelector('p').textContent).toContain(showcase);
+      });
+   });
+
    it('should link every language with hreflang', async () => {
 
       // when

@@ -1,5 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { DebugElement, NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
+import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -15,7 +15,7 @@ import { Aggregation, ChangeEvent, Column, ComputeOperator, DataType, TimeUnit }
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { MatIconModuleMock } from 'app/shared/test';
-import { ChartSideBarComponent } from './chart-side-bar.component';
+import { AggregationMode, ChartSideBarComponent } from './chart-side-bar.component';
 import { ScaleComponent } from './scale/scale.component';
 import { TicksComponent } from './scale/ticks/ticks.component';
 import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/side-bar-header.component';
@@ -40,14 +40,27 @@ describe('ChartSideBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('name column field should be outlined for individual values of circular chart', () => {
+  it('value mode and name column fields should be outlined for individual values of circular chart', () => {
 
     // when
     const fields = formFields();
 
     // then
-    expect(fields.length).toBe(1);
-    expect(fields[0].classList).toContain('mat-form-field-appearance-outline');
+    expect(fields.length).toBe(2);
+    fields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
+  });
+
+  it('value mode options should name unique named values on circular chart', () => {
+
+    // when
+    const options = openSelectOptions('Value Mode');
+
+    // then
+    expect(optionTexts(options)).toEqual(['Count Distinct Values', 'Unique Named Values']);
+  });
+
+  it('stacked checkbox should be hidden on circular chart', () => {
+    expect(fixture.nativeElement.querySelector('mat-checkbox')).toBeNull();
   });
 
   it('#click on SCATTER chart button should switch to individual values when number data column is selected', () => {
@@ -108,7 +121,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
     expect(component).toBeTruthy();
   });
 
-  it('group by, time unit and step size fields should be outlined for counted line chart', () => {
+  it('value mode, group by, time unit and step size fields should be outlined for counted line chart', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
@@ -118,7 +131,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     const fields = formFields();
-    expect(fields.length).toBe(4);
+    expect(fields.length).toBe(5);
     fields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
   });
 
@@ -901,7 +914,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
     fixture.detectChanges();
 
     // then
-    const fieldRow: HTMLElement = fixture.nativeElement.querySelector('.field-row');
+    const fieldRow: HTMLElement = fixture.nativeElement.querySelector('.field_group_by').closest('.field-row');
     const labels = Array.from(fieldRow.querySelectorAll('mat-label')).map(l => l.textContent.trim());
     expect(labels).toEqual(['Group by', 'Time Unit Grouping']);
   });
@@ -913,10 +926,10 @@ describe('ChartSideBarComponent - data includes time column', () => {
     fixture.detectChanges();
 
     // when
-    const options = openSelectOptions();
+    const options = openSelectOptions('Group by');
 
     // then
-    expect(options).toEqual(['Time', 'Host', 'Path', 'Amount', 'Percent']);
+    expect(columnNames(options)).toEqual(['Time', 'Host', 'Path', 'Amount', 'Percent']);
   });
 
   it('name options should exclude data columns on PIE chart', () => {
@@ -927,10 +940,10 @@ describe('ChartSideBarComponent - data includes time column', () => {
     fixture.detectChanges();
 
     // when
-    const options = openSelectOptions();
+    const options = openSelectOptions('Name Column');
 
     // then
-    expect(options).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent']);
+    expect(columnNames(options)).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent']);
   });
 
   it('#timeUnitKey should return not grouped key when time unit is undefined', () => {
@@ -972,8 +985,8 @@ describe('ChartSideBarComponent - time aggregation', () => {
   }));
 
   it('time aggregation options should be shown for LINE chart grouped by time column', () => {
-    expect(radioButton('.radio_aggregate_values')).toBeTruthy();
-    expect(radioButton('.radio_count_rows')).toBeTruthy();
+    expect(optionTexts(openSelectOptions('Value Mode')))
+      .toEqual(['Count Distinct Values', 'Individual Values', 'Aggregate Values', 'Count Rows']);
   });
 
   it('time aggregation options should be hidden for LINE chart grouped by text column', () => {
@@ -983,8 +996,7 @@ describe('ChartSideBarComponent - time aggregation', () => {
     fixture.detectChanges();
 
     // then
-    expect(radioButton('.radio_aggregate_values')).toBeNull();
-    expect(radioButton('.radio_count_rows')).toBeNull();
+    expect(optionTexts(openSelectOptions('Value Mode'))).toEqual(['Count Distinct Values', 'Individual Values']);
   });
 
   it('time aggregation options should be hidden for BAR chart', () => {
@@ -995,8 +1007,7 @@ describe('ChartSideBarComponent - time aggregation', () => {
     fixture.detectChanges();
 
     // then
-    expect(radioButton('.radio_aggregate_values')).toBeNull();
-    expect(radioButton('.radio_count_rows')).toBeNull();
+    expect(optionTexts(openSelectOptions('Value Mode'))).toEqual(['Count Distinct Values', 'Individual Values']);
   });
 
   it('aggregate values option should be disabled when text data column is selected', () => {
@@ -1010,26 +1021,77 @@ describe('ChartSideBarComponent - time aggregation', () => {
     fixture.detectChanges();
 
     // then
-    expect(radioButton('.radio_aggregate_values').properties['disabled']).toBe(true);
+    const options = openSelectOptions('Value Mode');
+    expect(findOption(options, 'Aggregate Values').getAttribute('aria-disabled')).toBe('true');
+    expect(findOption(options, 'Count Rows').getAttribute('aria-disabled')).toBe('false');
   });
 
-  it('#change of aggregate values option should select SUM', () => {
+  it('#selection of aggregate values option should select SUM', () => {
 
     // when
-    radioButton('.radio_aggregate_values').triggerEventHandler('change');
+    findOption(openSelectOptions('Value Mode'), 'Aggregate Values').click();
 
     // then
     expect(context.aggregations).toEqual([Aggregation.SUM]);
   });
 
-  it('#change of count rows option should select row count', () => {
+  it('#selection of count rows option should select row count', () => {
 
     // when
-    radioButton('.radio_count_rows').triggerEventHandler('change');
+    findOption(openSelectOptions('Value Mode'), 'Count Rows').click();
 
     // then
     expect(context.aggregations).toEqual([Aggregation.ROW_COUNT]);
     expect(context.dataColumns).toEqual([]);
+  });
+
+  it('selecting current aggregate values option should keep value aggregation', () => {
+
+    // given
+    component.onValueAggregationChanged(Aggregation.MAX);
+    fixture.detectChanges();
+
+    // when
+    findOption(openSelectOptions('Value Mode'), 'Aggregate Values').click();
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.MAX]);
+  });
+
+  it('value mode should show selected aggregation mode', () => {
+
+    // when
+    component.onRowCountSelected();
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.debugElement.query(By.css('.field_aggregation_mode mat-select')).componentInstance.value).toBe('rowCount');
+  });
+
+  it.each<{ mode: AggregationMode; expected: Aggregation[] }>([
+    { mode: 'count', expected: [Aggregation.COUNT] },
+    { mode: 'individual', expected: [] },
+    { mode: 'aggregate', expected: [Aggregation.SUM] },
+    { mode: 'rowCount', expected: [Aggregation.ROW_COUNT] }
+  ])('#onAggregationModeChanged should select $expected for mode $mode', ({ mode, expected }) => {
+
+    // given
+    context.aggregations = [Aggregation.MAX];
+
+    // when
+    component.onAggregationModeChanged(mode);
+
+    // then
+    expect(context.aggregations).toEqual(expected);
+  });
+
+  it('stacked checkbox should be placed in value mode row of non-circular chart', () => {
+
+    // when
+    const fieldRow: HTMLElement = fixture.nativeElement.querySelector('.field_aggregation_mode').closest('.field-row');
+
+    // then
+    expect(fieldRow.querySelector('mat-checkbox')).toBeTruthy();
   });
 
   it('value aggregation field should show selected aggregation', () => {
@@ -1049,15 +1111,13 @@ describe('ChartSideBarComponent - time aggregation', () => {
     // given
     component.onAggregateValuesSelected();
     fixture.detectChanges();
-    fixture.nativeElement.querySelector('.field_value_aggregation .mat-mdc-select-trigger').click();
-    fixture.detectChanges();
-    const options: HTMLElement[] = Array.from(document.querySelectorAll('mat-option'));
+    const options = openSelectOptions('Aggregation');
 
     // when
-    options.find(o => o.textContent.trim() === 'Max').click();
+    findOption(options, 'Max').click();
 
     // then
-    expect(options.map(o => o.textContent.trim())).toEqual(['Average', 'Median', 'Max', 'Min', 'Sum']);
+    expect(optionTexts(options)).toEqual(['Average', 'Median', 'Max', 'Min', 'Sum']);
     expect(context.aggregations).toEqual([Aggregation.MAX]);
   });
 
@@ -1268,10 +1328,6 @@ describe('ChartSideBarComponent - time aggregation', () => {
     component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
     fixture.detectChanges();
   }
-
-  function radioButton(selector: string): DebugElement {
-    return fixture.debugElement.query(By.css(selector));
-  }
 });
 
 describe('ChartSideBarComponent - computed columns', () => {
@@ -1419,10 +1475,23 @@ function formFieldLabels(): string[] {
   return Array.from(fixture.nativeElement.querySelectorAll('mat-form-field mat-label')).map((l: HTMLElement) => l.textContent.trim());
 }
 
-function openSelectOptions(): string[] {
-  fixture.nativeElement.querySelector('.mat-mdc-select-trigger').click();
+function openSelectOptions(label: string): HTMLElement[] {
+  formFields().find(f => f.querySelector('mat-label')?.textContent.trim() === label)
+    .querySelector<HTMLElement>('.mat-mdc-select-trigger').click();
   fixture.detectChanges();
-  return Array.from(document.querySelectorAll('mat-option')).map(o => o.textContent.trim().split(/\s+/).pop());
+  return Array.from(document.querySelectorAll('mat-option'));
+}
+
+function optionTexts(options: HTMLElement[]): string[] {
+  return options.map(o => o.textContent.trim());
+}
+
+function columnNames(options: HTMLElement[]): string[] {
+  return options.map(o => o.textContent.trim().split(/\s+/).pop());
+}
+
+function findOption(options: HTMLElement[], text: string): HTMLElement {
+  return options.find(o => o.textContent.trim() === text);
 }
 
 function findColumn(name: string): Column {

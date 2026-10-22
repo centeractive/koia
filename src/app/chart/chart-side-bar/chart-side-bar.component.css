@@ -69,3 +69,7 @@ mat-form-field {
   width: 100px;
   margin-left: auto;
 }
+
+.field_aggregation_mode {
+  flex: 1;
+}

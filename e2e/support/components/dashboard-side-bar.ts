@@ -55,17 +55,17 @@ export class DashboardSideBar {
    }
 
    /**
-    * the group-by select of the chart, its text is available while its panel is collapsed
+    * the group-by select of the chart (`.field_group_by`), its text is available while its panel is collapsed
     */
    groupByField(): Locator {
-      return this.sidenav.locator('.field-row mat-select').first();
+      return this.sidenav.locator('.field_group_by mat-select');
    }
 
    /**
-    * @param label the label of the aggregation radio button (e.g. 'Count Rows')
+    * @param label the label of the value mode option (e.g. 'Count Rows')
     */
    async chooseAggregation(label: string): Promise<void> {
-      await this.sidenav.getByRole('radio', { name: label, exact: true }).check();
+      await this.selectOption(this.sidenav.locator('.field_aggregation_mode'), label);
    }
 
    async selectValueAggregation(label: string): Promise<void> {
