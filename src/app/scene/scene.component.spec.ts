@@ -472,6 +472,16 @@ describe('SceneComponent', () => {
     expect(formField.classList).toContain('mat-form-field-invalid');
   });
 
+  it('scene name field should limit input to max scene name length', () => {
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('.scene_name input');
+    expect(input.maxLength).toBe(40);
+  });
+
   it('scene name field should not show error when name is unique', () => {
 
     // given

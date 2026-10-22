@@ -92,9 +92,16 @@ export class StringUtils {
     * @returns the specified name or, when it exists, the name with the next free number appended (e.g. "name (2)")
     */
    static uniqueName(name: string, existingNames: Set<string>): string {
-      let uniqueName = name;
+      return StringUtils.uniqueNameOf(suffix => name + suffix, existingNames);
+   }
+
+   /**
+    * @param nameOf creates the name with the given number suffix, which is empty for the first candidate
+    */
+   static uniqueNameOf(nameOf: (suffix: string) => string, existingNames: Set<string>): string {
+      let uniqueName = nameOf('');
       for (let i = 2; existingNames.has(uniqueName); i++) {
-         uniqueName = name + ' (' + i + ')';
+         uniqueName = nameOf(' (' + i + ')');
       }
       return uniqueName;
    }

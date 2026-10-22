@@ -5,6 +5,7 @@ import { DatePipe } from '@angular/common';
 describe('SceneUtils', () => {
 
    const datePipe = new DatePipe('en-US');
+   const lastModified = new Date(2026, 9, 22).getTime();
    const tableData = [
       ['1', 'X', 'true'],
       ['2', 'Y', 'false'],
@@ -29,7 +30,7 @@ describe('SceneUtils', () => {
       const file = createFile();
 
       // when
-      const name = SceneUtils.generateSceneName(dataReader, file);
+      const name = SceneUtils.generateSceneName(dataReader, file, new Set());
 
       // then
       const formattedDate = datePipe.transform(file.lastModified, 'mediumDate');
@@ -43,10 +44,65 @@ describe('SceneUtils', () => {
       const file = { name: 'test.txt' } as File;
 
       // when
-      const name = SceneUtils.generateSceneName(dataReader, file);
+      const name = SceneUtils.generateSceneName(dataReader, file, new Set());
 
       // then
       expect(name).toBe('test');
+   });
+
+   it('#generateSceneName should append number suffix when name is taken', () => {
+
+      // given
+      const dataReader = { getFileExtension: () => '.txt' } as DataReader;
+      const file = new File([''], 'test.txt', { lastModified });
+
+      // when
+      const name = SceneUtils.generateSceneName(dataReader, file, new Set(['test / Oct 22, 2026']));
+
+      // then
+      expect(name).toBe('test / Oct 22, 2026 (2)');
+   });
+
+   it('#generateSceneName should abbreviate file name to keep date within max length', () => {
+
+      // given
+      const dataReader = { getFileExtension: () => '.txt' } as DataReader;
+      const file = new File([''], 'x'.repeat(50) + '.txt', { lastModified });
+
+      // when
+      const name = SceneUtils.generateSceneName(dataReader, file, new Set());
+
+      // then
+      expect(name).toBe('x'.repeat(22) + '... / Oct 22, 2026');
+      expect(name.length).toBe(SceneUtils.SCENE_NAME_MAX_LENGTH);
+   });
+
+   it('#generateSceneName should abbreviate file name to max length when file modification date is not available', () => {
+
+      // given
+      const dataReader = { getFileExtension: () => '.txt' } as DataReader;
+      const file = { name: 'x'.repeat(50) + '.txt' } as File;
+
+      // when
+      const name = SceneUtils.generateSceneName(dataReader, file, new Set());
+
+      // then
+      expect(name).toBe('x'.repeat(37) + '...');
+      expect(name.length).toBe(SceneUtils.SCENE_NAME_MAX_LENGTH);
+   });
+
+   it('#generateSceneName should abbreviate file name to keep number suffix within max length', () => {
+
+      // given
+      const dataReader = { getFileExtension: () => '.txt' } as DataReader;
+      const file = new File([''], 'x'.repeat(50) + '.txt', { lastModified });
+
+      // when
+      const name = SceneUtils.generateSceneName(dataReader, file, new Set(['x'.repeat(22) + '... / Oct 22, 2026']));
+
+      // then
+      expect(name).toBe('x'.repeat(18) + '... / Oct 22, 2026 (2)');
+      expect(name.length).toBe(SceneUtils.SCENE_NAME_MAX_LENGTH);
    });
 
    it('#generateSceneDescription should return description when file modification date is available', () => {

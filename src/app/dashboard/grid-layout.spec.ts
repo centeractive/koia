@@ -139,58 +139,67 @@ describe('GridLayout', () => {
       expect(column).toBe(2);
     });
 
-    it('#coveredSpansOf should keep cells while edge stays within them', () => {
+    it('#resizedSpansOf should not cover next cell before edge reaches its middle', () => {
 
       // when
-      const spans = gridLayout.coveredSpansOf(390, 590, 0, contentWidth);
+      const spans = gridLayout.resizedSpansOf(294, 294, 0, contentWidth);
 
       // then
-      expect(spans).toEqual({ columnSpan: 2, rowSpan: 3 });
+      expect(spans).toEqual({ columnSpan: 1, rowSpan: 1 });
     });
 
-    it('#coveredSpansOf should keep cells while edge is in gap', () => {
+    it('#resizedSpansOf should cover next cell when edge reaches its middle', () => {
 
       // when
-      const spans = gridLayout.coveredSpansOf(399, 399, 0, contentWidth);
+      const spans = gridLayout.resizedSpansOf(295, 295, 0, contentWidth);
 
       // then
       expect(spans).toEqual({ columnSpan: 2, rowSpan: 2 });
     });
 
-    it('#coveredSpansOf should grow as soon as edge enters next cell', () => {
+    it('#resizedSpansOf should release last cell when edge passes back before its middle', () => {
 
       // when
-      const spans = gridLayout.coveredSpansOf(401, 401, 0, contentWidth);
+      const spans = gridLayout.resizedSpansOf(494, 494, 0, contentWidth);
 
       // then
-      expect(spans).toEqual({ columnSpan: 3, rowSpan: 3 });
+      expect(spans).toEqual({ columnSpan: 2, rowSpan: 2 });
     });
 
-    it('#coveredSpansOf should limit column span to columns right of start column', () => {
+    it('#resizedSpansOf should keep at least one cell', () => {
 
       // when
-      const spans = gridLayout.coveredSpansOf(790, 190, 2, contentWidth);
+      const spans = gridLayout.resizedSpansOf(10, 10, 0, contentWidth);
+
+      // then
+      expect(spans).toEqual({ columnSpan: 1, rowSpan: 1 });
+    });
+
+    it('#resizedSpansOf should limit column span to columns right of start column', () => {
+
+      // when
+      const spans = gridLayout.resizedSpansOf(790, 190, 2, contentWidth);
 
       // then
       expect(spans).toEqual({ columnSpan: 2, rowSpan: 1 });
     });
 
-    it('#coveredSpansOf should limit row span to max row span', () => {
+    it('#resizedSpansOf should limit row span to max row span', () => {
 
       // when
-      const spans = gridLayout.coveredSpansOf(190, 2000, 0, contentWidth);
+      const spans = gridLayout.resizedSpansOf(190, 2000, 0, contentWidth);
 
       // then
       expect(spans).toEqual({ columnSpan: 1, rowSpan: 4 });
     });
 
-    it('#coveredSpansOf should consider cell ratio', () => {
+    it('#resizedSpansOf should consider cell ratio', () => {
 
       // given
       gridLayout.gridCellRatio = '2:1';
 
       // when
-      const spans = gridLayout.coveredSpansOf(190, 106, 0, contentWidth);
+      const spans = gridLayout.resizedSpansOf(190, 153, 0, contentWidth);
 
       // then
       expect(spans).toEqual({ columnSpan: 1, rowSpan: 2 });
