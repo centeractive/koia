@@ -5,6 +5,7 @@ export * from './route.enum';
 export * from './canvas-paging.enum';
 export * from './document.type';
 export * from './scene-info.type';
+export * from './scene-labels.type';
 export * from './scene.type';
 export * from './scene-activation.type';
 export * from './context-info.type';

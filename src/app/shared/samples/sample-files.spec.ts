@@ -29,6 +29,15 @@ describe('sample files', () => {
             ['rows', 'cols', 'vals'].includes(key) ? value.length : value);
    }
 
+   it('sample scene ids should differ per language', () => {
+
+      // when
+      const sceneIds = new Set(languages.map(l => fruitSalesSampleOf(l).sceneId));
+
+      // then
+      expect(sceneIds.size).toBe(languages.length);
+   });
+
    languages.forEach(language => describe(language, () => {
 
       const def = fruitSalesSampleOf(language);

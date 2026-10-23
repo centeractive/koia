@@ -55,6 +55,68 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scenes.rows).toContainText(fruitSalesSampleOf('en').sceneName);
    });
 
+   test('edited scene keeps its data and shows new name and description', async ({ scenes, rawData }) => {
+      const message = await scenes.edit(ORDERS_CSV.name, 'renamed orders', 'edited description');
+
+      expect(message).toBe(en.get('scenes.sceneUpdated'));
+
+      await scenes.activate('renamed orders');
+
+      await expect(rawData.table.rowCount).toHaveText(en.rows(ORDERS_CSV.rowCount));
+
+      await rawData.mainToolbar.openScenes();
+
+      await expect(scenes.rows.first()).toContainText('renamed orders');
+      await expect(scenes.rows.first()).toContainText('edited description');
+   });
+
+   test('edit rejects name of other scene', async ({ scenes }) => {
+      await scenes.startEdit(ORDERS_CSV.name);
+      await scenes.editNameInput.fill(fruitSalesSampleOf('en').sceneName);
+
+      await expect(scenes.editNameError).toHaveText(en.get('scene.nameExists'));
+      await expect(scenes.saveEditButton).toBeDisabled();
+   });
+
+   test('edit row does not scroll while table container keeps horizontal scroll', async ({ scenes }) => {
+      await scenes.startEdit(ORDERS_CSV.name);
+
+      await expect(scenes.editRow).toHaveCSS('overflow-x', 'visible');
+      await expect(scenes.editRow).toHaveCSS('overflow-y', 'visible');
+      await expect(scenes.tableContainer).toHaveCSS('overflow-x', 'auto');
+   });
+
+   test('renamed sample scene is reopened instead of imported again', async ({ front, scenes, rawData }) => {
+      const sample = fruitSalesSampleOf('en');
+
+      await scenes.edit(sample.sceneName, 'my fruits');
+      await front.open('en');
+      await front.openSample();
+
+      await expect(rawData.table.rowCount).toHaveText(en.rows(sample.rowCount));
+
+      await rawData.mainToolbar.openScenes();
+
+      await expect(scenes.rows).toHaveCount(2);
+      await expect(scenes.rows.filter({ hasText: 'my fruits' })).toHaveCount(1);
+      await expect(scenes.rows.filter({ hasText: sample.sceneName })).toHaveCount(0);
+   });
+
+   test('deleted sample scene is imported again when reopened', async ({ front, scenes, rawData }) => {
+      const sample = fruitSalesSampleOf('en');
+
+      await scenes.delete(sample.sceneName);
+      await front.open('en');
+      await front.openSample();
+
+      await expect(rawData.table.rowCount).toHaveText(en.rows(sample.rowCount));
+
+      await rawData.mainToolbar.openScenes();
+
+      await expect(scenes.rows).toHaveCount(2);
+      await expect(scenes.rows.filter({ hasText: sample.sceneName })).toHaveCount(1);
+   });
+
    test('new scene with file of existing scene gets numbered name and rejects existing name', async ({ scenes, rawData, scene }) => {
       await scenes.activate(ORDERS_CSV.name);
       await rawData.mainToolbar.addScene();

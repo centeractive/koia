@@ -167,6 +167,7 @@
     "more": "mehr...",
     "no": "Nein",
     "ok": "OK",
+    "save": "Speichern",
     "yes": "Ja"
   },
   "scene": {
@@ -263,9 +264,11 @@
     "deleteAllTitle": "Alle Szenen löschen",
     "deleteConfirm": "Wollen Sie wirklich {{count}} Szene(n) löschen?",
     "sceneDeleted": "Szene wurde gelöscht",
+    "sceneUpdated": "Szene wurde aktualisiert",
     "scenesDeleted": "{{count}} Szenen wurden gelöscht",
     "scenesDeletedOne": "{{count}} Szene wurde gelöscht",
     "showDetails": "Details anzeigen",
+    "edit": "Name und Beschreibung bearbeiten",
     "activate": "Szene aktivieren",
     "continueActive": "Mit aktiver Szene fortfahren",
     "active": "Aktiv",

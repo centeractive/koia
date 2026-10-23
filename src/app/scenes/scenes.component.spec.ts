@@ -439,6 +439,51 @@ describe('ScenesComponent', () => {
     expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.RAWDATA);
   });
 
+  it('should pass names of all scenes to scene table when filtered', () => {
+
+    // given
+    component.filter = '1';
+    component.onFilterChange();
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(sceneTable().existingSceneNames).toEqual(new Set(['Scene 1', 'Scene 2', 'Scene 3']));
+  });
+
+  it('#onEdit of scene table should update scene labels, reload data and notify success', fakeAsync(() => {
+
+    // given
+    const labels = { _id: '2', name: 'new name', shortDescription: 'new description' };
+    vi.spyOn(dbService, 'updateSceneLabels').mockResolvedValue(undefined);
+    vi.mocked(findSceneInfosSpy).mockClear();
+
+    // when
+    sceneTable().onEdit.emit(labels);
+    flush();
+
+    // then
+    expect(dbService.updateSceneLabels).toHaveBeenCalledWith(labels);
+    expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
+    expect(notificationService.onSuccess).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'Scene has been updated');
+  }));
+
+  it('#onEdit of scene table should notify error and reload data when update fails', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'updateSceneLabels').mockRejectedValue('conflict');
+    vi.mocked(findSceneInfosSpy).mockClear();
+
+    // when
+    sceneTable().onEdit.emit({ _id: '2', name: 'new name', shortDescription: 'new description' });
+    flush();
+
+    // then
+    expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'conflict');
+  }));
+
   it('#click on cancel button should navigate to previous page', () => {
 
     // given
@@ -452,6 +497,10 @@ describe('ScenesComponent', () => {
     // then
     expect(location.back).toHaveBeenCalled();
   });
+
+  function sceneTable(): SceneTableComponent {
+    return fixture.debugElement.query(By.directive(SceneTableComponent)).componentInstance;
+  }
 
   function rowNames(): string[] {
     return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row .scene-name'))

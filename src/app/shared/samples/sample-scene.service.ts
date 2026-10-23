@@ -3,6 +3,7 @@ import { Scene } from 'app/shared/model';
 import { TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { LanguageService } from 'app/shared/services/language';
+import { StringUtils } from 'app/shared/utils';
 import { SampleDef } from './fruit-sales.sample';
 import { SampleData, toEntries } from './sample-data';
 
@@ -16,10 +17,12 @@ export class SampleSceneService {
    constructor(private dbService: DBService) { }
 
    /**
-    * activates the sample scene, inserts it into the database before when it does not exist yet or was imported incompletely
+    * activates the sample scene identified by its fixed id, inserts it (named uniquely) into the database before when it does not
+    * exist yet or was imported incompletely
     */
    async open(sample: SampleDef): Promise<void> {
-      const sceneInfo = (await this.dbService.findSceneInfos()).find(si => si.name === sample.sceneName);
+      const sceneInfos = await this.dbService.findSceneInfos();
+      const sceneInfo = sceneInfos.find(si => si._id === sample.sceneId);
       if (sceneInfo) {
          if (this.dbService.getActiveScene()?._id !== sceneInfo._id) {
             await this.dbService.activateScene(sceneInfo._id);
@@ -30,7 +33,8 @@ export class SampleSceneService {
          console.warn('sample scene was imported incompletely and is imported again');
          await this.dbService.deleteScene(sceneInfo);
       }
-      await this.insert(await this.fetchSampleData(sample));
+      const otherSceneNames = new Set(sceneInfos.filter(si => si._id !== sample.sceneId).map(si => si.name));
+      await this.insert(sample.sceneId, otherSceneNames, await this.fetchSampleData(sample));
    }
 
    private async fetchSampleData(sample: SampleDef): Promise<SampleData> {
@@ -42,11 +46,14 @@ export class SampleSceneService {
    }
 
    /**
-    * activates the scene not before its entries and tabs are persisted, a scene that cannot be completed is deleted again
+    * activates the scene not before its entries and tabs are persisted, a scene that was inserted but cannot be completed is
+    * deleted again
     */
-   private async insert(data: SampleData): Promise<void> {
+   private async insert(sceneId: string, otherSceneNames: Set<string>, data: SampleData): Promise<void> {
       const scene: Scene = {
          ...data.scene,
+         _id: sceneId,
+         name: StringUtils.uniqueName(data.scene.name, otherSceneNames),
          creationTime: new Date().getTime(),
          database: await this.dbService.findFreeDatabaseName()
       };
@@ -59,7 +66,7 @@ export class SampleSceneService {
          await this.saveTabs(scene, data.tabs);
          await this.dbService.activateScene(scene._id);
       } catch (err) {
-         if (scene._id) {
+         if (scene._rev) {
             await this.dbService.deleteScene(scene).catch(e => console.warn('incomplete sample scene cannot be deleted', e));
          }
          throw err;

@@ -167,6 +167,7 @@
     "more": "その他...",
     "no": "いいえ",
     "ok": "OK",
+    "save": "保存",
     "yes": "はい"
   },
   "scene": {
@@ -263,9 +264,11 @@
     "deleteAllTitle": "すべてのシーンを削除",
     "deleteConfirm": "{{count}} 件のシーンを削除してもよろしいですか？",
     "sceneDeleted": "シーンを削除しました",
+    "sceneUpdated": "シーンを更新しました",
     "scenesDeleted": "{{count}} 件のシーンを削除しました",
     "scenesDeletedOne": "{{count}} 件のシーンを削除しました",
     "showDetails": "詳細を表示",
+    "edit": "名前と説明を編集",
     "activate": "シーンをアクティブにする",
     "continueActive": "アクティブなシーンで続ける",
     "active": "アクティブ",

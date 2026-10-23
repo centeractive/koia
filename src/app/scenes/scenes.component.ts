@@ -1,6 +1,6 @@
 import { LanguageService } from 'app/shared/services/language';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { SceneInfo, Route, Scene } from 'app/shared/model';
+import { SceneInfo, SceneLabels, Route, Scene } from 'app/shared/model';
 import { Router } from '@angular/router';
 import { NotificationService, DialogService } from 'app/shared/services';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
@@ -25,6 +25,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   activeScene: Scene;
   filter = '';
   filteredSceneInfos: SceneInfo[] = [];
+  sceneNames = new Set<string>();
 
   private sceneInfos: SceneInfo[] = [];
 
@@ -55,16 +56,12 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
       .catch(err => this.notifyError(err));
   }
 
+  updateLabels(labels: SceneLabels): void {
+    this.reloadAfter(this.dbService.updateSceneLabels(labels), LanguageService.instant('scenes.sceneUpdated'));
+  }
+
   delete(sceneInfo: SceneInfo) {
-    this.dbService.deleteScene(sceneInfo)
-      .then(() => {
-        this.loadData();
-        this.notifySuccess(LanguageService.instant('scenes.sceneDeleted'));
-      })
-      .catch(err => {
-        this.loadData();
-        this.notifyError(err);
-      });
+    this.reloadAfter(this.dbService.deleteScene(sceneInfo), LanguageService.instant('scenes.sceneDeleted'));
   }
 
   onDeleteScenesButtonPressed(): void {
@@ -80,12 +77,15 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   }
 
   private deleteScenes(sceneInfos: SceneInfo[]): void {
-    const promises = sceneInfos.map(si => this.dbService.deleteScene(si));
-    Promise.all(promises)
+    this.reloadAfter(Promise.all(sceneInfos.map(si => this.dbService.deleteScene(si))),
+      LanguageService.instant(sceneInfos.length === 1 ? 'scenes.scenesDeletedOne' : 'scenes.scenesDeleted', { count: sceneInfos.length }));
+  }
+
+  private reloadAfter(change: Promise<unknown>, successMessage: string): void {
+    change
       .then(() => {
-        this.notifySuccess(LanguageService.instant(sceneInfos.length === 1 ? 'scenes.scenesDeletedOne' : 'scenes.scenesDeleted',
-          { count: sceneInfos.length }));
         this.loadData();
+        this.notifySuccess(successMessage);
       })
       .catch(err => {
         this.loadData();
@@ -99,6 +99,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
       .then(([sceneInfos, activationTimes]) => {
         if (sceneInfos && sceneInfos.length > 0) {
           this.sceneInfos = orderSceneInfos(sceneInfos, activationTimes, this.activeScene?._id);
+          this.sceneNames = new Set(sceneInfos.map(si => si.name));
           this.filteredSceneInfos = this.filterSceneInfos();
         } else {
           this.router.navigateByUrl(Route.SCENE);

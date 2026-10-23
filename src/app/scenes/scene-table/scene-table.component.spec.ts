@@ -1,9 +1,11 @@
 import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { By } from '@angular/platform-browser';
@@ -24,6 +26,7 @@ let component: SceneTableComponent;
 let onActivateEmitSpy: Mock;
 let onContinueEmitSpy: Mock;
 let onDeleteEmitSpy: Mock;
+let onEditEmitSpy: Mock;
 
 describe('SceneTableComponent', () => {
 
@@ -41,6 +44,7 @@ describe('SceneTableComponent', () => {
     vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
     component.sceneInfos = scenes;
     component.activeScene = scenes[0];
+    component.existingSceneNames = new Set(scenes.map(s => s.name));
     fixture.detectChanges();
   });
 
@@ -187,6 +191,190 @@ describe('SceneTableComponent', () => {
     expect(onDeleteEmitSpy).toHaveBeenCalledWith(scenes[2]);
   }));
 
+  it('#selecting "Edit" menu item should show name and short description inputs of scene', fakeAsync(() => {
+
+    // when
+    startEditOf(1);
+
+    // then
+    expect(nameInput().value).toBe(scenes[1].name);
+    expect(descriptionInput().value).toBe(scenes[1].shortDescription);
+    expect(rows()[1].querySelector('.scene-name')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.edit_name').length).toBe(1);
+  }));
+
+  it('name input should limit input to max scene name length', fakeAsync(() => {
+
+    // when
+    startEditOf(1);
+
+    // then
+    expect(nameInput().maxLength).toBe(40);
+  }));
+
+  it('#click on save button should emit trimmed labels and end editing', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+    typeInto(nameInput(), ' new name ');
+
+    // when
+    saveButton().click();
+    fixture.detectChanges();
+
+    // then
+    expect(onEditEmitSpy).toHaveBeenCalledWith({ _id: '2', name: 'new name', shortDescription: scenes[1].shortDescription });
+    expect(fixture.nativeElement.querySelector('.edit_name')).toBeNull();
+  }));
+
+  it('save button should be disabled when nothing changed', fakeAsync(() => {
+
+    // when
+    startEditOf(1);
+
+    // then
+    expect(saveButton().disabled).toBe(true);
+  }));
+
+  it('enter in short description input should save changes', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+    typeInto(descriptionInput(), ' new desc ');
+
+    // when
+    pressKey(descriptionInput(), 'Enter');
+
+    // then
+    expect(onEditEmitSpy).toHaveBeenCalledWith({ _id: '2', name: scenes[1].name, shortDescription: 'new desc' });
+    expect(fixture.nativeElement.querySelector('.edit_name')).toBeNull();
+  }));
+
+  it('enter should not emit when changes are not savable', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+    typeInto(nameInput(), '');
+
+    // when
+    pressKey(nameInput(), 'Enter');
+
+    // then
+    expect(onEditEmitSpy).not.toHaveBeenCalled();
+    expect(nameInput()).not.toBeNull();
+  }));
+
+  it('escape should end editing without emitting', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+    typeInto(nameInput(), 'x');
+
+    // when
+    pressKey(nameInput(), 'Escape');
+
+    // then
+    expect(onEditEmitSpy).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('.edit_name')).toBeNull();
+  }));
+
+  it('#click on cancel button should end editing without emitting', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+    typeInto(nameInput(), 'x');
+
+    // when
+    fixture.nativeElement.querySelector('.but_cancel_edit').click();
+    fixture.detectChanges();
+
+    // then
+    expect(onEditEmitSpy).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('.edit_name')).toBeNull();
+  }));
+
+  it('active chip should stay visible while active scene is edited', fakeAsync(() => {
+
+    // when
+    startEditOf(0);
+
+    // then
+    expect(rows()[0].querySelector('.edit_name')).not.toBeNull();
+    expect(rows()[0].querySelector('.active-chip')).not.toBeNull();
+  }));
+
+  it('should show name exists error when name of other scene is entered', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+
+    // when
+    typeInto(nameInput(), scenes[2].name);
+
+    // then
+    expect(fixture.nativeElement.querySelector('.edit_name mat-error').textContent).toBe('Scene name already exists');
+    expect(saveButton().disabled).toBe(true);
+  }));
+
+  it('should show too long error when changed name exceeds max length', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+
+    // when
+    component.edit.name = 'y'.repeat(41);
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.edit_name mat-error').textContent).toBe('Name must not exceed 40 characters');
+  }));
+
+  it('#selecting "Edit" on other row should replace current edit', fakeAsync(() => {
+
+    // given
+    startEditOf(1);
+
+    // when
+    startEditOf(2);
+
+    // then
+    expect(fixture.nativeElement.querySelectorAll('.edit_name').length).toBe(1);
+    expect(rows()[2].querySelector('.edit_name')).not.toBeNull();
+    expect(nameInput().value).toBe(scenes[2].name);
+  }));
+
+  function startEditOf(rowIndex: number): void {
+    rows()[rowIndex].querySelector<HTMLButtonElement>('.but_more').click();
+    fixture.detectChanges();
+    fixture.debugElement.query(By.css('.menu_item_edit')).nativeElement.click();
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+  }
+
+  function typeInto(input: HTMLInputElement, value: string): void {
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+  }
+
+  function pressKey(input: HTMLInputElement, key: string): void {
+    input.dispatchEvent(new KeyboardEvent('keydown', { key }));
+    fixture.detectChanges();
+  }
+
+  function nameInput(): HTMLInputElement {
+    return fixture.nativeElement.querySelector('.edit_name input');
+  }
+
+  function descriptionInput(): HTMLInputElement {
+    return fixture.nativeElement.querySelector('.edit_desc input');
+  }
+
+  function saveButton(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('.but_save_edit');
+  }
+
   function rows(): HTMLElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row'));
   }
@@ -195,7 +383,8 @@ describe('SceneTableComponent', () => {
 async function setup(): Promise<void> {
   await TestBed.configureTestingModule({
     declarations: [SceneTableComponent],
-    imports: [MatBottomSheetModule, MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
+    imports: [MatBottomSheetModule, MatDialogModule, MatMenuModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule,
+      FormsModule, MatInputModule],
     providers: [Location,
       { provide: DBService, useValue: dbService },
       { provide: DialogService, useValue: dialogService },
@@ -208,4 +397,5 @@ async function setup(): Promise<void> {
   onActivateEmitSpy = vi.spyOn(component.onActivate, 'emit').mockReturnValue(undefined);
   onContinueEmitSpy = vi.spyOn(component.onContinue, 'emit').mockReturnValue(undefined);
   onDeleteEmitSpy = vi.spyOn(component.onDelete, 'emit').mockReturnValue(undefined);
+  onEditEmitSpy = vi.spyOn(component.onEdit, 'emit').mockReturnValue(undefined);
 }
