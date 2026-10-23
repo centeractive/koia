@@ -109,7 +109,8 @@ describe('DashboardGenerator', () => {
   }
 
   function isTimeChart(context: ChartContext): boolean {
-    return [ChartType.LINE.type, ChartType.AREA.type].includes(context.chartType) && context.groupByColumns[0]?.dataType === DataType.TIME;
+    return [ChartType.LINE.type, ChartType.AREA.type, ChartType.LINEAR_BAR.type].includes(context.chartType)
+      && context.groupByColumns[0]?.dataType === DataType.TIME;
   }
 
   function charts(result: GeneratedDashboard): ChartContext[] {
@@ -128,6 +129,17 @@ describe('DashboardGenerator', () => {
       return valid(context, () => isValid.call(this, context));
     });
     return contexts;
+  }
+
+  function generateSpecsMatching(matches: (spec: TileSpec) => boolean): void {
+    const generate = TileSpecGenerator.prototype.generate;
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
+      return generate.call(this, profiles, randomizer, combinations).filter(matches);
+    });
+  }
+
+  function generateWithoutUngroupedTables(): void {
+    generateSpecsMatching(s => !!s.chartType || s.groupByColumns.length > 0);
   }
 
   function colorOptionsOf(scheme: CategoricalColorScheme, bgColorOpacity = 0.75): ColorOptions {
@@ -166,10 +178,10 @@ describe('DashboardGenerator', () => {
   it('#generate should return undefined when qualifying columns allow no tile', () => {
 
     // given
-    const entries = Array.from({ length: 10 }, (_, i) => ({ Amount: (i % 4) * 10 }));
+    const entries = monthsOf(24).map(time => ({ Time: time }));
 
     // when
-    const result = generatorOf().generate(requestOf([AMOUNT], entries));
+    const result = generatorOf().generate(requestOf([TIME], entries));
 
     // then
     expect(result).toBeUndefined();
@@ -413,7 +425,7 @@ describe('DashboardGenerator', () => {
     const validated = spyIsValid(() => false);
 
     // when
-    const result = generatorOf().generate(requestOf([LEVEL], ENTRIES));
+    const result = generatorOf().generate(requestOf([TIME], ENTRIES));
 
     // then
     expect(validated.length).toBeGreaterThan(0);
@@ -488,10 +500,10 @@ describe('DashboardGenerator', () => {
   it('#generate should generate without summary table when no table spec exists', () => {
 
     // given
-    const entries = monthsOf(24).flatMap(time => Array.from({ length: 30 }, (_, k) => ({ Level: 'L' + (k % 5), Time: time })));
+    const entries = monthsOf(24).flatMap(time => Array.from({ length: 30 }, () => ({ Time: time })));
 
     // when
-    const result = generatorOf().generate(requestOf([LEVEL, TIME], entries));
+    const result = generatorOf().generate(requestOf([TIME], entries));
 
     // then
     expect(result.elementContexts.length).toBeGreaterThan(0);
@@ -592,6 +604,7 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(5);
+    generateWithoutUngroupedTables();
     vi.spyOn(TileSpecGenerator.prototype, 'graphGroupings').mockReturnValue([]);
     spyIsValid((context, isValid) => context.chartType === ChartType.PIE.type && context.dataColumns[0].name === 'Level' && isValid());
 
@@ -661,7 +674,9 @@ describe('DashboardGenerator', () => {
       expect(c.groupByColumns).toEqual([]);
       expect(c.aggregations).toEqual([Aggregation.COUNT]);
     });
-    expect(result.elementContexts.some(c => c instanceof SummaryContext)).toBe(false);
+    const tables = result.elementContexts.filter(c => c instanceof SummaryContext);
+    expect(tables.length).toBeGreaterThan(0);
+    tables.forEach(t => expect(t.groupByColumns).toEqual([]));
   });
 
   it('#generate should place time chart, summary table and charts of sparse log data filling the grid of every resolution', () => {
@@ -680,7 +695,8 @@ describe('DashboardGenerator', () => {
         expect(isTimeChart(first)).toBe(true);
         expect(first.gridColumnSpan).toBe(columns);
         const tables = result.elementContexts.filter(c => c instanceof SummaryContext);
-        expect(tables.map(t => t.gridColumnSpan)).toEqual([2]);
+        expect([1, 2]).toContain(tables.length);
+        tables.forEach(t => expect(t.gridColumnSpan).toBe(2));
         expect(charts(result).length).toBeGreaterThan(1);
         expectFilled(result);
       }
@@ -885,6 +901,7 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(5);
+    generateWithoutUngroupedTables();
     spyIsValid((context, isValid) => context.chartType === ChartType.PIE.type && context.dataColumns[0].name === 'Level' && isValid());
 
     // when
@@ -904,6 +921,7 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(4);
+    generateWithoutUngroupedTables();
     const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: i % 6 }));
 
     // when
@@ -923,10 +941,7 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(5);
-    const generate = TileSpecGenerator.prototype.generate;
-    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
-      return generate.call(this, profiles, randomizer, combinations).filter(s => s.chartType && !s.groupByColumns.length);
-    });
+    generateSpecsMatching(s => !!s.chartType && !s.groupByColumns.length);
     const signatures = new Set<string>();
     const validated = spyIsValid(context => {
       const signature = TileSignature.ofContext(context);
@@ -946,6 +961,7 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(5);
+    generateWithoutUngroupedTables();
     const graphGroupings = vi.spyOn(TileSpecGenerator.prototype, 'graphGroupings');
 
     // when
@@ -955,6 +971,68 @@ describe('DashboardGenerator', () => {
     expect(graphGroupings).toHaveReturnedWith([]);
     expect(graphsOf(result)).toEqual([]);
     expect(cellsOf(result).length).toBeLessThan(rowsOf(5));
+  });
+
+  it('#generate should include summary table and sampled scatter for many yearly values of two measures', () => {
+
+    // given
+    const ch4: Column = { name: 'CH4', dataType: DataType.NUMBER, width: 10 };
+    const co2: Column = { name: 'CO2', dataType: DataType.NUMBER, width: 10 };
+    const entries = Array.from({ length: 1500 }, (_, i) => ({ Time: new Date(500 + i, 0, 1).getTime(), CH4: 600 + i % 97, CO2: 270 + i % 41 }));
+
+    // when
+    const result = generatorOf().generate(requestOf([TIME, ch4, co2], entries));
+
+    // then
+    expect(result.elementContexts.some(c => c instanceof SummaryContext)).toBe(true);
+    const scatters = charts(result).filter(c => c.chartType === ChartType.SCATTER.type);
+    expect(scatters.length).toBeGreaterThan(0);
+    expect(scatters.every(c => c.dataSampledDown)).toBe(true);
+  });
+
+  it('#generate should accept other chart types of accepted signatures before exceeding charts per chart type', () => {
+
+    // given
+    chooseGridOf(5);
+    const name: Column = { name: 'Name', dataType: DataType.TEXT, width: 10 };
+    const measures: Column[] = ['M1', 'M2', 'M3'].map(n => ({ name: n, dataType: DataType.NUMBER, width: 10 }));
+    const entries = Array.from({ length: 6 }, (_, i) => ({ Name: ['A', 'B', 'C'][i % 3], M1: i * 10, M2: i * 7 % 6, M3: 50 - i * 3 }));
+    const accepted: ChartContext[] = [];
+    spyIsValid((context, isValid) => {
+      const valid = isValid();
+      if (valid) {
+        accepted.push(context);
+      }
+      return valid;
+    });
+
+    // when
+    generatorOf().generate(requestOf([name, ...measures], entries));
+
+    // then
+    const signatures = accepted.map(c => TileSignature.ofContext(c));
+    const firstVariant = signatures.findIndex((s, i) => signatures.indexOf(s) < i);
+    expect(firstVariant).toBeGreaterThan(0);
+    const typesBeforeVariants = accepted.slice(0, firstVariant).map(c => c.chartType);
+    typesBeforeVariants.forEach(t =>
+      expect(typesBeforeVariants.filter(u => u === t).length).toBeLessThanOrEqual(DashboardGenerator.MAX_CHARTS_PER_TYPE));
+  });
+
+  it('#generate should fill remaining cells with charts of full chart types when no other chart type is valid', () => {
+
+    // given
+    chooseGridOf(4);
+    generateSpecsMatching(s => s.chartType === ChartType.SCATTER);
+    const measures: Column[] = ['M1', 'M2', 'M3', 'M4'].map(n => ({ name: n, dataType: DataType.NUMBER, width: 10 }));
+    const entries = Array.from({ length: 12 }, (_, i) => ({ M1: i, M2: i * 7 % 12, M3: 30 - i * 2, M4: i * i % 11 }));
+
+    // when
+    const result = generatorOf().generate(requestOf(measures, entries));
+
+    // then
+    expect(charts(result).length).toBeGreaterThan(DashboardGenerator.MAX_CHARTS_PER_TYPE);
+    charts(result).forEach(c => expect(c.chartType).toBe(ChartType.SCATTER.type));
+    expectFilled(result);
   });
 
   it('#generate should not repeat time chart feature in other chart type', () => {

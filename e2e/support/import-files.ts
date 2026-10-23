@@ -33,6 +33,8 @@ export const LOG_LEVELS_JSON = jsonFile(resolve(E2E_DATA_DIR, 'log-levels.json')
 
 export const SEMICOLON_ORDERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-semicolon.csv'), [DataType.TEXT, DataType.NUMBER, DataType.TIME], ';');
 
+export const MONTHLY_TWO_MEASURES_CSV = csvFile(resolve(E2E_DATA_DIR, 'monthly-two-measures.csv'), [DataType.TIME, DataType.NUMBER, DataType.NUMBER]);
+
 function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFile {
    const [columns, ...rows] = Papa.parse<string[]>(readFileSync(path, 'utf-8'), { delimiter: separator, skipEmptyLines: true }).data;
    return { path, name: basename(path, extname(path)), sourceName: SourceName.CSV, columns, rowCount: rows.length, dataTypes, separator };

@@ -110,6 +110,15 @@ export class DashboardSideBar {
    }
 
    /**
+    * @returns the chart type whose button is highlighted, once the side bar shows the chart types
+    */
+   async selectedChartType(): Promise<ChartType> {
+      await expect(this.sidenav.locator('.but_chart_type.mat-accent')).toHaveCount(1);
+      const classNames = await this.sidenav.locator('.but_chart_type').evaluateAll(buttons => buttons.map(b => b.className));
+      return ChartType.ALL[classNames.findIndex(c => /\bmat-accent\b/.test(c))];
+   }
+
+   /**
     * the side bar is opened in push mode, its backdrop covers the elements
     */
    async close(): Promise<void> {

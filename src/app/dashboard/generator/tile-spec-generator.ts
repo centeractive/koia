@@ -4,10 +4,9 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { CategoryCombinationCounter } from './category-combination-counter';
 import { ColumnProfile, ColumnRole } from './column-profile';
 import { Randomizer } from './randomizer';
-import { TileSignature } from './tile-signature';
+import { SummarySpecGenerator } from './summary-spec-generator';
 import { TileSize, TileSpec } from './tile-spec';
-
-type SpecFields = Pick<TileSpec, 'dataColumns' | 'aggregations' | 'size'> & Partial<Omit<TileSpec, 'signature' | 'key'>>;
+import { pairsOf, tileSpecOf } from './tile-spec-builder';
 
 /**
  * creates the candidate tile specs of all recipes that apply to the profiled columns
@@ -16,18 +15,9 @@ export class TileSpecGenerator {
 
   static readonly MAX_SERIES = 6;
   static readonly MAX_AXIS_CATEGORIES = 12;
-  static readonly MAX_TABLE_ROWS = 24;
-  static readonly MAX_HIERARCHY_ROWS = 60;
-  static readonly MAX_TIME_BUCKETS = 36;
-  static readonly MAX_RANGE_CATEGORIES = 8;
   /** number of colors of the smallest color schemes, so that the colors of time series never repeat */
   static readonly MAX_TIME_SERIES = 8;
-  static readonly AGGREGATION_SETS: readonly Aggregation[][] = [
-    [Aggregation.MIN, Aggregation.MAX, Aggregation.AVG, Aggregation.SUM],
-    [Aggregation.SUM, Aggregation.AVG],
-    [Aggregation.AVG, Aggregation.MEDIAN, Aggregation.MAX],
-    [Aggregation.SUM]
-  ];
+  static readonly MAX_TIME_BARS = 60;
 
   private static readonly MAX_CIRCULAR_CATEGORIES = 8;
   private static readonly MIN_RADAR_CATEGORIES = 3;
@@ -36,6 +26,8 @@ export class TileSpecGenerator {
   private static readonly MAX_HORIZONTAL_BAR_CATEGORIES = 30;
   private static readonly TIME_CHART_TYPES = [ChartType.LINE, ChartType.AREA];
   private static readonly TIME_AGGREGATIONS = [Aggregation.SUM, Aggregation.AVG];
+
+  constructor(private readonly summarySpecGenerator = new SummarySpecGenerator()) { }
 
   generate(profiles: ColumnProfile[], randomizer: Randomizer, combinations: CategoryCombinationCounter): TileSpec[] {
     const categories = this.profilesOf(profiles, ColumnRole.CATEGORY);
@@ -49,10 +41,8 @@ export class TileSpecGenerator {
       ...this.aggregatedValuesOverTime(measures, times, categories, randomizer),
       ...this.rowCountsOverTime(times),
       ...this.scatters(measures, times, categories),
-      ...this.measuresByCategories(measures, categories, randomizer, combinations),
-      ...this.measuresOverTime(measures, times, randomizer),
-      ...this.categoryCrosstabs(categories, combinations),
-      ...this.valueRanges(measures, categories)
+      ...this.valuesByName(measures, categories),
+      ...this.summarySpecGenerator.generate(categories, measures, times, randomizer, combinations)
     ].filter(s => !this.isSelfCombination(s));
   }
 
@@ -61,7 +51,7 @@ export class TileSpecGenerator {
    */
   graphGroupings(profiles: ColumnProfile[], combinations: CategoryCombinationCounter): ColumnProfile[] {
     const categories = this.profilesOf(profiles, ColumnRole.CATEGORY);
-    return this.tableCategoryPairs(categories, combinations)[0] ?? categories.slice(0, 1);
+    return this.summarySpecGenerator.tableCategoryPairs(categories, combinations)[0] ?? categories.slice(0, 1);
   }
 
   private profilesOf(profiles: ColumnProfile[], role: ColumnRole): ColumnProfile[] {
@@ -79,7 +69,7 @@ export class TileSpecGenerator {
   private distributions(categories: ColumnProfile[], randomizer: Randomizer): TileSpec[] {
     return categories.flatMap(c => this.distributionChartTypes(c.distinctCount).map(chartType => {
       const legend = [ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA].includes(chartType);
-      return this.spec({
+      return tileSpecOf({
         chartType,
         dataColumns: [c],
         aggregations: [Aggregation.COUNT],
@@ -113,7 +103,7 @@ export class TileSpecGenerator {
     return this.seriesCategories(categories).flatMap(a => axisCategories
       .filter(b => b !== a)
       .flatMap(b => this.valueCountSplits(a, b, categories, combinations).flatMap(splitColumns =>
-        [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR].map(chartType => this.spec({
+        [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR].map(chartType => tileSpecOf({
           chartType,
           dataColumns: [a],
           groupByColumns: [b],
@@ -141,7 +131,7 @@ export class TileSpecGenerator {
 
   private countsOverTime(categories: ColumnProfile[], times: ColumnProfile[], randomizer: Randomizer): TileSpec[] {
     return this.seriesCategories(categories).flatMap(a => times
-      .flatMap(t => TileSpecGenerator.TIME_CHART_TYPES.map(chartType => this.spec({
+      .flatMap(t => TileSpecGenerator.TIME_CHART_TYPES.map(chartType => tileSpecOf({
         chartType,
         dataColumns: [a],
         groupByColumns: [t],
@@ -157,8 +147,8 @@ export class TileSpecGenerator {
     return times
       .filter(t => t.maxValueCount === 1)
       .flatMap(t => [
-        ...measures.flatMap(n => this.seriesSplits(categories).flatMap(split => this.timeCharts([n], t, split))),
-        ...this.pairsOf(measures).flatMap(pair => this.timeCharts(pair, t, []))
+        ...measures.flatMap(n => this.seriesSplits(categories).flatMap(split => this.timeCharts([n], t, split, t.presentCount))),
+        ...pairsOf(measures).flatMap(pair => this.timeCharts(pair, t, [], t.presentCount))
       ]);
   }
 
@@ -166,11 +156,11 @@ export class TileSpecGenerator {
     randomizer: Randomizer): TileSpec[] {
     const splits = this.unsplitAndSplitBy(categories.filter(c => c.distinctCount <= TileSpecGenerator.MAX_TIME_SERIES));
     return this.aggregatingTimes(times).flatMap(t => measures.flatMap(n => splits.flatMap(split =>
-      this.timeCharts([n], t, split, [randomizer.pick(TileSpecGenerator.TIME_AGGREGATIONS)]))));
+      this.timeCharts([n], t, split, t.timeBucketCount, [randomizer.pick(TileSpecGenerator.TIME_AGGREGATIONS)]))));
   }
 
   private rowCountsOverTime(times: ColumnProfile[]): TileSpec[] {
-    return this.aggregatingTimes(times).flatMap(t => this.timeCharts([], t, [], [Aggregation.ROW_COUNT]));
+    return this.aggregatingTimes(times).flatMap(t => this.timeCharts([], t, [], t.timeBucketCount, [Aggregation.ROW_COUNT]));
   }
 
   /**
@@ -180,9 +170,14 @@ export class TileSpecGenerator {
     return times.filter(t => t.timeBucketCount < t.presentCount && t.timeBucketCount <= ChartDataService.MAX_DATA_POINTS);
   }
 
-  private timeCharts(dataColumns: ColumnProfile[], time: ColumnProfile, splitColumns: ColumnProfile[],
+  /**
+   * @returns line and area charts, and linear bar charts when their bars per series fit the bar limit
+   */
+  private timeCharts(dataColumns: ColumnProfile[], time: ColumnProfile, splitColumns: ColumnProfile[], points: number,
     aggregations: Aggregation[] = []): TileSpec[] {
-    return TileSpecGenerator.TIME_CHART_TYPES.map(chartType => this.spec({
+    const chartTypes = points <= TileSpecGenerator.MAX_TIME_BARS ?
+      [...TileSpecGenerator.TIME_CHART_TYPES, ChartType.LINEAR_BAR] : TileSpecGenerator.TIME_CHART_TYPES;
+    return chartTypes.map(chartType => tileSpecOf({
       chartType,
       dataColumns,
       groupByColumns: [time],
@@ -197,7 +192,7 @@ export class TileSpecGenerator {
 
   private scatters(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
     return measures.flatMap(n => [...times, ...measures.filter(x => x !== n)]
-      .flatMap(x => this.scatterSplits(n, categories).map(split => this.spec({
+      .flatMap(x => this.scatterSplits(n, categories).map(split => tileSpecOf({
         chartType: ChartType.SCATTER,
         dataColumns: [n],
         groupByColumns: [x],
@@ -213,100 +208,37 @@ export class TileSpecGenerator {
   }
 
   /**
-   * @returns the split columns of all scatter specs of the specified measure whose series fit
+   * @returns the split columns of all scatter specs of the specified measure whose series fit, else the unsplit scatter that is
+   * sampled down
    */
   private scatterSplits(measure: ColumnProfile, categories: ColumnProfile[]): ColumnProfile[][] {
     const variants: ColumnProfile[][] = measure.presentCount <= ChartDataService.MAX_DATA_POINTS ? [[]] : [];
     this.seriesCategories(categories)
       .filter(s => Math.min(measure.presentCount, s.maxValueCount) <= ChartDataService.MAX_DATA_POINTS)
       .forEach(s => variants.push([s]));
-    return variants;
+    return variants.length ? variants : [[]];
   }
 
-  private measuresByCategories(measures: ColumnProfile[], categories: ColumnProfile[], randomizer: Randomizer,
-    combinations: CategoryCombinationCounter): TileSpec[] {
-    const groupings = [
-      ...categories.filter(c => c.distinctCount <= TileSpecGenerator.MAX_TABLE_ROWS).map(c => [c]),
-      ...this.tableCategoryPairs(categories, combinations)
-    ];
-    return measures.flatMap(n => groupings.map(groupByColumns => this.spec({
-      dataColumns: [n],
-      groupByColumns,
-      aggregations: [...randomizer.pick(TileSpecGenerator.AGGREGATION_SETS)],
-      size: TileSize.WIDE
-    })));
-  }
-
-  private measuresOverTime(measures: ColumnProfile[], times: ColumnProfile[], randomizer: Randomizer): TileSpec[] {
-    return measures.flatMap(n => times
-      .filter(t => t.timeBucketCount <= TileSpecGenerator.MAX_TIME_BUCKETS)
-      .map(t => this.spec({
+  /**
+   * @returns the radar and bar charts of the individual values of each measure labeled by a text category of unique values
+   */
+  private valuesByName(measures: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
+    return categories
+      .filter(c => c.dataType === DataType.TEXT && c.maxValueCount === 1)
+      .flatMap(c => measures.flatMap(n => this.nameChartTypes(c.distinctCount).map(chartType => tileSpecOf({
+        chartType,
         dataColumns: [n],
-        groupByColumns: [t],
-        aggregations: [...randomizer.pick(TileSpecGenerator.AGGREGATION_SETS)],
-        size: TileSize.WIDE
-      })));
+        groupByColumns: [c],
+        aggregations: [],
+        size: TileSize.SMALL
+      }))));
   }
 
-  private categoryCrosstabs(categories: ColumnProfile[], combinations: CategoryCombinationCounter): TileSpec[] {
-    return this.tableCategoryPairs(categories, combinations).map(([c1, c2]) => this.spec({
-      dataColumns: [c2],
-      groupByColumns: [c1],
-      aggregations: [Aggregation.COUNT],
-      size: TileSize.WIDE
-    }));
-  }
-
-  private valueRanges(measures: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
-    const rangeCategories = categories.filter(c => c.distinctCount <= TileSpecGenerator.MAX_RANGE_CATEGORIES);
-    return measures.flatMap(n => rangeCategories.map(c => this.spec({
-      dataColumns: [n],
-      groupByColumns: [c],
-      aggregations: [Aggregation.COUNT],
-      valueGroupingColumn: n,
-      size: TileSize.WIDE
-    })));
+  private nameChartTypes(distinctCount: number): ChartType[] {
+    return this.distributionChartTypes(distinctCount).filter(t => [ChartType.BAR, ChartType.HORIZONTAL_BAR, ChartType.RADAR].includes(t));
   }
 
   private seriesCategories(categories: ColumnProfile[]): ColumnProfile[] {
     return categories.filter(c => c.distinctCount <= TileSpecGenerator.MAX_SERIES);
-  }
-
-  /**
-   * @returns the category pairs whose value combinations are within the hierarchy row limit, the category of lower cardinality
-   * first
-   */
-  private tableCategoryPairs(categories: ColumnProfile[], combinations: CategoryCombinationCounter): ColumnProfile[][] {
-    return this.pairsOf(categories)
-      .filter(([c1, c2]) => combinations.count(c1.name, c2.name) <= TileSpecGenerator.MAX_HIERARCHY_ROWS)
-      .map(([c1, c2]) => c2.distinctCount < c1.distinctCount ? [c2, c1] : [c1, c2]);
-  }
-
-  private pairsOf(profiles: ColumnProfile[]): ColumnProfile[][] {
-    return profiles.flatMap((p1, i) => profiles.slice(i + 1).map(p2 => [p1, p2]));
-  }
-
-  private spec(fields: SpecFields): TileSpec {
-    const groupByColumns = fields.groupByColumns ?? [];
-    const splitColumns = fields.splitColumns ?? [];
-    const columnNames = [...fields.dataColumns, ...groupByColumns, ...splitColumns].map(c => c.name);
-    const countOnly = fields.aggregations.length === 1 && fields.aggregations[0] === Aggregation.COUNT;
-    const signature = TileSignature.of(fields.chartType ? 'chart' : TileSignature.summaryKind(countOnly), columnNames);
-    return {
-      signature,
-      key: TileSignature.keyOf(signature, fields.chartType?.type),
-      chartType: fields.chartType,
-      dataColumns: fields.dataColumns,
-      groupByColumns,
-      splitColumns,
-      aggregations: fields.aggregations,
-      valueGroupingColumn: fields.valueGroupingColumn,
-      stacked: fields.stacked ?? false,
-      multiValueAxes: fields.multiValueAxes ?? false,
-      showLegend: fields.showLegend ?? false,
-      legendPosition: fields.legendPosition ?? 'top',
-      size: fields.size,
-      timeChart: fields.timeChart ?? false
-    };
   }
 }

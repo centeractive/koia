@@ -4,12 +4,12 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartDataset } from 'chart.js';
 
 /**
- * accepts charts that render data without error or warning, sampled down only when they are lines or areas over time, and
+ * accepts charts that render data without error, sampled down only when they are lines or areas over time or scatters, and
  * unstacks time series that cannot be stacked
  */
 export class TileValidator {
 
-  private static readonly SAMPLEABLE_CHART_TYPES = [ChartType.LINE.type, ChartType.AREA.type];
+  private static readonly SAMPLEABLE_TIME_CHART_TYPES = [ChartType.LINE.type, ChartType.AREA.type];
 
   constructor(private readonly chartDataService: ChartDataService) { }
 
@@ -26,7 +26,8 @@ export class TileValidator {
   }
 
   private isSampleable(context: ChartContext): boolean {
-    return TileValidator.SAMPLEABLE_CHART_TYPES.includes(context.chartType) && this.isGroupedByTime(context);
+    return context.chartType === ChartType.SCATTER.type
+      || (TileValidator.SAMPLEABLE_TIME_CHART_TYPES.includes(context.chartType) && this.isGroupedByTime(context));
   }
 
   /**

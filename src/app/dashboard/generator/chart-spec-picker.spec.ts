@@ -66,6 +66,31 @@ describe('ChartSpecPicker', () => {
     expect(next).toBe(candidate);
   });
 
+  it('#next should skip specs of excluded chart types', () => {
+
+    // given
+    const pieA = spec(ChartType.PIE, 'A');
+    const barB = spec(ChartType.BAR, 'B');
+
+    // when
+    const next = picker.next([pieA, barB], new Set(), new Set(), new Set([ChartType.PIE, ChartType.BAR]), new Set([ChartType.PIE]));
+
+    // then
+    expect(next).toBe(barB);
+  });
+
+  it('#next should return undefined when only excluded chart types remain', () => {
+
+    // given
+    const pieA = spec(ChartType.PIE, 'A');
+
+    // when
+    const next = picker.next([pieA], new Set(), new Set(), new Set([ChartType.PIE]), new Set([ChartType.PIE]));
+
+    // then
+    expect(next).toBeUndefined();
+  });
+
   it('#next should return undefined without candidates', () => {
 
     // given

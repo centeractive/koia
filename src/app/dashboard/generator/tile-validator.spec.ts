@@ -10,7 +10,8 @@ describe('TileValidator', () => {
   const LEVEL: Column = { name: 'Level', dataType: DataType.TEXT, width: 10 };
   const AMOUNT: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };
   const TIME: Column = { name: 'Time', dataType: DataType.TIME, width: 10, groupingTimeUnit: TimeUnit.DAY };
-  const COLUMNS = [LEVEL, AMOUNT, TIME];
+  const PRICE: Column = { name: 'Price', dataType: DataType.NUMBER, width: 10 };
+  const COLUMNS = [LEVEL, AMOUNT, TIME, PRICE];
 
   let chartDataService: ChartDataService;
   let validator: TileValidator;
@@ -72,19 +73,19 @@ describe('TileValidator', () => {
     expect(valid).toBe(false);
   });
 
-  it('#isValid should reject sampled down scatter chart', () => {
+  it('#isValid should accept sampled down scatter charts grouped by time and by measure', () => {
 
     // given
-    const entries = Array.from({ length: ChartDataService.MAX_DATA_POINTS + 1 }, (_, i) => ({ Amount: i % 7, Time: T0 + i * DAY }));
-    const context = chartOf(ChartType.SCATTER, [AMOUNT], [TIME], entries);
-    context.aggregations = [];
+    const entries = Array.from({ length: ChartDataService.MAX_DATA_POINTS + 1 }, (_, i) => ({ Amount: i % 7, Time: T0 + i * DAY, Price: i }));
+    const contexts = [TIME, PRICE].map(groupByColumn => chartOf(ChartType.SCATTER, [AMOUNT], [groupByColumn], entries));
+    contexts.forEach(c => c.aggregations = []);
 
     // when
-    const valid = validator.isValid(context);
+    const valid = contexts.map(c => validator.isValid(c));
 
     // then
-    expect(context.dataSampledDown).toBe(true);
-    expect(valid).toBe(false);
+    expect(contexts.map(c => c.dataSampledDown)).toEqual([true, true]);
+    expect(valid).toEqual([true, true]);
   });
 
   it('#isValid should accept sampled down line and area charts over time', () => {

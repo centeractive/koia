@@ -51,6 +51,8 @@ export interface GeneratedDashboard {
 export class DashboardGenerator {
 
   static readonly MAX_VALIDATIONS = 40;
+  /** charts of one chart type accepted before other chart types of accepted signatures get their turn */
+  static readonly MAX_CHARTS_PER_TYPE = 2;
 
   private readonly randomizer: Randomizer;
   private readonly profiler = new ColumnProfiler();
@@ -106,7 +108,17 @@ export class DashboardGenerator {
         withTiles.length - wideTiles + smallCharts.length, wideTiles);
     };
     const fillsMoreRows = (tile: SizedTile) => fillableRows([...tiles, tile]) > fillableRows(tiles);
-    const usedChartTypes = new Set<ChartType>(feature ? [ChartType.fromType(feature.chartType)] : []);
+    const usedChartTypes = new Set<ChartType>();
+    const chartTypeCounts = new Map<ChartType, number>();
+    const useChartType = (chartType: ChartType) => {
+      usedChartTypes.add(chartType);
+      chartTypeCounts.set(chartType, (chartTypeCounts.get(chartType) ?? 0) + 1);
+    };
+    const fullChartTypes = () => new Set([...chartTypeCounts]
+      .filter(([, count]) => count >= DashboardGenerator.MAX_CHARTS_PER_TYPE).map(([chartType]) => chartType));
+    if (feature) {
+      useChartType(ChartType.fromType(feature.chartType));
+    }
     let validations = 0;
     const acceptCharts = (next: () => TileSpec | undefined) => {
       while (validations < DashboardGenerator.MAX_VALIDATIONS && fillableRows(tiles) < remainingRows) {
@@ -120,14 +132,14 @@ export class DashboardGenerator {
           accepted.add(spec.signature);
           chartSignatures.add(spec.signature);
           acceptedKeys.add(spec.key);
-          usedChartTypes.add(spec.chartType);
+          useChartType(spec.chartType);
           (spec.size === TileSize.SMALL ? smallCharts : wideCharts).push(context);
         } else {
           invalidSpecs.add(spec);
         }
       }
     };
-    acceptCharts(() => this.picker.next(ranked, accepted, invalidSpecs, usedChartTypes));
+    acceptCharts(() => this.picker.next(ranked, accepted, invalidSpecs, usedChartTypes, fullChartTypes()));
     const secondTable = fillableRows(tiles) < remainingRows ? this.createTable(ranked, request, accepted, grid.columns) : undefined;
     const addSecondTable = () => {
       if (secondTable && !tiles.includes(secondTable) && fillsMoreRows(secondTable)) {
@@ -137,6 +149,7 @@ export class DashboardGenerator {
     addSecondTable();
     acceptCharts(() => this.picker.nextVariant(ranked, chartSignatures, acceptedKeys, invalidSpecs, usedChartTypes));
     addSecondTable();
+    acceptCharts(() => this.picker.next(ranked, accepted, invalidSpecs, usedChartTypes));
     if (fillableRows(tiles) < remainingRows) {
       const graph = this.createGraph(profiles, combinations, request, fillsMoreRows);
       if (graph) {
