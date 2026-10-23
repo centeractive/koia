@@ -1,7 +1,7 @@
 import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
-import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivation, SceneInfo } from 'app/shared/model';
+import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivation, SceneInfo, SceneLabels } from 'app/shared/model';
 import { SceneTabs } from 'app/shared/model/view-config';
 import { QueryUtils } from 'app/shared/utils';
 import { storedColumnsOf } from 'app/shared/utils/column-utils';
@@ -145,6 +145,21 @@ export class DBService {
   async updateScene(scene: Scene): Promise<Scene> {
     return this.db.update(this.scenesDbName(), scene)
       .then(() => scene);
+  }
+
+  /**
+   * updates name and short description of the specified scene, the active scene is updated in place
+   */
+  async updateSceneLabels(labels: SceneLabels): Promise<void> {
+    const scene = await this.findScene(labels._id);
+    scene.name = labels.name;
+    scene.shortDescription = labels.shortDescription;
+    await this.updateScene(scene);
+    if (this.activeScene?._id === scene._id) {
+      this.activeScene.name = scene.name;
+      this.activeScene.shortDescription = scene.shortDescription;
+      this.activeScene._rev = scene._rev;
+    }
   }
 
   async deleteScene(sceneInfo: SceneInfo): Promise<void> {

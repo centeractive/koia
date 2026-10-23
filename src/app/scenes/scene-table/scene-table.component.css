@@ -1,4 +1,4 @@
-div {
+.table_container {
     overflow-x: auto;
 }
 
@@ -35,4 +35,14 @@ tr.active-scene .scene-name {
     font-size: 12px;
     color: var(--koia-on-color);
     background-color: var(--koia-accent);
+}
+
+.edit_row {
+    display: flex;
+    align-items: center;
+}
+
+.edit_name, .edit_desc {
+    width: 100%;
+    min-width: 16em;
 }

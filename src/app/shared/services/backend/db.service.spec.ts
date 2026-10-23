@@ -420,6 +420,55 @@ describe('DBService', () => {
       .then(s => expect(s.name).toBe('updated'));
   });
 
+  it('#updateSceneLabels should update name and short description only', async () => {
+
+    // given
+    const scene2 = SceneFactory.createScene('2', columns);
+    await dbService.persistScene(scene2, false);
+
+    // when
+    await dbService.updateSceneLabels({ _id: scene2._id, name: 'new name', shortDescription: 'new description' });
+
+    // then
+    const persisted = await dbService.findScene(scene2._id);
+    expect(persisted.name).toBe('new name');
+    expect(persisted.shortDescription).toBe('new description');
+    expect(persisted.columns).toEqual(scene2.columns);
+    expect(persisted.database).toBe(scene2.database);
+    expect(persisted.creationTime).toBe(scene2.creationTime);
+    expect(dbService.getActiveScene()).toBe(initialScene);
+    expect(initialScene.name).toBe('Scene 0');
+  });
+
+  it('#updateSceneLabels should update active scene in place with new revision', async () => {
+
+    // when
+    await dbService.updateSceneLabels({ _id: initialScene._id, name: 'new name', shortDescription: 'new description' });
+
+    // then
+    const persisted = await dbService.findScene(initialScene._id);
+    expect(dbService.getActiveScene()).toBe(initialScene);
+    expect(initialScene.name).toBe('new name');
+    expect(initialScene.shortDescription).toBe('new description');
+    expect(initialScene._rev).toBe(persisted._rev);
+    await expect(dbService.updateScene(dbService.getActiveScene())).resolves.toBe(initialScene);
+  });
+
+  it('#updateSceneLabels should keep active scene unchanged when update fails', async () => {
+
+    // given
+    const sceneRev = initialScene._rev;
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue('conflict');
+
+    // when
+    const update = dbService.updateSceneLabels({ _id: initialScene._id, name: 'new name', shortDescription: 'new description' });
+
+    // then
+    await expect(update).rejects.toBe('conflict');
+    expect(dbService.getActiveScene().name).toBe('Scene 0');
+    expect(dbService.getActiveScene()._rev).toBe(sceneRev);
+  });
+
   it('#deleteScene should delete active scene', async () => {
 
     // when

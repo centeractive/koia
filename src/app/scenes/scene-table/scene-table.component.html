@@ -1,4 +1,4 @@
-<div>
+<div class="table_container">
   <table mat-table [dataSource]="sceneInfos">
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
@@ -10,6 +10,10 @@
           <button class="menu_item_details" mat-menu-item (click)="showSceneDetails(sceneInfo._id)">
             <mat-icon>pageview</mat-icon>
             <span>{{ 'scenes.showDetails' | translate }}</span>
+          </button>
+          <button class="menu_item_edit" mat-menu-item (click)="startEdit(sceneInfo)">
+            <mat-icon>edit</mat-icon>
+            <span>{{ 'scenes.edit' | translate }}</span>
           </button>
           <button class="menu_item_delete" mat-menu-item (click)="onDelete.emit(sceneInfo)">
             <mat-icon>delete_forever</mat-icon>
@@ -32,7 +36,20 @@
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef>{{ 'scene.name' | translate }}</th>
       <td class="nowrap" mat-cell *matCellDef="let sceneInfo">
-        <span class="scene-name">{{sceneInfo.name}}</span>
+        @if (isEdited(sceneInfo)) {
+          <mat-form-field class="edit_name" subscriptSizing="dynamic">
+            <input matInput required [attr.maxlength]="sceneNameMaxLength" [(ngModel)]="edit.name"
+              [errorStateMatcher]="sceneNameErrorStateMatcher" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()">
+            @if (edit.isNameTaken()) {
+              <mat-error>{{ 'scene.nameExists' | translate }}</mat-error>
+            }
+            @if (edit.isNameTooLong()) {
+              <mat-error>{{ 'scene.column.nameTooLong' | translate: { max: sceneNameMaxLength } }}</mat-error>
+            }
+          </mat-form-field>
+        } @else {
+          <span class="scene-name">{{sceneInfo.name}}</span>
+        }
         @if (isActive(sceneInfo)) {
           <span class="active-chip">{{ 'scenes.active' | translate }}</span>
         }
@@ -40,7 +57,24 @@
     </ng-container>
     <ng-container matColumnDef="shortDescription">
       <th mat-header-cell *matHeaderCellDef>{{ 'scene.shortDescription' | translate }}</th>
-      <td mat-cell *matCellDef="let sceneInfo"> {{sceneInfo.shortDescription}} </td>
+      <td mat-cell *matCellDef="let sceneInfo">
+        @if (isEdited(sceneInfo)) {
+          <div class="edit_row">
+            <mat-form-field class="edit_desc" subscriptSizing="dynamic">
+              <input matInput required [(ngModel)]="edit.shortDescription" (keydown.enter)="saveEdit()" (keydown.escape)="cancelEdit()">
+            </mat-form-field>
+            <button class="but_save_edit" mat-icon-button color="primary" [disabled]="!edit.isSavable()"
+              [matTooltip]="'common.save' | translate" (click)="saveEdit()">
+              <mat-icon>check</mat-icon>
+            </button>
+            <button class="but_cancel_edit" mat-icon-button [matTooltip]="'common.cancel' | translate" (click)="cancelEdit()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        } @else {
+          {{sceneInfo.shortDescription}}
+        }
+      </td>
     </ng-container>
     <ng-container matColumnDef="creationTime">
       <th mat-header-cell *matHeaderCellDef>{{ 'scenes.creationTime' | translate }}</th>

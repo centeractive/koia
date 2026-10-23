@@ -167,6 +167,7 @@
     "more": "more...",
     "no": "No",
     "ok": "OK",
+    "save": "Save",
     "yes": "Yes"
   },
   "scene": {
@@ -263,9 +264,11 @@
     "deleteAllTitle": "Delete all scenes",
     "deleteConfirm": "Do you really want to delete {{count}} scene(s)?",
     "sceneDeleted": "Scene has been deleted",
+    "sceneUpdated": "Scene has been updated",
     "scenesDeleted": "{{count}} scenes have been deleted",
     "scenesDeletedOne": "{{count}} scene has been deleted",
     "showDetails": "Show details",
+    "edit": "Edit name and description",
     "activate": "Activate scene",
     "continueActive": "Continue with active scene",
     "active": "Active",

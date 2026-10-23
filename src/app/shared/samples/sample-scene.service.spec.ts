@@ -8,7 +8,7 @@ import { SampleSceneService } from './sample-scene.service';
 describe('SampleSceneService', () => {
 
    const sample = fruitSalesSampleOf('en');
-   const sampleSceneInfo = { _id: 'sample', name: sample.sceneName, database: 'data_1' } as SceneInfo;
+   const sampleSceneInfo = { _id: sample.sceneId, name: sample.sceneName, database: 'data_1' } as SceneInfo;
    let dbService: DBService;
    let service: SampleSceneService;
    let persistSceneSpy: Mock;
@@ -24,7 +24,7 @@ describe('SampleSceneService', () => {
       vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([]);
       vi.spyOn(dbService, 'findFreeDatabaseName').mockResolvedValue('data_7');
       persistSceneSpy = vi.spyOn(dbService, 'persistScene').mockImplementation(async (scene: Scene) => {
-         scene._id = 'new';
+         scene._rev = '1';
          return scene;
       });
       writeEntriesSpy = vi.spyOn(dbService, 'writeEntries').mockResolvedValue(undefined);
@@ -40,6 +40,7 @@ describe('SampleSceneService', () => {
 
       // then
       const scene: Scene = persistSceneSpy.mock.calls[0][0];
+      expect(scene._id).toBe(sample.sceneId);
       expect(scene.name).toBe(sample.sceneName);
       expect(scene.database).toBe('data_7');
       expect(scene.creationTime).toBeGreaterThan(0);
@@ -49,9 +50,9 @@ describe('SampleSceneService', () => {
       expect(writeEntriesSpy.mock.calls.flatMap(c => c[1]).length).toBe(sample.rowCount);
       expect(writeEntriesSpy.mock.calls[0][1][0][scene.columns[0].name]).toBe(new Date(2024, 0, 1).getTime());
       const sceneTabs = saveSceneTabsSpy.mock.calls[0][0];
-      expect(sceneTabs._id).toBe('new_tabs');
+      expect(sceneTabs._id).toBe(sample.sceneId + '_tabs');
       expect(sceneTabs.tabs.length).toBe(2);
-      expect(activateSceneSpy).toHaveBeenCalledWith('new');
+      expect(activateSceneSpy).toHaveBeenCalledWith(sample.sceneId);
       expect(activateSceneSpy.mock.invocationCallOrder[0]).toBeGreaterThan(saveSceneTabsSpy.mock.invocationCallOrder[0]);
    });
 
@@ -64,7 +65,7 @@ describe('SampleSceneService', () => {
       await service.open(sample);
 
       // then
-      expect(activateSceneSpy).toHaveBeenCalledWith('new');
+      expect(activateSceneSpy).toHaveBeenCalledWith(sample.sceneId);
       expect(deleteSceneSpy).not.toHaveBeenCalled();
    });
 
@@ -78,7 +79,7 @@ describe('SampleSceneService', () => {
 
       // then
       await expect(result).rejects.toBe('disk full');
-      expect(deleteSceneSpy).toHaveBeenCalledWith(expect.objectContaining({ _id: 'new' }));
+      expect(deleteSceneSpy).toHaveBeenCalledWith(expect.objectContaining({ _id: sample.sceneId }));
       expect(activateSceneSpy).not.toHaveBeenCalled();
    });
 
@@ -132,7 +133,7 @@ describe('SampleSceneService', () => {
       await service.open(sample);
 
       // then
-      expect(activateSceneSpy).toHaveBeenCalledWith('sample');
+      expect(activateSceneSpy).toHaveBeenCalledWith(sample.sceneId);
       expect(window.fetch).not.toHaveBeenCalled();
       expect(persistSceneSpy).not.toHaveBeenCalled();
    });
@@ -164,7 +165,8 @@ describe('SampleSceneService', () => {
       // then
       expect(deleteSceneSpy).toHaveBeenCalledWith(sampleSceneInfo);
       expect(persistSceneSpy).toHaveBeenCalled();
-      expect(activateSceneSpy).toHaveBeenLastCalledWith('new');
+      expect(persistSceneSpy.mock.calls[0][0].name).toBe(sample.sceneName);
+      expect(activateSceneSpy).toHaveBeenLastCalledWith(sample.sceneId);
    });
 
    it('#open should import sample of other language although sample exists in English', async () => {
@@ -179,5 +181,33 @@ describe('SampleSceneService', () => {
       const scene: Scene = persistSceneSpy.mock.calls[0][0];
       expect(scene.name).toBe(fruitSalesSampleOf('de').sceneName);
       expect(scene.columns.map(c => c.name)).toEqual(['Datum', 'Region', 'Kanal', 'Produkt', 'Menge', 'Umsatz']);
+   });
+
+   it('#open should activate renamed sample scene without import', async () => {
+
+      // given
+      vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([{ ...sampleSceneInfo, name: 'my fruits' }]);
+      vi.spyOn(dbService, 'countEntriesOfActiveScene').mockResolvedValue(sample.rowCount);
+
+      // when
+      await service.open(sample);
+
+      // then
+      expect(activateSceneSpy).toHaveBeenCalledWith(sample.sceneId);
+      expect(persistSceneSpy).not.toHaveBeenCalled();
+   });
+
+   it('#open should neither take nor delete other scene with sample name', async () => {
+
+      // given
+      vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([{ _id: 'user', name: sample.sceneName, database: 'data_1' } as SceneInfo]);
+
+      // when
+      await service.open(sample);
+
+      // then
+      expect(deleteSceneSpy).not.toHaveBeenCalled();
+      expect(activateSceneSpy).not.toHaveBeenCalledWith('user');
+      expect(persistSceneSpy.mock.calls[0][0].name).toBe(sample.sceneName + ' (2)');
    });
 });
