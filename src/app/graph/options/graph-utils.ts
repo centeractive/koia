@@ -1,5 +1,5 @@
 import { LanguageService } from 'app/shared/services/language';
-import { Column, DataType } from 'app/shared/model';
+import { Column, DataType, PropertyFilter } from 'app/shared/model';
 import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { DateTimeUtils } from 'app/shared/utils/date-time-utils';
 import { ColumnNameConverter } from 'app/shared/utils';
@@ -50,7 +50,7 @@ export class GraphUtils {
    static formattedValueOf(graphNode: GraphNode, context: GraphContext): string | number {
       let value: string | number = graphNode.value;
       const timeColumn = this.findCorrespondingTimeColumn(graphNode.name, context);
-      if (timeColumn) {
+      if (timeColumn && value !== PropertyFilter.EMPTY_VALUE) {
          value = DateTimeUtils.formatTime(value as number,timeColumn.groupingTimeUnit, LanguageService.localeId());
       }
       return value;

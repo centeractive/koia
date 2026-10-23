@@ -1,4 +1,4 @@
-import { rightInsetOf, rowCountOf, stylesOf, textsOf } from './dom-queries';
+import { leftInsetOf, rightInsetOf, rowCountOf, stylesOf, textsOf } from './dom-queries';
 
 describe('dom queries', () => {
 
@@ -49,6 +49,18 @@ describe('dom queries', () => {
 
     // then
     expect(styles.map(s => s.marginBottom)).toEqual(['3px', '5px']);
+  });
+
+  it('leftInsetOf should return distance between left edges of element and container', () => {
+
+    // given
+    createRoot('<div style="width: 200px; padding-left: 8px"><i style="display: block; width: 50px"></i></div>');
+
+    // when
+    const inset = leftInsetOf(root.querySelector('i'), root.querySelector('div'));
+
+    // then
+    expect(inset).toBe(8);
   });
 
   it('rightInsetOf should return distance between right edges of element and container', () => {

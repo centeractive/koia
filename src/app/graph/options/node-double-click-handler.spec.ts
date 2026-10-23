@@ -103,6 +103,46 @@ describe('NodeDoubleClickHandler', () => {
          graphContext);
    });
 
+   it('#onNodeDoubleClicked should reveal raw data of time node with <empty> value', () => {
+
+      // given
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '', count: 0 };
+      const node: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: PropertyFilter.EMPTY_VALUE, info: '3', count: 3 };
+      timeColumn.groupingTimeUnit = TimeUnit.HOUR;
+      graphContext.groupByColumns = [timeColumn];
+      graphContext.query = new Query();
+
+      // when
+      handler.onNodeDoubleClicked(node, graphContext);
+
+      // then
+      const expectedQuery = new Query(new PropertyFilter('Time', Operator.EMPTY, ''));
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], [], graphContext);
+      expect(rawDataRevealService.ofTimeUnit).not.toHaveBeenCalled();
+   });
+
+   it('#onNodeDoubleClicked should reveal raw data of leaf node below grouped time node and time node with <empty> value', () => {
+
+      // given
+      const endColumn = createColumn('End', DataType.TIME, TimeUnit.MINUTE);
+      const rootNode: GraphNode = { parent: null, group: 0, name: '', value: null, info: '', count: 0 };
+      const timeNode: GraphNode = { parent: rootNode, group: 1, name: 'Time (per hour)', value: oneHourAgo, info: '', count: 10 };
+      const endNode: GraphNode = { parent: timeNode, group: 1, name: 'End (per minute)', value: PropertyFilter.EMPTY_VALUE, info: '', count: 10 };
+      const levelNode: GraphNode = { parent: endNode, group: 1, name: 'Level', value: 'ERROR', info: '10', count: 10 };
+      timeColumn.groupingTimeUnit = TimeUnit.HOUR;
+      graphContext = new GraphContext([timeColumn, levelColumn, endColumn]);
+      graphContext.groupByColumns = [timeColumn, endColumn, levelColumn];
+      graphContext.query = new Query();
+
+      // when
+      handler.onNodeDoubleClicked(levelNode, graphContext);
+
+      // then
+      const expectedQuery = new Query(new PropertyFilter('End', Operator.EMPTY, ''));
+      expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(expectedQuery, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'],
+         graphContext);
+   });
+
    function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {
       return {
          name: name,

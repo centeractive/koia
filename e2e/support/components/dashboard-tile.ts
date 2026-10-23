@@ -24,6 +24,7 @@ export class DashboardTile {
    readonly title: Locator;
    readonly firstCountLink: Locator;
    readonly graphRootNode: Locator;
+   readonly graphNodes: Locator;
    readonly marginButton: Locator;
    readonly margin: Locator;
    readonly resizeHandles: Locator;
@@ -32,6 +33,7 @@ export class DashboardTile {
       this.title = root.locator('textarea.textarea_title');
       this.firstCountLink = root.locator('td.td_aggregation a').first();
       this.graphRootNode = root.locator('koia-graph svg g.nodes > g > circle').first();
+      this.graphNodes = root.locator('koia-graph svg g.nodes > g');
       this.marginButton = root.locator('.but_element_margin');
       this.margin = root.locator('.div_margins');
       this.resizeHandles = root.locator('.div_resize_handle');
@@ -61,6 +63,13 @@ export class DashboardTile {
       }).toBe(true);
       const scale = scan.width / scan.clientWidth;
       await this.root.locator('canvas').click({ position: { x: scan.clientWidth / 2, y: scan.paintedRow / scale - 10 } });
+   }
+
+   /**
+    * dispatches the event to the node's circle, which a pointer can miss among hundreds of overlapping nodes and labels
+    */
+   async doubleClickGraphNode(node: Locator): Promise<void> {
+      await node.locator('circle').dispatchEvent('dblclick');
    }
 
    spans(): Promise<{ columns: number; rows: number }> {

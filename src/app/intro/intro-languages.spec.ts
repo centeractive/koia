@@ -1,3 +1,5 @@
+import { FORMAL_GERMAN_ADDRESS } from 'app/shared/test/german-address';
+
 describe('intro page languages', () => {
 
    const STORAGE_KEY = 'koia.language';
@@ -79,6 +81,15 @@ describe('intro page languages', () => {
          expect(doc.querySelector('.landing-lead').textContent).toContain(lead);
          expect(Array.from(doc.querySelectorAll('.landing-showcase-row')).pop().querySelector('p').textContent).toContain(showcase);
       });
+   });
+
+   it('de copy should address reader informally', async () => {
+
+      // when
+      const doc = await load('/intro/index.de.html');
+
+      // then
+      expect(doc.documentElement.outerHTML).not.toMatch(FORMAL_GERMAN_ADDRESS);
    });
 
    it('should link every language with hreflang', async () => {

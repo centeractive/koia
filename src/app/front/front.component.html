@@ -65,29 +65,33 @@
             </aside>
           }
           <div class="front-actions">
+            <div class="front-actions-row">
+              @if (scenesCount > 0) {
+                <a id="load_file_button" class="landing-btn landing-btn-outline" role="link"
+                  [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
+                  <mat-icon>upload_file</mat-icon>{{ 'front.actions.loadFile' | translate }}
+                </a>
+              } @else {
+                <a id="start_button" class="landing-btn landing-btn-accent" role="link"
+                  [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
+                  <mat-icon>upload_file</mat-icon>{{ 'front.actions.loadFile' | translate }}
+                </a>
+              }
+              <button id="sample_button" type="button" class="landing-btn landing-btn-outline" [disabled]="busy"
+                [attr.aria-busy]="loadingSample" (click)="openSample()">
+                @if (loadingSample) {
+                  <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>{{ 'front.actions.loadingSample' | translate }}
+                } @else {
+                  <mat-icon>science</mat-icon>{{ 'front.actions.trySample' | translate }}
+                }
+              </button>
+            </div>
             @if (scenesCount > 0) {
               <a id="start_button" class="landing-btn landing-btn-accent" role="link"
                 [routerLink]="busy ? null : urlScenes" [attr.aria-disabled]="busy">
                 <mat-icon>play_circle_outline</mat-icon>{{ (scenesCount === 1 ? 'front.actions.continueOne' : 'front.actions.continueMany') | translate: { count: scenesCount } }}
               </a>
-              <a id="load_file_button" class="landing-btn landing-btn-outline" role="link"
-                [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
-                <mat-icon>upload_file</mat-icon>{{ 'front.actions.loadFile' | translate }}
-              </a>
-            } @else {
-              <a id="start_button" class="landing-btn landing-btn-accent" role="link"
-                [routerLink]="busy ? null : urlScene" [attr.aria-disabled]="busy">
-                <mat-icon>upload_file</mat-icon>{{ 'front.actions.loadFile' | translate }}
-              </a>
             }
-            <button id="sample_button" type="button" class="landing-btn landing-btn-outline" [disabled]="busy"
-              [attr.aria-busy]="loadingSample" (click)="openSample()">
-              @if (loadingSample) {
-                <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>{{ 'front.actions.loadingSample' | translate }}
-              } @else {
-                <mat-icon>science</mat-icon>{{ 'front.actions.trySample' | translate }}
-              }
-            </button>
           </div>
         </div>
       </div>

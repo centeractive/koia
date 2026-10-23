@@ -7,7 +7,7 @@
       "about": "Über Koia"
     },
     "title": "Loslegen",
-    "lead": "Laden Sie Ihre eigene CSV-, Excel- oder JSON-Datei oder erkunden Sie Koia mit Beispieldaten. Ihre Daten werden nie an fremde Server gesendet.",
+    "lead": "Lade deine eigene CSV-, Excel- oder JSON-Datei oder erkunde Koia mit Beispieldaten. Deine Daten werden nie an fremde Server gesendet.",
     "externalInvocationFailed": "Rohdaten der Szene mit _id {{id}} können nicht angezeigt werden",
     "storage": {
       "storedIn": "Daten werden ausschliesslich gespeichert in",
@@ -22,38 +22,38 @@
     },
     "couchdbTip": {
       "title": "Empfohlen: CouchDB verwenden",
-      "text": "Schneller bei grösseren Datenmengen, und Ihre Daten überstehen das Leeren des Browser-Caches. Installieren Sie CouchDB lokal und verbinden Sie sich dann.",
+      "text": "Schneller bei grösseren Datenmengen, und deine Daten überstehen das Leeren des Browser-Caches. Installiere CouchDB lokal und verbinde dich dann.",
       "connect": "Mit CouchDB verbinden",
       "setupGuide": "Installationsanleitung",
       "notNow": "Nicht jetzt"
     },
     "actions": {
-      "continueOne": "Mit Ihrer Szene fortfahren",
-      "continueMany": "Mit Ihren {{count}} Szenen fortfahren",
+      "continueOne": "Mit deiner Szene fortfahren",
+      "continueMany": "Mit deinen {{count}} Szenen fortfahren",
       "loadFile": "Datei laden",
       "loadingSample": "Beispiel wird geladen…",
       "trySample": "Beispieldaten ausprobieren"
     },
     "guide": {
-      "title": "Erstellen Sie Ihre ersten Ansichten",
-      "intro": "Sobald Ihre Daten geladen sind, zeigt Koia die Rohdaten. Fügen Sie daneben Ansichten als Tabs hinzu.",
+      "title": "Erstelle deine ersten Ansichten",
+      "intro": "Sobald deine Daten geladen sind, zeigt Koia die Rohdaten. Füge daneben Ansichten als Tabs hinzu.",
       "rawData": {
         "title": "Rohdaten erkunden",
-        "text": "Sortieren Sie Spalten, schränken Sie Zeilen mit <b>Filter hinzufügen</b> ein und klicken Sie auf ein Diagrammelement oder einen Wert, um die zugrunde liegenden Zeilen zu sehen."
+        "text": "Sortiere Spalten, schränke Zeilen mit <b>Filter hinzufügen</b> ein und klicke auf ein Diagrammelement oder einen Wert, um die zugrunde liegenden Zeilen zu sehen."
       },
       "pivot": {
         "title": "Pivot-Tabelle",
-        "beforeIcon": "Klicken Sie neben den Tabs auf ",
-        "afterIcon": ", wählen Sie <b>Neue Pivot-Tabelle</b> und ziehen Sie die Spalten an ihren Platz. Klicken Sie auf einen Wert, um seine Zeilen zu sehen."
+        "beforeIcon": "Klicke neben den Tabs auf ",
+        "afterIcon": ", wähle <b>Neue Pivot-Tabelle</b> und ziehe die Spalten an ihren Platz. Klicke auf einen Wert, um seine Zeilen zu sehen."
       },
       "dashboard": {
         "title": "Dashboard",
-        "beforeIcon": "Klicken Sie auf ",
-        "afterIcon": ", wählen Sie <b>Neues Dashboard</b> und kombinieren Sie Diagramme, Graphen, Übersichtstabellen und Textfelder."
+        "beforeIcon": "Klicke auf ",
+        "afterIcon": ", wähle <b>Neues Dashboard</b> und kombiniere Diagramme, Graphen, Übersichtstabellen und Textfelder."
       },
       "configure": {
         "title": "Elemente konfigurieren",
-        "beforeIcon": "Klicken Sie bei einem Element auf ",
+        "beforeIcon": "Klicke bei einem Element auf ",
         "afterIcon": ", um Spalten, Diagrammtyp und Farben zu wählen."
       }
     },
@@ -98,7 +98,7 @@
       "renameTitle": "Tab umbenennen",
       "tabName": "Tab-Name",
       "closeTitle": "Tab schliessen",
-      "closeQuestion": "Möchten Sie \"{{title}}\" wirklich schliessen?"
+      "closeQuestion": "Möchtest du \"{{title}}\" wirklich schliessen?"
     }
   },
   "filter": {
@@ -193,7 +193,7 @@
     "detectColumnsButton": "Spalten erkennen",
     "columnDefinitions": "Spaltendefinitionen",
     "preview": "Vorschau",
-    "previewErrorsTooltip": "Die Vorschau enthält Zuordnungsfehler. Bitte korrigieren Sie die Leseattribute und/oder Spaltendefinitionen, bevor fehlerhafte Daten in die Datenbank geladen werden",
+    "previewErrorsTooltip": "Die Vorschau enthält Zuordnungsfehler. Bitte korrigiere die Leseattribute und/oder Spaltendefinitionen, bevor fehlerhafte Daten in die Datenbank geladen werden",
     "loadDataTooltip": "Lädt alle Daten in die Datenbank",
     "loadData": "Daten laden",
     "maxItems": "Max. Einträge",
@@ -248,7 +248,7 @@
       "excelDescription": "Microsoft Excel besteht aus einem oder mehreren Tabellenblättern mit Daten in Tabellenform.\nDie Spaltennamen werden in der ersten Zeile des ausgewählten Tabellenblatts erwartet.",
       "excelSheetName": "Tabellenblatt",
       "excelSheetNameDescription": "Name des Excel-Tabellenblatts mit den Daten",
-      "jsonDescription": "JSON (JavaScript Object Notation) ist formatierter, selbstbeschreibender Text zum Speichern und Austauschen von Daten.\nSie importieren ein Array flacher (nicht verschachtelter) Objekte, indem Sie dessen JSONPath angeben.",
+      "jsonDescription": "JSON (JavaScript Object Notation) ist formatierter, selbstbeschreibender Text zum Speichern und Austauschen von Daten.\nDu importierst ein Array flacher (nicht verschachtelter) Objekte, indem du dessen JSONPath angibst.",
       "jsonPath": "Array-JSONPath",
       "jsonPathDescription": "JSONPath zum Objekt-Array mit den Daten",
       "worksheetMissing": "Tabellenblatt \"{{sheet}}\" existiert nicht oder kann nicht gelesen werden"
@@ -262,7 +262,7 @@
     "deleteAll": "Alle löschen",
     "deleteFilteredTitle": "Gefilterte Szenen löschen",
     "deleteAllTitle": "Alle Szenen löschen",
-    "deleteConfirm": "Wollen Sie wirklich {{count}} Szene(n) löschen?",
+    "deleteConfirm": "Willst du wirklich {{count}} Szene(n) löschen?",
     "sceneDeleted": "Szene wurde gelöscht",
     "sceneUpdated": "Szene wurde aktualisiert",
     "scenesDeleted": "{{count}} Szenen wurden gelöscht",
@@ -292,11 +292,11 @@
     "manageSavedViews": "Gespeicherte Ansichten verwalten",
     "manageSavedViewsHint": "Zuvor gespeicherte Ansichten löschen oder umbenennen.",
     "createView": "Ansicht erstellen",
-    "chooseInitialElement": "Wählen Sie das erste Element der neuen Ansicht.",
+    "chooseInitialElement": "Wähle das erste Element der neuen Ansicht.",
     "chart": "Diagramm",
     "graph": "Beziehungsgraph",
     "summaryTable": "Übersichtstabelle",
-    "generateDashboardHint": "Oder lassen Sie Koia ein Dashboard aus den Daten zusammenstellen.",
+    "generateDashboardHint": "Oder lass Koia ein Dashboard aus den Daten zusammenstellen.",
     "generateDashboard": "Dashboard generieren",
     "dontShowAgain": "Nicht mehr anzeigen",
     "rememberChoice": "Auswahl merken",
@@ -314,7 +314,7 @@
     "save": "Alle Tabs als Ansicht speichern",
     "restore": "Gespeicherte Ansicht wiederherstellen",
     "restoreTitle": "Ansicht wiederherstellen",
-    "restoreQuestion": "Das Wiederherstellen von \"{{name}}\" ersetzt alle offenen Tabs. Möchten Sie fortfahren?",
+    "restoreQuestion": "Das Wiederherstellen von \"{{name}}\" ersetzt alle offenen Tabs. Möchtest du fortfahren?",
     "saveTitle": "Ansicht speichern",
     "name": "Name der Ansicht",
     "saved": "Ansicht \"{{name}}\" wurde gespeichert",
@@ -613,7 +613,7 @@
     }
   },
   "graph": {
-    "maxNodesExceeded": "Graph: Maximale Anzahl von {{max}} Knoten überschritten.\n\nBitte wählen Sie stattdessen ein Diagramm oder verfeinern Sie die Datenfilterung.",
+    "maxNodesExceeded": "Graph: Maximale Anzahl von {{max}} Knoten überschritten.\n\nBitte wähle stattdessen ein Diagramm oder verfeinere die Datenfilterung.",
     "tooltip": {
       "rootNode": "Wurzelknoten",
       "oneEntry": "({{count}} Eintrag)",

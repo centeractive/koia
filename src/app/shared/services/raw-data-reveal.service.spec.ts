@@ -77,7 +77,7 @@ describe('RawDataRevealService', () => {
     expect(actualQuery.getValueRangeFilters()).toEqual([]);
   });
 
-  it('#ofTimeUnit should navigate to raw data view for time period of entire timeunit', () => {
+  it('#ofTimeUnit should navigate to raw data view for time period of entire time unit without start of next time unit', () => {
 
     // when
     service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'], context);
@@ -87,7 +87,7 @@ describe('RawDataRevealService', () => {
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
-      new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo + min, maxExcluding: undefined })
+      new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo + min, maxExcluding: true })
     ]);
   });
 
@@ -158,7 +158,24 @@ describe('RawDataRevealService', () => {
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1')]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
-      new ValueRangeFilter('Time', { min: now - min, max: now, maxExcluding: undefined })
+      new ValueRangeFilter('Time', { min: now - min, max: now, maxExcluding: true })
+    ]);
+  });
+
+  it('#ofTimeUnit should exclude start of next time unit when base query time range ends there', () => {
+
+    // given
+    timeColumn.groupingTimeUnit = TimeUnit.HOUR;
+    query.addValueRangeFilter('Time', oneHourAgo, now);
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Host'], ['server1'], context);
+
+    // then
+    expect(dialogServiceOpenSpy).toHaveBeenCalled();
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getValueRangeFilters()).toEqual([
+      new ValueRangeFilter('Time', { min: oneHourAgo, max: now, maxExcluding: true })
     ]);
   });
 

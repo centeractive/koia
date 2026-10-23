@@ -1,6 +1,7 @@
 import de from 'assets/i18n/de.json';
 import en from 'assets/i18n/en.json';
 import ja from 'assets/i18n/ja.json';
+import { FORMAL_GERMAN_ADDRESS } from 'app/shared/test/german-address';
 
 describe('translation files', () => {
 
@@ -46,5 +47,9 @@ describe('translation files', () => {
             expect((text as string).trim(), key).not.toBe('');
          });
       });
+   });
+
+   it('de should address user informally', () => {
+      flatten(de).forEach((text, key) => expect(text, key).not.toMatch(FORMAL_GERMAN_ADDRESS));
    });
 });

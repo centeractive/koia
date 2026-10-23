@@ -23,7 +23,7 @@ export class GraphDataService {
    createData(graphContext: GraphContext): GraphData {
       const providerContext = new ProviderContext(graphContext);
       let dataFrame: IDataFrame<number, object> = new DataFrame(providerContext.entries);
-      graphContext.columns.filter(c => c.dataType === DataType.TIME).forEach(c => dataFrame = this.convertTime(dataFrame, c));
+      graphContext.columns.filter(c => c.dataType === DataType.TIME && c.groupingTimeUnit).forEach(c => dataFrame = this.convertTime(dataFrame, c));
       const treeRoot = this.createTree(dataFrame.toArray(), providerContext);
       this.buildGraphData(null, treeRoot, -1, providerContext);
       return { nodes: providerContext.nodes, links: providerContext.links };

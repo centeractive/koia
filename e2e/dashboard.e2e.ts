@@ -5,16 +5,18 @@ import { DataType } from 'app/shared/model/data-type.enum';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
+import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { StringUtils } from 'app/shared/utils/string-utils';
 import { SUMMARY_TABLE_STYLE } from 'app/summary-table/summary-table-style';
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILIES, FONT_SIZES } from 'app/text-box/text-box-style';
 import { Locator, Page } from '@playwright/test';
+import { DateTime } from 'luxon';
 import { DashboardTile } from './support/components/dashboard-tile';
 import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
 import { dispatchWindowEvent, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { expect, test } from './support/fixtures';
-import { firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { countOf, distinctValuesOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
 import { DashboardPage } from './support/pages/dashboard-page';
 import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
@@ -32,7 +34,21 @@ const NOTE_MIN_FIT_WIDTH = 120;
 const TEXT_BOX_FRAME_PADDING_PX = 2 * 6;
 const BOTTOM_RIGHT_QUADRANT = { x: 0.7, y: 0.7 };
 const en = new Texts('en');
-const column = firstColumnOf(fruitSalesOf('en'), DataType.TEXT);
+const sample = fruitSalesOf('en');
+const column = firstColumnOf(sample, DataType.TEXT);
+const dateColumn = firstColumnOf(sample, DataType.TIME);
+const firstDay = distinctValuesOf<string>(sample, dateColumn)[0];
+
+async function addGraphGroupedBy(dashboard: DashboardPage, timeUnitLabel: string): Promise<void> {
+   await dashboard.launcher.addGraph();
+   await dashboard.sideBar.dragGroupByColumn(dateColumn);
+   await dashboard.sideBar.selectGroupByTimeUnit(dateColumn, timeUnitLabel);
+   await dashboard.sideBar.close();
+}
+
+function formattedFirstDay(format: string): string {
+   return DateTime.fromISO(firstDay, { locale: 'en-US' }).toFormat(format);
+}
 
 test.beforeEach(async ({ front, tabBar }) => {
    await front.open('en');
@@ -68,7 +84,31 @@ test('double click on the graph root node reveals all rows', async ({ dashboard,
 
    await dashboard.tile(0).graphRootNode.dblclick();
 
-   await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(fruitSalesOf('en').entries.length));
+   await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(sample.entries.length));
+});
+
+test('double click on a month node of a graph grouped by month reveals the rows of that month', async ({ dashboard, rawDataDialog }) => {
+   const count = countOf(sample, e => e[dateColumn].startsWith(firstDay.slice(0, 7)));
+   const nodeText = `${dateColumn} (per ${TimeUnit.MONTH}): ${formattedFirstDay('MMM yyyy')} (`;
+   await addGraphGroupedBy(dashboard, en.get(EnumLabelKeys.groupingTimeUnit(TimeUnit.MONTH)));
+   const node = dashboard.tile(0).graphNodes.filter({ hasText: nodeText });
+   await expect(node).toHaveText(nodeText + en.number(count) + ')');
+
+   await dashboard.tile(0).doubleClickGraphNode(node);
+
+   await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(count));
+});
+
+test('double click on a time node of a graph not grouped by time unit reveals the rows of that time', async ({ dashboard, rawDataDialog }) => {
+   const count = countOf(sample, e => e[dateColumn] === firstDay);
+   const nodeText = `${dateColumn}: ${formattedFirstDay('d MMM yyyy HH:mm:ss SSS')} (`;
+   await addGraphGroupedBy(dashboard, en.get('ui.notGrouped'));
+   const node = dashboard.tile(0).graphNodes.filter({ hasText: nodeText });
+   await expect(node).toHaveText(nodeText + en.number(count) + ')');
+
+   await dashboard.tile(0).doubleClickGraphNode(node);
+
+   await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(count));
 });
 
 test('saved view restores the removed element', async ({ dashboard, notifications, confirmDialog }) => {

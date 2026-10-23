@@ -14,7 +14,7 @@ import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, rightInsetOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
+import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, leftInsetOf, rightInsetOf, rowCountOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { QueryParamExtractor } from 'app/shared/utils';
 import { Observable, of } from 'rxjs';
@@ -818,7 +818,7 @@ describe('FrontComponent', () => {
     expect(startButton(host).textContent).toContain('Continue with your scene');
   });
 
-  it('should offer loading a file and sample data next to continue', () => {
+  it('should offer loading a file and sample data above continue', () => {
 
     // when
     const host = render();
@@ -826,6 +826,33 @@ describe('FrontComponent', () => {
     // then
     expect(host.querySelector('#load_file_button').getAttribute('href')).toMatch(/\/scene$/);
     expect(host.querySelector('#sample_button').textContent).toContain('Try sample data');
+  });
+
+  it('continue button should be last below load file and sample buttons, all stacked with same width', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const actions = host.querySelector('.front-actions');
+    const start = startButton(host);
+    expect(actions.lastElementChild).toBe(start);
+    expect(start.getBoundingClientRect().top).toBeGreaterThanOrEqual(host.querySelector('#sample_button').getBoundingClientRect().bottom);
+    expect(actionButtonWidths(host)).toEqual(Array(3).fill(actions.getBoundingClientRect().width));
+  });
+
+  it('should not show continue row when no scene exists', () => {
+
+    // given
+    component.scenesCount = 0;
+
+    // when
+    const host = render();
+
+    // then
+    const actions = host.querySelector('.front-actions');
+    expect(actions.children.length).toBe(1);
+    expect(Array.from(actions.querySelector(':scope > .front-actions-row').children).map(c => c.id)).toEqual(['start_button', 'sample_button']);
   });
 
   it('should start with loading a file when no scene exists', () => {
@@ -1025,6 +1052,31 @@ describe('FrontComponent', () => {
       expect(startButton(host).getBoundingClientRect().bottom).toBeLessThanOrEqual(800);
     });
 
+    it('load file and sample buttons should share one row above continue button', () => {
+
+      // when
+      const host = render();
+
+      // then
+      expect(rowCountOf(host, '.front-actions-row .landing-btn')).toBe(1);
+      expect(startButton(host).getBoundingClientRect().top).toBeGreaterThan(host.querySelector('#load_file_button').getBoundingClientRect().bottom);
+    });
+
+    it('continue button should be centered with same width as load file and sample buttons', () => {
+
+      // when
+      const host = render();
+
+      // then
+      const actions = host.querySelector('.front-actions');
+      const start = startButton(host);
+      const [loadFile, sample, continueWidth] = actionButtonWidths(host);
+      expect(continueWidth).toBeCloseTo(loadFile, 0);
+      expect(continueWidth).toBeCloseTo(sample, 0);
+      expect(continueWidth).toBeLessThan(actions.getBoundingClientRect().width / 2);
+      expect(Math.abs(leftInsetOf(start, actions) - rightInsetOf(start, actions))).toBeLessThanOrEqual(1);
+    });
+
     it('should show language selection at right end of header', () => {
 
       // when
@@ -1051,6 +1103,10 @@ describe('FrontComponent', () => {
 
   function storageButtons(host: HTMLElement): HTMLButtonElement[] {
     return Array.from(host.querySelectorAll<HTMLButtonElement>('.front-storage-option'));
+  }
+
+  function actionButtonWidths(host: HTMLElement): number[] {
+    return Array.from(host.querySelectorAll('.front-actions .landing-btn')).map(b => b.getBoundingClientRect().width);
   }
 
   function startButton(host: HTMLElement): HTMLAnchorElement {

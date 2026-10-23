@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
-import { Aggregation, Column, DataType } from 'app/shared/model';
+import { Aggregation, Column, ComputeOperator, DataType, Operator, PropertyFilter, Query } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { SeriesNameConverter } from 'app/shared/services/chart';
@@ -56,12 +56,13 @@ describe('RawDataRevealer - PIE', () => {
         const context = new ChartContext([colName, colAmount], ChartType.PIE.type, null);
         context.dataColumns = [colAmount];
         context.groupByColumns = [colName];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['B'], context);
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Name'], ['B'], context);
     });
 
     it('#reveal - individual values by time', () => {
@@ -79,12 +80,60 @@ describe('RawDataRevealer - PIE', () => {
         const context = new ChartContext([colTimestamp, colAmount], ChartType.PIE.type, null);
         context.dataColumns = [colAmount];
         context.groupByColumns = [colTimestamp];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Timestamp'], [1735167600000], context);
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Timestamp'], [1735167600000], context);
+    });
+
+    it('#reveal - count distinct values of boolean column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: arcElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            labels: ['false', 'true'],
+            datasets: [{
+                label: 'Flag',
+                data: [4, 6]
+            }]
+        };
+        const dataColumn = booleanColumn('Flag');
+        const context = new ChartContext([dataColumn], ChartType.PIE.type, null);
+        context.aggregations = [Aggregation.COUNT];
+        context.dataColumns = [dataColumn];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Flag'], [true], context);
+    });
+
+    it('#reveal - individual values of computed data column', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: arcElement(), datasetIndex: 0, index: 1 }];
+        const data: ChartData = {
+            labels: ['A', 'B', 'C'],
+            datasets: [{
+                label: 'Share',
+                data: [40, 35, 25]
+            }]
+        };
+        const colName = textColumn('Name');
+        const colShare = computedColumn('Share');
+        const context = new ChartContext([colName, colShare], ChartType.PIE.type, null);
+        context.dataColumns = [colShare];
+        context.groupByColumns = [colName];
+        context.query = new Query();
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(context.query, ['Name'], ['B'], context);
+        expect(ofQuerySpy.mock.calls[0][0]).toBe(context.query);
     });
 
 });
@@ -152,12 +201,56 @@ describe('RawDataRevealer - HORIZONTAL_BAR', () => {
         const context = new ChartContext([colName, colAmount], ChartType.HORIZONTAL_BAR.type, null);
         context.dataColumns = [colAmount];
         context.groupByColumns = [colName];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['B'], context);
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Name'], ['B'], context);
+    });
+
+    it('#reveal - count distinct values of boolean column with bar legend', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: barElement(), datasetIndex: 0, index: 0 }];
+        const data = {
+            labels: [],
+            datasets: [
+                { label: 'false', originalLabel: 'false', data: [{ x: 1, y: 4 }] },
+                { label: 'true', originalLabel: 'true', data: [{ x: 2, y: 6 }] }
+            ]
+        } as unknown as ChartData;
+        const dataColumn = booleanColumn('Flag');
+        const context = new ChartContext([dataColumn], ChartType.HORIZONTAL_BAR.type, null);
+        context.aggregations = [Aggregation.COUNT];
+        context.dataColumns = [dataColumn];
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Flag'], [false], context);
+    });
+
+    it('#reveal - individual values of time named bar at epoch', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: barElement(), datasetIndex: 0, index: 0 }];
+        const data = {
+            labels: [],
+            datasets: [{ label: '1 Jan 1970', originalLabel: 0, data: [{ x: 1, y: 900 }] }]
+        } as unknown as ChartData;
+        const colTimestamp = timeColumn('Timestamp');
+        const colAmount = numberColumn('Amount');
+        const context = new ChartContext([colTimestamp, colAmount], ChartType.HORIZONTAL_BAR.type, null);
+        context.dataColumns = [colAmount];
+        context.groupByColumns = [colTimestamp];
+        context.query = new Query();
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Timestamp'], [0], context);
     });
 
 });
@@ -257,12 +350,13 @@ describe('RawDataRevealer - LINEAR_HORIZONTAL_BAR', () => {
         const context = new ChartContext([colName, colAmount, colDiscount], ChartType.LINEAR_HORIZONTAL_BAR.type, null);
         context.dataColumns = [colAmount, colDiscount];
         context.groupByColumns = [colName];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['B'], expect.anything());
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Name'], ['B'], expect.anything());
     });
 
 });
@@ -296,12 +390,13 @@ describe('RawDataRevealer - LINE', () => {
         context.aggregations = [Aggregation.COUNT];
         context.dataColumns = [colAmount, colDiscount];
         context.groupByColumns = [colName];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Name'], ['C'], context);
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('City'), ['Name'], ['C'], context);
     });
 
     it('#reveal - no element', () => {
@@ -483,12 +578,13 @@ describe('RawDataRevealer - LINE', () => {
         context.groupByColumns = [colTimestamp];
         context.splitColumns = [colCity];
         context.aggregations = [Aggregation.SUM];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofTimeUnitSpy).toHaveBeenCalledWith(undefined, [colTimestamp], [1734994800000], ['City'], ['London'], context);
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), [colTimestamp], [1734994800000], ['City'], ['London'], context);
     });
 
     it('#reveal - row count by time', () => {
@@ -544,12 +640,13 @@ describe('RawDataRevealer - LINE', () => {
         context.dataColumns = [colAmount];
         context.groupByColumns = [colRank];
         context.aggregations = [Aggregation.SUM];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Rank'], [3], context);
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Rank'], [3], context);
     });
 
     it('#reveal - sum of values by text', () => {
@@ -564,12 +661,60 @@ describe('RawDataRevealer - LINE', () => {
         context.dataColumns = [colAmount];
         context.groupByColumns = [colFood];
         context.aggregations = [Aggregation.SUM];
+        context.query = new Query();
 
         // when
         revealer.reveal(activeElements, data, context);
 
         // then
-        expect(ofQuerySpy).toHaveBeenCalledWith(undefined, ['Food'], ['Pizza'], context);
+        expect(ofQuerySpy).toHaveBeenCalledWith(notEmptyQuery('Amount'), ['Food'], ['Pizza'], context);
+    });
+
+    it('#reveal - average of second data column by time', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 1, index: 0 }];
+        const data: ChartData = {
+            datasets: [
+                { label: 'Amount', data: [{ x: 1734994800000, y: 900 }] },
+                { label: 'Price', data: [{ x: 1734994800000, y: 12 }] }
+            ]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colAmount = numberColumn('Amount');
+        const colPrice = numberColumn('Price');
+        const context = new ChartContext([colTimestamp, colAmount, colPrice], ChartType.LINE.type, null);
+        context.dataColumns = [colAmount, colPrice];
+        context.groupByColumns = [colTimestamp];
+        context.aggregations = [Aggregation.AVG];
+        context.query = new Query();
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(notEmptyQuery('Price'), [colTimestamp], [1734994800000], [], [], context);
+    });
+
+    it('#reveal - sum of computed column by time', () => {
+        // given
+        const activeElements: ActiveElement[] = [{ element: pointElement(), datasetIndex: 0, index: 0 }];
+        const data: ChartData = {
+            datasets: [{ label: 'Share', data: [{ x: 1734994800000, y: 75 }] }]
+        };
+        const colTimestamp = timeColumn('Timestamp');
+        const colShare = computedColumn('Share');
+        const context = new ChartContext([colTimestamp, colShare], ChartType.LINE.type, null);
+        context.dataColumns = [colShare];
+        context.groupByColumns = [colTimestamp];
+        context.aggregations = [Aggregation.SUM];
+        context.query = new Query();
+
+        // when
+        revealer.reveal(activeElements, data, context);
+
+        // then
+        expect(ofTimeUnitSpy).toHaveBeenCalledWith(context.query, [colTimestamp], [1734994800000], [], [], context);
+        expect(ofTimeUnitSpy.mock.calls[0][0]).toBe(context.query);
     });
 
 });
@@ -619,6 +764,21 @@ function setup(): void {
     ofTimeUnitSpy = vi.spyOn(rawDataRevealService, 'ofTimeUnit').mockReturnValue(undefined);
 }
 
+
+function notEmptyQuery(columnName: string): Query {
+    return new Query(new PropertyFilter(columnName, Operator.NOT_EMPTY, ''));
+}
+
+function booleanColumn(name: string): Column {
+    return column(name, DataType.BOOLEAN);
+}
+
+function computedColumn(name: string): Column {
+    return {
+        ...numberColumn(name),
+        computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+}
 
 function textColumn(name: string): Column {
     return column(name, DataType.TEXT);

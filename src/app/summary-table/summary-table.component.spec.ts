@@ -463,7 +463,7 @@ describe('SummaryTableComponent', () => {
     expect(query.getValueRangeFilters()).toEqual([]);
   });
 
-  it('#onAggregationCellClick should open raw data view for matching column and time period', () => {
+  it('#onAggregationCellClick should open raw data view for matching column and time period without start of next minute', () => {
 
     // given
     context.dataColumns = [findColumn('t1')];
@@ -478,7 +478,7 @@ describe('SummaryTableComponent', () => {
     const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
     expect(query.getPropertyFilters()).toEqual([new PropertyFilter('t1', Operator.EQUAL, 'a')]);
     expect(query.getValueRangeFilters()).toEqual([
-      new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: undefined })
+      new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: true })
     ]);
   });
 

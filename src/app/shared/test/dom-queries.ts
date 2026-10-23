@@ -10,6 +10,10 @@ export function stylesOf(root: ParentNode, selector: string): CSSStyleDeclaratio
   return Array.from(root.querySelectorAll(selector)).map(e => getComputedStyle(e));
 }
 
+export function leftInsetOf(element: Element, container: Element): number {
+  return element.getBoundingClientRect().left - container.getBoundingClientRect().left;
+}
+
 export function rightInsetOf(element: Element, container: Element): number {
   return container.getBoundingClientRect().right - element.getBoundingClientRect().right;
 }
