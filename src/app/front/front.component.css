@@ -11,19 +11,39 @@
 
 .front-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
   margin-top: 20px;
   padding-top: 20px;
   border-top: var(--koia-tile-border);
+  container-type: inline-size;
 }
 
 .front-actions .landing-btn {
-  flex: 1 1 180px;
+  box-sizing: border-box;
 }
 
-.front-actions .landing-btn:first-child:nth-last-child(3) {
-  flex-basis: 100%;
+.front-actions > .landing-btn {
+  width: calc((100% - 12px) / 2);
+}
+
+/* row buttons wrap below 2 x 180px + 12px gap */
+@container (width < 372px) {
+  .front-actions > .landing-btn {
+    width: 100%;
+  }
+}
+
+.front-actions-row {
+  align-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.front-actions-row .landing-btn {
+  flex: 1 1 180px;
 }
 
 .front-start-panel .landing-btn-outline {
