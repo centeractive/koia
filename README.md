@@ -60,6 +60,8 @@ It is recommended to use [CouchDB 3.n](http://couchdb.apache.org/) as described 
 4. After editing the configuration file, CouchDB should be restarted to have the changes applied.
 5. Start Koia by opening [**https://www.koia.io**](https://www.koia.io).
 
+A CouchDB on another machine must be reached through HTTPS (see [CouchDB TLS options](https://docs.couchdb.org/en/stable/config/http.html#https-ssl-tls-options)); choose HTTPS in Koia's CouchDB connection dialog.
+
 
 ## Building
 
