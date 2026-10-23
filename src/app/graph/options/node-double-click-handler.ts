@@ -18,7 +18,7 @@ export class NodeDoubleClickHandler {
       GraphUtils.collectNonTimeColumnNames(graphNode, context).forEach(c => {
          const value = GraphUtils.findColumnValue(graphNode, c);
          if (value === PropertyFilter.EMPTY_VALUE) {
-            query.addPropertyFilter(new PropertyFilter(c, Operator.EMPTY, ''));
+            this.addEmptyFilter(query, c);
          } else {
             columnNames.push(c);
             columnValues.push(value);
@@ -30,13 +30,26 @@ export class NodeDoubleClickHandler {
    private revealRawData(graphNode: GraphNode, query: Query, groupByColumns: Column[], columnNames: string[], columnValues: (string | number)[],
       context: GraphContext) {
       const level = this.hierarchyLevelOf(graphNode);
-      const timeColumns = groupByColumns.slice(0, level).filter(c => c.dataType === DataType.TIME);
+      const timeColumns: Column[] = [];
+      const startTimes: number[] = [];
+      groupByColumns.slice(0, level).filter(c => c.dataType === DataType.TIME).forEach(c => {
+         const startTime = GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit));
+         if (startTime === PropertyFilter.EMPTY_VALUE) {
+            this.addEmptyFilter(query, c.name);
+         } else {
+            timeColumns.push(c);
+            startTimes.push(startTime as number);
+         }
+      });
       if (timeColumns.length > 0) {
-         const startTimes = timeColumns.map(c => GraphUtils.findColumnValue(graphNode, ColumnNameConverter.toLabel(c, c.groupingTimeUnit)) as number);
          this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues, context);
       } else {
          this.rawDataRevealService.ofQuery(query, columnNames, columnValues, context);
       }
+   }
+
+   private addEmptyFilter(query: Query, columnName: string): void {
+      query.addPropertyFilter(new PropertyFilter(columnName, Operator.EMPTY, ''));
    }
 
    private hierarchyLevelOf(graphNode: GraphNode): number {

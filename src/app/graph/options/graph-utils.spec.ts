@@ -1,4 +1,4 @@
-import { DataType, Column, TimeUnit } from 'app/shared/model';
+import { DataType, Column, TimeUnit, PropertyFilter } from 'app/shared/model';
 import { GraphNode, GraphContext } from 'app/shared/model/graph';
 import { GraphUtils } from './graph-utils';
 import { DatePipe } from '@angular/common';
@@ -160,6 +160,34 @@ describe('GraphUtils', () => {
 
       // then
       expect(formattedValue).toEqual('var/log/messages');
+   });
+
+   it('#formattedValueOf should return <empty> value of time node unformatted', () => {
+
+      // given
+      const graphContext = new GraphContext([]);
+      graphContext.groupByColumns = [createColumn('Date', DataType.TIME, TimeUnit.YEAR)];
+      const graphNode: GraphNode = { parent: rootNode, group: 0, name: 'Date (per year)', value: PropertyFilter.EMPTY_VALUE, info: '3', count: 3 };
+
+      // when
+      const formattedValue = GraphUtils.formattedValueOf(graphNode, graphContext);
+
+      // then
+      expect(formattedValue).toEqual(PropertyFilter.EMPTY_VALUE);
+   });
+
+   it('#createDisplayText should return display text of time node with <empty> value', () => {
+
+      // given
+      const graphContext = new GraphContext([]);
+      graphContext.groupByColumns = [createColumn('Date', DataType.TIME, TimeUnit.YEAR)];
+      const graphNode: GraphNode = { parent: rootNode, group: 0, name: 'Date (per year)', value: PropertyFilter.EMPTY_VALUE, info: '3', count: 3 };
+
+      // when
+      const text = GraphUtils.createDisplayText(graphNode, graphContext);
+
+      // then
+      expect(text).toEqual('Date (per year): <empty> (3)');
    });
 
    function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {

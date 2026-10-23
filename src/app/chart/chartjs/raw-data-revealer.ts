@@ -1,7 +1,9 @@
-import { DataType } from 'app/shared/model';
+import { Column, DataType, Operator, PropertyFilter, Query } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
 import { SeriesNameConverter } from 'app/shared/services/chart';
+import { DataTypeUtils } from 'app/shared/utils';
+import { isComputedColumn } from 'app/shared/utils/column-utils';
 import { ActiveElement, BarElement, ChartData, ChartDataset, Point, PointElement } from 'chart.js';
 
 /**
@@ -45,47 +47,69 @@ export class RawDataRevealer {
 
          // series name consists of split column values followed by the data column name
          const tokens = dsLabel.split(SeriesNameConverter.SEPARATOR);
-         const dataColumnName = tokens.pop();
-         dataColumn = context.dataColumns.find(c => c.name === dataColumnName) || dataColumn;
+         tokens.pop();
+         dataColumn = this.dataColumnOf(dsLabel, context);
          groupKey = tokens.concat(String(point.y)).join(SeriesNameConverter.SEPARATOR);
       }
       const columnNames = context.splitColumns.map(c => c.name).concat(dataColumn.name);
       const values = this.seriesNameConverter.toValues(groupKey, dataColumn, context.splitColumns);
-      this.revealGroup(point, columnNames, values, context);
+      this.revealGroup(context.query, point, columnNames, values, context);
    }
 
    private fromAggregatedDataPoint(point: Point, dataset: ChartDataset, context: ChartContext): void {
+      const query = context.isRowCountSelected() ? context.query : this.dataValueQuery(this.dataColumnOf(dataset.label, context), context);
       const columnNames = context.splitColumns.map(c => c.name);
       const values = this.seriesNameConverter.toSplitValues(dataset.label, context.splitColumns);
-      this.revealGroup(point, columnNames, values, context);
+      this.revealGroup(query, point, columnNames, values, context);
    }
 
-   private revealGroup(point: Point, columnNames: string[], values: (string | number | boolean)[], context: ChartContext): void {
+   private dataColumnOf(seriesName: string, context: ChartContext): Column {
+      const dataColumnName = seriesName.split(SeriesNameConverter.SEPARATOR).pop();
+      return context.dataColumns.find(c => c.name === dataColumnName) || context.dataColumns[0];
+   }
+
+   /**
+    * computed values are not stored, hence raw data cannot be filtered by them
+    */
+   private dataValueQuery(dataColumn: Column, context: ChartContext): Query {
+      if (isComputedColumn(dataColumn)) {
+         return context.query;
+      }
+      const query = context.query.clone();
+      query.addPropertyFilter(new PropertyFilter(dataColumn.name, Operator.NOT_EMPTY, ''));
+      return query;
+   }
+
+   private revealGroup(query: Query, point: Point, columnNames: string[], values: (string | number | boolean)[], context: ChartContext): void {
       const groupByColumn = context.groupByColumns[0];
       if (groupByColumn.dataType === DataType.TIME) {
          const timeStart: number = point.x;
-         this.rawDataRevealService.ofTimeUnit(context.query, [groupByColumn], [timeStart], columnNames, values, context);
+         this.rawDataRevealService.ofTimeUnit(query, [groupByColumn], [timeStart], columnNames, values, context);
       } else {
          columnNames.push(groupByColumn.name);
          values.push(point.x);
-         this.rawDataRevealService.ofQuery(context.query, columnNames, values, context);
+         this.rawDataRevealService.ofQuery(query, columnNames, values, context);
       }
    }
 
    private fromFlatData(elements: ActiveElement[], data: ChartData, context: ChartContext): void {
+      const dsIndex = elements[0].datasetIndex;
+      const count = context.isAggregationCountSelected();
       if (data.labels?.length) {
-         const dsIndex = elements[0].datasetIndex;
-         const index = elements[0].index;
-         const column = context.isAggregationCountSelected() ? context.dataColumns[dsIndex] : context.groupByColumns[0];
-         const label = data.labels[index];
-         this.rawDataRevealService.ofQuery(context.query, [column.name], [label], context);
+         const column = count ? context.dataColumns[dsIndex] : context.groupByColumns[0];
+         const query = count ? context.query : this.dataValueQuery(context.dataColumns[dsIndex], context);
+         this.revealValue(query, column, data.labels[elements[0].index], context);
       } else {
-         const dsIndex = elements[0].datasetIndex;
-         const column = context.isAggregationCountSelected() ? context.dataColumns[0] : context.groupByColumns[0];
+         const column = count ? context.dataColumns[0] : context.groupByColumns[0];
+         const query = count ? context.query : this.dataValueQuery(context.dataColumns[0], context);
          const ds = data.datasets[dsIndex];
-         const label = ds['originalLabel'] || ds.label;
-         this.rawDataRevealService.ofQuery(context.query, [column.name], [label], context);
+         this.revealValue(query, column, ds['originalLabel'] ?? ds.label, context);
       }
+   }
+
+   private revealValue(query: Query, column: Column, value: unknown, context: ChartContext): void {
+      const typedValue = column.dataType === DataType.BOOLEAN ? DataTypeUtils.asBoolean(value as string | boolean) : value;
+      this.rawDataRevealService.ofQuery(query, [column.name], [typedValue], context);
    }
 
 }

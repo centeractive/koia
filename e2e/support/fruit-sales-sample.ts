@@ -2,6 +2,7 @@ import { resolve } from 'path';
 import type { PivotContext } from 'app/pivot-table/model/pivot-context.type';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { DataType } from 'app/shared/model/data-type.enum';
+import { ElementType } from 'app/shared/model/view-config/element-type.enum';
 import type { TabDef } from 'app/shared/model/view-config/tab-def.type';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import type { SampleData } from 'app/shared/samples/sample-data';
@@ -47,6 +48,10 @@ export function pivotRowColumnOf(tab: TabDef): string {
 
 export function pivotTimeColumnOf(tab: TabDef): string {
    return (tab.record.data as PivotContext).timeColumns[0].name;
+}
+
+export function graphIndexOf(tab: TabDef): number {
+   return tab.view.elements.findIndex(element => element.elementType === ElementType.GRAPH);
 }
 
 export function chartIndexOf(tab: TabDef, chartType: ChartType): number {

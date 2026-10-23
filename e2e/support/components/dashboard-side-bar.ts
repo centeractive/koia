@@ -87,7 +87,7 @@ export class DashboardSideBar {
    }
 
    /**
-    * expands the hierarchy panel of the summary table unless it is expanded already and drops the available column into the
+    * expands the hierarchy panel of the summary table or graph unless it is expanded already and drops the available column into the
     * selected group-by columns
     */
    async dragGroupByColumn(name: string): Promise<void> {
@@ -103,6 +103,14 @@ export class DashboardSideBar {
          to.y + to.height / 2 - (from.y + from.height / 2));
       await page.mouse.up();
       await expect(selected.getByText(name, { exact: true })).toBeVisible();
+   }
+
+   async selectGroupByTimeUnit(column: string, label: string): Promise<void> {
+      const page = this.sidenav.page();
+      await this.sidenav.locator('#selectedGroupByColumns koia-draggable-column')
+         .filter({ has: page.getByText(column, { exact: true }) })
+         .locator('.select_time_unit > span').click();
+      await page.getByRole('menuitem', { name: label, exact: true }).click();
    }
 
    async switchChartType(chartType: ChartType): Promise<void> {

@@ -2,9 +2,11 @@ import { ChartType } from 'app/shared/model/chart/chart-type';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { LANGUAGE_NAMES } from 'app/shared/services/language/language';
 import { expect, test } from './support/fixtures';
-import { chartIndexOf, dashboardTabOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { chartIndexOf, dashboardTabOf, fruitSalesOf, graphIndexOf } from './support/fruit-sales-sample';
+import { Texts } from './support/texts';
 
 const TOP_RIGHT_TILE = 1;
+const en = new Texts('en');
 
 for (const language of ['de', 'ja'] as const) {
    test(`${LANGUAGE_NAMES[language]} sample dashboard shows the top right chart without warning`, async ({ front, tabBar, dashboard, notifications }) => {
@@ -46,4 +48,18 @@ test('configure button of the sample doughnut chart selects its type and switchi
 
    await expect(dashboard.sideBar.chartTypeButton(ChartType.PIE)).toHaveClass(/\bmat-accent\b/);
    await dashboard.tile(doughnut).expectChartPainted();
+});
+
+test('double click on a product node of the sample graph reveals the rows of its region, channel and product', async ({ front, tabBar, dashboard, rawDataDialog }) => {
+   const dashboardTab = dashboardTabOf(fruitSalesOf('en'));
+   await front.open('en');
+   await front.openSample();
+   await tabBar.open(dashboardTab.id);
+   const tile = dashboard.tile(graphIndexOf(dashboardTab));
+   const node = tile.graphNodes.filter({ hasText: /^Product: / }).first();
+   const count = /\(([^)]*)\)$/.exec(await node.textContent())[1];
+
+   await tile.doubleClickGraphNode(node);
+
+   await expect(rawDataDialog.table.rowCount).toHaveText(en.get('ui.rows', { count }));
 });

@@ -234,6 +234,28 @@ describe('GraphDataService', () => {
       expect(nodes[2].count).toBe(2);
    });
 
+   it('#createData should keep exact times when time column is not grouped', () => {
+
+      // given
+      const timeColumn: Column = { name: 'Time', dataType: DataType.TIME, width: 100 };
+      context = new GraphContext([timeColumn]);
+      context.entries = [{ Time: now }, { Time: now + 30 * sec }, { Time: now + 30 * sec }];
+      context.groupByColumns = [timeColumn];
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      const nodes: GraphNode[] = data['nodes'];
+      expect(nodes.length).toEqual(3);
+      expect(nodes[1].name).toEqual('Time');
+      expect(nodes[1].value).toEqual(now);
+      expect(nodes[1].count).toBe(1);
+      expect(nodes[2].name).toEqual('Time');
+      expect(nodes[2].value).toEqual(now + 30 * sec);
+      expect(nodes[2].count).toBe(2);
+   });
+
    function findColumn(name: string): Column {
       return columns.find(c => c.name === name);
    }
