@@ -20,6 +20,7 @@ import { FreeLayout, Rect, TileRect } from './free-layout';
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
+import { isLegacyFlexView } from './legacy-flex-view';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { PageReflow } from './page-reflow';
 import { RESIZE_CURSORS } from './resize-handles/resize-handles.component';
@@ -748,7 +749,7 @@ export class DashboardComponent extends ViewController {
 
   protected onPreRestoreView(view: View): void {
     this.route = view.route;
-    this.freeLayout.pageFormat = PageFormat.of(view.canvasPaging);
+    this.freeLayout.pageFormat = isLegacyFlexView(view) ? PageFormat.UNPAGED : PageFormat.of(view.canvasPaging);
     if (view.gridColumns) {
       this.gridLayout.gridColumns = view.gridColumns;
     }

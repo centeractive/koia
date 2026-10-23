@@ -15,7 +15,7 @@ import { DashboardComponent } from 'app/dashboard/dashboard.component';
 // must be imported after DashboardComponent to resolve the ViewController <-> ChartComponent import cycle in the right order
 import { ChartComponent } from 'app/chart/chart.component';
 import { PivotTableComponent } from 'app/pivot-table/pivot-table.component';
-import { Aggregation, Query, Route, Scene } from 'app/shared/model';
+import { Aggregation, CanvasPaging, Query, Route, Scene } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { ConfigRecord, ElementType, SceneTabs, TabDef, View, ViewType } from 'app/shared/model/view-config';
 import { DialogService, NotificationService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
@@ -134,7 +134,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     ]);
   }, TIMEOUT);
 
-  it('should restore legacy flex view converted to tab in dashboard with flex layout and default spans', async () => {
+  it('should restore legacy flex view converted to tab in dashboard on free canvas with default spans', async () => {
 
     // given
     scene.config.views = [legacyView(Route.FLEX, 'legacy flex', null, summaryElement(null, null))];
@@ -147,7 +147,8 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     const dashboard = fixture.componentInstance;
 
     // then
-    expect(dashboard.isGridLayout()).toBe(false);
+    expect(dashboard.isCanvasPaging(CanvasPaging.NONE)).toBe(true);
+    expect(dashboard.elementContexts[0].y).toBe(0);
     expect(dashboard.elementContexts[0].gridColumnSpan).toBe(1);
     expect(dashboard.elementContexts[0].gridRowSpan).toBe(1);
     expect(dashboard.elementContexts[0].title).toBe('Levels');

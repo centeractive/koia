@@ -3552,7 +3552,7 @@ describe('DashboardComponent', () => {
       });
     });
 
-    it('#applyView should place tiles of legacy flex view in rows', () => {
+    it('#applyView should place tiles of legacy flex view in rows on free canvas', () => {
 
       // given
       component.addSummaryTable();
@@ -3563,7 +3563,8 @@ describe('DashboardComponent', () => {
       component.applyView(view);
 
       // then
-      expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[0, 10], [610, 10]]);
+      expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[0, 0], [610, 0]]);
+      expect(component.freeLayout.pageFormat).toBe(PageFormat.UNPAGED);
     });
 
     it('#applyView should size legacy flex tiles without size by default', () => {
@@ -4665,10 +4666,12 @@ describe('DashboardComponent', () => {
       { paging: CanvasPaging.NONE, format: PageFormat.UNPAGED },
       { paging: CanvasPaging.PORTRAIT, format: PageFormat.PORTRAIT },
       { paging: undefined, format: PageFormat.LANDSCAPE }
-    ])('#ngOnInit should restore canvas paging $paging of tab view', ({ paging, format }) => fakeAsync(() => {
+    ])('#ngOnInit should restore canvas paging $paging of tab view with positioned tiles', ({ paging, format }) => fakeAsync(() => {
 
       // given
-      const view = viewOf(Route.FLEX, [new SummaryContext(scene.columns)]);
+      const context = new SummaryContext(scene.columns);
+      context.setPosition(0, 10);
+      const view = viewOf(Route.FLEX, [context]);
       view.canvasPaging = paging;
 
       // when
