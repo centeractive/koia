@@ -5,7 +5,7 @@ import { Injectable, signal } from '@angular/core';
 import { getValue, InterpolationParameters, TranslateService } from '@ngx-translate/core';
 import en from 'assets/i18n/en.json';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
-import { DEFAULT_LANGUAGE, Language, languageOf, localeIdOf } from './language';
+import { DEFAULT_LANGUAGE, Language, LANGUAGE_QUERY_PARAM, languageOf, localeIdOf } from './language';
 
 registerLocaleData(localeDe);
 registerLocaleData(localeJa);
@@ -20,7 +20,6 @@ registerLocaleData(localeJa);
 export class LanguageService {
 
    static readonly STORAGE_KEY = 'koia.language';
-   static readonly QUERY_PARAM = 'lang';
 
    private static instance: LanguageService;
 
@@ -80,7 +79,7 @@ export class LanguageService {
     * is not remembered in order to follow later changes of the browser preferences.
     */
    async init(): Promise<void> {
-      const requested = languageOf(new URLSearchParams(window.location.search).get(LanguageService.QUERY_PARAM));
+      const requested = languageOf(new URLSearchParams(window.location.search).get(LANGUAGE_QUERY_PARAM));
       const language = requested ?? languageOf(this.readStored()) ?? this.browserLanguage() ?? DEFAULT_LANGUAGE;
       await this.apply(language, !!requested);
    }

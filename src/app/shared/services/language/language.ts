@@ -5,6 +5,11 @@ export const LANGUAGES: readonly Language[] = ['en', 'de', 'ja'];
 export const DEFAULT_LANGUAGE: Language = 'en';
 
 /**
+ * query parameter with which a third-party program (e.g. Retrospective) requests the language
+ */
+export const LANGUAGE_QUERY_PARAM = 'lang';
+
+/**
  * language names in their own language, as shown in the language selection
  */
 export const LANGUAGE_NAMES: Readonly<Record<Language, string>> = {

@@ -21,7 +21,10 @@ export class SeededScene {
    private readonly data: SampleData = fruitSalesOf(DEFAULT_LANGUAGE);
    readonly columnNames = this.data.scene.columns.map(c => c.name);
 
-   constructor(private readonly couchDB: CouchDB) { }
+   /**
+    * @param overrides replace properties of the scene document, e.g. to make it violate the scene format
+    */
+   constructor(private readonly couchDB: CouchDB, private readonly overrides: Partial<Scene> = {}) { }
 
    async create(): Promise<void> {
       await this.ensureScenesDatabase();
@@ -55,6 +58,6 @@ export class SeededScene {
    }
 
    private sceneDocument(): Scene {
-      return { ...this.data.scene, _id: this.id, name: this.name, creationTime: Date.now(), database: this.id };
+      return { ...this.data.scene, _id: this.id, name: this.name, creationTime: Date.now(), database: this.id, ...this.overrides };
    }
 }

@@ -3,6 +3,8 @@ import { Injectable, NgZone } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
 import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivation, SceneInfo, SceneLabels } from 'app/shared/model';
 import { SceneTabs } from 'app/shared/model/view-config';
+import { rejectionOf } from 'app/shared/scene-format/scene-format-rejection';
+import { SceneValidator } from 'app/shared/scene-format/scene-validator';
 import { QueryUtils } from 'app/shared/utils';
 import { storedColumnsOf } from 'app/shared/utils/column-utils';
 import { withComputedValues } from 'app/shared/utils/computation-utils';
@@ -28,6 +30,7 @@ export class DBService {
   private dbPrefix = '';
   private queryConverter: QueryConverter;
   private activeScene: Scene;
+  private readonly sceneValidator = new SceneValidator();
 
   constructor(private couchDBService: CouchDBService, private readonly zone: NgZone) { }
 
@@ -236,7 +239,17 @@ export class DBService {
     }
     return this.db.findById(this.scenesDbName(), id)
       .then(async s => {
-        this.activeScene = s as Scene;
+        const validation = this.sceneValidator.validate(s);
+        const rejection = rejectionOf(validation, this.sceneValidator.supportedVersions);
+        if (rejection) {
+          throw rejection;
+        }
+        if (validation.errors.length) {
+          console.warn('scene ' + id + ' does not comply with scene format ' + validation.version, validation.errors);
+        }
+        const scene = s as Scene;
+        scene.config ??= {};
+        this.activeScene = scene;
         await this.saveSceneActivation(id);
         return this.activeScene;
       });

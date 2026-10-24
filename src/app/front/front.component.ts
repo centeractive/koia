@@ -11,8 +11,9 @@ import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
-import { firstValueFrom } from 'rxjs';
+import { combineLatest, firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
+import { LaunchParamsService } from './launch-params.service';
 
 @Component({
     selector: 'koia-front',
@@ -39,13 +40,13 @@ export class FrontComponent extends AbstractComponent implements OnInit {
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private dialogService: DialogService, private sampleSceneService: SampleSceneService,
-    notificationService: NotificationService, private languageService: LanguageService) {
+    notificationService: NotificationService, private languageService: LanguageService, private launchParamsService: LaunchParamsService) {
     super(bottomSheet, notificationService);
   }
 
   ngOnInit(): void {
-    this.activatedRoute.queryParamMap.subscribe(params => {
-      const queryParamExtractor = new QueryParamExtractor(params);
+    combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.fragment]).subscribe(([params, fragment]) => {
+      const queryParamExtractor = new QueryParamExtractor(this.launchParamsService.paramsOf(params, fragment));
       if (queryParamExtractor.getCouchDBConnectionInfo() && queryParamExtractor.getSceneID()) {
         this.handleExternalInvocation(queryParamExtractor);
       } else {
@@ -57,7 +58,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   }
 
   /**
-   * web-app was invoked externally with a query string that carries CouchDB connection information and a [[Scene]] _id
+   * web-app was invoked externally with a URL fragment (or query string) that carries CouchDB connection information and a [[Scene]] _id
    */
   private handleExternalInvocation(queryParamExtractor: QueryParamExtractor): void {
     const sceneID = queryParamExtractor.getSceneID();

@@ -20,10 +20,33 @@ test('connecting through the connection dialog switches the data storage to Couc
    await expect(front.storage).toHaveText(texts.get('front.storage.storedIn') + ' ' + COUCHDB_STORAGE);
 });
 
-test('invocation with CouchDB query parameters shows the raw data of the scene', async ({ seededScene, front, rawData }) => {
+test('invocation with CouchDB parameters in URL fragment shows the raw data of the scene', async ({ seededScene, front, rawData }) => {
    await front.openScene(COUCHDB_CONNECTION, seededScene.id);
 
    await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
+});
+
+test('invocation with CouchDB query parameters of released launchers shows the raw data of the scene', async ({ seededScene, front, rawData }) => {
+   await front.openScene(COUCHDB_CONNECTION, seededScene.id, { separator: '?', language: DEFAULT_LANGUAGE });
+
+   await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
+});
+
+test('invocation with scene violating its scene format shows the violation', async ({ seedScene, front, notifications }) => {
+   const scene = await seedScene({ schemaVersion: '1.0', database: '' });
+
+   await front.launch(COUCHDB_CONNECTION, scene.id);
+
+   expect(await notifications.dismiss(StatusType.ERROR))
+      .toContain(texts.get('sceneFormat.invalid', { version: '1.0', errors: '/database: must NOT have fewer than 1 characters' }));
+});
+
+test('invocation with unsupported scene format shows supported versions', async ({ seedScene, front, notifications }) => {
+   const scene = await seedScene({ schemaVersion: '9.0' });
+
+   await front.launch(COUCHDB_CONNECTION, scene.id);
+
+   expect(await notifications.dismiss(StatusType.ERROR)).toContain(texts.get('sceneFormat.unsupportedVersion', { version: '9.0', supported: '1.0' }));
 });
 
 test('sorting raw data informs about the CouchDB sort limitation', async ({ seededScene, front, rawData, confirmDialog }) => {

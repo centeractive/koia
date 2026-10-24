@@ -689,5 +689,9 @@
     "deleteTitle": "計算列の削除",
     "deleteQuestion": "「{{name}}」を削除しますか？この列は、すべてのダッシュボードと保存済みビューで、この列を使用しているすべてのグラフと表から削除されます。",
     "noRawData": "計算列「{{column}}」の値では生データを表示できません"
+  },
+  "sceneFormat": {
+    "invalid": "シーンはシーン形式 {{version}} に準拠していません:\n{{errors}}",
+    "unsupportedVersion": "シーン形式 {{version}} はこの Koia バージョンではサポートされていません（サポート: {{supported}}）"
   }
 }

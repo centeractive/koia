@@ -689,5 +689,9 @@
     "deleteTitle": "Berechnete Spalte löschen",
     "deleteQuestion": "Soll \"{{name}}\" wirklich gelöscht werden? Die Spalte wird aus allen Diagrammen und Tabellen entfernt, die sie verwenden, in allen Dashboards und gespeicherten Ansichten.",
     "noRawData": "Rohdaten können nicht nach Werten der berechneten Spalte \"{{column}}\" angezeigt werden"
+  },
+  "sceneFormat": {
+    "invalid": "Die Szene entspricht nicht dem Szenenformat {{version}}:\n{{errors}}",
+    "unsupportedVersion": "Szenenformat {{version}} wird von dieser Koia-Version nicht unterstützt (unterstützt: {{supported}})"
   }
 }

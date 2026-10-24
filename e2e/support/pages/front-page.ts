@@ -1,8 +1,15 @@
 import { expect, Locator, Page } from '@playwright/test';
 import type { ConnectionInfo } from 'app/shared/model/connection-info.type';
 import { Route } from 'app/shared/model/route.enum';
-import { Language } from 'app/shared/services/language/language';
+import { Language, LANGUAGE_QUERY_PARAM } from 'app/shared/services/language/language';
 import { QueryParamExtractor } from 'app/shared/utils/query-param-extractor';
+
+export type LaunchSeparator = '#' | '?';
+
+export interface LaunchOptions {
+   separator?: LaunchSeparator;
+   language?: Language;
+}
 
 export class FrontPage {
 
@@ -22,7 +29,7 @@ export class FrontPage {
     * @param language when omitted, the stored or the browser language applies
     */
    async open(language?: Language): Promise<void> {
-      await this.page.goto('/' + Route.FRONT + (language ? '?lang=' + language : ''));
+      await this.page.goto('/' + Route.FRONT + this.languageQuery(language));
       await this.waitUntilReady();
    }
 
@@ -31,7 +38,15 @@ export class FrontPage {
       await this.waitUntilReady();
    }
 
-   async openScene(connection: ConnectionInfo, sceneId: string): Promise<void> {
+   async openScene(connection: ConnectionInfo, sceneId: string, options: LaunchOptions = {}): Promise<void> {
+      await this.launch(connection, sceneId, options);
+      await this.page.waitForURL('**/' + Route.RAWDATA);
+   }
+
+   /**
+    * opens the front page with the connection and the scene in the URL fragment ('#') or, as released launchers do, in the query ('?')
+    */
+   async launch(connection: ConnectionInfo, sceneId: string, { separator = '#', language }: LaunchOptions = {}): Promise<void> {
       const params = new URLSearchParams({
          [QueryParamExtractor.PROTOCOL]: connection.protocol,
          [QueryParamExtractor.HOST]: connection.host,
@@ -40,8 +55,18 @@ export class FrontPage {
          [QueryParamExtractor.PASSWORD]: btoa(connection.password),
          [QueryParamExtractor.SCENE_ID]: sceneId
       });
-      await this.page.goto('/' + Route.FRONT + '?' + params);
-      await this.page.waitForURL('**/' + Route.RAWDATA);
+      if (separator === '#') {
+         await this.page.goto('/' + Route.FRONT + this.languageQuery(language) + '#' + params);
+      } else {
+         if (language) {
+            params.set(LANGUAGE_QUERY_PARAM, language);
+         }
+         await this.page.goto('/' + Route.FRONT + '?' + params);
+      }
+   }
+
+   private languageQuery(language?: Language): string {
+      return language ? '?' + LANGUAGE_QUERY_PARAM + '=' + language : '';
    }
 
    async connectToCouchDB(): Promise<void> {

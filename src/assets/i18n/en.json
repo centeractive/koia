@@ -689,5 +689,9 @@
     "deleteTitle": "Delete Computed Column",
     "deleteQuestion": "Do you really want to delete \"{{name}}\"? It will be removed from all charts and tables using it, in all dashboards and saved views.",
     "noRawData": "Raw data cannot be revealed by values of the computed column \"{{column}}\""
+  },
+  "sceneFormat": {
+    "invalid": "scene does not comply with scene format {{version}}:\n{{errors}}",
+    "unsupportedVersion": "scene format {{version}} is not supported by this Koia version (supported: {{supported}})"
   }
 }

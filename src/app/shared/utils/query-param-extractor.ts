@@ -4,7 +4,7 @@ import { Protocol } from '../model/protocol.enum';
 
 /**
  * extracts the CouchDB [[ConnectionInfo]] from the specified [[ParamMap]] in case the web-app was invoked by a third-party
- * program with a query string that carries corresponding information
+ * program with a URL fragment, which never reaches a web server, or query string that carries corresponding information
  */
 export class QueryParamExtractor {
 
@@ -19,7 +19,7 @@ export class QueryParamExtractor {
    private sceneID: string;
 
    /**
-    * @param params query string parameters (see static definitions of expected names above). the password is expected to be Base64 encoded.
+    * @param params URL fragment, which never reaches a web server, or query string parameters (see static definitions of expected names above). the password is expected to be Base64 encoded.
     * Note that an encoded password is not an encrypted password, hence it's not secure. This is acceptable since we assume that the Koia
     * web-app is invoked by a third-party program on the same local machine and that its user is aware of the password.
     */
