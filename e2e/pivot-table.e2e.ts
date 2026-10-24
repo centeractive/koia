@@ -3,7 +3,7 @@ import { PIVOT_TABLE_FILE_BASE_NAME } from 'app/shared/services/export/export-fi
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 import { Locator } from '@playwright/test';
-import { downloadOf, exportFileName } from './support/downloads';
+import { downloadOf, exportFileName, sheetOf } from './support/downloads';
 import { expect, test } from './support/fixtures';
 import { countOf, distinctValuesOf, fruitSalesOf, pivotRowColumnOf, pivotTabOf, pivotTimeColumnOf } from './support/fruit-sales-sample';
 import { contentOffsetOf, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
@@ -62,10 +62,16 @@ test('switching the time unit to year regroups the rows and the row total reveal
       countOf(sample, e => e[rowColumn] === firstRowValue && e[timeColumn].startsWith(firstYear))));
 });
 
-test('pivot table is exported as Excel file', async ({ page, pivot }) => {
+test('pivot table is exported as Excel file with numbers as numbers and time labels as text', async ({ page, pivot }) => {
+   const dataValue = await pivot.valueCells.first().getAttribute('data-value');
+   const timeLabel = await pivot.rowLabels.nth(1).textContent();
+
    const download = await downloadOf(page, () => pivot.viewToolbar.chooseMoreMenuItem(en.get('pivot.saveAsExcel')));
 
    expect(download.suggestedFilename()).toMatch(exportFileName(PIVOT_TABLE_FILE_BASE_NAME, ExportFormat.EXCEL));
+   const cells = Object.entries(await sheetOf(download)).filter(([key]) => !key.startsWith('!')).map(([, cell]) => cell);
+   expect(cells).toContainEqual(expect.objectContaining({ t: 'n', v: Number(dataValue) }));
+   expect(cells).toContainEqual(expect.objectContaining({ t: 's', v: timeLabel }));
 });
 
 test('row totals toggle hides and shows the row total column', async ({ pivot }) => {

@@ -25,6 +25,7 @@ export class DashboardTile {
    readonly firstCountLink: Locator;
    readonly graphRootNode: Locator;
    readonly graphNodes: Locator;
+   readonly graphArea: Locator;
    readonly marginButton: Locator;
    readonly margin: Locator;
    readonly resizeHandles: Locator;
@@ -34,6 +35,7 @@ export class DashboardTile {
       this.firstCountLink = root.locator('td.td_aggregation a').first();
       this.graphRootNode = root.locator('koia-graph svg g.nodes > g > circle').first();
       this.graphNodes = root.locator('koia-graph svg g.nodes > g');
+      this.graphArea = root.locator('koia-graph .div_svg');
       this.marginButton = root.locator('.but_element_margin');
       this.margin = root.locator('.div_margins');
       this.resizeHandles = root.locator('.div_resize_handle');

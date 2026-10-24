@@ -28,6 +28,7 @@ import { ChartDataService, ChartMarginService } from 'app/shared/services/chart'
 import { LanguageService } from 'app/shared/services/language';
 import { claimClick } from 'app/shared/ui/claimed-click';
 import { listenToDocumentOutsideAngular } from 'app/shared/ui/document-listener';
+import { isRendered } from 'app/shared/ui/rendered';
 import { CommonUtils } from 'app/shared/utils';
 import { Subscription } from 'rxjs';
 import { ChangeEvent, Route } from '../shared/model';
@@ -100,8 +101,7 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   }
 
   private isVisible(): boolean {
-    const canvas = this.canvasRef?.nativeElement;
-    return !!canvas?.isConnected && canvas.getClientRects().length > 0;
+    return isRendered(this.canvasRef?.nativeElement);
   }
 
   ngOnChanges(changes: SimpleChanges): void {

@@ -26,4 +26,12 @@ describe('ElementContext', () => {
       // then
       expect(property.value).toBe('');
    });
+
+   it('#isEmptyValue should be true for undefined, null and empty string', () => {
+      [undefined, null, ''].forEach(value => expect(PropertyFilter.isEmptyValue(value)).toBe(true));
+   });
+
+   it('#isEmptyValue should be false for zero, false and blank', () => {
+      [0, false, ' '].forEach(value => expect(PropertyFilter.isEmptyValue(value)).toBe(false));
+   });
 });

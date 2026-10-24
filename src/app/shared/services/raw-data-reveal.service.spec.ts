@@ -85,7 +85,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
-    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo + min, maxExcluding: true })
     ]);
@@ -102,7 +102,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
-    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo, maxExcluding: undefined })
     ]);
@@ -120,7 +120,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
-    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1')]);
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo + min, max: now - min, maxExcluding: undefined })
     ]);
@@ -138,7 +138,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
-    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1')]);
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: now - min, maxExcluding: undefined })
     ]);
@@ -156,7 +156,7 @@ describe('RawDataRevealService', () => {
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
-    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1')]);
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: now - min, max: now, maxExcluding: true })
     ]);
@@ -236,7 +236,7 @@ describe('RawDataRevealService', () => {
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
     expect(actualQuery.hasFullTextFilter()).toBe(false);
-    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR')]);
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([]);
   });
 
@@ -267,9 +267,9 @@ describe('RawDataRevealService', () => {
     const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
     expect(actualQuery.hasFullTextFilter()).toBe(false);
     expect(actualQuery.getPropertyFilters()).toEqual([
-      new PropertyFilter('Host', Operator.EQUAL, 'Server'),
-      new PropertyFilter('Path', Operator.EQUAL, '/opt/tomcat/log/catalina.log'),
-      new PropertyFilter('Level', Operator.EQUAL, 'ERROR')
+      new PropertyFilter('Host', Operator.EQUAL, 'Server', DataType.TEXT),
+      new PropertyFilter('Path', Operator.EQUAL, '/opt/tomcat/log/catalina.log', DataType.TEXT),
+      new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)
     ]);
     expect(actualQuery.getValueRangeFilters()).toEqual([new ValueRangeFilter('Time', { min: now, max: now, maxExcluding: undefined })]);
   });
@@ -312,8 +312,8 @@ describe('RawDataRevealService', () => {
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Host', Operator.NOT_EMPTY, ''),
       new PropertyFilter('Path', Operator.CONTAINS, '.txt'),
-      new PropertyFilter('Level', Operator.EQUAL, 'WARN'),
-      new PropertyFilter('Amount', Operator.EQUAL, 1000)
+      new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT),
+      new PropertyFilter('Amount', Operator.EQUAL, 1000, DataType.NUMBER)
     ]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: now, maxExcluding: undefined })
@@ -361,6 +361,46 @@ describe('RawDataRevealService', () => {
     // then
     expect(onWarningSpy).toHaveBeenCalled();
     expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
+  });
+
+  it('#ofQuery should create equal filter with data type of number column', () => {
+
+    // when
+    service.ofQuery(query, ['Amount'], [1234.5], context);
+
+    // then
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.EQUAL, 1234.5, DataType.NUMBER)]);
+  });
+
+  it('#ofQuery should create empty filter for undefined value', () => {
+
+    // when
+    service.ofQuery(query, ['Level'], [undefined], context);
+
+    // then
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EMPTY, '', DataType.TEXT)]);
+  });
+
+  it('#ofQuery should create empty filter for null value', () => {
+
+    // when
+    service.ofQuery(query, ['Amount'], [null], context);
+
+    // then
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.EMPTY, '', DataType.NUMBER)]);
+  });
+
+  it('#ofQuery should create empty filter for empty string', () => {
+
+    // when
+    service.ofQuery(query, ['Host'], [''], context);
+
+    // then
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EMPTY, '', DataType.TEXT)]);
   });
 
   function shareColumn(): Column {

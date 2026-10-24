@@ -63,7 +63,17 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
     this.baseDataFrame = new DataFrame(this.context.entries || []);
     if (this.context.hasDataColumn()) {
       this.refreshDataFrameAsync(ChangeEvent.STRUCTURE);
+    } else {
+      this.clearData();
     }
+  }
+
+  private clearData(): void {
+    this.dataFrame = undefined;
+    this.frameColumns = undefined;
+    this.frameData = undefined;
+    this.rowSpans = undefined;
+    this.overalls = undefined;
   }
 
   private contextChanged(e: ChangeEvent): void {
@@ -113,18 +123,22 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
     }
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
-    this.dataFrame = this.dataComputer.aggregate(this.baseDataFrame, this.context);
-    this.frameColumns = this.dataFrame.getColumnNames();
-    this.sortDataFrame();
-    this.overalls = this.dataComputer.overallsOf(this.dataFrame, this.context);
+    if (this.context.hasDataColumn()) {
+      this.dataFrame = this.dataComputer.aggregate(this.baseDataFrame, this.context);
+      this.frameColumns = this.dataFrame.getColumnNames();
+      this.sortDataFrame();
+      this.overalls = this.dataComputer.overallsOf(this.dataFrame, this.context);
+    }
     this.computing = false;
   }
 
   async sort(sort: Sort): Promise<void> {
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
-    this.currentSort = sort;
-    this.sortDataFrame();
+    if (this.dataFrame) {
+      this.currentSort = sort;
+      this.sortDataFrame();
+    }
     this.computing = false;
   }
 

@@ -1,5 +1,6 @@
 import { Download, Page } from '@playwright/test';
 import { readFileSync } from 'fs';
+import * as XLSX from '@e965/xlsx';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { EXPORT_FILE_EXTENSIONS } from 'app/shared/services/export/export-file';
 
@@ -29,6 +30,11 @@ export function exportDayOf(fileName: string, baseName: string, format: ExportFo
 
 export function localDayOf(date: Date): string {
    return [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(n => String(n).padStart(2, '0')).join('-');
+}
+
+export async function sheetOf(download: Download): Promise<XLSX.WorkSheet> {
+   const workbook = XLSX.readFile(await download.path());
+   return workbook.Sheets[workbook.SheetNames[0]];
 }
 
 function escaped(text: string): string {

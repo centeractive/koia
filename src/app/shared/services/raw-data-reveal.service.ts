@@ -69,8 +69,10 @@ export class RawDataRevealService {
       const dataType = context.columns.find(c => c.name === columnNames[i]).dataType;
       if (dataType === DataType.TIME) {
         query.addValueRangeFilter(columnNames[i], columnValues[i] as number, columnValues[i] as number);
+      } else if (PropertyFilter.isEmptyValue(columnValues[i])) {
+        query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EMPTY, '', dataType));
       } else {
-        query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i] as string | number | boolean));
+        query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i] as string | number | boolean, dataType));
       }
     }
     this.show(query);

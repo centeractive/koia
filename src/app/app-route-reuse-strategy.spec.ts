@@ -101,6 +101,22 @@ describe('AppRouteReuseStrategy', () => {
       expect(document.getElementsByTagName('mat-tooltip-component').length).toBe(0);
    });
 
+   it('#shouldAttach should remove all of several stale tooltips', () => {
+
+      // given
+      const routeSnapshot = createActivatedRouteSnapshot(Route.RAWDATA);
+      strategy.store(routeSnapshot, {});
+      for (let i = 0; i < 3; i++) {
+         document.body.appendChild(document.createElement('mat-tooltip-component'));
+      }
+
+      // when
+      strategy.shouldAttach(routeSnapshot);
+
+      // then
+      expect(document.getElementsByTagName('mat-tooltip-component').length).toBe(0);
+   });
+
    it('#retrieve should return undefined when detached route handle is not stored', () => {
 
       // given

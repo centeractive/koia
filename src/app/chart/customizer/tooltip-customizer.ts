@@ -27,8 +27,10 @@ export class TooltipCustomizer extends TimeFormatter {
             if (context.isAggregationCountSelected()) {
                 options.plugins.tooltip.callbacks.label = ctx => EnumLabels.aggregation(Aggregation.COUNT) + ': ' + ctx.formattedValue;
             } else if (context.isCircularChart() && chartType !== ChartType.RADAR) {
-                options.plugins.tooltip.callbacks.label = ctx => context.dataColumns[ctx.datasetIndex].name + ': ' + ctx.formattedValue +
-                    ' (' + FormatUtils.percentage(ctx.chart.data.datasets[ctx.datasetIndex].data, <number>ctx.raw) + ')';
+                options.plugins.tooltip.callbacks.label = ctx => {
+                    const percentage = FormatUtils.percentage(ctx.chart.data.datasets[ctx.datasetIndex].data, <number>ctx.raw);
+                    return context.dataColumns[ctx.datasetIndex].name + ': ' + ctx.formattedValue + (percentage ? ' (' + percentage + ')' : '');
+                };
             }
         }
     }

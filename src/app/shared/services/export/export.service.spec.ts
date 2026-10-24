@@ -256,6 +256,24 @@ describe('ExportService', () => {
     expect(vi.mocked(saveAsSpy).mock.lastCall[1]).toMatch(/testfile.*\.xlsx/);
   });
 
+  it('#exportTableAsExcel should write numbers as numbers and labels as text', async () => {
+
+    // given
+    const table = document.createElement('table');
+    table.innerHTML = '<tbody><tr><th>2024-01-02</th><td data-value="1234.5">1,234.50</td><td data-value="0.25">25.0%</td></tr></tbody>';
+    const saveAsSpy = vi.spyOn(exportService, 'saveBlobAs').mockReturnValue(undefined);
+
+    // when
+    exportService.exportTableAsExcel(table, 'testfile');
+
+    // then
+    const blob: Blob = vi.mocked(saveAsSpy).mock.lastCall[0];
+    const sheet = XLSX.read(await blob.arrayBuffer(), { cellNF: true }).Sheets['data'];
+    expect(sheet['A1']).toMatchObject({ t: 's', v: '2024-01-02' });
+    expect(sheet['B1']).toMatchObject({ t: 'n', v: 1234.5 });
+    expect(sheet['C1']).toMatchObject({ t: 'n', v: 0.25, z: '0.0%' });
+  });
+
   it('#exportImage should save .png file', () => {
 
     // given

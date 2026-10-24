@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { By } from '@angular/platform-browser';
-import { ElementContext, ExportFormat, SummaryContext } from 'app/shared/model';
+import { DataType, ElementContext, ExportFormat, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { MatIconModuleMock } from 'app/shared/test';
@@ -56,6 +56,12 @@ describe('ElementHeaderComponent', () => {
     fixture.detectChanges();
   }
 
+  function summaryContextWithDataColumn(): SummaryContext {
+    const context = new SummaryContext([]);
+    context.dataColumns = [{ name: 'Amount', dataType: DataType.NUMBER, width: 70 }];
+    return context;
+  }
+
   function menuItems(selector: string): HTMLButtonElement[] {
     return Array.from(document.querySelectorAll<HTMLButtonElement>(selector));
   }
@@ -72,7 +78,7 @@ describe('ElementHeaderComponent', () => {
   it('should show more button when element supports export formats', () => {
 
     // when
-    render(new SummaryContext([]), null);
+    render(summaryContextWithDataColumn(), null);
 
     // then
     expect(query('.but_more')).toBeTruthy();
@@ -166,14 +172,39 @@ describe('ElementHeaderComponent', () => {
   it('should hide span menu items when grid layout is missing', () => {
 
     // given
-    render(new SummaryContext([]), null);
+    const context = summaryContextWithDataColumn();
+    render(context, null);
 
     // when
     openMoreMenu();
 
     // then
     expect(menuItems('.menu_item_column_span').length).toBe(0);
-    expect(menuItems('.menu_item_save_as').length).toBe(new SummaryContext([]).getSupportedExportFormats().length);
+    expect(menuItems('.menu_item_save_as').length).toBe(context.getSupportedExportFormats().length);
+  });
+
+  it('should hide save as menu items of summary table without data column', () => {
+
+    // given
+    render(new SummaryContext([]), new GridLayout());
+
+    // when
+    openMoreMenu();
+
+    // then
+    expect(menuItems('.menu_item_save_as').length).toBe(0);
+  });
+
+  it('should hide save as menu item of chart not drawn yet', () => {
+
+    // given
+    render(new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 }), new GridLayout());
+
+    // when
+    openMoreMenu();
+
+    // then
+    expect(menuItems('.menu_item_save_as').length).toBe(0);
   });
 
   it('should change column span when column span menu item is selected', () => {
@@ -220,7 +251,8 @@ describe('ElementHeaderComponent', () => {
   it('should emit save as when export menu item is selected', () => {
 
     // given
-    render(new SummaryContext([]), null);
+    const context = summaryContextWithDataColumn();
+    render(context, null);
     const saveAsSpy = vi.spyOn(component.saveAs, 'emit');
     openMoreMenu();
 
@@ -228,7 +260,7 @@ describe('ElementHeaderComponent', () => {
     menuItems('.menu_item_save_as')[0].click();
 
     // then
-    expect(saveAsSpy).toHaveBeenCalledWith(new SummaryContext([]).getSupportedExportFormats()[0] as ExportFormat);
+    expect(saveAsSpy).toHaveBeenCalledWith(context.getSupportedExportFormats()[0] as ExportFormat);
   });
 
   it('should emit configure when configure button is clicked', () => {
