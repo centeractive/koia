@@ -116,6 +116,19 @@ describe('NumberRangeFilter', () => {
       expect(filter.availableSteps).toEqual([1, 10, 100, 1_000, 10_000, 100_000, 1_000_000]);
    });
 
+   it('#constructor should init slider steps when all values are equal', () => {
+
+      // given
+      const column = { name: 'X', dataType: DataType.NUMBER, width: 10 };
+
+      // when
+      const filter = new NumberRangeFilter(column, 42, 42, null, false);
+
+      // then
+      expect(filter.selectedStep).toBe(0.1);
+      expect(filter.availableSteps).toEqual([0.00001, 0.0001, 0.001, 0.01, 0.1, 1]);
+   });
+
    it('#constructor should init slider steps when values are both positive', () => {
 
       // given

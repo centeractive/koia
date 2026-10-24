@@ -13,6 +13,8 @@ import { SceneFactory } from 'app/shared/test';
 import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueRangeFilter } from 'app/shared/value-range/model';
+import { DataFrameSorter } from './data-frame-sorter';
+import { SummaryDataComputer } from './summary-data-computer';
 import { SummaryTableComponent } from './summary-table.component';
 import type { Mock } from 'vitest';
 
@@ -457,8 +459,8 @@ describe('SummaryTableComponent', () => {
     // then
     const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
     expect(query.getPropertyFilters()).toEqual([
-      new PropertyFilter('t2', Operator.EQUAL, 'x'),
-      new PropertyFilter('t1', Operator.EQUAL, 'a')
+      new PropertyFilter('t2', Operator.EQUAL, 'x', DataType.TEXT),
+      new PropertyFilter('t1', Operator.EQUAL, 'a', DataType.TEXT)
     ]);
     expect(query.getValueRangeFilters()).toEqual([]);
   });
@@ -476,7 +478,7 @@ describe('SummaryTableComponent', () => {
 
     // then
     const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
-    expect(query.getPropertyFilters()).toEqual([new PropertyFilter('t1', Operator.EQUAL, 'a')]);
+    expect(query.getPropertyFilters()).toEqual([new PropertyFilter('t1', Operator.EQUAL, 'a', DataType.TEXT)]);
     expect(query.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: true })
     ]);
@@ -576,6 +578,80 @@ describe('SummaryTableComponent', () => {
     // then
     expect(component.frameData).toEqual([]);
     expect(component.rowSpans).toBeUndefined();
+  }));
+
+  it('should hide table when data column is removed', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+    fixture.detectChanges();
+    flush();
+    expect(component.frameData).toBeDefined();
+
+    // when
+    context.dataColumns = [];
+    flush();
+
+    // then
+    fixture.detectChanges();
+    expect(component.frameData).toBeUndefined();
+    expect(component.rowSpans).toBeUndefined();
+    expect(component.overalls).toBeUndefined();
+    expect(component.frameColumns).toBeUndefined();
+    expect(fixture.nativeElement.querySelector('.div_summary_table table')).toBeNull();
+  }));
+
+  it('should not compute data of look change without data column', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [];
+    fixture.detectChanges();
+    flush();
+    const aggregate = vi.spyOn(SummaryDataComputer.prototype, 'aggregate');
+
+    // when
+    context.fireLookChanged();
+    flush();
+
+    // then
+    expect(aggregate).not.toHaveBeenCalled();
+    expect(component.computing).toBe(false);
+  }));
+
+  it('should skip refresh queued before data column is removed', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+    fixture.detectChanges();
+    flush();
+    const aggregate = vi.spyOn(SummaryDataComputer.prototype, 'aggregate');
+
+    // when
+    context.fireLookChanged();
+    context.dataColumns = [];
+    flush();
+
+    // then
+    expect(aggregate).not.toHaveBeenCalled();
+    expect(component.frameData).toBeUndefined();
+  }));
+
+  it('#sort should skip sort pending while data column is removed', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+    fixture.detectChanges();
+    flush();
+    const sort = vi.spyOn(DataFrameSorter.prototype, 'sort');
+
+    // when
+    component.sort({ active: 't1', direction: 'desc' });
+    context.dataColumns = [];
+    flush();
+
+    // then
+    expect(sort).not.toHaveBeenCalled();
+    expect(component.computing).toBe(false);
   }));
 
   it('should neither compute summary data nor sort by data column when context has no data column', fakeAsync(() => {

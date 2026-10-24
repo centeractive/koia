@@ -83,6 +83,21 @@ describe('TooltipCustomizer', () => {
         expect(opts.plugins.tooltip.callbacks.label.call(null, tooltipItem)).toBe('Amount: 1 (25%)');
     });
 
+    it('#customize should define PIE label without percentage when total is zero', () => {
+        // given
+        const ctx = context(ChartType.PIE, [colAmount]);
+        ctx.aggregations = [];
+        ctx.groupByColumns = [colName];
+        const opts = options();
+
+        // when
+        customizer.customize(ctx, opts);
+
+        // then
+        const tooltipItem = { datasetIndex: 0, formattedValue: '0', raw: 0, chart: { data: { datasets: [{ data: [0, 0] }] } } } as TooltipItem<'pie'>;
+        expect(opts.plugins.tooltip.callbacks.label.call(null, tooltipItem)).toBe('Amount: 0');
+    });
+
     it('#customize should not define label of RADAR', () => {
         // given
         const ctx = context(ChartType.RADAR, [colAmount]);

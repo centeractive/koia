@@ -148,6 +148,50 @@ describe('GraphComponent', () => {
     expect(generate).toHaveBeenCalledExactlyOnceWith(component.graphData, svgDiv(), context);
   }));
 
+  it('window resize should not regenerate graph while it is not displayed', fakeAsync(() => {
+
+    // given
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+    fixture.nativeElement.style.display = 'none';
+
+    // when
+    window.dispatchEvent(new Event('resize'));
+    flush();
+
+    // then
+    expect(generate).not.toHaveBeenCalled();
+  }));
+
+  it('#ngDoCheck should regenerate graph once it is displayed again', fakeAsync(() => {
+
+    // given
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+    fixture.nativeElement.style.display = 'none';
+    window.dispatchEvent(new Event('resize'));
+    flush();
+
+    // when
+    fixture.nativeElement.style.display = 'block';
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(generate).toHaveBeenCalledExactlyOnceWith(component.graphData, svgDiv(), context);
+  }));
+
+  it('#ngDoCheck should not regenerate displayed graph that is up to date', fakeAsync(() => {
+
+    // given
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+
+    // when
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(generate).not.toHaveBeenCalled();
+  }));
+
   it('destroy should stop graph simulation', () => {
 
     // given

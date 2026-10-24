@@ -797,7 +797,7 @@ describe('SceneComponent', () => {
     refreshPreviewButtons[0].click();
 
     // then
-    expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options');
+    expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options', '_blank', 'noopener');
   }));
 
   it('#click on "Delete column mapping" should mark column mapping to be skipped', fakeAsync(() => {

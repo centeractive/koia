@@ -6,6 +6,7 @@ import { ExportDataConverter } from './data-converter/export-data-converter';
 import { Column, ExportFormat } from 'app/shared/model';
 import { ExcelDataConverter } from './data-converter/excel-data-converter';
 import { EXPORT_FILE_EXTENSIONS } from './export-file';
+import { typedTableClone } from './data-converter/typed-table';
 import { propertyNamesOf } from './data-converter/property-names';
 
 @Injectable({
@@ -37,8 +38,7 @@ export class ExportService {
   }
 
   exportTableAsExcel(htmlTable: HTMLTableElement, baseFileName: string): void {
-    const options = { raw: true }; // keeps original date/time format
-    this.saveExcelFile(XLSX.utils.table_to_sheet(htmlTable, options), baseFileName);
+    this.saveExcelFile(XLSX.utils.table_to_sheet(typedTableClone(htmlTable)), baseFileName);
   }
 
   exportImage(base64Image: string, exportFormat: ExportFormat, baseFileName: string): void {

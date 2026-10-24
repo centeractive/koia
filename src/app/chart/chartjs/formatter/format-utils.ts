@@ -11,6 +11,9 @@ export class FormatUtils {
             .map(v => v['y'] || v)
             .filter(v => !isNaN(v))
             .reduce((a, b) => a + b, 0);
+        if (total === 0) {
+            return '';
+        }
         return Math.round(1000 / total * value) / 10 + '%';
     }
 }

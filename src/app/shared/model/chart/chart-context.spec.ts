@@ -12,6 +12,7 @@ import { ChartType } from './chart-type';
 import { ScaleConfig } from './scale-config';
 import { TicksConfig } from './ticks-config';
 import type { Mock } from 'vitest';
+import type { Chart } from 'chart.js';
 
 describe('ChartContext', () => {
 
@@ -1172,8 +1173,20 @@ describe('ChartContext', () => {
       document.documentElement.lang = 'en';
    });
 
-   it('#getSupportedExportFormats should return PNG', () => {
-      expect(context.getSupportedExportFormats()).toEqual([ExportFormat.PNG]);
+   it('#getSupportedExportFormats should return PNG when chart is drawn', () => {
+
+      // given
+      context.chart = {} as Chart;
+
+      // when
+      const formats = context.getSupportedExportFormats();
+
+      // then
+      expect(formats).toEqual([ExportFormat.PNG]);
+   });
+
+   it('#getSupportedExportFormats should return no format when chart is not drawn', () => {
+      expect(context.getSupportedExportFormats()).toEqual([]);
    });
 
    function scaleConfig(columnName?: string, stepSize?: number, rotation?: number): ScaleConfig {

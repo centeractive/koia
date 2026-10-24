@@ -209,7 +209,7 @@ describe('ColumnMappingComponent', () => {
     component.openDatePipeFormatPage();
 
     // then
-    expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options');
+    expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options', '_blank', 'noopener');
   });
 
   function createColumnPair(): ColumnPair {

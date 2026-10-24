@@ -66,6 +66,6 @@ export class ColumnMappingComponent implements OnInit {
   }
 
   openDatePipeFormatPage() {
-    window.open('https://angular.io/api/common/DatePipe#custom-format-options');
+    window.open('https://angular.io/api/common/DatePipe#custom-format-options', '_blank', 'noopener');
   }
 }

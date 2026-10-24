@@ -2,7 +2,7 @@ import { ChartType } from 'app/shared/model/chart/chart-type';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { LANGUAGE_NAMES } from 'app/shared/services/language/language';
 import { expect, test } from './support/fixtures';
-import { chartIndexOf, dashboardTabOf, fruitSalesOf, graphIndexOf } from './support/fruit-sales-sample';
+import { chartIndexOf, dashboardTabOf, fruitSalesOf, graphIndexOf, pivotTabOf } from './support/fruit-sales-sample';
 import { Texts } from './support/texts';
 
 const TOP_RIGHT_TILE = 1;
@@ -62,4 +62,28 @@ test('double click on a product node of the sample graph reveals the rows of its
    await tile.doubleClickGraphNode(node);
 
    await expect(rawDataDialog.table.rowCount).toHaveText(en.get('ui.rows', { count }));
+});
+
+test('graph of dashboard tab resized while hidden is centered when shown again', async ({ page, front, tabBar, dashboard, pivot }) => {
+   const sample = fruitSalesOf('en');
+   const dashboardTab = dashboardTabOf(sample);
+   const graphTile = dashboard.tile(graphIndexOf(dashboardTab));
+   await front.open('en');
+   await front.openSample();
+   await tabBar.open(dashboardTab.id);
+   await graphTile.graphRootNode.waitFor();
+   await tabBar.open(pivotTabOf(sample).id);
+   await pivot.valueCells.first().waitFor();
+   await page.setViewportSize({ width: 1400, height: 1000 });
+
+   await tabBar.open(dashboardTab.id);
+
+   await expect.poll(async () => {
+      const node = await graphTile.graphRootNode.boundingBox();
+      const area = await graphTile.graphArea.boundingBox();
+      const x = node.x + node.width / 2;
+      const y = node.y + node.height / 2;
+      return x > area.x + area.width / 4 && x < area.x + area.width * 3 / 4 &&
+         y > area.y + area.height / 4 && y < area.y + area.height * 3 / 4;
+   }).toBe(true);
 });

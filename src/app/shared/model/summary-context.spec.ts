@@ -83,8 +83,20 @@ describe('SummaryContext', () => {
       expect(title).toBe('test title');
    });
 
-   it('#getSupportedExportFormats should return CSV, JSON and EXCEL', () => {
-      expect(context.getSupportedExportFormats()).toEqual([ExportFormat.CSV, ExportFormat.JSON, ExportFormat.EXCEL]);
+   it('#getSupportedExportFormats should return CSV, JSON and EXCEL when data column is defined', () => {
+
+      // given
+      context.dataColumns = [column('Amount')];
+
+      // when
+      const formats = context.getSupportedExportFormats();
+
+      // then
+      expect(formats).toEqual([ExportFormat.CSV, ExportFormat.JSON, ExportFormat.EXCEL]);
+   });
+
+   it('#getSupportedExportFormats should return no format without data column', () => {
+      expect(context.getSupportedExportFormats()).toEqual([]);
    });
 
    function column(name: string): Column {

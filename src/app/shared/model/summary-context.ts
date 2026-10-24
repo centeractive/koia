@@ -22,6 +22,6 @@ export class SummaryContext extends ElementContext {
    }
 
    getSupportedExportFormats(): ExportFormat[] {
-      return [ExportFormat.CSV, ExportFormat.JSON, ExportFormat.EXCEL];
+      return this.hasDataColumn() ? [ExportFormat.CSV, ExportFormat.JSON, ExportFormat.EXCEL] : [];
    }
 }

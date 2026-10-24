@@ -63,7 +63,7 @@ export class NumberRangeFilter {
    }
 
    protected initSliderSteps(): void {
-      const diff = this.end - this.start;
+      const diff = this.end - this.start || NumberRangeFilter.MIN_REQUIRED_UNITS_PER_SLIDER_STEP_TYPE;
       let step = NumberUtils.basePowerOfTen(diff);
       if (diff / step < NumberRangeFilter.MIN_REQUIRED_UNITS_PER_SLIDER_STEP_TYPE) {
          step = step / 10;

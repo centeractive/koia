@@ -422,7 +422,7 @@ export class ChartContext extends ElementContext {
    }
 
    getSupportedExportFormats(): ExportFormat[] {
-      return [ExportFormat.PNG];
+      return this.chart ? [ExportFormat.PNG] : [];
    }
 
 }

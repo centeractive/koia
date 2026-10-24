@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DoCheck,
   ElementRef,
   EventEmitter,
   HostListener,
@@ -15,6 +16,7 @@ import { ExportDataProvider } from 'app/shared/controller';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphData, GraphDataService, RawDataRevealService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
+import { isRendered } from 'app/shared/ui/rendered';
 import { CommonUtils } from 'app/shared/utils';
 import { Subscription } from 'rxjs';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
@@ -27,7 +29,7 @@ import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
+export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataProvider {
 
   static readonly MAX_NODES = 1_000;
 
@@ -42,6 +44,7 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   private graphGenerator: D3ForceGraphGenerator;
   private contextSubscription: Subscription;
   private destroyed = false;
+  private outdated = false;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private graphDataService: GraphDataService,
     rawDataRevealService: RawDataRevealService) {
@@ -51,6 +54,13 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   ngOnInit(): void {
     this.contextSubscription = this.context.subscribeToChanges(() => this.prepareGraphAsync());
     this.prepareGraphAsync()
+  }
+
+  ngDoCheck(): void {
+    if (this.outdated && isRendered(this.svgDiv())) {
+      this.outdated = false;
+      this.prepareGraphAsync();
+    }
   }
 
   @HostListener('window:resize')
@@ -66,7 +76,11 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
     if (!this.destroyed) {
-      this.buildGraphData();
+      if (isRendered(this.svgDiv())) {
+        this.buildGraphData();
+      } else {
+        this.outdated = true;
+      }
     }
     this.loading = false;
   }
@@ -85,8 +99,11 @@ export class GraphComponent implements OnInit, OnDestroy, ExportDataProvider {
   private generateGraph(): void {
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
-    const div: HTMLDivElement = this.cmpElementRef.nativeElement.querySelector('.div_svg');
-    this.graphGenerator.generate(this.graphData, div, this.context);
+    this.graphGenerator.generate(this.graphData, this.svgDiv(), this.context);
+  }
+
+  private svgDiv(): HTMLDivElement {
+    return this.cmpElementRef.nativeElement.querySelector('.div_svg');
   }
 
   createExportData(): object[] {

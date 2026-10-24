@@ -21,6 +21,24 @@ describe('FormatUtils', () => {
         expect(formatted).toBe('');
     });
 
+    it('#percentage should return empty string when total is zero', () => {
+
+        // when
+        const formatted = FormatUtils.percentage([0, 0], 0);
+
+        // then
+        expect(formatted).toBe('');
+    });
+
+    it('#percentage should return empty string when values cancel each other out', () => {
+
+        // when
+        const formatted = FormatUtils.percentage([-2, 2], 2);
+
+        // then
+        expect(formatted).toBe('');
+    });
+
     it('#percentage when data contains missing y (ScatterDataPoint)', () => {
 
         // given

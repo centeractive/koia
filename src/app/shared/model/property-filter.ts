@@ -52,6 +52,10 @@ export class PropertyFilter {
       this._dataType = dataType;
    }
 
+   static isEmptyValue(value: unknown): boolean {
+      return value === undefined || value === null || value === '';
+   }
+
    isApplicable(): boolean {
       if (this._operator === Operator.EMPTY || this._operator === Operator.NOT_EMPTY) {
          return true;
