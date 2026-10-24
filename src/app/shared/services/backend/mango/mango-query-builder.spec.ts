@@ -157,6 +157,19 @@ describe('MangoQueryBuilder', () => {
       expect(query).toEqual(expected);
    });
 
+   it('should build selectors of column named __proto__ without polluting object prototype', () => {
+
+      // when
+      const query = new MangoQueryBuilder(false, columns)
+         .where('Level', Operator.EQUAL, 'Info')
+         .where('__proto__', Operator.EQUAL, 'x')
+         .toQuery();
+
+      // then
+      expect(({} as Record<string, unknown>)['$eq']).toBeUndefined();
+      expect(JSON.stringify(query)).toContain('{"__proto__":{"$eq":"x"}}');
+   });
+
    it('EQUAL text selector', () => {
 
       // when

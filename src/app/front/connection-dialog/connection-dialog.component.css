@@ -9,3 +9,8 @@
 .form_field_port {
    width: 6em;
 }
+
+.risk_note {
+   max-width: 28em;
+   font-size: smaller;
+}

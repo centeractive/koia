@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,7 +41,8 @@ export class FrontComponent extends AbstractComponent implements OnInit {
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private dialogService: DialogService, private sampleSceneService: SampleSceneService,
-    notificationService: NotificationService, private languageService: LanguageService, private launchParamsService: LaunchParamsService) {
+    notificationService: NotificationService, private languageService: LanguageService, private launchParamsService: LaunchParamsService,
+    private location: Location) {
     super(bottomSheet, notificationService);
   }
 
@@ -62,11 +64,14 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    */
   private handleExternalInvocation(queryParamExtractor: QueryParamExtractor): void {
     const sceneID = queryParamExtractor.getSceneID();
-    this.couchDBService.initConnection(queryParamExtractor.getCouchDBConnectionInfo())
+    this.couchDBService.initLaunchConnection(queryParamExtractor.getCouchDBConnectionInfo())
       .then(() => this.dbService.initBackend(true))
       .then(() => this.dbService.activateScene(sceneID))
-      .then(() => this.router.navigateByUrl(Route.RAWDATA))
-      .catch(err => this.notifyError(this.languageService.instant('front.externalInvocationFailed', { id: sceneID }) + ':\n\n' + err));
+      .then(() => this.router.navigateByUrl(Route.RAWDATA, { replaceUrl: true }))
+      .catch(err => {
+        this.location.replaceState('/' + Route.FRONT);
+        this.notifyError(this.languageService.instant('front.externalInvocationFailed', { id: sceneID }) + ':\n\n' + err);
+      });
   }
 
   onDataStorageChanged(dataStorage: string): void {

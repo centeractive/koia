@@ -304,7 +304,15 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   private validateColumnMappings(): void {
     this.columnMappingsValid = this.targetColumnNames.length > 0 &&
-      this.targetColumnNames.every(n => ColumnMappingGenerator.isValidColumnName(n));
+      this.targetColumnNames.every(n => ColumnMappingGenerator.isValidColumnName(n)) &&
+      new Set(this.targetColumnNames).size === this.targetColumnNames.length;
+  }
+
+  /**
+   * @returns true when another mapping that is not skipped targets the same column name
+   */
+  isNameInUse(columnPair: ColumnPair): boolean {
+    return this.columnMappings.some(cp => cp !== columnPair && !cp.skip && cp.target.name === columnPair.target.name);
   }
 
   isPreviewDirty(): boolean {

@@ -5,7 +5,7 @@ import { StatusType } from 'app/shared/model/status-type.enum';
 import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { LANGUAGE_ABBREVIATIONS } from 'app/shared/services/language/language';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
-import { contentOf, downloadOf, exportDayOf, exportFileName, localDayOf } from './support/downloads';
+import { bytesOf, contentOf, downloadOf, exportDayOf, exportFileName, localDayOf } from './support/downloads';
 import { expect, test } from './support/fixtures';
 import { columnValuesOf, countOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
 import { contentOffsetOf, printedSheets, whilePrinted } from './support/print';
@@ -83,6 +83,12 @@ test('raw data is exported as CSV file with a header and all rows', async ({ pag
    expect([dayBefore, dayAfter]).toContain(exportDayOf(download.suggestedFilename(), RAW_DATA_FILE_BASE_NAME, ExportFormat.CSV));
    expect(header.split(',')).toEqual(expect.arrayContaining(sample.scene.columns.map(column => column.name)));
    expect(rows).toHaveLength(sample.entries.length);
+});
+
+test('exported CSV starts with byte order mark', async ({ page, rawData }) => {
+   const download = await downloadOf(page, () => rawData.viewToolbar.chooseMoreMenuItem(en.get('rawData.saveAs', { format: ExportFormat.CSV })));
+
+   expect([...(await bytesOf(download)).subarray(0, 3)]).toEqual([0xEF, 0xBB, 0xBF]);
 });
 
 test('raw data without matching rows is exported as CSV file with the column names only', async ({ page, rawData, notifications }) => {

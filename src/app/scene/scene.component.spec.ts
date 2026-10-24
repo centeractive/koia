@@ -950,6 +950,72 @@ describe('SceneComponent', () => {
     expect(component.columnMappingsValid).toBe(false);
   }));
 
+  it('#onColumnChanged should invalidate column mappings with target name starting with underscore', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.columnMappings[0].target.name = '_id';
+
+    // when
+    component.onColumnChanged();
+
+    // then
+    expect(component.columnMappingsValid).toBe(false);
+  }));
+
+  it('#onColumnChanged should invalidate column mappings with duplicate target names', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.columnMappings[1].target.name = component.columnMappings[0].target.name;
+
+    // when
+    component.onColumnChanged();
+
+    // then
+    expect(component.columnMappingsValid).toBe(false);
+  }));
+
+  it('#isNameInUse should report mapping whose target name is used by another mapping', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.columnMappings[1].target.name = component.columnMappings[0].target.name;
+
+    // when
+    const nameInUse = component.isNameInUse(component.columnMappings[0]);
+
+    // then
+    expect(nameInUse).toBe(true);
+  }));
+
+  it('#isNameInUse should not report mapping with unique target name', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+
+    // when
+    const nameInUse = component.isNameInUse(component.columnMappings[0]);
+
+    // then
+    expect(nameInUse).toBe(false);
+  }));
+
+  it('#isNameInUse should ignore skipped mapping when checking duplicate names', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.columnMappings[1].target.name = component.columnMappings[0].target.name;
+    component.deleteColumnMapping(component.columnMappings[1]);
+
+    // when
+    const nameInUse = component.isNameInUse(component.columnMappings[0]);
+
+    // then
+    expect(nameInUse).toBe(false);
+    expect(component.columnMappingsValid).toBe(true);
+  }));
+
   it('#click on cancel button while scene is being persisted should not read data', fakeAsync(() => {
 
     // given

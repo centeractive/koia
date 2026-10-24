@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatOption } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,7 +26,7 @@ describe('ConnectionDialogComponent', () => {
     dialogData = new ConnectionDialogData(connectionInfo);
     TestBed.configureTestingModule({
       declarations: [ConnectionDialogComponent, KoiaFormDirective],
-      imports: [MatCardModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
+      imports: [MatCardModule, MatCheckboxModule, FormsModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatInputModule],
       providers: [
         { provide: MatDialogRef, useValue: { close(): void { } } },
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
@@ -123,6 +124,51 @@ describe('ConnectionDialogComponent', () => {
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
 
+  it('should hide remember password for local host', () => {
+    expect(rememberPasswordInput()).toBeNull();
+    expect(fixture.nativeElement.querySelector('.risk_note')).toBeNull();
+  });
+
+  it('should show unchecked remember password with risk note for remote host', async () => {
+
+    // when
+    await changeHost('couch.example.com');
+
+    // then
+    expect(rememberPasswordInput().checked).toBe(false);
+    expect(fixture.nativeElement.querySelector('.risk_note').textContent.trim())
+      .toBe('The password is stored unencrypted and can be read by anyone using this browser profile.');
+  });
+
+  it('should set remember password when checked', async () => {
+
+    // given
+    await changeHost('couch.example.com');
+
+    // when
+    rememberPasswordInput().click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // then
+    expect(component.data.connectionInfo.rememberPassword).toBe(true);
+  });
+
+  it('should restore remember password on cancel', async () => {
+
+    // given
+    await changeHost('couch.example.com');
+    rememberPasswordInput().click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // when
+    component.onCancel();
+
+    // then
+    expect(component.data.connectionInfo).toEqual(connectionInfo);
+  });
+
   it('form fields should be outlined', () => {
 
     // when
@@ -195,6 +241,16 @@ describe('ConnectionDialogComponent', () => {
 
   function getInputValue(id: string): string | number {
     return fixture.debugElement.query(By.css('#' + id)).nativeElement.value;
+  }
+
+  async function changeHost(host: string): Promise<void> {
+    changeInputValue('host', host);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  }
+
+  function rememberPasswordInput(): HTMLInputElement | null {
+    return fixture.nativeElement.querySelector('#remember_password input');
   }
 
   function changeInputValue(id: string, value: string): void {

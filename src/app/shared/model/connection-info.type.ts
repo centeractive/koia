@@ -6,4 +6,8 @@ export interface ConnectionInfo {
    port: number;
    user: string;
    password: string;
+   /**
+    * user allowed to store the password of a remote host in the browser
+    */
+   rememberPassword?: boolean;
 }

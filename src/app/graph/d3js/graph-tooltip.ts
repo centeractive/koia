@@ -1,4 +1,5 @@
 import { GraphContext, GraphNode } from 'app/shared/model/graph';
+import * as _ from 'lodash';
 import { LanguageService } from 'app/shared/services/language';
 import { GraphUtils } from '../options/graph-utils';
 
@@ -7,9 +8,9 @@ import { GraphUtils } from '../options/graph-utils';
  */
 export function graphTooltip(graphNode: GraphNode, color: string, context: GraphContext): string {
     let result = '<div class="div_tooltip">'
-        + '<span class="tooltip_colored_box" style="background:' + color + ';margin-right:10px;"></span>';
+        + '<span class="tooltip_colored_box" style="background:' + _.escape(color) + ';margin-right:10px;"></span>';
     if (graphNode.parent) {
-        result += graphNode.name + ': <b>' + GraphUtils.formattedValueOf(graphNode, context) + '</b>';
+        result += _.escape(graphNode.name) + ': <b>' + _.escape(String(GraphUtils.formattedValueOf(graphNode, context))) + '</b>';
     } else {
         result += LanguageService.instant('graph.tooltip.rootNode');
     }

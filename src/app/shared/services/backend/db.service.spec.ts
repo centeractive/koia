@@ -587,6 +587,21 @@ describe('DBService', () => {
     await expect(deletion).rejects.toThrow(expect.objectContaining({ message: 'cannot delete database' }));
   });
 
+  it('#deleteScene should delete scene referring to scenes database but keep scenes database', async () => {
+
+    // given
+    initialScene.database = 'test_scenes';
+    vi.spyOn(couchDBService, 'deleteDatabase');
+
+    // when
+    await dbService.deleteScene(initialScene);
+
+    // then
+    expect(couchDBService.deleteDatabase).not.toHaveBeenCalled();
+    await expect(dbService.findScene(initialScene._id)).rejects.toMatchObject({ ok: false, status: 404, statusText: 'Object Not Found' });
+    expect(console.warn).toHaveBeenCalledWith('scene ' + initialScene._id + ' refers to the scenes database, which is kept');
+  });
+
   it('#deleteScene should delete open tabs of scene', async () => {
 
     // given

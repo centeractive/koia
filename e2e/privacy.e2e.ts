@@ -1,7 +1,8 @@
 import type { Request } from '@playwright/test';
 import { StatusType } from 'app/shared/model/status-type.enum';
+import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 import { QueryParamExtractor } from 'app/shared/utils/query-param-extractor';
-import { COUCHDB_CONNECTION, COUCHDB_ORIGIN } from './support/couchdb';
+import { COUCHDB_CONNECTION, COUCHDB_ORIGIN, presetConnectionInfo } from './support/couchdb';
 import { expect, test } from './support/fixtures';
 import { Texts } from './support/texts';
 
@@ -37,6 +38,19 @@ test('launch through URL fragment authorizes CouchDB requests with user and pass
 
    const authorizations = (await Promise.all(couchRequests.map(request => request.allHeaders()))).map(headers => headers['authorization']);
    expect(authorizations).toContain('Basic ' + btoa(LAUNCH.connection.user + ':' + LAUNCH.connection.password));
+});
+
+test('failed launch keeps saved connection and leaves no credentials in address bar', async ({ context, page, front, notifications }) => {
+   const saved = { ...COUCHDB_CONNECTION, user: 'saved' };
+   await presetConnectionInfo(context, saved);
+
+   await front.launch(LAUNCH.connection, LAUNCH.sceneId);
+   await notifications.dismiss(StatusType.ERROR);
+
+   const url = new URL(page.url());
+   expect([url.pathname, url.search, url.hash]).toEqual(['/front', '', '']);
+   expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)), CouchDBConfig.CONN_INFO_NAME)).toEqual(saved);
+   expect(await page.evaluate(key => sessionStorage.getItem(key), CouchDBConfig.SESSION_CONN_INFO_NAME)).toBeNull();
 });
 
 test('launch through URL fragment shows its messages in language of query', async ({ front, notifications }) => {

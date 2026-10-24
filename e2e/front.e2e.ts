@@ -18,3 +18,16 @@ test('dismissed CouchDB tip stays hidden after reloading the front page', async 
 
    await expect(front.couchDBTip).toHaveCount(0);
 });
+
+test('connection dialog offers remembering the password for remote hosts only', async ({ front, connectionDialog }) => {
+   await front.open('en');
+   await front.connectToCouchDB();
+   await expect(connectionDialog.rememberPassword).toHaveCount(0);
+
+   await connectionDialog.typeHost('couch.example.com');
+
+   await expect(connectionDialog.rememberPassword).toBeVisible();
+   await expect(connectionDialog.rememberPassword).not.toBeChecked();
+   await expect(connectionDialog.riskNote).toHaveText(en.get('front.connection.rememberPasswordRisk'));
+   await connectionDialog.cancel();
+});

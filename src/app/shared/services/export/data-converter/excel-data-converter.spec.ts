@@ -166,6 +166,24 @@ describe('ExcelDataConverter', () => {
         expect(worksheet['A2'].z).toBe(ValueFormatter.DEFAULT_DATETIME_FORMAT);
     });
 
+    it('#toWorksheet should place column empty in first row in column order', () => {
+
+        // given
+        const data: object[] = [{ Name: 'A', Amount: 1 }, { Name: 'B', Level: 'x', Amount: 2 }];
+        const columns: Column[] = [
+            { name: 'Name', dataType: DataType.TEXT, width: 10 },
+            { name: 'Level', dataType: DataType.TEXT, width: 10 },
+            { name: 'Amount', dataType: DataType.NUMBER, width: 10 }
+        ];
+
+        // when
+        const worksheet = converter.toWorksheet(data, columns);
+
+        // then
+        expect([worksheet['A1'].v, worksheet['B1'].v, worksheet['C1'].v]).toEqual(['Name', 'Level', 'Amount']);
+        expect(worksheet['B3'].v).toBe('x');
+    });
+
     it('#toWorksheet should use default width when column is unknown', () => {
 
         // given

@@ -31,12 +31,30 @@ export class CouchDBService implements DB {
   private httpOptions: HttpOptions;
 
   constructor(private http: HttpClient) {
-    this.initConnection(this.config.readConnectionInfo());
+    this.connect(this.config.readConnectionInfo());
   }
 
+  /**
+   * connects to the CouchDB the user confirmed and saves its connection
+   */
   async initConnection(connectionInfo: ConnectionInfo): Promise<string> {
-    this.connectionInfo = connectionInfo;
     this.config.saveConnectionInfo(connectionInfo);
+    return this.connect(connectionInfo);
+  }
+
+  /**
+   * connects to the CouchDB of an external invocation, its connection is saved for the current tab only and only when it is established
+   */
+  async initLaunchConnection(connectionInfo: ConnectionInfo): Promise<string> {
+    return this.connect(connectionInfo)
+      .then(msg => {
+        this.config.saveLaunchConnectionInfo(connectionInfo);
+        return msg;
+      });
+  }
+
+  private async connect(connectionInfo: ConnectionInfo): Promise<string> {
+    this.connectionInfo = connectionInfo;
     this.httpOptions = this.createHttpOptions();
     this.baseURL = CouchDBConfig.urlOf(connectionInfo);
     return this.listDatabases()
@@ -100,7 +118,7 @@ export class CouchDBService implements DB {
   }
 
   find(database: string, mangoQuery: object): Observable<Document[]> {
-    const url = this.baseURL + database + '/_find';
+    const url = this.url(database, '_find');
     LogUtils.logHttpRequest(HTTPMethod.POST, url, mangoQuery);
     return this.http.post<{ docs: Document[] }>(url, mangoQuery, this.httpOptions).pipe(
       map(res => res.docs)
@@ -141,7 +159,7 @@ export class CouchDBService implements DB {
   }
 
   delete(database: string, document: Document): Promise<DocChangeResponse> {
-    const url = this.url(database, document._id + '?rev=' + document._rev);
+    const url = this.url(database, document._id) + '?rev=' + encodeURIComponent(document._rev);
     LogUtils.logHttpRequest(HTTPMethod.DELETE, url);
     return lastValueFrom(this.http.delete<DocChangeResponse>(url, this.httpOptions));
   }
@@ -161,8 +179,8 @@ export class CouchDBService implements DB {
       );
   }
 
-  private url(database: string, properties?: string): string {
-    return this.baseURL + database + (properties ? '/' + properties : '');
+  private url(database: string, ...segments: string[]): string {
+    return this.baseURL + [database, ...segments].map(encodeURIComponent).join('/');
   }
 
 }

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { GraphContext, GraphNode } from 'app/shared/model/graph';
+import { PropertyFilter } from 'app/shared/model/property-filter';
 import { LanguageService } from 'app/shared/services/language';
 import { graphTooltip } from './graph-tooltip';
 
@@ -59,6 +60,43 @@ describe('graph-tooltip', () => {
         expect(tooltip).toEqual('<div class="div_tooltip">'
             + '<span class="tooltip_colored_box" style="background:green;margin-right:10px;"></span>'
             + 'Path: <b>/var/log</b> (7 Entries)<br><br>Double-click to show data...</div>');
+    });
+
+    it('should escape markup in node name and value', () => {
+
+        // given
+        const leafNode: GraphNode = { parent: rootNode, group: 1, name: '<i>Level</i>', value: '<img src=x onerror=alert(1)>', info: '1', count: 1 };
+
+        // when
+        const tooltip = graphTooltip(leafNode, 'red', context);
+
+        // then
+        expect(tooltip).toEqual('<div class="div_tooltip">'
+            + '<span class="tooltip_colored_box" style="background:red;margin-right:10px;"></span>'
+            + '&lt;i&gt;Level&lt;/i&gt;: <b>&lt;img src=x onerror=alert(1)&gt;</b> (1 Entry)<br><br>Double-click to show data...</div>');
+    });
+
+    it('should escape markup in color', () => {
+
+        // when
+        const tooltip = graphTooltip(rootNode, 'red;"><img src=x>', context);
+
+        // then
+        expect(tooltip).toEqual('<div class="div_tooltip">'
+            + '<span class="tooltip_colored_box" style="background:red;&quot;&gt;&lt;img src=x&gt;;margin-right:10px;"></span>'
+            + 'Root Node (25 Entries)<br><br>Double-click to show data...</div>');
+    });
+
+    it('should show empty value of node as text', () => {
+
+        // given
+        const leafNode: GraphNode = { parent: rootNode, group: 1, name: 'Level', value: PropertyFilter.EMPTY_VALUE, info: '2', count: 2 };
+
+        // when
+        const tooltip = graphTooltip(leafNode, 'red', context);
+
+        // then
+        expect(tooltip).toContain('Level: <b>&lt;empty&gt;</b> (2 Entries)');
     });
 
     it('should generate tooltip in current language', async () => {

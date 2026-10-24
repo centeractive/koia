@@ -1,4 +1,5 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { Location } from '@angular/common';
 import { CdkScrollable } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component, EnvironmentProviders, Provider } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
@@ -1166,10 +1167,11 @@ describe('FrontComponent (external invocation)', () => {
     const fixture = TestBed.createComponent(FrontComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
-    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection established');
+    vi.spyOn(couchDBService, 'initLaunchConnection').mockResolvedValue('connection established');
     initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
     vi.spyOn(dbService, 'activateScene').mockResolvedValue(SceneFactory.createScene('1', []));
     vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
+    vi.spyOn(TestBed.inject(Location), 'replaceState').mockReturnValue(undefined);
     fixture.detectChanges();
     flush();
   }));
@@ -1179,11 +1181,11 @@ describe('FrontComponent (external invocation)', () => {
   });
 
   it('should activate scene and navigate to raw data view', () => {
-    expect(couchDBService.initConnection).toHaveBeenCalledWith(
+    expect(couchDBService.initLaunchConnection).toHaveBeenCalledWith(
       <ConnectionInfo>{ protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
     expect(dbService.initBackend).toHaveBeenCalled();
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
-    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA, { replaceUrl: true });
   });
 
   it('#ngOnInit should notify error when backend cannot be initialized', fakeAsync(() => {
@@ -1203,7 +1205,7 @@ describe('FrontComponent (external invocation)', () => {
   it('#ngOnInit should notify error when CouchDB connection cannot be established', fakeAsync(() => {
 
     // given
-    vi.mocked(couchDBService.initConnection).mockRejectedValue('connection refused');
+    vi.mocked(couchDBService.initLaunchConnection).mockRejectedValue('connection refused');
     vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
     vi.mocked(initBackendSpy).mockClear();
 
@@ -1214,6 +1216,20 @@ describe('FrontComponent (external invocation)', () => {
     // then
     expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), expect.stringContaining('connection refused'));
     expect(dbService.initBackend).not.toHaveBeenCalled();
+  }));
+
+  it('should replace launch URL in history after failed external invocation', fakeAsync(() => {
+
+    // given
+    vi.mocked(couchDBService.initLaunchConnection).mockRejectedValue('connection refused');
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(TestBed.inject(Location).replaceState).toHaveBeenCalledWith('/front');
   }));
 });
 
@@ -1233,10 +1249,11 @@ describe('FrontComponent (external invocation through URL fragment)', () => {
   beforeEach(fakeAsync(() => {
     const fixture = TestBed.createComponent(FrontComponent);
     router = TestBed.inject(Router);
-    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection established');
+    vi.spyOn(couchDBService, 'initLaunchConnection').mockResolvedValue('connection established');
     vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
     vi.spyOn(dbService, 'activateScene').mockResolvedValue(SceneFactory.createScene('1', []));
     vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
+    vi.spyOn(TestBed.inject(Location), 'replaceState').mockReturnValue(undefined);
     fixture.detectChanges();
     flush();
   }));
@@ -1246,10 +1263,10 @@ describe('FrontComponent (external invocation through URL fragment)', () => {
   });
 
   it('should activate scene of fragment params and navigate to raw data view', () => {
-    expect(couchDBService.initConnection).toHaveBeenCalledWith(
+    expect(couchDBService.initLaunchConnection).toHaveBeenCalledWith(
       <ConnectionInfo>{ protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
     expect(dbService.initBackend).toHaveBeenCalled();
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
-    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA, { replaceUrl: true });
   });
 });

@@ -1,6 +1,5 @@
 import type { Scene } from 'app/shared/model/scene.type';
 import { test as base } from './fixtures';
-import { ConnectionDialog } from './components/connection-dialog';
 import { COUCHDB_ORIGIN, CouchDB } from './couchdb';
 import { SeededScene } from './seeded-scene';
 
@@ -11,7 +10,6 @@ interface CouchDBFixtures {
     */
    seedScene: (overrides?: Partial<Scene>) => Promise<SeededScene>;
    seededScene: SeededScene;
-   connectionDialog: ConnectionDialog;
 }
 
 export const test = base.extend<CouchDBFixtures>({
@@ -47,9 +45,6 @@ export const test = base.extend<CouchDBFixtures>({
    },
    seededScene: async ({ seedScene }, use) => {
       await use(await seedScene());
-   },
-   connectionDialog: async ({ page }, use) => {
-      await use(new ConnectionDialog(page));
    }
 });
 

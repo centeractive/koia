@@ -9,7 +9,11 @@ export async function downloadOf(page: Page, trigger: () => Promise<void>): Prom
 }
 
 export async function contentOf(download: Download): Promise<string> {
-   return readFileSync(await download.path(), 'utf-8');
+   return readFileSync(await download.path(), 'utf-8').replace(/^\uFEFF/, '');
+}
+
+export async function bytesOf(download: Download): Promise<Buffer> {
+   return readFileSync(await download.path());
 }
 
 /**

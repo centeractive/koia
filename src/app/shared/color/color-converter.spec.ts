@@ -16,4 +16,16 @@ describe('ColorConverter', () => {
         expect(ColorConverter.rgbToRgba('rgb(120,0,120)', 1)).toEqual('rgba(120,0,120,1)');
     });
 
+    it('#rgbToRgba should render non-number opacity as NaN', () => {
+
+        // given
+        const opacity = '1)"><img src=x>' as unknown as number;
+
+        // when
+        const rgba = ColorConverter.rgbToRgba('rgb(0,255,0)', opacity);
+
+        // then
+        expect(rgba).toEqual('rgba(0,255,0,NaN)');
+    });
+
 });

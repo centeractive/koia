@@ -1,9 +1,9 @@
 import { DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ColumnPair, DataType, EnumLabels } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
-import { columnNameErrorMessage, columnNameValidators } from 'app/shared/validator/column-name-validation';
+import { columnNameErrorMessage, columnNameValidators, storedColumnNameValidator } from 'app/shared/validator/column-name-validation';
 import { ColumnDefinitionAssistant } from '../utils';
 import { ColumnMappingGenerator } from './mapper';
 
@@ -14,11 +14,12 @@ import { ColumnMappingGenerator } from './mapper';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class ColumnMappingComponent implements OnInit {
+export class ColumnMappingComponent implements OnInit, OnChanges {
 
   readonly dataTypeLabel = EnumLabels.dataType;
 
   @Input() mapping: ColumnPair;
+  @Input() nameInUse = false;
   @Output() onChange = new EventEmitter<void>();
   @Output() onRemove = new EventEmitter<void>();
 
@@ -31,9 +32,14 @@ export class ColumnMappingComponent implements OnInit {
   ngOnInit() {
     this.dateFormats = DateTimeUtils.allTimeUnits('desc')
       .map(timeunit => DateTimeUtils.ngFormatOf(timeunit));
-    this.columnNameControl = new UntypedFormControl('', columnNameValidators());
+    this.columnNameControl = new UntypedFormControl('', [...columnNameValidators(), storedColumnNameValidator,
+      () => this.nameInUse ? { nameInUse: true } : null]);
     this.columnNameControl.setValue(this.mapping.target.name);
     this.columnNameControl.markAsTouched();
+  }
+
+  ngOnChanges(): void {
+    this.columnNameControl?.updateValueAndValidity();
   }
 
   onColumnNameChanged(name: string): void {

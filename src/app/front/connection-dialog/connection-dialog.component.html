@@ -35,6 +35,14 @@
         <input id="password" matInput type="password" [(ngModel)]="data.connectionInfo.password">
       </mat-form-field>
     </div>
+    @if (!isLocalHost()) {
+      <div class="field-row">
+        <mat-checkbox id="remember_password" [(ngModel)]="data.connectionInfo.rememberPassword">
+          {{ 'front.connection.rememberPassword' | translate }}
+        </mat-checkbox>
+      </div>
+      <p class="risk_note">{{ 'front.connection.rememberPasswordRisk' | translate }}</p>
+    }
     <div class="field-row">
       <button id="but_cancel" mat-flat-button color="primary" (click)="onCancel()">{{ 'front.connection.cancel' | translate }}</button>
       <button id="but_ok" mat-flat-button color="primary" (click)="onOK()">{{ 'front.connection.ok' | translate }}</button>

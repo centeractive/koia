@@ -64,6 +64,8 @@
       "port": "ポート",
       "user": "ユーザー",
       "password": "パスワード",
+      "rememberPassword": "このブラウザーにパスワードを保存する",
+      "rememberPasswordRisk": "パスワードは暗号化されずに保存され、このブラウザープロファイルを使用するすべての人が読み取ることができます。",
       "cancel": "キャンセル",
       "ok": "OK"
     },
@@ -231,6 +233,7 @@
       "displayFormat": "表示形式",
       "nameRequired": "名前は必須です",
       "nameDollar": "名前を $ で始めることはできません",
+      "nameUnderscore": "名前を _ で始めることはできません",
       "nameTooLong": "名前は {{max}} 文字以内にしてください",
       "incompatibleTypes": "列に互換性のないデータ型の値が含まれています",
       "nameInUse": "この名前は既に使用されています"

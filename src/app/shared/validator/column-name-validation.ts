@@ -9,6 +9,17 @@ export function columnNameValidators(): ValidatorFn[] {
 }
 
 /**
+ * @returns false for a name CouchDB reserves for itself, which can therefore not be stored as property of an entry
+ */
+export function isStoredColumnName(name: string): boolean {
+   return !name.startsWith('_');
+}
+
+export function storedColumnNameValidator(control: AbstractControl): ValidationErrors | null {
+   return isStoredColumnName(control.value ?? '') ? null : { underscore: true };
+}
+
+/**
  * @param usedNames names that are already in use, compared with the trimmed name
  */
 export function availableColumnNameValidator(usedNames: string[]): ValidatorFn {
@@ -26,6 +37,8 @@ export function columnNameErrorMessage(control: AbstractControl): string {
       return LanguageService.instant('scene.column.nameRequired');
    } else if (control.hasError('pattern')) {
       return LanguageService.instant('scene.column.nameDollar');
+   } else if (control.hasError('underscore')) {
+      return LanguageService.instant('scene.column.nameUnderscore');
    } else if (control.hasError('maxlength')) {
       return LanguageService.instant('scene.column.nameTooLong', { max: COLUMN_NAME_MAX_LENGTH });
    } else if (control.hasError('nameInUse')) {

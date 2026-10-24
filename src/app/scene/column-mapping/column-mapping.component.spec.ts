@@ -117,6 +117,39 @@ describe('ColumnMappingComponent', () => {
     expect(error).toBe('');
   });
 
+  it('should show name in use error when input says so', () => {
+
+    // when
+    fixture.componentRef.setInput('nameInUse', true);
+    fixture.detectChanges();
+
+    // then
+    expect(component.getColumnNameErrorMessage()).toBe('Name is already in use');
+  });
+
+  it('should clear name in use error when input says so no more', () => {
+
+    // given
+    fixture.componentRef.setInput('nameInUse', true);
+    fixture.detectChanges();
+
+    // when
+    fixture.componentRef.setInput('nameInUse', false);
+    fixture.detectChanges();
+
+    // then
+    expect(component.getColumnNameErrorMessage()).toBe('');
+  });
+
+  it('should show underscore error', () => {
+
+    // when
+    component.columnNameControl.setValue('_id');
+
+    // then
+    expect(component.getColumnNameErrorMessage()).toBe('Name must not start with _');
+  });
+
   it('#getColumnNameErrorMessage should return error when column name is empty', () => {
 
     // given

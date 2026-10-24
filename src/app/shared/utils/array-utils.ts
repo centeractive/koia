@@ -141,7 +141,7 @@ export class ArrayUtils {
    */
   static findObjectByKey(array: object[], key: string): object {
     for (const obj of array) {
-      if (obj[key]) {
+      if (Object.hasOwn(obj, key) && obj[key]) {
         return obj;
       }
     }

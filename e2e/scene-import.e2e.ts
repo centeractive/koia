@@ -1,6 +1,6 @@
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { expect, test } from './support/fixtures';
-import { IMPORT_FILES, SEMICOLON_ORDERS_CSV } from './support/import-files';
+import { IMPORT_FILES, ORDERS_WITH_ID_CSV, SEMICOLON_ORDERS_CSV } from './support/import-files';
 import { Texts } from './support/texts';
 
 const en = new Texts('en');
@@ -36,4 +36,13 @@ test('semicolon separated CSV file with commas in quoted values is split into it
    expect(dataTypes).toEqual(file.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
    await expect(rawData.table.headers).toHaveText(file.columns);
    await expect(rawData.table.rowCount).toHaveText(en.rows(file.rowCount));
+});
+
+test('CSV column starting with underscore is refused', async ({ front, scene }) => {
+   await front.open('en');
+   await front.startWithFile();
+
+   await scene.detectColumns(ORDERS_WITH_ID_CSV);
+
+   await expect(scene.columnNameErrors).toHaveText([en.get('scene.column.nameUnderscore')]);
 });

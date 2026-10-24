@@ -64,6 +64,73 @@ describe('ExportService', () => {
     expect(await blob.text()).toBe('a,b\n');
   });
 
+  it('#exportData should escape CSV values starting with formula characters', async () => {
+
+    // when
+    const csv = await csvOf([{ a: '=1+2' }, { a: '+1' }, { a: '@SUM(A1)' }], [textColumn('a')]);
+
+    // then
+    expect(csv).toBe('a\n"\'=1+2"\n"\'+1"\n"\'@SUM(A1)"');
+  });
+
+  it('#exportData should escape multi-line CSV value starting with formula character', async () => {
+
+    // when
+    const csv = await csvOf([{ a: '=A1\nx' }], [textColumn('a')]);
+
+    // then
+    expect(csv).toBe('a\n"\'=A1\nx"');
+  });
+
+  it('#exportData should escape CSV header starting with formula character', async () => {
+
+    // when
+    const csv = await csvOf([], [textColumn('-x')]);
+
+    // then
+    expect(csv).toBe('"\'-x"\n');
+  });
+
+  it('#exportData should escape text value starting with minus', async () => {
+
+    // when
+    const csv = await csvOf([{ a: '-5' }], [textColumn('a')]);
+
+    // then
+    expect(csv).toBe('a\n"\'-5"');
+  });
+
+  it('#exportData should keep negative numbers unescaped', async () => {
+
+    // when
+    const csv = await csvOf([{ a: -5 }], [{ name: 'a', dataType: DataType.NUMBER, width: 10 }]);
+
+    // then
+    expect(csv).toBe('a\n-5');
+  });
+
+  it('#exportData should export column empty in first row', async () => {
+
+    // when
+    const csv = await csvOf([{ a: 'x' }, { a: 'y', b: 'z' }], [textColumn('a'), textColumn('b')]);
+
+    // then
+    expect(csv).toBe('a,b\nx,\ny,z');
+  });
+
+  it('#exportData should start CSV with byte order mark', async () => {
+
+    // given
+    let blob: Blob;
+    vi.spyOn(exportService, 'saveBlobAs').mockImplementation(b => blob = b);
+
+    // when
+    exportService.exportData([{ a: 'x' }], [textColumn('a')], ExportFormat.CSV, 'testfile');
+
+    // then
+    expect([...new Uint8Array(await blob.arrayBuffer()).subarray(0, 3)]).toEqual([0xEF, 0xBB, 0xBF]);
+  });
+
   it('#exportData should quote CSV values containing delimiter, quotes or line breaks', async () => {
 
     // given
@@ -237,5 +304,16 @@ describe('ExportService', () => {
   it('#exportImage should throw error when format is not supported', () => {
     expect(() => exportService.exportImage('base64Image...', ExportFormat.JSON, 'testfile')).toThrow(expect.objectContaining({ message: 'export format JSON is not supported' }));
   });
+
+  function textColumn(name: string): Column {
+    return { name, dataType: DataType.TEXT, width: 10 };
+  }
+
+  async function csvOf(data: object[], columns: Column[]): Promise<string> {
+    let blob: Blob;
+    vi.spyOn(exportService, 'saveBlobAs').mockImplementation(b => blob = b);
+    exportService.exportData(data, columns, ExportFormat.CSV, 'testfile');
+    return blob.text();
+  }
 
 });

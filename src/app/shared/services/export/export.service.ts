@@ -17,6 +17,8 @@ export class ExportService {
   private static readonly TYPE_EXCEL = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
   private static readonly TYPE_JSON = 'application/javascript;charset=UTF-8';
   static readonly OBJECT_URL_LIFETIME_MS = 40_000;
+  private static readonly BYTE_ORDER_MARK = '\uFEFF';
+  private static readonly FORMULA_START = /^[=+\-@\t\r]/;
 
   private newline = '\n';
   private datePipe = new DatePipe('en-US');
@@ -52,12 +54,12 @@ export class ExportService {
   private exportAsCSV(data: object[], columns: Column[], baseFileName: string): void {
     this.exportDataConverter.timeToFormattedString(data, columns);
     const csv = this.toCSV(data, columns, ',');
-    const blob: Blob = new Blob([csv], { type: ExportService.TYPE_CSV });
+    const blob: Blob = new Blob([ExportService.BYTE_ORDER_MARK, csv], { type: ExportService.TYPE_CSV });
     this.saveBlobAs(blob, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.CSV]));
   }
 
   private toCSV(data: object[], columns: Column[], delimiter: string): string {
-    return Papa.unparse({ fields: propertyNamesOf(data, columns), data }, { delimiter, newline: this.newline });
+    return Papa.unparse({ fields: propertyNamesOf(data, columns), data }, { delimiter, newline: this.newline, escapeFormulae: ExportService.FORMULA_START });
   }
 
   private exportAsExcel(data: object[], columns: Column[], baseFileName: string): void {

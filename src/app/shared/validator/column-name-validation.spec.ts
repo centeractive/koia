@@ -1,6 +1,7 @@
 import { FormControl } from '@angular/forms';
 import {
-   availableColumnNameValidator, COLUMN_NAME_MAX_LENGTH, columnNameErrorMessage, columnNameValidators
+   availableColumnNameValidator, COLUMN_NAME_MAX_LENGTH, columnNameErrorMessage, columnNameValidators, isStoredColumnName,
+   storedColumnNameValidator
 } from './column-name-validation';
 
 describe('column-name-validation', () => {
@@ -67,6 +68,30 @@ describe('column-name-validation', () => {
 
    it('#columnNameErrorMessage should return dollar message', () => {
       expect(columnNameErrorMessage(controlOf('$x'))).toBe('Name must not start with $');
+   });
+
+   it('#storedColumnNameValidator should reject name starting with underscore', () => {
+      expect(storedColumnNameValidator(new FormControl('_id'))).toEqual({ underscore: true });
+   });
+
+   it('#storedColumnNameValidator should accept underscore inside name', () => {
+      expect(storedColumnNameValidator(new FormControl('a_b'))).toBeNull();
+   });
+
+   it('#storedColumnNameValidator should accept null value', () => {
+      expect(storedColumnNameValidator(new FormControl(null))).toBeNull();
+   });
+
+   it('#isStoredColumnName should reject name starting with underscore', () => {
+      expect(isStoredColumnName('_rev')).toBe(false);
+   });
+
+   it('#isStoredColumnName should accept name not starting with underscore', () => {
+      expect(isStoredColumnName('Amount')).toBe(true);
+   });
+
+   it('#columnNameErrorMessage should return underscore message', () => {
+      expect(columnNameErrorMessage(new FormControl('_id', storedColumnNameValidator))).toBe('Name must not start with _');
    });
 
    it('#columnNameErrorMessage should return too long message', () => {

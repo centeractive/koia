@@ -13,6 +13,6 @@ export class ColorConverter {
     }
 
     static rgbToRgba(rgb: string, opacity: number): string {
-        return 'rgba' + rgb.slice(3, -1) + ',' + opacity + ')';
+        return 'rgba' + rgb.slice(3, -1) + ',' + Number(opacity) + ')';
     }
 }

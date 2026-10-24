@@ -237,6 +237,18 @@ describe('ArrayUtils', () => {
     expect(object).toBeNull();
   });
 
+  it('#findObjectByKey should ignore inherited properties', () => {
+
+    // given
+    const array = [{ a: 1 }, { b: 2 }];
+
+    // when
+    const object = ArrayUtils.findObjectByKey(array, '__proto__');
+
+    // then
+    expect(object).toBeNull();
+  });
+
   it('#findObjectByKey should return object when first object contains key', () => {
 
     // given

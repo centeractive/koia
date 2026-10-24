@@ -64,6 +64,8 @@
       "port": "Port",
       "user": "User",
       "password": "Password",
+      "rememberPassword": "Remember password in this browser",
+      "rememberPasswordRisk": "The password is stored unencrypted and can be read by anyone using this browser profile.",
       "cancel": "Cancel",
       "ok": "OK"
     },
@@ -231,6 +233,7 @@
       "displayFormat": "Display Format",
       "nameRequired": "Name is required",
       "nameDollar": "Name must not start with $",
+      "nameUnderscore": "Name must not start with _",
       "nameTooLong": "Name must not exceed {{max}} characters",
       "incompatibleTypes": "Column contains values of incompatible data types",
       "nameInUse": "Name is already in use"

@@ -64,6 +64,8 @@
       "port": "Port",
       "user": "Benutzer",
       "password": "Passwort",
+      "rememberPassword": "Passwort in diesem Browser speichern",
+      "rememberPasswordRisk": "Das Passwort wird unverschlüsselt gespeichert und ist für alle lesbar, die dieses Browserprofil nutzen.",
       "cancel": "Abbrechen",
       "ok": "OK"
     },
@@ -231,6 +233,7 @@
       "displayFormat": "Anzeigeformat",
       "nameRequired": "Name ist erforderlich",
       "nameDollar": "Name darf nicht mit $ beginnen",
+      "nameUnderscore": "Name darf nicht mit _ beginnen",
       "nameTooLong": "Name darf höchstens {{max}} Zeichen lang sein",
       "incompatibleTypes": "Spalte enthält Werte mit unverträglichen Datentypen",
       "nameInUse": "Name wird bereits verwendet"

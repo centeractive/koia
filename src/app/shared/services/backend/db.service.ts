@@ -170,9 +170,20 @@ export class DBService {
       this.activeScene = undefined;
     }
     return this.db.delete(this.scenesDbName(), sceneInfo)
-      .then(() => this.db.deleteDatabase(sceneInfo.database))
+      .then(() => this.deleteSceneDatabase(sceneInfo))
       .then(() => this.deleteOptional(DBService.sceneTabsId(sceneInfo._id), 'open tabs', sceneInfo._id))
       .then(() => this.deleteOptional(sceneActivationId(sceneInfo._id), 'activation time', sceneInfo._id));
+  }
+
+  /**
+   * a scene written by a third party may refer to the scenes database, which must never be deleted along with it
+   */
+  private async deleteSceneDatabase(sceneInfo: SceneInfo): Promise<unknown> {
+    if (sceneInfo.database === this.scenesDbName()) {
+      console.warn('scene ' + sceneInfo._id + ' refers to the scenes database, which is kept');
+      return undefined;
+    }
+    return this.db.deleteDatabase(sceneInfo.database);
   }
 
   private async deleteOptional(docId: string, label: string, sceneId: string): Promise<void> {

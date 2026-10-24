@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
-import { COLUMN_NAME_MAX_LENGTH, COLUMN_NAME_PATTERN } from 'app/shared/validator/column-name-validation';
+import { COLUMN_NAME_MAX_LENGTH, COLUMN_NAME_PATTERN, isStoredColumnName } from 'app/shared/validator/column-name-validation';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 import { TimeGuesser } from './time-guesser';
 
@@ -24,7 +24,7 @@ export class ColumnMappingGenerator {
 
    static isValidColumnName(name: string): boolean {
       return !!name && name.length <= ColumnMappingGenerator.COLUMN_NAME_MAX_LENGTH &&
-         ColumnMappingGenerator.COLUMN_NAME_PATTERN.test(name);
+         ColumnMappingGenerator.COLUMN_NAME_PATTERN.test(name) && isStoredColumnName(name);
    }
 
    generate(entries: object[], locale: string): ColumnPair[] {

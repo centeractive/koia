@@ -24,6 +24,10 @@ export class ConnectionDialogComponent {
     this.dialogRef.disableClose = true;
   }
 
+  isLocalHost(): boolean {
+    return CouchDBConfig.isLocalHost(this.data.connectionInfo.host);
+  }
+
   onProtocolChanged(protocol: Protocol): void {
     this.data.connectionInfo.port = CouchDBConfig.defaultPortOf(protocol);
   }

@@ -12,6 +12,7 @@ export class ScenePage {
    readonly nameInput: Locator;
    readonly nameError: Locator;
    readonly detectColumnsButton: Locator;
+   readonly columnNameErrors: Locator;
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
@@ -21,6 +22,7 @@ export class ScenePage {
       this.nameInput = page.locator('.scene_name input');
       this.nameError = page.locator('.scene_name mat-error');
       this.detectColumnsButton = page.locator('#but_detect_columns');
+      this.columnNameErrors = page.locator('koia-column-mapping mat-error');
       this.notifications = new Notifications(page);
    }
 

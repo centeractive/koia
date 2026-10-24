@@ -33,6 +33,8 @@ export const LOG_LEVELS_JSON = jsonFile(resolve(E2E_DATA_DIR, 'log-levels.json')
 
 export const SEMICOLON_ORDERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-semicolon.csv'), [DataType.TEXT, DataType.NUMBER, DataType.TIME], ';');
 
+export const ORDERS_WITH_ID_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-with-id.csv'), [DataType.NUMBER, DataType.TEXT, DataType.NUMBER]);
+
 export const MONTHLY_TWO_MEASURES_CSV = csvFile(resolve(E2E_DATA_DIR, 'monthly-two-measures.csv'), [DataType.TIME, DataType.NUMBER, DataType.NUMBER]);
 
 function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFile {

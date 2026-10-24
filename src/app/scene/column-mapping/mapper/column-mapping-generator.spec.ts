@@ -536,6 +536,15 @@ describe('ColumnMappingGenerator', () => {
       expect(valid).toBe(false);
    });
 
+   it('#isValidColumnName should return false when name starts with underscore', () => {
+
+      // when
+      const valid = ColumnMappingGenerator.isValidColumnName('_id');
+
+      // then
+      expect(valid).toBe(false);
+   });
+
    it('#isValidColumnName should return false when name is too long', () => {
 
       // when

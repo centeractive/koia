@@ -1,5 +1,6 @@
 import { SORT_INDICATORS } from 'app/raw-data/sort-indicators';
 import { StatusType } from 'app/shared/model/status-type.enum';
+import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
 import { DEFAULT_LANGUAGE } from 'app/shared/services/language/language';
 import { COUCHDB_CONNECTION, COUCHDB_STORAGE, COUCHDB_URL, presetConnectionInfo } from './support/couchdb';
 import { expect, test } from './support/couchdb-fixtures';
@@ -30,6 +31,25 @@ test('invocation with CouchDB query parameters of released launchers shows the r
    await front.openScene(COUCHDB_CONNECTION, seededScene.id, { separator: '?', language: DEFAULT_LANGUAGE });
 
    await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
+});
+
+test('launch replaces its URL in history and keeps saved connection', async ({ context, page, seededScene, front, rawData }) => {
+   const saved = { ...COUCHDB_CONNECTION, user: 'saved' };
+   await presetConnectionInfo(context, saved);
+   await front.open(DEFAULT_LANGUAGE);
+   const historyLength = await page.evaluate(() => history.length);
+
+   await front.openScene(COUCHDB_CONNECTION, seededScene.id);
+   await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
+
+   expect(await page.evaluate(() => history.length)).toBe(historyLength + 1);
+   expect(new URL(page.url()).hash).toBe('');
+   expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)), CouchDBConfig.CONN_INFO_NAME)).toEqual(saved);
+   expect(await page.evaluate(key => JSON.parse(sessionStorage.getItem(key)).user, CouchDBConfig.SESSION_CONN_INFO_NAME))
+      .toBe(COUCHDB_CONNECTION.user);
+   await page.goBack();
+   const url = new URL(page.url());
+   expect([url.pathname, url.search, url.hash]).toEqual(['/front', '?lang=' + DEFAULT_LANGUAGE, '']);
 });
 
 test('invocation with scene violating its scene format shows the violation', async ({ seedScene, front, notifications }) => {
