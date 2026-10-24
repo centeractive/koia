@@ -9,7 +9,7 @@ describe('EntryPersister', () => {
 
    const database = 'test_data';
    const batchSize = 4;
-   const dbService: DBService = new DBService(null);
+   const dbService: DBService = new DBService(null, null);
    let dbServiceWriteEtriesSpy: Mock;
    let monitor: ProgressMonitor;
    let monitorOnProgressSpy: Mock;

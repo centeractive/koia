@@ -27,7 +27,7 @@ describe('SummaryTableComponent', () => {
 
   let component: SummaryTableComponent;
   let fixture: ComponentFixture<SummaryTableComponent>;
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   const datePipe = new DatePipe('en-US');
   let getActiveSceneSpy: Mock;
   let showRawDataSpy: Mock;

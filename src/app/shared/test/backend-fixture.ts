@@ -1,4 +1,5 @@
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
+import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import PouchDB from 'pouchdb';
 import { Column, DataType, Scene } from '../model';
@@ -63,7 +64,7 @@ export function sceneData(name: string, entryCount: number): SceneData {
 export async function setUpBackend(backend: Backend, scenes: SceneData[]): Promise<BackendRun> {
    const prefix = IT_DB_PREFIX + Date.now() + '_' + runCounter++ + '_';
    scenes.forEach(s => s.scene.database = prefix + 'data_' + s.scene._id);
-   const db = new DBService(TestBed.inject(CouchDBService));
+   const db = new DBService(TestBed.inject(CouchDBService), TestBed.inject(NgZone));
    db.setDbPrefix(prefix);
    await backend.init(db);
    expect(db.isCouchDbInUse()).toBe(backend.name === 'CouchDB');

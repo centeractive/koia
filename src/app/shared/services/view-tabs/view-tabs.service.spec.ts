@@ -23,7 +23,7 @@ describe('ViewTabsService', () => {
 
    beforeEach(() => {
       scene = SceneFactory.createScene('s1', []);
-      dbService = new DBService(null);
+      dbService = new DBService(null, null);
       getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
       findSceneTabsSpy = vi.spyOn(dbService, 'findSceneTabs').mockResolvedValue(undefined);
       persister = {

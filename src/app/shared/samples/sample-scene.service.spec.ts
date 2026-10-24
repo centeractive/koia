@@ -19,7 +19,7 @@ describe('SampleSceneService', () => {
 
    beforeEach(() => {
       vi.spyOn(console, 'warn').mockReturnValue(undefined);
-      dbService = new DBService(new CouchDBServiceMock());
+      dbService = new DBService(new CouchDBServiceMock(), null);
       service = new SampleSceneService(dbService);
       vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([]);
       vi.spyOn(dbService, 'findFreeDatabaseName').mockResolvedValue('data_7');

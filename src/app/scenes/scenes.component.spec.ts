@@ -40,7 +40,7 @@ describe('ScenesComponent', () => {
 
   const appRouteReuseStrategy = new AppRouteReuseStrategy();
   let scenes: Scene[];
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   let navigateByUrlSpy: Mock;
