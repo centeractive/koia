@@ -1,3 +1,4 @@
+import { NgZone } from '@angular/core';
 import { PouchDBAccess } from './pouchdb-access';
 import { Document } from 'app/shared/model';
 import PouchDB from 'pouchdb';
@@ -6,7 +7,13 @@ import { lastValueFrom } from 'rxjs';
 describe('PouchDBAccess', () => {
 
    const DB = 'db';
-   const dbAccess = new PouchDBAccess();
+   let zone: NgZone;
+   let dbAccess: PouchDBAccess;
+
+   beforeAll(() => {
+      zone = new NgZone({ enableLongStackTrace: false });
+      dbAccess = new PouchDBAccess(zone);
+   });
 
    beforeEach(async () => {
       vi.spyOn(console, 'log').mockReturnValue(undefined);
@@ -57,6 +64,38 @@ describe('PouchDBAccess', () => {
             // then
             expect(n).toBe(1);
          });
+   });
+
+   it('#find should query PouchDB outside Angular zone when called inside Angular zone', async () => {
+
+      // given
+      let inAngularZone: boolean;
+      vi.spyOn(PouchDB.prototype, 'find').mockImplementation(async () => {
+         inAngularZone = NgZone.isInAngularZone();
+         return { docs: [] };
+      });
+
+      // when
+      await zone.run(() => lastValueFrom(dbAccess.find(DB, { selector: {} })));
+
+      // then
+      expect(inAngularZone).toBe(false);
+   });
+
+   it('#find should emit result inside Angular zone when called inside Angular zone', async () => {
+
+      // given
+      let inAngularZone: boolean;
+      vi.spyOn(PouchDB.prototype, 'find').mockResolvedValue({ docs: [] });
+
+      // when
+      await new Promise<void>(resolve => zone.run(() => dbAccess.find(DB, { selector: {} }).subscribe(() => {
+         inAngularZone = NgZone.isInAngularZone();
+         resolve();
+      })));
+
+      // then
+      expect(inAngularZone).toBe(true);
    });
 
    it('#find should return single document when two contains filter on same field match', async () => {

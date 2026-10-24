@@ -14,7 +14,7 @@ describe('RawDataBlockCache', () => {
 
   beforeEach(() => {
     total = 1234;
-    dbService = new DBService(null);
+    dbService = new DBService(null, null);
     query = new Query();
     listener = {
       onLoading: vi.fn(),

@@ -22,7 +22,7 @@ import { SideBarHeaderComponent } from 'app/shared/component/side-bar-header/sid
 
 describe('GraphSideBarComponent', () => {
 
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   let columns: Column[];
   let scene: Scene;
   let context: GraphContext;

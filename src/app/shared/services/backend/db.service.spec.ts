@@ -1,4 +1,5 @@
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
+import { NgZone } from '@angular/core';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
 import { Column, ComputeOperator, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneTabs, ViewType } from 'app/shared/model/view-config';
@@ -44,10 +45,10 @@ describe('DBService', () => {
   });
 
   beforeEach(async () => {
-    dbService = new DBService(couchDBService);
+    dbService = new DBService(couchDBService, TestBed.inject(NgZone));
     await couchDBService.clear(testDBPrefix)
       .then(() => {
-        dbService = new DBService(couchDBService);
+        dbService = new DBService(couchDBService, TestBed.inject(NgZone));
         dbService.setDbPrefix(testDBPrefix);
         return dbService.initBackend(false);
       })
@@ -175,7 +176,7 @@ describe('DBService', () => {
   it('#getMaxDataItemsPerScene should return undefined when storage is not defined', async () => {
 
     // when
-    const maxDataItems = new DBService(couchDBService).getMaxDataItemsPerScene();
+    const maxDataItems = new DBService(couchDBService, TestBed.inject(NgZone)).getMaxDataItemsPerScene();
 
     // then
     expect(maxDataItems).toBeUndefined();

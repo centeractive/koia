@@ -37,7 +37,7 @@ describe('SavedViewsService', () => {
       openTabs = [];
       tabsReady = true;
       proposedNames = [];
-      dbService = new DBService(null);
+      dbService = new DBService(null, null);
       getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
       viewTabsService = {
          get ready() { return tabsReady; },

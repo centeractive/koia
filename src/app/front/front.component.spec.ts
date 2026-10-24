@@ -86,7 +86,7 @@ describe('FrontComponent', () => {
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     localStorage.removeItem(COUCHDB_TIP_DISMISSED);
-    dbService = new DBService(couchDBService);
+    dbService = new DBService(couchDBService, null);
     configureTestingModule(new QueryParams(), null, provideRouter([]));
     TestBed.compileComponents();
     initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
@@ -1157,7 +1157,7 @@ describe('FrontComponent (external invocation)', () => {
 
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
-    dbService = new DBService(couchDBService);
+    dbService = new DBService(couchDBService, null);
     configureTestingModule(createQueryParams(), null);
     TestBed.compileComponents();
   }));
@@ -1224,7 +1224,7 @@ describe('FrontComponent (external invocation through URL fragment)', () => {
 
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
-    dbService = new DBService(couchDBService);
+    dbService = new DBService(couchDBService, null);
     launchParamsService.paramsOf.mockReset().mockReturnValue(createQueryParams());
     configureTestingModule(new QueryParams(), 'host=localhost', { provide: LaunchParamsService, useValue: launchParamsService });
     TestBed.compileComponents();

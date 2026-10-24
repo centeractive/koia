@@ -17,7 +17,7 @@ describe('RawDataStateService', () => {
 
    beforeEach(() => {
       scene = SceneFactory.createScene('1', []);
-      dbService = new DBService(null);
+      dbService = new DBService(null, null);
       getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
       service = new RawDataStateService(dbService);
    });

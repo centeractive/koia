@@ -18,7 +18,7 @@ describe('ValueFilterComponent', () => {
   let component: ValueFilterComponent;
   let fixture: ComponentFixture<ValueFilterComponent>;
   let columns: Column[];
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
 
   beforeEach(() => {
     columns = [

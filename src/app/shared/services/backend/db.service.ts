@@ -1,5 +1,5 @@
 import { LanguageService } from '../language';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { SortDirection } from '@angular/material/sort';
 import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivation, SceneInfo, SceneLabels } from 'app/shared/model';
 import { SceneTabs } from 'app/shared/model/view-config';
@@ -32,7 +32,7 @@ export class DBService {
   private activeScene: Scene;
   private readonly sceneValidator = new SceneValidator();
 
-  constructor(private couchDBService: CouchDBService) { }
+  constructor(private couchDBService: CouchDBService, private readonly zone: NgZone) { }
 
   setDbPrefix(prefix: string): void {
     this.dbPrefix = prefix;
@@ -65,7 +65,7 @@ export class DBService {
   }
 
   useIndexedDb(): Promise<unknown> {
-    this.db = new PouchDBAccess();
+    this.db = new PouchDBAccess(this.zone);
     this.queryConverter = new QueryConverter(true);
     return this.createScenesDB();
   }

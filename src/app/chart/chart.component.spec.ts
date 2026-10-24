@@ -24,7 +24,7 @@ describe('ChartComponent', () => {
   let scene: Scene;
   let context: ChartContext;
   let entries: object[];
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   let component: ChartComponent;
   let fixture: ComponentFixture<ChartComponent>;
   let getActiveSceneSpy: Mock;

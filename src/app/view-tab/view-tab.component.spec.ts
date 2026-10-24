@@ -21,7 +21,7 @@ class DashboardComponent {
 
 describe('ViewTabComponent', () => {
 
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   let viewTabsService: ViewTabsService;
   let router: Router;
   let fixture: ComponentFixture<ViewTabComponent>;

@@ -18,7 +18,7 @@ describe('TabsPersister', () => {
 
    beforeEach(() => {
       vi.useFakeTimers();
-      dbService = new DBService(null);
+      dbService = new DBService(null, null);
       notificationService = new NotificationServiceMock();
       vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
       saveSceneTabsSpy = vi.spyOn(dbService, 'saveSceneTabs').mockImplementation(d => Promise.resolve(d));
