@@ -67,7 +67,7 @@ function configureTestingModule(dbService: DBService, dialogService: DialogServi
 
 describe('MainToolbarComponent with many tabs', () => {
 
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   const dialogService = new DialogService(null);
   let fixture: ComponentFixture<MainToolbarComponent>;
 
@@ -163,7 +163,7 @@ describe('MainToolbarComponent', () => {
   let valueRange: ValueRange;
   let component: MainToolbarComponent;
   let fixture: ComponentFixture<MainToolbarComponent>;
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   const dialogService = new DialogService(null);
   let getActiveSceneSpy: Mock;
 

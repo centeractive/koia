@@ -98,7 +98,7 @@ describe('DashboardComponent', () => {
   let entries: object[];
   let fixture: ComponentFixture<DashboardComponent>;
   let component: DashboardComponent;
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();

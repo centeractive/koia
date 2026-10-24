@@ -58,7 +58,7 @@ describe('SceneComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
-    dbService = new DBService(null);
+    dbService = new DBService(null, null);
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [SceneComponent, ColumnMappingComponent, KoiaFormDirective, PageFrameComponent],

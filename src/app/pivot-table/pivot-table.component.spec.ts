@@ -52,7 +52,7 @@ describe('PivotTableComponent', () => {
   let entries: object[];
   let component: PivotTableComponent;
   let fixture: ComponentFixture<PivotTableComponent>;
-  const dbService = new DBService(null);
+  const dbService = new DBService(null, null);
   const notificationService = new NotificationServiceMock();
   const exportService = new ExportService();
   const rawDataRevealService = new RawDataRevealService(null, null, null, null);

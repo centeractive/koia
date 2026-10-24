@@ -55,7 +55,7 @@ describe('RawDataComponent', () => {
   let longHostFrom: number;
   let component: RawDataComponent;
   let fixture: ComponentFixture<RawDataComponent>;
-  const dbService: DBService = new DBService(null);
+  const dbService: DBService = new DBService(null, null);
   const dialogService = new DialogService(null);
   const notificationService = new NotificationServiceMock();
   let exportService: ExportService;

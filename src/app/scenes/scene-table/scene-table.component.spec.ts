@@ -17,7 +17,7 @@ import { NotificationServiceMock } from 'app/shared/test/notification-service-mo
 import { SceneTableComponent } from './scene-table.component';
 import type { Mock } from 'vitest';
 
-const dbService = new DBService(null);
+const dbService = new DBService(null, null);
 const dialogService = new DialogService(null);
 const notificationService = new NotificationServiceMock();
 

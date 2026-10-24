@@ -32,7 +32,7 @@ describe('ComputedColumnService', () => {
     comment = { name: 'Comment', dataType: DataType.NUMBER, width: 80, indexed: false };
     share = computedColumn('Share', ComputeOperator.PERCENTAGE);
     scene = SceneFactory.createScene('1', [time, level, amount, price, comment, share]);
-    dbService = new DBService(null);
+    dbService = new DBService(null, null);
     vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
     updateSceneSpy = vi.spyOn(dbService, 'updateScene').mockImplementation(s => Promise.resolve(s));
     viewTabsService = { renameColumn: vi.fn() } as unknown as ViewTabsService;
