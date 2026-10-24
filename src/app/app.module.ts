@@ -46,6 +46,7 @@ import { ResizeHandlesComponent } from './dashboard/resize-handles/resize-handle
 import { ConnectionDialogComponent } from './front/connection-dialog/connection-dialog.component';
 import { FrontGuideComponent } from './front/front-guide/front-guide.component';
 import { FrontComponent } from './front/front.component';
+import { provideLaunchParams } from './front/launch-params.service';
 import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.component';
 import { GraphComponent } from './graph/graph.component';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
@@ -231,7 +232,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         DialogService,
         provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideZoneChangeDetection(),
-        ...provideTranslation()
+        ...provideTranslation(),
+        provideLaunchParams()
     ]
 })
 export class AppModule { }

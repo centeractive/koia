@@ -20,8 +20,14 @@ test('connecting through the connection dialog switches the data storage to Couc
    await expect(front.storage).toHaveText(texts.get('front.storage.storedIn') + ' ' + COUCHDB_STORAGE);
 });
 
-test('invocation with CouchDB query parameters shows the raw data of the scene', async ({ seededScene, front, rawData }) => {
+test('invocation with CouchDB parameters in URL fragment shows the raw data of the scene', async ({ seededScene, front, rawData }) => {
    await front.openScene(COUCHDB_CONNECTION, seededScene.id);
+
+   await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
+});
+
+test('invocation with CouchDB query parameters of released launchers shows the raw data of the scene', async ({ seededScene, front, rawData }) => {
+   await front.openScene(COUCHDB_CONNECTION, seededScene.id, { separator: '?', language: DEFAULT_LANGUAGE });
 
    await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
 });

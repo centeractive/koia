@@ -23,6 +23,7 @@ import { page } from 'vitest/browser';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { FrontGuideComponent } from './front-guide/front-guide.component';
 import { FrontComponent } from './front.component';
+import { LaunchParamsService } from './launch-params.service';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
@@ -41,12 +42,24 @@ const dialogService = new DialogService(null);
 const connectionInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: 'localhost', port: 5984, user: 'test', password: 'secret' };
 const notificationService = new NotificationServiceMock();
 const COUCHDB_TIP_DISMISSED = 'koia.front.couchdbTipDismissed';
+const sceneID = '123';
 let dbService: DBService;
 let isIndexedDbInUseSpy: Mock;
 let initBackendSpy: Mock;
 let findSceneInfosSpy: Mock;
 
-function configureTestingModule(queryParams: QueryParams, ...providers: (Provider | EnvironmentProviders)[]): void {
+function createQueryParams(): QueryParams {
+  const queryParams = new QueryParams();
+  queryParams.set(QueryParamExtractor.PROTOCOL, 'HTTP');
+  queryParams.set(QueryParamExtractor.HOST, 'localhost');
+  queryParams.set(QueryParamExtractor.PORT, '5984');
+  queryParams.set(QueryParamExtractor.USER, 'test');
+  queryParams.set(QueryParamExtractor.PASSWORD, btoa('secret'));
+  queryParams.set(QueryParamExtractor.SCENE_ID, sceneID);
+  return queryParams;
+}
+
+function configureTestingModule(queryParams: QueryParams, fragment: string | null, ...providers: (Provider | EnvironmentProviders)[]): void {
   TestBed.configureTestingModule({
     declarations: [FrontComponent, FrontGuideComponent, LanguageSelectComponent, DummyComponent],
     imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDialogModule, DragDropModule,
@@ -54,7 +67,7 @@ function configureTestingModule(queryParams: QueryParams, ...providers: (Provide
     ],
     providers: [
       ...providers,
-      { provide: ActivatedRoute, useValue: { queryParamMap: of(queryParams) } },
+      { provide: ActivatedRoute, useValue: { queryParamMap: of(queryParams), fragment: of(fragment) } },
       { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy },
       MatBottomSheet,
       { provide: DBService, useValue: dbService },
@@ -74,7 +87,7 @@ describe('FrontComponent', () => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     localStorage.removeItem(COUCHDB_TIP_DISMISSED);
     dbService = new DBService(couchDBService);
-    configureTestingModule(new QueryParams(), provideRouter([]));
+    configureTestingModule(new QueryParams(), null, provideRouter([]));
     TestBed.compileComponents();
     initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
     isIndexedDbInUseSpy = vi.spyOn(dbService, 'isIndexedDbInUse').mockReturnValue(true);
@@ -1139,14 +1152,13 @@ describe('FrontComponent', () => {
 
 describe('FrontComponent (external invocation)', () => {
 
-  const sceneID = '123';
   let component: FrontComponent;
   let router: Router;
 
   beforeEach(waitForAsync(() => {
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(couchDBService);
-    configureTestingModule(createQueryParams());
+    configureTestingModule(createQueryParams(), null);
     TestBed.compileComponents();
   }));
 
@@ -1203,15 +1215,41 @@ describe('FrontComponent (external invocation)', () => {
     expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), expect.stringContaining('connection refused'));
     expect(dbService.initBackend).not.toHaveBeenCalled();
   }));
+});
 
-  function createQueryParams(): QueryParams {
-    const queryParams = new QueryParams();
-    queryParams.set(QueryParamExtractor.PROTOCOL, 'HTTP');
-    queryParams.set(QueryParamExtractor.HOST, 'localhost');
-    queryParams.set(QueryParamExtractor.PORT, '5984');
-    queryParams.set(QueryParamExtractor.USER, 'test');
-    queryParams.set(QueryParamExtractor.PASSWORD, btoa('secret'));
-    queryParams.set(QueryParamExtractor.SCENE_ID, sceneID);
-    return queryParams;
-  }
+describe('FrontComponent (external invocation through URL fragment)', () => {
+
+  const launchParamsService = { paramsOf: vi.fn() };
+  let router: Router;
+
+  beforeEach(waitForAsync(() => {
+    vi.spyOn(console, 'log').mockReturnValue(undefined);
+    dbService = new DBService(couchDBService);
+    launchParamsService.paramsOf.mockReset().mockReturnValue(createQueryParams());
+    configureTestingModule(new QueryParams(), 'host=localhost', { provide: LaunchParamsService, useValue: launchParamsService });
+    TestBed.compileComponents();
+  }));
+
+  beforeEach(fakeAsync(() => {
+    const fixture = TestBed.createComponent(FrontComponent);
+    router = TestBed.inject(Router);
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection established');
+    vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
+    vi.spyOn(dbService, 'activateScene').mockResolvedValue(SceneFactory.createScene('1', []));
+    vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
+    fixture.detectChanges();
+    flush();
+  }));
+
+  it('should pass query params and fragment to launch params service', () => {
+    expect(launchParamsService.paramsOf).toHaveBeenCalledWith(expect.any(QueryParams), 'host=localhost');
+  });
+
+  it('should activate scene of fragment params and navigate to raw data view', () => {
+    expect(couchDBService.initConnection).toHaveBeenCalledWith(
+      <ConnectionInfo>{ protocol: 'HTTP', host: 'localhost', port: 5984, user: 'test', password: 'secret' });
+    expect(dbService.initBackend).toHaveBeenCalled();
+    expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
+    expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA);
+  });
 });
