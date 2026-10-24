@@ -329,6 +329,86 @@ describe('DBService', () => {
     expect(console.warn).toHaveBeenCalledWith('activation time of scene ' + scene._id + ' cannot be saved', { status: 500 });
   });
 
+  it('#activateScene should reject versioned scene violating its format', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    await dbService.updateScene({ ...scene, schemaVersion: '1.0', database: '' });
+
+    // when
+    const activation = dbService.activateScene(scene._id);
+
+    // then
+    await expect(activation).rejects.toBe('scene does not comply with scene format 1.0:\n/database: must NOT have fewer than 1 characters');
+    expect(dbService.getActiveScene()._id).toBe(initialScene._id);
+  });
+
+  it('#activateScene should reject scene of unsupported format version', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    await dbService.updateScene({ ...scene, schemaVersion: '9.0' });
+
+    // when
+    const activation = dbService.activateScene(scene._id);
+
+    // then
+    await expect(activation).rejects.toBe('scene format 9.0 is not supported by this Koia version (supported: 1.0)');
+  });
+
+  it('#activateScene should activate legacy scene violating format and warn', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    await dbService.updateScene({ ...scene, database: '' });
+
+    // when
+    const activeScene = await dbService.activateScene(scene._id);
+
+    // then
+    expect(activeScene._id).toBe(scene._id);
+    expect(console.warn).toHaveBeenCalledWith('scene 1 does not comply with scene format 1.0',
+      [{ path: '/database', message: 'must NOT have fewer than 1 characters' }]);
+  });
+
+  it('#activateScene should default missing config', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    delete scene.config;
+    await dbService.updateScene(scene);
+
+    // when
+    const activeScene = await dbService.activateScene(scene._id);
+
+    // then
+    expect(activeScene.config).toEqual({});
+  });
+
+  it('#activateScene should accept versioned scene extended by Koia', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', columns);
+    await dbService.persistScene(scene, false);
+    const computedColumn: Column = {
+      name: 'Double', dataType: DataType.NUMBER, width: 10,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.ADD, rightColumn: 'Amount' }
+    };
+    const savedView = { name: 'Overview', modifiedTime: 1, tabs: [], rawData: undefined };
+    await dbService.updateScene({ ...scene, schemaVersion: '1.0', columns: [...columns, computedColumn], config: { savedViews: [savedView] } });
+
+    // when
+    const activeScene = await dbService.activateScene(scene._id);
+
+    // then
+    expect(activeScene.columns.at(-1)).toEqual(computedColumn);
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
   it('#findSceneActivationTimes should return empty map when no scene was activated', async () => {
 
     // when

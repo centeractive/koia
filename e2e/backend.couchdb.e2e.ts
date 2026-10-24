@@ -32,6 +32,23 @@ test('invocation with CouchDB query parameters of released launchers shows the r
    await expect(rawData.table.rowCount).toHaveText(texts.rows(seededScene.entryCount));
 });
 
+test('invocation with scene violating its scene format shows the violation', async ({ seedScene, front, notifications }) => {
+   const scene = await seedScene({ schemaVersion: '1.0', database: '' });
+
+   await front.launch(COUCHDB_CONNECTION, scene.id);
+
+   expect(await notifications.dismiss(StatusType.ERROR))
+      .toContain(texts.get('sceneFormat.invalid', { version: '1.0', errors: '/database: must NOT have fewer than 1 characters' }));
+});
+
+test('invocation with unsupported scene format shows supported versions', async ({ seedScene, front, notifications }) => {
+   const scene = await seedScene({ schemaVersion: '9.0' });
+
+   await front.launch(COUCHDB_CONNECTION, scene.id);
+
+   expect(await notifications.dismiss(StatusType.ERROR)).toContain(texts.get('sceneFormat.unsupportedVersion', { version: '9.0', supported: '1.0' }));
+});
+
 test('sorting raw data informs about the CouchDB sort limitation', async ({ seededScene, front, rawData, confirmDialog }) => {
    const column = seededScene.columnNames[0];
    await front.openScene(COUCHDB_CONNECTION, seededScene.id);

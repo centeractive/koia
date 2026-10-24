@@ -23,8 +23,20 @@
               "src/intro",
               "src/.htaccess",
               "src/assets",
+              {
+                "glob": "**/*.schema.json",
+                "input": "node_modules/@centeractive/koia-scene-schema/schemas",
+                "output": "assets/scene-format"
+              },
               "src/WEB-INF",
               "src/web.config"
+            ],
+            "allowedCommonJsDependencies": [
+              "ajv",
+              "fast-deep-equal",
+              "fast-uri",
+              "json-schema-traverse",
+              "require-from-string"
             ],
             "styles": [
               "node_modules/material-icons/iconfont/filled.css",

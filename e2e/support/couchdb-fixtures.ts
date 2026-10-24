@@ -1,3 +1,4 @@
+import type { Scene } from 'app/shared/model/scene.type';
 import { test as base } from './fixtures';
 import { ConnectionDialog } from './components/connection-dialog';
 import { COUCHDB_ORIGIN, CouchDB } from './couchdb';
@@ -5,6 +6,10 @@ import { SeededScene } from './seeded-scene';
 
 interface CouchDBFixtures {
    couchDB: CouchDB;
+   /**
+    * creates a scene like an external writer does, all created scenes are removed after the test
+    */
+   seedScene: (overrides?: Partial<Scene>) => Promise<SeededScene>;
    seededScene: SeededScene;
    connectionDialog: ConnectionDialog;
 }
@@ -25,14 +30,23 @@ export const test = base.extend<CouchDBFixtures>({
          route => route.request().method() === 'DELETE' ? route.abort() : route.continue());
       await use(context);
    },
-   seededScene: async ({ couchDB }, use) => {
-      const scene = new SeededScene(couchDB);
+   seedScene: async ({ couchDB }, use) => {
+      const scenes: SeededScene[] = [];
       try {
-         await scene.create();
-         await use(scene);
+         await use(async overrides => {
+            const scene = new SeededScene(couchDB, overrides);
+            scenes.push(scene);
+            await scene.create();
+            return scene;
+         });
       } finally {
-         await scene.remove();
+         for (const scene of scenes) {
+            await scene.remove();
+         }
       }
+   },
+   seededScene: async ({ seedScene }, use) => {
+      await use(await seedScene());
    },
    connectionDialog: async ({ page }, use) => {
       await use(new ConnectionDialog(page));
