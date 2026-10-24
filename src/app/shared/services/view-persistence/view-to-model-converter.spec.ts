@@ -131,6 +131,23 @@ describe('ViewToModelConverter', () => {
       expect(context.groupByColumns.map(c => [c.name, c.groupingTimeUnit])).toEqual([['Time', TimeUnit.MONTH]]);
    });
 
+   it('#convert should restore axis titles of chart', () => {
+
+      // given
+      const chart = new ChartContext(columns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      chart.dataColumns = [columns[2]];
+      chart.groupByColumns = [columns[0]];
+      chart.baseScale.title = 'Day';
+      chart.valueScales[0].title = 'Units';
+
+      // when
+      const [context] = converter.convert(viewElementsOf(chart)) as ChartContext[];
+
+      // then
+      expect(context.baseScale.title).toBe('Day');
+      expect(context.valueScales.map(s => s.title)).toEqual(['Units']);
+   });
+
    it('#convert should create text box context', () => {
 
       // given

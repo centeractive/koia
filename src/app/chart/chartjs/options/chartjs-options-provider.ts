@@ -136,7 +136,7 @@ export class ChartJsOptionsProvider {
     }
 
     private valueScaleOptions(context: ChartContext, columnIdx = 0): ScaleOptions {
-        const title = this.valueScaleTitle(context, columnIdx);
+        const title = context.valueScales?.[columnIdx]?.title ?? this.valueScaleTitle(context, columnIdx);
         const scaleOptions: ScaleOptions = {
             display: true,
             stacked: context.stacked,
@@ -195,10 +195,11 @@ export class ChartJsOptionsProvider {
             };
         }
         const column = context.groupByColumns[0];
-        if (column) {
+        const title = context.baseScale.title ?? column?.name;
+        if (title) {
             scaleOptions.title = {
                 display: true,
-                text: column.name
+                text: title
             }
         }
 

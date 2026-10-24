@@ -121,7 +121,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
     expect(component).toBeTruthy();
   });
 
-  it('value mode, group by, time unit and step size fields should be outlined for counted line chart', () => {
+  it('value mode, group by, time unit, axis title and step size fields should be outlined for counted line chart', () => {
 
     // given
     context.chartType = ChartType.LINE.type;
@@ -131,7 +131,7 @@ describe('ChartSideBarComponent - data includes time column', () => {
 
     // then
     const fields = formFields();
-    expect(fields.length).toBe(5);
+    expect(fields.length).toBe(7);
     fields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
   });
 

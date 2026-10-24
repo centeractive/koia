@@ -392,6 +392,7 @@
     "baseScale": "基準スケール",
     "valueScale": "値スケール",
     "valueScaleNumbered": "値スケール {{number}}",
+    "axisTitle": "軸タイトル",
     "stepSize": "目盛り間隔",
     "automatic": "自動",
     "labelRotation": "ラベルの回転",

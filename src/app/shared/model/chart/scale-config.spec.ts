@@ -86,6 +86,72 @@ describe('ScaleConfig - specific column', () => {
         });
         expect(onChangeSpy).toHaveBeenCalledTimes(1);
     }));
+
+    it('#constructor should restore title of scale', () => {
+
+        // when
+        const config = new ScaleConfig(onChangeSpy, { columnName: 'X', title: 'Units', ticks: {} });
+
+        // then
+        expect(config.title).toBe('Units');
+        expect(config.toScale().title).toBe('Units');
+    });
+
+    it('#title should fire change event', () => {
+
+        // when
+        scaleConfig.title = 'Units';
+
+        // then
+        expect(scaleConfig.toScale().title).toBe('Units');
+        expect(onChangeSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('#title should not fire change event when title did not change', () => {
+
+        // given
+        scaleConfig.title = 'Units';
+        onChangeSpy.mockClear();
+
+        // when
+        scaleConfig.title = 'Units';
+
+        // then
+        expect(onChangeSpy).not.toHaveBeenCalled();
+    });
+
+    it('#title should be undefined when emptied', () => {
+
+        // given
+        scaleConfig.title = 'Units';
+
+        // when
+        scaleConfig.title = '';
+
+        // then
+        expect(scaleConfig.title).toBeUndefined();
+        expect(onChangeSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('#title should be undefined when blank', () => {
+
+        // when
+        scaleConfig.title = '  ';
+
+        // then
+        expect(scaleConfig.title).toBeUndefined();
+        expect(onChangeSpy).not.toHaveBeenCalled();
+    });
+
+    it('#title should not fire change event when set undefined', () => {
+
+        // when
+        scaleConfig.title = undefined;
+
+        // then
+        expect(scaleConfig.title).toBeUndefined();
+        expect(onChangeSpy).not.toHaveBeenCalled();
+    });
 });
 
 describe('ScaleConfig - generic', () => {
@@ -169,4 +235,21 @@ describe('ScaleConfig - generic', () => {
         });
         expect(onChangeSpy).toHaveBeenCalledTimes(1);
     }));
+
+    it('#title should fire change event', () => {
+
+        // when
+        scaleConfig.title = 'Units';
+
+        // then
+        expect(scaleConfig.toScale()).toEqual({
+            columnName: undefined,
+            title: 'Units',
+            ticks: {
+                stepSize: undefined,
+                rotation: undefined
+            }
+        });
+        expect(onChangeSpy).toHaveBeenCalledTimes(1);
+    });
 });

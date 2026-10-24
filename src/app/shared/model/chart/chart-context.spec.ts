@@ -177,6 +177,20 @@ describe('ChartContext', () => {
       ]);
    }));
 
+   it('#removeDataColumn should keep value scale title of remaining column', () => {
+
+      // given
+      context.dataColumns = [columns[3]];
+      context.valueScales[0].title = 'Units';
+      context.addDataColumn(columns[4]);
+
+      // when
+      context.removeDataColumn(columns[4]);
+
+      // then
+      expect(context.valueScales.map(s => [s.columnName, s.title])).toEqual([['Amount', 'Units']]);
+   });
+
    it('#removeDataColumn should change valueScales when multi axes selected', fakeAsync(() => {
       // given
       context.multiValueAxes = true;

@@ -392,6 +392,7 @@
     "baseScale": "Base Scale",
     "valueScale": "Value Scale",
     "valueScaleNumbered": "Value Scale {{number}}",
+    "axisTitle": "Axis Title",
     "stepSize": "Step Size",
     "automatic": "Automatic",
     "labelRotation": "Label Rotation",

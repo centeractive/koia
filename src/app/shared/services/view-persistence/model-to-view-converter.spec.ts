@@ -1,7 +1,8 @@
-import { Aggregation, ElementContext, Query, Route, SummaryContext, TextBoxContext } from 'app/shared/model';
+import { Aggregation, Column, DataType, ElementContext, Query, Route, SummaryContext, TextBoxContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { ElementType } from 'app/shared/model/view-config';
+import { Chart } from './chart.type';
 import { ModelToViewConverter } from './model-to-view-converter';
 import { TextBox } from './text-box.type';
 
@@ -52,6 +53,28 @@ describe('ModelToViewConverter', () => {
 
       // then
       expect([view.elements[0].x, view.elements[0].y, view.elements[0].z]).toEqual([undefined, undefined, undefined]);
+   });
+
+   it('#convert should keep axis titles of chart', () => {
+
+      // given
+      const columns: Column[] = [
+         { name: 'Time', dataType: DataType.TIME, width: 100 },
+         { name: 'Amount', dataType: DataType.NUMBER, width: 70 }
+      ];
+      const context = new ChartContext(columns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [columns[1]];
+      context.groupByColumns = [columns[0]];
+      context.baseScale.title = 'Day';
+      context.valueScales[0].title = 'Units';
+
+      // when
+      const view = converter.convert(Route.GRID, 'test', new Query(), [context]);
+
+      // then
+      const chart = view.elements[0] as Chart;
+      expect(chart.baseScale.title).toBe('Day');
+      expect(chart.valueScales.map(s => s.title)).toEqual(['Units']);
    });
 
    it('#convert should map text box', () => {

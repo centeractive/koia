@@ -392,6 +392,7 @@
     "baseScale": "Basisskala",
     "valueScale": "Werteskala",
     "valueScaleNumbered": "Werteskala {{number}}",
+    "axisTitle": "Achsentitel",
     "stepSize": "Schrittweite",
     "automatic": "Automatisch",
     "labelRotation": "Beschriftungsdrehung",

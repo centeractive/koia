@@ -1,3 +1,7 @@
 <hr />
 {{ title }}
+<mat-form-field koiaForm class="field_axis_title">
+    <mat-label>{{ 'chart.axisTitle' | translate }}</mat-label>
+    <input matInput [placeholder]="'chart.automatic' | translate" [(ngModel)]="scale.title">
+</mat-form-field>
 <koia-ticks [ticks]="scale.ticks"></koia-ticks>

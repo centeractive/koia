@@ -337,6 +337,19 @@ describe('ChartJsOptionsProvider - multi value axes', () => {
     expect(options.scales['x'].display).toBe(true);
   });
 
+  it('#provide should define custom title of additional value axis', () => {
+
+    // given
+    const context = multiAxesContext(ChartType.LINE);
+    context.valueScales[1].title = 'Share';
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y2']['title']).toEqual({ display: true, text: 'Share' });
+  });
+
   function multiAxesContext(chartType: ChartType): ChartContext {
     const context = new ChartContext(columns, chartType.type, margin());
     context.multiValueAxes = true;
@@ -579,6 +592,53 @@ describe('ChartJsOptionsProvider - aggregated value scale titles', () => {
     context.data = data();
     return context;
   }
+});
+
+describe('ChartJsOptionsProvider - custom axis titles', () => {
+
+  beforeAll(() => Chart.register(...registerables));
+
+  it('#provide should define custom value axis title instead of automatic one', () => {
+
+    // given
+    const context = chartContext(ChartType.LINE, { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE });
+    context.valueScales[0].title = 'Units';
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y']['title']).toEqual({ display: true, text: 'Units' });
+  });
+
+  it('#provide should define custom base axis title instead of group-by column name', () => {
+
+    // given
+    const context = chartContext(ChartType.LINE, { ...COLUMNS[0], groupingTimeUnit: TimeUnit.MINUTE });
+    context.baseScale.title = 'Day';
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['x']['title']).toEqual({ display: true, text: 'Day' });
+  });
+
+  it('#provide should define custom base axis title without group-by column', () => {
+
+    // given
+    const context = new ChartContext(COLUMNS, ChartType.LINE.type, margin());
+    context.dataColumns = [COLUMNS[3]];
+    context.groupByColumns = [];
+    context.data = data();
+    context.baseScale.title = 'Day';
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['x']['title']).toEqual({ display: true, text: 'Day' });
+  });
 });
 
 function chartContext(chartType: ChartType, groupByColumn: Column): ChartContext {

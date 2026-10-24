@@ -43,9 +43,28 @@ export class DashboardSideBar {
     * expands the panel unless it is expanded already, a click on the header of an expanded panel collapses it
     */
    async toggle(panelTitle: string, label: string): Promise<void> {
+      await this.expandPanel(panelTitle);
+      await this.sidenav.getByRole('switch', { name: label, exact: true }).click();
+   }
+
+   /**
+    * @param scaleTitle the title of the scale (e.g. 'Base Scale'), it must match a single scale
+    */
+   axisTitleInput(scaleTitle: string): Locator {
+      return this.sidenav.locator('koia-scale').filter({ hasText: scaleTitle }).locator('.field_axis_title input');
+   }
+
+   /**
+    * expands the panel unless it is expanded already
+    */
+   async setAxisTitle(panelTitle: string, scaleTitle: string, title: string): Promise<void> {
+      await this.expandPanel(panelTitle);
+      await this.axisTitleInput(scaleTitle).fill(title);
+   }
+
+   private async expandPanel(panelTitle: string): Promise<void> {
       await this.expand(this.sidenav.locator('mat-expansion-panel-header')
          .filter({ has: this.sidenav.page().getByText(panelTitle, { exact: true }) }));
-      await this.sidenav.getByRole('switch', { name: label, exact: true }).click();
    }
 
    private async expand(header: Locator): Promise<void> {
