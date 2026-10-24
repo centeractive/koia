@@ -37,6 +37,12 @@ Dashboards combine summary tables, charts, relationship graphs and formatted tex
 
 When satisfied with the outcome, users can **save** all open tabs as a view or **export** data to use it elsewhere.
 
+## Scene format
+
+Third party programs writing scenes to CouchDB must follow the scene format specified in [SPEC.md](https://github.com/centeractive/koia-scene-schema/blob/main/docs/SPEC.md), which also covers the launch URL and the discovery of supported versions through `assets/scene-format/versions.json`. JSON schemas, types and example scenes per format version are published as npm package [@centeractive/koia-scene-schema](https://www.npmjs.com/package/@centeractive/koia-scene-schema), as Java library `com.centeractive.koia:koia-scene-model` on Maven Central and as Python package [koia-scene-model](https://pypi.org/project/koia-scene-model/) on PyPI.
+
+Koia validates each scene when it is activated: it shows the violations of an invalid scene and lists the supported versions when a scene has an unsupported `schemaVersion`. Scenes without `schemaVersion` are treated as format 1.0 and are never refused, violations are only logged as a warning.
+
 ## Getting Started
 
 It is recommended to use [CouchDB 3.n](http://couchdb.apache.org/) as described down below since the data scenes in Koia will be lost when the browser cache is emptied when using the IndexedDB.

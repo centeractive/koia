@@ -32,7 +32,7 @@
     "@angular/platform-browser": "^22.2.2",
     "@angular/platform-server": "^22.2.2",
     "@angular/router": "^22.2.2",
-    "@centeractive/koia-scene-schema": "file:../../Users/ursmi/AppData/Local/Temp/claude/C--workspace-koia-koia-wt2/0e6eb893-f487-48fd-9443-2d1e78a6b8c2/scratchpad/centeractive-koia-scene-schema-1.0.0.tgz",
+    "@centeractive/koia-scene-schema": "1.0.0",
     "@e965/xlsx": "0.20.3",
     "@ngx-translate/core": "18.0.0",
     "@ngx-translate/http-loader": "18.0.0",
