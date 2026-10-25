@@ -9,6 +9,8 @@ import { ViewToolbar } from '../components/view-toolbar';
 
 export class DashboardPage {
 
+   static readonly GRID_GAP_PX = 10;
+
    readonly tiles: Locator;
    readonly summaryTables: Locator;
    readonly summaryTiles: Locator;
@@ -25,6 +27,7 @@ export class DashboardPage {
    readonly sheets: Locator;
    readonly gridContent: Locator;
    readonly canvasContent: Locator;
+   readonly canvasPageContent: Locator;
    readonly canvasGuide: Locator;
    readonly resizePreview: Locator;
    private readonly root: Locator;
@@ -49,6 +52,7 @@ export class DashboardPage {
       this.sheets = this.root.locator('.div_canvas_sheet');
       this.gridContent = this.root.locator('#div_grid');
       this.canvasContent = this.root.locator('#div_canvas');
+      this.canvasPageContent = this.canvasContent.locator('.div_canvas_page_content').first();
       this.canvasGuide = this.root.locator('.div_canvas_guide');
       this.resizePreview = this.root.locator('.div_resize_preview');
    }
@@ -114,7 +118,7 @@ export class DashboardPage {
     * @returns the screen pixels per page unit of the free canvas, measured at the content of its first page
     */
    async canvasScale(pageFormat = PageFormat.LANDSCAPE): Promise<number> {
-      const content = await this.canvasContent.locator('.div_canvas_page_content').first().boundingBox();
+      const content = await this.canvasPageContent.boundingBox();
       return content.width / pageFormat.width;
    }
 

@@ -4,6 +4,15 @@ import { ChartType } from 'app/shared/model/chart/chart-type';
 import { dragCenterOnto } from '../pointer';
 import { SideNav } from './side-nav';
 
+const SPLIT_COLUMNS_ID = 'selectedSplitColumns';
+
+/**
+ * matches the element by its own text, ignoring the text of the icon preceding it
+ */
+function textNodeOf(name: string): (list: Locator) => Locator {
+   return list => list.locator(`:text-is(${JSON.stringify(name)})`);
+}
+
 export class DashboardSideBar extends SideNav {
 
    chartTypeButton(chartType: ChartType): Locator {
@@ -34,7 +43,27 @@ export class DashboardSideBar extends SideNav {
     */
    async toggle(panelTitle: string, label: string): Promise<void> {
       await this.expandPanel(panelTitle);
-      await this.sidenav.getByRole('switch', { name: label, exact: true }).click();
+      await this.switchButton(label).click();
+   }
+
+   /**
+    * expands the panel unless it is expanded already
+    */
+   async setToggle(panelTitle: string, label: string, on: boolean): Promise<void> {
+      await this.expandPanel(panelTitle);
+      await this.switchButton(label).setChecked(on);
+   }
+
+   switchButton(label: string): Locator {
+      return this.sidenav.getByRole('switch', { name: label, exact: true });
+   }
+
+   checkbox(label: string): Locator {
+      return this.sidenav.getByRole('checkbox', { name: label, exact: true });
+   }
+
+   async setCheckbox(label: string, checked: boolean): Promise<void> {
+      await this.checkbox(label).setChecked(checked);
    }
 
    /**
@@ -156,19 +185,38 @@ export class DashboardSideBar extends SideNav {
    }
 
    /**
+    * expands the split panel of the chart unless it is expanded already and drops the available column into the split columns
+    */
+   splitBy(column: string): Promise<void> {
+      return this.dragBetweenLists(SPLIT_COLUMNS_ID, column, true, textNodeOf(column));
+   }
+
+   /**
+    * expands the split panel of the chart unless it is expanded already and drops every split column into the available columns
+    */
+   async removeSplitColumns(): Promise<void> {
+      const panel = await this.expandPanelOf('#' + SPLIT_COLUMNS_ID);
+      const names = await panel.locator('#' + SPLIT_COLUMNS_ID + ' .div_column_item > span').allTextContents();
+      for (const name of names.map(n => n.trim())) {
+         await this.dragBetweenLists(SPLIT_COLUMNS_ID, name, false, textNodeOf(name));
+      }
+   }
+
+   /**
     * drags the item by its label between the selected list and the available list of the panel holding the selected list, after
     * scrolling the available list into view, as an expanded panel may reach below the window, and resolves once the drop animation
     * removed the drag preview, as items moved before would be pressed at their animated position
     */
-   private async dragBetweenLists(selectedListId: string, label: string, toSelected: boolean): Promise<void> {
+   private async dragBetweenLists(selectedListId: string, label: string, toSelected: boolean,
+      itemOf: (list: Locator) => Locator = list => list.getByText(label, { exact: true })): Promise<void> {
       const selectedList = '#' + selectedListId;
       const panel = await this.expandPanelOf(selectedList);
       const selected = panel.locator(selectedList);
       const available = panel.locator('.div_column_list:not(' + selectedList + ')');
       const [from, to] = toSelected ? [available, selected] : [selected, available];
       await available.scrollIntoViewIfNeeded();
-      await dragCenterOnto(from.getByText(label, { exact: true }), to);
-      await expect(to.getByText(label, { exact: true })).toBeVisible();
+      await dragCenterOnto(itemOf(from), to);
+      await expect(itemOf(to)).toBeVisible();
       await expect(this.sidenav.page().locator('.cdk-drag-preview')).toHaveCount(0);
    }
 

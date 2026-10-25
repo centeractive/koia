@@ -25,6 +25,14 @@ test.beforeEach(async ({ front }) => {
    await front.openSample();
 });
 
+test('clicking a header once sorts its column ascending', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.NUMBER);
+
+   await rawData.table.sortBy(column);
+
+   await expect(rawData.table.sortIndicator(column)).toHaveText(SORT_INDICATORS.asc);
+});
+
 test('sorting a number column twice shows the descending indicator and the largest value first', async ({ rawData }) => {
    const column = firstColumnOf(sample, DataType.NUMBER);
 

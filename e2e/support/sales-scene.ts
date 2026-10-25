@@ -1,7 +1,7 @@
-import { SALES_CSV } from '../../support/import-files';
-import { FrontPage } from '../../support/pages/front-page';
-import { ScenePage } from '../../support/pages/scene-page';
-import { ScenesPage } from '../../support/pages/scenes-page';
+import { SALES_CSV } from './import-files';
+import { FrontPage } from './pages/front-page';
+import { ScenePage } from './pages/scene-page';
+import { ScenesPage } from './pages/scenes-page';
 
 /**
  * imports the sales demo data off camera and opens its scene in the raw data view

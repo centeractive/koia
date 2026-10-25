@@ -12,6 +12,7 @@ import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
 
 const TABLE_RENDERER = 'Table';
+const ROW_HEATMAP_RENDERER = 'Row Heatmap';
 const en = new Texts('en');
 const sample = fruitSalesOf('en');
 const pivotTab = pivotTabOf(sample);
@@ -41,6 +42,15 @@ test('switching from heatmap to table renderer removes the cell colors', async (
 });
 
 test('clicking a value cell shows fewer raw data rows in a dialog', async ({ pivot, rawDataDialog }) => {
+   await pivot.valueCells.first().click();
+
+   await expect.poll(() => rawDataDialog.table.rowCountValue()).toBeLessThan(sample.entries.length);
+   expect(await rawDataDialog.table.rowCountValue()).toBeGreaterThan(0);
+});
+
+test('clicking a value cell of the row heatmap shows fewer raw data rows in a dialog', async ({ pivot, rawDataDialog }) => {
+   await pivot.selectRenderer(ROW_HEATMAP_RENDERER);
+
    await pivot.valueCells.first().click();
 
    await expect.poll(() => rawDataDialog.table.rowCountValue()).toBeLessThan(sample.entries.length);

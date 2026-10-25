@@ -2,11 +2,13 @@ import { rowsOf } from 'app/dashboard/generator/generated-grid';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { StatusType } from 'app/shared/model/status-type.enum';
+import { averageRevenueTourOf, expectAverageRevenueChart } from './support/average-revenue-tour';
 import { expect, test } from './support/fixtures';
 import { DashboardTile } from './support/components/dashboard-tile';
 import { LOG_LEVELS_JSON, MONTHLY_TWO_MEASURES_CSV } from './support/import-files';
 import { DashboardPage } from './support/pages/dashboard-page';
 import { Notifications } from './support/components/notifications';
+import { openSalesScene } from './support/sales-scene';
 import { Texts } from './support/texts';
 
 const en = new Texts('en');
@@ -68,3 +70,25 @@ async function expectTimeChartSummaryTableAndCharts(dashboard: DashboardPage, no
    await expect(dashboard.tile(0).root.locator('koia-chart')).toHaveCount(1);
    await expect(notifications.pane(StatusType.WARNING)).toHaveCount(0);
 }
+
+test('average revenue tour turns the generated time chart of the sales data shrunk by two columns into unstacked linear bars of the average '
+   + 'revenue per month split by channel', async ({ front, scene, scenes, tabBar, dashboard }) => {
+   await openSalesScene(front, scene, scenes);
+   await tabBar.addDashboard();
+   await dashboard.launcher.generateDashboard();
+   const columns = await dashboard.generatedGridColumns();
+   const chart = dashboard.tile(0);
+   const box = await chart.root.boundingBox();
+
+   await chart.startResizeBy(-2 * (box.width + DashboardPage.GRID_GAP_PX) / columns, 0);
+   await chart.release();
+   await expect.poll(() => chart.spans()).toEqual({ columns: columns - 2, rows: 1 });
+   await chart.configure();
+   await expect(chart.root).toBeInViewport({ ratio: 1 });
+   for (const step of averageRevenueTourOf(dashboard.sideBar, en)) {
+      await step.run();
+   }
+
+   await expect(chart.root).toBeInViewport({ ratio: 1 });
+   await expectAverageRevenueChart(chart, dashboard.sideBar, en);
+});

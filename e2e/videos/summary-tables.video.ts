@@ -1,14 +1,17 @@
 import { Aggregation } from 'app/shared/model/aggregation.enum';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
+import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { downloadOf } from '../support/downloads';
 import { expect, test } from '../support/fixtures';
 import { Texts } from '../support/texts';
-import { openSalesScene } from './support/sales-scene';
+import { openSalesScene } from '../support/sales-scene';
 import { VideoRecording } from './support/video-recording';
 
 const en = new Texts('en');
 const QUANTITY = 'Quantity';
+const DATE = 'Date';
+const NOTE = 'Fruit sales per channel and month';
 
 test('summary tables', async ({ page, front, scene, scenes, tabBar, dashboard, rawDataDialog }) => {
    const recording = new VideoRecording(page, 'summary-tables');
@@ -42,6 +45,11 @@ test('summary tables', async ({ page, front, scene, scenes, tabBar, dashboard, r
    await dashboard.sideBar.dragGroupByColumn('Channel');
    await recording.caption('Aggregate per group, e.g. per channel');
 
+   await dashboard.sideBar.dragGroupByColumn(DATE);
+   await dashboard.sideBar.selectGroupByTimeUnit(DATE, en.get(EnumLabelKeys.groupingTimeUnit(TimeUnit.MONTH)));
+   await expect.poll(async () => (await dashboard.tile(1).tableWidths()).columnCount).toBe(3);
+   await recording.caption('Group by time too, e.g. per month');
+
    await dashboard.sideBar.close();
    await dashboard.addSummary();
    await dashboard.sideBar.selectColumn(QUANTITY);
@@ -55,6 +63,13 @@ test('summary tables', async ({ page, front, scene, scenes, tabBar, dashboard, r
 
    await downloadOf(page, () => ranges.saveAs(en.get('element.saveAs', { format: en.get(EnumLabelKeys.exportFormat(ExportFormat.CSV)) })));
    await recording.caption('Save a summary table as CSV file');
+
+   const note = await dashboard.addNote();
+   await note.focus();
+   await note.type(NOTE);
+   await dashboard.pressOutsideTextBoxes();
+   await expect(note.paragraphs.first()).toHaveText(NOTE);
+   await recording.caption('Add a note to explain your findings');
 
    await recording.save();
 });

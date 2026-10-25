@@ -26,7 +26,6 @@ import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
 
 const VIEW_NAME = 'Regions overview';
-const GRID_GAP_PX = 10;
 /** half a snap step of 10 page units */
 const SNAP_TOLERANCE_PX = 6;
 /** minimum width of 40 page units of a text box added with 300 page units */
@@ -45,6 +44,8 @@ const column = firstColumnOf(sample, DataType.TEXT);
 const dateColumn = firstColumnOf(sample, DataType.TIME);
 const firstDay = distinctValuesOf<string>(sample, dateColumn)[0];
 const [quantityColumn] = columnsOf(sample, DataType.NUMBER);
+const revenueColumn = columnsOf(sample, DataType.NUMBER)[1];
+const channelColumn = columnsOf(sample, DataType.TEXT)[1];
 
 async function addGraphGroupedBy(dashboard: DashboardPage, timeUnitLabel: string): Promise<void> {
    await dashboard.launcher.addGraph();
@@ -83,6 +84,20 @@ test('count of a summary table opens a raw data dialog with the counted rows', a
    await dashboard.tile(0).firstCountLink.click();
 
    await expect(rawDataDialog.table.rowCount).toHaveText(en.get('ui.rows', { count }));
+});
+
+test('summary of a sum grouped by channel and by date per month shows three columns', async ({ dashboard }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(revenueColumn);
+   await dashboard.sideBar.selectAggregation(en.summaryAggregation(Aggregation.SUM));
+   await dashboard.sideBar.deselectAggregation(en.summaryAggregation(Aggregation.AVG));
+   await dashboard.sideBar.dragGroupByColumn(channelColumn);
+
+   await dashboard.sideBar.dragGroupByColumn(dateColumn);
+   await dashboard.sideBar.selectGroupByTimeUnit(dateColumn, en.get(EnumLabelKeys.groupingTimeUnit(TimeUnit.MONTH)));
+   await dashboard.sideBar.close();
+
+   await expect.poll(async () => (await dashboard.tile(0).tableWidths()).columnCount).toBe(3);
 });
 
 test('double click on the graph root node reveals all rows', async ({ dashboard, rawDataDialog }) => {
@@ -276,7 +291,7 @@ test('grid tile grows by a row in the default window', async ({ dashboard }) => 
    const tile = dashboard.tile(0);
    const box = await tile.root.boundingBox();
 
-   await tile.startResizeBy(0, (box.height + 10) / 2 + 10);
+   await tile.startResizeBy(0, (box.height + DashboardPage.GRID_GAP_PX) / 2 + 10);
    await tile.release();
 
    await expect(tile.root).toHaveCSS('grid-row-end', 'span 2');
@@ -290,7 +305,7 @@ test('resizing a grid tile by its left edge widens its column span', async ({ pa
    const tile = dashboard.tile(0);
    const box = await tile.root.boundingBox();
 
-   await tile.startResizeBy(-((box.width + 10) / 2 + 10), 0, 'left');
+   await tile.startResizeBy(-((box.width + DashboardPage.GRID_GAP_PX) / 2 + 10), 0, 'left');
    await tile.release();
 
    await expect(tile.root).toHaveCSS('grid-column-end', 'span 2');
@@ -341,7 +356,7 @@ async function expectGridResizeBy(dashboard: DashboardPage, offsetOf: (pitch: nu
    startSpan = 1): Promise<void> {
    const tile = dashboard.tile(0);
    const box = await tile.root.boundingBox();
-   const pitch = (box.width + 10) / startSpan;
+   const pitch = (box.width + DashboardPage.GRID_GAP_PX) / startSpan;
    const offset = offsetOf(pitch);
 
    await tile.startResizeBy(offset, offset);
@@ -350,8 +365,8 @@ async function expectGridResizeBy(dashboard: DashboardPage, offsetOf: (pitch: nu
 
    expect(Math.abs(preview.x - box.x)).toBeLessThanOrEqual(2);
    expect(Math.abs(preview.y - box.y)).toBeLessThanOrEqual(2);
-   expect(Math.abs(preview.width - (expectedSpan * pitch - 10))).toBeLessThanOrEqual(2);
-   expect(Math.abs(preview.height - (expectedSpan * pitch - 10))).toBeLessThanOrEqual(2);
+   expect(Math.abs(preview.width - (expectedSpan * pitch - DashboardPage.GRID_GAP_PX))).toBeLessThanOrEqual(2);
+   expect(Math.abs(preview.height - (expectedSpan * pitch - DashboardPage.GRID_GAP_PX))).toBeLessThanOrEqual(2);
    await expect(tile.root).toHaveCSS('grid-column-end', 'span ' + expectedSpan);
    await expect(tile.root).toHaveCSS('grid-row-end', 'span ' + expectedSpan);
    await expect(tile.root).toBeVisible();
@@ -403,7 +418,7 @@ test.describe('switching from grid', () => {
       await dashboard.landscapePagesButton.click();
       await expect(dashboard.canvasContent).toBeVisible();
 
-      const pageContent = await dashboard.canvasContent.locator('.div_canvas_page_content').first().boundingBox();
+      const pageContent = await dashboard.canvasPageContent.boundingBox();
       const canvasUnitBoxes = pageUnitBoxesOf(await tileBoxes(dashboard), pageContent, await dashboard.canvasScale());
       expect(canvasUnitBoxes.length).toBe(3);
       canvasUnitBoxes.forEach((box, i) => {
@@ -814,7 +829,7 @@ test('generated summary tables span one cell only when their content fits and ne
       if (spans.columns === 1) {
          expect(Math.abs(rendered - maxContent)).toBeLessThanOrEqual(0.5);
       } else {
-         const cellWidth = (offsetWidth - scrollbarWidth) / columns - GRID_GAP_PX;
+         const cellWidth = (offsetWidth - scrollbarWidth) / columns - DashboardPage.GRID_GAP_PX;
          expect(maxContent + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth + columnCount).toBeGreaterThanOrEqual(cellWidth - 1);
       }
    }
@@ -1031,7 +1046,7 @@ test('text tile takes the grid cell after a summary', async ({ dashboard }) => {
 
    const [summary, tile] = await tileBoxes(dashboard);
    expect(tile.y).toBeCloseTo(summary.y, 0);
-   expect(tile.x).toBeCloseTo(summary.x + summary.width + GRID_GAP_PX, 0);
+   expect(tile.x).toBeCloseTo(summary.x + summary.width + DashboardPage.GRID_GAP_PX, 0);
    expect(tile.width).toBeCloseTo(summary.width, 0);
    expect(await new DashboardTile(textTile.tile).spans()).toEqual({ columns: 1, rows: 1 });
 });

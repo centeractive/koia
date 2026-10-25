@@ -87,7 +87,7 @@
     "@angular/compiler-cli": "^22.2.2",
     "@angular/localize": "^22.2.2",
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "1.64.0",
+    "@playwright/test": "1.64.1",
     "@types/node": "~26.6.4",
     "@vitest/browser-playwright": "^5.0.5",
     "@vitest/coverage-istanbul": "^5.0.5",

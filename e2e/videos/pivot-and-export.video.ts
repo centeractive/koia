@@ -1,14 +1,15 @@
 import { downloadOf } from '../support/downloads';
-import { test } from '../support/fixtures';
+import { expect, test } from '../support/fixtures';
 import { Texts } from '../support/texts';
-import { openSalesScene } from './support/sales-scene';
+import { openSalesScene } from '../support/sales-scene';
 import { VideoRecording } from './support/video-recording';
 
 const en = new Texts('en');
 const SUM = 'Sum';
 const ROW_HEATMAP = 'Row Heatmap';
+const ROW_COUNT = 240;
 
-test('pivot tables and export', async ({ page, front, scene, scenes, tabBar, pivot }) => {
+test('pivot tables and export', async ({ page, front, scene, scenes, tabBar, pivot, rawDataDialog }) => {
    const recording = new VideoRecording(page, 'pivot-and-export');
    await openSalesScene(front, scene, scenes);
    recording.markStart();
@@ -35,11 +36,25 @@ test('pivot tables and export', async ({ page, front, scene, scenes, tabBar, piv
    await pivot.columnTotalsButton.click();
    await recording.caption('Hide the column totals with one click');
 
+   await pivot.valueCells.first().click();
+   await expect.poll(() => rawDataDialog.table.rowCountValue()).toBeLessThan(ROW_COUNT);
+   expect(await rawDataDialog.table.rowCountValue()).toBeGreaterThan(0);
+   await recording.caption('Click a value to see the rows it sums up');
+   await rawDataDialog.close();
+
    await pivot.dragFieldToRows('Date (per month)');
    await recording.caption('Dates are grouped per month');
 
    await pivot.setTimeUnit('Date', en.get('pivot.timeUnit.year'));
    await recording.caption('Switch the time unit, e.g. to years');
+
+   await pivot.mainToolbar.addValueFilter('Channel', 'Online');
+   await recording.caption('Filter the data, e.g. online sales only');
+
+   await pivot.pagingToggles.landscapeButton.click();
+   await expect(pivot.sheets.first()).toBeVisible();
+   await recording.caption('Preview the pivot table as printable pages');
+   await pivot.pagingToggles.monitorButton.click();
 
    await downloadOf(page, () => pivot.viewToolbar.chooseMoreMenuItem(en.get('pivot.saveAsExcel')));
    await recording.caption('Save the pivot table as Excel file');

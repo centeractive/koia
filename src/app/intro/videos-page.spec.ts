@@ -223,7 +223,7 @@ describe('videos page', () => {
     expect(all(doc, 'a.landing-btn').map(a => a.getAttribute('href'))).toEqual(['/front']);
   });
 
-  it('should credit soundtrack under creative commons by attribution 4.0', async () => {
+  it('should credit both soundtracks under creative commons by attribution 4.0', async () => {
 
     // when
     const doc = await loadVideos(DESKTOP);
@@ -231,7 +231,7 @@ describe('videos page', () => {
     // then
     const credit = doc.querySelector('.landing-footer-inner > small.video-credit');
     const link = credit.querySelector('a');
-    expect(credit.textContent.replace(/\s+/g, ' ')).toBe('Music: “The Entertainer” Kevin MacLeod (incompetech.com), composed by Scott Joplin, licensed under Creative Commons: By Attribution 4.0');
+    expect(credit.textContent.replace(/\s+/g, ' ')).toBe('Music: “The Entertainer” and “Fig Leaf Rag” Kevin MacLeod (incompetech.com), composed by Scott Joplin, licensed under Creative Commons: By Attribution 4.0');
     expect([link.getAttribute('href'), link.target, link.rel]).toEqual(['https://creativecommons.org/licenses/by/4.0/', '_blank', 'noopener']);
   });
 

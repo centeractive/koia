@@ -1,10 +1,16 @@
+import { SORT_INDICATORS } from 'app/raw-data/sort-indicators';
 import { CategoricalColorScheme } from 'app/shared/color/categorical-color-scheme.enum';
 import { expect, test } from '../support/fixtures';
+import { openSalesScene } from '../support/sales-scene';
 import { Texts } from '../support/texts';
-import { openSalesScene } from './support/sales-scene';
-import { VideoRecording } from './support/video-recording';
+import { CAPTION_BAND_PX, VideoRecording } from './support/video-recording';
 
 const en = new Texts('en');
+const REVENUE = 'Revenue';
+
+function tooltipOf(entries: number): string {
+   return 'Region: West ' + en.get('graph.tooltip.entries', { count: en.number(entries) }) + en.get('graph.tooltip.doubleClick');
+}
 
 test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboard, rawDataDialog }) => {
    const recording = new VideoRecording(page, 'relationship-graphs');
@@ -29,13 +35,23 @@ test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboa
    await recording.caption('Pick a color scheme');
 
    await dashboard.sideBar.close();
-   await dashboard.setGridCellRatio('2:3');
-   await graph.setColumnSpan(en.get('element.columns', { count: 3 }));
-   await recording.caption('Give the graph room to arrange its nodes');
+   await dashboard.freeCanvasButton.click();
+   await expect(dashboard.canvasContent).toBeVisible();
+   await recording.caption('Switch to the free canvas to place tiles freely');
 
-   await graph.hoverGraphNode(graph.graphNodes.filter({ hasText: 'Region: West' }));
-   await expect(graph.graphTooltip).toHaveText('Region: West ' + en.get('graph.tooltip.entries', { count: en.number(69) })
-      + en.get('graph.tooltip.doubleClick'));
+   const sheet = await dashboard.canvasPageContent.boundingBox();
+   const box = await graph.root.boundingBox();
+   await graph.startResizeBy(sheet.x + sheet.width - (box.x + box.width), page.viewportSize().height - CAPTION_BAND_PX - (box.y + box.height));
+   await expect(dashboard.resizePreview).toBeVisible();
+   await recording.caption('Drag the corner to give the graph more room');
+   await graph.release();
+   await expect(dashboard.resizePreview).toHaveCount(0);
+   await expect(graph.root).toBeInViewport({ ratio: 1 });
+   await recording.caption('The graph arranges its nodes in the new space');
+
+   const west = graph.graphNodes.filter({ hasText: 'Region: West' });
+   await graph.hoverGraphNode(west);
+   await expect(graph.graphTooltip).toHaveText(tooltipOf(69));
    await recording.caption('Hover a node to see its number of entries');
 
    const westLemons = graph.graphNodes.filter({ hasText: 'Product: Lemons (14)' });
@@ -44,6 +60,18 @@ test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboa
    await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(14));
    await recording.caption('Double-click a node to see its rows');
 
+   await rawDataDialog.table.sortBy(REVENUE);
+   await expect(rawDataDialog.table.sortIndicator(REVENUE)).toHaveText(SORT_INDICATORS.asc);
+   await recording.caption('Click a header to sort the rows');
    await rawDataDialog.close();
+
+   await dashboard.mainToolbar.addValueFilter('Channel', 'Online');
+   await expect(graph.graphNodes.filter({ hasText: 'Product: Lemons (10)' })).toHaveCount(1);
+   await recording.caption('Filters apply to the dashboard, e.g. online sales');
+
+   await graph.hoverGraphNode(west);
+   await expect(graph.graphTooltip).toHaveText(tooltipOf(34));
+   await recording.caption('Nodes count the filtered rows only');
+
    await recording.save();
 });

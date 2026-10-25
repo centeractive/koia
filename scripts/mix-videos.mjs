@@ -1,6 +1,7 @@
 /**
- * Mixes the background music given by environment variable VIDEO_MUSIC (default e2e/videos/music/The Entertainer.mp3) into the raw videos recorded by `npm run videos:record`,
- * trims their loading frames, extracts a poster and copies both to src/intro/videos unless the video exceeds the size cap.
+ * Mixes the soundtrack alternating by tile position on src/intro/videos.html from the music directory given by environment variable VIDEO_MUSIC_DIR
+ * (default e2e/videos/music) into the raw videos recorded by `npm run videos:record`, trims their loading frames, extracts a poster and copies both
+ * to src/intro/videos unless the video exceeds the size cap.
  *
  * usage: node scripts/mix-videos.mjs [slug]
  */
@@ -8,15 +9,15 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { audioFilterOf, MUSIC_DIR_VARIABLE, musicProblemOf, soundtrackOf, tileSlugsOf } from '../e2e/videos/support/soundtrack.mts';
 
 const REPO_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const RAW_DIR = join(REPO_DIR, 'test-results/videos/raw');
 const OUT_DIR = join(REPO_DIR, 'test-results/videos/out');
 const TARGET_DIR = join(REPO_DIR, 'src/intro/videos');
+const VIDEOS_PAGE = join(REPO_DIR, 'src/intro/videos.html');
+const MUSIC_DIR = process.env[MUSIC_DIR_VARIABLE] || join(REPO_DIR, 'e2e/videos/music');
 const MAX_BYTES = 8 * 1024 * 1024;
-const FADE_OUT_SECONDS = 2.5;
-const DEFAULT_MUSIC = join(REPO_DIR, 'e2e/videos/music/The Entertainer.mp3');
-const MUSIC_URL = 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Entertainer.mp3';
 
 function fail(message) {
    console.error(message);
@@ -51,7 +52,7 @@ function mix(slug, music) {
    run('ffmpeg', ['-y', '-ss', String(trimStart), '-i', raw, '-stream_loop', '-1', '-i', music, '-map', '0:v', '-map', '1:a:0',
       '-t', String(duration), '-c:v', 'libvpx-vp9', '-crf', '36', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2',
       '-c:a', 'libopus', '-b:a', '96k',
-      '-af', `volume=0.95,afade=t=in:d=1,afade=t=out:st=${duration - FADE_OUT_SECONDS}:d=${FADE_OUT_SECONDS}`, video]);
+      '-af', audioFilterOf(duration), video]);
    run('ffmpeg', ['-y', '-sseof', '-0.5', '-i', video, '-frames:v', '1', '-c:v', 'libwebp', poster]);
    const bytes = statSync(video).size;
    if (bytes > MAX_BYTES) {
@@ -62,14 +63,17 @@ function mix(slug, music) {
    console.log(`${slug}: ${duration.toFixed(1)} s, ${bytes} bytes copied to ${TARGET_DIR}`);
 }
 
-const music = process.env.VIDEO_MUSIC || DEFAULT_MUSIC;
-if (!existsSync(music) || !statSync(music).isFile()) {
-   fail(`music file ${music} missing, download ${MUSIC_URL} to ${DEFAULT_MUSIC} or name another file by environment variable VIDEO_MUSIC`);
+const slugs = slugsToMix(process.argv[2]);
+const tileSlugs = tileSlugsOf(readFileSync(VIDEOS_PAGE, 'utf8'));
+const musicFiles = existsSync(MUSIC_DIR) ? readdirSync(MUSIC_DIR, { withFileTypes: true }).filter(e => e.isFile()).map(e => e.name) : [];
+const problems = slugs.map(slug => musicProblemOf(slug, tileSlugs, VIDEOS_PAGE, MUSIC_DIR, musicFiles)).filter(problem => problem);
+if (problems.length) {
+   fail(problems.join('\n'));
 }
 run('ffmpeg', ['-version'], 'ignore');
 run('ffprobe', ['-version'], 'ignore');
 mkdirSync(OUT_DIR, { recursive: true });
 mkdirSync(TARGET_DIR, { recursive: true });
-for (const slug of slugsToMix(process.argv[2])) {
-   mix(slug, music);
+for (const slug of slugs) {
+   mix(slug, join(MUSIC_DIR, soundtrackOf(slug, tileSlugs).file));
 }
