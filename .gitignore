@@ -54,3 +54,6 @@ Thumbs.db
 
 # shell crash dumps
 *.stackdump
+
+# background music for tutorial videos
+/e2e/videos/music/

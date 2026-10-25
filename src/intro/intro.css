@@ -136,6 +136,22 @@ svg.landing-tile-icon {
   text-wrap: balance;
 }
 
+.intro-videos-link {
+  margin: -24px 0 40px;
+}
+
+.intro-videos-link a {
+  color: var(--koia-on-color);
+  text-decoration: underline;
+}
+
+.intro-videos-link a:focus-visible {
+  outline-width: 2px;
+  outline-style: solid;
+  outline-color: var(--koia-on-color);
+  outline-offset: 2px;
+}
+
 .intro-languages {
   position: relative;
 }

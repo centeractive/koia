@@ -28,6 +28,14 @@ Run `npm run e2e` to execute the [Playwright](https://playwright.dev) end-to-end
 
 There is one spec per area (`e2e/*.e2e.ts`). Specs use the page objects of `e2e/support/pages` and `e2e/support/components` through the fixtures in `e2e/support/fixtures.ts` and `e2e/support/couchdb-fixtures.ts` and import framework-free app modules directly (never barrels). Expected texts come from `src/assets/i18n/<lang>.json` (`e2e/support/texts.ts`), sample data from `src/assets/samples`, import files from `e2e/data` and `src/app/shared/services/reader/excel/test.xlsx`. Both Azure pipelines run the end-to-end tests through the step template `e2e/azure-e2e-steps.yml`.
 
+## Recording tutorial videos
+
+The videos of `src/intro/videos.html` are recorded by Playwright scripts in `e2e/videos/*.video.ts` and mixed with background music by `scripts/mix-videos.mjs`. Prerequisites: `ffmpeg` and `ffprobe` on the `PATH` (e.g. `winget install Gyan.FFmpeg`) and the soundtrack "The Entertainer" by Scott Joplin, recorded by Kevin MacLeod (incompetech.com, CC BY 4.0, credited in the footer of `videos.html`), in the git-ignored `e2e/videos/music/`: `curl -L --create-dirs -o "e2e/videos/music/The Entertainer.mp3" https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Entertainer.mp3`. Environment variable `VIDEO_MUSIC` may name another music file.
+
+Record and mix one video, here `new-scene`, with `E2E_PORT=4317 npm run videos:record -- new-scene && npm run videos:mix -- new-scene` (PowerShell 7: `$env:E2E_PORT=4317; npm run videos:record -- new-scene && npm run videos:mix -- new-scene`; `&&` needs PowerShell 7, pwsh). The recording writes the raw video and its trim offset to `test-results/videos/raw`, the mix writes `src/intro/videos/<slug>.webm` and its poster `<slug>.webp` and fails when the video exceeds 8 MB. Each recording run clears `test-results/videos`, hence `npm run videos:mix` without a slug mixes the videos of the last recording run only.
+
+To add a video, write `e2e/videos/<slug>.video.ts` with `VideoRecording` (`e2e/videos/support/video-recording.ts`), record and mix it as above, add its tile with the play button and video dialog to `src/intro/videos.html` and update the tiles expected by `src/app/intro/videos-page.spec.ts`.
+
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).

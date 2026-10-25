@@ -31,3 +31,13 @@ test('connection dialog offers remembering the password for remote hosts only', 
    await expect(connectionDialog.riskNote).toHaveText(en.get('front.connection.rememberPasswordRisk'));
    await connectionDialog.cancel();
 });
+
+test('home button leads back to the front page which continues with the scenes', async ({ front, rawData, scenes }) => {
+   await front.open('en');
+   await front.openSample();
+
+   await rawData.mainToolbar.openFront();
+   await front.continueWithScenes();
+
+   await expect(scenes.rows).toHaveCount(1);
+});

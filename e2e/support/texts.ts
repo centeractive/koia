@@ -1,4 +1,5 @@
 import { resolve } from 'path';
+import { Aggregation } from 'app/shared/model/aggregation.enum';
 import { Language, localeIdOf } from 'app/shared/services/language/language';
 import { jsonOf, SRC_DIR } from './paths';
 
@@ -24,5 +25,9 @@ export class Texts {
 
    rows(count: number): string {
       return this.get('ui.rows', { count: this.number(count) });
+   }
+
+   summaryAggregation(aggregation: Aggregation): string {
+      return this.get('summary.aggregation.' + aggregation);
    }
 }

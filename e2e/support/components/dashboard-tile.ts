@@ -26,6 +26,7 @@ export class DashboardTile {
    readonly graphRootNode: Locator;
    readonly graphNodes: Locator;
    readonly graphArea: Locator;
+   readonly graphTooltip: Locator;
    readonly marginButton: Locator;
    readonly margin: Locator;
    readonly resizeHandles: Locator;
@@ -36,6 +37,7 @@ export class DashboardTile {
       this.graphRootNode = root.locator('koia-graph svg g.nodes > g > circle').first();
       this.graphNodes = root.locator('koia-graph svg g.nodes > g');
       this.graphArea = root.locator('koia-graph .div_svg');
+      this.graphTooltip = root.locator('koia-graph .tooltip');
       this.marginButton = root.locator('.but_element_margin');
       this.margin = root.locator('.div_margins');
       this.resizeHandles = root.locator('.div_resize_handle');
@@ -54,15 +56,7 @@ export class DashboardTile {
     * because Chart.js animates and redraws when the closing side bar resizes the content
     */
    async clickChartNearBottomCenter(): Promise<void> {
-      let previous: string;
-      let scan: CenterColumnScan;
-      await expect.poll(async () => {
-         scan = await this.scanCenterColumn();
-         const current = JSON.stringify(scan);
-         const stable = scan.paintedRow >= 0 && current === previous;
-         previous = current;
-         return stable;
-      }).toBe(true);
+      const scan = await this.stableScan(() => this.scanCenterColumn(), s => s.paintedRow >= 0);
       const scale = scan.width / scan.clientWidth;
       await this.root.locator('canvas').click({ position: { x: scan.clientWidth / 2, y: scan.paintedRow / scale - 10 } });
    }
@@ -72,6 +66,16 @@ export class DashboardTile {
     */
    async doubleClickGraphNode(node: Locator): Promise<void> {
       await node.locator('circle').dispatchEvent('dblclick');
+   }
+
+   /**
+    * moves the pointer onto the circle of the node once two consecutive scans of its position agree, because the force layout moves
+    * the nodes until it rests and the pointer would miss a moving node, then shows the tooltip of the node
+    */
+   async hoverGraphNode(node: Locator): Promise<void> {
+      const circle = node.locator('circle');
+      await this.stableScan(() => circle.boundingBox());
+      await circle.hover();
    }
 
    spans(): Promise<{ columns: number; rows: number }> {
@@ -133,6 +137,15 @@ export class DashboardTile {
    async firstColumnValues(): Promise<string[]> {
       await this.waitForSummaryTable();
       return (await this.root.locator('tr.mat-mdc-row td:first-child').allTextContents()).map(t => t.trim());
+   }
+
+   /**
+    * clicks the header of a summary table column that is not sorted yet, which sorts it ascending
+    */
+   async sortAscendingBy(header: string): Promise<void> {
+      const headerCell = this.root.getByRole('columnheader', { name: header, exact: true });
+      await headerCell.click();
+      await expect(headerCell).toHaveAttribute('aria-sort', 'ascending');
    }
 
    async hoverFirstTableRow(): Promise<void> {
@@ -233,6 +246,22 @@ export class DashboardTile {
    private async waitForSummaryTable(): Promise<void> {
       await expect(this.root.locator('td.mat-mdc-footer-cell').first()).toBeVisible();
       await expect(this.root.locator('mat-progress-bar')).toHaveCount(0);
+   }
+
+   /**
+    * @returns the first scan that agrees with its previous scan and is valid
+    */
+   private async stableScan<T>(scan: () => Promise<T>, isValid: (value: T) => boolean = () => true): Promise<T> {
+      let previous: string;
+      let value: T;
+      await expect.poll(async () => {
+         value = await scan();
+         const current = JSON.stringify(value);
+         const stable = isValid(value) && current === previous;
+         previous = current;
+         return stable;
+      }).toBe(true);
+      return value;
    }
 
    private paintedPixelCount(): Promise<number> {

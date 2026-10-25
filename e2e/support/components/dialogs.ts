@@ -102,8 +102,15 @@ export class ViewLauncherDialog {
 export class RawDataDialog {
 
    readonly table: RawDataTable;
+   private readonly root: Locator;
 
    constructor(page: Page) {
-      this.table = new RawDataTable(page.locator('koia-raw-data-dialog koia-raw-data'));
+      this.root = page.locator('koia-raw-data-dialog');
+      this.table = new RawDataTable(this.root.locator('koia-raw-data'));
+   }
+
+   async close(): Promise<void> {
+      await this.root.locator('#but_close_dialog').click();
+      await this.root.waitFor({ state: 'detached' });
    }
 }

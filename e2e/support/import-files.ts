@@ -21,12 +21,15 @@ export interface ImportFile {
 
 export const ORDERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders.csv'), [DataType.TEXT, DataType.NUMBER, DataType.TIME]);
 
+export const SALES_CSV = csvFile(resolve(E2E_DATA_DIR, 'sales.csv'),
+   [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.NUMBER, DataType.NUMBER, DataType.NUMBER]);
+
 export const READER_TEST_XLSX = excelFile(resolve(SRC_DIR, 'app/shared/services/reader/excel/test.xlsx'),
    [DataType.TEXT, DataType.NUMBER, DataType.BOOLEAN, DataType.TIME]);
 
 export const DELIVERIES_JSON = jsonFile(resolve(E2E_DATA_DIR, 'deliveries.json'), [DataType.TEXT, DataType.NUMBER, DataType.TIME]);
 
-export const IMPORT_FILES = [ORDERS_CSV, READER_TEST_XLSX, DELIVERIES_JSON];
+export const IMPORT_FILES = [ORDERS_CSV, SALES_CSV, READER_TEST_XLSX, DELIVERIES_JSON];
 
 export const LOG_LEVELS_JSON = jsonFile(resolve(E2E_DATA_DIR, 'log-levels.json'),
    [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.TEXT]);

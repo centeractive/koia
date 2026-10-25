@@ -38,6 +38,10 @@ export function countOf(sample: SampleData, predicate: (entry: object) => boolea
    return sample.entries.filter(predicate).length;
 }
 
+export function sumOf(sample: SampleData, column: string, predicate: (entry: object) => boolean): number {
+   return sample.entries.filter(predicate).reduce((sum, entry) => sum + Number(entry[column]), 0);
+}
+
 export function distinctValuesOf<T>(sample: SampleData, column: string): T[] {
    return [...new Set(columnValuesOf<T>(sample, column))].sort();
 }

@@ -1,4 +1,4 @@
-import { leftInsetOf, rightInsetOf, rowCountOf, stylesOf, textsOf } from './dom-queries';
+import { expectFittingIntoViewport, leftInsetOf, lineCountOf, rightInsetOf, rowCountOf, stylesOf, textsOf } from './dom-queries';
 
 describe('dom queries', () => {
 
@@ -73,5 +73,62 @@ describe('dom queries', () => {
 
     // then
     expect(inset).toBe(8);
+  });
+
+  it('lineCountOf should count one line for unwrapped text', () => {
+
+    // given
+    const div = createRoot('<div style="font: 16px monospace">alpha beta</div>').firstElementChild;
+
+    // when
+    const lines = lineCountOf(div);
+
+    // then
+    expect(lines).toBe(1);
+  });
+
+  it('lineCountOf should count two lines for wrapped text', () => {
+
+    // given
+    const div = createRoot('<div style="font: 16px monospace; width: 6ch">alpha beta</div>').firstElementChild;
+
+    // when
+    const lines = lineCountOf(div);
+
+    // then
+    expect(lines).toBe(2);
+  });
+
+  function createDialogWithElement(): HTMLElement {
+    const width = window.innerWidth * 0.5;
+    const dialog = createRoot('<dialog style="padding: 0; border: 0; max-width: none; max-height: none">'
+      + '<i style="display: block; width: ' + width + 'px; height: ' + width * 9 / 16 + 'px"></i></dialog>')
+      .querySelector('dialog');
+    dialog.showModal();
+    return dialog.querySelector('i');
+  }
+
+  it('expectFittingIntoViewport should accept element fitting into viewport with its aspect ratio', () => {
+
+    // given
+    const element = createDialogWithElement();
+
+    // when
+    const check = () => expectFittingIntoViewport(element, 0.9, 16 / 9);
+
+    // then
+    expect(check).not.toThrow();
+  });
+
+  it('expectFittingIntoViewport should reject element exceeding viewport height share', () => {
+
+    // given
+    const element = createDialogWithElement();
+
+    // when
+    const check = () => expectFittingIntoViewport(element, 0.1, 16 / 9);
+
+    // then
+    expect(check).toThrow();
   });
 });

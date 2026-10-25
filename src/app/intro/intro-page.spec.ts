@@ -1,4 +1,4 @@
-import { findStyleRule, findUnsafeExternalLinks, rightInsetOf } from 'app/shared/test';
+import { expectFittingIntoViewport, findStyleRule, findUnsafeExternalLinks, lineCountOf, loadStaticPage, rightInsetOf } from 'app/shared/test';
 
 describe('intro page', () => {
 
@@ -9,15 +9,9 @@ describe('intro page', () => {
 
   afterEach(() => iframe?.remove());
 
-  function loadIntro(width: number): Promise<Document> {
-    iframe = document.createElement('iframe');
-    iframe.sandbox.add('allow-same-origin');
-    iframe.style.width = width + 'px';
-    iframe.style.height = '800px';
-    const loaded = new Promise<Document>(resolve => iframe.addEventListener('load', () => resolve(iframe.contentDocument)));
-    iframe.src = '/intro/index.html';
-    document.body.appendChild(iframe);
-    return loaded;
+  async function loadIntro(width: number): Promise<Document> {
+    iframe = await loadStaticPage('/intro/index.html', { width });
+    return iframe.contentDocument;
   }
 
   function styleOf(doc: Document, selector: string): CSSStyleDeclaration {
@@ -109,9 +103,7 @@ describe('intro page', () => {
     const doc = await loadIntro(DESKTOP);
 
     // then
-    const range = doc.createRange();
-    range.selectNodeContents(doc.querySelector('#why li:last-child h3'));
-    expect(new Set(Array.from(range.getClientRects()).map(r => Math.round(r.top))).size).toBeLessThanOrEqual(2);
+    expect(lineCountOf(doc.querySelector('#why li:last-child h3'))).toBeLessThanOrEqual(2);
   });
 
   it('should promise in last why koia tile that data never leaves trusted environment', async () => {
@@ -167,6 +159,72 @@ describe('intro page', () => {
 
     // then
     expect(all(doc, 'a[href*="youtu"]')).toEqual([]);
+  });
+
+  it('should link videos page from nav and hero', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(doc.querySelector('.landing-nav a.landing-nav-secondary[href="videos.html"]').textContent).toBe('Videos');
+    expect(doc.querySelector('.landing-hero .intro-videos-link a[href="videos.html"]').textContent).toBe('Watch short videos');
+  });
+
+  it('should show hero videos link in on-color', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    expect(styleOf(doc, '.intro-videos-link a').color).toBe('rgb(255, 255, 255)');
+  });
+
+  it('should keep hero videos link visible on mobile', async () => {
+
+    // when
+    const doc = await loadIntro(MOBILE);
+
+    // then
+    const link = doc.querySelector('.intro-videos-link a');
+    expect(doc.defaultView.getComputedStyle(link).display).not.toBe('none');
+    expect(link.getBoundingClientRect().width).toBeGreaterThan(0);
+  });
+
+  it('should place hero videos link 16px below actions and 40px above screenshot', async () => {
+
+    // when
+    const doc = await loadIntro(DESKTOP);
+
+    // then
+    const link = doc.querySelector('.intro-videos-link').getBoundingClientRect();
+    expect(link.top - doc.querySelector('.landing-hero .landing-actions').getBoundingClientRect().bottom).toBeCloseTo(16, 0);
+    expect(doc.querySelector('.landing-hero-shot').getBoundingClientRect().top - link.bottom).toBeCloseTo(40, 0);
+  });
+
+  it('should outline focused hero videos link in on-color', async () => {
+
+    // given
+    const doc = await loadIntro(DESKTOP);
+
+    // when
+    const rule = findStyleRule(Array.from(doc.styleSheets), '.intro-videos-link a:focus-visible');
+
+    // then
+    expect(rule.style.outlineWidth).toBe('2px');
+    expect(rule.style.outlineStyle).toBe('solid');
+    expect(rule.style.outlineOffset).toBe('2px');
+    expect(rule.style.getPropertyValue('outline-color')).toBe('var(--koia-on-color)');
+  });
+
+  it('should keep header nav on one line at medium width', async () => {
+
+    // when
+    const doc = await loadIntro(MEDIUM);
+
+    // then
+    all(doc, '.landing-nav > a, .landing-nav > details > summary').forEach(label => expect(lineCountOf(label)).toBe(1));
+    expect(rightInsetOf(doc.querySelector('.intro-languages summary'), doc.querySelector('.landing-header'))).toBe(8);
   });
 
   it('should open external links in new tab without opener', async () => {
@@ -701,7 +759,7 @@ describe('intro page', () => {
     button.click();
 
     // then
-    expectFittingIntoViewport(doc, img);
+    expectFittingIntoViewport(img, 0.9, img.naturalWidth / img.naturalHeight);
     expect(img.getBoundingClientRect().width).toBeGreaterThan(button.getBoundingClientRect().width);
   });
 
@@ -716,7 +774,7 @@ describe('intro page', () => {
     button.click();
 
     // then
-    expectFittingIntoViewport(doc, img);
+    expectFittingIntoViewport(img, 0.9, img.naturalWidth / img.naturalHeight);
   });
 
   it('should outline focused close button in primary dark inside hero dialog', async () => {
@@ -761,14 +819,5 @@ describe('intro page', () => {
     img.loading = 'eager';
     await img.decode();
     return img;
-  }
-
-  function expectFittingIntoViewport(doc: Document, img: HTMLImageElement): void {
-    const view = doc.defaultView;
-    const rect = img.getBoundingClientRect();
-    expect(rect.width).toBeLessThanOrEqual(view.innerWidth * 0.95 + 0.5);
-    expect(rect.height).toBeLessThanOrEqual(view.innerHeight * 0.9 + 0.5);
-    expect(img.offsetWidth).toBeLessThanOrEqual(img.closest('dialog').clientWidth);
-    expect(rect.width / rect.height).toBeCloseTo(img.naturalWidth / img.naturalHeight, 1);
   }
 });

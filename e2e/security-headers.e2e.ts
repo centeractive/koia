@@ -23,6 +23,17 @@ test('web.config sets security headers', () => {
    }
 });
 
+test('web.config serves webm as video/webm', () => {
+   const webConfig = readFileSync(resolve(SRC_DIR, 'web.config'), 'utf-8');
+   const remove = '<remove fileExtension=".webm" />';
+   const removeEnd = webConfig.indexOf(remove) + remove.length;
+   const mimeMapStart = webConfig.indexOf('<mimeMap fileExtension=".webm" mimeType="video/webm" />');
+
+   expect(webConfig.indexOf(remove)).toBeGreaterThanOrEqual(0);
+   expect(mimeMapStart).toBeGreaterThan(removeEnd);
+   expect(webConfig.slice(removeEnd, mimeMapStart).trim()).toBe('');
+});
+
 test('.htaccess sets security headers', () => {
    const htaccess = readFileSync(resolve(SRC_DIR, '.htaccess'), 'utf-8');
    const headersModule = /<IfModule mod_headers\.c>([\s\S]*?)<\/IfModule>/.exec(htaccess)[1];

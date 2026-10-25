@@ -16,6 +16,8 @@
     "test:ci": "ng test --configuration=ci",
     "test-debug": "ng test --browsers=chromium",
     "e2e": "playwright test --config e2e/playwright.config.ts",
+    "videos:record": "playwright test --config e2e/videos/videos.config.ts",
+    "videos:mix": "node scripts/mix-videos.mjs",
     "lint": "eslint . --fix && npm run check:i18n && npm run check:types",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:types": "tsc -p src/tsconfig.spec.json --noEmit"

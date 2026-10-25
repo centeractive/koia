@@ -6,7 +6,7 @@ import { Texts } from './support/texts';
 const en = new Texts('en');
 
 for (const file of IMPORT_FILES) {
-   test(`${file.sourceName} file is imported with detected column types and all its rows`, async ({ front, scene, scenes, rawData }) => {
+   test(`${file.sourceName} file ${file.name} is imported with detected column types and all its rows`, async ({ front, scene, scenes, rawData }) => {
       await front.open('en');
       await front.startWithFile();
 

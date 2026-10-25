@@ -41,6 +41,11 @@ export class MainToolbar {
       await this.root.page().waitForURL('**/' + Route.SCENES);
    }
 
+   async openFront(): Promise<void> {
+      await this.root.locator('#butHome').click();
+      await this.root.page().waitForURL('**/' + Route.FRONT);
+   }
+
    async saveView(name: string): Promise<void> {
       await this.root.locator('#but_save_view').click();
       await new InputDialog(this.root.page()).submit(name);

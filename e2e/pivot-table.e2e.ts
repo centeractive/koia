@@ -1,3 +1,4 @@
+import { DataType } from 'app/shared/model/data-type.enum';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { PIVOT_TABLE_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
@@ -5,7 +6,7 @@ import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 import { Locator } from '@playwright/test';
 import { downloadOf, exportFileName, sheetOf } from './support/downloads';
 import { expect, test } from './support/fixtures';
-import { countOf, distinctValuesOf, fruitSalesOf, pivotRowColumnOf, pivotTabOf, pivotTimeColumnOf } from './support/fruit-sales-sample';
+import { columnsOf, countOf, distinctValuesOf, firstColumnOf, fruitSalesOf, pivotRowColumnOf, pivotTabOf, pivotTimeColumnOf, sumOf } from './support/fruit-sales-sample';
 import { contentOffsetOf, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
@@ -18,6 +19,10 @@ const rowColumn = pivotRowColumnOf(pivotTab);
 const timeColumn = pivotTimeColumnOf(pivotTab);
 const firstRowValue = distinctValuesOf<string>(sample, rowColumn)[0];
 const firstDay = distinctValuesOf<string>(sample, timeColumn)[0];
+const SUM = 'Sum';
+const colsColumn = firstColumnOf(sample, DataType.TEXT);
+const firstColsValue = distinctValuesOf<string>(sample, colsColumn)[0];
+const [quantityColumn, revenueColumn] = columnsOf(sample, DataType.NUMBER);
 
 test.beforeEach(async ({ front, tabBar, pivot }) => {
    await front.open('en');
@@ -84,6 +89,42 @@ test('row totals toggle hides and shows the row total column', async ({ pivot })
 
    await expect(pivot.firstRowTotal).toBeVisible();
    await expect(pivot.rowTotalsButton).toHaveClass(/\bkoia-toggle-active\b/);
+});
+
+test('column totals toggle hides and shows the column totals row', async ({ pivot }) => {
+   await pivot.columnTotalsButton.click();
+
+   await expect(pivot.columnTotals).toHaveCount(0);
+   await expect(pivot.columnTotalsButton).not.toHaveClass(/\bkoia-toggle-active\b/);
+
+   await pivot.columnTotalsButton.click();
+
+   await expect(pivot.columnTotals.first()).toBeVisible();
+   await expect(pivot.columnTotalsButton).toHaveClass(/\bkoia-toggle-active\b/);
+});
+
+test('fields dragged into rows and columns of a new pivot table sum up the chosen attribute', async ({ tabBar, pivot }) => {
+   await tabBar.addPivotTable();
+   await pivot.table.waitFor();
+
+   await pivot.dragFieldToRows(rowColumn);
+   await pivot.dragFieldToColumns(colsColumn);
+   await pivot.chooseAggregator(SUM, quantityColumn);
+
+   await expect(pivot.rowLabels.first()).toHaveText(firstRowValue);
+   await expect(pivot.valueCells.first()).toHaveAttribute('data-value',
+      String(sumOf(sample, quantityColumn, e => e[rowColumn] === firstRowValue && e[colsColumn] === firstColsValue)));
+});
+
+test('removing the value grouping of a number column lets a new pivot table sum its exact values', async ({ tabBar, pivot }) => {
+   await tabBar.addPivotTable();
+   await pivot.table.waitFor();
+   await pivot.dragFieldToRows(rowColumn);
+
+   await pivot.removeValueGrouping(en.get('pivot.sideBar.columnGrouping', { column: revenueColumn }));
+   await pivot.chooseAggregator(SUM, revenueColumn);
+
+   await expect(pivot.firstRowTotal).toHaveAttribute('data-value', String(sumOf(sample, revenueColumn, e => e[rowColumn] === firstRowValue)));
 });
 
 test('pivot table uses the shared table font compact and without underlined values', async ({ pivot }) => {

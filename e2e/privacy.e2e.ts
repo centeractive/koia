@@ -6,7 +6,7 @@ import { COUCHDB_CONNECTION, COUCHDB_ORIGIN, presetConnectionInfo } from './supp
 import { expect, test } from './support/fixtures';
 import { Texts } from './support/texts';
 
-const INTROS = ['/intro/index.html', '/intro/index.de.html', '/intro/index.ja.html'];
+const INTROS = ['/intro/index.html', '/intro/index.de.html', '/intro/index.ja.html', '/intro/videos.html'];
 const LAUNCH = { connection: { ...COUCHDB_CONNECTION, user: 'a&b', password: '>?>' }, sceneId: 'scene1' };
 const en = new Texts('en');
 const de = new Texts('de');

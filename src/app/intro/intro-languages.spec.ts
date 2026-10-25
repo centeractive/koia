@@ -1,3 +1,4 @@
+import { lineCountOf, loadStaticPage, rightInsetOf } from 'app/shared/test';
 import { FORMAL_GERMAN_ADDRESS } from 'app/shared/test/german-address';
 
 describe('intro page languages', () => {
@@ -11,16 +12,9 @@ describe('intro page languages', () => {
       localStorage.removeItem(STORAGE_KEY);
    });
 
-   function load(url: string, runScripts = false): Promise<Document> {
-      iframe = document.createElement('iframe');
-      iframe.sandbox.add('allow-same-origin');
-      if (runScripts) {
-         iframe.sandbox.add('allow-scripts');
-      }
-      const loaded = new Promise<Document>(resolve => iframe.addEventListener('load', () => resolve(iframe.contentDocument)));
-      iframe.src = url;
-      document.body.appendChild(iframe);
-      return loaded;
+   async function load(url: string, runScripts = false): Promise<Document> {
+      iframe = await loadStaticPage(url, { scripts: runScripts });
+      return iframe.contentDocument;
    }
 
    /**
@@ -64,7 +58,32 @@ describe('intro page languages', () => {
          expect(doc.querySelector('.landing-header-inner > a').getAttribute('href')).toBe(url);
          expect(doc.body.textContent).not.toContain('Open Koia');
       });
+
+      it(language + ' copy should keep header nav on one line at medium width', async () => {
+
+         // when
+         iframe = await loadStaticPage(url, { width: 800 });
+
+         // then
+         const doc = iframe.contentDocument;
+         doc.querySelectorAll('.landing-nav > a, .landing-nav > details > summary').forEach(label => expect(lineCountOf(label)).toBe(1));
+         expect(rightInsetOf(doc.querySelector('.intro-languages summary'), doc.querySelector('.landing-header'))).toBe(8);
+      });
    });
+
+   [['de', '/intro/index.de.html', 'Videos', 'Kurze Videos ansehen'], ['ja', '/intro/index.ja.html', '動画', '短い動画を見る']]
+      .forEach(([language, url, nav, hero]) => {
+
+         it(language + ' copy should label videos links in its language', async () => {
+
+            // when
+            const doc = await load(url);
+
+            // then
+            expect(doc.querySelector('.landing-nav a[href="videos.html"]').textContent).toBe(nav);
+            expect(doc.querySelector('.intro-videos-link a[href="videos.html"]').textContent).toBe(hero);
+         });
+      });
 
    [
       ['de', '/intro/index.de.html', 'Ein Klick auf ein Diagrammelement zeigt die zugrunde liegenden Zeilen.',

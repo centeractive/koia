@@ -1,0 +1,32 @@
+.videos-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.video-tile {
+  display: flex;
+  flex-direction: column;
+}
+
+.video-tile-actions {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.video-dialog video {
+  display: block;
+  width: min(95vw, calc(85vh * 16 / 9));
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .videos-grid {
+    grid-template-columns: 1fr;
+  }
+}

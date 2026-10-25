@@ -1,4 +1,6 @@
 import { rowsOf } from 'app/dashboard/generator/generated-grid';
+import { Aggregation } from 'app/shared/model/aggregation.enum';
+import { CategoricalColorScheme } from 'app/shared/color/categorical-color-scheme.enum';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { DataType } from 'app/shared/model/data-type.enum';
@@ -7,16 +9,18 @@ import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { StringUtils } from 'app/shared/utils/string-utils';
+import { ValueRangeConverter } from 'app/shared/value-range/value-range-converter';
 import { SUMMARY_TABLE_STYLE } from 'app/summary-table/summary-table-style';
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILIES, FONT_SIZES } from 'app/text-box/text-box-style';
 import { Locator, Page } from '@playwright/test';
+import { rgb, schemeSet1 } from 'd3';
 import { DateTime } from 'luxon';
 import { DashboardTile } from './support/components/dashboard-tile';
 import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
 import { dispatchWindowEvent, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { expect, test } from './support/fixtures';
-import { countOf, distinctValuesOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { columnsOf, columnValuesOf, countOf, distinctValuesOf, firstColumnOf, fruitSalesOf, sumOf } from './support/fruit-sales-sample';
 import { DashboardPage } from './support/pages/dashboard-page';
 import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
@@ -33,11 +37,14 @@ const NOTE_MIN_FIT_WIDTH = 120;
 /** padding of the text box frame around its editor */
 const TEXT_BOX_FRAME_PADDING_PX = 2 * 6;
 const BOTTOM_RIGHT_QUADRANT = { x: 0.7, y: 0.7 };
+/** opacity of the default background colors, ColorProviderFactory.DEF_BG_OPACITY */
+const DEFAULT_BG_OPACITY = 0.75;
 const en = new Texts('en');
 const sample = fruitSalesOf('en');
 const column = firstColumnOf(sample, DataType.TEXT);
 const dateColumn = firstColumnOf(sample, DataType.TIME);
 const firstDay = distinctValuesOf<string>(sample, dateColumn)[0];
+const [quantityColumn] = columnsOf(sample, DataType.NUMBER);
 
 async function addGraphGroupedBy(dashboard: DashboardPage, timeUnitLabel: string): Promise<void> {
    await dashboard.launcher.addGraph();
@@ -109,6 +116,31 @@ test('double click on a time node of a graph not grouped by time unit reveals th
    await dashboard.tile(0).doubleClickGraphNode(node);
 
    await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(count));
+});
+
+test('hovering a graph node shows its value and number of entries in a tooltip', async ({ dashboard }) => {
+   const [value] = distinctValuesOf<string>(sample, column);
+   const count = countOf(sample, e => e[column] === value);
+   await dashboard.launcher.addGraph();
+   await dashboard.sideBar.dragGroupByColumn(column);
+   await dashboard.sideBar.close();
+   const tile = dashboard.tile(0);
+
+   await tile.hoverGraphNode(tile.graphNodes.filter({ hasText: `${column}: ${value} (` }));
+
+   await expect(tile.graphTooltip).toHaveText(`${column}: ${value} ${en.get('graph.tooltip.entries', { count: en.number(count) })}`
+      + en.get('graph.tooltip.doubleClick'));
+});
+
+test('color scheme selected for a graph colors the nodes of each top level value with the next color of the scheme', async ({ dashboard }) => {
+   const valueCount = distinctValuesOf<string>(sample, column).length;
+   await dashboard.launcher.addGraph();
+   await dashboard.sideBar.dragGroupByColumn(column);
+
+   await dashboard.sideBar.selectColorScheme(CategoricalColorScheme.SET_1);
+
+   await expect.poll(() => dashboard.tile(0).graphNodes.locator('circle').evaluateAll(circles => circles.slice(1).map(c => getComputedStyle(c).fill)))
+      .toEqual(schemeSet1.slice(0, valueCount).map(color => rgb(color).copy({ opacity: DEFAULT_BG_OPACITY }).toString()));
 });
 
 test('saved view restores the removed element', async ({ dashboard, notifications, confirmDialog }) => {
@@ -1488,3 +1520,44 @@ function isHitAt(element: Locator, x: number, y: number): Promise<boolean> {
 function printZoom(page: Page): Promise<number> {
    return page.evaluate(() => Number(getComputedStyle(document.documentElement).getPropertyValue('--koia-print-zoom')));
 }
+
+test('summary of a number column shows only its sum once sum is dragged in and average dragged out', async ({ dashboard }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(quantityColumn);
+
+   await dashboard.sideBar.selectAggregation(en.summaryAggregation(Aggregation.SUM));
+   await dashboard.sideBar.deselectAggregation(en.summaryAggregation(Aggregation.AVG));
+
+   await expect.poll(async () => (await dashboard.tile(0).tableWidths()).columnCount).toBe(1);
+   expect(await dashboard.tile(0).firstColumnValues()).toEqual([en.number(sumOf(sample, quantityColumn, () => true))]);
+});
+
+test('value grouping of a number column lists contiguous ranges covering all its values, ascending once its header is clicked', async ({ dashboard }) => {
+   const quantities = columnValuesOf<number>(sample, quantityColumn);
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(quantityColumn);
+   await dashboard.sideBar.addValueGrouping(quantityColumn);
+   await dashboard.sideBar.close();
+
+   await dashboard.tile(0).sortAscendingBy(quantityColumn);
+
+   const ranges = await dashboard.tile(0).firstColumnValues();
+   const mins = ranges.map(r => ValueRangeConverter.toMinValue(r));
+   const maxs = ranges.map(r => ValueRangeConverter.toMaxValue(r));
+   expect(mins[0]).toBeUndefined();
+   expect(mins.slice(1)).toEqual(maxs.slice(0, -1));
+   expect(Math.min(...quantities)).toBeLessThan(maxs[0]);
+   expect(Math.max(...quantities)).toBeGreaterThanOrEqual(mins.at(-1));
+});
+
+test('closing the raw data dialog of a summary count shows the dashboard again', async ({ dashboard, rawDataDialog }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.selectColumn(column);
+   await dashboard.sideBar.close();
+   await dashboard.tile(0).firstCountLink.click();
+   await rawDataDialog.table.headers.first().waitFor();
+
+   await rawDataDialog.close();
+
+   await dashboard.tile(0).firstCountLink.click({ trial: true });
+});
