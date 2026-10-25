@@ -2,6 +2,7 @@ import { Locator, Page } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { Notifications } from '../components/notifications';
+import { RawDataTable } from '../components/raw-data-table';
 import { ImportFile } from '../import-files';
 
 export class ScenePage {
@@ -14,6 +15,8 @@ export class ScenePage {
    readonly detectColumnsButton: Locator;
    readonly columnNameErrors: Locator;
    readonly dataTypes: Locator;
+   readonly preview: RawDataTable;
+   readonly previewRowWarnings: Locator;
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
@@ -24,6 +27,8 @@ export class ScenePage {
       this.nameError = page.locator('.scene_name mat-error');
       this.detectColumnsButton = page.locator('#but_detect_columns');
       this.columnNameErrors = page.locator('koia-column-mapping mat-error');
+      this.preview = new RawDataTable(page.locator('koia-scene-preview'));
+      this.previewRowWarnings = page.locator('koia-scene-preview .img_row_warning');
       this.dataTypes = page.locator('koia-column-mapping .select_data_type');
       this.notifications = new Notifications(page);
    }
@@ -44,6 +49,11 @@ export class ScenePage {
       await this.detectColumnsButton.click();
       await this.dataTypes.first().waitFor();
       return (await this.dataTypes.allInnerTexts()).map(text => text.trim());
+   }
+
+   async changeDataType(columnIndex: number, dataTypeLabel: string): Promise<void> {
+      await this.dataTypes.nth(columnIndex).click();
+      await this.page.getByRole('option', { name: dataTypeLabel, exact: true }).click();
    }
 
    /**

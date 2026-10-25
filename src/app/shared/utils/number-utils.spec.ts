@@ -144,6 +144,60 @@ describe('NumberUtils', () => {
     expect(NumberUtils.isNumber('-1,0,000.1', 'en-US')).toBe(false);
   });
 
+  it('#isPlainNumber should return true when value is number', () => {
+    expect(NumberUtils.isPlainNumber(-1.1, 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber(0, 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber(123, 'en-US')).toBe(true);
+  });
+
+  it('#isPlainNumber should return true when string represents number without leading zeros', () => {
+    expect(NumberUtils.isPlainNumber('0', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('0.5', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('-0.5', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('-0', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('.5', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('0e5', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('123', 'en-US')).toBe(true);
+    expect(NumberUtils.isPlainNumber('1,000.5', 'en-US')).toBe(true);
+  });
+
+  it('#isPlainNumber should return true when string with decimal comma of German locale starts with single zero', () => {
+    expect(NumberUtils.isPlainNumber('0,5', 'de')).toBe(true);
+    expect(NumberUtils.isPlainNumber('-0,5', 'de')).toBe(true);
+    expect(NumberUtils.isPlainNumber('1.000,5', 'de')).toBe(true);
+  });
+
+  it('#isPlainNumber should return false when string has leading zeros', () => {
+    expect(NumberUtils.isPlainNumber('00123', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('0123', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('-0123', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('+0123', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('00.5', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber(' 007 ', 'en-US')).toBe(false);
+  });
+
+  it('#isPlainNumber should return false when leading zero is followed by thousands separator', () => {
+    expect(NumberUtils.isPlainNumber('0,123', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('0.123', 'de')).toBe(false);
+  });
+
+  it('#isPlainNumber should return false when string has radix prefix', () => {
+    expect(NumberUtils.isPlainNumber('0x1A', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('0X1A', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('0b101', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('0o17', 'en-US')).toBe(false);
+  });
+
+  it('#isPlainNumber should return false when value is no number', () => {
+    expect(NumberUtils.isPlainNumber('abc', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber('   ', 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber(undefined, 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber(null, 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber(true, 'en-US')).toBe(false);
+    expect(NumberUtils.isPlainNumber({}, 'en-US')).toBe(false);
+  });
+
   it('#representsNumber should return false when string is missing', () => {
     expect(NumberUtils.representsNumber(null, 'en-US')).toBe(false);
     expect(NumberUtils.representsNumber(undefined, 'en-US')).toBe(false);

@@ -174,6 +174,47 @@ describe('SceneUtils', () => {
       expect(entries).toEqual(expected);
    });
 
+   it('#entriesFromTableData should return entries with unique keys when column names are duplicate', () => {
+
+      // when
+      const entries = SceneUtils.entriesFromTableData({ columnNames: ['A', 'A', 'B'], tableData: tableData });
+
+      // then
+      const expected = [
+         { A: '1', 'A (2)': 'X', B: 'true' },
+         { A: '2', 'A (2)': 'Y', B: 'false' },
+         { A: '3', 'A (2)': 'Z', B: 'true' }
+      ];
+      expect(entries).toEqual(expected);
+   });
+
+   it('#columnNamesFrom should append number to duplicate column names', () => {
+
+      // when
+      const columnNames = SceneUtils.columnNamesFrom({ columnNames: ['A', 'A', 'A'], tableData: tableData });
+
+      // then
+      expect(columnNames).toEqual(['A', 'A (2)', 'A (3)']);
+   });
+
+   it('#columnNamesFrom should append number to column name that collides with generated column name', () => {
+
+      // when
+      const columnNames = SceneUtils.columnNamesFrom({ columnNames: ['Column 2', '', 'C'], tableData: tableData });
+
+      // then
+      expect(columnNames).toEqual(['Column 2', 'Column 2 (2)', 'C']);
+   });
+
+   it('#columnNamesFrom should generate column name when column name contains whitespace only', () => {
+
+      // when
+      const columnNames = SceneUtils.columnNamesFrom({ columnNames: ['A', '  ', 'C'], tableData: tableData });
+
+      // then
+      expect(columnNames).toEqual(['A', 'Column 2', 'C']);
+   });
+
    it('#columnNamesFrom should return given and generated column names', () => {
 
       // when

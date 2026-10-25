@@ -73,6 +73,26 @@ describe('EntryMapper', () => {
       expect(actual.length).toBe(0);
    });
 
+   it('#mapRows should not map but ignore values that contain whitespace only', () => {
+
+      // when
+      const actual = mapper.mapRows([['A', '  ', ' \t', ' ']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'A' });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows should return empty array when text value contains whitespace only', () => {
+
+      // when
+      const actual = mapper.mapRows([['  ']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(0);
+   });
+
    it('#mapRows TEXT to TEXT', () => {
 
       // when
@@ -272,6 +292,129 @@ describe('EntryMapper', () => {
       expect(actual[0].errors).toEqual(['Column \'Number\': Cannot convert "X" to Number']);
    });
 
+   it('#mapRows should return no value but error when number has leading zeros', () => {
+
+      // when
+      const actual = mapper.mapRows([['A', '00123']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'A' });
+      expect(actual[0].errors).toEqual(['Column \'Number\': Cannot convert "00123" to Number']);
+   });
+
+   it('#mapRows NUMBER to TIME should interpret number as epoch milliseconds when source format is missing', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.target.name = 'Shipped';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapRows([[undefined, '86400000']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Shipped: 86_400_000 });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows NUMBER to TIME should round epoch milliseconds down to target format when source format is missing', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.target.name = 'Year';
+      cp.target.dataType = DataType.TIME;
+      cp.target.format = 'yyyy';
+
+      // when
+      const actual = mapper.mapRows([[undefined, new Date(2019, 4, 6, 11, 22).getTime().toString()]], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Year: new Date(2019, 0, 1).getTime() });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows NUMBER to TIME should return no entry but error when value is no number and source format is missing', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapRows([[undefined, 'X']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toBeUndefined();
+      expect(actual[0].errors).toEqual(['Column \'Number\': Cannot convert "X" to Time without a custom source format']);
+   });
+
+   it('#mapRows NUMBER to TIME should return no entry but error when epoch milliseconds exceed date range', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapRows([[undefined, '9e15']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toBeUndefined();
+      expect(actual[0].errors).toEqual(['Column \'Number\': Cannot convert "9e15" to Time without a custom source format']);
+   });
+
+   it('#mapRows TEXT to TIME should parse ISO 8601 date in local time when source format is missing', () => {
+
+      // given
+      const cp = columnPair('Text');
+      cp.target.name = 'Date';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapRows([['2019-05-06']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Date: new Date(2019, 4, 6).getTime() });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows TEXT to TIME should respect offset of ISO 8601 date/time when source format is missing', () => {
+
+      // given
+      const cp = columnPair('Text');
+      cp.target.name = 'Date';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapRows([['2019-05-06T11:22:33+02:00']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Date: Date.UTC(2019, 4, 6, 9, 22, 33) });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows TEXT to TIME should return no entry but error when value matches neither source format nor ISO 8601', () => {
+
+      // given
+      const cp = columnPair('Text');
+      cp.source.format = 'dd.MM.yyyy';
+      cp.target.name = 'Date';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapRows([['05/06/2019']], sourceColumnNames);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toBeUndefined();
+      expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "05/06/2019" to Time using format "dd.MM.yyyy"']);
+   });
+
    it('#mapRows should return no entry but error for invalid time', () => {
 
       // given
@@ -361,17 +504,17 @@ describe('EntryMapper', () => {
       expect(actual[0].errors).toEqual([]);
    });
 
-   it('#mapRows should map value of last column when source column names are duplicate', () => {
+   it('#mapRows should map values of all columns when duplicate source column names have been made unique', () => {
 
       // given
-      mapper = new EntryMapper([columnPair('Text')], 'en');
+      mapper = new EntryMapper([columnPair('Text'), toColumnPair({ name: 'Text (2)', dataType: DataType.TEXT, width: 1 })], 'en');
 
       // when
-      const actual = mapper.mapRows([['A', 'B']], ['Text', 'Text']);
+      const actual = mapper.mapRows([['A', 'B']], ['Text', 'Text (2)']);
 
       // then
       expect(actual.length).toBe(1);
-      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'B' });
+      expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'A', 'Text (2)': 'B' });
       expect(actual[0].errors).toEqual([]);
    });
 
@@ -423,6 +566,15 @@ describe('EntryMapper', () => {
 
       // when
       const actual = mapper.mapObjects([{ Text: undefined, Number: undefined }]);
+
+      // then
+      expect(actual.length).toBe(0);
+   });
+
+   it('#mapObjects should return empty array when all values contain whitespace only', () => {
+
+      // when
+      const actual = mapper.mapObjects([{ Text: ' ', Number: '\t', Time: '  ', Boolean: '\n' }]);
 
       // then
       expect(actual.length).toBe(0);
@@ -570,11 +722,11 @@ describe('EntryMapper', () => {
       expect(actual[0].errors).toEqual([]);
    });
 
-   it('#mapObjects TEXT to TIME when non ISO-8601 and ISO-8601 date is present', () => {
+   it('#mapObjects TEXT to TIME should parse ISO 8601 date in local time when value does not match source format', () => {
 
       // given
       const cp = columnPair('Text');
-      cp.source.format = 'dd.MM.YYYY';
+      cp.source.format = 'dd.MM.yyyy';
       cp.target.name = 'Date/Time';
       cp.target.dataType = DataType.TIME;
 
@@ -583,11 +735,8 @@ describe('EntryMapper', () => {
 
       // then
       expect(actual.length).toBe(2);
-      const d1 = new Date(actual[0].entry['Date/Time']);
-      const d2 = new Date(actual[1].entry['Date/Time']);
-      expect(isNaN(d1.getTime())).toBe(false);
-      expect(isNaN(d2.getTime())).toBe(false);
-      expect(d1.toDateString()).toBe(d2.toDateString());
+      expect(actual[0].entry['Date/Time']).toBe(new Date(2019, 0, 1).getTime());
+      expect(actual[1].entry['Date/Time']).toBe(new Date(2019, 0, 1).getTime());
       expect(actual[0].errors).toEqual([]);
       expect(actual[1].errors).toEqual([]);
    });
@@ -621,6 +770,22 @@ describe('EntryMapper', () => {
       // then
       expect(actual.length).toBe(1);
       expect(actual[0].entry['Code']).toBe('123');
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapObjects NUMBER to TIME should interpret number as epoch milliseconds when source format is missing', () => {
+
+      // given
+      const cp = columnPair('Number');
+      cp.target.name = 'Shipped';
+      cp.target.dataType = DataType.TIME;
+
+      // when
+      const actual = mapper.mapObjects([{ Number: 172_800_000 }]);
+
+      // then
+      expect(actual.length).toBe(1);
+      expect(actual[0].entry).toEqual({ _id: '1000001', Shipped: 172_800_000 });
       expect(actual[0].errors).toEqual([]);
    });
 

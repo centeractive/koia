@@ -53,15 +53,12 @@ export class SceneUtils {
 
    static columnNamesFrom(sample: Sample): string[] {
       const columnCount = sample.columnNames ? sample.columnNames.length : sample.tableData[0].length;
-      const columns: string[] = [];
+      const columnNames = new Set<string>();
       for (let i = 0; i < columnCount; i++) {
-         if (sample.columnNames && sample.columnNames[i] && sample.columnNames[i] !== '') {
-            columns.push(sample.columnNames[i]);
-         } else {
-            columns.push('Column ' + (i + 1));
-         }
+         const name = sample.columnNames?.[i];
+         columnNames.add(StringUtils.uniqueName(StringUtils.isBlank(name) ? 'Column ' + (i + 1) : name, columnNames));
       }
-      return columns;
+      return Array.from(columnNames);
    }
 
    static fileContextInfo(file: File): ContextInfo[] {

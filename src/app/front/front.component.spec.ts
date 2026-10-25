@@ -49,14 +49,23 @@ let isIndexedDbInUseSpy: Mock;
 let initBackendSpy: Mock;
 let findSceneInfosSpy: Mock;
 
-function createQueryParams(): QueryParams {
+/**
+ * @param changes the values that replace the default values, an undefined value omits the param
+ */
+function createQueryParams(changes: Record<string, string | undefined> = {}): QueryParams {
+  const values: Record<string, string | undefined> = {
+    [QueryParamExtractor.PROTOCOL]: 'HTTP',
+    [QueryParamExtractor.HOST]: 'localhost',
+    [QueryParamExtractor.PORT]: '5984',
+    [QueryParamExtractor.USER]: 'test',
+    [QueryParamExtractor.PASSWORD]: btoa('secret'),
+    [QueryParamExtractor.SCENE_ID]: sceneID,
+    ...changes
+  };
   const queryParams = new QueryParams();
-  queryParams.set(QueryParamExtractor.PROTOCOL, 'HTTP');
-  queryParams.set(QueryParamExtractor.HOST, 'localhost');
-  queryParams.set(QueryParamExtractor.PORT, '5984');
-  queryParams.set(QueryParamExtractor.USER, 'test');
-  queryParams.set(QueryParamExtractor.PASSWORD, btoa('secret'));
-  queryParams.set(QueryParamExtractor.SCENE_ID, sceneID);
+  Object.entries(values)
+    .filter(([, value]) => value !== undefined)
+    .forEach(([name, value]) => queryParams.set(name, value));
   return queryParams;
 }
 
@@ -124,6 +133,101 @@ describe('FrontComponent', () => {
 
     // then
     expect(notificationService.onError).toHaveBeenCalled();
+  }));
+
+  it('#ngOnInit should warn on start when browser storage is used instead of saved CouchDB connection', fakeAsync(() => {
+
+    // given
+    initBackendSpy.mockResolvedValue({ couchDBError: 'unreachable' });
+    vi.spyOn(couchDBService, 'isConnectionSaved').mockReturnValue(true);
+    vi.spyOn(notificationService, 'onWarning').mockReturnValue(undefined);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onWarning).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'CouchDB cannot be used, data is stored in this browser (IndexedDB) instead: unreachable');
+    expect(component.ready).toBe(true);
+  }));
+
+  it('#ngOnInit should not warn on start when browser storage is used instead of default CouchDB connection', fakeAsync(() => {
+
+    // given
+    initBackendSpy.mockResolvedValue({ couchDBError: 'unreachable' });
+    vi.spyOn(couchDBService, 'isConnectionSaved').mockReturnValue(false);
+    vi.spyOn(notificationService, 'onWarning').mockReturnValue(undefined);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onWarning).not.toHaveBeenCalled();
+    expect(component.ready).toBe(true);
+  }));
+
+  it('#onDataStorageChanged should clear cached views when switching to IndexedDB', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.couchDB;
+    const clearSpy = vi.spyOn(TestBed.inject(Router).routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    vi.spyOn(dbService, 'useIndexedDb').mockResolvedValue(undefined);
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.indexedDB);
+    flush();
+
+    // then
+    expect(clearSpy).toHaveBeenCalled();
+    expect(clearSpy.mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(dbService.useIndexedDb).mock.invocationCallOrder[0]);
+  }));
+
+  it('#onDataStorageChanged should clear cached views when connecting to CouchDB', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.indexedDB;
+    const clearSpy = vi.spyOn(TestBed.inject(Router).routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
+      data.closedWithOK = true;
+      return createConnectionDialogRef();
+    });
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection established');
+    initBackendSpy.mockClear();
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.couchDB);
+    flush();
+
+    // then
+    expect(clearSpy).toHaveBeenCalled();
+    expect(clearSpy.mock.invocationCallOrder[0]).toBeLessThan(initBackendSpy.mock.invocationCallOrder[0]);
+  }));
+
+  it('#onDataStorageChanged should warn and show browser storage when CouchDB cannot be used after connecting', fakeAsync(() => {
+
+    // given
+    component.selectedDataStorage = component.indexedDB;
+    vi.spyOn(dialogService, 'showConnectionDialog').mockImplementation((data: ConnectionDialogData) => {
+      data.closedWithOK = true;
+      return createConnectionDialogRef();
+    });
+    vi.spyOn(couchDBService, 'initConnection').mockResolvedValue('connection established');
+    initBackendSpy.mockResolvedValue({ couchDBError: 'unreachable' });
+    vi.spyOn(notificationService, 'onSuccess').mockReturnValue(undefined);
+    vi.spyOn(notificationService, 'onWarning').mockReturnValue(undefined);
+
+    // when
+    component.onDataStorageChanged(component.couchDB);
+    flush();
+
+    // then
+    expect(notificationService.onWarning).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'CouchDB cannot be used, data is stored in this browser (IndexedDB) instead: unreachable');
+    expect(notificationService.onSuccess).not.toHaveBeenCalled();
+    expect(component.selectedDataStorage).toBe(component.indexedDB);
+    expect(component.ready).toBe(true);
   }));
 
   it('#onDataStorageChanged should be ignored when storage did not change', fakeAsync(() => {
@@ -1218,6 +1322,38 @@ describe('FrontComponent (external invocation)', () => {
     expect(dbService.initBackend).not.toHaveBeenCalled();
   }));
 
+  it('should clear cached views before activating scene of external invocation', fakeAsync(() => {
+
+    // given
+    const clearSpy = vi.spyOn(router.routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    initBackendSpy.mockClear();
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(clearSpy).toHaveBeenCalled();
+    expect(clearSpy.mock.invocationCallOrder[0]).toBeLessThan(initBackendSpy.mock.invocationCallOrder[0]);
+  }));
+
+  it('#ngOnInit should notify CouchDB failure instead of activating scene when browser storage is used instead', fakeAsync(() => {
+
+    // given
+    initBackendSpy.mockResolvedValue({ couchDBError: 'unreachable' });
+    vi.mocked(dbService.activateScene).mockClear();
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'cannot show raw data of scene with _id ' + sceneID + ':\n\n' + 'CouchDB cannot be used, data is stored in this browser (IndexedDB) instead: unreachable');
+    expect(dbService.activateScene).not.toHaveBeenCalled();
+  }));
+
   it('should replace launch URL in history after failed external invocation', fakeAsync(() => {
 
     // given
@@ -1236,6 +1372,7 @@ describe('FrontComponent (external invocation)', () => {
 describe('FrontComponent (external invocation through URL fragment)', () => {
 
   const launchParamsService = { paramsOf: vi.fn() };
+  let component: FrontComponent;
   let router: Router;
 
   beforeEach(waitForAsync(() => {
@@ -1248,6 +1385,7 @@ describe('FrontComponent (external invocation through URL fragment)', () => {
 
   beforeEach(fakeAsync(() => {
     const fixture = TestBed.createComponent(FrontComponent);
+    component = fixture.componentInstance;
     router = TestBed.inject(Router);
     vi.spyOn(couchDBService, 'initLaunchConnection').mockResolvedValue('connection established');
     vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
@@ -1269,4 +1407,42 @@ describe('FrontComponent (external invocation through URL fragment)', () => {
     expect(dbService.activateScene).toHaveBeenCalledWith(sceneID);
     expect(router.navigateByUrl).toHaveBeenCalledWith(Route.RAWDATA, { replaceUrl: true });
   });
+
+  it.each([
+    { invalid: 'port', changes: { [QueryParamExtractor.PORT]: '5984x' }, error: 'invalid port: 5984x' },
+    { invalid: 'password', changes: { [QueryParamExtractor.PASSWORD]: 'a!' }, error: 'invalid pw: not Base64 encoded' }
+  ])('#ngOnInit should notify error and replace launch URL when $invalid is invalid', ({ changes, error }) => fakeAsync(() => {
+
+    // given
+    launchParamsService.paramsOf.mockReturnValue(createQueryParams(changes));
+    vi.mocked(couchDBService.initLaunchConnection).mockClear();
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'cannot show raw data of scene with _id ' + sceneID + ':\n\nError: ' + error);
+    expect(TestBed.inject(Location).replaceState).toHaveBeenCalledWith('/front');
+    expect(couchDBService.initLaunchConnection).not.toHaveBeenCalled();
+  })());
+
+  it('#ngOnInit should init backend when params with invalid password carry no scene ID', fakeAsync(() => {
+
+    // given
+    launchParamsService.paramsOf.mockReturnValue(createQueryParams({ [QueryParamExtractor.PASSWORD]: 'a!', [QueryParamExtractor.SCENE_ID]: undefined }));
+    vi.mocked(couchDBService.initLaunchConnection).mockClear();
+    vi.mocked(dbService.initBackend).mockClear();
+    vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([]);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(dbService.initBackend).toHaveBeenCalledWith(false);
+    expect(couchDBService.initLaunchConnection).not.toHaveBeenCalled();
+  }));
 });

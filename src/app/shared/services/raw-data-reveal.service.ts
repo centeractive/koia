@@ -29,7 +29,8 @@ export class RawDataRevealService {
    *
    * @param baseQuery base query
    * @param timeColumn time columns
-   * @param startTimes start time (timeunit lower boundary, the upper boundary is excluded) belonging to individual time columns
+   * @param startTimes start time (timeunit lower boundary, the upper boundary is excluded) belonging to individual time columns,
+   * [[undefined]] or [[null]] for missing time
    * @param columnNames columns names (must not include 'Time' column)
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
@@ -40,7 +41,9 @@ export class RawDataRevealService {
     for (let i = 0; i < timeColumns.length; i++) {
       const timeStart = startTimes[i];
       const timeUnit = timeColumns[i].groupingTimeUnit;
-      if (timeUnit) {
+      if (PropertyFilter.isEmptyValue(timeStart)) {
+        query.addPropertyFilter(new PropertyFilter(timeColumns[i].name, Operator.EMPTY, '', timeColumns[i].dataType));
+      } else if (timeUnit) {
         query.addValueRangeFilter(timeColumns[i].name, timeStart, DateTimeUtils.addTimeUnits(timeStart, 1, timeUnit), true);
       } else {
         query.addValueRangeFilter(timeColumns[i].name, timeStart, timeStart);

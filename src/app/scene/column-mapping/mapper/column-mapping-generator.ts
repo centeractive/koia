@@ -46,7 +46,7 @@ export class ColumnMappingGenerator {
    }
 
    private createColumnPair(name: string, value: SourceValue, locale: string): ColumnPair {
-      const dataType = this.guessDataTypeOf(value, locale);
+      const dataType = DataTypeUtils.typeOf(value, locale);
       const columnPair: ColumnPair = {
          source: { name: name, dataType: dataType, width: undefined },
          target: { name: name, dataType: dataType, width: undefined, indexed: this.shallBeIndexed(value) }
@@ -57,7 +57,7 @@ export class ColumnMappingGenerator {
    }
 
    private refine(columnPair: ColumnPair, value: SourceValue, locale: string): void {
-      const dataType = this.guessDataTypeOf(value, locale);
+      const dataType = DataTypeUtils.typeOf(value, locale);
       if (dataType == undefined) {
          return;
       } else if (columnPair.source.dataType == undefined) {
@@ -110,10 +110,6 @@ export class ColumnMappingGenerator {
          columnPair.source.dataType = DataType.TIME;
          columnPair.target.dataType = DataType.TIME;
       }
-   }
-
-   private guessDataTypeOf(value: SourceValue, locale: string): DataType {
-      return value === '' ? undefined : DataTypeUtils.typeOf(value, locale);
    }
 
    private shallBeIndexed(value: SourceValue): boolean {

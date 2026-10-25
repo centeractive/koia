@@ -108,6 +108,39 @@ describe('RawDataRevealService', () => {
     ]);
   });
 
+  it('#ofTimeUnit should navigate to raw data view for empty time when start time of grouped time column is missing', () => {
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [undefined], ['Level'], ['ERROR'], context);
+
+    // then
+    expect(dialogServiceOpenSpy).toHaveBeenCalled();
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([
+      new PropertyFilter('Time', Operator.EMPTY, '', DataType.TIME),
+      new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)
+    ]);
+    expect(actualQuery.getValueRangeFilters()).toEqual([]);
+  });
+
+  it('#ofTimeUnit should navigate to raw data view for empty time when start time of ungrouped time column is null', () => {
+
+    // given
+    timeColumn.groupingTimeUnit = undefined;
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [null], ['Level'], ['ERROR'], context);
+
+    // then
+    expect(dialogServiceOpenSpy).toHaveBeenCalled();
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    expect(actualQuery.getPropertyFilters()).toEqual([
+      new PropertyFilter('Time', Operator.EMPTY, '', DataType.TIME),
+      new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)
+    ]);
+    expect(actualQuery.getValueRangeFilters()).toEqual([]);
+  });
+
   it('#ofTimeUnit should navigate to raw data view for time period of trimmed timeunit', () => {
 
     // given

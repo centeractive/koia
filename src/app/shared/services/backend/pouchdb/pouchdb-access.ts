@@ -14,6 +14,7 @@ export class PouchDBAccess implements DB {
   private static MAX_DATA_ITEMS_PER_SCENE = 10_000;
 
   private databases: string[] = [];
+  private readonly instances = new Map<string, { db: PouchDB.Database, operations: number }>();
 
   constructor(private readonly zone: NgZone) { }
 
@@ -102,6 +103,41 @@ export class PouchDBAccess implements DB {
    * runs the operation outside Angular's zone, PouchDB's IndexedDB callbacks would trigger change detection for every request
    */
   private run<T>(database: string, operation: (db: PouchDB.Database) => Promise<T>): Promise<T> {
-    return this.zone.runOutsideAngular(() => operation(new PouchDB(database)));
+    return this.zone.runOutsideAngular(async () => {
+      const instance = this.acquire(database);
+      try {
+        return await operation(instance.db);
+      } finally {
+        await this.release(database, instance);
+      }
+    });
+  }
+
+  /**
+   * concurrent operations share one instance, closing one instance closes the IndexedDB connection of all instances of a database
+   */
+  private acquire(database: string): { db: PouchDB.Database, operations: number } {
+    let instance = this.instances.get(database);
+    if (!instance) {
+      instance = { db: new PouchDB(database), operations: 0 };
+      this.instances.set(database, instance);
+      instance.db.once('destroyed', () => {
+        if (this.instances.get(database) === instance) {
+          this.instances.delete(database);
+        }
+      });
+    }
+    instance.operations++;
+    return instance;
+  }
+
+  /**
+   * PouchDB keeps every instance registered until it is closed or its database is destroyed
+   */
+  private async release(database: string, instance: { db: PouchDB.Database, operations: number }): Promise<void> {
+    if (--instance.operations === 0 && this.instances.get(database) === instance) {
+      this.instances.delete(database);
+      await instance.db.close().catch(() => undefined);
+    }
   }
 }

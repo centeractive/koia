@@ -1,19 +1,13 @@
 import { LanguageService } from '../../language';
-import { MangoQueryBuilder } from '../mango';
-import { Query, Page } from 'app/shared/model';
+import { Query } from 'app/shared/model';
 import { DBService } from '../db.service';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { DialogService } from '../../dialog.service';
-import { CommonUtils } from 'app/shared/utils';
 
 /**
  * CouchDB's _find doesn't include documents lacking the sort field: sorting requires an index containing the sort field
  * and a JSON index only contains documents having all indexed fields present
- * (see https://docs.couchdb.org/en/stable/api/database/find.html). Therefore, we...
- * - cannot simply count all entries from the active scene if the query has filters
- * - need to count matching entries each time the sort condition changes
- * - need to query all matching IDs using the sort conditions
- * - have to inform the user about the limitation
+ * (see https://docs.couchdb.org/en/stable/api/database/find.html), the user is informed about this limitation
  */
 export class SortLimitationWorkaround {
 
@@ -34,20 +28,6 @@ export class SortLimitationWorkaround {
          this.dialogDataLocale = locale;
       }
       return this.dialogData;
-   }
-
-   static isCouchDbWithSort(dbService: DBService, query: Query): boolean {
-      return dbService.isCouchDbInUse() && query.hasSort();
-   }
-
-   static isCouchDbWithChangedSort(dbService: DBService, query: Query, prevPage: Page): boolean {
-      return dbService.isCouchDbInUse() && !CommonUtils.compare(query.getSort(), prevPage.query.getSort());
-   }
-
-   static sortByMatchingIDsQueryWhenCouchDbWithSort(couchDB: boolean, builder: MangoQueryBuilder, query: Query): void {
-      if (couchDB && query.hasSort()) {
-         builder.sortBy(query.getSort());
-      }
    }
 
    static showInfoDialog(dbService: DBService, dialogService: DialogService, query: Query): void {

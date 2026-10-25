@@ -18,7 +18,8 @@
       "hint": "IndexedDB はデータをこのブラウザーに保存します。CouchDB は通常より高速で、ブラウザーのキャッシュを消去してもデータが残り、共有もできます",
       "setupGuide": "セットアップガイド",
       "hintEnd": "。",
-      "switchedTo": "{{storage}} に切り替えました"
+      "switchedTo": "{{storage}} に切り替えました",
+      "couchDBUnusable": "CouchDB を使用できないため、代わりにこのブラウザー (IndexedDB) にデータを保存します: {{error}}"
     },
     "couchdbTip": {
       "title": "おすすめ: CouchDB を使う",
@@ -176,6 +177,7 @@
     "title": "新しいシーン",
     "name": "シーン名",
     "nameExists": "シーン名は既に存在します",
+    "databaseInUse": "データベース {{database}} は既に使用されています。もう一度お試しください",
     "shortDescription": "短い説明",
     "dataSource": "データソース",
     "sourceType": "ソースの種類",

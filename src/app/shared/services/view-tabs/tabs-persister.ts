@@ -1,6 +1,7 @@
 import { LanguageService } from '../language';
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { Subscription } from 'rxjs';
 import { SceneTabs, TabDef } from '../../model/view-config';
 import { DBService } from '../backend';
 import { NotificationService } from '../notification.service';
@@ -22,8 +23,12 @@ export class TabsPersister implements OnDestroy {
    private writes: Promise<unknown> = Promise.resolve();
    private errorReported = false;
    private destroyed = false;
+   private readonly discardedDocs = new WeakSet<SceneTabs>();
+   private readonly discardSubscription: Subscription;
 
-   constructor(private dbService: DBService, private notificationService: NotificationService, private bottomSheet: MatBottomSheet) { }
+   constructor(private dbService: DBService, private notificationService: NotificationService, private bottomSheet: MatBottomSheet) {
+      this.discardSubscription = dbService.sceneDiscarded$.subscribe(sceneId => this.discard(sceneId));
+   }
 
    reset(doc: SceneTabs): void {
       this.doc = doc;
@@ -63,6 +68,18 @@ export class TabsPersister implements OnDestroy {
    ngOnDestroy(): void {
       this.destroyed = true;
       this.cancel();
+      this.discardSubscription.unsubscribe();
+   }
+
+   /**
+    * a write requested for a discarded scene would recreate its deleted open tabs or write them to another storage
+    */
+   private discard(sceneId: string): void {
+      if (this.doc?._id === DBService.sceneTabsId(sceneId)) {
+         this.cancel();
+         this.discardedDocs.add(this.doc);
+         this.doc = undefined;
+      }
    }
 
    private clearTimer(): void {
@@ -71,16 +88,19 @@ export class TabsPersister implements OnDestroy {
    }
 
    private write(snapshot: () => TabDef[]): Promise<unknown> {
+      const doc = this.doc;
+      if (!doc) {
+         return this.writes;
+      }
       const json = JSON.stringify(snapshot());
       if (json === this.lastJson) {
          return this.writes;
       }
-      const doc = this.doc;
       const prevJson = this.lastJson;
       this.lastJson = json;
       doc.tabs = JSON.parse(json);
       this.writes = this.writes
-         .then(() => this.dbService.saveSceneTabs(doc))
+         .then(() => this.discardedDocs.has(doc) ? undefined : this.dbService.saveSceneTabs(doc))
          .then(() => { this.errorReported = false; })
          .catch(err => {
             if (this.lastJson === json) {

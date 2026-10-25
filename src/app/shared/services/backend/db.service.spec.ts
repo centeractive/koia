@@ -220,6 +220,20 @@ describe('DBService', () => {
     await expect(persistence).rejects.toThrow(expect.objectContaining({ message: 'cannot create database' }));
   });
 
+  it('#persistScene should reject without inserting scene when database exists already', async () => {
+
+    // given
+    const scene = SceneFactory.createScene('99', columns);
+    await couchDBService.createDatabase(scene.database);
+
+    // when
+    const persistence = dbService.persistScene(scene, false);
+
+    // then
+    await expect(persistence).rejects.toThrow('Database ' + scene.database + ' is already in use, please try again');
+    await expect(dbService.findScene('99')).rejects.toMatchObject({ status: 404 });
+  });
+
   it('#persistScene should throw error when index cannot be created', async () => {
 
     // given
@@ -600,6 +614,58 @@ describe('DBService', () => {
     expect(couchDBService.deleteDatabase).not.toHaveBeenCalled();
     await expect(dbService.findScene(initialScene._id)).rejects.toMatchObject({ ok: false, status: 404, statusText: 'Object Not Found' });
     expect(console.warn).toHaveBeenCalledWith('scene ' + initialScene._id + ' refers to the scenes database, which is kept');
+  });
+
+  it('#deleteScene should delete database of scene', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'deleteDatabase');
+
+    // when
+    await dbService.deleteScene(initialScene);
+
+    // then
+    expect(couchDBService.deleteDatabase).toHaveBeenCalledWith(initialScene.database);
+  });
+
+  it('#deleteScene should delete scene whose database was deleted before', async () => {
+
+    // given
+    await couchDBService.deleteDatabase(initialScene.database);
+
+    // when
+    const deletion = dbService.deleteScene(initialScene);
+
+    // then
+    await expect(deletion).resolves.toBeUndefined();
+    await expect(dbService.findScene(initialScene._id)).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('#deleteScene should keep scene when its database cannot be deleted', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'deleteDatabase').mockRejectedValue({ status: 500 });
+
+    // when
+    const deletion = dbService.deleteScene(initialScene);
+
+    // then
+    await expect(deletion).rejects.toEqual({ status: 500 });
+    await expect(dbService.findScene(initialScene._id)).resolves.toMatchObject({ _id: initialScene._id });
+  });
+
+  it('#deleteScene should keep open tabs when scene cannot be deleted', async () => {
+
+    // given
+    await dbService.saveSceneTabs(sceneTabs(initialScene, 'tab1'));
+    vi.spyOn(couchDBService, 'delete').mockRejectedValueOnce({ status: 409 });
+
+    // when
+    const deletion = dbService.deleteScene(initialScene);
+
+    // then
+    await expect(deletion).rejects.toEqual({ status: 409 });
+    await expect(dbService.findSceneTabs(initialScene._id)).resolves.toBeDefined();
   });
 
   it('#deleteScene should delete open tabs of scene', async () => {
@@ -1003,19 +1069,10 @@ describe('DBService', () => {
   }
 
   async function initWithSingleDatabase() {
-    let dbOneExists = false;
-    await dbService.findSceneInfos()
-      .then(r => r.forEach(si => {
-        if (si._id === '1') {
-          dbOneExists = true;
-        } else {
-          dbService.deleteScene(si);
-        }
-      }));
-    if (!dbOneExists) {
-      const scene = SceneFactory.createScene('1', columns);
-      await dbService.persistScene(scene, true)
-        .then(() => null);
+    const sceneInfos = await dbService.findSceneInfos();
+    await Promise.all(sceneInfos.filter(si => si._id !== '1').map(si => dbService.deleteScene(si)));
+    if (!sceneInfos.some(si => si._id === '1')) {
+      await dbService.persistScene(SceneFactory.createScene('1', columns), true);
     }
   }
 

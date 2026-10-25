@@ -63,9 +63,8 @@ export class CSVReader implements DataReader {
 
    private includesTextValuesOnly(values: string[], locale: string): boolean {
       return values
-         .filter(v => v !== '')
          .map(v => DataTypeUtils.typeOf(v, locale))
-         .find(t => t !== DataType.TEXT) === undefined;
+         .every(t => t === undefined || t === DataType.TEXT);
    }
 
    readSample(file: File, entriesCount: number, encoding?: string): Promise<Sample> {

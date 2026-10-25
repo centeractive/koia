@@ -1,7 +1,6 @@
 import { MangoQueryBuilder } from './mango-query-builder';
 import { CouchDBConstants } from '../couchdb/couchdb-constants';
 import { Column, Query, Operator } from 'app/shared/model';
-import { SortLimitationWorkaround } from '../couchdb';
 
 export class QueryConverter {
 
@@ -10,7 +9,8 @@ export class QueryConverter {
    constructor(private forPouchDB: boolean) { }
 
    /**
-   * Converts a [[Query]] to a Mango query that contains the selector and a single field (no sorting nor pagination info)
+   * Converts a [[Query]] to a Mango query that contains the selector, the sort (both backends omit documents lacking the sort field)
+   * and a single field (no pagination info)
    * to find out the total number of rows that match the selector of the base query.
    * Apparently there's no better way to find the total number of rows matching a certain selector.
    */
@@ -18,13 +18,17 @@ export class QueryConverter {
       const builder = new MangoQueryBuilder(this.forPouchDB, columns)
          .includeFields([CouchDBConstants._ID]);
       this.defineFilters(builder, query);
-      SortLimitationWorkaround.sortByMatchingIDsQueryWhenCouchDbWithSort(!this.forPouchDB, builder, query);
+      builder.sortBy(query.getSort());
       return builder.toQuery();
    }
 
-   toMango(columns: Column[], query: Query): object {
+   /**
+    * @param columns the stored columns, the full text filter searches their text columns and filter values get their types
+    * @param fieldColumns the columns whose values are fetched
+    */
+   toMango(columns: Column[], query: Query, fieldColumns = columns): object {
       const builder = new MangoQueryBuilder(this.forPouchDB, columns)
-         .includeFields(this.defineFields(columns, query));
+         .includeFields(this.defineFields(fieldColumns, query));
       this.defineFilters(builder, query);
       builder.sortBy(query.getSort());
       if (query.getPageIndex() >= 0 && query.getRowsPerPage() > 0) {

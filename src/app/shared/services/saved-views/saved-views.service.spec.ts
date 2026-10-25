@@ -241,10 +241,10 @@ describe('SavedViewsService', () => {
       const context = vi.mocked(dialogService.showManageViewDialog).mock.lastCall[0] as ManageViewContext<SavedView>;
 
       // when
-      await context.updateViews([deleted], [renamed]);
+      await context.updateViews([deleted], [{ view: renamed, name: 'new name' }]);
 
       // then
-      expect(viewPersistenceService.updateViews).toHaveBeenCalledWith(scene, [deleted], [renamed]);
+      expect(viewPersistenceService.updateViews).toHaveBeenCalledWith(scene, [deleted], [{ view: renamed, name: 'new name' }]);
       expect(onUpdated).toHaveBeenCalledWith(STATUS);
    });
 

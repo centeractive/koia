@@ -3,6 +3,18 @@ import { MatBottomSheet, MatBottomSheetConfig } from '@angular/material/bottom-s
 import { StatusComponent } from 'app/shared/component/status/status.component';
 import { Status, StatusType } from '../model';
 
+/**
+ * the text of a message or error as shown in notifications
+ */
+export function messageOf(value: string | object): string {
+  if (typeof value === 'string') {
+    return value;
+  } else if (value['name'] && value['message']) {
+    return value['name'] + ': ' + value['message'];
+  }
+  return JSON.stringify(value);
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
 
@@ -25,15 +37,6 @@ export class NotificationService {
   }
 
   private createStatus(statusType: StatusType, value: string | object): Status {
-    return { type: statusType, msg: this.toMessage(value) };
-  }
-
-  private toMessage(value: string | object): string {
-    if (typeof value === 'string') {
-      return value;
-    } else if (value['name'] && value['message']) {
-      return value['name'] + ': ' + value['message'];
-    }
-    return JSON.stringify(value);
+    return { type: statusType, msg: messageOf(value) };
   }
 }

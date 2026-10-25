@@ -185,6 +185,22 @@ describe.each(BACKENDS)('RawDataComponent IT ($name)', backend => {
     expect(cellText(1, 'Amount')).toBe(formatted('Amount', 12330));
   }, TIMEOUT);
 
+  it('should count the rows shown when sorted by a column with missing values', async () => {
+
+    // given
+    const entryWithoutAmount = { _id: '9999', ID: 9999, Level: 'INFO', Data: 'no amount' };
+    await run.db.writeEntries(run.scenes[0].scene.database, [entryWithoutAmount]);
+    await render();
+
+    // when
+    await reloaded(() => component.sortBy(column('Amount')));
+
+    // then
+    const shownRowCount = backend.name === 'CouchDB' ? ENTRY_COUNT : ENTRY_COUNT + 1;
+    expect(component.totalRowCount).toBe(shownRowCount);
+    expect(root().querySelector('.row-count').textContent).toBe(shownRowCount.toLocaleString('en-US') + ' rows');
+  }, TIMEOUT);
+
   if (backend.name === 'CouchDB') {
     it('should show sort limitation dialog once when sorted on CouchDB', async () => {
 

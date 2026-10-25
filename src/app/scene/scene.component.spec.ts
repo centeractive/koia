@@ -1,6 +1,6 @@
 import { DatePipe, Location } from '@angular/common';
 import { CUSTOM_ELEMENTS_SCHEMA, reflectComponentType } from '@angular/core';
-import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
@@ -1024,6 +1024,7 @@ describe('SceneComponent', () => {
     let resolvePersist: (scene: Scene) => void;
     vi.spyOn(dbService, 'persistScene').mockReturnValue(new Promise<Scene>(resolve => resolvePersist = resolve));
     fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flushMicrotasks();
 
     // when
     component.cancel();
@@ -1300,6 +1301,44 @@ describe('SceneComponent', () => {
     flush();
 
     // then
+    expect(component.scene.creationTime).toBeUndefined();
+    expect(component.progressBarMode).toBeUndefined();
+  }));
+
+  it('#click on "Load Data" should persist scene into database that is free when loading starts', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'findFreeDatabaseName').mockResolvedValue('data_2');
+    vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(vi.mocked(dbService.persistScene).mock.lastCall[0].database).toBe('data_2');
+    expect(dbService.writeEntries).toHaveBeenCalledWith('data_2', expect.any(Array));
+  }));
+
+  it('#click on "Load Data" should notify error and reset creation time when no free database is found', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'findFreeDatabaseName').mockRejectedValue('no database');
+    vi.spyOn(dbService, 'persistScene');
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(expect.anything(), 'no database');
+    expect(dbService.persistScene).not.toHaveBeenCalled();
     expect(component.scene.creationTime).toBeUndefined();
     expect(component.progressBarMode).toBeUndefined();
   }));

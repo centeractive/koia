@@ -73,6 +73,13 @@ export class CouchDBConfig {
       sessionStorage.setItem(CouchDBConfig.SESSION_CONN_INFO_NAME, JSON.stringify(connectionInfo));
    }
 
+   /**
+    * the user (or a launch) has chosen a connection, the default connection was never confirmed
+    */
+   hasSavedConnectionInfo(): boolean {
+      return sessionStorage.getItem(CouchDBConfig.SESSION_CONN_INFO_NAME) !== null || localStorage.getItem(CouchDBConfig.CONN_INFO_NAME) !== null;
+   }
+
    reset(): void {
       localStorage.removeItem(CouchDBConfig.CONN_INFO_NAME);
       sessionStorage.removeItem(CouchDBConfig.SESSION_CONN_INFO_NAME);

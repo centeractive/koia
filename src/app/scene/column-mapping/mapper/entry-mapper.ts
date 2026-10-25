@@ -1,5 +1,5 @@
 import { LanguageService } from 'app/shared/services/language';
-import { ColumnPair, DataType } from 'app/shared/model';
+import { Column, ColumnPair, DataType } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 
 /**
@@ -8,7 +8,7 @@ import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
  *
  * - values are NOT written to target entries...
  *   - when they're [[null]] or [[undefined]]
- *   - when they're empty
+ *   - when they're empty or contain whitespace only
  *   - when the target value of the specified data type cannot be created (parsed)
  * - the "_id" attribute starts at 1 and is incremented for each mapped target entry
  */
@@ -71,12 +71,12 @@ export class EntryMapper {
    }
 
    private mapValue(columnPair: ColumnPair, sourceValue: string | number | boolean | object, mappingResult: MappingResult): void {
-      if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
+      if (!StringUtils.isBlank(sourceValue)) {
          if (sourceValue instanceof Date) {
             this.mapDate(sourceValue, columnPair, mappingResult);
          } else if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)
             && columnPair.target.dataType === DataType.TIME) {
-            this.mapTextToTime(sourceValue?.toString(), columnPair, mappingResult);
+            this.mapToTime(sourceValue, columnPair, mappingResult);
          } else {
             const value = DataTypeUtils.toTypedValue(sourceValue, columnPair.target.dataType, this.locale);
             if (value == undefined) {
@@ -97,10 +97,10 @@ export class EntryMapper {
       }
    }
 
-   private mapTextToTime(sourceValue: string, columnPair: ColumnPair, mappingResult: MappingResult): void {
+   private mapToTime(sourceValue: string | number | boolean | object, columnPair: ColumnPair, mappingResult: MappingResult): void {
       try {
-         const date = this.parseDate(sourceValue, columnPair.source.format);
-         mappingResult.entry[columnPair.target.name] = this.roundDownToTargetFormat(date, columnPair.target.format).getTime();
+         const time = this.toTime(sourceValue, columnPair.source);
+         mappingResult.entry[columnPair.target.name] = this.roundDownToTargetFormat(time, columnPair.target.format);
       } catch (e) {
          mappingResult.errors.push(this.columnError(columnPair, e.message));
       }
@@ -110,26 +110,36 @@ export class EntryMapper {
       return LanguageService.instant('scene.mapping.columnError', { column: columnPair.source.name, error });
    }
 
+   /**
+    * @returns the time of a number column value without source format as epoch milliseconds, of other values as parsed date/time
+    */
+   private toTime(value: string | number | boolean | object, source: Column): number {
+      const time = source.dataType === DataType.NUMBER && !source.format ?
+         DataTypeUtils.toTypedValue(value, DataType.TIME, this.locale) as number :
+         this.parseDate(value.toString(), source.format)?.getTime();
+      if (time === undefined || isNaN(new Date(time).getTime())) {
+         throw new Error(source.format ?
+            LanguageService.instant('scene.mapping.cannotConvertTimeWithFormat', { value: this.abbreviate(value), format: source.format }) :
+            LanguageService.instant('scene.mapping.cannotConvertTime', { value: this.abbreviate(value) }));
+      }
+      return time;
+   }
+
    private parseDate(value: string, format: string): Date {
       let date = DateTimeUtils.parseDate(value, format, this.locale);
       if (!date && format) {
          date = DateTimeUtils.parseDate(value, undefined);
       }
-      if (!date || isNaN(date.getTime())) {
-         throw new Error(format ?
-            LanguageService.instant('scene.mapping.cannotConvertTimeWithFormat', { value: this.abbreviate(value), format }) :
-            LanguageService.instant('scene.mapping.cannotConvertTime', { value: this.abbreviate(value) }));
-      }
       return date;
    }
 
    /**
-    * @returns the down-rounded date, required for correct filtering
+    * @returns the down-rounded time, required for correct filtering
     *
     * @see [[TimeRangeFilter]]
     */
-   private roundDownToTargetFormat(date: Date, format: string): Date {
-      return DateTimeUtils.toBaseDate(date.getTime(), DateTimeUtils.timeUnitFromNgFormat(format));
+   private roundDownToTargetFormat(time: number, format: string): number {
+      return DateTimeUtils.toBaseTime(time, DateTimeUtils.timeUnitFromNgFormat(format));
    }
 
    private abbreviate(value: string | number | boolean | object): string {

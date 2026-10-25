@@ -203,7 +203,7 @@ describe('ViewPersistenceService', () => {
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = await service.updateViews(scene, [deleted], [renamed]);
+    const status = await service.updateViews(scene, [deleted], [{ view: renamed, name: 'new name' }]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 1 view\nRenamed 1 view' });
@@ -218,7 +218,7 @@ describe('ViewPersistenceService', () => {
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = await service.updateViews(scene, [views[0], views[1]], [views[2], views[3]]);
+    const status = await service.updateViews(scene, [views[0], views[1]], [{ view: views[2], name: 'x' }, { view: views[3], name: 'y' }]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Deleted 2 views\nRenamed 2 views' });
@@ -233,7 +233,7 @@ describe('ViewPersistenceService', () => {
     vi.spyOn(dbService, 'updateScene').mockResolvedValue(scene);
 
     // when
-    const status = await service.updateViews(scene, [], [renamed]);
+    const status = await service.updateViews(scene, [], [{ view: renamed, name: 'new name' }]);
 
     // then
     expect(status).toEqual({ type: StatusType.SUCCESS, msg: 'Renamed 1 view' });
@@ -250,6 +250,84 @@ describe('ViewPersistenceService', () => {
 
     // then
     expect(status).toEqual({ type: StatusType.ERROR, msg: 'Views cannot be updated: Scene cannot be updated' });
+  });
+
+  it('#saveView should keep saved views when update fails', async () => {
+
+    // given
+    const existing = savedViewOf('existing', [], A_MINUTE_AGO);
+    const savedViews = [existing];
+    scene.config = { savedViews };
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue(new Error('offline'));
+
+    // when
+    await service.saveView(scene, savedViewOf('new', [], NOW));
+
+    // then
+    expect(scene.config.savedViews).toEqual([existing]);
+  });
+
+  it('#saveView should keep replaced view when update fails', async () => {
+
+    // given
+    const replaced = savedViewOf('x', [], A_MINUTE_AGO);
+    scene.config = { savedViews: [replaced] };
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue(new Error('offline'));
+
+    // when
+    await service.saveView(scene, savedViewOf('x', [], NOW));
+
+    // then
+    expect(scene.config.savedViews).toEqual([replaced]);
+    expect(scene.config.savedViews[0]).toBe(replaced);
+  });
+
+  it('#saveView should keep legacy views when update fails', async () => {
+
+    // given
+    const views = [legacyView('dashboard', A_MINUTE_AGO)];
+    const records = [pivotRecord('pivot', A_MINUTE_AGO)];
+    scene.config = { views, records };
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue(new Error('offline'));
+
+    // when
+    await service.saveView(scene, savedViewOf('new', [], NOW));
+
+    // then
+    expect(scene.config).toEqual({ views, records });
+    expect(scene.config.views).toBe(views);
+    expect(scene.config.records).toBe(records);
+  });
+
+  it('#updateViews should keep deleted views when update fails', async () => {
+
+    // given
+    const kept = savedViewOf('kept', [], NOW);
+    const deleted = savedViewOf('deleted', [], NOW);
+    scene.config = { savedViews: [kept, deleted] };
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue(new Error('offline'));
+
+    // when
+    const status = await service.updateViews(scene, [deleted], []);
+
+    // then
+    expect(status.type).toBe(StatusType.ERROR);
+    expect(scene.config.savedViews).toEqual([kept, deleted]);
+  });
+
+  it('#updateViews should restore names of renamed views when update fails', async () => {
+
+    // given
+    const a = savedViewOf('a', [], NOW);
+    const b = savedViewOf('b', [], NOW);
+    scene.config = { savedViews: [a, b] };
+    vi.spyOn(dbService, 'updateScene').mockRejectedValue(new Error('offline'));
+
+    // when
+    await service.updateViews(scene, [], [{ view: a, name: 'x' }, { view: b, name: 'y' }]);
+
+    // then
+    expect(scene.config.savedViews.map(v => v.name)).toEqual(['a', 'b']);
   });
 
   function legacyView(name: string, modifiedTime: number): View {

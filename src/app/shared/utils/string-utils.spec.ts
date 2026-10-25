@@ -194,4 +194,20 @@ describe('StringUtils', () => {
       // then
       expect(name).toBe('[ (3)]');
    });
+
+   it('#isBlank should return true when value is missing or contains whitespace only', () => {
+      expect(StringUtils.isBlank(undefined)).toBe(true);
+      expect(StringUtils.isBlank(null)).toBe(true);
+      expect(StringUtils.isBlank('')).toBe(true);
+      expect(StringUtils.isBlank(' ')).toBe(true);
+      expect(StringUtils.isBlank('\t\n')).toBe(true);
+   });
+
+   it('#isBlank should return false when value is no blank string', () => {
+      expect(StringUtils.isBlank('a')).toBe(false);
+      expect(StringUtils.isBlank(' a ')).toBe(false);
+      expect(StringUtils.isBlank(0)).toBe(false);
+      expect(StringUtils.isBlank(false)).toBe(false);
+      expect(StringUtils.isBlank({})).toBe(false);
+   });
 });

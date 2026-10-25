@@ -1,19 +1,20 @@
 import { DataType } from '../model/data-type.enum';
 import { NumberUtils } from './number-utils';
 import { Column } from '../model';
+import { StringUtils } from './string-utils';
 
 export class DataTypeUtils {
 
    /**
-    * @returns the best matching data type of the specified value or [[undefined]]
+    * @returns the best matching data type of the specified value or [[undefined]] when the value is blank
     */
    static typeOf(value: string | number | boolean | object, locale: string): DataType {
-      if (value !== null && value !== undefined) {
+      if (!StringUtils.isBlank(value)) {
          if (typeof value === 'boolean' || ['TRUE', 'FALSE'].includes(value.toString().toUpperCase())) {
             return DataType.BOOLEAN;
          } else if (value instanceof Date) {
             return DataType.TIME;
-         } else if (NumberUtils.isNumber(value, locale)) {
+         } else if (NumberUtils.isPlainNumber(value, locale)) {
             return DataType.NUMBER;
          } else if (typeof value === 'object') {
             return DataType.OBJECT;
@@ -45,7 +46,7 @@ export class DataTypeUtils {
             return DataTypeUtils.asBoolean(value as string | number | boolean);
          case DataType.NUMBER:
          case DataType.TIME:
-            if (typeof value === 'string' || typeof value === 'number') {
+            if (typeof value === 'number' || (typeof value === 'string' && NumberUtils.isPlainNumber(value, locale))) {
                return NumberUtils.asNumber(value, locale);
             }
             return undefined;

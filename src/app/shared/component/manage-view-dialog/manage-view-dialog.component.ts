@@ -42,9 +42,7 @@ export class ManageViewDialogComponent<T extends { name: string, modifiedTime: n
     const deletedViews = this.items
       .filter(item => item.deleted)
       .map(item => item.view);
-    const renamedItems = this.renamedItems();
-    renamedItems.forEach(item => { item.view.name = item.name.trim(); });
-    this.context.updateViews(deletedViews, renamedItems.map(item => item.view));
+    this.context.updateViews(deletedViews, this.renamedItems().map(item => ({ view: item.view, name: item.name.trim() })));
     this.dialogRef.close();
   }
 

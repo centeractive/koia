@@ -340,7 +340,13 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       }
     });
 
-    this.dbService.persistScene(this.scene, false, progressMonitor)
+    this.dbService.findFreeDatabaseName()
+      .then(database => {
+        // the database chosen when the page was opened may have been taken meanwhile
+        this.scene.database = database;
+        this.entryPersister = this.createEntryPersister();
+        return this.dbService.persistScene(this.scene, false, progressMonitor);
+      })
       .then(() => {
         if (!this.canceled) {
           this.loadData();

@@ -18,7 +18,8 @@
       "hint": "IndexedDB speichert die Daten in diesem Browser. CouchDB ist meist schneller, übersteht das Leeren des Browser-Caches und kann gemeinsam genutzt werden",
       "setupGuide": "Installationsanleitung",
       "hintEnd": ".",
-      "switchedTo": "Erfolgreich zu {{storage}} gewechselt"
+      "switchedTo": "Erfolgreich zu {{storage}} gewechselt",
+      "couchDBUnusable": "CouchDB kann nicht verwendet werden, die Daten werden stattdessen in diesem Browser (IndexedDB) gespeichert: {{error}}"
     },
     "couchdbTip": {
       "title": "Empfohlen: CouchDB verwenden",
@@ -176,6 +177,7 @@
     "title": "Neue Szene",
     "name": "Szenenname",
     "nameExists": "Szenenname existiert bereits",
+    "databaseInUse": "Die Datenbank {{database}} wird bereits verwendet, bitte versuche es erneut",
     "shortDescription": "Kurzbeschreibung",
     "dataSource": "Datenquelle",
     "sourceType": "Quelltyp",

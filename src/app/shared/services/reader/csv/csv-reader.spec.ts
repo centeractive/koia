@@ -117,6 +117,34 @@ describe('CSVReader', () => {
       expect(attributes[0].value).toBeTruthy();
    });
 
+   it('#furnishAttributes should return has-header attribute when first line contains text with leading zeros or radix prefix', () => {
+
+      // when
+      const fileHeader =
+         'A,007,0x1A\n' +
+         'X,1,2\n';
+      const attributes = reader.furnishAttributes(fileHeader, 'en-US');
+
+      // then
+      expect(attributes).toBeDefined();
+      expect(attributes.length).toBe(2);
+      expect(attributes[0].value).toBe(true);
+   });
+
+   it('#furnishAttributes should return has-header attribute when first line contains text and blank values', () => {
+
+      // when
+      const fileHeader =
+         'A,,  ,C\n' +
+         'X,1,2,Z\n';
+      const attributes = reader.furnishAttributes(fileHeader, 'en-US');
+
+      // then
+      expect(attributes).toBeDefined();
+      expect(attributes.length).toBe(2);
+      expect(attributes[0].value).toBe(true);
+   });
+
    it('#furnishAttributes should return comma separator attribute', () => {
 
       // when

@@ -40,6 +40,17 @@ export const ORDERS_WITH_ID_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-with-id.
 
 export const MONTHLY_TWO_MEASURES_CSV = csvFile(resolve(E2E_DATA_DIR, 'monthly-two-measures.csv'), [DataType.TIME, DataType.NUMBER, DataType.NUMBER]);
 
+export const CODES_CSV = csvFile(resolve(E2E_DATA_DIR, 'codes.csv'), [DataType.TEXT, DataType.NUMBER, DataType.TEXT]);
+
+export const DUPLICATE_HEADERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'duplicate-headers.csv'),
+   [DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.NUMBER]);
+
+export const MIXED_DATES_CSV = csvFile(resolve(E2E_DATA_DIR, 'mixed-dates.csv'), [DataType.TEXT, DataType.TIME]);
+
+export const EPOCH_MILLIS_CSV = csvFile(resolve(E2E_DATA_DIR, 'epoch-millis.csv'), [DataType.TEXT, DataType.NUMBER]);
+
+export const MISSING_TIMES_CSV = csvFile(resolve(E2E_DATA_DIR, 'missing-times.csv'), [DataType.TEXT, DataType.TIME]);
+
 function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFile {
    const [columns, ...rows] = Papa.parse<string[]>(readFileSync(path, 'utf-8'), { delimiter: separator, skipEmptyLines: true }).data;
    return { path, name: basename(path, extname(path)), sourceName: SourceName.CSV, columns, rowCount: rows.length, dataTypes, separator };

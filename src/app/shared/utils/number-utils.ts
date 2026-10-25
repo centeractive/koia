@@ -1,6 +1,9 @@
+import { StringUtils } from './string-utils';
+
 export class NumberUtils {
 
    private static readonly symbols = new Map<string, { group: string, decimal: string }>();
+   private static readonly RADIX_PREFIX_OR_LEADING_ZERO = /^[+-]?0[\dbox]/i;
 
    /**
     * @returns [[true]], if the value is an integer or represents an integer (may contain thousands separators of the specified locale),
@@ -35,6 +38,15 @@ export class NumberUtils {
          return this.representsNumber(value, locale);
       }
       return !Number.isNaN(value);
+   }
+
+   /**
+    * @returns [[true]], if [[isNumber]] does and the value is no string with a radix prefix (e.g. '0x1A') or a leading zero
+    * (e.g. '00123'), thousands separators of the specified locale are removed before checking
+    */
+   static isPlainNumber(value: unknown, locale: string): boolean {
+      return this.isNumber(value, locale) &&
+         (typeof value !== 'string' || !NumberUtils.RADIX_PREFIX_OR_LEADING_ZERO.test(this.normalize(value, locale)));
    }
 
    /**
@@ -96,7 +108,7 @@ export class NumberUtils {
     * @returns the value as a number, 1 for boolean [[true]], 0 for boolean [[false]]
     */
    static asNumber(value: string | number | boolean, locale: string): number {
-      if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+      if (StringUtils.isBlank(value)) {
          return undefined;
       }
       if (typeof value === 'number') {
