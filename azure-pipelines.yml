@@ -45,13 +45,8 @@ steps:
       Get-Content "${HOME}/couchdb/etc/local.d/local.ini"
       Write-Output "----end   local.ini--------------------"
 
-- task: DockerInstaller@0
-  displayName: install Docker
-  inputs:
-    dockerVersion: 17.09.0-ce
-    releaseType: stable
-    
 - script: |
+    docker version
     docker run -p 5984:5984 --name couchdb -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:latest
   displayName: 'run CouchDB in Docker container'
 
