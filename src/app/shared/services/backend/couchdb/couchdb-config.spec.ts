@@ -223,4 +223,32 @@ describe('CouchDBConfig', () => {
       expect(actualConnInfo).toEqual(defaultConnInfo);
    });
 
+   it('#hasSavedConnectionInfo should return false when no connection is saved', () => {
+      expect(couchDBConfig.hasSavedConnectionInfo()).toBe(false);
+   });
+
+   it('#hasSavedConnectionInfo should return true when connection is saved', () => {
+
+      // given
+      couchDBConfig.saveConnectionInfo(localConnInfo);
+
+      // when
+      const saved = couchDBConfig.hasSavedConnectionInfo();
+
+      // then
+      expect(saved).toBe(true);
+   });
+
+   it('#hasSavedConnectionInfo should return true when connection of session is saved', () => {
+
+      // given
+      couchDBConfig.saveLaunchConnectionInfo(remoteConnInfo);
+
+      // when
+      const saved = couchDBConfig.hasSavedConnectionInfo();
+
+      // then
+      expect(saved).toBe(true);
+   });
+
 });

@@ -1,4 +1,5 @@
 export * from './array-utils';
+export * from './base64-utils';
 export * from './chart-utils';
 export * from './column-name-converter';
 export * from './common-utils';

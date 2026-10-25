@@ -334,6 +334,107 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
    });
 
+   it('#generate should return text mapping when values have leading zeros', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '00123' }, { X: '0456' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 10, indexed: true });
+   });
+
+   it('#generate should return text mapping when values have radix prefix', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '0x1A' }, { X: '0b101' }, { X: '0o17' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 10, indexed: true });
+   });
+
+   it('#generate should return number mapping when values start with single zero', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '0' }, { X: '0.5' }, { X: '-0.25' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
+   });
+
+   it('#generate should return number mapping when values with decimal comma start with single zero', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '0,5' }, { X: '-0,25' }], 'de');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
+   });
+
+   it('#generate should return number mapping when first value is blank', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '   ' }, { X: '123' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
+   });
+
+   it('#generate should return number mapping when other value is blank', () => {
+
+      // when
+      const mapping = generator.generate([{ X: '123' }, { X: '   ' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.NUMBER, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.NUMBER, width: 10, indexed: true });
+   });
+
+   it('#generate should return default text mapping when all values are blank', () => {
+
+      // when
+      const mapping = generator.generate([{ X: ' ' }, { X: '\t' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 10, indexed: true });
+   });
+
+   it('#generate should keep time mapping without warning when other value is blank', () => {
+
+      // when
+      const mapping = generator.generate([{ Time: now }, { Time: '   ' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].warning).toBeUndefined();
+      expect(mapping[0].source).toEqual({ name: 'Time', dataType: DataType.TIME, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'Time', dataType: DataType.TIME, width: 13, indexed: true });
+   });
+
+   it('#generate should downgrade time to text and report incompatible data types when other value has leading zeros', () => {
+
+      // when
+      const mapping = generator.generate([{ Time: now }, { Time: '007' }], 'en');
+
+      // then
+      expect(mapping.length).toBe(1);
+      expect(mapping[0].warning).toBe(ColumnMappingGenerator.INCOMPATIBLE_DATA_TYPES);
+      expect(mapping[0].source).toEqual({ name: 'Time', dataType: DataType.TEXT, width: undefined });
+      expect(mapping[0].target).toEqual({ name: 'Time', dataType: DataType.TEXT, width: 13, indexed: true });
+   });
+
    it('#generate should downgrade to TEXT and report incompatible data types when column contains date and float values', () => {
 
       // when

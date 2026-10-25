@@ -116,6 +116,7 @@ export class DashboardSideBar {
       await this.expand(panel.locator('mat-expansion-panel-header'));
       const column = panel.locator('.div_column_list:not(#selectedGroupByColumns) koia-draggable-column')
          .filter({ has: page.getByText(name, { exact: true }) });
+      await column.hover();
       const from = await column.boundingBox();
       const to = await selected.boundingBox();
       await pressCenterAndMoveBy(column, to.x + to.width / 2 - (from.x + from.width / 2),

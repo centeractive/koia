@@ -7,8 +7,8 @@ import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConnectionInfo, Route } from 'app/shared/model';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
-import { DialogService, NotificationService } from 'app/shared/services';
-import { DBService } from 'app/shared/services/backend';
+import { DialogService, NotificationService, messageOf } from 'app/shared/services';
+import { CouchDBFallback, DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
@@ -49,11 +49,16 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   ngOnInit(): void {
     combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.fragment]).subscribe(([params, fragment]) => {
       const queryParamExtractor = new QueryParamExtractor(this.launchParamsService.paramsOf(params, fragment));
-      if (queryParamExtractor.getCouchDBConnectionInfo() && queryParamExtractor.getSceneID()) {
+      if (queryParamExtractor.hasCouchDBConnectionParams() && queryParamExtractor.getSceneID()) {
         this.handleExternalInvocation(queryParamExtractor);
       } else {
         this.dbService.initBackend(false)
-          .then(() => this.init())
+          .then(fallback => {
+            if (fallback && this.couchDBService.isConnectionSaved()) {
+              this.notifyWarning(this.couchDBUnusableMessage(fallback));
+            }
+            return this.init();
+          })
           .catch(err => this.notifyError(err));
       }
     });
@@ -64,9 +69,18 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    */
   private handleExternalInvocation(queryParamExtractor: QueryParamExtractor): void {
     const sceneID = queryParamExtractor.getSceneID();
-    this.couchDBService.initLaunchConnection(queryParamExtractor.getCouchDBConnectionInfo())
-      .then(() => this.dbService.initBackend(true))
-      .then(() => this.dbService.activateScene(sceneID))
+    Promise.resolve()
+      .then(() => this.couchDBService.initLaunchConnection(queryParamExtractor.getCouchDBConnectionInfo()))
+      .then(() => {
+        this.clearCachedViews();
+        return this.dbService.initBackend(true);
+      })
+      .then(fallback => {
+        if (fallback) {
+          throw this.couchDBUnusableMessage(fallback);
+        }
+        return this.dbService.activateScene(sceneID);
+      })
       .then(() => this.router.navigateByUrl(Route.RAWDATA, { replaceUrl: true }))
       .catch(err => {
         this.location.replaceState('/' + Route.FRONT);
@@ -81,6 +95,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
       if (this.selectedDataStorage === this.couchDB) {
         this.showCouchDBConnectionDialog();
       } else {
+        this.clearCachedViews();
         this.dbService.useIndexedDb()
           .then(() => {
             this.notifySuccess(this.languageService.instant('front.storage.switchedTo', { storage: this.indexedDB }));
@@ -114,7 +129,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     this.loadingSample = true;
     this.sampleSceneService.open(fruitSalesSampleOf(this.languageService.current()))
       .then(() => {
-        (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
+        this.clearCachedViews();
         return this.router.navigateByUrl(Route.RAWDATA);
       })
       .catch(err => {
@@ -142,8 +157,9 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   private initCouchDBConnection(connectionInfo: ConnectionInfo): void {
     this.couchDBService.initConnection(connectionInfo)
       .then(msg => {
+        this.clearCachedViews();
         this.dbService.initBackend(true)
-          .then(() => this.couchDBConnectionSucceeded(msg))
+          .then(fallback => fallback ? this.couchDBFallbackUsed(fallback) : this.couchDBConnectionSucceeded(msg))
           .catch(err => this.couchDBConnectionFailed(err));
       })
       .catch(couchDBErr => this.couchDBConnectionFailed(couchDBErr));
@@ -153,6 +169,15 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     this.ready = true;
     this.notifySuccess(msg);
     this.initOrNotifyError();
+  }
+
+  private couchDBFallbackUsed(fallback: CouchDBFallback): void {
+    this.notifyWarning(this.couchDBUnusableMessage(fallback));
+    this.initOrNotifyError();
+  }
+
+  private couchDBUnusableMessage(fallback: CouchDBFallback): string {
+    return this.languageService.instant('front.storage.couchDBUnusable', { error: messageOf(fallback.couchDBError) });
   }
 
   private couchDBConnectionFailed(error: string | object): void {
@@ -185,6 +210,13 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  /**
+   * cached views belong to the scene that was active before
+   */
+  private clearCachedViews(): void {
+    (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
   }
 
   private initOrNotifyError(): void {

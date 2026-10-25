@@ -1,6 +1,7 @@
 import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
-import { SavedView } from 'app/shared/model/view-config';
+import type { ViewRename } from 'app/shared/component/manage-view-dialog/manage-view-context.type';
+import { Config, SavedView } from 'app/shared/model/view-config';
 import { Scene, Status, StatusType } from '../../model';
 import { ArrayUtils } from '../../utils';
 import { DBService } from '../backend';
@@ -28,6 +29,7 @@ export class ViewPersistenceService {
     * invoking part to catch errors
     */
    saveView(scene: Scene, view: SavedView): Promise<Status> {
+      const restore = this.restorerOf(scene, []);
       const savedViews = this.savedViewsOf(scene);
       const prevView = savedViews.find(v => v.name === view.name);
       if (prevView) {
@@ -35,19 +37,21 @@ export class ViewPersistenceService {
       } else {
          savedViews.push(view);
       }
-      return this.updateScene(scene, LanguageService.instant('view.saved', { name: view.name }),
+      return this.updateScene(scene, restore, LanguageService.instant('view.saved', { name: view.name }),
          e => LanguageService.instant('view.notSaved', { name: view.name, error: e }));
    }
 
    /**
-    * removes the deleted [[SavedView]]s from the [[Scene]] and updates it in the backing datastore, renamed views are
-    * expected to be renamed in place
+    * removes the deleted [[SavedView]]s from the [[Scene]], renames the renamed ones and updates the [[Scene]] in the backing
+    * datastore, both changes are undone when the update fails
     *
     * @returns a promise that provides the resolved processing status (success or error)
     */
-   updateViews(scene: Scene, deletedViews: SavedView[], renamedViews: SavedView[]): Promise<Status> {
+   updateViews(scene: Scene, deletedViews: SavedView[], renames: ViewRename<SavedView>[]): Promise<Status> {
+      const restore = this.restorerOf(scene, renames.map(r => r.view));
       scene.config.savedViews = this.without(this.savedViewsOf(scene), deletedViews);
-      return this.updateScene(scene, this.updateMessage(deletedViews.length, renamedViews.length),
+      renames.forEach(r => r.view.name = r.name);
+      return this.updateScene(scene, restore, this.updateMessage(deletedViews.length, renames.length),
          e => LanguageService.instant('view.notUpdated', { error: e }));
    }
 
@@ -60,6 +64,18 @@ export class ViewPersistenceService {
          delete config.records;
       }
       return config.savedViews;
+   }
+
+   /**
+    * @returns a function that brings back the current config of the [[Scene]] and the current names of the views
+    */
+   private restorerOf(scene: Scene, views: SavedView[]): () => void {
+      const config: Config = { ...scene.config, savedViews: scene.config.savedViews?.slice() };
+      const names = views.map(v => v.name);
+      return () => {
+         scene.config = config;
+         views.forEach((v, i) => v.name = names[i]);
+      };
    }
 
    private without<T>(items: T[], removedItems: T[]): T[] {
@@ -77,9 +93,12 @@ export class ViewPersistenceService {
       return message.join('\n');
    }
 
-   private updateScene(scene: Scene, successMsg: string, errorMsg: (error: string) => string): Promise<Status> {
+   private updateScene(scene: Scene, restore: () => void, successMsg: string, errorMsg: (error: string) => string): Promise<Status> {
       return this.dbService.updateScene(scene)
          .then((): Status => ({ type: StatusType.SUCCESS, msg: successMsg }))
-         .catch((e): Status => ({ type: StatusType.ERROR, msg: errorMsg(typeof e === 'string' ? e : e.message) }));
+         .catch((e): Status => {
+            restore();
+            return { type: StatusType.ERROR, msg: errorMsg(typeof e === 'string' ? e : e.message) };
+         });
    }
 }

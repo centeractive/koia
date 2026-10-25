@@ -107,8 +107,8 @@ describe('ManageViewDialogComponent', () => {
     button('but_ok').click();
 
     // then
-    expect(updateViewsSpy).toHaveBeenCalledWith([], [component.items[1].view]);
-    expect(component.items[1].view.name).toBe('X');
+    expect(updateViewsSpy).toHaveBeenCalledWith([], [{ view: component.items[1].view, name: 'X' }]);
+    expect(component.items[1].view.name).toBe('B');
   });
 
   it('butOK#click should not rename view when view was renamed and then deleted', () => {
@@ -126,7 +126,7 @@ describe('ManageViewDialogComponent', () => {
     expect(ctx.views[1].name).toBe('B');
   });
 
-  it('butOK#click should apply trimmed name when view was renamed', () => {
+  it('butOK#click should hand over trimmed name of renamed view without renaming it', () => {
 
     // given
     rename(1, '  X  ');
@@ -136,8 +136,8 @@ describe('ManageViewDialogComponent', () => {
     button('but_ok').click();
 
     // then
-    expect(updateViewsSpy).toHaveBeenCalledWith([], [ctx.views[1]]);
-    expect(ctx.views[1].name).toBe('X');
+    expect(updateViewsSpy).toHaveBeenCalledWith([], [{ view: ctx.views[1], name: 'X' }]);
+    expect(ctx.views[1].name).toBe('B');
   });
 
   it('butOK#click should allow name of deleted view to be reused', () => {
@@ -152,8 +152,8 @@ describe('ManageViewDialogComponent', () => {
 
     // then
     const [viewA, viewB] = ctx.views;
-    expect(updateViewsSpy).toHaveBeenCalledWith([viewA], [viewB]);
-    expect(viewB.name).toBe('A');
+    expect(updateViewsSpy).toHaveBeenCalledWith([viewA], [{ view: viewB, name: 'A' }]);
+    expect(viewB.name).toBe('B');
   });
 
   it('butCancel#click should keep view names when view was renamed', () => {

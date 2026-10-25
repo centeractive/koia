@@ -8,6 +8,12 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.typeOf(undefined, 'en-US')).toBeUndefined();
    });
 
+   it('#typeOf should return undefined when value is blank', () => {
+      expect(DataTypeUtils.typeOf('', 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.typeOf('   ', 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.typeOf('\t\n', 'en-US')).toBeUndefined();
+   });
+
    it('#typeOf should return BOOLEAN when value is boolean', () => {
       expect(DataTypeUtils.typeOf(true, 'en-US')).toEqual(DataType.BOOLEAN);
       expect(DataTypeUtils.typeOf(false, 'en-US')).toEqual(DataType.BOOLEAN);
@@ -52,6 +58,18 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.typeOf('.', 'en-US')).toEqual(DataType.TEXT);
       expect(DataTypeUtils.typeOf(',', 'en-US')).toEqual(DataType.TEXT);
       expect(DataTypeUtils.typeOf('%', 'en-US')).toEqual(DataType.TEXT);
+   });
+
+   it('#typeOf should return TEXT when string has leading zeros', () => {
+      expect(DataTypeUtils.typeOf('00123', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('-0123', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('007', 'en-US')).toEqual(DataType.TEXT);
+   });
+
+   it('#typeOf should return TEXT when string has radix prefix', () => {
+      expect(DataTypeUtils.typeOf('0x1A', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('0b101', 'en-US')).toEqual(DataType.TEXT);
+      expect(DataTypeUtils.typeOf('0o17', 'en-US')).toEqual(DataType.TEXT);
    });
 
    it('#isNumeric should return true when column is numeric', () => {
@@ -181,6 +199,22 @@ describe('DataTypeUtils', () => {
       expect(DataTypeUtils.toTypedValue('1-', DataType.NUMBER, 'en-US')).toBeUndefined();
       expect(DataTypeUtils.toTypedValue(false, DataType.NUMBER, 'en-US')).toBeUndefined();
       expect(DataTypeUtils.toTypedValue(true, DataType.NUMBER, 'en-US')).toBeUndefined();
+   });
+
+   it('#toTypedValue should return undefined when number string has leading zeros', () => {
+      expect(DataTypeUtils.toTypedValue('00123', DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('00123', DataType.TIME, 'en-US')).toBeUndefined();
+   });
+
+   it('#toTypedValue should return undefined when number string has radix prefix', () => {
+      expect(DataTypeUtils.toTypedValue('0x1A', DataType.NUMBER, 'en-US')).toBeUndefined();
+      expect(DataTypeUtils.toTypedValue('0x1A', DataType.TIME, 'en-US')).toBeUndefined();
+   });
+
+   it('#toTypedValue should return number when string starts with single zero', () => {
+      expect(DataTypeUtils.toTypedValue('0.5', DataType.NUMBER, 'en-US')).toBe(0.5);
+      expect(DataTypeUtils.toTypedValue('-0.5', DataType.NUMBER, 'en-US')).toBe(-0.5);
+      expect(DataTypeUtils.toTypedValue('0,5', DataType.NUMBER, 'de')).toBe(0.5);
    });
 
    it('#toTypedValue should return string when value is an object', () => {

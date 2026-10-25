@@ -9,6 +9,8 @@ describe('PouchDBAccess', () => {
    const DB = 'db';
    let zone: NgZone;
    let dbAccess: PouchDBAccess;
+   const registeredInstances = () =>
+      (PouchDB as unknown as { _destructionListeners: Map<string, unknown[]> })._destructionListeners.get(DB)?.length ?? 0;
 
    beforeAll(() => {
       zone = new NgZone({ enableLongStackTrace: false });
@@ -310,6 +312,109 @@ describe('PouchDBAccess', () => {
             // then
             expect(n).toBe(3);
          });
+   });
+
+   it('#insertBulk should leave no PouchDB instance registered when written', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+
+      // when
+      await dbAccess.insertBulk(DB, [{ _id: '1' }]);
+
+      // then
+      expect(registeredInstances()).toBe(0);
+   });
+
+   it('#findById should leave no PouchDB instance registered when operation fails', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+
+      // when
+      const finding = dbAccess.findById(DB, 'missing');
+
+      // then
+      await expect(finding).rejects.toMatchObject({ status: 404 });
+      expect(registeredInstances()).toBe(0);
+   });
+
+   it('#find should share one PouchDB instance between concurrent operations', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      const query = { selector: { _id: { $gt: null } } };
+
+      // when
+      const findings = [lastValueFrom(dbAccess.find(DB, query)), lastValueFrom(dbAccess.find(DB, query))];
+
+      // then
+      expect(dbAccess['instances'].size).toBe(1);
+      expect(dbAccess['instances'].get(DB).operations).toBe(2);
+      await Promise.all(findings);
+      expect(dbAccess['instances'].size).toBe(0);
+      expect(registeredInstances()).toBe(0);
+   });
+
+   it('#findById should reject with error of operation when instance cannot be closed', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      const acquire = dbAccess['acquire'].bind(dbAccess);
+      vi.spyOn(dbAccess as unknown as { acquire: typeof acquire }, 'acquire').mockImplementation(database => {
+         const instance = acquire(database);
+         vi.spyOn(instance.db, 'close').mockRejectedValue(new Error('not closed'));
+         return instance;
+      });
+
+      // when
+      const finding = dbAccess.findById(DB, 'missing');
+
+      // then
+      await expect(finding).rejects.toEqual(expect.objectContaining({ status: 404 }));
+   });
+
+   it('#deleteDatabase should leave no PouchDB instance registered', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      await dbAccess.insertBulk(DB, [{ _id: '1' }]);
+
+      // when
+      await dbAccess.deleteDatabase(DB);
+
+      // then
+      expect(dbAccess['instances'].size).toBe(0);
+      expect(registeredInstances()).toBe(0);
+   });
+
+   it('#insertBulk should write into recreated database after database was deleted', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      await dbAccess.insertBulk(DB, [{ _id: '1' }]);
+      await dbAccess.deleteDatabase(DB);
+      await dbAccess.createDatabase(DB);
+
+      // when
+      await dbAccess.insertBulk(DB, [{ _id: '1' }, { _id: '2' }, { _id: '3' }]);
+
+      // then
+      await expect(dbAccess.countDocuments(DB)).resolves.toBe(3);
+   });
+
+   it('#countDocuments should count documents of database destroyed meanwhile by another PouchDB instance', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      await dbAccess.insertBulk(DB, [{ _id: '1' }, { _id: '2' }]);
+      await new PouchDB(DB).destroy();
+
+      // when
+      const count = await dbAccess.countDocuments(DB);
+
+      // then
+      expect(count).toBe(0);
    });
 
    function checkDocument(doc: Document, expID: string, expName: string): void {

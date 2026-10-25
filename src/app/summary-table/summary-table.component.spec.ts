@@ -484,6 +484,25 @@ describe('SummaryTableComponent', () => {
     ]);
   });
 
+  it('#onAggregationCellClick should open raw data view for matching column and empty time when time period is missing', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [findColumn('Time')];
+    context.query = new Query();
+
+    // when
+    component.onAggregationCellClick({ 'Time (per minute)': undefined, t1: 'a', 'Count': 522 });
+
+    // then
+    const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
+    expect(query.getPropertyFilters()).toEqual([
+      new PropertyFilter('Time', Operator.EMPTY, '', DataType.TIME),
+      new PropertyFilter('t1', Operator.EQUAL, 'a', DataType.TEXT)
+    ]);
+    expect(query.getValueRangeFilters()).toEqual([]);
+  });
+
   it('#sort should sort ascending', fakeAsync(() => {
 
     // given

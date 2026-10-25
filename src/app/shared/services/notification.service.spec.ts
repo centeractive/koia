@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { StatusType } from '../model';
-import { NotificationService } from './notification.service';
+import { NotificationService, messageOf } from './notification.service';
 
 describe('NotificationService', () => {
 
@@ -53,5 +53,20 @@ describe('NotificationService', () => {
 
       // then
       expect(bottomSheet.open).toHaveBeenCalled();
+   });
+});
+
+describe('messageOf', () => {
+
+   it('messageOf should return string unchanged', () => {
+      expect(messageOf('careful!')).toBe('careful!');
+   });
+
+   it('messageOf should join name and message of error', () => {
+      expect(messageOf(new Error('big problem!'))).toBe('Error: big problem!');
+   });
+
+   it('messageOf should return JSON of other object', () => {
+      expect(messageOf({ id: 1, message: 'careful!' })).toBe('{"id":1,"message":"careful!"}');
    });
 });

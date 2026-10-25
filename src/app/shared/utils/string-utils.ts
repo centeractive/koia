@@ -3,6 +3,13 @@ export class StringUtils {
    static readonly EMPTY = '';
 
    /**
+    * @returns [[true]] if the value is [[null]], [[undefined]] or a string that is empty or contains whitespace only
+    */
+   static isBlank(value: unknown): boolean {
+      return value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
+   }
+
+   /**
    * @return abbreviated string using ellipses or specified string if it doesn't exceed [[maxWidth]]
    */
    static abbreviate(str: string, maxWidth: number): string {

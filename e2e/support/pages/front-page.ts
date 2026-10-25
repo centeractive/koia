@@ -2,6 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 import type { ConnectionInfo } from 'app/shared/model/connection-info.type';
 import { Route } from 'app/shared/model/route.enum';
 import { Language, LANGUAGE_QUERY_PARAM } from 'app/shared/services/language/language';
+import { Base64Utils } from 'app/shared/utils/base64-utils';
 import { QueryParamExtractor } from 'app/shared/utils/query-param-extractor';
 
 export type LaunchSeparator = '#' | '?';
@@ -52,7 +53,7 @@ export class FrontPage {
          [QueryParamExtractor.HOST]: connection.host,
          [QueryParamExtractor.PORT]: String(connection.port),
          [QueryParamExtractor.USER]: connection.user,
-         [QueryParamExtractor.PASSWORD]: btoa(connection.password),
+         [QueryParamExtractor.PASSWORD]: Base64Utils.encodeUtf8(connection.password),
          [QueryParamExtractor.SCENE_ID]: sceneId
       });
       if (separator === '#') {

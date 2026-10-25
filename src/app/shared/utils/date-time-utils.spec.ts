@@ -277,13 +277,68 @@ describe('DateTimeUtils', () => {
     expect(date).toBeUndefined();
   });
 
-  it('#parseDate should return date when ISO-8601 compliant date but no format is provided', () => {
+  it('#parseDate should return undefined when RFC 2822 date but no format is provided', () => {
 
     // when
     const date = DateTimeUtils.parseDate('01 Jan 1970 00:00:00 GMT', undefined);
 
     // then
-    expect(date.getTime()).toBe(0);
+    expect(date).toBeUndefined();
+  });
+
+  it('#parseDate should return local date when ISO 8601 date without time and no format is provided', () => {
+
+    // when
+    const date = DateTimeUtils.parseDate('2019-05-06', undefined);
+
+    // then
+    expect(date).toEqual(new Date(2019, 4, 6));
+  });
+
+  it('#parseDate should return local date and time when ISO 8601 date/time without offset and no format is provided', () => {
+
+    // when
+    const date = DateTimeUtils.parseDate('2019-05-06T11:22:33', undefined);
+
+    // then
+    expect(date).toEqual(new Date(2019, 4, 6, 11, 22, 33));
+  });
+
+  it('#parseDate should respect offset when ISO 8601 date/time with offset and no format is provided', () => {
+
+    // when
+    const utcDate = DateTimeUtils.parseDate('2019-05-06T11:22:33Z', undefined);
+    const offsetDate = DateTimeUtils.parseDate('2019-05-06T11:22:33+02:00', undefined);
+
+    // then
+    expect(utcDate.getTime()).toBe(Date.UTC(2019, 4, 6, 11, 22, 33));
+    expect(offsetDate.getTime()).toBe(Date.UTC(2019, 4, 6, 9, 22, 33));
+  });
+
+  it('#parseDate should return undefined when value is no ISO 8601 date and no format is provided', () => {
+    expect(DateTimeUtils.parseDate('06.05.2019', undefined)).toBeUndefined();
+    expect(DateTimeUtils.parseDate('05/06/2019', undefined)).toBeUndefined();
+    expect(DateTimeUtils.parseDate('May 6, 2019', undefined)).toBeUndefined();
+    expect(DateTimeUtils.parseDate('2019-05-06 11:22:33', undefined)).toBeUndefined();
+  });
+
+  it('#parseDate should return undefined when ISO 8601 time without date and no format is provided', () => {
+    expect(DateTimeUtils.parseDate('11:22', undefined)).toBeUndefined();
+    expect(DateTimeUtils.parseDate('T11:22:33', undefined)).toBeUndefined();
+  });
+
+  it('#parseDate should return local date when ISO 8601 year or basic date and no format is provided', () => {
+    for (const { value, expected } of [
+      { value: '2019', expected: new Date(2019, 0, 1) },
+      { value: '20190506', expected: new Date(2019, 4, 6) }
+    ]) {
+
+      // when
+      const date = DateTimeUtils.parseDate(value, undefined);
+
+      // then
+      expect(date).toEqual(expected);
+    }
   });
 
   it('#parseDate should return date when ISO-8601 compliant date and format', () => {

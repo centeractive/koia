@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ConnectionInfo, Document, HTTPMethod, Scene } from 'app/shared/model';
 import { CommonUtils, LogUtils } from 'app/shared/utils';
+import { Base64Utils } from 'app/shared/utils/base64-utils';
 import { Observable, lastValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DB } from '../db.type';
@@ -31,7 +32,8 @@ export class CouchDBService implements DB {
   private httpOptions: HttpOptions;
 
   constructor(private http: HttpClient) {
-    this.connect(this.config.readConnectionInfo());
+    // DBService.initBackend accesses CouchDB itself and handles its failure
+    this.connect(this.config.readConnectionInfo()).catch(() => undefined);
   }
 
   /**
@@ -54,9 +56,11 @@ export class CouchDBService implements DB {
   }
 
   private async connect(connectionInfo: ConnectionInfo): Promise<string> {
+    const httpOptions = this.createHttpOptions(connectionInfo);
+    const baseURL = CouchDBConfig.urlOf(connectionInfo);
     this.connectionInfo = connectionInfo;
-    this.httpOptions = this.createHttpOptions();
-    this.baseURL = CouchDBConfig.urlOf(connectionInfo);
+    this.httpOptions = httpOptions;
+    this.baseURL = baseURL;
     return this.listDatabases()
       .then(() => 'Connection to CouchDB at ' + this.baseURL + ' established');
   }
@@ -65,11 +69,15 @@ export class CouchDBService implements DB {
     return CommonUtils.clone(this.connectionInfo);
   }
 
-  private createHttpOptions(): HttpOptions {
+  isConnectionSaved(): boolean {
+    return this.config.hasSavedConnectionInfo();
+  }
+
+  private createHttpOptions(connectionInfo: ConnectionInfo): HttpOptions {
     let httpHeaders = new HttpHeaders();
     httpHeaders = httpHeaders.set('Accept', 'application/json');
     httpHeaders = httpHeaders.set('Content-type', 'application/json');
-    httpHeaders = httpHeaders.set('Authorization', 'Basic ' + btoa(this.connectionInfo.user + ':' + this.connectionInfo.password));
+    httpHeaders = httpHeaders.set('Authorization', 'Basic ' + Base64Utils.encodeUtf8(connectionInfo.user + ':' + connectionInfo.password));
     return { headers: httpHeaders, withCredentials: true };
   }
 

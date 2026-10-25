@@ -4,6 +4,8 @@ import { ArrayUtils } from './array-utils';
 
 export class DateTimeUtils {
 
+  private static readonly ISO_DATE_START = /^[+-]?\d{4}/;
+
   static maxTimeUnit(...timeUnits: TimeUnit[]): TimeUnit {
     if (!timeUnits.length) {
       return undefined;
@@ -77,21 +79,25 @@ export class DateTimeUtils {
   }
 
   /**
-   * @param value string representation of the date/time that must match the specified [[ngFormat]]
-   * or a simplification of the ISO 8601 calendar date extended format when [[ngFormat]] is missing
+   * @param value string representation of the date/time that must match the specified [[ngFormat]] or, when [[ngFormat]]
+   * is missing, an ISO 8601 date with optional time (date/times without offset are interpreted in local time)
    * @param ngFormat Angular date/time format according to https://angular.io/api/common/DatePipe
    * @returns the parsed [[Date]] or [[undefined]] when parsing fails
    */
   static parseDate(value: string, ngFormat: string, locale?: string): Date {
     if (value) {
-      if (ngFormat) {
-        const dateTime = DateTime.fromFormat(value, ngFormat, { locale: locale ? locale : 'en' });
-        return dateTime.isValid ? dateTime.toJSDate() : undefined;
-      }
-      const date = new Date(value);
-      return isNaN(date.getTime()) ? undefined : date;
+      const dateTime = ngFormat ?
+        DateTime.fromFormat(value, ngFormat, { locale: locale ? locale : 'en' }) : DateTimeUtils.fromISODate(value);
+      return dateTime?.isValid ? dateTime.toJSDate() : undefined;
     }
     return undefined;
+  }
+
+  /**
+   * luxon also accepts a time without date, which would silently become a time of today
+   */
+  private static fromISODate(value: string): DateTime | undefined {
+    return DateTimeUtils.ISO_DATE_START.test(value) ? DateTime.fromISO(value) : undefined;
   }
 
   /**

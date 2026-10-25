@@ -35,6 +35,19 @@ describe('LaunchParamsService', () => {
       expect(params.get(QueryParamExtractor.SCENE_ID)).toBe('7');
    });
 
+   it('#paramsOf should return params of loaded fragment whose password contains raw plus', () => {
+
+      // given
+      const hash = '#host=server1&port=5984&user=test&pw=Pj8+&scene_id=7';
+      const service = serviceOf(hash);
+
+      // when
+      const params = service.paramsOf(queryParams, decodeURIComponent(hash.substring(1)));
+
+      // then
+      expect(new QueryParamExtractor(params).getCouchDBConnectionInfo().password).toBe('>?>');
+   });
+
    it('#paramsOf should return query params when router shows no fragment', () => {
 
       // given

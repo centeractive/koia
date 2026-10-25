@@ -62,7 +62,7 @@ export class SavedViewsService {
       const scene = this.dbService.getActiveScene();
       this.dialogService.showManageViewDialog<SavedView>({
          views: this.viewPersistenceService.findSavedViews(scene),
-         updateViews: (deleted, renamed) => this.viewPersistenceService.updateViews(scene, deleted, renamed).then(onUpdated)
+         updateViews: (deleted, renames) => this.viewPersistenceService.updateViews(scene, deleted, renames).then(onUpdated)
       });
    }
 }

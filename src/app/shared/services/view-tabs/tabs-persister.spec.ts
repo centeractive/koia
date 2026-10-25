@@ -5,6 +5,7 @@ import { DBService } from '../backend';
 import { createTabDef } from './tab-defs';
 import { TabsPersister } from './tabs-persister';
 import type { Mock } from 'vitest';
+import { Subject } from 'rxjs';
 
 describe('TabsPersister', () => {
 
@@ -15,10 +16,13 @@ describe('TabsPersister', () => {
    let persister: TabsPersister;
    let doc: SceneTabs;
    let tabs: TabDef[];
+   let discarded: Subject<string>;
 
    beforeEach(() => {
       vi.useFakeTimers();
       dbService = new DBService(null, null);
+      discarded = new Subject<string>();
+      Object.assign(dbService, { sceneDiscarded$: discarded });
       notificationService = new NotificationServiceMock();
       vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
       saveSceneTabsSpy = vi.spyOn(dbService, 'saveSceneTabs').mockImplementation(d => Promise.resolve(d));
@@ -270,6 +274,92 @@ describe('TabsPersister', () => {
 
       // then
       expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#request should not persist tabs of discarded scene once delay elapsed', async () => {
+
+      // given
+      discarded.next('s1');
+
+      // when
+      persister.request(() => tabs);
+      await vi.advanceTimersByTimeAsync(TabsPersister.DELAY_MS);
+
+      // then
+      expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#persistNow should not persist tabs of discarded scene', async () => {
+
+      // given
+      discarded.next('s1');
+
+      // when
+      await persister.persistNow(() => tabs);
+
+      // then
+      expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#persistNow should skip queued write of discarded scene', async () => {
+
+      // given
+      const write = persister.persistNow(() => tabs);
+
+      // when
+      discarded.next('s1');
+      await write;
+
+      // then
+      expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#persistNow should persist tabs when other scene was discarded', async () => {
+
+      // given
+      discarded.next('s2');
+
+      // when
+      await persister.persistNow(() => tabs);
+
+      // then
+      expect(saveSceneTabsSpy).toHaveBeenCalledTimes(1);
+   });
+
+   it('#persistNow should persist tabs of scene reset after its scene was discarded', async () => {
+
+      // given
+      discarded.next('s1');
+      persister.reset({ _id: 's1_tabs', tabs: [] });
+
+      // when
+      await persister.persistNow(() => tabs);
+
+      // then
+      expect(saveSceneTabsSpy).toHaveBeenCalledTimes(1);
+      expect(saveSceneTabsSpy.mock.lastCall[0]).toEqual({ _id: 's1_tabs', tabs });
+   });
+
+   it('should ignore discarded scene when no tabs were reset', async () => {
+
+      // given
+      const otherPersister = new TabsPersister(dbService, notificationService, bottomSheet);
+
+      // when
+      discarded.next('s1');
+
+      // then
+      await otherPersister.persistNow(() => tabs);
+      expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#ngOnDestroy should stop listening to discarded scenes', () => {
+
+      // when
+      persister.ngOnDestroy();
+
+      // then
+      expect(discarded.observed).toBe(false);
    });
 
    it('#reportError should notify message of error object', () => {

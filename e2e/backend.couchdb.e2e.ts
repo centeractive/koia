@@ -1,3 +1,4 @@
+import { Page } from '@playwright/test';
 import { SORT_INDICATORS } from 'app/raw-data/sort-indicators';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { CouchDBConfig } from 'app/shared/services/backend/couchdb/couchdb-config';
@@ -9,16 +10,52 @@ import { Texts } from './support/texts';
 const texts = new Texts(DEFAULT_LANGUAGE);
 const UNREACHABLE_PORT = COUCHDB_CONNECTION.port + 1;
 const RENAMED_TAB_TITLE = 'Revenue by region';
+const COUCHDB_UNUSABLE = texts.get('front.storage.couchDBUnusable', { error: '' }).trim();
+
+/**
+ * lets the first database listing of the CouchDB through and aborts every later one
+ */
+async function failDatabaseListingsAfterFirst(page: Page): Promise<void> {
+   let listings = 0;
+   await page.route(COUCHDB_URL + '_all_dbs', route =>
+      route.request().method() === 'GET' && ++listings > 1 ? route.abort() : route.fallback());
+}
 
 test('connecting through the connection dialog switches the data storage to CouchDB', async ({ context, front, connectionDialog, notifications }) => {
    await presetConnectionInfo(context, { ...COUCHDB_CONNECTION, port: UNREACHABLE_PORT });
    await front.open(DEFAULT_LANGUAGE);
+   expect(await notifications.dismiss(StatusType.WARNING)).toContain(COUCHDB_UNUSABLE);
 
    await front.connectToCouchDB();
    await connectionDialog.connectToPort(COUCHDB_CONNECTION.port);
 
    await expect(notifications.pane(StatusType.SUCCESS)).toContainText(COUCHDB_URL);
    await expect(front.storage).toHaveText(texts.get('front.storage.storedIn') + ' ' + COUCHDB_STORAGE);
+});
+
+test('connecting through the connection dialog warns and keeps the browser storage when CouchDB fails after connecting',
+   async ({ context, page, front, connectionDialog, notifications }) => {
+      await presetConnectionInfo(context, { ...COUCHDB_CONNECTION, port: UNREACHABLE_PORT });
+      await front.open(DEFAULT_LANGUAGE);
+      await notifications.dismiss(StatusType.WARNING);
+      await failDatabaseListingsAfterFirst(page);
+
+      await front.connectToCouchDB();
+      await connectionDialog.connectToPort(COUCHDB_CONNECTION.port);
+
+      await expect(notifications.pane(StatusType.WARNING)).toContainText(COUCHDB_UNUSABLE);
+      await expect(front.storage).toHaveText(texts.get('front.storage.storedIn') + ' ' + texts.get('front.storage.thisBrowser'));
+   });
+
+test('invocation reports that CouchDB cannot be used when it fails after connecting', async ({ context, page, seededScene, front, notifications }) => {
+   await presetConnectionInfo(context, { ...COUCHDB_CONNECTION, port: UNREACHABLE_PORT });
+   await failDatabaseListingsAfterFirst(page);
+
+   await front.launch(COUCHDB_CONNECTION, seededScene.id);
+
+   const message = await notifications.dismiss(StatusType.ERROR);
+   expect(message).toContain(texts.get('front.externalInvocationFailed', { id: seededScene.id }));
+   expect(message).toContain(COUCHDB_UNUSABLE);
 });
 
 test('invocation with CouchDB parameters in URL fragment shows the raw data of the scene', async ({ seededScene, front, rawData }) => {

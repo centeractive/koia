@@ -5,19 +5,26 @@ import { Column, DataType, Document, Operator, Page, Query, Scene, SceneActivati
 import { SceneTabs } from 'app/shared/model/view-config';
 import { rejectionOf } from 'app/shared/scene-format/scene-format-rejection';
 import { SceneValidator } from 'app/shared/scene-format/scene-validator';
-import { QueryUtils } from 'app/shared/utils';
+import { CommonUtils, QueryUtils } from 'app/shared/utils';
 import { storedColumnsOf } from 'app/shared/utils/column-utils';
 import { withComputedValues } from 'app/shared/utils/computation-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
-import { Observable, lastValueFrom, map } from 'rxjs';
-import { CouchDBService, SortLimitationWorkaround } from './couchdb';
+import { Observable, Subject, lastValueFrom, map, of } from 'rxjs';
+import { CouchDBService } from './couchdb';
 import { CouchDBConstants } from './couchdb/couchdb-constants';
 import { DB } from './db.type';
 import { MangoQueryBuilder } from './mango/mango-query-builder';
 import { QueryConverter } from './mango/query-converter';
 import { PouchDBAccess } from './pouchdb';
 import { SCENES_DB, sceneActivationId, sceneTabsId } from './scenes-db';
+
+/**
+ * CouchDB cannot be used, the browser storage is used instead
+ */
+export interface CouchDBFallback {
+  couchDBError: string | object;
+}
 
 @Injectable()
 export class DBService {
@@ -27,10 +34,17 @@ export class DBService {
   static readonly MAX_DB_COUNT = 100;
 
   private db: DB;
+  private pouchDBAccess: PouchDBAccess;
   private dbPrefix = '';
   private queryConverter: QueryConverter;
   private activeScene: Scene;
   private readonly sceneValidator = new SceneValidator();
+  private readonly sceneDiscards = new Subject<string>();
+
+  /**
+   * emits the _id of each scene that is deleted or whose storage is given up, its open tabs must not be written anymore
+   */
+  readonly sceneDiscarded$ = this.sceneDiscards.asObservable();
 
   constructor(private couchDBService: CouchDBService, private readonly zone: NgZone) { }
 
@@ -46,28 +60,39 @@ export class DBService {
    * @param force [[true]] to initialize the backend regardless if it was already initialized before,
    * [[false]] to initialize the backend only in case it was not already initialized before
    */
-  async initBackend(force: boolean): Promise<unknown> {
-    if (!this.db || force) {
-      this.db = null;
-      return this.couchDBService.listDatabases()
-        .then(dbs => {
-          this.db = this.couchDBService;
-          this.queryConverter = new QueryConverter(false);
-          if (!dbs.includes(this.scenesDbName())) {
-            return this.createScenesDB();
-          }
-        })
-        .catch(err => {
-          console.warn('CouchDB cannot be accessed, browser storage is used instead', err);
-          return this.useIndexedDb();
-        });
+  async initBackend(force: boolean): Promise<CouchDBFallback | undefined> {
+    if (this.db && !force) {
+      return undefined;
+    }
+    this.discardActiveScene();
+    this.db = null;
+    try {
+      const dbs = await this.couchDBService.listDatabases();
+      this.db = this.couchDBService;
+      this.queryConverter = new QueryConverter(false);
+      if (!dbs.includes(this.scenesDbName())) {
+        await this.createScenesDB();
+      }
+      return undefined;
+    } catch (couchDBError) {
+      console.warn('CouchDB cannot be accessed, browser storage is used instead', couchDBError);
+      await this.useIndexedDb();
+      return { couchDBError };
     }
   }
 
   useIndexedDb(): Promise<unknown> {
-    this.db = new PouchDBAccess(this.zone);
+    this.discardActiveScene();
+    this.db = this.pouchDBAccess ??= new PouchDBAccess(this.zone);
     this.queryConverter = new QueryConverter(true);
     return this.createScenesDB();
+  }
+
+  private discardActiveScene(): void {
+    if (this.activeScene) {
+      this.sceneDiscards.next(this.activeScene._id);
+      this.activeScene = undefined;
+    }
   }
 
   private async createScenesDB(): Promise<unknown> {
@@ -77,16 +102,31 @@ export class DBService {
   }
 
   /**
-   * @returns the name of a database that does not exist yet
+   * @returns the name of a database that neither exists nor is referred to by a scene
    */
   async findFreeDatabaseName(): Promise<string> {
-    if (this.isIndexedDbInUse()) {
-      return this.findSceneInfos()
-        .then(infos => this.findFreeDBName(infos.map(i => i.database)));
-    } else {
-      return this.couchDBService.listDatabases()
-        .then(dbs => this.findFreeDBName(dbs));
+    const takenNames = await this.sceneDatabaseNames();
+    if (this.isCouchDbInUse()) {
+      takenNames.push(...await this.couchDBService.listDatabases());
     }
+    for (let i = 1; i <= DBService.MAX_DB_COUNT; i++) {
+      const dbName = this.dbPrefix + DBService.DATA + '_' + i;
+      if (!takenNames.includes(dbName) && !await this.containsPouchDocuments(dbName)) {
+        return dbName;
+      }
+    }
+    throw new Error('No free database table available (maximum of ' + DBService.MAX_DB_COUNT + ' reached)');
+  }
+
+  private async sceneDatabaseNames(): Promise<string[]> {
+    return (await this.findSceneInfos()).map(si => si.database);
+  }
+
+  /**
+   * PouchDB creates a database on first access, a database without documents is as good as a missing one
+   */
+  private async containsPouchDocuments(database: string): Promise<boolean> {
+    return this.isIndexedDbInUse() && await this.db.countDocuments(database) > 0;
   }
 
   isIndexedDbInUse(): boolean {
@@ -99,16 +139,6 @@ export class DBService {
 
   getMaxDataItemsPerScene(): number {
     return this.db ? this.db.getMaxDataItemsPerScene() : undefined;
-  }
-
-  private findFreeDBName(existingDBNames: string[]): string {
-    for (let i = 1; i <= DBService.MAX_DB_COUNT; i++) {
-      const dbName = this.dbPrefix + DBService.DATA + '_' + i;
-      if (!existingDBNames.includes(dbName)) {
-        return dbName;
-      }
-    }
-    throw new Error('No free database table available (maximum of ' + DBService.MAX_DB_COUNT + ' reached)');
   }
 
   async findSceneInfos(): Promise<SceneInfo[]> {
@@ -129,20 +159,47 @@ export class DBService {
 
   async persistScene(scene: Scene, activate: boolean, promiseMonitor?: PromiseProgressMonitor): Promise<Scene> {
     promiseMonitor = promiseMonitor ?? new PromiseProgressMonitor();
-    return promiseMonitor.add(LanguageService.instant('scene.task.insertScene'), this.db.insert(this.scenesDbName(), scene))
-      .then(LanguageService.instant('scene.task.createDatabase'), () => {
-        if (activate) {
-          this.activeScene = scene;
-          console.log('scene activated (id: ' + scene._id + ', rev: ' + scene._rev + ')');
-        }
-        return this.db.createDatabase(scene.database);
-      })
-      .then(LanguageService.instant('scene.task.indexColumns'), () => Promise.all(scene.columns
-        .filter(c => c.indexed)
-        .map(c => promiseMonitor.addUnchained(LanguageService.instant('scene.task.indexColumn', { column: c.name }),
-          this.db.createIndex(scene.database, c.name)))))
-      .unwrap()
-      .then(() => scene);
+    await promiseMonitor.addUnchained(LanguageService.instant('scene.task.createDatabase'), this.createSceneDatabase(scene.database));
+    try {
+      await promiseMonitor.add(LanguageService.instant('scene.task.insertScene'), this.db.insert(this.scenesDbName(), scene))
+        .then(LanguageService.instant('scene.task.indexColumns'), () => Promise.all(scene.columns
+          .filter(c => c.indexed)
+          .map(c => promiseMonitor.addUnchained(LanguageService.instant('scene.task.indexColumn', { column: c.name }),
+            this.db.createIndex(scene.database, c.name)))))
+        .unwrap();
+    } catch (err) {
+      await this.discardIncompleteScene(scene);
+      throw err;
+    }
+    if (activate) {
+      this.activeScene = scene;
+      console.log('scene activated (id: ' + scene._id + ', rev: ' + scene._rev + ')');
+    }
+    return scene;
+  }
+
+  private async createSceneDatabase(database: string): Promise<void> {
+    if ((await this.sceneDatabaseNames()).includes(database) || await this.containsPouchDocuments(database)) {
+      throw this.databaseInUseError(database);
+    }
+    try {
+      await this.db.createDatabase(database);
+    } catch (err) {
+      throw err?.status === 412 ? this.databaseInUseError(database) : err;
+    }
+  }
+
+  private databaseInUseError(database: string): Error {
+    return new Error(LanguageService.instant('scene.databaseInUse', { database }));
+  }
+
+  private async discardIncompleteScene(scene: Scene): Promise<void> {
+    try {
+      await (scene._rev ? this.deleteScene(scene) : this.deleteSceneDatabase(scene));
+    } catch (err) {
+      console.warn('incompletely persisted scene ' + scene._id + ' cannot be removed', err);
+    }
+    delete scene._rev;
   }
 
   async updateScene(scene: Scene): Promise<Scene> {
@@ -165,25 +222,40 @@ export class DBService {
     }
   }
 
+  /**
+   * deletes the database before the scene document, so that a failure leaves a scene that can be deleted again,
+   * open tabs and activation time go last since they're useless without the scene
+   */
   async deleteScene(sceneInfo: SceneInfo): Promise<void> {
     if (this.activeScene && this.activeScene._id === sceneInfo._id) {
       this.activeScene = undefined;
     }
-    return this.db.delete(this.scenesDbName(), sceneInfo)
-      .then(() => this.deleteSceneDatabase(sceneInfo))
-      .then(() => this.deleteOptional(DBService.sceneTabsId(sceneInfo._id), 'open tabs', sceneInfo._id))
-      .then(() => this.deleteOptional(sceneActivationId(sceneInfo._id), 'activation time', sceneInfo._id));
+    this.sceneDiscards.next(sceneInfo._id);
+    await this.deleteSceneDatabase(sceneInfo);
+    await this.db.delete(this.scenesDbName(), sceneInfo);
+    await this.deleteOptional(DBService.sceneTabsId(sceneInfo._id), 'open tabs', sceneInfo._id);
+    await this.deleteOptional(sceneActivationId(sceneInfo._id), 'activation time', sceneInfo._id);
   }
 
   /**
-   * a scene written by a third party may refer to the scenes database, which must never be deleted along with it
+   * a scene written by a third party may refer to the scenes database or to the database of another scene,
+   * which must never be deleted along with it
    */
-  private async deleteSceneDatabase(sceneInfo: SceneInfo): Promise<unknown> {
+  private async deleteSceneDatabase(sceneInfo: SceneInfo): Promise<void> {
     if (sceneInfo.database === this.scenesDbName()) {
       console.warn('scene ' + sceneInfo._id + ' refers to the scenes database, which is kept');
-      return undefined;
+      return;
     }
-    return this.db.deleteDatabase(sceneInfo.database);
+    if ((await this.findSceneInfos()).some(si => si._id !== sceneInfo._id && si.database === sceneInfo.database)) {
+      console.warn('database ' + sceneInfo.database + ' of scene ' + sceneInfo._id + ' is used by another scene, it is kept');
+      return;
+    }
+    await this.db.deleteDatabase(sceneInfo.database)
+      .catch(err => {
+        if (err?.status !== 404) {
+          throw err;
+        }
+      });
   }
 
   private async deleteOptional(docId: string, label: string, sceneId: string): Promise<void> {
@@ -303,8 +375,7 @@ export class DBService {
   }
 
   async requestEntriesPage(query: Query, prevPage?: Page): Promise<Page> {
-    if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query) &&
-      !SortLimitationWorkaround.isCouchDbWithChangedSort(this, query, prevPage)) {
+    if (prevPage && QueryUtils.areFiltersEqual(query, prevPage.query) && CommonUtils.compare(query.getSort(), prevPage.query.getSort())) {
       return lastValueFrom(this.findEntriesWithComputedValues(query, false))
         .then(entries => this.toPage(query, entries, prevPage.totalRowCount));
     } else {
@@ -328,8 +399,14 @@ export class DBService {
     };
   }
 
+  /**
+   * both backends omit entries lacking the value of the sort field, they're counted with the selector and sort of the entries query
+   */
   private async countMatchingEntries(query: Query): Promise<number> {
-    if (query.hasFilter() || SortLimitationWorkaround.isCouchDbWithSort(this, query)) {
+    if (this.matchesNothing(query)) {
+      return 0;
+    }
+    if (query.hasFilter() || query.hasSort()) {
       const mangoQuery = this.queryConverter.queryForAllMatchingIds(storedColumnsOf(this.activeScene.columns), query);
       const objects = await lastValueFrom(this.db.find(this.activeScene.database, mangoQuery));
       return objects.length;
@@ -346,10 +423,24 @@ export class DBService {
       .then(n => n - this.activeScene.columns.filter(c => c.indexed).length);
   }
 
+  /**
+   * @param indexedColumnsOnly true to fetch the values of indexed columns only, filters apply to all stored columns anyway
+   */
   findEntries(query: Query, indexedColumnsOnly: boolean): Observable<Document[]> {
-    const columns = indexedColumnsOnly ? this.activeScene.columns.filter(c => c.indexed) : storedColumnsOf(this.activeScene.columns);
-    const mangoQuery = this.queryConverter.toMango(columns, query);
+    if (this.matchesNothing(query)) {
+      return of([]);
+    }
+    const columns = storedColumnsOf(this.activeScene.columns);
+    const fieldColumns = indexedColumnsOnly ? this.activeScene.columns.filter(c => c.indexed) : columns;
+    const mangoQuery = this.queryConverter.toMango(columns, query, fieldColumns);
     return this.db.find(this.activeScene.database, mangoQuery);
+  }
+
+  /**
+   * a full text filter matches nothing when the scene has no stored text column
+   */
+  private matchesNothing(query: Query): boolean {
+    return query.hasFullTextFilter() && !storedColumnsOf(this.activeScene.columns).some(c => c.dataType === DataType.TEXT);
   }
 
   /**

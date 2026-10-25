@@ -199,9 +199,15 @@ describe('QueryConverter', () => {
       // then
       const expected = {
          selector: {
-            _id: { $gt: null }
+            $and: [
+               { _id: { $gt: null } },
+               { Level: { $gte: null } }
+            ]
          },
          fields: [CouchDBConstants._ID],
+         sort: [
+            { Level: 'desc' }
+         ],
          limit: MangoQueryBuilder.LIMIT
       };
       expect(mangoQuery).toEqual(expected);
@@ -242,6 +248,51 @@ describe('QueryConverter', () => {
             ]
          },
          fields: [CouchDBConstants._ID, 'ID', 'Time', 'Level', 'Data', 'Host', 'Path', 'Amount'],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#toMango should fetch field columns only but search all text columns', () => {
+
+      // given
+      query.setFullTextFilter('abc');
+      const fieldColumns = columns.filter(c => c.name === 'ID' || c.name === 'Level');
+
+      // when
+      const mangoQuery = queryConverter.toMango(columns, query, fieldColumns);
+
+      // then
+      const expected = {
+         selector: {
+            $or: [
+               { Level: { $regex: '(?i).*abc.*' } },
+               { Data: { $regex: '(?i).*abc.*' } },
+               { Host: { $regex: '(?i).*abc.*' } },
+               { Path: { $regex: '(?i).*abc.*' } }
+            ]
+         },
+         fields: [CouchDBConstants._ID, 'ID', 'Level'],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#toMango should convert number filter value of column that is not fetched', () => {
+
+      // given
+      query.addPropertyFilter(new PropertyFilter('Amount', Operator.GREATER_THAN, '5'));
+      const fieldColumns = columns.filter(c => c.name === 'ID');
+
+      // when
+      const mangoQuery = queryConverter.toMango(columns, query, fieldColumns);
+
+      // then
+      const expected = {
+         selector: {
+            Amount: { $gt: 5 }
+         },
+         fields: [CouchDBConstants._ID, 'ID'],
          limit: MangoQueryBuilder.LIMIT
       };
       expect(mangoQuery).toEqual(expected);
