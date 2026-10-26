@@ -252,7 +252,10 @@
       "nameUnderscore": "Name darf nicht mit _ beginnen",
       "nameTooLong": "Name darf höchstens {{max}} Zeichen lang sein",
       "incompatibleTypes": "Spalte enthält Werte mit unverträglichen Datentypen",
-      "nameInUse": "Name wird bereits verwendet"
+      "nameInUse": "Name wird bereits verwendet",
+      "addPatternTooltip": "Musterspalte hinzufügen, die variable Teile wie IDs und Zahlen maskiert",
+      "patternSuffix": "Muster",
+      "patternOf": "Muster von {{column}}"
     },
     "mapping": {
       "columnError": "Spalte '{{column}}': {{error}}",
@@ -303,7 +306,10 @@
       "unit": {
         "chars": "Zeichen",
         "pixel": "Pixel"
-      }
+      },
+      "addPattern": "Musterspalte hinzufügen",
+      "patternProgress": "{{count}} Zeilen verarbeitet",
+      "patternAdded": "Musterspalte \"{{column}}\" hinzugefügt"
     }
   },
   "dialog": {

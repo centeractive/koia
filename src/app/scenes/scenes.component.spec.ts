@@ -484,6 +484,39 @@ describe('ScenesComponent', () => {
     expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'conflict');
   }));
 
+  it('editing in scene table should disable filter, delete and cancel buttons', fakeAsync(() => {
+
+    // when
+    sceneTable().editingChange.emit(true);
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(editLockedControls().map(c => c.disabled)).toEqual([true, true, true]);
+  }));
+
+  it('end of editing should enable filter, delete and cancel buttons', fakeAsync(() => {
+
+    // given
+    sceneTable().editingChange.emit(true);
+    fixture.detectChanges();
+    flush();
+
+    // when
+    sceneTable().editingChange.emit(false);
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(editLockedControls().map(c => c.disabled)).toEqual([false, false, false]);
+  }));
+
+  function editLockedControls(): (HTMLInputElement | HTMLButtonElement)[] {
+    return ['#div_filter input', '#but_delete_scenes', '#but_cancel'].map(selector => fixture.nativeElement.querySelector(selector));
+  }
+
   it('#click on cancel button should navigate to previous page', () => {
 
     // given

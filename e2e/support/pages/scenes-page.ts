@@ -13,6 +13,13 @@ export class ScenesPage {
    readonly saveEditButton: Locator;
    readonly editRow: Locator;
    readonly tableContainer: Locator;
+   readonly moreButtons: Locator;
+   readonly filterInput: Locator;
+   readonly deleteAllButton: Locator;
+   readonly cancelButton: Locator;
+   readonly continueButton: Locator;
+   readonly activateButtons: Locator;
+   readonly activeChips: Locator;
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
@@ -24,11 +31,18 @@ export class ScenesPage {
       this.saveEditButton = page.locator('.but_save_edit');
       this.editRow = page.locator('.edit_row');
       this.tableContainer = page.locator('koia-scene-table .table_container');
+      this.moreButtons = page.locator('.but_more');
+      this.filterInput = page.locator('#div_filter input');
+      this.deleteAllButton = page.locator('#but_delete_scenes');
+      this.cancelButton = page.locator('#but_cancel');
+      this.continueButton = page.locator('.continueActiveScene');
+      this.activateButtons = page.locator('.activateScene');
+      this.activeChips = page.locator('.active-chip');
       this.notifications = new Notifications(page);
    }
 
    async filter(text: string): Promise<void> {
-      await this.page.locator('#div_filter input').fill(text);
+      await this.filterInput.fill(text);
    }
 
    async activate(sceneName: string): Promise<void> {
@@ -43,6 +57,16 @@ export class ScenesPage {
       await this.row(sceneName).locator('.but_more').click();
       await this.page.locator('.menu_item_delete').click();
       return this.notifications.dismiss(StatusType.SUCCESS);
+   }
+
+   async showDetails(sceneName: string): Promise<void> {
+      await this.row(sceneName).locator('.but_more').click();
+      await this.page.locator('.menu_item_details').click();
+   }
+
+   async continueActive(): Promise<void> {
+      await this.continueButton.click();
+      await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 
    async startEdit(sceneName: string): Promise<void> {

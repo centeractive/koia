@@ -15,6 +15,10 @@ export class ScenePage {
    readonly detectColumnsButton: Locator;
    readonly columnNameErrors: Locator;
    readonly dataTypes: Locator;
+   readonly columnNames: Locator;
+   readonly addPatternButtons: Locator;
+   readonly patternIcons: Locator;
+   readonly displayFormatValues: Locator;
    readonly preview: RawDataTable;
    readonly previewRowWarnings: Locator;
    private readonly notifications: Notifications;
@@ -30,6 +34,10 @@ export class ScenePage {
       this.preview = new RawDataTable(page.locator('koia-scene-preview'));
       this.previewRowWarnings = page.locator('koia-scene-preview .img_row_warning');
       this.dataTypes = page.locator('koia-column-mapping .select_data_type');
+      this.columnNames = page.locator('koia-column-mapping .column_name input');
+      this.addPatternButtons = page.locator('koia-column-mapping .but_add_pattern');
+      this.patternIcons = page.locator('koia-column-mapping .icon_pattern');
+      this.displayFormatValues = page.locator('koia-column-mapping .select_display_format .mat-mdc-select-value');
       this.notifications = new Notifications(page);
    }
 
@@ -54,6 +62,18 @@ export class ScenePage {
    async changeDataType(columnIndex: number, dataTypeLabel: string): Promise<void> {
       await this.dataTypes.nth(columnIndex).click();
       await this.page.getByRole('option', { name: dataTypeLabel, exact: true }).click();
+   }
+
+   async selectDisplayFormat(text: string): Promise<void> {
+      await this.page.locator('koia-column-mapping .select_display_format').click();
+      await this.page.getByRole('option', { name: text, exact: true }).click();
+   }
+
+   /**
+    * adds a pattern column right after the column of the specified index
+    */
+   async addPatternColumn(columnIndex: number): Promise<void> {
+      await this.page.locator('koia-column-mapping').nth(columnIndex).locator('.but_add_pattern').click();
    }
 
    /**

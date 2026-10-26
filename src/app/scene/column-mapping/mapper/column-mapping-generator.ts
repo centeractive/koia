@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
+import { MAX_INDEXED_TEXT_LENGTH } from 'app/shared/utils/column-utils';
 import { COLUMN_NAME_MAX_LENGTH, COLUMN_NAME_PATTERN, isStoredColumnName } from 'app/shared/validator/column-name-validation';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 import { TimeGuesser } from './time-guesser';
@@ -15,7 +16,6 @@ export class ColumnMappingGenerator {
 
    private static readonly MIN_WIDTH = 10;
    private static readonly MAX_WIDTH = 300;
-   private static readonly MAX_TEXT_LENGTH_TO_BE_INDEXED = 100;
    private static readonly DATESTRING_MIN_EXPECTED_DIGITS = 2;
 
    private datePipe = new DatePipe('en-US');
@@ -119,7 +119,7 @@ export class ColumnMappingGenerator {
       if (typeof value === 'object') {
          value = JSON.stringify(value, undefined, '  ');
       }
-      return typeof value !== 'string' || value.length <= ColumnMappingGenerator.MAX_TEXT_LENGTH_TO_BE_INDEXED;
+      return typeof value !== 'string' || value.length <= MAX_INDEXED_TEXT_LENGTH;
    }
 
    private computeWidth(value: SourceValue, columnPair: ColumnPair): number {

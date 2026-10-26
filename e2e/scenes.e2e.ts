@@ -70,6 +70,25 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scenes.rows.first()).toContainText('edited description');
    });
 
+   test('editing the active sample scene disables other actions and hides its active chip', async ({ scenes }) => {
+      const otherControls = [scenes.filterInput, scenes.deleteAllButton, scenes.cancelButton, scenes.continueButton, scenes.activateButtons];
+
+      await scenes.startEdit(fruitSalesSampleOf('en').sceneName);
+
+      await expect(scenes.moreButtons).toHaveCount(2);
+      for (const control of [...await scenes.moreButtons.all(), ...otherControls]) {
+         await expect(control).toBeDisabled();
+      }
+      await expect(scenes.activeChips).toHaveCount(0);
+
+      await scenes.editNameInput.press('Escape');
+
+      for (const control of [...await scenes.moreButtons.all(), ...otherControls]) {
+         await expect(control).toBeEnabled();
+      }
+      await expect(scenes.activeChips).toHaveCount(1);
+   });
+
    test('edit rejects name of other scene', async ({ scenes }) => {
       await scenes.startEdit(ORDERS_CSV.name);
       await scenes.editNameInput.fill(fruitSalesSampleOf('en').sceneName);

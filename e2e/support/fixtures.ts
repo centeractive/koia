@@ -4,6 +4,7 @@ import { ConnectionDialog } from './components/connection-dialog';
 import { ConfirmDialog, ManageViewsDialog, RawDataDialog } from './components/dialogs';
 import { LanguageSelect } from './components/language-select';
 import { Notifications } from './components/notifications';
+import { SceneDetailsDialog } from './components/scene-details-dialog';
 import { TabBar } from './components/tab-bar';
 import { DashboardPage } from './pages/dashboard-page';
 import { FrontPage } from './pages/front-page';
@@ -27,6 +28,7 @@ interface PageObjects {
    computedColumnDialog: ComputedColumnDialog;
    manageViewsDialog: ManageViewsDialog;
    connectionDialog: ConnectionDialog;
+   sceneDetailsDialog: SceneDetailsDialog;
 }
 
 /**
@@ -51,7 +53,8 @@ export const test = base.extend<PageObjects>({
    confirmDialog: async ({ page }, use) => use(new ConfirmDialog(page)),
    computedColumnDialog: async ({ page }, use) => use(new ComputedColumnDialog(page)),
    manageViewsDialog: async ({ page }, use) => use(new ManageViewsDialog(page)),
-   connectionDialog: async ({ page }, use) => use(new ConnectionDialog(page))
+   connectionDialog: async ({ page }, use) => use(new ConnectionDialog(page)),
+   sceneDetailsDialog: async ({ page }, use) => use(new SceneDetailsDialog(page))
 });
 
 export { expect } from '@playwright/test';

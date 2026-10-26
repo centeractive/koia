@@ -84,7 +84,22 @@ describe('DialogService', () => {
     service.showSceneDetailsDialog(scene);
 
     // then
-    expect(matDialogService.open).toHaveBeenCalledWith(SceneDetailsDialogComponent, { data: scene, panelClass: 'dialog-container' });
+    expect(matDialogService.open).toHaveBeenCalledWith(SceneDetailsDialogComponent,
+      { data: { scene, editable: false }, panelClass: 'dialog-container', closeOnNavigation: true });
+  });
+
+  it('#showSceneDetailsDialog should open editable dialog that is not closed on navigation', () => {
+
+    // given
+    const scene = SceneFactory.createScene('1', []);
+    vi.spyOn(matDialogService, 'open').mockReturnValue(undefined);
+
+    // when
+    service.showSceneDetailsDialog(scene, true);
+
+    // then
+    expect(matDialogService.open).toHaveBeenCalledWith(SceneDetailsDialogComponent,
+      { data: { scene, editable: true }, panelClass: 'dialog-container', closeOnNavigation: false });
   });
 
   it('#showViewLauncherDialog should open dialog', () => {

@@ -3,7 +3,7 @@ import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { expect, test } from './support/fixtures';
 import {
-   CODES_CSV, DUPLICATE_HEADERS_CSV, EPOCH_MILLIS_CSV, IMPORT_FILES, MISSING_TIMES_CSV, MIXED_DATES_CSV,
+   CODES_CSV, DUPLICATE_HEADERS_CSV, EPOCH_MILLIS_CSV, IMPORT_FILES, LOG_MESSAGES_CSV, MISSING_TIMES_CSV, MIXED_DATES_CSV,
    ORDERS_WITH_ID_CSV, SEMICOLON_ORDERS_CSV
 } from './support/import-files';
 import { Texts } from './support/texts';
@@ -123,3 +123,15 @@ test('count of a summary table row without time reveals the rows without time',
 
       await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(1));
    });
+
+test('longest display format is shown in full', async ({ page, front, scene }) => {
+   await page.clock.setFixedTime(new Date(2024, 4, 28, 23, 59, 59, 999));
+   await front.open('en');
+   await front.startWithFile();
+   await scene.detectColumns(LOG_MESSAGES_CSV);
+
+   await scene.selectDisplayFormat('28 May 2024 23:59:59 999');
+
+   await expect(scene.displayFormatValues).toHaveText('28 May 2024 23:59:59 999');
+   await expect.poll(() => scene.displayFormatValues.evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
+});

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
-import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
+import { SceneDetailsDialogComponent, SceneDetailsDialogData } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
 import { ComputedColumnDialogComponent, ComputedColumnDialogData } from '../component/computed-column-dialog/computed-column-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
@@ -28,8 +28,13 @@ export class DialogService {
     return this.dialogService.open(ConnectionDialogComponent, { data: data, panelClass: 'dialog-container' });
   }
 
-  showSceneDetailsDialog(scene: Scene): MatDialogRef<SceneDetailsDialogComponent> {
-    return this.dialogService.open(SceneDetailsDialogComponent, { data: scene, panelClass: 'dialog-container' });
+  /**
+   * @param editable whether pattern columns can be added, the dialog is then not closed on navigation (e.g. browser back) since
+   * adding a pattern column must not be interrupted
+   */
+  showSceneDetailsDialog(scene: Scene, editable = false): MatDialogRef<SceneDetailsDialogComponent> {
+    const data: SceneDetailsDialogData = { scene, editable };
+    return this.dialogService.open(SceneDetailsDialogComponent, { data, panelClass: 'dialog-container', closeOnNavigation: !editable });
   }
 
   showViewLauncherDialog(context: ViewLauncherContext): MatDialogRef<ViewLauncherDialogComponent> {

@@ -252,7 +252,10 @@
       "nameUnderscore": "名前を _ で始めることはできません",
       "nameTooLong": "名前は {{max}} 文字以内にしてください",
       "incompatibleTypes": "列に互換性のないデータ型の値が含まれています",
-      "nameInUse": "この名前は既に使用されています"
+      "nameInUse": "この名前は既に使用されています",
+      "addPatternTooltip": "ID や数値などの可変部分をマスクするパターン列を追加",
+      "patternSuffix": "パターン",
+      "patternOf": "{{column}} のパターン"
     },
     "mapping": {
       "columnError": "列 '{{column}}': {{error}}",
@@ -303,7 +306,10 @@
       "unit": {
         "chars": "文字",
         "pixel": "ピクセル"
-      }
+      },
+      "addPattern": "パターン列を追加",
+      "patternProgress": "{{count}} 行を処理しました",
+      "patternAdded": "パターン列「{{column}}」を追加しました"
     }
   },
   "dialog": {

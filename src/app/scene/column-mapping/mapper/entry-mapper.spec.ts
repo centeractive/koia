@@ -958,6 +958,79 @@ describe('EntryMapper', () => {
       expect(actual[0].errors).toEqual(['Column \'Text\': Cannot convert "X" to Boolean']);
    });
 
+   it('#mapRows should map message and its pattern from same source value', () => {
+
+      // given
+      mapper = new EntryMapper([columnPair('Text'), patternPair('Text')], 'en');
+
+      // when
+      const actual = mapper.mapRows([['Request r1 done']], ['Text']);
+
+      // then
+      expect(actual.map(r => r.entry)).toEqual([{ _id: '1000001', Text: 'Request r1 done', 'Text pattern': 'Request <*> done' }]);
+   });
+
+   it('#mapObjects should map message and its pattern from same source value', () => {
+
+      // given
+      mapper = new EntryMapper([columnPair('Text'), patternPair('Text')], 'en');
+
+      // when
+      const actual = mapper.mapObjects([{ Text: 'Request r1 done' }, { Text: ' ' }]);
+
+      // then
+      expect(actual.map(r => r.entry)).toEqual([{ _id: '1000001', Text: 'Request r1 done', 'Text pattern': 'Request <*> done' }]);
+   });
+
+   it('#mapObjects should map pattern of number, boolean and date', () => {
+
+      // given
+      mapper = new EntryMapper([patternPair('Number'), patternPair('Boolean'), patternPair('Time')], 'en');
+
+      // when
+      const actual = mapper.mapObjects([{ Number: 12, Boolean: false, Time: new Date(0) }]);
+
+      // then
+      expect(actual[0].entry).toEqual({ _id: '1000001', 'Number pattern': '<*>', 'Boolean pattern': 'false', 'Time pattern': '<*>:<*>:<*>' });
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows should map pattern when message column is skipped', () => {
+
+      // given
+      const message = columnPair('Text');
+      message.skip = true;
+      mapper = new EntryMapper([message, patternPair('Text')], 'en');
+
+      // when
+      const actual = mapper.mapRows([['code 500']], ['Text']);
+
+      // then
+      expect(actual.map(r => r.entry)).toEqual([{ _id: '1000001', 'Text pattern': 'code <*>' }]);
+   });
+
+   it('#mapRows should map pattern without error when message cannot be converted', () => {
+
+      // given
+      const pair = columnPair('Number');
+      mapper = new EntryMapper([pair, patternPair('Number')], 'en');
+
+      // when
+      const actual = mapper.mapRows([['X1']], ['Number']);
+
+      // then
+      expect(actual[0].entry).toEqual({ _id: '1000001', 'Number pattern': '<*>' });
+      expect(actual[0].errors).toEqual(['Column \'Number\': Cannot convert "X1" to Number']);
+   });
+
+   function patternPair(sourceColumnName: string): ColumnPair {
+      const source = columnPair(sourceColumnName).source;
+      return {
+         source: { ...source },
+         target: { name: sourceColumnName + ' pattern', dataType: DataType.TEXT, width: 1, indexed: true, patternOf: sourceColumnName }
+      };
+   }
+
    function toColumnPair(column: Column): ColumnPair {
       return {
          source: column,

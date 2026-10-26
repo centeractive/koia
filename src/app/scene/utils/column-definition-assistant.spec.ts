@@ -125,6 +125,19 @@ describe('ColumnDefinitionAssistant', () => {
       expect(result).toBe(false);
    });
 
+   it('#selectableDataTypeOf should return TEXT only for pattern column', () => {
+
+      // given
+      const columnPair: ColumnPair = createColumnPair(DataType.NUMBER, DataType.TEXT);
+      columnPair.target.patternOf = 'x';
+
+      // when
+      const dataTypes = colDefAssistant.selectableDataTypeOf(columnPair);
+
+      // then
+      expect(dataTypes).toEqual([DataType.TEXT]);
+   });
+
    function createColumnPair(sourceDataType: DataType, targetDataType?: DataType): ColumnPair {
       return {
          source: {

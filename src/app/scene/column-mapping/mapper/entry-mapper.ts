@@ -1,6 +1,7 @@
 import { LanguageService } from 'app/shared/services/language';
 import { Column, ColumnPair, DataType } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
+import { PatternMasker } from 'app/shared/utils/pattern-masker';
 
 /**
  * Maps data of different format to target entries and adds an "_id" attribute to each target entry.
@@ -10,6 +11,7 @@ import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
  *   - when they're [[null]] or [[undefined]]
  *   - when they're empty or contain whitespace only
  *   - when the target value of the specified data type cannot be created (parsed)
+ * - pattern columns get the pattern of the source value (see [[PatternMasker]]), never an error
  * - the "_id" attribute starts at 1 and is incremented for each mapped target entry
  */
 export class EntryMapper {
@@ -71,7 +73,12 @@ export class EntryMapper {
    }
 
    private mapValue(columnPair: ColumnPair, sourceValue: string | number | boolean | object, mappingResult: MappingResult): void {
-      if (!StringUtils.isBlank(sourceValue)) {
+      if (columnPair.target.patternOf) {
+         const pattern = PatternMasker.mask(sourceValue);
+         if (pattern !== undefined) {
+            mappingResult.entry[columnPair.target.name] = pattern;
+         }
+      } else if (!StringUtils.isBlank(sourceValue)) {
          if (sourceValue instanceof Date) {
             this.mapDate(sourceValue, columnPair, mappingResult);
          } else if ((columnPair.source.dataType === DataType.TEXT || columnPair.source.dataType === DataType.NUMBER)

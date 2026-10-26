@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, ChangeDetect
 import { UntypedFormControl } from '@angular/forms';
 import { ColumnPair, DataType, EnumLabels } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
+import { PATTERN_COLUMN_ICON } from 'app/shared/utils/column-utils';
 import { columnNameErrorMessage, columnNameValidators, storedColumnNameValidator } from 'app/shared/validator/column-name-validation';
 import { ColumnDefinitionAssistant } from '../utils';
 import { ColumnMappingGenerator } from './mapper';
@@ -17,11 +18,14 @@ import { ColumnMappingGenerator } from './mapper';
 export class ColumnMappingComponent implements OnInit, OnChanges {
 
   readonly dataTypeLabel = EnumLabels.dataType;
+  readonly patternColumnIcon = PATTERN_COLUMN_ICON;
 
   @Input() mapping: ColumnPair;
   @Input() nameInUse = false;
+  @Input() canAddPattern = false;
   @Output() onChange = new EventEmitter<void>();
   @Output() onRemove = new EventEmitter<void>();
+  @Output() onAddPattern = new EventEmitter<void>();
 
   readonly columnDefAssistant = new ColumnDefinitionAssistant();
   readonly now = new Date();

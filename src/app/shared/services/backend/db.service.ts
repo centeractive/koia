@@ -7,6 +7,7 @@ import { rejectionOf } from 'app/shared/scene-format/scene-format-rejection';
 import { SceneValidator } from 'app/shared/scene-format/scene-validator';
 import { CommonUtils, QueryUtils } from 'app/shared/utils';
 import { storedColumnsOf } from 'app/shared/utils/column-utils';
+import { PatternMasker } from 'app/shared/utils/pattern-masker';
 import { withComputedValues } from 'app/shared/utils/computation-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -32,6 +33,7 @@ export class DBService {
   static readonly SCENES = SCENES_DB;
   static readonly DATA = 'data';
   static readonly MAX_DB_COUNT = 100;
+  static readonly PATTERN_PAGE_SIZE = 1_000;
 
   private db: DB;
   private pouchDBAccess: PouchDBAccess;
@@ -372,6 +374,78 @@ export class DBService {
 
   writeEntries(database: string, entries: Document[]): Promise<void> {
     return this.db.insertBulk(database, entries);
+  }
+
+  createColumnIndex(database: string, columnName: string): Promise<unknown> {
+    return this.db.createIndex(database, columnName);
+  }
+
+  /**
+   * writes the pattern of the source field value of each entry to its target field, or removes the target field when the
+   * source field has no pattern (see [[PatternMasker]]). Entries are read as full documents in pages ordered by _id and
+   * written back unless they already carry the right pattern.
+   *
+   * Entries written by others meanwhile may be left without pattern, and a concurrent update of an entry fails the bulk write;
+   * both are healed by running it again.
+   *
+   * @param onProgress receives the number of entries processed so far after each page
+   * @returns the number of processed entries
+   */
+  async addPatternField(database: string, sourceName: string, targetName: string, onProgress: (count: number) => void): Promise<number> {
+    let processed = 0;
+    let lastId: string = null;
+    let docs: Document[];
+    do {
+      docs = await this.findDocumentsPage(database, lastId, DBService.PATTERN_PAGE_SIZE);
+      lastId = docs.length ? docs[docs.length - 1]._id : lastId;
+      const entries = DBService.entriesOf(docs);
+      const changed = entries.filter(e => this.applyPattern(e, sourceName, targetName));
+      if (changed.length) {
+        await this.db.insertBulk(database, changed);
+      }
+      processed += entries.length;
+      onProgress(processed);
+    } while (docs.length === DBService.PATTERN_PAGE_SIZE);
+    return processed;
+  }
+
+  /**
+   * @returns the first entries of the database, fewer than the limit when design documents are among them
+   */
+  async findSampleEntries(database: string, limit: number): Promise<Document[]> {
+    return DBService.entriesOf(await this.findDocumentsPage(database, null, limit));
+  }
+
+  /**
+   * @returns full documents ordered by _id that follow the specified _id (all when null), design documents included
+   */
+  private findDocumentsPage(database: string, lastId: string, limit: number): Promise<Document[]> {
+    const query = new MangoQueryBuilder(false, [])
+      .where(CouchDBConstants._ID, Operator.GREATER_THAN, lastId)
+      .sortBy({ active: CouchDBConstants._ID, direction: 'asc' })
+      .numberOfRows(limit)
+      .toQuery();
+    return lastValueFrom(this.db.find(database, query));
+  }
+
+  private static entriesOf(docs: Document[]): Document[] {
+    return docs.filter(d => !d._id.startsWith(CouchDBConstants.DESIGN_DOC_PREFIX));
+  }
+
+  /**
+   * @returns true when the target field of the entry was changed
+   */
+  private applyPattern(entry: Document, sourceName: string, targetName: string): boolean {
+    const pattern = PatternMasker.mask(entry[sourceName]);
+    if (entry[targetName] === pattern) {
+      return false;
+    }
+    if (pattern === undefined) {
+      delete entry[targetName];
+    } else {
+      entry[targetName] = pattern;
+    }
+    return true;
   }
 
   async requestEntriesPage(query: Query, prevPage?: Page): Promise<Page> {

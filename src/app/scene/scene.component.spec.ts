@@ -1569,6 +1569,255 @@ describe('SceneComponent', () => {
     flush();
   }
 
+  describe('pattern columns', () => {
+
+    const messages: Sample = { entries: [{ Message: 'Request r1 done', Amount: 1 }, { Message: 'Request r2 done', Amount: 2 }] };
+
+    function message(): ColumnPair {
+      return component.columnMappings.find(cp => cp.source.name === 'Message' && !cp.target.patternOf);
+    }
+
+    function pattern(): ColumnPair {
+      return component.columnMappings.find(cp => !!cp.target.patternOf);
+    }
+
+    it('#canAddPattern should allow pattern of text column only', fakeAsync(() => {
+
+      // when
+      initUpToDetectColumns(messages);
+
+      // then
+      expect(component.canAddPattern(message())).toBe(true);
+      expect(component.canAddPattern(component.columnMappings[1])).toBe(false);
+    }));
+
+    it('should not offer pattern of column with single token values', fakeAsync(() => {
+
+      // when
+      initUpToDetectColumns({ entries: [{ Host: 'node-1' }, { Host: 'node-2' }] });
+
+      // then
+      expect(component.columnMappings[0].target.dataType).toBe(DataType.TEXT);
+      expect(fixture.debugElement.query(By.css('.but_add_pattern'))).toBeNull();
+    }));
+
+    it('#cancel on file input should offer pattern of restored sample', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      clickSelectFile();
+      window.dispatchEvent(new Event('focus'));
+
+      // when
+      component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
+
+      // then
+      expect(component.canAddPattern(message())).toBe(true);
+    }));
+
+    it('#canAddPattern should not allow pattern of skipped column', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+
+      // when
+      component.deleteColumnMapping(message());
+
+      // then
+      expect(component.canAddPattern(message())).toBe(false);
+    }));
+
+    it('#canAddPattern should not allow second pattern nor pattern of pattern', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+
+      // when
+      component.addPatternColumn(message());
+
+      // then
+      expect(component.canAddPattern(message())).toBe(false);
+      expect(component.canAddPattern(pattern())).toBe(false);
+    }));
+
+    it('#canAddPattern should allow pattern again when pattern column was deleted', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+
+      // when
+      component.deleteColumnMapping(pattern());
+
+      // then
+      expect(component.canAddPattern(message())).toBe(true);
+    }));
+
+    it('click on add pattern button should insert pattern column after message column and preview its values', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+
+      // when
+      fixture.debugElement.query(By.css('.but_add_pattern')).nativeElement.click();
+      fixture.detectChanges();
+
+      // then
+      expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['Message', 'Message pattern', 'Amount']);
+      expect(pattern().source).toEqual(message().source);
+      expect(pattern().source).not.toBe(message().source);
+      expect(pattern().target).toEqual({
+        name: 'Message pattern', dataType: DataType.TEXT, width: message().target.width, indexed: true, patternOf: 'Message'
+      });
+      expect(component.previewData.map(mr => mr.entry)).toEqual([
+        { _id: '1000001', Message: 'Request r1 done', 'Message pattern': 'Request <*> done', Amount: 1 },
+        { _id: '1000002', Message: 'Request r2 done', 'Message pattern': 'Request <*> done', Amount: 2 }
+      ]);
+    }));
+
+    it('#addPatternColumn should number name when it is in use', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.columnMappings[1].target.name = 'Message pattern';
+
+      // when
+      component.addPatternColumn(message());
+
+      // then
+      expect(pattern().target.name).toBe('Message pattern (2)');
+    }));
+
+    it('#onColumnChanged should let pattern refer to renamed message column', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+      message().target.name = 'Text';
+
+      // when
+      component.onColumnChanged();
+
+      // then
+      expect(pattern().target.patternOf).toBe('Text');
+    }));
+
+    it('#deleteColumnMapping should let pattern refer to source column of deleted message column', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+      message().target.name = 'Text';
+      component.onColumnChanged();
+
+      // when
+      component.deleteColumnMapping(message());
+      component.columnMappings[2].target.name = 'Text';
+      component.onColumnChanged();
+
+      // then
+      expect(pattern().target.patternOf).toBe('Message');
+    }));
+
+    it('#persistScene should persist pattern column referring to current message column name', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+      message().target.name = 'Text';
+      vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) => {
+        dataHandler.onEntries(messages.entries);
+        dataHandler.onComplete();
+      });
+      vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
+
+      // when
+      component.persistScene();
+      flush();
+
+      // then
+      expect(component.scene.columns.map(c => c.patternOf)).toEqual([undefined, 'Text', undefined]);
+      expect(dbService.writeEntries).toHaveBeenCalledWith('data_1', [
+        expect.objectContaining({ Text: 'Request r1 done', 'Message pattern': 'Request <*> done', Amount: 1 }),
+        expect.objectContaining({ Text: 'Request r2 done', 'Message pattern': 'Request <*> done', Amount: 2 })
+      ]);
+    }));
+
+    it('#readSample should link adopted pattern column to message column it refers to', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+      message().target.name = 'Text';
+      component.onColumnChanged();
+      component.columnMappingsSource = { ...createSceneInfos(1)[0], columnMappings: [...component.columnMappings].reverse() };
+      component.adoptColumnsFromExistingScene = true;
+
+      // when
+      component.readSample();
+      flush();
+      message().target.name = 'Body';
+      component.onColumnChanged();
+
+      // then
+      expect(pattern().target.patternOf).toBe('Body');
+    }));
+
+    it('#readSample should link adopted pattern column to message column of same source when referred column is missing',
+      fakeAsync(() => {
+
+        // given
+        initUpToDetectColumns(messages);
+        component.addPatternColumn(message());
+        pattern().target.patternOf = 'Gone';
+        component.columnMappingsSource = { ...createSceneInfos(1)[0], columnMappings: component.columnMappings };
+        component.adoptColumnsFromExistingScene = true;
+
+        // when
+        component.readSample();
+        flush();
+        component.onColumnChanged();
+
+        // then
+        expect(pattern().target.patternOf).toBe('Message');
+      }));
+
+    it('#readSample should keep adopted pattern column without message column', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+      pattern().target.patternOf = 'Gone';
+      component.columnMappingsSource = { ...createSceneInfos(1)[0], columnMappings: [pattern()] };
+      component.adoptColumnsFromExistingScene = true;
+
+      // when
+      component.readSample();
+      flush();
+      component.onColumnChanged();
+
+      // then
+      expect(component.columnMappings.map(cp => cp.target.patternOf)).toEqual(['Gone']);
+    }));
+
+    it('#cancel on file input should keep pattern column linked to message column', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns(messages);
+      component.addPatternColumn(message());
+      clickSelectFile();
+      window.dispatchEvent(new Event('focus'));
+      component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
+      message().target.name = 'Text';
+
+      // when
+      component.onColumnChanged();
+
+      // then
+      expect(pattern().target.patternOf).toBe('Text');
+    }));
+  });
+
   function createSceneInfos(count: number): SceneInfo[] {
     const sceneInfos: SceneInfo[] = [];
     const now = new Date().getTime();

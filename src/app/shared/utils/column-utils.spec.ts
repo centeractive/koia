@@ -1,6 +1,7 @@
 import { Column, ComputeOperator, DataType } from '../model';
 import {
-   containsAnyNumber, filterableColumnsOf, iconOfColumn, isAnalyzableColumn, isComputedColumn, isOperandColumn, storedColumnsOf
+   containsAnyNumber, filterableColumnsOf, iconOfColumn, isAnalyzableColumn, isComputedColumn, isOperandColumn, isPatternColumn,
+   patternColumnName, storedColumnsOf
 } from './column-utils';
 
 describe('column-utils', () => {
@@ -92,5 +93,43 @@ describe('column-utils', () => {
 
    it('#iconOfColumn should return data type icon for stored column', () => {
       expect(iconOfColumn(text)).toBe('title');
+   });
+
+   it('#isPatternColumn should return true for pattern column only', () => {
+      expect(isPatternColumn({ ...indexedText, patternOf: 'Message' })).toBe(true);
+      expect(isPatternColumn(indexedText)).toBe(false);
+   });
+
+   it('#patternColumnName should append suffix', () => {
+      expect(patternColumnName('Message', new Set(['Message']), 'pattern')).toBe('Message pattern');
+   });
+
+   it('#patternColumnName should number name in use', () => {
+      expect(patternColumnName('Message', new Set(['Message pattern', 'Message pattern (2)']), 'pattern')).toBe('Message pattern (3)');
+   });
+
+   it('#patternColumnName should cut long base to maximum column name length', () => {
+
+      // given
+      const base = 'x'.repeat(100);
+
+      // when
+      const name = patternColumnName(base, new Set(), 'pattern');
+
+      // then
+      expect(name).toBe('x'.repeat(92) + ' pattern');
+   });
+
+   it('#patternColumnName should cut long base to maximum column name length when numbered', () => {
+
+      // given
+      const base = 'x'.repeat(100);
+
+      // when
+      const name = patternColumnName(base, new Set(['x'.repeat(92) + ' pattern']), 'pattern');
+
+      // then
+      expect(name).toBe('x'.repeat(88) + ' pattern (2)');
+      expect(name.length).toBe(100);
    });
 });

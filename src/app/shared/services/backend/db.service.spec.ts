@@ -1,12 +1,14 @@
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { NgZone } from '@angular/core';
 import { TestBed, fakeAsync, flush } from '@angular/core/testing';
-import { Column, ComputeOperator, DataType, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, Document, Operator, Page, PropertyFilter, Query, Scene } from 'app/shared/model';
 import { SceneTabs, ViewType } from 'app/shared/model/view-config';
 import { SceneFactory } from 'app/shared/test';
-import { lastValueFrom, throwError } from 'rxjs';
+import { lastValueFrom, of, throwError } from 'rxjs';
+import type { Mock } from 'vitest';
 import { CouchDBService } from './couchdb';
 import { CouchDBConfig } from './couchdb/couchdb-config';
+import { CouchDBConstants } from './couchdb/couchdb-constants';
 import { DBService } from './db.service';
 
 describe('DBService', () => {
@@ -808,6 +810,144 @@ describe('DBService', () => {
     // then
     await lastValueFrom(dbService.findEntries(new Query(), false))
       .then(data => expect(data.length).toBe(5));
+  });
+
+  describe('#addPatternField and #findSampleEntries', () => {
+
+    type Entry = Document & Record<string, unknown>;
+
+    let written: object[][];
+    let onProgress: Mock;
+
+    /**
+     * lets the database contain the specified documents and records the written ones
+     */
+    function simulate(docs: Entry[]): Mock {
+      const sorted = [...docs].sort((d1, d2) => d1._id < d2._id ? -1 : 1);
+      written = [];
+      onProgress = vi.fn();
+      vi.spyOn(couchDBService, 'insertBulk').mockImplementation((database: string, documents: Entry[]) => {
+        written.push(documents);
+        return Promise.resolve();
+      });
+      return vi.spyOn(couchDBService, 'find').mockImplementation((database: string, query: { selector: object, limit: number }) => {
+        const lastId = query.selector[CouchDBConstants._ID].$gt;
+        return of(sorted.filter(d => lastId === null || d._id > lastId).slice(0, query.limit).map(d => ({ ...d })));
+      });
+    }
+
+    function messages(count: number): Entry[] {
+      return Array.from({ length: count }, (_, i) => ({ _id: String(i).padStart(5, '0'), _rev: '1-a', Data: 'line ' + i }));
+    }
+
+    it('should page through documents ordered by _id', async () => {
+
+      // given
+      const find = simulate(messages(1_001));
+
+      // when
+      const count = await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(count).toBe(1_001);
+      expect(find.mock.calls.map(c => c[1])).toEqual([
+        { selector: { _id: { $gt: null } }, sort: [{ _id: 'asc' }], limit: 1_000 },
+        { selector: { _id: { $gt: '00999' } }, sort: [{ _id: 'asc' }], limit: 1_000 }
+      ]);
+      expect(written.map(docs => docs.length)).toEqual([1_000, 1]);
+      expect(written[1]).toEqual([{ _id: '01000', _rev: '1-a', Data: 'line 1000', 'Data pattern': 'line <*>' }]);
+      expect(onProgress.mock.calls).toEqual([[1_000], [1_001]]);
+    });
+
+    it.each([[0, 1], [999, 1], [1_000, 2]])('should process %i documents with %i queries', async (docCount, queryCount) => {
+
+      // given
+      const find = simulate(messages(docCount));
+
+      // when
+      const count = await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(count).toBe(docCount);
+      expect(find).toHaveBeenCalledTimes(queryCount);
+      expect(written.flat().length).toBe(docCount);
+      expect(onProgress).toHaveBeenLastCalledWith(docCount);
+    });
+
+    it('should continue after last document of page that ends with design document', async () => {
+
+      // given
+      const docs: Entry[] = [...messages(999), { _id: '_design/index_Data', _rev: '1-a' }, { _id: 'x', _rev: '1-a', Data: 'x 1' }];
+      simulate(docs);
+
+      // when
+      const count = await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(count).toBe(1_000);
+      expect(written.flat().map(d => d[CouchDBConstants._ID])).not.toContain('_design/index_Data');
+      expect(written[1]).toEqual([{ _id: 'x', _rev: '1-a', Data: 'x 1', 'Data pattern': 'x <*>' }]);
+    });
+
+    it('should write changed documents only and remove pattern of document without value', async () => {
+
+      // given
+      simulate([
+        { _id: '1', _rev: '1-a', Data: 'line 1', 'Data pattern': 'line <*>' },
+        { _id: '2', _rev: '1-a', Data: 'line 2', 'Data pattern': 'old' },
+        { _id: '3', _rev: '1-a', 'Data pattern': 'line <*>' },
+        { _id: '4', _rev: '1-a' }
+      ]);
+
+      // when
+      const count = await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(count).toBe(4);
+      expect(written).toEqual([[
+        { _id: '2', _rev: '1-a', Data: 'line 2', 'Data pattern': 'line <*>' },
+        { _id: '3', _rev: '1-a' }
+      ]]);
+    });
+
+    it('should not write page of unchanged documents', async () => {
+
+      // given
+      simulate([{ _id: '1', _rev: '1-a', Data: 'line 1', 'Data pattern': 'line <*>' }]);
+
+      // when
+      await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(written).toEqual([]);
+      expect(onProgress).toHaveBeenCalledWith(1);
+    });
+
+    it('#findSampleEntries should return first entries without design documents', async () => {
+
+      // given
+      const docs: Entry[] = ['a', 'b', 'c'].map(id => ({ _id: id, _rev: '1-a', Data: 'line ' + id }));
+      const find = simulate([{ _id: '_design/index_Data', _rev: '1-a' }, ...docs]);
+
+      // when
+      const entries = await dbService.findSampleEntries('db', 3);
+
+      // then
+      expect(find.mock.calls.map(c => c[1])).toEqual([{ selector: { _id: { $gt: null } }, sort: [{ _id: 'asc' }], limit: 3 }]);
+      expect(entries).toEqual(docs.slice(0, 2));
+    });
+  });
+
+  it('#createColumnIndex should create index of column', async () => {
+
+    // given
+    vi.spyOn(couchDBService, 'createIndex').mockResolvedValue(undefined);
+
+    // when
+    await dbService.createColumnIndex('db', 'Data pattern');
+
+    // then
+    expect(couchDBService.createIndex).toHaveBeenCalledWith('db', 'Data pattern');
   });
 
   it('#countEntriesOfActiveScene should return number of documents', async () => {

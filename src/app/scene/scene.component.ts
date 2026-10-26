@@ -20,7 +20,7 @@ import { DataHandler, DataReader, ReaderService } from '../shared/services/reade
 import { SourceName } from '../shared/services/reader/source-name.enum';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
-import { SceneUtils } from './utils';
+import { PatternPairs, SceneUtils } from './utils';
 
 @Component({
   selector: 'koia-scene',
@@ -82,6 +82,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private mappingErrors = new ConfinedStringSet(10);
   private fileDialogOpen = false;
   private loadFailed = false;
+  private readonly patternPairs = new PatternPairs();
   private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[]; sourceColumnNames: string[] } | undefined;
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
@@ -285,6 +286,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         this.sourceColumnNames = sample.entries ? undefined : SceneUtils.columnNamesFrom(sample);
         this.columnMappings = this.adoptColumnsFromExistingScene ? CommonUtils.clone(this.columnMappingsSource.columnMappings) :
           this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
+        this.patternPairs.link(this.columnMappings);
         this.onColumnChanged();
       })
       .catch(err => this.notifyError(err))
@@ -296,7 +298,17 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.onColumnChanged();
   }
 
+  canAddPattern(columnPair: ColumnPair): boolean {
+    return this.patternPairs.canAdd(columnPair, this.columnMappings, this.sampleEntries);
+  }
+
+  addPatternColumn(columnPair: ColumnPair): void {
+    this.patternPairs.add(columnPair, this.columnMappings, LanguageService.instant('scene.column.patternSuffix'));
+    this.onColumnChanged();
+  }
+
   onColumnChanged(): void {
+    this.patternPairs.updatePatternOf(this.columnMappings);
     this.targetColumnNames = this.columnMappings.filter(cp => !cp.skip).map(cp => cp.target.name);
     this.validateColumnMappings();
     this.previewData = new EntryMapper(this.columnMappings, this.selectedLocale).mapObjects(this.sampleEntries);
@@ -320,6 +332,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   persistScene(): void {
+    this.patternPairs.updatePatternOf(this.columnMappings);
     this.scene.creationTime = new Date().getTime();
     const colMappings = this.columnMappings.filter(cp => !cp.skip);
     this.scene.columnMappings = colMappings;

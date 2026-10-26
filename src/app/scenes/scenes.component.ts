@@ -26,6 +26,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   filter = '';
   filteredSceneInfos: SceneInfo[] = [];
   sceneNames = new Set<string>();
+  editing = false;
 
   private sceneInfos: SceneInfo[] = [];
 

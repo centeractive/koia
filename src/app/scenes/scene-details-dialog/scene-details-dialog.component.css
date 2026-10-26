@@ -34,6 +34,10 @@ mat-card-title {
   border-bottom: var(--koia-table-grid-line);
 }
 
+#columns_table td.mat-mdc-cell {
+  vertical-align: middle;
+}
+
 .ctx-value {
   white-space: pre-wrap;
 }
@@ -42,10 +46,35 @@ mat-card-title {
   text-align: right;
 }
 
-.icon_computed_column {
+/* icons and buttons fill the line height exactly, so that they never enlarge a row */
+.icon_computed_column,
+.icon_pattern_column {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  vertical-align: top;
+}
+
+.but_add_pattern {
+  --mat-icon-button-state-layer-size: 20px;
+  --mat-icon-button-icon-size: 18px;
+  padding: 1px;
+  margin: -2px 0;
+  vertical-align: top;
+}
+
+.but_add_pattern .mat-icon {
+  display: block;
   font-size: 18px;
   width: 18px;
   height: 18px;
-  margin-left: 4px;
-  vertical-align: middle;
+}
+
+.actions {
+  text-align: right;
+}
+
+.pattern-progress {
+  margin: 4px 0 8px;
 }

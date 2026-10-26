@@ -1,8 +1,15 @@
 <div>
-  <span>
+  <span class="column_actions">
     <button class="but_delete" mat-icon-button [matTooltip]="'scene.column.deleteTooltip' | translate" (click)="onRemove.emit()">
       <mat-icon>delete_forever</mat-icon>
     </button>
+    @if (mapping.target.patternOf) {
+      <mat-icon class="icon_pattern" [matTooltip]="'scene.column.patternOf' | translate: { column: mapping.target.patternOf }">{{ patternColumnIcon }}</mat-icon>
+    } @else if (canAddPattern) {
+      <button class="but_add_pattern" mat-icon-button [matTooltip]="'scene.column.addPatternTooltip' | translate" (click)="onAddPattern.emit()">
+        <mat-icon>pattern</mat-icon>
+      </button>
+    }
   </span>
   <mat-form-field class="column_name">
     <mat-label>{{ 'scene.column.name' | translate }}</mat-label>
@@ -45,7 +52,7 @@
           </span>
         }
         @if (columnDefAssistant.canHaveDisplayFormat(mapping)) {
-          <mat-form-field class="column_format">
+          <mat-form-field class="column_format column_display_format">
             <mat-label>{{ 'scene.column.displayFormat' | translate }}</mat-label>
             <mat-select class="select_display_format" [(value)]="mapping.target.format" (selectionChange)="onChange.emit()">
               @for (format of dateFormats; track format) {

@@ -7,6 +7,22 @@ div {
    border-bottom: 1px solid #eef0f2;
 }
 
+/* fixed width for the delete button plus the add pattern button or pattern icon, so that the fields of all rows line up */
+.column_actions {
+   display: flex;
+   align-items: center;
+   flex: 0 0 64px;
+}
+
+.column_actions .mat-mdc-icon-button {
+   --mat-icon-button-state-layer-size: 32px;
+   padding: 4px;
+}
+
+.icon_pattern {
+   margin: 0 4px;
+}
+
 .column_name {
    flex: 1 1 240px;
    max-width: 320px;
@@ -27,4 +43,9 @@ div {
 
 .column_format {
    flex: 0 0 220px;
+}
+
+/* fits the longest formatted time */
+.column_display_format {
+   flex-basis: 248px;
 }

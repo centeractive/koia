@@ -25,6 +25,7 @@ export class SceneTableComponent extends AbstractComponent {
   @Output() onContinue = new EventEmitter<SceneInfo>();
   @Output() onDelete = new EventEmitter<SceneInfo>();
   @Output() onEdit = new EventEmitter<SceneLabels>();
+  @Output() editingChange = new EventEmitter<boolean>();
 
   readonly sceneNameMaxLength = SceneUtils.SCENE_NAME_MAX_LENGTH;
   readonly sceneNameErrorStateMatcher = new ConditionalErrorStateMatcher(() => this.edit.isNameTaken() || this.edit.isNameTooLong());
@@ -43,12 +44,12 @@ export class SceneTableComponent extends AbstractComponent {
 
   showSceneDetails(sceneID: string): void {
     this.dbService.findScene(sceneID)
-      .then(s => this.dialogService.showSceneDetailsDialog(s))
+      .then(s => this.dialogService.showSceneDetailsDialog(s, true))
       .catch(err => this.notifyError(err));
   }
 
   startEdit(sceneInfo: SceneInfo): void {
-    this.edit = new SceneEdit(sceneInfo, this.existingSceneNames);
+    this.setEdit(new SceneEdit(sceneInfo, this.existingSceneNames));
   }
 
   isEdited(sceneInfo: SceneInfo): boolean {
@@ -58,11 +59,16 @@ export class SceneTableComponent extends AbstractComponent {
   saveEdit(): void {
     if (this.edit.isSavable()) {
       this.onEdit.emit(this.edit.toLabels());
-      this.edit = undefined;
+      this.setEdit(undefined);
     }
   }
 
   cancelEdit(): void {
-    this.edit = undefined;
+    this.setEdit(undefined);
+  }
+
+  private setEdit(edit: SceneEdit | undefined): void {
+    this.edit = edit;
+    this.editingChange.emit(!!edit);
   }
 }

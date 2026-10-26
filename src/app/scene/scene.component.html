@@ -165,8 +165,8 @@
             @for (columnPair of columnMappings; track columnPair) {
               <div>
                 @if (!columnPair.skip) {
-                  <koia-column-mapping [mapping]="columnPair" [nameInUse]="isNameInUse(columnPair)" (onChange)="onColumnChanged()"
-                    (onRemove)="deleteColumnMapping(columnPair)">
+                  <koia-column-mapping [mapping]="columnPair" [nameInUse]="isNameInUse(columnPair)" [canAddPattern]="canAddPattern(columnPair)"
+                    (onChange)="onColumnChanged()" (onRemove)="deleteColumnMapping(columnPair)" (onAddPattern)="addPatternColumn(columnPair)">
                   </koia-column-mapping>
                 }
               </div>

@@ -10,4 +10,8 @@ export interface Column {
   groupingTimeUnit?: TimeUnit;
   indexed?: boolean;
   computation?: Computation;
+  /**
+   * name of the column whose values with masked variable tokens make up the values of this pattern column
+   */
+  patternOf?: string;
 }

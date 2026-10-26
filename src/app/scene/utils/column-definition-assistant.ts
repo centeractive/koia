@@ -3,6 +3,9 @@ import { ColumnPair, DataType } from 'app/shared/model';
 export class ColumnDefinitionAssistant {
 
    selectableDataTypeOf(columnPair: ColumnPair): DataType[] {
+      if (columnPair.target.patternOf) {
+         return [DataType.TEXT];
+      }
       switch (columnPair.source.dataType) {
          case DataType.NUMBER:
          case DataType.TIME:

@@ -34,6 +34,9 @@ export const IMPORT_FILES = [ORDERS_CSV, SALES_CSV, READER_TEST_XLSX, DELIVERIES
 export const LOG_LEVELS_JSON = jsonFile(resolve(E2E_DATA_DIR, 'log-levels.json'),
    [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.TEXT]);
 
+/** 15 ERROR rows of one message pattern longer than 100 characters, 45 INFO rows of three other patterns */
+export const LOG_MESSAGES_CSV = csvFile(resolve(E2E_DATA_DIR, 'app-messages.csv'), [DataType.TIME, DataType.TEXT, DataType.TEXT]);
+
 export const SEMICOLON_ORDERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-semicolon.csv'), [DataType.TEXT, DataType.NUMBER, DataType.TIME], ';');
 
 export const ORDERS_WITH_ID_CSV = csvFile(resolve(E2E_DATA_DIR, 'orders-with-id.csv'), [DataType.NUMBER, DataType.TEXT, DataType.NUMBER]);

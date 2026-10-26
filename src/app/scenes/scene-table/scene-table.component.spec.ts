@@ -155,7 +155,7 @@ describe('SceneTableComponent', () => {
     flush();
 
     // then
-    expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scenes[0]);
+    expect(dialogService.showSceneDetailsDialog).toHaveBeenCalledWith(scenes[0], true);
   }));
 
   it('#selecting "Details" should notify error when scene cannot be read', fakeAsync(() => {
@@ -293,14 +293,14 @@ describe('SceneTableComponent', () => {
     expect(fixture.nativeElement.querySelector('.edit_name')).toBeNull();
   }));
 
-  it('active chip should stay visible while active scene is edited', fakeAsync(() => {
+  it('active chip should be hidden while active scene is edited', fakeAsync(() => {
 
     // when
     startEditOf(0);
 
     // then
     expect(rows()[0].querySelector('.edit_name')).not.toBeNull();
-    expect(rows()[0].querySelector('.active-chip')).not.toBeNull();
+    expect(rows()[0].querySelector('.active-chip')).toBeNull();
   }));
 
   it('should show name exists error when name of other scene is entered', fakeAsync(() => {
@@ -329,18 +329,67 @@ describe('SceneTableComponent', () => {
     expect(fixture.nativeElement.querySelector('.edit_name mat-error').textContent).toBe('Name must not exceed 40 characters');
   }));
 
-  it('#selecting "Edit" on other row should replace current edit', fakeAsync(() => {
+  it('editing should disable more, activate and continue buttons of all rows', fakeAsync(() => {
+
+    // when
+    startEditOf(1);
+
+    // then
+    expect(actionButtons().length).toBe(6);
+    expect(actionButtons().every(b => b.disabled)).toBe(true);
+  }));
+
+  it('save should enable buttons again and show active chip', fakeAsync(() => {
+
+    // given
+    startEditOf(0);
+    typeInto(nameInput(), 'new name');
+
+    // when
+    saveButton().click();
+    fixture.detectChanges();
+
+    // then
+    expect(actionButtons().every(b => !b.disabled)).toBe(true);
+    expect(rows()[0].querySelector('.active-chip')).not.toBeNull();
+  }));
+
+  it('cancel should enable buttons again', fakeAsync(() => {
 
     // given
     startEditOf(1);
 
     // when
-    startEditOf(2);
+    fixture.nativeElement.querySelector('.but_cancel_edit').click();
+    fixture.detectChanges();
 
     // then
-    expect(fixture.nativeElement.querySelectorAll('.edit_name').length).toBe(1);
-    expect(rows()[2].querySelector('.edit_name')).not.toBeNull();
-    expect(nameInput().value).toBe(scenes[2].name);
+    expect(actionButtons().every(b => !b.disabled)).toBe(true);
+  }));
+
+  it('#editingChange should emit true on start and false on save and cancel', fakeAsync(() => {
+
+    // given
+    const editingChangeEmitSpy = vi.spyOn(component.editingChange, 'emit');
+
+    // when
+    startEditOf(1);
+    typeInto(nameInput(), '');
+    pressKey(nameInput(), 'Enter');
+
+    // then
+    expect(editingChangeEmitSpy).toHaveBeenNthCalledWith(1, true);
+    expect(editingChangeEmitSpy).toHaveBeenCalledTimes(1);
+
+    // when
+    typeInto(nameInput(), 'new name');
+    saveButton().click();
+    fixture.detectChanges();
+    startEditOf(2);
+    pressKey(nameInput(), 'Escape');
+
+    // then
+    expect(editingChangeEmitSpy.mock.calls).toEqual([[true], [false], [true], [false]]);
   }));
 
   function startEditOf(rowIndex: number): void {
@@ -373,6 +422,10 @@ describe('SceneTableComponent', () => {
 
   function saveButton(): HTMLButtonElement {
     return fixture.nativeElement.querySelector('.but_save_edit');
+  }
+
+  function actionButtons(): HTMLButtonElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('.but_more, .activateScene, .continueActiveScene'));
   }
 
   function rows(): HTMLElement[] {

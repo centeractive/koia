@@ -252,7 +252,10 @@
       "nameUnderscore": "Name must not start with _",
       "nameTooLong": "Name must not exceed {{max}} characters",
       "incompatibleTypes": "Column contains values of incompatible data types",
-      "nameInUse": "Name is already in use"
+      "nameInUse": "Name is already in use",
+      "addPatternTooltip": "Add a pattern column that masks variable parts such as ids and numbers",
+      "patternSuffix": "pattern",
+      "patternOf": "Pattern of {{column}}"
     },
     "mapping": {
       "columnError": "Column '{{column}}': {{error}}",
@@ -303,7 +306,10 @@
       "unit": {
         "chars": "chars",
         "pixel": "pixel"
-      }
+      },
+      "addPattern": "Add pattern column",
+      "patternProgress": "{{count}} rows processed",
+      "patternAdded": "Pattern column \"{{column}}\" added"
     }
   },
   "dialog": {
