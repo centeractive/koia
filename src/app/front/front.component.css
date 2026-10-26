@@ -64,6 +64,34 @@
   opacity: 1;
 }
 
+/* no bottom margin, the last child of a landing tile has none */
+.front-log-sample {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.front-log-sample-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--koia-primary);
+  font: 600 14px var(--koia-font-landing);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.front-log-sample :disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.front-log-sample [aria-busy="true"] {
+  opacity: 1;
+}
+
 .front-sample-progress {
   animation: front-spin 1s linear infinite;
 }

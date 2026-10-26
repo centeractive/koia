@@ -94,6 +94,11 @@ export class FrontPage {
       await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 
+   async openLogSample(): Promise<void> {
+      await this.page.locator('#log_sample_button').click();
+      await this.page.waitForURL('**/' + Route.RAWDATA);
+   }
+
    private async waitUntilReady(): Promise<void> {
       await expect(this.startButton).toHaveAttribute('aria-disabled', 'false');
    }

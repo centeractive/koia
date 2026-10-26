@@ -27,6 +27,7 @@ import { FrontComponent } from './front.component';
 import { LaunchParamsService } from './launch-params.service';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
+import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
 import { LanguageService } from 'app/shared/services/language';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
@@ -1010,7 +1011,7 @@ describe('FrontComponent', () => {
     const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
     // when
-    component.openSample();
+    component.openSample(fruitSalesSampleOf);
     await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
 
     // then
@@ -1028,11 +1029,101 @@ describe('FrontComponent', () => {
     const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
     // when
-    component.openSample();
+    component.openSample(fruitSalesSampleOf);
     await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
 
     // then
     expect(openSpy).toHaveBeenCalledWith(fruitSalesSampleOf('ja'));
+  });
+
+  it('#openSample should open log sample of current language and show its raw data', async () => {
+
+    // given
+    const openSpy = vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockResolvedValue(undefined);
+    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+
+    // when
+    (render().querySelector('#log_sample_button') as HTMLButtonElement).click();
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+
+    // then
+    expect(openSpy).toHaveBeenCalledWith(appLogsSampleOf('en'));
+    expect(navigateSpy).toHaveBeenCalledWith(Route.RAWDATA);
+  });
+
+  it('sample button should open fruit sales sample', () => {
+
+    // given
+    const openSpy = vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockReturnValue(new Promise(() => undefined));
+
+    // when
+    (render().querySelector('#sample_button') as HTMLButtonElement).click();
+
+    // then
+    expect(openSpy).toHaveBeenCalledWith(fruitSalesSampleOf('en'));
+  });
+
+  it('should offer log sample below start actions', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const logSample = host.querySelector('.front-start-panel > .front-log-sample #log_sample_button');
+    expect(logSample.textContent).toContain('Or try log data');
+    expect(logSample.closest('.front-actions')).toBeNull();
+    expect(logSample.getBoundingClientRect().top).toBeGreaterThanOrEqual(host.querySelector('.front-actions').getBoundingClientRect().bottom);
+  });
+
+  it('should disable log sample button until ready', () => {
+
+    // given
+    component.ready = false;
+
+    // when
+    const host = render();
+
+    // then
+    const logSample = host.querySelector('#log_sample_button') as HTMLButtonElement;
+    expect(logSample.disabled).toBe(true);
+    expect(getComputedStyle(logSample).opacity).toBe('0.4');
+  });
+
+  it('#openSample should show progress on log sample button only while log sample is loading', () => {
+
+    // given
+    vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockReturnValue(new Promise(() => undefined));
+
+    // when
+    component.openSample(appLogsSampleOf);
+    const host = render();
+
+    // then
+    const logSample = host.querySelector('#log_sample_button') as HTMLButtonElement;
+    const sample = host.querySelector('#sample_button') as HTMLButtonElement;
+    expect(logSample.disabled).toBe(true);
+    expect(logSample.getAttribute('aria-busy')).toBe('true');
+    expect(getComputedStyle(logSample).opacity).toBe('1');
+    expect(logSample.textContent).toContain('Loading log data');
+    expect(sample.disabled).toBe(true);
+    expect(sample.getAttribute('aria-busy')).toBe('false');
+    expect(sample.textContent).toContain('Try sample data');
+  });
+
+  it('should keep storage selectable when not ready after failed CouchDB connection', () => {
+
+    // given
+    component.ready = false;
+    component.storageExpanded = true;
+
+    // when
+    const host = render();
+
+    // then
+    expect(component.busy).toBe(true);
+    expect(component.loadingAnySample).toBe(false);
+    expect((host.querySelector('.front-storage-change') as HTMLButtonElement).disabled).toBe(false);
+    storageButtons(host).forEach(b => expect(b.disabled).toBe(false));
   });
 
   it('should show texts in selected language without reload', async () => {
@@ -1080,7 +1171,7 @@ describe('FrontComponent', () => {
     component.storageExpanded = true;
 
     // when
-    component.openSample();
+    component.openSample(fruitSalesSampleOf);
     const host = render();
 
     // then
@@ -1099,11 +1190,11 @@ describe('FrontComponent', () => {
     const onErrorSpy = vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
-    component.openSample();
+    component.openSample(fruitSalesSampleOf);
     await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
 
     // then
-    expect(component.loadingSample).toBe(false);
+    expect(component.loadingSample).toBeUndefined();
     expect((render().querySelector('#sample_button') as HTMLButtonElement).disabled).toBe(false);
   });
 

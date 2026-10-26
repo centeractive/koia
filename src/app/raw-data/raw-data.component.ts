@@ -21,7 +21,9 @@ import { computedColumnTooltipOf } from 'app/shared/utils/computation-utils';
 import { colWidthMeasurementOf } from 'app/shared/utils/source-system';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
-import { CanvasPaging, Column, ExportFormat, Page, Query, Route } from '../shared/model';
+import { ContrastAnalysis, ContrastService } from 'app/shared/services/contrast/contrast.service';
+import { ContrastFinding, ValueKind } from 'app/shared/services/contrast/contrast.types';
+import { CanvasPaging, Column, ExportFormat, Operator, Page, PropertyFilter, Query, Route } from '../shared/model';
 import { DBService } from '../shared/services/backend';
 import { RawDataBlockCache } from './raw-data-block-cache';
 import { SORT_INDICATORS } from './sort-indicators';
@@ -38,6 +40,11 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   @Input() dialogStyle: boolean;
   @Input() query: Query;
   @Input() hideToolbar: boolean;
+
+  /**
+   * the rows the displayed rows are compared with when explaining them in a dialog, the main view compares with all rows
+   */
+  @Input() explainBase: Query;
 
   @ViewChild(VirtualTableComponent) table: VirtualTableComponent;
 
@@ -58,6 +65,12 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   widths: number[] = [];
   customWidths: Record<string, number> = {};
 
+  /**
+   * the selection and base explained in the contrast panel, undefined while the panel is closed
+   */
+  contrastAnchor: { selection: Query, base: Query };
+  contrast: ContrastAnalysis;
+
   readonly source: VirtualTableSource = {
     rowCount: () => this.totalRowCount,
     rowAt: index => this.cache.rowAt(index),
@@ -68,6 +81,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   private readonly widthResolver = new ColumnWidthResolver();
   private readonly computedColumnService = inject(ComputedColumnService);
   private computedColumnsSubscription: Subscription;
+  private readonly contrastService = inject(ContrastService);
 
   constructor(bottomSheet: MatBottomSheet, router: Router, public override dbService: DBService, public dialogService: DialogService,
     notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar,
@@ -105,6 +119,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
       new ViewColumnRenamer(change.previousName, change.name).renameKey(this.customWidths);
     }
     this.columns = this.scene.columns;
+    this.closeExplanation();
     this.applyWidths();
     this.reload();
   }
@@ -118,7 +133,63 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   onFilterChanged(query: Query): void {
     query.setSort(this.query.getSort());
     this.query = query;
+    this.closeExplanation();
     this.reload();
+  }
+
+  /**
+   * replaces the query by the specified one and keeps the current sort, the main toolbar shows the filters of the new query
+   */
+  applyQuery(query: Query): void {
+    query.setSort(this.query.getSort());
+    this.query = query;
+    this.restoredQuery = query;
+    this.reload();
+  }
+
+  canExplain(): boolean {
+    return this.dialogStyle ? !!this.explainBase : !!this.query?.hasFilter();
+  }
+
+  /**
+   * analyzes in which column values the displayed rows differ from the base rows
+   */
+  explain(): void {
+    const anchor = {
+      selection: this.query.clone(),
+      base: this.dialogStyle ? this.explainBase.clone() : new Query()
+    };
+    this.contrastAnchor = anchor;
+    this.contrast = undefined;
+    this.contrastService.explain(anchor.selection, anchor.base, this.scene.columns)
+      .then(analysis => {
+        if (this.contrastAnchor === anchor) {
+          this.contrast = analysis;
+        }
+      })
+      .catch(error => {
+        this.closeExplanation();
+        this.notifyError(error);
+      });
+  }
+
+  closeExplanation(): void {
+    this.contrastAnchor = undefined;
+    this.contrast = undefined;
+  }
+
+  /**
+   * narrows the explained rows to the ones having the value of the finding, a further finding replaces the previous narrowing
+   */
+  onFindingClick(finding: ContrastFinding): void {
+    const query = this.contrastAnchor.selection.clone();
+    const dataType = this.scene.columns.find(c => c.name === finding.column).dataType;
+    if (finding.kind === ValueKind.EMPTY) {
+      query.addPropertyFilter(new PropertyFilter(finding.column, Operator.EMPTY, '', dataType));
+    } else {
+      query.addPropertyFilter(new PropertyFilter(finding.column, Operator.EQUAL, finding.value, dataType));
+    }
+    this.applyQuery(query);
   }
 
   sortBy(column: Column): void {
@@ -205,6 +276,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
 
   applyRawDataState(state: RawDataState): void {
     this.adopt(state);
+    this.closeExplanation();
     this.applyWidths();
     this.reload();
   }

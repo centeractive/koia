@@ -56,6 +56,7 @@ import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.c
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
 import { PivotTableComponent } from './pivot-table/pivot-table.component';
+import { ContrastPanelComponent } from './raw-data/contrast-panel/contrast-panel.component';
 import { RawDataDialogComponent } from './raw-data/raw-data-dialog.component';
 import { RawDataViewComponent } from './raw-data/raw-data-view.component';
 import { RawDataComponent } from './raw-data/raw-data.component';
@@ -128,6 +129,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         RawDataComponent,
         RawDataViewComponent,
         RawDataDialogComponent,
+        ContrastPanelComponent,
         ChartComponent,
         ChartSideBarComponent,
         ScaleComponent,

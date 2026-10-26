@@ -22,7 +22,7 @@
             <img class="front-storage-icon" [src]="selectedDataStorage === couchDB ? '/assets/couchdb.png' : '/assets/monitor.png'"
               alt="" width="24" height="24">
             <span>{{ 'front.storage.storedIn' | translate }} <b>{{ selectedDataStorage === couchDB ? 'CouchDB' : ('front.storage.thisBrowser' | translate) }}</b></span>
-            <button type="button" class="front-storage-change" [attr.aria-expanded]="storageExpanded" [disabled]="loadingSample"
+            <button type="button" class="front-storage-change" [attr.aria-expanded]="storageExpanded" [disabled]="loadingAnySample"
               aria-controls="front-storage-options" (click)="storageExpanded = !storageExpanded">
               <mat-icon aria-hidden="true">swap_horiz</mat-icon>{{ 'front.storage.change' | translate }}
             </button>
@@ -31,9 +31,9 @@
             <div id="front-storage-options" class="front-storage-options">
               <div class="front-storage" role="group" [attr.aria-label]="'front.storage.group' | translate">
                 <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(indexedDB)"
-                  [attr.aria-pressed]="selectedDataStorage === indexedDB" [disabled]="loadingSample" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
+                  [attr.aria-pressed]="selectedDataStorage === indexedDB" [disabled]="loadingAnySample" (click)="onDataStorageChanged(indexedDB)">{{ indexedDB }}</button>
                 <button type="button" class="landing-btn front-storage-option" [attr.data-state]="colorOf(couchDB)"
-                  [attr.aria-pressed]="selectedDataStorage === couchDB" [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
+                  [attr.aria-pressed]="selectedDataStorage === couchDB" [disabled]="loadingAnySample" (click)="onDataStorageChanged(couchDB)">{{ couchDB }}</button>
                 @if (selectedDataStorage === couchDB) {
                   <button mat-icon-button type="button" class="front-storage-settings" [matTooltip]="'front.storage.configureCouchDB' | translate"
                     [attr.aria-label]="'front.storage.configureCouchDB' | translate" (click)="showCouchDBConnectionDialog()">
@@ -56,7 +56,7 @@
                 <p>{{ 'front.couchdbTip.text' | translate }}</p>
                 <div class="front-couchdb-tip-actions">
                   <button id="connect_couchdb_button" type="button" class="landing-btn landing-btn-accent"
-                    [disabled]="loadingSample" (click)="onDataStorageChanged(couchDB)">{{ 'front.couchdbTip.connect' | translate }}</button>
+                    [disabled]="loadingAnySample" (click)="onDataStorageChanged(couchDB)">{{ 'front.couchdbTip.connect' | translate }}</button>
                   <a class="front-couchdb-tip-link" href="https://github.com/centeractive/koia/blob/master/README.md#getting-started"
                     target="_blank" rel="noopener">{{ 'front.couchdbTip.setupGuide' | translate }}</a>
                   <button type="button" class="front-couchdb-tip-dismiss" (click)="dismissCouchDBTip()">{{ 'front.couchdbTip.notNow' | translate }}</button>
@@ -78,8 +78,8 @@
                 </a>
               }
               <button id="sample_button" type="button" class="landing-btn landing-btn-outline" [disabled]="busy"
-                [attr.aria-busy]="loadingSample" (click)="openSample()">
-                @if (loadingSample) {
+                [attr.aria-busy]="loadingSample === fruitSalesSampleOf" (click)="openSample(fruitSalesSampleOf)">
+                @if (loadingSample === fruitSalesSampleOf) {
                   <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>{{ 'front.actions.loadingSample' | translate }}
                 } @else {
                   <mat-icon>science</mat-icon>{{ 'front.actions.trySample' | translate }}
@@ -93,6 +93,16 @@
               </a>
             }
           </div>
+          <p class="front-log-sample">
+            <button id="log_sample_button" type="button" class="front-log-sample-button" [disabled]="busy"
+              [attr.aria-busy]="loadingSample === appLogsSampleOf" (click)="openSample(appLogsSampleOf)">
+              @if (loadingSample === appLogsSampleOf) {
+                <mat-icon class="front-sample-progress" aria-hidden="true">autorenew</mat-icon>{{ 'front.actions.loadingLogSample' | translate }}
+              } @else {
+                <mat-icon aria-hidden="true">receipt_long</mat-icon>{{ 'front.actions.tryLogSample' | translate }}
+              }
+            </button>
+          </p>
         </div>
       </div>
     </section>

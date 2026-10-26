@@ -15,6 +15,12 @@ Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or cont
 
 Koia keeps the **context to the original data**. A single click on a chart element, pivot table value or summary table count, or a double-click on a graph node, shows the raw data rows behind it, right in your browser with no install or account.
 
+**Explain** then tells you what makes these rows different: it ranks the column values that are clearly over-represented in them compared with the rest of the data, and one click on a finding narrows the rows to it. Picture 1 explains the ERROR rows of the log sample (*Or try log data* on the start page): 60% of them come from host node-7, compared with 5% of the other rows.
+
+ <img align="center" width="880" src="./src/intro/screenshots/explain.webp" alt="Explained ERROR rows of the log sample naming host node-7">
+
+ **Picture 1:** ERROR rows explained, host node-7 is over-represented by a factor of 11.8.
+
 Next to this, Koia enables the **switch between multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
 ## How it works
@@ -23,17 +29,17 @@ Data is loaded from files (CSV, Excel or JSON) to the browser's IndexedDB or a l
 
 The data can be viewed, filtered and sorted in a **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables** with a few mouseclicks. To gain insights into your data, Koia offers a variety of chart types such as: Pie charts, doughnut charts, bar charts, line charts, area charts, scatter charts, radar charts and polar area charts.
 
-Besides simply visualizing data, Koia also features **time and value filters** to take a closer look at the data. Each view has its own filters. A time range slider, for instance, narrows the raw data table to the selected period (Picture 1).
+Besides simply visualizing data, Koia also features **time and value filters** to take a closer look at the data. Each view has its own filters. A time range slider, for instance, narrows the raw data table to the selected period (Picture 2).
 
  <img align="center" width="880" src="./.github/images/rawdata-filter.webp" alt="Raw data filtered by a time range slider">
 
- **Picture 1:** Raw data table filtered by a time range slider on the date column.
+ **Picture 2:** Raw data table filtered by a time range slider on the date column.
 
-Dashboards combine summary tables, charts, relationship graphs and formatted text boxes in a grid of customizable dimension. Summary tables group data by several hierarchy levels and aggregate values such as average, sum or maximum (Picture 2).
+Dashboards combine summary tables, charts, relationship graphs and formatted text boxes in a grid of customizable dimension. Summary tables group data by several hierarchy levels and aggregate values such as average, sum or maximum (Picture 3).
 
  <img align="center" width="880" src="./src/intro/screenshots/dashboard.webp" alt="Dashboard on a five column grid">
 
- **Picture 2:** Dashboard on a five column grid with a summary table of revenue grouped by region, channel and product (average, sum, max), a scatter chart of units and revenue over time, and bar, doughnut and polar area charts.
+ **Picture 3:** Dashboard on a five column grid with a summary table of revenue grouped by region, channel and product (average, sum, max), a scatter chart of units and revenue over time, and bar, doughnut and polar area charts.
 
 When satisfied with the outcome, users can **save** all open tabs as a view or **export** data to use it elsewhere.
 

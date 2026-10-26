@@ -1,4 +1,4 @@
-import { Column } from 'app/shared/model';
+import { Column, Query } from 'app/shared/model';
 import { RawDataRevealService } from 'app/shared/services';
 import { ValueGrouping } from 'app/shared/value-range/model';
 import { QueryEnhancer } from './query-enhancer';
@@ -35,6 +35,18 @@ export class CellClickHandler {
     if (totalColumn) {
       queryEnhancer.addFiltersForValueChoices(exclusions, inclusions, pivotData);
     }
-    this.rawDataRevealService.show(queryEnhancer.getQuery());
+    this.rawDataRevealService.show(queryEnhancer.getQuery(), this.explainBase(valueGroupings, exclusions, inclusions, pivotData));
+  }
+
+  /**
+   * the rows the pivot table shows, i.e. the base query reduced by the exclusions of all row and column attributes, an empty
+   * filters object is required since exclusions of filter labels are skipped. As today, exclusions of attributes neither used
+   * in rows nor columns are not considered. The query of a non-total cell has no exclusions, it's thereby no subset of this
+   * base, which the explanation copes with by intersecting both
+   */
+  private explainBase(valueGroupings: ValueGrouping[], exclusions: object, inclusions: object, pivotData: object): Query {
+    const baseEnhancer = new QueryEnhancer(this.baseQueryProvider.provide().clone(), this.columns, valueGroupings, {});
+    baseEnhancer.addFiltersForValueChoices(exclusions, inclusions, pivotData);
+    return baseEnhancer.getQuery();
   }
 }

@@ -22,6 +22,7 @@ import { RawDataDialogComponent } from '../raw-data-dialog.component';
 import { RawDataComponent } from '../raw-data.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
 import { DialogCloseButtonComponent } from 'app/shared/ui/dialog-close-button/dialog-close-button.component';
+import { ContrastPanelComponent } from '../contrast-panel/contrast-panel.component';
 
 const TIMEOUT = 30_000;
 const FILTERED_COUNT = 411;
@@ -39,7 +40,7 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataDialogComponent, RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, ColumnResizeDirective,
-        DialogCloseButtonComponent],
+        DialogCloseButtonComponent, ContrastPanelComponent],
       imports: [MatDialogModule, MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule,
         MatBottomSheetModule],
       providers: [
@@ -189,5 +190,31 @@ describe.each(BACKENDS)('RawDataDialogComponent IT ($name)', backend => {
     // then
     expect(paneWidth()).toBeLessThan(innerWidth - 40);
     expect(scroller().scrollWidth).toBeLessThanOrEqual(scroller().clientWidth);
+  }, TIMEOUT);
+
+  it('should explain rows against base of drill-down', async () => {
+
+    // given
+    const query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'ERROR'));
+    TestBed.inject(RawDataRevealService).show(query, new Query());
+    await waitFrames(() => !!pane()?.querySelector('.vt-td'), 600);
+    await waitFrames(() => !rawDataComponent().loading, 600);
+
+    // when
+    (pane().querySelector('#but_explain') as HTMLButtonElement).click();
+    await waitFrames(() => !!pane().querySelector('.contrast-message'), 600);
+
+    // then
+    expect(rawDataComponent().contrast.comparable).toBe(true);
+    expect(pane().querySelector('.contrast-message').textContent).toContain('No column value is clearly over-represented');
+  }, TIMEOUT);
+
+  it('should not offer explanation without base', async () => {
+
+    // when
+    await openDialog();
+
+    // then
+    expect(pane().querySelector('#but_explain')).toBeNull();
   }, TIMEOUT);
 });

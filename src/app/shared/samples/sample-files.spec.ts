@@ -6,13 +6,16 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ViewToModelConverter } from 'app/shared/services/view-persistence/view-to-model-converter';
 import { hasContent } from 'app/shared/services/view-tabs/tab-defs';
 import { ColumnNameConverter } from 'app/shared/utils';
-import { fruitSalesSampleOf, SampleDef } from './fruit-sales.sample';
+import { appLogsSampleOf } from './app-logs.sample';
+import { fruitSalesSampleOf } from './fruit-sales.sample';
 import { LANGUAGES } from 'app/shared/services/language';
-import { SampleData, toEntries } from './sample-data';
+import { Language } from 'app/shared/services/language';
+import { SampleData, SampleDef, toEntries } from './sample-data';
 
 describe('sample files', () => {
 
    const languages = LANGUAGES;
+   const samples: [string, (language: Language) => SampleDef][] = [['fruit sales', fruitSalesSampleOf], ['app logs', appLogsSampleOf]];
 
    async function dataOf(def: SampleDef): Promise<SampleData> {
       const response = await fetch('/assets/samples/' + def.file);
@@ -29,18 +32,18 @@ describe('sample files', () => {
             ['rows', 'cols', 'vals'].includes(key) ? value.length : value);
    }
 
-   it('sample scene ids should differ per language', () => {
+   it('sample scene ids should differ per sample and language', () => {
 
       // when
-      const sceneIds = new Set(languages.map(l => fruitSalesSampleOf(l).sceneId));
+      const sceneIds = new Set(samples.flatMap(([, sampleOf]) => languages.map(l => sampleOf(l).sceneId)));
 
       // then
-      expect(sceneIds.size).toBe(languages.length);
+      expect(sceneIds.size).toBe(samples.length * languages.length);
    });
 
-   languages.forEach(language => describe(language, () => {
+   describe.each(samples)('%s', (_, sampleOf) => languages.forEach(language => describe(language, () => {
 
-      const def = fruitSalesSampleOf(language);
+      const def = sampleOf(language);
 
       it('should contain scene with expected number of entries', async () => {
 
@@ -61,7 +64,7 @@ describe('sample files', () => {
          const data = await dataOf(def);
 
          // then
-         expect(structureOf(data)).toBe(structureOf(await dataOf(fruitSalesSampleOf('en'))));
+         expect(structureOf(data)).toBe(structureOf(await dataOf(sampleOf('en'))));
       });
 
       it('should convert dates to local midnight', async () => {
@@ -149,5 +152,5 @@ describe('sample files', () => {
             expect(r.data.datasets.length).toBeGreaterThan(0);
          });
       });
-   }));
+   })));
 });

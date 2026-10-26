@@ -927,6 +927,48 @@ describe('DBService', () => {
       });
   });
 
+  it('#findMatchingIds should return IDs of all matching entries ignoring sort and paging', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
+    const query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'ERROR'));
+    query.setPageDefinition(0, 1);
+
+    // when
+    const ids = await dbService.findMatchingIds(query);
+
+    // then
+    expect([...ids].sort()).toEqual(['3', '4', '5']);
+  });
+
+  it('#findMatchingIds should return IDs of all entries when query has no filter', async () => {
+
+    // given
+    await dbService.writeEntries(initialScene.database, entries.slice(0)).then(() => null);
+
+    // when
+    const ids = await dbService.findMatchingIds(new Query());
+
+    // then
+    expect([...ids].sort()).toEqual(['1', '2', '3', '4', '5']);
+  });
+
+  it('#findMatchingIds should return no IDs for full text filter when scene has no stored text column', async () => {
+
+    // given
+    initialScene.columns = [{ name: 'Amount', dataType: DataType.NUMBER, width: 50, indexed: true }];
+    const findSpy = vi.spyOn(couchDBService, 'find');
+    const query = new Query();
+    query.setFullTextFilter('error');
+
+    // when
+    const ids = await dbService.findMatchingIds(query);
+
+    // then
+    expect(ids.size).toBe(0);
+    expect(findSpy).not.toHaveBeenCalled();
+  });
+
   it('#findEntries should return filtered entries when two contains filter on same column exist', async () => {
 
     // given

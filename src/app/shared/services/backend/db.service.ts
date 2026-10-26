@@ -416,6 +416,18 @@ export class DBService {
   }
 
   /**
+   * @returns the IDs of all entries of the active scene matching the filters of the specified query
+   */
+  async findMatchingIds(query: Query): Promise<Set<string>> {
+    if (this.matchesNothing(query)) {
+      return new Set();
+    }
+    const mangoQuery = this.queryConverter.queryForAllMatchingIds(storedColumnsOf(this.activeScene.columns), query);
+    const objects = await lastValueFrom(this.db.find(this.activeScene.database, mangoQuery));
+    return new Set(objects.map(o => o._id));
+  }
+
+  /**
    * @returns the number of all non-design documents contained in the entries database of the active scene
    */
   async countEntriesOfActiveScene(): Promise<number> {

@@ -2,6 +2,7 @@ import { CategoricalColorProvider, CategoricalColorScheme, ColorOptions, ColorPr
 import { Aggregation, Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
+import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleData, toEntries } from 'app/shared/samples/sample-data';
 import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
@@ -811,10 +812,11 @@ describe('DashboardGenerator', () => {
     expect(tableOf(exceedingResult).gridColumnSpan).toBe(2);
   });
 
-  LANGUAGES.forEach(language => it('#generate should create charts rendering without error from sample entries (' + language + ')', async () => {
+  [fruitSalesSampleOf, appLogsSampleOf].forEach(sampleOf => LANGUAGES.forEach(language =>
+    it('#generate should create charts rendering without error from sample entries (' + sampleOf(language).file + ')', async () => {
 
     // given
-    const response = await fetch('/assets/samples/' + fruitSalesSampleOf(language).file);
+    const response = await fetch('/assets/samples/' + sampleOf(language).file);
     expect(response.ok).toBe(true);
     const data: SampleData = await response.json();
     const entries = toEntries(data);
@@ -834,7 +836,7 @@ describe('DashboardGenerator', () => {
         expect(c.dataSampledDown).toBe(false);
       });
     }
-  }));
+  })));
 
   it('#generate should fill grid of food types and ratings with other chart types of the same columns', () => {
     for (const columns of [3, 4]) {

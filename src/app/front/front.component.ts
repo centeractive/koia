@@ -5,12 +5,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConnectionInfo, Route } from 'app/shared/model';
+import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
+import { SampleDef } from 'app/shared/samples/sample-data';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
 import { DialogService, NotificationService, messageOf } from 'app/shared/services';
 import { CouchDBFallback, DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { LanguageService } from 'app/shared/services/language';
+import { Language, LanguageService } from 'app/shared/services/language';
 import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
 import { combineLatest, firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
@@ -36,7 +38,13 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   ready = false;
   scenesCount: number;
   storageExpanded = false;
-  loadingSample = false;
+  readonly fruitSalesSampleOf = fruitSalesSampleOf;
+  readonly appLogsSampleOf = appLogsSampleOf;
+
+  /**
+   * the sample being loaded, undefined while no sample is being loaded
+   */
+  loadingSample: (language: Language) => SampleDef;
   couchDBTipDismissed = FrontComponent.readCouchDBTipDismissed();
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
@@ -119,21 +127,28 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    * start actions and storage selection are blocked while the backend is not ready or the sample is being loaded
    */
   get busy(): boolean {
-    return !this.ready || this.loadingSample;
+    return !this.ready || !!this.loadingSample;
   }
 
   /**
-   * inserts the sample scene of the current language unless it exists already and shows its raw data
+   * storage selection is blocked while a sample is being loaded only, it must remain possible after a failed CouchDB connection
    */
-  openSample(): void {
-    this.loadingSample = true;
-    this.sampleSceneService.open(fruitSalesSampleOf(this.languageService.current()))
+  get loadingAnySample(): boolean {
+    return !!this.loadingSample;
+  }
+
+  /**
+   * inserts the specified sample scene of the current language unless it exists already and shows its raw data
+   */
+  openSample(sampleOf: (language: Language) => SampleDef): void {
+    this.loadingSample = sampleOf;
+    this.sampleSceneService.open(sampleOf(this.languageService.current()))
       .then(() => {
         this.clearCachedViews();
         return this.router.navigateByUrl(Route.RAWDATA);
       })
       .catch(err => {
-        this.loadingSample = false;
+        this.loadingSample = undefined;
         this.notifyError(err);
       });
   }

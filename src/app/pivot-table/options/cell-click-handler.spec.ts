@@ -206,6 +206,60 @@ describe('CellClickHandler', () => {
       expect(query.getPropertyFilters()).toEqual(expected);
    });
 
+   it('#onCellClicked should explain row total against base query with exclusions of clicked attribute', () => {
+
+      // given
+      baseQueryProvider.provide = () => new Query(new PropertyFilter('Path', Operator.EQUAL, '/', DataType.TEXT));
+      const pivotData = { colAttrs: ['Host'], rowAttrs: ['Level'] };
+      const exclusions = { Level: ['DEBUG'], Host: ['server9'], Path: ['/x'] };
+
+      // when
+      cellClickHandler.onCellClicked([], createMouseEvent('pvtTotal'), { Level: 'ERROR' }, exclusions, {}, pivotData);
+
+      // then
+      const explainBase: Query = vi.mocked(showSpy).mock.lastCall[1];
+      expect(explainBase.getPropertyFilters()).toEqual([
+         new PropertyFilter('Path', Operator.EQUAL, '/', DataType.TEXT),
+         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT),
+         new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG', DataType.TEXT)
+      ]);
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
+      expect(query.getPropertyFilters()).toEqual([
+         new PropertyFilter('Path', Operator.EQUAL, '/', DataType.TEXT),
+         new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT),
+         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT)
+      ]);
+   });
+
+   it('#onCellClicked should explain value cell against base query with exclusions although cell query has none', () => {
+
+      // given
+      const pivotData = { colAttrs: ['Host'], rowAttrs: ['Level'] };
+
+      // when
+      cellClickHandler.onCellClicked([], createMouseEvent('pvtVal'), { Level: 'ERROR', Host: 'server1' }, { Host: ['server9'] }, {}, pivotData);
+
+      // then
+      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
+      expect(query.getPropertyFilters()).toEqual([
+         new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT),
+         new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)
+      ]);
+      const explainBase: Query = vi.mocked(showSpy).mock.lastCall[1];
+      expect(explainBase.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT)]);
+   });
+
+   it('#onCellClicked should explain against base query when there are no value choices', () => {
+
+      // when
+      cellClickHandler.onCellClicked([], createMouseEvent('pvtVal'), { Level: 'ERROR' }, undefined, undefined, {});
+
+      // then
+      const explainBase: Query = vi.mocked(showSpy).mock.lastCall[1];
+      expect(explainBase.getPropertyFilters()).toEqual([]);
+      expect(explainBase.getValueRangeFilters()).toEqual([]);
+   });
+
    function createValueGrouping(columnName: string): ValueGrouping {
       const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }, { max: 30, active: true }]
       return { columnName: columnName, ranges: ranges };

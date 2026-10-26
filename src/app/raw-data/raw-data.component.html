@@ -24,6 +24,12 @@
         [matTooltip]="(highlight ? 'rawData.undoHighlight' : 'rawData.highlight') | translate" (click)="toggleHighlight()">
         <mat-icon>highlight</mat-icon>
       </button>
+      @if (canExplain()) {
+        <button id="but_explain" mat-icon-button [class.koia-toggle-active]="!!contrastAnchor"
+          [matTooltip]="'contrast.explain' | translate" (click)="explain()">
+          <mat-icon>insights</mat-icon>
+        </button>
+      }
     </koia-view-toolbar>
     <mat-menu #moreMenu="matMenu">
       @for (exportFormat of exportFormats; track exportFormat) {
@@ -39,6 +45,9 @@
     }
   </div>
 
+  @if (contrastAnchor && !isPaged()) {
+    <koia-contrast-panel [analysis]="contrast" (findingClick)="onFindingClick($event)" (closePanel)="closeExplanation()" />
+  }
   @if (isPaged()) {
     <koia-table-sheets [paging]="paging" [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" [pageTemplate]="tableTemplate" />
   } @else {

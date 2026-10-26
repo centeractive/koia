@@ -10,7 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { ColumnResizeDirective } from 'app/shared/directives/column-resize.directive';
-import { CanvasPaging, Column, ComputeOperator, DataType, ExportFormat, Page, Query, Route, Scene } from 'app/shared/model';
+import { CanvasPaging, Column, ComputeOperator, DataType, ExportFormat, Operator, Page, PropertyFilter, Query, Route, Scene } from 'app/shared/model';
 import { RawDataState } from 'app/shared/model/view-config';
 import { DialogService, ExportService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -39,6 +39,9 @@ import { PagingTogglesComponent } from 'app/shared/ui/sheets/paging-toggles.comp
 import { SheetComponent } from 'app/shared/ui/sheets/sheet.component';
 import { TableSheetsComponent } from 'app/shared/ui/sheets/table-sheets.component';
 import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
+import { ContrastAnalysis, ContrastService } from 'app/shared/services/contrast/contrast.service';
+import { ContrastFinding, ValueKind } from 'app/shared/services/contrast/contrast.types';
+import { ContrastPanelComponent } from './contrast-panel/contrast-panel.component';
 
 describe('RawDataComponent', () => {
 
@@ -78,7 +81,8 @@ describe('RawDataComponent', () => {
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent,
-        PrintHeadingComponent, ColumnResizeDirective, PagingTogglesComponent, TableSheetsComponent, SheetComponent],
+        PrintHeadingComponent, ColumnResizeDirective, PagingTogglesComponent, TableSheetsComponent, SheetComponent,
+        ContrastPanelComponent],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),
@@ -1204,6 +1208,328 @@ describe('RawDataComponent', () => {
       // then
       expect(component.columns).toBe(loadedColumns);
       expect(requestEntriesPageSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('explain', () => {
+
+    const ANALYSIS: ContrastAnalysis = {
+      comparable: true,
+      findings: [finding('Host', 'server-node-1'), finding('Level', 'ERROR')],
+      skippedColumns: []
+    };
+
+    let explainSpy: Mock;
+
+    beforeEach(() => {
+      explainSpy = vi.spyOn(TestBed.inject(ContrastService), 'explain').mockResolvedValue(ANALYSIS);
+    });
+
+    function finding(column: string, value: string, kind = ValueKind.VALUE): ContrastFinding {
+      return { column, kind, value, selectedCount: 5, selectedShare: 0.5, restShare: 0.1, lift: 4.5, z: 6, isNew: false };
+    }
+
+    function errorQuery(): Query {
+      return new Query(new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT));
+    }
+
+    function explainButton(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('#but_explain');
+    }
+
+    function panel(): HTMLElement {
+      return fixture.nativeElement.querySelector('koia-contrast-panel');
+    }
+
+    async function explain(): Promise<void> {
+      explainButton().click();
+      await settle();
+      await render();
+    }
+
+    it('should not offer explanation in main view without filter', async () => {
+
+      // when
+      await render();
+
+      // then
+      expect(component.canExplain()).toBe(false);
+      expect(explainButton()).toBeNull();
+    });
+
+    it('should offer explanation in main view with filter', async () => {
+
+      // given
+      component.query = errorQuery();
+
+      // when
+      await render();
+
+      // then
+      expect(explainButton()).not.toBeNull();
+    });
+
+    it('should not offer explanation in dialog without base', async () => {
+
+      // given
+      component.dialogStyle = true;
+      component.query = errorQuery();
+
+      // when
+      await render();
+
+      // then
+      expect(explainButton()).toBeNull();
+    });
+
+    it('should offer explanation in dialog with base although rows are not filtered', async () => {
+
+      // given
+      component.dialogStyle = true;
+      component.explainBase = new Query();
+
+      // when
+      await render();
+
+      // then
+      expect(explainButton()).not.toBeNull();
+    });
+
+    it('#explain should compare rows of main view with all rows and show findings', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+
+      // when
+      await explain();
+
+      // then
+      const [selection, base, sceneColumns] = explainSpy.mock.lastCall;
+      expect(selection).toEqual(errorQuery());
+      expect(selection).not.toBe(component.query);
+      expect(base).toEqual(new Query());
+      expect(sceneColumns).toBe(scene.columns);
+      expect(explainButton().classList).toContain('koia-toggle-active');
+      expect(panel().querySelectorAll('.contrast-finding').length).toBe(2);
+    });
+
+    it('#explain should compare rows of dialog with base', async () => {
+
+      // given
+      const base = new Query(new PropertyFilter('Host', Operator.NOT_EMPTY, ''));
+      component.dialogStyle = true;
+      component.explainBase = base;
+      component.query = errorQuery();
+      await render();
+
+      // when
+      await explain();
+
+      // then
+      expect(explainSpy.mock.lastCall[1]).toEqual(base);
+      expect(explainSpy.mock.lastCall[1]).not.toBe(base);
+    });
+
+    it('panel should show progress until analysis is done', async () => {
+
+      // given
+      explainSpy.mockReturnValue(new Promise(() => undefined));
+      component.query = errorQuery();
+      await render();
+
+      // when
+      await explain();
+
+      // then
+      expect(panel().querySelector('mat-progress-bar')).not.toBeNull();
+    });
+
+    it('#onFindingClick should narrow explained rows and keep sort and panel', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+      component.sortBy(columns[columnIndex('Amount')]);
+      await settle();
+
+      // when
+      (panel().querySelector('.contrast-finding') as HTMLButtonElement).click();
+      await render();
+
+      // then
+      const expected = errorQuery();
+      expected.addPropertyFilter(new PropertyFilter('Host', Operator.EQUAL, 'server-node-1', DataType.TEXT));
+      expected.setSort({ active: 'Amount', direction: 'asc' });
+      expect(component.query).toEqual(expected);
+      expect(component.restoredQuery).toBe(component.query);
+      expect(requestedQuery(-1).getPropertyFilters()).toEqual(expected.getPropertyFilters());
+      expect(requestedQuery(-1).getPageIndex()).toBe(0);
+      expect(panel()).not.toBeNull();
+      expect(explainSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('#onFindingClick should replace previous narrowing', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+      component.onFindingClick(ANALYSIS.findings[0]);
+
+      // when
+      component.onFindingClick(finding('Amount', '20'));
+
+      // then
+      const expected = errorQuery();
+      expected.addPropertyFilter(new PropertyFilter('Amount', Operator.EQUAL, '20', DataType.NUMBER));
+      expect(component.query.getPropertyFilters()).toEqual(expected.getPropertyFilters());
+    });
+
+    it('#onFindingClick should narrow to rows with missing value', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      component.onFindingClick(finding('Host', undefined, ValueKind.EMPTY));
+
+      // then
+      expect(component.query.getPropertyFilters()[1]).toEqual(new PropertyFilter('Host', Operator.EMPTY, '', DataType.TEXT));
+    });
+
+    it('#sortBy should keep panel open', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      component.sortBy(columns[columnIndex('Level')]);
+      await render();
+
+      // then
+      expect(panel()).not.toBeNull();
+    });
+
+    it('#onFilterChanged should close panel', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      component.onFilterChanged(new Query());
+      await render();
+
+      // then
+      expect(component.contrastAnchor).toBeUndefined();
+      expect(panel()).toBeNull();
+    });
+
+    it('#applyRawDataState should close panel', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      component.applyRawDataState({ query: queryToQueryDef(errorQuery()), data: { considerColumnWidths: true, highlight: false } });
+      await render();
+
+      // then
+      expect(panel()).toBeNull();
+    });
+
+    it('computed column change should close panel', async () => {
+
+      // given
+      vi.spyOn(dbService, 'updateScene').mockImplementation(s => Promise.resolve(s));
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      await TestBed.inject(ComputedColumnService).save({
+        name: 'Share', dataType: DataType.NUMBER, width: 6, indexed: false,
+        computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+      });
+      await render();
+
+      // then
+      expect(panel()).toBeNull();
+    });
+
+    it('close button should close panel', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      (panel().querySelector('.contrast-close') as HTMLButtonElement).click();
+      await render();
+
+      // then
+      expect(panel()).toBeNull();
+      expect(explainButton().classList).not.toContain('koia-toggle-active');
+    });
+
+    it('panel should be hidden in page views', async () => {
+
+      // given
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      component.onPagingChange(CanvasPaging.PORTRAIT);
+      await render();
+
+      // then
+      expect(component.contrastAnchor).toBeDefined();
+      expect(panel()).toBeNull();
+    });
+
+    it('#explain should ignore analysis of closed panel', async () => {
+
+      // given
+      let resolve: (analysis: ContrastAnalysis) => void;
+      explainSpy.mockReturnValue(new Promise(r => resolve = r));
+      component.query = errorQuery();
+      await render();
+      await explain();
+      component.closeExplanation();
+
+      // when
+      resolve(ANALYSIS);
+      await render();
+
+      // then
+      expect(component.contrast).toBeUndefined();
+    });
+
+    it('#explain should close panel and notify error when analysis fails', async () => {
+
+      // given
+      explainSpy.mockRejectedValue('database unavailable');
+      vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+      component.query = errorQuery();
+      await render();
+
+      // when
+      await explain();
+
+      // then
+      expect(panel()).toBeNull();
+      expect(notificationService.onError).toHaveBeenCalled();
     });
   });
 });

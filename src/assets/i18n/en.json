@@ -33,7 +33,9 @@
       "continueMany": "Continue with your {{count}} scenes",
       "loadFile": "Load a file",
       "loadingSample": "Loading sample…",
-      "trySample": "Try sample data"
+      "trySample": "Try sample data",
+      "tryLogSample": "Or try log data",
+      "loadingLogSample": "Loading log data…"
     },
     "guide": {
       "title": "Create your first views",
@@ -159,6 +161,18 @@
     "saveAs": "Save As {{format}}",
     "exportFiltered": "filtered data is collected and saved as {{format}} in the background",
     "exportComplete": "complete data is collected and saved as {{format}} in the background"
+  },
+  "contrast": {
+    "title": "What makes these rows different",
+    "explain": "Explain these rows",
+    "disabled": "There is nothing to compare: the rows are either none or all of the compared rows.",
+    "none": "No column value is clearly over-represented in these rows.",
+    "share": "{{here}}% here · {{rest}}% elsewhere",
+    "new": "new",
+    "empty": "(empty)",
+    "null": "(null)",
+    "blank": "(\"\")",
+    "skipped": "Not analyzed, too many different values: {{columns}}"
   },
   "sample": {
     "loadFailed": "cannot load sample data: {{reason}}"

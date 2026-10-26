@@ -34,7 +34,7 @@ describe('NodeDoubleClickHandler', () => {
       handler.onNodeDoubleClicked(rootNode, graphContext);
 
       // then
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, [], [], graphContext);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, [], [], graphContext, graphContext.query);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of leaf node', () => {
@@ -49,7 +49,7 @@ describe('NodeDoubleClickHandler', () => {
       handler.onNodeDoubleClicked(node, graphContext);
 
       // then
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, ['Level'], ['ERROR'], graphContext);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(graphContext.query, ['Level'], ['ERROR'], graphContext, graphContext.query);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of leaf node with <empty> value', () => {
@@ -64,7 +64,7 @@ describe('NodeDoubleClickHandler', () => {
 
       // then
       const expectedQuery = new Query(new PropertyFilter('Level', Operator.EMPTY, ''));
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], [], graphContext);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], [], graphContext, graphContext.query);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of time node', () => {
@@ -80,7 +80,7 @@ describe('NodeDoubleClickHandler', () => {
       handler.onNodeDoubleClicked(node, graphContext);
 
       // then
-      expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], [], [], graphContext);
+      expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], [], [], graphContext, graphContext.query);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of time node within time columns of its hierarchy level', () => {
@@ -100,7 +100,7 @@ describe('NodeDoubleClickHandler', () => {
 
       // then
       expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(graphContext.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'],
-         graphContext);
+         graphContext, graphContext.query);
    });
 
    it('#onNodeDoubleClicked should reveal raw data of time node with <empty> value', () => {
@@ -117,7 +117,7 @@ describe('NodeDoubleClickHandler', () => {
 
       // then
       const expectedQuery = new Query(new PropertyFilter('Time', Operator.EMPTY, ''));
-      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], [], graphContext);
+      expect(rawDataRevealService.ofQuery).toHaveBeenCalledWith(expectedQuery, [], [], graphContext, graphContext.query);
       expect(rawDataRevealService.ofTimeUnit).not.toHaveBeenCalled();
    });
 
@@ -140,7 +140,7 @@ describe('NodeDoubleClickHandler', () => {
       // then
       const expectedQuery = new Query(new PropertyFilter('End', Operator.EMPTY, ''));
       expect(rawDataRevealService.ofTimeUnit).toHaveBeenCalledWith(expectedQuery, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'],
-         graphContext);
+         graphContext, graphContext.query);
    });
 
    function createColumn(name: string, dataType: DataType, timeUnit?: TimeUnit): Column {

@@ -57,7 +57,7 @@ describe('RawDataRevealService', () => {
     // then
     const expectedQuery = new Query(new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, '100', DataType.TEXT));
     expect(dialogService.open).toHaveBeenCalledWith(RawDataDialogComponent, {
-      data: expectedQuery,
+      data: { query: expectedQuery, explainBase: undefined },
       panelClass: 'dialog-container',
       maxWidth: 'calc(100vw - 40px)',
       enterAnimationDuration: 1,
@@ -72,7 +72,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter(CouchDBConstants._ID, Operator.EQUAL, '100', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([]);
   });
@@ -84,7 +84,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo + min, maxExcluding: true })
@@ -101,7 +101,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: oneHourAgo, maxExcluding: undefined })
@@ -115,7 +115,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Time', Operator.EMPTY, '', DataType.TIME),
       new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)
@@ -133,7 +133,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Time', Operator.EMPTY, '', DataType.TIME),
       new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)
@@ -152,7 +152,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo + min, max: now - min, maxExcluding: undefined })
@@ -170,7 +170,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: now - min, maxExcluding: undefined })
@@ -188,7 +188,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: now - min, max: now, maxExcluding: true })
@@ -206,7 +206,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneHourAgo, max: now, maxExcluding: true })
     ]);
@@ -219,7 +219,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.hasFilter()).toBe(false);
   });
 
@@ -233,7 +233,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getFullTextFilter()).toEqual('abc');
     expect(actualQuery.getPropertyFilters()).toEqual([]);
     expect(actualQuery.getValueRangeFilters()).toEqual([]);
@@ -251,7 +251,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getFullTextFilter()).toBe('asdf');
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Host', Operator.EQUAL, 'server1'),
@@ -267,7 +267,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.hasFullTextFilter()).toBe(false);
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)]);
     expect(actualQuery.getValueRangeFilters()).toEqual([]);
@@ -280,7 +280,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.hasFullTextFilter()).toBe(false);
     expect(actualQuery.getPropertyFilters()).toEqual([]);
     expect(actualQuery.getValueRangeFilters()).toEqual([new ValueRangeFilter('Time', { min: now, max: now, maxExcluding: undefined })]);
@@ -297,7 +297,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.hasFullTextFilter()).toBe(false);
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Host', Operator.EQUAL, 'Server', DataType.TEXT),
@@ -317,7 +317,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.hasFullTextFilter()).toBe(false);
     expect(actualQuery.getPropertyFilters()).toEqual([]);
     expect(actualQuery.getValueRangeFilters()).toEqual([
@@ -340,7 +340,7 @@ describe('RawDataRevealService', () => {
 
     // then
     expect(dialogServiceOpenSpy).toHaveBeenCalled();
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getFullTextFilter()).toBe('xyz');
     expect(actualQuery.getPropertyFilters()).toEqual([
       new PropertyFilter('Host', Operator.NOT_EMPTY, ''),
@@ -402,7 +402,7 @@ describe('RawDataRevealService', () => {
     service.ofQuery(query, ['Amount'], [1234.5], context);
 
     // then
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.EQUAL, 1234.5, DataType.NUMBER)]);
   });
 
@@ -412,7 +412,7 @@ describe('RawDataRevealService', () => {
     service.ofQuery(query, ['Level'], [undefined], context);
 
     // then
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EMPTY, '', DataType.TEXT)]);
   });
 
@@ -422,7 +422,7 @@ describe('RawDataRevealService', () => {
     service.ofQuery(query, ['Amount'], [null], context);
 
     // then
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.EMPTY, '', DataType.NUMBER)]);
   });
 
@@ -432,9 +432,80 @@ describe('RawDataRevealService', () => {
     service.ofQuery(query, ['Host'], [''], context);
 
     // then
-    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data;
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
     expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EMPTY, '', DataType.TEXT)]);
   });
+
+  it('#ofID should offer no explanation', () => {
+
+    // when
+    service.ofID('100');
+
+    // then
+    expect(explainBaseOfDialog()).toBeUndefined();
+  });
+
+  it('#ofQuery should explain against sanitized base query', () => {
+
+    // given
+    query.addPropertyFilter(new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT));
+    query.addPropertyFilter(new PropertyFilter('Host', Operator.EQUAL, 'server1'));
+
+    // when
+    service.ofQuery(query, ['Level'], ['ERROR'], context);
+
+    // then
+    expect(explainBaseOfDialog().getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)]);
+  });
+
+  it('#ofQuery should explain against specified base query', () => {
+
+    // given
+    const explainBase = new Query(new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT));
+
+    // when
+    service.ofQuery(query, ['Level'], ['ERROR'], context, explainBase);
+
+    // then
+    expect(explainBaseOfDialog().getPropertyFilters()).toEqual(explainBase.getPropertyFilters());
+  });
+
+  it('#ofTimeUnit should explain against base query without time range', () => {
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'], context);
+
+    // then
+    const explainBase = explainBaseOfDialog();
+    expect(explainBase.getPropertyFilters()).toEqual([]);
+    expect(explainBase.getValueRangeFilters()).toEqual([]);
+  });
+
+  it('#ofTimeUnit should explain against specified base query', () => {
+
+    // given
+    const explainBase = new Query(new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT));
+
+    // when
+    service.ofTimeUnit(context.query, [timeColumn], [oneHourAgo], ['Level'], ['ERROR'], context, explainBase);
+
+    // then
+    expect(explainBaseOfDialog().getPropertyFilters()).toEqual(explainBase.getPropertyFilters());
+    expect(explainBaseOfDialog().getValueRangeFilters()).toEqual([]);
+  });
+
+  it('#show should offer no explanation without base query', () => {
+
+    // when
+    service.show(new Query());
+
+    // then
+    expect(explainBaseOfDialog()).toBeUndefined();
+  });
+
+  function explainBaseOfDialog(): Query {
+    return vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.explainBase;
+  }
 
   function shareColumn(): Column {
     return {

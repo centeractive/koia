@@ -3,6 +3,16 @@ import type { Document } from 'app/shared/model/document.type';
 import type { Scene } from 'app/shared/model/scene.type';
 import type { TabDef } from 'app/shared/model/view-config/tab-def.type';
 
+export interface SampleDef {
+   id: string;
+   /** file with the scene, its preconfigured view tabs and its entries */
+   file: string;
+   /** fixed _id of the sample scene */
+   sceneId: string;
+   sceneName: string;
+   rowCount: number;
+}
+
 /**
  * content of a sample file, the time values of the entries are local dates of pattern 'yyyy-MM-dd'
  */

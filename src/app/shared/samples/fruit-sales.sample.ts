@@ -1,14 +1,5 @@
 import { Language } from 'app/shared/services/language/language';
-
-export interface SampleDef {
-   id: string;
-   /** file with the scene, its preconfigured view tabs and its entries */
-   file: string;
-   /** fixed _id of the sample scene */
-   sceneId: string;
-   sceneName: string;
-   rowCount: number;
-}
+import { SampleDef } from './sample-data';
 
 export const FRUIT_SALES = 'fruit-sales';
 

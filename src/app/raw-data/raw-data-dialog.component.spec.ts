@@ -1,5 +1,6 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -17,6 +18,7 @@ class RawDataComponent {
    @Input() dialogStyle: boolean;
    @Input() query: Query;
    @Input() hideToolbar: boolean;
+   @Input() explainBase: Query;
 }
 describe('RawDataDialogComponent', () => {
 
@@ -46,16 +48,44 @@ describe('RawDataDialogComponent', () => {
       expect(component.hideToolbar).toBe(false);
    });
 
-   function createComponent(query: Query): RawDataDialogComponent {
+   it('should pass query and explanation base to raw data component', () => {
+
+      // given
+      const query = new Query(new PropertyFilter('Level', Operator.EQUAL, 'ERROR'));
+      const explainBase = new Query();
+
+      // when
+      createComponent(query, explainBase);
+
+      // then
+      const rawData: RawDataComponent = fixture.debugElement.query(By.directive(RawDataComponent)).componentInstance;
+      expect(rawData.dialogStyle).toBe(true);
+      expect(rawData.query).toBe(query);
+      expect(rawData.explainBase).toBe(explainBase);
+   });
+
+   it('should pass no explanation base to raw data component when there is none', () => {
+
+      // when
+      createComponent(new Query());
+
+      // then
+      const rawData: RawDataComponent = fixture.debugElement.query(By.directive(RawDataComponent)).componentInstance;
+      expect(rawData.explainBase).toBeUndefined();
+   });
+
+   let fixture: ComponentFixture<RawDataDialogComponent>;
+
+   function createComponent(query: Query, explainBase?: Query): RawDataDialogComponent {
       TestBed.configureTestingModule({
          declarations: [RawDataDialogComponent, RawDataComponent, DialogCloseButtonComponent],
          imports: [MatDialogModule, MatIconModule, MatTooltipModule],
          providers: [
             { provide: MatDialogRef, useValue: { close(): void { } } },
-            { provide: MAT_DIALOG_DATA, useValue: query },
+            { provide: MAT_DIALOG_DATA, useValue: { query, explainBase } },
          ]
       }).compileComponents();
-      const fixture = TestBed.createComponent(RawDataDialogComponent);
+      fixture = TestBed.createComponent(RawDataDialogComponent);
       fixture.detectChanges();
       return fixture.componentInstance;
    }

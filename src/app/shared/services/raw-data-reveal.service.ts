@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
-import { RawDataDialogComponent } from 'app/raw-data/raw-data-dialog.component';
+import { RawDataDialogComponent, RawDataDialogData } from 'app/raw-data/raw-data-dialog.component';
 import { Column, DataType, ElementContext, Operator, PropertyFilter, Query } from '../model';
 import { DateTimeUtils, QuerySanitizer } from '../utils';
 import { isComputedColumn } from '../utils/column-utils';
@@ -34,9 +34,10 @@ export class RawDataRevealService {
    * @param columnNames columns names (must not include 'Time' column)
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
+   * @param explainBase the rows the revealed rows are compared with when explaining them
    */
   ofTimeUnit(baseQuery: Query, timeColumns: Column[], startTimes: number[], columnNames: string[],
-    columnValues: unknown[], context: ElementContext): void {
+    columnValues: unknown[], context: ElementContext, explainBase = baseQuery): void {
     const query = baseQuery.clone();
     for (let i = 0; i < timeColumns.length; i++) {
       const timeStart = startTimes[i];
@@ -49,7 +50,7 @@ export class RawDataRevealService {
         query.addValueRangeFilter(timeColumns[i].name, timeStart, timeStart);
       }
     }
-    this.ofQuery(query, columnNames, columnValues, context);
+    this.ofQuery(query, columnNames, columnValues, context, explainBase);
   }
 
   /**
@@ -59,8 +60,9 @@ export class RawDataRevealService {
    * @param columnNames columns names (must not include time columns)
    * @param columnValues column values matching the specified column names, Operator.EQUAL is applied for individual
    * column names and their values
+   * @param explainBase the rows the revealed rows are compared with when explaining them
    */
-  ofQuery(baseQuery: Query, columnNames: string[], columnValues: unknown[], context: ElementContext): void {
+  ofQuery(baseQuery: Query, columnNames: string[], columnValues: unknown[], context: ElementContext, explainBase = baseQuery): void {
     const computedColumn = context.columns.find(c => isComputedColumn(c) && columnNames.includes(c.name));
     if (computedColumn) {
       this.zone.run(() => this.notificationService.onWarning(this.bottomSheet,
@@ -78,16 +80,21 @@ export class RawDataRevealService {
         query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i] as string | number | boolean, dataType));
       }
     }
-    this.show(query);
+    this.show(query, explainBase);
   }
 
   /**
+   * @param explainBase the rows the revealed rows are compared with when explaining them, absent if they cannot be explained
    * @see https://stackoverflow.com/a/56508410/2358409
-   */ 
-  show(query: Query): void {    
+   */
+  show(query: Query, explainBase?: Query): void {
+    const data: RawDataDialogData = {
+      query: new QuerySanitizer(query).sanitize(),
+      explainBase: explainBase ? new QuerySanitizer(explainBase).sanitize() : undefined
+    };
     this.zone.run(() => {
       this.dialogService.open(RawDataDialogComponent, {
-        data: new QuerySanitizer(query).sanitize(),
+        data,
         panelClass: 'dialog-container',
         maxWidth: 'calc(100vw - 40px)',
         enterAnimationDuration: 1,

@@ -1,0 +1,38 @@
+<section class="contrast-panel">
+  <div class="contrast-header">
+    <mat-icon>insights</mat-icon>
+    <span class="contrast-title">{{ 'contrast.title' | translate }}</span>
+    <button mat-icon-button class="contrast-close" [matTooltip]="'common.close' | translate" (click)="closePanel.emit()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  @if (!analysis) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (!analysis.comparable) {
+    <p class="contrast-message">{{ 'contrast.disabled' | translate }}</p>
+  } @else {
+    @if (analysis.findings.length) {
+      <ul class="contrast-findings">
+        @for (finding of analysis.findings; track $index) {
+          <li>
+            <button type="button" class="contrast-finding" [class.contrast-clickable]="isClickable(finding)"
+              [disabled]="!isClickable(finding)" (click)="onFindingClick(finding)">
+              <span class="contrast-condition">{{ finding.column }} = {{ valueLabelOf(finding) }}</span>
+              <span class="contrast-share">{{ 'contrast.share' | translate: { here: percentOf(finding.selectedShare), rest: percentOf(finding.restShare) } }}</span>
+              @if (finding.isNew) {
+                <span class="contrast-new">{{ 'contrast.new' | translate }}</span>
+              } @else {
+                <span class="contrast-lift">×{{ liftOf(finding) }}</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="contrast-message">{{ 'contrast.none' | translate }}</p>
+    }
+    @if (analysis.skippedColumns.length) {
+      <p class="contrast-skipped">{{ 'contrast.skipped' | translate: { columns: skippedColumns() } }}</p>
+    }
+  }
+</section>

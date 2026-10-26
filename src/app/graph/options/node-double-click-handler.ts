@@ -41,10 +41,11 @@ export class NodeDoubleClickHandler {
             startTimes.push(startTime as number);
          }
       });
+      // the rows are explained against the graph's population, not against the query restricted by EMPTY filters
       if (timeColumns.length > 0) {
-         this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues, context);
+         this.rawDataRevealService.ofTimeUnit(query, timeColumns, startTimes, columnNames, columnValues, context, context.query);
       } else {
-         this.rawDataRevealService.ofQuery(query, columnNames, columnValues, context);
+         this.rawDataRevealService.ofQuery(query, columnNames, columnValues, context, context.query);
       }
    }
 

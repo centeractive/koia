@@ -1,5 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 import { RawDataTable } from './raw-data-table';
+import { ContrastPanel } from './contrast-panel';
 
 export class InputDialog {
 
@@ -102,11 +103,13 @@ export class ViewLauncherDialog {
 export class RawDataDialog {
 
    readonly table: RawDataTable;
+   readonly contrast: ContrastPanel;
    private readonly root: Locator;
 
    constructor(page: Page) {
       this.root = page.locator('koia-raw-data-dialog');
       this.table = new RawDataTable(this.root.locator('koia-raw-data'));
+      this.contrast = new ContrastPanel(this.root.locator('koia-raw-data'));
    }
 
    async close(): Promise<void> {

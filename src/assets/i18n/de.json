@@ -33,7 +33,9 @@
       "continueMany": "Mit deinen {{count}} Szenen fortfahren",
       "loadFile": "Datei laden",
       "loadingSample": "Beispiel wird geladen…",
-      "trySample": "Beispieldaten ausprobieren"
+      "trySample": "Beispieldaten ausprobieren",
+      "tryLogSample": "Oder probiere Logdaten aus",
+      "loadingLogSample": "Logdaten werden geladen…"
     },
     "guide": {
       "title": "Erstelle deine ersten Ansichten",
@@ -159,6 +161,18 @@
     "saveAs": "Speichern als {{format}}",
     "exportFiltered": "gefilterte Daten werden gesammelt und im Hintergrund als {{format}} gespeichert",
     "exportComplete": "alle Daten werden gesammelt und im Hintergrund als {{format}} gespeichert"
+  },
+  "contrast": {
+    "title": "Was diese Zeilen unterscheidet",
+    "explain": "Diese Zeilen erklären",
+    "disabled": "Es gibt nichts zu vergleichen: Die Zeilen umfassen keine oder alle der verglichenen Zeilen.",
+    "none": "Kein Spaltenwert ist in diesen Zeilen deutlich überrepräsentiert.",
+    "share": "{{here}}% hier · {{rest}}% sonst",
+    "new": "neu",
+    "empty": "(leer)",
+    "null": "(null)",
+    "blank": "(\"\")",
+    "skipped": "Nicht analysiert, zu viele verschiedene Werte: {{columns}}"
   },
   "sample": {
     "loadFailed": "Beispieldaten können nicht geladen werden: {{reason}}"

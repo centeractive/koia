@@ -4,8 +4,7 @@ import { TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { LanguageService } from 'app/shared/services/language';
 import { StringUtils } from 'app/shared/utils';
-import { SampleDef } from './fruit-sales.sample';
-import { SampleData, toEntries } from './sample-data';
+import { SampleData, SampleDef, toEntries } from './sample-data';
 
 @Injectable({
    providedIn: 'root'
