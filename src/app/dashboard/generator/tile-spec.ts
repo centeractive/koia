@@ -1,4 +1,4 @@
-import { Aggregation } from 'app/shared/model';
+import { Aggregation, ElementContext } from 'app/shared/model';
 import { ChartType } from 'app/shared/model/chart';
 import { ColumnProfile } from './column-profile';
 
@@ -19,6 +19,8 @@ export interface TileSpec {
   readonly groupByColumns: ColumnProfile[];
   readonly splitColumns: ColumnProfile[];
   readonly aggregations: Aggregation[];
+  /** aggregation sets the summary table may show instead of aggregations, each a subset of aggregations, empty when fixed */
+  readonly aggregationChoices: Aggregation[][];
   readonly valueGroupingColumn?: ColumnProfile;
   readonly stacked: boolean;
   readonly multiValueAxes: boolean;
@@ -26,4 +28,12 @@ export interface TileSpec {
   readonly legendPosition: string;
   readonly size: TileSize.SMALL | TileSize.WIDE;
   readonly timeChart: boolean;
+}
+
+/**
+ * a summary table or a relationship graph, never widened
+ */
+export interface SizedTile {
+  context: ElementContext;
+  size: TileSize;
 }

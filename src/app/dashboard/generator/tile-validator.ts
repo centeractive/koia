@@ -5,7 +5,7 @@ import { ChartDataset } from 'chart.js';
 
 /**
  * accepts charts that render data without error, sampled down only when they are lines or areas over time or scatters, and
- * unstacks time series that cannot be stacked
+ * unstacks time series that cannot be stacked, except areas, which are rejected
  */
 export class TileValidator {
 
@@ -19,9 +19,13 @@ export class TileValidator {
       || (context.dataSampledDown && !this.isSampleable(context))) {
       return false;
     }
-    if (!this.isStackable(context, result.data.datasets)) {
-      context.stacked = false;
+    if (this.isStackable(context, result.data.datasets)) {
+      return true;
     }
+    if (context.chartType === ChartType.AREA.type) {
+      return false;
+    }
+    context.stacked = false;
     return true;
   }
 

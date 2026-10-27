@@ -102,6 +102,29 @@ export class DashboardTile {
    }
 
    /**
+    * @returns the heights of the summary table, its header, all body rows and footer, of the tile and of the table scroller, the
+    * scroller width without scrollbar and the table width without wrapping
+    */
+   async tableHeights(): Promise<{ header: number; rows: number[]; footer: number; table: number; tile: number; scroller: number;
+      scrollerClientWidth: number; maxContent: number }> {
+      const { maxContent } = await this.tableWidths();
+      const heights = await this.root.evaluate((tile: HTMLElement) => {
+         const heightOf = (e: Element) => e.getBoundingClientRect().height;
+         const scroller = tile.querySelector('.div_summary_table');
+         return {
+            header: heightOf(tile.querySelector('tr.mat-mdc-header-row')),
+            rows: [...tile.querySelectorAll('tr.mat-mdc-row')].map(heightOf),
+            footer: heightOf(tile.querySelector('tr.mat-mdc-footer-row')),
+            table: heightOf(tile.querySelector('table')),
+            tile: heightOf(tile),
+            scroller: heightOf(scroller),
+            scrollerClientWidth: scroller.clientWidth
+         };
+      });
+      return { ...heights, maxContent };
+   }
+
+   /**
     * @returns heights and first cell background colors of the first two summary table rows
     */
    async tableRowStyles(): Promise<{ heights: number[]; backgrounds: string[] }> {

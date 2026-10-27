@@ -46,6 +46,7 @@ describe('TileContextFactory', () => {
       key: TileSignature.keyOf(signature, fields.chartType?.type),
       groupByColumns,
       splitColumns,
+      aggregationChoices: [],
       stacked: false,
       multiValueAxes: false,
       showLegend: false,

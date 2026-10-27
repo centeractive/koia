@@ -11,10 +11,17 @@ import { SummaryDataComputer } from './summary-data-computer';
 import { CellStyle, fontOf, SUMMARY_TABLE_STYLE } from './summary-table-style';
 import { SummaryValueFormatter } from './summary-value-formatter';
 
+export interface TableEstimate {
+  width: number;
+  height: number;
+  /** width of the column of each aggregation of the context */
+  aggregationWidths: number[];
+}
+
 /**
- * estimates the natural content width of a summary table before it is rendered
+ * estimates the natural content size of a summary table before it is rendered
  */
-export class SummaryTableWidthEstimator {
+export class SummaryTableSizeEstimator {
 
   private readonly headerMeasurer = measurerOf(SUMMARY_TABLE_STYLE.header);
   private readonly cellMeasurer = measurerOf(SUMMARY_TABLE_STYLE.cell);
@@ -24,8 +31,8 @@ export class SummaryTableWidthEstimator {
     private valueFormatter = new SummaryValueFormatter()) {
   }
 
-  estimate(context: SummaryContext): number {
-    const frame = this.dataComputer.aggregate(new DataFrame(context.entries), context);
+  estimate(context: SummaryContext): TableEstimate {
+    const frame = this.dataComputer.aggregate(new DataFrame(context.entries), context).bake();
     const overalls = this.dataComputer.overallsOf(frame, context);
     const rows = frame.toArray();
     const names = frame.getColumnNames();
@@ -39,7 +46,12 @@ export class SummaryTableWidthEstimator {
     const aggregationWidths = aggregations.map((a, j) => this.columnWidth(LanguageService.instant('summary.aggregation.' + a),
       rows.map(r => LocalizedNumberPipe.format(r[a], localeId) ?? ''),
       LocalizedNumberPipe.format(overalls[j], localeId) ?? ''));
-    return TableFitter.contentWidth(DomMetrics.scrollbarWidth(), leadingWidths.concat(aggregationWidths)) + SUMMARY_TABLE_STYLE.marginRight;
+    const { headerHeight, firstRowHeight, rowHeight, footerHeight, marginRight } = SUMMARY_TABLE_STYLE;
+    return {
+      width: TableFitter.contentWidth(DomMetrics.scrollbarWidth(), leadingWidths.concat(aggregationWidths)) + marginRight,
+      height: headerHeight + firstRowHeight + (rows.length - 1) * rowHeight + footerHeight,
+      aggregationWidths
+    };
   }
 
   private columnWidth(header: string, cells: string[], footer: string): number {

@@ -2,6 +2,7 @@ import { rowsOf } from 'app/dashboard/generator/generated-grid';
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { StatusType } from 'app/shared/model/status-type.enum';
+import { SUMMARY_TABLE_STYLE } from 'app/summary-table/summary-table-style';
 import { averageRevenueTourOf, expectAverageRevenueChart } from './support/average-revenue-tour';
 import { expect, test } from './support/fixtures';
 import { DashboardTile } from './support/components/dashboard-tile';
@@ -92,3 +93,32 @@ test('average revenue tour turns the generated time chart of the sales data shru
    await expect(chart.root).toBeInViewport({ ratio: 1 });
    await expectAverageRevenueChart(chart, dashboard.sideBar, en);
 });
+
+test('generated summary tables of sales data render the estimated height when they fit their tile width',
+   async ({ front, scene, scenes, tabBar, dashboard, confirmDialog }) => {
+      const { headerHeight, firstRowHeight, rowHeight, footerHeight } = SUMMARY_TABLE_STYLE;
+      await openSalesScene(front, scene, scenes);
+      await tabBar.addDashboard();
+      let checkedTables = 0;
+
+      for (let i = 0; i <= 3; i++) {
+         if (i === 0) {
+            await dashboard.launcher.generateDashboard();
+         } else {
+            const previousTile = await dashboard.tiles.first().elementHandle();
+            await dashboard.regenerate();
+            await confirmDialog.confirm();
+            await expect.poll(() => previousTile.evaluate(e => e.isConnected)).toBe(false);
+         }
+         await expect(dashboard.summaryTiles.first()).toBeVisible();
+         for (const summaryTile of await dashboard.summaryTiles.all()) {
+            const heights = await new DashboardTile(summaryTile).tableHeights();
+            if (heights.maxContent <= heights.scrollerClientWidth) {
+               expect(heights.table).toBeCloseTo(headerHeight + firstRowHeight + (heights.rows.length - 1) * rowHeight + footerHeight, 0);
+               checkedTables++;
+            }
+         }
+      }
+
+      expect(checkedTables).toBeGreaterThan(0);
+   });

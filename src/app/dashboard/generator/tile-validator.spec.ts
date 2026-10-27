@@ -29,8 +29,8 @@ describe('TileValidator', () => {
     return context;
   }
 
-  function stackedCountOverTime(entries: object[]): ChartContext {
-    const context = chartOf(ChartType.LINE, [LEVEL], [TIME], entries);
+  function stackedCountOverTime(entries: object[], chartType = ChartType.LINE): ChartContext {
+    const context = chartOf(chartType, [LEVEL], [TIME], entries);
     context.stacked = true;
     return context;
   }
@@ -139,6 +139,35 @@ describe('TileValidator', () => {
     const context = stackedCountOverTime([
       { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
     ]);
+
+    // when
+    const valid = validator.isValid(context);
+
+    // then
+    expect(valid).toBe(true);
+    expect(context.stacked).toBe(true);
+  });
+
+  it('#isValid should reject stacked area of series with different time buckets', () => {
+
+    // given
+    const context = stackedCountOverTime([
+      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
+    ], ChartType.AREA);
+
+    // when
+    const valid = validator.isValid(context);
+
+    // then
+    expect(valid).toBe(false);
+  });
+
+  it('#isValid should accept stacked area of series with same time buckets', () => {
+
+    // given
+    const context = stackedCountOverTime([
+      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
+    ], ChartType.AREA);
 
     // when
     const valid = validator.isValid(context);

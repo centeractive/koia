@@ -1,9 +1,8 @@
 import { Aggregation } from 'app/shared/model';
 import { CategoryCombinationCounter } from './category-combination-counter';
 import { ColumnProfile } from './column-profile';
-import { Randomizer } from './randomizer';
 import { TileSize, TileSpec } from './tile-spec';
-import { pairsOf, tileSpecOf } from './tile-spec-builder';
+import { pairsOf, tileSpecOf, triplesOf } from './tile-spec-builder';
 
 /**
  * creates the candidate summary table specs of all recipes that apply to the profiled columns
@@ -12,9 +11,12 @@ export class SummarySpecGenerator {
 
   static readonly MAX_TABLE_ROWS = 24;
   static readonly MAX_HIERARCHY_ROWS = 60;
+  static readonly MAX_HIERARCHY_TRIPLES = 20;
   static readonly MAX_TIME_BUCKETS = 36;
   static readonly MAX_RANGE_CATEGORIES = 8;
+  /** the first set holds the aggregations of all others */
   static readonly AGGREGATION_SETS: readonly Aggregation[][] = [
+    [Aggregation.SUM, Aggregation.AVG, Aggregation.MEDIAN, Aggregation.MIN, Aggregation.MAX],
     [Aggregation.MIN, Aggregation.MAX, Aggregation.AVG, Aggregation.SUM],
     [Aggregation.SUM, Aggregation.AVG],
     [Aggregation.AVG, Aggregation.MEDIAN, Aggregation.MAX],
@@ -23,11 +25,12 @@ export class SummarySpecGenerator {
   static readonly STATISTICS: readonly Aggregation[] = [Aggregation.MIN, Aggregation.MAX, Aggregation.AVG, Aggregation.MEDIAN];
   static readonly RANGE_AGGREGATIONS: readonly Aggregation[] = [Aggregation.MIN, Aggregation.AVG, Aggregation.MAX];
 
-  generate(categories: ColumnProfile[], measures: ColumnProfile[], times: ColumnProfile[], randomizer: Randomizer,
-    combinations: CategoryCombinationCounter): TileSpec[] {
+  generate(categories: ColumnProfile[], measures: ColumnProfile[], times: ColumnProfile[], combinations: CategoryCombinationCounter):
+    TileSpec[] {
     return [
-      ...this.measuresByCategories(measures, categories, randomizer, combinations),
-      ...this.measuresOverTime(measures, times, randomizer),
+      ...this.measuresByCategories(measures, categories, combinations),
+      ...this.measuresOverTime(measures, times),
+      ...this.measuresOverTimeByCategory(measures, times, categories),
       ...this.categoryCrosstabs(categories, combinations),
       ...this.valueRanges(measures, categories),
       ...this.measureStatistics(measures),
@@ -48,38 +51,68 @@ export class SummarySpecGenerator {
       .map(([c1, c2]) => c2.distinctCount < c1.distinctCount ? [c2, c1] : [c1, c2]);
   }
 
-  private measuresByCategories(measures: ColumnProfile[], categories: ColumnProfile[], randomizer: Randomizer,
-    combinations: CategoryCombinationCounter): TileSpec[] {
-    const groupings = [
-      ...categories.filter(c => c.distinctCount <= SummarySpecGenerator.MAX_TABLE_ROWS).map(c => [c]),
-      ...this.tableCategoryPairs(categories, combinations)
-    ];
-    return measures.flatMap(n => groupings.map(groupByColumns => tileSpecOf({
-      dataColumns: [n],
-      groupByColumns,
-      aggregations: [...randomizer.pick(SummarySpecGenerator.AGGREGATION_SETS)],
-      size: TileSize.WIDE
-    })));
+  /**
+   * @returns the first category triples whose rows, estimated by the smallest product of the combinations of a pair and the values
+   * of the third category, are within the hierarchy row limit, ordered by ascending cardinality
+   */
+  tableCategoryTriples(categories: ColumnProfile[], combinations: CategoryCombinationCounter): ColumnProfile[][] {
+    return triplesOf(categories)
+      .filter(triple => this.estimatedRows(triple, combinations) <= SummarySpecGenerator.MAX_HIERARCHY_ROWS)
+      .map(triple => [...triple].sort((c1, c2) => c1.distinctCount - c2.distinctCount))
+      .slice(0, SummarySpecGenerator.MAX_HIERARCHY_TRIPLES);
   }
 
-  private measuresOverTime(measures: ColumnProfile[], times: ColumnProfile[], randomizer: Randomizer): TileSpec[] {
+  private estimatedRows([c1, c2, c3]: ColumnProfile[], combinations: CategoryCombinationCounter): number {
+    return Math.min(
+      combinations.count(c1.name, c2.name) * c3.distinctCount,
+      combinations.count(c1.name, c3.name) * c2.distinctCount,
+      combinations.count(c2.name, c3.name) * c1.distinctCount
+    );
+  }
+
+  private measuresByCategories(measures: ColumnProfile[], categories: ColumnProfile[], combinations: CategoryCombinationCounter):
+    TileSpec[] {
+    const groupings = [
+      ...categories.filter(c => c.distinctCount <= SummarySpecGenerator.MAX_TABLE_ROWS).map(c => [c]),
+      ...this.tableCategoryPairs(categories, combinations),
+      ...this.tableCategoryTriples(categories, combinations)
+    ];
+    return measures.flatMap(n => groupings.map(groupByColumns => this.measureTable(n, groupByColumns)));
+  }
+
+  private measuresOverTime(measures: ColumnProfile[], times: ColumnProfile[]): TileSpec[] {
     return measures.flatMap(n => times
       .filter(t => this.timeRows(t) <= SummarySpecGenerator.MAX_TIME_BUCKETS)
-      .map(t => tileSpecOf({
-        dataColumns: [n],
-        groupByColumns: [t],
-        aggregations: [...randomizer.pick(SummarySpecGenerator.AGGREGATION_SETS)],
-        size: TileSize.WIDE
-      })));
+      .map(t => this.measureTable(n, [t])));
+  }
+
+  private measuresOverTimeByCategory(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
+    return measures.flatMap(n => categories.flatMap(c => times
+      .filter(t => c.distinctCount * this.timeRows(t) <= SummarySpecGenerator.MAX_HIERARCHY_ROWS)
+      .map(t => this.measureTable(n, [c, t]))));
+  }
+
+  /**
+   * @returns the summary table of the measure that shows the aggregation set filling its tile best
+   */
+  private measureTable(measure: ColumnProfile, groupByColumns: ColumnProfile[]): TileSpec {
+    return tileSpecOf({
+      dataColumns: [measure],
+      groupByColumns,
+      aggregations: [...SummarySpecGenerator.AGGREGATION_SETS[0]],
+      aggregationChoices: SummarySpecGenerator.AGGREGATION_SETS.map(s => [...s]),
+      size: TileSize.WIDE
+    });
   }
 
   private categoryCrosstabs(categories: ColumnProfile[], combinations: CategoryCombinationCounter): TileSpec[] {
-    return this.tableCategoryPairs(categories, combinations).map(([c1, c2]) => tileSpecOf({
-      dataColumns: [c2],
-      groupByColumns: [c1],
-      aggregations: [Aggregation.COUNT],
-      size: TileSize.WIDE
-    }));
+    return [...this.tableCategoryPairs(categories, combinations), ...this.tableCategoryTriples(categories, combinations)]
+      .map(grouping => tileSpecOf({
+        dataColumns: grouping.slice(-1),
+        groupByColumns: grouping.slice(0, -1),
+        aggregations: [Aggregation.COUNT],
+        size: TileSize.WIDE
+      }));
   }
 
   private valueRanges(measures: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {

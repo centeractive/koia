@@ -22,6 +22,7 @@ export class TileSpecGenerator {
   private static readonly MAX_CIRCULAR_CATEGORIES = 8;
   private static readonly MIN_RADAR_CATEGORIES = 3;
   private static readonly MAX_RADAR_CATEGORIES = 12;
+  private static readonly MIN_BAR_CATEGORIES = 3;
   private static readonly MAX_BAR_CATEGORIES = 20;
   private static readonly MAX_HORIZONTAL_BAR_CATEGORIES = 30;
   private static readonly TIME_CHART_TYPES = [ChartType.LINE, ChartType.AREA];
@@ -42,7 +43,7 @@ export class TileSpecGenerator {
       ...this.rowCountsOverTime(times),
       ...this.scatters(measures, times, categories),
       ...this.valuesByName(measures, categories),
-      ...this.summarySpecGenerator.generate(categories, measures, times, randomizer, combinations)
+      ...this.summarySpecGenerator.generate(categories, measures, times, combinations)
     ].filter(s => !this.isSelfCombination(s));
   }
 
@@ -87,6 +88,9 @@ export class TileSpecGenerator {
     }
     if (distinctCount >= TileSpecGenerator.MIN_RADAR_CATEGORIES && distinctCount <= TileSpecGenerator.MAX_RADAR_CATEGORIES) {
       chartTypes.push(ChartType.RADAR);
+    }
+    if (distinctCount < TileSpecGenerator.MIN_BAR_CATEGORIES) {
+      return chartTypes;
     }
     if (distinctCount <= TileSpecGenerator.MAX_BAR_CATEGORIES) {
       chartTypes.push(ChartType.BAR);
@@ -136,7 +140,7 @@ export class TileSpecGenerator {
         dataColumns: [a],
         groupByColumns: [t],
         aggregations: [Aggregation.COUNT],
-        stacked: randomizer.chance(),
+        stacked: chartType === ChartType.AREA || randomizer.chance(),
         showLegend: true,
         size: TileSize.WIDE,
         timeChart: true
@@ -171,18 +175,22 @@ export class TileSpecGenerator {
   }
 
   /**
-   * @returns line and area charts, and linear bar charts when their bars per series fit the bar limit
+   * @returns line charts, area charts of a single series or stacked split sums, and linear bar charts when their bars per series fit
+   * the bar limit
    */
   private timeCharts(dataColumns: ColumnProfile[], time: ColumnProfile, splitColumns: ColumnProfile[], points: number,
     aggregations: Aggregation[] = []): TileSpec[] {
-    const chartTypes = points <= TileSpecGenerator.MAX_TIME_BARS ?
-      [...TileSpecGenerator.TIME_CHART_TYPES, ChartType.LINEAR_BAR] : TileSpecGenerator.TIME_CHART_TYPES;
+    const split = splitColumns.length > 0;
+    const area = split ? aggregations.length === 1 && aggregations[0] === Aggregation.SUM : dataColumns.length <= 1;
+    const chartTypes = [ChartType.LINE, ...(area ? [ChartType.AREA] : []),
+      ...(points <= TileSpecGenerator.MAX_TIME_BARS ? [ChartType.LINEAR_BAR] : [])];
     return chartTypes.map(chartType => tileSpecOf({
       chartType,
       dataColumns,
       groupByColumns: [time],
       splitColumns,
       aggregations,
+      stacked: split && chartType === ChartType.AREA,
       multiValueAxes: dataColumns.length > 1,
       showLegend: splitColumns.length > 0 || dataColumns.length > 1,
       size: TileSize.WIDE,

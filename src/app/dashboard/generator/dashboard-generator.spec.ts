@@ -9,10 +9,11 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { LANGUAGES } from 'app/shared/services/language';
 import { occupiedCells, SequenceRandomSource } from 'app/shared/test';
-import { SummaryTableWidthEstimator } from 'app/summary-table/summary-table-width-estimator';
+import { SummaryTableSizeEstimator } from 'app/summary-table/summary-table-size-estimator';
 import { ColumnProfiler } from './column-profiler';
 import { DashboardGenerator, GeneratedDashboard, GenerationRequest } from './dashboard-generator';
 import { GENERATED_GRID_COLUMNS, GridChooser, GridDef, rowsOf } from './generated-grid';
+import { SummaryTablePicker } from './summary-table-picker';
 import { TileContextFactory } from './tile-context-factory';
 import { TileSignature } from './tile-signature';
 import { TileSize, TileSpec } from './tile-spec';
@@ -60,8 +61,8 @@ describe('DashboardGenerator', () => {
     return Array.from({ length: count }, (_, m) => new Date(2024, m, 1).getTime());
   }
 
-  function generatorOf(values: number[] = [0.3], tableWidthEstimator?: SummaryTableWidthEstimator): DashboardGenerator {
-    return new DashboardGenerator(new ChartMarginService(), new ChartDataService(), new SequenceRandomSource(values), tableWidthEstimator);
+  function generatorOf(values: number[] = [0.3], tableSizeEstimator?: SummaryTableSizeEstimator): DashboardGenerator {
+    return new DashboardGenerator(new ChartMarginService(), new ChartDataService(), new SequenceRandomSource(values), tableSizeEstimator);
   }
 
   function requestOf(columns: Column[], entries: object[], currentContexts: ElementContext[] = [],
@@ -69,9 +70,9 @@ describe('DashboardGenerator', () => {
     return { columns: () => columns.map(c => ({ ...c })), entries, currentContexts, currentGrid, containerWidth };
   }
 
-  function estimatorOf(tableWidth: number): SummaryTableWidthEstimator {
-    const estimator = new SummaryTableWidthEstimator();
-    vi.spyOn(estimator, 'estimate').mockReturnValue(tableWidth);
+  function estimatorOf(width: number, height = 100): SummaryTableSizeEstimator {
+    const estimator = new SummaryTableSizeEstimator();
+    vi.spyOn(estimator, 'estimate').mockImplementation(context => ({ width, height, aggregationWidths: context.aggregations.map(() => 0) }));
     return estimator;
   }
 
@@ -533,9 +534,11 @@ describe('DashboardGenerator', () => {
 
     // given
     chooseGridOf(3);
-    const estimator = new SummaryTableWidthEstimator();
-    vi.spyOn(estimator, 'estimate').mockReturnValueOnce(400).mockReturnValueOnce(100);
-    const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
+    const pickSpy = vi.spyOn(SummaryTablePicker.prototype, 'pick');
+    const estimator = new SummaryTableSizeEstimator();
+    vi.spyOn(estimator, 'estimate').mockImplementation(context => ({
+      width: pickSpy.mock.calls.length === 1 ? 400 : 100, height: 100, aggregationWidths: context.aggregations.map(() => 0)
+    }));
     spyIsValid(() => false);
 
     // when
@@ -543,27 +546,24 @@ describe('DashboardGenerator', () => {
 
     // then
     expect(result.elementContexts.every(c => c instanceof SummaryContext)).toBe(true);
-    expect(createSummarySpy.mock.results.map(r => (r.value as SummaryContext).gridColumnSpan)).toEqual([2, 1]);
+    expect(result.elementContexts.map(c => c.gridColumnSpan).sort()).toEqual([1, 2]);
     expect(cellsOf(result).flat().every(c => c)).toBe(true);
   });
 
   it('#generate should not add second summary table when it would only replace charts', () => {
-    for (const columns of [4, 5]) {
 
-      // given
-      vi.restoreAllMocks();
-      chooseGridOf(columns);
-      const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
-      spyIsValid((context, isValid) => !isTimeChart(context) && context.chartType !== ChartType.SCATTER.type && isValid());
+    // given
+    chooseGridOf(4);
+    const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
+    spyIsValid((context, isValid) => !isTimeChart(context) && context.chartType !== ChartType.SCATTER.type && isValid());
 
-      // when
-      const result = generatorOf().generate(requestOf(COLUMNS, ENTRIES));
+    // when
+    const result = generatorOf().generate(requestOf(COLUMNS, ENTRIES));
 
-      // then
-      expect(createSummarySpy).toHaveBeenCalledTimes(2);
-      expect(result.elementContexts.filter(c => c instanceof SummaryContext).length).toBe(1);
-      expect(charts(result).length).toBe(rowsOf(columns) * columns - 2);
-    }
+    // then
+    expect(createSummarySpy).toHaveBeenCalledTimes(2);
+    expect(result.elementContexts.filter(c => c instanceof SummaryContext).length).toBe(1);
+    expect(charts(result).length).toBe(rowsOf(4) * 4 - 2);
   });
 
   it('#generate should drop wide second summary table that cannot get a wide slot and fill its cell with small relationship graph', () => {
@@ -705,7 +705,10 @@ describe('DashboardGenerator', () => {
   });
 
 
-  it('#generate should unstack time chart of series with different time buckets', () => {
+  it('#generate should unstack line time chart of series with different time buckets', () => {
+
+    // given
+    generateSpecsMatching(s => s.chartType !== ChartType.AREA);
 
     // when
     const result = generatorOf([0]).generate(requestOf(LOG_COLUMNS, LOG_ENTRIES));
@@ -794,22 +797,63 @@ describe('DashboardGenerator', () => {
     }
   });
 
-  it('#generate should estimate summary table against cell width of chosen grid', () => {
+  it('#generate should estimate only summary contexts created for the pick', () => {
 
     // given
     chooseGridOf(4);
-    const cellWidth = 1000 / 4 - 10;
-    const fitting = estimatorOf(cellWidth);
-    const exceeding = estimatorOf(cellWidth + 0.5);
+    const createSummarySpy = vi.spyOn(TileContextFactory.prototype, 'createSummary');
+    const estimator = estimatorOf(100);
 
     // when
-    const fittingResult = generatorOf([0.3], fitting).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
-    const exceedingResult = generatorOf([0.3], exceeding).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+    const result = generatorOf([0.3], estimator).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
 
     // then
-    expect(fitting.estimate).toHaveBeenCalledExactlyOnceWith(tableOf(fittingResult));
-    expect(tableOf(fittingResult).gridColumnSpan).toBe(1);
-    expect(tableOf(exceedingResult).gridColumnSpan).toBe(2);
+    const created = createSummarySpy.mock.results.map(r => r.value);
+    const estimated = vi.mocked(estimator.estimate).mock.calls.map(([context]) => context);
+    expect(estimated.length).toBeGreaterThan(1);
+    estimated.forEach(context => expect(created).toContain(context));
+    expect(estimated).toContain(tableOf(result));
+  });
+
+  it('#generate should feature stacked or single series area when only areas are time charts', () => {
+    for (const values of SEQUENCES) {
+
+      // given
+      vi.restoreAllMocks();
+      generateSpecsMatching(s => !s.timeChart || s.chartType === ChartType.AREA);
+
+      // when
+      const result = generatorOf(values).generate(requestOf(COLUMNS, ENTRIES));
+
+      // then
+      expect((result.elementContexts[0] as ChartContext).chartType).toBe(ChartType.AREA.type);
+      charts(result).filter(c => c.chartType === ChartType.AREA.type).forEach(c =>
+        expect(c.stacked || new ChartDataService().createData(c).data.datasets.length === 1).toBe(true));
+    }
+  });
+
+  it('#generate should reject stacked area of series with different time buckets', () => {
+
+    // given
+    generateSpecsMatching(s => !s.timeChart || s.chartType === ChartType.AREA);
+    const validations: [ChartContext, boolean][] = [];
+    spyIsValid((context, isValid) => {
+      const valid = isValid();
+      validations.push([context, valid]);
+      return valid;
+    });
+
+    // when
+    const result = generatorOf([0]).generate(requestOf(LOG_COLUMNS, LOG_ENTRIES));
+
+    // then
+    const isLevelArea = (c: ChartContext) => c.chartType === ChartType.AREA.type && c.dataColumns[0]?.name === 'Level';
+    expect(validations.filter(([c]) => isLevelArea(c)).map(([, valid]) => valid)).toEqual([false]);
+    const feature = result.elementContexts[0] as ChartContext;
+    expect(feature.chartType).toBe(ChartType.AREA.type);
+    expect(feature.isRowCountSelected()).toBe(true);
+    expect(new ChartDataService().createData(feature).data.datasets.length).toBe(1);
+    expect(charts(result).some(c => isLevelArea(c))).toBe(false);
   });
 
   [fruitSalesSampleOf, appLogsSampleOf].forEach(sampleOf => LANGUAGES.forEach(language =>
@@ -837,6 +881,34 @@ describe('DashboardGenerator', () => {
       });
     }
   })));
+
+  it('#generate should place first summary table with best score of its candidates', async () => {
+
+    // given
+    const data: SampleData = await (await fetch('/assets/samples/' + fruitSalesSampleOf('en').file)).json();
+    const entries = toEntries(data);
+    const scorer = new SummaryTablePicker(new TileContextFactory(new ChartMarginService()), new SummaryTableSizeEstimator());
+
+    for (const columns of [3, 4, 5]) {
+      for (const values of SEQUENCES) {
+        vi.restoreAllMocks();
+        chooseGridOf(columns);
+        const pickSpy = vi.spyOn(SummaryTablePicker.prototype, 'pick');
+        const request = requestOf(data.scene.columns, entries, [], undefined, 1500);
+
+        // when
+        const result = generatorOf(values).generate(request);
+
+        // then
+        const [candidates] = pickSpy.mock.calls[0];
+        const picked = pickSpy.mock.results[0].value;
+        const scores = candidates.slice(0, SummaryTablePicker.MAX_CANDIDATES).map(c => scorer.pick([c], request, columns).score);
+        expect(picked.score).toBe(Math.max(...scores));
+        expect(picked.score).toBeGreaterThan(0);
+        expect(result.elementContexts).toContain(picked.context);
+      }
+    }
+  });
 
   it('#generate should fill grid of food types and ratings with other chart types of the same columns', () => {
     for (const columns of [3, 4]) {

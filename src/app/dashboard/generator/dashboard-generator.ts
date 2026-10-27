@@ -3,9 +3,7 @@ import { Column, ElementContext } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
-import { TableFitter } from 'app/shared/ui/table-fit/table-fitter';
-import { SummaryTableWidthEstimator } from 'app/summary-table/summary-table-width-estimator';
-import { GridLayout } from '../grid-layout';
+import { SummaryTableSizeEstimator } from 'app/summary-table/summary-table-size-estimator';
 import { CategoryCombinationCounter } from './category-combination-counter';
 import { ChartSpecPicker } from './chart-spec-picker';
 import { ColorOptionsChooser } from './color-options-chooser';
@@ -15,8 +13,9 @@ import { GridChooser, GridDef, rowsOf } from './generated-grid';
 import { GridPlanner } from './grid-planner';
 import { RandomSource } from './random-source';
 import { Randomizer } from './randomizer';
+import { SummaryTablePicker } from './summary-table-picker';
 import { TileContextFactory } from './tile-context-factory';
-import { TileSize, TileSpec } from './tile-spec';
+import { SizedTile, TileSize, TileSpec } from './tile-spec';
 import { TileSpecGenerator } from './tile-spec-generator';
 import { TileSpecRanker } from './tile-spec-ranker';
 import { TileValidator } from './tile-validator';
@@ -29,14 +28,6 @@ export interface GenerationRequest {
   currentGrid: GridDef;
   /** width of the grid scroller without scrollbar, 0 when unknown */
   containerWidth: number;
-}
-
-/**
- * a summary table or a relationship graph, never widened
- */
-interface SizedTile {
-  context: ElementContext;
-  size: TileSize;
 }
 
 export interface GeneratedDashboard {
@@ -64,11 +55,13 @@ export class DashboardGenerator {
   private readonly gridChooser: GridChooser;
   private readonly planner: GridPlanner;
   private readonly colorChooser: ColorOptionsChooser;
+  private readonly tablePicker: SummaryTablePicker;
 
   constructor(chartMarginService: ChartMarginService, chartDataService: ChartDataService, randomSource: RandomSource,
-    private readonly tableWidthEstimator = new SummaryTableWidthEstimator()) {
+    tableSizeEstimator = new SummaryTableSizeEstimator()) {
     this.randomizer = new Randomizer(randomSource);
     this.factory = new TileContextFactory(chartMarginService);
+    this.tablePicker = new SummaryTablePicker(this.factory, tableSizeEstimator);
     this.validator = new TileValidator(chartDataService);
     this.gridChooser = new GridChooser(this.randomizer);
     this.planner = new GridPlanner(this.randomizer);
@@ -189,19 +182,16 @@ export class DashboardGenerator {
   }
 
   /**
-   * creates the summary table that spans one cell when its estimated content width fits a cell, otherwise two cells
+   * picks the unaccepted summary table whose estimate best fills its tile
    */
   private createTable(ranked: TileSpec[], request: GenerationRequest, accepted: Set<string>, gridColumns: number):
     SizedTile | undefined {
-    const spec = ranked.find(s => !s.chartType && !accepted.has(s.signature));
-    if (!spec) {
+    const picked = this.tablePicker.pick(ranked.filter(s => !s.chartType && !accepted.has(s.signature)), request, gridColumns);
+    if (!picked) {
       return undefined;
     }
-    accepted.add(spec.signature);
-    const context = this.factory.createSummary(spec, request.columns(), request.entries);
-    const cellWidth = request.containerWidth / gridColumns - GridLayout.GAP_PX;
-    const fits = request.containerWidth > 0 && !TableFitter.hasHorizontalOverflow(this.tableWidthEstimator.estimate(context), cellWidth);
-    return { context, size: fits ? TileSize.SMALL : TileSize.WIDE };
+    accepted.add(picked.spec.signature);
+    return { context: picked.context, size: picked.size };
   }
 
   /**

@@ -47,8 +47,8 @@ describe('TileSpecRanker', () => {
     const [data, ...groupBy] = columnNames.map(n => profile(n));
     return {
       signature, key: TileSignature.keyOf(signature, chartType?.type), chartType, dataColumns: [data], groupByColumns: groupBy,
-      splitColumns: [], aggregations: [], stacked: false, multiValueAxes: false, showLegend: false, legendPosition: 'top',
-      size: TileSize.SMALL, timeChart: false
+      splitColumns: [], aggregations: [], aggregationChoices: [], stacked: false, multiValueAxes: false, showLegend: false,
+      legendPosition: 'top', size: TileSize.SMALL, timeChart: false
     };
   }
 

@@ -18,8 +18,8 @@ describe('ChartSpecPicker', () => {
     return {
       signature, key: TileSignature.keyOf(signature, chartType?.type), chartType,
       dataColumns: [{ name: columnName, dataType: DataType.TEXT, role: ColumnRole.CATEGORY, distinctCount: 3, presentCount: 10 }],
-      groupByColumns: [], splitColumns: [], aggregations: [], stacked: false, multiValueAxes: false, showLegend: false,
-      legendPosition: 'top', size: TileSize.SMALL, timeChart: false
+      groupByColumns: [], splitColumns: [], aggregations: [], aggregationChoices: [], stacked: false, multiValueAxes: false,
+      showLegend: false, legendPosition: 'top', size: TileSize.SMALL, timeChart: false
     };
   }
 

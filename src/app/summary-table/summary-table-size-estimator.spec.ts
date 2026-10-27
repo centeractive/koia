@@ -8,9 +8,9 @@ import { DataFrame } from 'data-forge';
 import { AggregationService } from '../shared/services';
 import { SummaryDataComputer } from './summary-data-computer';
 import { fontOf, SUMMARY_TABLE_STYLE } from './summary-table-style';
-import { SummaryTableWidthEstimator } from './summary-table-width-estimator';
+import { SummaryTableSizeEstimator } from './summary-table-size-estimator';
 
-describe('SummaryTableWidthEstimator', () => {
+describe('SummaryTableSizeEstimator', () => {
 
   const scrollbarWidth = 15;
   const columns: Column[] = [
@@ -23,7 +23,7 @@ describe('SummaryTableWidthEstimator', () => {
   const headerMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.header));
   const cellMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.cell));
   const footerMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.footer), SUMMARY_TABLE_STYLE.footer.letterSpacing + 'px');
-  const estimator = new SummaryTableWidthEstimator();
+  const estimator = new SummaryTableSizeEstimator();
   let context: SummaryContext;
 
   beforeEach(() => {
@@ -46,7 +46,7 @@ describe('SummaryTableWidthEstimator', () => {
     context.dataColumns = [findColumn('t2')];
 
     // when
-    const width = estimator.estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const expected = cellWidth('a much longer text value') + cellWidth('a considerably longer text') + headerWidth('Count')
@@ -61,7 +61,7 @@ describe('SummaryTableWidthEstimator', () => {
     context.dataColumns = [findColumn('Very Long Column Name')];
 
     // when
-    const width = estimator.estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const expected = headerWidth('Very Long Column Name') + headerWidth('Count') + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
@@ -75,7 +75,7 @@ describe('SummaryTableWidthEstimator', () => {
     context.dataColumns = [findColumn('t1')];
 
     // when
-    const width = estimator.estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const expected = footerWidth('Overall') + headerWidth('Count') + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
@@ -91,7 +91,7 @@ describe('SummaryTableWidthEstimator', () => {
     context.dataColumns = [findColumn('t1')];
 
     // when
-    const width = estimator.estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const formattedTime = new DatePipe('en-US').transform(time, 'd MMM yyyy HH:mm:ss');
@@ -109,7 +109,7 @@ describe('SummaryTableWidthEstimator', () => {
     context.dataColumns = [findColumn('t1')];
 
     // when
-    const width = estimator.estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const expected = footerWidth('Overall') + headerWidth('Translated Count Header') + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
@@ -125,7 +125,7 @@ describe('SummaryTableWidthEstimator', () => {
     context.aggregations = [Aggregation.SUM];
 
     // when
-    const width = estimator.estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const expected = footerWidth('Overall') + footerWidth('222,222,222') + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
@@ -160,11 +160,57 @@ describe('SummaryTableWidthEstimator', () => {
     context.aggregations = [Aggregation.AVG];
 
     // when
-    const width = new SummaryTableWidthEstimator(dataComputer).estimate(context);
+    const { width } = new SummaryTableSizeEstimator(dataComputer).estimate(context);
 
     // then
     const expected = footerWidth('Overall') + headerWidth('Average') + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
     expect(width).toBe(expected);
+  });
+
+  it('#estimate should return width of each aggregation column', () => {
+
+    // given
+    context.entries = [{ t1: 'a', n1: 1 }, { t1: 'b', n1: 111_111 }];
+    context.groupByColumns = [findColumn('t1')];
+    context.dataColumns = [findColumn('n1')];
+    context.aggregations = [Aggregation.SUM, Aggregation.MAX];
+
+    // when
+    const { aggregationWidths } = estimator.estimate(context);
+
+    // then
+    expect(aggregationWidths).toEqual([
+      Math.max(headerWidth('Sum'), cellWidth('111,111'), footerWidth('111,112')),
+      Math.max(headerWidth('Max'), cellWidth('111,111'), footerWidth('111,111'))
+    ]);
+  });
+
+  it('#estimate should sum header, first row, further rows and footer heights', () => {
+
+    // given
+    context.entries = [{ t1: 'a', t2: 'x' }, { t1: 'b', t2: 'x' }, { t1: 'c', t2: 'x' }];
+    context.groupByColumns = [findColumn('t1')];
+    context.dataColumns = [findColumn('t2')];
+
+    // when
+    const { height } = estimator.estimate(context);
+
+    // then
+    expect(height).toBe(23 + 22 + 2 * 23 + 24);
+  });
+
+  it('#estimate should give one-row height of ungrouped statistics', () => {
+
+    // given
+    context.entries = [{ n1: 1 }, { n1: 2 }];
+    context.dataColumns = [findColumn('n1')];
+    context.aggregations = [Aggregation.MIN, Aggregation.MAX];
+
+    // when
+    const { height } = estimator.estimate(context);
+
+    // then
+    expect(height).toBe(69);
   });
 
   function findColumn(name: string): Column {

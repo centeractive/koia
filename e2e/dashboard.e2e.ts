@@ -771,7 +771,7 @@ test('declining regeneration keeps tiles and grid resolution', async ({ dashboar
    expect((await dashboard.gridTracks()).columnWidths.length).toBe(previousColumns);
 });
 
-test('summary table style matches width estimator constants', async ({ dashboard }) => {
+test('summary table style matches size estimator constants', async ({ dashboard }) => {
    await dashboard.launcher.addSummary();
    await dashboard.sideBar.selectColumn(column);
    await dashboard.sideBar.close();
@@ -787,6 +787,14 @@ test('summary table style matches width estimator constants', async ({ dashboard
       expect(styles[part].horizontalPadding).toBe(expected.horizontalPadding);
    }
    expect(styles.sortArrowWidth).toBe(SUMMARY_TABLE_STYLE.sortArrowWidth);
+   const heights = await dashboard.tile(0).tableHeights();
+   const [firstRow, ...furtherRows] = heights.rows;
+   expect(heights.header).toBeCloseTo(SUMMARY_TABLE_STYLE.headerHeight, 0);
+   expect(firstRow).toBeCloseTo(SUMMARY_TABLE_STYLE.firstRowHeight, 0);
+   expect(furtherRows.length).toBeGreaterThan(0);
+   furtherRows.forEach(height => expect(height).toBeCloseTo(SUMMARY_TABLE_STYLE.rowHeight, 0));
+   expect(heights.footer).toBeCloseTo(SUMMARY_TABLE_STYLE.footerHeight, 0);
+   expect(heights.tile - heights.scroller).toBeCloseTo(SUMMARY_TABLE_STYLE.scrollerInset, 0);
 });
 
 test('summary table rows are dense, striped and highlighted on hover', async ({ dashboard }) => {
