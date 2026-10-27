@@ -112,6 +112,7 @@ describe('LanguageService', () => {
       expect(service.current()).toBe('de');
       expect(service.localeId()).toBe('de');
       expect(LanguageService.localeId()).toBe('de');
+      expect(LanguageService.language()).toBe('de');
       expect(stored()).toBe('de');
       expect(changes).toEqual(['de']);
       expect(service.instant('language.select')).toBe('Sprache');
@@ -182,6 +183,18 @@ describe('LanguageService', () => {
 
       // then
       expect(text).toBe('Language');
+   });
+
+   it('#language should be English when no instance exists', () => {
+
+      // given
+      LanguageService.reset();
+
+      // when
+      const language = LanguageService.language();
+
+      // then
+      expect(language).toBe('en');
    });
 
    it('#instant should keep placeholders when no instance exists and params are empty', () => {

@@ -1,6 +1,7 @@
 import { DataType } from 'app/shared/model';
 import { LanguageService } from 'app/shared/services/language';
 import { DataHandlerRecorder } from 'app/shared/test';
+import { TestBed } from '@angular/core/testing';
 import { LogLineReader } from './log-line-reader';
 import { LogReader } from './log-reader';
 import { FALLBACK_LOG_PATTERN, LOG_PATTERNS } from './log-patterns';
@@ -91,6 +92,48 @@ describe('LogReader', () => {
 
       // then
       expect(sample.entries).toEqual(ENTRIES);
+   });
+
+   it('#readSample should name level column of line pattern', async () => {
+
+      // given
+      usePattern(LOGBACK);
+
+      // when
+      const sample = await reader.readSample(logFile(), 10, 'UTF-8');
+
+      // then
+      expect(sample.levelColumn).toBe('Level');
+   });
+
+   it('#readSample should name no level column when line pattern has no level', async () => {
+
+      // given
+      usePattern(FALLBACK_LOG_PATTERN);
+
+      // when
+      const sample = await reader.readSample(logFile(), 10, 'UTF-8');
+
+      // then
+      expect(sample.levelColumn).toBeUndefined();
+   });
+
+   it('#readSample should read levels of current language', async () => {
+
+      // given
+      TestBed.inject(LanguageService).current.set('de');
+      const lines = [
+         '2024-01-01 10:00:00.123 [main] WARNUNG c.x.App - slow',
+         '2024-01-01 10:00:01.456 [main] Warnung c.x.App - slower'
+      ];
+      reader.furnishAttributes(lines.join('\n') + '\n');
+
+      // when
+      const sample = await reader.readSample(logFile(lines), 10, 'UTF-8');
+
+      // then
+      expect(sample.entries.map(e => e['Level'])).toEqual(['WARNUNG', 'Warnung']);
+      expect(sample.levelColumn).toBe('Level');
    });
 
    it('#readSample with an early stop returns exactly count entries', async () => {

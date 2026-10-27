@@ -3,6 +3,7 @@ import { Column, ColumnPair, DataType } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 import { PatternMasker } from 'app/shared/utils/pattern-masker';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
+import type { LogLevelColorizer } from 'app/shared/services/reader/log/log-level-colorizer';
 
 /**
  * Maps data of different format to target entries and adds an "_id" attribute to each target entry.
@@ -14,12 +15,13 @@ import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-co
  *   - when the target value of the specified data type cannot be created (parsed)
  * - pattern columns get the pattern of the source value (see [[PatternMasker]]), never an error
  * - the "_id" attribute starts at 1 and is incremented for each mapped target entry
+ * - target entries are colored by their log level when a [[LogLevelColorizer]] is given
  */
 export class EntryMapper {
 
    private idPointer = CouchDBConstants.ENTRY_ID_BASE; // allows for default natural sorting in CouchDB
 
-   constructor(private columnMapping: ColumnPair[], private locale: string) { }
+   constructor(private columnMapping: ColumnPair[], private locale: string, private colorizer?: LogLevelColorizer) { }
 
    mapRows(rows: string[][], sourceColumnNames: string[]): MappingResult[] {
       const valueIndexes = this.columnMapping.map(cp => sourceColumnNames.lastIndexOf(cp.source.name));
@@ -52,6 +54,7 @@ export class EntryMapper {
          const sourceValue = sourceEntry[cp.source.name];
          this.mapValue(cp, sourceValue, mappingResult);
       });
+      this.colorizer?.colorize(mappingResult.entry);
       return mappingResult;
    }
 
@@ -63,6 +66,7 @@ export class EntryMapper {
             this.mapValue(columnPair, values[valueIndexes[i]], mappingResult);
          }
       }
+      this.colorizer?.colorize(mappingResult.entry);
       return mappingResult;
    }
 

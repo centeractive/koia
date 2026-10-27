@@ -17,6 +17,7 @@ import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monito
 import { ConditionalErrorStateMatcher } from 'app/shared/validator/conditional-error-state-matcher';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
+import { LogLevelColorizer } from '../shared/services/reader/log/log-level-colorizer';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { PatternPairs, SceneUtils } from './utils';
@@ -55,6 +56,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   adoptColumnsFromExistingScene = false;
   columnMappingsSource: SceneInfo;
   columnMappings: ColumnPair[];
+  levelColumn: string;
   columnMappingsValid: boolean;
   targetColumnNames: string[];
   readingSample: boolean;
@@ -81,7 +83,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private loadFailed = false;
   private destroyed = false;
   private readonly patternPairs = new PatternPairs();
-  private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[]; sourceColumnNames: string[] } | undefined;
+  private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'levelColumn' | 'feedback'> & { sampleEntries: object[]; sourceColumnNames: string[] } | undefined;
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
@@ -198,7 +200,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     if (this.fileDialogOpen) {
       this.fileDialogOpen = false;
       this.previousContext = { file: this.file, fileHeader: this.fileHeader, sampleEntries: this.sampleEntries,
-        sourceColumnNames: this.sourceColumnNames, columnMappings: this.columnMappings, feedback: this.feedback };
+        sourceColumnNames: this.sourceColumnNames, columnMappings: this.columnMappings, levelColumn: this.levelColumn,
+        feedback: this.feedback };
       this.initContext();
       this.readingSample = true;
     }
@@ -271,6 +274,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.sampleEntries = undefined;
     this.sourceColumnNames = undefined;
     this.columnMappings = undefined;
+    this.levelColumn = undefined;
     this.feedback = undefined;
   }
 
@@ -282,6 +286,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         this.collapsePanelsAbove(SceneComponent.COLUMN_DEFINITIONS_STEP);
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
         this.sourceColumnNames = sample.entries ? undefined : SceneUtils.columnNamesFrom(sample);
+        this.levelColumn = sample.levelColumn;
         this.columnMappings = this.adoptColumnsFromExistingScene ? CommonUtils.clone(this.columnMappingsSource.columnMappings) :
           this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
         this.patternPairs.link(this.columnMappings);
@@ -309,7 +314,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.patternPairs.updatePatternOf(this.columnMappings);
     this.targetColumnNames = this.columnMappings.filter(cp => !cp.skip).map(cp => cp.target.name);
     this.validateColumnMappings();
-    this.previewData = new EntryMapper(this.columnMappings, this.selectedLocale).mapObjects(this.sampleEntries);
+    this.previewData = new EntryMapper(this.columnMappings, this.selectedLocale, this.logLevelColorizer()).mapObjects(this.sampleEntries);
   }
 
   private validateColumnMappings(): void {
@@ -376,10 +381,14 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     this.progressBarMode = 'query';
     this.mappingErrors.clear();
     this.entryPersister.reset();
-    const entryMapper = new EntryMapper(this.columnMappings, this.selectedLocale);
+    const entryMapper = new EntryMapper(this.columnMappings, this.selectedLocale, this.logLevelColorizer());
     const dataHandler = this.createDataHandler(entryMapper, this.sourceColumnNames);
     console.log('start loading file ' + this.file.name + ' of type ' + this.file.type);
     setTimeout(() => this.selectedReader.readData(this.file, SceneComponent.BATCH_SIZE * 160, dataHandler, this.encoding), 500); // let UI update itself
+  }
+
+  private logLevelColorizer(): LogLevelColorizer | undefined {
+    return LogLevelColorizer.of(this.columnMappings, this.levelColumn, LanguageService.language());
   }
 
   private createDataHandler(entryMapper: EntryMapper, sourceColumnNames: string[]): DataHandler {

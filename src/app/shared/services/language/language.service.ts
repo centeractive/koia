@@ -12,7 +12,8 @@ registerLocaleData(localeJa);
 
 /**
  * Determines the language of the user interface and switches it at runtime. The language is a matter of presentation only,
- * it never changes data that is persisted (scenes, entries, views).
+ * it never changes data that is persisted (scenes, entries, views). Log level names of the current language are also recognized
+ * when log files are imported.
  */
 @Injectable({
    providedIn: 'root'
@@ -53,7 +54,14 @@ export class LanguageService {
     * @returns the locale ID of the current language, used to format dates and numbers for display
     */
    static localeId(): string {
-      return localeIdOf(LanguageService.instance?.current() ?? DEFAULT_LANGUAGE);
+      return localeIdOf(LanguageService.language());
+   }
+
+   /**
+    * @returns the current language, English when no [[LanguageService]] was created yet
+    */
+   static language(): Language {
+      return LanguageService.instance?.current() ?? DEFAULT_LANGUAGE;
    }
 
    /**

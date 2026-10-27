@@ -45,6 +45,7 @@ describe('SceneComponent', () => {
   let tableData: string[][];
   let component: SceneComponent;
   let fixture: ComponentFixture<SceneComponent>;
+  const levelSample: Sample = { entries: [{ Level: 'WARN', Message: 'a' }, { Level: 'INFO', Message: 'b' }], levelColumn: 'Level' };
   let findSceneInfos: Mock;
 
   beforeAll(() => {
@@ -282,6 +283,7 @@ describe('SceneComponent', () => {
     loadSample();
     const file = component.file;
     component.columnMappings = [createColumnPair('x')];
+    component.levelColumn = 'Level';
     clickSelectFile();
     window.dispatchEvent(new Event('focus'));
 
@@ -293,6 +295,7 @@ describe('SceneComponent', () => {
     expect(component.file).toBe(file);
     expect(dataSample().value).toBe('dummy');
     expect(component.columnMappings.length).toBe(1);
+    expect(component.levelColumn).toBe('Level');
     expect(progressBar()).toBeNull();
   }));
 
@@ -1271,6 +1274,54 @@ describe('SceneComponent', () => {
     ]);
   }));
 
+  it('#readSample should keep level column of sample', fakeAsync(() => {
+
+    // when
+    initUpToDetectColumns({ entries: [{ Level: 'INFO' }], levelColumn: 'Level' });
+
+    // then
+    expect(component.levelColumn).toBe('Level');
+  }));
+
+  it('#readSample should color preview entries by their log level', fakeAsync(() => {
+
+    // when
+    initUpToDetectColumns(levelSample);
+
+    // then
+    expect(component.previewData.map(mr => mr.entry)).toEqual([
+      { _id: '1000001', Level: 'WARN', Message: 'a', bgcolor: '#fed255' },
+      { _id: '1000002', Level: 'INFO', Message: 'b' }
+    ]);
+  }));
+
+  it('#deleteColumnMapping of level column should remove preview colors', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns(levelSample);
+
+    // when
+    component.deleteColumnMapping(component.columnMappings.find(cp => cp.source.name === 'Level'));
+
+    // then
+    expect(component.previewData.map(mr => mr.entry)).toEqual([
+      { _id: '1000001', Message: 'a' },
+      { _id: '1000002', Message: 'b' }
+    ]);
+  }));
+
+  it('#initContext should forget level column', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns({ entries: [{ Level: 'INFO' }], levelColumn: 'Level' });
+
+    // when
+    component.initContext();
+
+    // then
+    expect(component.levelColumn).toBeUndefined();
+  }));
+
   it('#readSample should adopt copy of column mappings of existing scene', fakeAsync(() => {
 
     // given
@@ -1410,6 +1461,40 @@ describe('SceneComponent', () => {
     // then
     expect(vi.mocked(dbService.writeEntries).mock.calls).toEqual([['data_1', [{ _id: '1000001', 'Column 1': 'D', 'Column 2': 4 }]]]);
     expect(notificationService.onSuccess).toHaveBeenCalled();
+  }));
+
+  it('#click on "Load Data" should color entries by their log level', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns({ entries: [{ Level: 'INFO', Message: 'started' }], levelColumn: 'Level' });
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onEntries([{ Level: 'ERROR', Message: 'a' }, { Level: 'WARN', Message: 'b' }, { Level: 'INFO', Message: 'c' }]);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls).toEqual([['data_1', [
+      { _id: '1000001', Level: 'ERROR', Message: 'a', bgcolor: '#ff785a' },
+      { _id: '1000002', Level: 'WARN', Message: 'b', bgcolor: '#fed255' },
+      { _id: '1000003', Level: 'INFO', Message: 'c' }
+    ]]]);
+  }));
+
+  it('#click on "Load Data" should not color entries without level column', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns({ entries: [{ Level: 'INFO', Message: 'started' }] });
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onEntries([{ Level: 'ERROR', Message: 'a' }]);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls).toEqual([['data_1', [{ _id: '1000001', Level: 'ERROR', Message: 'a' }]]]);
   }));
 
   it('#click on "Load Data" should show number of items read', fakeAsync(() => {

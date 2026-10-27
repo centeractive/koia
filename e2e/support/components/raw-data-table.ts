@@ -28,10 +28,14 @@ export class RawDataTable {
       await this.header(column).click();
    }
 
+   row(index: number): Locator {
+      return this.root.locator(`.vt-row[data-index="${index}"]`);
+   }
+
    async cell(rowIndex: number, column: string): Promise<Locator> {
       await this.headers.first().waitFor();
       const columnIndex = (await this.headers.allTextContents()).indexOf(column);
-      return this.root.locator(`.vt-row[data-index="${rowIndex}"] .vt-td`).nth(columnIndex);
+      return this.row(rowIndex).locator('.vt-td').nth(columnIndex);
    }
 
    header(column: string): Locator {

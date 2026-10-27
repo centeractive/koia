@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DoCheck, Input, OnChanges } from '@angular/core';
 import { Column, ColumnPair } from 'app/shared/model';
 import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
+import { entryRowStyle } from 'app/shared/ui/virtual-table/entry-row-style';
 import { ColumnResize, VirtualTableSource } from 'app/shared/ui/virtual-table/virtual-table-source';
 import { MappingResult } from '../column-mapping/mapper';
 
@@ -21,6 +22,7 @@ export class ScenePreviewComponent implements OnChanges, DoCheck {
   source: VirtualTableSource;
   multiLine = false;
   showNestedObjects = false;
+  readonly rowStyleOf = entryRowStyle;
 
   private entries: object[];
   private widthsKey: string;

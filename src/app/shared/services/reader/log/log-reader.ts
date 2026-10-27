@@ -7,6 +7,7 @@ import { Sample } from '../sample.type';
 import { SourceName } from '../source-name.enum';
 import { LinePattern, LinePatternError } from './line-pattern';
 import { LogEntryAssembler } from './log-entry-assembler';
+import { LogLevels } from './log-levels';
 import { LogLineReader } from './log-line-reader';
 import { LogPatternDetector } from './log-pattern-detector';
 import { FALLBACK_LOG_PATTERN, LOG_PATTERNS } from './log-patterns';
@@ -43,14 +44,15 @@ export class LogReader implements DataReader {
    furnishAttributes(dataHeader: string): Attribute[] {
       const lines = HeaderLines.of(dataHeader);
       if (lines.length > 0) {
-         this.attrPattern.value = LogPatternDetector.detect(lines);
+         this.attrPattern.value = LogPatternDetector.detect(lines, this.levelNames());
       }
       return [this.attrPattern];
    }
 
    async readSample(file: File, entriesCount: number, encoding?: string): Promise<Sample> {
       const entries: object[] = [];
-      const assembler = new LogEntryAssembler(this.pattern(), entry => {
+      const pattern = this.pattern();
+      const assembler = new LogEntryAssembler(pattern, entry => {
          if (entries.length < entriesCount) {
             entries.push(entry);
          }
@@ -58,7 +60,7 @@ export class LogReader implements DataReader {
       });
       await this.lineReader.read(file, encoding, line => assembler.add(line));
       assembler.finish();
-      return { entries };
+      return { entries, levelColumn: pattern.levelName };
    }
 
    readData(file: File, chunkSize: number, dataHandler: DataHandler, encoding?: string): void {
@@ -96,11 +98,15 @@ export class LogReader implements DataReader {
     */
    private pattern(): LinePattern {
       try {
-         return new LinePattern(this.attrPattern.value);
+         return new LinePattern(this.attrPattern.value, this.levelNames());
       } catch (err) {
          const error = err as LinePatternError;
          throw LanguageService.instant('scene.reader.logPatternInvalid',
             { reason: LanguageService.instant(error.key, error.params) });
       }
+   }
+
+   private levelNames(): string[] {
+      return LogLevels.namesOf(LanguageService.language());
    }
 }

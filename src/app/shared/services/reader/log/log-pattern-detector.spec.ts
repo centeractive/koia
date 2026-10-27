@@ -1,3 +1,4 @@
+import { LogLevels } from './log-levels';
 import { LogPatternDetector } from './log-pattern-detector';
 import { FALLBACK_LOG_PATTERN, LOG_PATTERNS } from './log-patterns';
 
@@ -56,6 +57,23 @@ describe('LogPatternDetector', () => {
 
    it('#detect should detect logback file with Caused-by lines as logback', () => {
       expect(LogPatternDetector.detect(LOGBACK_LINES)).toBe(LOG_PATTERNS[1]);
+   });
+
+   it('#detect should detect logback file with levels of specified language', () => {
+
+      // given
+      const lines = [
+         '2024-01-01 10:00:00.123 [main] WARNUNG c.x.App - slow',
+         '2024-01-01 10:00:01.456 [http-1] SCHWERWIEGEND c.x.Auth - Request failed'
+      ];
+
+      // when
+      const german = LogPatternDetector.detect(lines, LogLevels.namesOf('de'));
+      const english = LogPatternDetector.detect(lines);
+
+      // then
+      expect(german).toBe(LOG_PATTERNS[1]);
+      expect(english).toBe(FALLBACK_LOG_PATTERN);
    });
 
    it('#detect should not detect logback file with Caused-by lines as level, logger and message pattern', () => {

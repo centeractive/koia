@@ -4,7 +4,9 @@ import { Column, Query, Operator } from 'app/shared/model';
 
 export class QueryConverter {
 
-   static readonly TABLE_STYLE_FIELDS = ['fgcolor', 'bgcolor'];
+   static readonly FG_COLOR = 'fgcolor';
+   static readonly BG_COLOR = 'bgcolor';
+   static readonly TABLE_STYLE_FIELDS = [QueryConverter.FG_COLOR, QueryConverter.BG_COLOR];
 
    constructor(private forPouchDB: boolean) { }
 

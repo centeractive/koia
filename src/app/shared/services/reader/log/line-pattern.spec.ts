@@ -1,5 +1,6 @@
 import { LinePattern, LinePatternError } from './line-pattern';
 import { LOG_PATTERNS } from './log-patterns';
+import { LogLevels } from './log-levels';
 
 describe('LinePattern', () => {
 
@@ -108,6 +109,60 @@ describe('LinePattern', () => {
 
       // then
       expect(values).toBeUndefined();
+   });
+
+   it('#match should accept level of specified language', () => {
+
+      // given
+      const pattern = new LinePattern('{Level:level} {Message}', LogLevels.namesOf('de'));
+
+      // when
+      const values = pattern.match('Warnung disk almost full');
+
+      // then
+      expect(values).toEqual({ Level: 'Warnung', Message: 'disk almost full' });
+   });
+
+   it('#match should not accept level of other language by default', () => {
+      expect(new LinePattern('{Level:level} {Message}').match('Warnung disk almost full')).toBeUndefined();
+   });
+
+   it('#match should accept japanese level', () => {
+
+      // given
+      const pattern = new LinePattern('{Level:level} {Message}', LogLevels.namesOf('ja'));
+
+      // when
+      const values = pattern.match('警告 disk almost full');
+
+      // then
+      expect(values).toEqual({ Level: '警告', Message: 'disk almost full' });
+   });
+
+   it('#match should accept level containing space', () => {
+
+      // given
+      const pattern = new LinePattern('{Level:level} - {Message}', LogLevels.namesOf('de'));
+
+      // when
+      const values = pattern.match('am feinsten - details');
+
+      // then
+      expect(values).toEqual({ Level: 'am feinsten', Message: 'details' });
+   });
+
+   it('#match should accept level of Retrospective by default', () => {
+      expect(new LinePattern('{Level:level} {Message}').match('EMERGENCY halt')).toEqual({ Level: 'EMERGENCY', Message: 'halt' });
+   });
+
+   it.each([
+      ['{Time:time} {Level:level} {Message}', 'Level'],
+      ['{Sev:level} {Message}', 'Sev'],
+      ['{Message}', undefined],
+      [LinePattern.JSON_LINES, undefined],
+      [LinePattern.LOGFMT, undefined]
+   ])('#levelName of %s should be %s', (template, levelName) => {
+      expect(new LinePattern(template).levelName).toBe(levelName);
    });
 
    it('#match should accept whitespace run for single space of template', () => {
