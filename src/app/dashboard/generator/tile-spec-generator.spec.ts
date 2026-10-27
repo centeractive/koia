@@ -43,7 +43,7 @@ describe('TileSpecGenerator', () => {
 
     // then
     expect(specsPerCount.map(specs => specs.map(s => s.chartType))).toEqual([
-      [ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA, ChartType.BAR, ChartType.HORIZONTAL_BAR],
+      [ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA],
       [ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA, ChartType.RADAR, ChartType.BAR, ChartType.HORIZONTAL_BAR],
       [ChartType.RADAR, ChartType.BAR, ChartType.HORIZONTAL_BAR],
       [ChartType.HORIZONTAL_BAR]
@@ -112,9 +112,9 @@ describe('TileSpecGenerator', () => {
 
     // then
     expect(specs.map(s => describeTileSpec(s))).toEqual(['line A by T split ', 'area A by T split ']);
+    expect(specs.map(s => s.stacked)).toEqual([false, true]);
     specs.forEach(s => {
       expect(s.aggregations).toEqual([Aggregation.COUNT]);
-      expect(s.stacked).toBe(false);
       expect(s.showLegend).toBe(true);
       expect(s.legendPosition).toBe('top');
       expect(s.size).toBe(TileSize.WIDE);
@@ -133,10 +133,10 @@ describe('TileSpecGenerator', () => {
     expect(specs.map(s => describeTileSpec(s))).toEqual([
       'line N1 by T split ', 'area N1 by T split ',
       'line N2 by T split ', 'area N2 by T split ',
-      'line N1,N2 by T split ', 'area N1,N2 by T split '
+      'line N1,N2 by T split '
     ]);
-    expect(specs.map(s => s.multiValueAxes)).toEqual([false, false, false, false, true, true]);
-    expect(specs.map(s => s.showLegend)).toEqual([false, false, false, false, true, true]);
+    expect(specs.map(s => s.multiValueAxes)).toEqual([false, false, false, false, true]);
+    expect(specs.map(s => s.showLegend)).toEqual([false, false, false, false, true]);
     specs.forEach(s => {
       expect(s.aggregations).toEqual([]);
       expect(s.stacked).toBe(false);
@@ -167,8 +167,8 @@ describe('TileSpecGenerator', () => {
     // then
     expect(specs.map(s => describeTileSpec(s))).toEqual([
       'line N by T split ', 'area N by T split ',
-      'line N by T split S1', 'area N by T split S1',
-      'line N by T split S2', 'area N by T split S2',
+      'line N by T split S1',
+      'line N by T split S2',
       'scatter N by T split ', 'scatter N by T split S1', 'scatter N by T split S2'
     ]);
     specs.forEach(s => {
@@ -266,8 +266,7 @@ describe('TileSpecGenerator', () => {
 
     // then
     expect(specs.map(s => describeTileSpec(s))).toEqual([
-      'radar N by Name split ', 'bar N by Name split ', 'horizontalBar N by Name split ',
-      'bar N by Code split ', 'horizontalBar N by Code split ', 'horizontalBar N by Label split '
+      'radar N by Name split ', 'bar N by Name split ', 'horizontalBar N by Name split ', 'horizontalBar N by Label split '
     ]);
     specs.forEach(s => {
       expect(s.aggregations).toEqual([]);
@@ -297,7 +296,7 @@ describe('TileSpecGenerator', () => {
     // then
     expect(specs[specs.length - 1]).toBe(tableSpec);
     expect(specs.filter(s => isTable(s))).toEqual([tableSpec]);
-    expect(generateTables).toHaveBeenCalledWith([c], [n], [t], randomizer, combinations);
+    expect(generateTables).toHaveBeenCalledWith([c], [n], [t], combinations);
   });
 
   it('#generate should never combine column with itself', () => {
@@ -344,7 +343,7 @@ describe('TileSpecGenerator', () => {
     expect(specs.map(s => describeTileSpec(s))).toEqual([
       'line N1 by T split ', 'area N1 by T split ',
       'line N2 by T split ', 'area N2 by T split ',
-      'line N1,N2 by T split ', 'area N1,N2 by T split '
+      'line N1,N2 by T split '
     ]);
   });
 
@@ -363,6 +362,7 @@ describe('TileSpecGenerator', () => {
       'line N by T split S1', 'area N by T split S1', 'linearBar N by T split S1'
     ]);
     expect(specs.map(s => s.showLegend)).toEqual([false, false, false, true, true, true]);
+    expect(specs.map(s => s.stacked)).toEqual([false, false, false, false, true, false]);
     specs.forEach(s => {
       expect(s.aggregations).toEqual([Aggregation.SUM]);
       expect(s.multiValueAxes).toBe(false);
@@ -510,5 +510,66 @@ describe('TileSpecGenerator', () => {
 
     // then
     expect(groupings).toEqual([]);
+  });
+
+  it('#generate should stack area charts of category counts over time', () => {
+
+    // given
+    const profiles = [category('A', 3), time('T', 2)];
+
+    // when
+    const specs = generate(profiles, [0.9]).filter(s => s.chartType === ChartType.AREA && s.dataColumns[0]?.name === 'A');
+
+    // then
+    expect(specs.map(s => describeTileSpec(s))).toEqual(['area A by T split ']);
+    expect(specs[0].stacked).toBe(true);
+  });
+
+  it('#generate should create stacked area of split sums over time', () => {
+
+    // given
+    const profiles = [measure('N'), time('T', 3), category('S', 3)];
+
+    // when
+    const specs = generate(profiles, [0]).filter(s => s.chartType === ChartType.AREA && s.dataColumns[0]?.name === 'N');
+
+    // then
+    expect(specs.map(s => [describeTileSpec(s), s.aggregations, s.stacked])).toEqual([
+      ['area N by T split ', [Aggregation.SUM], false],
+      ['area N by T split S', [Aggregation.SUM], true]
+    ]);
+  });
+
+  it('#generate should not create split area of averages over time', () => {
+
+    // given
+    const profiles = [measure('N'), time('T', 3), category('S', 3)];
+
+    // when
+    const specs = generate(profiles, [0.99]).filter(s => s.chartType === ChartType.AREA && s.dataColumns[0]?.name === 'N');
+
+    // then
+    expect(specs.map(s => [describeTileSpec(s), s.aggregations])).toEqual([['area N by T split ', [Aggregation.AVG]]]);
+  });
+
+  it('#generate should not create split area of individual values over time', () => {
+
+    // given
+    const profiles = [measure('N'), time('T', 1), category('S', 3)];
+
+    // when
+    const specs = generate(profiles).filter(s => s.chartType === ChartType.AREA && s.aggregations.length === 0);
+
+    // then
+    expect(specs.map(s => describeTileSpec(s))).toEqual(['area N by T split ']);
+  });
+
+  it('#generate should not create bar distributions of two categories', () => {
+
+    // when
+    const specs = generateCharts([category('C', 2)]);
+
+    // then
+    expect(specs.map(s => s.chartType)).toEqual([ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA]);
   });
 });

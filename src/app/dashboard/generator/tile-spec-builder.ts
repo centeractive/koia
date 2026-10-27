@@ -18,6 +18,7 @@ export function tileSpecOf(fields: TileSpecFields): TileSpec {
     groupByColumns,
     splitColumns,
     aggregations: fields.aggregations,
+    aggregationChoices: fields.aggregationChoices ?? [],
     valueGroupingColumn: fields.valueGroupingColumn,
     stacked: fields.stacked ?? false,
     multiValueAxes: fields.multiValueAxes ?? false,
@@ -30,4 +31,8 @@ export function tileSpecOf(fields: TileSpecFields): TileSpec {
 
 export function pairsOf<T>(items: T[]): T[][] {
   return items.flatMap((p1, i) => items.slice(i + 1).map(p2 => [p1, p2]));
+}
+
+export function triplesOf<T>(items: T[]): T[][] {
+  return items.flatMap((t1, i) => pairsOf(items.slice(i + 1)).map(pair => [t1, ...pair]));
 }

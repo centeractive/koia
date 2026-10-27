@@ -18,7 +18,13 @@ export const SUMMARY_TABLE_STYLE = {
   cell: { ...TABLE_CELL, fontWeight: 400 } as CellStyle,
   footer: { ...TABLE_CELL, fontWeight: 600 } as CellStyle,
   sortArrowWidth: 18,
-  marginRight: 1
+  marginRight: 1,
+  headerHeight: 23,
+  firstRowHeight: 22,
+  rowHeight: 23,
+  footerHeight: 24,
+  /** tile header plus resize handle around the table scroller */
+  scrollerInset: 64
 };
 
 export function fontOf(style: CellStyle): string {
