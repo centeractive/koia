@@ -296,6 +296,36 @@ describe('PivotTableComponent', () => {
     expect(component.dataFrame).not.toBe(dataFrame);
   });
 
+  it('#ngOnDestroy should not render pivot table pending before destroy', fakeAsync(() => {
+
+    // given
+    const pivotUI = vi.spyOn((globalThis as unknown as { jQuery: { fn: { pivotUI: () => void } } }).jQuery.fn, 'pivotUI');
+    const observe = vi.spyOn(MutationObserver.prototype, 'observe');
+    component.onShowColumnTotalsChanged();
+
+    // when
+    fixture.destroy();
+    flush();
+
+    // then
+    expect(pivotUI).not.toHaveBeenCalled();
+    expect(observe).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not group data pending before destroy', fakeAsync(() => {
+
+    // given
+    const groupByFormattedTimeUnit = vi.spyOn(TestBed.inject(TimeGroupingService), 'groupByFormattedTimeUnit');
+    component.onTimeUnitChanged(component.context.timeColumns[0], TimeUnit.YEAR);
+
+    // when
+    fixture.destroy();
+    flush();
+
+    // then
+    expect(groupByFormattedTimeUnit).not.toHaveBeenCalled();
+  }));
+
   it('#onTimeUnitChanged should change selected time unit and refresh data', fakeAsync(() => {
 
     // given

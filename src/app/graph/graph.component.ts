@@ -45,6 +45,7 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
   private contextSubscription: Subscription;
   private destroyed = false;
   private outdated = false;
+  private resizePending = false;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private graphDataService: GraphDataService,
     rawDataRevealService: RawDataRevealService) {
@@ -65,7 +66,10 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    this.prepareGraphAsync();
+    if (!this.resizePending) {
+      this.resizePending = true;
+      this.prepareGraphAsync();
+    }
   }
 
   private prepareGraphAsync(): void {
@@ -75,6 +79,7 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
   private async prepareGraph(): Promise<void> {
     this.loading = true;
     await CommonUtils.sleep(100); // releases UI thread for showing new title and progress bar
+    this.resizePending = false;
     if (!this.destroyed) {
       if (isRendered(this.svgDiv())) {
         this.buildGraphData();

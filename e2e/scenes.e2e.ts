@@ -55,6 +55,21 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scenes.rows).toContainText(fruitSalesSampleOf('en').sceneName);
    });
 
+   test('deleting the active scene discards its cached raw data', async ({ page, scenes, rawData }) => {
+      await scenes.activate(ORDERS_CSV.name);
+      await rawData.mainToolbar.openScenes();
+      await scenes.delete(ORDERS_CSV.name);
+      await scenes.title.evaluate(el => el.setAttribute('data-stale', ''));
+
+      await scenes.cancelButton.click();
+
+      await expect(page.locator('koia-page-frame .page_title[data-stale]')).toHaveCount(0);
+      await expect(scenes.title).toBeVisible();
+      await expect(page).toHaveURL(/\/scenes$/);
+      await expect(scenes.rows).toHaveCount(1);
+      await expect(scenes.rows).toContainText(fruitSalesSampleOf('en').sceneName);
+   });
+
    test('edited scene keeps its data and shows new name and description', async ({ scenes, rawData }) => {
       const message = await scenes.edit(ORDERS_CSV.name, 'renamed orders', 'edited description');
 

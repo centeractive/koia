@@ -18,7 +18,7 @@ import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, leftInsetOf, rightInsetOf, rowCountOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { QueryParamExtractor } from 'app/shared/utils';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import type { Mock } from 'vitest';
 import { page } from 'vitest/browser';
 import { ConnectionDialogComponent, ConnectionDialogData } from './connection-dialog/connection-dialog.component';
@@ -1348,6 +1348,122 @@ describe('FrontComponent', () => {
     expect(sceneFileCancelButton(host)).toBeNull();
   });
 
+  it('#openSample should clear cached views when active scene changed before failure', async () => {
+
+    // given
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValueOnce(SceneFactory.createScene('1', [])).mockReturnValue(undefined);
+    vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockRejectedValue('no space left');
+    const clearSpy = vi.spyOn(TestBed.inject(Router).routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const onErrorSpy = vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.openSample(fruitSalesSampleOf);
+    await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
+
+    // then
+    expect(clearSpy).toHaveBeenCalled();
+  });
+
+  it('#openSample should keep cached views when sample cannot be opened before scene changed', async () => {
+
+    // given
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', []));
+    vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockRejectedValue('no space left');
+    const clearSpy = vi.spyOn(TestBed.inject(Router).routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const onErrorSpy = vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    component.openSample(fruitSalesSampleOf);
+    await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
+
+    // then
+    expect(clearSpy).not.toHaveBeenCalled();
+  });
+
+  it('#ngOnDestroy should abort running scene file import', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+
+    // when
+    fixture.destroy();
+
+    // then
+    expect(importSpy.mock.calls[0][1].aborted).toBe(true);
+  });
+
+  it('#ngOnDestroy should not show raw data when scene file import completes after destroy', async () => {
+
+    // given
+    let completeImport: () => void;
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise<void>(resolve => completeImport = resolve));
+    const router = TestBed.inject(Router);
+    const clearSpy = vi.spyOn(router.routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+
+    // when
+    fixture.destroy();
+    completeImport();
+    await vi.waitFor(() => expect(clearSpy).toHaveBeenCalled());
+
+    // then
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('#ngOnDestroy should not show raw data when sample opens after destroy', async () => {
+
+    // given
+    let completeOpen: () => void;
+    vi.spyOn(TestBed.inject(SampleSceneService), 'open').mockReturnValue(new Promise<void>(resolve => completeOpen = resolve));
+    const router = TestBed.inject(Router);
+    const clearSpy = vi.spyOn(router.routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    component.openSample(fruitSalesSampleOf);
+
+    // when
+    fixture.destroy();
+    completeOpen();
+    await vi.waitFor(() => expect(clearSpy).toHaveBeenCalled());
+
+    // then
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it('#openSceneFile should show raw data when canceled after last abort check', async () => {
+
+    // given
+    let completeImport: () => void;
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise<void>(resolve => completeImport = resolve));
+    const router = TestBed.inject(Router);
+    vi.spyOn(router.routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+
+    // when
+    component.cancelSceneFileImport();
+    completeImport();
+
+    // then
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(Route.RAWDATA));
+  });
+
+  it('#ngOnDestroy should not fail when ngOnInit did not run', () => {
+
+    // given
+    const uninitializedFixture = TestBed.createComponent(FrontComponent);
+
+    // when
+    const destroy = () => uninitializedFixture.destroy();
+
+    // then
+    expect(destroy).not.toThrow();
+  });
+
   function sceneFileInput(host: HTMLElement): HTMLInputElement {
     return host.querySelector<HTMLInputElement>('#scene_file_input');
   }
@@ -1509,6 +1625,41 @@ describe('FrontComponent', () => {
       }
     };
   }
+});
+
+describe('FrontComponent (launch params)', () => {
+
+  const queryParamMap$ = new Subject<QueryParams>();
+  let fixture: ComponentFixture<FrontComponent>;
+
+  beforeEach(waitForAsync(() => {
+    vi.spyOn(console, 'log').mockReturnValue(undefined);
+    dbService = new DBService(couchDBService, null);
+    configureTestingModule(new QueryParams(), null);
+    TestBed.overrideProvider(ActivatedRoute, { useValue: { queryParamMap: queryParamMap$, fragment: of(null) } });
+    TestBed.compileComponents();
+    initBackendSpy = vi.spyOn(dbService, 'initBackend').mockResolvedValue(undefined);
+    vi.spyOn(dbService, 'isIndexedDbInUse').mockReturnValue(true);
+    vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([]);
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(FrontComponent);
+    fixture.detectChanges();
+  });
+
+  it('#ngOnDestroy should stop handling launch params', () => {
+
+    // given
+    queryParamMap$.next(new QueryParams());
+
+    // when
+    fixture.destroy();
+    queryParamMap$.next(new QueryParams());
+
+    // then
+    expect(initBackendSpy).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('FrontComponent (external invocation)', () => {

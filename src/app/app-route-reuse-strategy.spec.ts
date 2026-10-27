@@ -1,6 +1,7 @@
 import { ActivatedRouteSnapshot, DetachedRouteHandle, UrlSegment } from '@angular/router';
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { Route } from './shared/model';
+import { SceneFactory } from 'app/shared/test';
 
 describe('AppRouteReuseStrategy', () => {
 
@@ -272,6 +273,37 @@ describe('AppRouteReuseStrategy', () => {
       expect(tabRouteHandle['componentRef'].destroy).toHaveBeenCalled();
       expect(strategy.retrieve(rawDataRouteSnapshot)).toBeUndefined();
       expect(strategy.retrieve(tabRouteSnapshot)).toBeUndefined();
+   });
+
+   it('#clearIfSceneChanged should destroy stored routes when active scene changed', () => {
+
+      // given
+      const routeSnapshot = createActivatedRouteSnapshot(Route.RAWDATA);
+      const routeHandle = createDestroyableRouteHandle();
+      strategy.store(routeSnapshot, routeHandle);
+
+      // when
+      strategy.clearIfSceneChanged(SceneFactory.createScene('1', []), undefined);
+
+      // then
+      expect(routeHandle['componentRef'].destroy).toHaveBeenCalled();
+      expect(strategy.retrieve(routeSnapshot)).toBeUndefined();
+   });
+
+   it('#clearIfSceneChanged should keep stored routes when scene is still active', () => {
+
+      // given
+      const scene = SceneFactory.createScene('1', []);
+      const routeSnapshot = createActivatedRouteSnapshot(Route.RAWDATA);
+      const routeHandle = createDestroyableRouteHandle();
+      strategy.store(routeSnapshot, routeHandle);
+
+      // when
+      strategy.clearIfSceneChanged(scene, scene);
+
+      // then
+      expect(routeHandle['componentRef'].destroy).not.toHaveBeenCalled();
+      expect(strategy.retrieve(routeSnapshot)).toBe(routeHandle);
    });
 
    function createActivatedRouteSnapshot(route: Route): ActivatedRouteSnapshot {

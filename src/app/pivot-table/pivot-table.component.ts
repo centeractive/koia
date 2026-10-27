@@ -245,6 +245,9 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   private async refreshDataFrame(config?: object): Promise<void> {
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
+    if (this.destroyed) {
+      return;
+    }
     this.dataFrame = this.baseDataFrame;
     this.context.timeColumns
       .forEach(c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
@@ -348,6 +351,9 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
 
   private async renderPivotTable(pivotOptions?: object): Promise<void> {
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
+    if (this.destroyed) {
+      return;
+    }
     const targetElement = this.getTargetElement();
     if (pivotOptions) {
       targetElement.pivotUI(this.dataFrame.toArray(), pivotOptions, true);

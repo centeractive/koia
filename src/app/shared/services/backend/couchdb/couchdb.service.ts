@@ -146,7 +146,7 @@ export class CouchDBService implements DB {
 
   async insertBulk(database: string, documents: Document[]): Promise<void> {
     const url = this.url(database, '_bulk_docs');
-    LogUtils.logHttpRequest(HTTPMethod.POST, url, { docs: documents });
+    LogUtils.logHttpRequest(HTTPMethod.POST, url, documents.length + ' documents');
     return lastValueFrom(this.http.post<DocChangeResponse[]>(url, { docs: documents }, this.httpOptions))
       .then(r => {
         const errors = r.filter(dcr => dcr.error).map(dcr => 'id: ' + dcr.id + ', error: ' + dcr.error + ', reason: ' + dcr.reason);

@@ -1477,6 +1477,62 @@ describe('SceneComponent', () => {
     expect(dbService.writeEntries).not.toHaveBeenCalled();
   }));
 
+  it('#ngOnDestroy should cancel ongoing data load', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    loadData(dataHandler => dataHandler.onValues(tableData));
+
+    // when
+    fixture.destroy();
+    flush();
+
+    // then
+    expect(component.canceled).toBe(true);
+    expect(component.entryPersister.isPostingComplete()).toBe(true);
+    expect(dbService.writeEntries).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not navigate to scenes when data load completes after destroy', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    loadData(dataHandler => dataHandler.onValues(tableData));
+    navigateByUrlSpy.mockClear();
+
+    // when
+    fixture.destroy();
+    flush();
+
+    // then
+    expect(navigateByUrlSpy).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy should not cancel when no data is loaded', () => {
+
+    // given
+    vi.spyOn(component.entryPersister, 'postingComplete');
+
+    // when
+    fixture.destroy();
+
+    // then
+    expect(component.canceled).toBe(false);
+    expect(component.entryPersister.postingComplete).not.toHaveBeenCalled();
+  });
+
+  it('#ngOnDestroy should not fail when backend is not initialized', () => {
+
+    // given
+    component.scene = undefined;
+
+    // when
+    const destroy = () => fixture.destroy();
+
+    // then
+    expect(destroy).not.toThrow();
+  });
+
   it('#click on "Load Data" should not complete posting again when reader fails after cancel', fakeAsync(() => {
 
     // given

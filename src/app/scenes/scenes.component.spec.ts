@@ -351,7 +351,7 @@ describe('ScenesComponent', () => {
     flush();
 
     // then
-    expect(dbService.getActiveScene).toHaveBeenCalledTimes(1);
+    expect(dbService.getActiveScene).toHaveBeenCalledTimes(3);
     expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
     expect(dbService.findSceneActivationTimes).toHaveBeenCalledTimes(1);
   }));
@@ -372,6 +372,65 @@ describe('ScenesComponent', () => {
 
     // then
     expect(dbService.deleteScene).toHaveBeenCalledWith(scene);
+    expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#selecting delete menu item should clear cached views when active scene is deleted', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'deleteScene').mockImplementation(async () => {
+      getActiveSceneSpy.mockReturnValue(undefined);
+    });
+
+    // when
+    selectMenuItemOfFirstScene('.menu_item_delete');
+
+    // then
+    expect(appRouteReuseStrategy.clear).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#selecting delete menu item should keep cached views when inactive scene is deleted', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
+
+    // when
+    selectMenuItemOfFirstScene('.menu_item_delete');
+
+    // then
+    expect(appRouteReuseStrategy.clear).not.toHaveBeenCalled();
+  }));
+
+  it('#click on "Delete all" button should clear cached views when deletion fails after active scene was deleted', fakeAsync(() => {
+
+    // given
+    spyOnConfirmDialogAndPressYes();
+    vi.spyOn(dbService, 'deleteScene').mockImplementation(async () => {
+      getActiveSceneSpy.mockReturnValue(undefined);
+      throw 'error';
+    });
+    const deleteButton: HTMLButtonElement = fixture.debugElement.query(By.css('#but_delete_scenes')).nativeElement;
+
+    // when
+    deleteButton.click();
+    flush();
+
+    // then
+    expect(appRouteReuseStrategy.clear).toHaveBeenCalledTimes(1);
+    expect(notificationService.onError).toHaveBeenCalledTimes(1);
+  }));
+
+  it('#updateLabels should keep cached views of active scene', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'updateSceneLabels').mockResolvedValue(undefined);
+
+    // when
+    component.updateLabels({ _id: scenes[0]._id, name: 'renamed', shortDescription: '' });
+    flush();
+
+    // then
+    expect(appRouteReuseStrategy.clear).not.toHaveBeenCalled();
     expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
   }));
 

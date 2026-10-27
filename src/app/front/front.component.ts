@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
@@ -16,7 +16,7 @@ import { CouchDBFallback, DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { Language, LanguageService } from 'app/shared/services/language';
 import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
-import { combineLatest, firstValueFrom } from 'rxjs';
+import { Subscription, combineLatest, firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { LaunchParamsService } from './launch-params.service';
 
@@ -27,7 +27,7 @@ import { LaunchParamsService } from './launch-params.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class FrontComponent extends AbstractComponent implements OnInit {
+export class FrontComponent extends AbstractComponent implements OnInit, OnDestroy {
 
   readonly indexedDB = 'IndexedDB';
   readonly couchDB = 'CouchDB';
@@ -52,6 +52,9 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   readonly sceneFileExtension = SCENE_FILE_EXTENSION;
   couchDBTipDismissed = FrontComponent.readCouchDBTipDismissed();
 
+  private launchSubscription = Subscription.EMPTY;
+  private destroyed = false;
+
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private dialogService: DialogService, private sampleSceneService: SampleSceneService,
     notificationService: NotificationService, private languageService: LanguageService, private launchParamsService: LaunchParamsService,
@@ -60,7 +63,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.fragment]).subscribe(([params, fragment]) => {
+    this.launchSubscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.fragment]).subscribe(([params, fragment]) => {
       const queryParamExtractor = new QueryParamExtractor(this.launchParamsService.paramsOf(params, fragment));
       if (queryParamExtractor.hasCouchDBConnectionParams() && queryParamExtractor.getSceneID()) {
         this.handleExternalInvocation(queryParamExtractor);
@@ -148,12 +151,11 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    */
   openSample(sampleOf: (language: Language) => SampleDef): void {
     this.loadingSample = sampleOf;
+    const activeScene = this.dbService.getActiveScene();
     this.sampleSceneService.open(sampleOf(this.languageService.current()))
-      .then(() => {
-        this.clearCachedViews();
-        return this.router.navigateByUrl(Route.RAWDATA);
-      })
+      .then(() => this.showRawData())
       .catch(err => {
+        this.routeReuseStrategy().clearIfSceneChanged(activeScene, this.dbService.getActiveScene());
         this.loadingSample = undefined;
         this.notifyError(err);
       });
@@ -172,10 +174,7 @@ export class FrontComponent extends AbstractComponent implements OnInit {
     const sceneFileImport = this.sceneFileImport = new AbortController();
     CommonUtils.afterNextPaint()
       .then(() => this.sceneFileService.import(file, sceneFileImport.signal))
-      .then(() => {
-        this.clearCachedViews();
-        return this.router.navigateByUrl(Route.RAWDATA);
-      })
+      .then(() => this.showRawData())
       .catch(err => {
         this.importingSceneFile = false;
         this.sceneFileImport = undefined;
@@ -269,10 +268,28 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   }
 
   /**
+   * the loaded scene is active now, unless this page was left meanwhile
+   */
+  private showRawData(): Promise<boolean> {
+    this.clearCachedViews();
+    return this.destroyed ? Promise.resolve(false) : this.router.navigateByUrl(Route.RAWDATA);
+  }
+
+  /**
    * cached views belong to the scene that was active before
    */
   private clearCachedViews(): void {
-    (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
+    this.routeReuseStrategy().clear();
+  }
+
+  private routeReuseStrategy(): AppRouteReuseStrategy {
+    return this.router.routeReuseStrategy as AppRouteReuseStrategy;
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.launchSubscription.unsubscribe();
+    this.sceneFileImport?.abort();
   }
 
   private initOrNotifyError(): void {

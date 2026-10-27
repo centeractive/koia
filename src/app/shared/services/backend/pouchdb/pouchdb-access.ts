@@ -9,6 +9,10 @@ import { deleteUnlessSystemDatabase, indexQueryOf } from '../db-utils';
 
 PouchDB.plugin(PouchFind);
 
+interface ViewCache {
+  _cachedViews?: Record<string, Promise<{ db: PouchDB.Database }>>;
+}
+
 export class PouchDBAccess implements DB {
 
   private static MAX_DATA_ITEMS_PER_SCENE = 10_000;
@@ -20,7 +24,9 @@ export class PouchDBAccess implements DB {
 
   createDatabase(database: string): Promise<void> {
     console.log('create database', database);
-    this.databases.push(database);
+    if (!this.databases.includes(database)) {
+      this.databases.push(database);
+    }
     return Promise.resolve();
   }
 
@@ -137,7 +143,15 @@ export class PouchDBAccess implements DB {
   private async release(database: string, instance: { db: PouchDB.Database, operations: number }): Promise<void> {
     if (--instance.operations === 0 && this.instances.get(database) === instance) {
       this.instances.delete(database);
-      await instance.db.close().catch(() => undefined);
+      await Promise.all([instance.db.close(), ...this.closeViews(instance.db)]).catch(() => undefined);
     }
+  }
+
+  /**
+   * pouchdb-find opens one database per index view, closing the source database leaves them open
+   */
+  private closeViews(db: PouchDB.Database): Promise<void>[] {
+    return Object.values((db as ViewCache)._cachedViews ?? {})
+      .map(view => view.then(v => v.db.close()).catch(() => undefined));
   }
 }

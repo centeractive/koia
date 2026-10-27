@@ -10,7 +10,14 @@ describe('PouchDBAccess', () => {
    let zone: NgZone;
    let dbAccess: PouchDBAccess;
    const registeredInstances = () =>
-      (PouchDB as unknown as { _destructionListeners: Map<string, unknown[]> })._destructionListeners.get(DB)?.length ?? 0;
+      destructionListeners().get(DB)?.length ?? 0;
+   const registeredViewInstances = () => [...destructionListeners()]
+      .filter(([name]) => name.startsWith(DB + '-mrview-'))
+      .reduce((sum, [, instances]) => sum + instances.length, 0);
+
+   function destructionListeners(): Map<string, unknown[]> {
+      return (PouchDB as unknown as { _destructionListeners: Map<string, unknown[]> })._destructionListeners;
+   }
 
    beforeAll(() => {
       zone = new NgZone({ enableLongStackTrace: false });
@@ -415,6 +422,69 @@ describe('PouchDBAccess', () => {
 
       // then
       expect(count).toBe(0);
+   });
+
+   it('#find should leave no view instance registered when sorted by indexed field', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      await dbAccess.createIndex(DB, 'name');
+      const documents = [{ _id: '1', name: 'b' }, { _id: '2', name: 'a' }];
+      await dbAccess.insertBulk(DB, documents);
+      const query = { selector: { name: { $gt: null } }, sort: ['name'] };
+
+      // when
+      const docs = await lastValueFrom(dbAccess.find(DB, query));
+
+      // then
+      expect(docs.map(d => d._id)).toEqual(['2', '1']);
+      expect(registeredViewInstances()).toBe(0);
+      expect(registeredInstances()).toBe(0);
+   });
+
+   it('#createIndex should leave no view instance registered', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+
+      // when
+      await dbAccess.createIndex(DB, 'name');
+
+      // then
+      expect(registeredViewInstances()).toBe(0);
+   });
+
+   it('#find should resolve when view cannot be closed', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+      await dbAccess.insertBulk(DB, [{ _id: '1' }]);
+      const acquire = dbAccess['acquire'].bind(dbAccess);
+      vi.spyOn(dbAccess as unknown as { acquire: typeof acquire }, 'acquire').mockImplementation(database => {
+         const instance = acquire(database);
+         (instance.db as unknown as { _cachedViews: object })._cachedViews = {
+            v: Promise.resolve({ db: { close: () => Promise.reject(new Error('not closed')) } })
+         };
+         return instance;
+      });
+
+      // when
+      const docs = await lastValueFrom(dbAccess.find(DB, { selector: { _id: { $gt: null } } }));
+
+      // then
+      expect(docs.map(d => d._id)).toEqual(['1']);
+   });
+
+   it('#createDatabase should register database once when created twice', async () => {
+
+      // given
+      await dbAccess.createDatabase(DB);
+
+      // when
+      await dbAccess.createDatabase(DB);
+
+      // then
+      expect(dbAccess['databases']).toEqual([DB]);
    });
 
    function checkDocument(doc: Document, expID: string, expName: string): void {

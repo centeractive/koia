@@ -148,6 +148,36 @@ describe('GraphComponent', () => {
     expect(generate).toHaveBeenCalledExactlyOnceWith(component.graphData, svgDiv(), context);
   }));
 
+  it('window resizes in quick succession should regenerate graph once', fakeAsync(() => {
+
+    // given
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+
+    // when
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
+    flush();
+
+    // then
+    expect(generate).toHaveBeenCalledOnce();
+  }));
+
+  it('window resize after graph regeneration should regenerate graph again', fakeAsync(() => {
+
+    // given
+    const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+    window.dispatchEvent(new Event('resize'));
+    flush();
+
+    // when
+    window.dispatchEvent(new Event('resize'));
+    flush();
+
+    // then
+    expect(generate).toHaveBeenCalledTimes(2);
+  }));
+
   it('window resize should not regenerate graph while it is not displayed', fakeAsync(() => {
 
     // given

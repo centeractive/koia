@@ -1,6 +1,7 @@
 import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { ConnectionInfo, Document, Protocol } from 'app/shared/model';
+import { ConnectionInfo, Document, HTTPMethod, Protocol } from 'app/shared/model';
+import { LogUtils } from 'app/shared/utils';
 import { lastValueFrom } from 'rxjs';
 import { CouchDBConfig } from './couchdb-config';
 import { CouchDBService } from './couchdb.service';
@@ -208,6 +209,20 @@ describe('CouchDBService', () => {
             checkDocument(docs[1], '2', 'b');
             checkDocument(docs[2], '3', 'c');
          });
+   });
+
+   it('#insertBulk should log number of documents instead of documents', async () => {
+
+      // given
+      const database = testDBPrefix + 'db';
+      await couchDBService.createDatabase(database);
+      const logHttpRequest = vi.spyOn(LogUtils, 'logHttpRequest');
+
+      // when
+      await couchDBService.insertBulk(database, [{ _id: '1' }, { _id: '2' }]);
+
+      // then
+      expect(logHttpRequest).toHaveBeenCalledWith(HTTPMethod.POST, expect.stringContaining('/_bulk_docs'), '2 documents');
    });
 
    it('#insertBulk should throw error when documents already exists', async () => {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, destroyDetachedRouteHandle, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
-import { Route } from './shared/model';
+import { Route, Scene } from './shared/model';
 
 @Injectable()
 export class AppRouteReuseStrategy implements RouteReuseStrategy {
@@ -79,5 +79,14 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
 
    clear(): void {
       [...this.routeHandlesCache.keys()].forEach(path => this.evict(path));
+   }
+
+   /**
+    * cached views belong to the scene that was active when they were cached
+    */
+   clearIfSceneChanged(cachedScene: Scene, activeScene: Scene): void {
+      if (activeScene !== cachedScene) {
+         this.clear();
+      }
    }
 }

@@ -52,14 +52,14 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
     this.dbService.activateScene(sceneInfo._id)
       .then(s => {
         this.activeScene = s;
-        (this.router.routeReuseStrategy as AppRouteReuseStrategy).clear();
+        this.routeReuseStrategy().clear();
         this.showRawData();
       })
       .catch(err => this.notifyError(err));
   }
 
   updateLabels(labels: SceneLabels): void {
-    this.reloadAfter(this.dbService.updateSceneLabels(labels), LanguageService.instant('scenes.sceneUpdated'));
+    this.reloadAfter(() => this.dbService.updateSceneLabels(labels), LanguageService.instant('scenes.sceneUpdated'));
   }
 
   share(sceneInfo: SceneInfo): void {
@@ -67,7 +67,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   }
 
   delete(sceneInfo: SceneInfo) {
-    this.reloadAfter(this.dbService.deleteScene(sceneInfo), LanguageService.instant('scenes.sceneDeleted'));
+    this.reloadAfter(() => this.dbService.deleteScene(sceneInfo), LanguageService.instant('scenes.sceneDeleted'));
   }
 
   onDeleteScenesButtonPressed(): void {
@@ -83,20 +83,27 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   }
 
   private deleteScenes(sceneInfos: SceneInfo[]): void {
-    this.reloadAfter(Promise.all(sceneInfos.map(si => this.dbService.deleteScene(si))),
+    this.reloadAfter(() => Promise.all(sceneInfos.map(si => this.dbService.deleteScene(si))),
       LanguageService.instant(sceneInfos.length === 1 ? 'scenes.scenesDeletedOne' : 'scenes.scenesDeleted', { count: sceneInfos.length }));
   }
 
-  private reloadAfter(change: Promise<unknown>, successMessage: string): void {
-    change
+  private reloadAfter(change: () => Promise<unknown>, successMessage: string): void {
+    const activeScene = this.dbService.getActiveScene();
+    change()
       .then(() => {
+        this.routeReuseStrategy().clearIfSceneChanged(activeScene, this.dbService.getActiveScene());
         this.loadData();
         this.notifySuccess(successMessage);
       })
       .catch(err => {
+        this.routeReuseStrategy().clearIfSceneChanged(activeScene, this.dbService.getActiveScene());
         this.loadData();
         this.notifyError(err);
       });
+  }
+
+  private routeReuseStrategy(): AppRouteReuseStrategy {
+    return this.router.routeReuseStrategy as AppRouteReuseStrategy;
   }
 
   private loadData(): void {

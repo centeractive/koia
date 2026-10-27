@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatAccordion } from '@angular/material/expansion';
@@ -29,7 +29,7 @@ import { PatternPairs, SceneUtils } from './utils';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit {
+export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private static readonly HEADER_SIZE = 10_000;
   private static readonly SAMPLE_SIZE = 100;
@@ -82,6 +82,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private mappingErrors = new ConfinedStringSet(10);
   private fileDialogOpen = false;
   private loadFailed = false;
+  private destroyed = false;
   private readonly patternPairs = new PatternPairs();
   private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'feedback'> & { sampleEntries: object[]; sourceColumnNames: string[] } | undefined;
 
@@ -176,7 +177,9 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       }
     }
     this.progressBarMode = undefined;
-    this.router.navigateByUrl(Route.SCENES);
+    if (!this.destroyed) {
+      this.router.navigateByUrl(Route.SCENES);
+    }
   }
 
   onSourceTypeChange(): void {
@@ -436,13 +439,30 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   cancel(): void {
-    if (this.scene.creationTime && !this.entryPersister.isPostingComplete()) {
-      this.canceled = true;
-      this.entryPersister.postingComplete(false);
-    } else if (this.scenesExist) {
+    if (this.cancelDataLoad()) {
+      return;
+    }
+    if (this.scenesExist) {
       this.location.back();
     } else {
       this.notifyWarning(LanguageService.instant('scene.noSceneExists'));
     }
+  }
+
+  /**
+   * @returns true when an ongoing data load was canceled
+   */
+  private cancelDataLoad(): boolean {
+    if (this.scene?.creationTime && !this.entryPersister.isPostingComplete()) {
+      this.canceled = true;
+      this.entryPersister.postingComplete(false);
+      return true;
+    }
+    return false;
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.cancelDataLoad();
   }
 }
