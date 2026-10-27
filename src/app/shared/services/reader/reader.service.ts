@@ -3,6 +3,7 @@ import { CSVReader } from './csv/csv-reader';
 import { DataReader } from './data-reader.type';
 import { ExcelReader } from './excel/excel-reader';
 import { JSONReader } from './json/json-reader';
+import { LogReader } from './log/log-reader';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,8 @@ export class ReaderService {
   private readonly readers: DataReader[] = [
     new CSVReader(),
     new ExcelReader(),
-    new JSONReader()
+    new JSONReader(),
+    new LogReader()
   ];
 
   getReaders(): DataReader[] {

@@ -177,7 +177,7 @@ describe('ScenesComponent', () => {
   it('typing into filter field should filter scene infos', () => {
 
     // given
-    const input: HTMLInputElement = fixture.nativeElement.querySelector('#div_filter input');
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('#div_filter .filter input');
 
     // when
     input.value = 'e 1';
@@ -547,7 +547,7 @@ describe('ScenesComponent', () => {
   }));
 
   function editLockedControls(): (HTMLInputElement | HTMLButtonElement)[] {
-    return ['#div_filter input', '#but_open_scene_file', '#but_delete_scenes', '#but_cancel'].map(selector => fixture.nativeElement.querySelector(selector));
+    return ['#div_filter .filter input', '#but_open_scene_file', '#but_delete_scenes', '#but_cancel'].map(selector => fixture.nativeElement.querySelector(selector));
   }
 
   it('open shared scene button should be shown before delete button', () => {

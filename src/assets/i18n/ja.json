@@ -7,7 +7,7 @@
       "about": "Koia について"
     },
     "title": "はじめに",
-    "lead": "CSV、Excel、JSON ファイルを読み込むか、サンプルデータで Koia を試してみましょう。データが第三者のサーバーに送信されることはありません。",
+    "lead": "CSV、Excel、JSON、ログファイルを読み込むか、サンプルデータで Koia を試してみましょう。データが第三者のサーバーに送信されることはありません。",
     "externalInvocationFailed": "_id {{id}} のシーンの生データを表示できません",
     "storage": {
       "storedIn": "データは次の場所にのみ保存されます:",
@@ -33,7 +33,7 @@
       "continueMany": "{{count}} 件のシーンの作業を続ける",
       "yourData": "自分のデータ",
       "loadFile": "ファイルを読み込む",
-      "loadFileHint": "CSV、Excel、JSON",
+      "loadFileHint": "CSV、Excel、JSON、ログ",
       "openSceneFile": "共有シーンを開く",
       "openSceneFileHint": "Koia シーンファイル (.koia)",
       "openingSceneFile": "共有シーンを開いています…",
@@ -281,7 +281,17 @@
       "jsonDescription": "JSON (JavaScript Object Notation) はデータの保存と交換のための自己記述型のテキストです。\nJSONPath を指定して、フラットな (ネストされていない) オブジェクトの配列をインポートします。",
       "jsonPath": "配列の JSONPath",
       "jsonPathDescription": "データを含むオブジェクト配列への JSONPath",
-      "worksheetMissing": "シート \"{{sheet}}\" が存在しないか、解析できません"
+      "worksheetMissing": "シート \"{{sheet}}\" が存在しないか、解析できません",
+      "logDescription": "テキスト形式のログファイル（1 行 1 エントリ）",
+      "logPattern": "行パターン",
+      "logPatternDescription": "{Name} は列、{Name:time} はタイムスタンプ、{Name:level} はログレベルになります。{json} は JSON Lines、{logfmt} は key=value 形式を読み込みます。一致しない行は最後の列に追加されます。",
+      "logPatternInvalid": "行パターンが無効です: {{reason}}",
+      "logPatternNoPlaceholder": "プレースホルダーがありません",
+      "logPatternDuplicateName": "プレースホルダー {{name}} が重複しています",
+      "logPatternUnclosed": "'{' が閉じられていません",
+      "logPatternEmptyName": "名前のないプレースホルダーがあります",
+      "logPatternAdjacent": "2 つのプレースホルダーの間には文字が必要です",
+      "logPatternUnknownKind": "不明なプレースホルダーの種類 {{kind}}"
     },
     "binaryDataNotShown": "*** バイナリデータは表示できません ***"
   },

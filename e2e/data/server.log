@@ -1,0 +1,33 @@
+2024-01-01 10:00:00.100 [main] INFO  c.x.App - Request r1000 handled
+2024-01-01 10:00:01.101 [http-1] DEBUG c.x.Auth - Request r1001 handled
+2024-01-01 10:00:02.102 [http-2] WARN  c.x.Orders - Request r1002 handled
+2024-01-01 10:00:03.103 [main] INFO  c.x.App - Request r1003 handled
+2024-01-01 10:00:04.104 [http-1] ERROR c.x.Auth - Request r1004 failed
+java.lang.IllegalStateException: upstream timeout
+	at c.x.Auth.login(Auth.java:42)
+Caused by: java.net.SocketTimeoutException: read timed out
+2024-01-01 10:00:05.105 [http-2] INFO  c.x.Orders - Request r1005 handled
+2024-01-01 10:00:06.106 [main] DEBUG c.x.App - Request r1006 handled
+2024-01-01 10:00:07.107 [http-1] WARN  c.x.Auth - Request r1007 handled
+2024-01-01 10:00:08.108 [http-2] INFO  c.x.Orders - Request r1008 handled
+2024-01-01 10:00:09.109 [main] ERROR c.x.App - Request r1009 failed
+2024-01-01 10:00:10.110 [http-1] INFO  c.x.Auth - Request r1010 handled
+2024-01-01 10:00:11.111 [http-2] DEBUG c.x.Orders - Request r1011 handled
+2024-01-01 10:00:12.112 [main] WARN  c.x.App - Request r1012 handled
+2024-01-01 10:00:13.113 [http-1] INFO  c.x.Auth - Request r1013 handled
+2024-01-01 10:00:14.114 [http-2] ERROR c.x.Orders - Request r1014 failed
+2024-01-01 10:00:15.115 [main] INFO  c.x.App - Request r1015 handled
+2024-01-01 10:00:16.116 [http-1] DEBUG c.x.Auth - Request r1016 handled
+2024-01-01 10:00:17.117 [http-2] WARN  c.x.Orders - Request r1017 handled
+2024-01-01 10:00:18.118 [main] INFO  c.x.App - Request r1018 handled
+2024-01-01 10:00:19.119 [http-1] ERROR c.x.Auth - Request r1019 failed
+2024-01-01 10:00:20.120 [http-2] INFO  c.x.Orders - Request r1020 handled
+2024-01-01 10:00:21.121 [main] DEBUG c.x.App - Request r1021 handled
+2024-01-01 10:00:22.122 [http-1] WARN  c.x.Auth - Request r1022 handled
+2024-01-01 10:00:23.123 [http-2] INFO  c.x.Orders - Request r1023 handled
+2024-01-01 10:00:24.124 [main] ERROR c.x.App - Request r1024 failed
+2024-01-01 10:00:25.125 [http-1] INFO  c.x.Auth - Request r1025 handled
+2024-01-01 10:00:26.126 [http-2] DEBUG c.x.Orders - Request r1026 handled
+2024-01-01 10:00:27.127 [main] WARN  c.x.App - Request r1027 handled
+2024-01-01 10:00:28.128 [http-1] INFO  c.x.Auth - Request r1028 handled
+2024-01-01 10:00:29.129 [http-2] ERROR c.x.Orders - Request r1029 failed

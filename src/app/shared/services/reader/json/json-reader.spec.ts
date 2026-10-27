@@ -30,6 +30,10 @@ describe('JSONReader', () => {
       expect(reader.expectsPlainTextData()).toBe(true);
    });
 
+   it('#supportsEncoding should return false', () => {
+      expect(reader.supportsEncoding()).toBe(false);
+   });
+
    it('#furnishAttributes should return attributes', () => {
 
       // when

@@ -30,6 +30,10 @@ describe('ExcelReader', () => {
       expect(reader.expectsPlainTextData()).toBe(false);
    });
 
+   it('#supportsEncoding should return false', () => {
+      expect(reader.supportsEncoding()).toBe(false);
+   });
+
    it('#furnishAttributes should return attributes', () => {
 
       // when

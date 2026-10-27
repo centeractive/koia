@@ -32,7 +32,7 @@ export class ScenesPage {
       this.editRow = page.locator('.edit_row');
       this.tableContainer = page.locator('koia-scene-table .table_container');
       this.moreButtons = page.locator('.but_more');
-      this.filterInput = page.locator('#div_filter input');
+      this.filterInput = page.locator('#div_filter .filter input');
       this.deleteAllButton = page.locator('#but_delete_scenes');
       this.cancelButton = page.locator('#but_cancel');
       this.continueButton = page.locator('.continueActiveScene');

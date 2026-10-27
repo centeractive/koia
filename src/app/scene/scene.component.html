@@ -48,7 +48,7 @@
                 <input matInput readonly [value]="file.name">
               </mat-form-field>
             }
-            @if (currSourceName === csvSourceName) {
+            @if (selectedReader?.supportsEncoding()) {
               <mat-form-field class="form_field_encoding">
                 <mat-label>{{ 'scene.encoding' | translate }}</mat-label>
                 <mat-select [(value)]="encoding" (selectionChange)="onCharacterEncodingChange()"
@@ -95,29 +95,30 @@
                   }
                 </mat-select>
               </mat-form-field>
-              @for (attr of readerAttributes; track attr) {
-                @if (attr.isBoolean()) {
+              @for (attribute of readerAttributes; track attribute) {
+                @if (attribute.isBoolean()) {
                   <mat-slide-toggle color="primary" (change)="columnMappings = null"
-                    [(ngModel)]="attr.value" [matTooltip]="attr.description | translate">
-                    {{ attr.name | translate }}
+                    [(ngModel)]="attribute.value" [matTooltip]="attribute.description | translate">
+                    {{ attribute.name | translate }}
                   </mat-slide-toggle>
                 }
-                @if (!attr.isBoolean()) {
-                  <mat-form-field class="form_field_separator">
-                    <mat-label>{{ attr.name | translate }}</mat-label>
+                @if (!attribute.isBoolean()) {
+                  <mat-form-field class="form_field_separator" [class.form_field_wide]="attribute.wide"
+                    [attr.data-attribute]="attribute.name">
+                    <mat-label>{{ attribute.name | translate }}</mat-label>
                     <input matInput
-                      [type]="attr.isNumber() ? 'number' : 'text'" [(ngModel)]="attr.value" [matTooltip]="attr.description | translate"
+                      [type]="attribute.isNumber() ? 'number' : 'text'" [(ngModel)]="attribute.value" [matTooltip]="attribute.description | translate"
                       (change)="columnMappings = null">
-                    @if (attr.hasValueChoice()) {
+                    @if (attribute.hasValueChoice()) {
                       <button matSuffix class="but_value_choice" mat-icon-button [matMenuTriggerFor]="valueChoiceMenu">
                         <mat-icon>expand_more</mat-icon>
                       </button>
                     }
                   </mat-form-field>
                   <mat-menu #valueChoiceMenu="matMenu">
-                    @for (choice of attr.valueChoice; track choice) {
-                      <button mat-menu-item [disabled]="choice === attr.value"
-                        (click)="attr.value = choice; columnMappings = null">{{choice}}</button>
+                    @for (choice of attribute.valueChoice; track choice) {
+                      <button mat-menu-item [disabled]="choice === attribute.value"
+                        (click)="attribute.value = choice; columnMappings = null">{{choice}}</button>
                     }
                   </mat-menu>
                 }

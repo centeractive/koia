@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { CSVReader } from './csv/csv-reader';
 import { ExcelReader } from './excel/excel-reader';
 import { JSONReader } from './json/json-reader';
+import { LogReader } from './log/log-reader';
 import { ReaderService } from './reader.service';
 
 describe('ReaderService', () => {
@@ -36,10 +37,11 @@ describe('ReaderService', () => {
     const readers = service.getReaders();
 
     // then
-    expect(readers.length).toBe(3);
+    expect(readers.length).toBe(4);
     expect(readers[0] instanceof CSVReader).toBeTruthy();
     expect(readers[1] instanceof ExcelReader).toBeTruthy();
     expect(readers[2] instanceof JSONReader).toBeTruthy();
+    expect(readers[3] instanceof LogReader).toBeTruthy();
   });
 
   it('#readHeader should return file start when bytesCount is less than file size', async () => {

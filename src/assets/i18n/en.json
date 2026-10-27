@@ -7,7 +7,7 @@
       "about": "About Koia"
     },
     "title": "Get started",
-    "lead": "Load your own CSV, Excel or JSON file, or explore Koia with sample data. Your data is never sent to any third-party server.",
+    "lead": "Load your own CSV, Excel, JSON or log file, or explore Koia with sample data. Your data is never sent to any third-party server.",
     "externalInvocationFailed": "cannot show raw data of scene with _id {{id}}",
     "storage": {
       "storedIn": "Data is stored only in",
@@ -33,7 +33,7 @@
       "continueMany": "Continue with your {{count}} scenes",
       "yourData": "Your data",
       "loadFile": "Load a file",
-      "loadFileHint": "CSV, Excel or JSON",
+      "loadFileHint": "CSV, Excel, JSON or log",
       "openSceneFile": "Open a shared scene",
       "openSceneFileHint": "Koia scene file (.koia)",
       "openingSceneFile": "Opening shared scene…",
@@ -281,7 +281,17 @@
       "jsonDescription": "JSON (JavaScript Object Notation) is formatted and self-describing text for storing and interchanging data.\nYou import an array of flat (non-nested) objects by specifying its JSONPath.",
       "jsonPath": "Array JSONPath",
       "jsonPathDescription": "JSONPath to the object array that contains the data",
-      "worksheetMissing": "Worksheet \"{{sheet}}\" does not exist or cannot be parsed"
+      "worksheetMissing": "Worksheet \"{{sheet}}\" does not exist or cannot be parsed",
+      "logDescription": "Plain-text log file, one entry per line",
+      "logPattern": "Line pattern",
+      "logPatternDescription": "{Name} becomes a column, {Name:time} a timestamp, {Name:level} a log level, {json} reads JSON Lines, {logfmt} key=value pairs. Lines not matching are appended to the last column.",
+      "logPatternInvalid": "invalid line pattern: {{reason}}",
+      "logPatternNoPlaceholder": "it contains no placeholder",
+      "logPatternDuplicateName": "placeholder {{name}} occurs twice",
+      "logPatternUnclosed": "a '{' is not closed",
+      "logPatternEmptyName": "a placeholder has no name",
+      "logPatternAdjacent": "two placeholders need text between them",
+      "logPatternUnknownKind": "unknown placeholder type {{kind}}"
     },
     "binaryDataNotShown": "*** binary data cannot be displayed ***"
   },

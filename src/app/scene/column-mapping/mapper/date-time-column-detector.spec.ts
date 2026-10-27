@@ -1,4 +1,5 @@
-import { ColumnPair, DataType } from 'app/shared/model';
+import { ColumnPair, DataType, TimeUnit } from 'app/shared/model';
+import { DateTimeUtils } from 'app/shared/utils';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 
 describe('DateTimeColumnDetector', () => {
@@ -65,4 +66,70 @@ describe('DateTimeColumnDetector', () => {
         expect(columnPair.target.dataType).toBe(DataType.TIME);
     });
 
+function textColumnPair(): ColumnPair {
+        return {
+            source: { name: 'Time', dataType: DataType.TEXT, width: undefined },
+            target: { name: 'Time', dataType: DataType.TEXT, width: undefined }
+        };
+    }
+
+    it.each([
+        ['2024-01-01T10:00:00.123Z', TimeUnit.MILLISECOND],
+        ['2024-01-01T10:00:00.123+01:00', TimeUnit.MILLISECOND],
+        ['2024-01-01T10:00:00.123456+01:00', TimeUnit.MILLISECOND],
+        ['2024-01-01T10:00:00,123Z', TimeUnit.MILLISECOND],
+        ['2024-01-01T10:00:00Z', TimeUnit.SECOND],
+        ['2024-01-01T10:00+01:00', TimeUnit.SECOND]
+    ])('#detect should detect ISO date/time %s without source format', (value, timeUnit) => {
+
+        // given
+        const columnPair = textColumnPair();
+
+        // when
+        detector.detect(columnPair, value, 'en-US');
+
+        // then
+        expect(columnPair.source.format).toBeUndefined();
+        expect(columnPair.target.dataType).toBe(DataType.TIME);
+        expect(columnPair.target.format).toBe(DateTimeUtils.ngFormatOf(timeUnit));
+    });
+
+    it('#detect should not detect ISO date without time', () => {
+
+        // given
+        const columnPair = textColumnPair();
+
+        // when
+        detector.detect(columnPair, '2024-01-01T', 'en-US');
+
+        // then
+        expect(columnPair.target.dataType).toBe(DataType.TEXT);
+        expect(columnPair.target.format).toBeUndefined();
+    });
+
+    it('#detect should not detect invalid ISO date/time', () => {
+
+        // given
+        const columnPair = textColumnPair();
+
+        // when
+        detector.detect(columnPair, '2024-13-45T10:00:00Z', 'en-US');
+
+        // then
+        expect(columnPair.target.dataType).toBe(DataType.TEXT);
+    });
+
+    it('#detect should keep source format of date/time with space detected so far', () => {
+
+        // given
+        const columnPair = textColumnPair();
+
+        // when
+        detector.detect(columnPair, '2024-01-01 10:00:00,123', 'en-US');
+
+        // then
+        expect(columnPair.source.format).toBe('yyyy-MM-dd HH:mm:ss,SSS');
+        expect(columnPair.target.dataType).toBe(DataType.TIME);
+    });
 });
+

@@ -21,7 +21,9 @@ export class DateTimeColumnDetector {
         { format: '', timeUnit: TimeUnit.DAY }
     ];
 
-    private static readonly ZONES = ['', 'Z', 'ZZ', 'ZZZ', 'ZZZZ', 'ZZZZZ', 'O', 'OO', 'OOO', 'OOOO', 'zzzz', 'zzz', 'zz', 'z'];
+    private static readonly ISO_DATE_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+    private static readonly ISO_FRACTION = /T\d{2}:\d{2}:\d{2}[.,]\d/;
+    private static readonly ZONES =['', 'Z', 'ZZ', 'ZZZ', 'ZZZZ', 'ZZZZZ', 'O', 'OO', 'OOO', 'OOOO', 'zzzz', 'zzz', 'zz', 'z'];
 
     private dateFormatProvider = new DateFormatProvider();
 
@@ -37,6 +39,18 @@ export class DateTimeColumnDetector {
             if (this.detectByDateFormat(columnPair, value, dateFormat, locale)) {
                 return;
             }
+        }
+        this.detectISODateTime(columnPair, value);
+    }
+
+    /**
+     * ISO date-times with "T" are parsed without source format, i.e. with "Z", an offset or microseconds
+     */
+    private detectISODateTime(columnPair: ColumnPair, value: string): void {
+        if (DateTimeColumnDetector.ISO_DATE_TIME.test(value) && DateTimeUtils.parseDate(value, undefined)) {
+            columnPair.target.dataType = DataType.TIME;
+            const timeUnit = DateTimeColumnDetector.ISO_FRACTION.test(value) ? TimeUnit.MILLISECOND : TimeUnit.SECOND;
+            columnPair.target.format = DateTimeUtils.ngFormatOf(timeUnit);
         }
     }
 

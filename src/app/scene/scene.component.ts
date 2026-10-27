@@ -17,7 +17,6 @@ import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monito
 import { ConditionalErrorStateMatcher } from 'app/shared/validator/conditional-error-state-matcher';
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
-import { SourceName } from '../shared/services/reader/source-name.enum';
 import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { PatternPairs, SceneUtils } from './utils';
@@ -37,7 +36,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private static readonly COLUMN_DEFINITIONS_STEP = 3;
 
   readonly route = Route.SCENE;
-  readonly csvSourceName = SourceName.CSV;
   readonly sceneNameMaxLength = SceneUtils.SCENE_NAME_MAX_LENGTH;
   readonly sceneNameErrorStateMatcher = new ConditionalErrorStateMatcher(() => this.isSceneNameTaken());
 
@@ -46,7 +44,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   readers: DataReader[];
   selectedReader: DataReader;
-  currSourceName: string;
   file: File;
   characterSets = CHARACTER_SETS;
   encoding = CHARACTER_SETS[0];
@@ -96,7 +93,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
     } else {
       this.readers = this.readerService.getReaders();
       this.selectedReader = this.readers[0];
-      this.currSourceName = this.selectedReader.getSourceName();
       this.defineLocales();
       this.collectSceneInfos();
       this.initScene();
@@ -180,7 +176,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   onSourceTypeChange(): void {
-    this.currSourceName = this.selectedReader.getSourceName();
     this.fileInputRef.nativeElement.value = '';
     this.initContext();
   }

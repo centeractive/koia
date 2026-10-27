@@ -8,7 +8,10 @@ export class Attribute<T = unknown> {
    private _value: T;
    private _valueChoice: T[];
 
-   constructor(name: string, description: string, dataType: DataType, value: T) {
+   /**
+    * @param wide rendered wider, for long values such as patterns
+    */
+   constructor(name: string, description: string, dataType: DataType, value: T, readonly wide = false) {
       this._name = name;
       this._description = description;
       this._dataType = dataType;

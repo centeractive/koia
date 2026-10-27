@@ -30,6 +30,10 @@ export class ExcelReader implements DataReader {
       return false;
    }
 
+   supportsEncoding(): boolean {
+      return false;
+   }
+
    furnishAttributes(): Attribute[] {
       this.attrSheetName = ExcelReader.createSheetNameAttribute();
       return [this.attrSheetName];

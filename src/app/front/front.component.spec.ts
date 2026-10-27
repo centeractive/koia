@@ -949,7 +949,7 @@ describe('FrontComponent', () => {
     expect(Array.from(group.querySelector('.front-actions-row').children).map(c => c.id)).toEqual(['load_file_button', 'scene_file_button']);
     expect(group.querySelector('#load_file_button').getAttribute('href')).toMatch(/\/scene$/);
     expect(group.querySelector('#load_file_button').textContent).toContain('Load a file');
-    expect(group.querySelector('#load_file_button').textContent).toContain('CSV, Excel or JSON');
+    expect(group.querySelector('#load_file_button').textContent).toContain('CSV, Excel, JSON or log');
     expect(group.querySelector('#scene_file_button').textContent).toContain('Open a shared scene');
     expect(group.querySelector('#scene_file_button').textContent).toContain('Koia scene file (.koia)');
   });

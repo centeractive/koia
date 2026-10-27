@@ -27,6 +27,11 @@ export interface DataReader {
    expectsPlainTextData(): boolean;
 
    /**
+    * @returns [[true]] if the user may choose the character set the file is decoded with
+    */
+   supportsEncoding(): boolean;
+
+   /**
     * @param dataHeader data header that may be used to refine contextual attribute values
     * @param locale that helps finding propper attributes
     * @returns attributes that may their values have modified by the user

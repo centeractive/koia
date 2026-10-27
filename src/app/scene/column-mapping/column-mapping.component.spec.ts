@@ -264,6 +264,23 @@ describe('ColumnMappingComponent', () => {
     expect(window.open).toHaveBeenCalledWith('https://angular.io/api/common/DatePipe#custom-format-options', '_blank', 'noopener');
   });
 
+  it('should show empty source format field for ISO text mapped to time without source format', () => {
+
+    // given
+    component.mapping = {
+      source: { name: 'Time', dataType: DataType.TEXT, width: 10 },
+      target: { name: 'Time', dataType: DataType.TIME, width: 10, format: 'd MMM yyyy HH:mm:ss SSS' }
+    };
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const sourceFormat: HTMLInputElement = fixture.nativeElement.querySelector('.input_source_format');
+    expect(sourceFormat).not.toBeNull();
+    expect(sourceFormat.value).toBe('');
+  });
+
   it('should not show add pattern button by default', () => {
     expect(fixture.debugElement.query(By.css('.but_add_pattern'))).toBeNull();
     expect(fixture.debugElement.query(By.css('.icon_pattern'))).toBeNull();

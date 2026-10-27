@@ -1,4 +1,5 @@
-import { Column, ColumnPair, DataType } from 'app/shared/model';
+import { Column, ColumnPair, DataType, TimeUnit } from 'app/shared/model';
+import { DateTimeUtils } from 'app/shared/utils';
 import { EntryMapper } from './entry-mapper';
 
 describe('EntryMapper', () => {
@@ -172,6 +173,22 @@ describe('EntryMapper', () => {
       expect(date.getMinutes()).toBe(22);
       expect(date.getSeconds()).toBe(33);
       expect(date.getMilliseconds()).toBe(444);
+      expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows TEXT to TIME should parse ISO text without source format', () => {
+
+      // given
+      const cp = columnPair('Text');
+      cp.target.name = 'Date/Time';
+      cp.target.dataType = DataType.TIME;
+      cp.target.format = DateTimeUtils.ngFormatOf(TimeUnit.MILLISECOND);
+
+      // when
+      const actual = mapper.mapRows([['2019-05-06T11:22:33.444456Z']], sourceColumnNames);
+
+      // then
+      expect(actual[0].entry['Date/Time']).toBe(Date.UTC(2019, 4, 6, 11, 22, 33, 444));
       expect(actual[0].errors).toEqual([]);
    });
 

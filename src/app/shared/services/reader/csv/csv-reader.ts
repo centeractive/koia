@@ -4,6 +4,7 @@ import { DataTypeUtils } from 'app/shared/utils';
 import * as Papa from 'papaparse';
 import { DataHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
+import { HeaderLines } from '../header-lines';
 import { Sample } from '../sample.type';
 import { SourceName } from '../source-name.enum';
 
@@ -29,6 +30,10 @@ export class CSVReader implements DataReader {
       return true;
    }
 
+   supportsEncoding(): boolean {
+      return true;
+   }
+
    furnishAttributes(dataHeader: string, locale: string): Attribute[] {
       if (dataHeader && dataHeader.length > 0) {
          this.attrSeparator.value = this.detectSeparator(dataHeader);
@@ -38,19 +43,11 @@ export class CSVReader implements DataReader {
    }
 
    private detectSeparator(text: string): string {
-      return Papa.parse(this.withoutLastLine(text), {
+      return Papa.parse(HeaderLines.withoutLastLine(text), {
          delimitersToGuess: CSVReader.SEPARATORS,
          skipEmptyLines: true,
          preview: 1
       }).meta.delimiter;
-   }
-
-   /**
-    * the last line may be incomplete because only the head of the file is provided
-    */
-   private withoutLastLine(text: string): string {
-      const lastLineBreak = text.lastIndexOf('\n');
-      return lastLineBreak === -1 ? text : text.substring(0, lastLineBreak);
    }
 
    private detectHeaderColumn(text: string, locale: string): boolean {

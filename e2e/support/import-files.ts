@@ -29,7 +29,15 @@ export const READER_TEST_XLSX = excelFile(resolve(SRC_DIR, 'app/shared/services/
 
 export const DELIVERIES_JSON = jsonFile(resolve(E2E_DATA_DIR, 'deliveries.json'), [DataType.TEXT, DataType.NUMBER, DataType.TIME]);
 
-export const IMPORT_FILES = [ORDERS_CSV, SALES_CSV, READER_TEST_XLSX, DELIVERIES_JSON];
+/** 30 logback entries, one of them with a stack trace of 3 lines */
+export const SERVER_LOG = logFile(resolve(E2E_DATA_DIR, 'server.log'), ['Time', 'Thread', 'Level', 'Logger', 'Message'], 30,
+   [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.TEXT]);
+
+/** 10 entries with ISO times that have an offset */
+export const SERVER_ISO_LOG = logFile(resolve(E2E_DATA_DIR, 'server-iso.log'), ['Time', 'Level', 'Message'], 10,
+   [DataType.TIME, DataType.TEXT, DataType.TEXT]);
+
+export const IMPORT_FILES = [ORDERS_CSV, SALES_CSV, READER_TEST_XLSX, DELIVERIES_JSON, SERVER_LOG];
 
 export const LOG_LEVELS_JSON = jsonFile(resolve(E2E_DATA_DIR, 'log-levels.json'),
    [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.TEXT, DataType.TEXT]);
@@ -66,6 +74,10 @@ function jsonFile(path: string, dataTypes: DataType[]): ImportFile {
 function excelFile(path: string, dataTypes: DataType[]): ImportFile {
    const workbook = XLSX.readFile(path);
    return fileWithRows(path, SourceName.EXCEL, XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]), dataTypes);
+}
+
+function logFile(path: string, columns: string[], rowCount: number, dataTypes: DataType[]): ImportFile {
+   return { path, name: basename(path, extname(path)), sourceName: SourceName.LOG, columns, rowCount, dataTypes };
 }
 
 function fileWithRows(path: string, sourceName: SourceName, rows: object[], dataTypes: DataType[]): ImportFile {
