@@ -22,7 +22,7 @@ import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
-import { SceneFactory } from 'app/shared/test';
+import { SceneFactory, selectFile } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
 import { SceneTableComponent } from './scene-table/scene-table.component';
@@ -517,7 +517,7 @@ describe('ScenesComponent', () => {
     expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'conflict');
   }));
 
-  it('editing in scene table should disable filter, delete and cancel buttons', fakeAsync(() => {
+  it('editing in scene table should disable filter, open shared scene, delete and cancel buttons', fakeAsync(() => {
 
     // when
     sceneTable().editingChange.emit(true);
@@ -526,10 +526,10 @@ describe('ScenesComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(editLockedControls().map(c => c.disabled)).toEqual([true, true, true]);
+    expect(editLockedControls().map(c => c.disabled)).toEqual([true, true, true, true]);
   }));
 
-  it('end of editing should enable filter, delete and cancel buttons', fakeAsync(() => {
+  it('end of editing should enable filter, open shared scene, delete and cancel buttons', fakeAsync(() => {
 
     // given
     sceneTable().editingChange.emit(true);
@@ -543,11 +543,123 @@ describe('ScenesComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(editLockedControls().map(c => c.disabled)).toEqual([false, false, false]);
+    expect(editLockedControls().map(c => c.disabled)).toEqual([false, false, false, false]);
   }));
 
   function editLockedControls(): (HTMLInputElement | HTMLButtonElement)[] {
-    return ['#div_filter input', '#but_delete_scenes', '#but_cancel'].map(selector => fixture.nativeElement.querySelector(selector));
+    return ['#div_filter input', '#but_open_scene_file', '#but_delete_scenes', '#but_cancel'].map(selector => fixture.nativeElement.querySelector(selector));
+  }
+
+  it('open shared scene button should be shown before delete button', () => {
+
+    // when
+    const buttons: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('#div_filter > button'));
+
+    // then
+    expect(buttons.map(b => b.id)).toEqual(['but_open_scene_file', 'but_delete_scenes']);
+  });
+
+  it('#click on open shared scene button should open file selection', () => {
+
+    // given
+    const clickSpy = vi.spyOn(sceneFileInput(), 'click').mockReturnValue(undefined);
+
+    // when
+    openSceneFileButton().click();
+
+    // then
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('#selecting a file should import it and show its raw data', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockResolvedValue(undefined);
+    const file = new File(['x'], 'sales.koia');
+
+    // when
+    selectFile(sceneFileInput(), file);
+    await vi.waitFor(() => expect(navigateByUrlSpy).toHaveBeenCalledWith(Route.RAWDATA));
+
+    // then
+    expect(importSpy).toHaveBeenCalledWith(file, expect.any(AbortSignal));
+  });
+
+  it('open shared scene button should show progress and cancel while scene file is imported', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+
+    // when
+    selectFile(sceneFileInput(), new File(['x'], 'sales.koia'));
+    fixture.detectChanges();
+
+    // then
+    const button = openSceneFileButton();
+    const icon = button.querySelector('mat-icon');
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.textContent).toContain('Opening shared scene…');
+    expect(icon.classList).toContain('koia-spin');
+    expect(getComputedStyle(icon).animationName).toBe('koia-spin');
+    expect(cancelSceneFileButton()).not.toBeNull();
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+  });
+
+  it('importing a scene file should lock filter, buttons and scene table', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+
+    // when
+    selectFile(sceneFileInput(), new File(['x'], 'sales.koia'));
+    await stabilize();
+
+    // then
+    const [filter, openSceneFile, deleteScenes, cancel] = editLockedControls();
+    expect([filter.disabled, deleteScenes.disabled, cancel.disabled]).toEqual([true, true, true]);
+    expect(openSceneFile.disabled).toBe(false);
+    expect(openSceneFile.getAttribute('aria-busy')).toBe('true');
+    expect(sceneTable().locked).toBe(true);
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+  });
+
+  it('#click on cancel should cancel scene file import', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockImplementation((_file, signal) =>
+      new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason))));
+    const onWarningSpy = vi.spyOn(notificationService, 'onWarning').mockReturnValue(undefined);
+    selectFile(sceneFileInput(), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+    fixture.detectChanges();
+
+    // when
+    cancelSceneFileButton().click();
+    await vi.waitFor(() => expect(onWarningSpy).toHaveBeenCalled());
+    await stabilize();
+
+    // then
+    expect(onWarningSpy.mock.calls[0][1]).toBe('Opening the shared scene was canceled');
+    expect(editLockedControls().map(c => c.disabled)).toEqual([false, false, false, false]);
+    expect(cancelSceneFileButton()).toBeNull();
+  });
+
+  async function stabilize(): Promise<void> {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  }
+
+  function sceneFileInput(): HTMLInputElement {
+    return fixture.nativeElement.querySelector('#scene_file_input');
+  }
+
+  function openSceneFileButton(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('#but_open_scene_file');
+  }
+
+  function cancelSceneFileButton(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('#but_cancel_scene_file');
   }
 
   it('#click on cancel button should navigate to previous page', () => {

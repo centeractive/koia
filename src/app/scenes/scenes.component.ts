@@ -11,6 +11,7 @@ import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { firstValueFrom } from 'rxjs';
 import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
+import { SceneFileOpener } from 'app/shared/scene-file/scene-file-opener';
 import { orderSceneInfos } from './scene-order';
 
 @Component({
@@ -28,12 +29,21 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   filteredSceneInfos: SceneInfo[] = [];
   sceneNames = new Set<string>();
   editing = false;
+  readonly sceneFileOpener: SceneFileOpener;
 
   private sceneInfos: SceneInfo[] = [];
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private dbService: DBService,
     private dialogService: DialogService, private sceneFileService: SceneFileService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
+    this.sceneFileOpener = new SceneFileOpener(sceneFileService, router, this);
+  }
+
+  /**
+   * actions are blocked while a scene is edited or a scene file is imported
+   */
+  get locked(): boolean {
+    return this.editing || this.sceneFileOpener.importing;
   }
 
   ngOnInit() {

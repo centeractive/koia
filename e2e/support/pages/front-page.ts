@@ -17,13 +17,15 @@ export class FrontPage {
    readonly storage: Locator;
    readonly couchDBTip: Locator;
    readonly couchDBTipTitle: Locator;
-   private readonly startButton: Locator;
+   readonly continueButton: Locator;
+   private readonly loadFileButton: Locator;
 
    constructor(private readonly page: Page) {
       this.storage = page.locator('.front-storage-line > span');
       this.couchDBTip = page.locator('.front-couchdb-tip');
       this.couchDBTipTitle = page.locator('#front-couchdb-tip-title');
-      this.startButton = page.locator('#start_button');
+      this.continueButton = page.locator('#start_button');
+      this.loadFileButton = page.locator('#load_file_button');
    }
 
    /**
@@ -80,12 +82,12 @@ export class FrontPage {
    }
 
    async startWithFile(): Promise<void> {
-      await this.startButton.click();
+      await this.loadFileButton.click();
       await this.page.waitForURL('**/' + Route.SCENE);
    }
 
    async continueWithScenes(): Promise<void> {
-      await this.startButton.click();
+      await this.continueButton.click();
       await this.page.waitForURL('**/' + Route.SCENES);
    }
 
@@ -113,6 +115,6 @@ export class FrontPage {
    }
 
    private async waitUntilReady(): Promise<void> {
-      await expect(this.startButton).toHaveAttribute('aria-disabled', 'false');
+      await expect(this.loadFileButton).toHaveAttribute('aria-disabled', 'false');
    }
 }

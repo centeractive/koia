@@ -31,13 +31,19 @@
     "actions": {
       "continueOne": "Mit deiner Szene fortfahren",
       "continueMany": "Mit deinen {{count}} Szenen fortfahren",
+      "yourData": "Eigene Daten",
       "loadFile": "Datei laden",
-      "loadingSample": "Beispiel wird geladen…",
-      "trySample": "Beispieldaten ausprobieren",
-      "tryLogSample": "Oder probiere Logdaten aus",
-      "loadingLogSample": "Logdaten werden geladen…",
-      "openSceneFile": "Geteilte Szene öffnen (.koia)",
-      "openingSceneFile": "Geteilte Szene wird geöffnet…"
+      "loadFileHint": "CSV, Excel oder JSON",
+      "openSceneFile": "Geteilte Szene öffnen",
+      "openSceneFileHint": "Koia-Szenendatei (.koia)",
+      "openingSceneFile": "Geteilte Szene wird geöffnet…",
+      "sampleData": "Beispieldaten",
+      "salesSample": "Verkaufsbeispiel",
+      "salesSampleHint": "Obstverkauf nach Region",
+      "loadingSample": "Verkaufsbeispiel wird geladen…",
+      "logSample": "Log-Beispiel",
+      "logSampleHint": "App-Logs nach Level und Host",
+      "loadingLogSample": "Log-Beispiel wird geladen…"
     },
     "guide": {
       "title": "Erstelle deine ersten Ansichten",

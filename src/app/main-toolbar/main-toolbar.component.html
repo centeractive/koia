@@ -11,6 +11,10 @@
         </koia-nav-buttons>
         <span class="koia-toolbar-separator"></span>
         <koia-saved-view-buttons [activeTabId]="tabId" />
+        <button id="butShareScene" mat-icon-button [matTooltip]="'scenes.share' | translate" [attr.aria-label]="'scenes.share' | translate"
+          (click)="shareScene()">
+          <mat-icon>share</mat-icon>
+        </button>
         <span class="koia-toolbar-separator"></span>
         <koia-view-tab-bar [currUrl]="currURL" />
       </span>

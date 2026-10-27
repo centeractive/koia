@@ -90,6 +90,20 @@ describe('SceneTableComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.activateScene').length).toBe(3);
   });
 
+  it('locked table should disable row actions', () => {
+
+    // given
+    component.locked = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('.but_more, .continueActiveScene, .activateScene'));
+    expect(buttons.length).toBe(6);
+    buttons.forEach(b => expect(b.disabled).toBe(true));
+  });
+
   it('active scene row should have green tint and left bar', () => {
 
     // when

@@ -64,6 +64,11 @@ export class ScenesPage {
       await this.page.locator('.menu_item_share').click();
    }
 
+   async openSceneFile(path: string): Promise<void> {
+      await this.page.locator('#scene_file_input').setInputFiles(path);
+      await this.page.waitForURL('**/' + Route.RAWDATA);
+   }
+
    async showDetails(sceneName: string): Promise<void> {
       await this.row(sceneName).locator('.but_more').click();
       await this.page.locator('.menu_item_details').click();

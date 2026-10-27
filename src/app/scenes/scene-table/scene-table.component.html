@@ -3,7 +3,7 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td class="nowrap" mat-cell *matCellDef="let sceneInfo">
-        <button class="but_more" mat-icon-button [disabled]="!!edit" [matMenuTriggerFor]="moreMenu" [matTooltip]="'common.more' | translate">
+        <button class="but_more" mat-icon-button [disabled]="locked || !!edit" [matMenuTriggerFor]="moreMenu" [matTooltip]="'common.more' | translate">
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #moreMenu="matMenu">
@@ -25,12 +25,12 @@
           </button>
         </mat-menu>
         @if (isActive(sceneInfo)) {
-          <button class="continueActiveScene" mat-icon-button color="accent" [disabled]="!!edit" [matTooltip]="'scenes.continueActive' | translate"
+          <button class="continueActiveScene" mat-icon-button color="accent" [disabled]="locked || !!edit" [matTooltip]="'scenes.continueActive' | translate"
             (click)="onContinue.emit(sceneInfo)">
             <mat-icon>play_circle_outline</mat-icon>
           </button>
         } @else {
-          <button class="activateScene" mat-icon-button [disabled]="!!edit" [matTooltip]="'scenes.activate' | translate"
+          <button class="activateScene" mat-icon-button [disabled]="locked || !!edit" [matTooltip]="'scenes.activate' | translate"
             (click)="onActivate.emit(sceneInfo)">
             <mat-icon>play_circle_outline</mat-icon>
           </button>

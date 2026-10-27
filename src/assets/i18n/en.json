@@ -31,13 +31,19 @@
     "actions": {
       "continueOne": "Continue with your scene",
       "continueMany": "Continue with your {{count}} scenes",
+      "yourData": "Your data",
       "loadFile": "Load a file",
-      "loadingSample": "Loading sample…",
-      "trySample": "Try sample data",
-      "tryLogSample": "Or try log data",
-      "loadingLogSample": "Loading log data…",
-      "openSceneFile": "Open a shared scene (.koia)",
-      "openingSceneFile": "Opening shared scene…"
+      "loadFileHint": "CSV, Excel or JSON",
+      "openSceneFile": "Open a shared scene",
+      "openSceneFileHint": "Koia scene file (.koia)",
+      "openingSceneFile": "Opening shared scene…",
+      "sampleData": "Sample data",
+      "salesSample": "Sales sample",
+      "salesSampleHint": "Fruit sales per region",
+      "loadingSample": "Loading sales sample…",
+      "logSample": "Log sample",
+      "logSampleHint": "App logs by level and host",
+      "loadingLogSample": "Loading log sample…"
     },
     "guide": {
       "title": "Create your first views",

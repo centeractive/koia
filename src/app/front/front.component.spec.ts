@@ -15,7 +15,7 @@ import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
-import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, leftInsetOf, rightInsetOf, rowCountOf, SceneFactory, stylesOf, textsOf } from 'app/shared/test';
+import { CouchDBServiceMock, findUnsafeExternalLinks, QueryParams, leftInsetOf, rightInsetOf, rowCountOf, SceneFactory, selectFile, stylesOf, textsOf } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { QueryParamExtractor } from 'app/shared/utils';
 import { Observable, of } from 'rxjs';
@@ -636,7 +636,7 @@ describe('FrontComponent', () => {
 
     // then
     const panel = host.querySelector('.front-hero .front-start-panel');
-    expect(panel.querySelector('.front-actions #start_button')).toBeTruthy();
+    expect(panel.querySelector('.front-actions #load_file_button')).toBeTruthy();
     expect(panel.querySelector('.front-storage-line')).toBeTruthy();
     expect(panel.querySelector('.front-storage')).toBeNull();
   });
@@ -938,17 +938,38 @@ describe('FrontComponent', () => {
     expect(startButton(host).textContent).toContain('Continue with your scene');
   });
 
-  it('should offer loading a file and sample data above continue', () => {
+  it('should offer loading a file and opening a shared scene as your data', () => {
 
     // when
     const host = render();
 
     // then
-    expect(host.querySelector('#load_file_button').getAttribute('href')).toMatch(/\/scene$/);
-    expect(host.querySelector('#sample_button').textContent).toContain('Try sample data');
+    const group = actionGroup(host, 'front_your_data_title');
+    expect(group.querySelector('h2').textContent).toBe('Your data');
+    expect(Array.from(group.querySelector('.front-actions-row').children).map(c => c.id)).toEqual(['load_file_button', 'scene_file_button']);
+    expect(group.querySelector('#load_file_button').getAttribute('href')).toMatch(/\/scene$/);
+    expect(group.querySelector('#load_file_button').textContent).toContain('Load a file');
+    expect(group.querySelector('#load_file_button').textContent).toContain('CSV, Excel or JSON');
+    expect(group.querySelector('#scene_file_button').textContent).toContain('Open a shared scene');
+    expect(group.querySelector('#scene_file_button').textContent).toContain('Koia scene file (.koia)');
   });
 
-  it('continue button should be last below load file and sample buttons, all stacked with same width', () => {
+  it('should offer sales and log sample as sample data', () => {
+
+    // when
+    const host = render();
+
+    // then
+    const group = actionGroup(host, 'front_sample_data_title');
+    expect(group.querySelector('h2').textContent).toBe('Sample data');
+    expect(Array.from(group.querySelector('.front-actions-row').children).map(c => c.id)).toEqual(['sample_button', 'log_sample_button']);
+    expect(group.querySelector('#sample_button').textContent).toContain('Sales sample');
+    expect(group.querySelector('#sample_button').textContent).toContain('Fruit sales per region');
+    expect(group.querySelector('#log_sample_button').textContent).toContain('Log sample');
+    expect(group.querySelector('#log_sample_button').textContent).toContain('App logs by level and host');
+  });
+
+  it('continue button should be last below both groups, row buttons stacked with same width on mobile', () => {
 
     // when
     const host = render();
@@ -957,11 +978,11 @@ describe('FrontComponent', () => {
     const actions = host.querySelector('.front-actions');
     const start = startButton(host);
     expect(actions.lastElementChild).toBe(start);
-    expect(start.getBoundingClientRect().top).toBeGreaterThanOrEqual(host.querySelector('#sample_button').getBoundingClientRect().bottom);
-    expect(actionButtonWidths(host)).toEqual(Array(3).fill(actions.getBoundingClientRect().width));
+    expect(start.getBoundingClientRect().top).toBeGreaterThanOrEqual(host.querySelector('#log_sample_button').getBoundingClientRect().bottom);
+    expect(actionButtonWidths(host)).toEqual(Array(4).fill(actions.getBoundingClientRect().width));
   });
 
-  it('should not show continue row when no scene exists', () => {
+  it('should show no green button and load a file from outline button when no scene exists', () => {
 
     // given
     component.scenesCount = 0;
@@ -970,25 +991,11 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    const actions = host.querySelector('.front-actions');
-    expect(actions.children.length).toBe(1);
-    expect(Array.from(actions.querySelector(':scope > .front-actions-row').children).map(c => c.id)).toEqual(['start_button', 'sample_button']);
-  });
-
-  it('should start with loading a file when no scene exists', () => {
-
-    // given
-    component.scenesCount = 0;
-
-    // when
-    const host = render();
-
-    // then
-    const start = startButton(host);
-    expect(start.getAttribute('href')).toMatch(/\/scene$/);
-    expect(start.textContent).toContain('Load a file');
-    expect(host.querySelector('#load_file_button')).toBeNull();
-    expect(host.querySelector('#sample_button')).toBeTruthy();
+    const loadFile = host.querySelector('#load_file_button');
+    expect(startButton(host)).toBeNull();
+    expect(host.querySelector('.front-actions .landing-btn-accent')).toBeNull();
+    expect(loadFile.classList).toContain('landing-btn-outline');
+    expect(loadFile.getAttribute('href')).toMatch(/\/scene$/);
   });
 
   it('should disable sample button until ready', () => {
@@ -1064,18 +1071,6 @@ describe('FrontComponent', () => {
     expect(openSpy).toHaveBeenCalledWith(fruitSalesSampleOf('en'));
   });
 
-  it('should offer log sample below start actions', () => {
-
-    // when
-    const host = render();
-
-    // then
-    const logSample = host.querySelector('.front-start-panel > .front-log-sample #log_sample_button');
-    expect(logSample.textContent).toContain('Or try log data');
-    expect(logSample.closest('.front-actions')).toBeNull();
-    expect(logSample.getBoundingClientRect().top).toBeGreaterThanOrEqual(host.querySelector('.front-actions').getBoundingClientRect().bottom);
-  });
-
   it('should disable log sample button until ready', () => {
 
     // given
@@ -1105,10 +1100,12 @@ describe('FrontComponent', () => {
     expect(logSample.disabled).toBe(true);
     expect(logSample.getAttribute('aria-busy')).toBe('true');
     expect(getComputedStyle(logSample).opacity).toBe('1');
-    expect(logSample.textContent).toContain('Loading log data');
+    expect(logSample.textContent).toContain('Loading log sample');
     expect(sample.disabled).toBe(true);
     expect(sample.getAttribute('aria-busy')).toBe('false');
-    expect(sample.textContent).toContain('Try sample data');
+    expect(sample.textContent).toContain('Sales sample');
+    expect(sample.querySelector('mat-icon').textContent.trim()).toBe('shopping_basket');
+    expect(sample.querySelector('.koia-spin')).toBeNull();
   });
 
   it('should keep storage selectable when not ready after failed CouchDB connection', () => {
@@ -1139,7 +1136,7 @@ describe('FrontComponent', () => {
     // then
     const host = render();
     expect(host.querySelector('h1').textContent).toBe('Loslegen');
-    expect(host.querySelector('#sample_button').textContent).toContain('Beispieldaten ausprobieren');
+    expect(host.querySelector('#sample_button').textContent).toContain('Verkaufsbeispiel');
   });
 
   it('should link introduction of selected language', async () => {
@@ -1178,7 +1175,7 @@ describe('FrontComponent', () => {
     // then
     const sample = host.querySelector('#sample_button') as HTMLButtonElement;
     expect(sample.disabled).toBe(true);
-    expect(sample.textContent).toContain('Loading sample');
+    expect(sample.textContent).toContain('Loading sales sample');
     expect(startButton(host).getAttribute('aria-disabled')).toBe('true');
     expect((host.querySelector('.front-storage-change') as HTMLButtonElement).disabled).toBe(true);
     storageButtons(host).forEach(b => expect(b.disabled).toBe(true));
@@ -1233,19 +1230,6 @@ describe('FrontComponent', () => {
     expect(input.value).toBe('');
   });
 
-  it('#openSceneFile should ignore change without file', () => {
-
-    // given
-    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import');
-
-    // when
-    sceneFileInput(render()).dispatchEvent(new Event('change'));
-
-    // then
-    expect(importSpy).not.toHaveBeenCalled();
-    expect(component.importingSceneFile).toBe(false);
-  });
-
   it('#openSceneFile should block start actions and storage while scene file is imported', async () => {
 
     // given
@@ -1267,21 +1251,6 @@ describe('FrontComponent', () => {
     storageButtons(host).forEach(b => expect(b.disabled).toBe(true));
     expect(sceneFileCancelButton(host).disabled).toBe(false);
     await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
-  });
-
-  it('#openSceneFile should start import only after progress is shown', async () => {
-
-    // given
-    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
-    const file = new File(['x'], 'sales.koia');
-
-    // when
-    selectFile(sceneFileInput(render()), file);
-
-    // then
-    expect(importSpy).not.toHaveBeenCalled();
-    expect(component.importingSceneFile).toBe(true);
-    await vi.waitFor(() => expect(importSpy).toHaveBeenCalledWith(file, expect.any(AbortSignal)));
   });
 
   it('should show no cancel button when no scene file is imported', () => {
@@ -1308,7 +1277,7 @@ describe('FrontComponent', () => {
 
     // then
     expect(onWarningSpy.mock.calls[0][1]).toBe('Opening the shared scene was canceled');
-    expect(component.importingSceneFile).toBe(false);
+    expect(component.sceneFileOpener.importing).toBe(false);
     const host = render();
     expect(sceneFileCancelButton(host)).toBeNull();
     expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(false);
@@ -1327,7 +1296,7 @@ describe('FrontComponent', () => {
     // then
     const host = render();
     expect(sceneFileCancelButton(host)).toBeNull();
-    expect(host.querySelector('#scene_file_button .front-sample-progress')).not.toBeNull();
+    expect(host.querySelector('#scene_file_button .koia-spin')).not.toBeNull();
   });
 
   it('#openSceneFile should notify error and unblock actions when import fails', async () => {
@@ -1342,7 +1311,7 @@ describe('FrontComponent', () => {
 
     // then
     expect(onErrorSpy.mock.calls[0][1]).toBe('sales.koia is not a Koia scene file');
-    expect(component.importingSceneFile).toBe(false);
+    expect(component.sceneFileOpener.importing).toBe(false);
     const host = render();
     expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(false);
     expect(sceneFileCancelButton(host)).toBeNull();
@@ -1356,12 +1325,6 @@ describe('FrontComponent', () => {
     return host.querySelector<HTMLButtonElement>('#scene_file_cancel_button');
   }
 
-  function selectFile(input: HTMLInputElement, file: File): void {
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(file);
-    input.files = dataTransfer.files;
-    input.dispatchEvent(new Event('change'));
-  }
 
 
   it('should disable start button until ready', () => {
@@ -1426,17 +1389,17 @@ describe('FrontComponent', () => {
       expect(startButton(host).getBoundingClientRect().bottom).toBeLessThanOrEqual(800);
     });
 
-    it('load file and sample buttons should share one row above continue button', () => {
+    it('your data and sample buttons should share one row per group', () => {
 
       // when
       const host = render();
 
       // then
-      expect(rowCountOf(host, '.front-actions-row .landing-btn')).toBe(1);
-      expect(startButton(host).getBoundingClientRect().top).toBeGreaterThan(host.querySelector('#load_file_button').getBoundingClientRect().bottom);
+      host.querySelectorAll('.front-action-group').forEach(group => expect(rowCountOf(group, '.front-actions-row .landing-btn')).toBe(1));
+      expect(startButton(host).getBoundingClientRect().top).toBeGreaterThan(host.querySelector('#log_sample_button').getBoundingClientRect().bottom);
     });
 
-    it('continue button should be centered with same width as load file and sample buttons', () => {
+    it('continue button should fit its content with height of buttons above, centered with larger gap', () => {
 
       // when
       const host = render();
@@ -1444,11 +1407,19 @@ describe('FrontComponent', () => {
       // then
       const actions = host.querySelector('.front-actions');
       const start = startButton(host);
-      const [loadFile, sample, continueWidth] = actionButtonWidths(host);
-      expect(continueWidth).toBeCloseTo(loadFile, 0);
-      expect(continueWidth).toBeCloseTo(sample, 0);
-      expect(continueWidth).toBeLessThan(actions.getBoundingClientRect().width / 2);
+      const startRect = start.getBoundingClientRect();
+      const logSampleRect = host.querySelector('#log_sample_button').getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(start);
+      const style = getComputedStyle(start);
+      const contentWidth = range.getBoundingClientRect().width
+        + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+        + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      expect(startRect.height).toBeCloseTo(logSampleRect.height, 0);
+      expect(startRect.width).toBeCloseTo(contentWidth, 0);
+      expect(startRect.width).toBeLessThan(actions.getBoundingClientRect().width);
       expect(Math.abs(leftInsetOf(start, actions) - rightInsetOf(start, actions))).toBeLessThanOrEqual(1);
+      expect(startRect.top - logSampleRect.bottom).toBeCloseTo(24, 0);
     });
 
     it('should show language selection at right end of header', () => {
@@ -1480,7 +1451,11 @@ describe('FrontComponent', () => {
   }
 
   function actionButtonWidths(host: HTMLElement): number[] {
-    return Array.from(host.querySelectorAll('.front-actions .landing-btn')).map(b => b.getBoundingClientRect().width);
+    return Array.from(host.querySelectorAll('.front-actions-row .landing-btn')).map(b => b.getBoundingClientRect().width);
+  }
+
+  function actionGroup(host: HTMLElement, titleId: string): HTMLElement {
+    return host.querySelector<HTMLElement>(`.front-action-group[aria-labelledby="${titleId}"]`);
   }
 
   function startButton(host: HTMLElement): HTMLAnchorElement {

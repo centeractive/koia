@@ -12,27 +12,29 @@
 .front-actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  align-items: stretch;
+  gap: 16px;
   margin-top: 20px;
   padding-top: 20px;
   border-top: var(--koia-tile-border);
-  container-type: inline-size;
 }
 
 .front-actions .landing-btn {
   box-sizing: border-box;
 }
 
-.front-actions > .landing-btn {
-  width: calc((100% - 12px) / 2);
+.front-action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* row buttons wrap below 2 x 180px + 12px gap */
-@container (width < 372px) {
-  .front-actions > .landing-btn {
-    width: 100%;
-  }
+.front-action-group-title {
+  margin: 0;
+  font: 600 12px var(--koia-font-landing);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--koia-text-secondary);
 }
 
 .front-actions-row {
@@ -44,6 +46,38 @@
 
 .front-actions-row .landing-btn {
   flex: 1 1 180px;
+}
+
+.front-action {
+  justify-content: flex-start;
+  min-height: 52px;
+  padding: 6px 16px;
+  text-align: left;
+}
+
+.front-action-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.front-action-label,
+.front-action-hint {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.front-action-hint {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--koia-text-secondary);
+}
+
+.front-continue {
+  align-self: center;
+  min-height: 52px;
+  margin-top: 8px;
 }
 
 .front-start-panel .landing-btn-outline {
@@ -64,13 +98,8 @@
   opacity: 1;
 }
 
-/* no bottom margin, the last child of a landing tile has none */
-.front-log-sample {
-  margin-top: 12px;
-  text-align: center;
-}
-
-.front-log-sample-button {
+.front-cancel-button {
+  align-self: center;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -81,31 +110,6 @@
   font: 600 14px var(--koia-font-landing);
   text-decoration: underline;
   cursor: pointer;
-}
-
-.front-log-sample :disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-.front-log-sample [aria-busy="true"] {
-  opacity: 1;
-}
-
-.front-sample-progress {
-  animation: front-spin 1s linear infinite;
-}
-
-@keyframes front-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .front-sample-progress {
-    animation: none;
-  }
 }
 
 .front-storage-line {
