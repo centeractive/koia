@@ -1,5 +1,6 @@
 import { Column, ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
+import { LogLevelColorizer } from 'app/shared/services/reader/log/log-level-colorizer';
 import { EntryMapper } from './entry-mapper';
 
 describe('EntryMapper', () => {
@@ -30,6 +31,36 @@ describe('EntryMapper', () => {
       expect(actual.length).toBe(1);
       expect(actual[0].entry).toEqual({ _id: '1000001', Text: 'A' });
       expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows should colorize each mapped entry', () => {
+
+      // given
+      const colorizer = { colorize: vi.fn() } as unknown as LogLevelColorizer;
+      mapper = new EntryMapper(columnPairs, 'en', colorizer);
+
+      // when
+      const actual = mapper.mapRows([['A'], ['B']], sourceColumnNames);
+
+      // then
+      expect(colorizer.colorize).toHaveBeenCalledTimes(2);
+      expect(colorizer.colorize).toHaveBeenNthCalledWith(1, actual[0].entry);
+      expect(colorizer.colorize).toHaveBeenNthCalledWith(2, actual[1].entry);
+   });
+
+   it('#mapObjects should colorize each mapped entry', () => {
+
+      // given
+      const colorizer = { colorize: vi.fn() } as unknown as LogLevelColorizer;
+      mapper = new EntryMapper(columnPairs, 'en', colorizer);
+
+      // when
+      const actual = mapper.mapObjects([{ Text: 'A' }, { Text: 'B' }]);
+
+      // then
+      expect(colorizer.colorize).toHaveBeenCalledTimes(2);
+      expect(colorizer.colorize).toHaveBeenNthCalledWith(1, actual[0].entry);
+      expect(colorizer.colorize).toHaveBeenNthCalledWith(2, actual[1].entry);
    });
 
    it('#mapRows should return entry with incremented _id attribute', () => {

@@ -5,6 +5,11 @@ import { CouchDBConstants } from '../couchdb';
 
 describe('QueryConverter', () => {
 
+   it('should name table style fields', () => {
+      expect(QueryConverter.TABLE_STYLE_FIELDS).toEqual([QueryConverter.FG_COLOR, QueryConverter.BG_COLOR]);
+      expect(QueryConverter.TABLE_STYLE_FIELDS).toEqual(['fgcolor', 'bgcolor']);
+   });
+
    let columns: Column[];
    let query: Query;
    const queryConverter = new QueryConverter(false);

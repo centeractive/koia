@@ -153,6 +153,19 @@ describe('ScenePreviewComponent', () => {
     expect(cellTexts(2)).toEqual(['c', '3']);
   });
 
+  it('should color row from bgcolor', async () => {
+
+    // given
+    host.results[0].entry['bgcolor'] = '#ff785a';
+
+    // when
+    await render();
+
+    // then
+    expect(getComputedStyle(rowElement(0)).backgroundColor).toBe('rgb(255, 120, 90)');
+    expect(getComputedStyle(rowElement(2)).backgroundColor).not.toBe('rgb(255, 120, 90)');
+  });
+
   it('should show row count', async () => {
 
     // when

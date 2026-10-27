@@ -10,6 +10,7 @@ import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file'
 import { LanguageService } from 'app/shared/services/language';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { RawDataStateProvider, RawDataStateService } from 'app/shared/services/saved-views';
+import { entryRowStyle } from 'app/shared/ui/virtual-table/entry-row-style';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
 import { ViewColumnRenamer } from 'app/shared/services/view-persistence/view-column-renamer';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
@@ -217,7 +218,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
 
   readonly headerTooltip = (column: Column): string => computedColumnTooltipOf(column);
 
-  readonly rowStyleOf =(entry: object): object | null => this.highlight ? { background: entry['bgcolor'], color: entry['fgcolor'] } : null;
+  readonly rowStyleOf =(entry: object): object | null => this.highlight ? entryRowStyle(entry) : null;
 
   onColumnResize(resize: ColumnResize): void {
     this.customWidths[this.columns[resize.index].name] = resize.width;

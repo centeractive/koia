@@ -16,6 +16,7 @@ test('log file is split by detected logback pattern and keeps stack trace in mes
    await expect(scene.linePattern).toHaveValue('{Time:time} [{Thread}] {Level:level} {Logger} - {Message}');
    await expect(await scene.preview.cell(4, 'Message')).toContainText('Caused by: java.net.SocketTimeoutException');
    await expect(await scene.preview.cell(5, 'Message')).toHaveText('Request r1005 handled');
+   await expect(scene.preview.row(4)).toHaveCSS('background-color', 'rgb(255, 120, 90)');
 });
 
 test('edited line pattern defines the columns', async ({ scene }) => {
@@ -27,6 +28,17 @@ test('edited line pattern defines the columns', async ({ scene }) => {
 
    await expect(scene.columnNames).toHaveCount(3);
    expect(await scene.columnNames.evaluateAll(inputs => inputs.map(i => (i as HTMLInputElement).value))).toEqual(['Time', 'Thread', 'Rest']);
+});
+
+test('error and warn entries of imported log are highlighted', async ({ page, scene, scenes, rawData }) => {
+   await scene.detectColumns(SERVER_LOG);
+   await scene.loadData();
+   await scenes.activate(SERVER_LOG.name);
+   await page.mouse.move(0, 0);
+
+   await expect(rawData.table.row(4)).toHaveCSS('background-color', 'rgb(255, 120, 90)');
+   await expect(rawData.table.row(2)).toHaveCSS('background-color', 'rgb(254, 210, 85)');
+   await expect(rawData.table.row(0)).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 });
 
 test('ISO times of log file are detected as time', async ({ scene }) => {

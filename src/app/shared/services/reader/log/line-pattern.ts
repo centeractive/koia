@@ -1,3 +1,6 @@
+import { DEFAULT_LANGUAGE } from '../../language/language';
+import { LogLevels } from './log-levels';
+
 /**
  * the reason why a line pattern template is invalid, expressed as translation key with its parameters
  */
@@ -24,26 +27,30 @@ export class LinePattern {
    static readonly LOGFMT = '{logfmt}';
 
    private static readonly TIME = '(\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}(?::\\d{2})?(?:[.,]\\d{1,9})?(?:Z|[+-]\\d{2}:?\\d{2})?)';
-   private static readonly LEVELS = ['WARNING', 'CRITICAL', 'SEVERE', 'FINEST', 'CONFIG', 'FINER', 'TRACE', 'DEBUG', 'ERROR',
-      'FATAL', 'INFO', 'WARN', 'FINE'];
-   private static readonly LEVEL = '(' + LinePattern.LEVELS.map(l => l.replace(/./g, c => '[' + c + c.toLowerCase() + ']')).join('|') + ')';
    private static readonly KINDS = ['time', 'level'];
    private static readonly LOGFMT_PAIR = /\s*([\w.-]+)=("(?:[^"\\]|\\.)*"|[^\s"]*)/y;
 
    readonly continuationName: string | undefined;
+   /** the name of the first {Name:level} placeholder */
+   readonly levelName: string | undefined;
    private readonly template: string;
    private readonly names: string[] = [];
+   private readonly levelRegex: string;
    private readonly regex: RegExp;
 
    /**
+    * @param levelNames the log level names a {Name:level} placeholder matches (case-insensitive)
     * @throws [[LinePatternError]] when the template is invalid
     */
-   constructor(template: string) {
+   constructor(template: string, levelNames: string[] = LogLevels.namesOf(DEFAULT_LANGUAGE)) {
       this.template = template.trim();
+      this.levelRegex = LinePattern.levelRegexOf(levelNames);
       if (this.template !== LinePattern.JSON_LINES && this.template !== LinePattern.LOGFMT) {
          const tokens = LinePattern.tokenize(this.template);
-         this.names = LinePattern.placeholdersOf(tokens).map(p => p.name);
-         this.regex = new RegExp('^' + tokens.map((t, i) => LinePattern.regexOf(t, tokens[i + 1])).join('') + '$');
+         const placeholders = LinePattern.placeholdersOf(tokens);
+         this.names = placeholders.map(p => p.name);
+         this.levelName = placeholders.find(p => p.kind === 'level')?.name;
+         this.regex = new RegExp('^' + tokens.map((t, i) => this.regexOf(t, tokens[i + 1])).join('') + '$');
          this.continuationName = this.names[this.names.length - 1];
       }
    }
@@ -112,7 +119,12 @@ export class LinePattern {
       return placeholders;
    }
 
-   private static regexOf(token: Token, next: Token | undefined): string {
+   private static levelRegexOf(levelNames: string[]): string {
+      const caseInsensitive = (c: string): string => c.toUpperCase() === c.toLowerCase() ? c : '[' + c.toUpperCase() + c.toLowerCase() + ']';
+      return '(' + levelNames.map(name => name.replace(/./gu, caseInsensitive)).join('|') + ')';
+   }
+
+   private regexOf(token: Token, next: Token | undefined): string {
       if (typeof token === 'string') {
          return token.split(/(\s+)/)
             .map(part => /^\s+$/.test(part) ? '\\s+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
@@ -120,7 +132,7 @@ export class LinePattern {
       } else if (token.kind === 'time') {
          return LinePattern.TIME;
       } else if (token.kind === 'level') {
-         return LinePattern.LEVEL;
+         return this.levelRegex;
       } else if (next === undefined) {
          return '(.*)';
       }

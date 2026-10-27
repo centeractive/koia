@@ -3,7 +3,7 @@
     (showNestedObjectsChange)="toggleShowNestedObjects()" />
 </div>
 <koia-virtual-table [columns]="columns" [widths]="widths" [source]="source" [multiLine]="multiLine"
-  [showNestedObjects]="showNestedObjects" [rowMarker]="warningMarker" (columnResize)="onColumnResize($event)" />
+  [showNestedObjects]="showNestedObjects" [rowStyleOf]="rowStyleOf" [rowMarker]="warningMarker" (columnResize)="onColumnResize($event)" />
 <ng-template #warningMarker let-index>
   @if (errorsOf(index); as errors) {
     <img class="img_row_warning" src="/assets/warning.png" [matTooltip]="errors" matTooltipClass="koia-tooltip-warning" />
