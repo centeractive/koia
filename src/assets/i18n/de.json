@@ -35,7 +35,9 @@
       "loadingSample": "Beispiel wird geladen…",
       "trySample": "Beispieldaten ausprobieren",
       "tryLogSample": "Oder probiere Logdaten aus",
-      "loadingLogSample": "Logdaten werden geladen…"
+      "loadingLogSample": "Logdaten werden geladen…",
+      "openSceneFile": "Geteilte Szene öffnen (.koia)",
+      "openingSceneFile": "Geteilte Szene wird geöffnet…"
     },
     "guide": {
       "title": "Erstelle deine ersten Ansichten",
@@ -290,6 +292,7 @@
     "scenesDeleted": "{{count}} Szenen wurden gelöscht",
     "scenesDeletedOne": "{{count}} Szene wurde gelöscht",
     "showDetails": "Details anzeigen",
+    "share": "Als Datei teilen",
     "edit": "Name und Beschreibung bearbeiten",
     "activate": "Szene aktivieren",
     "continueActive": "Mit aktiver Szene fortfahren",
@@ -718,5 +721,11 @@
   "sceneFormat": {
     "invalid": "Die Szene entspricht nicht dem Szenenformat {{version}}:\n{{errors}}",
     "unsupportedVersion": "Szenenformat {{version}} wird von dieser Koia-Version nicht unterstützt (unterstützt: {{supported}})"
+  },
+  "sceneFile": {
+    "unreadable": "{{file}} ist keine Koia-Szenendatei",
+    "invalid": "Szenendatei ist ungültig:\n{{errors}}",
+    "tooManyEntries": "Szene hat {{count}} Zeilen, der aktuelle Speicher fasst höchstens {{max}} Zeilen pro Szene",
+    "importCanceled": "Öffnen der geteilten Szene wurde abgebrochen"
   }
 }

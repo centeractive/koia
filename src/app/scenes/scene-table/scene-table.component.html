@@ -11,6 +11,10 @@
             <mat-icon>pageview</mat-icon>
             <span>{{ 'scenes.showDetails' | translate }}</span>
           </button>
+          <button class="menu_item_share" mat-menu-item (click)="onShare.emit(sceneInfo)">
+            <mat-icon>share</mat-icon>
+            <span>{{ 'scenes.share' | translate }}</span>
+          </button>
           <button class="menu_item_edit" mat-menu-item (click)="startEdit(sceneInfo)">
             <mat-icon>edit</mat-icon>
             <span>{{ 'scenes.edit' | translate }}</span>

@@ -4,6 +4,7 @@ import * as XLSX from '@e965/xlsx';
 import * as _ from 'lodash';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { EXPORT_FILE_EXTENSIONS } from 'app/shared/services/export/export-file';
+import { SCENE_FILE_EXTENSION } from 'app/shared/scene-file/scene-file';
 
 export async function downloadOf(page: Page, trigger: () => Promise<void>): Promise<Download> {
    const [download] = await Promise.all([page.waitForEvent('download'), trigger()]);
@@ -22,7 +23,15 @@ export async function bytesOf(download: Download): Promise<Buffer> {
  * matches '<baseName>_<yyyy-MM-dd_HHmmss><extension>', the day is the first group
  */
 export function exportFileName(baseName: string, format: ExportFormat): RegExp {
-   return new RegExp('^' + _.escapeRegExp(baseName) + '_(\\d{4}-\\d{2}-\\d{2})_\\d{6}' + _.escapeRegExp(EXPORT_FILE_EXTENSIONS[format]) + '$');
+   return fileNameOf(baseName, EXPORT_FILE_EXTENSIONS[format]);
+}
+
+export function sceneFileName(baseName: string): RegExp {
+   return fileNameOf(baseName, SCENE_FILE_EXTENSION);
+}
+
+function fileNameOf(baseName: string, extension: string): RegExp {
+   return new RegExp('^' + _.escapeRegExp(baseName) + '_(\\d{4}-\\d{2}-\\d{2})_\\d{6}' + _.escapeRegExp(extension) + '$');
 }
 
 export function exportDayOf(fileName: string, baseName: string, format: ExportFormat): string {

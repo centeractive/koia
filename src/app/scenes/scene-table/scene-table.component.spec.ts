@@ -191,6 +191,23 @@ describe('SceneTableComponent', () => {
     expect(onDeleteEmitSpy).toHaveBeenCalledWith(scenes[2]);
   }));
 
+  it('#selecting "Share as file" menu item should emit event', fakeAsync(() => {
+
+    // given
+    const onShareEmitSpy = vi.spyOn(component.onShare, 'emit').mockReturnValue(undefined);
+    const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[1].nativeElement;
+
+    // when
+    moreButton.click();
+    fixture.detectChanges();
+    const shareButton: HTMLButtonElement = fixture.debugElement.query(By.css('.menu_item_share')).nativeElement;
+    shareButton.click();
+    flush();
+
+    // then
+    expect(onShareEmitSpy).toHaveBeenCalledWith(scenes[1]);
+  }));
+
   it('#selecting "Edit" menu item should show name and short description inputs of scene', fakeAsync(() => {
 
     // when

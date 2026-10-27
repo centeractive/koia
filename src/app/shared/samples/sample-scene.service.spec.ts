@@ -1,4 +1,5 @@
 import { Scene, SceneInfo } from 'app/shared/model';
+import { SceneInserter } from 'app/shared/scene-file/scene-inserter.service';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBServiceMock } from 'app/shared/test';
 import type { Mock } from 'vitest';
@@ -20,7 +21,7 @@ describe('SampleSceneService', () => {
    beforeEach(() => {
       vi.spyOn(console, 'warn').mockReturnValue(undefined);
       dbService = new DBService(new CouchDBServiceMock(), null);
-      service = new SampleSceneService(dbService);
+      service = new SampleSceneService(dbService, new SceneInserter(dbService));
       vi.spyOn(dbService, 'findSceneInfos').mockResolvedValue([]);
       vi.spyOn(dbService, 'findFreeDatabaseName').mockResolvedValue('data_7');
       persistSceneSpy = vi.spyOn(dbService, 'persistScene').mockImplementation(async (scene: Scene) => {
@@ -45,7 +46,7 @@ describe('SampleSceneService', () => {
       expect(scene.database).toBe('data_7');
       expect(scene.creationTime).toBeGreaterThan(0);
       expect(persistSceneSpy.mock.calls[0][1]).toBe(false);
-      expect(writeEntriesSpy).toHaveBeenCalledTimes(sample.rowCount / SampleSceneService.BATCH_SIZE);
+      expect(writeEntriesSpy).toHaveBeenCalledTimes(sample.rowCount / SceneInserter.BATCH_SIZE);
       writeEntriesSpy.mock.calls.forEach(c => expect(c[0]).toBe('data_7'));
       expect(writeEntriesSpy.mock.calls.flatMap(c => c[1]).length).toBe(sample.rowCount);
       expect(writeEntriesSpy.mock.calls[0][1][0][scene.columns[0].name]).toBe(new Date(2024, 0, 1).getTime());
@@ -54,59 +55,6 @@ describe('SampleSceneService', () => {
       expect(sceneTabs.tabs.length).toBe(2);
       expect(activateSceneSpy).toHaveBeenCalledWith(sample.sceneId);
       expect(activateSceneSpy.mock.invocationCallOrder[0]).toBeGreaterThan(saveSceneTabsSpy.mock.invocationCallOrder[0]);
-   });
-
-   it('#open should activate sample scene although tabs cannot be saved', async () => {
-
-      // given
-      saveSceneTabsSpy.mockRejectedValue('conflict');
-
-      // when
-      await service.open(sample);
-
-      // then
-      expect(activateSceneSpy).toHaveBeenCalledWith(sample.sceneId);
-      expect(deleteSceneSpy).not.toHaveBeenCalled();
-   });
-
-   it('#open should delete sample scene and reject when entries cannot be written', async () => {
-
-      // given
-      writeEntriesSpy.mockRejectedValue('disk full');
-
-      // when
-      const result = service.open(sample);
-
-      // then
-      await expect(result).rejects.toBe('disk full');
-      expect(deleteSceneSpy).toHaveBeenCalledWith(expect.objectContaining({ _id: sample.sceneId }));
-      expect(activateSceneSpy).not.toHaveBeenCalled();
-   });
-
-   it('#open should not delete sample scene and reject when scene cannot be persisted', async () => {
-
-      // given
-      persistSceneSpy.mockRejectedValue('conflict');
-
-      // when
-      const result = service.open(sample);
-
-      // then
-      await expect(result).rejects.toBe('conflict');
-      expect(deleteSceneSpy).not.toHaveBeenCalled();
-   });
-
-   it('#open should reject with original error when incomplete scene cannot be deleted', async () => {
-
-      // given
-      writeEntriesSpy.mockRejectedValue('disk full');
-      deleteSceneSpy.mockRejectedValue('not found');
-
-      // when
-      const result = service.open(sample);
-
-      // then
-      await expect(result).rejects.toBe('disk full');
    });
 
    it('#open should reject without persisting when sample file is missing', async () => {

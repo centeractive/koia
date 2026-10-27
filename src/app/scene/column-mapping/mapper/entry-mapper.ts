@@ -2,6 +2,7 @@ import { LanguageService } from 'app/shared/services/language';
 import { Column, ColumnPair, DataType } from 'app/shared/model';
 import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
 import { PatternMasker } from 'app/shared/utils/pattern-masker';
+import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 
 /**
  * Maps data of different format to target entries and adds an "_id" attribute to each target entry.
@@ -16,7 +17,7 @@ import { PatternMasker } from 'app/shared/utils/pattern-masker';
  */
 export class EntryMapper {
 
-   private idPointer = 1_000_000; // allows for default natural sorting in CouchDB
+   private idPointer = CouchDBConstants.ENTRY_ID_BASE; // allows for default natural sorting in CouchDB
 
    constructor(private columnMapping: ColumnPair[], private locale: string) { }
 

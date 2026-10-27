@@ -33,7 +33,7 @@ export class DBService {
   static readonly SCENES = SCENES_DB;
   static readonly DATA = 'data';
   static readonly MAX_DB_COUNT = 100;
-  static readonly PATTERN_PAGE_SIZE = 1_000;
+  static readonly ENTRIES_PAGE_SIZE = 1_000;
 
   private db: DB;
   private pouchDBAccess: PouchDBAccess;
@@ -393,20 +393,37 @@ export class DBService {
    */
   async addPatternField(database: string, sourceName: string, targetName: string, onProgress: (count: number) => void): Promise<number> {
     let processed = 0;
-    let lastId: string = null;
-    let docs: Document[];
-    do {
-      docs = await this.findDocumentsPage(database, lastId, DBService.PATTERN_PAGE_SIZE);
-      lastId = docs.length ? docs[docs.length - 1]._id : lastId;
-      const entries = DBService.entriesOf(docs);
+    await this.forEachEntriesPage(database, async entries => {
       const changed = entries.filter(e => this.applyPattern(e, sourceName, targetName));
       if (changed.length) {
         await this.db.insertBulk(database, changed);
       }
       processed += entries.length;
       onProgress(processed);
-    } while (docs.length === DBService.PATTERN_PAGE_SIZE);
+    });
     return processed;
+  }
+
+  /**
+   * @returns all entries of the database ordered by _id, design documents excluded
+   */
+  async findAllEntries(database: string): Promise<Document[]> {
+    const entries: Document[] = [];
+    await this.forEachEntriesPage(database, async page => {
+      entries.push(...page);
+    });
+    return entries;
+  }
+
+  /**
+   * pages until a page is empty because PouchDB returns pages that follow an _id one document short
+   */
+  private async forEachEntriesPage(database: string, consume: (entries: Document[]) => Promise<void>): Promise<void> {
+    let docs = await this.findDocumentsPage(database, null, DBService.ENTRIES_PAGE_SIZE);
+    while (docs.length) {
+      await consume(DBService.entriesOf(docs));
+      docs = await this.findDocumentsPage(database, docs[docs.length - 1]._id, DBService.ENTRIES_PAGE_SIZE);
+    }
   }
 
   /**

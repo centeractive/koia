@@ -35,7 +35,9 @@
       "loadingSample": "Loading sample…",
       "trySample": "Try sample data",
       "tryLogSample": "Or try log data",
-      "loadingLogSample": "Loading log data…"
+      "loadingLogSample": "Loading log data…",
+      "openSceneFile": "Open a shared scene (.koia)",
+      "openingSceneFile": "Opening shared scene…"
     },
     "guide": {
       "title": "Create your first views",
@@ -290,6 +292,7 @@
     "scenesDeleted": "{{count}} scenes have been deleted",
     "scenesDeletedOne": "{{count}} scene has been deleted",
     "showDetails": "Show details",
+    "share": "Share as file",
     "edit": "Edit name and description",
     "activate": "Activate scene",
     "continueActive": "Continue with active scene",
@@ -718,5 +721,11 @@
   "sceneFormat": {
     "invalid": "scene does not comply with scene format {{version}}:\n{{errors}}",
     "unsupportedVersion": "scene format {{version}} is not supported by this Koia version (supported: {{supported}})"
+  },
+  "sceneFile": {
+    "unreadable": "{{file}} is not a Koia scene file",
+    "invalid": "scene file is invalid:\n{{errors}}",
+    "tooManyEntries": "scene has {{count}} rows, the current storage holds at most {{max}} rows per scene",
+    "importCanceled": "Opening the shared scene was canceled"
   }
 }

@@ -29,6 +29,7 @@ import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { LanguageService } from 'app/shared/services/language';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 
@@ -1121,7 +1122,7 @@ describe('FrontComponent', () => {
 
     // then
     expect(component.busy).toBe(true);
-    expect(component.loadingAnySample).toBe(false);
+    expect(component.loadingAnyScene).toBe(false);
     expect((host.querySelector('.front-storage-change') as HTMLButtonElement).disabled).toBe(false);
     storageButtons(host).forEach(b => expect(b.disabled).toBe(false));
   });
@@ -1197,6 +1198,170 @@ describe('FrontComponent', () => {
     expect(component.loadingSample).toBeUndefined();
     expect((render().querySelector('#sample_button') as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it('#click on open shared scene button should open file selection', () => {
+
+    // given
+    const host = render();
+    const clickSpy = vi.spyOn(sceneFileInput(host), 'click').mockReturnValue(undefined);
+
+    // when
+    (host.querySelector('#scene_file_button') as HTMLButtonElement).click();
+
+    // then
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('#openSceneFile should import selected file and show its raw data', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockResolvedValue(undefined);
+    const router = TestBed.inject(Router);
+    const clearSpy = vi.spyOn(router.routeReuseStrategy as AppRouteReuseStrategy, 'clear').mockReturnValue(undefined);
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const file = new File(['x'], 'sales.koia');
+    const input = sceneFileInput(render());
+
+    // when
+    selectFile(input, file);
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+
+    // then
+    expect(importSpy).toHaveBeenCalledWith(file, expect.any(AbortSignal));
+    expect(clearSpy).toHaveBeenCalled();
+    expect(navigateSpy).toHaveBeenCalledWith(Route.RAWDATA);
+    expect(input.value).toBe('');
+  });
+
+  it('#openSceneFile should ignore change without file', () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import');
+
+    // when
+    sceneFileInput(render()).dispatchEvent(new Event('change'));
+
+    // then
+    expect(importSpy).not.toHaveBeenCalled();
+    expect(component.importingSceneFile).toBe(false);
+  });
+
+  it('#openSceneFile should block start actions and storage while scene file is imported', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+    component.storageExpanded = true;
+
+    // when
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    const host = render();
+
+    // then
+    const button = host.querySelector('#scene_file_button') as HTMLButtonElement;
+    expect(component.busy).toBe(true);
+    expect(component.loadingAnyScene).toBe(true);
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.textContent).toContain('Opening shared scene…');
+    expect(startButton(host).getAttribute('aria-disabled')).toBe('true');
+    storageButtons(host).forEach(b => expect(b.disabled).toBe(true));
+    expect(sceneFileCancelButton(host).disabled).toBe(false);
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+  });
+
+  it('#openSceneFile should start import only after progress is shown', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+    const file = new File(['x'], 'sales.koia');
+
+    // when
+    selectFile(sceneFileInput(render()), file);
+
+    // then
+    expect(importSpy).not.toHaveBeenCalled();
+    expect(component.importingSceneFile).toBe(true);
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalledWith(file, expect.any(AbortSignal)));
+  });
+
+  it('should show no cancel button when no scene file is imported', () => {
+
+    // when
+    const host = render();
+
+    // then
+    expect(sceneFileCancelButton(host)).toBeNull();
+  });
+
+  it('#click on cancel should abort scene file import, warn and unblock actions', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockImplementation((_file, signal) =>
+      new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason))));
+    const onWarningSpy = vi.spyOn(notificationService, 'onWarning').mockReturnValue(undefined);
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+
+    // when
+    sceneFileCancelButton(render()).click();
+    await vi.waitFor(() => expect(onWarningSpy).toHaveBeenCalled());
+
+    // then
+    expect(onWarningSpy.mock.calls[0][1]).toBe('Opening the shared scene was canceled');
+    expect(component.importingSceneFile).toBe(false);
+    const host = render();
+    expect(sceneFileCancelButton(host)).toBeNull();
+    expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('#click on cancel should hide cancel button while import is still aborting', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+
+    // when
+    sceneFileCancelButton(render()).click();
+
+    // then
+    const host = render();
+    expect(sceneFileCancelButton(host)).toBeNull();
+    expect(host.querySelector('#scene_file_button .front-sample-progress')).not.toBeNull();
+  });
+
+  it('#openSceneFile should notify error and unblock actions when import fails', async () => {
+
+    // given
+    vi.spyOn(TestBed.inject(SceneFileService), 'import').mockRejectedValue('sales.koia is not a Koia scene file');
+    const onErrorSpy = vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+
+    // when
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
+
+    // then
+    expect(onErrorSpy.mock.calls[0][1]).toBe('sales.koia is not a Koia scene file');
+    expect(component.importingSceneFile).toBe(false);
+    const host = render();
+    expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(false);
+    expect(sceneFileCancelButton(host)).toBeNull();
+  });
+
+  function sceneFileInput(host: HTMLElement): HTMLInputElement {
+    return host.querySelector<HTMLInputElement>('#scene_file_input');
+  }
+
+  function sceneFileCancelButton(host: HTMLElement): HTMLButtonElement {
+    return host.querySelector<HTMLButtonElement>('#scene_file_cancel_button');
+  }
+
+  function selectFile(input: HTMLInputElement, file: File): void {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    input.files = dataTransfer.files;
+    input.dispatchEvent(new Event('change'));
+  }
 
 
   it('should disable start button until ready', () => {

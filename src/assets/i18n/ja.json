@@ -35,7 +35,9 @@
       "loadingSample": "サンプルを読み込み中…",
       "trySample": "サンプルデータを試す",
       "tryLogSample": "またはログデータを試す",
-      "loadingLogSample": "ログデータを読み込み中…"
+      "loadingLogSample": "ログデータを読み込み中…",
+      "openSceneFile": "共有シーンを開く (.koia)",
+      "openingSceneFile": "共有シーンを開いています…"
     },
     "guide": {
       "title": "最初のビューを作成する",
@@ -290,6 +292,7 @@
     "scenesDeleted": "{{count}} 件のシーンを削除しました",
     "scenesDeletedOne": "{{count}} 件のシーンを削除しました",
     "showDetails": "詳細を表示",
+    "share": "ファイルとして共有",
     "edit": "名前と説明を編集",
     "activate": "シーンをアクティブにする",
     "continueActive": "アクティブなシーンで続ける",
@@ -718,5 +721,11 @@
   "sceneFormat": {
     "invalid": "シーンはシーン形式 {{version}} に準拠していません:\n{{errors}}",
     "unsupportedVersion": "シーン形式 {{version}} はこの Koia バージョンではサポートされていません（サポート: {{supported}}）"
+  },
+  "sceneFile": {
+    "unreadable": "{{file}} は Koia のシーンファイルではありません",
+    "invalid": "シーンファイルが無効です:\n{{errors}}",
+    "tooManyEntries": "シーンには {{count}} 行ありますが、現在のストレージはシーンあたり最大 {{max}} 行までです",
+    "importCanceled": "共有シーンを開く操作はキャンセルされました"
   }
 }

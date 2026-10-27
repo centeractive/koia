@@ -130,4 +130,32 @@ describe('SceneValidator', () => {
       // then
       expect(unpublished).toEqual([]);
    });
+
+   it('#validateEntries should return no errors for valid entries', () => {
+
+      // when
+      const errors = validator.validateEntries('1.0', [{ a: 'x', b: 1, c: true }, { d: 2 }]);
+
+      // then
+      expect(errors).toEqual([]);
+   });
+
+   it('#validateEntries should return no errors for no entries', () => {
+
+      // when
+      const errors = validator.validateEntries('1.0', []);
+
+      // then
+      expect(errors).toEqual([]);
+   });
+
+   it('#validateEntries should return errors of first invalid entry with its index in path', () => {
+
+      // when
+      const errors = validator.validateEntries('1.0', [{ a: 1 }, { b: {} }, { c: null }]);
+
+      // then
+      expect(errors.length).toBeGreaterThan(0);
+      errors.forEach(e => expect(e.path).toBe('/1/b'));
+   });
 });

@@ -82,7 +82,7 @@ export class ExportService {
     this.saveBlobAs(blob, this.generateFileName(baseFileName, EXPORT_FILE_EXTENSIONS[ExportFormat.JSON]));
   }
 
-  private generateFileName(baseFileName: string, extension: string): string {
+  generateFileName(baseFileName: string, extension: string): string {
     const formattedDate = this.datePipe.transform(new Date().getTime(), this.timeFormat);
     return baseFileName + '_' + formattedDate + extension;
   }

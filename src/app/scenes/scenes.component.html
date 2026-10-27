@@ -13,7 +13,7 @@
         </button>
       </div>
       <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)"
-        (onContinue)="showRawData()" (onDelete)="delete($event)"
+        (onContinue)="showRawData()" (onShare)="share($event)" (onDelete)="delete($event)"
         [existingSceneNames]="sceneNames" (onEdit)="updateLabels($event)" (editingChange)="editing = $event">
       </koia-scene-table>
     </mat-card-content>

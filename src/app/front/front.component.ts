@@ -9,6 +9,8 @@ import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { SampleDef } from 'app/shared/samples/sample-data';
 import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
+import { SCENE_FILE_EXTENSION } from 'app/shared/scene-file/scene-file';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { DialogService, NotificationService, messageOf } from 'app/shared/services';
 import { CouchDBFallback, DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
@@ -45,12 +47,15 @@ export class FrontComponent extends AbstractComponent implements OnInit {
    * the sample being loaded, undefined while no sample is being loaded
    */
   loadingSample: (language: Language) => SampleDef;
+  importingSceneFile = false;
+  sceneFileImport: AbortController;
+  readonly sceneFileExtension = SCENE_FILE_EXTENSION;
   couchDBTipDismissed = FrontComponent.readCouchDBTipDismissed();
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, bottomSheet: MatBottomSheet, private dbService: DBService,
     private couchDBService: CouchDBService, private dialogService: DialogService, private sampleSceneService: SampleSceneService,
     notificationService: NotificationService, private languageService: LanguageService, private launchParamsService: LaunchParamsService,
-    private location: Location) {
+    private location: Location, private sceneFileService: SceneFileService) {
     super(bottomSheet, notificationService);
   }
 
@@ -124,17 +129,18 @@ export class FrontComponent extends AbstractComponent implements OnInit {
   }
 
   /**
-   * start actions and storage selection are blocked while the backend is not ready or the sample is being loaded
+   * start actions and storage selection are blocked while the backend is not ready or a sample or scene file is being loaded
    */
   get busy(): boolean {
-    return !this.ready || !!this.loadingSample;
+    return !this.ready || this.loadingAnyScene;
   }
 
   /**
-   * storage selection is blocked while a sample is being loaded only, it must remain possible after a failed CouchDB connection
+   * storage selection is blocked while a sample or scene file is being loaded only, it must remain possible after a failed CouchDB
+   * connection
    */
-  get loadingAnySample(): boolean {
-    return !!this.loadingSample;
+  get loadingAnyScene(): boolean {
+    return !!this.loadingSample || this.importingSceneFile;
   }
 
   /**
@@ -151,6 +157,41 @@ export class FrontComponent extends AbstractComponent implements OnInit {
         this.loadingSample = undefined;
         this.notifyError(err);
       });
+  }
+
+  /**
+   * inserts the scene of the selected .koia file as new scene and shows its raw data
+   */
+  openSceneFile(input: HTMLInputElement): void {
+    const file = input.files[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+    this.importingSceneFile = true;
+    const sceneFileImport = this.sceneFileImport = new AbortController();
+    CommonUtils.afterNextPaint()
+      .then(() => this.sceneFileService.import(file, sceneFileImport.signal))
+      .then(() => {
+        this.clearCachedViews();
+        return this.router.navigateByUrl(Route.RAWDATA);
+      })
+      .catch(err => {
+        this.importingSceneFile = false;
+        this.sceneFileImport = undefined;
+        if (sceneFileImport.signal.aborted) {
+          this.notifyWarning(this.languageService.instant('sceneFile.importCanceled'));
+        } else {
+          this.notifyError(err);
+        }
+      });
+  }
+
+  /**
+   * aborts the running scene file import, the partially inserted scene is deleted
+   */
+  cancelSceneFileImport(): void {
+    this.sceneFileImport.abort();
   }
 
   showCouchDBConnectionDialog(): void {

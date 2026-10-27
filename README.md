@@ -23,6 +23,8 @@ Koia keeps the **context to the original data**. A single click on a chart eleme
 
 Log messages rarely repeat literally, they differ in request ids, numbers or addresses. A **pattern column** masks these variable parts (`Request r10042 failed: upstream timeout` becomes `Request <*> failed: upstream timeout`), so messages can be grouped in pivot tables and charts, filtered and explained. Add it to a free-text column, one whose values contain variable parts, while importing a file, or later to any scene, including scenes written by third party programs, through the scene details on the scenes page. Pattern columns cannot be removed yet.
 
+A scene can be **shared as a file**: *Share as file* in the menu of a scene on the scenes page downloads it with its views and rows as `.koia` file, *Open a shared scene* on the start page adds it as new scene.
+
 Next to this, Koia enables the **switch between multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
 ## How it works

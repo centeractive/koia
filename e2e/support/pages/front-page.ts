@@ -94,6 +94,19 @@ export class FrontPage {
       await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 
+   async selectSceneFile(path: string): Promise<void> {
+      await this.page.locator('#scene_file_input').setInputFiles(path);
+   }
+
+   async openSceneFile(path: string): Promise<void> {
+      await this.selectSceneFile(path);
+      await this.page.waitForURL('**/' + Route.RAWDATA);
+   }
+
+   async cancelSceneFileImport(): Promise<void> {
+      await this.page.locator('#scene_file_cancel_button').click();
+   }
+
    async openLogSample(): Promise<void> {
       await this.page.locator('#log_sample_button').click();
       await this.page.waitForURL('**/' + Route.RAWDATA);

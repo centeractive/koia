@@ -59,6 +59,11 @@ export class ScenesPage {
       return this.notifications.dismiss(StatusType.SUCCESS);
    }
 
+   async share(sceneName: string): Promise<void> {
+      await this.row(sceneName).locator('.but_more').click();
+      await this.page.locator('.menu_item_share').click();
+   }
+
    async showDetails(sceneName: string): Promise<void> {
       await this.row(sceneName).locator('.but_more').click();
       await this.page.locator('.menu_item_details').click();

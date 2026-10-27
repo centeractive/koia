@@ -1,4 +1,4 @@
-import { rejectionOf } from './scene-format-rejection';
+import { rejectionOf, textOf } from './scene-format-rejection';
 import { SceneValidation } from './scene-validator';
 
 const SUPPORTED_VERSIONS = ['1.0', '1.1'];
@@ -74,5 +74,27 @@ describe('rejectionOf', () => {
 
       // then
       expect(rejection).toBeUndefined();
+   });
+
+   it('strict should reject invalid document without version', () => {
+
+      // given
+      const errors = [{ path: '/database', message: 'must be string' }];
+      const validation: SceneValidation = { version: '1.0', versioned: false, supported: true, errors };
+
+      // when
+      const rejection = rejectionOf(validation, SUPPORTED_VERSIONS, true);
+
+      // then
+      expect(rejection).toBe('scene does not comply with scene format 1.0:\n' + textOf(errors));
+   });
+
+   it('#textOf should show root path as slash and list errors on separate lines', () => {
+
+      // when
+      const text = textOf([{ path: '', message: 'must be object' }, { path: '/name', message: 'must be string' }]);
+
+      // then
+      expect(text).toBe('/: must be object\n/name: must be string');
    });
 });

@@ -10,6 +10,7 @@ import { Location } from '@angular/common';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { firstValueFrom } from 'rxjs';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { orderSceneInfos } from './scene-order';
 
 @Component({
@@ -31,7 +32,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
   private sceneInfos: SceneInfo[] = [];
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private dbService: DBService,
-    private dialogService: DialogService, notificationService: NotificationService) {
+    private dialogService: DialogService, private sceneFileService: SceneFileService, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
@@ -59,6 +60,10 @@ export class ScenesComponent extends AbstractComponent implements OnInit {
 
   updateLabels(labels: SceneLabels): void {
     this.reloadAfter(this.dbService.updateSceneLabels(labels), LanguageService.instant('scenes.sceneUpdated'));
+  }
+
+  share(sceneInfo: SceneInfo): void {
+    this.sceneFileService.export(sceneInfo._id).catch(err => this.notifyError(err));
   }
 
   delete(sceneInfo: SceneInfo) {

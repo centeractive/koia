@@ -119,4 +119,25 @@ describe('CommonUtils', () => {
     expect(clone).not.toBe(array);
     expect(clone).toEqual(array);
   });
+
+  it('#afterNextPaint should resolve in task following next animation frame', async () => {
+
+    // given
+    let frame: FrameRequestCallback;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(cb => {
+      frame = cb;
+      return 1;
+    });
+    let resolved = false;
+    CommonUtils.afterNextPaint().then(() => resolved = true);
+
+    // when
+    frame(0);
+    await Promise.resolve();
+
+    // then
+    expect(resolved).toBe(false);
+    await CommonUtils.sleep(0);
+    expect(resolved).toBe(true);
+  });
 });

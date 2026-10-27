@@ -27,6 +27,14 @@ export class CommonUtils {
   }
 
   /**
+   * resolves after the browser painted the next frame, which lets a progress indicator start before blocking work;
+   * does not resolve while the document is hidden because animation frames are paused then
+   */
+  static afterNextPaint(): Promise<void> {
+    return new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)));
+  }
+
+  /**
    * @returns <true> if the specified objects are equal, <false> otherwise
    */
   static compare(o1: object, o2: object): boolean {

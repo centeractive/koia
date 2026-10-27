@@ -26,6 +26,7 @@ import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
 import { SceneTableComponent } from './scene-table/scene-table.component';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { ScenesComponent } from './scenes.component';
 import type { Mock } from 'vitest';
 
@@ -373,6 +374,38 @@ describe('ScenesComponent', () => {
     expect(dbService.deleteScene).toHaveBeenCalledWith(scene);
     expect(notificationService.onSuccess).toHaveBeenCalledTimes(1);
   }));
+
+  it('#selecting share menu item should export scene', fakeAsync(() => {
+
+    // given
+    const exportSpy = vi.spyOn(TestBed.inject(SceneFileService), 'export').mockResolvedValue(undefined);
+
+    // when
+    selectMenuItemOfFirstScene('.menu_item_share');
+
+    // then
+    expect(exportSpy).toHaveBeenCalledWith(scenes[0]._id);
+    expect(notificationService.onError).not.toHaveBeenCalled();
+  }));
+
+  it('#selecting share menu item should notify error when export fails', fakeAsync(() => {
+
+    // given
+    vi.spyOn(TestBed.inject(SceneFileService), 'export').mockRejectedValue('cannot read scene');
+
+    // when
+    selectMenuItemOfFirstScene('.menu_item_share');
+
+    // then
+    expect(notificationService.onError).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet), 'cannot read scene');
+  }));
+
+  function selectMenuItemOfFirstScene(selector: string): void {
+    fixture.debugElement.queryAll(By.css('.but_more'))[0].nativeElement.click();
+    fixture.detectChanges();
+    fixture.debugElement.query(By.css(selector)).nativeElement.click();
+    flush();
+  }
 
   it('#selecting delete menu item should notify error when error occurs', fakeAsync(() => {
 

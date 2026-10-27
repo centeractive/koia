@@ -812,7 +812,7 @@ describe('DBService', () => {
       .then(data => expect(data.length).toBe(5));
   });
 
-  describe('#addPatternField and #findSampleEntries', () => {
+  describe('#addPatternField, #findSampleEntries and #findAllEntries', () => {
 
     type Entry = Document & Record<string, unknown>;
 
@@ -852,14 +852,15 @@ describe('DBService', () => {
       expect(count).toBe(1_001);
       expect(find.mock.calls.map(c => c[1])).toEqual([
         { selector: { _id: { $gt: null } }, sort: [{ _id: 'asc' }], limit: 1_000 },
-        { selector: { _id: { $gt: '00999' } }, sort: [{ _id: 'asc' }], limit: 1_000 }
+        { selector: { _id: { $gt: '00999' } }, sort: [{ _id: 'asc' }], limit: 1_000 },
+        { selector: { _id: { $gt: '01000' } }, sort: [{ _id: 'asc' }], limit: 1_000 }
       ]);
       expect(written.map(docs => docs.length)).toEqual([1_000, 1]);
       expect(written[1]).toEqual([{ _id: '01000', _rev: '1-a', Data: 'line 1000', 'Data pattern': 'line <*>' }]);
       expect(onProgress.mock.calls).toEqual([[1_000], [1_001]]);
     });
 
-    it.each([[0, 1], [999, 1], [1_000, 2]])('should process %i documents with %i queries', async (docCount, queryCount) => {
+    it.each([[1, 2], [999, 2], [1_000, 2]])('should process %i documents with %i queries', async (docCount, queryCount) => {
 
       // given
       const find = simulate(messages(docCount));
@@ -872,6 +873,35 @@ describe('DBService', () => {
       expect(find).toHaveBeenCalledTimes(queryCount);
       expect(written.flat().length).toBe(docCount);
       expect(onProgress).toHaveBeenLastCalledWith(docCount);
+    });
+
+    it('should process no documents with one query', async () => {
+
+      // given
+      const find = simulate([]);
+
+      // when
+      const count = await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(count).toBe(0);
+      expect(find).toHaveBeenCalledTimes(1);
+      expect(onProgress).not.toHaveBeenCalled();
+    });
+
+    it('should continue after page that is one document short like pages of PouchDB', async () => {
+
+      // given
+      const find = simulate(messages(2_500));
+      const fullPages = find.getMockImplementation();
+      find.mockImplementation((database: string, query: { selector: object, limit: number }) => fullPages(database, { ...query, limit: query.limit - 1 }));
+
+      // when
+      const count = await dbService.addPatternField('db', 'Data', 'Data pattern', onProgress);
+
+      // then
+      expect(count).toBe(2_500);
+      expect(written.flat().length).toBe(2_500);
     });
 
     it('should continue after last document of page that ends with design document', async () => {
@@ -935,6 +965,20 @@ describe('DBService', () => {
       // then
       expect(find.mock.calls.map(c => c[1])).toEqual([{ selector: { _id: { $gt: null } }, sort: [{ _id: 'asc' }], limit: 3 }]);
       expect(entries).toEqual(docs.slice(0, 2));
+    });
+
+    it('#findAllEntries should return entries of all pages in _id order without design documents', async () => {
+
+      // given
+      const docs = messages(1_001);
+      const find = simulate([...docs, { _id: '_design/index_Data', _rev: '1-a' }]);
+
+      // when
+      const entries = await dbService.findAllEntries('db');
+
+      // then
+      expect(entries.map(e => e._id)).toEqual(docs.map(d => d._id));
+      expect(find).toHaveBeenCalledTimes(3);
     });
   });
 

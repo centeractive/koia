@@ -23,6 +23,7 @@ export class SceneTableComponent extends AbstractComponent {
 
   @Output() onActivate = new EventEmitter<SceneInfo>();
   @Output() onContinue = new EventEmitter<SceneInfo>();
+  @Output() onShare = new EventEmitter<SceneInfo>();
   @Output() onDelete = new EventEmitter<SceneInfo>();
   @Output() onEdit = new EventEmitter<SceneLabels>();
   @Output() editingChange = new EventEmitter<boolean>();
