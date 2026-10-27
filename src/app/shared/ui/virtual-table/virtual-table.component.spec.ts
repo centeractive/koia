@@ -728,6 +728,19 @@ describe('VirtualTableComponent', () => {
       expect(getComputedStyle(rowElement(8)).backgroundColor).toBe('rgb(255, 255, 255)');
     });
 
+    it('#rowStyle should return no style when no rowStyleOf is bound', () => {
+
+      // given
+      const component = TestBed.createComponent(VirtualTableComponent).componentInstance;
+      component.source = new TestSource(1);
+
+      // when
+      const style = component.rowStyle(0);
+
+      // then
+      expect(style).toBeNull();
+    });
+
     it('should open object dialog on object cell click', async () => {
 
       // given
