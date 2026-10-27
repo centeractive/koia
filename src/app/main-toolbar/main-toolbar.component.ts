@@ -2,6 +2,7 @@ import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnDestroy,
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NavigationEnd, Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
@@ -44,8 +45,8 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   private justNavigatedToParentView: boolean;
   private navigationSubscription: Subscription;
 
-  constructor(public router: Router, private dbService: DBService, private dialogService: DialogService, bottomSheet: MatBottomSheet,
-    notificationService: NotificationService) {
+  constructor(public router: Router, private dbService: DBService, private dialogService: DialogService,
+    private sceneFileService: SceneFileService, bottomSheet: MatBottomSheet, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
@@ -121,6 +122,13 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
 
   showSceneDetails(): void {
     this.dialogService.showSceneDetailsDialog(this.scene);
+  }
+
+  /**
+   * downloads the active scene with its open tabs and all its rows as .koia file
+   */
+  shareScene(): void {
+    this.sceneFileService.export(this.scene._id).catch(err => this.notifyError(err));
   }
 
   addValueFilter(column: Column): void {

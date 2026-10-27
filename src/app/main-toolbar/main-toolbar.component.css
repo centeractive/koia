@@ -66,3 +66,7 @@ button {
   min-height: 50px;
   margin-left: 4px;
 }
+
+#butShareScene {
+  flex-shrink: 0;
+}

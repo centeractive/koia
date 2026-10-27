@@ -7,7 +7,7 @@
       "about": "Über Koia"
     },
     "title": "Loslegen",
-    "lead": "Lade deine eigene CSV-, Excel- oder JSON-Datei oder erkunde Koia mit Beispieldaten. Deine Daten werden nie an fremde Server gesendet.",
+    "lead": "Lade deine eigene CSV-, Excel-, JSON- oder Logdatei oder erkunde Koia mit Beispieldaten. Deine Daten werden nie an fremde Server gesendet.",
     "externalInvocationFailed": "Rohdaten der Szene mit _id {{id}} können nicht angezeigt werden",
     "storage": {
       "storedIn": "Daten werden ausschliesslich gespeichert in",
@@ -31,13 +31,19 @@
     "actions": {
       "continueOne": "Mit deiner Szene fortfahren",
       "continueMany": "Mit deinen {{count}} Szenen fortfahren",
+      "yourData": "Eigene Daten",
       "loadFile": "Datei laden",
-      "loadingSample": "Beispiel wird geladen…",
-      "trySample": "Beispieldaten ausprobieren",
-      "tryLogSample": "Oder probiere Logdaten aus",
-      "loadingLogSample": "Logdaten werden geladen…",
-      "openSceneFile": "Geteilte Szene öffnen (.koia)",
-      "openingSceneFile": "Geteilte Szene wird geöffnet…"
+      "loadFileHint": "CSV, Excel, JSON oder Log",
+      "openSceneFile": "Geteilte Szene öffnen",
+      "openSceneFileHint": "Koia-Szenendatei (.koia)",
+      "openingSceneFile": "Geteilte Szene wird geöffnet…",
+      "sampleData": "Beispieldaten",
+      "salesSample": "Verkaufsbeispiel",
+      "salesSampleHint": "Obstverkauf nach Region",
+      "loadingSample": "Verkaufsbeispiel wird geladen…",
+      "logSample": "Log-Beispiel",
+      "logSampleHint": "App-Logs nach Level und Host",
+      "loadingLogSample": "Log-Beispiel wird geladen…"
     },
     "guide": {
       "title": "Erstelle deine ersten Ansichten",
@@ -275,7 +281,17 @@
       "jsonDescription": "JSON (JavaScript Object Notation) ist formatierter, selbstbeschreibender Text zum Speichern und Austauschen von Daten.\nDu importierst ein Array flacher (nicht verschachtelter) Objekte, indem du dessen JSONPath angibst.",
       "jsonPath": "Array-JSONPath",
       "jsonPathDescription": "JSONPath zum Objekt-Array mit den Daten",
-      "worksheetMissing": "Tabellenblatt \"{{sheet}}\" existiert nicht oder kann nicht gelesen werden"
+      "worksheetMissing": "Tabellenblatt \"{{sheet}}\" existiert nicht oder kann nicht gelesen werden",
+      "logDescription": "Logdatei im Textformat, ein Eintrag pro Zeile",
+      "logPattern": "Zeilenmuster",
+      "logPatternDescription": "{Name} wird zur Spalte, {Name:time} zum Zeitstempel, {Name:level} zur Log-Stufe, {json} liest JSON Lines, {logfmt} Schlüssel=Wert-Paare. Nicht passende Zeilen werden an die letzte Spalte angehängt.",
+      "logPatternInvalid": "ungültiges Zeilenmuster: {{reason}}",
+      "logPatternNoPlaceholder": "es enthält keinen Platzhalter",
+      "logPatternDuplicateName": "Platzhalter {{name}} kommt doppelt vor",
+      "logPatternUnclosed": "eine '{' ist nicht geschlossen",
+      "logPatternEmptyName": "ein Platzhalter hat keinen Namen",
+      "logPatternAdjacent": "zwischen zwei Platzhaltern muss Text stehen",
+      "logPatternUnknownKind": "unbekannter Platzhaltertyp {{kind}}"
     },
     "binaryDataNotShown": "*** Binärdaten können nicht angezeigt werden ***"
   },

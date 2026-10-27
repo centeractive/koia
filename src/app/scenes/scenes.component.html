@@ -5,20 +5,29 @@
         <mat-form-field class="filter">
           <mat-icon matPrefix>search</mat-icon>
           <input matInput type="text" [placeholder]="'scenes.filter' | translate" [(ngModel)]="filter" (ngModelChange)="onFilterChange()"
-            [disabled]="editing">
+            [disabled]="locked">
         </mat-form-field>
-        <button id="but_delete_scenes" mat-stroked-button [disabled]="editing || filteredSceneInfos.length === 0" (click)="onDeleteScenesButtonPressed()">
+        <button id="but_open_scene_file" mat-stroked-button [disabled]="editing"
+          [attr.aria-busy]="sceneFileOpener.importing" (click)="sceneFileOpener.select(sceneFileInput)">
+          <mat-icon [class.koia-spin]="sceneFileOpener.importing">{{ sceneFileOpener.importing ? 'autorenew' : 'file_open' }}</mat-icon>
+          <span>&nbsp;{{ (sceneFileOpener.importing ? 'front.actions.openingSceneFile' : 'front.actions.openSceneFile') | translate }}</span>
+        </button>
+        @if (sceneFileOpener.cancelable) {
+          <button id="but_cancel_scene_file" mat-stroked-button (click)="sceneFileOpener.cancel()">{{ 'common.cancel' | translate }}</button>
+        }
+        <input #sceneFileInput id="scene_file_input" type="file" hidden [accept]="sceneFileOpener.extension" (change)="sceneFileOpener.open(sceneFileInput)">
+        <button id="but_delete_scenes" mat-stroked-button [disabled]="locked || filteredSceneInfos.length === 0" (click)="onDeleteScenesButtonPressed()">
           <mat-icon>delete_forever</mat-icon>
           <span>&nbsp;{{ (filter ? 'scenes.deleteFiltered' : 'scenes.deleteAll') | translate }}</span>
         </button>
       </div>
       <koia-scene-table [sceneInfos]="filteredSceneInfos" [activeScene]="activeScene" (onActivate)="activate($event)"
         (onContinue)="showRawData()" (onShare)="share($event)" (onDelete)="delete($event)"
-        [existingSceneNames]="sceneNames" (onEdit)="updateLabels($event)" (editingChange)="editing = $event">
+        [existingSceneNames]="sceneNames" [locked]="sceneFileOpener.importing" (onEdit)="updateLabels($event)" (editingChange)="editing = $event">
       </koia-scene-table>
     </mat-card-content>
     <mat-card-actions>
-      <button id="but_cancel" mat-flat-button color="primary" [disabled]="editing" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
+      <button id="but_cancel" mat-flat-button color="primary" [disabled]="locked" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
     </mat-card-actions>
   </mat-card>
 </koia-page-frame>

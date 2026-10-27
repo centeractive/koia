@@ -16,6 +16,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { Column, ComputeOperator, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -141,6 +142,15 @@ describe('MainToolbarComponent with many tabs', () => {
     expect(rightOf('#butAddTab')).toBeLessThanOrEqual(toolbarRight);
   });
 
+  it('should keep share button size when tabs exceed toolbar width', () => {
+
+    // when
+    const shareWidth = fixture.nativeElement.querySelector('#butShareScene').getBoundingClientRect().width;
+
+    // then
+    expect(shareWidth).toBe(fixture.nativeElement.querySelector('#but_save_view').getBoundingClientRect().width);
+  });
+
   it('saved view buttons should get tab of toolbar as active tab', () => {
 
     // given
@@ -264,14 +274,42 @@ describe('MainToolbarComponent', () => {
     });
   });
 
-  it('saved view buttons should be separated from tab bar by divider', () => {
+  it('share button should be right of saved view buttons and separated from tab bar by divider', () => {
 
     // when
     const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[1];
 
     // then
-    expect(separator.previousElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
+    const share = separator.previousElementSibling;
+    expect(share.id).toBe('butShareScene');
+    expect(share.previousElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
     expect(separator.nextElementSibling.tagName).toBe('KOIA-VIEW-TAB-BAR');
+  });
+
+  it('#click on share button should export active scene', () => {
+
+    // given
+    const exportSpy = vi.spyOn(TestBed.inject(SceneFileService), 'export').mockResolvedValue(undefined);
+
+    // when
+    fixture.nativeElement.querySelector('#butShareScene').click();
+
+    // then
+    expect(exportSpy).toHaveBeenCalledWith(scene._id);
+  });
+
+  it('#click on share button should notify error when export fails', async () => {
+
+    // given
+    vi.spyOn(TestBed.inject(SceneFileService), 'export').mockRejectedValue('disk full');
+    const onErrorSpy = vi.spyOn(TestBed.inject(NotificationService), 'onError').mockReturnValue(undefined);
+
+    // when
+    fixture.nativeElement.querySelector('#butShareScene').click();
+    await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
+
+    // then
+    expect(onErrorSpy.mock.calls[0][1]).toBe('disk full');
   });
 
   it('add filter button should be rounded accent button without non-breaking spaces', () => {

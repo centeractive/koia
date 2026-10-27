@@ -1,4 +1,5 @@
-import { DataType } from 'app/shared/model';
+import { DataType, TimeUnit } from 'app/shared/model';
+import { DateTimeUtils } from 'app/shared/utils';
 import { ColumnMappingGenerator } from './column-mapping-generator';
 
 describe('ColumnMappingGenerator', () => {
@@ -22,6 +23,18 @@ describe('ColumnMappingGenerator', () => {
       expect(mapping.length).toBe(1);
       expect(mapping[0].source).toEqual({ name: 'X', dataType: DataType.TEXT, width: undefined });
       expect(mapping[0].target).toEqual({ name: 'X', dataType: DataType.TEXT, width: 10, indexed: true });
+   });
+
+   it('#generate should map ISO value to TIME target without source format', () => {
+
+      // when
+      const mapping = generator.generate([{ Time: '2024-01-01T10:00:00.123+01:00' }], 'en');
+
+      // then
+      expect(mapping[0].source.dataType).toBe(DataType.TEXT);
+      expect(mapping[0].source.format).toBeUndefined();
+      expect(mapping[0].target.dataType).toBe(DataType.TIME);
+      expect(mapping[0].target.format).toBe(DateTimeUtils.ngFormatOf(TimeUnit.MILLISECOND));
    });
 
    it('#generate should return non-indexed text to text mapping when value is too long', () => {

@@ -20,6 +20,7 @@ export class SceneTableComponent extends AbstractComponent {
   @Input() sceneInfos: SceneInfo[] = [];
   @Input() activeScene: Scene;
   @Input() existingSceneNames = new Set<string>();
+  @Input() locked = false;
 
   @Output() onActivate = new EventEmitter<SceneInfo>();
   @Output() onContinue = new EventEmitter<SceneInfo>();

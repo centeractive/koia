@@ -2,5 +2,6 @@
 export enum SourceName {
    CSV = 'CSV',
    EXCEL = 'Excel',
-   JSON = 'JSON'
+   JSON = 'JSON',
+   LOG = 'Log'
 }

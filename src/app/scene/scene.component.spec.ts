@@ -682,6 +682,23 @@ describe('SceneComponent', () => {
         '#but_detect_columns']);
     }));
 
+    it('wide attribute field should be wider than other attribute fields', () => {
+
+      // given
+      const logReader = component.readers[3];
+      component.selectedReader = logReader;
+      component.readerAttributes = logReader.furnishAttributes('', 'en-US');
+      component.fileHeader = 'x';
+      component.accordion.openAll();
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const field: HTMLElement = fixture.nativeElement.querySelector('[data-attribute="scene.reader.logPattern"]');
+      expect(field.getBoundingClientRect().width).toBeGreaterThan(180);
+    });
+
     it('adopt columns toggle, scene select and detect button should share one row', fakeAsync(() => {
 
       // given
@@ -713,6 +730,41 @@ describe('SceneComponent', () => {
     // then
     expect(steps.map(s => s.textContent)).toEqual(['1', '2', '3', '4']);
   }));
+
+  it('encoding select should be shown for reader supporting encoding only', () => {
+
+    // given
+    const [csvReader, , jsonReader] = component.readers;
+
+    // when
+    component.selectedReader = jsonReader;
+    fixture.detectChanges();
+    const encodingOfJson = fixture.nativeElement.querySelector('.form_field_encoding');
+    component.selectedReader = csvReader;
+    fixture.detectChanges();
+    const encodingOfCsv = fixture.nativeElement.querySelector('.form_field_encoding');
+
+    // then
+    expect(encodingOfJson).toBeNull();
+    expect(encodingOfCsv).not.toBeNull();
+  });
+
+  it('wide attribute should be rendered in wide form field marked with attribute name', () => {
+
+    // given
+    const logReader = component.readers[3];
+    component.selectedReader = logReader;
+    component.readerAttributes = logReader.furnishAttributes('', 'en-US');
+    component.fileHeader = 'x';
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const field: HTMLElement = fixture.nativeElement.querySelector('[data-attribute="scene.reader.logPattern"]');
+    expect(field.classList).toContain('form_field_wide');
+    expect(fixture.nativeElement.querySelector('.form_field_encoding')).not.toBeNull();
+  });
 
   it('value choice button should sit inside attribute form field', () => {
 

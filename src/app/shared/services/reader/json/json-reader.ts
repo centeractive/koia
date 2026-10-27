@@ -32,6 +32,10 @@ export class JSONReader implements DataReader {
     return true;
   }
 
+  supportsEncoding(): boolean {
+    return false;
+  }
+
   furnishAttributes(dataHeader: string): Attribute[] {
     this.attrArrayJSONPath = JSONReader.createArrayJSONPathAttribute();
     this.detectArrayJSONPaths(dataHeader, this.attrArrayJSONPath);

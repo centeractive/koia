@@ -627,3 +627,19 @@ koia-print-heading {
   font-size: 12px;
   font-weight: 500;
 }
+
+.koia-spin {
+  animation: koia-spin 1s linear infinite;
+}
+
+@keyframes koia-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .koia-spin {
+    animation: none;
+  }
+}

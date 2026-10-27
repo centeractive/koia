@@ -41,6 +41,10 @@ describe('CSVReader', () => {
       expect(reader.expectsPlainTextData()).toBeTruthy();
    });
 
+   it('#supportsEncoding should return true', () => {
+      expect(reader.supportsEncoding()).toBe(true);
+   });
+
    it('#furnishAttributes should return attributes with default values', () => {
 
       // when

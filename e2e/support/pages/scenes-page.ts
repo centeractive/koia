@@ -32,7 +32,7 @@ export class ScenesPage {
       this.editRow = page.locator('.edit_row');
       this.tableContainer = page.locator('koia-scene-table .table_container');
       this.moreButtons = page.locator('.but_more');
-      this.filterInput = page.locator('#div_filter input');
+      this.filterInput = page.locator('#div_filter .filter input');
       this.deleteAllButton = page.locator('#but_delete_scenes');
       this.cancelButton = page.locator('#but_cancel');
       this.continueButton = page.locator('.continueActiveScene');
@@ -62,6 +62,11 @@ export class ScenesPage {
    async share(sceneName: string): Promise<void> {
       await this.row(sceneName).locator('.but_more').click();
       await this.page.locator('.menu_item_share').click();
+   }
+
+   async openSceneFile(path: string): Promise<void> {
+      await this.page.locator('#scene_file_input').setInputFiles(path);
+      await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 
    async showDetails(sceneName: string): Promise<void> {

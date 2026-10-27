@@ -74,5 +74,27 @@ test('canceled shared scene import leaves no scene', async ({ front, notificatio
 
    expect(await notifications.dismiss(StatusType.WARNING)).toContain(en.get('sceneFile.importCanceled'));
    await front.reload();
-   await front.startWithFile();
+   await expect(front.continueButton).toBeHidden();
+});
+
+test('scene shared from main toolbar downloads as .koia file', async ({ page, front, rawData }) => {
+   await front.openSample();
+
+   const download = await downloadOf(page, () => rawData.mainToolbar.shareScene());
+
+   expect(download.suggestedFilename()).toMatch(sceneFileName(sample.scene.name));
+});
+
+test('shared scene opens from scenes page', async ({ page, front, rawData, scenes }, testInfo) => {
+   await front.openSample();
+   const download = await downloadOf(page, () => rawData.mainToolbar.shareScene());
+   const file = testInfo.outputPath(download.suggestedFilename());
+   await download.saveAs(file);
+   await rawData.mainToolbar.openScenes();
+
+   await scenes.openSceneFile(file);
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(sample.entries.length));
+   await rawData.mainToolbar.openScenes();
+   await expect(scenes.rows).toHaveCount(2);
 });

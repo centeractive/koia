@@ -9,6 +9,7 @@ export class ScenePage {
 
    readonly title: Locator;
    readonly separator: Locator;
+   readonly linePattern: Locator;
    readonly panels: Locator;
    readonly nameInput: Locator;
    readonly nameError: Locator;
@@ -26,6 +27,7 @@ export class ScenePage {
    constructor(private readonly page: Page) {
       this.title = page.locator('koia-page-frame .page_title');
       this.separator = page.locator('.form_field_separator input');
+      this.linePattern = page.locator('[data-attribute="scene.reader.logPattern"] input');
       this.panels = page.locator('mat-accordion mat-expansion-panel');
       this.nameInput = page.locator('.scene_name input');
       this.nameError = page.locator('.scene_name mat-error');

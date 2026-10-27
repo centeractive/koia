@@ -15,7 +15,7 @@ Use Koia straight away at [**https://www.koia.io**](https://www.koia.io) or cont
 
 Koia keeps the **context to the original data**. A single click on a chart element, pivot table value or summary table count, or a double-click on a graph node, shows the raw data rows behind it, right in your browser with no install or account.
 
-**Explain** then tells you what makes these rows different: it ranks the column values that are clearly over-represented in them compared with the rest of the data, and one click on a finding narrows the rows to it. Picture 1 explains the ERROR rows of the log sample (*Or try log data* on the start page): 60% of them come from host node-7, compared with 5% of the other rows.
+**Explain** then tells you what makes these rows different: it ranks the column values that are clearly over-represented in them compared with the rest of the data, and one click on a finding narrows the rows to it. Picture 1 explains the ERROR rows of the log sample (*Log sample* on the start page): 60% of them come from host node-7, compared with 5% of the other rows.
 
  <img align="center" width="880" src="./src/intro/screenshots/explain.webp" alt="Explained ERROR rows of the log sample naming host node-7">
 
@@ -23,13 +23,13 @@ Koia keeps the **context to the original data**. A single click on a chart eleme
 
 Log messages rarely repeat literally, they differ in request ids, numbers or addresses. A **pattern column** masks these variable parts (`Request r10042 failed: upstream timeout` becomes `Request <*> failed: upstream timeout`), so messages can be grouped in pivot tables and charts, filtered and explained. Add it to a free-text column, one whose values contain variable parts, while importing a file, or later to any scene, including scenes written by third party programs, through the scene details on the scenes page. Pattern columns cannot be removed yet.
 
-A scene can be **shared as a file**: *Share as file* in the menu of a scene on the scenes page downloads it with its views and rows as `.koia` file, *Open a shared scene* on the start page adds it as new scene.
+A scene can be **shared as a file**: *Share as file* in the menu of a scene on the scenes page or in the main toolbar downloads it with its views and rows as `.koia` file, *Open a shared scene* on the start page adds it as new scene.
 
 Next to this, Koia enables the **switch between multiple data sets**, so it is possible to create graphics based on different data without opening a lot of tabs in your browser but **switching between the data sets in one tab**.
 
 ## How it works
 
-Data is loaded from files (CSV, Excel or JSON) to the browser's IndexedDB or a local CouchDB through Koia itself or it may be written to it by a third party program. Uploaded data from an individual file is represented by a **scene**. You can switch between different scenes as you please to create diagrams based on different data.
+Data is loaded from files (CSV, Excel, JSON or plain-text log files) to the browser's IndexedDB or a local CouchDB through Koia itself or it may be written to it by a third party program. Log files are split into columns by a detected line pattern that can be adjusted, multi-line entries such as stack traces stay together. Uploaded data from an individual file is represented by a **scene**. You can switch between different scenes as you please to create diagrams based on different data.
 
 The data can be viewed, filtered and sorted in a **raw data table** or it may be refined and displayed as **charts, relationship graphs, summary or pivot tables** with a few mouseclicks. To gain insights into your data, Koia offers a variety of chart types such as: Pie charts, doughnut charts, bar charts, line charts, area charts, scatter charts, radar charts and polar area charts.
 

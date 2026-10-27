@@ -19,6 +19,10 @@
   flex: 0 0 180px;
 }
 
+.form_field_wide {
+  flex: 1 1 420px;
+}
+
 .file_name {
   flex: 1 1 300px;
 }
