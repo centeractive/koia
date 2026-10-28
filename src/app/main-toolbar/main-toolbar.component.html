@@ -10,11 +10,17 @@
           </button>
         </koia-nav-buttons>
         <span class="koia-toolbar-separator"></span>
-        <koia-saved-view-buttons [activeTabId]="tabId" />
         <button id="butShareScene" mat-icon-button [matTooltip]="'scenes.share' | translate" [attr.aria-label]="'scenes.share' | translate"
           (click)="shareScene()">
-          <mat-icon>share</mat-icon>
+          <mat-icon svgIcon="file_export" />
         </button>
+        <button id="butOpenSceneFile" mat-icon-button [attr.aria-busy]="sceneFileOpener.importing"
+          [matTooltip]="sceneFileOpener.tooltipKey | translate" [attr.aria-label]="sceneFileOpener.tooltipKey | translate"
+          (click)="sceneFileOpener.selectOrCancel(sceneFileInput)">
+          <mat-icon [class.koia-spin]="sceneFileOpener.importing">{{ sceneFileOpener.icon }}</mat-icon>
+        </button>
+        <input #sceneFileInput id="toolbarSceneFileInput" type="file" hidden [accept]="sceneFileOpener.extension" (change)="sceneFileOpener.open(sceneFileInput)">
+        <koia-saved-view-buttons [activeTabId]="tabId" />
         <span class="koia-toolbar-separator"></span>
         <koia-view-tab-bar [currUrl]="currURL" />
       </span>

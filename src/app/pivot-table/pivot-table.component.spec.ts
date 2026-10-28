@@ -4,13 +4,13 @@ import { CUSTOM_ELEMENTS_SCHEMA, ElementRef, Injectable } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
-import { By, DomSanitizer } from '@angular/platform-browser';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { CanvasPaging, Column, DataType, Document, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { ConfigRecord, ViewType } from 'app/shared/model/view-config';
@@ -18,7 +18,7 @@ import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/que
 import { ExportService, NotificationService, RawDataRevealService, TimeGroupingService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
-import { findStyleRule, SceneFactory } from 'app/shared/test';
+import { findStyleRule, registerSvgIconLiterals, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
 import { LanguageService } from 'app/shared/services/language';
@@ -101,9 +101,7 @@ describe('PivotTableComponent', () => {
         { provide: ViewTabsService, useValue: viewTabsService }
       ]
     }).compileComponents();
-    const sanitizer = TestBed.inject(DomSanitizer);
-    ['row_totals', 'column_totals'].forEach(icon =>
-      TestBed.inject(MatIconRegistry).addSvgIconLiteral(icon, sanitizer.bypassSecurityTrustHtml('<svg></svg>')));
+    registerSvgIconLiterals('row_totals', 'column_totals');
   }));
 
   beforeEach(fakeAsync(() => {

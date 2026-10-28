@@ -4,7 +4,7 @@ import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angu
 import { FormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +22,7 @@ import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
-import { SceneFactory, selectFile } from 'app/shared/test';
+import { registerSvgIconLiterals, SceneFactory, selectFile } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
 import { SceneTableComponent } from './scene-table/scene-table.component';
@@ -73,6 +73,7 @@ describe('ScenesComponent', () => {
         { provide: RouteReuseStrategy, useValue: appRouteReuseStrategy },
       ]
     }).compileComponents();
+    registerSvgIconLiterals('file_export');
 
     const router = TestBed.inject(Router);
     navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);
@@ -674,7 +675,7 @@ describe('ScenesComponent', () => {
     expect(button.textContent).toContain('Opening shared scene…');
     expect(icon.classList).toContain('koia-spin');
     expect(getComputedStyle(icon).animationName).toBe('koia-spin');
-    expect(cancelSceneFileButton()).not.toBeNull();
+    expect(fixture.debugElement.query(By.css('#but_open_scene_file')).injector.get(MatTooltip).message).toBe('Cancel');
     await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
   });
 
@@ -707,14 +708,14 @@ describe('ScenesComponent', () => {
     fixture.detectChanges();
 
     // when
-    cancelSceneFileButton().click();
+    openSceneFileButton().click();
     await vi.waitFor(() => expect(onWarningSpy).toHaveBeenCalled());
     await stabilize();
 
     // then
     expect(onWarningSpy.mock.calls[0][1]).toBe('Opening the shared scene was canceled');
     expect(editLockedControls().map(c => c.disabled)).toEqual([false, false, false, false]);
-    expect(cancelSceneFileButton()).toBeNull();
+    expect(openSceneFileButton().querySelector('.koia-spin')).toBeNull();
   });
 
   async function stabilize(): Promise<void> {
@@ -729,10 +730,6 @@ describe('ScenesComponent', () => {
 
   function openSceneFileButton(): HTMLButtonElement {
     return fixture.nativeElement.querySelector('#but_open_scene_file');
-  }
-
-  function cancelSceneFileButton(): HTMLButtonElement {
-    return fixture.nativeElement.querySelector('#but_cancel_scene_file');
   }
 
   it('#click on cancel button should navigate to previous page', () => {

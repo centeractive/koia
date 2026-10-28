@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatAccordion } from '@angular/material/expansion';
@@ -79,11 +79,9 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private sourceColumnNames: string[];
   private columnFactory = new ColumnMappingGenerator();
   private mappingErrors = new ConfinedStringSet(10);
-  private fileDialogOpen = false;
   private loadFailed = false;
   private destroyed = false;
   private readonly patternPairs = new PatternPairs();
-  private previousContext: Pick<SceneComponent, 'file' | 'fileHeader' | 'columnMappings' | 'levelColumn' | 'feedback'> & { sampleEntries: object[]; sourceColumnNames: string[] } | undefined;
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
     private dbService: DBService, notificationService: NotificationService) {
@@ -104,7 +102,6 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   ngAfterViewInit(): void {
     this.fileInputRef.nativeElement.addEventListener('change', () => this.onFileSelChange(this.fileInputRef.nativeElement.files));
-    this.fileInputRef.nativeElement.addEventListener('cancel', () => this.restorePreviousContext());
   }
 
   private defineLocales(): void {
@@ -187,46 +184,17 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   selectFile(): void {
     this.fileInputRef.nativeElement.value = '';
-    this.fileDialogOpen = true;
     this.fileInputRef.nativeElement.click();
-  }
-
-  /**
-   * browsers fire the file input 'change' event up to several seconds after the file dialog was closed,
-   * the window regaining focus is the earliest sign of a file being selected
-   */
-  @HostListener('window:focus')
-  onWindowFocus(): void {
-    if (this.fileDialogOpen) {
-      this.fileDialogOpen = false;
-      this.previousContext = { file: this.file, fileHeader: this.fileHeader, sampleEntries: this.sampleEntries,
-        sourceColumnNames: this.sourceColumnNames, columnMappings: this.columnMappings, levelColumn: this.levelColumn,
-        feedback: this.feedback };
-      this.initContext();
-      this.readingSample = true;
-    }
   }
 
   onFileSelChange(files: FileList): void {
     if (!files.length) {
-      this.restorePreviousContext();
       return;
     }
-    this.fileDialogOpen = false;
-    this.previousContext = undefined;
     this.initContext();
     this.file = files[0];
     this.scene.context = SceneUtils.fileContextInfo(this.file);
     this.readDataSample();
-  }
-
-  private restorePreviousContext(): void {
-    this.fileDialogOpen = false;
-    this.readingSample = false;
-    if (this.previousContext) {
-      Object.assign(this, this.previousContext);
-      this.previousContext = undefined;
-    }
   }
 
   onCharacterEncodingChange(): void {

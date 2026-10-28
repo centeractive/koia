@@ -138,6 +138,13 @@ export class FrontComponent extends AbstractComponent implements OnInit, OnDestr
   }
 
   /**
+   * the button stays enabled while a scene file is imported, so that a click can cancel it
+   */
+  get sceneFileButtonDisabled(): boolean {
+    return !this.ready || !!this.loadingSample;
+  }
+
+  /**
    * storage selection is blocked while a sample or scene file is being loaded only, it must remain possible after a failed CouchDB
    * connection
    */

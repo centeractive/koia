@@ -76,20 +76,16 @@
                     <span class="front-action-hint">{{ 'front.actions.loadFileHint' | translate }}</span>
                   </span>
                 </a>
-                <button id="scene_file_button" type="button" class="landing-btn landing-btn-outline front-action" [disabled]="busy"
-                  [attr.aria-busy]="sceneFileOpener.importing" (click)="sceneFileOpener.select(sceneFileInput)">
-                  <mat-icon [class.koia-spin]="sceneFileOpener.importing" aria-hidden="true">{{ sceneFileOpener.importing ? 'autorenew' : 'file_open' }}</mat-icon>
+                <button id="scene_file_button" type="button" class="landing-btn landing-btn-outline front-action" [disabled]="sceneFileButtonDisabled"
+                  [attr.aria-busy]="sceneFileOpener.importing" [matTooltip]="sceneFileOpener.tooltipKey | translate"
+                  (click)="sceneFileOpener.selectOrCancel(sceneFileInput)">
+                  <mat-icon [class.koia-spin]="sceneFileOpener.importing" aria-hidden="true">{{ sceneFileOpener.icon }}</mat-icon>
                   <span class="front-action-text">
-                    <span class="front-action-label">{{ (sceneFileOpener.importing ? 'front.actions.openingSceneFile' : 'front.actions.openSceneFile') | translate }}</span>
+                    <span class="front-action-label">{{ sceneFileOpener.labelKey | translate }}</span>
                     <span class="front-action-hint">{{ 'front.actions.openSceneFileHint' | translate }}</span>
                   </span>
                 </button>
               </div>
-              @if (sceneFileOpener.cancelable) {
-                <button id="scene_file_cancel_button" type="button" class="front-cancel-button" (click)="sceneFileOpener.cancel()">
-                  {{ 'common.cancel' | translate }}
-                </button>
-              }
               <input #sceneFileInput id="scene_file_input" type="file" hidden [accept]="sceneFileOpener.extension" (change)="sceneFileOpener.open(sceneFileInput)">
             </div>
             <div class="front-action-group" role="group" aria-labelledby="front_sample_data_title">

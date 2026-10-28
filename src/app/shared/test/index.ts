@@ -17,3 +17,4 @@ export * from './animation-frames';
 export * from './tile-spec-fixtures';
 export * from './static-page';
 export * from './file-input';
+export * from './svg-icon-literals';

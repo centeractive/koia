@@ -2,6 +2,7 @@ import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnDestroy,
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NavigationEnd, Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
+import { SceneFileOpener } from 'app/shared/scene-file/scene-file-opener';
 import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -40,6 +41,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   fullTextFilter = '';
   propertyFilters: PropertyFilter[] = [];
   rangeFilters: NumberRangeFilter[] = [];
+  readonly sceneFileOpener: SceneFileOpener;
 
   private propertyFilterValidator: PropertyFilterValidator;
   private justNavigatedToParentView: boolean;
@@ -48,6 +50,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService,
     private sceneFileService: SceneFileService, bottomSheet: MatBottomSheet, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
+    this.sceneFileOpener = new SceneFileOpener(sceneFileService, router, this);
   }
 
   ngOnInit(): void {
@@ -71,6 +74,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
 
   ngOnDestroy(): void {
     this.navigationSubscription?.unsubscribe();
+    this.sceneFileOpener.destroy();
   }
 
   /**

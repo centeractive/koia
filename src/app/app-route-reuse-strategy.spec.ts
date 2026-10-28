@@ -1,4 +1,4 @@
-import { ActivatedRouteSnapshot, DetachedRouteHandle, UrlSegment } from '@angular/router';
+import { ActivatedRouteSnapshot, DefaultUrlSerializer, DetachedRouteHandle, UrlSegment } from '@angular/router';
 import { AppRouteReuseStrategy } from './app-route-reuse-strategy';
 import { Route } from './shared/model';
 import { SceneFactory } from 'app/shared/test';
@@ -304,6 +304,33 @@ describe('AppRouteReuseStrategy', () => {
       // then
       expect(routeHandle['componentRef'].destroy).not.toHaveBeenCalled();
       expect(strategy.retrieve(routeSnapshot)).toBe(routeHandle);
+   });
+
+   it('#isCached should be true for raw data and view tab urls', () => {
+
+      // when
+      const cached = ['/rawdata', '/view/tab1'].map(url => strategy.isCached(new DefaultUrlSerializer().parse(url)));
+
+      // then
+      expect(cached).toEqual([true, true]);
+   });
+
+   it('#isCached should be false for front, scenes and scene urls', () => {
+
+      // when
+      const cached = ['/front?x=1', '/scenes', '/scene'].map(url => strategy.isCached(new DefaultUrlSerializer().parse(url)));
+
+      // then
+      expect(cached).toEqual([false, false, false]);
+   });
+
+   it('#isCached should be false for root url', () => {
+
+      // when
+      const cached = strategy.isCached(new DefaultUrlSerializer().parse('/'));
+
+      // then
+      expect(cached).toBe(false);
    });
 
    function createActivatedRouteSnapshot(route: Route): ActivatedRouteSnapshot {

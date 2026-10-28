@@ -50,6 +50,11 @@ export class MainToolbar {
       await this.root.locator('#butShareScene').click();
    }
 
+   async openSceneFile(path: string): Promise<void> {
+      await this.root.locator('#toolbarSceneFileInput').setInputFiles(path);
+      await this.root.page().waitForURL('**/' + Route.RAWDATA);
+   }
+
    async saveView(name: string): Promise<void> {
       await this.root.locator('#but_save_view').click();
       await new InputDialog(this.root.page()).submit(name);
