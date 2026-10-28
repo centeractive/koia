@@ -98,20 +98,6 @@
   opacity: 1;
 }
 
-.front-cancel-button {
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border: none;
-  background: none;
-  color: var(--koia-primary);
-  font: 600 14px var(--koia-font-landing);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 .front-storage-line {
   display: flex;
   align-items: center;

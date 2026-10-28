@@ -98,3 +98,45 @@ test('shared scene opens from scenes page', async ({ page, front, rawData, scene
    await rawData.mainToolbar.openScenes();
    await expect(scenes.rows).toHaveCount(2);
 });
+
+test('shared scene opened from main toolbar of raw data replaces shown rows', async ({ page, front, rawData }, testInfo) => {
+   await front.openSample();
+   const download = await downloadOf(page, () => rawData.mainToolbar.shareScene());
+   const file = testInfo.outputPath(download.suggestedFilename());
+   await download.saveAs(file);
+   await front.open('en');
+   await front.openLogSample();
+   await expect(rawData.table.headers.filter({ hasText: 'Level' })).toHaveCount(1);
+
+   await rawData.mainToolbar.openSceneFile(file);
+
+   await expect(rawData.table.headers).toHaveText(sample.scene.columns.map(column => column.name));
+});
+
+test('shared scene opened from main toolbar of view tab replaces cached view of same tab id', async ({ page, front, rawData, tabBar, pivot }, testInfo) => {
+   await front.openSample();
+   const download = await downloadOf(page, () => rawData.mainToolbar.shareScene());
+   const file = testInfo.outputPath(download.suggestedFilename());
+   await download.saveAs(file);
+   await front.open('en');
+   await front.openLogSample();
+   await tabBar.open('tab1');
+   await expect(pivot.fieldChips.filter({ hasText: 'Level' })).toHaveCount(1);
+
+   await pivot.mainToolbar.openSceneFile(file);
+   await tabBar.open('tab1');
+
+   await expect(pivot.fieldChips.filter({ hasText: 'Level' })).toHaveCount(0);
+   await expect(pivot.fieldChips.filter({ hasText: 'Revenue' })).toHaveCount(1);
+});
+
+test('open shared scene button does not spin while file selection is open', async ({ page, front }, testInfo) => {
+   const file = testInfo.outputPath('sample.koia');
+   writeSceneFileOfSample(file, sample.entries.length);
+
+   const [fileChooser] = await Promise.all([page.waitForEvent('filechooser'), front.sceneFileButton.click()]);
+
+   await expect(front.sceneFileButton.locator('mat-icon')).not.toHaveClass(/koia-spin/);
+   await fileChooser.setFiles(file);
+   await page.waitForURL('**/' + Route.RAWDATA);
+});

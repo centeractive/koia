@@ -142,13 +142,14 @@ describe('MainToolbarComponent with many tabs', () => {
     expect(rightOf('#butAddTab')).toBeLessThanOrEqual(toolbarRight);
   });
 
-  it('should keep share button size when tabs exceed toolbar width', () => {
+  it('should keep share and open scene file button size when tabs exceed toolbar width', () => {
 
     // when
-    const shareWidth = fixture.nativeElement.querySelector('#butShareScene').getBoundingClientRect().width;
+    const widths = ['#butShareScene', '#butOpenSceneFile'].map(id => fixture.nativeElement.querySelector(id).getBoundingClientRect().width);
 
     // then
-    expect(shareWidth).toBe(fixture.nativeElement.querySelector('#but_save_view').getBoundingClientRect().width);
+    const saveViewWidth = fixture.nativeElement.querySelector('#but_save_view').getBoundingClientRect().width;
+    expect(widths).toEqual([saveViewWidth, saveViewWidth]);
   });
 
   it('saved view buttons should get tab of toolbar as active tab', () => {
@@ -239,14 +240,14 @@ describe('MainToolbarComponent', () => {
     expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('navigation buttons should be separated from saved view buttons by divider', () => {
+  it('navigation buttons should be separated from share button by divider', () => {
 
     // when
     const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[0];
 
     // then
     expect(separator.previousElementSibling.tagName).toBe('KOIA-NAV-BUTTONS');
-    expect(separator.nextElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
+    expect(separator.nextElementSibling.id).toBe('butShareScene');
   });
 
   it('scene details button should be shown between home and scenes buttons', () => {
@@ -274,16 +275,122 @@ describe('MainToolbarComponent', () => {
     });
   });
 
-  it('share button should be right of saved view buttons and separated from tab bar by divider', () => {
+  it('share and open scene file buttons should be left of saved view buttons, separated from tab bar by divider', () => {
 
     // when
-    const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[1];
+    const share: HTMLElement = fixture.nativeElement.querySelector('#butShareScene');
 
     // then
-    const share = separator.previousElementSibling;
-    expect(share.id).toBe('butShareScene');
-    expect(share.previousElementSibling.tagName).toBe('KOIA-SAVED-VIEW-BUTTONS');
+    const open = share.nextElementSibling;
+    const input = open.nextElementSibling;
+    const savedViewButtons = input.nextElementSibling;
+    const separator = savedViewButtons.nextElementSibling;
+    expect([open.id, input.id, savedViewButtons.tagName]).toEqual(['butOpenSceneFile', 'toolbarSceneFileInput', 'KOIA-SAVED-VIEW-BUTTONS']);
+    expect(separator.classList).toContain('koia-toolbar-separator');
     expect(separator.nextElementSibling.tagName).toBe('KOIA-VIEW-TAB-BAR');
+  });
+
+  it('share button should show file export icon', () => {
+
+    // when
+    const icon: HTMLElement = fixture.nativeElement.querySelector('#butShareScene mat-icon');
+
+    // then
+    expect(icon.getAttribute('svgicon')).toBe('file_export');
+  });
+
+  it('#click on open scene file button should select file', () => {
+
+    // given
+    const selectSpy = vi.spyOn(component.sceneFileOpener, 'select').mockReturnValue(undefined);
+
+    // when
+    fixture.nativeElement.querySelector('#butOpenSceneFile').click();
+
+    // then
+    expect(selectSpy).toHaveBeenCalledWith(fixture.nativeElement.querySelector('#toolbarSceneFileInput'));
+  });
+
+  it('#click on open scene file button should cancel running import', () => {
+
+    // given
+    vi.spyOn(component.sceneFileOpener, 'cancelable', 'get').mockReturnValue(true);
+    const cancelSpy = vi.spyOn(component.sceneFileOpener, 'cancel').mockReturnValue(undefined);
+    const selectSpy = vi.spyOn(component.sceneFileOpener, 'select').mockReturnValue(undefined);
+
+    // when
+    fixture.nativeElement.querySelector('#butOpenSceneFile').click();
+
+    // then
+    expect(cancelSpy).toHaveBeenCalled();
+    expect(selectSpy).not.toHaveBeenCalled();
+  });
+
+  it('open scene file button should spin and offer cancel while import is cancelable', () => {
+
+    // given
+    component.sceneFileOpener.importing = true;
+    vi.spyOn(component.sceneFileOpener, 'cancelable', 'get').mockReturnValue(true);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const button: HTMLElement = fixture.nativeElement.querySelector('#butOpenSceneFile');
+    const icon = button.querySelector('mat-icon');
+    expect(icon.textContent.trim()).toBe('autorenew');
+    expect(icon.classList).toContain('koia-spin');
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe('Cancel');
+  });
+
+  it('open scene file button should show opening label once import is canceled', () => {
+
+    // given
+    component.sceneFileOpener.importing = true;
+    vi.spyOn(component.sceneFileOpener, 'cancelable', 'get').mockReturnValue(false);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#butOpenSceneFile').getAttribute('aria-label')).toBe('Opening shared scene…');
+  });
+
+  it('open scene file button should show open icon and label when no import runs', () => {
+
+    // when
+    const button: HTMLElement = fixture.nativeElement.querySelector('#butOpenSceneFile');
+
+    // then
+    expect(button.querySelector('mat-icon').textContent.trim()).toBe('file_open');
+    expect(button.getAttribute('aria-label')).toBe('Open a shared scene');
+    expect(button.getAttribute('aria-busy')).toBe('false');
+  });
+
+  it('#change of scene file input should open selected file', () => {
+
+    // given
+    const openSpy = vi.spyOn(component.sceneFileOpener, 'open').mockReturnValue(undefined);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('#toolbarSceneFileInput');
+
+    // when
+    input.dispatchEvent(new Event('change'));
+
+    // then
+    expect(openSpy).toHaveBeenCalledWith(input);
+  });
+
+  it('#ngOnDestroy should destroy scene file opener', () => {
+
+    // given
+    const destroySpy = vi.spyOn(component.sceneFileOpener, 'destroy');
+
+    // when
+    component.ngOnDestroy();
+
+    // then
+    expect(destroySpy).toHaveBeenCalled();
   });
 
   it('#click on share button should export active scene', () => {

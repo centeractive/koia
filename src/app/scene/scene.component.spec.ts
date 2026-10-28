@@ -316,7 +316,7 @@ describe('SceneComponent', () => {
     expect(component.fileInputRef.nativeElement.value).toBe('');
   }));
 
-  it('#window focus after select file should hide previous data sample and show progress bar immediately', fakeAsync(() => {
+  it('#window focus after select file should keep data sample without progress bar', fakeAsync(() => {
 
     // given
     loadSample();
@@ -327,25 +327,11 @@ describe('SceneComponent', () => {
     fixture.detectChanges();
 
     // then
-    expect(dataSample()).toBeNull();
-    expect(progressBar()).not.toBeNull();
-  }));
-
-  it('#window focus without select file should keep data sample', fakeAsync(() => {
-
-    // given
-    loadSample();
-
-    // when
-    window.dispatchEvent(new Event('focus'));
-    fixture.detectChanges();
-
-    // then
-    expect(dataSample()).not.toBeNull();
+    expect(dataSample().value).toBe('dummy');
     expect(progressBar()).toBeNull();
   }));
 
-  it('#cancel on file input after window focus should restore previous data sample and hide progress bar', fakeAsync(() => {
+  it('#cancel on file input after select file should keep data sample and mappings without progress bar', fakeAsync(() => {
 
     // given
     loadSample();
@@ -353,7 +339,6 @@ describe('SceneComponent', () => {
     component.columnMappings = [createColumnPair('x')];
     component.levelColumn = 'Level';
     clickSelectFile();
-    window.dispatchEvent(new Event('focus'));
 
     // when
     component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
@@ -367,12 +352,11 @@ describe('SceneComponent', () => {
     expect(progressBar()).toBeNull();
   }));
 
-  it('#change on file input without file after window focus should restore previous data sample', fakeAsync(() => {
+  it('#change on file input without file should keep data sample', fakeAsync(() => {
 
     // given
     loadSample();
     clickSelectFile();
-    window.dispatchEvent(new Event('focus'));
 
     // when
     component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
@@ -383,23 +367,11 @@ describe('SceneComponent', () => {
     expect(progressBar()).toBeNull();
   }));
 
-  it('#cancel on file input without previous context should not show progress bar', fakeAsync(() => {
-
-    // when
-    component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
-    fixture.detectChanges();
-
-    // then
-    expect(component.file).toBeUndefined();
-    expect(progressBar()).toBeNull();
-  }));
-
-  it('#change on file input after window focus should show new data sample', fakeAsync(() => {
+  it('#change on file input after select file should show new data sample', fakeAsync(() => {
 
     // given
     loadSample();
     clickSelectFile();
-    window.dispatchEvent(new Event('focus'));
     putFileIntoInput('Other.csv');
     vi.spyOn(readerService, 'readHeader').mockResolvedValue('other');
 
@@ -428,22 +400,6 @@ describe('SceneComponent', () => {
     expect(dataSample()).toBeNull();
     expect(progressBar()).not.toBeNull();
     flush();
-  }));
-
-  it('#change on file input after cancel should not restore previous data sample again', fakeAsync(() => {
-
-    // given
-    loadSample();
-    clickSelectFile();
-    window.dispatchEvent(new Event('focus'));
-    component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
-    component.fileHeader = 'changed';
-
-    // when
-    component.fileInputRef.nativeElement.dispatchEvent(new Event('change'));
-
-    // then
-    expect(component.fileHeader).toBe('changed');
   }));
 
   it('#onFileSelChange should generate scene name and short description', fakeAsync(() => {
@@ -1908,20 +1864,6 @@ describe('SceneComponent', () => {
       expect(fixture.debugElement.query(By.css('.but_add_pattern'))).toBeNull();
     }));
 
-    it('#cancel on file input should offer pattern of restored sample', fakeAsync(() => {
-
-      // given
-      initUpToDetectColumns(messages);
-      clickSelectFile();
-      window.dispatchEvent(new Event('focus'));
-
-      // when
-      component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
-
-      // then
-      expect(component.canAddPattern(message())).toBe(true);
-    }));
-
     it('#canAddPattern should not allow pattern of skipped column', fakeAsync(() => {
 
       // given
@@ -2107,22 +2049,6 @@ describe('SceneComponent', () => {
       expect(component.columnMappings.map(cp => cp.target.patternOf)).toEqual(['Gone']);
     }));
 
-    it('#cancel on file input should keep pattern column linked to message column', fakeAsync(() => {
-
-      // given
-      initUpToDetectColumns(messages);
-      component.addPatternColumn(message());
-      clickSelectFile();
-      window.dispatchEvent(new Event('focus'));
-      component.fileInputRef.nativeElement.dispatchEvent(new Event('cancel'));
-      message().target.name = 'Text';
-
-      // when
-      component.onColumnChanged();
-
-      // then
-      expect(pattern().target.patternOf).toBe('Text');
-    }));
   });
 
   function createSceneInfos(count: number): SceneInfo[] {

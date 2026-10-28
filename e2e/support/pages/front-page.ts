@@ -18,6 +18,7 @@ export class FrontPage {
    readonly couchDBTip: Locator;
    readonly couchDBTipTitle: Locator;
    readonly continueButton: Locator;
+   readonly sceneFileButton: Locator;
    private readonly loadFileButton: Locator;
 
    constructor(private readonly page: Page) {
@@ -25,6 +26,7 @@ export class FrontPage {
       this.couchDBTip = page.locator('.front-couchdb-tip');
       this.couchDBTipTitle = page.locator('#front-couchdb-tip-title');
       this.continueButton = page.locator('#start_button');
+      this.sceneFileButton = page.locator('#scene_file_button');
       this.loadFileButton = page.locator('#load_file_button');
    }
 
@@ -106,7 +108,7 @@ export class FrontPage {
    }
 
    async cancelSceneFileImport(): Promise<void> {
-      await this.page.locator('#scene_file_cancel_button').click();
+      await this.sceneFileButton.click();
    }
 
    async openLogSample(): Promise<void> {

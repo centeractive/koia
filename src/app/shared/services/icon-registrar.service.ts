@@ -13,6 +13,7 @@ export class IconRegistrarService {
     'area_chart',
     'column_totals',
     'add_graph',
+    'file_export',
     'flex_view',
     'grid_view',
     'horizontal_bar_chart',

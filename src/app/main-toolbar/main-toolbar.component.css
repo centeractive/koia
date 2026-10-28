@@ -67,6 +67,6 @@ button {
   margin-left: 4px;
 }
 
-#butShareScene {
+#butShareScene, #butOpenSceneFile {
   flex-shrink: 0;
 }

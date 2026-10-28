@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, destroyDetachedRouteHandle, DetachedRouteHandle, RouteReuseStrategy } from '@angular/router';
+import { ActivatedRouteSnapshot, destroyDetachedRouteHandle, DetachedRouteHandle, PRIMARY_OUTLET, RouteReuseStrategy, UrlTree } from '@angular/router';
 import { Route, Scene } from './shared/model';
 
 @Injectable()
@@ -57,6 +57,14 @@ export class AppRouteReuseStrategy implements RouteReuseStrategy {
    /**
     * @returns the resolved path of the route (i.e. 'view/tab1' for route 'view/:id')
     */
+   /**
+    * @returns true when the page of the url is kept when it is left
+    */
+   isCached(url: UrlTree): boolean {
+      const path = url.root.children[PRIMARY_OUTLET]?.segments[0]?.path;
+      return !!path && !AppRouteReuseStrategy.NON_CACHED_ROUTES.includes(path);
+   }
+
    private pathOf(route: ActivatedRouteSnapshot): string {
       if (route.routeConfig) {
          return route.url.map(s => s.path).join('/');

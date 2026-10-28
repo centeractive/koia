@@ -1,4 +1,4 @@
-import { Router } from '@angular/router';
+import { DefaultUrlSerializer, Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { Route } from 'app/shared/model';
@@ -12,6 +12,7 @@ describe('SceneFileOpener', () => {
   let importSpy: Mock;
   let routeReuseStrategy: AppRouteReuseStrategy;
   let navigateSpy: Mock;
+  let router: { url: string, parseUrl: (url: string) => unknown, navigateByUrl: Mock, routeReuseStrategy: AppRouteReuseStrategy };
   let notifier: { notifyWarning: Mock, notifyError: Mock };
   let input: HTMLInputElement;
   let opener: SceneFileOpener;
@@ -24,8 +25,9 @@ describe('SceneFileOpener', () => {
     notifier = { notifyWarning: vi.fn(), notifyError: vi.fn() };
     input = document.createElement('input');
     input.type = 'file';
-    opener = new SceneFileOpener({ import: importSpy } as unknown as SceneFileService,
-      { navigateByUrl: navigateSpy, routeReuseStrategy } as unknown as Router, notifier as unknown as AbstractComponent);
+    router = { url: '/front', parseUrl: url => new DefaultUrlSerializer().parse(url), navigateByUrl: navigateSpy, routeReuseStrategy };
+    opener = new SceneFileOpener({ import: importSpy } as unknown as SceneFileService, router as unknown as Router,
+      notifier as unknown as AbstractComponent);
     input.addEventListener('change', () => opener.open(input));
   });
 
@@ -50,6 +52,36 @@ describe('SceneFileOpener', () => {
     expect(importSpy).toHaveBeenCalledWith(file, expect.any(AbortSignal));
     expect(routeReuseStrategy.clear).toHaveBeenCalled();
     expect(input.value).toBe('');
+  });
+
+  it('#open from cached page should leave it before clearing cached views and showing raw data', async () => {
+
+    // given
+    router.url = '/rawdata';
+    importSpy.mockResolvedValue(undefined);
+
+    // when
+    selectFile(input, new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(2));
+
+    // then
+    expect(navigateSpy.mock.calls).toEqual([[Route.SCENES, { skipLocationChange: true }], [Route.RAWDATA]]);
+    const clearOrder = vi.mocked(routeReuseStrategy.clear).mock.invocationCallOrder[0];
+    expect(navigateSpy.mock.invocationCallOrder[0]).toBeLessThan(clearOrder);
+    expect(clearOrder).toBeLessThan(navigateSpy.mock.invocationCallOrder[1]);
+  });
+
+  it('#open from page that is not cached should show raw data without leaving it', async () => {
+
+    // given
+    importSpy.mockResolvedValue(undefined);
+
+    // when
+    selectFile(input, new File(['x'], 'sales.koia'));
+    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+
+    // then
+    expect(navigateSpy.mock.calls).toEqual([[Route.RAWDATA]]);
   });
 
   it('#open should ignore input without file', () => {
@@ -183,7 +215,7 @@ describe('SceneFileOpener', () => {
     expect(opener.cancelable).toBe(false);
   });
 
-  it('#select should open file selection when no import runs', () => {
+  it('#select should open file selection without showing progress', () => {
 
     // given
     const clickSpy = vi.spyOn(input, 'click').mockReturnValue(undefined);
@@ -193,6 +225,70 @@ describe('SceneFileOpener', () => {
 
     // then
     expect(clickSpy).toHaveBeenCalled();
+    expect(opener.importing).toBe(false);
+  });
+
+  it('#selectOrCancel should select file when no import is cancelable', () => {
+
+    // given
+    const clickSpy = vi.spyOn(input, 'click').mockReturnValue(undefined);
+
+    // when
+    opener.selectOrCancel(input);
+
+    // then
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('#selectOrCancel should cancel cancelable import', async () => {
+
+    // given
+    importSpy.mockReturnValue(new Promise(() => undefined));
+    selectFile(input, new File(['x'], 'sales.koia'));
+    const clickSpy = vi.spyOn(input, 'click').mockReturnValue(undefined);
+
+    // when
+    opener.selectOrCancel(input);
+
+    // then
+    expect(opener.cancelable).toBe(false);
+    expect(clickSpy).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+  });
+
+  it('#icon should show open icon when idle and spinner while importing', () => {
+
+    // when
+    const idle = opener.icon;
+    opener.importing = true;
+
+    // then
+    expect([idle, opener.icon]).toEqual(['file_open', 'autorenew']);
+  });
+
+  it('#labelKey should name opening while importing', () => {
+
+    // when
+    const idle = opener.labelKey;
+    opener.importing = true;
+
+    // then
+    expect([idle, opener.labelKey]).toEqual(['front.actions.openSceneFile', 'front.actions.openingSceneFile']);
+  });
+
+  it('#tooltipKey should offer cancel while import is cancelable', async () => {
+
+    // given
+    importSpy.mockReturnValue(new Promise(() => undefined));
+
+    // when
+    selectFile(input, new File(['x'], 'sales.koia'));
+
+    // then
+    expect(opener.tooltipKey).toBe('common.cancel');
+    opener.cancel();
+    expect(opener.tooltipKey).toBe('front.actions.openingSceneFile');
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
   });
 
   it('#select should not open file selection while importing', async () => {

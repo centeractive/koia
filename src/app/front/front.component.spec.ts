@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { ActivatedRoute, provideRouter, Router, RouteReuseStrategy, RouterModule } from '@angular/router';
 import { ConnectionInfo, Protocol, Route, SceneInfo } from 'app/shared/model';
@@ -1244,22 +1244,50 @@ describe('FrontComponent', () => {
     const button = host.querySelector('#scene_file_button') as HTMLButtonElement;
     expect(component.busy).toBe(true);
     expect(component.loadingAnyScene).toBe(true);
-    expect(button.disabled).toBe(true);
+    expect(button.disabled).toBe(false);
     expect(button.getAttribute('aria-busy')).toBe('true');
     expect(button.textContent).toContain('Opening shared scene…');
     expect(startButton(host).getAttribute('aria-disabled')).toBe('true');
     storageButtons(host).forEach(b => expect(b.disabled).toBe(true));
-    expect(sceneFileCancelButton(host).disabled).toBe(false);
     await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
   });
 
-  it('should show no cancel button when no scene file is imported', () => {
+  it('open shared scene button should offer cancel as tooltip while import is cancelable', async () => {
+
+    // given
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+
+    // when
+    selectFile(sceneFileInput(render()), new File(['x'], 'sales.koia'));
+    render();
+
+    // then
+    expect(fixture.debugElement.query(By.css('#scene_file_button')).injector.get(MatTooltip).message).toBe('Cancel');
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+  });
+
+  it('open shared scene button should be disabled while backend is not ready', () => {
+
+    // given
+    component.ready = false;
 
     // when
     const host = render();
 
     // then
-    expect(sceneFileCancelButton(host)).toBeNull();
+    expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('open shared scene button should be disabled while sample is loading', () => {
+
+    // given
+    component.loadingSample = fruitSalesSampleOf;
+
+    // when
+    const host = render();
+
+    // then
+    expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('#click on cancel should abort scene file import, warn and unblock actions', async () => {
@@ -1272,18 +1300,18 @@ describe('FrontComponent', () => {
     await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
 
     // when
-    sceneFileCancelButton(render()).click();
+    sceneFileButton(render()).click();
     await vi.waitFor(() => expect(onWarningSpy).toHaveBeenCalled());
 
     // then
     expect(onWarningSpy.mock.calls[0][1]).toBe('Opening the shared scene was canceled');
     expect(component.sceneFileOpener.importing).toBe(false);
     const host = render();
-    expect(sceneFileCancelButton(host)).toBeNull();
-    expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(false);
+    expect(host.querySelector('#scene_file_button .koia-spin')).toBeNull();
+    expect(sceneFileButton(host).disabled).toBe(false);
   });
 
-  it('#click on cancel should hide cancel button while import is still aborting', async () => {
+  it('#click on spinning button should keep spinning while import is still aborting', async () => {
 
     // given
     const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
@@ -1291,11 +1319,11 @@ describe('FrontComponent', () => {
     await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
 
     // when
-    sceneFileCancelButton(render()).click();
+    sceneFileButton(render()).click();
 
     // then
     const host = render();
-    expect(sceneFileCancelButton(host)).toBeNull();
+    expect(component.sceneFileOpener.cancelable).toBe(false);
     expect(host.querySelector('#scene_file_button .koia-spin')).not.toBeNull();
   });
 
@@ -1314,7 +1342,7 @@ describe('FrontComponent', () => {
     expect(component.sceneFileOpener.importing).toBe(false);
     const host = render();
     expect((host.querySelector('#scene_file_button') as HTMLButtonElement).disabled).toBe(false);
-    expect(sceneFileCancelButton(host)).toBeNull();
+    expect(host.querySelector('#scene_file_button .koia-spin')).toBeNull();
   });
 
   it('#openSample should clear cached views when active scene changed before failure', async () => {
@@ -1398,8 +1426,8 @@ describe('FrontComponent', () => {
     return host.querySelector<HTMLInputElement>('#scene_file_input');
   }
 
-  function sceneFileCancelButton(host: HTMLElement): HTMLButtonElement {
-    return host.querySelector<HTMLButtonElement>('#scene_file_cancel_button');
+  function sceneFileButton(host: HTMLElement): HTMLButtonElement {
+    return host.querySelector<HTMLButtonElement>('#scene_file_button');
   }
 
 
