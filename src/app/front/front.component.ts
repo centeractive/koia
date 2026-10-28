@@ -15,7 +15,7 @@ import { DialogService, NotificationService, messageOf } from 'app/shared/servic
 import { CouchDBFallback, DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { Language, LanguageService } from 'app/shared/services/language';
-import { CommonUtils, QueryParamExtractor } from 'app/shared/utils';
+import { BrowserStorage, CommonUtils, QueryParamExtractor } from 'app/shared/utils';
 import { Subscription, combineLatest, firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { LaunchParamsService } from './launch-params.service';
@@ -219,19 +219,11 @@ export class FrontComponent extends AbstractComponent implements OnInit, OnDestr
 
   dismissCouchDBTip(): void {
     this.couchDBTipDismissed = true;
-    try {
-      localStorage.setItem(FrontComponent.COUCHDB_TIP_DISMISSED, 'true');
-    } catch {
-      // storage unavailable, dismissed for this visit only
-    }
+    BrowserStorage.write(FrontComponent.COUCHDB_TIP_DISMISSED, 'true');
   }
 
   private static readCouchDBTipDismissed(): boolean {
-    try {
-      return localStorage.getItem(FrontComponent.COUCHDB_TIP_DISMISSED) === 'true';
-    } catch {
-      return false;
-    }
+    return BrowserStorage.read(FrontComponent.COUCHDB_TIP_DISMISSED) === 'true';
   }
 
   /**

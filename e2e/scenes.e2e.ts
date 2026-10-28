@@ -171,6 +171,20 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scene.nameError).toBeHidden();
       await expect(scene.detectColumnsButton).toBeEnabled();
    });
+
+   test('adopt columns toggle and detect columns button start rows below language aligned left', async ({ scenes, rawData, scene }) => {
+      await scenes.activate(ORDERS_CSV.name);
+      await rawData.mainToolbar.addScene();
+      await scene.selectFile(ORDERS_CSV);
+
+      const language = await scene.languageField.boundingBox();
+      const toggle = await scene.adoptColumnsToggle.boundingBox();
+      const button = await scene.detectColumnsButton.boundingBox();
+      expect(toggle.y).toBeGreaterThanOrEqual(language.y + language.height);
+      expect(button.y).toBeGreaterThanOrEqual(toggle.y + toggle.height);
+      expect(Math.abs(toggle.x - language.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(button.x - language.x)).toBeLessThanOrEqual(1);
+   });
 });
 
 test.describe('new scene name', () => {

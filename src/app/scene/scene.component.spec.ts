@@ -35,6 +35,7 @@ import type { Mock } from 'vitest';
 
 describe('SceneComponent', () => {
 
+  const SOURCE_TYPE_KEY = 'koia.scene.sourceType';
   const datePipe = new DatePipe('en-US');
   const readerService = new ReaderService();
   const notificationService = new NotificationServiceMock();
@@ -58,6 +59,7 @@ describe('SceneComponent', () => {
   });
 
   beforeEach(waitForAsync(async () => {
+    localStorage.removeItem(SOURCE_TYPE_KEY);
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(null, null);
     TestBed.configureTestingModule({
@@ -94,6 +96,8 @@ describe('SceneComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
   }));
+
+  afterEach(() => localStorage.removeItem(SOURCE_TYPE_KEY));
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -195,17 +199,81 @@ describe('SceneComponent', () => {
     expect(component.initContext).toHaveBeenCalled();
   }));
 
+  it('#onSourceTypeChange should remember selected source type', fakeAsync(() => {
+
+    // given
+    component.selectedReader = component.readers[3];
+
+    // when
+    component.onSourceTypeChange();
+
+    // then
+    expect(localStorage.getItem(SOURCE_TYPE_KEY)).toBe('Log');
+  }));
+
+  it('#ngOnInit should select remembered source type', fakeAsync(() => {
+
+    // given
+    localStorage.setItem(SOURCE_TYPE_KEY, 'Log');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedReader).toBe(component.readers[3]);
+  }));
+
+  it('#ngOnInit should select first source type when remembered source type is unknown', fakeAsync(() => {
+
+    // given
+    localStorage.setItem(SOURCE_TYPE_KEY, 'XML');
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedReader).toBe(component.readers[0]);
+  }));
+
+  it('#ngOnInit should select first source type when no source type is remembered', fakeAsync(() => {
+
+    // given
+    component.selectedReader = component.readers[3];
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.selectedReader).toBe(component.readers[0]);
+  }));
+
   it('#onFileSelChange should truncate header of large file', fakeAsync(() => {
 
     // given
     vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
 
     // when
-    component.onFileSelChange(createFileList('x'.repeat(10_001)));
+    component.onFileSelChange(createFileList('x'.repeat(20_001)));
     flush();
 
     // then
     expect(component.fileHeader).toBe('dummy...');
+  }));
+
+  it('#onFileSelChange should not truncate header of file not larger than header size', fakeAsync(() => {
+
+    // given
+    vi.spyOn(readerService, 'readHeader').mockResolvedValue('dummy');
+
+    // when
+    component.onFileSelChange(createFileList('x'.repeat(20_000)));
+    flush();
+
+    // then
+    expect(component.fileHeader).toBe('dummy');
   }));
 
   function loadSample(): void {
@@ -635,15 +703,6 @@ describe('SceneComponent', () => {
     formFields.forEach(f => expect(f.classList).toContain('mat-form-field-appearance-outline'));
   }));
 
-  it('adopt columns toggle, scene select and detect button should wrap on narrow screen', fakeAsync(() => {
-
-    // when
-    initUpToDetectColumns();
-
-    // then
-    expect(getComputedStyle(fixture.nativeElement.querySelector('#div_detect_columns')).flexWrap).toBe('wrap');
-  }));
-
   describe('on desktop', () => {
 
     beforeAll(() => page.viewport(1280, 800));
@@ -670,7 +729,15 @@ describe('SceneComponent', () => {
       expectOnOneLineInOrder(['.form_field_source_type', '#select_file_button', '.file_name', '.form_field_encoding']);
     }));
 
-    it('language, source attributes and detect button should share one row', fakeAsync(() => {
+    function expectRowBelowAlignedLeft(selector: string, aboveSelector: string): void {
+      const language = fixture.nativeElement.querySelector('.form_field_language').getBoundingClientRect();
+      const above = fixture.nativeElement.querySelector(aboveSelector).getBoundingClientRect();
+      const element = fixture.nativeElement.querySelector(selector).getBoundingClientRect();
+      expect(element.top).toBeGreaterThanOrEqual(above.bottom);
+      expect(Math.abs(element.left - language.left)).toBeLessThanOrEqual(1);
+    }
+
+    it('language and source attributes should share one row', fakeAsync(() => {
 
       // given
       initUpToDetectColumns();
@@ -681,8 +748,37 @@ describe('SceneComponent', () => {
       fixture.detectChanges();
 
       // then
-      expectOnOneLineInOrder(['.form_field_language', '#div_source_attributes > mat-slide-toggle', '.form_field_separator',
-        '#but_detect_columns']);
+      expectOnOneLineInOrder(['.form_field_language', '#div_source_attributes > mat-slide-toggle', '.form_field_separator']);
+    }));
+
+    it('detect button should start row below source attributes aligned left', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+      component.columnMappingsSource = undefined;
+
+      // when
+      component.accordion.openAll();
+      fixture.detectChanges();
+
+      // then
+      expectRowBelowAlignedLeft('#but_detect_columns', '#div_source_attributes');
+    }));
+
+    it('adopt columns toggle should start row below source attributes aligned left', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+      const sceneInfos = createSceneInfos(1);
+      component.columnMappingsSourceCandidates = sceneInfos;
+      component.columnMappingsSource = sceneInfos[0];
+
+      // when
+      component.accordion.openAll();
+      fixture.detectChanges();
+
+      // then
+      expectRowBelowAlignedLeft('#div_adopt_columns mat-slide-toggle', '#div_source_attributes');
     }));
 
     it('wide attribute field should be wider than other attribute fields', () => {
@@ -702,7 +798,7 @@ describe('SceneComponent', () => {
       expect(field.getBoundingClientRect().width).toBeGreaterThan(180);
     });
 
-    it('adopt columns toggle, scene select and detect button should share one row', fakeAsync(() => {
+    it('adopt columns toggle and scene select should share one row', fakeAsync(() => {
 
       // given
       initUpToDetectColumns();
@@ -713,12 +809,30 @@ describe('SceneComponent', () => {
       fixture.detectChanges();
 
       // when
-      fixture.nativeElement.querySelector('#div_detect_columns mat-slide-toggle button').click();
+      fixture.nativeElement.querySelector('#div_adopt_columns mat-slide-toggle button').click();
       fixture.detectChanges();
 
       // then
-      expect(getComputedStyle(fixture.nativeElement.querySelector('#div_detect_columns')).display).toBe('flex');
-      expectOnOneLineInOrder(['#div_detect_columns mat-slide-toggle', '#column_mapping_source', '#but_detect_columns']);
+      expect(getComputedStyle(fixture.nativeElement.querySelector('#div_adopt_columns')).display).toBe('flex');
+      expectOnOneLineInOrder(['#div_adopt_columns mat-slide-toggle', '#column_mapping_source']);
+    }));
+
+    it('detect button should start row below adopt columns scene select aligned left', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+      component.accordion.openAll();
+      const sceneInfos = createSceneInfos(1);
+      component.columnMappingsSourceCandidates = sceneInfos;
+      component.columnMappingsSource = sceneInfos[0];
+      fixture.detectChanges();
+
+      // when
+      fixture.nativeElement.querySelector('#div_adopt_columns mat-slide-toggle button').click();
+      fixture.detectChanges();
+
+      // then
+      expectRowBelowAlignedLeft('#but_detect_columns', '#div_adopt_columns');
     }));
   });
 
@@ -1217,7 +1331,7 @@ describe('SceneComponent', () => {
     flush();
 
     // then
-    expect(readerService.readHeader).toHaveBeenCalledWith(component.file, 10_000, component.encoding);
+    expect(readerService.readHeader).toHaveBeenCalledWith(component.file, 20_000, component.encoding);
   }));
 
   it('#onCharacterEncodingChange should not read file header when no file is selected', fakeAsync(() => {

@@ -3,6 +3,7 @@ import localeDe from '@angular/common/locales/de';
 import localeJa from '@angular/common/locales/ja';
 import { Injectable, signal } from '@angular/core';
 import { getValue, InterpolationParameters, TranslateService } from '@ngx-translate/core';
+import { BrowserStorage } from 'app/shared/utils/browser-storage';
 import en from 'assets/i18n/en.json';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 import { DEFAULT_LANGUAGE, Language, LANGUAGE_QUERY_PARAM, languageOf, localeIdOf } from './language';
@@ -122,19 +123,11 @@ export class LanguageService {
    }
 
    private readStored(): string | null {
-      try {
-         return localStorage.getItem(LanguageService.STORAGE_KEY);
-      } catch {
-         return null;
-      }
+      return BrowserStorage.read(LanguageService.STORAGE_KEY);
    }
 
    private store(language: Language): void {
-      try {
-         localStorage.setItem(LanguageService.STORAGE_KEY, language);
-      } catch (err) {
-         console.warn('language cannot be remembered', err);
-      }
+      BrowserStorage.write(LanguageService.STORAGE_KEY, language, err => console.warn('language cannot be remembered', err));
    }
 }
 

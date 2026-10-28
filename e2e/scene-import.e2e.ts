@@ -1,10 +1,11 @@
+import { readFileSync } from 'fs';
 import { DataType } from 'app/shared/model/data-type.enum';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { expect, test } from './support/fixtures';
 import {
    CODES_CSV, DUPLICATE_HEADERS_CSV, EPOCH_MILLIS_CSV, IMPORT_FILES, LOG_MESSAGES_CSV, MISSING_TIMES_CSV, MIXED_DATES_CSV,
-   ORDERS_WITH_ID_CSV, SEMICOLON_ORDERS_CSV
+   ORDERS_WITH_ID_CSV, SALES_CSV, SEMICOLON_ORDERS_CSV
 } from './support/import-files';
 import { Texts } from './support/texts';
 
@@ -134,4 +135,25 @@ test('longest display format is shown in full', async ({ page, front, scene }) =
 
    await expect(scene.displayFormatValues).toHaveText('28 May 2024 23:59:59 999');
    await expect.poll(() => scene.displayFormatValues.evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
+});
+
+test('data sample shows whole file of up to 20,000 bytes without truncation', async ({ front, scene }) => {
+   await front.open('en');
+   await front.startWithFile();
+
+   await scene.selectFile(SALES_CSV);
+
+   await expect(scene.dataSample).toHaveValue(readFileSync(SALES_CSV.path, 'utf8'));
+});
+
+test('detect columns button starts row below source attributes aligned left', async ({ front, scene }) => {
+   await front.open('en');
+   await front.startWithFile();
+
+   await scene.selectFile(SALES_CSV);
+
+   const language = await scene.languageField.boundingBox();
+   const button = await scene.detectColumnsButton.boundingBox();
+   expect(button.y).toBeGreaterThanOrEqual(language.y + language.height);
+   expect(Math.abs(button.x - language.x)).toBeLessThanOrEqual(1);
 });

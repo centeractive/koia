@@ -46,3 +46,12 @@ test('ISO times of log file are detected as time', async ({ scene }) => {
 
    expect(dataTypes).toEqual(SERVER_ISO_LOG.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
 });
+
+test('selected source type is preselected when the scene page is opened again', async ({ front, scene }) => {
+   await scene.selectFile(SERVER_LOG);
+
+   await front.open('en');
+   await front.startWithFile();
+
+   await expect(scene.sourceType).toHaveText(SERVER_LOG.sourceName);
+});

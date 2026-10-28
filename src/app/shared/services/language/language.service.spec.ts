@@ -137,13 +137,14 @@ describe('LanguageService', () => {
 
       // given
       vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota'); });
-      vi.spyOn(console, 'warn').mockReturnValue(undefined);
+      const warn = vi.spyOn(console, 'warn').mockReturnValue(undefined);
 
       // when
       await service.use('ja');
 
       // then
       expect(service.current()).toBe('ja');
+      expect(warn).toHaveBeenCalledWith('language cannot be remembered', expect.any(Error));
    });
 
    it('#use should switch language although translations cannot be loaded', async () => {

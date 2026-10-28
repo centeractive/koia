@@ -10,7 +10,7 @@ import { Attribute, ColumnPair, Route, Scene, SceneInfo } from 'app/shared/model
 import { NotificationService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
 import { DBService } from 'app/shared/services/backend';
-import { CommonUtils, NumberUtils } from 'app/shared/utils';
+import { BrowserStorage, CommonUtils, NumberUtils } from 'app/shared/utils';
 import { CHARACTER_SETS } from 'app/shared/utils/charactersets';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
@@ -31,7 +31,8 @@ import { PatternPairs, SceneUtils } from './utils';
 })
 export class SceneComponent extends AbstractComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  private static readonly HEADER_SIZE = 10_000;
+  private static readonly SOURCE_TYPE_KEY = 'koia.scene.sourceType';
+  private static readonly HEADER_SIZE = 20_000;
   private static readonly SAMPLE_SIZE = 100;
   private static readonly BATCH_SIZE = 1_000;
   private static readonly COLUMN_DEFINITIONS_STEP = 3;
@@ -95,7 +96,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       this.router.navigateByUrl(Route.FRONT);
     } else {
       this.readers = this.readerService.getReaders();
-      this.selectedReader = this.readers[0];
+      const rememberedSourceName = BrowserStorage.read(SceneComponent.SOURCE_TYPE_KEY);
+      this.selectedReader = this.readers.find(r => r.getSourceName() === rememberedSourceName) ?? this.readers[0];
       this.defineLocales();
       this.collectSceneInfos();
       this.initScene();
@@ -181,6 +183,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   onSourceTypeChange(): void {
+    BrowserStorage.write(SceneComponent.SOURCE_TYPE_KEY, this.selectedReader.getSourceName());
     this.fileInputRef.nativeElement.value = '';
     this.initContext();
   }

@@ -76,14 +76,3 @@ p {
 .span_load {
   gap: 16px;
 }
-
-#div_detect_columns {
-  margin: 0;
-}
-
-/* a wrapping flex item is sized by its widest child, so the adopt controls would wrap even where they fit in one line */
-@media (min-width: 1024px) {
-  #div_detect_columns {
-    flex-wrap: nowrap;
-  }
-}

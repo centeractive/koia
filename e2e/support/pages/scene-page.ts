@@ -8,6 +8,10 @@ import { ImportFile } from '../import-files';
 export class ScenePage {
 
    readonly title: Locator;
+   readonly sourceType: Locator;
+   readonly dataSample: Locator;
+   readonly languageField: Locator;
+   readonly adoptColumnsToggle: Locator;
    readonly separator: Locator;
    readonly linePattern: Locator;
    readonly panels: Locator;
@@ -26,6 +30,10 @@ export class ScenePage {
 
    constructor(private readonly page: Page) {
       this.title = page.locator('koia-page-frame .page_title');
+      this.sourceType = page.locator('.form_field_source_type mat-select');
+      this.dataSample = page.locator('#textarea_data_sample');
+      this.languageField = page.locator('.form_field_language');
+      this.adoptColumnsToggle = page.locator('#div_adopt_columns mat-slide-toggle');
       this.separator = page.locator('.form_field_separator input');
       this.linePattern = page.locator('[data-attribute="scene.reader.logPattern"] input');
       this.panels = page.locator('mat-accordion mat-expansion-panel');
@@ -45,10 +53,10 @@ export class ScenePage {
 
    async selectFile(file: ImportFile): Promise<void> {
       await this.nameInput.waitFor();
-      await this.page.locator('.form_field_source_type mat-select').click();
+      await this.sourceType.click();
       await this.page.getByRole('option', { name: file.sourceName, exact: true }).click();
       await this.page.locator('#fileInput').setInputFiles(file.path);
-      await this.page.locator('#textarea_data_sample').waitFor();
+      await this.dataSample.waitFor();
    }
 
    /**

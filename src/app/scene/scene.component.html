@@ -123,35 +123,37 @@
                   </mat-menu>
                 }
               }
-              <div id="div_detect_columns" class="field-row">
-                @if (columnMappingsSource) {
-                  <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">{{ 'scene.adoptColumns' | translate }}</mat-slide-toggle>
-                  @if (adoptColumnsFromExistingScene) {
-                    <mat-form-field id="column_mapping_source">
-                      <mat-label>{{ 'scene.scene' | translate }}</mat-label>
-                      <mat-select [(ngModel)]="columnMappingsSource">
-                        <mat-select-trigger>
-                          {{ columnMappingsSource.name }}
+            </div>
+            @if (columnMappingsSource) {
+              <div id="div_adopt_columns" class="field-row">
+                <mat-slide-toggle [(ngModel)]="adoptColumnsFromExistingScene" color="primary">{{ 'scene.adoptColumns' | translate }}</mat-slide-toggle>
+                @if (adoptColumnsFromExistingScene) {
+                  <mat-form-field id="column_mapping_source">
+                    <mat-label>{{ 'scene.scene' | translate }}</mat-label>
+                    <mat-select [(ngModel)]="columnMappingsSource">
+                      <mat-select-trigger>
+                        {{ columnMappingsSource.name }}
+                        <var class="scene_info_creation_time">
+                          ({{ 'scene.created' | translate: { time: (columnMappingsSource.creationTime | koiaDate:'medium') } }})
+                        </var>
+                      </mat-select-trigger>
+                      @for (sceneInfo of columnMappingsSourceCandidates; track sceneInfo) {
+                        <mat-option [value]="sceneInfo">
+                          {{ sceneInfo.name }}
                           <var class="scene_info_creation_time">
-                            ({{ 'scene.created' | translate: { time: (columnMappingsSource.creationTime | koiaDate:'medium') } }})
+                            ({{ 'scene.created' | translate: { time: (sceneInfo.creationTime | koiaDate:'medium') } }})
                           </var>
-                        </mat-select-trigger>
-                        @for (sceneInfo of columnMappingsSourceCandidates; track sceneInfo) {
-                          <mat-option [value]="sceneInfo">
-                            {{ sceneInfo.name }}
-                            <var class="scene_info_creation_time">
-                              ({{ 'scene.created' | translate: { time: (sceneInfo.creationTime | koiaDate:'medium') } }})
-                            </var>
-                          </mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                  }
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
                 }
-                <button id="but_detect_columns" mat-flat-button color="primary" [disabled]="isSceneNameTaken()"
-                  [matTooltip]="adoptColumnsFromExistingScene ? '' : ('scene.detectColumnsTooltip' | translate)"
-                  (click)="readSample()">{{ (adoptColumnsFromExistingScene ? 'scene.adoptColumnsButton' : 'scene.detectColumnsButton') | translate }}</button>
               </div>
+            }
+            <div id="div_detect_columns" class="field-row">
+              <button id="but_detect_columns" mat-flat-button color="primary" [disabled]="isSceneNameTaken()"
+                [matTooltip]="adoptColumnsFromExistingScene ? '' : ('scene.detectColumnsTooltip' | translate)"
+                (click)="readSample()">{{ (adoptColumnsFromExistingScene ? 'scene.adoptColumnsButton' : 'scene.detectColumnsButton') | translate }}</button>
             </div>
           </mat-expansion-panel>
         }
