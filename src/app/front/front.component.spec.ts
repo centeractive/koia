@@ -627,7 +627,7 @@ describe('FrontComponent', () => {
     const host = render();
 
     // then
-    expect(styleOf(host, '.front-hero').paddingTop).toBe('40px');
+    expect(styleOf(host, '.front-hero').paddingTop).toBe('24px');
   });
 
   it('should show start panel in hero with collapsed storage options', () => {

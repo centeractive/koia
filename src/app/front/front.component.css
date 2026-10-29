@@ -1,10 +1,10 @@
 .front-hero {
-  padding-block: 40px;
+  padding-block: 24px 40px;
 }
 
 .front-start-panel {
   max-width: 640px;
-  margin: 24px auto 0;
+  margin: 16px auto 0;
   color: var(--koia-text-primary);
   text-align: left;
 }

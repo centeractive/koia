@@ -94,7 +94,7 @@ describe('intro page', () => {
 
     // then
     expect(all(doc, '#why h3').map(h => h.textContent))
-      .toEqual(['Your data stays private', 'Open-source', 'CSV, Excel, JSON, logs', 'Data never leaves your environment']);
+      .toEqual(['Your data stays private', 'Open-source', 'CSV, Excel, JSON, logs', 'Stays in your environment']);
   });
 
   it('should fit last why koia tile heading on two lines', async () => {
