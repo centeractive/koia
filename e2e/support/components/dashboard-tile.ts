@@ -1,4 +1,5 @@
 import { expect, Locator } from '@playwright/test';
+import type { BarElement, Chart } from 'chart.js';
 import { pressCenterAndMoveBy } from '../pointer';
 
 export interface RenderedCellStyle {
@@ -8,6 +9,8 @@ export interface RenderedCellStyle {
    letterSpacing: number;
    horizontalPadding: number;
 }
+
+declare const ng: { getComponent(element: Element): { context: { chart: Chart } } };
 
 /** gap between the top of the tile and its header buttons and title, which are centered in the taller header */
 const HEADER_GAP_PX = 3;
@@ -59,6 +62,19 @@ export class DashboardTile {
       const scan = await this.stableScan(() => this.scanCenterColumn(), s => s.paintedRow >= 0);
       const scale = scan.width / scan.clientWidth;
       await this.root.locator('canvas').click({ position: { x: scan.clientWidth / 2, y: scan.paintedRow / scale - 10 } });
+   }
+
+   /**
+    * clicks the centre of the bar of the value, which a bar chart of counted values draws as a data set of its own; the bar is read
+    * from the Chart.js instance through the Angular debug API of the development server, because bars are painted on the canvas
+    */
+   async clickChartBar(value: string): Promise<void> {
+      const center = await this.stableScan(() => this.root.locator('koia-chart').evaluate((element, v) => {
+         const chart = ng.getComponent(element).context.chart;
+         const index = chart?.data.datasets.findIndex(dataset => dataset.label === v) ?? -1;
+         return index < 0 ? undefined : (chart.getDatasetMeta(index).data[0] as BarElement).getCenterPoint(false);
+      }, value), center => center !== undefined);
+      await this.root.locator('canvas').click({ position: { x: center.x, y: center.y } });
    }
 
    /**

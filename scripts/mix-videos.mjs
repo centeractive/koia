@@ -1,6 +1,6 @@
 /**
- * Mixes the soundtrack alternating by tile position on src/intro/videos.html from the music directory given by environment variable VIDEO_MUSIC_DIR
- * (default e2e/videos/music) into the raw videos recorded by `npm run videos:record`, trims their loading frames, extracts a poster and copies both
+ * Mixes the soundtrack chosen by soundtrackOf from the tiles of src/intro/videos.html from the music directory given by environment variable
+ * VIDEO_MUSIC_DIR (default e2e/videos/music) into the raw videos recorded by `npm run videos:record`, trims their loading frames, cuts the long waits marked by VideoRecording.cutWhile, extracts a poster and copies both
  * to src/intro/videos unless the video exceeds the size cap.
  *
  * usage: node scripts/mix-videos.mjs [slug]
@@ -9,6 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cutFilterOf, keptDurationOf } from '../e2e/videos/support/cuts.mts';
 import { audioFilterOf, MUSIC_DIR_VARIABLE, musicProblemOf, soundtrackOf, tileSlugsOf } from '../e2e/videos/support/soundtrack.mts';
 
 const REPO_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -45,12 +46,14 @@ function mix(slug, music) {
    if (!existsSync(raw) || !existsSync(sidecar)) {
       fail(`no recording of ${slug} in ${RAW_DIR}, run npm run videos:record -- ${slug} first`);
    }
-   const { trimStart } = JSON.parse(readFileSync(sidecar, 'utf8'));
-   const duration = Number(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', raw], 'pipe')) - trimStart;
+   const { trimStart, cuts = [] } = JSON.parse(readFileSync(sidecar, 'utf8'));
+   const duration = keptDurationOf(Number(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', raw], 'pipe'))
+      - trimStart, cuts);
+   const cutFilter = cutFilterOf(cuts);
    const video = join(OUT_DIR, slug + '.webm');
    const poster = join(OUT_DIR, slug + '.webp');
    run('ffmpeg', ['-y', '-ss', String(trimStart), '-i', raw, '-stream_loop', '-1', '-i', music, '-map', '0:v', '-map', '1:a:0',
-      '-t', String(duration), '-c:v', 'libvpx-vp9', '-crf', '36', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2',
+      '-t', String(duration), ...(cutFilter ? ['-vf', cutFilter] : []), '-c:v', 'libvpx-vp9', '-crf', '36', '-b:v', '0', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '2',
       '-c:a', 'libopus', '-b:a', '96k',
       '-af', audioFilterOf(duration), video]);
    run('ffmpeg', ['-y', '-sseof', '-0.5', '-i', video, '-frames:v', '1', '-c:v', 'libwebp', poster]);

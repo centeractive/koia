@@ -1,7 +1,6 @@
 import { defineConfig } from '@playwright/test';
+import { RECORDED_VIDEO, VIDEO_SIZE } from '../support/video-options';
 import { BASE_URL, WEB_SERVER } from '../support/web-server';
-
-const SIZE = { width: 1280, height: 720 };
 
 export default defineConfig({
    testDir: '.',
@@ -14,8 +13,8 @@ export default defineConfig({
    use: {
       baseURL: BASE_URL,
       locale: 'en-US',
-      viewport: SIZE,
-      video: { mode: 'on', size: SIZE, show: { actions: { cursor: 'pointer', duration: 800, style: { title: 'display: none' } } } }
+      viewport: VIDEO_SIZE,
+      video: RECORDED_VIDEO
    },
    webServer: WEB_SERVER
 });

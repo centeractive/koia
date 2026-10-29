@@ -8,7 +8,7 @@ import {
 
 const VIDEOS_PAGE = resolve(SRC_DIR, 'intro/videos.html');
 const MUSIC_DIR = 'music';
-const [ENTERTAINER, FIG_LEAF_RAG] = SOUNDTRACKS;
+const [ENTERTAINER, FIG_LEAF_RAG, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG, MERRY_GO] = SOUNDTRACKS;
 
 function videosPageHtml(): string {
    return readFileSync(VIDEOS_PAGE, 'utf-8');
@@ -19,7 +19,11 @@ test('soundtracks name incompetech mp3 urls of their titles', () => {
 
    expect(filesAndUrls).toEqual([
       ['The Entertainer', 'The Entertainer.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Entertainer.mp3'],
-      ['Fig Leaf Rag', 'Fig Leaf Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fig%20Leaf%20Rag.mp3']
+      ['Fig Leaf Rag', 'Fig Leaf Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fig%20Leaf%20Rag.mp3'],
+      ['Plucky Daisy', 'Plucky Daisy.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Plucky%20Daisy.mp3'],
+      ['Maple Leaf Rag', 'Maple Leaf Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Maple%20Leaf%20Rag.mp3'],
+      ['Frogs Legs Rag', 'Frogs Legs Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Frogs%20Legs%20Rag.mp3'],
+      ['Merry Go', 'Merry Go.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Merry%20Go.mp3']
    ]);
 });
 
@@ -29,15 +33,24 @@ test('tile slugs of the videos page follow the order of its tiles', () => {
    const slugs = tileSlugsOf(html);
 
    expect(slugs).toEqual(['new-scene', 'scenes-and-navigation', 'pivot-and-export', 'dashboards-and-charts', 'summary-tables',
-      'relationship-graphs']);
+      'relationship-graphs', 'explain-these-rows', 'message-patterns', 'shared-scenes']);
 });
 
-test('odd tiles play The Entertainer and even tiles Fig Leaf Rag', () => {
+test('topic tiles alternate The Entertainer and Fig Leaf Rag and tiles with dedicated soundtrack play their own', () => {
    const slugs = tileSlugsOf(videosPageHtml());
 
    const soundtracks = slugs.map(slug => soundtrackOf(slug, slugs));
 
-   expect(soundtracks).toEqual([ENTERTAINER, FIG_LEAF_RAG, ENTERTAINER, FIG_LEAF_RAG, ENTERTAINER, FIG_LEAF_RAG]);
+   expect(soundtracks).toEqual([ENTERTAINER, FIG_LEAF_RAG, ENTERTAINER, FIG_LEAF_RAG, ENTERTAINER, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG,
+      MERRY_GO]);
+});
+
+test('tile with dedicated soundtrack between topic tiles keeps the alternation of the topic tiles', () => {
+   const slugs = ['a', 'explain-these-rows', 'b'];
+
+   const soundtracks = slugs.map(slug => soundtrackOf(slug, slugs));
+
+   expect(soundtracks).toEqual([ENTERTAINER, MAPLE_LEAF_RAG, FIG_LEAF_RAG]);
 });
 
 test('reordered tiles swap the soundtracks of their videos', () => {
@@ -52,6 +65,14 @@ test('video without tile has no soundtrack', () => {
    const slugs = ['a'];
 
    const soundtrack = soundtrackOf('b', slugs);
+
+   expect(soundtrack).toBeUndefined();
+});
+
+test('video with dedicated soundtrack but without tile has no soundtrack', () => {
+   const slugs = ['a'];
+
+   const soundtrack = soundtrackOf('shared-scenes', slugs);
 
    expect(soundtrack).toBeUndefined();
 });
