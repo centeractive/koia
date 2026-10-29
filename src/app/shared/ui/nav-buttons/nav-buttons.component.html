@@ -13,3 +13,7 @@
   [routerLink]="[urlScene]">
   <mat-icon>add_photo_alternate</mat-icon>
 </button>
+<a id="butManual" mat-icon-button [href]="userManualUrl" target="_blank" rel="noopener"
+  [matTooltip]="'toolbar.manual' | translate" [attr.aria-label]="'toolbar.manual' | translate">
+  <mat-icon>help_outline</mat-icon>
+</a>

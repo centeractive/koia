@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Route } from 'app/shared/model';
+import { USER_MANUAL_URL } from 'app/shared/utils/user-manual';
 
 /**
- * navigates to the front page, the scenes and a new scene, marking the button of the current page
+ * navigates to the front page, the scenes and a new scene, marking the button of the current page, and opens the user manual
  */
 @Component({
   selector: 'koia-nav-buttons',
@@ -20,4 +21,5 @@ export class NavButtonsComponent {
   readonly urlFront = '/' + Route.FRONT;
   readonly urlScenes = '/' + Route.SCENES;
   readonly urlScene = '/' + Route.SCENE;
+  readonly userManualUrl = USER_MANUAL_URL;
 }

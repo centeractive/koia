@@ -32,6 +32,7 @@ import { SampleSceneService } from 'app/shared/samples/sample-scene.service';
 import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { LanguageService } from 'app/shared/services/language';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
+import { USER_MANUAL_URL } from 'app/shared/utils/user-manual';
 
 @Component({
   template: '',
@@ -1151,6 +1152,16 @@ describe('FrontComponent', () => {
     // then
     expect(render().querySelector('.landing-nav a').getAttribute('href')).toBe('/intro/index.ja.html');
     expect(component.introUrl()).toBe('/intro/index.ja.html');
+  });
+
+  it('header links to the user manual in a new tab', () => {
+
+    // when
+    const link = render().querySelector('#front_manual_link') as HTMLAnchorElement;
+
+    // then
+    expect([link.getAttribute('href'), link.target, link.rel, link.textContent.trim()])
+      .toEqual([USER_MANUAL_URL, '_blank', 'noopener', 'User Manual']);
   });
 
   it('should offer language selection in navigation', () => {

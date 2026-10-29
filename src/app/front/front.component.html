@@ -6,6 +6,7 @@
       </a>
       <nav class="landing-nav">
         <a class="landing-nav-secondary" [href]="introUrl()">{{ 'front.nav.about' | translate }}</a>
+        <a id="front_manual_link" class="landing-nav-secondary" [href]="userManualUrl" target="_blank" rel="noopener">{{ 'front.nav.manual' | translate }}</a>
         <a class="landing-nav-secondary" href="https://github.com/centeractive/koia" target="_blank" rel="noopener">GitHub</a>
         <koia-language-select />
       </nav>

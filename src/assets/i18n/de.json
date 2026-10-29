@@ -4,7 +4,8 @@
   },
   "front": {
     "nav": {
-      "about": "Über Koia"
+      "about": "Über Koia",
+      "manual": "Benutzerhandbuch"
     },
     "title": "Loslegen",
     "lead": "Lade deine eigene CSV-, Excel-, JSON- oder Logdatei oder erkunde Koia mit Beispieldaten. Deine Daten werden nie an fremde Server gesendet.",
@@ -92,6 +93,7 @@
     "sceneDetails": "Szenendetails anzeigen",
     "scenes": "Szenen",
     "addScene": "Szene hinzufügen",
+    "manual": "Benutzerhandbuch",
     "fullTextFilter": "Filter (nur Textspalten)",
     "clear": "Löschen",
     "addColumnFilter": "Spaltenfilter hinzufügen",

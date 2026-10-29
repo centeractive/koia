@@ -4,7 +4,8 @@
   },
   "front": {
     "nav": {
-      "about": "Koia について"
+      "about": "Koia について",
+      "manual": "ユーザーマニュアル"
     },
     "title": "はじめに",
     "lead": "CSV、Excel、JSON、ログファイルを読み込むか、サンプルデータで Koia を試してみましょう。データが第三者のサーバーに送信されることはありません。",
@@ -92,6 +93,7 @@
     "sceneDetails": "シーンの詳細を表示",
     "scenes": "シーン",
     "addScene": "シーンを追加",
+    "manual": "ユーザーマニュアル",
     "fullTextFilter": "フィルター (テキスト列のみ)",
     "clear": "クリア",
     "addColumnFilter": "列フィルターを追加",

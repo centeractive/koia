@@ -4,7 +4,8 @@
   },
   "front": {
     "nav": {
-      "about": "About Koia"
+      "about": "About Koia",
+      "manual": "User Manual"
     },
     "title": "Get started",
     "lead": "Load your own CSV, Excel, JSON or log file, or explore Koia with sample data. Your data is never sent to any third-party server.",
@@ -92,6 +93,7 @@
     "sceneDetails": "Show Scene Details",
     "scenes": "Scenes",
     "addScene": "Add Scene",
+    "manual": "User Manual",
     "fullTextFilter": "Filter (text columns only)",
     "clear": "Clear",
     "addColumnFilter": "Add column filter",

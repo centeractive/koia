@@ -16,6 +16,7 @@ import { CouchDBFallback, DBService } from 'app/shared/services/backend';
 import { CouchDBService } from 'app/shared/services/backend/couchdb';
 import { Language, LanguageService } from 'app/shared/services/language';
 import { BrowserStorage, CommonUtils, QueryParamExtractor } from 'app/shared/utils';
+import { USER_MANUAL_URL } from 'app/shared/utils/user-manual';
 import { Subscription, combineLatest, firstValueFrom } from 'rxjs';
 import { ConnectionDialogData } from './connection-dialog/connection-dialog.component';
 import { LaunchParamsService } from './launch-params.service';
@@ -33,6 +34,7 @@ export class FrontComponent extends AbstractComponent implements OnInit, OnDestr
   readonly couchDB = 'CouchDB';
   readonly urlScene = '/' + Route.SCENE;
   readonly urlScenes = '/' + Route.SCENES;
+  readonly userManualUrl = USER_MANUAL_URL;
   private static readonly COUCHDB_TIP_DISMISSED = 'koia.front.couchdbTipDismissed';
 
   dataStorages = [this.indexedDB, this.couchDB];
