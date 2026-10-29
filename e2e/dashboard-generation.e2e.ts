@@ -1,6 +1,5 @@
 import { rowsOf } from 'app/dashboard/generator/generated-grid';
 import { ChartType } from 'app/shared/model/chart/chart-type';
-import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { SUMMARY_TABLE_STYLE } from 'app/summary-table/summary-table-style';
 import { averageRevenueTourOf, expectAverageRevenueChart } from './support/average-revenue-tour';
@@ -34,7 +33,7 @@ test('generation and repeated regeneration of sparse data always fill the grid w
          await expectTimeChartSummaryTableAndCharts(dashboard, notifications);
       }
 
-      expect(dataTypes).toEqual(LOG_LEVELS_JSON.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
+      expect(dataTypes).toEqual(en.dataTypes(LOG_LEVELS_JSON.dataTypes));
    });
 
 test('generation of two measures over time adds summary table and scatter chart to time charts',

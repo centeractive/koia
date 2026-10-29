@@ -2,6 +2,7 @@ import { Column, ColumnPair, DataType, TimeUnit } from 'app/shared/model';
 import { DateTimeUtils } from 'app/shared/utils';
 import { LogLevelColorizer } from 'app/shared/services/reader/log/log-level-colorizer';
 import { EntryMapper } from './entry-mapper';
+import { IdColumn } from './id-column';
 
 describe('EntryMapper', () => {
 
@@ -10,6 +11,7 @@ describe('EntryMapper', () => {
    const sourceColumnNames = ['Text', 'Number', 'Time', 'Boolean'];
    let columnPairs: ColumnPair[];
    let mapper: EntryMapper;
+   let idPair: ColumnPair;
 
    beforeEach(() => {
       const sourceColumns = [
@@ -20,6 +22,7 @@ describe('EntryMapper', () => {
       ];
       columnPairs = sourceColumns.map(c => toColumnPair(c));
       mapper = new EntryMapper(columnPairs, 'en');
+      idPair = IdColumn.applyTo([], true)[0];
    });
 
    it('#mapRows should return entry with initial _id attribute', () => {
@@ -76,6 +79,71 @@ describe('EntryMapper', () => {
       expect(actual.length).toBe(1);
       expect(actual[0].entry).toEqual({ _id: '1000021', Text: 'C' });
       expect(actual[0].errors).toEqual([]);
+   });
+
+   it('#mapRows should number entries of ID column across calls', () => {
+
+      // given
+      mapper = new EntryMapper([idPair, columnPairs[0]], 'en');
+      const first = mapper.mapRows([['A'], ['B']], sourceColumnNames);
+
+      // when
+      const actual = mapper.mapRows([['C']], sourceColumnNames);
+
+      // then
+      expect(first.map(mr => mr.entry)).toEqual([{ _id: '1000001', ID: 1, Text: 'A' }, { _id: '1000002', ID: 2, Text: 'B' }]);
+      expect(actual.map(mr => mr.entry)).toEqual([{ _id: '1000003', ID: 3, Text: 'C' }]);
+   });
+
+   it('#mapRows should number entries with mapping errors but not results without entry', () => {
+
+      // given
+      mapper = new EntryMapper([idPair, columnPairs[0], columnPairs[1]], 'en');
+
+      // when
+      const actual = mapper.mapRows([['A', '1'], ['B', 'x'], [undefined, 'y'], ['C', '2']], sourceColumnNames);
+
+      // then
+      expect(actual.map(mr => mr.entry?.['ID'])).toEqual([1, 2, undefined, 3]);
+      expect(actual[2].entry).toBeUndefined();
+      expect(actual[2].errors).toEqual(['Column \'Number\': Cannot convert "y" to Number']);
+   });
+
+   it('#mapRows should not number rows without values', () => {
+
+      // given
+      mapper = new EntryMapper([idPair, columnPairs[0]], 'en');
+
+      // when
+      const actual = mapper.mapRows([['A'], [' '], ['C']], sourceColumnNames);
+
+      // then
+      expect(actual.map(mr => mr.entry)).toEqual([{ _id: '1000001', ID: 1, Text: 'A' }, { _id: '1000003', ID: 2, Text: 'C' }]);
+   });
+
+   it('#mapRows should ignore source column named like ID column', () => {
+
+      // given
+      mapper = new EntryMapper([idPair, columnPairs[0]], 'en');
+
+      // when
+      const actual = mapper.mapRows([['x', 'A']], ['ID', 'Text']);
+
+      // then
+      expect(actual[0].entry).toEqual({ _id: '1000001', ID: 1, Text: 'A' });
+   });
+
+   it('#mapObjects should number entries of renamed ID column', () => {
+
+      // given
+      idPair.target.name = 'Nr';
+      mapper = new EntryMapper([idPair, columnPairs[0]], 'en');
+
+      // when
+      const actual = mapper.mapObjects([{ ID: 'x', Text: 'A' }]);
+
+      // then
+      expect(actual[0].entry).toEqual({ _id: '1000001', Nr: 1, Text: 'A' });
    });
 
    it('#mapRows should return empty array when row is empty', () => {

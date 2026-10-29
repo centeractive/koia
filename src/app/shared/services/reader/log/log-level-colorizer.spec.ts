@@ -85,6 +85,18 @@ describe('LogLevelColorizer', () => {
       expect(colorizer).toBeUndefined();
    });
 
+   it('#of should ignore ID mapping when level column is named like it', () => {
+
+      // given
+      const idPair = { ...pair('ID'), sequence: true };
+
+      // when
+      const colorizer = LogLevelColorizer.of([idPair], 'ID', 'en');
+
+      // then
+      expect(colorizer).toBeUndefined();
+   });
+
    it('#of should give no colorizer when only pattern column has level source', () => {
 
       // given

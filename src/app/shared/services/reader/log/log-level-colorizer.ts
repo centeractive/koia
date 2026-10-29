@@ -15,7 +15,7 @@ export class LogLevelColorizer {
     * @returns undefined when the log level column is not mapped or when the data has its own color columns
     */
    static of(columnMappings: ColumnPair[], levelColumn: string | undefined, language: Language): LogLevelColorizer | undefined {
-      const mappings = columnMappings.filter(cp => !cp.skip);
+      const mappings = columnMappings.filter(cp => !cp.skip && !cp.sequence);
       const levelMapping = mappings.find(cp => !cp.target.patternOf && cp.source.name === levelColumn);
       if (!levelMapping || mappings.some(cp => QueryConverter.TABLE_STYLE_FIELDS.includes(cp.target.name))) {
          return undefined;

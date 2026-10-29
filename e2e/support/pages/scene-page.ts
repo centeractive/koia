@@ -12,6 +12,7 @@ export class ScenePage {
    readonly dataSample: Locator;
    readonly languageField: Locator;
    readonly adoptColumnsToggle: Locator;
+   readonly idColumnToggle: Locator;
    readonly separator: Locator;
    readonly linePattern: Locator;
    readonly panels: Locator;
@@ -34,6 +35,7 @@ export class ScenePage {
       this.dataSample = page.locator('#textarea_data_sample');
       this.languageField = page.locator('.form_field_language');
       this.adoptColumnsToggle = page.locator('#div_adopt_columns mat-slide-toggle');
+      this.idColumnToggle = page.locator('#toggle_id_column').getByRole('switch');
       this.separator = page.locator('.form_field_separator input');
       this.linePattern = page.locator('[data-attribute="scene.reader.logPattern"] input');
       this.panels = page.locator('mat-accordion mat-expansion-panel');

@@ -61,7 +61,7 @@ export class PatternPairs {
     * derived from, or the first one of the same source column otherwise
     */
    link(columnMappings: ColumnPair[]): void {
-      const messagePairs = columnMappings.filter(cp => !isPatternColumn(cp.target));
+      const messagePairs = columnMappings.filter(cp => !isPatternColumn(cp.target) && !cp.sequence);
       columnMappings.filter(cp => isPatternColumn(cp.target)).forEach(cp => {
          const messagePair = messagePairs.find(mp => mp.target.name === cp.target.patternOf) ??
             messagePairs.find(mp => mp.source.name === cp.source.name);

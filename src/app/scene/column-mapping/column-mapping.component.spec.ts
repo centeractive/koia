@@ -12,13 +12,14 @@ import { By } from '@angular/platform-browser';
 import { ColumnPair, DataType } from 'app/shared/model';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { ColumnMappingComponent } from './column-mapping.component';
-import { ColumnMappingGenerator } from './mapper';
+import { ColumnMappingGenerator, IdColumn } from './mapper';
 
 @Component({
   template: `<div koiaForm>
     <koia-column-mapping [mapping]="plain" />
     <koia-column-mapping [mapping]="message" [canAddPattern]="true" />
     <koia-column-mapping [mapping]="pattern" />
+    <koia-column-mapping [mapping]="id" />
   </div>`,
   standalone: false
 })
@@ -29,6 +30,7 @@ class ColumnMappingsHostComponent {
     source: { name: 'Message', dataType: DataType.TEXT, width: 40 },
     target: { name: 'Message pattern', dataType: DataType.TEXT, width: 40, patternOf: 'Message' }
   };
+  id: ColumnPair = IdColumn.applyTo([], true)[0];
 }
 
 describe('ColumnMappingComponent', () => {
@@ -281,6 +283,18 @@ describe('ColumnMappingComponent', () => {
     expect(sourceFormat.value).toBe('');
   });
 
+  it('should hide delete button of ID column', () => {
+
+    // given
+    component.mapping.sequence = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.debugElement.query(By.css('.but_delete'))).toBeNull();
+  });
+
   it('should not show add pattern button by default', () => {
     expect(fixture.debugElement.query(By.css('.but_add_pattern'))).toBeNull();
     expect(fixture.debugElement.query(By.css('.icon_pattern'))).toBeNull();
@@ -330,13 +344,13 @@ describe('ColumnMappingComponent', () => {
       return rect.top + rect.height / 2;
     }
 
-    it('should align column name fields of plain, message and pattern rows', () => {
+    it('should align column name fields of plain, message, pattern and ID rows', () => {
       const lefts = rows.map(r => r.querySelector('.column_name').getBoundingClientRect().left);
-      expect(lefts).toEqual([lefts[0], lefts[0], lefts[0]]);
+      expect(lefts).toEqual([lefts[0], lefts[0], lefts[0], lefts[0]]);
     });
 
-    it('should reserve same width for actions of plain, message and pattern rows', () => {
-      expect(rows.map(r => r.querySelector('.column_actions').getBoundingClientRect().width)).toEqual([64, 64, 64]);
+    it('should reserve same width for actions of plain, message, pattern and ID rows', () => {
+      expect(rows.map(r => r.querySelector('.column_actions').getBoundingClientRect().width)).toEqual([64, 64, 64, 64]);
     });
 
     it('should show compact delete and add pattern buttons', () => {

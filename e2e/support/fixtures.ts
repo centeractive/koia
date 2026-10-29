@@ -1,4 +1,5 @@
 import { test as base } from '@playwright/test';
+import { ID_COLUMN_STORAGE_KEY } from 'app/scene/id-column-storage-key';
 import { ComputedColumnDialog } from './components/computed-column-dialog';
 import { ConnectionDialog } from './components/connection-dialog';
 import { ConfirmDialog, ManageViewsDialog, RawDataDialog } from './components/dialogs';
@@ -31,13 +32,28 @@ interface PageObjects {
    sceneDetailsDialog: SceneDetailsDialog;
 }
 
+interface IdColumnOption {
+   /**
+    * presets the ID column toggle of the scene page off unless a choice is remembered, so that imports keep their source columns only
+    */
+   idColumnOffAtFirst: boolean;
+}
+
 /**
  * aborts requests of all pages to foreign origins, hence Koia cannot reach any CouchDB and uses the empty IndexedDB of the fresh browser context
  */
-export const test = base.extend<PageObjects>({
-   context: async ({ context, baseURL }, use) => {
+export const test = base.extend<PageObjects & IdColumnOption>({
+   idColumnOffAtFirst: [true, { option: true }],
+   context: async ({ context, baseURL, idColumnOffAtFirst }, use) => {
       const appOrigin = new URL(baseURL).origin;
       await context.route(url => url.origin !== appOrigin, route => route.abort());
+      if (idColumnOffAtFirst) {
+         await context.addInitScript(key => {
+            if (localStorage.getItem(key) === null) {
+               localStorage.setItem(key, 'false');
+            }
+         }, ID_COLUMN_STORAGE_KEY);
+      }
       await use(context);
    },
    front: async ({ page }, use) => use(new FrontPage(page)),

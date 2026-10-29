@@ -5,6 +5,18 @@ describe('ColumnDefinitionAssistant', () => {
 
    const colDefAssistant = new ColumnDefinitionAssistant();
 
+   it('#selectableDataTypeOf when column is ID column', () => {
+
+      // given
+      const columnPair: ColumnPair = { ...createColumnPair(DataType.NUMBER), sequence: true };
+
+      // when
+      const dataTypes = colDefAssistant.selectableDataTypeOf(columnPair);
+
+      // then
+      expect(dataTypes).toEqual([DataType.NUMBER]);
+   });
+
    it('#selectableDataTypeOf when source data type is NUMBER', () => {
 
       // given

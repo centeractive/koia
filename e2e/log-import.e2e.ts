@@ -1,4 +1,3 @@
-import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { expect, test } from './support/fixtures';
 import { SERVER_ISO_LOG, SERVER_LOG } from './support/import-files';
 import { Texts } from './support/texts';
@@ -44,7 +43,7 @@ test('error and warn entries of imported log are highlighted', async ({ page, sc
 test('ISO times of log file are detected as time', async ({ scene }) => {
    const dataTypes = await scene.detectColumns(SERVER_ISO_LOG);
 
-   expect(dataTypes).toEqual(SERVER_ISO_LOG.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
+   expect(dataTypes).toEqual(en.dataTypes(SERVER_ISO_LOG.dataTypes));
 });
 
 test('selected source type is preselected when the scene page is opened again', async ({ front, scene }) => {

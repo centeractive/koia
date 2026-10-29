@@ -217,6 +217,8 @@
     "detectColumnsTooltip": "Spalten anhand der definierten Attribute erkennen",
     "adoptColumnsButton": "Spalten übernehmen",
     "detectColumnsButton": "Spalten erkennen",
+    "idColumn": "ID-Spalte hinzufügen",
+    "idColumnTooltip": "Fügt die Spalte \"ID\" hinzu, welche die gespeicherten Zeilen mit 1, 2, 3, … nummeriert",
     "columnDefinitions": "Spaltendefinitionen",
     "preview": "Vorschau",
     "previewErrorsTooltip": "Die Vorschau enthält Zuordnungsfehler. Bitte korrigiere die Leseattribute und/oder Spaltendefinitionen, bevor fehlerhafte Daten in die Datenbank geladen werden",

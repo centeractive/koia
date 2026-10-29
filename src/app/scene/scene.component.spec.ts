@@ -28,6 +28,8 @@ import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ColumnMappingComponent } from './column-mapping/column-mapping.component';
+import { IdColumn } from './column-mapping/mapper';
+import { ID_COLUMN_STORAGE_KEY } from './id-column-storage-key';
 import { EntryPersister } from './persister/entry-persister';
 import { SceneComponent } from './scene.component';
 import { page } from 'vitest/browser';
@@ -60,6 +62,7 @@ describe('SceneComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     localStorage.removeItem(SOURCE_TYPE_KEY);
+    localStorage.setItem(ID_COLUMN_STORAGE_KEY, 'false');
     vi.spyOn(console, 'log').mockReturnValue(undefined);
     dbService = new DBService(null, null);
     TestBed.configureTestingModule({
@@ -97,7 +100,10 @@ describe('SceneComponent', () => {
     fixture.detectChanges();
   }));
 
-  afterEach(() => localStorage.removeItem(SOURCE_TYPE_KEY));
+  afterEach(() => {
+    localStorage.removeItem(SOURCE_TYPE_KEY);
+    localStorage.removeItem(ID_COLUMN_STORAGE_KEY);
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -789,6 +795,20 @@ describe('SceneComponent', () => {
 
       // then
       expectRowBelowAlignedLeft('#but_detect_columns', '#div_adopt_columns');
+    }));
+
+    it('detect button and ID column toggle should share one row', fakeAsync(() => {
+
+      // given
+      initUpToDetectColumns();
+      component.columnMappingsSource = undefined;
+
+      // when
+      component.accordion.openAll();
+      fixture.detectChanges();
+
+      // then
+      expectOnOneLineInOrder(['#but_detect_columns', '#toggle_id_column']);
     }));
   });
 
@@ -1831,6 +1851,226 @@ describe('SceneComponent', () => {
     fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
     flush();
   }
+
+  function idColumnSwitch(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('#toggle_id_column button');
+  }
+
+  function previewIds(): number[] {
+    return component.previewData.map(mr => mr.entry['ID']);
+  }
+
+  it('#ngOnInit should switch ID column on when remembered', fakeAsync(() => {
+
+    // given
+    localStorage.setItem(ID_COLUMN_STORAGE_KEY, 'true');
+
+    // when
+    component.ngOnInit();
+    flush();
+    loadSample();
+
+    // then
+    expect(component.addIdColumn).toBe(true);
+    expect(idColumnSwitch().getAttribute('aria-checked')).toBe('true');
+  }));
+
+  it('#ngOnInit should switch ID column on when no choice is remembered', fakeAsync(() => {
+
+    // given
+    localStorage.removeItem(ID_COLUMN_STORAGE_KEY);
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.addIdColumn).toBe(true);
+  }));
+
+  it('#ngOnInit should switch ID column off when remembered', fakeAsync(() => {
+
+    // given
+    component.addIdColumn = true;
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.addIdColumn).toBe(false);
+  }));
+
+  it('#click on ID column toggle should remember choice', fakeAsync(() => {
+
+    // given
+    loadSample();
+
+    // when
+    idColumnSwitch().click();
+    const rememberedAfterFirstClick = localStorage.getItem(ID_COLUMN_STORAGE_KEY);
+    idColumnSwitch().click();
+
+    // then
+    expect(rememberedAfterFirstClick).toBe('true');
+    expect(localStorage.getItem(ID_COLUMN_STORAGE_KEY)).toBe('false');
+  }));
+
+  it('#click on ID column toggle before detecting columns should not create column mappings', fakeAsync(() => {
+
+    // given
+    loadSample();
+
+    // when
+    idColumnSwitch().click();
+
+    // then
+    expect(component.addIdColumn).toBe(true);
+    expect(component.columnMappings).toBeUndefined();
+  }));
+
+  it('#readSample should put ID column first when ID column is switched on', fakeAsync(() => {
+
+    // given
+    loadSample();
+    component.addIdColumn = true;
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
+
+    // when
+    component.readSample();
+    flush();
+
+    // then
+    expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['ID', 'Column 1', 'Column 2']);
+    expect(previewIds()).toEqual([1, 2, 3]);
+    expect(component.columnMappingsValid).toBe(true);
+  }));
+
+  it('#readSample should keep renamed ID column of adopted column mappings when ID column is switched on', fakeAsync(() => {
+
+    // given
+    loadSample();
+    const sceneInfo = createSceneInfos(1)[0];
+    const idPair = IdColumn.applyTo([], true)[0];
+    idPair.target.name = 'Nr';
+    sceneInfo.columnMappings = [...sceneInfo.columnMappings, idPair];
+    component.columnMappingsSource = sceneInfo;
+    component.adoptColumnsFromExistingScene = true;
+    component.addIdColumn = true;
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
+
+    // when
+    component.readSample();
+    flush();
+
+    // then
+    expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['Nr', 'a', 'b']);
+    expect(component.columnMappings[0].sequence).toBe(true);
+  }));
+
+  it('#readSample should drop ID column of adopted column mappings when ID column is switched off', fakeAsync(() => {
+
+    // given
+    loadSample();
+    const sceneInfo = createSceneInfos(1)[0];
+    sceneInfo.columnMappings = IdColumn.applyTo(sceneInfo.columnMappings, true);
+    component.columnMappingsSource = sceneInfo;
+    component.adoptColumnsFromExistingScene = true;
+    vi.spyOn(component.selectedReader, 'readSample').mockResolvedValue({ tableData: tableData.slice(0, 4) });
+
+    // when
+    component.readSample();
+    flush();
+
+    // then
+    expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['a', 'b']);
+  }));
+
+  it('#click on ID column toggle after detecting columns should add ID column with numbered preview', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.accordion.openAll();
+    fixture.detectChanges();
+
+    // when
+    idColumnSwitch().click();
+
+    // then
+    expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['ID', 'Column 1', 'Column 2']);
+    expect(previewIds()).toEqual([1, 2, 3]);
+  }));
+
+  it('#click on ID column toggle off after detecting columns should remove ID column', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.accordion.openAll();
+    fixture.detectChanges();
+    idColumnSwitch().click();
+
+    // when
+    idColumnSwitch().click();
+
+    // then
+    expect(component.addIdColumn).toBe(false);
+    expect(component.columnMappings.map(cp => cp.target.name)).toEqual(['Column 1', 'Column 2']);
+    expect(previewIds()).toEqual([undefined, undefined, undefined]);
+  }));
+
+  it('#onColumnChanged should invalidate column mappings when only ID column is left', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.onIdColumnChange(true);
+
+    // when
+    component.deleteColumnMapping(component.columnMappings[1]);
+    component.deleteColumnMapping(component.columnMappings[2]);
+
+    // then
+    expect(component.targetColumnNames).toEqual(['ID']);
+    expect(component.columnMappingsValid).toBe(false);
+  }));
+
+  it('#click on "Load Data" should store ID column and number entries across batches', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.onIdColumnChange(true);
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues(tableData);
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(component.scene.columns[0].name).toBe('ID');
+    expect(component.scene.columnMappings[0].sequence).toBe(true);
+    expect(vi.mocked(dbService.writeEntries).mock.calls.length).toBe(1);
+    const entries = vi.mocked(dbService.writeEntries).mock.calls[0][1];
+    expect(entries.map(e => e['ID'])).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(entries.map(e => e._id)).toEqual(['1000001', '1000002', '1000003', '1000004', '1000005', '1000006']);
+  }));
+
+  it('#click on "Load Data" should number only entries up to max items', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.onIdColumnChange(true);
+    component.maxItemsToLoadControl.setValue(2);
+
+    // when
+    loadData(dataHandler => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+
+    // then
+    expect(vi.mocked(dbService.writeEntries).mock.calls.flatMap(c => c[1]).map(e => e['ID'])).toEqual([1, 2]);
+  }));
 
   describe('pattern columns', () => {
 

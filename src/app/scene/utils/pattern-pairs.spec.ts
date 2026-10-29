@@ -1,5 +1,6 @@
 import { ColumnPair, DataType } from 'app/shared/model';
 import { PatternMasker } from 'app/shared/utils/pattern-masker';
+import { IdColumn } from '../column-mapping/mapper';
 import { PatternPairs } from './pattern-pairs';
 
 describe('PatternPairs', () => {
@@ -183,6 +184,23 @@ describe('PatternPairs', () => {
 
       // then
       expect(patternPair.target.patternOf).toBe('Message');
+   });
+
+   it('#link should not link pattern mapping to ID mapping of same source name', () => {
+
+      // given
+      const patternPair = {
+         source: { name: 'ID', dataType: DataType.TEXT, width: 20 },
+         target: { name: 'P', dataType: DataType.TEXT, width: 20, patternOf: 'Gone' }
+      };
+      const mappings = [IdColumn.applyTo([], true)[0], patternPair];
+
+      // when
+      patternPairs.link(mappings);
+      patternPairs.updatePatternOf(mappings);
+
+      // then
+      expect(patternPair.target.patternOf).toBe('Gone');
    });
 
    it('#link should keep pattern without message column', () => {

@@ -3,6 +3,9 @@ import { ColumnPair, DataType } from 'app/shared/model';
 export class ColumnDefinitionAssistant {
 
    selectableDataTypeOf(columnPair: ColumnPair): DataType[] {
+      if (columnPair.sequence) {
+         return [DataType.NUMBER];
+      }
       if (columnPair.target.patternOf) {
          return [DataType.TEXT];
       }

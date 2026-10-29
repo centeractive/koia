@@ -217,6 +217,8 @@
     "detectColumnsTooltip": "定義された属性を考慮して列を検出します",
     "adoptColumnsButton": "列を引き継ぐ",
     "detectColumnsButton": "列を検出",
+    "idColumn": "ID列を追加",
+    "idColumnTooltip": "保存した行に 1, 2, 3, … と番号を付ける列「ID」を追加します",
     "columnDefinitions": "列の定義",
     "preview": "プレビュー",
     "previewErrorsTooltip": "プレビューにマッピングエラーがあります。不正なデータをデータベースに読み込む前に、読み取り属性や列の定義を修正してください",

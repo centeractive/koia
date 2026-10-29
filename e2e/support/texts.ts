@@ -1,5 +1,7 @@
 import { resolve } from 'path';
 import { Aggregation } from 'app/shared/model/aggregation.enum';
+import { DataType } from 'app/shared/model/data-type.enum';
+import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { Language, localeIdOf } from 'app/shared/services/language/language';
 import { jsonOf, SRC_DIR } from './paths';
 
@@ -25,6 +27,10 @@ export class Texts {
 
    rows(count: number): string {
       return this.get('ui.rows', { count: this.number(count) });
+   }
+
+   dataTypes(dataTypes: DataType[]): string[] {
+      return dataTypes.map(dataType => this.get(EnumLabelKeys.dataType(dataType)));
    }
 
    summaryAggregation(aggregation: Aggregation): string {

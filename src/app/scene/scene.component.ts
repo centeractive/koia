@@ -18,7 +18,8 @@ import { ConditionalErrorStateMatcher } from 'app/shared/validator/conditional-e
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
 import { LogLevelColorizer } from '../shared/services/reader/log/log-level-colorizer';
-import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, MappingResult } from './column-mapping/mapper';
+import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, IdColumn, MappingResult } from './column-mapping/mapper';
+import { ID_COLUMN_STORAGE_KEY } from './id-column-storage-key';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { PatternPairs, SceneUtils } from './utils';
 
@@ -55,6 +56,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   selectedLocale: string;
   columnMappingsSourceCandidates: SceneInfo[];
   adoptColumnsFromExistingScene = false;
+  addIdColumn: boolean;
   columnMappingsSource: SceneInfo;
   columnMappings: ColumnPair[];
   levelColumn: string;
@@ -96,6 +98,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       this.readers = this.readerService.getReaders();
       const rememberedSourceName = BrowserStorage.read(SceneComponent.SOURCE_TYPE_KEY);
       this.selectedReader = this.readers.find(r => r.getSourceName() === rememberedSourceName) ?? this.readers[0];
+      this.addIdColumn = BrowserStorage.read(ID_COLUMN_STORAGE_KEY) !== 'false';
       this.defineLocales();
       this.collectSceneInfos();
       this.initScene();
@@ -258,13 +261,22 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         this.sampleEntries = sample.entries ? sample.entries : SceneUtils.entriesFromTableData(sample);
         this.sourceColumnNames = sample.entries ? undefined : SceneUtils.columnNamesFrom(sample);
         this.levelColumn = sample.levelColumn;
-        this.columnMappings = this.adoptColumnsFromExistingScene ? CommonUtils.clone(this.columnMappingsSource.columnMappings) :
-          this.columnFactory.generate(this.sampleEntries, this.selectedLocale);
+        this.columnMappings = IdColumn.applyTo(this.adoptColumnsFromExistingScene ? CommonUtils.clone(this.columnMappingsSource.columnMappings) :
+          this.columnFactory.generate(this.sampleEntries, this.selectedLocale), this.addIdColumn);
         this.patternPairs.link(this.columnMappings);
         this.onColumnChanged();
       })
       .catch(err => this.notifyError(err))
       .finally(() => this.readingSample = false);
+  }
+
+  onIdColumnChange(wanted: boolean): void {
+    this.addIdColumn = wanted;
+    BrowserStorage.write(ID_COLUMN_STORAGE_KEY, String(wanted));
+    if (this.columnMappings) {
+      this.columnMappings = IdColumn.applyTo(this.columnMappings, wanted);
+      this.onColumnChanged();
+    }
   }
 
   deleteColumnMapping(columnPair: ColumnPair): void {
@@ -289,7 +301,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   }
 
   private validateColumnMappings(): void {
-    this.columnMappingsValid = this.targetColumnNames.length > 0 &&
+    this.columnMappingsValid = this.columnMappings.some(cp => !cp.skip && !cp.sequence) &&
       this.targetColumnNames.every(n => ColumnMappingGenerator.isValidColumnName(n)) &&
       new Set(this.targetColumnNames).size === this.targetColumnNames.length;
   }

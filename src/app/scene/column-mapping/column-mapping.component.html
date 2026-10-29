@@ -1,8 +1,10 @@
 <div>
   <span class="column_actions">
-    <button class="but_delete" mat-icon-button [matTooltip]="'scene.column.deleteTooltip' | translate" (click)="onRemove.emit()">
-      <mat-icon>delete_forever</mat-icon>
-    </button>
+    @if (!mapping.sequence) {
+      <button class="but_delete" mat-icon-button [matTooltip]="'scene.column.deleteTooltip' | translate" (click)="onRemove.emit()">
+        <mat-icon>delete_forever</mat-icon>
+      </button>
+    }
     @if (mapping.target.patternOf) {
       <mat-icon class="icon_pattern" [matTooltip]="'scene.column.patternOf' | translate: { column: mapping.target.patternOf }">{{ patternColumnIcon }}</mat-icon>
     } @else if (canAddPattern) {

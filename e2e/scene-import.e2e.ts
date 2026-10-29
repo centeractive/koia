@@ -5,11 +5,26 @@ import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { expect, test } from './support/fixtures';
 import {
    CODES_CSV, DUPLICATE_HEADERS_CSV, EPOCH_MILLIS_CSV, IMPORT_FILES, LOG_MESSAGES_CSV, MISSING_TIMES_CSV, MIXED_DATES_CSV,
-   ORDERS_WITH_ID_CSV, SALES_CSV, SEMICOLON_ORDERS_CSV
+   ImportFile, ORDERS_CSV, ORDERS_WITH_ID_CSV, SALES_CSV, SEMICOLON_ORDERS_CSV
 } from './support/import-files';
+import { FrontPage } from './support/pages/front-page';
+import { ScenePage } from './support/pages/scene-page';
+import { ScenesPage } from './support/pages/scenes-page';
 import { Texts } from './support/texts';
 
 const en = new Texts('en');
+
+/**
+ * @returns the labels of the detected column data types
+ */
+async function importFile(file: ImportFile, front: FrontPage, scene: ScenePage, scenes: ScenesPage): Promise<string[]> {
+   await front.open('en');
+   await front.startWithFile();
+   const dataTypes = await scene.detectColumns(file);
+   await scene.loadData();
+   await scenes.activate(file.name);
+   return dataTypes;
+}
 
 for (const file of IMPORT_FILES) {
    test(`${file.sourceName} file ${file.name} is imported with detected column types and all its rows`, async ({ front, scene, scenes, rawData }) => {
@@ -21,7 +36,7 @@ for (const file of IMPORT_FILES) {
       const message = await scene.loadData();
       await scenes.activate(file.name);
 
-      expect(dataTypes).toEqual(file.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
+      expect(dataTypes).toEqual(en.dataTypes(file.dataTypes));
       expect(panelsExpanded).toEqual([false, false, true, true]);
       expect(message).toBe(en.get('scene.itemsPersisted', { count: en.number(file.rowCount) }));
       await expect(rawData.table.headers).toHaveText(file.columns);
@@ -39,7 +54,7 @@ test('semicolon separated CSV file with commas in quoted values is split into it
    await scene.loadData();
    await scenes.activate(file.name);
 
-   expect(dataTypes).toEqual(file.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
+   expect(dataTypes).toEqual(en.dataTypes(file.dataTypes));
    await expect(rawData.table.headers).toHaveText(file.columns);
    await expect(rawData.table.rowCount).toHaveText(en.rows(file.rowCount));
 });
@@ -56,14 +71,10 @@ test('CSV column starting with underscore is refused', async ({ front, scene }) 
 test('CSV values with leading zeros or radix prefix stay text and whitespace only values stay empty',
    async ({ front, scene, scenes, rawData }) => {
       const file = CODES_CSV;
-      await front.open('en');
-      await front.startWithFile();
 
-      const dataTypes = await scene.detectColumns(file);
-      await scene.loadData();
-      await scenes.activate(file.name);
+      const dataTypes = await importFile(file, front, scene, scenes);
 
-      expect(dataTypes).toEqual(file.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
+      expect(dataTypes).toEqual(en.dataTypes(file.dataTypes));
       await expect(rawData.table.rowCount).toHaveText(en.rows(file.rowCount));
       await expect(await rawData.table.cell(0, 'Code')).toHaveText('00123');
       await expect(await rawData.table.cell(0, 'Hex')).toHaveText('0x1A');
@@ -73,12 +84,8 @@ test('CSV values with leading zeros or radix prefix stay text and whitespace onl
 
 test('CSV file with duplicate and empty headers is imported with unique column names', async ({ front, scene, scenes, rawData }) => {
    const file = DUPLICATE_HEADERS_CSV;
-   await front.open('en');
-   await front.startWithFile();
 
-   await scene.detectColumns(file);
-   await scene.loadData();
-   await scenes.activate(file.name);
+   await importFile(file, front, scene, scenes);
 
    await expect(rawData.table.headers).toHaveText(['Item', 'Item (2)', 'Column 3', 'Amount']);
    await expect(await rawData.table.cell(0, 'Item')).toHaveText('Apples');
@@ -91,7 +98,7 @@ test('date neither matching the detected format nor ISO 8601 is reported in the 
 
    const dataTypes = await scene.detectColumns(MIXED_DATES_CSV);
 
-   expect(dataTypes).toEqual(MIXED_DATES_CSV.dataTypes.map(dataType => en.get(EnumLabelKeys.dataType(dataType))));
+   expect(dataTypes).toEqual(en.dataTypes(MIXED_DATES_CSV.dataTypes));
    await expect(scene.previewRowWarnings).toHaveCount(1);
 });
 
@@ -108,11 +115,7 @@ test('number column changed to time is interpreted as epoch milliseconds', async
 
 test('count of a summary table row without time reveals the rows without time',
    async ({ front, scene, scenes, tabBar, dashboard, rawDataDialog }) => {
-      await front.open('en');
-      await front.startWithFile();
-      await scene.detectColumns(MISSING_TIMES_CSV);
-      await scene.loadData();
-      await scenes.activate(MISSING_TIMES_CSV.name);
+      await importFile(MISSING_TIMES_CSV, front, scene, scenes);
       await tabBar.addDashboard();
       await dashboard.launcher.addSummary();
       await dashboard.sideBar.selectColumn('Item');
@@ -156,4 +159,54 @@ test('detect columns button starts row below source attributes aligned left', as
    const button = await scene.detectColumnsButton.boundingBox();
    expect(button.y).toBeGreaterThanOrEqual(language.y + language.height);
    expect(Math.abs(button.x - language.x)).toBeLessThanOrEqual(1);
+});
+
+test.describe('ID column', () => {
+
+   test.use({ idColumnOffAtFirst: false });
+
+   for (const file of IMPORT_FILES) {
+      test(`${file.sourceName} file ${file.name} is imported with its rows numbered from 1`, async ({ front, scene, scenes, rawData }) => {
+         const dataTypes = await importFile(file, front, scene, scenes);
+
+         expect(dataTypes).toEqual(en.dataTypes([DataType.NUMBER, ...file.dataTypes]));
+         await expect(rawData.table.headers).toHaveText(['ID', ...file.columns]);
+         await expect(rawData.table.rowCount).toHaveText(en.rows(file.rowCount));
+         await expect(await rawData.table.cell(0, 'ID')).toHaveText('1');
+         await rawData.table.sortBy('ID');
+         await rawData.table.sortBy('ID');
+         await expect(await rawData.table.cell(0, 'ID')).toHaveText(en.number(file.rowCount));
+      });
+   }
+
+   test('adopted ID column keeps its name', async ({ front, scene, scenes, rawData }) => {
+      await front.open('en');
+      await front.startWithFile();
+      await scene.detectColumns(ORDERS_CSV);
+      await scene.columnNames.first().fill('Nr');
+      await scene.columnNames.first().press('Tab');
+      await scene.loadData();
+      await scenes.activate(ORDERS_CSV.name);
+      await rawData.mainToolbar.addScene();
+      await scene.selectFile(ORDERS_CSV);
+
+      await scene.adoptColumnsToggle.getByRole('switch').click();
+      await scene.detectColumnsButton.click();
+
+      await expect(scene.columnNames.first()).toHaveValue('Nr');
+   });
+
+   test('switched off toggle stays off when the scene page is opened again', async ({ front, scene }) => {
+      await front.open('en');
+      await front.startWithFile();
+      await scene.selectFile(ORDERS_CSV);
+      await scene.idColumnToggle.click();
+      await expect(scene.idColumnToggle).not.toBeChecked();
+
+      await front.open('en');
+      await front.startWithFile();
+      await scene.selectFile(ORDERS_CSV);
+
+      await expect(scene.idColumnToggle).not.toBeChecked();
+   });
 });

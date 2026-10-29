@@ -217,6 +217,8 @@
     "detectColumnsTooltip": "Detect columns by considering defined attributes",
     "adoptColumnsButton": "Adopt Columns",
     "detectColumnsButton": "Detect Columns",
+    "idColumn": "Add ID column",
+    "idColumnTooltip": "Adds the column \"ID\" numbering the stored rows 1, 2, 3, …",
     "columnDefinitions": "Column Definitions",
     "preview": "Preview",
     "previewErrorsTooltip": "Preview contains mapping errors. Please correct reader attributes and/or column definitions prior to load corrupt data to the database",

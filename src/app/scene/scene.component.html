@@ -154,6 +154,8 @@
               <button id="but_detect_columns" mat-flat-button color="primary" [disabled]="isSceneNameTaken()"
                 [matTooltip]="adoptColumnsFromExistingScene ? '' : ('scene.detectColumnsTooltip' | translate)"
                 (click)="readSample()">{{ (adoptColumnsFromExistingScene ? 'scene.adoptColumnsButton' : 'scene.detectColumnsButton') | translate }}</button>
+              <mat-slide-toggle id="toggle_id_column" color="primary" [checked]="addIdColumn" (change)="onIdColumnChange($event.checked)"
+                [matTooltip]="'scene.idColumnTooltip' | translate">{{ 'scene.idColumn' | translate }}</mat-slide-toggle>
             </div>
           </mat-expansion-panel>
         }
