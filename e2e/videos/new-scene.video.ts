@@ -1,9 +1,11 @@
 import { SORT_INDICATORS } from 'app/raw-data/sort-indicators';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
+import { basename } from 'path';
 import { downloadOf } from '../support/downloads';
 import { expect, test } from '../support/fixtures';
 import { SALES_CSV } from '../support/import-files';
 import { Texts } from '../support/texts';
+import { FileDialogKind } from './support/file-dialog';
 import { VideoRecording } from './support/video-recording';
 
 const en = new Texts('en');
@@ -19,7 +21,7 @@ test('creating a new scene', async ({ page, front, scene, scenes, rawData }) => 
    await front.startWithFile();
    await recording.caption('Choose CSV and pick your file');
 
-   await scene.selectFile(SALES_CSV);
+   await scene.selectFile(SALES_CSV, () => recording.fileDialog(FileDialogKind.OPEN, basename(SALES_CSV.path)));
    await recording.caption('Koia shows a sample of the file content');
 
    await scene.detectColumnsButton.click();

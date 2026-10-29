@@ -5,7 +5,9 @@ describe('videos page', () => {
   const DESKTOP = 1280;
   const MEDIUM = 800;
   const MOBILE = 375;
-  const TILE_SLUGS = ['new-scene', 'scenes-and-navigation', 'pivot-and-export', 'dashboards-and-charts', 'summary-tables', 'relationship-graphs'];  let iframe: HTMLIFrameElement;
+  const TILE_SLUGS = ['new-scene', 'scenes-and-navigation', 'pivot-and-export', 'dashboards-and-charts', 'summary-tables', 'relationship-graphs',
+    'explain-these-rows', 'message-patterns', 'shared-scenes'];
+  let iframe: HTMLIFrameElement;
 
   afterEach(() => iframe?.remove());
 
@@ -63,18 +65,19 @@ describe('videos page', () => {
     expect(heading.nextElementSibling.matches('ul.videos-grid')).toBe(true);
   });
 
-  it('should show six video tiles with inline svg icon and expected titles', async () => {
+  it('should show nine video tiles with inline svg icon and expected titles', async () => {
 
     // when
     const doc = await loadVideos(DESKTOP);
 
     // then
     expect(textsOf(doc, '.video-tile h3')).toEqual(['Creating a new scene', 'Managing scenes and navigating',
-      'Pivot tables and export', 'Dashboards and charts', 'Summary tables', 'Relationship graphs']);
+      'Pivot tables and export', 'Dashboards and charts', 'Summary tables', 'Relationship graphs', 'Explain these rows', 'Message patterns',
+      'Sharing scenes as files']);
     all(doc, '.video-tile').forEach(tile => expect(tile.querySelector('.landing-tile-head > svg.landing-tile-icon path')).not.toBeNull());
   });
 
-  [[DESKTOP, 2], [MEDIUM, 3], [MOBILE, 6]].forEach(([width, rows]) => {
+  [[DESKTOP, 3], [MEDIUM, 5], [MOBILE, 9]].forEach(([width, rows]) => {
 
     it('should lay out tiles in ' + rows + ' rows at width ' + width, async () => {
 
@@ -223,7 +226,7 @@ describe('videos page', () => {
     expect(all(doc, 'a.landing-btn').map(a => a.getAttribute('href'))).toEqual(['/front']);
   });
 
-  it('should credit both soundtracks under creative commons by attribution 4.0', async () => {
+  it('should credit all soundtracks under creative commons by attribution 4.0', async () => {
 
     // when
     const doc = await loadVideos(DESKTOP);
@@ -231,7 +234,7 @@ describe('videos page', () => {
     // then
     const credit = doc.querySelector('.landing-footer-inner > small.video-credit');
     const link = credit.querySelector('a');
-    expect(credit.textContent.replace(/\s+/g, ' ')).toBe('Music: “The Entertainer” and “Fig Leaf Rag” Kevin MacLeod (incompetech.com), composed by Scott Joplin, licensed under Creative Commons: By Attribution 4.0');
+    expect(credit.textContent.replace(/\s+/g, ' ')).toBe('Music: “The Entertainer”, “Fig Leaf Rag” and “Maple Leaf Rag” (composed by Scott Joplin), “Frogs Legs Rag” (composed by James Scott), “Merry Go” and “Plucky Daisy” Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0');
     expect([link.getAttribute('href'), link.target, link.rel]).toEqual(['https://creativecommons.org/licenses/by/4.0/', '_blank', 'noopener']);
   });
 

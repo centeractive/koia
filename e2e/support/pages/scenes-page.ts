@@ -64,8 +64,10 @@ export class ScenesPage {
       await this.page.locator('.menu_item_share').click();
    }
 
-   async openSceneFile(path: string): Promise<void> {
-      await this.page.locator('#scene_file_input').setInputFiles(path);
+   async openSceneFile(path: string, whileChoosing: () => Promise<void> = async () => undefined): Promise<void> {
+      const [fileChooser] = await Promise.all([this.page.waitForEvent('filechooser'), this.page.locator('#but_open_scene_file').click()]);
+      await whileChoosing();
+      await fileChooser.setFiles(path);
       await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 

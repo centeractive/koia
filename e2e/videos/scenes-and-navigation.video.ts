@@ -2,14 +2,12 @@ import { StatusType } from 'app/shared/model/status-type.enum';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { expect, test } from '../support/fixtures';
 import { SALES_CSV } from '../support/import-files';
-import { openSalesScene } from '../support/sales-scene';
+import { openSalesScene, SALES_SCENE_DESCRIPTION, SALES_SCENE_NAME } from '../support/sales-scene';
 import { VideoRecording } from './support/video-recording';
 
 const PIVOT_TAB_ID = 'tab1';
 const DASHBOARD_TAB_ID = 'tab2';
 const DASHBOARD_TITLE = 'Sales overview';
-const SCENE_NAME = 'My sales';
-const SCENE_DESCRIPTION = 'Fruit sales of 2025 and 2026';
 const VIEW_NAME = 'Overview';
 
 test('managing scenes and navigating', async ({ page, front, scene, scenes, rawData, tabBar, dashboard, notifications,
@@ -54,11 +52,11 @@ test('managing scenes and navigating', async ({ page, front, scene, scenes, rawD
    await scenes.filter('csv');
    await recording.caption('Filter scenes by name or description');
 
-   await scenes.edit(SALES_CSV.name, SCENE_NAME, SCENE_DESCRIPTION);
+   await scenes.edit(SALES_CSV.name, SALES_SCENE_NAME, SALES_SCENE_DESCRIPTION);
    await recording.caption('Rename or describe a scene in place');
 
    await scenes.filter('');
-   await scenes.activate(SCENE_NAME);
+   await scenes.activate(SALES_SCENE_NAME);
    await recording.caption('Activate a scene to switch to its data');
 
    await tabBar.open(DASHBOARD_TAB_ID);

@@ -53,19 +53,21 @@ export class ScenePage {
       this.notifications = new Notifications(page);
    }
 
-   async selectFile(file: ImportFile): Promise<void> {
+   async selectFile(file: ImportFile, whileChoosing: () => Promise<void> = async () => undefined): Promise<void> {
       await this.nameInput.waitFor();
       await this.sourceType.click();
       await this.page.getByRole('option', { name: file.sourceName, exact: true }).click();
-      await this.page.locator('#fileInput').setInputFiles(file.path);
+      const [fileChooser] = await Promise.all([this.page.waitForEvent('filechooser'), this.page.locator('#select_file_button').click()]);
+      await whileChoosing();
+      await fileChooser.setFiles(file.path);
       await this.dataSample.waitFor();
    }
 
    /**
     * @returns the labels of the detected column data types
     */
-   async detectColumns(file: ImportFile): Promise<string[]> {
-      await this.selectFile(file);
+   async detectColumns(file: ImportFile, whileChoosing: () => Promise<void> = async () => undefined): Promise<string[]> {
+      await this.selectFile(file, whileChoosing);
       await this.detectColumnsButton.click();
       await this.dataTypes.first().waitFor();
       return (await this.dataTypes.allInnerTexts()).map(text => text.trim());

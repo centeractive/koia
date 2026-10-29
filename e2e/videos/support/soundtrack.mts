@@ -19,8 +19,16 @@ function incompetechSoundtrack(title: string): Soundtrack {
    return { title, file, url: INCOMPETECH_MP3_URL + encodeURIComponent(file) };
 }
 
-/** played by the odd and by the even tiles of the videos page */
-export const SOUNDTRACKS: readonly Soundtrack[] = [incompetechSoundtrack('The Entertainer'), incompetechSoundtrack('Fig Leaf Rag')];
+/** played alternately by the topic tiles of the videos page without dedicated soundtrack */
+const TOPIC_SOUNDTRACKS: readonly Soundtrack[] = [incompetechSoundtrack('The Entertainer'), incompetechSoundtrack('Fig Leaf Rag')];
+/** played by their videos wherever their tiles are */
+const DEDICATED_SOUNDTRACKS: Readonly<Record<string, Soundtrack>> = {
+   'relationship-graphs': incompetechSoundtrack('Plucky Daisy'),
+   'explain-these-rows': incompetechSoundtrack('Maple Leaf Rag'),
+   'message-patterns': incompetechSoundtrack('Frogs Legs Rag'),
+   'shared-scenes': incompetechSoundtrack('Merry Go')
+};
+export const SOUNDTRACKS: readonly Soundtrack[] = [...TOPIC_SOUNDTRACKS, ...Object.values(DEDICATED_SOUNDTRACKS)];
 
 /**
  * @returns the slugs of the videos in the order of their tiles on the videos page
@@ -30,11 +38,18 @@ export function tileSlugsOf(videosPageHtml: string): string[] {
 }
 
 /**
- * @returns the soundtrack alternating by tile position, undefined for a video without tile
+ * @returns the dedicated soundtrack of the video, else the soundtrack alternating by position among the tiles without dedicated
+ * soundtrack, undefined for a video without tile
  */
 export function soundtrackOf(slug: string, tileSlugs: readonly string[]): Soundtrack | undefined {
-   const index = tileSlugs.indexOf(slug);
-   return index < 0 ? undefined : SOUNDTRACKS[index % SOUNDTRACKS.length];
+   if (!tileSlugs.includes(slug)) {
+      return undefined;
+   }
+   if (Object.hasOwn(DEDICATED_SOUNDTRACKS, slug)) {
+      return DEDICATED_SOUNDTRACKS[slug];
+   }
+   const topicSlugs = tileSlugs.filter(s => !Object.hasOwn(DEDICATED_SOUNDTRACKS, s));
+   return TOPIC_SOUNDTRACKS[topicSlugs.indexOf(slug) % TOPIC_SOUNDTRACKS.length];
 }
 
 /**
