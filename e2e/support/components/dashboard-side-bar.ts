@@ -127,8 +127,11 @@ export class DashboardSideBar extends SideNav {
       await this.selectOption(panel.locator('.field_time_unit'), label);
    }
 
+   /**
+    * opens the select by clicking its form field like a user, as the label of an empty select may cover the select itself
+    */
    private async selectOption(field: Locator, label: string): Promise<void> {
-      await field.locator('mat-select').click();
+      await field.locator('.mat-mdc-text-field-wrapper').click();
       await this.sidenav.page().getByRole('option', { name: label, exact: true }).click();
    }
 
