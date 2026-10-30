@@ -10,6 +10,7 @@ import { RouterModule } from '@angular/router';
 import { Route } from 'app/shared/model';
 import { rightInsetOf } from 'app/shared/test/dom-queries';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
+import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { page } from 'vitest/browser';
 import { PageFrameComponent } from './page-frame.component';
@@ -33,7 +34,7 @@ describe('PageFrameComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [HostComponent, PageFrameComponent, NavButtonsComponent, LanguageSelectComponent],
+      declarations: [HostComponent, PageFrameComponent, NavButtonsComponent, ManualLinkComponent, LanguageSelectComponent],
       imports: [RouterModule.forRoot([]), CdkScrollableModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule]
     });
     fixture = TestBed.createComponent(HostComponent);
@@ -56,6 +57,16 @@ describe('PageFrameComponent', () => {
     // then
     expect(navButtons.active).toBe(Route.SCENE);
     expect(navButtons.scenesExist).toBe(false);
+  });
+
+  it('should show manual link directly left of language selection', () => {
+
+    // when
+    const previous = element('koia-language-select').previousElementSibling;
+
+    // then
+    expect(previous.tagName).toBe('KOIA-MANUAL-LINK');
+    expect(element('#butManual')).toBeTruthy();
   });
 
   it('should cover window on canvas below header on header surface', () => {

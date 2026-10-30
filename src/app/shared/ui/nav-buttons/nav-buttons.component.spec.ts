@@ -5,7 +5,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule, UrlTree } from '@angular/router';
 import { Route } from 'app/shared/model';
-import { USER_MANUAL_URL } from 'app/shared/utils/user-manual';
 import { NavButtonsComponent } from './nav-buttons.component';
 import type { Mock } from 'vitest';
 
@@ -48,25 +47,14 @@ describe('NavButtonsComponent', () => {
       .map(b => b.id);
   }
 
-  it('should show home button, projected content, scenes button, add scene button and manual link in order', () => {
+  it('should show home button, projected content, scenes button and add scene button in order', () => {
 
     // when
     fixture.detectChanges();
 
     // then
-    const ids = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('koia-nav-buttons > button, koia-nav-buttons > a')).map(b => b.id);
-    expect(ids).toEqual(['butHome', 'but_projected', 'butScenes', 'butScene', 'butManual']);
-  });
-
-  it('manual link opens the user manual in a new tab', () => {
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    const link = fixture.nativeElement.querySelector('#butManual') as HTMLAnchorElement;
-    expect([link.getAttribute('href'), link.target, link.rel, link.getAttribute('aria-label')])
-      .toEqual([USER_MANUAL_URL, '_blank', 'noopener', 'User Manual']);
+    const ids = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('koia-nav-buttons > button')).map(b => b.id);
+    expect(ids).toEqual(['butHome', 'but_projected', 'butScenes', 'butScene']);
   });
 
   [

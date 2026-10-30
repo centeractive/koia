@@ -3,7 +3,6 @@
   align-items: center;
 }
 
-button,
-a {
+button {
   z-index: 999;
 }
