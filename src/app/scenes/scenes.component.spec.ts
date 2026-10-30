@@ -20,6 +20,7 @@ import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
+import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
 import { registerSvgIconLiterals, SceneFactory, selectFile } from 'app/shared/test';
@@ -62,7 +63,7 @@ describe('ScenesComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective, LanguageSelectComponent, PageFrameComponent,
-        NavButtonsComponent],
+        NavButtonsComponent, ManualLinkComponent],
       imports: [MatBottomSheetModule, MatDialogModule, MatCardModule, MatTooltipModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],

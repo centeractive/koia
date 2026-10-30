@@ -1162,6 +1162,7 @@ describe('FrontComponent', () => {
     // then
     expect([link.getAttribute('href'), link.target, link.rel, link.textContent.trim()])
       .toEqual([USER_MANUAL_URL, '_blank', 'noopener', 'User Manual']);
+    expect(link.nextElementSibling.tagName).toBe('KOIA-LANGUAGE-SELECT');
   });
 
   it('should offer language selection in navigation', () => {

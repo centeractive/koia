@@ -29,6 +29,7 @@ import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
 import { rightInsetOf } from 'app/shared/test/dom-queries';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
+import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { page } from 'vitest/browser';
 import { MainToolbarComponent } from './main-toolbar.component';
@@ -77,7 +78,7 @@ describe('MainToolbarComponent with many tabs', () => {
     const viewTabsService = { tabs, ready: true, layoutOf: vi.fn() } as unknown as ViewTabsService;
     const savedViewsService = { ready: true, findAll: () => [] } as unknown as SavedViewsService;
     await configureTestingModule(dbService, dialogService, {
-      declarations: [ViewTabBarComponent, SavedViewButtonsComponent],
+      declarations: [ViewTabBarComponent, SavedViewButtonsComponent, LanguageSelectComponent, ManualLinkComponent],
       imports: [MatTabsModule, MatBadgeModule],
       providers: [{ provide: ViewTabsService, useValue: viewTabsService }, { provide: SavedViewsService, useValue: savedViewsService }]
     });
@@ -107,6 +108,16 @@ describe('MainToolbarComponent with many tabs', () => {
     // then
     expect(rightOf('.but_add_col_filter')).toBeLessThanOrEqual(toolbarRight);
     expect(rightOf('.span_buttons:not(.span_navigation) > button:last-child')).toBeLessThanOrEqual(toolbarRight);
+  });
+
+  it('should keep manual link and language selection visible when tabs exceed toolbar width', () => {
+
+    // when
+    const languageRect = fixture.nativeElement.querySelector('#but_language').getBoundingClientRect();
+
+    // then
+    expect(languageRect.right).toBeLessThanOrEqual(toolbarRect().right);
+    expect(rightOf('#butManual')).toBeLessThanOrEqual(languageRect.left);
   });
 
   it('should enable tab pagination when tabs exceed toolbar width', () => {
@@ -210,7 +221,7 @@ describe('MainToolbarComponent', () => {
     valueRange = { min: timeMin, max: timeMax };
   });
 
-  beforeEach(waitForAsync(() => configureTestingModule(dbService, dialogService, { declarations: [LanguageSelectComponent] })));
+  beforeEach(waitForAsync(() => configureTestingModule(dbService, dialogService, { declarations: [LanguageSelectComponent, ManualLinkComponent] })));
 
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(MainToolbarComponent);
@@ -257,6 +268,16 @@ describe('MainToolbarComponent', () => {
 
     // then
     expect(buttons.map(b => b.id)).toEqual(['butHome', 'butShowSceneDetails', 'butScenes', 'butScene']);
+  });
+
+  it('manual link should be shown directly left of language selection', () => {
+
+    // when
+    const manualLink = fixture.nativeElement.querySelector('.span_language > koia-manual-link + koia-language-select');
+
+    // then
+    expect(manualLink).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('#butManual')).toBeTruthy();
   });
 
   describe('on desktop', () => {
