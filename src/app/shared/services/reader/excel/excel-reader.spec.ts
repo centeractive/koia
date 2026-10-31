@@ -158,6 +158,20 @@ describe('ExcelReader', () => {
       await expect(recorder.completion).rejects.toBe('Worksheet "XYZ Sheet" does not exist or cannot be parsed');
    });
 
+   it('#readData should return error when worksheet named constructor does not exist', async () => {
+
+      // given
+      const file = await loadExcelFile();
+      reader.furnishAttributes()[0].value = 'constructor';
+      const recorder = new DataHandlerRecorder();
+
+      // when
+      reader.readData(file, 100, recorder);
+
+      // then
+      await expect(recorder.completion).rejects.toBe('Worksheet "constructor" does not exist or cannot be parsed');
+   });
+
    it('#readData should return error when data is invalid', async () => {
 
       // given

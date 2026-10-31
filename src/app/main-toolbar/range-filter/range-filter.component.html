@@ -29,6 +29,9 @@
 <div class="div_range_column_name">{{ filter.column.name }}
   <span [class]="filter.inverted ? 'span_outside_range_menu_trigger' : 'span_menu_trigger'"
   [matMenuTriggerFor]="rangeTypeMenu">{{ (filter.inverted ? 'filter.range.outside' : 'filter.range.inside') | translate }}</span>
+  @if (filter.inverted && filter.orEmpty) {
+    <span class="span_or_empty">{{ 'filter.orEmpty' | translate }}</span>
+  }
   <mat-menu #rangeTypeMenu="matMenu">
     <button mat-menu-item [disabled]="!filter.inverted" (click)="onInvertedChanged(false)">
       <span>{{ 'filter.range.inside' | translate }}</span>

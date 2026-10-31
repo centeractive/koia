@@ -1,6 +1,7 @@
 import { Column } from 'app/shared/model';
 import { DataTypeUtils } from 'app/shared/utils/data-type-utils';
 import { NumberUtils } from 'app/shared/utils/number-utils';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 
 export class SeriesNameConverter {
 
@@ -12,10 +13,10 @@ export class SeriesNameConverter {
     */
    toGroupKey(entry: object, dataColumn: Column, splitColumns: Column[]): string | number | boolean | undefined {
       if (splitColumns.length === 0) {
-         return entry[dataColumn.name];
+         return ObjectUtils.ownValue<string | number | boolean>(entry, dataColumn.name);
       }
       const name = this.fromSplitColumns(entry, splitColumns);
-      const value = entry[dataColumn.name];
+      const value = ObjectUtils.ownValue<string | number | boolean>(entry, dataColumn.name);
       if (!name || value === undefined || value === null) {
          return undefined;
       }
@@ -48,7 +49,7 @@ export class SeriesNameConverter {
    private fromSplitColumns(entry: object, splitColumns: Column[]): string | undefined {
       const splitColumnValues = [];
       for (const splitColumn of splitColumns) {
-         const splitColumnValue = entry[splitColumn.name];
+         const splitColumnValue = ObjectUtils.ownValue<string | number | boolean>(entry, splitColumn.name);
          if (splitColumnValue == undefined || splitColumnValue === '') {
             return undefined;
          }

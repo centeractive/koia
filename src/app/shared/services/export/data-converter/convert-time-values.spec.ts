@@ -28,4 +28,19 @@ describe('convertTimeValues', () => {
             { Amount: 4 }
         ]);
     });
+
+    it('#convertTimeValues should skip items lacking value of time column named constructor', () => {
+
+        // given
+        const columns: Column[] = [{ name: 'constructor', dataType: DataType.TIME, width: 10 }];
+        const data = [{ ID: 1 }];
+        const convert = vi.fn(() => 'x');
+
+        // when
+        convertTimeValues(data, columns, convert);
+
+        // then
+        expect(data).toEqual([{ ID: 1 }]);
+        expect(convert).not.toHaveBeenCalled();
+    });
 });

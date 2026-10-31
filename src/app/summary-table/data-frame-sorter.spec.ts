@@ -1,6 +1,6 @@
 import { DataFrameSorter } from './data-frame-sorter';
 import { IDataFrame, DataFrame } from 'data-forge';
-import { SummaryContext } from 'app/shared/model';
+import { DataType, SummaryContext } from 'app/shared/model';
 
 describe('DataFrameSorter', () => {
 
@@ -87,7 +87,7 @@ describe('DataFrameSorter', () => {
          { g: '4 - 6' },
          { g: 'min - 2' }
       ]);
-      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
+      groupByValueRanges();
 
       // when
       const sortedDataFrame = sorter.sort(data, { active: 'g', direction: 'asc' }, context);
@@ -100,7 +100,7 @@ describe('DataFrameSorter', () => {
    it('#sort should ascending sort grouped column', () => {
 
       // given
-      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
+      groupByValueRanges();
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'asc' }, context);
@@ -113,7 +113,7 @@ describe('DataFrameSorter', () => {
    it('#sort should descending sort grouped column', () => {
 
       // given
-      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
+      groupByValueRanges();
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'desc' }, context);
@@ -131,7 +131,7 @@ describe('DataFrameSorter', () => {
       const range3 = toRange(0, 1_000_000);
       const range4 = toRange(1_000_000, 2_000_000);
       dataFrame = new DataFrame([{ g: range3 }, { g: range1 }, { g: range4 }, { g: range2 }]);
-      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
+      groupByValueRanges();
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'asc' }, context);
@@ -148,7 +148,7 @@ describe('DataFrameSorter', () => {
       const range3 = toRange(0, 1_000_000);
       const range4 = toRange(1_000_000, 2_000_000);
       dataFrame = new DataFrame([{ g: range3 }, { g: range1 }, { g: range4 }, { g: range2 }]);
-      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
+      groupByValueRanges();
 
       // when
       const sortedDataFrame = sorter.sort(dataFrame, { active: 'g', direction: 'desc' }, context);
@@ -156,6 +156,58 @@ describe('DataFrameSorter', () => {
       // then
       expect(sortedDataFrame.getSeries('g').toArray()).toEqual([range4, range3, range2, range1]);
    });
+
+   it('#sort should return original data frame when direction is empty', () => {
+
+      // when
+      const sortedDataFrame = sorter.sort(dataFrame, { active: 't', direction: '' }, context);
+
+      // then
+      expect(sortedDataFrame).toBe(dataFrame);
+   });
+
+   it('#sort should ascending sort empty values first', () => {
+
+      // given
+      dataFrame = new DataFrame<number, object>([{ t: 'b' }, { t: null }, { t: 'a' }, { n: 1 }]);
+
+      // when
+      const sortedDataFrame = sorter.sort(dataFrame, { active: 't', direction: 'asc' }, context);
+
+      // then
+      expect(sortedDataFrame.toArray().map(r => r['t'])).toEqual([null, undefined, 'a', 'b']);
+   });
+
+   it('#sort should descending sort empty values last', () => {
+
+      // given
+      dataFrame = new DataFrame<number, object>([{ t: 'b' }, { t: null }, { t: 'a' }, { n: 1 }]);
+
+      // when
+      const sortedDataFrame = sorter.sort(dataFrame, { active: 't', direction: 'desc' }, context);
+
+      // then
+      expect(sortedDataFrame.toArray().map(r => r['t'])).toEqual(['b', 'a', null, undefined]);
+   });
+
+   it('#sort should sort aggregation column by its values when value grouping exists for column of same name', () => {
+
+      // given
+      context.dataColumns = [{ name: 't', dataType: DataType.TEXT, width: 10 }];
+      vi.spyOn(context, 'hasValueGrouping').mockImplementation(name => name === 'Count');
+      dataFrame = new DataFrame([{ t: 'a', Count: 2 }, { t: 'b', Count: 10 }, { t: 'c', Count: 1 }]);
+
+      // when
+      const sortedDataFrame = sorter.sort(dataFrame, { active: 'Count', direction: 'asc' }, context);
+
+      // then
+      expect(sortedDataFrame.getSeries('Count').toArray()).toEqual([1, 2, 10]);
+   });
+
+   function groupByValueRanges(): void {
+      context.groupByColumns = [{ name: 'g', dataType: DataType.NUMBER, width: 10 }];
+      vi.spyOn(context, 'hasValueGrouping').mockReturnValue(true);
+   }
 
    function toRange(from: number, to: number): string {
       return from.toLocaleString() + ' - ' + to.toLocaleString();

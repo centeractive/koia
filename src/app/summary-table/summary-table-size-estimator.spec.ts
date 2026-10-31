@@ -3,10 +3,6 @@ import { Aggregation, Column, DataType, SummaryContext, TimeUnit } from 'app/sha
 import { LanguageService } from 'app/shared/services/language';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { TextMeasurer } from 'app/shared/ui/table-fit/text-measurer';
-import { ValueRangeGroupingService } from 'app/shared/value-range';
-import { DataFrame } from 'data-forge';
-import { AggregationService } from '../shared/services';
-import { SummaryDataComputer } from './summary-data-computer';
 import { fontOf, SUMMARY_TABLE_STYLE } from './summary-table-style';
 import { SummaryTableSizeEstimator } from './summary-table-size-estimator';
 
@@ -18,7 +14,8 @@ describe('SummaryTableSizeEstimator', () => {
     { name: 't2', dataType: DataType.TEXT, width: 60, indexed: true },
     { name: 'n1', dataType: DataType.NUMBER, width: 80, indexed: true },
     { name: 'Very Long Column Name', dataType: DataType.TEXT, width: 60, indexed: true },
-    { name: 'T', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.SECOND, indexed: true }
+    { name: 'T', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.SECOND, indexed: true },
+    { name: 'Count', dataType: DataType.NUMBER, width: 80, indexed: true }
   ];
   const headerMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.header));
   const cellMeasurer = new TextMeasurer(fontOf(SUMMARY_TABLE_STYLE.cell));
@@ -148,22 +145,34 @@ describe('SummaryTableSizeEstimator', () => {
     expect(context.aggregations).toEqual([Aggregation.COUNT]);
   });
 
-  it('#estimate should measure missing aggregated values as empty', () => {
+  it('#estimate should measure aggregated value of group without numbers as empty', () => {
 
     // given
-    const dataComputer = new SummaryDataComputer(new AggregationService(), new ValueRangeGroupingService());
-    vi.spyOn(dataComputer, 'aggregate').mockReturnValue(new DataFrame([{ t1: 'a', Average: null }]));
-    vi.spyOn(dataComputer, 'overallsOf').mockReturnValue([null]);
     context.entries = [{ t1: 'a', n1: null }];
     context.groupByColumns = [findColumn('t1')];
     context.dataColumns = [findColumn('n1')];
     context.aggregations = [Aggregation.AVG];
 
     // when
-    const { width } = new SummaryTableSizeEstimator(dataComputer).estimate(context);
+    const { width } = estimator.estimate(context);
 
     // then
     const expected = footerWidth('Overall') + headerWidth('Average') + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
+    expect(width).toBe(expected);
+  });
+
+  it('#estimate should measure data column named like COUNT aggregation as own column', () => {
+
+    // given
+    context.entries = [{ Count: 123_456_789 }];
+    context.dataColumns = [findColumn('Count')];
+
+    // when
+    const { width } = estimator.estimate(context);
+
+    // then
+    const expected = Math.max(headerWidth('Count'), cellWidth('123,456,789'), footerWidth('Overall')) + headerWidth('Count')
+      + SUMMARY_TABLE_STYLE.marginRight + scrollbarWidth;
     expect(width).toBe(expected);
   });
 

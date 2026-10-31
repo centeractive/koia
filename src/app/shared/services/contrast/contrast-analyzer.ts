@@ -1,5 +1,6 @@
 import { Column, DataType } from 'app/shared/model';
 import { isComputedColumn } from 'app/shared/utils/column-utils';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 import { ContrastFinding, ContrastResult, ValueKind } from './contrast.types';
 import { normalQuantile } from './normal-quantile';
 
@@ -94,8 +95,8 @@ export class ContrastAnalyzer {
    }
 
    private valueCountOf(counts: Map<string, ValueCount>, entry: object, columnName: string): ValueCount {
-      const value = entry[columnName];
-      const kind = this.kindOf(entry, columnName);
+      const value = ObjectUtils.ownValue<string | number | boolean>(entry, columnName);
+      const kind = this.kindOf(value);
       const key = kind === ValueKind.VALUE ? typeof value + ':' + String(value) : kind;
       let valueCount = counts.get(key);
       if (!valueCount) {
@@ -108,8 +109,7 @@ export class ContrastAnalyzer {
       return valueCount;
    }
 
-   private kindOf(entry: object, columnName: string): ValueKind {
-      const value = entry[columnName];
+   private kindOf(value: unknown): ValueKind {
       if (value === undefined) {
          return ValueKind.EMPTY;
       } else if (value === null) {

@@ -232,6 +232,18 @@ describe('LinePattern', () => {
       expect(values).toEqual({ level: 'info', msg: 'said "hi"', empty: '', duration: '12ms' });
    });
 
+   it('#match should keep value of logfmt key __proto__', () => {
+
+      // given
+      const pattern = new LinePattern(LinePattern.LOGFMT);
+
+      // when
+      const values = pattern.match('__proto__=x level=info');
+
+      // then
+      expect(Object.entries(values)).toEqual([['__proto__', 'x'], ['level', 'info']]);
+   });
+
    it.each([
       ['token without value', 'level=info started'],
       ['unclosed quote', 'msg="open'],

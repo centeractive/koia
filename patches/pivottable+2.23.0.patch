@@ -1,0 +1,94 @@
+diff --git a/node_modules/pivottable/dist/pivot.js b/node_modules/pivottable/dist/pivot.js
+index 489e412..626f5c6 100644
+--- a/node_modules/pivottable/dist/pivot.js
++++ b/node_modules/pivottable/dist/pivot.js
+@@ -617,7 +617,7 @@
+           if ($.isFunction(sort)) {
+             return sort;
+           }
+-        } else if (sorters[attr] != null) {
++        } else if (hasProp.call(sorters, attr) && sorters[attr] != null) {
+           return sorters[attr];
+         }
+       }
+@@ -651,11 +651,11 @@
+         this.filter = (ref9 = opts.filter) != null ? ref9 : (function() {
+           return true;
+         });
+-        this.tree = {};
++        this.tree = Object.create(null);
+         this.rowKeys = [];
+         this.colKeys = [];
+-        this.rowTotals = {};
+-        this.colTotals = {};
++        this.rowTotals = Object.create(null);
++        this.colTotals = Object.create(null);
+         this.allTotal = this.aggregator(this, [], []);
+         this.sorted = false;
+         PivotData.forEachRecord(this.input, this.derivedAttributes, (function(_this) {
+@@ -859,7 +859,7 @@
+         }
+         if (colKey.length !== 0 && rowKey.length !== 0) {
+           if (!this.tree[flatRowKey]) {
+-            this.tree[flatRowKey] = {};
++            this.tree[flatRowKey] = Object.create(null);
+           }
+           if (!this.tree[flatRowKey][flatColKey]) {
+             this.tree[flatRowKey][flatColKey] = this.aggregator(this, rowKey, colKey);
+@@ -929,7 +929,7 @@
+       if (opts.table.clickCallback) {
+         getClickHandler = function(value, rowValues, colValues) {
+           var attr, filters, i;
+-          filters = {};
++          filters = Object.create(null);
+           for (i in colAttrs) {
+             if (!hasProp.call(colAttrs, i)) continue;
+             attr = colAttrs[i];
+@@ -1244,7 +1244,7 @@
+         opts = existingOpts;
+       }
+       try {
+-        attrValues = {};
++        attrValues = Object.create(null);
+         materializedInput = [];
+         recordsProcessed = 0;
+         PivotData.forEachRecord(input, opts.derivedAttributes, function(record) {
+@@ -1256,7 +1256,7 @@
+           for (attr in record) {
+             if (!hasProp.call(record, attr)) continue;
+             if (attrValues[attr] == null) {
+-              attrValues[attr] = {};
++              attrValues[attr] = Object.create(null);
+               if (recordsProcessed > 0) {
+                 attrValues[attr]["null"] = recordsProcessed;
+               }
+@@ -1410,9 +1410,9 @@
+               valueCount = attrValues[attr][value];
+               filterItem = $("<label>");
+               filterItemExcluded = false;
+-              if (opts.inclusions[attr]) {
++              if (hasProp.call(opts.inclusions, attr) && opts.inclusions[attr]) {
+                 filterItemExcluded = (indexOf.call(opts.inclusions[attr], value) < 0);
+-              } else if (opts.exclusions[attr]) {
++              } else if (hasProp.call(opts.exclusions, attr) && opts.exclusions[attr]) {
+                 filterItemExcluded = (indexOf.call(opts.exclusions[attr], value) >= 0);
+               }
+               hasExcludedItem || (hasExcludedItem = filterItemExcluded);
+@@ -1601,7 +1601,7 @@
+             subopts.renderer = opts.renderers[renderer.val()];
+             subopts.rowOrder = rowOrderArrow.data("order");
+             subopts.colOrder = colOrderArrow.data("order");
+-            exclusions = {};
++            exclusions = Object.create(null);
+             _this.find('input.pvtFilter').not(':checked').each(function() {
+               var filter;
+               filter = $(this).data("filter");
+@@ -1611,7 +1611,7 @@
+                 return exclusions[filter[0]] = [filter[1]];
+               }
+             });
+-            inclusions = {};
++            inclusions = Object.create(null);
+             _this.find('input.pvtFilter:checked').each(function() {
+               var filter;
+               filter = $(this).data("filter");

@@ -1,7 +1,7 @@
 import { Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType, DataPoint } from 'app/shared/model/chart';
 import { shuffle } from 'd3';
-import { DateTime } from 'luxon';
+import { DateTime, Settings } from 'luxon';
 import { TestBed } from '@angular/core/testing';
 import { LanguageService } from 'app/shared/services/language';
 import { ChartDataHelper } from './chart-data-helper';
@@ -54,6 +54,20 @@ describe('ChartDataHelper', () => {
       expect(distinceValues).toEqual(expectedValues);
    });
 
+   it('#countDistinctValues should not count rows lacking value of column named constructor', () => {
+
+      // given
+      const context = new ChartContext([], ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('constructor', DataType.TEXT)];
+      context.entries = [{ constructor: 'a' }, { constructor: 'a' }, { ID: 1 }];
+
+      // when
+      const distinctValues = ChartDataHelper.countDistinctValues(context);
+
+      // then
+      expect(distinctValues).toEqual([{ x: 'a', y: 2 }]);
+   });
+
    it('#extractGroupingValue should return unchanged value when data type is NUMBER', () => {
 
       // given
@@ -84,6 +98,24 @@ describe('ChartDataHelper', () => {
       expect(value).toBe(date.getTime());
    });
 
+   it('#extractGroupingValue should return hour of same occurrence when clocks are turned back', () => {
+
+      // given
+      Settings.defaultZone = 'Europe/Zurich';
+      const entry = { _id: 1, x: 1, y: Date.UTC(2024, 9, 27, 1, 30, 15, 250) };
+      const groupByColumn = createColumn('y', DataType.TIME, TimeUnit.HOUR);
+
+      try {
+         // when
+         const value = ChartDataHelper.extractGroupingValue(entry, groupByColumn);
+
+         // then
+         expect(value).toBe(Date.UTC(2024, 9, 27, 1));
+      } finally {
+         Settings.defaultZone = null;
+      }
+   });
+
    it('#extractGroupingValue should return undefined when time is undefined', () => {
 
       // given
@@ -92,6 +124,18 @@ describe('ChartDataHelper', () => {
 
       // when
       const value = ChartDataHelper.extractGroupingValue(entry, groupByColumn);
+
+      // then
+      expect(value).toBeUndefined();
+   });
+
+   it('#extractGroupingValue should return undefined when entry lacks value of column named valueOf', () => {
+
+      // given
+      const groupByColumn = createColumn('valueOf', DataType.NUMBER);
+
+      // when
+      const value = ChartDataHelper.extractGroupingValue({ ID: 1 }, groupByColumn);
 
       // then
       expect(value).toBeUndefined();
@@ -140,6 +184,21 @@ describe('ChartDataHelper', () => {
             { label: 'z', values: [10, 20, undefined] }
          ]
       });
+   });
+
+   it('#categoryData should skip rows lacking value of name or data columns named like Object.prototype members', () => {
+
+      // given
+      const context = new ChartContext([], ChartType.BAR.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      context.dataColumns = [createColumn('valueOf', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('constructor', DataType.TEXT)];
+      context.entries = [{ constructor: 'a', valueOf: 1 }, { valueOf: 2 }, { constructor: 'b' }];
+
+      // when
+      const categoryData = ChartDataHelper.categoryData(context);
+
+      // then
+      expect(categoryData).toEqual({ labels: ['a'], dataSets: [{ label: 'valueOf', values: [1] }] });
    });
 
    it('#categoryData should throw error when names are not unique', () => {

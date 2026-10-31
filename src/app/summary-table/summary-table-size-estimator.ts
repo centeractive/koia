@@ -6,7 +6,7 @@ import { TextMeasurer } from 'app/shared/ui/table-fit/text-measurer';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame } from 'data-forge';
 import { SummaryContext } from '../shared/model';
-import { AggregationService } from '../shared/services';
+import { AggregationKeys, AggregationService } from '../shared/services';
 import { SummaryDataComputer } from './summary-data-computer';
 import { CellStyle, fontOf, SUMMARY_TABLE_STYLE } from './summary-table-style';
 import { SummaryValueFormatter } from './summary-value-formatter';
@@ -32,19 +32,16 @@ export class SummaryTableSizeEstimator {
   }
 
   estimate(context: SummaryContext): TableEstimate {
-    const frame = this.dataComputer.aggregate(new DataFrame(context.entries), context).bake();
-    const overalls = this.dataComputer.overallsOf(frame, context);
-    const rows = frame.toArray();
-    const names = frame.getColumnNames();
-    const aggregations = context.aggregations;
-    const leading = names.length - aggregations.length;
+    const { dataFrame, overalls } = this.dataComputer.compute(new DataFrame(context.entries), context);
+    const rows = dataFrame.toArray();
+    const keys = new AggregationKeys(context);
     const groupByColumns = context.groupByColumns;
     const localeId = LanguageService.localeId();
-    const leadingWidths = names.slice(0, leading).map((name, i) => this.columnWidth(name,
-      rows.map(r => String(this.valueFormatter.format(groupByColumns, i, r[name]) ?? '')),
-      i === leading - 1 ? LanguageService.instant('summary.overall') : ''));
-    const aggregationWidths = aggregations.map((a, j) => this.columnWidth(LanguageService.instant('summary.aggregation.' + a),
-      rows.map(r => LocalizedNumberPipe.format(r[a], localeId) ?? ''),
+    const leadingWidths = keys.leading.map((key, i) => this.columnWidth(keys.leadingLabels[i],
+      rows.map(r => String(this.valueFormatter.format(groupByColumns, i, r[key]) ?? '')),
+      i === keys.leading.length - 1 ? LanguageService.instant('summary.overall') : ''));
+    const aggregationWidths = context.aggregations.map((a, j) => this.columnWidth(LanguageService.instant('summary.aggregation.' + a),
+      rows.map(r => LocalizedNumberPipe.format(r[keys.aggregations[j]], localeId) ?? ''),
       LocalizedNumberPipe.format(overalls[j], localeId) ?? ''));
     const { headerHeight, firstRowHeight, rowHeight, footerHeight, marginRight } = SUMMARY_TABLE_STYLE;
     return {

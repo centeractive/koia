@@ -67,7 +67,7 @@ describe('ComputedColumnService', () => {
     const names = service.usedNames();
 
     // then
-    expect(names).toEqual(['Time', 'Level', 'Amount', 'Price', 'Comment', 'Share', '_id', '_rev', 'fgcolor', 'bgcolor']);
+    expect(names).toEqual(['Time', 'Level', 'Amount', 'Price', 'Comment', 'Share', '_id', '_rev', 'fgcolor', 'bgcolor', '__proto__']);
   });
 
   it('#usedNames should not return name of excepted computed column', () => {
@@ -76,7 +76,7 @@ describe('ComputedColumnService', () => {
     const names = service.usedNames('Share');
 
     // then
-    expect(names).toEqual(['Time', 'Level', 'Amount', 'Price', 'Comment', '_id', '_rev', 'fgcolor', 'bgcolor']);
+    expect(names).toEqual(['Time', 'Level', 'Amount', 'Price', 'Comment', '_id', '_rev', 'fgcolor', 'bgcolor', '__proto__']);
   });
 
   it('#usedNames should return name of excepted stored column', () => {
@@ -164,7 +164,7 @@ describe('ComputedColumnService', () => {
     expect(state.data.columnWidths).toEqual({ Ratio: 40 });
   });
 
-  it.each(['Amount', 'Comment', '_id', 'fgcolor'])('#save should reject name "%s" without updating scene', async name => {
+  it.each(['Amount', 'Comment', '_id', 'fgcolor', '__proto__'])('#save should reject name "%s" without updating scene', async name => {
 
     // given
     const column = computedColumn(name, ComputeOperator.ADD);

@@ -160,7 +160,8 @@
       "month": "月",
       "year": "年"
     },
-    "invalidValue": "無効な値（{{type}}）"
+    "invalidValue": "無効な値（{{type}}）",
+    "orEmpty": "または空"
   },
   "rawData": {
     "loading": "データを読み込み中...",

@@ -141,6 +141,24 @@ describe('QueryBuilder', () => {
       ]);
    });
 
+   it('#getQuery should keep orEmpty of inverted range filters', () => {
+
+      // given
+      const rangeFilters = [
+         new NumberRangeFilter(amountColumn, 1, 10, { min: 2, max: 5, maxExcluding: true }, true, true),
+         new NumberRangeFilter(percentColumn, 1, 10, { min: 2, max: 5 }, true)
+      ];
+
+      // when
+      const query = new QueryBuilder().rangeFilters(rangeFilters).getQuery();
+
+      // then
+      expect(query.getValueRangeFilters()).toEqual([
+         new ValueRangeFilter('Amount', { min: 2, max: 5, maxExcluding: true }, true, true),
+         new ValueRangeFilter('Percent', { min: 2, max: 5, maxExcluding: undefined }, true)
+      ]);
+   });
+
    it('#getQuery when all kind of filters are defined', () => {
 
       // given

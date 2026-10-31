@@ -385,6 +385,20 @@ describe('DBService (IndexedDB)', () => {
     expect(dbService['db'].find).not.toHaveBeenCalled();
   });
 
+  it('#findEntries should sort by column filtered only by filter matching empty values', async () => {
+
+    // given
+    await activateSceneWithEntries(columns);
+    const query = new Query(new PropertyFilter('Amount', Operator.NOT_EQUAL, 20, DataType.NUMBER, true));
+    query.setSort({ active: 'Amount', direction: 'asc' });
+
+    // when
+    const found = await lastValueFrom(dbService.findEntries(query, true));
+
+    // then
+    expect(found.map(e => e['ID'])).toEqual([4, 1, 3]);
+  });
+
   function dataDB(n: number): string {
     return prefix + DBService.DATA + '_' + n;
   }

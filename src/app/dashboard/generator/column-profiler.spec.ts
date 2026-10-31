@@ -116,6 +116,18 @@ describe('ColumnProfiler', () => {
     expect(profiles).toEqual([]);
   });
 
+  it('#profile should not count values of text column named constructor in entries lacking it', () => {
+
+    // given
+    const entries: object[] = [{ constructor: 'a' }, { constructor: 'b' }, { ID: 1 }, { ID: 2 }, { ID: 3 }];
+
+    // when
+    const profiles = profiler.profile([column('constructor', DataType.TEXT)], entries);
+
+    // then
+    expect(profiles).toEqual([]);
+  });
+
   it('#profile should classify number column with repeated values as measure', () => {
 
     // given

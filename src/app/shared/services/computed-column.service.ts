@@ -26,7 +26,10 @@ export interface ComputedColumnChange {
 })
 export class ComputedColumnService {
 
-  static readonly RESERVED_NAMES = [CouchDBConstants._ID, CouchDBConstants._REV, ...QueryConverter.TABLE_STYLE_FIELDS];
+  /**
+   * besides the fields of CouchDB and table styles '__proto__', which as property name sets the prototype instead of a value
+   */
+  static readonly RESERVED_NAMES = [CouchDBConstants._ID, CouchDBConstants._REV, ...QueryConverter.TABLE_STYLE_FIELDS, '__proto__'];
 
   private readonly changedSubject = new Subject<ComputedColumnChange>();
 

@@ -1,7 +1,7 @@
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Column, PropertyFilter, DataType } from 'app/shared/model';
 import { GraphContext, GraphNode, GraphLink } from 'app/shared/model/graph';
-import { DateTimeUtils, ColumnNameConverter, DataFrameUtils } from 'app/shared/utils';
+import { DateTimeUtils, ColumnNameConverter, DataFrameUtils, ObjectUtils } from 'app/shared/utils';
 import { Injectable } from '@angular/core';
 import { LanguageService } from './language/language.service';
 
@@ -45,7 +45,7 @@ export class GraphDataService {
       data.forEach(entry => {
          groupByColumns.reduce((nodes, column, i) => {
             const lastGroupByColumns = i + 1 === groupByColumns.length;
-            const columnValue = entry[column];
+            const columnValue = ObjectUtils.ownValue<string>(entry, column);
             const value = PropertyFilter.isEmptyValue(columnValue) ? PropertyFilter.EMPTY_VALUE : columnValue;
             let node: TreeNode = nodes.find(n => n.key === value);
             if (node) {

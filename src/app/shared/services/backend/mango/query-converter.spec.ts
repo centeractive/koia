@@ -218,6 +218,67 @@ describe('QueryConverter', () => {
       expect(mangoQuery).toEqual(expected);
    });
 
+   it('#queryForAllMatchingIds when PouchDB query has inverted value range filter without min', () => {
+
+      // given
+      query.addValueRangeFilter('Amount', undefined, 5, false, true);
+
+      // when
+      const mangoQuery = new QueryConverter(true).queryForAllMatchingIds(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            Amount: { $gt: 5 }
+         },
+         fields: [CouchDBConstants._ID],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#queryForAllMatchingIds when PouchDB query has value range filter without min', () => {
+
+      // given
+      query.addValueRangeFilter('Amount', undefined, 5);
+
+      // when
+      const mangoQuery = new QueryConverter(true).queryForAllMatchingIds(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            Amount: { $lte: 5, $exists: true }
+         },
+         fields: [CouchDBConstants._ID],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#queryForAllMatchingIds when PouchDB query has EQUAL filters on same field', () => {
+
+      // given
+      query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'INFO'));
+      query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'WARN'));
+
+      // when
+      const mangoQuery = new QueryConverter(true).queryForAllMatchingIds(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { Level: { $eq: 'INFO' } },
+               { $nor: [{ $nor: [{ Level: { $eq: 'WARN' } }] }] }
+            ]
+         },
+         fields: [CouchDBConstants._ID],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
    it('#toMango when query has no filter', () => {
 
       // when
@@ -399,6 +460,73 @@ describe('QueryConverter', () => {
             ]
          },
          fields: [CouchDBConstants._ID, 'ID', 'Time', 'Level', 'Data', 'Host', 'Path', 'Amount'],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#toMango when query has filters matching empty values', () => {
+
+      // given
+      query.addPropertyFilter(new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG', DataType.TEXT, true));
+      query.addValueRangeFilter('Amount', 1, 5, true, true, true);
+
+      // when
+      const mangoQuery = queryConverter.toMango(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { $or: [{ Level: { $exists: false } }, { Level: { $nin: ['DEBUG'] } }] },
+               { $or: [{ Amount: { $exists: false } }, { Amount: { $lt: 1 } }, { Amount: { $gte: 5 } }] }
+            ]
+         },
+         fields: [CouchDBConstants._ID, 'ID', 'Time', 'Level', 'Data', 'Host', 'Path', 'Amount'],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#toMango when CouchDB query has inverted value range filter without bounds and property filter', () => {
+
+      // given
+      query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'INFO'));
+      query.addValueRangeFilter('Amount', undefined, undefined, false, true);
+
+      // when
+      const mangoQuery = queryConverter.toMango(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            $and: [
+               { Level: { $eq: 'INFO' } },
+               { Amount: { $in: [] } }
+            ]
+         },
+         fields: [CouchDBConstants._ID, 'ID', 'Time', 'Level', 'Data', 'Host', 'Path', 'Amount'],
+         limit: MangoQueryBuilder.LIMIT
+      };
+      expect(mangoQuery).toEqual(expected);
+   });
+
+   it('#toMango when PouchDB query has NOT_EQUAL filter and sort on its column', () => {
+
+      // given
+      query.addPropertyFilter(new PropertyFilter('Amount', Operator.NOT_EQUAL, '20', DataType.NUMBER));
+      query.setSort({ active: 'Amount', direction: 'asc' });
+
+      // when
+      const mangoQuery = new QueryConverter(true).toMango(columns, query);
+
+      // then
+      const expected = {
+         selector: {
+            Amount: { $nin: [20] }
+         },
+         fields: [CouchDBConstants._ID, 'ID', 'Time', 'Level', 'Data', 'Host', 'Path', 'Amount'],
+         sort: [{ Amount: 'asc' }],
          limit: MangoQueryBuilder.LIMIT
       };
       expect(mangoQuery).toEqual(expected);

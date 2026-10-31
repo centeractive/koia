@@ -160,7 +160,8 @@
       "month": "month",
       "year": "year"
     },
-    "invalidValue": "Invalid {{type}}"
+    "invalidValue": "Invalid {{type}}",
+    "orEmpty": "or empty"
   },
   "rawData": {
     "loading": "Loading Data...",

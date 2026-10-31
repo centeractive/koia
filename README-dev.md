@@ -6,6 +6,10 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 Node.js 24 LTS (≥ 24.15)
 
+## Patched dependencies
+
+`.npmrc` sets `ignore-scripts=true`, so `npm ci` and `npm install` skip the `postinstall` script. Run `npm run postinstall` after every install; it applies the patches in `patches/` with [patch-package](https://github.com/ds300/patch-package) and fails when one does not apply. `patches/pivottable+2.23.0.patch` patches `dist/pivot.js` of PivotTable.js (loaded by `angular.json` instead of `pivot.min.js`): its internal maps get no prototype and the passed maps are read by own key only, since values or attributes named like `Object.prototype` members (e.g. `constructor`, `toString`, `__proto__`) otherwise crash the pivot table or give wrong counts. After changing `node_modules/pivottable/dist/pivot.js`, regenerate the patch with `npx patch-package pivottable`.
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
@@ -26,7 +30,7 @@ Run `npm test` to execute the unit tests with [Vitest](https://vitest.dev) in he
 
 Run `npm run e2e` to execute the [Playwright](https://playwright.dev) end-to-end tests in `e2e/` against their own `ng serve` on port 4300, or the port in environment variable `E2E_PORT` (a dev server already running on that port is reused; one-time: `npx playwright install chromium`). The browser locale is `en-US`. Tests of project `chromium` block requests to other origins, hence they never touch a CouchDB and start with an empty browser IndexedDB. Tests in `*.couchdb.e2e.ts` (project `couchdb`, run alone with `npm run e2e -- --project=couchdb`) use the CouchDB at `http://localhost:5984` with the default credentials admin/admin and require CORS for the origin of the tested app (`origins = *` works); they are skipped, stating why, when that CouchDB is not usable, but fail on CI. Each creates its own scene document and data database named `e2e_<timestamp>_<random>` and removes them with the scene's tabs document afterwards; the browser cannot send DELETE requests to CouchDB. Scenes named `E2E e2e_…` left by an aborted run can be deleted on the scenes page. Results are written to `test-results/e2e-junit.xml`, traces of failed tests to `test-results/e2e` (view with `npx playwright show-trace <zip>`).
 
-There is one spec per area (`e2e/*.e2e.ts`). Specs use the page objects of `e2e/support/pages` and `e2e/support/components` through the fixtures in `e2e/support/fixtures.ts` and `e2e/support/couchdb-fixtures.ts` and import framework-free app modules directly (never barrels). Expected texts come from `src/assets/i18n/<lang>.json` (`e2e/support/texts.ts`), sample data from `src/assets/samples`, import files from `e2e/data` and `src/app/shared/services/reader/excel/test.xlsx`. Both Azure pipelines run the end-to-end tests through the step template `e2e/azure-e2e-steps.yml`.
+There is one spec per area (`e2e/*.e2e.ts`). Specs use the page objects of `e2e/support/pages` and `e2e/support/components` through the fixtures in `e2e/support/fixtures.ts` and `e2e/support/couchdb-fixtures.ts` and import framework-free app modules directly (never barrels). Expected texts come from `src/assets/i18n/<lang>.json` (`e2e/support/texts.ts`), sample data from `src/assets/samples`, import files from `e2e/data` and `src/app/shared/services/reader/excel/test.xlsx`. The Azure pipeline runs the end-to-end tests through the step template `e2e/azure-e2e-steps.yml`.
 
 ## Recording tutorial videos
 

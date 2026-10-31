@@ -157,4 +157,30 @@ describe('ValueFormatter', () => {
       // then
       expect(formatted).toBe('server1');
    });
+
+   it('#formatCell should return blank when entry lacks value of time column named constructor', () => {
+
+      // given
+      const column: Column = { name: 'constructor', dataType: DataType.TIME, width: 10 };
+
+      // when
+      const formatted = formatter.formatCell(column, { ID: 1 }, false);
+
+      // then
+      expect(formatted).toBe('');
+   });
+
+   it('#formatCell should return blank when entry lacks value of object column named toString', () => {
+
+      // given
+      const column: Column = { name: 'toString', dataType: DataType.OBJECT, width: 10 };
+
+      // when
+      const shown = formatter.formatCell(column, { ID: 1 }, true);
+      const hidden = formatter.formatCell(column, { ID: 1 }, false);
+
+      // then
+      expect(shown).toBe('');
+      expect(hidden).toBe('');
+   });
 });

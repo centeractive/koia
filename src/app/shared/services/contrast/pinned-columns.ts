@@ -3,8 +3,8 @@ import { QuerySanitizer } from 'app/shared/utils';
 
 /**
  * @returns the names of the columns whose applicable filters differ between both queries, the values of these columns are
- * determined by the selection itself and are therefore not worth explaining. Property filters are compared by name, operator
- * and value only since filters of charts and graphs lack the data type. The full text filter is not related to any column.
+ * determined by the selection itself and are therefore not worth explaining. Property filters are compared by name, operator,
+ * value and whether they match empty values only since filters of charts and graphs lack the data type. The full text filter is not related to any column.
  */
 export function pinnedColumnsOf(selection: Query, base: Query): Set<string> {
    const selectionConditions = conditionsOf(selection);
@@ -29,10 +29,10 @@ function conditionsOf(query: Query): Map<string, Set<string>> {
    };
    sanitized.getPropertyFilters()
       .filter(f => f.isApplicable())
-      .forEach(f => add(f.name, JSON.stringify(['p', f.operator, f.value])));
+      .forEach(f => add(f.name, JSON.stringify(['p', f.operator, f.value, f.orEmpty])));
    sanitized.getValueRangeFilters()
       .filter(f => f.isApplicable())
-      .forEach(f => add(f.name, JSON.stringify(['r', f.valueRange.min, f.valueRange.max, !!f.valueRange.maxExcluding, f.inverted])));
+      .forEach(f => add(f.name, JSON.stringify(['r', f.valueRange.min, f.valueRange.max, !!f.valueRange.maxExcluding, f.inverted, f.orEmpty])));
    return conditions;
 }
 

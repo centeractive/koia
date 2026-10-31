@@ -5,30 +5,29 @@
   @if (frameData && rowSpans) {
     <table mat-table class="koia-data-table" [dataSource]="frameData" matSort (matSortChange)="sort($event)"
       [matSortActive]="currentSort.active" [matSortDirection]="currentSort.direction">
-      @for (column of frameColumns.slice(0, - overalls.length); track column; let iCol = $index) {
-        <ng-container [matColumnDef]="column"
-          >
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ column }}</th>
+      @for (key of keys.leading; track key; let iCol = $index) {
+        <ng-container [matColumnDef]="key">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ keys.leadingLabels[iCol] }}</th>
           <td *matCellDef="let entry; let iRow = index" [attr.rowspan]="rowSpans[iCol][iRow].span"
-            [style.display]="rowSpans[iCol][iRow].span === 0 ? 'none'  : ''">{{ formattedValueOf(iCol, entry[column]) }}
+            [style.display]="rowSpans[iCol][iRow].span === 0 ? 'none'  : ''">{{ formattedValueOf(iCol, entry[key]) }}
           </td>
-          <td mat-footer-cell *matFooterCellDef>{{ iCol === frameColumns.length - overalls.length - 1 ? ('summary.overall' | translate) : '' }}
+          <td mat-footer-cell *matFooterCellDef>{{ iCol === keys.leading.length - 1 ? ('summary.overall' | translate) : '' }}
           </td>
         </ng-container>
       }
-      @for (aggregation of context.aggregations; track aggregation; let iCol = $index) {
-        <ng-container [matColumnDef]="aggregation">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'summary.aggregation.' + aggregation | translate }}</th>
+      @for (key of keys.aggregations; track key; let iCol = $index) {
+        <ng-container [matColumnDef]="key">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'summary.aggregation.' + aggregations[iCol] | translate }}</th>
           <td class="td_aggregation" *matCellDef="let entry">
-            @if (aggregation !== 'Count' || context.isAnyColumnWithValueGroupingInUse()) {
+            @if (aggregations[iCol] !== 'Count' || context.isAnyColumnWithValueGroupingInUse()) {
               <span>
-                {{ entry[aggregation] | koiaNumber }}
+                {{ entry[key] | koiaNumber }}
               </span>
             }
-            @if (aggregation === 'Count' && !context.isAnyColumnWithValueGroupingInUse()) {
+            @if (aggregations[iCol] === 'Count' && !context.isAnyColumnWithValueGroupingInUse()) {
               <a
                 (click)="onAggregationCellClick(entry)" [matTooltip]="'summary.showData' | translate">
-                {{ entry[aggregation] | koiaNumber }}
+                {{ entry[key] | koiaNumber }}
               </a>
             }
           </td>

@@ -2,6 +2,7 @@ import { DataType } from '../model/data-type.enum';
 import { Column } from '../model/column.type';
 import { formatDate } from '@angular/common';
 import { NumberUtils } from '../utils/number-utils';
+import { ObjectUtils } from '../utils/object-utils';
 import { NumberFormatter } from './number-formatter';
 
 export class ValueFormatter {
@@ -31,9 +32,10 @@ export class ValueFormatter {
 
    // eslint-disable-next-line
    formatCell(column: Column, entry: object, showNestedObjects: boolean): any {
+      const value = ObjectUtils.ownValue<string | number | boolean>(entry, column.name);
       if (!showNestedObjects && column.dataType === DataType.OBJECT) {
-         return entry[column.name] ? '...' : '';
+         return value ? '...' : '';
       }
-      return this.formatValue(column, entry[column.name]);
+      return this.formatValue(column, value);
    }
 }

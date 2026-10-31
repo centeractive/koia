@@ -3,12 +3,12 @@ import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { ExportDataProvider } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
-import { ColumnNameConverter, CommonUtils } from 'app/shared/utils';
+import { CommonUtils } from 'app/shared/utils';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Subscription } from 'rxjs';
-import { ChangeEvent, DataType, Route, SummaryContext } from '../shared/model';
-import { AggregationService, RawDataRevealService } from '../shared/services';
+import { Aggregation, ChangeEvent, Column, DataType, Route, SummaryContext } from '../shared/model';
+import { AggregationKeys, AggregationService, RawDataRevealService } from '../shared/services';
 import { DataFrameSorter } from './data-frame-sorter';
 import { ExportDataGenerator } from './export-data-generator';
 import { RowSpanComputer, Span } from './row-span-computer';
@@ -26,6 +26,8 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
 
   @Input() context: SummaryContext;
 
+  keys: AggregationKeys;
+  aggregations: Aggregation[];
   frameColumns: string[];
   frameData: object[];
   overalls: number[];
@@ -70,6 +72,8 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
 
   private clearData(): void {
     this.dataFrame = undefined;
+    this.keys = undefined;
+    this.aggregations = undefined;
     this.frameColumns = undefined;
     this.frameData = undefined;
     this.rowSpans = undefined;
@@ -85,13 +89,15 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
   }
 
   onAggregationCellClick(entry: object): void {
-    const columns = this.context.groupByColumns //
+    const groupByColumns = this.context.groupByColumns;
+    const columns = groupByColumns //
       .filter(c => c.dataType !== DataType.TIME) //
-      .concat(this.context.dataColumns[0])
+      .concat(this.context.dataColumns[0]);
     const columnValues = columns.map(c => entry[c.name]);
-    if (this.context.groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
-      const timeColumns = this.context.groupByColumns.filter(c => c.dataType === DataType.TIME);
-      const startTimes = timeColumns.map(c => entry[ColumnNameConverter.toLabel(c, c.groupingTimeUnit)]);
+    if (groupByColumns.find(c => c.dataType === DataType.TIME) !== undefined) {
+      const groupByKeys = this.keys.groupBy;
+      const timeColumns = groupByColumns.filter(c => c.dataType === DataType.TIME);
+      const startTimes = timeColumns.map(c => entry[groupByKeys[groupByColumns.indexOf(c)]]);
       this.rawDataRevealService.ofTimeUnit(this.context.query, timeColumns, startTimes, columns.map(c => c.name), columnValues,
         this.context);
     } else {
@@ -103,10 +109,9 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
    * sorts count tables by their first group-by column, other tables by their data column
    */
   private initSort(): void {
-    const firstGroupByColumn = this.context.groupByColumns[0];
     let active: string;
-    if (this.context.isAggregationCountSelected() && firstGroupByColumn) {
-      active = ColumnNameConverter.toLabel(firstGroupByColumn, firstGroupByColumn.groupingTimeUnit);
+    if (this.context.isAggregationCountSelected() && this.context.groupByColumns.length > 0) {
+      active = new AggregationKeys(this.context).groupBy[0];
     } else {
       active = this.context.hasDataColumn() ? this.context.dataColumns[0].name : undefined;
     }
@@ -124,10 +129,13 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
     this.computing = true;
     await CommonUtils.sleep(100); // releases UI thread for showing progress bar
     if (this.context.hasDataColumn()) {
-      this.dataFrame = this.dataComputer.aggregate(this.baseDataFrame, this.context);
-      this.frameColumns = this.dataFrame.getColumnNames();
+      const { dataFrame, overalls } = this.dataComputer.compute(this.baseDataFrame, this.context);
+      this.keys = new AggregationKeys(this.context);
+      this.aggregations = this.context.aggregations;
+      this.dataFrame = dataFrame;
+      this.frameColumns = this.keys.all;
+      this.overalls = overalls;
       this.sortDataFrame();
-      this.overalls = this.dataComputer.overallsOf(this.dataFrame, this.context);
     }
     this.computing = false;
   }
@@ -151,12 +159,11 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
   }
 
   /**
-   * computes row spans for the leading columns, no row spans are needed for the aggregation columns and the column that immediatly
-   * preceds them. To keep the HTML simple, we however also include latter in row span comuting.
+   * computes row spans for the leading columns; the column immediately preceding the aggregation columns needs none, it is however
+   * included to keep the HTML simple
    */
   private computeRowSpans(): void {
-    const columnNames = this.dataFrame.getColumnNames().slice(0, -1);
-    this.rowSpans = this.rowSpanComputer.compute(this.frameData, columnNames);
+    this.rowSpans = this.rowSpanComputer.compute(this.frameData, this.keys.leading);
   }
 
   formattedValueOf(columnIndex: number, value: string | number | boolean): string | boolean {
@@ -165,6 +172,13 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
 
   createExportData(): object[] {
     return this.exportDataGenerator.generate(this.context, this.dataFrame, this.overalls);
+  }
+
+  /**
+   * @returns the columns among the specified ones whose exported values are converted by data type
+   */
+  createExportColumns(columns: Column[]): Column[] {
+    return this.exportDataGenerator.columnsOf(this.context, columns);
   }
 
   ngOnDestroy(): void {

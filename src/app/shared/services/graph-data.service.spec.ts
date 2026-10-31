@@ -256,6 +256,24 @@ describe('GraphDataService', () => {
       expect(nodes[2].count).toBe(2);
    });
 
+   it('#createData should group rows lacking value of column named toString as empty', () => {
+
+      // given
+      const column: Column = { name: 'toString', dataType: DataType.TEXT, width: 10 };
+      context = new GraphContext([column]);
+      context.entries = [{ toString: 'a' }, { ID: 1 }];
+      context.groupByColumns = [column];
+
+      // when
+      const data = dataService.createData(context);
+
+      // then
+      const nodes: GraphNode[] = data['nodes'];
+      expect(nodes[1].value).toBe('a');
+      expect(nodes[2].value).toBe(PropertyFilter.EMPTY_VALUE);
+      expect(nodes[2].count).toBe(1);
+   });
+
    function findColumn(name: string): Column {
       return columns.find(c => c.name === name);
    }

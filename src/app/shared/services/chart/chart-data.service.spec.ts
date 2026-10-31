@@ -404,6 +404,22 @@ describe('ChartDataService', () => {
       expect(context.warning).toBeUndefined();
    });
 
+   it('#createData should skip rows lacking value of individual values columns named like Object.prototype members', () => {
+
+      // given
+      context.chartType = ChartType.SCATTER.type;
+      context.dataColumns = [createColumn('valueOf', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('constructor', DataType.TIME)];
+      context.aggregations = [];
+      context.entries = [{ _id: 1, constructor: now, valueOf: 5 }, { _id: 2, constructor: now + min }, { _id: 3, valueOf: 7 }];
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      expect(result.data.datasets[0].data).toEqual([{ id: 1, x: now, y: 5 }]);
+   });
+
    it('#createData should create chronologically sorted and splitted individual values data', () => {
 
       // given

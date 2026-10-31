@@ -249,4 +249,28 @@ describe('ValueRangeFilter', () => {
       expect(clone.valueRange).toEqual({ min: 1, max: null, maxExcluding: undefined });
       expect(clone.inverted).toBe(true);
    });
+
+   it.each([
+      [true, true],
+      [false, false]
+   ])('#orEmpty should apply to inverted filter only (inverted: %s)', (inverted, expected) => {
+
+      // when
+      const filter = new ValueRangeFilter('x', { min: 1, max: 2 }, inverted, true);
+
+      // then
+      expect(filter.orEmpty).toBe(expected);
+   });
+
+   it('#clone should keep orEmpty', () => {
+
+      // given
+      const filter = new ValueRangeFilter('x', { min: 1, max: 2 }, true, true);
+
+      // when
+      const clone = filter.clone();
+
+      // then
+      expect(clone.orEmpty).toBe(true);
+   });
 });

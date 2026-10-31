@@ -522,6 +522,106 @@ describe('DateTimeUtils', () => {
     expect(DateTimeUtils.formatTime(now, TimeUnit.YEAR)).toBe(ngFormat(TimeUnit.YEAR));
   });
 
+  describe('when clocks are turned back in Europe/Zurich on 27 Oct 2024 from 03:00 to 02:00', () => {
+
+    const firstOccurrence = Date.UTC(2024, 9, 27, 0, 30, 15, 250);
+    const secondOccurrence = Date.UTC(2024, 9, 27, 1, 30, 15, 250);
+
+    beforeEach(() => Settings.defaultZone = 'Europe/Zurich');
+
+    afterEach(() => Settings.defaultZone = null);
+
+    it('#toBaseDate should round down to hour of same occurrence', () => {
+
+      // when
+      const dates = [firstOccurrence, secondOccurrence].map(t => DateTimeUtils.toBaseDate(t, TimeUnit.HOUR));
+
+      // then
+      expect(dates).toEqual([new Date(Date.UTC(2024, 9, 27, 0)), new Date(Date.UTC(2024, 9, 27, 1))]);
+    });
+
+    it('#toBaseDate should round down to minute of same occurrence', () => {
+
+      // when
+      const dates = [firstOccurrence, secondOccurrence].map(t => DateTimeUtils.toBaseDate(t, TimeUnit.MINUTE));
+
+      // then
+      expect(dates).toEqual([new Date(Date.UTC(2024, 9, 27, 0, 30)), new Date(Date.UTC(2024, 9, 27, 1, 30))]);
+    });
+
+    it('#toBaseDate should round down to second of same occurrence', () => {
+
+      // when
+      const dates = [firstOccurrence, secondOccurrence].map(t => DateTimeUtils.toBaseDate(t, TimeUnit.SECOND));
+
+      // then
+      expect(dates).toEqual([new Date(Date.UTC(2024, 9, 27, 0, 30, 15)), new Date(Date.UTC(2024, 9, 27, 1, 30, 15))]);
+    });
+
+    it('#formatTime should append offset when hour occurs twice', () => {
+
+      // when
+      const formattedTimes = [firstOccurrence, secondOccurrence].map(t => DateTimeUtils.formatTime(t, TimeUnit.HOUR));
+
+      // then
+      expect(formattedTimes).toEqual(['27 Oct 2024 02 +02:00', '27 Oct 2024 02 +01:00']);
+    });
+
+    it('#formatTime should append offset when millisecond occurs twice', () => {
+
+      // when
+      const formattedTimes = [firstOccurrence, secondOccurrence].map(t => DateTimeUtils.formatTime(t, TimeUnit.MILLISECOND));
+
+      // then
+      expect(formattedTimes).toEqual(['27 Oct 2024 02:30:15 250 +02:00', '27 Oct 2024 02:30:15 250 +01:00']);
+    });
+
+    it('#formatTime should not append offset when hour occurs once', () => {
+
+      // when
+      const formattedTimes = [Date.UTC(2024, 9, 26, 23), Date.UTC(2024, 9, 27, 2)].map(t => DateTimeUtils.formatTime(t, TimeUnit.HOUR));
+
+      // then
+      expect(formattedTimes).toEqual(['27 Oct 2024 01', '27 Oct 2024 03']);
+    });
+
+    it('#formatTime should not append offset to day', () => {
+
+      // when
+      const formattedTime = DateTimeUtils.formatTime(secondOccurrence, TimeUnit.DAY);
+
+      // then
+      expect(formattedTime).toBe('27 Oct 2024');
+    });
+
+    it('#parseFormattedTime should return occurrence denoted by offset', () => {
+
+      // when
+      const dates = ['27 Oct 2024 02 +02:00', '27 Oct 2024 02 +01:00'].map(t => DateTimeUtils.parseFormattedTime(t, TimeUnit.HOUR));
+
+      // then
+      expect(dates).toEqual([new Date(Date.UTC(2024, 9, 27, 0)), new Date(Date.UTC(2024, 9, 27, 1))]);
+    });
+
+    it('#parseFormattedTime should return time formatted without offset', () => {
+
+      // when
+      const date = DateTimeUtils.parseFormattedTime('27 Oct 2024 03', TimeUnit.HOUR);
+
+      // then
+      expect(date).toEqual(new Date(Date.UTC(2024, 9, 27, 2)));
+    });
+  });
+
+  it('#parseFormattedTime should return undefined when time is not formatted', () => {
+
+    // when
+    const date = DateTimeUtils.parseFormattedTime('x', TimeUnit.HOUR);
+
+    // then
+    expect(date).toBeUndefined();
+  });
+
   it('#timeUnitFromNgFormat should return MILLISECOND when ngFormat is missing', () => {
     expect(DateTimeUtils.timeUnitFromNgFormat(null)).toBe(TimeUnit.MILLISECOND);
     expect(DateTimeUtils.timeUnitFromNgFormat(undefined)).toBe(TimeUnit.MILLISECOND);

@@ -5,5 +5,6 @@ export * from './raw-data-reveal.service';
 export * from './graph-data.service';
 export * from './time-grouping.service';
 export * from './aggregation.service';
+export * from './aggregation-keys';
 export * from './notification.service';
 export * from './export/export.service';

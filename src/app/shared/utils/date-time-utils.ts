@@ -5,6 +5,8 @@ import { ArrayUtils } from './array-utils';
 export class DateTimeUtils {
 
   private static readonly ISO_DATE_START = /^[+-]?\d{4}/;
+  private static readonly TIME_OF_DAY_UNITS: readonly TimeUnit[] = [TimeUnit.MILLISECOND, TimeUnit.SECOND, TimeUnit.MINUTE, TimeUnit.HOUR];
+  private static readonly OFFSET_FORMAT_SUFFIX = ' ZZ';
 
   static maxTimeUnit(...timeUnits: TimeUnit[]): TimeUnit {
     if (!timeUnits.length) {
@@ -111,18 +113,13 @@ export class DateTimeUtils {
     if (timeUnit === TimeUnit.MILLISECOND) {
       return date;
     }
+    if (DateTimeUtils.TIME_OF_DAY_UNITS.includes(timeUnit)) {
+      // luxon keeps the offset, hence a time within the hour repeated when clocks are turned back stays in its occurrence
+      return new Date(DateTimeUtils.startOf(time, timeUnit));
+    }
     date.setMilliseconds(0);
-    if (timeUnit === TimeUnit.SECOND) {
-      return date;
-    }
     date.setSeconds(0);
-    if (timeUnit === TimeUnit.MINUTE) {
-      return date;
-    }
     date.setMinutes(0);
-    if (timeUnit === TimeUnit.HOUR) {
-      return date;
-    }
     date.setHours(0);
     if (timeUnit === TimeUnit.DAY) {
       return date;
@@ -143,9 +140,21 @@ export class DateTimeUtils {
   /**
    * @param locale English by default, since the formatted times are data (e.g. pivot table values) that are parsed back
    * with English locale, other locales are meant for display only
+   * @returns the formatted time with the UTC offset appended when the wall time occurs twice because clocks are turned back
    */
   static formatTime(time: number, timeUnit: TimeUnit, locale = 'en'): string {
-    return DateTime.fromMillis(time, { locale }).toFormat(this.luxonFormatOf(timeUnit));
+    const dateTime = DateTime.fromMillis(time, { locale });
+    const format = this.luxonFormatOf(timeUnit);
+    const ambiguous = DateTimeUtils.TIME_OF_DAY_UNITS.includes(timeUnit) && dateTime.getPossibleOffsets().length > 1;
+    return dateTime.toFormat(ambiguous ? format + DateTimeUtils.OFFSET_FORMAT_SUFFIX : format);
+  }
+
+  /**
+   * @returns the [[Date]] of a time formatted in English by [[#formatTime]] or [[undefined]] when parsing fails
+   */
+  static parseFormattedTime(formattedTime: string, timeUnit: TimeUnit): Date {
+    const format = this.luxonFormatOf(timeUnit);
+    return DateTimeUtils.parseDate(formattedTime, format) ?? DateTimeUtils.parseDate(formattedTime, format + DateTimeUtils.OFFSET_FORMAT_SUFFIX);
   }
 
   /**

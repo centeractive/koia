@@ -491,7 +491,8 @@ export class DBService {
   }
 
   /**
-   * both backends omit entries lacking the value of the sort field, they're counted with the selector and sort of the entries query
+   * CouchDB omits the entries lacking the value of the sort field, PouchDB keeps them: they're counted with the selector and sort of the
+   * entries query
    */
   private async countMatchingEntries(query: Query): Promise<number> {
     if (this.matchesNothing(query)) {

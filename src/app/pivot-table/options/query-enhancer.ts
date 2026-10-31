@@ -1,8 +1,9 @@
+import * as _ from 'lodash';
 import { ValueGrouping } from 'app/shared/value-range/model';
-import { ArrayUtils, DateTimeUtils, QuerySanitizer, ColumnNameConverter, NumberUtils } from 'app/shared/utils';
+import { ArrayUtils, DateTimeUtils, QuerySanitizer, NumberUtils } from 'app/shared/utils';
 import { Operator, PropertyFilter, Column, Query, DataType } from 'app/shared/model';
 import { ValueRangeConverter } from 'app/shared/value-range';
-import { NumberFormatter } from 'app/shared/format';
+import { columnOfLabel } from './pivot-labels';
 
 /**
  * responsible for enhancing the query used to request raw data of a specific pivot table cell
@@ -10,7 +11,6 @@ import { NumberFormatter } from 'app/shared/format';
 export class QueryEnhancer {
 
    private filterLabels: string[];
-   private readonly numberFormatter = new NumberFormatter();
 
    constructor(private query: Query, private columns: Column[], private valueGroupings: ValueGrouping[], private filters: object) {
       this.filterLabels = Object.keys(filters);
@@ -18,9 +18,7 @@ export class QueryEnhancer {
 
    addBasicFilters(): void {
       for (const filterLabel of this.filterLabels) {
-         const columnName = ColumnNameConverter.toColumnName(filterLabel);
-         const column = this.columns.find(c => c.name === columnName);
-         this.addFilter(column, this.filters[filterLabel]);
+         this.addFilter(columnOfLabel(filterLabel, this.columns), this.filters[filterLabel]);
       }
    }
 
@@ -37,73 +35,86 @@ export class QueryEnhancer {
    }
 
    /**
-    * adds filters required to match the value choices the user made in the pop-up filter menus of individual attributes (labels)
+    * adds filters dropping the rows PivotTable.js drops since their value of an attribute (label) not pinned by the filters is
+    * excluded in its pop-up filter menu. Like PivotTable.js, they keep the rows lacking a value, a NOT_EMPTY filter drops them
+    * when the empty value ('null', 'empty' for time columns and value groupings) is excluded too.
     *
-    * @param exclusions excluded values (see https://github.com/nicolaskruchten/pivottable/wiki/Parameters)
-    * @param inclusions included values (see https://github.com/nicolaskruchten/pivottable/wiki/Parameters)
-    * @param pivotData PivotTable.js data model (see https://github.com/nicolaskruchten/pivottable/wiki/Renderers#the-pivotdata-object)
-    *
-    * Exclusions (not inclusions) are translated into filters because PivotTable.js filters records by exclusions only, and inclusions of time columns and value groupings would require OR-combined value ranges, which a [[Query]] cannot express.
+    * @param exclusions excluded values per label (see https://github.com/nicolaskruchten/pivottable/wiki/Parameters)
     */
-   addFiltersForValueChoices(exclusions: object, inclusions: object, pivotData: object): void {
-      if (exclusions) {
-         const labelsInUse = pivotData['colAttrs'].concat(pivotData['rowAttrs']);
-         for (const label of labelsInUse) {
-            if (!this.filterLabels.includes(label) && exclusions[label]) {
-               const column = this.columns.find(c => c.name === ColumnNameConverter.toColumnName(label));
-               if (column.dataType === DataType.TIME) {
-                  exclusions[label].forEach(v => this.addTimeRangeFilter(column, v, true));
-               } else if (this.hasValueGrouping(label)) {
-                  exclusions[label].forEach(v => this.addValueGroupingFilter(column, v, true));
-               } else {
-                  this.addValueExclusionFilters(label, column, exclusions[label]);
-               }
+   addFiltersForValueChoices(exclusions: object): void {
+      for (const [label, excludedValues] of Object.entries(exclusions)) {
+         if (!this.filterLabels.includes(label)) {
+            const column = columnOfLabel(label, this.columns);
+            if (column.dataType === DataType.TIME) {
+               excludedValues.forEach(v => this.addTimeRangeFilter(column, v, true));
+            } else if (this.hasValueGrouping(column.name)) {
+               excludedValues.forEach(v => this.addValueGroupingFilter(column, v, true));
+            } else {
+               this.addValueExclusionFilters(column, excludedValues);
             }
          }
       }
    }
 
    /**
-    * 'null' is the label PivotTable.js shows for missing values
+    * 'null' is the label PivotTable.js shows for missing values. Numbers are excluded one by one to be compared exactly, as well
+    * as texts that splitting and trimming the semicolon separated NONE_OF list would alter.
     */
-   private addValueExclusionFilters(label: string, column: Column, excludedValues: string[]): void {
-      let values = excludedValues.filter(v => v !== 'null');
-      if (values.length < excludedValues.length) {
-         this.query.addPropertyFilter(new PropertyFilter(label, Operator.NOT_EMPTY, '', column.dataType));
+   private addValueExclusionFilters(column: Column, excludedValues: string[]): void {
+      if (excludedValues.includes('null')) {
+         this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.NOT_EMPTY, '', column.dataType));
       }
-      if (values.length) {
-         if (column.dataType === DataType.NUMBER) {
-            values = values.map(v => this.numberFormatter.format(NumberUtils.parseMachineNumber(v)));
+      const values = excludedValues.filter(v => v !== 'null');
+      if (column.dataType === DataType.NUMBER) {
+         values.forEach(v => this.addNotEqualFilter(column, NumberUtils.parseMachineNumber(v)));
+      } else {
+         const [listedValues, singleValues] = _.partition(values, v => !v.includes(ArrayUtils.DEFAULT_SEPARATOR) && v === v.trim());
+         if (listedValues.length) {
+            this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.NONE_OF,
+               listedValues.join(ArrayUtils.DEFAULT_SEPARATOR), column.dataType, true));
          }
-         this.query.addPropertyFilter(new PropertyFilter(label, Operator.NONE_OF, values.join(ArrayUtils.DEFAULT_SEPARATOR), column.dataType));
+         singleValues.forEach(v => this.addNotEqualFilter(column, v));
       }
+   }
+
+   private addNotEqualFilter(column: Column, value: string | number): void {
+      this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.NOT_EQUAL, value, column.dataType, true));
    }
 
    private hasValueGrouping(columnName: string): boolean {
       return this.valueGroupings.find(vg => vg.columnName === columnName) !== undefined;
    }
 
+   /**
+    * the value group 'min - max' (no bounds) comprises all values
+    */
    private addValueGroupingFilter(column: Column, filterValue: string, inverted: boolean): void {
       if (filterValue === ValueRangeConverter.EMPTY) {
-         const operator = inverted ? Operator.NOT_EMPTY : Operator.EMPTY;
-         this.query.addPropertyFilter(new PropertyFilter(column.name, operator, '', column.dataType));
+         this.addEmptinessFilter(column, inverted);
+         return;
+      }
+      const minValue = ValueRangeConverter.toMinValue(filterValue);
+      const maxValue = ValueRangeConverter.toMaxValue(filterValue);
+      if (inverted || minValue !== undefined || maxValue !== undefined) {
+         this.query.addValueRangeFilter(column.name, minValue, maxValue, true, inverted, inverted);
       } else {
-         const minValue = ValueRangeConverter.toMinValue(filterValue);
-         const maxValue = ValueRangeConverter.toMaxValue(filterValue);
-         this.query.addValueRangeFilter(column.name, minValue, maxValue, true, inverted);
+         this.query.addPropertyFilter(new PropertyFilter(column.name, Operator.NOT_EMPTY, '', column.dataType));
       }
    }
 
    private addTimeRangeFilter(column: Column, filterValue: string, inverted: boolean): void {
-      const ngFormat = DateTimeUtils.ngFormatOf(column.groupingTimeUnit);
       if (filterValue === ValueRangeConverter.EMPTY) {
-         const operator = inverted ? Operator.NOT_EMPTY : Operator.EMPTY;
-         this.query.addPropertyFilter(new PropertyFilter(column.name, operator, '', column.dataType));
+         this.addEmptinessFilter(column, inverted);
       } else {
-         const timeStart = DateTimeUtils.parseDate(filterValue, ngFormat).getTime();
+         const timeStart = DateTimeUtils.parseFormattedTime(filterValue, column.groupingTimeUnit).getTime();
          const timeEnd = DateTimeUtils.addTimeUnits(timeStart, 1, column.groupingTimeUnit);
-         this.query.addValueRangeFilter(column.name, timeStart, timeEnd, true, inverted);
+         this.query.addValueRangeFilter(column.name, timeStart, timeEnd, true, inverted, inverted);
       }
+   }
+
+   private addEmptinessFilter(column: Column, inverted: boolean): void {
+      const operator = inverted ? Operator.NOT_EMPTY : Operator.EMPTY;
+      this.query.addPropertyFilter(new PropertyFilter(column.name, operator, '', column.dataType));
    }
 
    getQuery(): Query {

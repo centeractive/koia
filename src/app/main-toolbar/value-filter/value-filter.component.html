@@ -47,6 +47,9 @@
         <span>false</span>
       </button>
     </mat-menu>
+    @if (filter.orEmpty) {
+      <span class="span_or_empty">{{ 'filter.orEmpty' | translate }}</span>
+    }
     <button class="but_remove_column_filter" mat-icon-button [matTooltip]="'filter.value.remove' | translate"
       [attr.aria-label]="'filter.value.remove' | translate" (click)="onRemove.emit()">
       <mat-icon>remove_circle_outline</mat-icon>

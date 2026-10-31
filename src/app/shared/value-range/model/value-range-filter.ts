@@ -7,11 +7,16 @@ export class ValueRangeFilter {
    protected _name: string;
    private _valueRange: ValueRange;
    private _inverted: boolean;
+   private _orEmpty: boolean;
 
-   constructor(name: string, valueRange: ValueRange, inverted?: boolean) {
+   /**
+    * @param orEmpty whether an inverted filter also matches the rows lacking a value, as PivotTable.js does
+    */
+   constructor(name: string, valueRange: ValueRange, inverted?: boolean, orEmpty?: boolean) {
       this._name = name;
       this._valueRange = valueRange;
       this._inverted = inverted == undefined ? false : inverted;
+      this._orEmpty = this._inverted && !!orEmpty;
    }
 
    get name(): string {
@@ -32,6 +37,10 @@ export class ValueRangeFilter {
 
    get inverted(): boolean {
       return this._inverted;
+   }
+
+   get orEmpty(): boolean {
+      return this._orEmpty;
    }
 
    isApplicable(): boolean {
@@ -82,6 +91,6 @@ export class ValueRangeFilter {
          max: this._valueRange.max,
          maxExcluding: this._valueRange.maxExcluding
       };
-      return new ValueRangeFilter(this._name, valueRange, this._inverted);
+      return new ValueRangeFilter(this._name, valueRange, this._inverted, this._orEmpty);
    }
 }

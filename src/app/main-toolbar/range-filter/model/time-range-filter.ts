@@ -19,8 +19,8 @@ export class TimeRangeFilter extends NumberRangeFilter {
    declare availableSteps: TimeUnit[];
    declare selectedStep: TimeUnit;
 
-   constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
-      super(column, start, end, selValueRange, inverted);
+   constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean, orEmpty = false) {
+      super(column, start, end, selValueRange, inverted, orEmpty);
    }
 
    protected override defineSliderValueRange(): void {

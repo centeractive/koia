@@ -23,7 +23,7 @@ export class QuerySanitizer {
       }
       this.cleanUpPropertyFilters(this.query).forEach(f => newQuery.addPropertyFilter(f));
       this.cleanUpValueRangeFilters(this.query).forEach(f =>
-         newQuery.addValueRangeFilter(f.name, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding, f.inverted));
+         newQuery.addValueRangeFilter(f.name, f.valueRange.min, f.valueRange.max, f.valueRange.maxExcluding, f.inverted, f.orEmpty));
       return newQuery;
    }
 
@@ -42,7 +42,7 @@ export class QuerySanitizer {
 
    private isSameCondition(f1: PropertyFilter, f2: PropertyFilter): boolean {
       return f1.name === f2.name && f1.operator === f2.operator && f1.value === f2.value &&
-         (f1.dataType === f2.dataType || this.isDataTypeNegligible(f1, f2));
+         (f1.dataType === f2.dataType || this.isDataTypeNegligible(f1, f2)) && f1.orEmpty === f2.orEmpty;
    }
 
    private isDataTypeNegligible(f1: PropertyFilter, f2: PropertyFilter): boolean {

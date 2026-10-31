@@ -66,6 +66,8 @@ export const EPOCH_MILLIS_CSV = csvFile(resolve(E2E_DATA_DIR, 'epoch-millis.csv'
 
 export const MISSING_TIMES_CSV = csvFile(resolve(E2E_DATA_DIR, 'missing-times.csv'), [DataType.TEXT, DataType.TIME]);
 
+export const PROTOTYPE_VALUES_CSV = csvFile(resolve(E2E_DATA_DIR, 'prototype-values.csv'), [DataType.TEXT, DataType.TEXT]);
+
 function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFile {
    const [columns, ...rows] = Papa.parse<string[]>(readFileSync(path, 'utf-8'), { delimiter: separator, skipEmptyLines: true }).data;
    return { path, name: basename(path, extname(path)), sourceName: SourceName.CSV, columns, rowCount: rows.length, dataTypes, separator };

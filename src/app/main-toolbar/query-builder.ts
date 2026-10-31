@@ -25,7 +25,7 @@ export class QueryBuilder {
       .forEach(f => {
         const min = f.start === f.selValueRange.min ? undefined : f.selValueRange.min;
         const max = f.end === f.selValueRange.max ? undefined : f.selValueRange.max;
-        this.query.addValueRangeFilter(f.column.name, min, max, f.selValueRange.maxExcluding, f.inverted);
+        this.query.addValueRangeFilter(f.column.name, min, max, f.selValueRange.maxExcluding, f.inverted, f.orEmpty);
       });
     return this;
   }

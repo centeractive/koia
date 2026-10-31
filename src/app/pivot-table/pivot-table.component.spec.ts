@@ -12,7 +12,7 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { CanvasPaging, Column, DataType, Document, Query, Route, Scene, TimeUnit } from 'app/shared/model';
+import { CanvasPaging, Column, DataType, Document, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { ConfigRecord, ViewType } from 'app/shared/model/view-config';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { ExportService, NotificationService, RawDataRevealService, TimeGroupingService } from 'app/shared/services';
@@ -27,7 +27,7 @@ import { ValueGrouping } from 'app/shared/value-range/model';
 import { of, Subject, throwError } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
-import type { Mock } from 'vitest';
+import type { Mock, MockInstance } from 'vitest';
 import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
 import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
@@ -297,7 +297,7 @@ describe('PivotTableComponent', () => {
   it('#ngOnDestroy should not render pivot table pending before destroy', fakeAsync(() => {
 
     // given
-    const pivotUI = vi.spyOn((globalThis as unknown as { jQuery: { fn: { pivotUI: () => void } } }).jQuery.fn, 'pivotUI');
+    const pivotUI = spyOnPivotUI();
     const observe = vi.spyOn(MutationObserver.prototype, 'observe');
     component.onShowColumnTotalsChanged();
 
@@ -308,6 +308,20 @@ describe('PivotTableComponent', () => {
     // then
     expect(pivotUI).not.toHaveBeenCalled();
     expect(observe).not.toHaveBeenCalled();
+  }));
+
+  it('should pass rows of data frame unchanged to PivotTable.js when no column is named like Object.prototype member', fakeAsync(() => {
+
+    // given
+    const pivotUI = spyOnPivotUI();
+    const toArray = vi.spyOn(component.dataFrame, 'toArray');
+
+    // when
+    component.onShowRowTotalsChanged();
+    flush();
+
+    // then
+    expect(pivotUI.mock.lastCall[0]).toBe(toArray.mock.results[0].value);
   }));
 
   it('#ngOnDestroy should not group data pending before destroy', fakeAsync(() => {
@@ -356,6 +370,18 @@ describe('PivotTableComponent', () => {
       tabComponent.tab = { id: 'tab1', type: ViewType.PIVOT, title: 'Pivot Table 1', record };
     }
 
+    function clickCell(selector = 'td.pvtVal', rowLabel?: string): Query {
+      const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
+      const cell = Array.from<HTMLTableCellElement>(tabFixture.nativeElement.querySelectorAll(selector))
+        .find(c => c.textContent !== '' && (rowLabel === undefined || c.parentElement.querySelector('th.pvtRowLabel')?.textContent === rowLabel));
+      (cell.onclick as (e: unknown) => void)({ target: cell });
+      return showSpy.mock.lastCall[0];
+    }
+
+    function texts(selector: string): string[] {
+      return Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll(selector)).map(e => e.textContent);
+    }
+
     const sumRecord = (): ConfigRecord => ({
       route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
       data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Sum', vals: ['Amount'], cols: ['Level'], rows: [] } }
@@ -395,19 +421,31 @@ describe('PivotTableComponent', () => {
       expect(tabFixture.nativeElement.querySelector('.pvtTable')).toBeTruthy();
     }));
 
+    it('should reveal raw data of clicked cell without rows of values excluded from unused attribute', fakeAsync(() => {
+
+      // given
+      const record = sumRecord();
+      (record.data as PivotContext).pivotOptions['exclusions'] = { ID: ['1'] };
+      createTabComponent(record);
+      tabFixture.detectChanges();
+      flush();
+
+      // when
+      const query = clickCell('td.pvtTotal');
+
+      // then
+      expect(query.getPropertyFilters()).toEqual([
+        new PropertyFilter('Level', Operator.EQUAL, 'INFO', DataType.TEXT),
+        new PropertyFilter('ID', Operator.NOT_EQUAL, 1, DataType.NUMBER, true)
+      ]);
+    }));
+
     describe('with restored time unit', () => {
 
       const timeRecord = (): ConfigRecord => ({
         route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
         data: { ...pivotContext(), pivotOptions: { rendererName: 'Table', aggregatorName: 'Count', cols: ['Level'], rows: ['Time (per month)'] } }
       });
-
-      function clickFirstCell(): Query {
-        const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
-        const cell: HTMLTableCellElement = tabFixture.nativeElement.querySelector('td.pvtVal');
-        (cell.onclick as (e: unknown) => void)({ target: cell });
-        return showSpy.mock.lastCall[0];
-      }
 
       function monthStart(): number {
         const date = new Date(now);
@@ -424,7 +462,7 @@ describe('PivotTableComponent', () => {
         flush();
 
         // when
-        const query = clickFirstCell();
+        const query = clickCell();
 
         // then
         const valueRange = query.findValueRangeFilter('Time').valueRange;
@@ -447,7 +485,7 @@ describe('PivotTableComponent', () => {
 
         // then
         expect(tabComponent.timeColumns[0].groupingTimeUnit).toBe(TimeUnit.MONTH);
-        expect(clickFirstCell().findValueRangeFilter('Time').valueRange.min).toBe(monthStart());
+        expect(clickCell().findValueRangeFilter('Time').valueRange.min).toBe(monthStart());
       }));
 
       it('should share restored time columns with time unit menu', fakeAsync(() => {
@@ -938,10 +976,6 @@ describe('PivotTableComponent', () => {
         return tabFixture.nativeElement.querySelector('select.' + selectClass + ' option[value="' + value + '"]').textContent;
       }
 
-      function totalLabels(): string[] {
-        return Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll('.pvtTotalLabel')).map(e => e.textContent);
-      }
-
       beforeEach(() => vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined));
 
       afterEach(() => document.documentElement.lang = 'en');
@@ -956,7 +990,7 @@ describe('PivotTableComponent', () => {
         flush();
 
         // then
-        expect(totalLabels()).toContain('Totals');
+        expect(texts('.pvtTotalLabel')).toContain('Totals');
         expect(optionText('pvtAggregator', 'Sum')).toBe('Sum');
         expect(optionText('pvtRenderer', 'Row Heatmap')).toBe('Row Heatmap');
       }));
@@ -975,8 +1009,8 @@ describe('PivotTableComponent', () => {
         tick(5_000);
 
         // then
-        expect(totalLabels()).toContain('Summen');
-        expect(totalLabels()).not.toContain('Totals');
+        expect(texts('.pvtTotalLabel')).toContain('Summen');
+        expect(texts('.pvtTotalLabel')).not.toContain('Totals');
         expect(optionText('pvtAggregator', 'Sum')).toBe('Summe');
         expect(optionText('pvtRenderer', 'Row Heatmap')).toBe('Heatmap pro Zeile');
         expect(tabFixture.nativeElement.querySelector('select.pvtAggregator').value).toBe('Sum');
@@ -1004,7 +1038,7 @@ describe('PivotTableComponent', () => {
 
         // then
         expect(viewTabsService.requestPersist).toHaveBeenCalled();
-        expect(totalLabels()).toContain('合計');
+        expect(texts('.pvtTotalLabel')).toContain('合計');
       }));
 
       it('should re-render detached pivot table in new language once attached again', fakeAsync(() => {
@@ -1019,14 +1053,14 @@ describe('PivotTableComponent', () => {
 
         // when
         switchLanguage('de');
-        const labelsWhileDetached = totalLabels();
+        const labelsWhileDetached = texts('.pvtTotalLabel');
         parent.appendChild(host);
         tabFixture.detectChanges();
         flush();
 
         // then
         expect(labelsWhileDetached).toContain('Totals');
-        expect(totalLabels()).toContain('Summen');
+        expect(texts('.pvtTotalLabel')).toContain('Summen');
       }));
 
       it('should not re-render pivot table in new language when pivot table has no options', fakeAsync(() => {
@@ -1041,7 +1075,7 @@ describe('PivotTableComponent', () => {
         switchLanguage('de');
 
         // then
-        expect(totalLabels()).toContain('Totals');
+        expect(texts('.pvtTotalLabel')).toContain('Totals');
         expect(tabComponent.computing).toBe(false);
       }));
 
@@ -1055,20 +1089,177 @@ describe('PivotTableComponent', () => {
         tabFixture.detectChanges();
         flush();
         switchLanguage('de');
-        const showSpy = vi.spyOn(rawDataRevealService, 'show').mockReturnValue(undefined);
         const rowLabel: HTMLElement = tabFixture.nativeElement.querySelector('th.pvtRowLabel');
 
         // when
-        const cell: HTMLTableCellElement = tabFixture.nativeElement.querySelector('td.pvtVal');
-        (cell.onclick as (e: unknown) => void)({ target: cell });
+        const query = clickCell();
 
         // then
         const monthStart = new Date(now);
         monthStart.setDate(1);
         monthStart.setHours(0, 0, 0, 0);
         expect(rowLabel.textContent).toBe(datePipe.transform(now, 'MMM yyyy'));
-        const query: Query = showSpy.mock.lastCall[0];
         expect(query.findValueRangeFilter('Time').valueRange.min).toBe(monthStart.getTime());
+      }));
+    });
+
+    describe('with values and attribute named like Object.prototype members', () => {
+
+      const crossTabOptions = { rendererName: 'Table', aggregatorName: 'Count', rows: ['Level'], cols: ['constructor'] };
+      const constructorExclusionOptions = { rendererName: 'Table', aggregatorName: 'Count', rows: ['Level'], cols: [], exclusions: { constructor: ['b'] } };
+      const levelExclusionOptions = {
+        rendererName: 'Table', aggregatorName: 'Count', rows: ['constructor'], cols: [], exclusions: { Level: ['__proto__', 'toString'] }
+      };
+
+      beforeEach(() => {
+        getActiveSceneSpy.mockReturnValue(SceneFactory.createScene('1', [
+          { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
+          { name: 'constructor', dataType: DataType.TEXT, width: 60, indexed: true }
+        ]));
+        mockEntries([
+          { Level: 'constructor', constructor: 'a' },
+          { Level: 'toString', constructor: 'b' },
+          { Level: '__proto__', constructor: 'a' },
+          { Level: 'hasOwnProperty', constructor: 'a' },
+          { Level: 'INFO', constructor: 'b' },
+          { Level: 'INFO', constructor: 'a' }
+        ]);
+      });
+
+      function mockEntries(rows: object[]): void {
+        vi.mocked(dbService.findEntries).mockReturnValue(of(rows));
+      }
+
+      function renderTab(pivotOptions: object): void {
+        createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: { ...pivotContext(), pivotOptions } });
+        tabFixture.detectChanges();
+        flush();
+      }
+
+      function filterBoxItems(attribute: string): string[] {
+        const filterBox = Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll('.pvtFilterBox'))
+          .find(box => box.querySelector('h4 > span').textContent === attribute);
+        return Array.from<HTMLLabelElement>(filterBox.querySelectorAll('.pvtCheckContainer label'))
+          .map(label => label.querySelector('.value').textContent + ' ' + label.querySelector('.count').textContent
+            + (label.querySelector<HTMLInputElement>('input.pvtFilter').checked ? '' : ' unchecked'));
+      }
+
+      it('should count values named like Object.prototype members per value of attribute named constructor', fakeAsync(() => {
+
+        // when
+        renderTab(crossTabOptions);
+
+        // then
+        expect(texts('th.pvtRowLabel')).toEqual(['INFO', '__proto__', 'constructor', 'hasOwnProperty', 'toString']);
+        expect(texts('th.pvtColLabel')).toEqual(['a', 'b']);
+        expect(texts('td.pvtTotal.rowTotal')).toEqual(['2', '1', '1', '1', '1']);
+        expect(texts('td.pvtTotal.colTotal')).toEqual(['4', '2']);
+        expect(texts('td.pvtGrandTotal')).toEqual(['6']);
+      }));
+
+      it('filter boxes should list values named like Object.prototype members and values of attribute named constructor with counts', fakeAsync(() => {
+
+        // when
+        renderTab(crossTabOptions);
+
+        // then
+        expect(filterBoxItems('Level')).toEqual(['INFO (2)', '__proto__ (1)', 'constructor (1)', 'hasOwnProperty (1)', 'toString (1)']);
+        expect(filterBoxItems('constructor')).toEqual(['a (4)', 'b (2)']);
+      }));
+
+      it('click on cell of value named constructor should reveal raw data filtered by value and attribute named constructor', fakeAsync(() => {
+
+        // given
+        renderTab(crossTabOptions);
+
+        // when
+        const query = clickCell('td.pvtVal', 'constructor');
+
+        // then
+        expect(query.getPropertyFilters()).toEqual([
+          new PropertyFilter('constructor', Operator.EQUAL, 'a', DataType.TEXT),
+          new PropertyFilter('Level', Operator.EQUAL, 'constructor', DataType.TEXT)
+        ]);
+      }));
+
+      it('restored exclusion of value of attribute named constructor should uncheck value and drop its rows', fakeAsync(() => {
+
+        // when
+        renderTab(constructorExclusionOptions);
+
+        // then
+        expect(filterBoxItems('constructor')).toEqual(['a (4)', 'b (2) unchecked']);
+        expect(texts('th.pvtRowLabel')).toEqual(['INFO', '__proto__', 'constructor', 'hasOwnProperty']);
+        expect(texts('td.pvtTotal.rowTotal')).toEqual(['1', '1', '1', '1']);
+        expect(texts('td.pvtGrandTotal')).toEqual(['4']);
+      }));
+
+      it('click on row total should reveal raw data without rows of value excluded from attribute named constructor', fakeAsync(() => {
+
+        // given
+        renderTab(constructorExclusionOptions);
+
+        // when
+        const query = clickCell('td.pvtTotal.rowTotal', 'INFO');
+
+        // then
+        expect(query.getPropertyFilters()).toEqual([
+          new PropertyFilter('Level', Operator.EQUAL, 'INFO', DataType.TEXT),
+          new PropertyFilter('constructor', Operator.NONE_OF, 'b', DataType.TEXT, true)
+        ]);
+      }));
+
+      it('restored exclusions of values named like Object.prototype members should uncheck them and drop their rows', fakeAsync(() => {
+
+        // when
+        renderTab(levelExclusionOptions);
+
+        // then
+        expect(filterBoxItems('Level'))
+          .toEqual(['INFO (2)', '__proto__ (1) unchecked', 'constructor (1)', 'hasOwnProperty (1)', 'toString (1) unchecked']);
+        expect(texts('th.pvtRowLabel')).toEqual(['a', 'b']);
+        expect(texts('td.pvtTotal.rowTotal')).toEqual(['3', '1']);
+        expect(texts('td.pvtGrandTotal')).toEqual(['4']);
+      }));
+
+      it('click on row total should reveal raw data without rows of excluded values named like Object.prototype members', fakeAsync(() => {
+
+        // given
+        renderTab(levelExclusionOptions);
+
+        // when
+        const query = clickCell('td.pvtTotal.rowTotal', 'a');
+
+        // then
+        expect(query.getPropertyFilters()).toEqual([
+          new PropertyFilter('constructor', Operator.EQUAL, 'a', DataType.TEXT),
+          new PropertyFilter('Level', Operator.NONE_OF, '__proto__;toString', DataType.TEXT, true)
+        ]);
+      }));
+
+      it('#tabContent should keep exclusions of attribute named constructor', fakeAsync(() => {
+
+        // given
+        renderTab(constructorExclusionOptions);
+
+        // when
+        const content = tabComponent.tabContent();
+
+        // then
+        expect((content.record.data as PivotContext).pivotOptions['exclusions']).toEqual({ constructor: ['b'] });
+      }));
+
+      it('should count rows lacking value of attribute named constructor as null', fakeAsync(() => {
+
+        // given
+        mockEntries([{ Level: 'X', constructor: 'a' }, { Level: 'Y' }, { Level: 'Z' }]);
+
+        // when
+        renderTab({ rendererName: 'Table', aggregatorName: 'Count', rows: ['constructor'], cols: [] });
+
+        // then
+        expect(texts('th.pvtRowLabel')).toEqual(['a', 'null']);
+        expect(texts('td.pvtTotal.rowTotal')).toEqual(['1', '2']);
       }));
     });
 
@@ -1629,6 +1820,10 @@ describe('PivotTableComponent', () => {
   function showPages(paging: CanvasPaging): void {
     component.onPagingChange(paging);
     fixture.detectChanges();
+  }
+
+  function spyOnPivotUI(): MockInstance<(...args: unknown[]) => void> {
+    return vi.spyOn((globalThis as unknown as { jQuery: { fn: { pivotUI: (...args: unknown[]) => void } } }).jQuery.fn, 'pivotUI');
   }
 
   function tooltipOf(selector: string): string {

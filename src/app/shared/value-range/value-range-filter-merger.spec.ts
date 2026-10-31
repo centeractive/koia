@@ -211,4 +211,18 @@ describe('ValueFilterRangeMerger', () => {
       expect(merged).toBe(false);
       expect(f1.valueRange).toEqual({ min: 0, max: 5, maxExcluding: true });
    });
+
+   it('#merge should not merge adjacent inverted filters when only one matches empty values', () => {
+
+      // given
+      const f1 = new ValueRangeFilter('x', { min: 0, max: 5, maxExcluding: true }, true, true);
+      const f2 = new ValueRangeFilter('x', { min: 5, max: 10 }, true);
+
+      // when
+      const merged = merger.merge(f1, f2);
+
+      // then
+      expect(merged).toBe(false);
+      expect(f1.valueRange).toEqual({ min: 0, max: 5, maxExcluding: true });
+   });
 });

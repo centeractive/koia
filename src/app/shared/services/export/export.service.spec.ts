@@ -1,6 +1,7 @@
 import { ExportService } from './export.service';
 import { ExportFormat, DataType, Column } from '../../model';
 import * as XLSX from '@e965/xlsx';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 
 describe('ExportService', () => {
 
@@ -116,6 +117,29 @@ describe('ExportService', () => {
 
     // then
     expect(csv).toBe('a,b\nx,\ny,z');
+  });
+
+  it('#exportData should leave CSV value of column named constructor empty in row lacking it', async () => {
+
+    // when
+    const csv = await csvOf([{ a: 'x' }, { a: 'y', constructor: 'z' }], [textColumn('a'), textColumn('constructor')]);
+
+    // then
+    expect(csv).toBe('a,constructor\nx,\ny,z');
+  });
+
+  it('#exportData should pass data unchanged to CSV conversion when no column is named like Object.prototype member', async () => {
+
+    // given
+    const withoutInheritedValues = vi.spyOn(ObjectUtils, 'withoutInheritedValues');
+    const data = [{ a: 'x', b: 1 }];
+
+    // when
+    await csvOf(data, [textColumn('a'), { name: 'b', dataType: DataType.NUMBER, width: 10 }]);
+
+    // then
+    expect(withoutInheritedValues).toHaveBeenCalledWith(data, ['a', 'b']);
+    expect(withoutInheritedValues.mock.results[0].value).toBe(data);
   });
 
   it('#exportData should start CSV with byte order mark', async () => {

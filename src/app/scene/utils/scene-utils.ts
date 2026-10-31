@@ -44,11 +44,7 @@ export class SceneUtils {
    }
 
    private static rowToEntry(columnNames: string[], row: string[]) {
-      const entry = {};
-      for (let i = 0; i < columnNames.length; i++) {
-         entry[columnNames[i]] = row[i];
-      }
-      return entry;
+      return Object.fromEntries(columnNames.map((name, i) => [name, row[i]]));
    }
 
    static columnNamesFrom(sample: Sample): string[] {

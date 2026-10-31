@@ -423,6 +423,19 @@ describe('RawDataComponent', () => {
       expect(fixture.nativeElement.querySelectorAll('.vt-th')[columnIndex('Level')].getBoundingClientRect().width).toBe(70);
     });
 
+    it('should apply width of definition to column named constructor', async () => {
+
+      // given
+      const index = columnIndex('Level');
+      columns[index].name = 'constructor';
+
+      // when
+      await render();
+
+      // then
+      expect(component.widths[index]).toBe(5 * EM_PX);
+    });
+
     it('should use px widths', async () => {
 
       // given

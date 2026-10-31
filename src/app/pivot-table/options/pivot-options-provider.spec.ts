@@ -27,7 +27,7 @@ describe('PivotOptionsProvider', () => {
          pivotOptions: null
       };
       cellClickHandler = new CellClickHandler([], null, null);
-      optionsProvider = new PivotOptionsProvider(cellClickHandler);
+      optionsProvider = new PivotOptionsProvider(cellClickHandler, [timeColumn]);
    });
 
    it('#enrichPivotOptions should return new options when options are missing', () => {
@@ -126,7 +126,38 @@ describe('PivotOptionsProvider', () => {
       const filters = { x: '100', y: '57' };
       const pivotData = {};
       clickCallback(mouseEvent, '100', filters, pivotData);
-      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, mouseEvent, filters, [], [], pivotData);
+      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, filters, {});
+   });
+
+   it('#enrichPivotOptions click callback should pass exclusions of last refresh', () => {
+
+      // given
+      vi.spyOn(cellClickHandler, 'onCellClicked').mockImplementation(() => null);
+      const pivotOptions = optionsProvider.enrichPivotOptions(null, context, () => null);
+      pivotOptions['onRefresh']({ exclusions: { Host: ['server9'] } });
+      const clickCallback: (e: object, value: unknown, filters: object, pivotData: object) => void =
+         pivotOptions['rendererOptions']['table']['clickCallback'];
+
+      // when
+      clickCallback({}, 5, { Level: 'ERROR' }, {});
+
+      // then
+      expect(cellClickHandler.onCellClicked).toHaveBeenCalledWith(context.valueGroupings, { Level: 'ERROR' }, { Host: ['server9'] });
+   });
+
+   it('#enrichPivotOptions should key sorters of time labels colliding with a column by suffixed label', () => {
+
+      // given
+      const columns: Column[] = [timeColumn, { name: 'Date/Time (per day)', dataType: DataType.TEXT, width: 10 }];
+      const provider = new PivotOptionsProvider(cellClickHandler, columns);
+
+      // when
+      const pivotOptions = provider.enrichPivotOptions(undefined, context, () => null);
+
+      // then
+      const sorterKeys = Object.keys(pivotOptions['sorters']);
+      expect(sorterKeys).toContain('Date/Time (per day) #');
+      expect(sorterKeys).not.toContain('Date/Time (per day)');
    });
 
    it('#enrichPivotOptions should take over "show totals" attributes from context (I)', () => {
@@ -325,6 +356,21 @@ describe('PivotOptionsProvider', () => {
       // then
       expect(options['cols']).toBe(cols);
       expect(options['rows']).toEqual(['Path', 'Amount', 'Date/Time (per minute)']);
+   });
+
+   it('#replaceTimeColumnsInUse should replace by suffixed label when new label collides with a column', () => {
+
+      // given
+      const columns: Column[] = [timeColumn, { name: 'Date/Time (per hour)', dataType: DataType.TEXT, width: 10 }];
+      const provider = new PivotOptionsProvider(cellClickHandler, columns);
+      const options = createOptions();
+      options['cols'] = ['Date/Time (per minute)'];
+
+      // when
+      provider.replaceTimeColumnsInUse(options, timeColumn, TimeUnit.MINUTE, TimeUnit.HOUR);
+
+      // then
+      expect(options['cols']).toEqual(['Date/Time (per hour) #']);
    });
 
    it('#enrichPivotOptions should provide translated locale strings to pivot table and renderers', async () => {

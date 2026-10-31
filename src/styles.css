@@ -197,6 +197,12 @@ mat-panel-description {
   background-color: var(--koia-hover-tint);
 }
 
+.span_or_empty {
+  margin-left: 4px;
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
 .span_outside_range_menu_trigger {
   background-color: rgb(250, 218, 162);
 }

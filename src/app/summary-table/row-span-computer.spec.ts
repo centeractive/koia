@@ -136,4 +136,13 @@ describe('RowSpanComputer', () => {
       expect(rowSpansC3[4].span).toEqual(2);
       expect(rowSpansC3[5].span).toEqual(0);
    });
+
+   it('#compute should not span empty values of rows below different values of previous column', () => {
+
+      // when
+      const rowSpans: Array<Span[]> = rowSpanComputer.compute([{ c1: 'A' }, { c1: 'B' }], ['c1', 'c2']);
+
+      // then
+      expect(rowSpans).toEqual([[{ span: 1 }, { span: 1 }], [{ span: 1 }, { span: 1 }]]);
+   });
 });

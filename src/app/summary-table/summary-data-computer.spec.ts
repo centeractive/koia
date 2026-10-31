@@ -8,7 +8,8 @@ describe('SummaryDataComputer', () => {
 
   const columns: Column[] = [
     { name: 't1', dataType: DataType.TEXT, width: 60, indexed: true },
-    { name: 'n1', dataType: DataType.NUMBER, width: 80, indexed: true }
+    { name: 'n1', dataType: DataType.NUMBER, width: 80, indexed: true },
+    { name: 'Count', dataType: DataType.NUMBER, width: 80, indexed: true }
   ];
   const baseDataFrame = new DataFrame([
     { t1: 'a', n1: 1 },
@@ -23,14 +24,14 @@ describe('SummaryDataComputer', () => {
     context = new SummaryContext(columns);
   });
 
-  it('#aggregate should apply value groupings before aggregating', () => {
+  it('#compute should apply value groupings before aggregating', () => {
 
     // given
     context.dataColumns = [columns[1]];
     context.valueGroupings = [{ columnName: 'n1', ranges: [{ max: 2, active: true }] }];
 
     // when
-    const dataFrame = computer.aggregate(baseDataFrame, context);
+    const { dataFrame } = computer.compute(baseDataFrame, context);
 
     // then
     expect(dataFrame.toArray()).toEqual([
@@ -39,14 +40,14 @@ describe('SummaryDataComputer', () => {
     ]);
   });
 
-  it('#aggregate should aggregate by group-by columns', () => {
+  it('#compute should aggregate by group-by columns', () => {
 
     // given
     context.dataColumns = [columns[1]];
     context.groupByColumns = [columns[0]];
 
     // when
-    const dataFrame = computer.aggregate(baseDataFrame, context);
+    const { dataFrame } = computer.compute(baseDataFrame, context);
 
     // then
     expect(dataFrame.toArray()).toEqual([
@@ -56,28 +57,73 @@ describe('SummaryDataComputer', () => {
     ]);
   });
 
-  it('#overallsOf should sum counts', () => {
+  it('#compute should count all rows as overall COUNT', () => {
 
     // given
-    const dataFrame = new DataFrame([{ Count: 1 }, { Count: 3 }]);
+    context.dataColumns = [columns[1]];
+    context.groupByColumns = [columns[0]];
 
     // when
-    const overalls = computer.overallsOf(dataFrame, context);
+    const { overalls } = computer.compute(baseDataFrame, context);
 
     // then
     expect(overalls).toEqual([4]);
   });
 
-  it('#overallsOf should aggregate values with their aggregation', () => {
+  it('#compute should compute overall average of all rows instead of average of group averages', () => {
 
     // given
-    context.aggregations = [Aggregation.MIN, Aggregation.MAX];
-    const dataFrame = new DataFrame([{ Min: 1, Max: 5 }, { Min: 2, Max: 9 }]);
+    context.dataColumns = [columns[1]];
+    context.groupByColumns = [columns[0]];
+    context.aggregations = [Aggregation.AVG];
 
     // when
-    const overalls = computer.overallsOf(dataFrame, context);
+    const { overalls } = computer.compute(baseDataFrame, context);
 
     // then
-    expect(overalls).toEqual([1, 9]);
+    expect(overalls).toEqual([2]);
+  });
+
+  it('#compute should compute overall median of all rows instead of median of group medians', () => {
+
+    // given
+    context.dataColumns = [columns[1]];
+    context.groupByColumns = [columns[0]];
+    context.aggregations = [Aggregation.MEDIAN];
+
+    // when
+    const { overalls } = computer.compute(baseDataFrame, context);
+
+    // then
+    expect(overalls).toEqual([2]);
+  });
+
+  it('#compute should return undefined overall of value aggregation without numbers', () => {
+
+    // given
+    const base = new DataFrame([{ t1: 'a', n1: null }]);
+    context.dataColumns = [columns[1]];
+    context.groupByColumns = [columns[0]];
+    context.aggregations = [Aggregation.SUM];
+
+    // when
+    const { overalls } = computer.compute(base, context);
+
+    // then
+    expect(overalls).toEqual([undefined]);
+  });
+
+  it('#compute should count overall of aggregation whose key is taken by data column', () => {
+
+    // given
+    const base = new DataFrame([{ Count: 5 }, { Count: 7 }, { Count: 7 }]);
+    context.dataColumns = [columns[2]];
+
+    // when
+    const { dataFrame, overalls } = computer.compute(base, context);
+
+    // then
+    expect(dataFrame.toArray()).toEqual([{ Count: 5, 'Count (2)': 1 }, { Count: 7, 'Count (2)': 2 }]);
+    expect(overalls).toEqual([3]);
   });
 });

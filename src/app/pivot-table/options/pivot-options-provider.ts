@@ -1,12 +1,13 @@
 import { Column, TimeUnit } from 'app/shared/model';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { LanguageService } from 'app/shared/services/language';
-import { ArrayUtils, ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { ArrayUtils, CommonUtils, DateTimeUtils } from 'app/shared/utils';
 import { compareFormattedTime } from 'app/shared/utils/comparator/formatted-time-comparator';
 import { ValueRangeLabelComparator } from 'app/shared/value-range';
 import { ScaleLinear, scaleLinear } from 'd3';
 import { PivotContext } from '../model';
 import { CellClickHandler } from './cell-click-handler';
+import { timeLabelOf } from './pivot-labels';
 
 declare let $: { pivotUtilities: { renderers: object } };
 
@@ -56,9 +57,9 @@ export class PivotOptionsProvider {
       'Count as Fraction of Columns': 'countFractionColumns'
    };
 
-   private currConfig: object = { exclusions: [], inclusions: [] };
+   private currConfig: object = { exclusions: {} };
 
-   constructor(private cellClickHandler: CellClickHandler) { }
+   constructor(private cellClickHandler: CellClickHandler, private columns: Column[]) { }
 
    /**
     * enriches the specified pivot options with relevant elements or cretes new options if the specified [[pivotOptions]] is undefined
@@ -132,8 +133,8 @@ export class PivotOptionsProvider {
     * replaces the time columns in case they're currently in use
     */
    replaceTimeColumnsInUse(pivotOptions: object, timeColumn: Column, oldTimeUnit: TimeUnit, newTimeUnit: TimeUnit): void {
-      const oldLabel = ColumnNameConverter.toLabel(timeColumn, oldTimeUnit);
-      const newLabel = ColumnNameConverter.toLabel(timeColumn, newTimeUnit);
+      const oldLabel = timeLabelOf(timeColumn, oldTimeUnit, this.columns);
+      const newLabel = timeLabelOf(timeColumn, newTimeUnit, this.columns);
       ArrayUtils.replaceElement(pivotOptions['cols'], oldLabel, newLabel);
       ArrayUtils.replaceElement(pivotOptions['rows'], oldLabel, newLabel);
    }
@@ -145,7 +146,7 @@ export class PivotOptionsProvider {
       }
       for (const timeColumn of context.timeColumns) {
          DateTimeUtils.allTimeUnits('asc').forEach(timeUnit => {
-            sorters[ColumnNameConverter.toLabel(timeColumn, timeUnit)] = (v1: string, v2: string) => compareFormattedTime(v1, v2, timeUnit);
+            sorters[timeLabelOf(timeColumn, timeUnit, this.columns)] = (v1: string, v2: string) => compareFormattedTime(v1, v2, timeUnit);
          });
       }
       return sorters;
@@ -163,17 +164,15 @@ export class PivotOptionsProvider {
             colorScaleGenerator: values => this.generateColorScale(context, values)
          },
          table: {
-            clickCallback: (e, value, filters, pivotData) => this.onCellClicked(context, e, filters, pivotData),
+            clickCallback: (e, value, filters) => this.onCellClicked(context, filters),
             rowTotals: context.showRowTotals,
             colTotals: context.showColumnTotals
          }
       };
    }
 
-   private onCellClicked(context: PivotContext, mouseEvent: MouseEvent, filters: object, pivotData: object): void {
-      const exclusions = this.currConfig['exclusions'];
-      const inclusions = this.currConfig['inclusions'];
-      this.cellClickHandler.onCellClicked(context.valueGroupings, mouseEvent, filters, exclusions, inclusions, pivotData);
+   private onCellClicked(context: PivotContext, filters: object): void {
+      this.cellClickHandler.onCellClicked(context.valueGroupings, filters, this.currConfig['exclusions']);
    }
 
    private generateColorScale(context: PivotContext, values: number[]): ScaleLinear<string, string> {

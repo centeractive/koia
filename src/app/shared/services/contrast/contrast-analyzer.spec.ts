@@ -294,6 +294,19 @@ describe('ContrastAnalyzer', () => {
       ]);
    });
 
+   it('should find rows lacking value of column named constructor as empty', () => {
+
+      // given
+      const selected = rows(30, () => ({}));
+      const rest = rows(1000, () => ({ constructor: 'a' }));
+
+      // when
+      const result = analyzer.analyze(selected, rest, [column('constructor', DataType.TEXT)], NONE);
+
+      // then
+      expect(result.findings.map(f => [f.kind, f.value])).toEqual([[ValueKind.EMPTY, undefined]]);
+   });
+
    it('should distinguish number from text of same digits', () => {
 
       // given

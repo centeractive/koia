@@ -9,6 +9,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
+    "postinstall": "patch-package --error-on-fail",
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
@@ -94,6 +95,7 @@
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
     "less": "^4.9.1",
+    "patch-package": "8.0.1",
     "ts-node": "~10.9.2",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1",

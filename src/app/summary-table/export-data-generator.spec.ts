@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { DataFrame } from 'data-forge';
-import { Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
+import { Aggregation, Column, DataType, SummaryContext, TimeUnit } from 'app/shared/model';
 import { LanguageService } from 'app/shared/services/language';
 import { ExportDataGenerator } from './export-data-generator';
 
@@ -69,7 +69,76 @@ describe('ExportDataGenerator', () => {
       expect(data).toEqual([
          { Count: 1, 'Time (per minute)': '' },
          { 'Time (per minute)': datePipe.transform(t0, format), Count: 2 },
-         { Count: 3 }
+         { 'Time (per minute)': 'Overall', Count: 3 }
       ]);
+   });
+
+   it('#generate should export aggregation under suffixed name when data column has its name', () => {
+
+      // given
+      context.dataColumns = [{ name: 'Count', dataType: DataType.NUMBER, width: 10 }];
+      const dataFrame = new DataFrame([{ 'Time (per minute)': t0, Count: 5, 'Count (2)': 2 }]);
+
+      // when
+      const data = generator.generate(context, dataFrame, [2]);
+
+      // then
+      expect(data).toEqual([
+         { 'Time (per minute)': datePipe.transform(t0, format), Count: 5, 'Count (2)': 2 },
+         { 'Time (per minute)': '', Count: 'Overall', 'Count (2)': 2 }
+      ]);
+   });
+
+   it('#generate should format time column under suffixed name when group-by column has its label', () => {
+
+      // given
+      context.groupByColumns = [timeCol, { name: 'Time (per minute)', dataType: DataType.TEXT, width: 10 }];
+      const dataFrame = new DataFrame([{ 'Time (per minute) (2)': t0, 'Time (per minute)': 'x', Count: 2 }]);
+
+      // when
+      const data = generator.generate(context, dataFrame, [2]);
+
+      // then
+      expect(data).toEqual([
+         { 'Time (per minute) (2)': datePipe.transform(t0, format), 'Time (per minute)': 'x', Count: 2 },
+         { 'Time (per minute) (2)': '', 'Time (per minute)': 'Overall', Count: 2 }
+      ]);
+   });
+
+   it('#columnsOf should return columns keyed by their name except time columns', () => {
+
+      // given
+      const level: Column = { name: 'Level', dataType: DataType.TEXT, width: 10 };
+      const stamp: Column = { name: 'Stamp', dataType: DataType.TIME, width: 10 };
+      const amount: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };
+      const count: Column = { name: 'Count', dataType: DataType.TIME, width: 10 };
+      const sum: Column = { name: 'Sum', dataType: DataType.OBJECT, width: 10 };
+      context.groupByColumns = [timeCol, level, stamp];
+      context.dataColumns = [amount];
+
+      // when
+      const columns = generator.columnsOf(context, [timeCol, level, stamp, amount, count, sum]);
+
+      // then
+      expect(columns).toEqual([level, amount]);
+   });
+
+   it('#columnsOf should exclude data column when aggregating values', () => {
+
+      // given
+      const level: Column = { name: 'Level', dataType: DataType.TEXT, width: 10 };
+      const stamp: Column = { name: 'Stamp', dataType: DataType.TIME, width: 10 };
+      const amount: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };
+      const count: Column = { name: 'Count', dataType: DataType.TIME, width: 10 };
+      const sum: Column = { name: 'Sum', dataType: DataType.OBJECT, width: 10 };
+      context.groupByColumns = [timeCol, level, stamp];
+      context.dataColumns = [amount];
+      context.aggregations = [Aggregation.SUM];
+
+      // when
+      const columns = generator.columnsOf(context, [timeCol, level, stamp, amount, count, sum]);
+
+      // then
+      expect(columns).toEqual([level]);
    });
 });

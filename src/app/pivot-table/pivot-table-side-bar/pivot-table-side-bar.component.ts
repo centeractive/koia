@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { MatAccordion } from '@angular/material/expansion';
-import { ArrayUtils } from 'app/shared/utils';
+import { ArrayUtils, DataFrameUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model/value-grouping.type';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
@@ -64,7 +64,7 @@ export class PivotTableSideBarComponent implements OnChanges {
   }
 
   private limitsOf(columnName: string): ValueRange {
-    const series: ISeries<number, number> = this.data.getSeries(columnName);
+    const series: ISeries<number, number> = DataFrameUtils.columnValues<number>(this.data, columnName);
     return {
       min: series.min(),
       max: series.max(),

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Column, DataType } from 'app/shared/model';
 import { ChartContext, ChartType, DataPoint, DataSet } from 'app/shared/model/chart';
 import { ChartDataResult } from 'app/shared/model/chart/chart-data-result.type';
-import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
+import { ArrayUtils, DataTypeUtils, ObjectUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { ChartData, ChartDataset } from 'chart.js';
 import { largestTriangleThreeBucket } from 'd3fc-sample';
@@ -257,9 +257,9 @@ export class ChartDataService {
           dataPoints = [];
           namedSeries.set(seriesName, dataPoints);
         }
-        const dataAxisValue: number = entry[dataColumn.name];
+        const dataAxisValue = ObjectUtils.ownValue<number>(entry, dataColumn.name);
         if (dataAxisValue !== null && dataAxisValue !== undefined) {
-          const groupingAxisValue = entry[context.groupByColumns[0].name];
+          const groupingAxisValue = ObjectUtils.ownValue<number>(entry, context.groupByColumns[0].name);
           if (groupingAxisValue !== null && groupingAxisValue !== undefined) {
             dataPoints.push({ id: entry[CouchDBConstants._ID], x: groupingAxisValue, y: dataAxisValue });
           }

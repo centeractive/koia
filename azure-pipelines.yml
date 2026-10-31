@@ -25,6 +25,7 @@ steps:
 - script: |
     npm i -g @angular/cli@22 --ignore-scripts
     npm ci --ignore-scripts
+    npm run postinstall
   displayName: 'install npm packages'
 
 # set-up and rund CouchDB in Docker container (used by unit and end-to-end tests)

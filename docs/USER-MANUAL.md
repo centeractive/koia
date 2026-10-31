@@ -223,7 +223,7 @@ Every number Koia shows leads to its rows:
 | Summary table | Click a count. |
 | Relationship graph | Double-click a node. |
 
-The rows open in a dialog. Its filters are those of the tab plus one filter per clicked value; a clicked time group becomes a time range. You can add filters, sort, export and explain the rows there.
+The rows open in a dialog. Its filters are those of the tab plus one filter per clicked value; a clicked time group becomes a time range. Values deselected in the value filter of a pivot field become filters ending with *or empty*: like the pivot table, they keep the rows where that field is empty unless *null* or *empty* is deselected too; with CouchDB, sorting by that field drops these rows (see [chapter 6](#6-raw-data-and-filters)). You can add filters, sort, export and explain the rows there.
 
 Good to know: values of computed columns cannot be drilled into.
 
@@ -292,8 +292,8 @@ Video: [Message patterns](https://www.koia.io/intro/videos.html)
 
 The toolbar of the tab adds:
 
-- **Define Value Grouping...** – group a number column into ranges (**Add Value Range**, **Up to:**).
-- **Time Unit Grouping** – group a time column by millisecond up to year.
+- **Define Value Grouping...** – group a number column into ranges (**Add Value Range**, **Up to:**); without an active range all values fall into *min - max*.
+- **Time Unit Grouping** – group a time column by millisecond up to year. In the hour repeated when clocks are turned back, the labels carry the UTC offset, e.g. *27 Oct 2024 02 +02:00* and *27 Oct 2024 02 +01:00*.
 - **Show Row Totals** / **Show Column Totals**, and **Heatmap Colors** for negative and positive values.
 - **⋮** → **Save As Excel**.
 
@@ -357,9 +357,13 @@ A summary table counts or aggregates rows per group, over several hierarchy leve
 2. **Hierarchy** – drag the group-by columns into **Selected Columns**; their order sets the levels. Time columns can be grouped by a time unit.
 3. **Aggregation** – drag Count, Average, Median, Max, Min or Sum into **Selected Aggregations**.
 
-Click a header to sort. The **Overall** row shows the totals. Each count links to its rows (**Show Data...**). **⋮** → **Save As CSV**, **Save As JSON** or **Save As Excel** exports the table.
+Click a header to sort; empty values come first in ascending and last in descending order. The **Overall** row aggregates all rows: the total count, or the average, median, maximum, minimum or sum of all values – not of the group results. Each count links to its rows (**Show Data...**). **⋮** → **Save As CSV**, **Save As JSON** or **Save As Excel** exports the table.
 
 Good to know: counts are not clickable while a value grouping is used.
+
+Good to know: a group without numbers shows an empty cell for Average, Median, Max, Min and Sum.
+
+Good to know: a column named like an aggregation, e.g. Count, keeps its own column; in exports the aggregation column then gets a number suffix, e.g. Count (2).
 
 Video: [Summary tables](https://www.koia.io/intro/videos.html)
 
