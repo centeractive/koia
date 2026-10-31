@@ -1,6 +1,10 @@
 import { expect, Locator } from '@playwright/test';
 import type { BarElement, Chart } from 'chart.js';
+import { Box } from '../box';
 import { pressCenterAndMoveBy } from '../pointer';
+
+/** largest distance of a dragged graph node from the moved pointer, which d3 pins it to */
+export const DRAGGED_GRAPH_NODE_TOLERANCE_PX = 2;
 
 export interface RenderedCellStyle {
    fontWeight: number;
@@ -33,6 +37,7 @@ export class DashboardTile {
    readonly marginButton: Locator;
    readonly margin: Locator;
    readonly resizeHandles: Locator;
+   readonly summaryTable: Locator;
 
    constructor(readonly root: Locator) {
       this.title = root.locator('textarea.textarea_title');
@@ -44,6 +49,7 @@ export class DashboardTile {
       this.marginButton = root.locator('.but_element_margin');
       this.margin = root.locator('.div_margins');
       this.resizeHandles = root.locator('.div_resize_handle');
+      this.summaryTable = root.locator('table');
    }
 
    async configure(): Promise<void> {
@@ -89,9 +95,23 @@ export class DashboardTile {
     * the nodes until it rests and the pointer would miss a moving node, then shows the tooltip of the node
     */
    async hoverGraphNode(node: Locator): Promise<void> {
-      const circle = node.locator('circle');
-      await this.stableScan(() => circle.boundingBox());
-      await circle.hover();
+      await this.graphNodeBox(node);
+      await node.locator('circle').hover();
+   }
+
+   /**
+    * @returns the box of the node's circle once two consecutive scans agree, because the force layout moves the nodes until it rests
+    */
+   graphNodeBox(node: Locator): Promise<Box> {
+      return this.stableScan(() => node.locator('circle').boundingBox());
+   }
+
+   /**
+    * presses the node once the force layout rests and moves it, its links pull its leaves along until released
+    */
+   async startGraphNodeDragBy(node: Locator, dx: number, dy: number): Promise<void> {
+      await this.graphNodeBox(node);
+      await pressCenterAndMoveBy(node.locator('circle'), dx, dy);
    }
 
    spans(): Promise<{ columns: number; rows: number }> {
@@ -107,7 +127,7 @@ export class DashboardTile {
     */
    async tableWidths(): Promise<{ rendered: number; maxContent: number; columnCount: number }> {
       await this.waitForSummaryTable();
-      return this.root.locator('table').evaluate((table: HTMLTableElement) => {
+      return this.summaryTable.evaluate((table: HTMLTableElement) => {
          const rendered = table.getBoundingClientRect().width;
          const inlineWidth = table.style.width;
          table.style.width = 'max-content';
@@ -194,7 +214,7 @@ export class DashboardTile {
    async tableCellStyles(): Promise<{ header: RenderedCellStyle; cell: RenderedCellStyle; footer: RenderedCellStyle;
       sortArrowWidth: number }> {
       await this.waitForSummaryTable();
-      return this.root.locator('table').evaluate((table: HTMLTableElement) => {
+      return this.summaryTable.evaluate((table: HTMLTableElement) => {
          const styleOf = (textElement: Element, paddedElement: Element) => {
             const text = getComputedStyle(textElement);
             const padded = getComputedStyle(paddedElement);

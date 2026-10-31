@@ -137,6 +137,15 @@ test('removing the value grouping of a number column lets a new pivot table sum 
    await expect(pivot.firstRowTotal).toHaveAttribute('data-value', String(sumOf(sample, revenueColumn, e => e[rowColumn] === firstRowValue)));
 });
 
+test('number field in the columns shows its value ranges', async ({ tabBar, pivot }) => {
+   await tabBar.addPivotTable();
+   await pivot.table.waitFor();
+
+   await pivot.dragFieldToColumns(revenueColumn);
+
+   await expect(pivot.columnLabels).toHaveText(['min - 100', '100 - 200', '200 - 300', '300 - 400']);
+});
+
 test('pivot table uses the shared table font compact and without underlined values', async ({ pivot }) => {
    const style = await pivot.valueCells.first().evaluate((cell: HTMLElement) => {
       const computed = getComputedStyle(cell);

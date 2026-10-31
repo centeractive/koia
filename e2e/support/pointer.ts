@@ -41,6 +41,7 @@ export async function pressCenterAndMoveBy(grip: Locator, dx: number, dy: number
 }
 
 export async function dragCenterOnto(grip: Locator, target: Locator): Promise<void> {
+   await grip.scrollIntoViewIfNeeded();
    const from = await grip.boundingBox();
    const to = await target.boundingBox();
    await pressCenterAndMoveBy(grip, to.x + to.width / 2 - (from.x + from.width / 2), to.y + to.height / 2 - (from.y + from.height / 2));

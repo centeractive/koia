@@ -23,6 +23,22 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scenes.rows).toContainText(ORDERS_CSV.name);
    });
 
+   test('typed filter narrows the scenes with every letter', async ({ scenes }) => {
+      await scenes.typeFilter('r');
+      await expect(scenes.rows).toHaveCount(2);
+
+      await scenes.typeFilter('s');
+
+      await expect(scenes.rows).toHaveCount(1);
+      await expect(scenes.rows).toContainText(ORDERS_CSV.name);
+   });
+
+   test('front page button of scenes page opens the front page', async ({ scenes, front }) => {
+      await scenes.navButtons.openFront();
+
+      await expect(front.sceneFileButton).toBeEnabled();
+   });
+
    test('activated scene shows its rows', async ({ scenes, rawData }) => {
       await scenes.activate(ORDERS_CSV.name);
 

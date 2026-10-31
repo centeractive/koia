@@ -8,18 +8,24 @@ import {
 
 const VIDEOS_PAGE = resolve(SRC_DIR, 'intro/videos.html');
 const MUSIC_DIR = 'music';
-const [ENTERTAINER, FIG_LEAF_RAG, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG, MERRY_GO] = SOUNDTRACKS;
+const [ENTERTAINER, FIG_LEAF_RAG, WAGON_WHEEL, ORIGINAL_RAGS, RAGTIME_DANCE, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG, MERRY_GO] =
+   SOUNDTRACKS;
 
 function videosPageHtml(): string {
    return readFileSync(VIDEOS_PAGE, 'utf-8');
 }
 
-test('soundtracks name incompetech mp3 urls of their titles', () => {
+test('soundtracks name the download url of their file', () => {
    const filesAndUrls = SOUNDTRACKS.map(s => [s.title, s.file, s.url]);
 
    expect(filesAndUrls).toEqual([
       ['The Entertainer', 'The Entertainer.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Entertainer.mp3'],
       ['Fig Leaf Rag', 'Fig Leaf Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Fig%20Leaf%20Rag.mp3'],
+      ['Wagon Wheel', 'Wagon Wheel.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Wagon%20Wheel.mp3'],
+      ['Original Rags', 'Scott_Joplin_-_09_-_Original_Rags_1900_piano_roll.mp3', 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/'
+         + 'Oddio_Overplay/Scott_Joplin/Frog_Legs_Ragtime_Era_Favorites/Scott_Joplin_-_09_-_Original_Rags_1900_piano_roll.mp3'],
+      ['Ragtime Dance', 'Scott_Joplin_-_Ragtime_Dance.mp3', 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/'
+         + 'Oddio_Overplay/Scott_Joplin/Piano_Rolls_from_archiveorg/Scott_Joplin_-_Ragtime_Dance.mp3'],
       ['Plucky Daisy', 'Plucky Daisy.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Plucky%20Daisy.mp3'],
       ['Maple Leaf Rag', 'Maple Leaf Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Maple%20Leaf%20Rag.mp3'],
       ['Frogs Legs Rag', 'Frogs Legs Rag.mp3', 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Frogs%20Legs%20Rag.mp3'],
@@ -36,12 +42,12 @@ test('tile slugs of the videos page follow the order of its tiles', () => {
       'relationship-graphs', 'explain-these-rows', 'message-patterns', 'shared-scenes']);
 });
 
-test('topic tiles alternate The Entertainer and Fig Leaf Rag and tiles with dedicated soundtrack play their own', () => {
+test('tiles play their dedicated soundtrack, the others alternate The Entertainer and Fig Leaf Rag', () => {
    const slugs = tileSlugsOf(videosPageHtml());
 
    const soundtracks = slugs.map(slug => soundtrackOf(slug, slugs));
 
-   expect(soundtracks).toEqual([ENTERTAINER, FIG_LEAF_RAG, ENTERTAINER, FIG_LEAF_RAG, ENTERTAINER, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG,
+   expect(soundtracks).toEqual([ENTERTAINER, FIG_LEAF_RAG, WAGON_WHEEL, ORIGINAL_RAGS, RAGTIME_DANCE, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG,
       MERRY_GO]);
 });
 
@@ -106,7 +112,7 @@ test('present music file reports no problem', () => {
 test('videos page credits every soundtrack', () => {
    const html = videosPageHtml();
 
-   const credit = /<small class="video-credit">([^<]*)/.exec(html)[1];
+   const credit = /<small class="video-credit">([\s\S]*?)<\/small>/.exec(html)[1].replace(/<[^>]+>/g, '');
 
    SOUNDTRACKS.forEach(s => expect(credit).toContain('“' + s.title + '”'));
 });

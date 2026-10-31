@@ -1,5 +1,5 @@
 import { StatusType } from 'app/shared/model/status-type.enum';
-import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
+import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
 import { expect, test } from '../support/fixtures';
 import { SALES_CSV } from '../support/import-files';
 import { openSalesScene, SALES_SCENE_DESCRIPTION, SALES_SCENE_NAME } from '../support/sales-scene';
@@ -10,14 +10,23 @@ const DASHBOARD_TAB_ID = 'tab2';
 const DASHBOARD_TITLE = 'Sales overview';
 const VIEW_NAME = 'Overview';
 
-test('managing scenes and navigating', async ({ page, front, scene, scenes, rawData, tabBar, dashboard, notifications,
+test('managing scenes and navigating', async ({ page, front, scene, scenes, rawData, tabBar, pivot, dashboard, notifications,
    confirmDialog }) => {
    const recording = new VideoRecording(page, 'scenes-and-navigation');
    await openSalesScene(front, scene, scenes);
+   await rawData.mainToolbar.openFront();
+   await front.openSample();
+   await rawData.mainToolbar.openScenes();
+   await scenes.activate(SALES_CSV.name);
    recording.markStart();
 
    await tabBar.addPivotTable();
+   await pivot.table.waitFor();
    await recording.caption('Add a pivot table as a new tab');
+
+   await pivot.dragFieldToRows('Region');
+   await pivot.dragFieldToColumns('Channel');
+   await recording.caption('Drag fields into its rows and columns');
 
    await tabBar.addDashboard();
    await dashboard.launcher.generateDashboard();
@@ -29,9 +38,10 @@ test('managing scenes and navigating', async ({ page, front, scene, scenes, rawD
 
    await dashboard.mainToolbar.saveView(VIEW_NAME);
    await notifications.dismiss(StatusType.SUCCESS);
-   await recording.caption('Save the view to restore it later');
+   await recording.caption('Save your tabs as a view to restore them later');
 
    await tabBar.close(tabBar.tab(PIVOT_TAB_ID));
+   await confirmDialog.confirm();
    await recording.caption('Close tabs you no longer need');
 
    await dashboard.mainToolbar.restoreView(VIEW_NAME);
@@ -41,30 +51,36 @@ test('managing scenes and navigating', async ({ page, front, scene, scenes, rawD
    await recording.caption('Restore the view to get closed tabs back');
 
    await dashboard.mainToolbar.openFront();
-   await recording.caption('Home leads back to the front page');
+   await recording.caption('Front Page leads back to the start page');
 
-   await front.openSample();
-   await recording.caption('Try the sample data as a second scene');
+   await front.openLogSample();
+   await recording.caption('Open the log sample as another scene – with tabs of its own');
 
    await rawData.mainToolbar.openScenes();
    await recording.caption('The scenes button lists all your scenes');
 
-   await scenes.filter('csv');
-   await recording.caption('Filter scenes by name or description');
-
    await scenes.edit(SALES_CSV.name, SALES_SCENE_NAME, SALES_SCENE_DESCRIPTION);
    await recording.caption('Rename or describe a scene in place');
 
+   await scenes.typeFilter('sal');
+   await expect(scenes.rows).toHaveCount(2);
+   await recording.caption('Type to filter scenes by name or description');
+
+   await scenes.typeFilter('es of');
+   await expect(scenes.rows).toHaveCount(1);
+   await recording.caption('Every letter narrows the list');
+
    await scenes.filter('');
    await scenes.activate(SALES_SCENE_NAME);
+   await expect(tabBar.titles).toContainText([DASHBOARD_TITLE]);
    await recording.caption('Activate a scene to switch to its data');
 
    await tabBar.open(DASHBOARD_TAB_ID);
    await dashboard.tiles.first().waitFor();
-   await recording.caption('Its tabs come back as you left them');
+   await recording.caption('Each scene keeps its own tabs');
 
    await dashboard.mainToolbar.openScenes();
-   await scenes.delete(fruitSalesSampleOf('en').sceneName);
+   await scenes.delete(appLogsSampleOf('en').sceneName);
    await recording.caption('Delete scenes you no longer need');
 
    await recording.save();

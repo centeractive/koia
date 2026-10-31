@@ -45,9 +45,6 @@ test('dashboards and charts', async ({ page, front, scene, scenes, tabBar, dashb
    await expectAverageRevenueChart(chart, dashboard.sideBar, en);
 
    await dashboard.sideBar.close();
-   await chart.setColumnSpan(en.get('element.columns', { count: gridColumns }));
-   await chart.expectChartPainted();
-   await recording.caption('Let the chart span all columns again');
 
    await downloadOf(page, () => chart.saveAs(en.get('element.saveAs', { format: en.get(EnumLabelKeys.exportFormat(ExportFormat.PNG)) })));
    await recording.caption('Save the chart as PNG image');

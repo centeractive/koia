@@ -3,6 +3,7 @@ import { Route } from 'app/shared/model/route.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { Notifications } from '../components/notifications';
 import { RawDataTable } from '../components/raw-data-table';
+import { chooseFile } from '../file-chooser';
 import { ImportFile } from '../import-files';
 
 export class ScenePage {
@@ -57,9 +58,7 @@ export class ScenePage {
       await this.nameInput.waitFor();
       await this.sourceType.click();
       await this.page.getByRole('option', { name: file.sourceName, exact: true }).click();
-      const [fileChooser] = await Promise.all([this.page.waitForEvent('filechooser'), this.page.locator('#select_file_button').click()]);
-      await whileChoosing();
-      await fileChooser.setFiles(file.path);
+      await chooseFile(this.page.locator('#select_file_button'), file.path, whileChoosing);
       await this.dataSample.waitFor();
    }
 

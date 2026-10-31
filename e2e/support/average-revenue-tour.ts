@@ -27,11 +27,14 @@ export function averageRevenueTourOf(sideBar: DashboardSideBar, en: Texts): Tour
    const legendAndScales = en.get('chart.legendAndScales');
    return [
       {
-         caption: 'Choose a chart type, e.g. a line chart',
-         run: () => sideBar.switchChartType(ChartType.LINE)
+         caption: 'Choose another chart type',
+         run: async () => {
+            const current = await sideBar.selectedChartType();
+            await sideBar.switchChartType(current === ChartType.LINE ? ChartType.AREA : ChartType.LINE);
+         }
       },
       {
-         caption: 'Count the rows per month',
+         caption: 'Start by counting the rows per month',
          run: () => sideBar.chooseAggregation(en.get('chart.countRows'))
       },
       {
@@ -39,7 +42,7 @@ export function averageRevenueTourOf(sideBar: DashboardSideBar, en: Texts): Tour
          run: () => sideBar.selectColumn(REVENUE)
       },
       {
-         caption: 'Aggregate its values per month',
+         caption: 'Aggregate its values per month instead',
          run: () => sideBar.chooseAggregation(en.get('summary.sideBar.aggregateValues'))
       },
       {
@@ -56,7 +59,10 @@ export function averageRevenueTourOf(sideBar: DashboardSideBar, en: Texts): Tour
       },
       {
          caption: 'Pick a color scheme',
-         run: () => sideBar.selectColorScheme(CategoricalColorScheme.SET_1)
+         run: async () => {
+            const current = await sideBar.selectedColorScheme();
+            await sideBar.selectColorScheme(current === CategoricalColorScheme.SET_1 ? CategoricalColorScheme.DARK_2 : CategoricalColorScheme.SET_1);
+         }
       },
       {
          caption: 'Show the legend and give the axes a title',

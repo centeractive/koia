@@ -15,19 +15,19 @@ import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILIES, FONT_SIZES } fro
 import { Locator, Page } from '@playwright/test';
 import { rgb, schemeSet1 } from 'd3';
 import { DateTime } from 'luxon';
-import { DashboardTile } from './support/components/dashboard-tile';
+import { centerXOf } from './support/box';
+import { DashboardTile, DRAGGED_GRAPH_NODE_TOLERANCE_PX } from './support/components/dashboard-tile';
 import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
 import { dispatchWindowEvent, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { expect, test } from './support/fixtures';
 import { columnsOf, columnValuesOf, countOf, distinctValuesOf, firstColumnOf, fruitSalesOf, sumOf } from './support/fruit-sales-sample';
 import { DashboardPage } from './support/pages/dashboard-page';
+import { SNAP_TOLERANCE_PX } from './support/snap';
 import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
 
 const VIEW_NAME = 'Regions overview';
-/** half a snap step of 10 page units */
-const SNAP_TOLERANCE_PX = 6;
 /** minimum width of 40 page units of a text box added with 300 page units */
 const TEXT_BOX_MIN_WIDTH_RATIO = 40 / 300;
 const TEXT_BOX_MIN_HEIGHT = 30;
@@ -145,6 +145,35 @@ test('hovering a graph node shows its value and number of entries in a tooltip',
 
    await expect(tile.graphTooltip).toHaveText(`${column}: ${value} ${en.get('graph.tooltip.entries', { count: en.number(count) })}`
       + en.get('graph.tooltip.doubleClick'));
+});
+
+test('dragged graph node takes its leaves along', async ({ dashboard }) => {
+   const regions = distinctValuesOf<string>(sample, column);
+   const channels = distinctValuesOf<string>(sample, channelColumn);
+   const leafLabel = (region: string, channel: string) =>
+      `${channelColumn}: ${channel} (${en.number(countOf(sample, e => e[column] === region && e[channelColumn] === channel))})`;
+   const pairs = regions.flatMap(r => channels.filter(c => countOf(sample, e => e[column] === r && e[channelColumn] === c) > 0)
+      .map(c => leafLabel(r, c)));
+   const [region] = regions;
+   const leafText = channels.map(c => leafLabel(region, c)).find(label => pairs.filter(p => p === label).length === 1);
+   await dashboard.launcher.addGraph();
+   await dashboard.sideBar.dragGroupByColumn(channelColumn);
+   await dashboard.sideBar.dragGroupByColumn(column);
+   const tile = dashboard.tile(0);
+   await expect(tile.graphNodes).toHaveCount(1 + regions.length + pairs.length);
+   await dashboard.sideBar.close();
+   const regionNode = tile.graphNodes.filter({ hasText: `${column}: ${region}` });
+   const leaf = tile.graphNodes.filter({ hasText: leafText });
+   await expect(leaf).toHaveCount(1);
+   const regionStart = centerXOf(await tile.graphNodeBox(regionNode));
+   const leafStart = centerXOf(await tile.graphNodeBox(leaf));
+   const dx = -(regionStart - (await tile.root.boundingBox()).x) / 2;
+
+   await tile.startGraphNodeDragBy(regionNode, dx, 0);
+
+   expect(Math.abs(centerXOf(await regionNode.locator('circle').boundingBox()) - (regionStart + dx))).toBeLessThanOrEqual(DRAGGED_GRAPH_NODE_TOLERANCE_PX);
+   await expect.poll(async () => centerXOf(await leaf.locator('circle').boundingBox())).toBeLessThanOrEqual(leafStart - Math.abs(dx) / 2);
+   await tile.release();
 });
 
 test('color scheme selected for a graph colors the nodes of each top level value with the next color of the scheme', async ({ dashboard }) => {
@@ -1507,10 +1536,8 @@ async function expectCentredIn(textBox: TextBox, content: Locator): Promise<void
  * @returns the spot the text box was dropped at after snapping
  */
 async function dropOnto(textBox: TextBox, tile: Locator, spot: Spot): Promise<Spot> {
-   const box = await textBox.tile.boundingBox();
    const target = await tile.boundingBox();
-   await textBox.startMoveBy(target.x + spot.x * target.width - box.x, target.y + spot.y * target.height - box.y);
-   await textBox.release();
+   await textBox.moveTopLeftTo(target.x + spot.x * target.width, target.y + spot.y * target.height);
    return spotOf(textBox, tile);
 }
 

@@ -1,6 +1,7 @@
 import { Locator } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
 import { InputDialog } from './dialogs';
+import { NavButtons } from './nav-buttons';
 import { RangeFilter } from './range-filter';
 
 export class MainToolbar {
@@ -8,11 +9,13 @@ export class MainToolbar {
    readonly addFilterButton: Locator;
    readonly rangeFilterPanel: Locator;
    readonly restoreViewButton: Locator;
+   readonly navButtons: NavButtons;
 
    constructor(private readonly root: Locator) {
       this.addFilterButton = root.locator('.but_add_col_filter');
       this.rangeFilterPanel = root.locator('.div_range_filters');
       this.restoreViewButton = root.locator('#but_restore_view');
+      this.navButtons = new NavButtons(root.locator('koia-nav-buttons'));
    }
 
    async addValueFilter(column: string, value: string): Promise<void> {
@@ -41,9 +44,8 @@ export class MainToolbar {
       await this.root.page().waitForURL('**/' + Route.SCENES);
    }
 
-   async openFront(): Promise<void> {
-      await this.root.locator('#butHome').click();
-      await this.root.page().waitForURL('**/' + Route.FRONT);
+   openFront(): Promise<void> {
+      return this.navButtons.openFront();
    }
 
    async shareScene(): Promise<void> {

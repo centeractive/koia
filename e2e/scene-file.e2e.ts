@@ -130,13 +130,9 @@ test('shared scene opened from main toolbar of view tab replaces cached view of 
    await expect(pivot.fieldChips.filter({ hasText: 'Revenue' })).toHaveCount(1);
 });
 
-test('open shared scene button does not spin while file selection is open', async ({ page, front }, testInfo) => {
+test('open shared scene button does not spin while file selection is open', async ({ front }, testInfo) => {
    const file = testInfo.outputPath('sample.koia');
    writeSceneFileOfSample(file, sample.entries.length);
 
-   const [fileChooser] = await Promise.all([page.waitForEvent('filechooser'), front.sceneFileButton.click()]);
-
-   await expect(front.sceneFileButton.locator('mat-icon')).not.toHaveClass(/koia-spin/);
-   await fileChooser.setFiles(file);
-   await page.waitForURL('**/' + Route.RAWDATA);
+   await front.chooseSceneFile(file, () => expect(front.sceneFileButton.locator('mat-icon')).not.toHaveClass(/koia-spin/));
 });

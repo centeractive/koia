@@ -162,6 +162,14 @@ export class DashboardSideBar extends SideNav {
    }
 
    /**
+    * expands the color scheme panel unless it is expanded already and resolves to the pressed scheme
+    */
+   async selectedColorScheme(): Promise<string> {
+      const panel = await this.expandPanelOf('koia-color-scheme-selection');
+      return panel.getByRole('button', { pressed: true }).getAttribute('aria-label');
+   }
+
+   /**
     * expands the aggregation panel of the summary table unless it is expanded already and drops the available aggregation into the
     * selected aggregations
     */
@@ -207,8 +215,9 @@ export class DashboardSideBar extends SideNav {
 
    /**
     * drags the item by its label between the selected list and the available list of the panel holding the selected list, after
-    * scrolling the available list into view, as an expanded panel may reach below the window, and resolves once the drop animation
-    * removed the drag preview, as items moved before would be pressed at their animated position
+    * scrolling the available list and then the nearest edge of the drop list into view, as an expanded panel may reach beyond the
+    * window, and resolves once the drop animation removed the drag preview, as items moved before would be pressed at their animated
+    * position
     */
    private async dragBetweenLists(selectedListId: string, label: string, toSelected: boolean,
       itemOf: (list: Locator) => Locator = list => list.getByText(label, { exact: true })): Promise<void> {
@@ -218,6 +227,7 @@ export class DashboardSideBar extends SideNav {
       const available = panel.locator('.div_column_list:not(' + selectedList + ')');
       const [from, to] = toSelected ? [available, selected] : [selected, available];
       await available.scrollIntoViewIfNeeded();
+      await to.evaluate(list => list.scrollIntoView({ block: 'nearest' }));
       await dragCenterOnto(itemOf(from), to);
       await expect(itemOf(to)).toBeVisible();
       await expect(this.sidenav.page().locator('.cdk-drag-preview')).toHaveCount(0);

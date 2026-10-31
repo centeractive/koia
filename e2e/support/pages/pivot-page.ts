@@ -15,6 +15,7 @@ export class PivotPage {
    readonly valueCells: Locator;
    readonly heatmapCells: Locator;
    readonly rowLabels: Locator;
+   readonly columnLabels: Locator;
    readonly rowTotals: Locator;
    readonly firstRowTotal: Locator;
    readonly rowTotalsButton: Locator;
@@ -42,6 +43,7 @@ export class PivotPage {
       this.valueCells = this.root.locator('table.pvtTable td.pvtVal');
       this.heatmapCells = this.root.locator(PivotPage.HEATMAP_CELL);
       this.rowLabels = this.root.locator('table.pvtTable th.pvtRowLabel');
+      this.columnLabels = this.root.locator('table.pvtTable th.pvtColLabel');
       this.rowTotals = this.root.locator('table.pvtTable td.pvtTotal.rowTotal');
       this.firstRowTotal = this.rowTotals.first();
       this.rowTotalsButton = this.root.locator('#but_row_totals');

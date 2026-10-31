@@ -134,6 +134,8 @@ A plain-text log file is split into columns by a **Line pattern**. Koia picks th
 
 Video: [Creating a new scene](https://www.koia.io/intro/videos.html)
 
+Video for log files: [Message patterns](https://www.koia.io/intro/videos.html)
+
 ## 5. Manage scenes
 
 The **Scenes** icon in any page header opens the scenes page. The active scene is marked **Active** and listed first, the others by when they were last used.
@@ -207,6 +209,8 @@ A **saved view** keeps all tabs of a scene under a name, for example to return t
 - **Save all tabs as view** stores all tabs, the active tab and the raw data state (filters, sorting, column widths). Saving under an existing name replaces that view.
 - **Restore saved view** lists the views; restoring replaces all open tabs.
 - **Manage Views** (end of that list) renames and deletes views.
+
+Video: [Managing scenes and navigating](https://www.koia.io/intro/videos.html)
 
 ## 8. Drill down to the rows
 

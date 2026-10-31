@@ -1,8 +1,9 @@
 import { defineConfig } from '@playwright/test';
+import { RecordingOptions } from '../support/fixtures';
 import { RECORDED_VIDEO, VIDEO_SIZE } from '../support/video-options';
 import { BASE_URL, WEB_SERVER } from '../support/web-server';
 
-export default defineConfig({
+export default defineConfig<RecordingOptions>({
    testDir: '.',
    testMatch: '**/*.video.ts',
    outputDir: '../../test-results/videos',
@@ -14,7 +15,9 @@ export default defineConfig({
       baseURL: BASE_URL,
       locale: 'en-US',
       viewport: VIDEO_SIZE,
-      video: RECORDED_VIDEO
+      video: RECORDED_VIDEO,
+      idColumnOffAtFirst: false,
+      recordingStyles: true
    },
    webServer: WEB_SERVER
 });

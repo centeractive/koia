@@ -1,17 +1,17 @@
-import { Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
+import { captionHtml } from './caption';
 import { Cut } from './cuts.mjs';
 import { fileDialogHtml, FileDialogKind } from './file-dialog';
 import { TAIL_SECONDS } from './soundtrack.mjs';
 
 const RAW_DIR = resolve(__dirname, '../../../test-results/videos/raw');
-const CAPTION_STYLE = 'position:absolute;left:50%;bottom:40px;transform:translateX(-50%);padding:10px 20px;border-radius:12px;'
-   + 'background:rgba(26,35,126,.88);color:#fff;font:500 22px/1.4 system-ui,sans-serif';
 
 const FILE_DIALOG_MS = 2500;
 /** seconds of a long wait kept in the mixed video, showing that the app works */
 const CUT_KEPT_SECONDS = 1.5;
+const PAGINATED_TAB_HEADER = 'nav.mat-mdc-tab-header-pagination-controls-enabled';
 
 /** bottom band covered by a one-line caption: about 51 px high, ending 40 px above the bottom, so its top is about 91 px up */
 export const CAPTION_BAND_PX = 100;
@@ -33,10 +33,27 @@ export class VideoRecording {
    }
 
    /**
-    * shows the text for its reading time and resolves once it disappeared
+    * shows the text for its reading time and resolves once it disappeared, fails if the tab header paginates or the view is scrolled
+    * sideways
     */
    async caption(text: string): Promise<void> {
-      await this.page.screencast.showOverlay('<div style="' + CAPTION_STYLE + '">' + text + '</div>', { duration: Math.max(1800, 60 * text.length) });
+      if (await this.page.locator(PAGINATED_TAB_HEADER).count() > 0) {
+         throw new Error('paginated tab header under caption: ' + text);
+      }
+      if (await this.page.locator('.mat-drawer-container').evaluateAll(containers => containers.some(c => c.scrollLeft > 0))) {
+         throw new Error('sideways scrolled view under caption: ' + text);
+      }
+      await this.page.screencast.showOverlay(captionHtml(text), { duration: Math.max(1800, 60 * text.length) });
+   }
+
+   /**
+    * scrolls the target to the middle of the window, as captions cover its bottom band, and moves the pointer over it
+    */
+   async pointAt(target: Locator): Promise<void> {
+      await target.evaluate(element => element.scrollIntoView({ block: 'center' }));
+      await target.hover();
+      const box = await target.boundingBox();
+      expect(box.y + box.height).toBeLessThanOrEqual(this.page.viewportSize().height - CAPTION_BAND_PX);
    }
 
    /**

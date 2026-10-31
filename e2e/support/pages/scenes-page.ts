@@ -1,7 +1,12 @@
 import { Locator, Page } from '@playwright/test';
+import * as _ from 'lodash';
 import { Route } from 'app/shared/model/route.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
+import { NavButtons } from '../components/nav-buttons';
 import { Notifications } from '../components/notifications';
+import { chooseFile } from '../file-chooser';
+
+const TYPING_DELAY_MS = 250;
 
 export class ScenesPage {
 
@@ -20,6 +25,7 @@ export class ScenesPage {
    readonly continueButton: Locator;
    readonly activateButtons: Locator;
    readonly activeChips: Locator;
+   readonly navButtons: NavButtons;
    private readonly notifications: Notifications;
 
    constructor(private readonly page: Page) {
@@ -38,11 +44,19 @@ export class ScenesPage {
       this.continueButton = page.locator('.continueActiveScene');
       this.activateButtons = page.locator('.activateScene');
       this.activeChips = page.locator('.active-chip');
+      this.navButtons = new NavButtons(page.locator('koia-page-frame koia-nav-buttons'));
       this.notifications = new Notifications(page);
    }
 
    async filter(text: string): Promise<void> {
       await this.filterInput.fill(text);
+   }
+
+   /**
+    * types letter by letter after the current text, the list narrows with every letter
+    */
+   async typeFilter(text: string): Promise<void> {
+      await this.filterInput.pressSequentially(text, { delay: TYPING_DELAY_MS });
    }
 
    async activate(sceneName: string): Promise<void> {
@@ -65,9 +79,7 @@ export class ScenesPage {
    }
 
    async openSceneFile(path: string, whileChoosing: () => Promise<void> = async () => undefined): Promise<void> {
-      const [fileChooser] = await Promise.all([this.page.waitForEvent('filechooser'), this.page.locator('#but_open_scene_file').click()]);
-      await whileChoosing();
-      await fileChooser.setFiles(path);
+      await chooseFile(this.page.locator('#but_open_scene_file'), path, whileChoosing);
       await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 
@@ -100,6 +112,6 @@ export class ScenesPage {
    }
 
    private row(sceneName: string): Locator {
-      return this.rows.filter({ hasText: sceneName });
+      return this.rows.filter({ has: this.page.locator('.scene-name', { hasText: new RegExp('^' + _.escapeRegExp(sceneName)) }) });
    }
 }

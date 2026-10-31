@@ -66,6 +66,19 @@ test('range filter at the maximum shows its rows, removing it shows all rows and
    await expect(rawData.mainToolbar.rangeFilterPanel).toHaveCount(0);
 });
 
+test('dragged min and range of a range filter narrow and shift its rows', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.NUMBER);
+   const values = columnValuesOf<number>(sample, column);
+   const [min, max] = [Math.min(...values), Math.max(...values)];
+   const rangeFilter = await rawData.mainToolbar.addRangeFilter(column, en.get('toolbar.valueRange'));
+
+   await rangeFilter.dragMinBy(30);
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] >= min + 30)));
+   await rangeFilter.dragRangeBy(-10);
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] >= min + 20 && e[column] <= max - 10)));
+});
+
 test('saved view restores the removed value filter', async ({ rawData, notifications, confirmDialog }) => {
    const column = firstColumnOf(sample, DataType.TEXT);
    const value: string = sample.entries[0][column];

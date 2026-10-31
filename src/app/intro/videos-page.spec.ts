@@ -5,6 +5,7 @@ describe('videos page', () => {
   const DESKTOP = 1280;
   const MEDIUM = 800;
   const MOBILE = 375;
+  const VIDEO_SIZE = [1600, 900];
   const TILE_SLUGS = ['new-scene', 'scenes-and-navigation', 'pivot-and-export', 'dashboards-and-charts', 'summary-tables', 'relationship-graphs',
     'explain-these-rows', 'message-patterns', 'shared-scenes'];
   let iframe: HTMLIFrameElement;
@@ -77,6 +78,25 @@ describe('videos page', () => {
     all(doc, '.video-tile').forEach(tile => expect(tile.querySelector('.landing-tile-head > svg.landing-tile-icon path')).not.toBeNull());
   });
 
+  it('should describe every video tile', async () => {
+
+    // when
+    const doc = await loadVideos(DESKTOP);
+
+    // then
+    expect(textsOf(doc, '.video-tile p')).toEqual([
+      'Load a CSV file, let Koia detect columns and types, then sort, filter, preview and export the rows.',
+      'Organize tabs and views, switch between scenes, rename, filter and delete them.',
+      'Drag fields into rows and columns, sum values, apply a heatmap and export to Excel.',
+      'Generate a dashboard, resize tiles, configure a chart and save it as PNG.',
+      'Count, aggregate and group rows by values, time and number ranges, and export them.',
+      'Explore relations between values in an interactive graph.',
+      'Filter rows and let Koia show what makes them different.',
+      'Import a log file, group its messages by pattern – when creating a scene or later – and chart them.',
+      'Share a scene with all its tabs in one file – every drill-down keeps working.'
+    ]);
+  });
+
   [[DESKTOP, 3], [MEDIUM, 5], [MOBILE, 9]].forEach(([width, rows]) => {
 
     it('should lay out tiles in ' + rows + ' rows at width ' + width, async () => {
@@ -131,7 +151,7 @@ describe('videos page', () => {
     expect(responses.map(r => r.headers.get('content-type'))).toEqual(TILE_SLUGS.flatMap(() => ['video/webm', 'image/webp']));
   });
 
-  it('should decode posters at 1280x720', async () => {
+  it('should decode posters at ' + VIDEO_SIZE.join('x'), async () => {
 
     // given
     const doc = await loadVideos(DESKTOP);
@@ -144,17 +164,17 @@ describe('videos page', () => {
       await poster.decode();
 
       // then
-      expect([poster.naturalWidth, poster.naturalHeight]).toEqual([1280, 720]);
+      expect([poster.naturalWidth, poster.naturalHeight]).toEqual(VIDEO_SIZE);
     }
   });
 
-  it('should declare 1280x720 size attributes on videos', async () => {
+  it('should declare ' + VIDEO_SIZE.join('x') + ' size attributes on videos', async () => {
 
     // when
     const doc = await loadVideos(DESKTOP);
 
     // then
-    all(doc, 'video').forEach(v => expect([v.getAttribute('width'), v.getAttribute('height')]).toEqual(['1280', '720']));
+    all(doc, 'video').forEach(v => expect([v.getAttribute('width'), v.getAttribute('height')]).toEqual(VIDEO_SIZE.map(String)));
   });
 
   [DESKTOP, MOBILE].forEach(width => {
@@ -226,7 +246,7 @@ describe('videos page', () => {
     expect(all(doc, 'a.landing-btn').map(a => a.getAttribute('href'))).toEqual(['/front']);
   });
 
-  it('should credit all soundtracks under creative commons by attribution 4.0', async () => {
+  it('should credit all soundtracks with their licences', async () => {
 
     // when
     const doc = await loadVideos(DESKTOP);
@@ -234,7 +254,7 @@ describe('videos page', () => {
     // then
     const credit = doc.querySelector('.landing-footer-inner > small.video-credit');
     const link = credit.querySelector('a');
-    expect(credit.textContent.replace(/\s+/g, ' ')).toBe('Music: “The Entertainer”, “Fig Leaf Rag” and “Maple Leaf Rag” (composed by Scott Joplin), “Frogs Legs Rag” (composed by James Scott), “Merry Go” and “Plucky Daisy” Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0');
+    expect(credit.textContent.replace(/\s+/g, ' ')).toBe('Music: “The Entertainer”, “Fig Leaf Rag” and “Maple Leaf Rag” (composed by Scott Joplin), “Frogs Legs Rag” (composed by James Scott), “Merry Go”, “Plucky Daisy” and “Wagon Wheel” Kevin MacLeod (incompetech.com), licensed under Creative Commons: By Attribution 4.0; “Original Rags” and “Ragtime Dance”, piano rolls by Scott Joplin, public domain (Free Music Archive)');
     expect([link.getAttribute('href'), link.target, link.rel]).toEqual(['https://creativecommons.org/licenses/by/4.0/', '_blank', 'noopener']);
   });
 

@@ -6,6 +6,7 @@ export const FADE_OUT_SECONDS = 4;
 const FADE_OUT_CURVE = 'qua';
 const MUSIC_VOLUME = 0.95;
 const INCOMPETECH_MP3_URL = 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/';
+const FMA_MP3_URL = 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/Oddio_Overplay/Scott_Joplin/';
 export const MUSIC_DIR_VARIABLE = 'VIDEO_MUSIC_DIR';
 
 export interface Soundtrack {
@@ -19,10 +20,18 @@ function incompetechSoundtrack(title: string): Soundtrack {
    return { title, file, url: INCOMPETECH_MP3_URL + encodeURIComponent(file) };
 }
 
+function freeMusicArchiveSoundtrack(title: string, url: string): Soundtrack {
+   return { title, file: url.split('/').pop(), url };
+}
+
 /** played alternately by the topic tiles of the videos page without dedicated soundtrack */
 const TOPIC_SOUNDTRACKS: readonly Soundtrack[] = [incompetechSoundtrack('The Entertainer'), incompetechSoundtrack('Fig Leaf Rag')];
 /** played by their videos wherever their tiles are */
 const DEDICATED_SOUNDTRACKS: Readonly<Record<string, Soundtrack>> = {
+   'pivot-and-export': incompetechSoundtrack('Wagon Wheel'),
+   'dashboards-and-charts': freeMusicArchiveSoundtrack('Original Rags',
+      FMA_MP3_URL + 'Frog_Legs_Ragtime_Era_Favorites/Scott_Joplin_-_09_-_Original_Rags_1900_piano_roll.mp3'),
+   'summary-tables': freeMusicArchiveSoundtrack('Ragtime Dance', FMA_MP3_URL + 'Piano_Rolls_from_archiveorg/Scott_Joplin_-_Ragtime_Dance.mp3'),
    'relationship-graphs': incompetechSoundtrack('Plucky Daisy'),
    'explain-these-rows': incompetechSoundtrack('Maple Leaf Rag'),
    'message-patterns': incompetechSoundtrack('Frogs Legs Rag'),

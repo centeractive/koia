@@ -1,11 +1,26 @@
 import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
+import { TabBar } from './support/components/tab-bar';
 import { expect, test } from './support/fixtures';
-import { LOG_MESSAGES_CSV } from './support/import-files';
+import { APP_MESSAGES_LOG, ImportFile, LOG_MESSAGES_CSV } from './support/import-files';
 import { CONNECTION_PATTERN, LOG_MESSAGE_PATTERNS, MESSAGE_PATTERN_COLUMN } from './support/log-messages';
+import { PivotPage } from './support/pages/pivot-page';
+import { ScenePage } from './support/pages/scene-page';
+import { ScenesPage } from './support/pages/scenes-page';
 import { Texts } from './support/texts';
 
 const en = new Texts('en');
 const ERROR_ROWS = 15;
+
+/**
+ * loads the data of the scene page with pattern column into a new scene and shows its message patterns in the rows of a pivot table
+ */
+async function pivotPatterns(file: ImportFile, scene: ScenePage, scenes: ScenesPage, tabBar: TabBar, pivot: PivotPage): Promise<void> {
+   await scene.loadData();
+   await scenes.activate(file.name);
+   await tabBar.addPivotTable();
+   await pivot.table.waitFor();
+   await pivot.dragFieldToRows(MESSAGE_PATTERN_COLUMN);
+}
 
 test('pattern column added on import groups messages in a pivot table and explains their level', async ({ front, scene, scenes, tabBar, pivot, rawDataDialog }) => {
    await front.open('en');
@@ -20,11 +35,7 @@ test('pattern column added on import groups messages in a pivot table and explai
       .toEqual(['Time', 'Level', 'Message', MESSAGE_PATTERN_COLUMN]);
    await expect(scene.patternIcons).toHaveText('subdirectory_arrow_right');
    await expect(scene.preview.headers).toContainText([MESSAGE_PATTERN_COLUMN]);
-   await scene.loadData();
-   await scenes.activate(LOG_MESSAGES_CSV.name);
-   await tabBar.addPivotTable();
-   await pivot.table.waitFor();
-   await pivot.dragFieldToRows(MESSAGE_PATTERN_COLUMN);
+   await pivotPatterns(LOG_MESSAGES_CSV, scene, scenes, tabBar, pivot);
 
    expect((await pivot.rowLabels.allInnerTexts()).sort()).toEqual([...LOG_MESSAGE_PATTERNS].sort());
    const connectionRow = (await pivot.rowLabels.allInnerTexts()).indexOf(CONNECTION_PATTERN);
@@ -34,6 +45,18 @@ test('pattern column added on import groups messages in a pivot table and explai
 
    await expect(rawDataDialog.contrast.findings).toHaveCount(1);
    await expect(rawDataDialog.contrast.findings.first()).toContainText('Level = ERROR');
+});
+
+test('pattern column added on log file import groups its messages by pattern', async ({ front, scene, scenes, tabBar, pivot }) => {
+   await front.open('en');
+   await front.startWithFile();
+   await scene.detectColumns(APP_MESSAGES_LOG);
+   await expect(scene.addPatternButtons).toHaveCount(1);
+   await scene.addPatternColumn(APP_MESSAGES_LOG.columns.indexOf('Message'));
+
+   await pivotPatterns(APP_MESSAGES_LOG, scene, scenes, tabBar, pivot);
+
+   expect((await pivot.rowLabels.allInnerTexts()).sort()).toEqual([...LOG_MESSAGE_PATTERNS].sort());
 });
 
 test('pattern column added to the log sample explains its ERROR rows by message patterns', async ({ front, rawData, scenes, sceneDetailsDialog, tabBar, pivot, rawDataDialog }) => {

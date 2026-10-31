@@ -1,12 +1,11 @@
-import { SORT_INDICATORS } from 'app/raw-data/sort-indicators';
-import { CategoricalColorScheme } from 'app/shared/color/categorical-color-scheme.enum';
+import { centerXOf } from '../support/box';
+import { DRAGGED_GRAPH_NODE_TOLERANCE_PX } from '../support/components/dashboard-tile';
 import { expect, test } from '../support/fixtures';
 import { openSalesScene } from '../support/sales-scene';
 import { Texts } from '../support/texts';
 import { CAPTION_BAND_PX, VideoRecording } from './support/video-recording';
 
 const en = new Texts('en');
-const REVENUE = 'Revenue';
 
 function tooltipOf(entries: number): string {
    return 'Region: West ' + en.get('graph.tooltip.entries', { count: en.number(entries) }) + en.get('graph.tooltip.doubleClick');
@@ -31,13 +30,10 @@ test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboa
    await expect(graph.graphNodes).toHaveCount(29);
    await recording.caption('Drop Region on top to group the products by region');
 
-   await dashboard.sideBar.selectColorScheme(CategoricalColorScheme.SET_1);
-   await recording.caption('Pick a color scheme');
-
    await dashboard.sideBar.close();
    await dashboard.freeCanvasButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
-   await recording.caption('Switch to the free canvas to place tiles freely');
+   await recording.caption('On the free canvas, tiles take any size and position');
 
    const sheet = await dashboard.canvasPageContent.boundingBox();
    const box = await graph.root.boundingBox();
@@ -50,28 +46,34 @@ test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboa
    await recording.caption('The graph arranges its nodes in the new space');
 
    const west = graph.graphNodes.filter({ hasText: 'Region: West' });
+   const lemonsOfWest = graph.graphNodes.filter({ hasText: 'Product: Lemons (14)' });
    await graph.hoverGraphNode(west);
    await expect(graph.graphTooltip).toHaveText(tooltipOf(69));
    await recording.caption('Hover a node to see its number of entries');
 
-   const westLemons = graph.graphNodes.filter({ hasText: 'Product: Lemons (14)' });
-   await graph.hoverGraphNode(westLemons);
-   await graph.doubleClickGraphNode(westLemons);
+   await graph.hoverGraphNode(lemonsOfWest);
+   await graph.doubleClickGraphNode(lemonsOfWest);
    await expect(rawDataDialog.table.rowCount).toHaveText(en.rows(14));
-   await recording.caption('Double-click a node to see its rows');
-
-   await rawDataDialog.table.sortBy(REVENUE);
-   await expect(rawDataDialog.table.sortIndicator(REVENUE)).toHaveText(SORT_INDICATORS.asc);
-   await recording.caption('Click a header to sort the rows');
+   await recording.caption('Double-click a node, e.g. the lemons of West, to see its rows');
    await rawDataDialog.close();
 
    await dashboard.mainToolbar.addValueFilter('Channel', 'Online');
-   await expect(graph.graphNodes.filter({ hasText: 'Product: Lemons (10)' })).toHaveCount(1);
+   const onlineLemonsOfWest = graph.graphNodes.filter({ hasText: 'Product: Lemons (10)' });
+   await expect(onlineLemonsOfWest).toHaveCount(1);
    await recording.caption('Filters apply to the dashboard, e.g. online sales');
 
    await graph.hoverGraphNode(west);
    await expect(graph.graphTooltip).toHaveText(tooltipOf(34));
    await recording.caption('Nodes count the filtered rows only');
+
+   const westStart = centerXOf(await graph.graphNodeBox(west));
+   const leafStart = centerXOf(await graph.graphNodeBox(onlineLemonsOfWest));
+   const dx = -(westStart - (await graph.root.boundingBox()).x) / 2;
+   await graph.startGraphNodeDragBy(west, dx, 0);
+   expect(Math.abs(centerXOf(await west.locator('circle').boundingBox()) - (westStart + dx))).toBeLessThanOrEqual(DRAGGED_GRAPH_NODE_TOLERANCE_PX);
+   await expect.poll(async () => centerXOf(await onlineLemonsOfWest.locator('circle').boundingBox())).toBeLessThanOrEqual(leafStart - Math.abs(dx) / 2);
+   await recording.caption('Drag a node and its branch follows');
+   await graph.release();
 
    await recording.save();
 });

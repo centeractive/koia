@@ -32,19 +32,25 @@ interface PageObjects {
    sceneDetailsDialog: SceneDetailsDialog;
 }
 
-interface IdColumnOption {
+export interface RecordingOptions {
    /**
     * presets the ID column toggle of the scene page off unless a choice is remembered, so that imports keep their source columns only
     */
    idColumnOffAtFirst: boolean;
+   /**
+    * lets tooltips under the motionless recording pointer pass clicks through and clips the side nav containers, which Playwright
+    * would otherwise scroll sideways when scrolling a clicked element into view
+    */
+   recordingStyles: boolean;
 }
 
 /**
  * aborts requests of all pages to foreign origins, hence Koia cannot reach any CouchDB and uses the empty IndexedDB of the fresh browser context
  */
-export const test = base.extend<PageObjects & IdColumnOption>({
+export const test = base.extend<PageObjects & RecordingOptions>({
    idColumnOffAtFirst: [true, { option: true }],
-   context: async ({ context, baseURL, idColumnOffAtFirst }, use) => {
+   recordingStyles: [false, { option: true }],
+   context: async ({ context, baseURL, idColumnOffAtFirst, recordingStyles }, use) => {
       const appOrigin = new URL(baseURL).origin;
       await context.route(url => url.origin !== appOrigin, route => route.abort());
       if (idColumnOffAtFirst) {
@@ -53,6 +59,14 @@ export const test = base.extend<PageObjects & IdColumnOption>({
                localStorage.setItem(key, 'false');
             }
          }, ID_COLUMN_STORAGE_KEY);
+      }
+      if (recordingStyles) {
+         await context.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = '.mat-mdc-tooltip-panel, .mat-mdc-tooltip-panel * { pointer-events: none !important; }'
+               + ' .mat-drawer-container { overflow: clip !important; }';
+            document.head.appendChild(style);
+         }));
       }
       await use(context);
    },

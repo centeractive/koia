@@ -7,6 +7,7 @@ import {
    CODES_CSV, DUPLICATE_HEADERS_CSV, EPOCH_MILLIS_CSV, IMPORT_FILES, LOG_MESSAGES_CSV, MISSING_TIMES_CSV, MIXED_DATES_CSV,
    ImportFile, ORDERS_CSV, ORDERS_WITH_ID_CSV, SALES_CSV, SEMICOLON_ORDERS_CSV
 } from './support/import-files';
+import { ID_COLUMN } from './support/id-column';
 import { FrontPage } from './support/pages/front-page';
 import { ScenePage } from './support/pages/scene-page';
 import { ScenesPage } from './support/pages/scenes-page';
@@ -170,12 +171,12 @@ test.describe('ID column', () => {
          const dataTypes = await importFile(file, front, scene, scenes);
 
          expect(dataTypes).toEqual(en.dataTypes([DataType.NUMBER, ...file.dataTypes]));
-         await expect(rawData.table.headers).toHaveText(['ID', ...file.columns]);
+         await expect(rawData.table.headers).toHaveText([ID_COLUMN, ...file.columns]);
          await expect(rawData.table.rowCount).toHaveText(en.rows(file.rowCount));
-         await expect(await rawData.table.cell(0, 'ID')).toHaveText('1');
-         await rawData.table.sortBy('ID');
-         await rawData.table.sortBy('ID');
-         await expect(await rawData.table.cell(0, 'ID')).toHaveText(en.number(file.rowCount));
+         await expect(await rawData.table.cell(0, ID_COLUMN)).toHaveText('1');
+         await rawData.table.sortBy(ID_COLUMN);
+         await rawData.table.sortBy(ID_COLUMN);
+         await expect(await rawData.table.cell(0, ID_COLUMN)).toHaveText(en.number(file.rowCount));
       });
    }
 

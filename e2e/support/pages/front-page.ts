@@ -4,6 +4,7 @@ import { Route } from 'app/shared/model/route.enum';
 import { Language, LANGUAGE_QUERY_PARAM } from 'app/shared/services/language/language';
 import { Base64Utils } from 'app/shared/utils/base64-utils';
 import { QueryParamExtractor } from 'app/shared/utils/query-param-extractor';
+import { chooseFile } from '../file-chooser';
 
 export type LaunchSeparator = '#' | '?';
 
@@ -104,6 +105,14 @@ export class FrontPage {
 
    async openSceneFile(path: string): Promise<void> {
       await this.selectSceneFile(path);
+      await this.page.waitForURL('**/' + Route.RAWDATA);
+   }
+
+   /**
+    * opens the scene file chosen in the file selection of the open a shared scene button
+    */
+   async chooseSceneFile(path: string, whileChoosing: () => Promise<void> = async () => undefined): Promise<void> {
+      await chooseFile(this.sceneFileButton, path, whileChoosing);
       await this.page.waitForURL('**/' + Route.RAWDATA);
    }
 

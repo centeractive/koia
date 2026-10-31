@@ -1,0 +1,90 @@
+2024-01-01 10:00:00.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.0.0:5432 refused after 1000 ms while executing the nightly reconciliation job for tenant t100 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:01.000 [http-1] INFO  c.x.Api - Request r10001 completed in 21 ms
+2024-01-01 10:00:02.000 [http-1] INFO  c.x.Auth - User u502 logged in from 192.168.2.12
+2024-01-01 10:00:03.000 [http-1] INFO  c.x.Cache - Cache refreshed with 300 entries
+2024-01-01 10:00:04.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.1.7:5432 refused after 1037 ms while executing the nightly reconciliation job for tenant t101 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:05.000 [http-1] INFO  c.x.Api - Request r10005 completed in 25 ms
+2024-01-01 10:00:06.000 [http-1] INFO  c.x.Auth - User u506 logged in from 192.168.1.16
+2024-01-01 10:00:07.000 [http-1] INFO  c.x.Cache - Cache refreshed with 700 entries
+2024-01-01 10:00:08.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.2.14:5432 refused after 1074 ms while executing the nightly reconciliation job for tenant t102 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:09.000 [http-1] INFO  c.x.Api - Request r10009 completed in 29 ms
+2024-01-01 10:00:10.000 [http-1] INFO  c.x.Auth - User u510 logged in from 192.168.0.20
+2024-01-01 10:00:11.000 [http-1] INFO  c.x.Cache - Cache refreshed with 1100 entries
+2024-01-01 10:00:12.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.3.21:5432 refused after 1111 ms while executing the nightly reconciliation job for tenant t103 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:13.000 [http-1] INFO  c.x.Api - Request r10013 completed in 33 ms
+2024-01-01 10:00:14.000 [http-1] INFO  c.x.Auth - User u514 logged in from 192.168.4.24
+2024-01-01 10:00:15.000 [http-1] INFO  c.x.Cache - Cache refreshed with 1500 entries
+2024-01-01 10:00:16.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.4.28:5432 refused after 1148 ms while executing the nightly reconciliation job for tenant t104 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:17.000 [http-1] INFO  c.x.Api - Request r10017 completed in 37 ms
+2024-01-01 10:00:18.000 [http-1] INFO  c.x.Auth - User u518 logged in from 192.168.3.28
+2024-01-01 10:00:19.000 [http-1] INFO  c.x.Cache - Cache refreshed with 1900 entries
+2024-01-01 10:00:20.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.5.35:5432 refused after 1185 ms while executing the nightly reconciliation job for tenant t105 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:21.000 [http-1] INFO  c.x.Api - Request r10021 completed in 41 ms
+2024-01-01 10:00:22.000 [http-1] INFO  c.x.Auth - User u522 logged in from 192.168.2.32
+2024-01-01 10:00:23.000 [http-1] INFO  c.x.Cache - Cache refreshed with 2300 entries
+2024-01-01 10:00:24.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.6.42:5432 refused after 1222 ms while executing the nightly reconciliation job for tenant t106 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:25.000 [http-1] INFO  c.x.Api - Request r10025 completed in 45 ms
+2024-01-01 10:00:26.000 [http-1] INFO  c.x.Auth - User u526 logged in from 192.168.1.36
+2024-01-01 10:00:27.000 [http-1] INFO  c.x.Cache - Cache refreshed with 2700 entries
+2024-01-01 10:00:28.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.7.49:5432 refused after 1259 ms while executing the nightly reconciliation job for tenant t107 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:29.000 [http-1] INFO  c.x.Api - Request r10029 completed in 49 ms
+2024-01-01 10:00:30.000 [http-1] INFO  c.x.Auth - User u530 logged in from 192.168.0.40
+2024-01-01 10:00:31.000 [http-1] INFO  c.x.Cache - Cache refreshed with 3100 entries
+2024-01-01 10:00:32.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.8.56:5432 refused after 1296 ms while executing the nightly reconciliation job for tenant t108 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:33.000 [http-1] INFO  c.x.Api - Request r10033 completed in 53 ms
+2024-01-01 10:00:34.000 [http-1] INFO  c.x.Auth - User u534 logged in from 192.168.4.44
+2024-01-01 10:00:35.000 [http-1] INFO  c.x.Cache - Cache refreshed with 3500 entries
+2024-01-01 10:00:36.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.9.63:5432 refused after 1333 ms while executing the nightly reconciliation job for tenant t109 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:37.000 [http-1] INFO  c.x.Api - Request r10037 completed in 57 ms
+2024-01-01 10:00:38.000 [http-1] INFO  c.x.Auth - User u538 logged in from 192.168.3.48
+2024-01-01 10:00:39.000 [http-1] INFO  c.x.Cache - Cache refreshed with 3900 entries
+2024-01-01 10:00:40.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.10.70:5432 refused after 1370 ms while executing the nightly reconciliation job for tenant t110 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:41.000 [http-1] INFO  c.x.Api - Request r10041 completed in 61 ms
+2024-01-01 10:00:42.000 [http-1] INFO  c.x.Auth - User u542 logged in from 192.168.2.52
+2024-01-01 10:00:43.000 [http-1] INFO  c.x.Cache - Cache refreshed with 4300 entries
+2024-01-01 10:00:44.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.11.77:5432 refused after 1407 ms while executing the nightly reconciliation job for tenant t111 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:45.000 [http-1] INFO  c.x.Api - Request r10045 completed in 65 ms
+2024-01-01 10:00:46.000 [http-1] INFO  c.x.Auth - User u546 logged in from 192.168.1.56
+2024-01-01 10:00:47.000 [http-1] INFO  c.x.Cache - Cache refreshed with 4700 entries
+2024-01-01 10:00:48.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.12.84:5432 refused after 1444 ms while executing the nightly reconciliation job for tenant t112 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:49.000 [http-1] INFO  c.x.Api - Request r10049 completed in 69 ms
+2024-01-01 10:00:50.000 [http-1] INFO  c.x.Auth - User u550 logged in from 192.168.0.60
+2024-01-01 10:00:51.000 [http-1] INFO  c.x.Cache - Cache refreshed with 5100 entries
+2024-01-01 10:00:52.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.13.91:5432 refused after 1481 ms while executing the nightly reconciliation job for tenant t113 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:53.000 [http-1] INFO  c.x.Api - Request r10053 completed in 73 ms
+2024-01-01 10:00:54.000 [http-1] INFO  c.x.Auth - User u554 logged in from 192.168.4.64
+2024-01-01 10:00:55.000 [http-1] INFO  c.x.Cache - Cache refreshed with 5500 entries
+2024-01-01 10:00:56.000 [scheduler-1] ERROR c.x.Reconciler - Connection to 10.0.14.98:5432 refused after 1518 ms while executing the nightly reconciliation job for tenant t114 in region eu-west
+java.net.ConnectException: Connection refused
+	at c.x.Reconciler.run(Reconciler.java:88)
+2024-01-01 10:00:57.000 [http-1] INFO  c.x.Api - Request r10057 completed in 77 ms
+2024-01-01 10:00:58.000 [http-1] INFO  c.x.Auth - User u558 logged in from 192.168.3.68
+2024-01-01 10:00:59.000 [http-1] INFO  c.x.Cache - Cache refreshed with 5900 entries

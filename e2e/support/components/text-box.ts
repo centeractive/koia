@@ -145,6 +145,12 @@ export class TextBox {
       await this.tile.page().mouse.up();
    }
 
+   async moveTopLeftTo(x: number, y: number): Promise<void> {
+      const box = await this.tile.boundingBox();
+      await this.startMoveBy(x - box.x, y - box.y);
+      await this.release();
+   }
+
    /**
     * @returns the height of the editor text including its padding, as the editor itself is stretched to the tile
     */
