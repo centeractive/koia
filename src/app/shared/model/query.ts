@@ -47,13 +47,10 @@ export class Query {
       return this.propertyFilters.slice(0);
    }
 
-   addValueRangeFilter(name: string, minValue: number, maxValue: number, maxExcluding?: boolean, inverted?: boolean): void {
-      const valueRange: ValueRange = {
-         min: minValue,
-         max: maxValue,
-         maxExcluding
-      };
-      this.valueRangeFilters.push(new ValueRangeFilter(name, valueRange, inverted));
+   addValueRangeFilter(name: string, minValue: number, maxValue: number, maxExcluding?: boolean, inverted?: boolean,
+      orEmpty?: boolean): void {
+      const valueRange: ValueRange = { min: minValue, max: maxValue, maxExcluding };
+      this.valueRangeFilters.push(new ValueRangeFilter(name, valueRange, inverted, orEmpty));
    }
 
    findValueRangeFilter(name: string): ValueRangeFilter | undefined {

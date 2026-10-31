@@ -1,5 +1,5 @@
 import { Column, DataType, TimeUnit } from 'app/shared/model';
-import { ArrayUtils, CommonUtils, DateTimeUtils, NumberUtils } from 'app/shared/utils';
+import { ArrayUtils, CommonUtils, DateTimeUtils, NumberUtils, ObjectUtils } from 'app/shared/utils';
 import { isComputedColumn } from 'app/shared/utils/column-utils';
 import { ColumnProfile, ColumnRole } from './column-profile';
 
@@ -176,7 +176,7 @@ export class ColumnProfiler {
   }
 
   private valueOf(entry: object, column: Column): unknown {
-    return (entry as Record<string, unknown>)[column.name];
+    return ObjectUtils.ownValue(entry, column.name);
   }
 
   private isPresent(value: unknown): boolean {

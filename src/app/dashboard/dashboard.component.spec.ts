@@ -4174,7 +4174,10 @@ describe('DashboardComponent', () => {
       const summaryContext = component.addSummaryTable();
       summaryContext.title = 'Test';
       const exportData = [{ Level: 'INFO', Count: 3 }];
-      const summaryTableComponent = { context: summaryContext, createExportData: () => exportData };
+      const exportColumns = [scene.columns[0]];
+      const summaryTableComponent = {
+        context: summaryContext, createExportData: () => exportData, createExportColumns: vi.fn().mockReturnValue(exportColumns)
+      };
       component.sumTableComponents.reset([summaryTableComponent as unknown as RealSummaryTableComponent]);
       vi.spyOn(exportService, 'exportData').mockReturnValue(undefined);
 
@@ -4185,8 +4188,9 @@ describe('DashboardComponent', () => {
       const indexedColumns = scene.columns
         .filter(c => c.indexed)
         .map(c => c.dataType === DataType.TIME ? { ...c, groupingTimeUnit: TimeUnit.MILLISECOND } : c);
-      expect(exportService.exportData).toHaveBeenCalledWith(exportData, indexedColumns, ExportFormat.EXCEL, 'Test');
-      expect(vi.mocked(exportService.exportData).mock.lastCall[1][0]).not.toBe(scene.columns[0]);
+      expect(summaryTableComponent.createExportColumns).toHaveBeenCalledWith(indexedColumns);
+      expect(summaryTableComponent.createExportColumns.mock.lastCall[0][0]).not.toBe(scene.columns[0]);
+      expect(exportService.exportData).toHaveBeenCalledWith(exportData, exportColumns, ExportFormat.EXCEL, 'Test');
     });
 
     it('#saveAs should not export when graph context is provided', () => {

@@ -21,7 +21,7 @@ export class RowSpanComputer {
                const span = { span: 1 };
                spanColumnContexts[iCol] = { span: span, spannedRow: row };
                spans[iCol].push(span);
-               spanColumnContexts.slice(iCol + 1).forEach(c => c.spannedRow = {});
+               spanColumnContexts.fill(undefined, iCol + 1);
             }
          }
       }

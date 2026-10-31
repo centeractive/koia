@@ -382,6 +382,22 @@ describe('ValueFilterComponent', () => {
     expect(component.onChange.emit).toHaveBeenCalled();
   });
 
+  it.each([
+    [true, 'or empty'],
+    [false, undefined]
+  ])('filter matching empty values (%s) should show hint: %s', (orEmpty, expected) => {
+
+    // given
+    component.filter = new PropertyFilter('Level', Operator.NONE_OF, 'INFO', DataType.TEXT, orEmpty);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const hint: HTMLElement = fixture.nativeElement.querySelector('.span_or_empty');
+    expect(hint?.textContent).toBe(expected);
+  });
+
   it('pressing <enter> in text column filter field should emit change event', () => {
 
     // given

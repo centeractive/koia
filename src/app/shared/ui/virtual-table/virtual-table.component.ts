@@ -8,6 +8,7 @@ import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-d
 import { ValueFormatter } from 'app/shared/format';
 import { Column, DataType } from 'app/shared/model';
 import { DialogService } from 'app/shared/services/dialog.service';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 import * as _ from 'lodash';
 import { DomMetrics } from '../table-fit/dom-metrics';
 import { TableFitter } from '../table-fit/table-fitter';
@@ -149,7 +150,7 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
 
   displayValue(column: Column, entry: object): void {
     if (column.dataType === DataType.OBJECT) {
-      const data = new ConfirmDialogData(LanguageService.instant('ui.columnValue', { column: column.name }), '<pre>' + _.escape(entry[column.name]) + '</pre>',
+      const data = new ConfirmDialogData(LanguageService.instant('ui.columnValue', { column: column.name }), '<pre>' + _.escape(ObjectUtils.ownValue<string>(entry, column.name)) + '</pre>',
         [LanguageService.instant('common.close')]);
       this.dialogService.showConfirmDialog(data);
     }

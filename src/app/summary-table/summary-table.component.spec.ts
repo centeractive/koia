@@ -45,7 +45,10 @@ describe('SummaryTableComponent', () => {
       { name: 'n1', dataType: DataType.NUMBER, width: 80, indexed: true },
       { name: 't2', dataType: DataType.TEXT, width: 200, indexed: true },
       { name: 'n2', dataType: DataType.NUMBER, width: 70, indexed: true },
-      { name: 'b', dataType: DataType.BOOLEAN, width: 10, indexed: true }
+      { name: 'b', dataType: DataType.BOOLEAN, width: 10, indexed: true },
+      { name: 'Count', dataType: DataType.NUMBER, width: 60, indexed: true },
+      { name: 'Sum', dataType: DataType.TEXT, width: 60, indexed: true },
+      { name: 'Time (per minute)', dataType: DataType.TEXT, width: 60, indexed: true }
     ];
     entries = [
       { Time: now, /*      */ t1: 'a', n1: 1, t2: null, n2: null },
@@ -98,18 +101,8 @@ describe('SummaryTableComponent', () => {
 
   describe('styling', () => {
 
-    function render(): void {
-      fixture.detectChanges();
-      flush();
-      fixture.detectChanges();
-    }
-
     function styleOf(selector: string): CSSStyleDeclaration {
       return getComputedStyle(fixture.nativeElement.querySelector(selector));
-    }
-
-    function rows(): HTMLTableRowElement[] {
-      return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row'));
     }
 
     it('body cells should use dense table font', fakeAsync(() => {
@@ -465,12 +458,13 @@ describe('SummaryTableComponent', () => {
     expect(query.getValueRangeFilters()).toEqual([]);
   });
 
-  it('#onAggregationCellClick should open raw data view for matching column and time period without start of next minute', () => {
+  it('#onAggregationCellClick should open raw data view for matching column and time period without start of next minute', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('t1')];
     context.groupByColumns = [findColumn('Time')];
     context.query = new Query();
+    render();
     const oneMinuteAgo = now - 60 * sec;
 
     // when
@@ -482,14 +476,15 @@ describe('SummaryTableComponent', () => {
     expect(query.getValueRangeFilters()).toEqual([
       new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: true })
     ]);
-  });
+  }));
 
-  it('#onAggregationCellClick should open raw data view for matching column and empty time when time period is missing', () => {
+  it('#onAggregationCellClick should open raw data view for matching column and empty time when time period is missing', fakeAsync(() => {
 
     // given
     context.dataColumns = [findColumn('t1')];
     context.groupByColumns = [findColumn('Time')];
     context.query = new Query();
+    render();
 
     // when
     component.onAggregationCellClick({ 'Time (per minute)': undefined, t1: 'a', 'Count': 522 });
@@ -501,7 +496,7 @@ describe('SummaryTableComponent', () => {
       new PropertyFilter('t1', Operator.EQUAL, 'a', DataType.TEXT)
     ]);
     expect(query.getValueRangeFilters()).toEqual([]);
-  });
+  }));
 
   it('#sort should sort ascending', fakeAsync(() => {
 
@@ -626,14 +621,14 @@ describe('SummaryTableComponent', () => {
     context.dataColumns = [];
     fixture.detectChanges();
     flush();
-    const aggregate = vi.spyOn(SummaryDataComputer.prototype, 'aggregate');
+    const compute = vi.spyOn(SummaryDataComputer.prototype, 'compute');
 
     // when
     context.fireLookChanged();
     flush();
 
     // then
-    expect(aggregate).not.toHaveBeenCalled();
+    expect(compute).not.toHaveBeenCalled();
     expect(component.computing).toBe(false);
   }));
 
@@ -643,7 +638,7 @@ describe('SummaryTableComponent', () => {
     context.dataColumns = [findColumn('t1')];
     fixture.detectChanges();
     flush();
-    const aggregate = vi.spyOn(SummaryDataComputer.prototype, 'aggregate');
+    const compute = vi.spyOn(SummaryDataComputer.prototype, 'compute');
 
     // when
     context.fireLookChanged();
@@ -651,7 +646,7 @@ describe('SummaryTableComponent', () => {
     flush();
 
     // then
-    expect(aggregate).not.toHaveBeenCalled();
+    expect(compute).not.toHaveBeenCalled();
     expect(component.frameData).toBeUndefined();
   }));
 
@@ -729,6 +724,189 @@ describe('SummaryTableComponent', () => {
     ];
     expect(data).toEqual(expectedData);
   }));
+
+  it('should display data column named like COUNT aggregation in own column', fakeAsync(() => {
+
+    // given
+    context.entries = [{ Count: 7 }, { Count: 5 }, { Count: 7 }];
+    context.dataColumns = [findColumn('Count')];
+
+    // when
+    render();
+
+    // then
+    expect(component.frameColumns).toEqual(['Count', 'Count (2)']);
+    expect(component.frameData).toEqual([{ Count: 5, 'Count (2)': 1 }, { Count: 7, 'Count (2)': 2 }]);
+    expect(textsOf('th')).toEqual(['Count', 'Count']);
+    expect(textsOf('tr.mat-mdc-row td')).toEqual(['5', '1', '7', '2']);
+    expect(textsOf('td.mat-mdc-footer-cell')).toEqual(['Overall', '3']);
+  }));
+
+  it('should display group-by column named like value aggregation in own column', fakeAsync(() => {
+
+    // given
+    context.entries = [{ Sum: 'b', n1: 2 }, { Sum: 'a', n1: 1 }, { Sum: 'b', n1: 3 }];
+    context.dataColumns = [findColumn('n1')];
+    context.groupByColumns = [findColumn('Sum')];
+    context.aggregations = [Aggregation.SUM];
+
+    // when
+    render();
+
+    // then
+    expect(component.frameData).toEqual([{ Sum: 'a', 'Sum (2)': 1 }, { Sum: 'b', 'Sum (2)': 5 }]);
+    expect(textsOf('th')).toEqual(['Sum', 'Sum']);
+    expect(textsOf('tr.mat-mdc-row td')).toEqual(['a', '1', 'b', '5']);
+    expect(textsOf('td.mat-mdc-footer-cell')).toEqual(['Overall', '6']);
+  }));
+
+  it('should display time-grouped column whose label is taken by group-by column', fakeAsync(() => {
+
+    // given
+    context.entries = [
+      { Time: now + 70 * sec, 'Time (per minute)': 'x', t1: 'a' },
+      { Time: now, 'Time (per minute)': 'x', t1: 'a' }
+    ];
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [findColumn('Time'), findColumn('Time (per minute)')];
+
+    // when
+    render();
+
+    // then
+    expect(component.currentSort).toEqual({ active: 'Time (per minute) (2)', direction: 'asc' });
+    expect(component.frameData).toEqual([
+      { 'Time (per minute) (2)': now, 'Time (per minute)': 'x', t1: 'a', Count: 1 },
+      { 'Time (per minute) (2)': now + 60 * sec, 'Time (per minute)': 'x', t1: 'a', Count: 1 }
+    ]);
+    expect(textsOf('th')).toEqual(['Time (per minute)', 'Time (per minute)', 't1', 'Count']);
+  }));
+
+  it('should show overall average of all rows', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('n1')];
+    context.groupByColumns = [findColumn('t1')];
+    context.aggregations = [Aggregation.AVG];
+
+    // when
+    render();
+
+    // then
+    expect(component.overalls).toEqual([2]);
+  }));
+
+  it('should show empty aggregation cell of group without numbers', fakeAsync(() => {
+
+    // given
+    context.entries = [{ t1: 'a', n1: null }, { t1: 'b', n1: 4 }];
+    context.dataColumns = [findColumn('n1')];
+    context.groupByColumns = [findColumn('t1')];
+    context.aggregations = [Aggregation.SUM];
+
+    // when
+    render();
+
+    // then
+    expect(textsOf('tr.mat-mdc-row td')).toEqual(['a', '', 'b', '4']);
+  }));
+
+  it('#sort should sort by aggregation column whose name is taken by data column', fakeAsync(() => {
+
+    // given
+    context.entries = [{ Count: 7 }, { Count: 5 }, { Count: 7 }];
+    context.dataColumns = [findColumn('Count')];
+    render();
+
+    // when
+    component.sort({ active: 'Count (2)', direction: 'desc' });
+    flush();
+
+    // then
+    expect(component.frameData).toEqual([{ Count: 7, 'Count (2)': 2 }, { Count: 5, 'Count (2)': 1 }]);
+  }));
+
+  it('#sort should keep order when direction is empty', fakeAsync(() => {
+
+    // given
+    context.dataColumns = [findColumn('n1')];
+    render();
+    component.sort({ active: 'n1', direction: 'desc' });
+    flush();
+
+    // when
+    component.sort({ active: 'n1', direction: '' });
+    flush();
+
+    // then
+    expect(component.frameData).toEqual([{ n1: 3, Count: 1 }, { n1: 2, Count: 2 }, { n1: 1, Count: 1 }]);
+  }));
+
+  it('#onAggregationCellClick should filter by value of data column named like COUNT aggregation', fakeAsync(() => {
+
+    // given
+    context.entries = [{ Count: 7 }];
+    context.dataColumns = [findColumn('Count')];
+    context.query = new Query();
+    render();
+
+    // when
+    fixture.nativeElement.querySelector('td.td_aggregation a').click();
+
+    // then
+    const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
+    expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Count', Operator.EQUAL, 7, DataType.NUMBER)]);
+  }));
+
+  it('#onAggregationCellClick should open raw data view for time period of time-grouped column whose label is taken by group-by column',
+    fakeAsync(() => {
+
+      // given
+      context.dataColumns = [findColumn('t1')];
+      context.groupByColumns = [findColumn('Time'), findColumn('Time (per minute)')];
+      context.query = new Query();
+      render();
+      const oneMinuteAgo = now - 60 * sec;
+
+      // when
+      component.onAggregationCellClick({ 'Time (per minute) (2)': oneMinuteAgo, 'Time (per minute)': 'x', t1: 'a', Count: 1 });
+
+      // then
+      const query: Query = vi.mocked(showRawDataSpy).mock.calls[0][0];
+      expect(query.getPropertyFilters()).toEqual([
+        new PropertyFilter('Time (per minute)', Operator.EQUAL, 'x', DataType.TEXT),
+        new PropertyFilter('t1', Operator.EQUAL, 'a', DataType.TEXT)
+      ]);
+      expect(query.getValueRangeFilters()).toEqual([
+        new ValueRangeFilter('Time', { min: oneMinuteAgo, max: now, maxExcluding: true })
+      ]);
+    }));
+
+  it('#createExportColumns should exclude scene column named like aggregation', () => {
+
+    // given
+    context.dataColumns = [findColumn('t1')];
+
+    // when
+    const exportColumns = component.createExportColumns(columns);
+
+    // then
+    expect(exportColumns).toEqual([findColumn('t1')]);
+  });
+
+  function render(): void {
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+  }
+
+  function rows(): HTMLTableRowElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('tr.mat-mdc-row'));
+  }
+
+  function textsOf(selector: string): string[] {
+    return Array.from<Element>(fixture.nativeElement.querySelectorAll(selector)).map(e => e.textContent.trim());
+  }
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);

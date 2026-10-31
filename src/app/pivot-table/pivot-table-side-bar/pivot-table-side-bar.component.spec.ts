@@ -179,6 +179,21 @@ describe('PivotTableSideBarComponent', () => {
     expect(percentGrouping.minMaxValues).toEqual({ min: 12, max: 48 });
   });
 
+  it('#ngOnChanges should retain limits of grouping of column named valueOf ignoring rows lacking it', () => {
+
+    // given
+    component.data = new DataFrame<number, object>([{ valueOf: 5 }, { ID: 1 }, { valueOf: 9 }]);
+    component.columns = [{ name: 'valueOf', dataType: DataType.NUMBER, width: 10 }];
+    const grouping: ValueGrouping = { columnName: 'valueOf', ranges: [{ max: 7, active: true }] };
+    component.context.valueGroupings = [grouping];
+
+    // when
+    component.ngOnChanges();
+
+    // then
+    expect(grouping.minMaxValues).toEqual({ min: 5, max: 9 });
+  });
+
   it('#addValueGrouping should remove column from non-grouped columns', () => {
 
     // given

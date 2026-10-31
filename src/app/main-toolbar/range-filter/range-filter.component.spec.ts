@@ -70,6 +70,24 @@ describe('RangeFilterComponent', () => {
     expect(getComputedStyle(trigger).backgroundColor).toBe('rgb(250, 218, 162)');
   });
 
+  it.each([
+    [true, true, true],
+    [false, true, false],
+    [true, false, false]
+  ])('range filter (inverted: %s, orEmpty: %s) should show hint "or empty": %s', (inverted, orEmpty, expected) => {
+
+    // given
+    component.filter = new NumberRangeFilter(amountColumn, 1, 10, { min: 2, max: 5 }, inverted, orEmpty);
+    component.ngOnChanges();
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const hint: HTMLElement = fixture.nativeElement.querySelector('.div_range_column_name .span_or_empty');
+    expect(hint?.textContent === 'or empty').toBe(expected);
+  });
+
   it('slider bar should stand out from header surface while selection stays green', () => {
 
     // when

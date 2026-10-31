@@ -16,6 +16,8 @@ export class NumberRangeFilter {
    start: number;
    end: number;
    inverted: boolean;
+   /** whether the filter also matches the rows lacking a value while it is inverted */
+   orEmpty: boolean;
    availableSteps: (number | TimeUnit)[];
    selectedStep: number | TimeUnit;
    selectedStepAbbrev: string;
@@ -30,11 +32,12 @@ export class NumberRangeFilter {
     * as soon as the slider high value is changed by the user
     * @see RangeFilterComponent#onHighValueChanged
     */
-   constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean) {
+   constructor(column: Column, start: number, end: number, selValueRange: ValueRange, inverted: boolean, orEmpty = false) {
       this.column = column;
       this.start = start;
       this.end = end;
       this.inverted = inverted == undefined ? false : inverted;
+      this.orEmpty = orEmpty;
       this.initSelectedRange(selValueRange);
       this.initSliderSteps();
       this.defineSliderOptions();

@@ -9,9 +9,8 @@ export function compareFormattedTime(v1: string, v2: string, timeUnit: TimeUnit)
         } else if (isMissing(v2)) {
             return 1;
         }
-        const luxonFormat = DateTimeUtils.luxonFormatOf(timeUnit);
-        const t1 = toDate(v1, luxonFormat).getTime();
-        const t2 = toDate(v2, luxonFormat).getTime();
+        const t1 = DateTimeUtils.parseFormattedTime(v1, timeUnit).getTime();
+        const t2 = DateTimeUtils.parseFormattedTime(v2, timeUnit).getTime();
         if (t1 === t2) {
             return 0;
         }
@@ -24,8 +23,4 @@ export function compareFormattedTime(v1: string, v2: string, timeUnit: TimeUnit)
 
 function isMissing(v: string): boolean {
     return !v || v === ValueRangeConverter.EMPTY;
-}
-
-function toDate(formattedTime: string, luxonFormat: string): Date {
-    return DateTimeUtils.parseDate(formattedTime, luxonFormat);
 }

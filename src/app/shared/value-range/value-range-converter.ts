@@ -1,4 +1,3 @@
-import { NumberUtils } from '../utils/number-utils';
 import { NumberFormatter } from '../format/number-formatter';
 
 export class ValueRangeConverter {
@@ -12,7 +11,7 @@ export class ValueRangeConverter {
 
    static toLabel(min: number, max: number): string {
       if (min == undefined && max == undefined) {
-         return ValueRangeConverter.EMPTY;
+         return ValueRangeConverter.MIN + ValueRangeConverter.DELIMITER + ValueRangeConverter.MAX;
       }
       const minString = min == undefined ? ValueRangeConverter.MIN : ValueRangeConverter.numberFormatter.format(min);
       const maxString = max == undefined ? ValueRangeConverter.MAX : ValueRangeConverter.numberFormatter.format(max);
@@ -24,7 +23,7 @@ export class ValueRangeConverter {
          return undefined;
       }
       const value = label.substring(0, label.indexOf(ValueRangeConverter.DELIMITER));
-      return value === ValueRangeConverter.MIN ? undefined : NumberUtils.parseNumber(value, undefined);
+      return value === ValueRangeConverter.MIN ? undefined : ValueRangeConverter.numberFormatter.parse(value);
    }
 
    static toMaxValue(label: string): number | undefined {
@@ -32,6 +31,6 @@ export class ValueRangeConverter {
          return undefined;
       }
       const value = label.substring(label.lastIndexOf(ValueRangeConverter.DELIMITER) + ValueRangeConverter.DELIMITER.length);
-      return value === ValueRangeConverter.MAX ? undefined : NumberUtils.parseNumber(value, undefined);
+      return value === ValueRangeConverter.MAX ? undefined : ValueRangeConverter.numberFormatter.parse(value);
    }
 }

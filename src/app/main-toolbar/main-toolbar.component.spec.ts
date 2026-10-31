@@ -516,6 +516,24 @@ describe('MainToolbarComponent', () => {
     expect(timeRangeFilter.selValueRange.max).toEqual(now);
   }));
 
+  it('#ngOnInit should retain range filters matching empty values', fakeAsync(() => {
+
+    // given
+    const query = new Query();
+    query.addValueRangeFilter('Time', now - 1_000, now, true, true, true);
+    query.addValueRangeFilter('Amount', 20, 80, true, true, true);
+    component.query = query;
+    component.rangeFilters = [];
+
+    // when
+    component.ngOnInit();
+    flush();
+
+    // then
+    expect(component.rangeFilters.map(f => f.orEmpty)).toEqual([true, true]);
+    expect(component.rangeFilters[0]).toBeInstanceOf(TimeRangeFilter);
+  }));
+
   it('#ngOnInit should initialize filters when query was injected', fakeAsync(() => {
 
     // given

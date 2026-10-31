@@ -10,6 +10,7 @@ export * from './date-time-utils';
 export * from './keyboard-events';
 export * from './log-utils';
 export * from './number-utils';
+export * from './object-utils';
 export * from './query-param-extractor';
 export * from './query-sanitizer';
 export * from './query-utils';

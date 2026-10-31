@@ -226,4 +226,31 @@ describe('QuerySanitizer', () => {
     const expValueRangeFilter = new ValueRangeFilter('X', { min: 5, max: 10, maxExcluding: true }, true);
     expect(actualQuery.getValueRangeFilters()).toEqual([expValueRangeFilter]);
   });
+
+  it('#sanitize should retain property filters differing in matching empty values', () => {
+
+    // given
+    const query = new Query();
+    query.addPropertyFilter(new PropertyFilter('X', Operator.NONE_OF, 'a', DataType.TEXT, true));
+    query.addPropertyFilter(new PropertyFilter('X', Operator.NONE_OF, 'a', DataType.TEXT));
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    expect(actualQuery.getPropertyFilters().map(f => f.orEmpty)).toEqual([true, false]);
+  });
+
+  it('#sanitize should keep orEmpty of inverted value range filter', () => {
+
+    // given
+    const query = new Query();
+    query.addValueRangeFilter('X', 5, 10, true, true, true);
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    expect(actualQuery.getValueRangeFilters()).toEqual([new ValueRangeFilter('X', { min: 5, max: 10, maxExcluding: true }, true, true)]);
+  });
 });

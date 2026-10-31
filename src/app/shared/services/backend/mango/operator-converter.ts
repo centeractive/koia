@@ -30,4 +30,15 @@ export class OperatorConverter {
             throw new Error('operator ' + operator + ' is not yet supported');
       }
    }
+
+   /**
+    * - PouchDB fails on '$gt: null' when using the index of a field some documents lack, hence NOT_EMPTY becomes '$exists'
+    * - PouchDB's '$ne' matches the documents lacking the field, unlike CouchDB's, hence NOT_EQUAL becomes '$nin' (of its value)
+    */
+   toPouchDBMangoOperator(operator: Operator): string {
+      if (operator === Operator.NOT_EMPTY) {
+         return '$exists';
+      }
+      return operator === Operator.NOT_EQUAL ? '$nin' : this.toMangoOperator(operator);
+   }
 }

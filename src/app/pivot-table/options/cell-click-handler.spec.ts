@@ -2,7 +2,6 @@ import { Column, DataType, TimeUnit, Query, PropertyFilter, Operator } from 'app
 import { RawDataRevealService, TimeGroupingService } from 'app/shared/services';
 import { CellClickHandler } from './cell-click-handler';
 import { ValueRangeFilter, ValueGrouping, ValueRange } from 'app/shared/value-range/model';
-import { flush, fakeAsync } from '@angular/core/testing';
 import { QueryProvider } from './query-provider';
 import type { Mock } from 'vitest';
 
@@ -32,11 +31,10 @@ describe('CellClickHandler', () => {
    it('#onCellClicked should show raw data with single empty filter', () => {
 
       // given
-      const mouseEvent = createMouseEvent('any');
       const filters = { Percent: 'null' };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked([], filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -50,11 +48,10 @@ describe('CellClickHandler', () => {
    it('#onCellClicked should show raw data with single TEXT filter', () => {
 
       // given
-      const mouseEvent = createMouseEvent('any');
       const filters = { Level: 'ERROR' };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked([], filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -68,11 +65,10 @@ describe('CellClickHandler', () => {
    it('#onCellClicked should show raw data with single NUMBER filter', () => {
 
       // given
-      const mouseEvent = createMouseEvent('any');
       const filters = { Amount: 12 };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked([], filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -87,11 +83,10 @@ describe('CellClickHandler', () => {
 
       // given
       const valueGroupings = [createValueGrouping('Amount')];
-      const mouseEvent = createMouseEvent('any');
       const filters = { Amount: TimeGroupingService.EMPTY };
 
       // when
-      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked(valueGroupings, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -106,11 +101,10 @@ describe('CellClickHandler', () => {
 
       // given
       const valueGroupings = [createValueGrouping('Amount')];
-      const mouseEvent = createMouseEvent('any');
       const filters = { Amount: '10 - 20' };
 
       // when
-      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked(valueGroupings, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -127,11 +121,10 @@ describe('CellClickHandler', () => {
       const baseQuery = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
       baseQuery.addValueRangeFilter('Amount', 11, 22);
       vi.spyOn(baseQueryProvider, 'provide').mockReturnValue(baseQuery);
-      const mouseEvent = createMouseEvent('any');
       const filters = { Percent: 10 };
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked([], filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -149,11 +142,10 @@ describe('CellClickHandler', () => {
 
       // given
       const valueGroupings = [createValueGrouping('Amount')];
-      const mouseEvent = createMouseEvent('any');
       const filters = { Level: 'INFO', Host: 'server1', Amount: 'min - 20', Percent: 'null' };
 
       // when
-      cellClickHandler.onCellClicked(valueGroupings, mouseEvent, filters, undefined, undefined, {});
+      cellClickHandler.onCellClicked(valueGroupings, filters, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
@@ -170,89 +162,67 @@ describe('CellClickHandler', () => {
       expect(valueRangeFilters[0]).toEqual(new ValueRangeFilter('Amount', { min: undefined, max: 20, maxExcluding: true }));
    });
 
-   it('#onCellClicked should show raw data when grand-total cell', fakeAsync(() => {
-
-      // given
-      const mouseEvent = createMouseEvent('pvtGrandTotal');
+   it('#onCellClicked should show raw data of all rows when cell pins no attribute', () => {
 
       // when
-      cellClickHandler.onCellClicked([], mouseEvent, {}, undefined, undefined, {});
-      flush();
+      cellClickHandler.onCellClicked([], {}, {});
 
       // then
       expect(showSpy).toHaveBeenCalled();
       const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       expect(query.getPropertyFilters()).toEqual([]);
       expect(query.getValueRangeFilters()).toEqual([]);
-   }));
-
-   it.each([
-      { case: 'total cell', cssClass: 'pvtTotal', expected: [new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG;INFO', DataType.TEXT)] },
-      { case: 'value cell', cssClass: 'pvtVal', expected: [] }
-   ])('#onCellClicked should consider value choices only when bar chart $case is clicked', ({ cssClass, expected }) => {
-
-      // given
-      const cell = document.createElement('TD');
-      cell.classList.add(cssClass);
-      const bar = cell.appendChild(document.createElement('DIV'));
-      const mouseEvent = { target: bar } as Partial<MouseEvent> as MouseEvent;
-      const pivotData = { colAttrs: ['Amount'], rowAttrs: ['Level'] };
-
-      // when
-      cellClickHandler.onCellClicked([], mouseEvent, {}, { Level: ['DEBUG', 'INFO'] }, {}, pivotData);
-
-      // then
-      const query: Query = vi.mocked(showSpy).mock.lastCall[0];
-      expect(query.getPropertyFilters()).toEqual(expected);
    });
 
-   it('#onCellClicked should explain row total against base query with exclusions of clicked attribute', () => {
+   it('#onCellClicked should explain row total against base query reduced by exclusions of all attributes', () => {
 
       // given
       baseQueryProvider.provide = () => new Query(new PropertyFilter('Path', Operator.EQUAL, '/', DataType.TEXT));
-      const pivotData = { colAttrs: ['Host'], rowAttrs: ['Level'] };
       const exclusions = { Level: ['DEBUG'], Host: ['server9'], Path: ['/x'] };
 
       // when
-      cellClickHandler.onCellClicked([], createMouseEvent('pvtTotal'), { Level: 'ERROR' }, exclusions, {}, pivotData);
+      cellClickHandler.onCellClicked([], { Level: 'ERROR' }, exclusions);
 
       // then
       const explainBase: Query = vi.mocked(showSpy).mock.lastCall[1];
       expect(explainBase.getPropertyFilters()).toEqual([
          new PropertyFilter('Path', Operator.EQUAL, '/', DataType.TEXT),
-         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT),
-         new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG', DataType.TEXT)
+         new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG', DataType.TEXT, true),
+         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT, true),
+         new PropertyFilter('Path', Operator.NONE_OF, '/x', DataType.TEXT, true)
       ]);
       const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       expect(query.getPropertyFilters()).toEqual([
          new PropertyFilter('Path', Operator.EQUAL, '/', DataType.TEXT),
          new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT),
-         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT)
+         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT, true),
+         new PropertyFilter('Path', Operator.NONE_OF, '/x', DataType.TEXT, true)
       ]);
    });
 
-   it('#onCellClicked should explain value cell against base query with exclusions although cell query has none', () => {
-
-      // given
-      const pivotData = { colAttrs: ['Host'], rowAttrs: ['Level'] };
+   it('#onCellClicked should exclude values of unpinned attributes and explain against base query with exclusions of all attributes', () => {
 
       // when
-      cellClickHandler.onCellClicked([], createMouseEvent('pvtVal'), { Level: 'ERROR', Host: 'server1' }, { Host: ['server9'] }, {}, pivotData);
+      cellClickHandler.onCellClicked([], { Level: 'ERROR', Host: 'server1' }, { Host: ['server9'], Path: ['/x'] });
 
       // then
       const query: Query = vi.mocked(showSpy).mock.lastCall[0];
       expect(query.getPropertyFilters()).toEqual([
          new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT),
-         new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT)
+         new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT),
+         new PropertyFilter('Path', Operator.NONE_OF, '/x', DataType.TEXT, true)
       ]);
       const explainBase: Query = vi.mocked(showSpy).mock.lastCall[1];
-      expect(explainBase.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT)]);
+      expect(explainBase.getPropertyFilters()).toEqual([
+         new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT, true),
+         new PropertyFilter('Path', Operator.NONE_OF, '/x', DataType.TEXT, true)
+      ]);
    });
 
    it('#onCellClicked should explain against base query when there are no value choices', () => {
 
       // when
-      cellClickHandler.onCellClicked([], createMouseEvent('pvtVal'), { Level: 'ERROR' }, undefined, undefined, {});
+      cellClickHandler.onCellClicked([], { Level: 'ERROR' }, {});
 
       // then
       const explainBase: Query = vi.mocked(showSpy).mock.lastCall[1];
@@ -263,11 +233,5 @@ describe('CellClickHandler', () => {
    function createValueGrouping(columnName: string): ValueGrouping {
       const ranges: ValueRange[] = [{ max: 10, active: true }, { max: 20, active: true }, { max: 30, active: true }]
       return { columnName: columnName, ranges: ranges };
-   }
-
-   function createMouseEvent(cssClass: string): MouseEvent {
-      const cell = document.createElement('TD');
-      cell.classList.add(cssClass);
-      return { target: cell } as Partial<MouseEvent> as MouseEvent;
    }
 });

@@ -14,7 +14,7 @@ import { LanguageService } from 'app/shared/services/language';
 import { TabContentProvider, ViewTabsService } from 'app/shared/services/view-tabs';
 import { MeasuredTable, measureTable } from 'app/shared/ui/sheets/measured-table';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
-import { ColumnNameConverter, CommonUtils, DateTimeUtils } from 'app/shared/utils';
+import { CommonUtils, DateTimeUtils, ObjectUtils } from 'app/shared/utils';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Subscription } from 'rxjs';
@@ -28,6 +28,7 @@ import {
 import { PivotContext, PivotContextFactory } from './model';
 import { CellClickHandler } from './options/cell-click-handler';
 import { PivotOptionsProvider } from './options/pivot-options-provider';
+import { timeLabelOf } from './options/pivot-labels';
 import { QueryProvider } from './options/query-provider';
 
 // eslint-disable-next-line
@@ -94,7 +95,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
       .filter(c => c.dataType == DataType.TIME);
     const baseQueryProvider: QueryProvider = { provide: () => this.query };
     const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
-    this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback);
+    this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback, this.columns);
     this.pendingRecord = this.tab?.record;
     this.restoredQuery = this.pendingRecord?.query ? queryDefToQuery(this.pendingRecord.query) : undefined;
     this.fetchData(this.restoredQuery ?? new Query());
@@ -223,7 +224,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
       .filter(o => o)
       .flatMap(o => [...(o['cols'] ?? []), ...(o['rows'] ?? [])]);
     const nonSelectedTimeColumns = this.context.timeColumns
-      .filter(c => !selColNames.includes(ColumnNameConverter.toLabel(c, c.groupingTimeUnit)));
+      .filter(c => !selColNames.includes(timeLabelOf(c, c.groupingTimeUnit, this.columns)));
     DateTimeUtils.defineTimeUnits(nonSelectedTimeColumns, entries);
   }
 
@@ -250,7 +251,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
     }
     this.dataFrame = this.baseDataFrame;
     this.context.timeColumns
-      .forEach(c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c));
+      .forEach(c => this.dataFrame = this.timeGroupingService.groupByFormattedTimeUnit(this.dataFrame, c, timeLabelOf(c, c.groupingTimeUnit, this.columns)));
     if (this.context.valueGroupings.length > 0) {
       this.dataFrame.bake();
       this.dataFrame = this.valueGroupingService.compute(this.dataFrame, this.context.valueGroupings);
@@ -356,12 +357,19 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
     }
     const targetElement = this.getTargetElement();
     if (pivotOptions) {
-      targetElement.pivotUI(this.dataFrame.toArray(), pivotOptions, true);
+      targetElement.pivotUI(this.pivotRecords(), pivotOptions, true);
     } else {
-      targetElement.pivotUI(this.dataFrame.toArray(),
+      targetElement.pivotUI(this.pivotRecords(),
         this.pivotOptionsProvider.enrichPivotOptions(undefined, this.context, () => this.onPivotTableRefreshEnd()));
     }
     this.pivotOptionsProvider.localizeSelections(this.divPivot.nativeElement);
+  }
+
+  /**
+   * @returns the rows of the data frame for PivotTable.js, which reads record[attr]
+   */
+  private pivotRecords(): object[] {
+    return ObjectUtils.withoutInheritedValues(this.dataFrame.toArray(), this.columns.map(c => c.name));
   }
 
   // eslint-disable-next-line

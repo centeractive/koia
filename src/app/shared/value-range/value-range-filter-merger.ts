@@ -37,7 +37,7 @@ export class ValueRangeFilterMerger {
    }
 
    private canInvertedBeMerged(f1: ValueRangeFilter, f2: ValueRangeFilter): boolean {
-      return f1.valueRange.max === f2.valueRange.min && f1.valueRange.maxExcluding;
+      return f1.orEmpty === f2.orEmpty && f1.valueRange.max === f2.valueRange.min && f1.valueRange.maxExcluding;
    }
 
    private maxExcluding(vr1: ValueRange, vr2: ValueRange): boolean {

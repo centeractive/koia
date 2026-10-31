@@ -1,6 +1,6 @@
 import { Column, DataType } from 'app/shared/model';
 import { CategoryData, ChartContext, DataPoint, LabeledValues } from 'app/shared/model/chart';
-import { ArrayUtils, DateTimeUtils } from 'app/shared/utils';
+import { ArrayUtils, DateTimeUtils, ObjectUtils } from 'app/shared/utils';
 import { LanguageService } from '../language/language.service';
 
 export class ChartDataHelper {
@@ -12,7 +12,7 @@ export class ChartDataHelper {
    static countDistinctValues(context: ChartContext): DataPoint[] {
       const data: DataPoint[] = [];
       for (const entry of context.entries) {
-         const value = entry[context.dataColumns[0].name];
+         const value = ObjectUtils.ownValue<number>(entry, context.dataColumns[0].name);
          if (value !== null && value !== undefined) {
             const nameValueObject = ArrayUtils.findObjectByKeyValue(data, 'x', value);
             if (nameValueObject == null) {
@@ -34,7 +34,7 @@ export class ChartDataHelper {
             if (!labeledValues[iCol]) {
                labeledValues.push({ label: c.name, values: [] });
             }
-            labeledValues[iCol].values.push(e[c.name]);
+            labeledValues[iCol].values.push(ObjectUtils.ownValue(e, c.name));
          });
          labels.push(label);
       });
@@ -62,12 +62,12 @@ export class ChartDataHelper {
       consumer: (name: unknown, entry: object) => void): unknown {
       const names = new Set<unknown>();
       for (const entry of entries) {
-         const name = entry[nameColumn.name];
+         const name = ObjectUtils.ownValue(entry, nameColumn.name);
          if (name !== null && name !== undefined && name !== '') {
             if (names.has(name)) {
                return name;
             }
-            if (dataColumns.some(c => entry[c.name] !== null && entry[c.name] !== undefined)) {
+            if (dataColumns.some(c => ObjectUtils.ownValue(entry, c.name) != undefined)) {
                consumer(name, entry);
                names.add(name);
             }
@@ -84,7 +84,7 @@ export class ChartDataHelper {
    }
 
    static extractGroupingValue(entry: object, groupByColumn: Column): number {
-      let value = entry[groupByColumn.name];
+      let value = ObjectUtils.ownValue<number>(entry, groupByColumn.name);
       if (groupByColumn.dataType === DataType.TIME && groupByColumn.groupingTimeUnit) {
          const date = DateTimeUtils.toBaseDate(value, groupByColumn.groupingTimeUnit);
          if (date) {

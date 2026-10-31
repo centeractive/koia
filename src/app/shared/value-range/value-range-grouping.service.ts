@@ -1,5 +1,6 @@
 import { IDataFrame, DataFrame, Series } from 'data-forge';
 import { Injectable } from '@angular/core';
+import { DataFrameUtils } from 'app/shared/utils/data-frame-utils';
 import { ValueGrouping } from './model/value-grouping.type';
 import { ValueRange } from './model/value-range.type';
 import { ValueRangeConverter } from './value-range-converter';
@@ -22,7 +23,7 @@ export class ValueRangeGroupingService {
 
   private groupByValueRanges(dataFrame: IDataFrame<number, object>, grouping: ValueGrouping): IDataFrame<number, object> {
     const sortedRangesMax = this.sortedActiveRangesMaxValues(grouping.ranges);
-    const series = dataFrame.getSeries(grouping.columnName);
+    const series = DataFrameUtils.columnValues<number>(dataFrame, grouping.columnName);
     const values: string[] = [];
     series.forEach(v => values.push(this.toGroupValue(v, sortedRangesMax)));
     return dataFrame.withSeries(grouping.columnName, new Series(values));
@@ -30,7 +31,7 @@ export class ValueRangeGroupingService {
 
   private sortedActiveRangesMaxValues(ranges: ValueRange[]): number[] {
     return ranges
-      .filter(r => r.active)
+      .filter(r => r.active && Number.isFinite(r.max))
       .map(r => r.max)
       .sort((max1, max2) => max1 - max2);
   }
@@ -39,13 +40,12 @@ export class ValueRangeGroupingService {
     if (value === null || value === undefined) {
       return ValueRangeConverter.EMPTY;
     }
-    let prevRangeMax = - Number.MAX_VALUE;
+    let prevRangeMax: number = undefined;
     for (const rangeMax of sortedRangesMax) {
       if (value >= rangeMax) {
         prevRangeMax = rangeMax;
       } else {
-        const from = prevRangeMax === - Number.MAX_VALUE ? undefined : prevRangeMax;
-        return ValueRangeConverter.toLabel(from, rangeMax);
+        return ValueRangeConverter.toLabel(prevRangeMax, rangeMax);
       }
     }
     return ValueRangeConverter.toLabel(prevRangeMax, undefined);

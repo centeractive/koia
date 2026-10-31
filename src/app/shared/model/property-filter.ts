@@ -10,11 +10,29 @@ export class PropertyFilter {
    private _value: string | number | boolean;
    private _dataType?: DataType;
 
-   constructor(name: string, operator: Operator, filterValue: string | number | boolean, dataType?: DataType) {
+   /**
+    * operators of filters excluding values, only they can match the rows lacking a value
+    */
+   private static readonly EXCLUDING_OPERATORS = [Operator.NONE_OF, Operator.NOT_EQUAL];
+
+   private _orEmpty: boolean;
+
+   /**
+    * @param orEmpty whether a filter excluding values also matches the rows lacking a value, as PivotTable.js does
+    */
+   constructor(name: string, operator: Operator, filterValue: string | number | boolean, dataType?: DataType, orEmpty = false) {
       this._name = name;
       this._operator = operator;
       this._value = filterValue;
       this._dataType = dataType;
+      this._orEmpty = orEmpty;
+   }
+
+   /**
+    * true if the filter excludes values but matches the rows lacking a value, the operator may have changed since construction
+    */
+   get orEmpty(): boolean {
+      return this._orEmpty && PropertyFilter.EXCLUDING_OPERATORS.includes(this._operator);
    }
 
    get name(): string {
@@ -64,6 +82,6 @@ export class PropertyFilter {
    }
 
    clone(): PropertyFilter {
-      return new PropertyFilter(this._name, this._operator, this._value, this._dataType);
+      return new PropertyFilter(this._name, this._operator, this._value, this._dataType, this._orEmpty);
    }
 }

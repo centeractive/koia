@@ -1,38 +1,43 @@
 import { DatePipe } from '@angular/common';
 import { IDataFrame } from 'data-forge';
-import { SummaryContext, DataType } from 'app/shared/model';
+import { Column, SummaryContext, DataType } from 'app/shared/model';
+import { AggregationKeys } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
-import { DateTimeUtils, ColumnNameConverter, DataFrameUtils } from 'app/shared/utils';
+import { DateTimeUtils, DataFrameUtils } from 'app/shared/utils';
 
 export class ExportDataGenerator {
 
    private datePipe = new DatePipe('en-US');
 
    generate(context: SummaryContext, dataFrame: IDataFrame<number, object>, overalls: number[]): object[] {
-      const data = this.formatTimeColumns(context, dataFrame).toArray();
-      data.push(this.createOverallRow(dataFrame.getColumnNames(), overalls));
+      const keys = new AggregationKeys(context);
+      const data = this.formatTimeColumns(context.groupByColumns, keys, dataFrame).toArray();
+      data.push(this.createOverallRow(keys, overalls));
       return data;
    }
 
-   private formatTimeColumns(context: SummaryContext, dataFrame: IDataFrame<number, object>) {
-      context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c => {
-         dataFrame = DataFrameUtils.transformColumn(dataFrame, ColumnNameConverter.toLabel(c, c.groupingTimeUnit), (time: number) => isNaN(time) ? '' : this.datePipe.transform(time, DateTimeUtils.ngFormatOf(c.groupingTimeUnit)));
+   /**
+    * @returns the columns among the specified ones whose exported values are converted by data type, i.e. the columns keyed by their
+    * name except time columns, whose values are already formatted
+    */
+   columnsOf(context: SummaryContext, columns: Column[]): Column[] {
+      const keys = new AggregationKeys(context);
+      return columns.filter(c => c.dataType !== DataType.TIME && keys.isColumnName(c.name));
+   }
+
+   private formatTimeColumns(groupByColumns: Column[], keys: AggregationKeys, dataFrame: IDataFrame<number, object>) {
+      groupByColumns.forEach((c, i) => {
+         if (c.dataType === DataType.TIME) {
+            dataFrame = DataFrameUtils.transformColumn(dataFrame, keys.groupBy[i], (time: number) => isNaN(time) ? '' : this.datePipe.transform(time, DateTimeUtils.ngFormatOf(c.groupingTimeUnit)));
+         }
       });
       return dataFrame;
    }
 
-   private createOverallRow(columnNames: string[], overalls: number[]): object {
+   private createOverallRow(keys: AggregationKeys, overalls: number[]): object {
       const overallRow = {};
-      for (let iCol = 0; iCol < columnNames.length; iCol++) {
-         const iOverall = overalls.length - columnNames.length + iCol;
-         let value: string | number = '';
-         if (iOverall === - 1) {
-            value = LanguageService.instant('summary.overall');
-         } else if (iOverall >= 0) {
-            value = overalls[iOverall];
-         }
-         overallRow[columnNames[iCol]] = value;
-      }
+      keys.leading.forEach((key, i) => overallRow[key] = i === keys.leading.length - 1 ? LanguageService.instant('summary.overall') : '');
+      keys.aggregations.forEach((key, i) => overallRow[key] = overalls[i]);
       return overallRow;
    }
 }

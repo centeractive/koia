@@ -1,0 +1,7 @@
+Level,Host
+constructor,a
+toString,b
+__proto__,a
+hasOwnProperty,a
+INFO,b
+INFO,a

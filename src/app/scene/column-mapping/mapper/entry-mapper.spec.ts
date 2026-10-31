@@ -146,6 +146,30 @@ describe('EntryMapper', () => {
       expect(actual[0].entry).toEqual({ _id: '1000001', Nr: 1, Text: 'A' });
    });
 
+   it('#mapObjects should not map value to text column named constructor from object lacking it', () => {
+
+      // given
+      mapper = new EntryMapper([pairOf('constructor', DataType.TEXT), pairOf('Text', DataType.TEXT)], 'en');
+
+      // when
+      const actual = mapper.mapObjects([{ Text: 'A' }]);
+
+      // then
+      expect(actual).toEqual([{ entry: { _id: '1000001', Text: 'A' }, errors: [] }]);
+   });
+
+   it('#mapObjects should not report error for number column named valueOf from object lacking it', () => {
+
+      // given
+      mapper = new EntryMapper([pairOf('valueOf', DataType.NUMBER), pairOf('Text', DataType.TEXT)], 'en');
+
+      // when
+      const actual = mapper.mapObjects([{ Text: 'A' }]);
+
+      // then
+      expect(actual).toEqual([{ entry: { _id: '1000001', Text: 'A' }, errors: [] }]);
+   });
+
    it('#mapRows should return empty array when row is empty', () => {
 
       // when
@@ -1145,6 +1169,10 @@ describe('EntryMapper', () => {
          source: { ...source },
          target: { name: sourceColumnName + ' pattern', dataType: DataType.TEXT, width: 1, indexed: true, patternOf: sourceColumnName }
       };
+   }
+
+   function pairOf(name: string, dataType: DataType): ColumnPair {
+      return toColumnPair({ name, dataType, width: 10 });
    }
 
    function toColumnPair(column: Column): ColumnPair {

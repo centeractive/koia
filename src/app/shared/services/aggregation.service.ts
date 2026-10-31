@@ -1,8 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Aggregation, ElementContext, DataType } from '../model';
-import { IDataFrame, DataFrame, ISeries } from 'data-forge';
-import { TimeGroupingService } from './time-grouping.service';
-import { ColumnNameConverter } from '../utils';
+import { DataFrame, IDataFrame, ISeries, Series } from 'data-forge';
+import { Aggregation, Column, DataType, ElementContext } from '../model';
+import { DataFrameUtils, DateTimeUtils, ObjectUtils } from '../utils';
+import { AggregationKeys } from './aggregation-keys';
+
+interface Group {
+  values: unknown[];
+  rows: object[];
+}
 
 /**
  * computes aggregated data
@@ -12,58 +17,81 @@ import { ColumnNameConverter } from '../utils';
 })
 export class AggregationService {
 
-  private timeGroupingService = new TimeGroupingService();
-
+  /**
+   * @returns a row per distinct values of the group-by columns (and of the data column when counting) ordered by these values, a single
+   * row when there are no such columns; the rows are keyed by [[AggregationKeys]]
+   */
   compute(data: IDataFrame<number, object>, context: ElementContext): IDataFrame<number, object> {
-    let dataFrame: IDataFrame<number, object> = new DataFrame(data);
-    const columns = context.groupByColumns;
-    columns.push(context.dataColumns[0]);
-    context.groupByColumns.filter(c => c.dataType === DataType.TIME).forEach(c =>
-      dataFrame = this.timeGroupingService.groupByTimeUnit(dataFrame, c));
-    const columnNames = columns.map(c => c.dataType === DataType.TIME ? ColumnNameConverter.toLabel(c, c.groupingTimeUnit) : c.name);
-    if (context.aggregations[0] === Aggregation.COUNT) {
-      return this.countDistinctValues(dataFrame, columnNames, context.aggregations[0]);
-    } else if (columns.length === 1) {
-      return this.aggregate(dataFrame, columnNames[0], context.aggregations);
-    } else {
-      return this.groupAndAggregate(dataFrame, columnNames.slice(0, -1), columnNames.slice(-1)[0], context.aggregations);
+    const keys = new AggregationKeys(context);
+    const dataColumnName = context.dataColumns[0].name;
+    const aggregations = context.aggregations;
+    const toRow = (group: Group): object => {
+      const series = new Series(group.rows.map(r => ObjectUtils.ownValue(r, dataColumnName)));
+      const row = {};
+      keys.leading.forEach((key, i) => row[key] = group.values[i]);
+      keys.aggregations.forEach((key, i) => row[key] = this.aggregateValue(series, aggregations[i]));
+      return row;
+    };
+    const rows = data.toArray();
+    if (keys.leading.length === 0) {
+      return new DataFrame([toRow({ values: [], rows })]);
     }
+    const groupByColumns = context.groupByColumns;
+    const groups = this.groupsOf(rows, row => {
+      const values = groupByColumns.map(c => this.groupValueOf(row, c));
+      return keys.data === undefined ? values : [...values, ObjectUtils.ownValue(row, dataColumnName)];
+    });
+    return DataFrameUtils.orderBy(new DataFrame(groups.map(toRow)), keys.leading.map(key => (row: object) => row[key]), 'asc');
   }
 
-  private countDistinctValues(data: IDataFrame<number, object>, pivotColumns: string[], aggregation: Aggregation): IDataFrame<number, object> {
-    return data.pivot(pivotColumns, aggregation, v => this.aggregateValue(v, aggregation));
+  private groupValueOf(row: object, column: Column): unknown {
+    const value = ObjectUtils.ownValue(row, column.name);
+    return column.dataType === DataType.TIME && column.groupingTimeUnit ? DateTimeUtils.toBaseTime(value as number, column.groupingTimeUnit) : value;
   }
 
-  private aggregate(data: IDataFrame<number, object>, numberColumn: string, aggregations: Aggregation[]): IDataFrame<number, object> {
-    const namedAggregatedValues = {};
-    aggregations.map(a => namedAggregatedValues[a] = this.aggregateValue(data.getSeries(numberColumn), a));
-    return new DataFrame([namedAggregatedValues]);
+  /**
+   * groups by type and value, unlike grouping by object property, values of different type (e.g. 1 and '1') are not merged;
+   * null and undefined form the same empty group
+   */
+  private groupsOf(rows: object[], valuesOf: (row: object) => unknown[]): Group[] {
+    const groups = new Map<string, Group>();
+    for (const row of rows) {
+      const values = valuesOf(row).map(v => v ?? undefined);
+      const groupKey = JSON.stringify(values.map(v => typeof v + ':' + v));
+      const group = groups.get(groupKey);
+      if (group) {
+        group.rows.push(row);
+      } else {
+        groups.set(groupKey, { values, rows: [row] });
+      }
+    }
+    return Array.from(groups.values());
   }
 
-  private groupAndAggregate(data: IDataFrame<number, object>, pivotColumns: string[], numberColumn: string, aggregations: Aggregation[])
-    : IDataFrame<number, object> {
-    const aggregationMappings = {};
-    aggregations.map(a => aggregationMappings[a] = v => this.aggregateValue(v, a));
-    const aggregationSpec = { [numberColumn]: aggregationMappings };
-    return data.pivot(pivotColumns, aggregationSpec);
-  }
-
+  /**
+   * @returns the number of values for COUNT, else the aggregation of the numbers among the values or undefined when there are none
+   */
   aggregateValue(values: ISeries<number, unknown>, aggregation: Aggregation): number {
     switch (aggregation) {
       case Aggregation.COUNT:
         return values.count();
       case Aggregation.AVG:
-        return values.average();
+        return this.aggregateNumbers(values, n => n.average());
       case Aggregation.MEDIAN:
-        return values.median();
+        return this.aggregateNumbers(values, n => n.median());
       case Aggregation.MAX:
-        return values.max();
+        return this.aggregateNumbers(values, n => n.max());
       case Aggregation.MIN:
-        return values.min();
+        return this.aggregateNumbers(values, n => n.min());
       case Aggregation.SUM:
-        return values.sum();
+        return this.aggregateNumbers(values, n => n.sum());
       default:
         throw new Error('aggregation of type ' + aggregation + ' is not yet implemented');
     }
+  }
+
+  private aggregateNumbers(values: ISeries<number, unknown>, aggregate: (numbers: ISeries<number, number>) => number): number {
+    const numbers = values.filter(v => typeof v === 'number').select(v => v as number);
+    return numbers.any() ? aggregate(numbers) : undefined;
   }
 }

@@ -64,6 +64,18 @@ describe('DataFrameUtils', () => {
     expect(hasColumn).toBe(false);
   });
 
+  it('#hasColumn should return false when column named constructor is missing in all rows', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ ID: 1 }, { ID: 2 }]);
+
+    // when
+    const hasColumn = DataFrameUtils.hasColumn(dataFrame, 'constructor');
+
+    // then
+    expect(hasColumn).toBe(false);
+  });
+
   it('#hasColumn should return false when data frame is empty', () => {
 
     // given
@@ -74,5 +86,78 @@ describe('DataFrameUtils', () => {
 
     // then
     expect(hasColumn).toBe(false);
+  });
+
+  it('#columnValues should return undefined for rows lacking column named constructor', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ constructor: 'a' }, { ID: 1 }]);
+
+    // when
+    const values = DataFrameUtils.columnValues<string>(dataFrame, 'constructor');
+
+    // then
+    expect(values.toPairs()).toEqual([[0, 'a']]);
+    expect(values.count()).toBe(2);
+  });
+
+  it('#orderBy should order ascending with empty values first', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ a: 2 }, { a: undefined }, { a: 1 }, { a: null }]);
+
+    // when
+    const result = DataFrameUtils.orderBy(dataFrame, [r => r['a']], 'asc');
+
+    // then
+    expect(result.toArray().map(r => r['a'])).toEqual([undefined, null, 1, 2]);
+  });
+
+  it('#orderBy should order descending with empty values last', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ a: 2 }, { a: undefined }, { a: 1 }, { a: null }]);
+
+    // when
+    const result = DataFrameUtils.orderBy(dataFrame, [r => r['a']], 'desc');
+
+    // then
+    expect(result.toArray().map(r => r['a'])).toEqual([2, 1, undefined, null]);
+  });
+
+  it('#orderBy should order by further selector when previous values are equal', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ a: 1, b: 2 }, { a: 1, b: undefined }, { a: 0, b: 3 }]);
+
+    // when
+    const result = DataFrameUtils.orderBy(dataFrame, [r => r['a'], r => r['b']], 'asc');
+
+    // then
+    expect(result.toArray().map(r => r['b'])).toEqual([3, undefined, 2]);
+  });
+
+  it('#orderBy should order descending by further selector when previous values are equal', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ a: 1, b: 1 }, { a: 1, b: 2 }]);
+
+    // when
+    const result = DataFrameUtils.orderBy(dataFrame, [r => r['a'], r => r['b']], 'desc');
+
+    // then
+    expect(result.toArray().map(r => r['b'])).toEqual([2, 1]);
+  });
+
+  it('#orderBy should treat null like undefined', () => {
+
+    // given
+    const dataFrame = new DataFrame<number, object>([{ a: null, b: 2 }, { a: undefined, b: 1 }]);
+
+    // when
+    const result = DataFrameUtils.orderBy(dataFrame, [r => r['a'], r => r['b']], 'asc');
+
+    // then
+    expect(result.toArray().map(r => r['b'])).toEqual([1, 2]);
   });
 });

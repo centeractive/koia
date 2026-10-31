@@ -1,6 +1,6 @@
 import { LanguageService } from 'app/shared/services/language';
 import { Column, ColumnPair, DataType } from 'app/shared/model';
-import { DataTypeUtils, DateTimeUtils, StringUtils } from 'app/shared/utils';
+import { DataTypeUtils, DateTimeUtils, ObjectUtils, StringUtils } from 'app/shared/utils';
 import { PatternMasker } from 'app/shared/utils/pattern-masker';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import type { LogLevelColorizer } from 'app/shared/services/reader/log/log-level-colorizer';
@@ -61,7 +61,7 @@ export class EntryMapper {
    private mapObject(sourceEntry: object, id: number): MappingResult {
       const mappingResult = this.newMappingResult(id);
       this.columnMapping.filter(cp => !cp.skip && !cp.sequence).forEach(cp => {
-         const sourceValue = sourceEntry[cp.source.name];
+         const sourceValue = ObjectUtils.ownValue<string | number | boolean | object>(sourceEntry, cp.source.name);
          this.mapValue(cp, sourceValue, mappingResult);
       });
       this.colorizer?.colorize(mappingResult.entry);

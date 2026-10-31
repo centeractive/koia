@@ -125,6 +125,21 @@ describe('pinnedColumnsOf', () => {
       expect([...pinned]).toEqual([]);
    });
 
+   it('should pin columns of filters differing in matching empty values only', () => {
+
+      // given
+      const selection = queryOf(new PropertyFilter('Level', Operator.NONE_OF, 'INFO', DataType.TEXT, true));
+      selection.addValueRangeFilter('Amount', 1, 5, true, true, true);
+      const base = queryOf(new PropertyFilter('Level', Operator.NONE_OF, 'INFO', DataType.TEXT));
+      base.addValueRangeFilter('Amount', 1, 5, true, true);
+
+      // when
+      const pinned = pinnedColumnsOf(selection, base);
+
+      // then
+      expect([...pinned]).toEqual(['Level', 'Amount']);
+   });
+
    function queryOf(filter: PropertyFilter): Query {
       return new Query(filter);
    }

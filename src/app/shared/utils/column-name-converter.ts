@@ -16,19 +16,6 @@ export class ColumnNameConverter {
     return column.name;
   }
 
-  /**
-   * @param label pattern "<column name> (per <time unit>)" for time columns of relevant time unit, the column name otherwise
-   */
-  static toColumnName(label: string): string {
-    for (const timeUnit of ColumnNameConverter.RELEVANT_TIME_UNITS) {
-      const postfixPos = label.indexOf(this.wrap(timeUnit));
-      if (postfixPos > 0) {
-        return label.substring(0, postfixPos);
-      }
-    }
-    return label;
-  }
-
   private static wrap(timeUnit: TimeUnit): string {
     return ' (per ' + timeUnit + ')';
   }

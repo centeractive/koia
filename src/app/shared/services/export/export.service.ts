@@ -8,6 +8,7 @@ import { ExcelDataConverter } from './data-converter/excel-data-converter';
 import { EXPORT_FILE_EXTENSIONS } from './export-file';
 import { typedTableClone } from './data-converter/typed-table';
 import { propertyNamesOf } from './data-converter/property-names';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -59,7 +60,8 @@ export class ExportService {
   }
 
   private toCSV(data: object[], columns: Column[], delimiter: string): string {
-    return Papa.unparse({ fields: propertyNamesOf(data, columns), data }, { delimiter, newline: this.newline, escapeFormulae: ExportService.FORMULA_START });
+    const fields = propertyNamesOf(data, columns);
+    return Papa.unparse({ fields, data: ObjectUtils.withoutInheritedValues(data, fields) }, { delimiter, newline: this.newline, escapeFormulae: ExportService.FORMULA_START });
   }
 
   private exportAsExcel(data: object[], columns: Column[], baseFileName: string): void {

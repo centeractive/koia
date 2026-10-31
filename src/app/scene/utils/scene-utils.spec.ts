@@ -174,6 +174,15 @@ describe('SceneUtils', () => {
       expect(entries).toEqual(expected);
    });
 
+   it('#entriesFromTableData should keep value of column named __proto__', () => {
+
+      // when
+      const entries = SceneUtils.entriesFromTableData({ columnNames: ['__proto__', 'B'], tableData: [['x', 'y']] });
+
+      // then
+      expect(Object.entries(entries[0])).toEqual([['__proto__', 'x'], ['B', 'y']]);
+   });
+
    it('#entriesFromTableData should return entries with unique keys when column names are duplicate', () => {
 
       // when

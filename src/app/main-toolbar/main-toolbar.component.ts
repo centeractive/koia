@@ -115,7 +115,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
       this.showRangeFilters = false;
       query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
-        this.addRangeFilter(column, f.valueRange, f.inverted);
+        this.addRangeFilter(column, f.valueRange, f.inverted, f.orEmpty);
       })
     }
   }
@@ -159,13 +159,13 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
     return true;
   }
 
-  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false): void {
+  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false, orEmpty = false): void {
     this.dbService.numberRangeOf(column)
       .then(vr => {
         if (column.dataType === DataType.TIME) {
-          this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange, inverted));
+          this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange, inverted, orEmpty));
         } else {
-          this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange, inverted));
+          this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange, inverted, orEmpty));
         }
         this.showRangeFilters = true;
       })

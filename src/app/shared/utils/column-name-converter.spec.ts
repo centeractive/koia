@@ -51,17 +51,4 @@ describe('ColumnNameConverter', () => {
 
       expect(label).toBe('A (per day)');
    });
-
-   it('#toColumnName should return column name when not of relevant time unit', () => {
-      expect(ColumnNameConverter.toColumnName('X')).toBe('X');
-   });
-
-   it('#toColumnName should return column name when of relevant time unit', () => {
-      for (const timeUnit of ColumnNameConverter.RELEVANT_TIME_UNITS) {
-         const column: Column = { name: 'X', dataType: DataType.TIME, width: 100 };
-         const label = ColumnNameConverter.toLabel(column, timeUnit);
-
-         expect(ColumnNameConverter.toColumnName(label)).toBe('X');
-      }
-   });
 });

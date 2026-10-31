@@ -102,6 +102,31 @@ describe('SeriesNameConverter', () => {
       expect(id).toBeUndefined();
    });
 
+   it('#toGroupKey should return undefined when entry lacks value of data column named constructor', () => {
+
+      // given
+      const dataColumn = createColumn('constructor', DataType.TEXT);
+
+      // when
+      const id = converter.toGroupKey({ ID: 1 }, dataColumn, []);
+
+      // then
+      expect(id).toBeUndefined();
+   });
+
+   it('#toGroupKey should return undefined when entry lacks value of split column named toString', () => {
+
+      // given
+      const dataColumn = createColumn('Amount', DataType.NUMBER);
+      const splitColumns = [createColumn('toString', DataType.TEXT)];
+
+      // when
+      const id = converter.toGroupKey({ Amount: 5 }, dataColumn, splitColumns);
+
+      // then
+      expect(id).toBeUndefined();
+   });
+
    it('#toSeriesName should return name derived from data column name', () => {
 
       // given

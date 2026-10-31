@@ -11,8 +11,8 @@ export class QueryConverter {
    constructor(private forPouchDB: boolean) { }
 
    /**
-   * Converts a [[Query]] to a Mango query that contains the selector, the sort (both backends omit documents lacking the sort field)
-   * and a single field (no pagination info)
+   * Converts a [[Query]] to a Mango query that contains the selector, the sort (CouchDB omits the documents lacking the sort field,
+   * PouchDB keeps them) and a single field (no pagination info)
    * to find out the total number of rows that match the selector of the base query.
    * Apparently there's no better way to find the total number of rows matching a certain selector.
    */
@@ -53,7 +53,7 @@ export class QueryConverter {
       }
       query.getPropertyFilters()
          .filter(f => f.isApplicable())
-         .forEach(f => builder.where(f.name, f.operator, f.value, f.dataType));
+         .forEach(f => builder.where(f.name, f.operator, f.value, f.dataType, f.orEmpty));
       query.getValueRangeFilters()
          .filter(f => f.isApplicable())
          .filter(f => !f.inverted)

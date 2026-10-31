@@ -1,6 +1,7 @@
 import { LanguageService } from '../../language';
 import * as XLSX from '@e965/xlsx';
 import { Attribute, DataType } from 'app/shared/model';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 import { EntryHandler } from '../data-handler.type';
 import { DataReader } from '../data-reader.type';
 import { Sample } from '../sample.type';
@@ -59,7 +60,7 @@ export class ExcelReader implements DataReader {
    async readEntries(file: File, rowCount: number): Promise<object[]> {
       const workbook = XLSX.read(await file.arrayBuffer(), this.parsingOptions(rowCount));
       const sheetName = this.identifySheetName(workbook);
-      const sheet = workbook.Sheets[sheetName];
+      const sheet = ObjectUtils.ownValue<XLSX.WorkSheet>(workbook.Sheets, sheetName);
       if (!sheet) {
          throw LanguageService.instant('scene.reader.worksheetMissing', { sheet: sheetName });
       }

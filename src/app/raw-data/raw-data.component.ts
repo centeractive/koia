@@ -19,6 +19,7 @@ import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-re
 import { VirtualTableComponent } from 'app/shared/ui/virtual-table/virtual-table.component';
 import { ColumnResize, VirtualTableSource } from 'app/shared/ui/virtual-table/virtual-table-source';
 import { computedColumnTooltipOf } from 'app/shared/utils/computation-utils';
+import { ObjectUtils } from 'app/shared/utils/object-utils';
 import { colWidthMeasurementOf } from 'app/shared/utils/source-system';
 import { lastValueFrom, Subscription } from 'rxjs';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
@@ -308,7 +309,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   }
 
   private applyWidths(): void {
-    this.widths = this.columns.map(column => this.customWidths[column.name] ??
+    this.widths = this.columns.map(column => ObjectUtils.ownValue<number>(this.customWidths, column.name) ??
       this.widthResolver.widthOf(column, this.colWidthMeasurement, this.considerColumnWidths, this.cache.loadedRows(), this.showNestedObjects));
   }
 }

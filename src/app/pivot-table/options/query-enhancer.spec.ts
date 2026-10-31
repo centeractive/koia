@@ -4,7 +4,7 @@ import { ValueRange, ValueGrouping, ValueRangeFilter } from 'app/shared/value-ra
 import { DateTimeUtils } from 'app/shared/utils';
 import { TimeGroupingService } from 'app/shared/services';
 import { ValueRangeConverter } from 'app/shared/value-range';
-import { NumberFormatter } from 'app/shared/format';
+import { Settings } from 'luxon';
 
 describe('QueryEnhancer', () => {
 
@@ -141,6 +141,57 @@ describe('QueryEnhancer', () => {
       expect(query.getPropertyFilters()).toEqual([]);
    });
 
+   it('#addBasicFilters should add not-empty filter for value group without bounds', () => {
+
+      // given
+      const valueGroupings = [createValueGrouping('Amount')];
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, valueGroupings, { Amount: 'min - max' });
+
+      // when
+      queryEnhancer.addBasicFilters();
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.NOT_EMPTY, '', DataType.NUMBER)]);
+      expect(query.getValueRangeFilters()).toEqual([]);
+   });
+
+   it('#addBasicFilters should resolve label naming a text column although it looks like a time label', () => {
+
+      // given
+      columns.push({ name: 'Duration', dataType: DataType.TIME, width: 100, groupingTimeUnit: TimeUnit.DAY });
+      columns.push({ name: 'Duration (per day)', dataType: DataType.TEXT, width: 60 });
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], { 'Duration (per day)': 'long' });
+
+      // when
+      queryEnhancer.addBasicFilters();
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Duration (per day)', Operator.EQUAL, 'long', DataType.TEXT)]);
+      expect(query.getValueRangeFilters()).toEqual([]);
+   });
+
+   it('#addBasicFilters should add time range filter of second occurrence of hour repeated when clocks are turned back', () => {
+
+      // given
+      Settings.defaultZone = 'Europe/Zurich';
+      column('Time').groupingTimeUnit = TimeUnit.HOUR;
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], { Time: '27 Oct 2024 02 +01:00' });
+
+      try {
+         // when
+         queryEnhancer.addBasicFilters();
+
+         // then
+         const expectedFilter = new ValueRangeFilter('Time',
+            { min: Date.UTC(2024, 9, 27, 1), max: Date.UTC(2024, 9, 27, 2), maxExcluding: true }, false);
+         expect(queryEnhancer.getQuery().getValueRangeFilters()).toEqual([expectedFilter]);
+      } finally {
+         Settings.defaultZone = null;
+      }
+   });
+
    it('#addFiltersForValueChoices should not change query when no exclusions exist', () => {
 
       // given
@@ -148,7 +199,7 @@ describe('QueryEnhancer', () => {
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
 
       // when
-      queryEnhancer.addFiltersForValueChoices(undefined, undefined, { colAttrs: ['Level'], rowAttrs: [] });
+      queryEnhancer.addFiltersForValueChoices({});
 
       // then
       const query = queryEnhancer.getQuery();
@@ -163,15 +214,46 @@ describe('QueryEnhancer', () => {
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ Level: ['DEBUG', 'INFO'] }, {}, { colAttrs: ['Amount'], rowAttrs: ['Level'] });
+      queryEnhancer.addFiltersForValueChoices({ Level: ['DEBUG', 'INFO'] });
 
       // then
       const query = queryEnhancer.getQuery();
-      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG;INFO', DataType.TEXT)]);
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.NONE_OF, 'DEBUG;INFO', DataType.TEXT, true)]);
       expect(query.getValueRangeFilters()).toEqual([]);
    });
 
-   it('#addFiltersForValueChoices should add time range filter when time is exclued', () => {
+   it('#addFiltersForValueChoices should skip excluded values of pinned attributes', () => {
+
+      // given
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], { Level: 'ERROR' });
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Level: ['DEBUG'], Host: ['server9'] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Host', Operator.NONE_OF, 'server9', DataType.TEXT, true)]);
+      expect(query.getValueRangeFilters()).toEqual([]);
+   });
+
+   it('#addFiltersForValueChoices should exclude texts with semicolon or surrounding blanks one by one', () => {
+
+      // given
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Path: ['/a', 'x;y', ' z'] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([
+         new PropertyFilter('Path', Operator.NONE_OF, '/a', DataType.TEXT, true),
+         new PropertyFilter('Path', Operator.NOT_EQUAL, 'x;y', DataType.TEXT, true),
+         new PropertyFilter('Path', Operator.NOT_EQUAL, ' z', DataType.TEXT, true)
+      ]);
+   });
+
+   it('#addFiltersForValueChoices should add inverted time range keeping empty values when time is excluded', () => {
 
       // given
       const filters = { Amount: 12 };
@@ -180,17 +262,52 @@ describe('QueryEnhancer', () => {
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': [formattedTime] }, {}, {
-         colAttrs: ['Time (per minute)'],
-         rowAttrs: ['Amount']
-      });
+      queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': [formattedTime] });
 
       // then
       const query = queryEnhancer.getQuery();
       const expectedFilter = new ValueRangeFilter('Time', { min: baseTime, max: baseTime + 60_000, maxExcluding: true },
-         true);
+         true, true);
       expect(query.getValueRangeFilters()).toEqual([expectedFilter]);
       expect(query.getPropertyFilters()).toEqual([]);
+   });
+
+   it('#addFiltersForValueChoices should resolve suffixed time label when a column is named like the time label', () => {
+
+      // given
+      columns.push({ name: 'Time (per minute)', dataType: DataType.TEXT, width: 60 });
+      const baseTime = DateTimeUtils.toBaseDate(now, TimeUnit.MINUTE).getTime();
+      const formattedTime = DateTimeUtils.formatTime(baseTime, TimeUnit.MINUTE);
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': ['x'], 'Time (per minute) #': [formattedTime] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Time (per minute)', Operator.NONE_OF, 'x', DataType.TEXT, true)]);
+      const expectedFilter = new ValueRangeFilter('Time', { min: baseTime, max: baseTime + 60_000, maxExcluding: true },
+         true, true);
+      expect(query.getValueRangeFilters()).toEqual([expectedFilter]);
+   });
+
+   it('#addFiltersForValueChoices should exclude first occurrence of minute repeated when clocks are turned back', () => {
+
+      // given
+      Settings.defaultZone = 'Europe/Zurich';
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], { Amount: 12 });
+
+      try {
+         // when
+         queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': ['27 Oct 2024 02:30 +02:00'] });
+
+         // then
+         const expectedFilter = new ValueRangeFilter('Time',
+            { min: Date.UTC(2024, 9, 27, 0, 30), max: Date.UTC(2024, 9, 27, 0, 31), maxExcluding: true }, true, true);
+         expect(queryEnhancer.getQuery().getValueRangeFilters()).toEqual([expectedFilter]);
+      } finally {
+         Settings.defaultZone = null;
+      }
    });
 
    it('#addFiltersForValueChoices should add non-empty value filter when empty time is exclued', () => {
@@ -200,10 +317,7 @@ describe('QueryEnhancer', () => {
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], filters);
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': ['empty'] }, {}, {
-         colAttrs: ['Time (per minute)'],
-         rowAttrs: ['Amount']
-      });
+      queryEnhancer.addFiltersForValueChoices({ 'Time (per minute)': ['empty'] });
 
       // then
       const query = queryEnhancer.getQuery();
@@ -219,8 +333,7 @@ describe('QueryEnhancer', () => {
       const queryEnhancer = new QueryEnhancer(new Query(), columns, valueGroupings, filters);
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ Percent: [TimeGroupingService.EMPTY] }, {},
-         { colAttrs: ['Level', 'Amount'], rowAttrs: ['Percent'] });
+      queryEnhancer.addFiltersForValueChoices({ Percent: [TimeGroupingService.EMPTY] });
 
       // then
       const query = queryEnhancer.getQuery();
@@ -228,19 +341,52 @@ describe('QueryEnhancer', () => {
       expect(query.getValueRangeFilters()).toEqual([]);
    });
 
-   it('#addFiltersForValueChoices should format excluded numbers in browser locale', () => {
+   it('#addFiltersForValueChoices should add inverted range keeping empty values when value group is excluded', () => {
 
       // given
-      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
-      const formatter = new NumberFormatter();
+      const valueGroupings = [createValueGrouping('Amount')];
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, valueGroupings, {});
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ Amount: ['1e-7', '1234.5'] }, {}, { colAttrs: ['Amount'], rowAttrs: [] });
+      queryEnhancer.addFiltersForValueChoices({ Amount: ['10 - 20'] });
 
       // then
       const query = queryEnhancer.getQuery();
-      const expectedValues = formatter.format(1e-7) + ';' + formatter.format(1234.5);
-      expect(query.getPropertyFilters()).toEqual([new PropertyFilter('Amount', Operator.NONE_OF, expectedValues, DataType.NUMBER)]);
+      expect(query.getValueRangeFilters()).toEqual([new ValueRangeFilter('Amount', { min: 10, max: 20, maxExcluding: true }, true, true)]);
+      expect(query.getPropertyFilters()).toEqual([]);
+   });
+
+   it('#addFiltersForValueChoices should exclude all values but keep empty ones when value group without bounds is excluded', () => {
+
+      // given
+      const valueGroupings = [createValueGrouping('Amount')];
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, valueGroupings, {});
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Amount: ['min - max'] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getValueRangeFilters()).toEqual([
+         new ValueRangeFilter('Amount', { min: undefined, max: undefined, maxExcluding: true }, true, true)
+      ]);
+      expect(query.getPropertyFilters()).toEqual([]);
+   });
+
+   it('#addFiltersForValueChoices should exclude numbers one by one as exact numbers', () => {
+
+      // given
+      const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
+
+      // when
+      queryEnhancer.addFiltersForValueChoices({ Amount: ['1e-7', '1234.5'] });
+
+      // then
+      const query = queryEnhancer.getQuery();
+      expect(query.getPropertyFilters()).toEqual([
+         new PropertyFilter('Amount', Operator.NOT_EQUAL, 1e-7, DataType.NUMBER, true),
+         new PropertyFilter('Amount', Operator.NOT_EQUAL, 1234.5, DataType.NUMBER, true)
+      ]);
    });
 
    it('#addFiltersForValueChoices should add not-empty filter when null is excluded from number column', () => {
@@ -250,13 +396,13 @@ describe('QueryEnhancer', () => {
       const excludedValues = ['null', '5'];
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ Amount: excludedValues }, {}, { colAttrs: ['Amount'], rowAttrs: [] });
+      queryEnhancer.addFiltersForValueChoices({ Amount: excludedValues });
 
       // then
       const query = queryEnhancer.getQuery();
       expect(query.getPropertyFilters()).toEqual([
          new PropertyFilter('Amount', Operator.NOT_EMPTY, '', DataType.NUMBER),
-         new PropertyFilter('Amount', Operator.NONE_OF, '5', DataType.NUMBER)
+         new PropertyFilter('Amount', Operator.NOT_EQUAL, 5, DataType.NUMBER, true)
       ]);
       expect(excludedValues).toEqual(['null', '5']);
    });
@@ -267,7 +413,7 @@ describe('QueryEnhancer', () => {
       const queryEnhancer = new QueryEnhancer(new Query(), columns, [], {});
 
       // when
-      queryEnhancer.addFiltersForValueChoices({ Level: ['null'] }, {}, { colAttrs: ['Level'], rowAttrs: [] });
+      queryEnhancer.addFiltersForValueChoices({ Level: ['null'] });
 
       // then
       const query = queryEnhancer.getQuery();

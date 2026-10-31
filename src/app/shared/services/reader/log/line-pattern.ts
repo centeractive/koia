@@ -151,16 +151,16 @@ export class LinePattern {
    }
 
    private static matchLogfmt(line: string): Record<string, unknown> | undefined {
-      const entry: Record<string, unknown> = {};
+      const pairs: [string, string][] = [];
       const text = line.trimEnd();
       const pair = new RegExp(LinePattern.LOGFMT_PAIR);
       let found = false;
       let groups: RegExpExecArray;
       while (pair.lastIndex < text.length && (groups = pair.exec(text))) {
          const value = groups[2];
-         entry[groups[1]] = value.startsWith('"') ? value.slice(1, -1).replace(/\\(.)/g, '$1') : value;
+         pairs.push([groups[1], value.startsWith('"') ? value.slice(1, -1).replace(/\\(.)/g, '$1') : value]);
          found = true;
       }
-      return found && pair.lastIndex === text.length ? entry : undefined;
+      return found && pair.lastIndex === text.length ? Object.fromEntries(pairs) : undefined;
    }
 }

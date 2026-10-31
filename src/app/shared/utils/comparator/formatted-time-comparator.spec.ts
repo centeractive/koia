@@ -1,6 +1,7 @@
 import { TimeUnit } from 'app/shared/model';
 import { compareFormattedTime } from './formatted-time-comparator';
 import { TimeGroupingService } from 'app/shared/services';
+import { Settings } from 'luxon';
 
 describe('formatted-time-comparator', () => {
 
@@ -91,6 +92,26 @@ describe('formatted-time-comparator', () => {
         expect(compareFormattedTime(before, after, timeUnit)).toBe(-1);
         expect(compareFormattedTime(before, before, timeUnit)).toBe(0);
         expect(compareFormattedTime(after, before, timeUnit)).toBe(1);
+    });
+
+    it('#compareFormattedTime should order occurrences of hour repeated when clocks are turned back', () => {
+
+        // given
+        Settings.defaultZone = 'Europe/Zurich';
+        const first = '27 Oct 2024 02 +02:00';
+        const second = '27 Oct 2024 02 +01:00';
+        const after = '27 Oct 2024 03';
+
+        try {
+            // when
+            const results = [compareFormattedTime(first, second, TimeUnit.HOUR), compareFormattedTime(second, after, TimeUnit.HOUR),
+                compareFormattedTime(second, first, TimeUnit.HOUR), compareFormattedTime(first, first, TimeUnit.HOUR)];
+
+            // then
+            expect(results).toEqual([-1, -1, 1, 0]);
+        } finally {
+            Settings.defaultZone = null;
+        }
     });
 
     it('#compareFormattedTime should log and throw when time is invalid', () => {

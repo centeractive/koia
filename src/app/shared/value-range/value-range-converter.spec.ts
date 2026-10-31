@@ -1,10 +1,11 @@
 import { ValueRangeConverter } from './value-range-converter';
 import { NumberUtils } from '../utils/number-utils';
+import { NumberFormatter } from '../format/number-formatter';
 
 describe('ValueRangeConverter', () => {
 
-   it('#toLabel should return "empty" when both values are undefined', () => {
-      expect(ValueRangeConverter.toLabel(undefined, undefined)).toBe('empty');
+   it('#toLabel should return "min - max" when both values are undefined', () => {
+      expect(ValueRangeConverter.toLabel(undefined, undefined)).toBe('min - max');
    });
 
    it('#toLabel should return label when min value is undefined', () => {
@@ -38,6 +39,18 @@ describe('ValueRangeConverter', () => {
       expect(ValueRangeConverter.toMinValue(toRange(-1_000, 0))).toBe(-1_000);
       expect(ValueRangeConverter.toMinValue(toRange(0, -1_000))).toBe(0);
       expect(ValueRangeConverter.toMinValue(toRange(1_000, -2_000))).toBe(1_000);
+   });
+
+   it('#toMinValue should return negative number formatted in browser locale', () => {
+
+      // given
+      const label = new NumberFormatter().format(-5) + ' - max';
+
+      // when
+      const minValue = ValueRangeConverter.toMinValue(label);
+
+      // then
+      expect(minValue).toBe(-5);
    });
 
    it('#toMaxValue should return undefined when label is "empty"', () => {

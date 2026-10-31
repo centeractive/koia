@@ -37,6 +37,32 @@ describe('ExportDataConverter', () => {
         expect(data).toEqual(expected);
     });
 
+    it('#restoreJSONObjects should keep value that is no JSON', () => {
+
+        // given
+        const data: object[] = [{ c: 'Overall' }, { c: '{"x":1}' }];
+        const columns: Column[] = [{ name: 'c', dataType: DataType.OBJECT, width: 200 }];
+
+        // when
+        converter.restoreJSONObjects(data, columns);
+
+        // then
+        expect(data).toEqual([{ c: 'Overall' }, { c: { x: 1 } }]);
+    });
+
+    it('#restoreJSONObjects should not add value of object column named constructor to item lacking it', () => {
+
+        // given
+        const data: object[] = [{ ID: 1 }];
+        const columns: Column[] = [{ name: 'constructor', dataType: DataType.OBJECT, width: 10 }];
+
+        // when
+        converter.restoreJSONObjects(data, columns);
+
+        // then
+        expect(Object.hasOwn(data[0], 'constructor')).toBe(false);
+    });
+
     it('#timeToFormattedString', () => {
         // given        
         const data: object[] = [

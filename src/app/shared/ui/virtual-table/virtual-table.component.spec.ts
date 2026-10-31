@@ -767,6 +767,20 @@ describe('VirtualTableComponent', () => {
       expect(data.htmlContent).toBe('<pre>&lt;b&gt;&quot;x&quot; &amp; y&lt;/b&gt;</pre>');
     });
 
+    it('#displayValue should show empty value of object column named constructor', async () => {
+
+      // given
+      await render();
+      const column: Column = { name: 'constructor', dataType: DataType.OBJECT, width: 10 };
+
+      // when
+      table().displayValue(column, { ID: 1 });
+
+      // then
+      const data: ConfirmDialogData = vi.mocked(dialogService.showConfirmDialog).mock.lastCall[0];
+      expect(data.htmlContent).toBe('<pre></pre>');
+    });
+
     it('#displayValue should not display dialog when data type is not OBJECT', async () => {
 
       // given
