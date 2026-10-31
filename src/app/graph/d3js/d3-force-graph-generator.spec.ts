@@ -107,6 +107,32 @@ describe('D3ForceGraphGenerator', () => {
         });
     });
 
+    it('#generate should take leaves of dragged node along', () => {
+        // given
+        graphData = treeOf(2, 2);
+        const [, region, otherRegion] = graphData.nodes;
+        const leaf = graphData.nodes.find(n => n.parent === region);
+        const otherLeaf = graphData.nodes.find(n => n.parent === otherRegion);
+        generator.generate(graphData, div, context);
+        generator['simulation'].stop().tick(300);
+        const regionStart = region.x;
+        const leafStart = leaf.x;
+        const otherLeafStart = otherLeaf.x;
+        const rect = div.querySelector('svg').getBoundingClientRect();
+        const clientX = Math.round(rect.left + region.x);
+        const clientY = Math.round(rect.top + region.y);
+        div.querySelectorAll('g.nodes g')[1].querySelector('circle').dispatchEvent(mouseEvent('mousedown', clientX, clientY));
+
+        // when
+        window.dispatchEvent(mouseEvent('mousemove', clientX - 100, clientY));
+        generator['simulation'].stop().tick(300);
+
+        // then
+        expect(region.x).toBeCloseTo(regionStart - 100);
+        expect(leaf.x).toBeLessThan(leafStart);
+        expect(leaf.x - leafStart).toBeLessThan(otherLeaf.x - otherLeafStart);
+    });
+
     it('#generate should release dragged node when drag ends', () => {
         // given
         const root = graphData.nodes[0];
@@ -338,6 +364,15 @@ describe('D3ForceGraphGenerator', () => {
         const children: GraphNode[] = childCounts.map((count, i) =>
             ({ parent: root, group: i + 1, name: 'c1', value: 'v' + i, info: String(count), count }));
         return { nodes: [root, ...children], links: children.map(child => ({ source: root, target: child })) };
+    }
+
+    function treeOf(regionCount: number, leafCount: number): GraphData {
+        const root: GraphNode = { parent: null, group: 0, name: '', value: '', info: null, count: regionCount * leafCount };
+        const regions: GraphNode[] = Array.from({ length: regionCount }, (_, i) =>
+            ({ parent: root, group: i + 1, name: 'r', value: 'r' + i, info: null, count: leafCount }));
+        const leaves: GraphNode[] = regions.flatMap(region => Array.from({ length: leafCount }, (_, i) =>
+            ({ parent: region, group: region.group, name: 'l', value: 'l' + i, info: null, count: 1 })));
+        return { nodes: [root, ...regions, ...leaves], links: [...regions, ...leaves].map(n => ({ source: n.parent, target: n })) };
     }
 
     function mouseEvent(type: string, clientX: number, clientY: number): MouseEvent {

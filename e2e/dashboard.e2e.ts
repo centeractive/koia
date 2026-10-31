@@ -147,15 +147,11 @@ test('hovering a graph node shows its value and number of entries in a tooltip',
       + en.get('graph.tooltip.doubleClick'));
 });
 
-test('dragged graph node takes its leaves along', async ({ dashboard }) => {
+test('dragged graph node stays under the pointer', async ({ dashboard }) => {
    const regions = distinctValuesOf<string>(sample, column);
    const channels = distinctValuesOf<string>(sample, channelColumn);
-   const leafLabel = (region: string, channel: string) =>
-      `${channelColumn}: ${channel} (${en.number(countOf(sample, e => e[column] === region && e[channelColumn] === channel))})`;
-   const pairs = regions.flatMap(r => channels.filter(c => countOf(sample, e => e[column] === r && e[channelColumn] === c) > 0)
-      .map(c => leafLabel(r, c)));
+   const pairs = regions.flatMap(r => channels.filter(c => countOf(sample, e => e[column] === r && e[channelColumn] === c) > 0));
    const [region] = regions;
-   const leafText = channels.map(c => leafLabel(region, c)).find(label => pairs.filter(p => p === label).length === 1);
    await dashboard.launcher.addGraph();
    await dashboard.sideBar.dragGroupByColumn(channelColumn);
    await dashboard.sideBar.dragGroupByColumn(column);
@@ -163,16 +159,13 @@ test('dragged graph node takes its leaves along', async ({ dashboard }) => {
    await expect(tile.graphNodes).toHaveCount(1 + regions.length + pairs.length);
    await dashboard.sideBar.close();
    const regionNode = tile.graphNodes.filter({ hasText: `${column}: ${region}` });
-   const leaf = tile.graphNodes.filter({ hasText: leafText });
-   await expect(leaf).toHaveCount(1);
    const regionStart = centerXOf(await tile.graphNodeBox(regionNode));
-   const leafStart = centerXOf(await tile.graphNodeBox(leaf));
    const dx = -(regionStart - (await tile.root.boundingBox()).x) / 2;
 
    await tile.startGraphNodeDragBy(regionNode, dx, 0);
 
-   expect(Math.abs(centerXOf(await regionNode.locator('circle').boundingBox()) - (regionStart + dx))).toBeLessThanOrEqual(DRAGGED_GRAPH_NODE_TOLERANCE_PX);
-   await expect.poll(async () => centerXOf(await leaf.locator('circle').boundingBox())).toBeLessThanOrEqual(leafStart - Math.abs(dx) / 2);
+   await expect.poll(async () => Math.abs(centerXOf(await regionNode.locator('circle').boundingBox()) - (regionStart + dx)))
+      .toBeLessThanOrEqual(DRAGGED_GRAPH_NODE_TOLERANCE_PX);
    await tile.release();
 });
 
