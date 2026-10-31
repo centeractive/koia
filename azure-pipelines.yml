@@ -8,84 +8,54 @@ variables:
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
+# unit and end-to-end tests run in separate jobs, each within the 60 minutes limit of hosted agents
+jobs:
 
-# install Node.js and npm packages
-- task: Cache@2
-  inputs:
-    key: npm | $(Agent.OS) | package-lock.json
-    path: $(npm_config_cache)
-  displayName: cache npm packages
+- job: unit
+  displayName: 'unit tests and build'
+  timeoutInMinutes: 60
+  steps:
 
-- task: NodeTool@0
-  inputs:
-    versionSpec: '24.x'
-  displayName: 'install Node.js'
+  - template: azure-setup-steps.yml
 
-- script: |
-    npm i -g @angular/cli@22 --ignore-scripts
-    npm ci --ignore-scripts
-    npm run postinstall
-  displayName: 'install npm packages'
+  # perform unit-tets and publish test and code coverage results
+  - script: |
+      CHROME_BIN= npx ng test --configuration=ci
+    displayName: 'perform unit tests'
 
-# set-up and rund CouchDB in Docker container (used by unit and end-to-end tests)
-- task: DownloadSecureFile@1
-  displayName: 'download CouchDB local.ini file'
-  name: couchdb_local_ini
-  inputs:
-    secureFile: 'couchdb_local.ini'    
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'test-results/junit.xml'
+    displayName: 'publish unit test results'
 
-- task: PowerShell@2
-  displayName: 'copy CouchDB local.ini to target directory'
-  inputs:
-    targetType: 'inline'
-    script: |
-      New-Item -Type Directory -Force "${HOME}/couchdb/etc/local.d"
-      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/etc/local.d/local.ini"
-      Write-Output "----start local.ini--------------------"
-      Get-Content "${HOME}/couchdb/etc/local.d/local.ini"
-      Write-Output "----end   local.ini--------------------"
+  - task: PublishCodeCoverageResults@2
+    displayName: 'publish code coverage report'
+    condition: succeededOrFailed()
+    inputs:
+      codeCoverageTool: Cobertura
+      summaryFileLocation: '$(Build.SourcesDirectory)/coverage/koia/cobertura-coverage.xml'
+      failIfCoverageEmpty: false
 
-- script: |
-    docker version
-    docker run -p 5984:5984 --name couchdb -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:latest
-  displayName: 'run CouchDB in Docker container'
+  # build product and publish artifact
+  - script: |
+      npx ng build --configuration production
+    failOnStderr: false
+    displayName: 'build koia product'
 
-# perform unit-tets and publish test and code coverage results
-- script: |
-    npx playwright install --with-deps chromium
-  displayName: 'install Playwright Chromium'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'koiadist'
+      targetPath: 'dist/koia'
+    enabled: true
+    displayName: 'publish artifact'
 
-- script: |
-    CHROME_BIN= npx ng test --configuration=ci
-  displayName: 'perform unit tests'    
+- job: e2e
+  displayName: 'end-to-end tests'
+  timeoutInMinutes: 60
+  steps:
 
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: 'test-results/junit.xml'
-  displayName: 'publish unit test results'
+  - template: azure-setup-steps.yml
 
-- template: e2e/azure-e2e-steps.yml
-
-- task: PublishCodeCoverageResults@2
-  displayName: 'publish code coverage report'
-  condition: succeededOrFailed()
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: '$(Build.SourcesDirectory)/coverage/koia/cobertura-coverage.xml'
-    failIfCoverageEmpty: false  
-
-# build product and publish artifact
-- script: |
-    npx ng build --configuration production
-  failOnStderr: false    
-  displayName: 'build koia product'
-
-- task: PublishPipelineArtifact@0  
-  inputs:
-    artifactName: 'koiadist'
-    targetPath: 'dist/koia'
-  enabled: true
-  displayName: 'publish artifact'
+  - template: e2e/azure-e2e-steps.yml

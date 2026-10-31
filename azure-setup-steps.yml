@@ -1,0 +1,46 @@
+steps:
+
+# install Node.js and npm packages
+- task: Cache@2
+  inputs:
+    key: npm | $(Agent.OS) | package-lock.json
+    path: $(npm_config_cache)
+  displayName: cache npm packages
+
+- task: NodeTool@0
+  inputs:
+    versionSpec: '24.x'
+  displayName: 'install Node.js'
+
+- script: |
+    npm i -g @angular/cli@22 --ignore-scripts
+    npm ci --ignore-scripts
+    npm run postinstall
+  displayName: 'install npm packages'
+
+# set-up and rund CouchDB in Docker container (used by unit and end-to-end tests)
+- task: DownloadSecureFile@1
+  displayName: 'download CouchDB local.ini file'
+  name: couchdb_local_ini
+  inputs:
+    secureFile: 'couchdb_local.ini'
+
+- task: PowerShell@2
+  displayName: 'copy CouchDB local.ini to target directory'
+  inputs:
+    targetType: 'inline'
+    script: |
+      New-Item -Type Directory -Force "${HOME}/couchdb/etc/local.d"
+      Copy-Item -Force "$(couchdb_local_ini.secureFilePath)" "${HOME}/couchdb/etc/local.d/local.ini"
+      Write-Output "----start local.ini--------------------"
+      Get-Content "${HOME}/couchdb/etc/local.d/local.ini"
+      Write-Output "----end   local.ini--------------------"
+
+- script: |
+    docker version
+    docker run -p 5984:5984 --name couchdb -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=password -v ${HOME}/couchdb/etc/local.d:/opt/couchdb/etc/local.d -d couchdb:latest
+  displayName: 'run CouchDB in Docker container'
+
+- script: |
+    npx playwright install --with-deps chromium
+  displayName: 'install Playwright Chromium'
