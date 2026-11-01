@@ -53,6 +53,43 @@ test('value filter reduces the rows to the matching ones', async ({ rawData }) =
    await expect(rawData.table.rowCount).toHaveText(en.rows(matching.length));
 });
 
+test('value filters show below the toolbar, keep the tabs visible and disappear once removed', async ({ rawData, tabBar }) => {
+   const column = firstColumnOf(sample, DataType.TEXT);
+
+   await rawData.mainToolbar.addValueFilter(column, sample.entries[0][column]);
+   await rawData.mainToolbar.addValueFilter(column, sample.entries[1][column]);
+
+   await expect(rawData.mainToolbar.valueFilterPanel.locator('koia-value-filter')).toHaveCount(2);
+   const panelBox = await rawData.mainToolbar.valueFilterPanel.boundingBox();
+   const addFilterBox = await rawData.mainToolbar.addFilterButton.boundingBox();
+   expect(panelBox.y).toBeGreaterThanOrEqual(addFilterBox.y + addFilterBox.height);
+   await expect(tabBar.rawDataTitle).toBeVisible();
+   await rawData.mainToolbar.removeValueFilter();
+   await rawData.mainToolbar.removeValueFilter();
+
+   await expect(rawData.mainToolbar.valueFilterPanel).toHaveCount(0);
+   await expect(rawData.mainToolbar.filtersToggle).toHaveCount(0);
+});
+
+test('filters toggle hides and shows value and range filters and counts them', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.TEXT);
+   const value: string = sample.entries[0][column];
+   const matching = columnValuesOf<string>(sample, column).filter(v => v.toLowerCase().includes(value.toLowerCase()));
+   await rawData.mainToolbar.addValueFilter(column, value);
+   await rawData.mainToolbar.addRangeFilter(firstColumnOf(sample, DataType.NUMBER), en.get('toolbar.valueRange'));
+
+   await expect(rawData.mainToolbar.filtersToggle.locator('.mat-badge-content')).toHaveText('2');
+   await expect(rawData.table.rowCount).toHaveText(en.rows(matching.length));
+   await rawData.mainToolbar.filtersToggle.click();
+   await expect(rawData.mainToolbar.valueFilterPanel).toHaveCount(0);
+   await expect(rawData.mainToolbar.rangeFilterPanel).toHaveCount(0);
+   await expect(rawData.table.rowCount).toHaveText(en.rows(matching.length));
+   await rawData.mainToolbar.filtersToggle.click();
+
+   await expect(rawData.mainToolbar.valueFilterPanel).toHaveCount(1);
+   await expect(rawData.mainToolbar.rangeFilterPanel).toHaveCount(1);
+});
+
 test('range filter at the maximum shows its rows, removing it shows all rows and hides the range filter panel', async ({ rawData }) => {
    const column = firstColumnOf(sample, DataType.NUMBER);
    const max = Math.max(...columnValuesOf<number>(sample, column));

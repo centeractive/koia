@@ -30,11 +30,8 @@ button {
   flex-shrink: 0;
 }
 
-.div_filter {
-  display: flex;
+.span_toolbar_space {
   flex: 1 1 auto;
-  justify-content: flex-end;
-  flex-wrap: wrap;
   margin-left: 20px;
 }
 
@@ -57,9 +54,20 @@ button {
   border-radius: 8px;
 }
 
-.div_range_filters {
+.div_filters {
   border-top: var(--koia-header-line);
   padding-top: 4px;
+}
+
+.div_value_filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-inline: var(--koia-header-padding-inline);
+}
+
+.div_value_filters > * {
+  flex: 0 0 auto;
 }
 
 .span_language {

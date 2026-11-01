@@ -8,12 +8,16 @@ export class MainToolbar {
 
    readonly addFilterButton: Locator;
    readonly rangeFilterPanel: Locator;
+   readonly valueFilterPanel: Locator;
+   readonly filtersToggle: Locator;
    readonly restoreViewButton: Locator;
    readonly navButtons: NavButtons;
 
    constructor(private readonly root: Locator) {
       this.addFilterButton = root.locator('.but_add_col_filter');
       this.rangeFilterPanel = root.locator('.div_range_filters');
+      this.valueFilterPanel = root.locator('.div_value_filters');
+      this.filtersToggle = root.locator('#butToggleFilters');
       this.restoreViewButton = root.locator('#but_restore_view');
       this.navButtons = new NavButtons(root.locator('koia-nav-buttons'));
    }

@@ -37,7 +37,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   currURL: string;
   scene: Scene;
   showFullTextFilter: boolean;
-  showRangeFilters: boolean;
+  showFilters: boolean;
   fullTextFilter = '';
   propertyFilters: PropertyFilter[] = [];
   rangeFilters: NumberRangeFilter[] = [];
@@ -112,7 +112,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
       this.showFullTextFilter = !!this.fullTextFilter;
       this.propertyFilters = query.getPropertyFilters();
       this.rangeFilters = [];
-      this.showRangeFilters = false;
+      this.showFilters = this.showFullTextFilter || this.propertyFilters.length > 0;
       query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
         this.addRangeFilter(column, f.valueRange, f.inverted, f.orEmpty);
@@ -139,6 +139,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
     const operator = ValueFilterUtils.defaultOperatorOf(column.dataType);
     const value = column.dataType === DataType.BOOLEAN ? true : '';
     this.propertyFilters.push(new PropertyFilter(column.name, operator, value, column.dataType));
+    this.showFilters = true;
     if (column.dataType === DataType.TIME || column.dataType === DataType.BOOLEAN) {
       this.refreshEntries();
     }
@@ -159,6 +160,10 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
     return true;
   }
 
+  filterCount(): number {
+    return (this.showFullTextFilter ? 1 : 0) + this.propertyFilters.length + this.rangeFilters.length;
+  }
+
   addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false, orEmpty = false): void {
     this.dbService.numberRangeOf(column)
       .then(vr => {
@@ -167,7 +172,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
         } else {
           this.rangeFilters.push(new NumberRangeFilter(column, vr.min, vr.max, selValueRange, inverted, orEmpty));
         }
-        this.showRangeFilters = true;
+        this.showFilters = true;
       })
       .catch(err => this.notifyError(err));
   }
@@ -180,6 +185,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
 
   removePropertyFilter(propertyFilter: PropertyFilter): void {
     this.propertyFilters = this.propertyFilters.filter(cf => cf !== propertyFilter);
+    this.hideFiltersWhenNone();
     if (propertyFilter.isApplicable()) {
       this.refreshEntries();
     }
@@ -188,14 +194,21 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   resetFullTextFilter(): void {
     this.fullTextFilter = '';
     this.showFullTextFilter = false;
+    this.hideFiltersWhenNone();
     this.refreshEntries();
   }
 
   removeRangeFilter(rangeFilter: NumberRangeFilter): void {
     ArrayUtils.removeElement(this.rangeFilters, rangeFilter);
-    this.showRangeFilters = this.rangeFilters.length > 0;
+    this.hideFiltersWhenNone();
     if (rangeFilter.isFiltered()) {
       this.refreshEntries();
+    }
+  }
+
+  private hideFiltersWhenNone(): void {
+    if (this.filterCount() === 0) {
+      this.showFilters = false;
     }
   }
 

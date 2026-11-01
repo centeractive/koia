@@ -100,8 +100,8 @@
     "addFilter": "Add Filter",
     "value": "Value",
     "valueRange": "Value Range",
-    "hideRangeFilters": "Hide value range filters",
-    "showRangeFilters": "Show value range filters",
+    "hideFilters": "Hide filters",
+    "showFilters": "Show filters",
     "refresh": "Refresh data",
     "tabs": {
       "rawData": "Raw Data",

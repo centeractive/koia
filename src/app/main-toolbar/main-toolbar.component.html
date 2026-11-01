@@ -26,27 +26,7 @@
       </span>
     }
 
-    <div class="div_filter">
-      @if (showFullTextFilter) {
-        <mat-form-field class="full_text_filter" koiaForm>
-          <input id="fullTextFilter" matInput type="text" [placeholder]="'toolbar.fullTextFilter' | translate" [(ngModel)]="fullTextFilter"
-            (keyup)="onFullTextFilterFieldKeyUp($event)">
-            @if (fullTextFilter) {
-              <button id="clearFullTextFilterButton" color="primary" matSuffix
-                mat-icon-button [attr.aria-label]="'toolbar.clear' | translate" (click)="resetFullTextFilter()">
-                <mat-icon>close</mat-icon>
-              </button>
-            }
-          </mat-form-field>
-        }
-
-        @for (propertyFilter of propertyFilters; track propertyFilter) {
-          <span class="span_column_filter">
-            <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()" (onRemove)="removePropertyFilter(propertyFilter)">
-            </koia-value-filter>
-          </span>
-        }
-      </div>
+    <span class="span_toolbar_space"></span>
 
       @if (scene) {
         <span class="span_buttons">
@@ -82,12 +62,13 @@
               </span>
             }
           </mat-menu>
-          @if (rangeFilters.length > 0) {
-            <button mat-icon-button
-              [matTooltip]="(showRangeFilters ? 'toolbar.hideRangeFilters' : 'toolbar.showRangeFilters') | translate"
-              (click)="showRangeFilters = !showRangeFilters">
-              <mat-icon [matBadge]="rangeFilters.length" matBadgeSize="small"
-              [matBadgeColor]="showRangeFilters ? 'primary' : 'accent'">swap_horiz</mat-icon>
+          @if (filterCount() > 0) {
+            @let filtersToggleLabel = showFilters ? ('toolbar.hideFilters' | translate) : ('toolbar.showFilters' | translate);
+            <button id="butToggleFilters" mat-icon-button
+              [matTooltip]="filtersToggleLabel" [attr.aria-label]="filtersToggleLabel"
+              (click)="showFilters = !showFilters">
+              <mat-icon [matBadge]="filterCount()" matBadgeSize="small"
+              [matBadgeColor]="showFilters ? 'primary' : 'accent'">filter_alt</mat-icon>
             </button>
           }
           <button (click)="refreshEntries()" color="accent" mat-icon-button [matTooltip]="'toolbar.refresh' | translate">
@@ -103,12 +84,38 @@
       }
     </div>
 
-    @if (showRangeFilters) {
-      <div class="div_range_filters">
-        @for (rangeFilter of rangeFilters; track rangeFilter) {
-          <div>
-            <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">
-            </koia-range-filter>
+    @if (showFilters) {
+      <div class="div_filters">
+        @if (showFullTextFilter || propertyFilters.length > 0) {
+          <div class="div_value_filters">
+            @if (showFullTextFilter) {
+              <mat-form-field class="full_text_filter" koiaForm>
+                <input id="fullTextFilter" matInput type="text" [placeholder]="'toolbar.fullTextFilter' | translate" [(ngModel)]="fullTextFilter"
+                  (keyup)="onFullTextFilterFieldKeyUp($event)">
+                @if (fullTextFilter) {
+                  <button id="clearFullTextFilterButton" color="primary" matSuffix
+                    mat-icon-button [attr.aria-label]="'toolbar.clear' | translate" (click)="resetFullTextFilter()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                }
+              </mat-form-field>
+            }
+            @for (propertyFilter of propertyFilters; track propertyFilter) {
+              <span class="span_column_filter">
+                <koia-value-filter [filter]="propertyFilter" (onChange)="refreshEntries()" (onRemove)="removePropertyFilter(propertyFilter)">
+                </koia-value-filter>
+              </span>
+            }
+          </div>
+        }
+        @if (rangeFilters.length > 0) {
+          <div class="div_range_filters">
+            @for (rangeFilter of rangeFilters; track rangeFilter) {
+              <div>
+                <koia-range-filter [filter]="rangeFilter" (onChange)="refreshEntries()" (onRemove)="removeRangeFilter(rangeFilter)">
+                </koia-range-filter>
+              </div>
+            }
           </div>
         }
       </div>

@@ -174,6 +174,8 @@ The **Raw Data** tab shows the rows of the active scene. Rows load as you scroll
 
 A **value filter** shows column, operator and value. Click the column or the operator to change them, type the value and press Enter.
 
+Value filters appear in a row below the toolbar; when there are many, they wrap onto further rows, each filter stays on one line.
+
 | Type | Operators |
 |---|---|
 | Text | contains, <, <=, =, ≠, >=, >, is empty, is not empty, is any of, is none of |
@@ -184,15 +186,14 @@ A **value filter** shows column, operator and value. Click the column or the ope
 
 *contains* ignores case, *=* and *≠* do not. Separate the values of *is any of* and *is none of* with `;`.
 
-A **value range filter** is a slider below the toolbar:
+A **value range filter** is a slider in a row below the toolbar and the value filters:
 
 - Drag either handle, or the whole range.
 - Click the range label to switch between **is inside range** and **is outside range**.
 - **Define slider step size** sets the step, e.g. one day.
 - **Reset value range filter** restores the full range.
-- **Hide value range filters** saves space.
 
-The ⊖ button removes a filter, **Refresh data** reloads the rows.
+The ⊖ button removes a filter, **Refresh data** reloads the rows. **Hide filters** hides all filters to save space, **Show filters** shows them again; its badge counts the filters.
 
 Good to know:
 
