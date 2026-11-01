@@ -21,6 +21,9 @@ import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageSe
       }
     </mat-menu>`,
   styles: [`
+    :host {
+      display: inline-flex;
+    }
     button#but_language {
       display: inline-flex;
       align-items: center;

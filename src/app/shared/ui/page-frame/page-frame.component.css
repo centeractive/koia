@@ -10,7 +10,7 @@
 .page_header {
   display: flex;
   align-items: center;
-  min-height: 50px;
+  min-height: var(--koia-toolbar-height);
   padding: 2px var(--koia-header-padding-inline) 0;
 }
 

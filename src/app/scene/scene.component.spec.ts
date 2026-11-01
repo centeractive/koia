@@ -22,7 +22,7 @@ import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { DataHandler, ReaderService, Sample } from 'app/shared/services/reader';
-import { SceneFactory } from 'app/shared/test';
+import { SceneFactory, verticalCenterOf } from 'app/shared/test';
 import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
 import { LocaleUtils } from 'app/shared/utils/i18n/locale-utils';
 import { PromiseProgressMonitor } from 'app/shared/utils/promise-progress-monitor';
@@ -672,9 +672,9 @@ describe('SceneComponent', () => {
     afterAll(() => page.viewport(414, 896));
 
     function expectOnOneLineInOrder(selectors: string[]): void {
-      const rects = selectors.map(s => fixture.nativeElement.querySelector(s).getBoundingClientRect());
-      const centerOf = (r: DOMRect) => r.top + r.height / 2;
-      rects.forEach(r => expect(Math.abs(centerOf(r) - centerOf(rects[0]))).toBeLessThanOrEqual(1));
+      const elements: Element[] = selectors.map(s => fixture.nativeElement.querySelector(s));
+      const rects = elements.map(e => e.getBoundingClientRect());
+      elements.forEach(e => expect(Math.abs(verticalCenterOf(e) - verticalCenterOf(elements[0]))).toBeLessThanOrEqual(1));
       rects.slice(1).forEach((r, i) => expect(rects[i].right).toBeLessThan(r.left));
     }
 

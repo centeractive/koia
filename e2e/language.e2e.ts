@@ -1,4 +1,5 @@
 import { Locator } from '@playwright/test';
+import { centerYOf } from './support/box';
 import { expect, test } from './support/fixtures';
 import { Texts } from './support/texts';
 
@@ -29,7 +30,7 @@ test('language button sits at top right of every page, at same height on scene, 
       const boxes: Record<string, { right: number, centerY: number }> = {};
       const measure = async (pageName: string, button: Locator) => {
          const box = await button.boundingBox();
-         boxes[pageName] = { right: box.x + box.width, centerY: box.y + box.height / 2 };
+         boxes[pageName] = { right: box.x + box.width, centerY: centerYOf(box) };
       };
 
       await front.open('en');

@@ -42,6 +42,16 @@ describe('LanguageSelectComponent', () => {
       expect(icons[0].textContent.trim()).toBe('arrow_drop_down');
    });
 
+   it('host should be as high as language button including its margins', () => {
+
+      // when
+      const host: HTMLElement = fixture.nativeElement;
+
+      // then
+      expect(host.getBoundingClientRect().height).toBe(40);
+      expect(getComputedStyle(host).display).toBe('inline-flex');
+   });
+
    it('should list languages in their own language and mark current language', () => {
 
       // when

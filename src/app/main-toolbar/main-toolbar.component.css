@@ -8,7 +8,7 @@ button {
 
 .div_toolbar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: nowrap;
   box-sizing: border-box;
   width: 100%;
@@ -22,7 +22,6 @@ button {
 
 .span_navigation {
   flex: 0 1 auto;
-  align-self: flex-end;
   min-width: 0;
 }
 
@@ -71,7 +70,6 @@ button {
 }
 
 .span_language {
-  min-height: 50px;
   margin-left: 4px;
 }
 
