@@ -10,10 +10,10 @@ describe('registerSvgIconLiterals', () => {
   it('#registerSvgIconLiterals should make icons resolvable by MatIconRegistry', async () => {
 
     // when
-    registerSvgIconLiterals('file_export');
+    registerSvgIconLiterals('row_totals');
 
     // then
-    const icon = await firstValueFrom(TestBed.inject(MatIconRegistry).getNamedSvgIcon('file_export'));
+    const icon = await firstValueFrom(TestBed.inject(MatIconRegistry).getNamedSvgIcon('row_totals'));
     expect(icon).toBeInstanceOf(SVGElement);
   });
 });

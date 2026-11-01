@@ -27,7 +27,7 @@ export class SceneFileOpener {
   }
 
   get icon(): string {
-    return this.importing ? 'autorenew' : 'file_open';
+    return this.importing ? 'autorenew' : 'folder_open';
   }
 
   get labelKey(): string {

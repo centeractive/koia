@@ -12,7 +12,7 @@ import { By } from '@angular/platform-browser';
 import { Scene } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { registerSvgIconLiterals, SceneFactory } from 'app/shared/test';
+import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { SceneTableComponent } from './scene-table.component';
 import type { Mock } from 'vitest';
@@ -222,7 +222,7 @@ describe('SceneTableComponent', () => {
     expect(onShareEmitSpy).toHaveBeenCalledWith(scenes[1]);
   }));
 
-  it('share menu item should show file export icon', fakeAsync(() => {
+  it('share menu item should show save icon', fakeAsync(() => {
 
     // given
     const moreButton: HTMLButtonElement = fixture.debugElement.queryAll(By.css('.but_more'))[1].nativeElement;
@@ -233,7 +233,7 @@ describe('SceneTableComponent', () => {
     flush();
 
     // then
-    expect(fixture.debugElement.query(By.css('.menu_item_share mat-icon')).nativeElement.getAttribute('svgicon')).toBe('file_export');
+    expect(fixture.debugElement.query(By.css('.menu_item_share mat-icon')).nativeElement.textContent.trim()).toBe('save');
   }));
 
   it('#selecting "Edit" menu item should show name and short description inputs of scene', fakeAsync(() => {
@@ -489,7 +489,6 @@ async function setup(): Promise<void> {
       { provide: NotificationService, useValue: notificationService }
     ]
   }).compileComponents();
-  registerSvgIconLiterals('file_export');
 
   fixture = TestBed.createComponent(SceneTableComponent);
   component = fixture.componentInstance;

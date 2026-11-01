@@ -23,7 +23,7 @@ import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-
 import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { PageFrameComponent } from 'app/shared/ui/page-frame/page-frame.component';
-import { registerSvgIconLiterals, SceneFactory, selectFile } from 'app/shared/test';
+import { SceneFactory, selectFile } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { Observable, of } from 'rxjs';
 import { SceneTableComponent } from './scene-table/scene-table.component';
@@ -74,7 +74,6 @@ describe('ScenesComponent', () => {
         { provide: RouteReuseStrategy, useValue: appRouteReuseStrategy },
       ]
     }).compileComponents();
-    registerSvgIconLiterals('file_export');
 
     const router = TestBed.inject(Router);
     navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockReturnValue(undefined);

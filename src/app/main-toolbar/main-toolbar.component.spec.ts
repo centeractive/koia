@@ -311,13 +311,13 @@ describe('MainToolbarComponent', () => {
     expect(separator.nextElementSibling.tagName).toBe('KOIA-VIEW-TAB-BAR');
   });
 
-  it('share button should show file export icon', () => {
+  it('share button should show save icon', () => {
 
     // when
     const icon: HTMLElement = fixture.nativeElement.querySelector('#butShareScene mat-icon');
 
     // then
-    expect(icon.getAttribute('svgicon')).toBe('file_export');
+    expect(icon.textContent.trim()).toBe('save');
   });
 
   it('#click on open scene file button should select file', () => {
@@ -384,7 +384,7 @@ describe('MainToolbarComponent', () => {
     const button: HTMLElement = fixture.nativeElement.querySelector('#butOpenSceneFile');
 
     // then
-    expect(button.querySelector('mat-icon').textContent.trim()).toBe('file_open');
+    expect(button.querySelector('mat-icon').textContent.trim()).toBe('folder_open');
     expect(button.getAttribute('aria-label')).toBe('Open a shared scene');
     expect(button.getAttribute('aria-busy')).toBe('false');
   });

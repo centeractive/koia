@@ -263,7 +263,7 @@ describe('SceneFileOpener', () => {
     opener.importing = true;
 
     // then
-    expect([idle, opener.icon]).toEqual(['file_open', 'autorenew']);
+    expect([idle, opener.icon]).toEqual(['folder_open', 'autorenew']);
   });
 
   it('#labelKey should name opening while importing', () => {

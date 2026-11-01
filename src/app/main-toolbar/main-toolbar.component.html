@@ -12,7 +12,7 @@
         <span class="koia-toolbar-separator"></span>
         <button id="butShareScene" mat-icon-button [matTooltip]="'scenes.share' | translate" [attr.aria-label]="'scenes.share' | translate"
           (click)="shareScene()">
-          <mat-icon svgIcon="file_export" />
+          <mat-icon>save</mat-icon>
         </button>
         <button id="butOpenSceneFile" mat-icon-button [attr.aria-busy]="sceneFileOpener.importing"
           [matTooltip]="sceneFileOpener.tooltipKey | translate" [attr.aria-label]="sceneFileOpener.tooltipKey | translate"
