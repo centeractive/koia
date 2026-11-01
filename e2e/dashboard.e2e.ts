@@ -15,7 +15,7 @@ import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILIES, FONT_SIZES } fro
 import { Locator, Page } from '@playwright/test';
 import { rgb, schemeSet1 } from 'd3';
 import { DateTime } from 'luxon';
-import { centerXOf } from './support/box';
+import { centerXOf, centerYOf } from './support/box';
 import { DashboardTile, DRAGGED_GRAPH_NODE_TOLERANCE_PX } from './support/components/dashboard-tile';
 import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
@@ -75,7 +75,7 @@ test('switching to pie chart selects its type instead of bar and keeps the chart
    await dashboard.tile(0).expectChartPainted();
 });
 
-test('count of a summary table opens a raw data dialog with the counted rows', async ({ dashboard, rawDataDialog }) => {
+test('count of a summary table opens a raw data dialog with the counted rows and its toolbar buttons level with the close button', async ({ dashboard, rawDataDialog }) => {
    await dashboard.launcher.addSummary();
    await dashboard.sideBar.selectColumn(column);
    await dashboard.sideBar.close();
@@ -84,6 +84,10 @@ test('count of a summary table opens a raw data dialog with the counted rows', a
    await dashboard.tile(0).firstCountLink.click();
 
    await expect(rawDataDialog.table.rowCount).toHaveText(en.get('ui.rows', { count }));
+   const closeCenter = centerYOf(await rawDataDialog.closeButton.boundingBox());
+   for (const button of [rawDataDialog.mainToolbar.refreshButton, rawDataDialog.mainToolbar.addFilterButton]) {
+      expect(Math.abs(centerYOf(await button.boundingBox()) - closeCenter)).toBeLessThanOrEqual(1);
+   }
 });
 
 test('summary of a sum grouped by channel and by date per month shows three columns', async ({ dashboard }) => {
@@ -1521,8 +1525,8 @@ async function expectCentredIn(textBox: TextBox, content: Locator): Promise<void
       const rect = e.getBoundingClientRect();
       return { x: rect.left + e.clientLeft + e.clientWidth / 2, y: rect.top + e.clientTop + e.clientHeight / 2 };
    });
-   expect(Math.abs(tile.x + tile.width / 2 - center.x)).toBeLessThanOrEqual(2);
-   expect(Math.abs(tile.y + tile.height / 2 - center.y)).toBeLessThanOrEqual(2);
+   expect(Math.abs(centerXOf(tile) - center.x)).toBeLessThanOrEqual(2);
+   expect(Math.abs(centerYOf(tile) - center.y)).toBeLessThanOrEqual(2);
 }
 
 /**

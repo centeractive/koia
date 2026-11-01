@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
-import { InputDialog } from './dialogs';
+import { InputDialog } from './input-dialog';
 
 export class TabBar {
 

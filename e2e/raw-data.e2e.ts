@@ -5,6 +5,7 @@ import { StatusType } from 'app/shared/model/status-type.enum';
 import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { LANGUAGE_ABBREVIATIONS } from 'app/shared/services/language/language';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
+import { centerYOf } from './support/box';
 import { bytesOf, contentOf, downloadOf, exportDayOf, exportFileName, localDayOf } from './support/downloads';
 import { expect, test } from './support/fixtures';
 import { columnValuesOf, countOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
@@ -69,6 +70,23 @@ test('value filters show below the toolbar, keep the tabs visible and disappear 
 
    await expect(rawData.mainToolbar.valueFilterPanel).toHaveCount(0);
    await expect(rawData.mainToolbar.filtersToggle).toHaveCount(0);
+});
+
+test('toolbar controls left and right of the tabs are vertically centered with the tabs', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.TEXT);
+   await rawData.mainToolbar.addValueFilter(column, sample.entries[0][column]);
+
+   const row = rawData.mainToolbar.toolbarRow;
+   const navBox = await row.locator('nav').boundingBox();
+   const controls = [
+      ...['#butHome', '#butShareScene', '#but_save_view', '#butAddTab', '#butManual', '#but_language'].map(id => row.locator(id)),
+      rawData.mainToolbar.addFilterButton, rawData.mainToolbar.filtersToggle, rawData.mainToolbar.refreshButton
+   ];
+   for (const control of controls) {
+      expect(Math.abs(centerYOf(await control.boundingBox()) - centerYOf(navBox))).toBeLessThanOrEqual(1);
+   }
+   const rowBox = await row.boundingBox();
+   expect(Math.abs(navBox.y + navBox.height - (rowBox.y + rowBox.height))).toBeLessThanOrEqual(1);
 });
 
 test('filters toggle hides and shows value and range filters and counts them', async ({ rawData }) => {

@@ -1,4 +1,4 @@
-import { expectFittingIntoViewport, leftInsetOf, lineCountOf, rightInsetOf, rowCountOf, stylesOf, textsOf } from './dom-queries';
+import { expectFittingIntoViewport, leftInsetOf, lineCountOf, rightInsetOf, rowCountOf, stylesOf, textsOf, verticalCenterOf } from './dom-queries';
 
 describe('dom queries', () => {
 
@@ -130,5 +130,17 @@ describe('dom queries', () => {
 
     // then
     expect(check).toThrow();
+  });
+
+  it('verticalCenterOf should return vertical center of element in viewport', () => {
+
+    // given
+    createRoot('<div style="padding-top: 10px"><i style="display: block; height: 20px"></i></div>');
+
+    // when
+    const center = verticalCenterOf(root.querySelector('i'));
+
+    // then
+    expect(center).toBe(root.querySelector('div').getBoundingClientRect().top + 20);
   });
 });

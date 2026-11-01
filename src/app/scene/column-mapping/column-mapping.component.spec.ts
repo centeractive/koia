@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { ColumnPair, DataType } from 'app/shared/model';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
+import { verticalCenterOf } from 'app/shared/test/dom-queries';
 import { ColumnMappingComponent } from './column-mapping.component';
 import { ColumnMappingGenerator, IdColumn } from './mapper';
 
@@ -409,11 +410,6 @@ describe('ColumnMappingComponent', () => {
       rows = Array.from(hostFixture.nativeElement.querySelectorAll('koia-column-mapping'));
     });
 
-    function centerY(element: Element): number {
-      const rect = element.getBoundingClientRect();
-      return rect.top + rect.height / 2;
-    }
-
     it('should align column name fields of plain, message, pattern and ID rows', () => {
       const lefts = rows.map(r => r.querySelector('.column_name').getBoundingClientRect().left);
       expect(lefts).toEqual([lefts[0], lefts[0], lefts[0], lefts[0]]);
@@ -445,8 +441,8 @@ describe('ColumnMappingComponent', () => {
 
     it('should vertically center buttons with column name field', () => {
       const buttons = Array.from(rows[1].querySelectorAll('.but_delete, .but_add_pattern'));
-      const fieldCenter = centerY(rows[1].querySelector('.column_name .mat-mdc-text-field-wrapper'));
-      expect(buttons.map(b => Math.abs(centerY(b) - fieldCenter) <= 1)).toEqual([true, true]);
+      const fieldCenter = verticalCenterOf(rows[1].querySelector('.column_name .mat-mdc-text-field-wrapper'));
+      expect(buttons.map(b => Math.abs(verticalCenterOf(b) - fieldCenter) <= 1)).toEqual([true, true]);
     });
   });
 

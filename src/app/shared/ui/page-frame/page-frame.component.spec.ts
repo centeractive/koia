@@ -69,6 +69,15 @@ describe('PageFrameComponent', () => {
     expect(element('#butManual')).toBeTruthy();
   });
 
+  it('header should be as high as main toolbar including top padding', () => {
+
+    // when
+    const height = element('.page_header').clientHeight;
+
+    // then
+    expect(height).toBe(50);
+  });
+
   it('should cover window on canvas below header on header surface', () => {
 
     // when

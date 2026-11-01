@@ -27,7 +27,7 @@ import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
-import { rightInsetOf, rowCountOf } from 'app/shared/test/dom-queries';
+import { rightInsetOf, rowCountOf, verticalCenterOf } from 'app/shared/test/dom-queries';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
@@ -117,15 +117,34 @@ describe('MainToolbarComponent with many tabs', () => {
 
   function expectOnSingleLine(controls: Element[]): void {
     expect(controls.length).toBe(4);
-    const rects = controls.map(c => c.getBoundingClientRect());
-    const firstCenter = rects[0].top + rects[0].height / 2;
-    rects.forEach((r, i) => {
-      expect(r.top + r.height / 2).toBeCloseTo(firstCenter, 0);
+    const firstCenter = verticalCenterOf(controls[0]);
+    controls.forEach((c, i) => {
+      expect(verticalCenterOf(c)).toBeCloseTo(firstCenter, 0);
       if (i > 0) {
-        expect(r.left).toBeGreaterThanOrEqual(rects[i - 1].right);
+        expect(c.getBoundingClientRect().left).toBeGreaterThanOrEqual(controls[i - 1].getBoundingClientRect().right);
       }
     });
   }
+
+  it('controls left and right of tab bar should be vertically centered with tab bar', () => {
+
+    // given
+    addLevelFilters(1);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const root: HTMLElement = fixture.nativeElement;
+    const nav = root.querySelector('nav');
+    expect(nav.getBoundingClientRect().height).toBe(48);
+    expect(verticalCenterOf(nav)).toBeCloseTo(verticalCenterOf(root.querySelector('.div_toolbar')), 0);
+    const controls = Array.from(root.querySelectorAll('#butHome, #butShowSceneDetails, #butScenes, #butScene, #butShareScene, '
+      + '#butOpenSceneFile, #but_save_view, #but_restore_view, .span_navigation > .koia-toolbar-separator, #butAddTab, '
+      + '.but_add_col_filter, #butToggleFilters, .span_buttons:not(.span_navigation) > button:last-child, #butManual, #but_language'));
+    expect(controls.length).toBe(16);
+    controls.forEach(c => expect(verticalCenterOf(c)).toBeCloseTo(verticalCenterOf(nav), 0));
+  });
 
   it('should keep Add Filter button and refresh button visible when tabs exceed toolbar width', () => {
 
@@ -391,6 +410,21 @@ describe('MainToolbarComponent', () => {
       // then
       const refreshButton = fixture.nativeElement.querySelector('.span_buttons:not(.span_navigation) > button:last-child');
       expect(rightInsetOf(refreshButton, fixture.nativeElement.querySelector('.div_toolbar'))).toBe(8);
+    });
+
+    it('toolbar should not reserve tab height in dialog style', () => {
+
+      // given
+      fixture.componentRef.setInput('dialogStyle', true);
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const toolbarHeight = fixture.nativeElement.querySelector('.div_toolbar').getBoundingClientRect().height;
+      const buttonsHeight = fixture.nativeElement.querySelector('.span_buttons:not(.span_navigation)').getBoundingClientRect().height;
+      expect(toolbarHeight).toBe(buttonsHeight);
+      expect(toolbarHeight).toBe(40);
     });
   });
 

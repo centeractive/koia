@@ -1,6 +1,7 @@
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { LANGUAGE_NAMES } from 'app/shared/services/language/language';
+import { centerXOf, centerYOf } from './support/box';
 import { expect, test } from './support/fixtures';
 import { chartIndexOf, dashboardTabOf, fruitSalesOf, graphIndexOf, pivotTabOf } from './support/fruit-sales-sample';
 import { Texts } from './support/texts';
@@ -81,8 +82,8 @@ test('graph of dashboard tab resized while hidden is centered when shown again',
    await expect.poll(async () => {
       const node = await graphTile.graphRootNode.boundingBox();
       const area = await graphTile.graphArea.boundingBox();
-      const x = node.x + node.width / 2;
-      const y = node.y + node.height / 2;
+      const x = centerXOf(node);
+      const y = centerYOf(node);
       return x > area.x + area.width / 4 && x < area.x + area.width * 3 / 4 &&
          y > area.y + area.height / 4 && y < area.y + area.height * 3 / 4;
    }).toBe(true);

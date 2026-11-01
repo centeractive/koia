@@ -1,6 +1,6 @@
 import { Locator } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
-import { InputDialog } from './dialogs';
+import { InputDialog } from './input-dialog';
 import { NavButtons } from './nav-buttons';
 import { RangeFilter } from './range-filter';
 
@@ -10,6 +10,8 @@ export class MainToolbar {
    readonly rangeFilterPanel: Locator;
    readonly valueFilterPanel: Locator;
    readonly filtersToggle: Locator;
+   readonly refreshButton: Locator;
+   readonly toolbarRow: Locator;
    readonly restoreViewButton: Locator;
    readonly navButtons: NavButtons;
 
@@ -18,6 +20,8 @@ export class MainToolbar {
       this.rangeFilterPanel = root.locator('.div_range_filters');
       this.valueFilterPanel = root.locator('.div_value_filters');
       this.filtersToggle = root.locator('#butToggleFilters');
+      this.refreshButton = root.locator('.span_buttons:not(.span_navigation) > button:last-child');
+      this.toolbarRow = root.locator('.div_toolbar');
       this.restoreViewButton = root.locator('#but_restore_view');
       this.navButtons = new NavButtons(root.locator('koia-nav-buttons'));
    }

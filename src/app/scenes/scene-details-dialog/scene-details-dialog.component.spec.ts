@@ -12,7 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { Column, ComputeOperator, DataType, Scene, TimeUnit } from 'app/shared/model';
-import { SceneFactory, textsOf } from 'app/shared/test';
+import { SceneFactory, textsOf, verticalCenterOf } from 'app/shared/test';
 import { DialogCloseButtonComponent } from 'app/shared/ui/dialog-close-button/dialog-close-button.component';
 import { SceneDetailsDialogComponent, SceneDetailsDialogData } from './scene-details-dialog.component';
 import { MatCardModule } from '@angular/material/card';
@@ -432,9 +432,11 @@ describe('SceneDetailsDialogComponent', () => {
          const host = await renderWithSample();
 
          // then
-         const button = host.querySelector('.but_add_pattern').getBoundingClientRect();
-         const icon = host.querySelector('.but_add_pattern mat-icon').getBoundingClientRect();
-         expect(Math.abs((icon.top + icon.height / 2) - (button.top + button.height / 2))).toBeLessThanOrEqual(1);
+         const buttonEl = host.querySelector('.but_add_pattern');
+         const iconEl = host.querySelector('.but_add_pattern mat-icon');
+         const button = buttonEl.getBoundingClientRect();
+         const icon = iconEl.getBoundingClientRect();
+         expect(Math.abs(verticalCenterOf(iconEl) - verticalCenterOf(buttonEl))).toBeLessThanOrEqual(1);
          expect(Math.abs((icon.left + icon.width / 2) - (button.left + button.width / 2))).toBeLessThanOrEqual(1);
       });
    });

@@ -1,21 +1,7 @@
 import { Locator, Page } from '@playwright/test';
 import { RawDataTable } from './raw-data-table';
 import { ContrastPanel } from './contrast-panel';
-
-export class InputDialog {
-
-   private readonly root: Locator;
-
-   constructor(page: Page) {
-      this.root = page.locator('koia-input-dialog');
-   }
-
-   async submit(input: string): Promise<void> {
-      await this.root.locator('input#host').fill(input);
-      await this.root.locator('#but_ok').click();
-      await this.root.waitFor({ state: 'detached' });
-   }
-}
+import { MainToolbar } from './main-toolbar';
 
 export class ConfirmDialog {
 
@@ -104,16 +90,20 @@ export class RawDataDialog {
 
    readonly table: RawDataTable;
    readonly contrast: ContrastPanel;
+   readonly mainToolbar: MainToolbar;
+   readonly closeButton: Locator;
    private readonly root: Locator;
 
    constructor(page: Page) {
       this.root = page.locator('koia-raw-data-dialog');
       this.table = new RawDataTable(this.root.locator('koia-raw-data'));
       this.contrast = new ContrastPanel(this.root.locator('koia-raw-data'));
+      this.mainToolbar = new MainToolbar(this.root.locator('koia-main-toolbar'));
+      this.closeButton = this.root.locator('#but_close_dialog');
    }
 
    async close(): Promise<void> {
-      await this.root.locator('#but_close_dialog').click();
+      await this.closeButton.click();
       await this.root.waitFor({ state: 'detached' });
    }
 }

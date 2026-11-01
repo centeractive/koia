@@ -32,3 +32,8 @@ export function expectFittingIntoViewport(element: HTMLElement, maxHeightShare: 
   expect(element.offsetWidth).toBeLessThanOrEqual(element.closest('dialog').clientWidth);
   expect(rect.width / rect.height).toBeCloseTo(aspectRatio, 1);
 }
+
+export function verticalCenterOf(element: Element): number {
+  const rect = element.getBoundingClientRect();
+  return rect.top + rect.height / 2;
+}
