@@ -126,6 +126,58 @@ describe('SceneTableComponent', () => {
     expect(style.borderRadius).toBe('10px');
   });
 
+  it('should mark no scene as new by default', () => {
+
+    // when
+    const newChips = fixture.nativeElement.querySelectorAll('.new-chip');
+
+    // then
+    expect(newChips.length).toBe(0);
+  });
+
+  it('should mark new scene with new chip', () => {
+
+    // given
+    component.newSceneIds = new Set(['2']);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(rows()[1].querySelector('.new-chip').textContent).toBe('New');
+    expect(rows()[0].querySelector('.new-chip')).toBeNull();
+    expect(rows()[2].querySelector('.new-chip')).toBeNull();
+  });
+
+  it('new chip should look like active chip', () => {
+
+    // given
+    component.newSceneIds = new Set(['2']);
+    fixture.detectChanges();
+
+    // when
+    const newStyle = getComputedStyle(rows()[1].querySelector('.new-chip'));
+
+    // then
+    const activeStyle = getComputedStyle(rows()[0].querySelector('.active-chip'));
+    ['background-color', 'color', 'border-radius', 'font-size', 'padding', 'margin-left']
+      .forEach(p => expect(newStyle.getPropertyValue(p)).toBe(activeStyle.getPropertyValue(p)));
+    expect(newStyle.backgroundColor).toBe('rgb(56, 142, 60)');
+  });
+
+  it('should hide new chip while new scene is edited', () => {
+
+    // given
+    component.newSceneIds = new Set(['2']);
+
+    // when
+    component.startEdit(scenes[1]);
+    fixture.detectChanges();
+
+    // then
+    expect(rows()[1].querySelector('.new-chip')).toBeNull();
+  });
+
   it('#click on continue button should emit continue event', () => {
 
     // given

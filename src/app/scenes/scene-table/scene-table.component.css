@@ -28,7 +28,7 @@ tr.active-scene .scene-name {
     font-weight: 600;
 }
 
-.active-chip {
+.active-chip, .new-chip {
     margin-left: 8px;
     padding: 2px 8px;
     border-radius: 10px;

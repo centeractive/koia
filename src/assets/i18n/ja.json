@@ -318,6 +318,7 @@
     "activate": "シーンをアクティブにする",
     "continueActive": "アクティブなシーンで続ける",
     "active": "アクティブ",
+    "new": "新規",
     "creationTime": "作成日時",
     "details": {
       "sourceContext": "ソースのコンテキスト",

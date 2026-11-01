@@ -2,7 +2,7 @@ import { LanguageService } from 'app/shared/services/language';
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SceneInfo, SceneLabels, Route, Scene } from 'app/shared/model';
 import { Router } from '@angular/router';
-import { NotificationService, DialogService } from 'app/shared/services';
+import { NotificationService, DialogService, NewScenesService } from 'app/shared/services';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { DBService } from 'app/shared/services/backend';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
@@ -30,13 +30,16 @@ export class ScenesComponent extends AbstractComponent implements OnInit, OnDest
   sceneNames = new Set<string>();
   editing = false;
   readonly sceneFileOpener: SceneFileOpener;
+  readonly newSceneIds: Set<string>;
 
   private sceneInfos: SceneInfo[] = [];
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private dbService: DBService,
-    private dialogService: DialogService, private sceneFileService: SceneFileService, notificationService: NotificationService) {
+    private dialogService: DialogService, private sceneFileService: SceneFileService, notificationService: NotificationService,
+    newScenesService: NewScenesService) {
     super(bottomSheet, notificationService);
     this.sceneFileOpener = new SceneFileOpener(sceneFileService, router, this);
+    this.newSceneIds = newScenesService.take();
   }
 
   /**

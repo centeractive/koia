@@ -19,7 +19,7 @@ import { Router, RouterModule } from '@angular/router';
 import { RawDataComponent } from 'app/raw-data/raw-data.component';
 import { Attribute, ColumnPair, DataType, Route, Scene, SceneInfo } from 'app/shared/model';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { NotificationService } from 'app/shared/services';
+import { NewScenesService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { DataHandler, ReaderService, Sample } from 'app/shared/services/reader';
 import { SceneFactory, verticalCenterOf } from 'app/shared/test';
@@ -1178,6 +1178,61 @@ describe('SceneComponent', () => {
 
     // then
     expect(component.selectedReader.readData).not.toHaveBeenCalled();
+  }));
+
+  it('#click on cancel button while scene is being persisted should not mark scene as new', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(component.selectedReader, 'readData').mockReturnValue(undefined);
+    let resolvePersist: (scene: Scene) => void;
+    vi.spyOn(dbService, 'persistScene').mockReturnValue(new Promise<Scene>(resolve => resolvePersist = resolve));
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flushMicrotasks();
+
+    // when
+    component.cancel();
+    component.scene._id = 'new';
+    resolvePersist(component.scene);
+    flush();
+
+    // then
+    expect(TestBed.inject(NewScenesService).take().size).toBe(0);
+  }));
+
+  it('#click on "Load Data" should mark persisted scene as new', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(component.selectedReader, 'readData').mockImplementation((file: File, chunkSize: number, dataHandler: DataHandler) => {
+      dataHandler.onValues(tableData);
+      dataHandler.onComplete();
+    });
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => {
+      scene._id = 'new';
+      return Promise.resolve(scene);
+    });
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(TestBed.inject(NewScenesService).take()).toEqual(new Set(['new']));
+  }));
+
+  it('#click on "Load Data" should not mark scene as new when scene cannot be persisted', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'persistScene').mockRejectedValue('conflict');
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+
+    // then
+    expect(TestBed.inject(NewScenesService).take().size).toBe(0);
   }));
 
   it('#click on cancel button should cancel ongoing data load and not submit pending items', () => {

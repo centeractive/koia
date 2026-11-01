@@ -16,6 +16,19 @@ test.describe('scenes of the sample and the imported orders', () => {
       await scene.loadData();
    });
 
+   test('loaded scene is marked new until the scenes page is left', async ({ scenes, rawData }) => {
+      const newChip = scenes.rows.filter({ hasText: ORDERS_CSV.name }).locator('.new-chip');
+      await expect(scenes.newChips).toHaveCount(1);
+      await expect(newChip).toHaveText(en.get('scenes.new'));
+      await expect(newChip).toHaveCSS('background-color', 'rgb(56, 142, 60)');
+
+      await scenes.activate(ORDERS_CSV.name);
+      await rawData.mainToolbar.openScenes();
+
+      await expect(scenes.rows).toHaveCount(2);
+      await expect(scenes.newChips).toHaveCount(0);
+   });
+
    test('filter shows the matching scene only', async ({ scenes }) => {
       await scenes.filter(ORDERS_CSV.name);
 

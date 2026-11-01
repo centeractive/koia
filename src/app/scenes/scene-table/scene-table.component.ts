@@ -19,6 +19,7 @@ export class SceneTableComponent extends AbstractComponent {
 
   @Input() sceneInfos: SceneInfo[] = [];
   @Input() activeScene: Scene;
+  @Input() newSceneIds = new Set<string>();
   @Input() existingSceneNames = new Set<string>();
   @Input() locked = false;
 
@@ -42,6 +43,10 @@ export class SceneTableComponent extends AbstractComponent {
 
   isActive(sceneInfo: SceneInfo): boolean {
     return !!this.activeScene && sceneInfo._id === this.activeScene._id;
+  }
+
+  isNew(sceneInfo: SceneInfo): boolean {
+    return this.newSceneIds.has(sceneInfo._id);
   }
 
   showSceneDetails(sceneID: string): void {

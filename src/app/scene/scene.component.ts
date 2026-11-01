@@ -7,7 +7,7 @@ import { ProgressBarMode } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
 import { Attribute, ColumnPair, Route, Scene, SceneInfo } from 'app/shared/model';
-import { NotificationService } from 'app/shared/services';
+import { NewScenesService, NotificationService } from 'app/shared/services';
 import { LanguageService } from 'app/shared/services/language';
 import { DBService } from 'app/shared/services/backend';
 import { BrowserStorage, CommonUtils, NumberUtils } from 'app/shared/utils';
@@ -87,7 +87,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   private readonly patternPairs = new PatternPairs();
 
   constructor(private router: Router, private location: Location, bottomSheet: MatBottomSheet, private readerService: ReaderService,
-    private dbService: DBService, notificationService: NotificationService) {
+    private dbService: DBService, notificationService: NotificationService, private newScenesService: NewScenesService) {
     super(bottomSheet, notificationService);
   }
 
@@ -352,6 +352,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       })
       .then(() => {
         if (!this.canceled) {
+          this.newScenesService.add(this.scene._id);
           this.loadData();
         }
       })

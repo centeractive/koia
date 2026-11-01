@@ -25,6 +25,7 @@ export class ScenesPage {
    readonly continueButton: Locator;
    readonly activateButtons: Locator;
    readonly activeChips: Locator;
+   readonly newChips: Locator;
    readonly navButtons: NavButtons;
    private readonly notifications: Notifications;
 
@@ -44,6 +45,7 @@ export class ScenesPage {
       this.continueButton = page.locator('.continueActiveScene');
       this.activateButtons = page.locator('.activateScene');
       this.activeChips = page.locator('.active-chip');
+      this.newChips = page.locator('.new-chip');
       this.navButtons = new NavButtons(page.locator('koia-page-frame koia-nav-buttons'));
       this.notifications = new Notifications(page);
    }

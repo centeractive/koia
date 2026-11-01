@@ -83,6 +83,16 @@ test('CSV values with leading zeros or radix prefix stay text and whitespace onl
       await expect(await rawData.table.cell(2, 'Amount')).toHaveText('12');
    });
 
+test('first scene loaded from front page is marked new on scenes page', async ({ front, scene, scenes }) => {
+   await front.open('en');
+   await front.startWithFile();
+   await scene.detectColumns(ORDERS_CSV);
+   await scene.loadData();
+
+   await expect(scenes.rows).toHaveCount(1);
+   await expect(scenes.newChips).toHaveText([en.get('scenes.new')]);
+});
+
 test('CSV file with duplicate and empty headers is imported with unique column names', async ({ front, scene, scenes, rawData }) => {
    const file = DUPLICATE_HEADERS_CSV;
 

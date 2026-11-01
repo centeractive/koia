@@ -57,6 +57,9 @@
         @if (isActive(sceneInfo) && !isEdited(sceneInfo)) {
           <span class="active-chip">{{ 'scenes.active' | translate }}</span>
         }
+        @if (isNew(sceneInfo) && !isEdited(sceneInfo)) {
+          <span class="new-chip">{{ 'scenes.new' | translate }}</span>
+        }
       </td>
     </ng-container>
     <ng-container matColumnDef="shortDescription">

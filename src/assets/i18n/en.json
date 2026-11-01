@@ -318,6 +318,7 @@
     "activate": "Activate scene",
     "continueActive": "Continue with active scene",
     "active": "Active",
+    "new": "New",
     "creationTime": "Creation Time",
     "details": {
       "sourceContext": "Source Context",

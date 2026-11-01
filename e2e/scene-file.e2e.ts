@@ -97,6 +97,7 @@ test('shared scene opens from scenes page', async ({ page, front, rawData, scene
    await expect(rawData.table.rowCount).toHaveText(en.rows(sample.entries.length));
    await rawData.mainToolbar.openScenes();
    await expect(scenes.rows).toHaveCount(2);
+   await expect(scenes.newChips).toHaveCount(0);
 });
 
 test('shared scene opened from main toolbar of raw data replaces shown rows', async ({ page, front, rawData }, testInfo) => {

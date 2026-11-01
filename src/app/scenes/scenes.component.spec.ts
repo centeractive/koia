@@ -16,7 +16,7 @@ import { Router, RouteReuseStrategy, RouterModule } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Route, Scene } from 'app/shared/model';
-import { DialogService, NotificationService } from 'app/shared/services';
+import { DialogService, NewScenesService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
@@ -89,13 +89,7 @@ describe('ScenesComponent', () => {
     vi.spyOn(dbService, 'findScene').mockResolvedValue(scenes[0]);
   }));
 
-  beforeEach(fakeAsync(() => {
-    fixture = TestBed.createComponent(ScenesComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    flush();
-    fixture.detectChanges();
-  }));
+  beforeEach(fakeAsync(() => createComponent()));
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -217,6 +211,35 @@ describe('ScenesComponent', () => {
     expect(names).toEqual(['Scene 1', 'Scene 3', 'Scene 2']);
     expect(fixture.nativeElement.querySelector('tr.mat-mdc-row').classList).toContain('active-scene');
   });
+
+  it('should pass scenes added before page was opened as new to scene table', fakeAsync(() => {
+
+    // given
+    TestBed.inject(NewScenesService).add('2');
+
+    // when
+    createComponent();
+
+    // then
+    expect(sceneTable().newSceneIds).toEqual(new Set(['2']));
+    expect(rowOf(scenes[1]).querySelector('.new-chip')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.new-chip').length).toBe(1);
+  }));
+
+  it('scenes should no longer be new when page is opened again', fakeAsync(() => {
+
+    // given
+    TestBed.inject(NewScenesService).add('2');
+    createComponent();
+    fixture.destroy();
+
+    // when
+    createComponent();
+
+    // then
+    expect(sceneTable().newSceneIds.size).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.new-chip').length).toBe(0);
+  }));
 
   it('should mark no scene when none is active', fakeAsync(() => {
 
@@ -756,9 +779,20 @@ describe('ScenesComponent', () => {
   }
 
   function activateButtonOf(scene: Scene): HTMLButtonElement {
+    return rowOf(scene).querySelector('.activateScene');
+  }
+
+  function rowOf(scene: Scene): HTMLElement {
     return fixture.debugElement.queryAll(By.css('tr.mat-mdc-row'))
-      .find(r => r.nativeElement.textContent.includes(scene.name))
-      .query(By.css('.activateScene')).nativeElement;
+      .find(r => r.nativeElement.textContent.includes(scene.name)).nativeElement;
+  }
+
+  function createComponent(): void {
+    fixture = TestBed.createComponent(ScenesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
   }
 
   function spyOnConfirmDialogAndPressYes(): void {

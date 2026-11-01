@@ -8,3 +8,4 @@ export * from './aggregation.service';
 export * from './aggregation-keys';
 export * from './notification.service';
 export * from './export/export.service';
+export * from './new-scenes.service';

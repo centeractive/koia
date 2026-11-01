@@ -140,7 +140,7 @@ Video for log files: [Message patterns](https://www.koia.io/intro/videos.html)
 
 ## 5. Manage scenes
 
-The **Scenes** icon in any page header opens the scenes page. The active scene is marked **Active** and listed first, the others by when they were last used.
+The **Scenes** icon in any page header opens the scenes page. The active scene is marked **Active** and listed first, the others by when they were last used. A scene just created on the **New Scene** page is marked **New** until you leave the scenes page.
 
 - **Filter scenes** narrows the list by name or description.
 - The play icon activates a scene (**Activate scene**) or returns to the active one (**Continue with active scene**).
