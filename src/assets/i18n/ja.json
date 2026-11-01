@@ -100,8 +100,8 @@
     "addFilter": "フィルターを追加",
     "value": "値",
     "valueRange": "値の範囲",
-    "hideRangeFilters": "値範囲フィルターを隠す",
-    "showRangeFilters": "値範囲フィルターを表示",
+    "hideFilters": "フィルターを隠す",
+    "showFilters": "フィルターを表示",
     "refresh": "データを更新",
     "tabs": {
       "rawData": "生データ",

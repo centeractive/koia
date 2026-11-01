@@ -27,7 +27,7 @@ import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
-import { rightInsetOf } from 'app/shared/test/dom-queries';
+import { rightInsetOf, rowCountOf } from 'app/shared/test/dom-queries';
 import { LanguageSelectComponent } from 'app/shared/ui/language-select/language-select.component';
 import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.component';
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
@@ -35,6 +35,7 @@ import { page } from 'vitest/browser';
 import { MainToolbarComponent } from './main-toolbar.component';
 import { SavedViewButtonsComponent } from './saved-view-buttons/saved-view-buttons.component';
 import { ViewTabBarComponent } from './view-tab-bar/view-tab-bar.component';
+import { ValueFilterComponent } from './value-filter/value-filter.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
 import { TimeRangeFilter } from './range-filter/model/time-range-filter';
 import type { Mock } from 'vitest';
@@ -78,7 +79,7 @@ describe('MainToolbarComponent with many tabs', () => {
     const viewTabsService = { tabs, ready: true, layoutOf: vi.fn() } as unknown as ViewTabsService;
     const savedViewsService = { ready: true, findAll: () => [] } as unknown as SavedViewsService;
     await configureTestingModule(dbService, dialogService, {
-      declarations: [ViewTabBarComponent, SavedViewButtonsComponent, LanguageSelectComponent, ManualLinkComponent],
+      declarations: [ViewTabBarComponent, SavedViewButtonsComponent, LanguageSelectComponent, ManualLinkComponent, ValueFilterComponent],
       imports: [MatTabsModule, MatBadgeModule],
       providers: [{ provide: ViewTabsService, useValue: viewTabsService }, { provide: SavedViewsService, useValue: savedViewsService }]
     });
@@ -98,6 +99,32 @@ describe('MainToolbarComponent with many tabs', () => {
 
   function rightOf(selector: string): number {
     return fixture.nativeElement.querySelector(selector).getBoundingClientRect().right;
+  }
+
+  function leftOf(selector: string): number {
+    return fixture.nativeElement.querySelector(selector).getBoundingClientRect().left;
+  }
+
+  function addLevelFilters(count: number): void {
+    const toolbar = fixture.componentInstance;
+    const level = toolbar.scene.columns.find(c => c.name === 'Level');
+    Array.from({ length: count }).forEach(() => toolbar.addValueFilter(level));
+  }
+
+  function navWidth(): number {
+    return fixture.nativeElement.querySelector('nav').getBoundingClientRect().width;
+  }
+
+  function expectOnSingleLine(controls: Element[]): void {
+    expect(controls.length).toBe(4);
+    const rects = controls.map(c => c.getBoundingClientRect());
+    const firstCenter = rects[0].top + rects[0].height / 2;
+    rects.forEach((r, i) => {
+      expect(r.top + r.height / 2).toBeCloseTo(firstCenter, 0);
+      if (i > 0) {
+        expect(r.left).toBeGreaterThanOrEqual(rects[i - 1].right);
+      }
+    });
   }
 
   it('should keep Add Filter button and refresh button visible when tabs exceed toolbar width', () => {
@@ -129,19 +156,77 @@ describe('MainToolbarComponent with many tabs', () => {
     expect(nav.classList).toContain('mat-mdc-tab-header-pagination-controls-enabled');
   });
 
-  it('tab bar should touch bottom of toolbar when column filter makes toolbar taller', () => {
+  it('adding value filter should show it in row below toolbar with tab bar touching bottom of toolbar', () => {
 
     // given
-    const toolbar = fixture.componentInstance;
-    toolbar.addValueFilter(toolbar.scene.columns.find(c => c.name === 'Level'));
+    addLevelFilters(1);
 
     // when
     fixture.detectChanges();
 
     // then
+    const filter: HTMLElement = fixture.nativeElement.querySelector('.div_value_filters .div_property_filter');
+    expect(filter.getBoundingClientRect().top).toBeGreaterThanOrEqual(toolbarRect().bottom);
     const navRect: DOMRect = fixture.nativeElement.querySelector('nav').getBoundingClientRect();
-    expect(toolbarRect().height - navRect.height).toBeGreaterThanOrEqual(1);
     expect(navRect.bottom).toBeCloseTo(toolbarRect().bottom, 0);
+  });
+
+  it('many value filters should wrap to further rows with each filter on one row', () => {
+
+    // given
+    addLevelFilters(10);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const root: HTMLElement = fixture.nativeElement;
+    const filters: HTMLElement[] = Array.from(root.querySelectorAll('.div_value_filters .div_property_filter'));
+    expect(filters.length).toBe(10);
+    expect(rowCountOf(root, '.span_column_filter')).toBeGreaterThan(1);
+    const rowRight = root.querySelector('.div_value_filters').getBoundingClientRect().right;
+    const spans = Array.from(root.querySelectorAll('.span_column_filter')).map(s => s.getBoundingClientRect());
+    spans.forEach(s => expect(s.right).toBeLessThanOrEqual(rowRight));
+    filters.forEach(f => expectOnSingleLine(Array.from(f.querySelectorAll(':scope > :not(mat-menu)'))));
+    expect(spans[1].top).toBe(spans[0].top);
+    expect(spans[1].left - spans[0].right).toBeCloseTo(20, 0);
+  });
+
+  it('Add Filter button should keep 20px distance to tab bar when tabs exceed toolbar width', () => {
+
+    // when
+    const distance = leftOf('.but_add_col_filter') - rightOf('.span_navigation');
+
+    // then
+    expect(distance).toBeCloseTo(20, 0);
+  });
+
+  it('should keep tab bar width when value filters are added', () => {
+
+    // given
+    addLevelFilters(1);
+    fixture.detectChanges();
+    const widthBefore = navWidth();
+
+    // when
+    addLevelFilters(9);
+    fixture.detectChanges();
+
+    // then
+    expect(navWidth()).toBe(widthBefore);
+  });
+
+  it('filters toggle should show filter icon with number of filters as badge', () => {
+
+    // given
+    addLevelFilters(3);
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#butToggleFilters mat-icon').textContent.startsWith('filter_alt')).toBe(true);
+    expect(fixture.nativeElement.querySelector('#butToggleFilters .mat-badge-content').textContent).toBe('3');
   });
 
   it('should keep add tab button visible', () => {
@@ -293,6 +378,19 @@ describe('MainToolbarComponent', () => {
 
       // then
       expect(inset).toBe(8);
+    });
+
+    it('filter buttons should be at right end of toolbar in dialog style', () => {
+
+      // given
+      fixture.componentRef.setInput('dialogStyle', true);
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const refreshButton = fixture.nativeElement.querySelector('.span_buttons:not(.span_navigation) > button:last-child');
+      expect(rightInsetOf(refreshButton, fixture.nativeElement.querySelector('.div_toolbar'))).toBe(8);
     });
   });
 
@@ -457,6 +555,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.showFullTextFilter = true;
+    component.showFilters = true;
 
     // when
     fixture.detectChanges();
@@ -467,7 +566,7 @@ describe('MainToolbarComponent', () => {
     expect(field.querySelector<HTMLElement>('.mat-mdc-text-field-wrapper').offsetHeight).toBe(40);
   });
 
-  it('range filters should be separated from toolbar by top border', fakeAsync(() => {
+  it('filters should be separated from toolbar by top border', fakeAsync(() => {
 
     // given
     component.addRangeFilter(column('Amount'), null);
@@ -477,10 +576,146 @@ describe('MainToolbarComponent', () => {
     fixture.detectChanges();
 
     // then
-    const style = getComputedStyle(fixture.nativeElement.querySelector('.div_range_filters'));
+    const style = getComputedStyle(fixture.nativeElement.querySelector('.div_filters'));
     expect(style.borderTopWidth).toBe('1px');
     expect(style.borderTopColor).toBe('rgb(197, 202, 233)');
   }));
+
+  it('range filter row should not be separated from value filter row by line', fakeAsync(() => {
+
+    // given
+    component.addValueFilter(column('Level'));
+    component.addRangeFilter(column('Amount'), null);
+
+    // when
+    flush();
+    fixture.detectChanges();
+
+    // then
+    const filters: HTMLElement = fixture.nativeElement.querySelector('.div_filters');
+    const rows = ['.div_value_filters', '.div_range_filters'].map(selector => filters.querySelector(selector));
+    expect(rows.map(row => getComputedStyle(row).borderTopWidth)).toEqual(['0px', '0px']);
+  }));
+
+  it('should not show value filter row when only range filters exist', fakeAsync(() => {
+
+    // given
+    component.addRangeFilter(column('Amount'), null);
+
+    // when
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.div_value_filters')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.div_range_filters')).not.toBeNull();
+  }));
+
+  it('should not show range filter row when only value filters exist', () => {
+
+    // given
+    component.addValueFilter(column('Level'));
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.div_range_filters')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.div_value_filters')).not.toBeNull();
+  });
+
+  it('should show full text filter in value filter row', () => {
+
+    // given
+    component.showFullTextFilter = true;
+    component.showFilters = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.div_value_filters .full_text_filter')).not.toBeNull();
+  });
+
+  it('should not show filters toggle without filters', () => {
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#butToggleFilters')).toBeNull();
+  });
+
+  it('#filterCount should count shown full text filter, value filters and range filters', () => {
+
+    // given
+    component.showFullTextFilter = true;
+    component.propertyFilters = [new PropertyFilter('Level', Operator.EQUAL, 'INFO'), new PropertyFilter('Host', Operator.EQUAL, 'server1')];
+    component.rangeFilters = [new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false)];
+
+    // when
+    const count = component.filterCount();
+
+    // then
+    expect(count).toBe(4);
+  });
+
+  it('#filterCount should not count hidden full text filter', () => {
+
+    // given
+    component.showFullTextFilter = false;
+    component.fullTextFilter = 'abc';
+    component.propertyFilters = [];
+    component.rangeFilters = [];
+
+    // when
+    const count = component.filterCount();
+
+    // then
+    expect(count).toBe(0);
+  });
+
+  it('#click on filters toggle should hide all filters', fakeAsync(() => {
+
+    // given
+    showAllKindsOfFilters();
+
+    // when
+    toggleFilters();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.div_value_filters')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.div_range_filters')).toBeNull();
+    expect(component.showFilters).toBe(false);
+    expect(fixture.nativeElement.querySelector('#butToggleFilters').getAttribute('aria-label')).toBe('Show filters');
+  }));
+
+  it('#click on filters toggle should show hidden filters', fakeAsync(() => {
+
+    // given
+    showAllKindsOfFilters();
+    toggleFilters();
+
+    // when
+    toggleFilters();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.div_value_filters')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.div_range_filters')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('#butToggleFilters').getAttribute('aria-label')).toBe('Hide filters');
+  }));
+
+  it('#addValueFilter should show filters', () => {
+
+    // given
+    component.showFilters = false;
+
+    // when
+    component.addValueFilter(column('Level'));
+
+    // then
+    expect(component.showFilters).toBe(true);
+  });
 
   it('#ngOnInit should not retain initial filters when active scene is not defeined', () => {
 
@@ -585,6 +820,34 @@ describe('MainToolbarComponent', () => {
     expect(valueRangeFilter.inverted).toBe(false);
   }));
 
+  it('#ngOnInit should show filters when query has value filter', () => {
+
+    // given
+    const query = new Query();
+    query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'INFO'));
+    component.query = query;
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.showFilters).toBe(true);
+  });
+
+  it('#ngOnInit should show filters when query has full text filter', () => {
+
+    // given
+    const query = new Query();
+    query.setFullTextFilter('abc');
+    component.query = query;
+
+    // when
+    component.ngOnInit();
+
+    // then
+    expect(component.showFilters).toBe(true);
+  });
+
   it('#ngOnInit should hide full text filter when query has none', () => {
 
     // given
@@ -655,17 +918,17 @@ describe('MainToolbarComponent', () => {
     expect(component.fullTextFilter).toBe('abc');
   });
 
-  it('#ngOnChanges should hide range filters when restored query has none', () => {
+  it('#ngOnChanges should hide filters when restored query has none', () => {
 
     // given
-    component.showRangeFilters = true;
+    component.showFilters = true;
     component.restoredQuery = new Query();
 
     // when
     component.ngOnChanges({ restoredQuery: new SimpleChange(undefined, component.restoredQuery, false) });
 
     // then
-    expect(component.showRangeFilters).toBe(false);
+    expect(component.showFilters).toBe(false);
   });
 
   it('#ngOnChanges should keep query when restored query changed to null', () => {
@@ -821,6 +1084,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.showFullTextFilter = true;
+    component.showFilters = true;
     fixture.detectChanges();
     const htmlInput: HTMLInputElement = fixture.debugElement.query(By.css('#fullTextFilter')).nativeElement;
     htmlInput.value = 'abc';
@@ -842,6 +1106,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.showFullTextFilter = true;
+    component.showFilters = true;
     fixture.detectChanges();
     const htmlInput: HTMLInputElement = fixture.debugElement.query(By.css('#fullTextFilter')).nativeElement;
     htmlInput.value = 'abc';
@@ -867,6 +1132,7 @@ describe('MainToolbarComponent', () => {
 
     // given
     component.showFullTextFilter = true;
+    component.showFilters = true;
     fixture.detectChanges();
     const htmlInput: HTMLInputElement = fixture.debugElement.query(By.css('#fullTextFilter')).nativeElement;
     htmlInput.value = 'abc';
@@ -1107,35 +1373,113 @@ describe('MainToolbarComponent', () => {
     expect(component.refreshEntries).not.toHaveBeenCalled();
   });
 
-  it('#removeRangeFilter should hide range filters when the last one was removed', () => {
+  it('#removeRangeFilter should hide filters when the last one was removed', () => {
 
     // given
     const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
     component.rangeFilters = [rangeFilter];
-    component.showRangeFilters = true;
+    component.showFilters = true;
     vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
 
     // when
     component.removeRangeFilter(rangeFilter);
 
     // then
-    expect(component.showRangeFilters).toBe(false);
+    expect(component.showFilters).toBe(false);
   });
 
-  it('#removeRangeFilter should keep range filters shown when others remain', () => {
+  it('#removeRangeFilter should keep filters shown when others remain', () => {
 
     // given
     const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
     const otherRangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 3, max: 4 }, false);
     component.rangeFilters = [rangeFilter, otherRangeFilter];
-    component.showRangeFilters = true;
+    component.showFilters = true;
     vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
 
     // when
     component.removeRangeFilter(rangeFilter);
 
     // then
-    expect(component.showRangeFilters).toBe(true);
+    expect(component.showFilters).toBe(true);
+  });
+
+  it('#removeRangeFilter should keep filters shown when value filter remains', () => {
+
+    // given
+    const rangeFilter = new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false);
+    component.rangeFilters = [rangeFilter];
+    component.propertyFilters = [new PropertyFilter('Level', Operator.EQUAL, 'INFO')];
+    component.showFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.removeRangeFilter(rangeFilter);
+
+    // then
+    expect(component.showFilters).toBe(true);
+  });
+
+  it('#removePropertyFilter should hide filters when the last one was removed', () => {
+
+    // given
+    const propertyFilter = new PropertyFilter('Level', Operator.EQUAL, 'INFO');
+    component.propertyFilters = [propertyFilter];
+    component.showFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.removePropertyFilter(propertyFilter);
+
+    // then
+    expect(component.showFilters).toBe(false);
+  });
+
+  it('#removePropertyFilter should keep filters shown when range filter remains', () => {
+
+    // given
+    const propertyFilter = new PropertyFilter('Level', Operator.EQUAL, 'INFO');
+    component.propertyFilters = [propertyFilter];
+    component.rangeFilters = [new NumberRangeFilter(column('Amount'), 1, 10, { min: 2, max: 5 }, false)];
+    component.showFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.removePropertyFilter(propertyFilter);
+
+    // then
+    expect(component.showFilters).toBe(true);
+  });
+
+  it('#resetFullTextFilter should hide filters when it was the only filter', () => {
+
+    // given
+    component.showFullTextFilter = true;
+    component.fullTextFilter = 'abc';
+    component.showFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.resetFullTextFilter();
+
+    // then
+    expect(component.showFilters).toBe(false);
+  });
+
+  it('#resetFullTextFilter should keep filters shown when value filter remains', () => {
+
+    // given
+    component.showFullTextFilter = true;
+    component.fullTextFilter = 'abc';
+    component.propertyFilters = [new PropertyFilter('Level', Operator.EQUAL, 'INFO')];
+    component.showFilters = true;
+    vi.spyOn(component, 'refreshEntries').mockReturnValue(undefined);
+
+    // when
+    component.resetFullTextFilter();
+
+    // then
+    expect(component.showFilters).toBe(true);
   });
 
   it('#filterableColumns should exclude computed columns', () => {
@@ -1188,6 +1532,19 @@ describe('MainToolbarComponent', () => {
         savedViews: []
       }
     };
+  }
+
+  function showAllKindsOfFilters(): void {
+    component.showFullTextFilter = true;
+    component.addValueFilter(column('Level'));
+    component.addRangeFilter(column('Amount'), null);
+    flush();
+    fixture.detectChanges();
+  }
+
+  function toggleFilters(): void {
+    fixture.nativeElement.querySelector('#butToggleFilters').click();
+    fixture.detectChanges();
   }
 
   function addLevelFilterThroughMenu(): void {

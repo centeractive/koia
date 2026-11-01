@@ -100,8 +100,8 @@
     "addFilter": "Filter hinzufügen",
     "value": "Wert",
     "valueRange": "Wertebereich",
-    "hideRangeFilters": "Wertebereichsfilter ausblenden",
-    "showRangeFilters": "Wertebereichsfilter einblenden",
+    "hideFilters": "Filter ausblenden",
+    "showFilters": "Filter einblenden",
     "refresh": "Daten aktualisieren",
     "tabs": {
       "rawData": "Rohdaten",
