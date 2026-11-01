@@ -201,7 +201,8 @@ export class DashboardComponent extends ViewController {
       entries: this.entries,
       currentContexts: this.elementContexts.filter(c => !this.isTextBoxContext(c)),
       currentGrid: { columns: this.gridLayout.gridColumns, cellRatio: this.gridLayout.gridCellRatio },
-      containerWidth: this.generationContainerWidth()
+      containerWidth: this.generationContainerWidth(),
+      excludedColumnNames: this.scene.columnMappings?.filter(cp => cp.sequence).map(cp => cp.target.name) ?? []
     });
     if (!result) {
       this.notifyWarning(LanguageService.instant('dashboard.nothingToGenerate'));

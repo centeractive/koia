@@ -1204,4 +1204,23 @@ describe('EntryMapper', () => {
    function columnPair(surceColumnName: string): ColumnPair {
       return columnPairs.find(cp => cp.source.name === surceColumnName);
    }
+
+   it('#mapObjects should map numbers of year column to start of their years', () => {
+
+      // given
+      const yearPair: ColumnPair = {
+         source: { name: 'Year', dataType: DataType.NUMBER, width: 4, format: 'y' },
+         target: { name: 'Year', dataType: DataType.TIME, width: 10, format: 'yyyy' }
+      };
+      mapper = new EntryMapper([yearPair], 'en');
+
+      // when
+      const results = mapper.mapObjects([{ Year: '1' }, { Year: 2004 }]);
+
+      // then
+      const firstYear = new Date(2000, 0, 1);
+      firstYear.setFullYear(1);
+      expect(results.map(r => r.entry['Year'])).toEqual([firstYear.getTime(), new Date(2004, 0, 1).getTime()]);
+      expect(results.flatMap(r => r.errors)).toEqual([]);
+   });
 });

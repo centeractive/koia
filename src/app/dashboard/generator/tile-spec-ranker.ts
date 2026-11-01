@@ -1,4 +1,4 @@
-import { ElementContext } from 'app/shared/model';
+import { Aggregation, ElementContext } from 'app/shared/model';
 import { Randomizer } from './randomizer';
 import { TileSignature } from './tile-signature';
 import { TileSpec } from './tile-spec';
@@ -18,5 +18,14 @@ export class TileSpecRanker {
     const ranks: TileSpec[][] = [[], [], []];
     specs.forEach(s => ranks[keys.has(s.key) ? 2 : signatures.has(s.signature) ? 1 : 0].push(s));
     return ranks.flatMap(r => randomizer.shuffled(r));
+  }
+
+  /**
+   * @returns the ranked time chart specs, those averaging values after the others
+   */
+  featureCandidates(ranked: TileSpec[]): TileSpec[] {
+    const timeSpecs = ranked.filter(s => s.timeChart);
+    const averaging = (s: TileSpec) => s.aggregations.includes(Aggregation.AVG);
+    return [...timeSpecs.filter(s => !averaging(s)), ...timeSpecs.filter(averaging)];
   }
 }

@@ -1,4 +1,5 @@
-import { Aggregation } from 'app/shared/model';
+import { Aggregation, DataType } from 'app/shared/model';
+import { ColumnProfile } from './column-profile';
 import { TileSignature } from './tile-signature';
 import { TileSpec } from './tile-spec';
 
@@ -35,4 +36,36 @@ export function pairsOf<T>(items: T[]): T[][] {
 
 export function triplesOf<T>(items: T[]): T[][] {
   return items.flatMap((t1, i) => pairsOf(items.slice(i + 1)).map(pair => [t1, ...pair]));
+}
+
+export const MAX_SERIES = 6;
+export const MAX_AXIS_CATEGORIES = 12;
+
+export function seriesCategoriesOf(categories: ColumnProfile[]): ColumnProfile[] {
+  return categories.filter(c => c.distinctCount <= MAX_SERIES);
+}
+
+export function unsplitAndSplitBy(categories: ColumnProfile[]): ColumnProfile[][] {
+  return [[], ...categories.map(c => [c])];
+}
+
+/**
+ * @returns whether every value of the category occurs equally often
+ */
+export function isUniformCategory(category: ColumnProfile): boolean {
+  return category.maxValueCount * category.distinctCount === category.presentCount;
+}
+
+/**
+ * @returns the text categories whose values fit a category axis
+ */
+export function axisCategoriesOf(categories: ColumnProfile[]): ColumnProfile[] {
+  return categories.filter(c => c.dataType === DataType.TEXT && c.distinctCount <= MAX_AXIS_CATEGORIES);
+}
+
+/**
+ * @returns the maximum number of rows grouped by the time column, its time buckets that hold values
+ */
+export function timeRowsOf(time: ColumnProfile): number {
+  return Math.min(time.timeBucketCount, time.distinctCount);
 }

@@ -2,9 +2,10 @@ import { DataType } from 'app/shared/model';
 import { ChartContext, ChartType, DataPoint } from 'app/shared/model/chart';
 import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { ChartDataset } from 'chart.js';
+import { hasVaryingValues } from './chart-value-variety';
 
 /**
- * accepts charts that render data without error, sampled down only when they are lines or areas over time or scatters, and
+ * accepts charts that render varying data without error, sampled down only when they are lines or areas over time or scatters, and
  * unstacks time series that cannot be stacked, except areas, which are rejected
  */
 export class TileValidator {
@@ -16,7 +17,7 @@ export class TileValidator {
   isValid(context: ChartContext): boolean {
     const result = this.chartDataService.createData(context);
     if (result.error || !result.data.datasets.some(ds => ds.data.length > 0)
-      || (context.dataSampledDown && !this.isSampleable(context))) {
+      || (context.dataSampledDown && !this.isSampleable(context)) || !hasVaryingValues(result.data.datasets)) {
       return false;
     }
     if (this.isStackable(context, result.data.datasets)) {

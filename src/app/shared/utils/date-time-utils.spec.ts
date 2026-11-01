@@ -112,6 +112,24 @@ describe('DateTimeUtils', () => {
     expect(DateTimeUtils.largestMatchingTimeUnit(86_400_000, 1)).toBe(TimeUnit.DAY);
   });
 
+  it('#coarsestUnitOf should return unit of local alignment', () => {
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2003, 0, 1).getTime(), new Date(2004, 0, 1).getTime()])).toBe(TimeUnit.YEAR);
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2004, 0, 1).getTime(), new Date(2004, 6, 1).getTime()])).toBe(TimeUnit.MONTH);
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2024, 2, 30).getTime(), new Date(2024, 2, 31).getTime()])).toBe(TimeUnit.DAY);
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2024, 0, 1, 5).getTime()])).toBe(TimeUnit.HOUR);
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2024, 0, 1, 5, 7).getTime()])).toBe(TimeUnit.MINUTE);
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2024, 0, 1, 5, 7, 9).getTime()])).toBe(TimeUnit.SECOND);
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2024, 0, 1, 5, 7, 9, 11).getTime()])).toBe(TimeUnit.MILLISECOND);
+  });
+
+  it('#coarsestUnitOf should return day of UTC midnights', () => {
+    expect(DateTimeUtils.coarsestUnitOf([Date.UTC(2024, 6, 1), Date.UTC(2024, 11, 31)])).toBe(TimeUnit.DAY);
+  });
+
+  it('#coarsestUnitOf should return hour of times aligned neither locally nor in UTC to a day', () => {
+    expect(DateTimeUtils.coarsestUnitOf([new Date(2024, 0, 1).getTime(), Date.UTC(2024, 0, 2, 12)])).toBe(TimeUnit.HOUR);
+  });
+
   it('#countTimeUnits should return one fixed timeunit', () => {
     expect(DateTimeUtils.countTimeUnits(1, TimeUnit.MILLISECOND)).toBe(1);
     expect(DateTimeUtils.countTimeUnits(1_000, TimeUnit.SECOND)).toBe(1);

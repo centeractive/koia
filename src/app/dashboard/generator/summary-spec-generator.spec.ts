@@ -7,6 +7,7 @@ import { CategoryCombinationCounter } from './category-combination-counter';
 import { ColumnProfile } from './column-profile';
 import { SummarySpecGenerator } from './summary-spec-generator';
 import { TileSize, TileSpec } from './tile-spec';
+import { TimeSeriesInspector } from './time-series-inspector';
 
 describe('SummarySpecGenerator', () => {
 
@@ -23,8 +24,8 @@ describe('SummarySpecGenerator', () => {
   }
 
   function generate({ categories = [], measures = [], times = [] }: Profiles,
-    combinations: CategoryCombinationCounter = productCombinationCounter(categories)): TileSpec[] {
-    return generator.generate(categories, measures, times, combinations);
+    combinations: CategoryCombinationCounter = productCombinationCounter(categories), inspector = new TimeSeriesInspector([], [])): TileSpec[] {
+    return generator.generate(categories, measures, times, combinations, inspector);
   }
 
   function isCount(spec: TileSpec): boolean {
@@ -211,6 +212,47 @@ describe('SummarySpecGenerator', () => {
     // then
     expect(specs.map(s => describeTileSpec(s))).toEqual(['table C1 by T1 split ', 'table C1 by T2 split ', 'table C2 by T2 split ']);
     specs.forEach(s => expect(s.aggregations).toEqual([Aggregation.COUNT]));
+  });
+
+  it('#generate should not create count summary table of uniformly distributed category', () => {
+
+    // given
+    const profiles = { categories: [category('C1', 4, 25), category('C2', 4)] };
+
+    // when
+    const specs = generate(profiles, combinationCounterOf(() => SummarySpecGenerator.MAX_HIERARCHY_ROWS + 1));
+
+    // then
+    expect(specs.map(s => describeTileSpec(s))).toEqual(['table C2 by  split ']);
+  });
+
+  it('#generate should not create count summary table of category uniformly distributed over time', () => {
+
+    // given
+    const profiles = { categories: [category('C1', 3), category('C2', 4)], times: [time('T', 2, 10)] };
+    const inspector = new TimeSeriesInspector([], []);
+    vi.spyOn(inspector, 'isUniform').mockImplementation((_t, c) => c.name === 'C1');
+
+    // when
+    const specs = generate(profiles, combinationCounterOf(() => SummarySpecGenerator.MAX_HIERARCHY_ROWS + 1), inspector)
+      .filter(s => s.groupByColumns.length);
+
+    // then
+    expect(specs.map(s => describeTileSpec(s))).toEqual(['table C2 by T split ']);
+  });
+
+  it('#generate should not create crosstab summary table of category pair holding uniform combination counts', () => {
+
+    // given
+    const categories = [category('A', 2), category('B', 3), category('C', 4)];
+    const combinations = productCombinationCounter(categories);
+    vi.spyOn(combinations, 'isUniform').mockImplementation((name1, name2) => [name1, name2].sort().join() === 'A,B');
+
+    // when
+    const specs = generate({ categories }, combinations).filter(s => isCount(s) && s.groupByColumns.length === 1);
+
+    // then
+    expect(specs.map(s => describeTileSpec(s))).toEqual(['table C by A split ', 'table C by B split ']);
   });
 
   it('#generate should create no specs without profiles', () => {

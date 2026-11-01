@@ -103,6 +103,8 @@ Video: [Managing scenes and navigating](https://www.koia.io/intro/videos.html)
    | Object | Object |
 
    A text column turned into Time needs a **Source Format**; the **Display Format** shows how times appear. **Width** is the column width in characters. A warning icon marks columns with values of incompatible types.
+
+   An integer column named like *Year*, *Jahr* or *Année* with values from 1 to 9999 is detected as Time of Source Format `y`, and turning an integer column of such values into Time fills in `y` as well. Years below 1000 show leading zeros, e.g. *0001*. Turn a counter that only looks like a year, e.g. *Year count*, back into Number.
 4. **Preview** – shows the mapped sample rows; rows with mapping errors carry a warning icon. Click **Load Data**. **Max. items** limits the rows, **Abort on data error** stops at the first bad row, **Cancel** stops the load (rows stored so far are kept). The scenes page opens when the load is done.
 
 Good to know:
@@ -301,7 +303,7 @@ Video: [Pivot tables and export](https://www.koia.io/intro/videos.html)
 
 ## 12. Dashboards
 
-**+** → **New Dashboard** opens the **Create View** dialog: start with a **Chart**, **Relationship Graph** or **Summary Table**, or let Koia **Generate Dashboard** from the data. The generator picks suitable columns and fills whole grid rows with charts and summary tables; each run differs. **Regenerate Dashboard** replaces all elements after a confirmation.
+**+** → **New Dashboard** opens the **Create View** dialog: start with a **Chart**, **Relationship Graph** or **Summary Table**, or let Koia **Generate Dashboard** from the data. The generator picks suitable columns and fills whole grid rows with charts and summary tables; each run differs. It never uses the ID column. Running totals, such as cumulative counts, are charted per original time step as sum and average. Their highest (latest) value per series category appears in summary tables (per period also the lowest) and in stacked bar charts whose stacks total the categories; a table footer's Max is the highest single series value, not a total. Running totals are not scattered over time. Charts and count tables whose values are all equal, or only reflect the calendar, are left out. Two measures over time get a chart with distinct value axes. **Regenerate Dashboard** replaces all elements after a confirmation.
 
 <img width="880" src="../src/intro/screenshots/dashboard.webp" alt="Dashboard on a five column grid">
 

@@ -47,6 +47,31 @@ describe('TileValidator', () => {
     expect(valid).toBe(true);
   });
 
+  it('#isValid should reject distribution of equal counts', () => {
+
+    // given
+    const context = chartOf(ChartType.PIE, [LEVEL], [], [{ Level: 'INFO' }, { Level: 'WARN' }]);
+
+    // when
+    const valid = validator.isValid(context);
+
+    // then
+    expect(valid).toBe(false);
+  });
+
+  it('#isValid should reject series of a constant value', () => {
+
+    // given
+    const entries = [0, 1, 2].map(d => ({ Time: T0 + d * DAY, Amount: 4 }));
+    const context = chartOf(ChartType.LINE, [AMOUNT], [TIME], entries);
+
+    // when
+    const valid = validator.isValid(context);
+
+    // then
+    expect(valid).toBe(false);
+  });
+
   it('#isValid should reject chart with data error', () => {
 
     // given
@@ -122,7 +147,7 @@ describe('TileValidator', () => {
 
     // given
     const context = stackedCountOverTime([
-      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
+      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
     ]);
 
     // when
@@ -137,7 +162,8 @@ describe('TileValidator', () => {
 
     // given
     const context = stackedCountOverTime([
-      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
+      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 + DAY },
+      { Level: 'WARN', Time: T0 }
     ]);
 
     // when
@@ -166,7 +192,8 @@ describe('TileValidator', () => {
 
     // given
     const context = stackedCountOverTime([
-      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 + DAY }, { Level: 'WARN', Time: T0 }
+      { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 }, { Level: 'INFO', Time: T0 + DAY }, { Level: 'WARN', Time: T0 + DAY },
+      { Level: 'WARN', Time: T0 }
     ], ChartType.AREA);
 
     // when

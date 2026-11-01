@@ -57,6 +57,17 @@ export class DateTimeUtils {
   }
 
   /**
+   * @returns the coarsest time unit all specified times are aligned to in local time or in UTC, [[TimeUnit.MILLISECOND]] when
+   * none is
+   */
+  static coarsestUnitOf(times: Iterable<number>): TimeUnit {
+    const values = [...times];
+    return [TimeUnit.YEAR, TimeUnit.MONTH, TimeUnit.DAY, TimeUnit.HOUR, TimeUnit.MINUTE, TimeUnit.SECOND].find(unit =>
+      values.every(t => t === DateTimeUtils.toBaseTime(t, unit)) ||
+      values.every(t => t === DateTime.fromMillis(t, { zone: 'utc' }).startOf(unit).toMillis())) ?? TimeUnit.MILLISECOND;
+  }
+
+  /**
    * computes the number of time units contained in the specified duration,
    * note that the result for TimeUnit.DAY, TimeUnit.MONTH and TimeUnit.YEAR is approximative
    * since it varies depending on the point in time (for example, when the time change takes place 

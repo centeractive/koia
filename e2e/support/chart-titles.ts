@@ -20,7 +20,11 @@ export class ChartTitles {
    }
 
    groupedByMonth(title: string, timeColumn: string): string {
-      const columns = timeColumn + ' ' + this.texts.get(EnumLabelKeys.groupingTimeUnit(TimeUnit.MONTH));
+      return this.groupedBy(title, timeColumn, TimeUnit.MONTH);
+   }
+
+   groupedBy(title: string, timeColumn: string, timeUnit: TimeUnit): string {
+      const columns = timeColumn + ' ' + this.texts.get(EnumLabelKeys.groupingTimeUnit(timeUnit));
       return this.texts.get('chart.title.groupedBy', { title, columns });
    }
 

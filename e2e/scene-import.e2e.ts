@@ -5,7 +5,7 @@ import { TimeUnit } from 'app/shared/model/time-unit.enum';
 import { expect, test } from './support/fixtures';
 import {
    CODES_CSV, DUPLICATE_HEADERS_CSV, EPOCH_MILLIS_CSV, IMPORT_FILES, LOG_MESSAGES_CSV, MISSING_TIMES_CSV, MIXED_DATES_CSV,
-   ImportFile, ORDERS_CSV, ORDERS_WITH_ID_CSV, SALES_CSV, SEMICOLON_ORDERS_CSV
+   ImportFile, ORDERS_CSV, ORDERS_WITH_ID_CSV, PERIODS_CSV, SALES_CSV, SEMICOLON_ORDERS_CSV, YEARLY_GREENHOUSE_CSV
 } from './support/import-files';
 import { ID_COLUMN } from './support/id-column';
 import { FrontPage } from './support/pages/front-page';
@@ -210,4 +210,36 @@ test.describe('ID column', () => {
 
       await expect(scene.idColumnToggle).not.toBeChecked();
    });
+});
+
+test('integer column named like a year is detected as time of source format y and loads its years', async ({ front, scene, scenes, rawData }) => {
+   const file = YEARLY_GREENHOUSE_CSV;
+   await front.open('en');
+   await front.startWithFile();
+
+   const dataTypes = await scene.detectColumns(file);
+   const sourceFormat = await scene.sourceFormat(0);
+   await scene.loadData();
+   await scenes.activate(file.name);
+
+   expect(dataTypes).toEqual(en.dataTypes(file.dataTypes));
+   expect(sourceFormat).toBe('y');
+   await expect(rawData.table.rowCount).toHaveText(en.rows(file.rowCount));
+   await expect(await rawData.table.cell(0, 'Year AD')).toHaveText('0001');
+});
+
+test('switching an integer column of years to time fills in source format y', async ({ front, scene, scenes, rawData }) => {
+   const file = PERIODS_CSV;
+   await front.open('en');
+   await front.startWithFile();
+   const dataTypes = await scene.detectColumns(file);
+
+   await scene.changeDataType(0, en.get(EnumLabelKeys.dataType(DataType.TIME)));
+   const sourceFormat = await scene.sourceFormat(0);
+   await scene.loadData();
+   await scenes.activate(file.name);
+
+   expect(dataTypes).toEqual(en.dataTypes(file.dataTypes));
+   expect(sourceFormat).toBe('y');
+   await expect(await rawData.table.cell(0, 'Period')).toHaveText('1990');
 });

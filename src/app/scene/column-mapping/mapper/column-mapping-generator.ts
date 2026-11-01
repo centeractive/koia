@@ -5,6 +5,7 @@ import { MAX_INDEXED_TEXT_LENGTH } from 'app/shared/utils/column-utils';
 import { COLUMN_NAME_MAX_LENGTH, COLUMN_NAME_PATTERN, isStoredColumnName } from 'app/shared/validator/column-name-validation';
 import { DateTimeColumnDetector } from './date-time-column-detector';
 import { TimeGuesser } from './time-guesser';
+import { YearColumn } from './year-column';
 
 type SourceValue = string | number | boolean | object;
 
@@ -42,7 +43,14 @@ export class ColumnMappingGenerator {
             }
          }
       }
-      return this.extractColumnPairs(columnNamesToPair);
+      const columnPairs = this.extractColumnPairs(columnNamesToPair);
+      columnPairs.filter(cp => this.isYearColumn(cp, entries)).forEach(cp => YearColumn.apply(cp));
+      return columnPairs;
+   }
+
+   private isYearColumn(columnPair: ColumnPair, entries: object[]): boolean {
+      return columnPair.source.dataType === DataType.NUMBER && columnPair.target.dataType === DataType.NUMBER
+         && YearColumn.isYearName(columnPair.source.name) && YearColumn.hasYearValues(entries.map(e => e[columnPair.source.name]));
    }
 
    private createColumnPair(name: string, value: SourceValue, locale: string): ColumnPair {

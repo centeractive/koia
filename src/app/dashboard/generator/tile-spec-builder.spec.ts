@@ -1,7 +1,7 @@
-import { Aggregation } from 'app/shared/model';
-import { measureProfile as measure } from 'app/shared/test';
+import { Aggregation, DataType } from 'app/shared/model';
+import { categoryProfile as category, measureProfile as measure, timeProfile as time } from 'app/shared/test';
 import { TileSize } from './tile-spec';
-import { tileSpecOf, triplesOf } from './tile-spec-builder';
+import { axisCategoriesOf, MAX_AXIS_CATEGORIES, tileSpecOf, timeRowsOf, triplesOf } from './tile-spec-builder';
 
 describe('tile-spec-builder', () => {
 
@@ -30,5 +30,27 @@ describe('tile-spec-builder', () => {
 
     // then
     expect(spec.aggregationChoices).toEqual([]);
+  });
+
+  it('axisCategoriesOf should keep text categories within the axis category limit', () => {
+
+    // given
+    const categories = [category('A', MAX_AXIS_CATEGORIES), category('B', MAX_AXIS_CATEGORIES + 1), category('C', 3, 10, DataType.NUMBER),
+      category('D', 2, 10, DataType.BOOLEAN), category('E', 2)];
+
+    // when
+    const axisCategories = axisCategoriesOf(categories);
+
+    // then
+    expect(axisCategories.map(c => c.name)).toEqual(['A', 'E']);
+  });
+
+  it('timeRowsOf should return the smaller of time bucket count and distinct count', () => {
+
+    // when
+    const rows = [timeRowsOf(time('T', 1, 12, 30)), timeRowsOf(time('T', 1, 30, 12))];
+
+    // then
+    expect(rows).toEqual([12, 12]);
   });
 });

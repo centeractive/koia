@@ -79,6 +79,7 @@ describe('ChartJsOptionsProvider - LINE', () => {
       displayFormats: { minute: 'd MMM yyyy HH:mm' },
       tooltipFormat: 'd MMM yyyy HH:mm'
     });
+    expect(options.clip).toBeUndefined();
   });
 });
 
@@ -474,7 +475,7 @@ describe('ChartJsOptionsProvider - LINE scales', () => {
     expect(options.scales['y']['title']).toEqual({ display: false, text: null });
   });
 
-  it('#provide should define linear base scale with suggested range when grouped by number column', () => {
+  it('#provide should define unclipped linear base scale ending at the data when grouped by number column', () => {
 
     // given
     const context = new ChartContext(COLUMNS, ChartType.LINE.type, margin());
@@ -493,8 +494,45 @@ describe('ChartJsOptionsProvider - LINE scales', () => {
 
     // then
     expect(options.scales['x'].type).toBe('linear');
-    expect(options.scales['x']['suggestedMin']).toBe(-1);
-    expect(options.scales['x']['suggestedMax']).toBe(7);
+    expect(options.scales['x'].min).toBe(-1);
+    expect(options.scales['x'].max).toBe(7);
+    expect(options.clip).toBe(false);
+  });
+
+  it('#provide should leave range of linear base scale of a single value to Chart.js', () => {
+
+    // given
+    const context = new ChartContext(COLUMNS, ChartType.SCATTER.type, margin());
+    context.dataColumns = [COLUMNS[4]];
+    context.aggregations = [];
+    context.groupByColumns = [COLUMNS[3]];
+    context.data = { datasets: [{ data: [{ x: 2, y: 1 }, { x: 2, y: 3 }] }] };
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['x'].min).toBeUndefined();
+    expect(options.scales['x'].max).toBeUndefined();
+    expect(options.clip).toBeUndefined();
+  });
+
+  it('#provide should define unclipped linear base scale ending at the data of horizontal chart grouped by number column', () => {
+
+    // given
+    const context = new ChartContext(COLUMNS, ChartType.LINEAR_HORIZONTAL_BAR.type, margin());
+    context.dataColumns = [COLUMNS[4]];
+    context.aggregations = [];
+    context.groupByColumns = [COLUMNS[3]];
+    context.data = { datasets: [{ data: [{ x: 2, y: 1 }, { x: 7, y: 3 }] }] };
+
+    // when
+    const options = provider.provide(context);
+
+    // then
+    expect(options.scales['y'].min).toBe(2);
+    expect(options.scales['y'].max).toBe(7);
+    expect(options.clip).toBe(false);
   });
 
   it('#provide should define category base scale when grouped by text column', () => {
@@ -511,6 +549,7 @@ describe('ChartJsOptionsProvider - LINE scales', () => {
 
     // then
     expect(options.scales['x'].type).toBe('category');
+    expect(options.clip).toBeUndefined();
   });
 
   it('#provide should define tooltip format from column format when grouped by time column without time unit', () => {

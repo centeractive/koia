@@ -77,6 +77,10 @@ export class ScenePage {
       await this.page.getByRole('option', { name: dataTypeLabel, exact: true }).click();
    }
 
+   async sourceFormat(columnIndex: number): Promise<string> {
+      return this.page.locator('koia-column-mapping').nth(columnIndex).locator('.input_source_format').inputValue();
+   }
+
    async selectDisplayFormat(text: string): Promise<void> {
       await this.page.locator('koia-column-mapping .select_display_format').click();
       await this.page.getByRole('option', { name: text, exact: true }).click();

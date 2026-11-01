@@ -1,5 +1,5 @@
 import { CategoricalColorProvider, CategoricalColorScheme, ColorOptions, ColorProviderFactory, ColorSchemeType } from 'app/shared/color';
-import { Aggregation, Column, DataType, ElementContext, SummaryContext } from 'app/shared/model';
+import { Aggregation, Column, DataType, ElementContext, SummaryContext, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { appLogsSampleOf } from 'app/shared/samples/app-logs.sample';
@@ -10,6 +10,7 @@ import { ChartMarginService } from 'app/shared/services/chart/chart-margin.servi
 import { LANGUAGES } from 'app/shared/services/language';
 import { occupiedCells, SequenceRandomSource } from 'app/shared/test';
 import { SummaryTableSizeEstimator } from 'app/summary-table/summary-table-size-estimator';
+import { hasVaryingValues } from './chart-value-variety';
 import { ColumnProfiler } from './column-profiler';
 import { DashboardGenerator, GeneratedDashboard, GenerationRequest } from './dashboard-generator';
 import { GENERATED_GRID_COLUMNS, GridChooser, GridDef, rowsOf } from './generated-grid';
@@ -29,7 +30,8 @@ describe('DashboardGenerator', () => {
   const AMOUNT: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 10 };
   const COLUMNS = [LEVEL, REGION, TIME, AMOUNT];
   const ENTRIES = monthsOf(24).flatMap((time, m) => ['INFO', 'WARN', 'ERROR'].flatMap((level, l) => ['North', 'South']
-    .map((region, r) => ({ Level: level, Region: region, Time: time, Amount: ((m + l * 7 + r * 3) % 9) * 10 + 5 }))));
+    .map((region, r) => ({ Level: level, Region: region, Time: time, Amount: ((m + l * 7 + r * 3) % 9) * 10 + 5 })))
+    .concat(m % 3 === 0 ? [{ Level: 'ERROR', Region: 'North', Time: time, Amount: 5 }] : []));
   const MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
   const HOUR = 3_600_000;
   const LOG_TIME: Column = { name: 'Date/Time', dataType: DataType.TIME, width: 10 };
@@ -45,11 +47,11 @@ describe('DashboardGenerator', () => {
     Name: 'n' + i,
     City: 'c' + (i % 100),
     Food: i % 40 === 39 ? null : 'F' + (i % 12),
-    Rating: (i % 12 + Math.floor(i / 12) % 4) % 6
+    Rating: Math.min((i % 12 + Math.floor(i / 12) % 4) % 7, 5)
   }));
   const LOG_ENTRIES = Array.from({ length: 40 }, (_, i) => ({
     'Date/Time': new Date(2024, 0, 1).getTime() + Math.round(i * 29 / 39) * HOUR,
-    Level: ['ERROR', 'INFO', 'WARN', 'DEBUG'][i % 4],
+    Level: ['ERROR', 'INFO', 'WARN', 'DEBUG', 'INFO'][i % 5],
     Path: '/p' + (i % 7),
     Data: 'message ' + i,
     Host: 'host'
@@ -67,7 +69,7 @@ describe('DashboardGenerator', () => {
 
   function requestOf(columns: Column[], entries: object[], currentContexts: ElementContext[] = [],
     currentGrid: GridDef = { columns: 3, cellRatio: '1:1' }, containerWidth = 0): GenerationRequest {
-    return { columns: () => columns.map(c => ({ ...c })), entries, currentContexts, currentGrid, containerWidth };
+    return { columns: () => columns.map(c => ({ ...c })), entries, currentContexts, currentGrid, containerWidth, excludedColumnNames: [] };
   }
 
   function estimatorOf(width: number, height = 100): SummaryTableSizeEstimator {
@@ -85,14 +87,15 @@ describe('DashboardGenerator', () => {
   }
 
   /**
-   * creates category columns C0, C1, ... of three values each, and entries holding every value of each category in every month
+   * creates category columns C0, C1, ... of three values each, and entries holding every value of each category in every month,
+   * the first entry twice in every fourth month
    */
   function categoryColumns(count: number): Column[] {
     return Array.from({ length: count }, (_, i) => ({ name: 'C' + i, dataType: DataType.TEXT, width: 10 }));
   }
 
   function categoryEntries(categoryCount: number, timeColumns: Column[]): object[] {
-    return monthsOf(24).flatMap((time, m) => [0, 1, 2].map(k => {
+    return monthsOf(24).flatMap((time, m) => (m % 4 === 0 ? [0, 1, 2, 0] : [0, 1, 2]).map(k => {
       const entry = { Amount: ((m * 3 + k) % 5) * 10 };
       categoryColumns(categoryCount).forEach((c, i) => entry[c.name] = 'v' + ((k + i) % 3));
       timeColumns.forEach(c => entry[c.name] = time);
@@ -135,8 +138,8 @@ describe('DashboardGenerator', () => {
 
   function generateSpecsMatching(matches: (spec: TileSpec) => boolean): void {
     const generate = TileSpecGenerator.prototype.generate;
-    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
-      return generate.call(this, profiles, randomizer, combinations).filter(matches);
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, ...args) {
+      return generate.apply(this, args).filter(matches);
     });
   }
 
@@ -247,8 +250,8 @@ describe('DashboardGenerator', () => {
 
     // given
     const generate = TileSpecGenerator.prototype.generate;
-    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
-      return generate.call(this, profiles, randomizer, combinations).filter(s => s.size !== TileSize.SMALL || ChartType.CIRCULAR.includes(s.chartType));
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, ...args) {
+      return generate.apply(this, args).filter(s => s.size !== TileSize.SMALL || ChartType.CIRCULAR.includes(s.chartType));
     });
     const circularCharts: ChartContext[] = [];
 
@@ -502,7 +505,7 @@ describe('DashboardGenerator', () => {
   it('#generate should generate without summary table when no table spec exists', () => {
 
     // given
-    const entries = monthsOf(24).flatMap(time => Array.from({ length: 30 }, () => ({ Time: time })));
+    const entries = monthsOf(24).flatMap((time, m) => Array.from({ length: 30 + m % 2 }, () => ({ Time: time })));
 
     // when
     const result = generatorOf().generate(requestOf([TIME], entries));
@@ -663,7 +666,7 @@ describe('DashboardGenerator', () => {
   it('#generate should chart ordinal number column as category without combining it with itself', () => {
 
     // given
-    const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: i % 6 }));
+    const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: Math.min(i % 7, 5) }));
 
     // when
     const result = generatorOf().generate(requestOf([RATING], entries));
@@ -724,19 +727,20 @@ describe('DashboardGenerator', () => {
     // given
     const generate = TileSpecGenerator.prototype.generate;
     const specs: TileSpec[] = [];
-    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
-      specs.push(...generate.call(this, profiles, randomizer, combinations));
+    vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, ...args) {
+      specs.push(...generate.apply(this, args));
       return specs;
     });
-    const validated = spyIsValid((context, isValid) => !isTimeChart(context) && isValid());
+    spyIsValid((context, isValid) => !isTimeChart(context) && isValid());
+    const createChartSpy = vi.spyOn(TileContextFactory.prototype, 'createChart');
 
     // when
     generatorOf().generate(requestOf(COLUMNS, ENTRIES));
 
     // then
-    const timeChartKeys = validated.filter(c => isTimeChart(c)).map(c => TileSignature.keyOfContext(c));
-    expect(timeChartKeys.length).toBe(specs.filter(s => s.timeChart).length);
-    expect(new Set(timeChartKeys).size).toBe(timeChartKeys.length);
+    const validatedTimeSpecs = createChartSpy.mock.calls.map(([spec]) => spec).filter(spec => spec.timeChart);
+    expect(validatedTimeSpecs.length).toBe(specs.filter(s => s.timeChart).length);
+    expect(new Set(validatedTimeSpecs).size).toBe(validatedTimeSpecs.length);
   });
 
   it('#generate should give summary table one cell when its content fits a cell', () => {
@@ -783,8 +787,8 @@ describe('DashboardGenerator', () => {
       vi.restoreAllMocks();
       chooseGridOf(4);
       const generate = TileSpecGenerator.prototype.generate;
-      vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, profiles, randomizer, combinations) {
-        return generate.call(this, profiles, randomizer, combinations).filter(s => s.size !== TileSize.SMALL || !s.chartType);
+      vi.spyOn(TileSpecGenerator.prototype, 'generate').mockImplementation(function (this: TileSpecGenerator, ...args) {
+        return generate.apply(this, args).filter(s => s.size !== TileSize.SMALL || !s.chartType);
       });
 
       // when
@@ -873,10 +877,14 @@ describe('DashboardGenerator', () => {
       // then
       expectFilled(result);
       expect(result.elementContexts.filter(c => c instanceof SummaryContext).length).toBe(1);
+      const feature = result.elementContexts[0] as ChartContext;
+      expect(isTimeChart(feature)).toBe(true);
+      expect(feature.aggregations).not.toContain(Aggregation.AVG);
       charts(result).forEach(c => {
         const chartData = new ChartDataService().createData(c);
         expect(chartData.error).toBeUndefined();
         expect(chartData.data.datasets.length).toBeGreaterThan(0);
+        expect(hasVaryingValues(chartData.data.datasets)).toBe(true);
         expect(c.dataSampledDown).toBe(false);
       });
     }
@@ -996,7 +1004,7 @@ describe('DashboardGenerator', () => {
     // given
     chooseGridOf(4);
     generateWithoutUngroupedTables();
-    const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: i % 6 }));
+    const entries = Array.from({ length: 60 }, (_, i) => ({ Rating: Math.min(i % 7, 5) }));
 
     // when
     const result = generatorOf().generate(requestOf([RATING], entries));
@@ -1070,7 +1078,7 @@ describe('DashboardGenerator', () => {
     chooseGridOf(5);
     const name: Column = { name: 'Name', dataType: DataType.TEXT, width: 10 };
     const measures: Column[] = ['M1', 'M2', 'M3'].map(n => ({ name: n, dataType: DataType.NUMBER, width: 10 }));
-    const entries = Array.from({ length: 6 }, (_, i) => ({ Name: ['A', 'B', 'C'][i % 3], M1: i * 10, M2: i * 7 % 6, M3: 50 - i * 3 }));
+    const entries = Array.from({ length: 6 }, (_, i) => ({ Name: ['A', 'B', 'C', 'A', 'A', 'B'][i], M1: i * 10, M2: i * 7 % 6, M3: 50 - i * 3 }));
     const accepted: ChartContext[] = [];
     spyIsValid((context, isValid) => {
       const valid = isValid();
@@ -1131,4 +1139,103 @@ describe('DashboardGenerator', () => {
     }
   });
 
+
+  describe('running totals of a complete grid of days, age classes and genders', () => {
+
+    const DATE: Column = { name: 'Date', dataType: DataType.TIME, width: 10 };
+    const AGE_CLASS: Column = { name: 'Age Class', dataType: DataType.TEXT, width: 10 };
+    const GENDER: Column = { name: 'Gender', dataType: DataType.TEXT, width: 10 };
+    const FIRST: Column = { name: 'First Doses', dataType: DataType.NUMBER, width: 10 };
+    const SECOND: Column = { name: 'Second Doses', dataType: DataType.NUMBER, width: 10 };
+    const DOSE_COLUMNS = [DATE, AGE_CLASS, GENDER, FIRST, SECOND];
+    const DOSE_ENTRIES = Array.from({ length: 330 }, (_, d) => d).flatMap(d => [0, 1, 2].flatMap(a => [0, 1].map(g => ({
+      Date: new Date(2021, 0, 4 + d).getTime(),
+      'Age Class': ['0-19', '20-64', '65+'][a],
+      Gender: ['f', 'm'][g],
+      'First Doses': d * d * (a + 1) * (g + 1),
+      'Second Doses': Math.floor(d * d / 2) * (a + 1)
+    }))));
+
+    function generateAll(): GeneratedDashboard[] {
+      return [3, 4, 5].flatMap(columns => SEQUENCES.map(values => {
+        vi.restoreAllMocks();
+        chooseGridOf(columns);
+        return generatorOf(values).generate(requestOf(DOSE_COLUMNS, DOSE_ENTRIES));
+      }));
+    }
+
+    it('#generate should feature their daily sum, fill the grid, summarize their latest values by series categories and chart no counts',
+      () => {
+
+      // when
+      const results = generateAll();
+
+      // then
+      results.forEach(result => {
+        expectFilled(result);
+        const feature = result.elementContexts[0] as ChartContext;
+        expect(isTimeChart(feature)).toBe(true);
+        expect(feature.aggregations).toEqual([Aggregation.SUM]);
+        expect(feature.groupByColumns[0].groupingTimeUnit).toBe(TimeUnit.DAY);
+        charts(result).forEach(c => {
+          expect(c.isAggregationCountSelected()).toBe(false);
+          expect(c.isRowCountSelected()).toBe(false);
+          expect(c.chartType === ChartType.SCATTER.type && c.groupByColumns[0].name === DATE.name).toBe(false);
+        });
+        expect(charts(result).some(c => [ChartType.LINEAR_BAR.type, ChartType.LINEAR_HORIZONTAL_BAR.type].includes(c.chartType)
+          && c.aggregations.length === 1 && c.aggregations[0] === Aggregation.MAX)).toBe(true);
+        const tables = result.elementContexts.filter(c => c instanceof SummaryContext);
+        expect(tables.length).toBeGreaterThanOrEqual(1);
+        expect(tables.length).toBeLessThanOrEqual(2);
+        tables.forEach(t => {
+          expect([FIRST.name, SECOND.name]).toContain(t.dataColumns[0].name);
+          t.aggregations.forEach(a => expect([Aggregation.MIN, Aggregation.MAX]).toContain(a));
+          expect(t.groupByColumns.map(c => c.name).slice(0, 2)).toEqual([GENDER.name, AGE_CLASS.name]);
+        });
+      });
+    });
+
+    it('#generate should offer running totals as stacked area, chart of distinct value axes and stacked bars of latest values', () => {
+
+      // given
+      const generateSpy = vi.spyOn(TileSpecGenerator.prototype, 'generate');
+
+      // when
+      generatorOf().generate(requestOf(DOSE_COLUMNS, DOSE_ENTRIES));
+
+      // then
+      const specs = generateSpy.mock.results[0].value as TileSpec[];
+      expect(specs.some(s => s.chartType === ChartType.AREA && s.stacked && s.splitColumns.length > 0
+        && s.aggregations[0] === Aggregation.SUM)).toBe(true);
+      expect(specs.some(s => s.multiValueAxes && s.dataColumns.length === 2)).toBe(true);
+      expect(specs.some(s => s.chartType === ChartType.LINEAR_BAR && s.stacked && s.splitColumns.length === 1
+        && s.aggregations[0] === Aggregation.MAX)).toBe(true);
+    });
+  });
+
+  it('#generate should never use excluded ID column', () => {
+
+    // given
+    const id: Column = { name: 'ID', dataType: DataType.NUMBER, width: 6 };
+    const entries = Array.from({ length: 12 }, (_, i) => ({ ID: i + 1, Level: ['INFO', 'WARN', 'INFO'][i % 3], Amount: (i * 7) % 5 }));
+    const request = { ...requestOf([id, LEVEL, AMOUNT], entries), excludedColumnNames: ['ID'] };
+
+    // when
+    const result = generatorOf().generate(request);
+
+    // then
+    expect(result.elementContexts.length).toBeGreaterThan(0);
+    result.elementContexts.forEach(c => expect([...c.dataColumns, ...c.groupByColumns, ...c.splitColumns].map(col => col.name)).not.toContain('ID'));
+  });
+
+  it('#generate should feature sum rather than average over time', () => {
+    for (const values of SEQUENCES) {
+
+      // when
+      const result = generatorOf(values).generate(requestOf([TIME, AMOUNT], ENTRIES));
+
+      // then
+      expect((result.elementContexts[0] as ChartContext).aggregations).not.toContain(Aggregation.AVG);
+    }
+  });
 });

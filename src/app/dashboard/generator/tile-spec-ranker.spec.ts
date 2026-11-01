@@ -84,4 +84,17 @@ describe('TileSpecRanker', () => {
     expect(ranked[2]).toBe(otherChartType);
     expect(new Set(ranked.slice(3))).toEqual(new Set([samePieKey, sameTableKey]));
   });
+
+  it('#featureCandidates should return time chart specs, those averaging values last', () => {
+
+    // given
+    const time = (aggregation: Aggregation) => ({ ...spec(ChartType.LINE, ['Level']), aggregations: [aggregation], timeChart: true });
+    const [average, sum, rowCount] = [time(Aggregation.AVG), time(Aggregation.SUM), time(Aggregation.ROW_COUNT)];
+
+    // when
+    const candidates = ranker.featureCandidates([average, unusedChart, sum, rowCount]);
+
+    // then
+    expect(candidates).toEqual([sum, rowCount, average]);
+  });
 });

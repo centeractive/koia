@@ -22,14 +22,14 @@ export class ColumnProfiler {
   static readonly MIN_IDENTIFIER_DISTINCT = 20;
 
   /**
-   * @returns the profiles of the qualifying columns in column order
+   * @returns the profiles of the qualifying columns in column order, the excluded columns not profiled
    */
-  profile(columns: Column[], entries: object[]): ColumnProfile[] {
+  profile(columns: Column[], entries: object[], excludedColumnNames: string[] = []): ColumnProfile[] {
     if (!entries.length) {
       return [];
     }
     return columns
-      .filter(c => !isComputedColumn(c))
+      .filter(c => !isComputedColumn(c) && !excludedColumnNames.includes(c.name))
       .flatMap(c => this.profileColumn(c, entries));
   }
 
@@ -135,11 +135,13 @@ export class ColumnProfiler {
     }
     const clone = CommonUtils.clone(column);
     DateTimeUtils.defineTimeUnits([clone], entries);
-    const timeUnit = clone.groupingTimeUnit;
-    if (!timeUnit || timeUnit === TimeUnit.MILLISECOND) {
+    const spanUnit = clone.groupingTimeUnit;
+    if (!spanUnit || spanUnit === TimeUnit.MILLISECOND) {
       return [];
     }
     const valueRange = ArrayUtils.numberValueRange(entries, column.name);
+    const nativeTimeUnit = DateTimeUtils.coarsestUnitOf(counts.valueCounts.keys());
+    const timeUnit = DateTimeUtils.maxTimeUnit(spanUnit, nativeTimeUnit);
     return [{
       name: column.name,
       dataType: column.dataType,
@@ -148,7 +150,9 @@ export class ColumnProfiler {
       presentCount: counts.presentCount,
       maxValueCount: this.maxOf(counts.valueCounts.values()),
       groupingTimeUnit: timeUnit,
-      timeBucketCount: Math.floor(DateTimeUtils.countTimeUnits(valueRange.max - valueRange.min, timeUnit)) + 1
+      timeBucketCount: Math.floor(DateTimeUtils.countTimeUnits(valueRange.max - valueRange.min, timeUnit)) + 1,
+      nativeTimeUnit,
+      nativeBucketCount: Math.round(DateTimeUtils.diff(valueRange.min, valueRange.max, nativeTimeUnit)) + 1
     }];
   }
 

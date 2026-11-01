@@ -113,6 +113,76 @@ describe('ColumnMappingComponent', () => {
     expect(component.onChange.emit).toHaveBeenCalled();
   });
 
+  it('#onDataTypeChanged should parse number column of year values to TIME by year format', () => {
+
+    // given
+    component.yearValues = true;
+    component.mapping.target.dataType = DataType.TIME;
+    component.mapping.target.format = 'd MMM yyyy';
+
+    // when
+    component.onDataTypeChanged();
+
+    // then
+    expect(component.mapping.source.format).toBe('y');
+    expect(component.mapping.target.format).toBe('yyyy');
+  });
+
+  it('#onDataTypeChanged should keep source format of number column of year values', () => {
+
+    // given
+    component.yearValues = true;
+    component.mapping.source.format = 'yyyy';
+    component.mapping.target.dataType = DataType.TIME;
+
+    // when
+    component.onDataTypeChanged();
+
+    // then
+    expect(component.mapping.source.format).toBe('yyyy');
+    expect(component.mapping.target.format).toBe('yyyy');
+  });
+
+  it('#onDataTypeChanged should not set source format of number column without year values', () => {
+
+    // given
+    component.mapping.target.dataType = DataType.TIME;
+
+    // when
+    component.onDataTypeChanged();
+
+    // then
+    expect(component.mapping.source.format).toBeUndefined();
+  });
+
+  it('#onDataTypeChanged should not set source format of text column of year values', () => {
+
+    // given
+    component.yearValues = true;
+    component.mapping.source.dataType = DataType.TEXT;
+    component.mapping.target.dataType = DataType.TIME;
+
+    // when
+    component.onDataTypeChanged();
+
+    // then
+    expect(component.mapping.source.format).toBeUndefined();
+  });
+
+  it('#onDataTypeChanged should not set source format of year values for other data type than TIME', () => {
+
+    // given
+    component.yearValues = true;
+    component.mapping.target.dataType = DataType.TEXT;
+
+    // when
+    component.onDataTypeChanged();
+
+    // then
+    expect(component.mapping.source.format).toBeUndefined();
+    expect(component.mapping.target.format).toBeUndefined();
+  });
+
   it('#selectionChange of display format should emit change event', () => {
 
     // given

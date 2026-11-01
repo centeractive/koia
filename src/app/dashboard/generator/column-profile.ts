@@ -16,4 +16,8 @@ export interface ColumnProfile {
   readonly maxValueCount?: number;
   readonly groupingTimeUnit?: TimeUnit;
   readonly timeBucketCount?: number;
+  /** coarsest time unit the values are aligned to, defined for TIME only */
+  readonly nativeTimeUnit?: TimeUnit;
+  /** number of native time units from the first to the last value, defined for TIME only */
+  readonly nativeBucketCount?: number;
 }

@@ -468,4 +468,56 @@ describe('ColumnProfiler', () => {
     // then
     expect(profiles[0].maxValueCount).toBe(3);
   });
+
+  it('#profile should derive native time unit and bucket count from aligned values', () => {
+
+    // given
+    const entries = entriesOf('Time', [T0, new Date(2024, 0, 3).getTime(), new Date(2024, 5, 30).getTime()]);
+
+    // when
+    const profiles = profiler.profile([column('Time', DataType.TIME)], entries);
+
+    // then
+    expect(profiles[0].nativeTimeUnit).toBe(TimeUnit.DAY);
+    expect(profiles[0].nativeBucketCount).toBe(182);
+  });
+
+  it('#profile should count native buckets of UTC midnights across the change to winter time', () => {
+
+    // given
+    const entries = entriesOf('Time', [Date.UTC(2024, 6, 1), Date.UTC(2024, 11, 31)]);
+
+    // when
+    const profiles = profiler.profile([column('Time', DataType.TIME)], entries);
+
+    // then
+    expect(profiles[0].nativeTimeUnit).toBe(TimeUnit.DAY);
+    expect(profiles[0].nativeBucketCount).toBe(184);
+  });
+
+  it('#profile should group time column by native time unit coarser than unit of value range', () => {
+
+    // given
+    const entries = entriesOf('Time', [2015, 2018, 2024].map(year => new Date(year, 0, 1).getTime()));
+
+    // when
+    const profiles = profiler.profile([column('Time', DataType.TIME)], entries);
+
+    // then
+    expect(profiles[0].groupingTimeUnit).toBe(TimeUnit.YEAR);
+    expect(profiles[0].timeBucketCount).toBe(10);
+    expect(profiles[0].nativeBucketCount).toBe(10);
+  });
+
+  it('#profile should not profile excluded columns', () => {
+
+    // given
+    const entries = Array.from({ length: 12 }, (_, i) => ({ ID: i + 1, Level: ['a', 'b', 'b'][i % 3] }));
+
+    // when
+    const profiles = profiler.profile([column('ID', DataType.NUMBER), column('Level', DataType.TEXT)], entries, ['ID']);
+
+    // then
+    expect(profiles.map(p => p.name)).toEqual(['Level']);
+  });
 });

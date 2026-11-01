@@ -677,4 +677,43 @@ describe('ColumnMappingGenerator', () => {
       expect(valid).toBe(true);
    });
 
+   it('#generate should map integer column named like a year of year values to time parsed by year format', () => {
+
+      // when
+      const mapping = generator.generate([{ 'Year AD': '1' }, { 'Year AD': '' }, { 'Year AD': '2004' }], 'en');
+
+      // then
+      expect(mapping[0].source).toEqual({ name: 'Year AD', dataType: DataType.NUMBER, width: undefined, format: 'y' });
+      expect(mapping[0].target.dataType).toBe(DataType.TIME);
+      expect(mapping[0].target.format).toBe('yyyy');
+   });
+
+   it('#generate should keep integer column of year values not named like a year', () => {
+
+      // when
+      const mapping = generator.generate([{ Period: '1990' }, { Period: '2001' }], 'en');
+
+      // then
+      expect(mapping[0].source.format).toBeUndefined();
+      expect(mapping[0].target.dataType).toBe(DataType.NUMBER);
+   });
+
+   it('#generate should keep number column named like a year of values other than years', () => {
+
+      // when
+      const mapping = generator.generate([{ Jahr: '2020' }, { Jahr: '12000' }], 'en');
+
+      // then
+      expect(mapping[0].source.format).toBeUndefined();
+      expect(mapping[0].target.dataType).toBe(DataType.NUMBER);
+   });
+
+   it('#generate should keep text column named like a year', () => {
+
+      // when
+      const mapping = generator.generate([{ Year: '2020' }, { Year: 'n/a' }], 'en');
+
+      // then
+      expect(mapping[0].target.dataType).toBe(DataType.TEXT);
+   });
 });

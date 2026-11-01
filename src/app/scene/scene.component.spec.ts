@@ -2072,6 +2072,33 @@ describe('SceneComponent', () => {
     expect(vi.mocked(dbService.writeEntries).mock.calls.flatMap(c => c[1]).map(e => e['ID'])).toEqual([1, 2]);
   }));
 
+  it('#hasYearValues should tell whether sample values of column are years', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns({ entries: [{ Period: 1990, Amount: 0.5 }, { Period: 2001, Amount: 7 }] });
+    const pairOf = (name: string) => component.columnMappings.find(cp => cp.source.name === name);
+    const idPair: ColumnPair = {
+      source: { name: 'ID', dataType: DataType.NUMBER, width: 6 }, target: { name: 'ID', dataType: DataType.NUMBER, width: 6 }, sequence: true
+    };
+
+    // when
+    const yearValues = [component.hasYearValues(pairOf('Period')), component.hasYearValues(pairOf('Amount')), component.hasYearValues(idPair)];
+
+    // then
+    expect(yearValues).toEqual([true, false, false]);
+  }));
+
+  it('#hasYearValues should tell no year values without sample', () => {
+
+    // when
+    const yearValues = component.hasYearValues({
+      source: { name: 'Period', dataType: DataType.NUMBER, width: 4 }, target: { name: 'Period', dataType: DataType.NUMBER, width: 4 }
+    });
+
+    // then
+    expect(yearValues).toBe(false);
+  });
+
   describe('pattern columns', () => {
 
     const messages: Sample = { entries: [{ Message: 'Request r1 done', Amount: 1 }, { Message: 'Request r2 done', Amount: 2 }] };

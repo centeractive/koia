@@ -4294,6 +4294,37 @@ describe('DashboardComponent', () => {
       expect(generateSpy.mock.lastCall[0].currentContexts).toEqual([context]);
     }));
 
+    it('#generateDashboard should exclude ID column of scene from generation', fakeAsync(() => {
+
+      // given
+      scene.columnMappings = [
+        { source: { name: 'ID', dataType: DataType.NUMBER, width: 6 }, target: { name: 'Number', dataType: DataType.NUMBER, width: 6 }, sequence: true },
+        { source: { name: 'Level', dataType: DataType.TEXT, width: 10 }, target: { name: 'Level', dataType: DataType.TEXT, width: 10 } }
+      ];
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].excludedColumnNames).toEqual(['Number']);
+    }));
+
+    it('#generateDashboard should exclude no column of scene without column mappings', fakeAsync(() => {
+
+      // given
+      scene.columnMappings = undefined;
+      const generateSpy = vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(generatedDashboard());
+
+      // when
+      component.generateDashboard();
+      flush();
+
+      // then
+      expect(generateSpy.mock.lastCall[0].excludedColumnNames).toEqual([]);
+    }));
+
     it('#generateDashboard should replace text tiles and notes by generated elements', fakeAsync(() => {
 
       // given

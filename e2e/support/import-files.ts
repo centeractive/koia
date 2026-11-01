@@ -68,6 +68,19 @@ export const MISSING_TIMES_CSV = csvFile(resolve(E2E_DATA_DIR, 'missing-times.cs
 
 export const PROTOTYPE_VALUES_CSV = csvFile(resolve(E2E_DATA_DIR, 'prototype-values.csv'), [DataType.TEXT, DataType.TEXT]);
 
+/** 330 days of 6 rows each, one per age class and gender, holding running totals */
+export const CUMULATIVE_DOSES_CSV = csvFile(resolve(E2E_DATA_DIR, 'cumulative-doses.csv'),
+   [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.NUMBER, DataType.NUMBER]);
+
+/** 200 rows of every tenth year from 1 to 1991 */
+export const YEARLY_GREENHOUSE_CSV = csvFile(resolve(E2E_DATA_DIR, 'yearly-greenhouse.csv'), [DataType.TIME, DataType.NUMBER, DataType.NUMBER]);
+
+/** the years 1990 to 2001 in a column not named like a year */
+export const PERIODS_CSV = csvFile(resolve(E2E_DATA_DIR, 'periods.csv'), [DataType.NUMBER, DataType.NUMBER]);
+
+/** 12 daily orders */
+export const SMALL_ORDERS_CSV = csvFile(resolve(E2E_DATA_DIR, 'small-orders.csv'), [DataType.TIME, DataType.TEXT, DataType.TEXT, DataType.NUMBER]);
+
 function csvFile(path: string, dataTypes: DataType[], separator = ','): ImportFile {
    const [columns, ...rows] = Papa.parse<string[]>(readFileSync(path, 'utf-8'), { delimiter: separator, skipEmptyLines: true }).data;
    return { path, name: basename(path, extname(path)), sourceName: SourceName.CSV, columns, rowCount: rows.length, dataTypes, separator };

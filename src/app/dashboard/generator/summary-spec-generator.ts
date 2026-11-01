@@ -2,7 +2,8 @@ import { Aggregation } from 'app/shared/model';
 import { CategoryCombinationCounter } from './category-combination-counter';
 import { ColumnProfile } from './column-profile';
 import { TileSize, TileSpec } from './tile-spec';
-import { pairsOf, tileSpecOf, triplesOf } from './tile-spec-builder';
+import { isUniformCategory, pairsOf, tileSpecOf, timeRowsOf, triplesOf } from './tile-spec-builder';
+import { TimeSeriesInspector } from './time-series-inspector';
 
 /**
  * creates the candidate summary table specs of all recipes that apply to the profiled columns
@@ -25,8 +26,11 @@ export class SummarySpecGenerator {
   static readonly STATISTICS: readonly Aggregation[] = [Aggregation.MIN, Aggregation.MAX, Aggregation.AVG, Aggregation.MEDIAN];
   static readonly RANGE_AGGREGATIONS: readonly Aggregation[] = [Aggregation.MIN, Aggregation.AVG, Aggregation.MAX];
 
-  generate(categories: ColumnProfile[], measures: ColumnProfile[], times: ColumnProfile[], combinations: CategoryCombinationCounter):
-    TileSpec[] {
+  /**
+   * @returns the specs of all recipes but the count tables of uniform distributions
+   */
+  generate(categories: ColumnProfile[], measures: ColumnProfile[], times: ColumnProfile[], combinations: CategoryCombinationCounter,
+    inspector: TimeSeriesInspector): TileSpec[] {
     return [
       ...this.measuresByCategories(measures, categories, combinations),
       ...this.measuresOverTime(measures, times),
@@ -37,7 +41,7 @@ export class SummarySpecGenerator {
       ...this.valueRangeCounts(measures),
       ...this.measuresByValueRanges(measures),
       ...this.categoryCounts(categories),
-      ...this.categoryCountsOverTime(categories, times)
+      ...this.categoryCountsOverTime(categories, times, inspector)
     ];
   }
 
@@ -82,13 +86,13 @@ export class SummarySpecGenerator {
 
   private measuresOverTime(measures: ColumnProfile[], times: ColumnProfile[]): TileSpec[] {
     return measures.flatMap(n => times
-      .filter(t => this.timeRows(t) <= SummarySpecGenerator.MAX_TIME_BUCKETS)
+      .filter(t => timeRowsOf(t) <= SummarySpecGenerator.MAX_TIME_BUCKETS)
       .map(t => this.measureTable(n, [t])));
   }
 
   private measuresOverTimeByCategory(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
     return measures.flatMap(n => categories.flatMap(c => times
-      .filter(t => c.distinctCount * this.timeRows(t) <= SummarySpecGenerator.MAX_HIERARCHY_ROWS)
+      .filter(t => c.distinctCount * timeRowsOf(t) <= SummarySpecGenerator.MAX_HIERARCHY_ROWS)
       .map(t => this.measureTable(n, [c, t]))));
   }
 
@@ -106,7 +110,8 @@ export class SummarySpecGenerator {
   }
 
   private categoryCrosstabs(categories: ColumnProfile[], combinations: CategoryCombinationCounter): TileSpec[] {
-    return [...this.tableCategoryPairs(categories, combinations), ...this.tableCategoryTriples(categories, combinations)]
+    const pairs = this.tableCategoryPairs(categories, combinations).filter(([c1, c2]) => !combinations.isUniform(c1.name, c2.name));
+    return [...pairs, ...this.tableCategoryTriples(categories, combinations)]
       .map(grouping => tileSpecOf({
         dataColumns: grouping.slice(-1),
         groupByColumns: grouping.slice(0, -1),
@@ -154,16 +159,16 @@ export class SummarySpecGenerator {
   }
 
   private categoryCounts(categories: ColumnProfile[]): TileSpec[] {
-    return categories.filter(c => c.distinctCount <= SummarySpecGenerator.MAX_TABLE_ROWS).map(c => tileSpecOf({
+    return categories.filter(c => c.distinctCount <= SummarySpecGenerator.MAX_TABLE_ROWS && !isUniformCategory(c)).map(c => tileSpecOf({
       dataColumns: [c],
       aggregations: [Aggregation.COUNT],
       size: TileSize.WIDE
     }));
   }
 
-  private categoryCountsOverTime(categories: ColumnProfile[], times: ColumnProfile[]): TileSpec[] {
+  private categoryCountsOverTime(categories: ColumnProfile[], times: ColumnProfile[], inspector: TimeSeriesInspector): TileSpec[] {
     return categories.flatMap(c => times
-      .filter(t => this.timeRows(t) * c.distinctCount <= SummarySpecGenerator.MAX_HIERARCHY_ROWS)
+      .filter(t => timeRowsOf(t) * c.distinctCount <= SummarySpecGenerator.MAX_HIERARCHY_ROWS && !inspector.isUniform(t, c))
       .map(t => tileSpecOf({
         dataColumns: [c],
         groupByColumns: [t],
@@ -177,12 +182,5 @@ export class SummarySpecGenerator {
    */
   private rangeMeasures(measures: ColumnProfile[]): ColumnProfile[] {
     return measures.filter(m => m.distinctCount > SummarySpecGenerator.MAX_TABLE_ROWS);
-  }
-
-  /**
-   * @returns the maximum number of rows grouped by the time column, its time buckets that hold values
-   */
-  private timeRows(time: ColumnProfile): number {
-    return Math.min(time.timeBucketCount, time.distinctCount);
   }
 }

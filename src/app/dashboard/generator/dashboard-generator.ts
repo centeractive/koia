@@ -19,6 +19,7 @@ import { SizedTile, TileSize, TileSpec } from './tile-spec';
 import { TileSpecGenerator } from './tile-spec-generator';
 import { TileSpecRanker } from './tile-spec-ranker';
 import { TileValidator } from './tile-validator';
+import { TimeSeriesInspector } from './time-series-inspector';
 
 export interface GenerationRequest {
   /** returns fresh column clones on every call */
@@ -28,6 +29,8 @@ export interface GenerationRequest {
   currentGrid: GridDef;
   /** width of the grid scroller without scrollbar, 0 when unknown */
   containerWidth: number;
+  /** columns never used by generated tiles, the ID column of the scene */
+  excludedColumnNames: string[];
 }
 
 export interface GeneratedDashboard {
@@ -72,12 +75,14 @@ export class DashboardGenerator {
     if (!request.entries?.length) {
       return undefined;
     }
-    const profiles = this.profiler.profile(request.columns(), request.entries);
+    const profiles = this.profiler.profile(request.columns(), request.entries, request.excludedColumnNames);
     if (!profiles.length) {
       return undefined;
     }
     const combinations = new CategoryCombinationCounter(request.entries);
-    const specs = this.specGenerator.generate(profiles, this.randomizer, combinations);
+    const inspector = new TimeSeriesInspector(request.entries,
+      TimeSeriesInspector.seriesColumnNamesOf(request.columns(), profiles, request.excludedColumnNames));
+    const specs = this.specGenerator.generate(profiles, this.randomizer, combinations, inspector);
     if (!specs.length) {
       return undefined;
     }
@@ -166,7 +171,7 @@ export class DashboardGenerator {
   private findFeature(ranked: TileSpec[], request: GenerationRequest, accepted: Set<string>, invalidSpecs: Set<TileSpec>):
     ChartContext | undefined {
     let validations = 0;
-    for (const spec of ranked.filter(s => s.timeChart)) {
+    for (const spec of this.ranker.featureCandidates(ranked)) {
       if (validations >= DashboardGenerator.MAX_VALIDATIONS) {
         break;
       }

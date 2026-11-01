@@ -4,20 +4,19 @@ import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import { CategoryCombinationCounter } from './category-combination-counter';
 import { ColumnProfile, ColumnRole } from './column-profile';
 import { Randomizer } from './randomizer';
+import { RunningTotal, RunningTotalSpecGenerator } from './running-total-spec-generator';
 import { SummarySpecGenerator } from './summary-spec-generator';
 import { TileSize, TileSpec } from './tile-spec';
-import { pairsOf, tileSpecOf } from './tile-spec-builder';
+import { axisCategoriesOf, isUniformCategory, MAX_SERIES, seriesCategoriesOf, tileSpecOf, unsplitAndSplitBy } from './tile-spec-builder';
+import { TimeSeriesInspector } from './time-series-inspector';
+import { TimeSpecGenerator } from './time-spec-generator';
 
 /**
  * creates the candidate tile specs of all recipes that apply to the profiled columns
  */
 export class TileSpecGenerator {
 
-  static readonly MAX_SERIES = 6;
-  static readonly MAX_AXIS_CATEGORIES = 12;
-  /** number of colors of the smallest color schemes, so that the colors of time series never repeat */
-  static readonly MAX_TIME_SERIES = 8;
-  static readonly MAX_TIME_BARS = 60;
+  static readonly MAX_SERIES = MAX_SERIES;
 
   private static readonly MAX_CIRCULAR_CATEGORIES = 8;
   private static readonly MIN_RADAR_CATEGORIES = 3;
@@ -25,25 +24,31 @@ export class TileSpecGenerator {
   private static readonly MIN_BAR_CATEGORIES = 3;
   private static readonly MAX_BAR_CATEGORIES = 20;
   private static readonly MAX_HORIZONTAL_BAR_CATEGORIES = 30;
-  private static readonly TIME_CHART_TYPES = [ChartType.LINE, ChartType.AREA];
-  private static readonly TIME_AGGREGATIONS = [Aggregation.SUM, Aggregation.AVG];
 
-  constructor(private readonly summarySpecGenerator = new SummarySpecGenerator()) { }
+  constructor(private readonly summarySpecGenerator = new SummarySpecGenerator(),
+    private readonly timeSpecGenerator = new TimeSpecGenerator(),
+    private readonly runningTotalSpecGenerator = new RunningTotalSpecGenerator(summarySpecGenerator)) { }
 
-  generate(profiles: ColumnProfile[], randomizer: Randomizer, combinations: CategoryCombinationCounter): TileSpec[] {
+  /**
+   * @returns the specs of all recipes, the running totals charted per native time unit summarized by their latest values only
+   */
+  generate(profiles: ColumnProfile[], randomizer: Randomizer, combinations: CategoryCombinationCounter, inspector: TimeSeriesInspector):
+    TileSpec[] {
     const categories = this.profilesOf(profiles, ColumnRole.CATEGORY);
     const measures = this.profilesOf(profiles, ColumnRole.MEASURE);
     const times = this.profilesOf(profiles, ColumnRole.TIME);
+    const runningTotals: RunningTotal[] = measures
+      .map(measure => ({ measure, times: this.timeSpecGenerator.runningTotalTimes(measure, times, inspector) }))
+      .filter(r => r.times.length > 0);
+    const summaryMeasures = measures.filter(n => !runningTotals.some(r => r.measure === n));
     return [
       ...this.distributions(categories, randomizer),
       ...this.categoriesByCategory(categories, randomizer, combinations),
-      ...this.countsOverTime(categories, times, randomizer),
-      ...this.valuesOverTime(measures, times, categories),
-      ...this.aggregatedValuesOverTime(measures, times, categories, randomizer),
-      ...this.rowCountsOverTime(times),
-      ...this.scatters(measures, times, categories),
+      ...this.timeSpecGenerator.generate(categories, measures, times, randomizer, inspector),
+      ...this.scatters(measures, times, categories, runningTotals),
       ...this.valuesByName(measures, categories),
-      ...this.summarySpecGenerator.generate(categories, measures, times, combinations)
+      ...this.summarySpecGenerator.generate(categories, summaryMeasures, times, combinations, inspector),
+      ...this.runningTotalSpecGenerator.generate(runningTotals, categories, combinations, inspector)
     ].filter(s => !this.isSelfCombination(s));
   }
 
@@ -68,17 +73,19 @@ export class TileSpecGenerator {
   }
 
   private distributions(categories: ColumnProfile[], randomizer: Randomizer): TileSpec[] {
-    return categories.flatMap(c => this.distributionChartTypes(c.distinctCount).map(chartType => {
-      const legend = [ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA].includes(chartType);
-      return tileSpecOf({
-        chartType,
-        dataColumns: [c],
-        aggregations: [Aggregation.COUNT],
-        showLegend: legend,
-        legendPosition: legend ? randomizer.pick(['top', 'right']) : 'top',
-        size: TileSize.SMALL
-      });
-    }));
+    return categories
+      .filter(c => !isUniformCategory(c))
+      .flatMap(c => this.distributionChartTypes(c.distinctCount).map(chartType => {
+        const legend = [ChartType.PIE, ChartType.DOUGHNUT, ChartType.POLAR_AREA].includes(chartType);
+        return tileSpecOf({
+          chartType,
+          dataColumns: [c],
+          aggregations: [Aggregation.COUNT],
+          showLegend: legend,
+          legendPosition: legend ? randomizer.pick(['top', 'right']) : 'top',
+          size: TileSize.SMALL
+        });
+      }));
   }
 
   private distributionChartTypes(distinctCount: number): ChartType[] {
@@ -103,8 +110,8 @@ export class TileSpecGenerator {
 
   private categoriesByCategory(categories: ColumnProfile[], randomizer: Randomizer, combinations: CategoryCombinationCounter):
     TileSpec[] {
-    const axisCategories = categories.filter(b => b.dataType === DataType.TEXT && b.distinctCount <= TileSpecGenerator.MAX_AXIS_CATEGORIES);
-    return this.seriesCategories(categories).flatMap(a => axisCategories
+    const axisCategories = axisCategoriesOf(categories);
+    return seriesCategoriesOf(categories).flatMap(a => axisCategories
       .filter(b => b !== a)
       .flatMap(b => this.valueCountSplits(a, b, categories, combinations).flatMap(splitColumns =>
         [ChartType.LINEAR_BAR, ChartType.LINEAR_HORIZONTAL_BAR].map(chartType => tileSpecOf({
@@ -125,81 +132,17 @@ export class TileSpecGenerator {
    */
   private valueCountSplits(series: ColumnProfile, axis: ColumnProfile, categories: ColumnProfile[],
     combinations: CategoryCombinationCounter): ColumnProfile[][] {
-    return this.unsplitAndSplitBy(categories
-      .filter(c => c !== series && c !== axis && combinations.count(series.name, c.name) <= TileSpecGenerator.MAX_SERIES));
-  }
-
-  private unsplitAndSplitBy(categories: ColumnProfile[]): ColumnProfile[][] {
-    return [[], ...categories.map(c => [c])];
-  }
-
-  private countsOverTime(categories: ColumnProfile[], times: ColumnProfile[], randomizer: Randomizer): TileSpec[] {
-    return this.seriesCategories(categories).flatMap(a => times
-      .flatMap(t => TileSpecGenerator.TIME_CHART_TYPES.map(chartType => tileSpecOf({
-        chartType,
-        dataColumns: [a],
-        groupByColumns: [t],
-        aggregations: [Aggregation.COUNT],
-        stacked: chartType === ChartType.AREA || randomizer.chance(),
-        showLegend: true,
-        size: TileSize.WIDE,
-        timeChart: true
-      }))));
-  }
-
-  private valuesOverTime(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
-    return times
-      .filter(t => t.maxValueCount === 1)
-      .flatMap(t => [
-        ...measures.flatMap(n => this.seriesSplits(categories).flatMap(split => this.timeCharts([n], t, split, t.presentCount))),
-        ...pairsOf(measures).flatMap(pair => this.timeCharts(pair, t, [], t.presentCount))
-      ]);
-  }
-
-  private aggregatedValuesOverTime(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[],
-    randomizer: Randomizer): TileSpec[] {
-    const splits = this.unsplitAndSplitBy(categories.filter(c => c.distinctCount <= TileSpecGenerator.MAX_TIME_SERIES));
-    return this.aggregatingTimes(times).flatMap(t => measures.flatMap(n => splits.flatMap(split =>
-      this.timeCharts([n], t, split, t.timeBucketCount, [randomizer.pick(TileSpecGenerator.TIME_AGGREGATIONS)]))));
-  }
-
-  private rowCountsOverTime(times: ColumnProfile[]): TileSpec[] {
-    return this.aggregatingTimes(times).flatMap(t => this.timeCharts([], t, [], t.timeBucketCount, [Aggregation.ROW_COUNT]));
+    return unsplitAndSplitBy(categories
+      .filter(c => c !== series && c !== axis && combinations.count(series.name, c.name) <= MAX_SERIES));
   }
 
   /**
-   * @returns the times whose time buckets aggregate values and fit a chart
+   * @returns the scatters of each measure by each other measure and by each time but the times of its running total
    */
-  private aggregatingTimes(times: ColumnProfile[]): ColumnProfile[] {
-    return times.filter(t => t.timeBucketCount < t.presentCount && t.timeBucketCount <= ChartDataService.MAX_DATA_POINTS);
-  }
-
-  /**
-   * @returns line charts, area charts of a single series or stacked split sums, and linear bar charts when their bars per series fit
-   * the bar limit
-   */
-  private timeCharts(dataColumns: ColumnProfile[], time: ColumnProfile, splitColumns: ColumnProfile[], points: number,
-    aggregations: Aggregation[] = []): TileSpec[] {
-    const split = splitColumns.length > 0;
-    const area = split ? aggregations.length === 1 && aggregations[0] === Aggregation.SUM : dataColumns.length <= 1;
-    const chartTypes = [ChartType.LINE, ...(area ? [ChartType.AREA] : []),
-      ...(points <= TileSpecGenerator.MAX_TIME_BARS ? [ChartType.LINEAR_BAR] : [])];
-    return chartTypes.map(chartType => tileSpecOf({
-      chartType,
-      dataColumns,
-      groupByColumns: [time],
-      splitColumns,
-      aggregations,
-      stacked: split && chartType === ChartType.AREA,
-      multiValueAxes: dataColumns.length > 1,
-      showLegend: splitColumns.length > 0 || dataColumns.length > 1,
-      size: TileSize.WIDE,
-      timeChart: true
-    }));
-  }
-
-  private scatters(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[]): TileSpec[] {
-    return measures.flatMap(n => [...times, ...measures.filter(x => x !== n)]
+  private scatters(measures: ColumnProfile[], times: ColumnProfile[], categories: ColumnProfile[], runningTotals: RunningTotal[]):
+    TileSpec[] {
+    const runningTotalTimesOf = (n: ColumnProfile) => runningTotals.find(r => r.measure === n)?.times ?? [];
+    return measures.flatMap(n => [...times.filter(t => !runningTotalTimesOf(n).includes(t)), ...measures.filter(x => x !== n)]
       .flatMap(x => this.scatterSplits(n, categories).map(split => tileSpecOf({
         chartType: ChartType.SCATTER,
         dataColumns: [n],
@@ -211,17 +154,13 @@ export class TileSpecGenerator {
       }))));
   }
 
-  private seriesSplits(categories: ColumnProfile[]): ColumnProfile[][] {
-    return this.unsplitAndSplitBy(this.seriesCategories(categories));
-  }
-
   /**
    * @returns the split columns of all scatter specs of the specified measure whose series fit, else the unsplit scatter that is
    * sampled down
    */
   private scatterSplits(measure: ColumnProfile, categories: ColumnProfile[]): ColumnProfile[][] {
     const variants: ColumnProfile[][] = measure.presentCount <= ChartDataService.MAX_DATA_POINTS ? [[]] : [];
-    this.seriesCategories(categories)
+    seriesCategoriesOf(categories)
       .filter(s => Math.min(measure.presentCount, s.maxValueCount) <= ChartDataService.MAX_DATA_POINTS)
       .forEach(s => variants.push([s]));
     return variants.length ? variants : [[]];
@@ -244,9 +183,5 @@ export class TileSpecGenerator {
 
   private nameChartTypes(distinctCount: number): ChartType[] {
     return this.distributionChartTypes(distinctCount).filter(t => [ChartType.BAR, ChartType.HORIZONTAL_BAR, ChartType.RADAR].includes(t));
-  }
-
-  private seriesCategories(categories: ColumnProfile[]): ColumnProfile[] {
-    return categories.filter(c => c.distinctCount <= TileSpecGenerator.MAX_SERIES);
   }
 }

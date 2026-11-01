@@ -1,16 +1,19 @@
 import { Aggregation, DataType } from 'app/shared/model';
 import { ChartType } from 'app/shared/model/chart';
-import { ChartDataService } from 'app/shared/services/chart/chart-data.service';
 import {
   categoryProfile as category, combinationCounterOf, describeTileSpec, measureProfile as measure, productCombinationCounter,
   SequenceRandomSource, timeProfile as time
 } from 'app/shared/test';
 import { ColumnProfile } from './column-profile';
 import { Randomizer } from './randomizer';
+import { RunningTotalSpecGenerator } from './running-total-spec-generator';
 import { SummarySpecGenerator } from './summary-spec-generator';
 import { TileSignature } from './tile-signature';
 import { TileSize, TileSpec } from './tile-spec';
+import { tileSpecOf } from './tile-spec-builder';
 import { TileSpecGenerator } from './tile-spec-generator';
+import { TimeSeriesInspector } from './time-series-inspector';
+import { TimeSpecGenerator } from './time-spec-generator';
 
 describe('TileSpecGenerator', () => {
 
@@ -21,7 +24,7 @@ describe('TileSpecGenerator', () => {
   });
 
   function generate(profiles: ColumnProfile[], randomValues = [0], combinations = productCombinationCounter(profiles)): TileSpec[] {
-    return generator.generate(profiles, new Randomizer(new SequenceRandomSource(randomValues)), combinations);
+    return generator.generate(profiles, new Randomizer(new SequenceRandomSource(randomValues)), combinations, new TimeSeriesInspector([], []));
   }
 
   function generateCharts(profiles: ColumnProfile[], randomValues = [0], combinations = productCombinationCounter(profiles)): TileSpec[] {
@@ -39,7 +42,7 @@ describe('TileSpecGenerator', () => {
   it('#generate should create distribution charts of chart types matching category count', () => {
 
     // when
-    const specsPerCount = [2, 8, 10, 25].map(d => generateCharts([category('C', d)], [0.5]));
+    const specsPerCount = [2, 8, 10, 25].map(d => generateCharts([category('C', d, 20)], [0.5]));
 
     // then
     expect(specsPerCount.map(specs => specs.map(s => s.chartType))).toEqual([
@@ -102,60 +105,6 @@ describe('TileSpecGenerator', () => {
     expect(specs.map(s => describeTileSpec(s))).toEqual(['linearBar Done by A split ']);
   });
 
-  it('#generate should create count over time charts as time charts', () => {
-
-    // given
-    const profiles = [category('A', 3), category('B', 7), time('T', 2)];
-
-    // when
-    const specs = generate(profiles, [0.9]).filter(s => s.timeChart && s.aggregations.includes(Aggregation.COUNT));
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual(['line A by T split ', 'area A by T split ']);
-    expect(specs.map(s => s.stacked)).toEqual([false, true]);
-    specs.forEach(s => {
-      expect(s.aggregations).toEqual([Aggregation.COUNT]);
-      expect(s.showLegend).toBe(true);
-      expect(s.legendPosition).toBe('top');
-      expect(s.size).toBe(TileSize.WIDE);
-    });
-  });
-
-  it('#generate should create values over time charts with multiple value axes for measure pairs', () => {
-
-    // given
-    const profiles = [measure('N1'), measure('N2'), time('T', 1)];
-
-    // when
-    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length === 0);
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual([
-      'line N1 by T split ', 'area N1 by T split ',
-      'line N2 by T split ', 'area N2 by T split ',
-      'line N1,N2 by T split '
-    ]);
-    expect(specs.map(s => s.multiValueAxes)).toEqual([false, false, false, false, true]);
-    expect(specs.map(s => s.showLegend)).toEqual([false, false, false, false, true]);
-    specs.forEach(s => {
-      expect(s.aggregations).toEqual([]);
-      expect(s.stacked).toBe(false);
-      expect(s.size).toBe(TileSize.WIDE);
-    });
-  });
-
-  it('#generate should not create values over time charts when time values repeat', () => {
-
-    // given
-    const profiles = [measure('N1'), measure('N2'), category('S', 3), time('T', 2)];
-
-    // when
-    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length === 0);
-
-    // then
-    expect(specs).toEqual([]);
-  });
-
   it('#generate should create values over time and scatter charts unsplit and split by each low cardinality category', () => {
 
     // given
@@ -176,31 +125,6 @@ describe('TileSpecGenerator', () => {
       expect(s.multiValueAxes).toBe(false);
       expect(s.showLegend).toBe(s.splitColumns.length > 0);
       expect(s.legendPosition).toBe('top');
-      expect(s.size).toBe(TileSize.WIDE);
-    });
-  });
-
-  it('#generate should create linear bar charts over time only when their bars fit the bar limit', () => {
-
-    // given
-    const fitting = [measure('N', 60), { ...time('T', 1, 60), presentCount: 60 }];
-    const exceeding = [measure('N', 61), { ...time('T', 1, 61), presentCount: 61 }];
-    const aggregating = [measure('N'), time('T', 2, TileSpecGenerator.MAX_TIME_BARS)];
-    const aggregatingExceeding = [measure('N'), time('T', 2, TileSpecGenerator.MAX_TIME_BARS + 1)];
-
-    // when
-    const specsPerProfiles = [fitting, exceeding, aggregating, aggregatingExceeding]
-      .map(profiles => generate(profiles).filter(s => s.chartType === ChartType.LINEAR_BAR));
-
-    // then
-    expect(specsPerProfiles.map(specs => specs.map(s => [describeTileSpec(s), s.aggregations]))).toEqual([
-      [['linearBar N by T split ', []]],
-      [],
-      [['linearBar N by T split ', [Aggregation.SUM]], ['linearBar  by T split ', [Aggregation.ROW_COUNT]]],
-      []
-    ]);
-    specsPerProfiles.flat().forEach(s => {
-      expect(s.timeChart).toBe(true);
       expect(s.size).toBe(TileSize.WIDE);
     });
   });
@@ -289,14 +213,103 @@ describe('TileSpecGenerator', () => {
     const t = time('T', 2);
     const randomizer = new Randomizer(new SequenceRandomSource([0]));
     const combinations = productCombinationCounter([n, c, t]);
+    const inspector = new TimeSeriesInspector([], []);
 
     // when
-    const specs = generator.generate([n, c, t], randomizer, combinations);
+    const specs = generator.generate([n, c, t], randomizer, combinations, inspector);
 
     // then
     expect(specs[specs.length - 1]).toBe(tableSpec);
     expect(specs.filter(s => isTable(s))).toEqual([tableSpec]);
-    expect(generateTables).toHaveBeenCalledWith([c], [n], [t], combinations);
+    expect(generateTables).toHaveBeenCalledWith([c], [n], [t], combinations, inspector);
+  });
+
+  it('#generate should pass measures but running totals charted per native time unit to summary table specs', () => {
+
+    // given
+    const [r, n, t] = [measure('R'), measure('N'), time('T', 2)];
+    const summarySpecGenerator = new SummarySpecGenerator();
+    const generateTables = vi.spyOn(summarySpecGenerator, 'generate');
+    const timeSpecGenerator = new TimeSpecGenerator();
+    const timesSpy = vi.spyOn(timeSpecGenerator, 'runningTotalTimes').mockImplementation(m => m === r ? [t] : []);
+    generator = new TileSpecGenerator(summarySpecGenerator, timeSpecGenerator);
+
+    // when
+    generate([r, n, t]);
+
+    // then
+    expect(timesSpy).toHaveBeenCalledWith(r, [t], expect.any(TimeSeriesInspector));
+    expect(timesSpy).toHaveBeenCalledWith(n, [t], expect.any(TimeSeriesInspector));
+    expect(generateTables.mock.lastCall[1]).toEqual([n]);
+  });
+
+  it('#generate should append the latest value specs of running totals with their times but drop those combining a column with itself',
+    () => {
+
+      // given
+      const [r, n, c, t] = [measure('R'), measure('N'), category('C', 3), time('T', 2)];
+      const timeSpecGenerator = new TimeSpecGenerator();
+      vi.spyOn(timeSpecGenerator, 'runningTotalTimes').mockImplementation(m => m === r ? [t] : []);
+      const runningTotalSpecGenerator = new RunningTotalSpecGenerator(new SummarySpecGenerator());
+      const latestSpec = tileSpecOf({ dataColumns: [r], groupByColumns: [c], aggregations: [Aggregation.MAX], size: TileSize.WIDE });
+      const selfSpec = tileSpecOf({ dataColumns: [r], groupByColumns: [r], aggregations: [Aggregation.MAX], size: TileSize.WIDE });
+      const generateLatest = vi.spyOn(runningTotalSpecGenerator, 'generate').mockReturnValue([latestSpec, selfSpec]);
+      generator = new TileSpecGenerator(new SummarySpecGenerator(), timeSpecGenerator, runningTotalSpecGenerator);
+      const combinations = productCombinationCounter([r, n, c, t]);
+      const inspector = new TimeSeriesInspector([], []);
+
+      // when
+      const specs = generator.generate([r, n, c, t], new Randomizer(new SequenceRandomSource([0])), combinations, inspector);
+
+      // then
+      expect(generateLatest).toHaveBeenCalledWith([{ measure: r, times: [t] }], [c], combinations, inspector);
+      expect(specs[specs.length - 1]).toBe(latestSpec);
+      expect(specs).not.toContain(selfSpec);
+    });
+
+  it('#generate should create no scatter of a running total by the times of its native time unit charts', () => {
+
+    // given
+    const [r, n, t1, t2] = [measure('R'), measure('N'), time('T1', 2), time('T2', 2)];
+    const timeSpecGenerator = new TimeSpecGenerator();
+    vi.spyOn(timeSpecGenerator, 'runningTotalTimes').mockImplementation(m => m === r ? [t1] : []);
+    generator = new TileSpecGenerator(new SummarySpecGenerator(), timeSpecGenerator);
+
+    // when
+    const specs = generateCharts([r, n, t1, t2]).filter(s => s.chartType === ChartType.SCATTER);
+
+    // then
+    expect(specs.map(s => describeTileSpec(s))).toEqual([
+      'scatter R by T2 split ', 'scatter R by N split ', 'scatter N by T1 split ', 'scatter N by T2 split ', 'scatter N by R split '
+    ]);
+  });
+
+  it('#generate should include time specs and drop those combining a column with itself', () => {
+
+    // given
+    const [r, c] = [measure('R'), category('C', 3)];
+    const timeSpec = tileSpecOf({ chartType: ChartType.LINE, dataColumns: [r], groupByColumns: [time('T', 2)], aggregations: [],
+      size: TileSize.WIDE, timeChart: true });
+    const selfSpec = tileSpecOf({ chartType: ChartType.LINE, dataColumns: [r], groupByColumns: [r], aggregations: [], size: TileSize.WIDE });
+    const timeSpecGenerator = new TimeSpecGenerator();
+    vi.spyOn(timeSpecGenerator, 'generate').mockReturnValue([timeSpec, selfSpec]);
+    generator = new TileSpecGenerator(new SummarySpecGenerator(), timeSpecGenerator);
+
+    // when
+    const specs = generate([r, c]);
+
+    // then
+    expect(specs).toContain(timeSpec);
+    expect(specs).not.toContain(selfSpec);
+  });
+
+  it('#generate should create no distribution chart of uniformly distributed category', () => {
+
+    // when
+    const specs = generateCharts([category('C', 4, 25)]);
+
+    // then
+    expect(specs).toEqual([]);
   });
 
   it('#generate should never combine column with itself', () => {
@@ -329,87 +342,6 @@ describe('TileSpecGenerator', () => {
       'bar Rating by  split ', 'horizontalBar Rating by  split ',
       'linearBar Rating by Food split ', 'linearHorizontalBar Rating by Food split '
     ]);
-  });
-
-  it('#generate should create values over time charts regardless of their data points', () => {
-
-    // given
-    const profiles = [measure('N1', 5000), measure('N2', 5000), time('T', 1)];
-
-    // when
-    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length === 0);
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual([
-      'line N1 by T split ', 'area N1 by T split ',
-      'line N2 by T split ', 'area N2 by T split ',
-      'line N1,N2 by T split '
-    ]);
-  });
-
-  it('#generate should create aggregated values over time charts unsplit and split by categories within time series limit', () => {
-
-    // given
-    const profiles = [measure('N'), time('T', 3), category('S1', TileSpecGenerator.MAX_TIME_SERIES),
-      category('S2', TileSpecGenerator.MAX_TIME_SERIES + 1)];
-
-    // when
-    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.includes(Aggregation.SUM));
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual([
-      'line N by T split ', 'area N by T split ', 'linearBar N by T split ',
-      'line N by T split S1', 'area N by T split S1', 'linearBar N by T split S1'
-    ]);
-    expect(specs.map(s => s.showLegend)).toEqual([false, false, false, true, true, true]);
-    expect(specs.map(s => s.stacked)).toEqual([false, false, false, false, true, false]);
-    specs.forEach(s => {
-      expect(s.aggregations).toEqual([Aggregation.SUM]);
-      expect(s.multiValueAxes).toBe(false);
-      expect(s.size).toBe(TileSize.WIDE);
-    });
-  });
-
-  it('#generate should create row count over time charts with signature of time column', () => {
-
-    // given
-    const profiles = [time('T', 3)];
-
-    // when
-    const specs = generate(profiles);
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual(['line  by T split ', 'area  by T split ', 'linearBar  by T split ']);
-    specs.forEach(s => {
-      expect(s.aggregations).toEqual([Aggregation.ROW_COUNT]);
-      expect(s.signature).toBe('chart:T');
-      expect(s.showLegend).toBe(false);
-      expect(s.timeChart).toBe(true);
-    });
-  });
-
-  it('#generate should not create aggregating time charts when time buckets equal rows', () => {
-
-    // given
-    const profiles = [measure('N'), time('T', 1, 100)];
-
-    // when
-    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length > 0);
-
-    // then
-    expect(specs).toEqual([]);
-  });
-
-  it('#generate should not create aggregating time charts beyond maximum data points of time buckets', () => {
-
-    // given
-    const profiles = [measure('N'), { ...time('T', 2, ChartDataService.MAX_DATA_POINTS + 1), presentCount: 5000 }];
-
-    // when
-    const specs = generate(profiles).filter(s => s.timeChart && s.aggregations.length > 0);
-
-    // then
-    expect(specs).toEqual([]);
   });
 
   it('#generate should never combine count with value aggregations', () => {
@@ -510,58 +442,6 @@ describe('TileSpecGenerator', () => {
 
     // then
     expect(groupings).toEqual([]);
-  });
-
-  it('#generate should stack area charts of category counts over time', () => {
-
-    // given
-    const profiles = [category('A', 3), time('T', 2)];
-
-    // when
-    const specs = generate(profiles, [0.9]).filter(s => s.chartType === ChartType.AREA && s.dataColumns[0]?.name === 'A');
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual(['area A by T split ']);
-    expect(specs[0].stacked).toBe(true);
-  });
-
-  it('#generate should create stacked area of split sums over time', () => {
-
-    // given
-    const profiles = [measure('N'), time('T', 3), category('S', 3)];
-
-    // when
-    const specs = generate(profiles, [0]).filter(s => s.chartType === ChartType.AREA && s.dataColumns[0]?.name === 'N');
-
-    // then
-    expect(specs.map(s => [describeTileSpec(s), s.aggregations, s.stacked])).toEqual([
-      ['area N by T split ', [Aggregation.SUM], false],
-      ['area N by T split S', [Aggregation.SUM], true]
-    ]);
-  });
-
-  it('#generate should not create split area of averages over time', () => {
-
-    // given
-    const profiles = [measure('N'), time('T', 3), category('S', 3)];
-
-    // when
-    const specs = generate(profiles, [0.99]).filter(s => s.chartType === ChartType.AREA && s.dataColumns[0]?.name === 'N');
-
-    // then
-    expect(specs.map(s => [describeTileSpec(s), s.aggregations])).toEqual([['area N by T split ', [Aggregation.AVG]]]);
-  });
-
-  it('#generate should not create split area of individual values over time', () => {
-
-    // given
-    const profiles = [measure('N'), time('T', 1), category('S', 3)];
-
-    // when
-    const specs = generate(profiles).filter(s => s.chartType === ChartType.AREA && s.aggregations.length === 0);
-
-    // then
-    expect(specs.map(s => describeTileSpec(s))).toEqual(['area N by T split ']);
   });
 
   it('#generate should not create bar distributions of two categories', () => {

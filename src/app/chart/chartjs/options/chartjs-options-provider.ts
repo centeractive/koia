@@ -39,7 +39,7 @@ export class ChartJsOptionsProvider {
                 options.indexAxis = 'y';
                 options.parsing = { yAxisKey: 'x', xAxisKey: 'y' };
                 options.scales = {
-                    y: this.baseScaleOptions(context),
+                    y: this.baseScaleOptions(context, options),
                     x: this.valueScaleOptions(context)
                 };
                 this.addAdditionalValueAxes(context, options);
@@ -48,7 +48,7 @@ export class ChartJsOptionsProvider {
                 if (!context.isCircularChart()) {
                     options.scales = {
                         y: this.valueScaleOptions(context),
-                        x: this.baseScaleOptions(context)
+                        x: this.baseScaleOptions(context, options)
                     };
                     this.addAdditionalValueAxes(context, options);
                 }
@@ -176,7 +176,7 @@ export class ChartJsOptionsProvider {
         }
     }
 
-    private baseScaleOptions(context: ChartContext): ScaleOptions {
+    private baseScaleOptions(context: ChartContext, options: ChartOptions): ScaleOptions {
         const scaleOptions: ScaleOptions = {
             display: true,
             stacked: context.stacked
@@ -210,10 +210,12 @@ export class ChartJsOptionsProvider {
                 case DataType.NUMBER: {
                     scaleOptions.type = 'linear';
                     const xRange = ChartJsUtils.overallXRangeOf(context.data);
-
-                    // not using min/max to avoid cut data-points at the chart border
-                    scaleOptions['suggestedMin'] = xRange.min;
-                    scaleOptions['suggestedMax'] = xRange.max;
+                    if (xRange.min < xRange.max) {
+                        // explicit bounds end the axis at the data, unclipped data points stay whole at the chart border
+                        scaleOptions.min = xRange.min;
+                        scaleOptions.max = xRange.max;
+                        options.clip = false;
+                    }
                     break;
                 }
                 case DataType.TIME:

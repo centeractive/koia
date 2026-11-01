@@ -18,7 +18,7 @@ import { ConditionalErrorStateMatcher } from 'app/shared/validator/conditional-e
 import { formattedNumberValidator } from 'app/shared/validator/number-validator';
 import { DataHandler, DataReader, ReaderService } from '../shared/services/reader';
 import { LogLevelColorizer } from '../shared/services/reader/log/log-level-colorizer';
-import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, IdColumn, MappingResult } from './column-mapping/mapper';
+import { ColumnMappingGenerator, ConfinedStringSet, EntryMapper, IdColumn, MappingResult, YearColumn } from './column-mapping/mapper';
 import { ID_COLUMN_STORAGE_KEY } from './id-column-storage-key';
 import { EntryPersister, ProgressMonitor } from './persister';
 import { PatternPairs, SceneUtils } from './utils';
@@ -286,6 +286,10 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
 
   canAddPattern(columnPair: ColumnPair): boolean {
     return this.patternPairs.canAdd(columnPair, this.columnMappings, this.sampleEntries);
+  }
+
+  hasYearValues(columnPair: ColumnPair): boolean {
+    return YearColumn.hasYearValues((this.sampleEntries ?? []).map(e => e[columnPair.source.name]));
   }
 
   addPatternColumn(columnPair: ColumnPair): void {

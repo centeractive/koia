@@ -6,7 +6,7 @@ import { DateTimeUtils } from 'app/shared/utils';
 import { PATTERN_COLUMN_ICON } from 'app/shared/utils/column-utils';
 import { columnNameErrorMessage, columnNameValidators, storedColumnNameValidator } from 'app/shared/validator/column-name-validation';
 import { ColumnDefinitionAssistant } from '../utils';
-import { ColumnMappingGenerator } from './mapper';
+import { ColumnMappingGenerator, YearColumn } from './mapper';
 
 @Component({
     selector: 'koia-column-mapping',
@@ -23,6 +23,7 @@ export class ColumnMappingComponent implements OnInit, OnChanges {
   @Input() mapping: ColumnPair;
   @Input() nameInUse = false;
   @Input() canAddPattern = false;
+  @Input() yearValues = false;
   @Output() onChange = new EventEmitter<void>();
   @Output() onRemove = new EventEmitter<void>();
   @Output() onAddPattern = new EventEmitter<void>();
@@ -69,7 +70,10 @@ export class ColumnMappingComponent implements OnInit, OnChanges {
 
   onDataTypeChanged(): void {
     const targetColumn = this.mapping.target;
-    if (targetColumn.dataType === DataType.TIME && !targetColumn.format) {
+    if (targetColumn.dataType === DataType.TIME && this.yearValues && this.mapping.source.dataType === DataType.NUMBER
+      && !this.mapping.source.format) {
+      YearColumn.apply(this.mapping);
+    } else if (targetColumn.dataType === DataType.TIME && !targetColumn.format) {
       targetColumn.format = this.dateFormats[0];
     }
     this.onChange.emit();

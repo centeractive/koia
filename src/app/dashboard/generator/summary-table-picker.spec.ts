@@ -43,7 +43,7 @@ describe('SummaryTablePicker', () => {
   function requestOf(containerWidth = 1000): GenerationRequest {
     return {
       columns: () => COLUMNS.map(c => ({ ...c })), entries: [], currentContexts: [], currentGrid: { columns: 4, cellRatio: '1:1' },
-      containerWidth
+      containerWidth, excludedColumnNames: []
     };
   }
 
