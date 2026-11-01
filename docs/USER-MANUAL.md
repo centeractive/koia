@@ -348,6 +348,8 @@ Then set the panels:
 - **Value Splitting** – one series per value of the selected columns.
 - **Stacked**, **Show Distinct Scales**, **Color Scheme**, legend position, axis titles and label rotation.
 
+Individual values of Line, Area, Scatter, Linear Bar and Linear Horizontal Bar charts with more than 1,000 points per series are sampled down, marked by a warning icon; stacked series keep the points of the same X values, so their stacks stay exact.
+
 A click on a bar, slice or point shows its rows ([chapter 8](#8-drill-down-to-the-rows)). **⋮** → **Save As PNG** exports the chart.
 
 Video: [Dashboards and charts](https://www.koia.io/intro/videos.html)

@@ -5,11 +5,11 @@ import { ChartDataResult } from 'app/shared/model/chart/chart-data-result.type';
 import { ArrayUtils, DataTypeUtils, ObjectUtils } from 'app/shared/utils';
 import { ValueRange } from 'app/shared/value-range/model';
 import { ChartData, ChartDataset } from 'chart.js';
-import { largestTriangleThreeBucket } from 'd3fc-sample';
 import { CouchDBConstants } from '../backend/couchdb';
 import { LanguageService } from '../language/language.service';
 import { AggregatedSeriesFactory } from './aggregated-series-factory';
 import { ChartDataHelper } from './chart-data-helper';
+import { DataPointSampler } from './data-point-sampler';
 import { ErrorResultFactory } from './error-result-factory';
 import { SeriesNameConverter } from './series-name-converter';
 
@@ -23,6 +23,7 @@ export class ChartDataService {
   private dataNameConverter = new SeriesNameConverter();
   private errorResultFactory = new ErrorResultFactory();
   private aggregatedSeriesFactory = new AggregatedSeriesFactory();
+  private dataPointSampler = new DataPointSampler(ChartDataService.MAX_DATA_POINTS);
 
   createData(context: ChartContext): ChartDataResult {
     context.dataSampledDown = false;
@@ -235,14 +236,17 @@ export class ChartDataService {
       const namedSeries = this.createIndividualValuesSeries(context.entries, dataColumn, context);
       for (const seriesName of Array.from(namedSeries.keys())) {
         const dataPoints = namedSeries.get(seriesName);
-        data.push({
-          key: seriesName,
-          values: this.optionallySampleDown(dataPoints, context),
-        });
+        data.push({ key: seriesName, values: dataPoints });
         valueRanges.push(ArrayUtils.numberValueRange(dataPoints, 'y'));
       }
     }
     context.valueRange = ArrayUtils.overallValueRange(valueRanges);
+    const values = data.map(ds => ds.values);
+    if (this.dataPointSampler.exceedsMaxPoints(values)) {
+      context.dataSampledDown = true;
+      context.warning = LanguageService.instant('chart.warning.sampledDown');
+      this.dataPointSampler.sampleDown(values, context.stacked).forEach((sampled, i) => data[i].values = sampled);
+    }
     return data;
   }
 
@@ -269,18 +273,4 @@ export class ChartDataService {
     Array.from(namedSeries.values()).forEach(dataPoints => ChartDataHelper.sortAscending(dataPoints));
     return namedSeries;
   }
-
-  private optionallySampleDown(values: DataPoint[], context: ChartContext): DataPoint[] {
-    if (values.length <= ChartDataService.MAX_DATA_POINTS) {
-      return values;
-    }
-    const sampler = largestTriangleThreeBucket();
-    sampler.x(d => d.x).y(d => d.y);
-    const bucketSize = Math.ceil(values.length / ChartDataService.MAX_DATA_POINTS);
-    sampler.bucketSize(bucketSize);
-    context.dataSampledDown = true;
-    context.warning = LanguageService.instant('chart.warning.sampledDown');
-    return sampler(values);
-  }
-
 }

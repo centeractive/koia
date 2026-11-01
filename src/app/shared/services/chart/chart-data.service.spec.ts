@@ -474,6 +474,30 @@ describe('ChartDataService', () => {
       expect(context.warning).toBeDefined();
    });
 
+   it('#createData should sample stacked individual values of several columns down at the same x values', () => {
+
+      // given
+      context.chartType = ChartType.LINE.type;
+      context.entries = Array.from({ length: ChartDataService.MAX_DATA_POINTS + 1 }, (_, i) =>
+         ({ _id: i, Time: now + i * sec, n1: i % 7, n2: (i * 3) % 11 }));
+      context.dataColumns = [createColumn('n1', DataType.NUMBER), createColumn('n2', DataType.NUMBER)];
+      context.groupByColumns = [createColumn('Time', DataType.TIME)];
+      context.aggregations = [];
+      context.stacked = true;
+
+      // when
+      const result = chartDataService.createData(context);
+
+      // then
+      const xs = result.data.datasets.map(ds => (ds.data as { x: number }[]).map(p => p.x));
+      expect(xs.length).toBe(2);
+      expect(xs[1]).toEqual(xs[0]);
+      expect(xs[0].length).toBeLessThanOrEqual(ChartDataService.MAX_DATA_POINTS);
+      expect(context.dataSampledDown).toBe(true);
+      expect(context.warning).toBeDefined();
+      expect(context.valueRange).toEqual({ min: 0, max: 10 });
+   });
+
    it('#createData should create chronologically sorted timeline data (count distinct values)', () => {
 
       // given
