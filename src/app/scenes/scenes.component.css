@@ -5,3 +5,20 @@
 .filter {
   flex: 0 1 360px;
 }
+
+#but_clear_filter {
+  --mat-icon-button-state-layer-size: 24px;
+  --mat-icon-button-hover-state-layer-opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  padding: 3px;
+}
+
+#but_clear_filter mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 18px;
+}

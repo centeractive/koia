@@ -46,6 +46,29 @@ test.describe('scenes of the sample and the imported orders', () => {
       await expect(scenes.rows).toContainText(ORDERS_CSV.name);
    });
 
+   test('clear button in the filter field shows all scenes again', async ({ scenes }) => {
+      await scenes.filter(ORDERS_CSV.name);
+
+      await scenes.clearFilterButton.click();
+
+      await expect(scenes.rows).toHaveCount(2);
+      await expect(scenes.filterInput).toHaveValue('');
+      await expect(scenes.clearFilterButton).toBeHidden();
+      await expect(scenes.filterInput).toBeFocused();
+   });
+
+   test('deleting the filtered scenes clears the filter', async ({ scenes, confirmDialog }) => {
+      await scenes.filter(ORDERS_CSV.name);
+
+      await scenes.deleteAllButton.click();
+      await confirmDialog.confirm();
+
+      await expect(scenes.rows).toHaveCount(1);
+      await expect(scenes.rows).toContainText(fruitSalesSampleOf('en').sceneName);
+      await expect(scenes.filterInput).toHaveValue('');
+      await expect(scenes.deleteAllButton).toContainText(en.get('scenes.deleteAll'));
+   });
+
    test('front page button of scenes page opens the front page', async ({ scenes, front }) => {
       await scenes.navButtons.openFront();
 

@@ -305,6 +305,7 @@
   "scenes": {
     "title": "Scenes",
     "filter": "Filter scenes",
+    "clearFilter": "Clear filter",
     "deleteFiltered": "Delete filtered",
     "deleteAll": "Delete all",
     "deleteFilteredTitle": "Delete filtered scenes",

@@ -305,6 +305,7 @@
   "scenes": {
     "title": "シーン",
     "filter": "シーンを絞り込む",
+    "clearFilter": "フィルターをクリア",
     "deleteFiltered": "絞り込み結果を削除",
     "deleteAll": "すべて削除",
     "deleteFilteredTitle": "絞り込んだシーンを削除",

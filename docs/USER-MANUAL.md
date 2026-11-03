@@ -142,10 +142,10 @@ Video for log files: [Message patterns](https://www.koia.io/intro/videos.html)
 
 The **Scenes** icon in any page header opens the scenes page. The active scene is marked **Active** and listed first, the others by when they were last used. A scene just created on the **New Scene** page is marked **New** until you leave the scenes page.
 
-- **Filter scenes** narrows the list by name or description.
+- **Filter scenes** narrows the list by name or description; **Clear filter** (✕ in the field) empties it.
 - The play icon activates a scene (**Activate scene**) or returns to the active one (**Continue with active scene**).
 - The **⋮** menu of a row offers **Show details**, **Share as file**, **Edit name and description** and **Delete**. While a row is edited (Enter saves, Esc cancels), the other rows are locked.
-- **Delete all** – or **Delete filtered** while a filter is set – removes several scenes after a confirmation.
+- **Delete all** – or **Delete filtered** while a filter is set – removes several scenes after a confirmation; the filter is cleared afterwards.
 
 **Show details** lists the source of the scene and its columns with type, format and width. It is also where pattern columns are added later ([chapter 10](#10-message-patterns)). The **Show Scene Details** icon in the data toolbar shows the same details read-only.
 

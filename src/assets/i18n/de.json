@@ -305,6 +305,7 @@
   "scenes": {
     "title": "Szenen",
     "filter": "Szenen filtern",
+    "clearFilter": "Filter leeren",
     "deleteFiltered": "Gefilterte löschen",
     "deleteAll": "Alle löschen",
     "deleteFilteredTitle": "Gefilterte Szenen löschen",

@@ -4,8 +4,15 @@
       <div id="div_filter" class="field-row">
         <mat-form-field class="filter">
           <mat-icon matPrefix>search</mat-icon>
-          <input matInput type="text" [placeholder]="'scenes.filter' | translate" [(ngModel)]="filter" (ngModelChange)="onFilterChange()"
+          <input #filterInput matInput type="text" [placeholder]="'scenes.filter' | translate" [(ngModel)]="filter" (ngModelChange)="onFilterChange()"
             [disabled]="locked">
+          @if (filter) {
+            @let clearFilterLabel = 'scenes.clearFilter' | translate;
+            <button id="but_clear_filter" matSuffix mat-icon-button disableRipple [disabled]="locked"
+              [attr.aria-label]="clearFilterLabel" [matTooltip]="clearFilterLabel" (click)="clearFilter(filterInput)">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
         </mat-form-field>
         <button id="but_open_scene_file" mat-stroked-button [disabled]="editing"
           [attr.aria-busy]="sceneFileOpener.importing" [matTooltip]="sceneFileOpener.tooltipKey | translate"
