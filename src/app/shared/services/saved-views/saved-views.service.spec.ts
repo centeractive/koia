@@ -4,7 +4,7 @@ import type { Mock } from 'vitest';
 import { InputDialogComponent, InputDialogData } from '../../component/input-dialog/input-dialog.component';
 import { ManageViewContext } from '../../component/manage-view-dialog';
 import { Route, Scene, Status, StatusType } from '../../model';
-import { ConfigRecord, SavedView, TabDef, ViewType } from '../../model/view-config';
+import { ConfigRecord, LinkedFilters, SavedView, TabDef, ViewType } from '../../model/view-config';
 import { savedViewOf, SceneFactory } from '../../test';
 import { DBService } from '../backend';
 import { DialogService } from '../dialog.service';
@@ -124,6 +124,35 @@ describe('SavedViewsService', () => {
       expect(saved.tabs).toEqual([{ ...openTabs[0], record }, openTabs[1]]);
       expect(saved.activeTabId).toBe('tab2');
       expect(saved.rawData).toEqual(rawData);
+   });
+
+   it('#save given linked filters then saves a copy with the view', async () => {
+
+      // given
+      const linkedFilters: LinkedFilters = { query: { fullTextFilter: 'error', propertyFilters: [], valueRangeFilters: [], sort: null, pageIndex: null, rowsPerPage: null } };
+      Object.defineProperty(viewTabsService, 'linkedFilters', { get: () => linkedFilters });
+      mockInputDialog('all');
+
+      // when
+      await service.save(undefined);
+
+      // then
+      const saved: SavedView = vi.mocked(viewPersistenceService.saveView).mock.lastCall[1];
+      expect(saved.linkedFilters).toEqual(linkedFilters);
+      expect(saved.linkedFilters).not.toBe(linkedFilters);
+   });
+
+   it('#save given filters not linked then saves no linked filters', async () => {
+
+      // given
+      mockInputDialog('all');
+
+      // when
+      await service.save(undefined);
+
+      // then
+      const saved: SavedView = vi.mocked(viewPersistenceService.saveView).mock.lastCall[1];
+      expect(saved.linkedFilters).toBeUndefined();
    });
 
    it('#save should provide status of persisting', async () => {

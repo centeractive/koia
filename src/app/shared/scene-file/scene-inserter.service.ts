@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Document, Scene } from 'app/shared/model';
-import { TabDef } from 'app/shared/model/view-config';
+import { SceneTabsContent } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { StringUtils } from 'app/shared/utils';
 
@@ -22,7 +22,7 @@ export class SceneInserter {
     * persisted, so a scene aborted before is persisted and deleted again
     */
    async insert(content: Omit<Scene, '_rev' | 'creationTime' | 'database'>, otherSceneNames: Set<string>, entries: Document[],
-      tabs: TabDef[], signal?: AbortSignal): Promise<void> {
+      tabs: SceneTabsContent, signal?: AbortSignal): Promise<void> {
       const scene: Scene = {
          ...content,
          name: StringUtils.uniqueName(content.name, otherSceneNames),
@@ -49,9 +49,9 @@ export class SceneInserter {
    /**
     * views are a bonus, the scene is usable without them
     */
-   private async saveTabs(scene: Scene, tabs: TabDef[]): Promise<void> {
+   private async saveTabs(scene: Scene, tabs: SceneTabsContent): Promise<void> {
       try {
-         await this.dbService.saveSceneTabs({ _id: DBService.sceneTabsId(scene._id), tabs });
+         await this.dbService.saveSceneTabs({ _id: DBService.sceneTabsId(scene._id), ...tabs });
       } catch (err) {
          console.warn('views of scene cannot be saved', err);
       }

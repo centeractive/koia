@@ -102,6 +102,8 @@
     "valueRange": "Value Range",
     "hideFilters": "Hide filters",
     "showFilters": "Show filters",
+    "linkFilters": "Link filters of all tabs",
+    "unlinkFilters": "Unlink filters, every tab keeps its filters",
     "refresh": "Refresh data",
     "tabs": {
       "rawData": "Raw Data",

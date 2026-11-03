@@ -10,6 +10,7 @@ import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file'
 import { LanguageService } from 'app/shared/services/language';
 import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { RawDataStateProvider, RawDataStateService } from 'app/shared/services/saved-views';
+import { LinkedFiltersService } from 'app/shared/services/view-tabs/linked-filters.service';
 import { entryRowStyle } from 'app/shared/ui/virtual-table/entry-row-style';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
 import { ViewColumnRenamer } from 'app/shared/services/view-persistence/view-column-renamer';
@@ -84,6 +85,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   private readonly computedColumnService = inject(ComputedColumnService);
   private computedColumnsSubscription: Subscription;
   private readonly contrastService = inject(ContrastService);
+  private readonly linkedFiltersService = inject(LinkedFiltersService);
 
   constructor(bottomSheet: MatBottomSheet, router: Router, public override dbService: DBService, public dialogService: DialogService,
     notificationService: NotificationService, private exportService: ExportService, public snackBar: MatSnackBar,
@@ -104,6 +106,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
     } else if (!this.query) {
       this.query = new Query();
     }
+    this.adoptLinkedFilters();
     this.columns = this.scene.columns;
     this.colWidthMeasurement = colWidthMeasurementOf(this.scene);
     this.cache = new RawDataBlockCache(this.dbService, () => this.query, {
@@ -143,10 +146,21 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
    * replaces the query by the specified one and keeps the current sort, the main toolbar shows the filters of the new query
    */
   applyQuery(query: Query): void {
+    this.adoptQuery(query);
+    this.reload();
+  }
+
+  private adoptQuery(query: Query): void {
     query.setSort(this.query.getSort());
     this.query = query;
     this.restoredQuery = query;
-    this.reload();
+  }
+
+  private adoptLinkedFilters(): void {
+    const filters = this.dialogStyle ? undefined : this.linkedFiltersService.takeFilters(Route.RAWDATA);
+    if (filters) {
+      this.adoptQuery(filters);
+    }
   }
 
   canExplain(): boolean {
@@ -192,6 +206,9 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
       query.addPropertyFilter(new PropertyFilter(finding.column, Operator.EQUAL, finding.value, dataType));
     }
     this.applyQuery(query);
+    if (!this.dialogStyle) {
+      this.linkedFiltersService.update(query, Route.RAWDATA);
+    }
   }
 
   sortBy(column: Column): void {
@@ -278,6 +295,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
 
   applyRawDataState(state: RawDataState): void {
     this.adopt(state);
+    this.adoptLinkedFilters();
     this.closeExplanation();
     this.applyWidths();
     this.reload();

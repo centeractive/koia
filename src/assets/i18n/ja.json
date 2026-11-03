@@ -102,6 +102,8 @@
     "valueRange": "値の範囲",
     "hideFilters": "フィルターを隠す",
     "showFilters": "フィルターを表示",
+    "linkFilters": "すべてのタブのフィルターをリンク",
+    "unlinkFilters": "フィルターのリンクを解除 (各タブはフィルターを保持)",
     "refresh": "データを更新",
     "tabs": {
       "rawData": "生データ",

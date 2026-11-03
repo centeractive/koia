@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewChecked, Component, EventEmitter, inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NavigationEnd, Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
@@ -6,12 +6,13 @@ import { SceneFileOpener } from 'app/shared/scene-file/scene-file-opener';
 import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { ArrayUtils, DataTypeUtils } from 'app/shared/utils';
+import { ArrayUtils, DataTypeUtils, QueryUtils } from 'app/shared/utils';
 import { filterableColumnsOf } from 'app/shared/utils/column-utils';
 import { PropertyFilterValidator } from 'app/shared/validator';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { Subscription } from 'rxjs';
 import { tabUrl } from 'app/shared/services/view-tabs/tab-defs';
+import { LinkedFiltersService } from 'app/shared/services/view-tabs/linked-filters.service';
 import { Column, DataType, PropertyFilter, Query, Route, Scene } from '../shared/model';
 import { QueryBuilder } from './query-builder';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
@@ -43,9 +44,17 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   rangeFilters: NumberRangeFilter[] = [];
   readonly sceneFileOpener: SceneFileOpener;
 
+  /**
+   * key of the view in the linked filters, undefined in dialogs and other views without linkable filters
+   */
+  linkedFiltersKey: string;
+
   private propertyFilterValidator: PropertyFilterValidator;
   private justNavigatedToParentView: boolean;
   private navigationSubscription: Subscription;
+  private loadedSubscription: Subscription;
+  private filtersGeneration = 0;
+  private readonly linkedFiltersService = inject(LinkedFiltersService);
 
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService,
     private sceneFileService: SceneFileService, bottomSheet: MatBottomSheet, notificationService: NotificationService) {
@@ -55,11 +64,19 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
 
   ngOnInit(): void {
     this.currURL = this.tabId ? tabUrl(this.tabId) : '/' + this.route;
+    this.linkedFiltersKey = this.dialogStyle ? undefined : this.tabId ?? (this.route === Route.RAWDATA ? Route.RAWDATA : undefined);
     this.scene = this.dbService.getActiveScene();
     if (this.scene) {
       this.propertyFilterValidator = new PropertyFilterValidator(this.scene.columns);
       this.listenOnNavigationEvents();
       this.retainInitialFilters();
+      if (this.linkedFiltersKey) {
+        this.loadedSubscription = this.linkedFiltersService.loaded$.subscribe(() => {
+          if (this.router.url === this.currURL) {
+            this.syncLinkedFilters();
+          }
+        });
+      }
     }
   }
 
@@ -74,6 +91,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
 
   ngOnDestroy(): void {
     this.navigationSubscription?.unsubscribe();
+    this.loadedSubscription?.unsubscribe();
     this.sceneFileOpener.destroy();
   }
 
@@ -91,6 +109,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
     this.navigationSubscription = this.router.events.subscribe(e => {
       if (e instanceof NavigationEnd && e.url === this.currURL) {
         this.justNavigatedToParentView = true;
+        this.syncLinkedFilters();
       }
     });
   }
@@ -105,8 +124,37 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
     }
   }
 
+  /**
+   * shows and applies the linked filters when this view has to take them over
+   */
+  private syncLinkedFilters(): void {
+    const filters = this.linkedFiltersKey ? this.linkedFiltersService.takeFilters(this.linkedFiltersKey) : undefined;
+    if (filters && !QueryUtils.areFiltersEqual(filters, this.query ?? new Query())) {
+      this.query = filters;
+      this.retainInitialFilters();
+      this.onFilterChange.emit(filters);
+    }
+  }
+
+  get filtersLinked(): boolean {
+    return this.linkedFiltersService.isLinked();
+  }
+
+  get linkedFiltersReady(): boolean {
+    return this.linkedFiltersService.ready;
+  }
+
+  toggleLinkedFilters(): void {
+    if (this.filtersLinked) {
+      this.linkedFiltersService.unlink();
+    } else {
+      this.linkedFiltersService.link(this.query ?? new Query(), this.linkedFiltersKey);
+    }
+  }
+
   retainInitialFilters(): void {
     if (this.query) {
+      const generation = ++this.filtersGeneration;
       const query = this.query.clone();
       this.fullTextFilter = query.getFullTextFilter();
       this.showFullTextFilter = !!this.fullTextFilter;
@@ -115,7 +163,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
       this.showFilters = this.showFullTextFilter || this.propertyFilters.length > 0;
       query.getValueRangeFilters().forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
-        this.addRangeFilter(column, f.valueRange, f.inverted, f.orEmpty);
+        this.addRangeFilter(column, f.valueRange, f.inverted, f.orEmpty, generation);
       })
     }
   }
@@ -164,9 +212,15 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
     return (this.showFullTextFilter ? 1 : 0) + this.propertyFilters.length + this.rangeFilters.length;
   }
 
-  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false, orEmpty = false): void {
+  /**
+   * @param generation filters retained since the range was requested replace the range filter
+   */
+  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false, orEmpty = false, generation = this.filtersGeneration): void {
     this.dbService.numberRangeOf(column)
       .then(vr => {
+        if (generation !== this.filtersGeneration) {
+          return;
+        }
         if (column.dataType === DataType.TIME) {
           this.rangeFilters.push(new TimeRangeFilter(column, vr.min, vr.max, selValueRange, inverted, orEmpty));
         } else {
@@ -219,7 +273,11 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
       .rangeFilters(this.rangeFilters)
       .getQuery();
     if (this.isValid(query)) {
+      this.query = query;
       this.onFilterChange.emit(query);
+      if (this.linkedFiltersKey) {
+        this.linkedFiltersService.update(query, this.linkedFiltersKey);
+      }
     }
   }
 

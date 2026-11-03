@@ -1,5 +1,5 @@
 import { DataType, Document, Scene } from 'app/shared/model';
-import { TabDef, ViewType } from 'app/shared/model/view-config';
+import { LinkedFilters, TabDef, ViewType } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { CouchDBServiceMock } from 'app/shared/test';
 import type { Mock } from 'vitest';
@@ -50,7 +50,7 @@ describe('SceneInserter', () => {
    it('should insert scene named uniquely into free database, its entries in batches and tabs before activating it', async () => {
 
       // when
-      await inserter.insert(contentOf('x'), new Set(['Sales']), entries(2_500), tabs);
+      await inserter.insert(contentOf('x'), new Set(['Sales']), entries(2_500), { tabs });
 
       // then
       const scene: Scene = persistSceneSpy.mock.calls[0][0];
@@ -67,11 +67,23 @@ describe('SceneInserter', () => {
    it('should use generated id when content has none', async () => {
 
       // when
-      await inserter.insert(contentOf(), new Set(), entries(1), tabs);
+      await inserter.insert(contentOf(), new Set(), entries(1), { tabs });
 
       // then
       expect(saveSceneTabsSpy).toHaveBeenCalledWith({ _id: 'gen_tabs', tabs });
       expect(activateSceneSpy).toHaveBeenCalledWith('gen');
+   });
+
+   it('#insert given linked filters then saves them with the tabs', async () => {
+
+      // given
+      const linkedFilters: LinkedFilters = { query: { fullTextFilter: 'error', propertyFilters: [], valueRangeFilters: [], sort: null, pageIndex: null, rowsPerPage: null } };
+
+      // when
+      await inserter.insert(contentOf('x'), new Set(), entries(1), { tabs, linkedFilters });
+
+      // then
+      expect(saveSceneTabsSpy).toHaveBeenCalledWith({ _id: 'x_tabs', tabs, linkedFilters });
    });
 
    it('should replace creation time and database of content', async () => {
@@ -80,7 +92,7 @@ describe('SceneInserter', () => {
       const content = { ...contentOf('x'), creationTime: 1, database: 'other' };
 
       // when
-      await inserter.insert(content, new Set(), entries(1), tabs);
+      await inserter.insert(content, new Set(), entries(1), { tabs });
 
       // then
       const scene: Scene = persistSceneSpy.mock.calls[0][0];
@@ -94,7 +106,7 @@ describe('SceneInserter', () => {
       saveSceneTabsSpy.mockRejectedValue('conflict');
 
       // when
-      await inserter.insert(contentOf('x'), new Set(), entries(1), tabs);
+      await inserter.insert(contentOf('x'), new Set(), entries(1), { tabs });
 
       // then
       expect(activateSceneSpy).toHaveBeenCalledWith('x');
@@ -107,7 +119,7 @@ describe('SceneInserter', () => {
       writeEntriesSpy.mockRejectedValue('disk full');
 
       // when
-      const result = inserter.insert(contentOf('x'), new Set(), entries(1), tabs);
+      const result = inserter.insert(contentOf('x'), new Set(), entries(1), { tabs });
 
       // then
       await expect(result).rejects.toBe('disk full');
@@ -121,7 +133,7 @@ describe('SceneInserter', () => {
       persistSceneSpy.mockRejectedValue('conflict');
 
       // when
-      const result = inserter.insert(contentOf('x'), new Set(), entries(1), tabs);
+      const result = inserter.insert(contentOf('x'), new Set(), entries(1), { tabs });
 
       // then
       await expect(result).rejects.toBe('conflict');
@@ -135,7 +147,7 @@ describe('SceneInserter', () => {
       writeEntriesSpy.mockImplementation(async () => controller.abort());
 
       // when
-      const result = inserter.insert(contentOf('x'), new Set(), entries(2_500), tabs, controller.signal);
+      const result = inserter.insert(contentOf('x'), new Set(), entries(2_500), { tabs }, controller.signal);
 
       // then
       await expect(result).rejects.toHaveProperty('name', 'AbortError');
@@ -152,7 +164,7 @@ describe('SceneInserter', () => {
       writeEntriesSpy.mockImplementation(async () => controller.abort());
 
       // when
-      const result = inserter.insert(contentOf('x'), new Set(), entries(500), tabs, controller.signal);
+      const result = inserter.insert(contentOf('x'), new Set(), entries(500), { tabs }, controller.signal);
 
       // then
       await expect(result).rejects.toHaveProperty('name', 'AbortError');
@@ -168,7 +180,7 @@ describe('SceneInserter', () => {
       deleteSceneSpy.mockRejectedValue('not found');
 
       // when
-      const result = inserter.insert(contentOf('x'), new Set(), entries(1), tabs);
+      const result = inserter.insert(contentOf('x'), new Set(), entries(1), { tabs });
 
       // then
       await expect(result).rejects.toBe('disk full');

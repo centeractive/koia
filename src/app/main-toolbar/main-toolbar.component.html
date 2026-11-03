@@ -30,9 +30,9 @@
 
       @if (scene) {
         <span class="span_buttons">
-          <button class="but_add_col_filter" mat-stroked-button [matTooltip]="'toolbar.addColumnFilter' | translate" [matMenuTriggerFor]="columnFilterMenu">
-            <mat-icon>add_circle_outline</mat-icon>
-            <span>{{ 'toolbar.addFilter' | translate }}</span>
+          <button class="but_add_col_filter" mat-icon-button color="accent" [matTooltip]="'toolbar.addColumnFilter' | translate"
+            [attr.aria-label]="'toolbar.addFilter' | translate" [matMenuTriggerFor]="columnFilterMenu">
+            <mat-icon svgIcon="add_filter"></mat-icon>
           </button>
           <mat-menu #columnFilterMenu="matMenu">
             @for (column of filterableColumns(); track column) {
@@ -62,6 +62,13 @@
               </span>
             }
           </mat-menu>
+          @if (linkedFiltersKey) {
+            @let linkFiltersLabel = (filtersLinked ? 'toolbar.unlinkFilters' : 'toolbar.linkFilters') | translate;
+            <button id="butLinkFilters" mat-icon-button [class.koia-toggle-active]="filtersLinked" [attr.aria-pressed]="filtersLinked"
+              [disabled]="!linkedFiltersReady" [matTooltip]="linkFiltersLabel" [attr.aria-label]="linkFiltersLabel" (click)="toggleLinkedFilters()">
+              <mat-icon>{{ filtersLinked ? 'link' : 'link_off' }}</mat-icon>
+            </button>
+          }
           @if (filterCount() > 0) {
             @let filtersToggleLabel = showFilters ? ('toolbar.hideFilters' | translate) : ('toolbar.showFilters' | translate);
             <button id="butToggleFilters" mat-icon-button

@@ -2,7 +2,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Route } from '../../model';
-import { TabDef, View, ViewType } from '../../model/view-config';
+import { LinkedFilters, TabDef, View, ViewType } from '../../model/view-config';
 import { savedViewOf } from '../../test';
 import { DialogService } from '../dialog.service';
 import { ViewTabsService } from '../view-tabs';
@@ -52,7 +52,35 @@ describe('SavedViewRestorer', () => {
       // then
       expect(restored).toBe(true);
       expect(dialogService.showConfirmDialog).not.toHaveBeenCalled();
-      expect(viewTabsService.replaceTabs).toHaveBeenCalledWith(view.tabs);
+      expect(viewTabsService.replaceTabs).toHaveBeenCalledWith(view.tabs, undefined);
+   });
+
+   it('#restore given view with linked filters then replaces tabs with them before the raw data state is applied', async () => {
+
+      // given
+      const linkedFilters: LinkedFilters = { query: { fullTextFilter: 'error', propertyFilters: [], valueRangeFilters: [], sort: null, pageIndex: null, rowsPerPage: null } };
+      const view = { ...savedViewOf('all', [dashboardTab('tab2', 1)]), linkedFilters };
+
+      // when
+      await restorer.restore(view);
+
+      // then
+      expect(viewTabsService.replaceTabs).toHaveBeenCalledWith(view.tabs, linkedFilters);
+      expect(vi.mocked(viewTabsService.replaceTabs).mock.lastCall[1]).not.toBe(linkedFilters);
+      expect(vi.mocked(viewTabsService.replaceTabs).mock.invocationCallOrder[0])
+         .toBeLessThan(vi.mocked(rawDataStateService.apply).mock.invocationCallOrder[0]);
+   });
+
+   it('#restore given legacy view then unlinks filters', async () => {
+
+      // given
+      const view = savedViewOf('all', [dashboardTab('tab2', 1)]);
+
+      // when
+      await restorer.restore(view);
+
+      // then
+      expect(vi.mocked(viewTabsService.replaceTabs).mock.lastCall[1]).toBeUndefined();
    });
 
    it('#restore should ask for confirmation with escaped view name when an open tab has content', async () => {
@@ -113,7 +141,7 @@ describe('SavedViewRestorer', () => {
 
       // then
       expect(restored).toBe(true);
-      expect(viewTabsService.replaceTabs).toHaveBeenCalledWith(view.tabs);
+      expect(viewTabsService.replaceTabs).toHaveBeenCalledWith(view.tabs, undefined);
    });
 
    it('#restore should navigate to raw data before tabs are replaced', async () => {

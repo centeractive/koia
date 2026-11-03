@@ -30,7 +30,7 @@ Labels in **bold** are the texts and tooltips of the English user interface. Eac
 Five minutes from the sample data to an explained finding:
 
 1. Open [www.koia.io](https://www.koia.io) and choose **Log sample** on the start page. The raw data of 2,000 log rows opens.
-2. Click **Add Filter**, choose the column *Level*, type `ERROR` and press Enter. 100 rows are left.
+2. Click **Add Filter** (funnel with plus), choose the column *Level*, type `ERROR` and press Enter. 100 rows are left.
 3. Click the **Explain these rows** icon in the table toolbar. Koia lists what makes the error rows different: 60% of them come from host *node-7*, against 5% of the other rows.
 4. Click **+** (**Add view**) in the tab bar, choose **New Dashboard** and then **Generate Dashboard**.
 5. Click a bar of any chart. A dialog shows the rows behind the bar – and offers **Explain these rows** again.
@@ -42,7 +42,7 @@ Five minutes from the sample data to an explained finding:
 | Scene | The data of one imported file (or of one sample, shared file or third-party program), with its column definitions, tabs and saved views. |
 | Tab (view) | One way to look at the active scene: the fixed **Raw Data** tab, plus any number of pivot tables and dashboards. |
 | Element | A tile on a dashboard: chart, relationship graph, summary table, text tile or note. |
-| Filter | Restricts the rows of one tab. Every tab has its own filters. |
+| Filter | Restricts the rows of one tab. Every tab has its own filters unless you link them. |
 | Drill-down | A click on a chart bar, pivot cell, summary count or graph node opens a dialog with the rows behind it. |
 | Saved view | A named snapshot of all tabs of a scene that can be restored later. |
 | Storage | Where scenes live: this browser (IndexedDB) or a CouchDB. |
@@ -170,7 +170,7 @@ The **Raw Data** tab shows the rows of the active scene. Rows load as you scroll
 
 ### Filters
 
-**Add Filter** lists the columns. Text, Boolean and Object columns get a value filter at once; Number and Time columns ask for **Value** or **Value Range**.
+**Add Filter** (funnel with plus) lists the columns. Text, Boolean and Object columns get a value filter at once; Number and Time columns ask for **Value** or **Value Range**.
 
 A **value filter** shows column, operator and value. Click the column or the operator to change them, type the value and press Enter.
 
@@ -197,19 +197,29 @@ The ⊖ button removes a filter, **Refresh data** reloads the rows. **Hide filte
 
 Good to know:
 
-- Each tab has its own filters: a filter on Raw Data does not change a dashboard.
+- Each tab has its own filters unless you link them: a filter on Raw Data does not change a dashboard.
 - With CouchDB, sorting by a column drops the rows where that column is empty.
+
+### Linked filters
+
+**Link filters of all tabs** (chain icon next to **Add Filter**) gives every tab of the scene (Raw Data, pivot tables, dashboards) the filters of the current tab. Sorting stays per tab.
+
+- While linked, adding, changing or removing a filter on any tab changes it on all tabs.
+- Only the tab you look at reloads right away; every other tab reloads when you open it.
+- New tabs get the linked filters. Linking a tab without filters removes the filters of all tabs.
+- **Unlink filters** (same button): every tab keeps its filters and changes them on its own again.
+- Koia remembers per scene whether filters are linked, also in saved views and shared `.koia` files. Drill-down dialogs are not linked.
 
 ## 7. Tabs and saved views
 
 - **+** (**Add view**) adds a **New Pivot Table** or a **New Dashboard**.
 - Double-click a tab, or press F2, to rename it.
 - The × of a tab, or the Delete key, closes it. Koia asks first if the tab has content. **Raw Data** cannot be closed.
-- Tabs are saved with the scene automatically.
+- Tabs, and whether their filters are linked, are saved with the scene automatically.
 
 A **saved view** keeps all tabs of a scene under a name, for example to return to an analysis later:
 
-- **Save all tabs as view** stores all tabs, the active tab and the raw data state (filters, sorting, column widths). Saving under an existing name replaces that view.
+- **Save all tabs as view** stores all tabs, the active tab, the raw data state (filters, sorting, column widths) and whether filters are linked. Saving under an existing name replaces that view.
 - **Restore saved view** lists the views; restoring replaces all open tabs.
 - **Manage Views** (end of that list) renames and deletes views.
 
@@ -386,7 +396,7 @@ Video: [Relationship graphs](https://www.koia.io/intro/videos.html)
 
 ## 16. Share and export
 
-**Share a scene** with all its tabs, saved views and rows as one `.koia` file:
+**Share a scene** with all its tabs, linked filters, saved views and rows as one `.koia` file:
 
 - *Scenes page → ⋮ → Share as file*, or
 - the **Share as file** icon in the toolbar of the active scene.

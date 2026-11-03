@@ -45,6 +45,20 @@ describe('SceneFileValidator', () => {
       expect(rejection).toBeUndefined();
    });
 
+   it('given linked filters of file and saved view then accepts', () => {
+
+      // given
+      const linkedFilters = { query: { fullTextFilter: 'error', propertyFilters: [], valueRangeFilters: [] }, pendingKeys: ['rawdata'] };
+      const file = validFile();
+      const sceneFile = { ...file, linkedFilters, scene: { ...file.scene, config: { savedViews: [{ ...savedViewOf('All'), linkedFilters }] } } };
+
+      // when
+      const rejection = validator.rejectionOf(sceneFile);
+
+      // then
+      expect(rejection).toBeUndefined();
+   });
+
    it.each([['fruit sales', fruitSalesSampleOf('en')], ['app logs', appLogsSampleOf('en')]])('should accept file of %s sample scene', async (_, def) => {
 
       // given
@@ -70,6 +84,11 @@ describe('SceneFileValidator', () => {
          '/scene/config/savedViews/0'],
       ['saved view with invalid tab', f => ({ ...f, scene: { ...f.scene, config: { savedViews: [{ ...savedViewOf('All'), tabs: [{ id: 1, type: ViewType.PIVOT, title: 'x' }] }] } } }),
          '/scene/config/savedViews/0/tabs/0/id'],
+      ['linked filters without query', f => ({ ...f, linkedFilters: {} }), '/linkedFilters'],
+      ['linked filters with non-string pending keys', f => ({ ...f, linkedFilters: { query: { propertyFilters: [], valueRangeFilters: [] }, pendingKeys: [1] } }),
+         '/linkedFilters/pendingKeys/0'],
+      ['saved view with malformed linked filters', f => ({ ...f, scene: { ...f.scene, config: { savedViews: [{ ...savedViewOf('All'), linkedFilters: { query: {} } }] } } }),
+         '/scene/config/savedViews/0/linkedFilters/query'],
       ['entry that is no object', f => ({ ...f, entries: [1] }), '/entries/0'],
       ['entry with _id', f => ({ ...f, entries: [{ _id: '1', Amount: 1 }] }), '/entries/0'],
       ['entry with object value', f => ({ ...f, entries: [{ Amount: 1 }, { x: {} }] }), '/entries/1/x']

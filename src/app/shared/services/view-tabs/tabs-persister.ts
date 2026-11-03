@@ -2,7 +2,7 @@ import { LanguageService } from '../language';
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { Subscription } from 'rxjs';
-import { SceneTabs, TabDef } from '../../model/view-config';
+import { SceneTabs, SceneTabsContent } from '../../model/view-config';
 import { DBService } from '../backend';
 import { NotificationService } from '../notification.service';
 
@@ -18,7 +18,7 @@ export class TabsPersister implements OnDestroy {
 
    private doc: SceneTabs;
    private lastJson: string;
-   private pendingSnapshot: () => TabDef[];
+   private pendingSnapshot: () => SceneTabsContent;
    private timer: ReturnType<typeof setTimeout>;
    private writes: Promise<unknown> = Promise.resolve();
    private errorReported = false;
@@ -32,16 +32,16 @@ export class TabsPersister implements OnDestroy {
 
    reset(doc: SceneTabs): void {
       this.doc = doc;
-      this.lastJson = JSON.stringify(doc.tabs);
+      this.lastJson = JSON.stringify({ tabs: doc.tabs, linkedFilters: doc.linkedFilters });
    }
 
-   request(snapshot: () => TabDef[]): void {
+   request(snapshot: () => SceneTabsContent): void {
       this.clearTimer();
       this.pendingSnapshot = snapshot;
       this.timer = setTimeout(() => this.flush(), TabsPersister.DELAY_MS);
    }
 
-   persistNow(snapshot: () => TabDef[]): Promise<unknown> {
+   persistNow(snapshot: () => SceneTabsContent): Promise<unknown> {
       this.cancel();
       return this.write(snapshot);
    }
@@ -87,7 +87,7 @@ export class TabsPersister implements OnDestroy {
       this.timer = undefined;
    }
 
-   private write(snapshot: () => TabDef[]): Promise<unknown> {
+   private write(snapshot: () => SceneTabsContent): Promise<unknown> {
       const doc = this.doc;
       if (!doc) {
          return this.writes;
@@ -98,7 +98,13 @@ export class TabsPersister implements OnDestroy {
       }
       const prevJson = this.lastJson;
       this.lastJson = json;
-      doc.tabs = JSON.parse(json);
+      const content: SceneTabsContent = JSON.parse(json);
+      doc.tabs = content.tabs;
+      if (content.linkedFilters) {
+         doc.linkedFilters = content.linkedFilters;
+      } else {
+         delete doc.linkedFilters;
+      }
       this.writes = this.writes
          .then(() => this.discardedDocs.has(doc) ? undefined : this.dbService.saveSceneTabs(doc))
          .then(() => { this.errorReported = false; })

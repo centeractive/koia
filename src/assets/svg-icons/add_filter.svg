@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <mask id="add_filter_gap">
+    <rect width="24" height="24" fill="#fff"/>
+    <g fill="#000" stroke="#000" stroke-width="3">
+      <rect x="16.86796" y="3.1659384" width="1.9866644" height="7.2450147"/>
+      <rect x="14.2828453" y="5.7844229" width="7.2450147" height="1.9866644"/>
+    </g>
+  </mask>
+  <g mask="url(#add_filter_gap)">
+    <path transform="translate(-1.7 2)" d="M4.25,5.61C6.27,8.2,10,13,10,13v6c0,0.55,0.45,1,1,1h2c0.55,0,1-0.45,1-1v-6c0,0,3.72-4.8,5.74-7.39C20.25,4.95,19.78,4,18.95,4H5.04C4.21,4,3.74,4.95,4.25,5.61z"/>
+  </g>
+  <rect style="opacity:0.86" x="16.86796" y="3.1659384" width="1.9866644" height="7.2450147"/>
+  <rect style="opacity:0.86" x="5.7844229" y="-21.527884" width="1.9866644" height="7.2450147" transform="rotate(90)"/>
+</svg>

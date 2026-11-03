@@ -10,7 +10,7 @@ import { DBService } from 'app/shared/services/backend';
 import { ChartDataService, ChartMarginService } from 'app/shared/services/chart';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
-import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
 import { listenToDocumentOutsideAngular } from 'app/shared/ui/document-listener';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
 import { CanvasPaging, ElementContext, Route, TextBoxContext } from '../shared/model';
@@ -77,9 +77,10 @@ export class DashboardComponent extends ViewController {
 
   constructor(router: Router, bottomSheet: MatBottomSheet, dbService: DBService, dialogService: DialogService,
     chartMarginService: ChartMarginService, notificationService: NotificationService, exportService: ExportService,
-    viewTabsService: ViewTabsService, chartDataService: ChartDataService, computedColumnService: ComputedColumnService) {
+    viewTabsService: ViewTabsService, chartDataService: ChartDataService, computedColumnService: ComputedColumnService,
+    linkedFiltersService: LinkedFiltersService) {
     super(Route.GRID, router, bottomSheet, dbService, dialogService, chartMarginService, notificationService, exportService,
-      viewTabsService, computedColumnService);
+      viewTabsService, computedColumnService, linkedFiltersService);
     this.dashboardGenerator = new DashboardGenerator(chartMarginService, chartDataService, new MathRandomSource());
     this.removeDocumentListeners = [
       listenToDocumentOutsideAngular(this.zone, this.renderer, 'pointerdown', () => this.renderIf(this.tileSelection.endPress())),

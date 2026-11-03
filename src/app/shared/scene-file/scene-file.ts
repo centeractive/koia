@@ -1,5 +1,5 @@
 import type { Scene } from 'app/shared/model/scene.type';
-import type { TabDef } from 'app/shared/model/view-config/tab-def.type';
+import type { LinkedFilters, TabDef } from 'app/shared/model/view-config/tab-def.type';
 
 export const SCENE_FILE_EXTENSION = '.koia';
 export const SCENE_FILE_FORMAT = 'koia-scene-file';
@@ -13,5 +13,6 @@ export interface SceneFile {
    version: number;
    scene: Scene;
    tabs: TabDef[];
+   linkedFilters?: LinkedFilters;
    entries: object[];
 }

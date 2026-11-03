@@ -1,7 +1,7 @@
 import { provideZoneChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Document, Route, Scene } from 'app/shared/model';
-import { ConfigRecord, TabDef, View, ViewType } from 'app/shared/model/view-config';
+import { ConfigRecord, LinkedFilters, TabDef, View, ViewType } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { ExportService } from 'app/shared/services/export/export.service';
 import { BACKENDS, BackendRun, IT_PROVIDERS, sceneData, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
@@ -89,5 +89,20 @@ describe.each(BACKENDS)('Scene file IT ($name)', backend => {
 
       // then
       expect((await importedScene()).name).toBe(scene.name + ' (2)');
+   }, TIMEOUT);
+
+   it('should keep linked filters through export and import', async () => {
+
+      // given
+      const linkedFilters: LinkedFilters = { query: { fullTextFilter: 'ERROR', propertyFilters: [], valueRangeFilters: [], sort: null, pageIndex: null, rowsPerPage: null } };
+      const sceneTabs = await run.db.findSceneTabs(scene._id);
+      await run.db.saveSceneTabs({ ...sceneTabs, linkedFilters });
+      await service.export(scene._id);
+
+      // when
+      await service.import(new File([exported], 'it.koia'));
+
+      // then
+      expect((await run.db.findSceneTabs((await importedScene())._id)).linkedFilters).toEqual(linkedFilters);
    }, TIMEOUT);
 });

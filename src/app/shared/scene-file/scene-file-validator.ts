@@ -25,6 +25,7 @@ const SCENE_FILE_SCHEMA = {
          }
       },
       tabs: { type: 'array', items: { $ref: '#/definitions/tab' } },
+      linkedFilters: { $ref: '#/definitions/linkedFilters' },
       entries: { type: 'array', items: { type: 'object', propertyNames: { not: { pattern: '^_' } } } }
    },
    definitions: {
@@ -47,7 +48,24 @@ const SCENE_FILE_SCHEMA = {
             modifiedTime: { type: 'number' },
             tabs: { type: 'array', items: { $ref: '#/definitions/tab' } },
             activeTabId: { type: 'string' },
-            rawData: { type: 'object' }
+            rawData: { type: 'object' },
+            linkedFilters: { $ref: '#/definitions/linkedFilters' }
+         }
+      },
+      linkedFilters: {
+         type: 'object',
+         required: ['query'],
+         properties: {
+            query: {
+               type: 'object',
+               required: ['propertyFilters', 'valueRangeFilters'],
+               properties: {
+                  fullTextFilter: { type: 'string' },
+                  propertyFilters: { type: 'array' },
+                  valueRangeFilters: { type: 'array' }
+               }
+            },
+            pendingKeys: { type: 'array', items: { type: 'string' } }
          }
       }
    }

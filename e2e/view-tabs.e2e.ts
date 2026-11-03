@@ -1,17 +1,20 @@
-import { Page } from '@playwright/test';
+import { DataType } from 'app/shared/model/data-type.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { fruitSalesSampleOf } from 'app/shared/samples/fruit-sales.sample';
 import { DASHBOARD_TAB_TITLES, PIVOT_TABLE_TAB_TITLES } from 'app/shared/services/view-tabs/tab-titles';
 import { TabBar } from './support/components/tab-bar';
 import { expect, test } from './support/fixtures';
-import { fruitSalesOf, pivotTabOf } from './support/fruit-sales-sample';
-import { FrontPage } from './support/pages/front-page';
-import { ScenesPage } from './support/pages/scenes-page';
+import { columnValuesOf, dashboardTabOf, firstColumnOf, fruitSalesOf, pivotTabOf } from './support/fruit-sales-sample';
+import { RawDataPage } from './support/pages/raw-data-page';
+import { activateSceneInNewPage } from './support/scene-activation';
 import { Texts } from './support/texts';
 
 const RENAMED_TITLE = 'Fruit revenue';
 const en = new Texts('en');
 const sample = fruitSalesOf('en');
+const filterColumn = firstColumnOf(sample, DataType.TEXT);
+const filterValue: string = sample.entries[0][filterColumn];
+const matchingCount = columnValuesOf<string>(sample, filterColumn).filter(v => v.toLowerCase().includes(filterValue.toLowerCase())).length;
 
 test.beforeEach(async ({ front }) => {
    await front.open('en');
@@ -91,12 +94,74 @@ test('renamed tab is restored when its scene is activated in a new browser tab',
    }).toPass({ timeout: 60_000 });
 });
 
-/**
- * the active scene lives in memory only, a new page activates it from the database while the first page completes its writes
- */
-async function activateSceneInNewPage(page: Page, sceneName: string): Promise<void> {
-   const front = new FrontPage(page);
-   await front.open('en');
-   await front.continueWithScenes();
-   await new ScenesPage(page).activate(sceneName);
-}
+test('linking filters on raw data gives the pivot table and the dashboard the same filters once they are opened', async ({ rawData, tabBar, pivot, dashboard }) => {
+   await rawData.mainToolbar.addValueFilter(filterColumn, filterValue);
+
+   await rawData.mainToolbar.toggleLinkedFilters();
+
+   await tabBar.open(pivotTabOf(sample).id);
+   await expect(pivot.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+   await expect(pivot.mainToolbar.linkFiltersToggle).toHaveAttribute('aria-pressed', 'true');
+   await tabBar.open(dashboardTabOf(sample).id);
+   await expect(dashboard.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+});
+
+test('changing a filter on the pivot table while filters are linked reduces the raw data rows', async ({ rawData, tabBar, pivot }) => {
+   await rawData.mainToolbar.toggleLinkedFilters();
+   await tabBar.open(pivotTabOf(sample).id);
+
+   await pivot.mainToolbar.addValueFilter(filterColumn, filterValue);
+
+   await tabBar.openRawData();
+   await expect(rawData.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+   await expect(rawData.table.rowCount).toHaveText(en.rows(matchingCount));
+});
+
+test('after unlinking, every tab keeps the linked filters and then changes them on its own', async ({ rawData, tabBar, pivot, dashboard }) => {
+   await rawData.mainToolbar.addValueFilter(filterColumn, filterValue);
+   await rawData.mainToolbar.toggleLinkedFilters();
+   await tabBar.open(pivotTabOf(sample).id);
+   await expect(pivot.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+
+   await pivot.mainToolbar.toggleLinkedFilters();
+
+   await tabBar.open(dashboardTabOf(sample).id);
+   await expect(dashboard.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+   await expect(dashboard.mainToolbar.linkFiltersToggle).toHaveAttribute('aria-pressed', 'false');
+   await dashboard.mainToolbar.removeValueFilter();
+   await expect(dashboard.mainToolbar.valueFilterInputs).toHaveCount(0);
+   await tabBar.openRawData();
+   await expect(rawData.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+});
+
+test('linked filters are remembered after reloading the page', async ({ context, rawData }) => {
+   await rawData.mainToolbar.addValueFilter(filterColumn, filterValue);
+
+   await rawData.mainToolbar.toggleLinkedFilters();
+
+   await expect(async () => {
+      const page = await context.newPage();
+      try {
+         await activateSceneInNewPage(page, fruitSalesSampleOf('en').sceneName);
+         const reloadedRawData = new RawDataPage(page);
+         await expect(reloadedRawData.mainToolbar.linkFiltersToggle).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+         await expect(reloadedRawData.mainToolbar.valueFilterInputs).toHaveValue(filterValue, { timeout: 5_000 });
+      } finally {
+         await page.close();
+      }
+   }).toPass({ timeout: 60_000 });
+});
+
+test('restoring a saved view brings back its linked filters', async ({ rawData, notifications, confirmDialog }) => {
+   await rawData.mainToolbar.addValueFilter(filterColumn, filterValue);
+   await rawData.mainToolbar.toggleLinkedFilters();
+   await rawData.mainToolbar.saveView('Linked');
+   await notifications.dismiss(StatusType.SUCCESS);
+   await rawData.mainToolbar.toggleLinkedFilters();
+
+   await rawData.mainToolbar.restoreView('Linked');
+   await confirmDialog.confirm();
+
+   await expect(rawData.mainToolbar.linkFiltersToggle).toHaveAttribute('aria-pressed', 'true');
+   await expect(rawData.mainToolbar.valueFilterInputs).toHaveValue(filterValue);
+});

@@ -1,6 +1,6 @@
 import { CanvasPaging } from '../canvas-paging.enum';
 import { QueryDef } from './query/query-def.type';
-import { TabDef } from './tab-def.type';
+import { LinkedFilters, TabDef } from './tab-def.type';
 
 export interface RawDataSettings {
    considerColumnWidths: boolean;
@@ -25,4 +25,5 @@ export interface SavedView {
    /** id of the tab shown when the view was saved, undefined when raw data was shown */
    activeTabId?: string;
    rawData: RawDataState;
+   linkedFilters?: LinkedFilters;
 }

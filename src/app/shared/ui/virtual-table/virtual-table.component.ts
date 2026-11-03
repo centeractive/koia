@@ -14,6 +14,7 @@ import { DomMetrics } from '../table-fit/dom-metrics';
 import { TableFitter } from '../table-fit/table-fitter';
 import { ColumnAutoSizer } from './column-auto-sizer';
 import { ColumnWidthResolver } from './column-width-resolver';
+import { FormattedCellCache } from './formatted-cell-cache';
 import { ColumnResize, VirtualTableSource } from './virtual-table-source';
 
 @Component({
@@ -73,7 +74,7 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
   private hScroll = 0;
   private resizeStartWidth: number | undefined;
   private resizeStartColumnsWidth: number | undefined;
-  private readonly valueFormatter = new ValueFormatter(LanguageService.localeId);
+  private readonly cellCache = new FormattedCellCache(new ValueFormatter(LanguageService.localeId), LanguageService.localeId);
 
   constructor(private dialogService: DialogService, private zone: NgZone, private cdr: ChangeDetectorRef) { }
 
@@ -145,7 +146,7 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
 
   // eslint-disable-next-line
   formattedValueOf(column: Column, entry: object): any {
-    return this.valueFormatter.formatCell(column, entry, this.showNestedObjects);
+    return this.cellCache.textOf(column, entry, this.showNestedObjects);
   }
 
   displayValue(column: Column, entry: object): void {

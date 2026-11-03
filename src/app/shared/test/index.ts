@@ -18,3 +18,4 @@ export * from './tile-spec-fixtures';
 export * from './static-page';
 export * from './file-input';
 export * from './svg-icon-literals';
+export * from './linked-filters-service-mock';

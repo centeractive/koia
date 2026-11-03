@@ -102,6 +102,8 @@
     "valueRange": "Wertebereich",
     "hideFilters": "Filter ausblenden",
     "showFilters": "Filter einblenden",
+    "linkFilters": "Filter aller Tabs verknüpfen",
+    "unlinkFilters": "Filter entkoppeln, jeder Tab behält seine Filter",
     "refresh": "Daten aktualisieren",
     "tabs": {
       "rawData": "Rohdaten",

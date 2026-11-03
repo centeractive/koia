@@ -145,7 +145,8 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
     this.context.data = chartDataResult.data;
     this.cdr.detectChanges();
 
-    new ChartJs(this.rawDataRevealService).create(this.canvasRef.nativeElement, this.context);
+    const canvas = this.canvasRef.nativeElement;
+    this.zone.runOutsideAngular(() => new ChartJs(this.rawDataRevealService).create(canvas, this.context));
   }
 
   ngOnDestroy(): void {

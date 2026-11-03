@@ -75,7 +75,7 @@ test('switching to pie chart selects its type instead of bar and keeps the chart
    await dashboard.tile(0).expectChartPainted();
 });
 
-test('count of a summary table opens a raw data dialog with the counted rows and its toolbar buttons level with the close button', async ({ dashboard, rawDataDialog }) => {
+test('count of a summary table opens a raw data dialog with the counted rows, its toolbar buttons level with the close button and no link filters toggle', async ({ dashboard, rawDataDialog }) => {
    await dashboard.launcher.addSummary();
    await dashboard.sideBar.selectColumn(column);
    await dashboard.sideBar.close();
@@ -88,6 +88,7 @@ test('count of a summary table opens a raw data dialog with the counted rows and
    for (const button of [rawDataDialog.mainToolbar.refreshButton, rawDataDialog.mainToolbar.addFilterButton]) {
       expect(Math.abs(centerYOf(await button.boundingBox()) - closeCenter)).toBeLessThanOrEqual(1);
    }
+   await expect(rawDataDialog.mainToolbar.linkFiltersToggle).toHaveCount(0);
 });
 
 test('summary of a sum grouped by channel and by date per month shows three columns', async ({ dashboard }) => {
