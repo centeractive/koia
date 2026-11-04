@@ -16,7 +16,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { NavigationEnd, Router, RouterEvent, RouterModule } from '@angular/router';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { Column, ComputeOperator, ContextInfo, DataType, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
@@ -33,7 +32,8 @@ import { ManualLinkComponent } from 'app/shared/ui/manual-link/manual-link.compo
 import { NavButtonsComponent } from 'app/shared/ui/nav-buttons/nav-buttons.component';
 import { page } from 'vitest/browser';
 import { MainToolbarComponent } from './main-toolbar.component';
-import { SavedViewButtonsComponent } from './saved-view-buttons/saved-view-buttons.component';
+import { RestoreViewMenuComponent } from './restore-view-menu/restore-view-menu.component';
+import { SaveViewMenuComponent } from './save-view-menu/save-view-menu.component';
 import { ViewTabBarComponent } from './view-tab-bar/view-tab-bar.component';
 import { ValueFilterComponent } from './value-filter/value-filter.component';
 import { NumberRangeFilter } from './range-filter/model/number-range-filter';
@@ -80,7 +80,7 @@ describe('MainToolbarComponent with many tabs', () => {
     const viewTabsService = { tabs, ready: true, layoutOf: vi.fn() } as unknown as ViewTabsService;
     const savedViewsService = { ready: true, findAll: () => [] } as unknown as SavedViewsService;
     await configureTestingModule(dbService, dialogService, {
-      declarations: [ViewTabBarComponent, SavedViewButtonsComponent, LanguageSelectComponent, ManualLinkComponent, ValueFilterComponent],
+      declarations: [ViewTabBarComponent, SaveViewMenuComponent, RestoreViewMenuComponent, LanguageSelectComponent, ManualLinkComponent, ValueFilterComponent],
       imports: [MatTabsModule, MatBadgeModule],
       providers: [{ provide: ViewTabsService, useValue: viewTabsService }, { provide: SavedViewsService, useValue: savedViewsService }]
     });
@@ -140,10 +140,10 @@ describe('MainToolbarComponent with many tabs', () => {
     const nav = root.querySelector('nav');
     expect(nav.getBoundingClientRect().height).toBe(48);
     expect(verticalCenterOf(nav)).toBeCloseTo(verticalCenterOf(root.querySelector('.div_toolbar')), 0);
-    const controls = Array.from(root.querySelectorAll('#butHome, #butShowSceneDetails, #butScenes, #butScene, #butShareScene, '
-      + '#butOpenSceneFile, #but_save_view, #but_restore_view, .span_navigation > .koia-toolbar-separator, #butAddTab, '
+    const controls = Array.from(root.querySelectorAll('#butHome, #butShowSceneDetails, #butScenes, #butScene, '
+      + '#but_save_view, #but_restore_view, .span_navigation > .koia-toolbar-separator, #butAddTab, '
       + '.but_add_col_filter, #butToggleFilters, .span_buttons:not(.span_navigation) > button:last-child, #butManual, #but_language'));
-    expect(controls.length).toBe(16);
+    expect(controls.length).toBe(14);
     controls.forEach(c => expect(verticalCenterOf(c)).toBeCloseTo(verticalCenterOf(nav), 0));
   });
 
@@ -258,17 +258,17 @@ describe('MainToolbarComponent with many tabs', () => {
     expect(rightOf('#butAddTab')).toBeLessThanOrEqual(toolbarRight);
   });
 
-  it('should keep share and open scene file button size when tabs exceed toolbar width', () => {
+  it('should keep save and restore view button size when tabs exceed toolbar width', () => {
 
     // when
-    const widths = ['#butShareScene', '#butOpenSceneFile'].map(id => fixture.nativeElement.querySelector(id).getBoundingClientRect().width);
+    const widths = ['#but_save_view', '#but_restore_view'].map(id => fixture.nativeElement.querySelector(id).getBoundingClientRect().width);
 
     // then
-    const saveViewWidth = fixture.nativeElement.querySelector('#but_save_view').getBoundingClientRect().width;
-    expect(widths).toEqual([saveViewWidth, saveViewWidth]);
+    const detailsWidth = fixture.nativeElement.querySelector('#butShowSceneDetails').getBoundingClientRect().width;
+    expect(widths).toEqual([detailsWidth, detailsWidth]);
   });
 
-  it('saved view buttons should get tab of toolbar as active tab', () => {
+  it('save view menu should get scene and tab of toolbar', () => {
 
     // given
     fixture.componentRef.setInput('tabId', 'tab3');
@@ -277,8 +277,9 @@ describe('MainToolbarComponent with many tabs', () => {
     fixture.detectChanges();
 
     // then
-    const buttons: SavedViewButtonsComponent = fixture.debugElement.query(By.directive(SavedViewButtonsComponent)).componentInstance;
-    expect(buttons.activeTabId).toBe('tab3');
+    const menu: SaveViewMenuComponent = fixture.debugElement.query(By.directive(SaveViewMenuComponent)).componentInstance;
+    expect(menu.sceneId).toBe('1');
+    expect(menu.activeTabId).toBe('tab3');
   });
 });
 
@@ -356,14 +357,14 @@ describe('MainToolbarComponent', () => {
     expect(style.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   });
 
-  it('navigation buttons should be separated from share button by divider', () => {
+  it('navigation buttons should be separated from save view menu by divider', () => {
 
     // when
     const separator: HTMLElement = fixture.nativeElement.querySelectorAll('.span_navigation > .koia-toolbar-separator')[0];
 
     // then
     expect(separator.previousElementSibling.tagName).toBe('KOIA-NAV-BUTTONS');
-    expect(separator.nextElementSibling.id).toBe('butShareScene');
+    expect(separator.nextElementSibling.tagName).toBe('KOIA-SAVE-VIEW-MENU');
   });
 
   it('scene details button should be shown between home and scenes buttons', () => {
@@ -429,148 +430,17 @@ describe('MainToolbarComponent', () => {
     });
   });
 
-  it('share and open scene file buttons should be left of saved view buttons, separated from tab bar by divider', () => {
+  it('save and restore view menus should be separated from tab bar by divider', () => {
 
     // when
-    const share: HTMLElement = fixture.nativeElement.querySelector('#butShareScene');
+    const saveViewMenu: HTMLElement = fixture.nativeElement.querySelector('koia-save-view-menu');
 
     // then
-    const open = share.nextElementSibling;
-    const input = open.nextElementSibling;
-    const savedViewButtons = input.nextElementSibling;
-    const separator = savedViewButtons.nextElementSibling;
-    expect([open.id, input.id, savedViewButtons.tagName]).toEqual(['butOpenSceneFile', 'toolbarSceneFileInput', 'KOIA-SAVED-VIEW-BUTTONS']);
+    const restoreViewMenu = saveViewMenu.nextElementSibling;
+    const separator = restoreViewMenu.nextElementSibling;
+    expect(restoreViewMenu.tagName).toBe('KOIA-RESTORE-VIEW-MENU');
     expect(separator.classList).toContain('koia-toolbar-separator');
     expect(separator.nextElementSibling.tagName).toBe('KOIA-VIEW-TAB-BAR');
-  });
-
-  it('share button should show save icon', () => {
-
-    // when
-    const icon: HTMLElement = fixture.nativeElement.querySelector('#butShareScene mat-icon');
-
-    // then
-    expect(icon.textContent.trim()).toBe('save');
-  });
-
-  it('#click on open scene file button should select file', () => {
-
-    // given
-    const selectSpy = vi.spyOn(component.sceneFileOpener, 'select').mockReturnValue(undefined);
-
-    // when
-    fixture.nativeElement.querySelector('#butOpenSceneFile').click();
-
-    // then
-    expect(selectSpy).toHaveBeenCalledWith(fixture.nativeElement.querySelector('#toolbarSceneFileInput'));
-  });
-
-  it('#click on open scene file button should cancel running import', () => {
-
-    // given
-    vi.spyOn(component.sceneFileOpener, 'cancelable', 'get').mockReturnValue(true);
-    const cancelSpy = vi.spyOn(component.sceneFileOpener, 'cancel').mockReturnValue(undefined);
-    const selectSpy = vi.spyOn(component.sceneFileOpener, 'select').mockReturnValue(undefined);
-
-    // when
-    fixture.nativeElement.querySelector('#butOpenSceneFile').click();
-
-    // then
-    expect(cancelSpy).toHaveBeenCalled();
-    expect(selectSpy).not.toHaveBeenCalled();
-  });
-
-  it('open scene file button should spin and offer cancel while import is cancelable', () => {
-
-    // given
-    component.sceneFileOpener.importing = true;
-    vi.spyOn(component.sceneFileOpener, 'cancelable', 'get').mockReturnValue(true);
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    const button: HTMLElement = fixture.nativeElement.querySelector('#butOpenSceneFile');
-    const icon = button.querySelector('mat-icon');
-    expect(icon.textContent.trim()).toBe('autorenew');
-    expect(icon.classList).toContain('koia-spin');
-    expect(button.getAttribute('aria-busy')).toBe('true');
-    expect(button.getAttribute('aria-label')).toBe('Cancel');
-  });
-
-  it('open scene file button should show opening label once import is canceled', () => {
-
-    // given
-    component.sceneFileOpener.importing = true;
-    vi.spyOn(component.sceneFileOpener, 'cancelable', 'get').mockReturnValue(false);
-
-    // when
-    fixture.detectChanges();
-
-    // then
-    expect(fixture.nativeElement.querySelector('#butOpenSceneFile').getAttribute('aria-label')).toBe('Opening shared scene…');
-  });
-
-  it('open scene file button should show open icon and label when no import runs', () => {
-
-    // when
-    const button: HTMLElement = fixture.nativeElement.querySelector('#butOpenSceneFile');
-
-    // then
-    expect(button.querySelector('mat-icon').textContent.trim()).toBe('folder_open');
-    expect(button.getAttribute('aria-label')).toBe('Open a shared scene');
-    expect(button.getAttribute('aria-busy')).toBe('false');
-  });
-
-  it('#change of scene file input should open selected file', () => {
-
-    // given
-    const openSpy = vi.spyOn(component.sceneFileOpener, 'open').mockReturnValue(undefined);
-    const input: HTMLInputElement = fixture.nativeElement.querySelector('#toolbarSceneFileInput');
-
-    // when
-    input.dispatchEvent(new Event('change'));
-
-    // then
-    expect(openSpy).toHaveBeenCalledWith(input);
-  });
-
-  it('#ngOnDestroy should destroy scene file opener', () => {
-
-    // given
-    const destroySpy = vi.spyOn(component.sceneFileOpener, 'destroy');
-
-    // when
-    component.ngOnDestroy();
-
-    // then
-    expect(destroySpy).toHaveBeenCalled();
-  });
-
-  it('#click on share button should export active scene', () => {
-
-    // given
-    const exportSpy = vi.spyOn(TestBed.inject(SceneFileService), 'export').mockResolvedValue(undefined);
-
-    // when
-    fixture.nativeElement.querySelector('#butShareScene').click();
-
-    // then
-    expect(exportSpy).toHaveBeenCalledWith(scene._id);
-  });
-
-  it('#click on share button should notify error when export fails', async () => {
-
-    // given
-    vi.spyOn(TestBed.inject(SceneFileService), 'export').mockRejectedValue('disk full');
-    const onErrorSpy = vi.spyOn(TestBed.inject(NotificationService), 'onError').mockReturnValue(undefined);
-
-    // when
-    fixture.nativeElement.querySelector('#butShareScene').click();
-    await vi.waitFor(() => expect(onErrorSpy).toHaveBeenCalled());
-
-    // then
-    expect(onErrorSpy.mock.calls[0][1]).toBe('disk full');
   });
 
   it('add filter button should be accent icon button showing add filter icon', () => {

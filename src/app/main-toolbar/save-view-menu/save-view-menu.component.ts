@@ -1,22 +1,24 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
-import { SavedView } from 'app/shared/model/view-config';
+import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { NotificationService } from 'app/shared/services';
 import { SavedViewsService } from 'app/shared/services/saved-views';
 
 @Component({
-  selector: 'koia-saved-view-buttons',
-  templateUrl: './saved-view-buttons.component.html',
-  styleUrls: ['./saved-view-buttons.component.css'],
+  selector: 'koia-save-view-menu',
+  templateUrl: './save-view-menu.component.html',
+  styleUrls: ['../toolbar-menu-host.css'],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
-export class SavedViewButtonsComponent extends AbstractComponent {
+export class SaveViewMenuComponent extends AbstractComponent {
 
+  @Input() sceneId: string;
   @Input() activeTabId: string;
 
-  constructor(private savedViewsService: SavedViewsService, bottomSheet: MatBottomSheet, notificationService: NotificationService) {
+  constructor(private savedViewsService: SavedViewsService, private sceneFileService: SceneFileService, bottomSheet: MatBottomSheet,
+    notificationService: NotificationService) {
     super(bottomSheet, notificationService);
   }
 
@@ -24,23 +26,18 @@ export class SavedViewButtonsComponent extends AbstractComponent {
     return this.savedViewsService.ready;
   }
 
-  get savedViews(): SavedView[] {
-    return this.savedViewsService.findAll();
+  /**
+   * downloads the active scene with its open tabs and all its rows as .koia file
+   */
+  shareScene(): void {
+    this.sceneFileService.export(this.sceneId).catch(err => this.notifyError(err));
   }
 
-  save(): void {
+  saveView(): void {
     this.savedViewsService.save(this.activeTabId).then(status => {
       if (status) {
         this.showStatus(status);
       }
     });
-  }
-
-  restore(view: SavedView): void {
-    this.savedViewsService.restore(view);
-  }
-
-  manage(): void {
-    this.savedViewsService.manage(status => this.showStatus(status));
   }
 }

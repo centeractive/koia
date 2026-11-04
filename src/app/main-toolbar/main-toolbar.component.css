@@ -64,7 +64,3 @@ button {
 .span_language {
   margin-left: 4px;
 }
-
-#butShareScene, #butOpenSceneFile {
-  flex-shrink: 0;
-}

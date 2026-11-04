@@ -1,0 +1,14 @@
+<button id="but_save_view" mat-icon-button [matTooltip]="'view.saveMenu' | translate" [attr.aria-label]="'view.saveMenu' | translate"
+  [matMenuTriggerFor]="saveViewMenu">
+  <mat-icon>save</mat-icon>
+</button>
+<mat-menu #saveViewMenu="matMenu">
+  <button id="menuItemShareScene" mat-menu-item (click)="shareScene()">
+    <mat-icon>save</mat-icon>
+    <span>{{ 'scenes.share' | translate }}</span>
+  </button>
+  <button id="menuItemSaveView" mat-menu-item [disabled]="!ready" (click)="saveView()">
+    <mat-icon>save_alt</mat-icon>
+    <span>{{ 'view.save' | translate }}</span>
+  </button>
+</mat-menu>

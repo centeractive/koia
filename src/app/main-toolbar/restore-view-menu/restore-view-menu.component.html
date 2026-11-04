@@ -1,0 +1,26 @@
+<button id="but_restore_view" mat-icon-button [attr.aria-busy]="sceneFileOpener.importing"
+  [matTooltip]="tooltipKey | translate" [attr.aria-label]="tooltipKey | translate"
+  [matMenuTriggerFor]="sceneFileOpener.importing ? null : restoreViewMenu" (click)="cancelImport()">
+  <mat-icon [class.koia-spin]="sceneFileOpener.importing" [matBadge]="savedViews.length"
+    [matBadgeHidden]="sceneFileOpener.importing || !savedViews.length" matBadgeSize="small" matBadgeColor="accent">{{ icon }}</mat-icon>
+</button>
+<input #sceneFileInput id="toolbarSceneFileInput" type="file" hidden [accept]="sceneFileOpener.extension" (change)="sceneFileOpener.open(sceneFileInput)">
+<mat-menu #restoreViewMenu="matMenu">
+  <button id="menuItemOpenSceneFile" mat-menu-item (click)="sceneFileOpener.select(sceneFileInput)">
+    <mat-icon>folder_open</mat-icon>
+    <span>{{ 'front.actions.openSceneFile' | translate }}</span>
+  </button>
+  @if (savedViews.length) {
+    <mat-divider />
+    @for (view of savedViews; track view) {
+      <button class="menu_item_details" mat-menu-item [disabled]="!ready" (click)="restore(view)">
+        <mat-icon>monitor</mat-icon>
+        <span>{{ view.name }} <var>{{ view.modifiedTime | koiaDate:'short' }}</var></span>
+      </button>
+    }
+    <button id="menuItemManageViews" mat-menu-item [disabled]="!ready" (click)="manage()">
+      <mat-icon>settings</mat-icon>
+      <span>{{ 'dialog.manageViews' | translate }}</span>
+    </button>
+  }
+</mat-menu>

@@ -2,8 +2,6 @@ import { AfterViewChecked, Component, EventEmitter, inject, Input, OnChanges, On
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { NavigationEnd, Router } from '@angular/router';
 import { AbstractComponent } from 'app/shared/component/abstract.component';
-import { SceneFileOpener } from 'app/shared/scene-file/scene-file-opener';
-import { SceneFileService } from 'app/shared/scene-file/scene-file.service';
 import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ArrayUtils, DataTypeUtils, QueryUtils } from 'app/shared/utils';
@@ -42,7 +40,6 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   fullTextFilter = '';
   propertyFilters: PropertyFilter[] = [];
   rangeFilters: NumberRangeFilter[] = [];
-  readonly sceneFileOpener: SceneFileOpener;
 
   /**
    * key of the view in the linked filters, undefined in dialogs and other views without linkable filters
@@ -57,9 +54,8 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   private readonly linkedFiltersService = inject(LinkedFiltersService);
 
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService,
-    private sceneFileService: SceneFileService, bottomSheet: MatBottomSheet, notificationService: NotificationService) {
+    bottomSheet: MatBottomSheet, notificationService: NotificationService) {
     super(bottomSheet, notificationService);
-    this.sceneFileOpener = new SceneFileOpener(sceneFileService, router, this);
   }
 
   ngOnInit(): void {
@@ -92,7 +88,6 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   ngOnDestroy(): void {
     this.navigationSubscription?.unsubscribe();
     this.loadedSubscription?.unsubscribe();
-    this.sceneFileOpener.destroy();
   }
 
   /**
@@ -174,13 +169,6 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
 
   showSceneDetails(): void {
     this.dialogService.showSceneDetailsDialog(this.scene);
-  }
-
-  /**
-   * downloads the active scene with its open tabs and all its rows as .koia file
-   */
-  shareScene(): void {
-    this.sceneFileService.export(this.scene._id).catch(err => this.notifyError(err));
   }
 
   addValueFilter(column: Column): void {

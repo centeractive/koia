@@ -67,7 +67,7 @@ test('restoring saved view needs no confirmation when open tabs have no content'
    await expect(confirmDialog.root).toHaveCount(0);
 });
 
-test('deleted saved view is no longer offered for restoring', async ({ rawData, notifications, manageViewsDialog }) => {
+test('deleted saved view is no longer offered for restoring', async ({ page, rawData, notifications, manageViewsDialog }) => {
    await rawData.mainToolbar.saveView('Gone');
    await notifications.dismiss(StatusType.SUCCESS);
 
@@ -75,7 +75,9 @@ test('deleted saved view is no longer offered for restoring', async ({ rawData, 
    await manageViewsDialog.delete(0);
    await notifications.dismiss(StatusType.SUCCESS);
 
-   await expect(rawData.mainToolbar.restoreViewButton).toBeDisabled();
+   await rawData.mainToolbar.openRestoreMenu();
+   await expect(rawData.mainToolbar.savedViewItems).toHaveCount(0);
+   await expect(page.locator('#menuItemOpenSceneFile')).toBeVisible();
 });
 
 test('renamed tab is restored when its scene is activated in a new browser tab', async ({ context, tabBar }) => {

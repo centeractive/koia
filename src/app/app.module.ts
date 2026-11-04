@@ -53,7 +53,8 @@ import { GraphSideBarComponent } from './graph/graph-side-bar/graph-side-bar.com
 import { GraphComponent } from './graph/graph.component';
 import { MainToolbarComponent } from './main-toolbar/main-toolbar.component';
 import { ViewTabBarComponent } from './main-toolbar/view-tab-bar/view-tab-bar.component';
-import { SavedViewButtonsComponent } from './main-toolbar/saved-view-buttons/saved-view-buttons.component';
+import { SaveViewMenuComponent } from './main-toolbar/save-view-menu/save-view-menu.component';
+import { RestoreViewMenuComponent } from './main-toolbar/restore-view-menu/restore-view-menu.component';
 import { RangeFilterComponent } from './main-toolbar/range-filter/range-filter.component';
 import { ValueFilterComponent } from './main-toolbar/value-filter/value-filter.component';
 import { PivotTableSideBarComponent } from './pivot-table/pivot-table-side-bar/pivot-table-side-bar.component';
@@ -120,7 +121,8 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         AppComponent,
         MainToolbarComponent,
         ViewTabBarComponent,
-        SavedViewButtonsComponent,
+        SaveViewMenuComponent,
+        RestoreViewMenuComponent,
         ScenesComponent,
         SceneDetailsDialogComponent,
         SceneComponent,

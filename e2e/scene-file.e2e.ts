@@ -112,7 +112,7 @@ test('shared scene opened from main toolbar of raw data replaces shown rows', as
    await front.openLogSample();
    await expect(rawData.table.headers.filter({ hasText: 'Level' })).toHaveCount(1);
 
-   await rawData.mainToolbar.openSceneFile(file);
+   await rawData.mainToolbar.chooseSceneFile(file);
 
    await expect(rawData.table.headers).toHaveText(sample.scene.columns.map(column => column.name));
 });

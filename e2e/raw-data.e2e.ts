@@ -79,7 +79,7 @@ test('toolbar controls left and right of the tabs are vertically centered with t
    const row = rawData.mainToolbar.toolbarRow;
    const navBox = await row.locator('nav').boundingBox();
    const controls = [
-      ...['#butHome', '#butShareScene', '#but_save_view', '#butAddTab', '#butManual', '#but_language'].map(id => row.locator(id)),
+      ...['#butHome', '#but_save_view', '#but_restore_view', '#butAddTab', '#butManual', '#but_language'].map(id => row.locator(id)),
       rawData.mainToolbar.addFilterButton, rawData.mainToolbar.linkFiltersToggle, rawData.mainToolbar.filtersToggle, rawData.mainToolbar.refreshButton
    ];
    for (const control of controls) {

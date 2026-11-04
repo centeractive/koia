@@ -1,5 +1,6 @@
 import { expect, Locator } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
+import { chooseFile } from '../file-chooser';
 import { InputDialog } from './input-dialog';
 import { NavButtons } from './nav-buttons';
 import { RangeFilter } from './range-filter';
@@ -14,7 +15,9 @@ export class MainToolbar {
    readonly valueFilterInputs: Locator;
    readonly refreshButton: Locator;
    readonly toolbarRow: Locator;
+   readonly saveViewButton: Locator;
    readonly restoreViewButton: Locator;
+   readonly savedViewItems: Locator;
    readonly navButtons: NavButtons;
 
    constructor(private readonly root: Locator) {
@@ -26,7 +29,9 @@ export class MainToolbar {
       this.valueFilterInputs = root.locator('koia-value-filter .column_filter_input');
       this.refreshButton = root.locator('.span_buttons:not(.span_navigation) > button:last-child');
       this.toolbarRow = root.locator('.div_toolbar');
+      this.saveViewButton = root.locator('#but_save_view');
       this.restoreViewButton = root.locator('#but_restore_view');
+      this.savedViewItems = root.page().locator('.menu_item_details');
       this.navButtons = new NavButtons(root.locator('koia-nav-buttons'));
    }
 
@@ -67,7 +72,8 @@ export class MainToolbar {
    }
 
    async shareScene(): Promise<void> {
-      await this.root.locator('#butShareScene').click();
+      await this.saveViewButton.click();
+      await this.root.page().locator('#menuItemShareScene').click();
    }
 
    async openSceneFile(path: string): Promise<void> {
@@ -75,18 +81,29 @@ export class MainToolbar {
       await this.root.page().waitForURL('**/' + Route.RAWDATA);
    }
 
+   async chooseSceneFile(path: string): Promise<void> {
+      await this.openRestoreMenu();
+      await chooseFile(this.root.page().locator('#menuItemOpenSceneFile'), path, async () => undefined);
+      await this.root.page().waitForURL('**/' + Route.RAWDATA);
+   }
+
    async saveView(name: string): Promise<void> {
-      await this.root.locator('#but_save_view').click();
+      await this.saveViewButton.click();
+      await this.root.page().locator('#menuItemSaveView').click();
       await new InputDialog(this.root.page()).submit(name);
    }
 
-   async restoreView(name: string): Promise<void> {
+   async openRestoreMenu(): Promise<void> {
       await this.restoreViewButton.click();
-      await this.root.page().locator('.menu_item_details').filter({ hasText: name }).click();
+   }
+
+   async restoreView(name: string): Promise<void> {
+      await this.openRestoreMenu();
+      await this.savedViewItems.filter({ hasText: name }).click();
    }
 
    async manageViews(): Promise<void> {
-      await this.restoreViewButton.click();
+      await this.openRestoreMenu();
       await this.root.page().locator('#menuItemManageViews').click();
    }
 

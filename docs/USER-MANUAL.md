@@ -219,8 +219,8 @@ Good to know:
 
 A **saved view** keeps all tabs of a scene under a name, for example to return to an analysis later:
 
-- **Save all tabs as view** stores all tabs, the active tab, the raw data state (filters, sorting, column widths) and whether filters are linked. Saving under an existing name replaces that view.
-- **Restore saved view** lists the views; restoring replaces all open tabs.
+- **Save view** (toolbar) → **Save all tabs as view** stores all tabs, the active tab, the raw data state (filters, sorting, column widths) and whether filters are linked. Saving under an existing name replaces that view.
+- **Restore view** (toolbar, its badge counts the saved views) lists the views below **Open a shared scene**; restoring replaces all open tabs.
 - **Manage Views** (end of that list) renames and deletes views.
 
 Video: [Managing scenes and navigating](https://www.koia.io/intro/videos.html)
@@ -405,9 +405,9 @@ Video: [Relationship graphs](https://www.koia.io/intro/videos.html)
 **Share a scene** with all its tabs, linked filters, saved views and rows as one `.koia` file:
 
 - *Scenes page → ⋮ → Share as file*, or
-- the **Share as file** icon in the toolbar of the active scene.
+- *Save view* (toolbar of the active scene) → *Share as file*.
 
-**Open a shared scene** on the start page, on the scenes page or in the toolbar adds the file as a new scene and opens it. Click the button again to cancel. Nobody needs a server or an account – just the file.
+**Open a shared scene** on the start page, on the scenes page or in the **Restore view** menu of the toolbar adds the file as a new scene and opens it. Click the button again to cancel; in the toolbar, that is the spinning **Restore view** button. Nobody needs a server or an account – just the file.
 
 Good to know:
 
