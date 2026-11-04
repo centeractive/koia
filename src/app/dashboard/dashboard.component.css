@@ -17,9 +17,6 @@
 .div_resize_preview {
   position: absolute;
   z-index: 100001;
-  box-sizing: border-box;
-  border: 2px dashed var(--koia-accent);
-  background-color: var(--koia-active-tint);
   pointer-events: none;
 }
 
@@ -39,10 +36,23 @@
   z-index: 100000 !important;
 }
 
-/* below the overlays, the notes on a selected tile stay visible */
+/* beats the stacking of the selected tiles, the followers stay above other tiles like the dragged one */
+.div_tile.div_canvas_tile.div_group_dragging {
+  z-index: 100000 !important;
+}
+
+/* the tiles shifted to make room for a tile moved into their row glide to and from their spot */
+.div_tile.div_canvas_tile.div_row_shifting {
+  transition: translate 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
 .div_tile.div_tile_selected {
-  z-index: 9999 !important;
   outline: 1px solid var(--koia-accent);
+}
+
+/* below the overlays, the notes on a selected tile stay visible; on the canvas the tiles keep their stacking */
+.div_grid_cells .div_tile.div_tile_selected {
+  z-index: 9999 !important;
 }
 
 .div_tile::after {
@@ -123,6 +133,13 @@
   outline-offset: 0;
 }
 
+/* after the outline of a hovered text box, which a selected one keeps */
+.div_tile.div_canvas_tile.div_tile_selected,
+.div_tile.div_text_box_tile.div_text_box_selected {
+  outline: 2px dashed var(--koia-accent);
+  outline-offset: 0;
+}
+
 .div_text_box_tile:has(koia-text-box.koia-text-box-active) > koia-resize-handles,
 .div_text_box_tile.cdk-drag-dragging > koia-resize-handles,
 .div_text_box_tile.resize-active > koia-resize-handles {
@@ -145,6 +162,32 @@
 #div_grid,
 #div_canvas {
   scrollbar-gutter: stable;
+}
+
+.div_tile_body {
+  display: contents;
+}
+
+/* the content beside the controls of a canvas tile moves it, as isContentPress of selecting-click.ts */
+.div_tile.div_tile_draggable .div_tile_body > * {
+  cursor: move;
+}
+
+.div_tile.div_tile_draggable .div_tile_body :is(canvas, svg, table, [contenteditable], .div_margins) {
+  cursor: auto;
+}
+
+/* an outline, as a border would enlarge the resized rect */
+.div_selection_bounds {
+  position: absolute;
+  outline: 1px dashed var(--koia-accent);
+  outline-offset: -1px;
+  pointer-events: none;
+  z-index: 100001;
+}
+
+.div_selection_bounds > koia-resize-handles {
+  pointer-events: auto;
 }
 
 .div_canvas_guide {

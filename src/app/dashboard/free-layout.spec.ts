@@ -1,5 +1,5 @@
 import { ElementContext, SummaryContext, TextBoxContext } from 'app/shared/model';
-import { FreeLayout } from './free-layout';
+import { boundsOf, containsRect, FreeLayout, intersects } from './free-layout';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 
 describe('FreeLayout', () => {
@@ -341,42 +341,6 @@ describe('FreeLayout', () => {
 
     // then
     expect(rect).toEqual({ x: 100, y: 200, width: 400, height: 600 });
-  });
-
-  it('#bringToFront should rank tile above others', () => {
-
-    // given
-    const contexts = [tile(0, 0, 100, 100, 1), tile(0, 0, 100, 100, 2), tile(0, 0, 100, 100, 3)];
-
-    // when
-    layout.bringToFront(contexts[0], contexts);
-
-    // then
-    expect(contexts.map(c => c.z)).toEqual([3, 1, 2]);
-  });
-
-  it('#sendToBack should rank tile below others', () => {
-
-    // given
-    const contexts = [tile(0, 0, 100, 100, 1), tile(0, 0, 100, 100, 2), tile(0, 0, 100, 100, 3)];
-
-    // when
-    layout.sendToBack(contexts[2], contexts);
-
-    // then
-    expect(contexts.map(c => c.z)).toEqual([2, 3, 1]);
-  });
-
-  it('#bringToFront should rank tile without z-order as lowest', () => {
-
-    // given
-    const contexts = [tile(0, 0, 100, 100, 2), tile(0, 0, 100, 100), tile(0, 0, 100, 100), tile(0, 0, 100, 100, 1)];
-
-    // when
-    layout.bringToFront(contexts[3], contexts);
-
-    // then
-    expect(contexts.map(c => c.z)).toEqual([3, 1, 2, 4]);
   });
 
   function textBox(x?: number, y?: number, z?: number): TextBoxContext {
@@ -785,6 +749,33 @@ describe('FreeLayout', () => {
       expect(result).toEqual([2000, 2000]);
     });
 
+    it('#layerYOfBottom should map bottom on page boundary onto end of page above', () => {
+
+      // when
+      const result = layout.layerYOfBottom(950, GAP);
+
+      // then
+      expect(result).toBeCloseTo(contentTop + 950, 10);
+    });
+
+    it('#layerYOfBottom should equal #layerYOf within page', () => {
+
+      // when
+      const result = layout.layerYOfBottom(1500, GAP);
+
+      // then
+      expect(result).toBeCloseTo(layout.layerYOf(1500, GAP), 10);
+    });
+
+    it('#layerYOfBottom should keep bottom without pages', () => {
+
+      // when
+      const result = unpaged.layerYOfBottom(950, GAP);
+
+      // then
+      expect(result).toBe(950);
+    });
+
     it('#rectOf should limit size to portrait page', () => {
 
       // when
@@ -1092,5 +1083,80 @@ describe('FreeLayout', () => {
       // then
       expect(size).toEqual({ width: 300, height: PageFormat.LANDSCAPE.height });
     });
+  });
+
+  it('#boundsOf should return smallest rect containing all rects', () => {
+
+    // when
+    const bounds = boundsOf([{ x: 100, y: 50, width: 200, height: 100 }, { x: 20, y: 300, width: 50, height: 400 }]);
+
+    // then
+    expect(bounds).toEqual({ x: 20, y: 50, width: 280, height: 650 });
+  });
+
+  it('intersects should be true for rects sharing an area', () => {
+
+    // when
+    const result = intersects({ x: 0, y: 0, width: 100, height: 100 }, { x: 99, y: 99, width: 10, height: 10 });
+
+    // then
+    expect(result).toBe(true);
+  });
+
+  it('intersects should be false for rects touching at an edge', () => {
+
+    // when
+    const result = intersects({ x: 0, y: 0, width: 100, height: 100 }, { x: 100, y: 0, width: 10, height: 10 });
+
+    // then
+    expect(result).toBe(false);
+  });
+
+  it('containsRect should be true for rect within and on the edges', () => {
+
+    // when
+    const result = containsRect({ x: 0, y: 0, width: 100, height: 100 }, { x: 0, y: 50, width: 100, height: 50 });
+
+    // then
+    expect(result).toBe(true);
+  });
+
+  it('containsRect should be false for rect reaching beyond', () => {
+
+    // when
+    const result = containsRect({ x: 0, y: 0, width: 100, height: 100 }, { x: 50, y: 50, width: 51, height: 10 });
+
+    // then
+    expect(result).toBe(false);
+  });
+
+  it('#layerRectStyle should place rect in page units', () => {
+
+    // when
+    const style = layout.layerRectStyle({ x: 10, y: 20, width: 30, height: 40 });
+
+    // then
+    expect(style).toEqual({
+      left: 'calc(10 * var(--koia-pu))',
+      top: 'calc(20 * var(--koia-pu))',
+      width: 'calc(30 * var(--koia-pu))',
+      height: 'calc(40 * var(--koia-pu))'
+    });
+  });
+
+  it('#contextsMovedToOtherPage should move contexts and return those moved onto another page', () => {
+
+    // given
+    const contexts = [tile(0, 0, 100, 100), tile(200, 0, 100, 100)];
+
+    // when
+    const moved = layout.contextsMovedToOtherPage(contexts, () => {
+      contexts[0].setPosition(0, 960);
+      contexts[1].setPosition(300, 10);
+    });
+
+    // then
+    expect(moved).toEqual([contexts[0]]);
+    expect(positionsOf(contexts)).toEqual([[0, 960], [300, 10]]);
   });
 });

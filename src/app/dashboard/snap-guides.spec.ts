@@ -268,6 +268,65 @@ describe('SnapGuides', () => {
     expect(snap.guides).toEqual([{ axis: 'x', position: 610 }, { axis: 'y', position: 410 }]);
   });
 
+  describe('group move', () => {
+
+    const members = [{ x: 1000, y: 600, width: 100, height: 50 }, { x: 1120, y: 660, width: 100, height: 50 }];
+
+    it('#snapGroupMove should snap bounds to other tile edge and move members along', () => {
+
+      // when
+      const snap = guidesOf().snapGroupMove({ x: 613, y: 703, width: 220, height: 110 }, members);
+
+      // then
+      expect(snap.bounds).toEqual({ x: 610, y: 700, width: 220, height: 110 });
+      expect(snap.rects).toEqual([{ x: 610, y: 700, width: 100, height: 50 }, { x: 730, y: 760, width: 100, height: 50 }]);
+      expect(snap.guides).toEqual([{ axis: 'x', position: 610 }]);
+    });
+
+    it('#snapGroupMove should clamp bounds to page width', () => {
+
+      // when
+      const snap = guidesOf().snapGroupMove({ x: 1300, y: 600, width: 220, height: 110 }, members);
+
+      // then
+      expect(snap.rects.map(r => r.x)).toEqual([1180, 1300]);
+      expect(snap.guides).toEqual([]);
+    });
+
+    it('#snapGroupMove should fit bounds fitting a page into a page', () => {
+
+      // when
+      const snap = guidesOf().snapGroupMove({ x: 1000, y: 900, width: 220, height: 110 }, members);
+
+      // then
+      expect(snap.rects.map(r => r.y)).toEqual([950, 1010]);
+    });
+
+    it('#snapGroupMove should fit each member into its page when bounds span pages', () => {
+
+      // given
+      const spanning = [{ x: 0, y: 100, width: 100, height: 100 }, { x: 0, y: 1000, width: 100, height: 100 }];
+
+      // when
+      const snap = guidesOf().snapGroupMove({ x: 0, y: -80, width: 100, height: 1000 }, spanning);
+
+      // then
+      expect(snap.rects.map(r => r.y)).toEqual([0, 950]);
+    });
+
+    it('#snapGroupMove should not fit members into pages when unpaged', () => {
+
+      // given
+      const unpaged = new SnapGuides([other], PageFormat.LANDSCAPE, 0, 5, false);
+
+      // when
+      const snap = unpaged.snapGroupMove({ x: 1000, y: 900, width: 220, height: 110 }, members);
+
+      // then
+      expect(snap.rects.map(r => r.y)).toEqual([900, 960]);
+    });
+  });
+
   describe('unpaged', () => {
 
     function unpagedGuidesOf(): SnapGuides {

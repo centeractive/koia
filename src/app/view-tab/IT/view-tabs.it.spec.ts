@@ -147,7 +147,7 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     const dashboard = fixture.componentInstance;
 
     // then
-    expect(dashboard.isCanvasPaging(CanvasPaging.NONE)).toBe(true);
+    expect([dashboard.isGridLayout(), dashboard.freeLayout.pageFormat.paging]).toEqual([false, CanvasPaging.NONE]);
     expect(dashboard.elementContexts[0].y).toBe(0);
     expect(dashboard.elementContexts[0].gridColumnSpan).toBe(1);
     expect(dashboard.elementContexts[0].gridRowSpan).toBe(1);

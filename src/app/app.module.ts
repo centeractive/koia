@@ -13,6 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -40,6 +41,7 @@ import { TicksComponent } from './chart/chart-side-bar/scale/ticks/ticks.compone
 import { ChartComponent } from './chart/chart.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ClickWithoutDragDirective } from './dashboard/click-without-drag.directive';
+import { MarqueeDirective } from './dashboard/marquee.directive';
 import { DetachFromDropListDirective } from './dashboard/detach-from-drop-list.directive';
 import { ElementHeaderComponent } from './dashboard/element-header/element-header.component';
 import { ResizeHandlesComponent } from './dashboard/resize-handles/resize-handles.component';
@@ -127,6 +129,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         ResizeHandlesComponent,
         DetachFromDropListDirective,
         ClickWithoutDragDirective,
+        MarqueeDirective,
         RawDataComponent,
         RawDataViewComponent,
         RawDataDialogComponent,
@@ -196,6 +199,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         MatExpansionModule,
         MatCardModule,
         MatSelectModule,
+        MatDividerModule,
         MatMenuModule,
         MatIconModule,
         MatInputModule,

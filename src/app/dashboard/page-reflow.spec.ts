@@ -30,7 +30,7 @@ describe('PageReflow', () => {
     new PageReflow(source, target).reflow(elements, contexts);
   }
 
-  it('should pack side by side tiles too wide for portrait page in rows in reading order', () => {
+  it('should scale side by side tiles to portrait page width and keep them side by side', () => {
 
     // given
     const elements = [element(610, 0, 600, 400), element(0, 0, 600, 400)];
@@ -39,10 +39,10 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 420, 600, 400], [0, 10, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[415, 10, 406, 400], [0, 10, 405, 400]]);
   });
 
-  it('should keep arrangement fitting portrait page width', () => {
+  it('should keep scaled arrangement and offsets within page', () => {
 
     // given
     const elements = [element(100, 50, 400, 300), element(510, 200, 400, 300)];
@@ -51,10 +51,10 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[100, 50, 400, 300], [510, 200, 400, 300]]);
+    expect(rectsOf(elements)).toEqual([[68, 50, 269, 300], [347, 200, 269, 300]]);
   });
 
-  it('should cap tile width at portrait page width', () => {
+  it('should scale full width tile to portrait page width', () => {
 
     // given
     const elements = [element(0, 0, 1400, 400)];
@@ -66,7 +66,19 @@ describe('PageReflow', () => {
     expect(rectsOf(elements)).toEqual([[0, 10, 950, 400]]);
   });
 
-  it('should start tiles of each former page on a new page', () => {
+  it('should keep min width of tile scaled below it even when overlapping its neighbour', () => {
+
+    // given
+    const elements = [element(0, 0, 100, 400), element(110, 0, 100, 400)];
+
+    // when
+    reflow(landscape, portrait, elements);
+
+    // then
+    expect(rectsOf(elements)).toEqual([[0, 10, 100, 400], [75, 10, 100, 400]]);
+  });
+
+  it('should flow tiles of later former page onto previous page with room', () => {
 
     // given
     const elements = [element(0, 0, 600, 400), element(0, 960, 600, 400)];
@@ -75,19 +87,19 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 1410, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 405, 400], [0, 420, 405, 400]]);
   });
 
-  it('should push packed tiles overflowing portrait page to next page', () => {
+  it('should move flowed row crossing portrait page boundary to next page', () => {
 
     // given
-    const elements = [element(0, 0, 700, 600), element(710, 0, 690, 600), element(0, 610, 700, 300)];
+    const elements = [element(0, 0, 600, 900), element(0, 960, 600, 600)];
 
     // when
     reflow(landscape, portrait, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 10, 700, 600], [0, 620, 690, 600], [0, 1410, 700, 300]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 405, 900], [0, 1410, 405, 600]]);
   });
 
   it('should cap tile height at landscape page height less top padding', () => {
@@ -99,7 +111,7 @@ describe('PageReflow', () => {
     reflow(portrait, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 10, 600, 940]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 886, 940]]);
   });
 
   it('should push row crossing landscape page boundary below fitted row to next page', () => {
@@ -111,7 +123,7 @@ describe('PageReflow', () => {
     reflow(portrait, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 960, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 886, 400], [0, 960, 886, 400]]);
   });
 
   it('should pull lone row crossing landscape page boundary to top padding of its page', () => {
@@ -123,7 +135,19 @@ describe('PageReflow', () => {
     reflow(portrait, landscape, elements);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 10, 600, 300]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 886, 300]]);
+  });
+
+  it('should remove leading empty page of portrait tile placed below landscape page height', () => {
+
+    // given
+    const elements = [element(0, 1000, 600, 300)];
+
+    // when
+    reflow(portrait, landscape, elements);
+
+    // then
+    expect(rectsOf(elements)).toEqual([[0, 50, 886, 300]]);
   });
 
   it('should fit all tiles of unpaged canvas onto pages as one group', () => {
@@ -138,6 +162,18 @@ describe('PageReflow', () => {
     expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 960, 600, 400], [0, 2160, 600, 400]]);
   });
 
+  it('should remove empty page left by gap of unpaged canvas', () => {
+
+    // given
+    const elements = [element(0, 0, 600, 400), element(0, 2000, 600, 400)];
+
+    // when
+    reflow(unpaged, landscape, elements);
+
+    // then
+    expect(rectsOf(elements)).toEqual([[0, 10, 600, 400], [0, 1060, 600, 400]]);
+  });
+
   it('should keep offset of note to tile below its top left corner', () => {
 
     // given
@@ -147,7 +183,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [...tiles(2), note()]);
 
     // then
-    expect(rectsOf(elements)[2]).toEqual([300, 520, 200, 100]);
+    expect(rectsOf(elements)[2]).toEqual([618, 110, 133, 100]);
   });
 
   it('should anchor note to topmost of overlapping tiles', () => {
@@ -160,8 +196,8 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [...tiles(3), note()]);
 
     // then
-    expect(rectsOf(elements)[2]).toEqual([0, 830, 600, 300]);
-    expect(rectsOf(elements)[3]).toEqual([100, 880, 100, 100]);
+    expect(rectsOf(elements)[2]).toEqual([204, 310, 406, 300]);
+    expect(rectsOf(elements)[3]).toEqual([272, 360, 65, 100]);
   });
 
   it('should keep offset of note without tile below to its page top', () => {
@@ -173,10 +209,10 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [...tiles(1), note()]);
 
     // then
-    expect(rectsOf(elements)[1]).toEqual([650, 550, 300, 150]);
+    expect(rectsOf(elements)[1]).toEqual([681, 550, 201, 150]);
   });
 
-  it('should keep note without tile below on its own page below first page of group', () => {
+  it('should remove empty page above note without tile below', () => {
 
     // given
     const elements = [element(0, 0, 600, 400), element(100, 2000, 300, 150)];
@@ -185,10 +221,10 @@ describe('PageReflow', () => {
     reflow(unpaged, landscape, elements, [...tiles(1), note()]);
 
     // then
-    expect(rectsOf(elements)[1]).toEqual([100, 2000, 300, 150]);
+    expect(rectsOf(elements)[1]).toEqual([100, 1050, 300, 150]);
   });
 
-  it('should start page of notes only on a new page', () => {
+  it('should flow tiles of later former page below page of notes only', () => {
 
     // given
     const elements = [element(100, 1000, 300, 150), element(0, 2000, 600, 400)];
@@ -197,7 +233,7 @@ describe('PageReflow', () => {
     reflow(landscape, portrait, elements, [note(), ...tiles(1)]);
 
     // then
-    expect(rectsOf(elements)).toEqual([[100, 50, 300, 150], [0, 1500, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[68, 50, 201, 150], [0, 210, 405, 400]]);
   });
 
   it('should keep unpositioned elements', () => {
@@ -212,18 +248,18 @@ describe('PageReflow', () => {
     expect(unpositioned).toEqual({ width: 600, height: 400 });
   });
 
-  it('should pack text tile by grown height and keep its own height', () => {
+  it('should flow next former page below grown height of text tile and keep its own height', () => {
 
     // given
     const textTile = new TextBoxContext([], true);
     textTile.fitHeight = 600;
-    const elements = [element(0, 0, 600, 200), element(610, 0, 600, 400)];
+    const elements = [element(0, 0, 600, 200), element(0, 1400, 600, 200)];
 
     // when
-    reflow(landscape, portrait, elements, [textTile, ...tiles(1)]);
+    reflow(portrait, landscape, elements, [textTile, ...tiles(1)]);
 
     // then
-    expect(rectsOf(elements)).toEqual([[0, 10, 600, 200], [0, 620, 600, 400]]);
+    expect(rectsOf(elements)).toEqual([[0, 10, 886, 200], [0, 620, 886, 200]]);
   });
 
   it('should keep z-order', () => {
@@ -236,5 +272,29 @@ describe('PageReflow', () => {
 
     // then
     expect(elements.map(e => e.z)).toEqual([1, 2]);
+  });
+
+  it('should only scale horizontally onto free canvas', () => {
+
+    // given
+    const elements = [element(100, 1500, 400, 300)];
+
+    // when
+    reflow(portrait, unpaged, elements);
+
+    // then
+    expect(rectsOf(elements)).toEqual([[147, 1500, 592, 300]]);
+  });
+
+  it('should keep elements onto free canvas of same width', () => {
+
+    // given
+    const elements = [element(100, 960, 700, 400)];
+
+    // when
+    reflow(landscape, unpaged, elements);
+
+    // then
+    expect(rectsOf(elements)).toEqual([[100, 960, 700, 400]]);
   });
 });

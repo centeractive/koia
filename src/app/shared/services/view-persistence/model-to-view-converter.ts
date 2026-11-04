@@ -11,7 +11,6 @@ import { TextBox } from './text-box.type';
 export class ModelToViewConverter {
 
    convert(route: Route, viewName: string, query: Query, elementContexts: ElementContext[]): View {
-      const configElements: ViewElement[] = elementContexts.map(c => this.toViewElement(c, elementContexts));
       return {
          route,
          name: viewName,
@@ -19,8 +18,15 @@ export class ModelToViewConverter {
          query: queryToQueryDef(query),
          gridColumns: null,
          gridCellRatio: null,
-         elements: configElements
+         elements: this.convertElements(elementContexts)
       };
+   }
+
+   /**
+    * @returns the view elements of the contexts, the anchors of text boxes index the given contexts
+    */
+   convertElements(elementContexts: ElementContext[]): ViewElement[] {
+      return elementContexts.map(c => this.toViewElement(c, elementContexts));
    }
 
    private toViewElement(context: ElementContext, elementContexts: ElementContext[]): ViewElement {

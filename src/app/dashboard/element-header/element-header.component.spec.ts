@@ -1,5 +1,4 @@
-import { CdkDrag, CdkDragHandle, DragDropModule } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, NO_ERRORS_SCHEMA, ViewChild } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,17 +11,6 @@ import { MatIconModuleMock } from 'app/shared/test';
 import { GridLayout } from '../grid-layout';
 import { ElementHeaderComponent } from './element-header.component';
 
-@Component({
-  template: `<div cdkDrag><koia-element-header [context]="context" [gridLayout]="gridLayout" [movable]="true" /></div>`,
-  changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false
-})
-class HostComponent {
-  @ViewChild(CdkDrag) drag: CdkDrag;
-  context: ElementContext = new SummaryContext([]);
-  gridLayout: GridLayout = null;
-}
-
 describe('ElementHeaderComponent', () => {
 
   let fixture: ComponentFixture<ElementHeaderComponent>;
@@ -31,18 +19,17 @@ describe('ElementHeaderComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [ElementHeaderComponent, HostComponent],
-      imports: [MatMenuModule, MatButtonModule, MatIconModule, DragDropModule]
+      declarations: [ElementHeaderComponent],
+      imports: [MatMenuModule, MatButtonModule, MatIconModule]
     })
       .overrideModule(MatIconModule, MatIconModuleMock.override());
     fixture = TestBed.createComponent(ElementHeaderComponent);
     component = fixture.componentInstance;
   });
 
-  function render(context: ElementContext, gridLayout: GridLayout, movable = false, stackable = false): void {
+  function render(context: ElementContext, gridLayout: GridLayout, stackable = false): void {
     component.context = context;
     component.gridLayout = gridLayout;
-    component.movable = movable;
     component.stackable = stackable;
     fixture.detectChanges();
   }
@@ -96,7 +83,7 @@ describe('ElementHeaderComponent', () => {
   it('more menu should be available when only stackable', () => {
 
     // when
-    render(new GraphContext([]), null, true, true);
+    render(new GraphContext([]), null, true);
 
     // then
     expect(query('.but_more')).toBeTruthy();
@@ -105,7 +92,7 @@ describe('ElementHeaderComponent', () => {
   it('should offer z-order menu items when stackable', () => {
 
     // given
-    render(new GraphContext([]), null, true, true);
+    render(new GraphContext([]), null, true);
 
     // when
     openMoreMenu();
@@ -131,7 +118,7 @@ describe('ElementHeaderComponent', () => {
   it('bring to front menu item should emit bringToFront', () => {
 
     // given
-    render(new GraphContext([]), null, true, true);
+    render(new GraphContext([]), null, true);
     const bringToFrontSpy = vi.spyOn(component.bringToFront, 'emit');
     openMoreMenu();
 
@@ -145,7 +132,7 @@ describe('ElementHeaderComponent', () => {
   it('send to back menu item should emit sendToBack', () => {
 
     // given
-    render(new GraphContext([]), null, true, true);
+    render(new GraphContext([]), null, true);
     const sendToBackSpy = vi.spyOn(component.sendToBack, 'emit');
     openMoreMenu();
 
@@ -364,19 +351,10 @@ describe('ElementHeaderComponent', () => {
     expect(query('.but_warning')).toBeTruthy();
   });
 
-  it('should hide move button when element is not movable', () => {
-
-    // when
-    render(new SummaryContext([]), null, false);
-
-    // then
-    expect(query('.but_move')).toBeFalsy();
-  });
-
   it('header should have tile header height, bottom border and keep buttons inside', () => {
 
     // when
-    render(new SummaryContext([]), null, true);
+    render(new SummaryContext([]), null);
 
     // then
     const header = query('.div_element_header');
@@ -465,16 +443,102 @@ describe('ElementHeaderComponent', () => {
     expect(style.lineHeight).toBe('16px');
   });
 
-  it('should register move button as drag handle of enclosing drag element', () => {
+  describe('draggable header', () => {
 
-    // given
-    const hostFixture = TestBed.createComponent(HostComponent);
+    let bubbled: MouseEvent[];
+
+    beforeEach(() => {
+      bubbled = [];
+      fixture.nativeElement.addEventListener('mousedown', (e: MouseEvent) => bubbled.push(e));
+      component.headerDraggable = true;
+      render(new SummaryContext([]), null);
+    });
+
+    function press(target: Element): void {
+      target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    }
+
+    it('press on button should not reach the tile', () => {
+
+      // when
+      press(query('.but_element_configure'));
+
+      // then
+      expect(bubbled.length).toBe(0);
+    });
+
+    it('press on title being edited should not reach the tile', () => {
+
+      // given
+      const title = query('.textarea_title');
+      title.focus();
+
+      // when
+      press(title);
+
+      // then
+      expect(bubbled.length).toBe(0);
+    });
+
+    it('press on unfocused title and on header should reach the tile', () => {
+
+      // when
+      press(query('.textarea_title'));
+      press(query('.div_element_header'));
+
+      // then
+      expect(bubbled.length).toBe(2);
+    });
+
+    it('should show move cursor on header and unfocused title, not on buttons and title being edited', () => {
+
+      // given
+      const title = query('.textarea_title');
+      const unfocused = getComputedStyle(title).cursor;
+
+      // when
+      title.focus();
+
+      // then
+      expect([getComputedStyle(query('.div_element_header')).cursor, unfocused]).toEqual(['move', 'move']);
+      expect(getComputedStyle(title).cursor).not.toBe('move');
+      expect(getComputedStyle(query('.but_element_configure')).cursor).toBe('pointer');
+    });
+
+    it('touch on button should not reach the tile', () => {
+
+      // given
+      const touched: Event[] = [];
+      fixture.nativeElement.addEventListener('touchstart', (e: Event) => touched.push(e));
+
+      // when
+      query('.but_element_configure').dispatchEvent(new Event('touchstart', { bubbles: true }));
+
+      // then
+      expect(touched.length).toBe(0);
+    });
+  });
+
+  it('should not show move cursor on header unless header is draggable', () => {
 
     // when
-    hostFixture.detectChanges();
+    render(new SummaryContext([]), null);
 
     // then
-    const handle = hostFixture.debugElement.query(By.directive(CdkDragHandle)).injector.get(CdkDragHandle);
-    expect(handle['_parentDrag']).toBe(hostFixture.componentInstance.drag);
+    expect(getComputedStyle(query('.div_element_header')).cursor).not.toBe('move');
+  });
+
+  it('press on button should reach the tile unless header is draggable', () => {
+
+    // given
+    const bubbled: MouseEvent[] = [];
+    fixture.nativeElement.addEventListener('mousedown', (e: MouseEvent) => bubbled.push(e));
+    render(new SummaryContext([]), null);
+
+    // when
+    query('.but_element_configure').dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+    // then
+    expect(bubbled.length).toBe(1);
   });
 });

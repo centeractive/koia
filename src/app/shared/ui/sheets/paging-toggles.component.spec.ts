@@ -10,14 +10,13 @@ import { PagingTogglesComponent } from './paging-toggles.component';
 
 @Component({
   template: `
-    <div id="toolbar"><koia-paging-toggles [paging]="paging" [showMonitor]="showMonitor" [printDisabled]="printDisabled"
-      (pagingChange)="changes.push($event)" /></div>`,
+    <div id="toolbar"><koia-paging-toggles [paging]="paging" [printDisabled]="printDisabled"
+      (pagingChange)="changes.push($event)"><button id="but_projected"></button></koia-paging-toggles></div>`,
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 class HostComponent {
   paging: CanvasPaging | undefined = CanvasPaging.NONE;
-  showMonitor = true;
   printDisabled = false;
   changes: CanvasPaging[] = [];
 }
@@ -69,7 +68,7 @@ describe('PagingTogglesComponent', () => {
     const toggles: HTMLElement = fixture.nativeElement.querySelector('koia-paging-toggles');
     expect(getComputedStyle(toggles).display).toBe('contents');
     expect(Array.from(toggles.children).map(c => c.id || c.tagName.toLowerCase() || c.className))
-      .toEqual(['but_monitor_view', 'but_landscape_pages', 'but_portrait_pages', 'koia-print-button', 'span']);
+      .toEqual(['but_monitor_view', 'but_landscape_pages', 'but_portrait_pages', 'but_projected', 'koia-print-button', 'span']);
     expect(toggles.lastElementChild.classList).toContain('koia-toolbar-separator');
   });
 
@@ -109,17 +108,14 @@ describe('PagingTogglesComponent', () => {
     expect(host.changes).toEqual([paging]);
   });
 
-  it('should hide monitor button when not shown', () => {
-
-    // given
-    host.showMonitor = false;
+  it('should place projected buttons between the portrait button and the print button', () => {
 
     // when
-    fixture.detectChanges();
+    const projected = button('but_projected');
 
     // then
-    expect(button('but_monitor_view')).toBeNull();
-    expect(button('but_landscape_pages')).not.toBeNull();
+    expect(projected.previousElementSibling).toBe(button('but_portrait_pages'));
+    expect(projected.nextElementSibling.tagName).toBe('KOIA-PRINT-BUTTON');
   });
 
   it.each([

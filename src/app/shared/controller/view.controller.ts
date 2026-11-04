@@ -249,7 +249,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    configure(event: MouseEvent, context: ElementContext): void {
       this.selectedContext = context;
-      this.selectedContextPosition = this.tiles().indexOf(context) + 1;
+      this.selectedContextPosition = this.tilePositionOf(context);
       this.sidenav.mode = !event || event.clientX < ViewController.SIDENAV_WIDTH ? 'push' : 'over';
       this.sidenav.open();
    }
@@ -279,6 +279,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
     */
    tileCount(): number {
       return this.tiles().length;
+   }
+
+   /**
+    * @returns the position of the context among the tiles, starts at 1
+    */
+   protected tilePositionOf(context: ElementContext): number {
+      return this.tiles().indexOf(context) + 1;
    }
 
    private tiles(): ElementContext[] {
@@ -324,6 +331,13 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    protected abstract onPreRestoreView(view: View): void;
 
    protected abstract onElementContextAdded(context: ElementContext): void;
+
+   /**
+    * @returns the view elements of the contexts, the anchors of text boxes index the given contexts
+    */
+   protected toViewElements(contexts: ElementContext[]): ViewElement[] {
+      return this.modelToViewConverter.convertElements(contexts);
+   }
 
    protected toView(name: string): View {
       const view = this.modelToViewConverter.convert(this.route, name, this.query, this.elementContexts);

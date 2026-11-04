@@ -175,7 +175,7 @@ export class ChartComponent implements OnInit, OnChanges, DoCheck, OnDestroy, Ex
   }
 
   private isResizableMarginControl(target: Node): boolean {
-    const tile: HTMLElement = this.cmpElementRef.nativeElement.parentElement;
+    const tile: HTMLElement = this.cmpElementRef.nativeElement.closest('.div_element');
     return Array.from(tile.querySelectorAll('.but_element_margin, .div_margins > [mwlResizeHandle]'))
       .some(control => control.contains(target));
   }

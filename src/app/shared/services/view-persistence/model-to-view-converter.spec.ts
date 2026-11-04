@@ -174,4 +174,18 @@ describe('ModelToViewConverter', () => {
       expect(view.elements[0]).not.toHaveProperty('anchorX');
       expect(view.elements[0]).not.toHaveProperty('anchorY');
    });
+
+   it('#convertElements should map anchor of text box to index within the converted contexts', () => {
+
+      // given
+      const summary = new SummaryContext([]);
+      const textBox = new TextBoxContext([]);
+      textBox.setAnchor(summary, { x: 0.25, y: 0.75 });
+
+      // when
+      const elements = converter.convertElements([summary, textBox]);
+
+      // then
+      expect((elements[1] as TextBox).anchor).toBe(0);
+   });
 });

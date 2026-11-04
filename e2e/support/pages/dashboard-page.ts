@@ -4,8 +4,10 @@ import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
 import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';
 import { MainToolbar } from '../components/main-toolbar';
+import { PagingToggles } from '../components/paging-toggles';
 import { TextBox } from '../components/text-box';
 import { ViewToolbar } from '../components/view-toolbar';
+import { pressAndMoveBy } from '../pointer';
 
 export class DashboardPage {
 
@@ -21,15 +23,15 @@ export class DashboardPage {
    readonly mainToolbar: MainToolbar;
    readonly viewToolbar: ViewToolbar;
    readonly snapToGridButton: Locator;
-   readonly freeCanvasButton: Locator;
-   readonly landscapePagesButton: Locator;
-   readonly portraitPagesButton: Locator;
+   readonly pagingToggles: PagingToggles;
    readonly sheets: Locator;
    readonly gridContent: Locator;
    readonly canvasContent: Locator;
    readonly canvasPageContent: Locator;
    readonly canvasGuide: Locator;
    readonly resizePreview: Locator;
+   readonly allowOverlapButton: Locator;
+   readonly selectionBox: Locator;
    private readonly root: Locator;
    private readonly toolbar: Locator;
 
@@ -46,15 +48,15 @@ export class DashboardPage {
       this.toolbar = this.root.locator('koia-view-toolbar');
       this.viewToolbar = new ViewToolbar(this.toolbar);
       this.snapToGridButton = this.root.locator('#but_snap_to_grid');
-      this.freeCanvasButton = this.root.locator('#but_free_canvas');
-      this.landscapePagesButton = this.root.locator('#but_landscape_pages');
-      this.portraitPagesButton = this.root.locator('#but_portrait_pages');
+      this.pagingToggles = new PagingToggles(this.root.locator('koia-paging-toggles'));
       this.sheets = this.root.locator('.div_canvas_sheet');
       this.gridContent = this.root.locator('#div_grid');
       this.canvasContent = this.root.locator('#div_canvas');
       this.canvasPageContent = this.canvasContent.locator('.div_canvas_page_content').first();
       this.canvasGuide = this.root.locator('.div_canvas_guide');
       this.resizePreview = this.root.locator('.div_resize_preview');
+      this.allowOverlapButton = this.root.locator('#but_allow_overlap');
+      this.selectionBox = this.root.locator('.div_selection_bounds');
    }
 
    async addChart(): Promise<void> {
@@ -127,6 +129,29 @@ export class DashboardPage {
     */
    gridScale(): Promise<number> {
       return this.gridContent.locator('.div_grid_cells').evaluate((cells: HTMLElement) => cells.clientWidth / 1400);
+   }
+
+   /**
+    * drags a marquee between the given client points, pressed beside the tiles
+    */
+   async marqueeSelect(from: { x: number; y: number }, to: { x: number; y: number }): Promise<void> {
+      const page = this.root.page();
+      await pressAndMoveBy(page, from.x, from.y, to.x - from.x, to.y - from.y);
+      await page.mouse.up();
+   }
+
+   /**
+    * opens the context menu of the canvas at the client point and chooses the item
+    */
+   async chooseCanvasMenuItem(point: { x: number; y: number }, item: string): Promise<void> {
+      const page = this.root.page();
+      await expect(page.locator('.cdk-overlay-container .mat-mdc-menu-panel')).toHaveCount(0);
+      await page.mouse.click(point.x, point.y, { button: 'right' });
+      await this.menuItem(item).click();
+   }
+
+   menuItem(item: string): Locator {
+      return this.root.page().locator('.cdk-overlay-container ' + item);
    }
 
    tile(index: number): DashboardTile {

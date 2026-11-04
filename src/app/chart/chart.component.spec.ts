@@ -345,10 +345,14 @@ describe('ChartComponent', () => {
 
     beforeEach(() => {
       tile = document.createElement('div');
+      tile.classList.add('div_element');
       document.body.appendChild(tile);
-      tile.appendChild(fixture.nativeElement);
+      const body = document.createElement('div');
+      tile.appendChild(body);
+      body.appendChild(fixture.nativeElement);
       ownMarginButton = createMarginButton(tile);
       otherTile = document.createElement('div');
+      otherTile.classList.add('div_element');
       document.body.appendChild(otherTile);
       createMarginButton(otherTile);
       showResizableMargin();

@@ -31,16 +31,19 @@
         <mat-progress-bar mode="indeterminate" [matTooltip]="'dashboard.loadingData' | translate"></mat-progress-bar>
       }
       <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined">
-        <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
-          [matTooltip]="'dashboard.snapToGrid' | translate" (click)="snapToGrid()">
-          <mat-icon svgIcon="snap_grid"></mat-icon>
-        </button>
-        <button id="but_free_canvas" mat-icon-button [class.koia-toggle-active]="isCanvasPaging(CanvasPaging.NONE)"
-          [matTooltip]="'dashboard.freeCanvas' | translate" (click)="showCanvas(CanvasPaging.NONE)">
-          <mat-icon svgIcon="flex_view"></mat-icon>
-        </button>
-        <koia-paging-toggles [paging]="isGridLayout() ? undefined : freeLayout.pageFormat.paging" [showMonitor]="false"
-          [printDisabled]="!elementContexts?.length" (pagingChange)="showCanvas($event)" />
+        <koia-paging-toggles [paging]="isGridLayout() ? CanvasPaging.NONE : freeLayout.pageFormat.paging"
+          [printDisabled]="!elementContexts?.length" (pagingChange)="onPagingChange($event)">
+          <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
+            [matTooltip]="'dashboard.snapToGrid' | translate" (click)="toggleSnapToGrid()">
+            <mat-icon svgIcon="snap_grid"></mat-icon>
+          </button>
+        </koia-paging-toggles>
+        @if (!isGridLayout()) {
+          <button id="but_allow_overlap" mat-icon-button [class.koia-toggle-active]="canvasOverlapAllowed"
+            [matTooltip]="'dashboard.allowOverlap' | translate" (click)="toggleOverlap()">
+            <mat-icon>layers</mat-icon>
+          </button>
+        }
         <button mat-icon-button [matTooltip]="'dashboard.addChart' | translate" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
         </button>
@@ -86,6 +89,119 @@
           <button mat-menu-item [disabled]="ratio === gridLayout.gridCellRatio" (click)="setGridCellRatio(ratio)">{{ ratio }}</button>
         }
       </mat-menu>
+      <mat-menu #canvasMenu="matMenu">
+        <ng-template matMenuContent>
+          @if (contextMenuTiles; as tiles) {
+            <button class="menu_item_cut" mat-menu-item (click)="editor.cut(tiles)">
+              <mat-icon>content_cut</mat-icon>
+              <span>{{ 'dashboard.cut' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('cut') }}</span>
+            </button>
+            <button class="menu_item_copy" mat-menu-item (click)="editor.copy(tiles)">
+              <mat-icon>content_copy</mat-icon>
+              <span>{{ 'dashboard.copy' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('copy') }}</span>
+            </button>
+            <button class="menu_item_duplicate" mat-menu-item (click)="editor.duplicate(tiles)">
+              <mat-icon>control_point_duplicate</mat-icon>
+              <span>{{ 'dashboard.duplicate' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('duplicate') }}</span>
+            </button>
+            <button class="menu_item_delete" mat-menu-item (click)="editor.delete(tiles)">
+              <mat-icon svgIcon="lucide_trash_2"></mat-icon>
+              <span>{{ 'element.delete' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('delete') }}</span>
+            </button>
+            <mat-divider />
+            <button class="menu_item_to_front" mat-menu-item (click)="editor.toFront(tiles)">
+              <mat-icon>flip_to_front</mat-icon>
+              <span>{{ 'element.bringToFront' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('toFront') }}</span>
+            </button>
+            <button class="menu_item_to_back" mat-menu-item (click)="editor.toBack(tiles)">
+              <mat-icon>flip_to_back</mat-icon>
+              <span>{{ 'element.sendToBack' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('toBack') }}</span>
+            </button>
+            <button class="menu_item_bring_forward" mat-menu-item (click)="editor.forward(tiles)">
+              <mat-icon>move_up</mat-icon>
+              <span>{{ 'element.bringForward' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('forward') }}</span>
+            </button>
+            <button class="menu_item_send_backward" mat-menu-item (click)="editor.backward(tiles)">
+              <mat-icon>move_down</mat-icon>
+              <span>{{ 'element.sendBackward' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('backward') }}</span>
+            </button>
+            <mat-divider />
+            <button class="menu_item_align" mat-menu-item [disabled]="tiles.length < 2" [matMenuTriggerFor]="alignMenu"
+              [matMenuTriggerData]="{ tiles }">
+              <mat-icon>align_horizontal_left</mat-icon>
+              <span>{{ 'dashboard.align' | translate }}</span>
+            </button>
+            <button class="menu_item_distribute" mat-menu-item [disabled]="tiles.length < 3" [matMenuTriggerFor]="distributeMenu"
+              [matMenuTriggerData]="{ tiles }">
+              <mat-icon>horizontal_distribute</mat-icon>
+              <span>{{ 'dashboard.distribute' | translate }}</span>
+            </button>
+          } @else {
+            <button class="menu_item_paste" mat-menu-item [disabled]="!editor.canPaste()" (click)="editor.paste(contextMenuPoint)">
+              <mat-icon>content_paste</mat-icon>
+              <span>{{ 'dashboard.paste' | translate }}</span>
+              <span class="span_shortcut">{{ shortcutLabelOf('paste') }}</span>
+            </button>
+          }
+          <mat-divider />
+          <button class="menu_item_select_all" mat-menu-item (click)="editor.selectAll()">
+            <mat-icon>select_all</mat-icon>
+            <span>{{ 'dashboard.selectAll' | translate }}</span>
+            <span class="span_shortcut">{{ shortcutLabelOf('selectAll') }}</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
+      <mat-menu #alignMenu="matMenu">
+        <ng-template matMenuContent let-tiles="tiles">
+          <button class="menu_item_align_left" mat-menu-item (click)="editor.align(tiles, 'left')">
+            <mat-icon>align_horizontal_left</mat-icon>
+            <span>{{ 'dashboard.alignLeft' | translate }}</span>
+          </button>
+          <button class="menu_item_align_center" mat-menu-item (click)="editor.align(tiles, 'center')">
+            <mat-icon>align_horizontal_center</mat-icon>
+            <span>{{ 'dashboard.alignCenter' | translate }}</span>
+          </button>
+          <button class="menu_item_align_right" mat-menu-item (click)="editor.align(tiles, 'right')">
+            <mat-icon>align_horizontal_right</mat-icon>
+            <span>{{ 'dashboard.alignRight' | translate }}</span>
+          </button>
+          <button class="menu_item_align_top" mat-menu-item (click)="editor.align(tiles, 'top')">
+            <mat-icon>align_vertical_top</mat-icon>
+            <span>{{ 'dashboard.alignTop' | translate }}</span>
+          </button>
+          <button class="menu_item_align_middle" mat-menu-item (click)="editor.align(tiles, 'middle')">
+            <mat-icon>align_vertical_center</mat-icon>
+            <span>{{ 'dashboard.alignMiddle' | translate }}</span>
+          </button>
+          <button class="menu_item_align_bottom" mat-menu-item (click)="editor.align(tiles, 'bottom')">
+            <mat-icon>align_vertical_bottom</mat-icon>
+            <span>{{ 'dashboard.alignBottom' | translate }}</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
+      <mat-menu #distributeMenu="matMenu">
+        <ng-template matMenuContent let-tiles="tiles">
+          <button class="menu_item_distribute_x" mat-menu-item (click)="editor.distribute(tiles, 'x')">
+            <mat-icon>horizontal_distribute</mat-icon>
+            <span>{{ 'dashboard.distributeHorizontally' | translate }}</span>
+          </button>
+          <button class="menu_item_distribute_y" mat-menu-item (click)="editor.distribute(tiles, 'y')">
+            <mat-icon>vertical_distribute</mat-icon>
+            <span>{{ 'dashboard.distributeVertically' | translate }}</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
       <koia-print-heading [title]="tab?.title" [sceneName]="scene?.name" [printSheets]="printSheets()"
         [class.koia-print-heading-in-sheets]="isPagedCanvas()" (printStart)="onPrintStart($event)" />
     </div>
@@ -110,7 +226,7 @@
     <ng-template #textBoxBody let-context>
       <koia-text-box #textBox [context]="context" (remove)="removeElement(context)" (fitHeightChange)="onTextFitHeight(context, $event)"
         (textEdited)="shrinkNoteToText(context, $event)" />
-      <div class="div_move_zone" koiaClickWithoutDrag (clickWithoutDrag)="textBox.startEditing()">
+      <div class="div_move_zone" koiaClickWithoutDrag (clickWithoutDrag)="onMoveZoneClick(textBox, $event)">
         <button type="button" class="but_text_box_move" mat-icon-button tabindex="-1" [matTooltip]="'element.move' | translate">
           <mat-icon svgIcon="move"></mat-icon>
         </button>
@@ -155,7 +271,7 @@
               <div class="div_tile div_text_box_tile div_text_tile" [class.div_text_box_bordered]="$any(context).bordered"
                 [style.--koia-anchor-name]="anchorNameOf(context)" [style]="textBoxTileStyle($any(context))"
                 [ngStyle]="gridCellStyleOf(context)" mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute"
-                (resizeStart)="onGridResizeStart()" (resizing)="onGridResizing(context, $event)"
+                (resizeStart)="onGridResizeStart(context)" (resizing)="onGridResizing(context, $event)"
                 (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
                 <div #elementContainer class="div_element">
                   <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
@@ -163,16 +279,19 @@
                 <koia-resize-handles [squaresOnly]="true" />
               </div>
             } @else {
-              <div class="div_tile mat-elevation-z1" [style.--koia-anchor-name]="anchorNameOf(context)" [ngStyle]="gridLayout.cellStyle(context)"
-                [class.div_tile_selected]="tileSelection.isSelected(context)" (pointerdown)="tileSelection.press(context)"
-                koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
-                mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart()"
-                (resizing)="onGridResizing(context, $event)" (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
+              <div class="div_tile mat-elevation-z1" [style.--koia-anchor-name]="anchorNameOf(context)" [ngStyle]="gridCellStyleOf(context)"
+                [class.div_tile_selected]="tileSelection.isSelected(context)" [class.div_tile_draggable]="tileCount() > 1"
+                (pointerdown)="tileSelection.press(context)" koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
+                mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart(context)"
+                (resizing)="onGridResizing(context, $event)" (resizeEnd)="onGridResizeEnd(context, $event)"
+                cdkDrag [cdkDragDisabled]="tileCount() < 2" (cdkDragStarted)="onGridMoveStarted()">
                 <div #elementContainer class="div_element">
-                  <koia-element-header [context]="context" [gridLayout]="gridLayout" [movable]="tileCount() > 1"
+                  <koia-element-header [context]="context" [gridLayout]="gridLayout" [headerDraggable]="tileCount() > 1"
                     (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
                     (titleChange)="onTitleChanged(context, $event)" />
-                  <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                  <div class="div_tile_body" (mousedown)="onTileBodyPress($event)" (touchstart)="$event.stopPropagation()">
+                    <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                  </div>
                 </div>
                 @if (showsResizeHandles(context)) {
                   <koia-resize-handles />
@@ -186,7 +305,8 @@
       </div>
     } @else {
       <div #content id="div_canvas" class="div_content" [class.div_canvas_desk]="isPagedCanvas()" [style.padding.px]="contentPaddingPx()"
-        cdkScrollable>
+        cdkScrollable koiaMarquee (marqueeStart)="onMarqueeStart($event)" (marqueeEnd)="onMarqueeEnd($event)"
+        [matContextMenuTriggerFor]="canvasMenu" (contextmenu)="onCanvasContextMenu($event)" (menuClosed)="contextMenuTiles = undefined">
         <div #canvasPages class="div_canvas_pages printable" [ngStyle]="freeLayout.pagesStyle()">
           @for (page of freeLayout.pageIndexes(elementContexts); track page; let last = $last, count = $count) {
             <div koiaSheet [layout]="freeLayout" [page]="page" [count]="count - 1" [spare]="last" [title]="tab?.title"
@@ -196,7 +316,11 @@
                   @if (isTextBoxContext(context)) {
                     <div class="div_tile div_canvas_tile div_text_box_tile" [class.div_text_tile]="!context.isOverlay()"
                       [class.div_text_box_bordered]="$any(context).bordered" [style]="textBoxTileStyle($any(context))"
-                      [ngStyle]="freeLayout.tileStyle(context)"
+                      [ngStyle]="freeLayout.tileStyle(context)" [style.translate]="shiftTranslateOf(context)" [class.div_row_shifting]="isRowShifting(context)"
+                      [class.div_text_box_selected]="tileSelection.isSelected(context)" [class.div_group_dragging]="isGroupFollower(context)"
+                      (pointerdown)="onTilePress(context, $event)" (mousedown)="preventTextSelectionOnAdditive($event)"
+                      koiaClickWithoutDrag (clickWithoutDrag)="onTextBoxFrameClick(context, $event)"
+                      (contextmenu)="onTileContextMenu(context, $event)"
                       mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute"
                       (resizeStart)="onFreeResizeStart(context)" (resizing)="onFreeResizing(context, $event)"
                       (resizeEnd)="onFreeResizeEnd(context, $event)"
@@ -208,18 +332,22 @@
                       <koia-resize-handles [squaresOnly]="true" />
                     </div>
                   } @else {
-                    <div class="div_tile div_canvas_tile mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
-                      [class.div_tile_selected]="tileSelection.isSelected(context)" (pointerdown)="tileSelection.press(context)"
-                      koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
+                    <div class="div_tile div_canvas_tile div_tile_draggable mat-elevation-z1" [ngStyle]="freeLayout.tileStyle(context)"
+                      [style.translate]="shiftTranslateOf(context)" [class.div_row_shifting]="isRowShifting(context)" [class.div_group_dragging]="isGroupFollower(context)"
+                      [class.div_tile_selected]="tileSelection.isSelected(context)" (pointerdown)="onTilePress(context, $event)"
+                      (mousedown)="preventTextSelectionOnAdditive($event)" koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
+                      (contextmenu)="onTileContextMenu(context, $event)"
                       mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute" (resizeStart)="onFreeResizeStart(context)"
                       (resizing)="onFreeResizing(context, $event)" (resizeEnd)="onFreeResizeEnd(context, $event)"
                       cdkDrag [cdkDragConstrainPosition]="constrainFreeMove" (cdkDragStarted)="onFreeMoveStarted(context)"
                       (cdkDragMoved)="onFreeMoving($event)" (cdkDragEnded)="onFreeMoveEnded(context, $event)">
                       <div #elementContainer class="div_element">
-                        <koia-element-header [context]="context" [gridLayout]="null" [movable]="true" [stackable]="true"
+                        <koia-element-header [context]="context" [gridLayout]="null" [headerDraggable]="true" [stackable]="true"
                           (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"
                           (titleChange)="onTitleChanged(context, $event)" (bringToFront)="bringToFront(context)" (sendToBack)="sendToBack(context)" />
-                        <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                        <div class="div_tile_body" (mousedown)="onTileBodyPress($event)" (touchstart)="$event.stopPropagation()">
+                          <ng-container *ngTemplateOutlet="elementBody; context: { $implicit: context }" />
+                        </div>
                       </div>
                       @if (showsResizeHandles(context)) {
                         <koia-resize-handles />
@@ -228,6 +356,15 @@
                   }
                 }
               </div>
+            </div>
+          }
+          @if (selectionBounds(); as bounds) {
+            <div class="div_selection_bounds" [ngStyle]="bounds.style" mwlResizable [resizeCursors]="resizeCursors"
+              ghostElementPositioning="absolute" (resizeStart)="onGroupResizeStart()" (resizing)="onGroupResizing($event)"
+              (resizeEnd)="onGroupResizeEnd($event)">
+              @if (bounds.resizable) {
+                <koia-resize-handles [squaresOnly]="true" (pointerdown)="tileSelection.pressSelection()" />
+              }
             </div>
           }
           <ng-container *ngTemplateOutlet="canvasGuidesTemplate" />

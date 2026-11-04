@@ -173,6 +173,33 @@ mat-panel-description {
   background-color: var(--koia-active-tint);
 }
 
+/* the dashboard's resize preview and marquee, the marquee is appended to the body */
+.div_resize_preview,
+.koia-marquee {
+  box-sizing: border-box;
+  border: 2px dashed var(--koia-accent);
+  background-color: var(--koia-active-tint);
+}
+
+.koia-marquee {
+  position: fixed;
+  z-index: 100002;
+  pointer-events: none;
+}
+
+/* the shortcut of a menu item, aligned at the end of the items */
+.mat-mdc-menu-item .mat-mdc-menu-item-text:has(> .span_shortcut) {
+  display: flex;
+  align-items: baseline;
+}
+
+.mat-mdc-menu-item .span_shortcut {
+  margin-left: auto;
+  padding-left: 32px;
+  font-size: 12px;
+  color: var(--koia-text-secondary);
+}
+
 .koia-toolbar-separator {
   display: inline-block;
   flex-shrink: 0;
@@ -380,7 +407,6 @@ koia-print-heading {
   }
 
   .but_config,
-  .but_move,
   .but_text_box_move,
   .but_close {
     display: none !important;

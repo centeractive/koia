@@ -31,9 +31,9 @@ test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboa
    await recording.caption('Drop Region on top to group the products by region');
 
    await dashboard.sideBar.close();
-   await dashboard.freeCanvasButton.click();
+   await dashboard.snapToGridButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
-   await recording.caption('On the free canvas, tiles take any size and position');
+   await recording.caption('On the screen view without snapping to the grid, tiles take any size and position');
 
    const sheet = await dashboard.canvasPageContent.boundingBox();
    const box = await graph.root.boundingBox();

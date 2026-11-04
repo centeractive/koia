@@ -86,9 +86,9 @@ export class GridLayout {
     return Math.min(Math.max(span, 1), max);
   }
 
-  cellStyle(context: ElementContext, rowSpan = context.gridRowSpan): object {
+  cellStyle(context: ElementContext, rowSpan = context.gridRowSpan, columnSpan = context.gridColumnSpan): object {
     return {
-      'grid-column': 'auto / span ' + context.gridColumnSpan,
+      'grid-column': 'auto / span ' + columnSpan,
       'grid-row': 'auto / span ' + rowSpan
     };
   }

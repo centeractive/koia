@@ -11,5 +11,7 @@ export interface View {
    gridColumns: number;
    gridCellRatio: string;
    canvasPaging?: CanvasPaging;
+   /** whether canvas tiles may overlap, views saved before the option allow it */
+   canvasOverlapAllowed?: boolean;
    elements: ViewElement[];
 }

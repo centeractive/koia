@@ -21,6 +21,7 @@ import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
 import { dispatchWindowEvent, printedSheets, sheetProportionsOf, whilePrinted } from './support/print';
 import { expect, test } from './support/fixtures';
+import { pressAndMoveBy, pressCenterAndMoveBy } from './support/pointer';
 import { columnsOf, columnValuesOf, countOf, distinctValuesOf, firstColumnOf, fruitSalesOf, sumOf } from './support/fruit-sales-sample';
 import { DashboardPage } from './support/pages/dashboard-page';
 import { SNAP_TOLERANCE_PX } from './support/snap';
@@ -244,36 +245,113 @@ test('narrowing grid columns below a tile span asks for confirmation and narrows
    await expect.poll(async () => (await dashboard.tile(0).spans()).columns).toBe(2);
 });
 
-test('layout buttons switch like radio buttons between grid, free canvas, landscape and portrait pages', async ({ dashboard }) => {
+test('layout buttons switch between screen view and pages, snap to grid toggling the grid on the screen view', async ({ dashboard }) => {
    await dashboard.launcher.addChart();
    await dashboard.sideBar.close();
-   const buttons = [dashboard.snapToGridButton, dashboard.freeCanvasButton, dashboard.landscapePagesButton, dashboard.portraitPagesButton];
-   const expectActive = (active: Locator) => expectOnlyActive(buttons, active);
-   await expectActive(dashboard.snapToGridButton);
-   await expect(dashboard.snapToGridButton.locator('svg path')).toHaveCount(2);
+   const { monitorButton, landscapeButton, portraitButton, printButton } = dashboard.pagingToggles;
+   const snapToGrid = dashboard.snapToGridButton;
+   const expectActive = (...active: Locator[]) => expectOnlyActive([monitorButton, landscapeButton, portraitButton, snapToGrid], active);
+   await expectActive(monitorButton, snapToGrid);
+   await expect(snapToGrid.locator('svg path')).toHaveCount(2);
+   await expect(dashboard.gridContent).toBeVisible();
+   await expect(printButton).toBeDisabled();
+
+   await monitorButton.click();
+   await expectActive(monitorButton, snapToGrid);
    await expect(dashboard.gridContent).toBeVisible();
 
-   await dashboard.snapToGridButton.click();
-   await expectActive(dashboard.snapToGridButton);
-   await expect(dashboard.gridContent).toBeVisible();
-
-   await dashboard.freeCanvasButton.click();
-   await expectActive(dashboard.freeCanvasButton);
+   await snapToGrid.click();
+   await expectActive(monitorButton);
    await expect(dashboard.canvasContent).toBeVisible();
    await expect(dashboard.sheets).toHaveCount(0);
+   await expect(printButton).toBeDisabled();
 
-   await dashboard.landscapePagesButton.click();
-   await expectActive(dashboard.landscapePagesButton);
+   await landscapeButton.click();
+   await expectActive(landscapeButton);
    await expect(dashboard.sheets).toHaveCount(2);
+   await expect(printButton).toBeEnabled();
 
-   await dashboard.portraitPagesButton.click();
-   await expectActive(dashboard.portraitPagesButton);
+   await portraitButton.click();
+   await expectActive(portraitButton);
    const sheet = await dashboard.sheets.first().boundingBox();
    expect(sheet.height / sheet.width).toBeCloseTo(297 / 210, 2);
 
-   await dashboard.snapToGridButton.click();
-   await expectActive(dashboard.snapToGridButton);
+   await snapToGrid.click();
+   await expectActive(monitorButton, snapToGrid);
    await expect(dashboard.gridContent).toBeVisible();
+});
+
+test('dragging the left edge of a grid tile over its neighbour grows it to the left, live, the neighbour moving after it', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.addSummaries(3);
+   const [first, second] = [await dashboard.tile(0).root.boundingBox(), await dashboard.tile(1).root.boundingBox()];
+
+   await dashboard.tile(2).startResizeBy(-(second.x - first.x), 0, 'left');
+   await expect.poll(async () => (await dashboard.tile(1).spans()).columns).toBe(2);
+   await dashboard.tile(2).release();
+
+   const [resized, wrapped] = [await dashboard.tile(1).root.boundingBox(), await dashboard.tile(2).root.boundingBox()];
+   expect(Math.abs(resized.x - second.x)).toBeLessThanOrEqual(1);
+   expect(wrapped.y).toBeGreaterThan(first.y + first.height);
+});
+
+test('a tile moved onto a tile of a row is inserted before it, the other shifting while dragging', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.pagingToggles.landscapeButton.click();
+   await dashboard.addSummaries(2);
+   const [left, right] = [dashboard.tile(0), dashboard.tile(1)];
+   const scale = await dashboard.canvasScale();
+   await right.startMoveBy(610 * scale, -410 * scale);
+   await right.release();
+   const leftBox = await left.root.boundingBox();
+
+   await right.startMoveBy(-(610 * scale + 20), 0);
+   await expect.poll(() => left.root.evaluate((e: HTMLElement) => e.style.translate)).not.toBe('');
+   await right.release();
+
+   const [moved, shifted] = [await right.root.boundingBox(), await left.root.boundingBox()];
+   expect(Math.abs(moved.x - leftBox.x)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+   expect(Math.abs(shifted.x - leftBox.x - 610 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+});
+
+test('a tile moved left in a row ending at the page edge keeps the tiles behind it in the row', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.setGridColumns(en.get('element.columns', { count: 4 }));
+   await dashboard.addSummaries(3);
+   await dashboard.tile(2).setColumnSpan(en.get('element.columns', { count: 2 }));
+   await dashboard.snapToGridButton.click();
+   const [first, moved, last] = [dashboard.tile(0), dashboard.tile(1), dashboard.tile(2)];
+   const lastTop = (await last.root.boundingBox()).y;
+
+   await moved.startMoveBy(-(await first.root.boundingBox()).width / 4, 0);
+   await expect(page.locator('.div_resize_preview')).toBeVisible();
+   expect(await last.root.evaluate((e: HTMLElement) => e.style.translate)).toBe('');
+   await moved.release();
+
+   expect(Math.abs((await last.root.boundingBox()).y - lastTop)).toBeLessThanOrEqual(1);
+});
+
+test('resizing a canvas tile into its right neighbour shifts the neighbour right', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.pagingToggles.landscapeButton.click();
+   await dashboard.addSummaries(2);
+   const [left, right] = [dashboard.tile(0), dashboard.tile(1)];
+   const scale = await dashboard.canvasScale();
+   await right.startMoveBy(610 * scale, -410 * scale);
+   await right.release();
+   const rightBox = await right.root.boundingBox();
+
+   await left.startResizeBy(100 * scale, 0, 'right');
+   await expect.poll(() => right.root.evaluate((e: HTMLElement) => e.style.translate)).not.toBe('');
+   await left.release();
+
+   const shifted = await right.root.boundingBox();
+   expect(Math.abs(shifted.x - rightBox.x - 100 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+   expect(Math.abs(shifted.y - rightBox.y)).toBeLessThanOrEqual(1);
 });
 
 test('resizing a lone grid tile snaps it to the cells whose middle the pointer reaches', async ({ page, dashboard }) => {
@@ -430,7 +508,7 @@ test.describe('switching from grid', () => {
    test('to free canvas keeps tile positions and sizes', async ({ page, dashboard }) => {
       const gridBoxes = await gridBoxesOfThreeTiles(page, dashboard);
 
-      await dashboard.freeCanvasButton.click();
+      await dashboard.snapToGridButton.click();
       await expect(dashboard.canvasContent).toBeVisible();
 
       await expectBoxesShiftedBy(dashboard, gridBoxes, 0);
@@ -441,7 +519,7 @@ test.describe('switching from grid', () => {
       const gridUnitBoxes = pageUnitBoxesOf(gridBoxes, await dashboard.gridContent.locator('.div_grid_cells').boundingBox(),
          await dashboard.gridScale());
 
-      await dashboard.landscapePagesButton.click();
+      await dashboard.pagingToggles.landscapeButton.click();
       await expect(dashboard.canvasContent).toBeVisible();
 
       const pageContent = await dashboard.canvasPageContent.boundingBox();
@@ -534,7 +612,7 @@ test('canvas tile brought to front is stacked above other tile', async ({ dashbo
 test('landscape pages print one landscape sheet per page', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    await dashboard.addChart();
    await dashboard.sideBar.selectColumn(column);
    await dashboard.sideBar.close();
@@ -554,7 +632,7 @@ test('landscape pages print one landscape sheet per page', async ({ page, dashbo
 test('portrait pages print one portrait sheet per page', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
-   await dashboard.portraitPagesButton.click();
+   await dashboard.pagingToggles.portraitButton.click();
    await dashboard.addSummaries(1);
    const sheetsOfOnePage = await printedSheets(page);
 
@@ -567,7 +645,7 @@ test('portrait pages print one portrait sheet per page', async ({ page, dashboar
 
 test('page sheets show heading and page number', async ({ dashboard }) => {
    await dashboard.launcher.cancel();
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    await dashboard.addSummaries(1);
 
    const sheet = dashboard.sheets.first();
@@ -577,22 +655,318 @@ test('page sheets show heading and page number', async ({ dashboard }) => {
    await expect(sheet.locator('.div_canvas_sheet_footer')).toHaveText(en.get('view.printPage', { page: 1, count: 1 }));
 });
 
-test('switching from landscape to portrait pages wraps side by side tiles into rows', async ({ page, dashboard }) => {
+test('switching from landscape to portrait pages keeps stacked tiles stacked at portrait width', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await startCanvasWithCharts(dashboard, 2);
 
-   await dashboard.portraitPagesButton.click();
+   await dashboard.pagingToggles.portraitButton.click();
 
    await expect(dashboard.sheets.first()).toBeVisible();
+   const scale = await dashboard.canvasScale(PageFormat.PORTRAIT);
    const [firstBox, secondBox] = await tileBoxes(dashboard);
    expect(Math.abs(secondBox.x - firstBox.x)).toBeLessThanOrEqual(1);
    expect(secondBox.y).toBeGreaterThan(firstBox.y + firstBox.height);
+   expect(Math.abs(firstBox.width - 405 * scale)).toBeLessThanOrEqual(1);
+});
+
+test('switching from landscape to portrait pages keeps side by side tiles side by side scaled to the page width', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   await dashboard.tile(1).startMoveBy(610 * scale, -410 * scale);
+   await dashboard.tile(1).release();
+
+   await dashboard.pagingToggles.portraitButton.click();
+
+   await expect(dashboard.sheets.first()).toBeVisible();
+   const content = await dashboard.canvasPageContent.boundingBox();
+   const portraitScale = await dashboard.canvasScale(PageFormat.PORTRAIT);
+   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   expect(Math.abs(secondBox.y - firstBox.y)).toBeLessThanOrEqual(1);
+   expect(Math.abs(firstBox.x - content.x)).toBeLessThanOrEqual(1);
+   expect(Math.abs(secondBox.x + secondBox.width - content.x - 821 * portraitScale)).toBeLessThanOrEqual(1);
+});
+
+test('switching three stacked charts to portrait pages flows them onto one page and back onto two landscape pages', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 3);
+   await expect(dashboard.sheets).toHaveCount(3);
+
+   await dashboard.pagingToggles.portraitButton.click();
+   await expect(dashboard.sheets).toHaveCount(2);
+
+   await dashboard.pagingToggles.landscapeButton.click();
+   await expect(dashboard.sheets).toHaveCount(3);
+});
+
+test('grid tiles switched to portrait pages fill the page width', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.setGridColumns(en.get('element.columns', { count: 2 }));
+   await dashboard.addSummaries(2);
+
+   await dashboard.pagingToggles.portraitButton.click();
+
+   await expect(dashboard.sheets.first()).toBeVisible();
+   const content = await dashboard.canvasPageContent.boundingBox();
+   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   expect(Math.abs(secondBox.y - firstBox.y)).toBeLessThanOrEqual(1);
+   expect(Math.abs(secondBox.x + secondBox.width - content.x - content.width)).toBeLessThanOrEqual(1);
+});
+
+test('resizing a canvas tile onto the tile below pushes it down while overlapping is prevented', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   await expect(dashboard.allowOverlapButton).not.toHaveClass(/koia-toggle-active/);
+
+   await dashboard.tile(0).startResizeBy(0, 200 * scale, 'bottom');
+   await dashboard.tile(0).release();
+
+   const [resizedBox, belowBox] = await tileBoxes(dashboard);
+   expect(belowBox.y).toBeGreaterThanOrEqual(resizedBox.y + resizedBox.height);
+});
+
+test('resizing a canvas tile onto the tile below lets them overlap while overlapping is allowed', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   await dashboard.allowOverlapButton.click();
+   await expect(dashboard.allowOverlapButton).toHaveClass(/koia-toggle-active/);
+   const before = await dashboard.tile(1).root.boundingBox();
+
+   await dashboard.tile(0).startResizeBy(0, 200 * scale, 'bottom');
+   await dashboard.tile(0).release();
+
+   const after = await dashboard.tile(1).root.boundingBox();
+   expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+});
+
+test('marquee selects the tiles within and dragging one of them moves them together', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   const sheet = await dashboard.sheets.first().boundingBox();
+   const [, secondBox] = await tileBoxes(dashboard);
+
+   await dashboard.marqueeSelect({ x: sheet.x + 5, y: sheet.y + 5 }, { x: secondBox.x + secondBox.width + 10, y: secondBox.y + secondBox.height + 10 });
+   await expect(dashboard.tile(0).root).toHaveClass(/div_tile_selected/);
+   await expect(dashboard.tile(1).root).toHaveClass(/div_tile_selected/);
+   const before = await tileBoxes(dashboard);
+   await dashboard.tile(0).startMoveBy(200 * scale, 0);
+   await dashboard.tile(0).release();
+
+   const after = await tileBoxes(dashboard);
+   after.forEach((box, i) => expect(Math.abs(box.x - before[i].x - 200 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX));
+});
+
+test('shift click on the move zone of a note adds it to the selected tile', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 1);
+   const note = await dashboard.addNote();
+   await dashboard.tile(0).select();
+
+   await note.moveZone.click({ modifiers: ['Shift'] });
+
+   await expect(note.tile).toHaveClass(/div_text_box_selected/);
+   await expect(dashboard.tile(0).root).toHaveClass(/div_tile_selected/);
+});
+
+test('canvas tile is moved by dragging its header title, then Delete removes the tile instead of editing the title', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 1);
+   const tile = dashboard.tile(0);
+   const before = await tile.root.boundingBox();
+
+   await tile.startMoveBy(200 * scale, 0);
+   await tile.release();
+   const after = await tile.root.boundingBox();
+   await tile.select();
+   await page.keyboard.press('Delete');
+
+   expect(Math.abs(after.x - before.x - 200 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+   await expect(dashboard.tiles).toHaveCount(0);
+});
+
+test('canvas tile is moved by dragging the empty space below its table, which shows the move cursor', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await dashboard.launcher.cancel();
+   await dashboard.pagingToggles.landscapeButton.click();
+   await dashboard.addSummaries(1);
+   const tile = dashboard.tile(0);
+   await expect(tile.root.locator('koia-summary-table')).toBeVisible();
+   const scale = await dashboard.canvasScale();
+   const before = await tile.root.boundingBox();
+   const point = { x: before.x + before.width / 2, y: before.y + before.height - 30 };
+   const cursor = await page.evaluate(({ x, y }) => getComputedStyle(document.elementFromPoint(x, y)).cursor, point);
+
+   await pressAndMoveBy(page, point.x, point.y, 100 * scale, 0);
+   await tile.release();
+
+   const after = await tile.root.boundingBox();
+   expect(cursor).toBe('move');
+   expect(Math.abs(after.x - before.x - 100 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+});
+
+test('dragging the header of a selected tile moves the selection, a click without moving selects the tile alone', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   const sheet = await dashboard.sheets.first().boundingBox();
+   const [, secondBox] = await tileBoxes(dashboard);
+   await dashboard.marqueeSelect({ x: sheet.x + 5, y: sheet.y + 5 }, { x: secondBox.x + secondBox.width + 10, y: secondBox.y + secondBox.height + 10 });
+   const before = await tileBoxes(dashboard);
+
+   await dashboard.tile(1).startMoveBy(0, 100 * scale);
+   await dashboard.tile(1).release();
+   const after = await tileBoxes(dashboard);
+   await dashboard.tile(1).select();
+
+   after.forEach((box, i) => expect(Math.abs(box.y - before[i].y - 100 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX));
+   await expect(dashboard.tile(0).root).not.toHaveClass(/div_tile_selected/);
+   await expect(dashboard.tile(1).root).toHaveClass(/div_tile_selected/);
+});
+
+test('Alt marquee started on a tile selects the tiles it touches without moving the tile', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 2);
+   const [firstBox, secondBox] = await tileBoxes(dashboard);
+
+   await page.keyboard.down('Alt');
+   await dashboard.marqueeSelect({ x: centerXOf(firstBox), y: centerYOf(firstBox) }, { x: centerXOf(secondBox), y: centerYOf(secondBox) });
+   await page.keyboard.up('Alt');
+
+   await expect(dashboard.tile(0).root).toHaveClass(/div_tile_selected/);
+   await expect(dashboard.tile(1).root).toHaveClass(/div_tile_selected/);
+   expect(await dashboard.tile(0).root.boundingBox()).toEqual(firstBox);
+});
+
+test('selection box resizes the selected tiles together', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   await page.keyboard.press('Control+a');
+   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const bounds = secondBox.x + secondBox.width - firstBox.x;
+   const shrunk = 300 * scale;
+
+   await expect(dashboard.selectionBox).toBeVisible();
+   await pressCenterAndMoveBy(dashboard.selectionBox.locator('.div_resize_handle_right'), -shrunk, 0);
+   await page.mouse.up();
+
+   const [first, second] = await tileBoxes(dashboard);
+   const factor = (bounds - shrunk) / bounds;
+   expect(Math.abs(first.width - firstBox.width * factor)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+   expect(Math.abs(second.x + second.width - (firstBox.x + bounds - shrunk))).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
+});
+
+test('context menu brings a selected tile forward and sends it backward', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 2);
+   const [first, second] = [dashboard.tile(0), dashboard.tile(1)];
+
+   await dashboard.chooseCanvasMenuItem(await first.headerGapPoint(), '.menu_item_bring_forward');
+   const forward = [await first.zIndex(), await second.zIndex()];
+   await dashboard.chooseCanvasMenuItem(await first.headerGapPoint(), '.menu_item_send_backward');
+
+   expect(forward[0]).toBeGreaterThan(forward[1]);
+   expect(await first.zIndex()).toBeLessThan(await second.zIndex());
+   await expect(first.root).toHaveClass(/div_tile_selected/);
+});
+
+test('context menu shows the shortcuts aligned at the end of its items', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 1);
+   const gap = await dashboard.tile(0).headerGapPoint();
+
+   await page.mouse.click(gap.x, gap.y, { button: 'right' });
+   await dashboard.menuItem('.menu_item_cut').waitFor();
+   await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished)));
+
+   const [cut, backward] = [await dashboard.menuItem('.menu_item_cut .span_shortcut').boundingBox(),
+      await dashboard.menuItem('.menu_item_send_backward .span_shortcut').boundingBox()];
+   await expect(dashboard.menuItem('.menu_item_send_backward .span_shortcut')).toHaveText('Ctrl+Alt+Shift+B');
+   expect(Math.abs(cut.x + cut.width - (backward.x + backward.width))).toBeLessThanOrEqual(1);
+});
+
+test('header menu brings all selected tiles to front', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 3);
+   await dashboard.tile(0).select();
+   await page.keyboard.down('Shift');
+   await dashboard.tile(1).select();
+   await page.keyboard.up('Shift');
+
+   await dashboard.tile(0).bringToFront();
+
+   const third = await dashboard.tile(2).zIndex();
+   expect(await dashboard.tile(0).zIndex()).toBeGreaterThan(third);
+   expect(await dashboard.tile(1).zIndex()).toBeGreaterThan(third);
+});
+
+test('context menu aligns the selected tiles left', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 2);
+   await page.keyboard.press('Control+a');
+
+   await dashboard.chooseCanvasMenuItem(await dashboard.tile(1).headerGapPoint(), '.menu_item_align');
+   await dashboard.menuItem('.menu_item_align_left').click();
+
+   const [first, second] = await tileBoxes(dashboard);
+   expect(Math.abs(second.x - first.x)).toBeLessThanOrEqual(1);
+   expect(second.y).toBeGreaterThan(first.y + first.height);
+});
+
+test('copied tile is pasted at the pointer from the menu of the canvas', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 1);
+   await dashboard.chooseCanvasMenuItem(await dashboard.tile(0).headerGapPoint(), '.menu_item_copy');
+   const content = await dashboard.canvasPageContent.boundingBox();
+   const point = { x: content.x + 700 * scale, y: content.y + 500 * scale };
+
+   await dashboard.chooseCanvasMenuItem(point, '.menu_item_paste');
+
+   await expect(dashboard.tiles).toHaveCount(2);
+   const pasted = await dashboard.tile(1).root.boundingBox();
+   expect(Math.abs(pasted.x - point.x)).toBeLessThanOrEqual(scale + 1);
+   expect(Math.abs(pasted.y - point.y)).toBeLessThanOrEqual(scale + 1);
+});
+
+test('Ctrl+D duplicates the selected tile and Delete removes the selection', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 1);
+   await dashboard.tile(0).select();
+
+   await page.keyboard.press('Control+d');
+   await expect(dashboard.tiles).toHaveCount(2);
+   await page.keyboard.press('Delete');
+
+   await expect(dashboard.tiles).toHaveCount(1);
+});
+
+test('Ctrl+A selects all tiles and Shift+arrow nudges them', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   const scale = await startCanvasWithCharts(dashboard, 2);
+   const before = await tileBoxes(dashboard);
+
+   await page.keyboard.press('Control+a');
+   await page.keyboard.press('Shift+ArrowDown');
+
+   await expect(dashboard.tile(0).root).toHaveClass(/div_tile_selected/);
+   await expect(dashboard.tile(1).root).toHaveClass(/div_tile_selected/);
+   const after = await tileBoxes(dashboard);
+   after.forEach((box, i) => expect(Math.abs(box.y - before[i].y - 10 * scale)).toBeLessThanOrEqual(1));
+});
+
+test('right-click into the text of a note opens no canvas menu', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 1);
+   const note = await dashboard.addNote();
+
+   await note.editor.click({ button: 'right' });
+
+   await expect(dashboard.menuItem('.menu_item_paste')).toHaveCount(0);
+   await expect(dashboard.menuItem('.menu_item_cut')).toHaveCount(0);
 });
 
 test('free canvas moves a tile across the landscape page boundary', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
-   await dashboard.freeCanvasButton.click();
+   await dashboard.snapToGridButton.click();
    await dashboard.addSummaries(1);
    const tile = dashboard.tile(0);
    const scale = await dashboard.canvasScale();
@@ -608,7 +982,7 @@ test('free canvas moves a tile across the landscape page boundary', async ({ pag
 
 async function startCanvasWithCharts(dashboard: DashboardPage, chartCount: number): Promise<number> {
    await dashboard.launcher.cancel();
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    for (let i = 0; i < chartCount; i++) {
       await dashboard.addChart();
       await dashboard.sideBar.close();
@@ -638,7 +1012,7 @@ function pageUnitBoxesOf(boxes: Box[], origin: Box, scale: number): Box[] {
 test('page sheets lie on a grey desk within its gutter', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    await dashboard.addSummaries(1);
 
    const desk = await dashboard.canvasContent.evaluate((canvas: HTMLElement) => {
@@ -666,7 +1040,7 @@ test('page sheets lie on a grey desk within its gutter', async ({ page, dashboar
 ].forEach(({ paging, printWidth }) => {
    test(`printed ${paging} sheet keeps the proportions shown on screen`, async ({ page, dashboard }) => {
       await dashboard.launcher.cancel();
-      await (paging === 'landscape' ? dashboard.landscapePagesButton : dashboard.portraitPagesButton).click();
+      await (paging === 'landscape' ? dashboard.pagingToggles.landscapeButton : dashboard.pagingToggles.portraitButton).click();
       await dashboard.addSummaries(1);
       const onScreen = await sheetProportionsOf(dashboard.sheets.first(), '.div_canvas_tile');
 
@@ -680,11 +1054,11 @@ test('page sheets lie on a grey desk within its gutter', async ({ page, dashboar
 test('dragging a tile to the bottom edge scrolls to the next page', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 812 });
    await dashboard.launcher.cancel();
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    await dashboard.addSummaries(1);
    const tile = dashboard.tile(0);
    const canvas = await dashboard.canvasContent.boundingBox();
-   const grip = await tile.root.locator('.but_move').boundingBox();
+   const grip = await tile.moveHandle().boundingBox();
    const scale = await dashboard.canvasScale();
 
    await tile.startMoveBy(0, canvas.y + canvas.height - 10 - (grip.y + grip.height / 2));
@@ -1228,7 +1602,7 @@ test('new note is centred in the visible canvas', async ({ dashboard }) => {
    await dashboard.launcher.cancel();
    await dashboard.addSummary();
    await dashboard.sideBar.close();
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
 
    const textBox = await dashboard.addNote();
 
@@ -1447,7 +1821,7 @@ test('switching layout back and forth keeps a text box on its spot of the tile',
    const textBox = await addSummaryChartAndTextBox(dashboard);
    const spot = await dropOnto(textBox, dashboard.chartTiles, BOTTOM_RIGHT_QUADRANT);
 
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
    const canvasSpot = await spotOf(textBox, dashboard.chartTiles);
    await dashboard.snapToGridButton.click();
@@ -1467,7 +1841,7 @@ test('switching layout back and forth keeps formatted text box content and backg
    await textBox.toolbar.toggleBold();
    await textBox.toolbar.setBackgroundColor('#ffff00');
 
-   await dashboard.landscapePagesButton.click();
+   await dashboard.pagingToggles.landscapeButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
    await dashboard.snapToGridButton.click();
    await expect(dashboard.gridContent).toBeVisible();

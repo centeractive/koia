@@ -280,6 +280,14 @@ export class DashboardTile {
       await this.root.click({ position: { x: box.width / 2, y: HEADER_GAP_PX } });
    }
 
+   /**
+    * @returns the client point of the empty gap above the header, which selects the tile
+    */
+   async headerGapPoint(): Promise<{ x: number; y: number }> {
+      const box = await this.root.boundingBox();
+      return { x: box.x + box.width / 2, y: box.y + HEADER_GAP_PX };
+   }
+
    resizeHandle(name = 'bottom_right'): Locator {
       return this.root.locator('.div_resize_handle_' + name);
    }
@@ -289,8 +297,15 @@ export class DashboardTile {
       await pressCenterAndMoveBy(this.resizeHandle(handle), dx, dy);
    }
 
-   startMoveBy(dx: number, dy: number): Promise<void> {
-      return pressCenterAndMoveBy(this.root.locator('.but_move'), dx, dy);
+   /**
+    * @returns the title, whose header moves the tile; a lone grid tile does not move
+    */
+   moveHandle(): Locator {
+      return this.title;
+   }
+
+   async startMoveBy(dx: number, dy: number): Promise<void> {
+      await pressCenterAndMoveBy(this.moveHandle(), dx, dy);
    }
 
    async release(): Promise<void> {

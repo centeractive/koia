@@ -308,21 +308,27 @@ Video: [Pivot tables and export](https://www.koia.io/intro/videos.html)
 
 <img width="880" src="../src/intro/screenshots/dashboard.webp" alt="Dashboard on a five column grid">
 
-**Layouts** (dashboard toolbar):
+**Layouts** (dashboard toolbar, in this order):
 
-- **Snap to Grid** – tiles fill grid cells. The **⋮** menu sets **Grid Columns** (1–5) and the **Grid Cell Ratio (width:height)**.
-- **Free Canvas** – tiles go anywhere; edges snap to other tiles.
+- **Screen View** – the dashboard on the screen; with **Snap to Grid** off, tiles go anywhere and their edges snap to other tiles.
 - **Landscape Pages** / **Portrait Pages** – the canvas is split into sheets; **Print current view** prints them.
+- **Snap to Grid** – on the screen view, tiles fill grid cells; click it again to place tiles freely. The **⋮** menu sets **Grid Columns** (1–5) and the **Grid Cell Ratio (width:height)**. New and generated dashboards start with Screen View and Snap to Grid.
+- Switching between grid, screen view and pages scales the tiles to the new width and keeps their heights; the tiles of each page flow on below the tiles before them, without empty pages in between.
+- **Allow overlapping tiles** (canvas) – when off, tiles side by side form a row and flow like text. A tile moved within its row swaps with a neighbour once it covers half of it (as in the grid); a tile moved onto another row is inserted where its centre is: while you drag, the tiles behind it already shift right, tiles no longer fitting the width wrap to the start of the next row (beside a taller tile of the row above), and the gap the tile leaves closes. A tile resized or moved with the arrow keys makes room the same way: the tiles to its right shift right, the tiles below move down, and its edge stops at the tiles to its left and above. Aligned tiles keep their place and the tiles covered move down; several tiles moved together push the tiles they cover down, on pages onto the next page if needed, and never cover each other. Notes may always overlap. New and generated dashboards start with it off.
 
 **Elements**: **Add Chart**, **Add Relationship Graph**, **Add Summary**, **Add Text Tile** and **Add Note** (a sticky note above the tiles). Each tile has a header with:
 
 - the title – click it to edit; left alone, Koia generates it;
 - **Configure...** – opens the side bar of the element (chapters 13–15);
 - **Toggle resizable chart margin** (charts);
-- **Move** and **Delete**;
-- **⋮** – **Column Span** and **Row Span** (grid), **Bring to Front** and **Send to Back** (canvas), and the export of the element.
+- **Delete**; to move a tile, drag its header anywhere but its buttons, or any empty spot of the tile beside the chart, graph or table, where the pointer shows the move cursor (in the grid, once there are two tiles);
+- **⋮** – **Column Span** and **Row Span** (grid), **Bring to Front** and **Send to Back** (canvas, for all selected tiles), and the export of the element.
 
-Click an empty part of a tile to select it, then drag its corner to resize it. Esc clears the selection.
+Click an empty part of a tile to select it, then drag its corner to resize it. In the grid, dragging the left edge over the tile to the left makes the tile wider to the left, the neighbour moving after it, already while you drag. Esc clears the selection.
+
+On the canvas, several tiles are selected together: drag a frame around them, starting beside the tiles, or Shift- or Ctrl-click further tiles (charts, graphs and summaries on their header or an empty spot, text tiles and notes on their frame or move button). With Alt held, the frame may start on a tile and selects every tile it touches. Dragging one of the selected tiles moves all of them; a click without moving selects that tile alone. Several selected tiles show a dashed box; while they lie on one page, its handles resize them together. Arrow keys move the selected tiles by one unit, with Shift by ten, within their page.
+
+Right-click a tile, which selects it alone unless it is selected already, for **Cut**, **Copy**, **Duplicate**, **Delete**, **Bring to Front**, **Send to Back**, **Bring Forward**, **Send Backward**, **Align** (left, center, right, top, middle, bottom, two or more tiles), **Distribute** (horizontally or vertically, three or more tiles) and **Select All**; they act on all selected tiles. Right-click an empty spot for **Paste**, which places the copied tiles there, and **Select All**; Ctrl+V pastes them a little offset from the copied tiles, cut tiles in their place. Copied tiles can be pasted into any dashboard of the same scene. Inside a text, the menu of the browser stays.
 
 Text tiles and notes have a toolbar while edited: **Font**, **Font Size**, **Bold**, **Italic**, **Underline**, alignment, **Text Color**, **Background Color** and **Border**.
 
@@ -435,6 +441,15 @@ Koia checks the scene against the scene format when it is activated; see [Scene 
 | Enter or Space | Column header | Sort |
 | Enter | Filter value | Apply |
 | Esc | Dashboard | Clear the tile selection |
+| Shift or Ctrl + click | Dashboard canvas | Add a tile to the selection or remove it |
+| Alt + drag | Dashboard canvas | Select the tiles the frame touches |
+| Ctrl+A | Dashboard canvas | Select all tiles |
+| Delete or Backspace | Dashboard canvas | Delete the selected tiles |
+| Arrow keys, Shift + arrow keys | Dashboard canvas | Move the selected tiles by 1 or 10 units |
+| Ctrl+C / Ctrl+X / Ctrl+V | Dashboard canvas | Copy / cut / paste tiles |
+| Ctrl+D | Dashboard canvas | Duplicate the selected tiles |
+| Ctrl+Shift+F / Ctrl+Shift+B | Dashboard canvas | Bring to front / send to back |
+| Ctrl+Alt+Shift+F / Ctrl+Alt+Shift+B | Dashboard canvas | Bring forward / send backward |
 | Enter / Esc | Scene name being edited | Save / cancel |
 
 ### Limits

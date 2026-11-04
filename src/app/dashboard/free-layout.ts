@@ -17,6 +17,32 @@ export interface Rect {
 
 export type Size = Pick<Rect, 'width' | 'height'>;
 
+/**
+ * @returns the smallest rect containing the given rects
+ */
+export function boundsOf(rects: Rect[]): Rect {
+  const x = Math.min(...rects.map(r => r.x));
+  const y = Math.min(...rects.map(r => r.y));
+  return {
+    x,
+    y,
+    width: Math.max(...rects.map(r => r.x + r.width)) - x,
+    height: Math.max(...rects.map(r => r.y + r.height)) - y
+  };
+}
+
+/**
+ * @returns whether the rects share an area
+ */
+export function intersects(a: Rect, b: Rect): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+}
+
+export function containsRect(outer: Rect, inner: Rect): boolean {
+  return inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width
+    && inner.y + inner.height <= outer.y + outer.height;
+}
+
 export interface TileRect<T> {
   tile: T;
   rect: Rect;
@@ -91,6 +117,13 @@ export class FreeLayout extends SheetLayout {
       : { width: FreeLayout.MIN_SIZE, height: FreeLayout.MIN_SIZE };
   }
 
+  /**
+   * @param rect rect on the rendered layer in page units
+   */
+  layerRectStyle(rect: Rect): object {
+    return { left: this.pageUnits(rect.x), top: this.pageUnits(rect.y), width: this.pageUnits(rect.width), height: this.pageUnits(rect.height) };
+  }
+
   guideStyle(guide: Guide): object {
     return guide.axis === 'x' ? { left: this.pageUnits(guide.position) } : { top: this.pageUnits(guide.position) };
   }
@@ -111,11 +144,23 @@ export class FreeLayout extends SheetLayout {
    * @returns the y on the rendered sheets, including the margins, header, footer and gap of the sheets above
    */
   layerYOf(y: number, gap: number): number {
+    return this.layerYOnPage(y, this.pageFormat.pageIndexOf(y), gap);
+  }
+
+  /**
+   * @param gap gap between the sheets in page units
+   * @returns the y on the rendered sheets of a bottom edge, a bottom on a page boundary is drawn at the end of the page above
+   */
+  layerYOfBottom(bottom: number, gap: number): number {
+    return this.layerYOnPage(bottom, this.pageFormat.pageTopOfBottom(bottom) / this.pageFormat.height, gap);
+  }
+
+  private layerYOnPage(y: number, page: number, gap: number): number {
     const { paged, sheetHeight, height, marginY } = this.pageFormat;
     if (!paged) {
       return y;
     }
-    return y + this.pageFormat.pageIndexOf(y) * (sheetHeight - height + gap) + marginY + PageFormat.SHEET_HEADER;
+    return y + page * (sheetHeight - height + gap) + marginY + PageFormat.SHEET_HEADER;
   }
 
   /**
@@ -153,6 +198,14 @@ export class FreeLayout extends SheetLayout {
     return this.grownRect(this.rectOf(context), context);
   }
 
+  /**
+   * @returns the drawn rect with the own width of the tile, as a tile clipped at the page edge grows when moved left
+   */
+  arrangedRectOf(context: ElementContext): Rect {
+    const ownWidth = this.rectOf({ x: 0, y: context.y, width: context.width, height: context.height }).width;
+    return { ...this.drawnRectOf(context), width: ownWidth };
+  }
+
   pageIndexes(contexts: ElementContext[]): number[] {
     const usedPages = this.pageFormat.paged ? Math.max(1, Math.ceil(this.bottomOf(contexts) / this.pageFormat.height)) : 1;
     return Array.from({ length: usedPages + 1 }, (_, i) => i);
@@ -164,6 +217,16 @@ export class FreeLayout extends SheetLayout {
 
   contextsOnPage(contexts: ElementContext[], page: number): ElementContext[] {
     return contexts.filter(c => this.pageOf(c) === page);
+  }
+
+  /**
+   * @param move moves the contexts
+   * @returns the contexts moved onto another page
+   */
+  contextsMovedToOtherPage(contexts: ElementContext[], move: () => void): ElementContext[] {
+    const pages = contexts.map(c => this.pageOf(c));
+    move();
+    return contexts.filter((c, i) => this.pageOf(c) !== pages[i]);
   }
 
   placeUnpositioned(contexts: ElementContext[]): void {
@@ -349,23 +412,5 @@ export class FreeLayout extends SheetLayout {
 
   private contains(rect: Rect, x: number, y: number): boolean {
     return x >= rect.x && x < rect.x + rect.width && y >= rect.y && y < rect.y + rect.height;
-  }
-
-  bringToFront(context: ElementContext, contexts: ElementContext[]): void {
-    this.rank([...this.othersByZ(context, contexts), context]);
-  }
-
-  sendToBack(context: ElementContext, contexts: ElementContext[]): void {
-    this.rank([context, ...this.othersByZ(context, contexts)]);
-  }
-
-  private othersByZ(context: ElementContext, contexts: ElementContext[]): ElementContext[] {
-    return contexts
-      .filter(c => c !== context)
-      .sort((a, b) => (a.z ?? 0) - (b.z ?? 0));
-  }
-
-  private rank(contexts: ElementContext[]): void {
-    contexts.forEach((c, i) => c.z = i + 1);
   }
 }

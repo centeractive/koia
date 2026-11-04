@@ -852,7 +852,7 @@ describe('global styles', () => {
   it('print styles should hide move button of text box', () => {
 
     // when
-    const rule = printRule('.but_config, .but_move, .but_text_box_move, .but_close');
+    const rule = printRule('.but_config, .but_text_box_move, .but_close');
 
     // then
     expect(rule.style.display).toBe('none');

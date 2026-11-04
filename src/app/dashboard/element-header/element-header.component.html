@@ -1,4 +1,4 @@
-<div class="div_element_header">
+<div class="div_element_header" (mousedown)="onHeaderPress($event)" (touchstart)="onHeaderPress($event)">
   <div class="div_header_actions">
     @if (isMoreMenuAvailable()) {
       <button class="but_config but_more" mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -67,11 +67,6 @@
   @if (context.warning) {
     <button class="but_warning" mat-icon-button [matTooltip]="context.warning" color="warn">
       <mat-icon>error</mat-icon>
-    </button>
-  }
-  @if (movable) {
-    <button class="but_move" mat-icon-button [matTooltip]="'element.move' | translate" cdkDragHandle>
-      <mat-icon svgIcon="move"></mat-icon>
     </button>
   }
   <button class="but_close" mat-icon-button [matTooltip]="'element.delete' | translate" (click)="remove.emit()">

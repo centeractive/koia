@@ -1,198 +1,72 @@
-import { CdkDrag, CdkDragDrop, CdkDragEnd, CdkDragMove, CdkDropList, DragDropModule } from '@angular/cdk/drag-drop';
-import { CdkScrollableModule, ScrollDispatcher } from '@angular/cdk/scrolling';
-import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostBinding, Input, NO_ERRORS_SCHEMA, Output, QueryList } from '@angular/core';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
+import { ScrollDispatcher } from '@angular/cdk/scrolling';
+import { ElementRef, QueryList } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, flushMicrotasks, TestBed, tick, waitForAsync } from '@angular/core/testing';
-import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { By } from '@angular/platform-browser';
-import { provideRouter, Router } from '@angular/router';
-import { Edges, ResizeEvent } from 'angular-resizable-element';
+import { Router } from '@angular/router';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import {
   Aggregation, AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
 } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
-import { TabDef, View, ViewType } from 'app/shared/model/view-config';
-import { DialogService, ExportService, NotificationService } from 'app/shared/services';
+import { ViewType } from 'app/shared/model/view-config';
+import { DialogService, ExportService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
-import { ChartMarginService } from 'app/shared/services/chart';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
 import { ModelToViewConverter } from 'app/shared/services/view-persistence';
 import { ViewTabsService } from 'app/shared/services/view-tabs';
-import { MatIconModuleMock, savedViewOf, SceneFactory } from 'app/shared/test';
-import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
+import { savedViewOf, SceneFactory } from 'app/shared/test';
 import { claimClick } from 'app/shared/ui/claimed-click';
 import type { SummaryTableComponent as RealSummaryTableComponent } from 'app/summary-table/summary-table.component';
 import { Chart } from 'chart.js';
 import { Observable, of, throwError } from 'rxjs';
 import type { Mock } from 'vitest';
-import { page, userEvent } from 'vitest/browser';
+import { userEvent } from 'vitest/browser';
 import { DashboardComponent } from './dashboard.component';
-import { ResizeHandlesComponent } from './resize-handles/resize-handles.component';
-import { ClickWithoutDragDirective } from './click-without-drag.directive';
-import { DetachFromDropListDirective } from './detach-from-drop-list.directive';
+import {
+  configureDashboardTestBed, createDashboardHarness, DashboardHarness, ElementHeaderComponent, TextBoxComponent, useRenderedViewport
+} from './dashboard.component.spec-harness';
 import { DragAutoScroll } from './drag-auto-scroll';
 import { FreeLayout, Rect } from './free-layout';
 import { DashboardGenerator, GeneratedDashboard } from './generator/dashboard-generator';
 import { GridLayout } from './grid-layout';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { Guide, SnapGuides } from './snap-guides';
-import { PageHeadingComponent } from 'app/shared/ui/print-heading/page-heading.component';
 import { PrintHeadingComponent } from 'app/shared/ui/print-heading/print-heading.component';
-import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.component';
-import { PrintButtonComponent } from 'app/shared/ui/print-button/print-button.component';
-import { PagingTogglesComponent } from 'app/shared/ui/sheets/paging-toggles.component';
-import { SheetComponent } from 'app/shared/ui/sheets/sheet.component';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
-import type { TextExtent } from 'app/text-box/text-fit';
-
-@Component({ selector: 'koia-main-toolbar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class MainToolbarComponent { }
-
-@Component({ selector: 'koia-chart-side-bar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class ChartSideBarComponent { }
-
-@Component({ selector: 'koia-graph-side-bar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class GraphSideBarComponent { }
-
-@Component({ selector: 'koia-summary-table-side-bar', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class SummaryTableSideBarComponent { }
-
-@Component({ selector: 'koia-summary-table', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class SummaryTableComponent { }
-
-@Component({ selector: 'koia-chart', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class ChartComponent { }
-
-@Component({ selector: 'koia-graph', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class GraphComponent { }
-
-@Component({
-  selector: 'koia-text-box', template: '<p class="p_line" style="margin: 0; pointer-events: auto">line</p>',
-  changeDetection: ChangeDetectionStrategy.Eager, standalone: false
-})
-class TextBoxComponent {
-  @Input() context: TextBoxContext;
-  @Output() remove = new EventEmitter<void>();
-  @Output() fitHeightChange = new EventEmitter<number>();
-  @Output() textEdited = new EventEmitter<TextExtent>();
-  @HostBinding('class.koia-text-box-active') active = false;
-  startEditing = vi.fn();
-}
-
-@Component({ selector: 'koia-element-header', template: '', changeDetection: ChangeDetectionStrategy.Eager, standalone: false })
-class ElementHeaderComponent {
-  @Input() movable: boolean;
-}
 
 describe('DashboardComponent', () => {
 
-  let now: number;
+  let harness: DashboardHarness;
+
   let scene: Scene;
   let entries: object[];
   let fixture: ComponentFixture<DashboardComponent>;
   let component: DashboardComponent;
-  const dbService = new DBService(null, null);
-  const dialogService = new DialogService(null);
-  const notificationService = new NotificationServiceMock();
-  const exportService = new ExportService();
+  let dbService: DBService;
+  let dialogService: DialogService;
+  let exportService: ExportService;
   let viewTabsService: ViewTabsService;
   let getActiveSceneSpy: Mock;
   let findEntriesSpy: Mock;
 
-  beforeAll(() => {
-    now = new Date().getTime();
-    const columns = [
-      { name: 'Time', dataType: DataType.TIME, width: 100, format: 'yyyy-MM-dd HH:mm:ss SSS', indexed: true },
-      { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true },
-      { name: 'Data', dataType: DataType.TEXT, width: 500, indexed: false },
-      { name: 'Host', dataType: DataType.TEXT, width: 80, indexed: true },
-      { name: 'Path', dataType: DataType.TEXT, width: 200, indexed: true },
-      { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true }
-    ];
-    scene = SceneFactory.createScene('1', columns);
-    entries = [
-      { ID: 1, Time: now - 1000, Level: 'INFO', Data: 'INFO line one', Host: 'server1', Path: '/opt/log/info.log', Amount: 10 },
-      { ID: 2, Time: now - 2000, Level: 'INFO', Data: 'INFO line two', Host: 'server1', Path: '/opt/log/info.log', Amount: 20 },
-      { ID: 3, Time: now - 3000, Level: 'INFO', Data: 'INFO line three', Host: 'server1', Path: '/opt/log/info.log', Amount: 30 },
-      { ID: 4, Time: now - 4000, Level: 'WARN', Data: 'WARN line one', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 40 },
-      { ID: 5, Time: now - 5000, Level: 'WARN', Data: 'WARN line two', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 50 },
-      { ID: 6, Time: now - 6000, Level: 'WARN', Data: 'WARN line three', Host: 'local drive', Path: 'C:/temp/log/warn.log', Amount: 60 },
-      { ID: 7, Time: now - 7000, Level: 'ERROR', Data: 'ERROR line one', Host: 'server2', Path: '/var/log/error.log', Amount: 70 },
-      { ID: 8, Time: now - 8000, Level: 'ERROR', Data: 'ERROR line two', Host: 'server2', Path: '/var/log/error.log', Amount: 80 },
-      { ID: 9, Time: now - 9000, Level: 'ERROR', Data: 'ERROR line three', Host: 'server2', Path: '/var/log/error.log', Amount: 90 },
-    ];
-  });
-
   beforeEach(waitForAsync(() => {
-    viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn(), renameColumn: vi.fn() } as unknown as ViewTabsService;
-    TestBed.configureTestingModule({
-      schemas: [NO_ERRORS_SCHEMA],
-      declarations: [
-        DashboardComponent, MainToolbarComponent, ChartSideBarComponent, GraphSideBarComponent, SummaryTableSideBarComponent,
-        SummaryTableComponent, ChartComponent, GraphComponent, TextBoxComponent, ElementHeaderComponent, ViewToolbarComponent, PrintButtonComponent,
-        PrintHeadingComponent, PageHeadingComponent, DetachFromDropListDirective, ClickWithoutDragDirective, ResizeHandlesComponent,
-        PagingTogglesComponent, SheetComponent
-      ],
-      imports: [MatSidenavModule, MatMenuModule, MatButtonModule, MatIconModule, MatBottomSheetModule, CdkScrollableModule, DragDropModule],
-      providers: [
-        provideRouter([]),
-        MatBottomSheet,
-        { provide: DBService, useValue: dbService },
-        { provide: DialogService, useValue: dialogService },
-        { provide: ChartMarginService, useClass: ChartMarginService },
-        { provide: NotificationService, useValue: notificationService },
-        { provide: ExportService, useValue: exportService },
-        { provide: ViewTabsService, useValue: viewTabsService }
-      ]
-    })
-      .overrideModule(MatIconModule, MatIconModuleMock.override())
-      .compileComponents();
+    harness = createDashboardHarness();
+    configureDashboardTestBed(harness);
   }));
 
   beforeEach(fakeAsync(() => {
-    fixture = TestBed.createComponent(DashboardComponent);
-    component = fixture.componentInstance;
-    vi.spyOn(dialogService, 'showViewLauncherDialog').mockReturnValue(undefined);
-    vi.spyOn(notificationService, 'showStatus').mockReturnValue(undefined);
-    getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
-    findEntriesSpy = vi.spyOn(dbService, 'findEntriesWithComputedValues').mockReturnValue(of(entries.slice(0)));
+    harness.createComponent();
+    ({ scene, entries, fixture, component, dbService, dialogService, exportService, viewTabsService, getActiveSceneSpy, findEntriesSpy } = harness);
+    component.canvasOverlapAllowed = true;
   }));
-
-  function init(tab?: TabDef): void {
-    component.tab = tab;
-    fixture.detectChanges();
-    flush();
-  }
-
-  /**
-   * @returns a move of a dragged pointer in the middle of the content, far from the edges that scroll it
-   */
-  function moveEventInMiddle(): CdkDragMove {
-    const rect = component.divContentRef.nativeElement.getBoundingClientRect();
-    return { event: new MouseEvent('mousemove', { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 }) } as CdkDragMove;
-  }
-
-  function dashboardTab(view?: View): TabDef {
-    return { id: 'tab1', type: ViewType.DASHBOARD, title: 'Dashboard 1', view };
-  }
-
-  function viewOf(route: Route, contexts: ElementContext[], gridColumns = 4, gridCellRatio = '4:3'): View {
-    const view = new ModelToViewConverter().convert(route, 'test', new Query(), contexts);
-    view.gridColumns = gridColumns;
-    view.gridCellRatio = gridCellRatio;
-    return view;
-  }
 
   describe('without tab', () => {
 
-    beforeEach(fakeAsync(() => init()));
+    beforeEach(fakeAsync(() => harness.init()));
 
     it('should create in grid layout', () => {
       expect(component).toBeTruthy();
@@ -580,7 +454,13 @@ describe('DashboardComponent', () => {
       expect(component.selectedContextPosition).toBe(2);
     });
 
-    it('grid tile should be movable when there is a text tile', () => {
+    function isFirstGridTileDraggable(): boolean {
+      const header = fixture.debugElement.query(By.directive(ElementHeaderComponent)).componentInstance as ElementHeaderComponent;
+      const drag = fixture.debugElement.query(By.css('#div_grid .div_tile.mat-elevation-z1')).injector.get(CdkDrag);
+      return header.headerDraggable && !drag.disabled;
+    }
+
+    it('grid tile should be draggable when there is a text tile', () => {
 
       // given
       component.addGraph();
@@ -590,7 +470,7 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(fixture.debugElement.query(By.directive(ElementHeaderComponent)).componentInstance.movable).toBe(true);
+      expect(isFirstGridTileDraggable()).toBe(true);
     });
 
     it('should render text box in grid as detached frameless tile with background color', () => {
@@ -690,7 +570,7 @@ describe('DashboardComponent', () => {
       expect(tile.querySelector('koia-text-box')).toBeNull();
     });
 
-    it('grid tile should be movable only when there is another tile, ignoring text boxes', () => {
+    it('grid tile should be draggable only when there is another tile, ignoring notes', () => {
 
       // given
       component.addGraph();
@@ -700,10 +580,10 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(fixture.debugElement.query(By.directive(ElementHeaderComponent)).componentInstance.movable).toBe(false);
+      expect(isFirstGridTileDraggable()).toBe(false);
       component.addGraph();
       fixture.detectChanges();
-      expect(fixture.debugElement.query(By.directive(ElementHeaderComponent)).componentInstance.movable).toBe(true);
+      expect(isFirstGridTileDraggable()).toBe(true);
     });
 
     it('#anchorNameOf should return anchor name by element index', () => {
@@ -747,9 +627,9 @@ describe('DashboardComponent', () => {
 
       // given
       const graphContext = component.addGraph();
-      graphContext.groupByColumns = [findColumn('Level', graphContext)];
+      graphContext.groupByColumns = [harness.findColumn('Level', graphContext)];
       const chartContext = component.addChart();
-      chartContext.dataColumns = [findColumn('Level', chartContext)];
+      chartContext.dataColumns = [harness.findColumn('Level', chartContext)];
       const query = new Query();
       query.setFullTextFilter('abc');
 
@@ -922,7 +802,7 @@ describe('DashboardComponent', () => {
       const context = component.addSummaryTable();
 
       // then
-      expect(findColumn('Time', context).groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+      expect(harness.findColumn('Time', context).groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
     });
 
     it('#ngOnInit should not modify time unit of scene columns', () => {
@@ -935,7 +815,7 @@ describe('DashboardComponent', () => {
       component.ngOnInit();
 
       // then
-      expect(findColumn('Time', component.addSummaryTable()).groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
+      expect(harness.findColumn('Time', component.addSummaryTable()).groupingTimeUnit).toBe(TimeUnit.MILLISECOND);
       otherScene.columns.forEach(c => expect(c.groupingTimeUnit).toBeUndefined());
     });
 
@@ -970,7 +850,7 @@ describe('DashboardComponent', () => {
       const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
 
       // when
-      component.applyView(viewOf(Route.GRID, [new SummaryContext(scene.columns), new SummaryContext(scene.columns)]));
+      component.applyView(harness.viewOf(Route.GRID, [new SummaryContext(scene.columns), new SummaryContext(scene.columns)]));
       fixture.detectChanges();
       flush();
 
@@ -1174,9 +1054,9 @@ describe('DashboardComponent', () => {
       // given
       const chartContext = component.addChart();
       chartContext.title = 'Test Chart';
-      chartContext.dataColumns = [findColumn('Amount', chartContext)];
+      chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
       const summaryContext = component.addSummaryTable();
-      summaryContext.dataColumns = [findColumn('Level', summaryContext)];
+      summaryContext.dataColumns = [harness.findColumn('Level', summaryContext)];
       const previousContexts = component.elementContexts;
 
       // when
@@ -1236,7 +1116,7 @@ describe('DashboardComponent', () => {
 
       // given
       const chartContext = component.addChart();
-      chartContext.dataColumns = [findColumn('Amount', chartContext)];
+      chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
       const summaryContext = component.addSummaryTable();
       fixture.detectChanges();
       const oldContexts = [chartContext, summaryContext];
@@ -1259,7 +1139,7 @@ describe('DashboardComponent', () => {
 
       // given
       const chartContext = component.addChart();
-      chartContext.dataColumns = [findColumn('Amount', chartContext)];
+      chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
       component.addSummaryTable();
 
       // when
@@ -1279,7 +1159,7 @@ describe('DashboardComponent', () => {
 
       // given
       const chartContext = component.addChart();
-      chartContext.dataColumns = [findColumn('Amount', chartContext)];
+      chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
       component.entries = undefined;
 
       // when
@@ -1329,9 +1209,7 @@ describe('DashboardComponent', () => {
 
     describe('with rendered tiles', () => {
 
-      beforeAll(() => page.viewport(1280, 800));
-
-      afterAll(() => page.viewport(414, 896));
+      useRenderedViewport();
 
       function renderHalfWidthSummaries(): void {
         renderGridSummaries(4, [[2, 1], [2, 1]]);
@@ -1422,7 +1300,7 @@ describe('DashboardComponent', () => {
 
         // then
         const firstPageContent = fixture.nativeElement.querySelector('.div_canvas_page_content');
-        expectSameRects(pageUnitRectsOf('.div_canvas_tile', firstPageContent, canvasScale()),
+        expectSameRects(pageUnitRectsOf('.div_canvas_tile', firstPageContent, harness.canvasScale()),
           gridRects.map(r => new DOMRect(r.x, r.y + PageFormat.TOP_PADDING, r.width, r.height)));
       });
 
@@ -1461,7 +1339,7 @@ describe('DashboardComponent', () => {
         // given
         component.gridLayout.gridColumns = 4;
         component.gridLayout.gridCellRatio = '1:1';
-        renderCanvasSummaries([[0, 0, 690, 340], [0, 350, 1390, 340]], paging);
+        harness.renderCanvasSummaries([[0, 0, 690, 340], [0, 350, 1390, 340]], paging);
 
         // when
         component.setLayout(Route.GRID);
@@ -1473,7 +1351,7 @@ describe('DashboardComponent', () => {
       it('#setLayout to grid should order tiles by reading order', () => {
 
         // given
-        const [right, left, below] = renderCanvasSummaries([[700, 0, 300, 300], [0, 0, 300, 300], [0, 500, 300, 300]]);
+        const [right, left, below] = harness.renderCanvasSummaries([[700, 0, 300, 300], [0, 0, 300, 300], [0, 500, 300, 300]]);
         [right.title, left.title, below.title] = ['right', 'left', 'below'];
 
         // when
@@ -1499,31 +1377,31 @@ describe('DashboardComponent', () => {
       it('should render tile on page of its top', () => {
 
         // when
-        renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+        harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
 
         // then
         const secondPage: HTMLElement = fixture.nativeElement.querySelectorAll('.div_canvas_page_content')[1];
         const tileRect = secondPage.querySelector('.div_canvas_tile').getBoundingClientRect();
-        expect(tileRect.top - secondPage.getBoundingClientRect().top).toBeCloseTo(10 * canvasScale(), 0);
+        expect(tileRect.top - secondPage.getBoundingClientRect().top).toBeCloseTo(10 * harness.canvasScale(), 0);
       });
 
       it('canvas tiles should be absolutely positioned', () => {
 
         // when
-        renderCanvasSummaries([[100, 50, 600, 400]]);
+        harness.renderCanvasSummaries([[100, 50, 600, 400]]);
 
         // then
         const [tileRect] = rectsOf('.div_canvas_tile');
         expect(getComputedStyle(fixture.nativeElement.querySelector('.div_canvas_tile')).position).toBe('absolute');
-        expect(tileRect.left - pagesRect().left).toBeCloseTo(layerX(100) * canvasScale(), 0);
-        expect(tileRect.top - pagesRect().top).toBeCloseTo(layerY(50) * canvasScale(), 0);
-        expect(tileRect.width).toBeCloseTo(600 * canvasScale(), 0);
+        expect(tileRect.left - harness.pagesRect().left).toBeCloseTo(harness.layerX(100) * harness.canvasScale(), 0);
+        expect(tileRect.top - harness.pagesRect().top).toBeCloseTo(harness.layerY(50) * harness.canvasScale(), 0);
+        expect(tileRect.width).toBeCloseTo(600 * harness.canvasScale(), 0);
       });
 
       it('should render canvas guides', () => {
 
         // given
-        renderCanvasSummaries([[0, 0, 600, 400]]);
+        harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         component.canvasGuides = [{ axis: 'x', position: 700 }, { axis: 'y', position: 400 }];
 
         // when
@@ -1531,16 +1409,16 @@ describe('DashboardComponent', () => {
 
         // then
         const [vertical, horizontal] = rectsOf('.div_canvas_pages > .div_canvas_guide');
-        expect(vertical.left - pagesRect().left).toBeCloseTo(700 * canvasScale(), 0);
-        expect(vertical.height).toBeCloseTo(pagesRect().height, 0);
-        expect(horizontal.top - pagesRect().top).toBeCloseTo(400 * canvasScale(), 0);
-        expect(horizontal.width).toBeCloseTo(pagesRect().width, 0);
+        expect(vertical.left - harness.pagesRect().left).toBeCloseTo(700 * harness.canvasScale(), 0);
+        expect(vertical.height).toBeCloseTo(harness.pagesRect().height, 0);
+        expect(horizontal.top - harness.pagesRect().top).toBeCloseTo(400 * harness.canvasScale(), 0);
+        expect(horizontal.width).toBeCloseTo(harness.pagesRect().width, 0);
       });
 
       it('should render resize preview on canvas', () => {
 
         // given
-        renderCanvasSummaries([[0, 0, 600, 400]]);
+        harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         component.resizePreview = { left: 10, top: 20, width: 100, height: 50 };
 
         // when
@@ -1548,8 +1426,8 @@ describe('DashboardComponent', () => {
 
         // then
         const [previewRect] = rectsOf('.div_canvas_pages > .div_resize_preview');
-        expect(previewRect.left - pagesRect().left).toBeCloseTo(10, 0);
-        expect(previewRect.top - pagesRect().top).toBeCloseTo(20, 0);
+        expect(previewRect.left - harness.pagesRect().left).toBeCloseTo(10, 0);
+        expect(previewRect.top - harness.pagesRect().top).toBeCloseTo(20, 0);
         expect([previewRect.width, previewRect.height]).toEqual([100, 50]);
       });
 
@@ -1570,25 +1448,25 @@ describe('DashboardComponent', () => {
         it('portrait pages should be centred at the scale of landscape pages', () => {
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
 
           // then
           const canvasLeft = canvas().getBoundingClientRect().left + PageFormat.DESK_GUTTER_PX;
-          const pages = pagesRect();
+          const pages = harness.pagesRect();
           expect(pages.width).toBeCloseTo(canvasContentWidth() * PageFormat.PORTRAIT.sheetWidth / PageFormat.LANDSCAPE.sheetWidth, 0);
           expect(pages.left - canvasLeft).toBeCloseTo((canvasContentWidth() - pages.width) / 2, 0);
-          expect(canvasScale()).toBeCloseTo(canvasContentWidth() / PageFormat.LANDSCAPE.sheetWidth, 2);
+          expect(harness.canvasScale()).toBeCloseTo(canvasContentWidth() / PageFormat.LANDSCAPE.sheetWidth, 2);
         });
 
         it('portrait sheet should consist of header, page content and footer in page units within paper margins', () => {
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
 
           // then
           const sheet = sheets()[0];
           const [header, content, footer] = Array.from(sheet.children).map(c => c.getBoundingClientRect());
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
           expect(header.height).toBeCloseTo(PageFormat.SHEET_HEADER * scale, 0);
           expect(Math.abs(content.height - 1400 * scale)).toBeLessThan(1);
           expect(footer.height).toBeCloseTo(PageFormat.SHEET_FOOTER * scale, 0);
@@ -1600,7 +1478,7 @@ describe('DashboardComponent', () => {
         it('sheets should lie on desk within gutter', () => {
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]]);
 
           // then
           const style = getComputedStyle(canvas());
@@ -1628,7 +1506,7 @@ describe('DashboardComponent', () => {
         it('sheets should be separated by desk gutter', () => {
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
 
           // then
           const [first, second] = sheets().map(s => s.getBoundingClientRect());
@@ -1638,10 +1516,10 @@ describe('DashboardComponent', () => {
         it('sheets should show heading and page number, the spare sheet neither', () => {
 
           // given
-          component.tab = dashboardTab();
+          component.tab = harness.dashboardTab();
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
 
           // then
           const [first, second, spare] = sheets();
@@ -1657,7 +1535,7 @@ describe('DashboardComponent', () => {
         it('sheets should be drawn as paper, the spare sheet faded', () => {
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]]);
 
           // then
           const [sheet, spare] = sheets();
@@ -1670,11 +1548,11 @@ describe('DashboardComponent', () => {
         it('free canvas should show one page as high as its tiles, without sheet, heading or footer', () => {
 
           // when
-          renderCanvasSummaries([[0, 0, 600, 400], [0, 900, 600, 400]], CanvasPaging.NONE);
+          harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 900, 600, 400]], CanvasPaging.NONE);
 
           // then
           const [page, spare] = sheets();
-          expect(page.querySelector('.div_canvas_page_content').getBoundingClientRect().height).toBeCloseTo(1300 * canvasScale(), 0);
+          expect(page.querySelector('.div_canvas_page_content').getBoundingClientRect().height).toBeCloseTo(1300 * harness.canvasScale(), 0);
           expect(page.querySelectorAll('.div_canvas_page_content > .div_canvas_tile').length).toBe(2);
           expect(sheets().some(s => s.classList.contains('div_canvas_sheet'))).toBe(false);
           expect(fixture.nativeElement.querySelector('.div_canvas_sheet_header, .div_canvas_sheet_footer')).toBeNull();
@@ -1701,7 +1579,7 @@ describe('DashboardComponent', () => {
         it('#onPrintStart should show print time on sheets', () => {
 
           // given
-          renderCanvasSummaries([[0, 0, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]]);
 
           // when
           component.onPrintStart(new Date(2026, 9, 16, 13, 25, 26));
@@ -1713,7 +1591,7 @@ describe('DashboardComponent', () => {
         it('print heading should pass print time to sheets when printing starts', () => {
 
           // given
-          renderCanvasSummaries([[0, 0, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]]);
           const printedAt = new Date(2026, 9, 16, 13, 25, 26);
 
           // when
@@ -1726,55 +1604,55 @@ describe('DashboardComponent', () => {
         it('#constrainFreeMove should map pointer on second sheet to page and back', () => {
 
           // given
-          const [moved] = renderCanvasSummaries([[0, 0, 600, 400], [700, 960, 600, 400]]);
+          const [moved] = harness.renderCanvasSummaries([[0, 0, 600, 400], [700, 960, 600, 400]]);
           component.onFreeMoveStarted(moved);
 
           // when
-          const point = constrainMoveTo(0, 1100);
-          component.onFreeMoveEnded(moved, dragEnd());
+          const point = harness.constrainMoveTo(0, 1100);
+          component.onFreeMoveEnded(moved, harness.dragEnd());
 
           // then
-          expect(point.y).toBeCloseTo(pagesRect().top + layerY(1100) * canvasScale(), 5);
+          expect(point.y).toBeCloseTo(harness.pagesRect().top + harness.layerY(1100) * harness.canvasScale(), 5);
           expect(moved.y).toBe(1100);
         });
 
         it('#onFreeMoving should show guides on second sheet below its header', () => {
 
           // given
-          const [moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
+          const [moved] = harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 960, 600, 400]]);
           component.onFreeMoveStarted(moved);
-          constrainMoveTo(603, 963);
+          harness.constrainMoveTo(603, 963);
 
           // when
-          component.onFreeMoving(moveEventInMiddle());
+          component.onFreeMoving(harness.moveEventInMiddle());
 
           // then
-          expect(component.canvasGuides).toEqual([{ axis: 'x', position: layerX(600) }, { axis: 'y', position: layerY(960) }]);
+          expect(component.canvasGuides).toEqual([{ axis: 'x', position: harness.layerX(600) }, { axis: 'y', position: harness.layerY(960) }]);
         });
 
         it('#onFreeResizing should preview size on second sheet below its header', () => {
 
           // given
-          const [resized] = renderCanvasSummaries([[0, 960, 600, 400]]);
+          const [resized] = harness.renderCanvasSummaries([[0, 960, 600, 400]]);
           component.onFreeResizeStart(resized);
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
 
           // when
-          component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
+          component.onFreeResizing(resized, harness.resizeEvent(697 * scale, 397 * scale));
 
           // then
-          expect(component.resizePreview.top).toBeCloseTo(layerY(960) * scale, 5);
+          expect(component.resizePreview.top).toBeCloseTo(harness.layerY(960) * scale, 5);
         });
 
         it('#onFreeResizeEnd by top edge on second sheet should stay within its page', () => {
 
           // given
-          const [resized] = renderCanvasSummaries([[0, 1000, 600, 400]]);
+          const [resized] = harness.renderCanvasSummaries([[0, 1000, 600, 400]]);
           component.onFreeResizeStart(resized);
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
 
           // when
-          component.onFreeResizeEnd(resized, resizeEvent(600 * scale, 500 * scale, 0, 0, { top: -100 * scale }));
+          component.onFreeResizeEnd(resized, harness.resizeEvent(600 * scale, 500 * scale, 0, 0, { top: -100 * scale }));
 
           // then
           expect([resized.y, resized.height]).toEqual([950, 450]);
@@ -1783,18 +1661,18 @@ describe('DashboardComponent', () => {
         it('#onFreeMoveEnded should leave tile across former page boundary on free canvas', () => {
 
           // given
-          const [moved] = renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.NONE);
+          const [moved] = harness.renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.NONE);
           component.onFreeMoveStarted(moved);
-          constrainMoveTo(0, 803);
+          harness.constrainMoveTo(0, 803);
 
           // when
-          component.onFreeMoveEnded(moved, dragEnd());
+          component.onFreeMoveEnded(moved, harness.dragEnd());
 
           // then
           expect(moved.y).toBe(800);
         });
 
-        it('#showCanvas with portrait pages should pack grid tiles into portrait page width', () => {
+        it('#showCanvas with portrait pages should scale side by side grid tiles to portrait page width', () => {
 
           // given
           renderGridSummaries(2, [[1, 1], [1, 1]]);
@@ -1804,40 +1682,68 @@ describe('DashboardComponent', () => {
 
           // then
           const [first, second] = component.elementContexts;
-          expect(component.elementContexts.every(c => c.x + c.width <= 950)).toBe(true);
-          expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
+          expect(first.x).toBe(0);
+          expect(second.y).toBe(first.y);
+          expect(second.x + second.width).toBe(PageFormat.PORTRAIT.width);
         });
 
-        it('#showCanvas should keep tile sizes switching from landscape to portrait and back', () => {
+        it('#showCanvas should scale tiles switching from landscape to portrait and back', () => {
 
           // given
-          renderCanvasSummaries([[0, 0, 600, 400], [610, 0, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400], [610, 0, 600, 400]]);
           component.showCanvas(CanvasPaging.PORTRAIT);
 
           // when
           component.showCanvas(CanvasPaging.LANDSCAPE);
 
           // then
-          expect(component.elementContexts.map(c => [c.x, c.y, c.width, c.height])).toEqual([[0, 10, 600, 400], [0, 420, 600, 400]]);
+          expect(component.elementContexts.map(c => [c.x, c.y, c.width, c.height])).toEqual([[0, 10, 600, 400], [610, 10, 601, 400]]);
         });
 
-        it('#showCanvas without pages should keep positions of paged tiles', () => {
+        it('#showCanvas without pages should scale paged tiles horizontally and keep their y', () => {
 
           // given
-          renderCanvasSummaries([[100, 960, 600, 400]], CanvasPaging.PORTRAIT);
+          harness.renderCanvasSummaries([[100, 960, 600, 400]], CanvasPaging.PORTRAIT);
 
           // when
           component.showCanvas(CanvasPaging.NONE);
 
           // then
-          expect(component.elementContexts.map(c => [c.x, c.y])).toEqual([[100, 960]]);
+          expect(component.elementContexts.map(c => [c.x, c.y, c.width, c.height])).toEqual([[147, 960, 886, 400]]);
+        });
+
+        it('#snapToGrid should span full width tile of portrait pages over all grid columns', () => {
+
+          // given
+          harness.renderCanvasSummaries([[0, 0, PageFormat.PORTRAIT.width, 400]], CanvasPaging.PORTRAIT);
+
+          // when
+          component.snapToGrid();
+
+          // then
+          expect(component.elementContexts[0].gridColumnSpan).toBe(component.gridLayout.gridColumns);
+        });
+
+        it('#snapToGrid should derive row span of portrait tile from its height in landscape page units', () => {
+
+          // given
+          harness.renderCanvasSummaries([[0, 0, PageFormat.LANDSCAPE.width, 600]]);
+          component.snapToGrid();
+          const landscapeRowSpan = component.elementContexts[0].gridRowSpan;
+          harness.renderCanvasSummaries([[0, 0, PageFormat.PORTRAIT.width, 600]], CanvasPaging.PORTRAIT);
+
+          // when
+          component.snapToGrid();
+
+          // then
+          expect(component.elementContexts[0].gridRowSpan).toBe(landscapeRowSpan);
         });
 
         it('#showCanvas should keep tiles without persisting when showing the shown pages', () => {
 
           // given
-          const contexts = renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
-          const persist = requestPersistSpy();
+          const contexts = harness.renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+          const persist = harness.requestPersistSpy();
 
           // when
           component.showCanvas(CanvasPaging.PORTRAIT);
@@ -1852,7 +1758,7 @@ describe('DashboardComponent', () => {
       it('guides and resize preview should be stacked above tiles', () => {
 
         // given
-        renderCanvasSummaries([[0, 0, 600, 400]]);
+        harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         component.canvasGuides = [{ axis: 'x', position: 700 }];
         component.resizePreview = { left: 10, top: 20, width: 100, height: 50 };
 
@@ -1882,9 +1788,9 @@ describe('DashboardComponent', () => {
         return component.divContentRef.nativeElement.clientWidth;
       }
 
-      function renderGridSummariesForResize(spans: number[][]): number {
+      function renderGridSummariesForResize(spans: number[][], resizedIndex = 0): number {
         renderGridSummaries(4, spans);
-        component.onGridResizeStart();
+        component.onGridResizeStart(component.elementContexts[resizedIndex]);
         return contentWidth() / 4;
       }
 
@@ -1903,7 +1809,7 @@ describe('DashboardComponent', () => {
         component.divContentRef = { nativeElement: { clientWidth: contentWidth() - 17 } } as ElementRef<HTMLDivElement>;
 
         // when
-        component.onGridResizing(component.elementContexts[0], resizeEvent(3 * pitch - 10, pitch - 10));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(3 * pitch - 10, pitch - 10));
 
         // then
         expect(component.resizePreview.width).toBeCloseTo(3 * pitch - 10, 0);
@@ -1915,7 +1821,7 @@ describe('DashboardComponent', () => {
         const pitch = renderGridSummariesForResize([[1, 1]]);
 
         // when
-        component.onGridResizing(component.elementContexts[0], resizeEvent(1.5 * pitch - 4, 1.5 * pitch - 4));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(1.5 * pitch - 4, 1.5 * pitch - 4));
 
         // then
         expectPreview({ left: 0, top: 0, width: 2 * pitch - 10, height: 2 * pitch - 10 });
@@ -1927,7 +1833,7 @@ describe('DashboardComponent', () => {
         const pitch = renderGridSummariesForResize([[2, 2]]);
 
         // when
-        component.onGridResizing(component.elementContexts[0], resizeEvent(1.5 * pitch - 6, 1.5 * pitch - 6));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(1.5 * pitch - 6, 1.5 * pitch - 6));
 
         // then
         expectPreview({ left: 0, top: 0, width: pitch - 10, height: pitch - 10 });
@@ -1939,7 +1845,7 @@ describe('DashboardComponent', () => {
         const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
 
         // when
-        component.onGridResizing(component.elementContexts[0], resizeEvent(2 * pitch - 10, pitch - 10, 3 * pitch));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(2 * pitch - 10, pitch - 10, 3 * pitch));
 
         // then
         expect(component.resizePreview.width).toBeCloseTo(pitch - 10, 0);
@@ -1949,7 +1855,7 @@ describe('DashboardComponent', () => {
 
         // given
         const pitch = renderGridSummariesForResize([[1, 1]]);
-        component.onGridResizing(component.elementContexts[0], resizeEvent(1.5 * pitch - 4, 1.5 * pitch - 4));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(1.5 * pitch - 4, 1.5 * pitch - 4));
 
         // when
         fixture.detectChanges();
@@ -1968,11 +1874,11 @@ describe('DashboardComponent', () => {
         // given
         renderGridSummariesForResize([[1, 1], [1, 1]]);
         const cw = contentWidth();
-        component.onGridResizing(component.elementContexts[0], resizeEvent(cw / 2, cw / 2));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(cw / 2, cw / 2));
         const context = component.elementContexts[0];
 
         // when
-        component.onGridResizeEnd(context, resizeEvent(cw / 2 - 10 + 7, cw / 2 - 10 - 6));
+        component.onGridResizeEnd(context, harness.resizeEvent(cw / 2 - 10 + 7, cw / 2 - 10 - 6));
         fixture.detectChanges();
 
         // then
@@ -1986,11 +1892,11 @@ describe('DashboardComponent', () => {
       it('#onGridResizeEnd should limit column span to grid columns', () => {
 
         // given
-        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]], 3);
         const context = component.elementContexts[3];
 
         // when
-        component.onGridResizeEnd(context, resizeEvent(3 * pitch, pitch - 10, 3 * pitch));
+        component.onGridResizeEnd(context, harness.resizeEvent(3 * pitch, pitch - 10, 3 * pitch));
 
         // then
         expect(context.gridColumnSpan).toBe(1);
@@ -2002,7 +1908,7 @@ describe('DashboardComponent', () => {
         const pitch = renderGridSummariesForResize([[1, 1]]);
 
         // when
-        component.onGridResizing(component.elementContexts[0], resizeEvent(2 * pitch - 10, pitch - 10, -pitch, 0, { left: -pitch }));
+        component.onGridResizing(component.elementContexts[0], harness.resizeEvent(2 * pitch - 10, pitch - 10, -pitch, 0, { left: -pitch }));
 
         // then
         expectPreview({ left: 0, top: 0, width: 2 * pitch - 10, height: pitch - 10 });
@@ -2015,7 +1921,7 @@ describe('DashboardComponent', () => {
         const context = component.elementContexts[0];
 
         // when
-        component.onGridResizeEnd(context, resizeEvent(2 * pitch - 10, pitch - 10, -pitch, 0, { left: -pitch }));
+        component.onGridResizeEnd(context, harness.resizeEvent(2 * pitch - 10, pitch - 10, -pitch, 0, { left: -pitch }));
 
         // then
         expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([2, 1]);
@@ -2028,129 +1934,95 @@ describe('DashboardComponent', () => {
         const context = component.elementContexts[0];
 
         // when
-        component.onGridResizeEnd(context, resizeEvent(pitch - 10, 2 * pitch - 10, 0, -pitch, { top: -pitch }));
+        component.onGridResizeEnd(context, harness.resizeEvent(pitch - 10, 2 * pitch - 10, 0, -pitch, { top: -pitch }));
 
         // then
         expect([context.gridColumnSpan, context.gridRowSpan]).toEqual([1, 2]);
       });
 
-      it('#onGridResizeEnd by left edge should limit column span to columns right of tile column', () => {
+      it('#onGridResizeEnd by left edge passing the centre of the neighbour should move tile before it, keeping its right edge', () => {
 
         // given
-        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]]);
-        const context = component.elementContexts[3];
+        const pitch = renderGridSummariesForResize([[1, 1], [1, 1], [1, 1], [1, 1]], 3);
+        const [first, second, third, fourth] = component.elementContexts;
+        const persist = harness.requestPersistSpy();
 
         // when
-        component.onGridResizeEnd(context, resizeEvent(2 * pitch - 10, pitch - 10, 2 * pitch, 0, { left: -pitch }));
+        component.onGridResizeEnd(fourth, harness.resizeEvent(2 * pitch - 10, pitch - 10, 2 * pitch, 0, { left: -pitch }));
+
+        // then
+        expect(fourth.gridColumnSpan).toBe(2);
+        expect(component.elementContexts).toEqual([first, second, fourth, third]);
+        expect(persist).toHaveBeenCalled();
+      });
+
+      it('#onGridResizeEnd by left edge before the centre of the neighbour should limit column span to columns right of tile column', () => {
+
+        // given
+        const pitch = renderGridSummariesForResize([[3, 1], [1, 1]], 1);
+        const context = component.elementContexts[1];
+
+        // when
+        component.onGridResizeEnd(context, harness.resizeEvent(2 * pitch - 10, pitch - 10, 2 * pitch, 0, { left: -pitch }));
 
         // then
         expect(context.gridColumnSpan).toBe(1);
+        expect(component.elementContexts.indexOf(context)).toBe(1);
       });
-
-      function renderCanvasSummaries(rects: number[][], paging = CanvasPaging.LANDSCAPE): SummaryContext[] {
-        component.showCanvas(paging);
-        component.elementContexts = rects.map(([x, y, width, height], i) => {
-          const context = new SummaryContext(scene.columns);
-          context.setPosition(x, y);
-          context.setSize(width, height);
-          context.z = i + 1;
-          return context;
-        });
-        fixture.detectChanges();
-        return component.elementContexts as SummaryContext[];
-      }
-
-      function canvasScale(): number {
-        return component.canvasPagesRef.nativeElement.clientWidth / component.freeLayout.pageFormat.sheetWidth;
-      }
-
-      /**
-       * @returns the x on the rendered sheets in page units
-       */
-      function layerX(x: number): number {
-        return component.freeLayout.layerXOf(x);
-      }
-
-      /**
-       * @returns the y on the rendered sheets in page units, the sheets separated by the desk gutter
-       */
-      function layerY(y: number): number {
-        return component.freeLayout.layerYOf(y, PageFormat.DESK_GUTTER_PX / canvasScale());
-      }
-
-      function pagesRect(): DOMRect {
-        return component.canvasPagesRef.nativeElement.getBoundingClientRect();
-      }
-
-      const PICKUP = { x: 10, y: 10 };
-
-      function constrainMoveTo(x: number, y: number, pages = pagesRect()): { x: number, y: number } {
-        const scale = canvasScale();
-        return component.constrainFreeMove({ x: pages.left + layerX(x) * scale + PICKUP.x, y: pages.top + layerY(y) * scale + PICKUP.y }, null, null,
-          PICKUP);
-      }
-
-      function dragEnd(): CdkDragEnd {
-        return { source: { reset: vi.fn() } } as unknown as CdkDragEnd;
-      }
-
-      function requestPersistSpy(): Mock {
-        return vi.spyOn(component as unknown as { requestPersist: () => void }, 'requestPersist');
-      }
 
       it('#constrainFreeMove should snap tile to aligned position', () => {
 
         // given
-        const [, moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        const [, moved] = harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
         component.onFreeMoveStarted(moved);
 
         // when
-        const point = constrainMoveTo(603, 3);
+        const point = harness.constrainMoveTo(603, 3);
 
         // then
-        expect(point.x).toBeCloseTo(pagesRect().left + layerX(600) * canvasScale(), 5);
-        expect(point.y).toBeCloseTo(pagesRect().top + layerY(0) * canvasScale(), 5);
+        expect(point.x).toBeCloseTo(harness.pagesRect().left + harness.layerX(600) * harness.canvasScale(), 5);
+        expect(point.y).toBeCloseTo(harness.pagesRect().top + harness.layerY(0) * harness.canvasScale(), 5);
       });
 
       it('#constrainFreeMove should follow scrolled canvas', () => {
 
         // given
-        const [, moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
-        const startRect = pagesRect();
+        const [, moved] = harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        const startRect = harness.pagesRect();
         component.onFreeMoveStarted(moved);
         const scrolledRect = new DOMRect(startRect.left, startRect.top - 100, startRect.width, startRect.height);
         vi.spyOn(component.canvasPagesRef.nativeElement, 'getBoundingClientRect').mockReturnValue(scrolledRect);
 
         // when
-        const point = constrainMoveTo(603, 3, scrolledRect);
+        const point = harness.constrainMoveTo(603, 3, scrolledRect);
 
         // then
-        expect(point.x).toBeCloseTo(startRect.left + layerX(600) * canvasScale(), 5);
-        expect(point.y).toBeCloseTo(startRect.top + layerY(0) * canvasScale(), 5);
+        expect(point.x).toBeCloseTo(startRect.left + harness.layerX(600) * harness.canvasScale(), 5);
+        expect(point.y).toBeCloseTo(startRect.top + harness.layerY(0) * harness.canvasScale(), 5);
       });
 
       it('#onFreeMoving should show guides of snap', () => {
 
         // given
-        const [, moved] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 300]]);
+        const [, moved] = harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 300]]);
         component.onFreeMoveStarted(moved);
-        constrainMoveTo(603, 3);
+        harness.constrainMoveTo(603, 3);
 
         // when
-        component.onFreeMoving(moveEventInMiddle());
+        component.onFreeMoving(harness.moveEventInMiddle());
 
         // then
-        expect(component.canvasGuides).toEqual([{ axis: 'x', position: layerX(600) }, { axis: 'y', position: layerY(0) }]);
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: harness.layerX(600) }, { axis: 'y', position: harness.layerY(0) }]);
       });
 
       it('#onFreeMoving should show no guides before first move', () => {
 
         // given
-        const [moved] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const [moved] = harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         component.onFreeMoveStarted(moved);
 
         // when
-        component.onFreeMoving(moveEventInMiddle());
+        component.onFreeMoving(harness.moveEventInMiddle());
 
         // then
         expect(component.canvasGuides).toEqual([]);
@@ -2159,11 +2031,11 @@ describe('DashboardComponent', () => {
       it('#onFreeMoveEnded should set position, bring tile to front and reset drag', () => {
 
         // given
-        const [moved, other] = renderCanvasSummaries([[0, 410, 600, 400], [0, 0, 600, 400]]);
+        const [moved, other] = harness.renderCanvasSummaries([[0, 410, 600, 400], [0, 0, 600, 400]]);
         component.onFreeMoveStarted(moved);
-        constrainMoveTo(603, 3);
-        component.onFreeMoving(moveEventInMiddle());
-        const event = dragEnd();
+        harness.constrainMoveTo(603, 3);
+        component.onFreeMoving(harness.moveEventInMiddle());
+        const event = harness.dragEnd();
 
         // when
         component.onFreeMoveEnded(moved, event);
@@ -2178,9 +2050,9 @@ describe('DashboardComponent', () => {
       it('#onFreeMoveEnded should keep position without move', () => {
 
         // given
-        const [moved] = renderCanvasSummaries([[100, 200, 600, 400]]);
+        const [moved] = harness.renderCanvasSummaries([[100, 200, 600, 400]]);
         component.onFreeMoveStarted(moved);
-        const event = dragEnd();
+        const event = harness.dragEnd();
 
         // when
         component.onFreeMoveEnded(moved, event);
@@ -2195,14 +2067,14 @@ describe('DashboardComponent', () => {
         // given
         component.setLayout(Route.FLEX);
         const chartContext = component.addChart();
-        chartContext.dataColumns = [findColumn('Amount', chartContext)];
+        chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
         fixture.detectChanges();
         component.onFreeMoveStarted(chartContext);
-        constrainMoveTo(0, PageFormat.LANDSCAPE.height + 2);
+        harness.constrainMoveTo(0, PageFormat.LANDSCAPE.height + 2);
         vi.spyOn(chartContext, 'fireStructureChanged');
 
         // when
-        component.onFreeMoveEnded(chartContext, dragEnd());
+        component.onFreeMoveEnded(chartContext, harness.dragEnd());
         tick();
 
         // then
@@ -2215,14 +2087,14 @@ describe('DashboardComponent', () => {
         // given
         component.setLayout(Route.FLEX);
         const chartContext = component.addChart();
-        chartContext.dataColumns = [findColumn('Amount', chartContext)];
+        chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
         fixture.detectChanges();
         component.onFreeMoveStarted(chartContext);
-        constrainMoveTo(0, 103);
+        harness.constrainMoveTo(0, 103);
         vi.spyOn(chartContext, 'fireStructureChanged');
 
         // when
-        component.onFreeMoveEnded(chartContext, dragEnd());
+        component.onFreeMoveEnded(chartContext, harness.dragEnd());
         tick();
 
         // then
@@ -2233,28 +2105,28 @@ describe('DashboardComponent', () => {
       it('#onFreeResizing should preview snapped size', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
+        component.onFreeResizing(resized, harness.resizeEvent(697 * scale, 397 * scale));
 
         // then
-        expect(component.resizePreview.left).toBeCloseTo(layerX(0) * scale, 5);
-        expect(component.resizePreview.top).toBeCloseTo(layerY(0) * scale, 5);
+        expect(component.resizePreview.left).toBeCloseTo(harness.layerX(0) * scale, 5);
+        expect(component.resizePreview.top).toBeCloseTo(harness.layerY(0) * scale, 5);
         expect(component.resizePreview.width).toBeCloseTo(700 * scale, 5);
         expect(component.resizePreview.height).toBeCloseTo(400 * scale, 5);
-        expect(component.canvasGuides).toEqual([{ axis: 'x', position: layerX(700) }]);
+        expect(component.canvasGuides).toEqual([{ axis: 'x', position: harness.layerX(700) }]);
       });
 
       it('#onFreeMoving should let content follow pointer of moved tile', () => {
 
         // given
-        const [moved] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const [moved] = harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         const follow = vi.spyOn(DragAutoScroll.prototype, 'follow');
         component.onFreeMoveStarted(moved);
-        const move = moveEventInMiddle();
+        const move = harness.moveEventInMiddle();
 
         // when
         component.onFreeMoving(move);
@@ -2267,12 +2139,12 @@ describe('DashboardComponent', () => {
       it('#onFreeMoveEnded should stop scrolling content', () => {
 
         // given
-        const [moved] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const [moved] = harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         const stop = vi.spyOn(DragAutoScroll.prototype, 'stop');
         component.onFreeMoveStarted(moved);
 
         // when
-        component.onFreeMoveEnded(moved, dragEnd());
+        component.onFreeMoveEnded(moved, harness.dragEnd());
 
         // then
         expect(stop).toHaveBeenCalledTimes(1);
@@ -2281,12 +2153,12 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd should end resizing without scrolling content', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[0, 0, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[0, 0, 600, 400]]);
         const stop = vi.spyOn(DragAutoScroll.prototype, 'stop');
         component.onFreeResizeStart(resized);
 
         // when
-        component.onFreeResizeEnd(resized, { ...resizeEvent(600, 400), edges: { right: 0, bottom: 0 } });
+        component.onFreeResizeEnd(resized, { ...harness.resizeEvent(600, 400), edges: { right: 0, bottom: 0 } });
 
         // then
         expect(stop).not.toHaveBeenCalled();
@@ -2295,13 +2167,13 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd should set snapped size and bring tile to front', () => {
 
         // given
-        const [resized, other] = renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
+        const [resized, other] = harness.renderCanvasSummaries([[0, 0, 600, 400], [0, 410, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
-        component.onFreeResizing(resized, resizeEvent(697 * scale, 397 * scale));
+        const scale = harness.canvasScale();
+        component.onFreeResizing(resized, harness.resizeEvent(697 * scale, 397 * scale));
 
         // when
-        component.onFreeResizeEnd(resized, { ...resizeEvent(697 * scale, 397 * scale), edges: { right: 97, bottom: -3 } });
+        component.onFreeResizeEnd(resized, { ...harness.resizeEvent(697 * scale, 397 * scale), edges: { right: 97, bottom: -3 } });
 
         // then
         expect([resized.width, resized.height]).toEqual([700, 400]);
@@ -2313,12 +2185,12 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd should keep size without resize', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[0, 0, 447, 333]]);
+        const [resized] = harness.renderCanvasSummaries([[0, 0, 447, 333]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizeEnd(resized, { ...resizeEvent(447 * scale, 333 * scale), edges: { right: 0, bottom: 0 } });
+        component.onFreeResizeEnd(resized, { ...harness.resizeEvent(447 * scale, 333 * scale), edges: { right: 0, bottom: 0 } });
 
         // then
         expect([resized.width, resized.height]).toEqual([447, 333]);
@@ -2328,12 +2200,12 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd by left edge should move left edge and keep right edge', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[100, 0, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[100, 0, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizeEnd(resized, resizeEvent(497 * scale, 400 * scale, 0, 0, { left: 103 * scale }));
+        component.onFreeResizeEnd(resized, harness.resizeEvent(497 * scale, 400 * scale, 0, 0, { left: 103 * scale }));
 
         // then
         expect([resized.x, resized.y, resized.width, resized.height]).toEqual([200, 0, 500, 400]);
@@ -2342,12 +2214,12 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd by top edge should move top edge and keep bottom edge', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[0, 100, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[0, 100, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizeEnd(resized, resizeEvent(600 * scale, 303 * scale, 0, 0, { top: 97 * scale }));
+        component.onFreeResizeEnd(resized, harness.resizeEvent(600 * scale, 303 * scale, 0, 0, { top: 97 * scale }));
 
         // then
         expect([resized.x, resized.y, resized.width, resized.height]).toEqual([0, 200, 600, 300]);
@@ -2356,16 +2228,16 @@ describe('DashboardComponent', () => {
       it('#onFreeResizing by top left corner should preview moved corner', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[100, 100, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[100, 100, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizing(resized, resizeEvent(650 * scale, 450 * scale, 0, 0, { left: -50 * scale, top: -50 * scale }));
+        component.onFreeResizing(resized, harness.resizeEvent(650 * scale, 450 * scale, 0, 0, { left: -50 * scale, top: -50 * scale }));
 
         // then
-        expect(component.resizePreview.left).toBeCloseTo(layerX(50) * scale, 5);
-        expect(component.resizePreview.top).toBeCloseTo(layerY(50) * scale, 5);
+        expect(component.resizePreview.left).toBeCloseTo(harness.layerX(50) * scale, 5);
+        expect(component.resizePreview.top).toBeCloseTo(harness.layerY(50) * scale, 5);
         expect(component.resizePreview.width).toBeCloseTo(650 * scale, 5);
         expect(component.resizePreview.height).toBeCloseTo(450 * scale, 5);
       });
@@ -2373,12 +2245,12 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd by top edge should keep model width despite rounded rectangle', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[0, 100, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[0, 100, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizeEnd(resized, resizeEvent(600 * scale + 0.4, 300 * scale, 0, 0, { top: 100 * scale }));
+        component.onFreeResizeEnd(resized, harness.resizeEvent(600 * scale + 0.4, 300 * scale, 0, 0, { top: 100 * scale }));
 
         // then
         expect([resized.y, resized.width, resized.height]).toEqual([200, 600, 300]);
@@ -2387,12 +2259,12 @@ describe('DashboardComponent', () => {
       it('#onFreeResizeEnd by left edge should keep right edge despite rounded rectangle', () => {
 
         // given
-        const [resized] = renderCanvasSummaries([[100, 0, 600, 400]]);
+        const [resized] = harness.renderCanvasSummaries([[100, 0, 600, 400]]);
         component.onFreeResizeStart(resized);
-        const scale = canvasScale();
+        const scale = harness.canvasScale();
 
         // when
-        component.onFreeResizeEnd(resized, resizeEvent(500 * scale - 0.4, 400 * scale, 0, 0, { left: 100 * scale }));
+        component.onFreeResizeEnd(resized, harness.resizeEvent(500 * scale - 0.4, 400 * scale, 0, 0, { left: 100 * scale }));
 
         // then
         expect([resized.x, resized.x + resized.width]).toEqual([200, 700]);
@@ -2401,8 +2273,8 @@ describe('DashboardComponent', () => {
       it('#bringToFront should rank tile first and request persisting', () => {
 
         // given
-        const [back, front] = renderCanvasSummaries([[0, 0, 600, 400], [100, 100, 600, 400]]);
-        const persistSpy = requestPersistSpy();
+        const [back, front] = harness.renderCanvasSummaries([[0, 0, 600, 400], [100, 100, 600, 400]]);
+        const persistSpy = harness.requestPersistSpy();
 
         // when
         component.bringToFront(back);
@@ -2415,8 +2287,8 @@ describe('DashboardComponent', () => {
       it('#sendToBack should rank tile last and request persisting', () => {
 
         // given
-        const [back, front] = renderCanvasSummaries([[0, 0, 600, 400], [100, 100, 600, 400]]);
-        const persistSpy = requestPersistSpy();
+        const [back, front] = harness.renderCanvasSummaries([[0, 0, 600, 400], [100, 100, 600, 400]]);
+        const persistSpy = harness.requestPersistSpy();
 
         // when
         component.sendToBack(front);
@@ -2477,8 +2349,8 @@ describe('DashboardComponent', () => {
 
         function gridMoveTo(x: number, y: number): void {
           const cellsRect = cells().getBoundingClientRect();
-          component.constrainFreeMove({ x: cellsRect.left + x * gridScale() + PICKUP.x, y: cellsRect.top + y * gridScale() + PICKUP.y },
-            null, null, PICKUP);
+          component.constrainFreeMove({ x: cellsRect.left + x * gridScale() + harness.PICKUP.x, y: cellsRect.top + y * gridScale() + harness.PICKUP.y },
+            null, null, harness.PICKUP);
         }
 
         function expectCloseTo(actual: number, expected: number): void {
@@ -2687,7 +2559,7 @@ describe('DashboardComponent', () => {
           component.onFreeResizeStart(textBox);
 
           // when
-          component.onFreeResizing(textBox, resizeEvent(drawn.width, drawn.height));
+          component.onFreeResizing(textBox, harness.resizeEvent(drawn.width, drawn.height));
 
           // then
           expectCloseTo(component.resizePreview.left, drawn.left - cellsRect.left);
@@ -2705,7 +2577,7 @@ describe('DashboardComponent', () => {
           gridMoveTo(tileRect.x + 2, 603);
 
           // when
-          component.onFreeMoving(moveEventInMiddle());
+          component.onFreeMoving(harness.moveEventInMiddle());
 
           // then
           expect(component.canvasGuides.map(g => g.axis)).toEqual(['x']);
@@ -2723,7 +2595,7 @@ describe('DashboardComponent', () => {
           gridMoveTo(tileRect.x + 0.3 * tileRect.width, 0.4 * tileRect.height);
 
           // when
-          component.onFreeMoveEnded(textBox, dragEnd());
+          component.onFreeMoveEnded(textBox, harness.dragEnd());
 
           // then
           expect(textBox.anchor).toBe(tile);
@@ -2742,7 +2614,7 @@ describe('DashboardComponent', () => {
           gridMoveTo(1000, 50);
 
           // when
-          component.onFreeMoveEnded(textBox, dragEnd());
+          component.onFreeMoveEnded(textBox, harness.dragEnd());
 
           // then
           expect([textBox.x, textBox.y]).toEqual([1000, 50]);
@@ -2759,7 +2631,7 @@ describe('DashboardComponent', () => {
           const scale = gridScale();
 
           // when
-          component.onFreeResizeEnd(textBox, { ...resizeEvent(200 * scale, 100 * scale), edges: { right: 1, bottom: 1 } });
+          component.onFreeResizeEnd(textBox, { ...harness.resizeEvent(200 * scale, 100 * scale), edges: { right: 1, bottom: 1 } });
 
           // then
           expect(Math.abs(textBox.width - 200)).toBeLessThanOrEqual(FreeLayout.STEP);
@@ -2780,7 +2652,7 @@ describe('DashboardComponent', () => {
           const scale = gridScale();
 
           // when
-          component.onFreeResizeEnd(textBox, resizeEvent(400 * scale, 150 * scale, 0, 0, { left: -100 * scale }));
+          component.onFreeResizeEnd(textBox, harness.resizeEvent(400 * scale, 150 * scale, 0, 0, { left: -100 * scale }));
 
           // then
           expect(textBox.x + textBox.width).toBe(right);
@@ -2797,7 +2669,7 @@ describe('DashboardComponent', () => {
           const scale = gridScale();
 
           // when
-          component.onFreeResizeEnd(textBox, { ...resizeEvent(10 * scale, 10 * scale), edges: { right: -1, bottom: -1 } });
+          component.onFreeResizeEnd(textBox, { ...harness.resizeEvent(10 * scale, 10 * scale), edges: { right: -1, bottom: -1 } });
 
           // then
           expect([textBox.width, textBox.height]).toEqual([TextBoxContext.MIN_WIDTH, TextBoxContext.MIN_HEIGHT]);
@@ -2839,7 +2711,7 @@ describe('DashboardComponent', () => {
         it('#removeElement in free layout should unanchor text box anchored to removed tile without moving it', () => {
 
           // given
-          const [removed] = renderCanvasSummaries([[0, 0, 600, 400]]);
+          const [removed] = harness.renderCanvasSummaries([[0, 0, 600, 400]]);
           const textBox = new TextBoxContext(scene.columns);
           textBox.setPosition(100, 100);
           textBox.setAnchor(removed, { x: 0.5, y: 0.5 });
@@ -2916,7 +2788,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to grid should anchor text boxes to tile below their top left corner in sorted order', () => {
 
           // given
-          const [right, left] = renderCanvasSummaries([[700, 0, 600, 400], [0, 0, 600, 400]]);
+          const [right, left] = harness.renderCanvasSummaries([[700, 0, 600, 400], [0, 0, 600, 400]]);
           [right.title, left.title] = ['right', 'left'];
           const onTile = new TextBoxContext(scene.columns);
           onTile.setPosition(750, 100);
@@ -2999,7 +2871,7 @@ describe('DashboardComponent', () => {
         it('#addNote in free layout should centre note in visible canvas within its page', () => {
 
           // given
-          renderCanvasSummaries([[0, 0, 600, 400]]);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]]);
           const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement);
 
           // when
@@ -3014,7 +2886,7 @@ describe('DashboardComponent', () => {
         it('#addNote on portrait pages should centre note in visible portrait sheet below its heading', () => {
 
           // given
-          renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
+          harness.renderCanvasSummaries([[0, 0, 600, 400]], CanvasPaging.PORTRAIT);
           const expected = visiblyCenteredPositionIn(component.canvasPagesRef.nativeElement);
 
           // when
@@ -3106,7 +2978,7 @@ describe('DashboardComponent', () => {
           {
             layout: 'canvas note',
             add: (): void => {
-              renderCanvasSummaries([]);
+              harness.renderCanvasSummaries([]);
               component.addNote();
               fixture.detectChanges();
             }
@@ -3213,7 +3085,7 @@ describe('DashboardComponent', () => {
           textBox.title = 'Notes';
 
           // when
-          component.applyView(viewOf(Route.GRID, [textBox]));
+          component.applyView(harness.viewOf(Route.GRID, [textBox]));
 
           // then
           expect([component.elementContexts[0].x, component.elementContexts[0].y]).toEqual([0, 0]);
@@ -3286,10 +3158,10 @@ describe('DashboardComponent', () => {
           renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
           const context = addTextTileContext(1, fitHeightBeyondRows(2));
           const drawn = textTile().getBoundingClientRect();
-          component.onGridResizeStart();
+          component.onGridResizeStart(context);
 
           // when
-          component.onGridResizing(context, resizeEvent(drawn.width, drawn.height + 1));
+          component.onGridResizing(context, harness.resizeEvent(drawn.width, drawn.height + 1));
 
           // then
           expectCloseTo(component.resizePreview.height, drawn.height);
@@ -3305,10 +3177,10 @@ describe('DashboardComponent', () => {
           const context = addTextTileContext(1, fitHeightBeyondRows(2));
           const rowPitch = gridTiles()[1].getBoundingClientRect().top - gridTiles()[0].getBoundingClientRect().top;
           const drawn = textTile().getBoundingClientRect();
-          component.onGridResizeStart();
+          component.onGridResizeStart(context);
 
           // when
-          component.onGridResizeEnd(context, resizeEvent(drawn.width, drawn.height + 1 + extraRows * rowPitch));
+          component.onGridResizeEnd(context, harness.resizeEvent(drawn.width, drawn.height + 1 + extraRows * rowPitch));
 
           // then
           expect(context.gridRowSpan).toBe(rowSpan);
@@ -3375,39 +3247,29 @@ describe('DashboardComponent', () => {
 
       describe('grown note in free layout', () => {
 
-        function addNoteContext(x: number, y: number, fitHeight: number): TextBoxContext {
-          const note = new TextBoxContext(scene.columns);
-          note.setPosition(x, y);
-          note.z = 10;
-          note.fitHeight = fitHeight;
-          component.elementContexts = component.elementContexts.concat([note]);
-          fixture.detectChanges();
-          return note;
-        }
-
         it('should be drawn at its fit height', () => {
 
           // given
-          renderCanvasSummaries([]);
+          harness.renderCanvasSummaries([]);
 
           // when
-          addNoteContext(100, 100, 400);
+          harness.addNoteContext(100, 100, 400);
 
           // then
           const tile: HTMLElement = fixture.nativeElement.querySelector('.div_text_box_tile');
-          expect(tile.getBoundingClientRect().height).toBeCloseTo(400 * canvasScale(), 0);
+          expect(tile.getBoundingClientRect().height).toBeCloseTo(400 * harness.canvasScale(), 0);
         });
 
         it('#onFreeResizing should preview grown height', () => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, 400);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, 400);
           component.onFreeResizeStart(note);
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
 
           // when
-          component.onFreeResizing(note, resizeEvent(300 * scale, 401 * scale));
+          component.onFreeResizing(note, harness.resizeEvent(300 * scale, 401 * scale));
 
           // then
           expect(Math.abs(component.resizePreview.height - 400 * scale)).toBeLessThan(1);
@@ -3416,13 +3278,13 @@ describe('DashboardComponent', () => {
         it('#onFreeResizeEnd should store own height when drawn note is enlarged by a pixel', () => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, 400);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, 400);
           component.onFreeResizeStart(note);
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
 
           // when
-          component.onFreeResizeEnd(note, { ...resizeEvent(300 * scale, 400 * scale + 1), edges: { right: 0, bottom: 1 } });
+          component.onFreeResizeEnd(note, { ...harness.resizeEvent(300 * scale, 400 * scale + 1), edges: { right: 0, bottom: 1 } });
 
           // then
           expect(note.height).toBe(TextBoxContext.TEXT_BOX_HEIGHT);
@@ -3431,13 +3293,13 @@ describe('DashboardComponent', () => {
         it('#onFreeResizeEnd by top edge of grown note should shrink own height and keep text height', () => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, 400);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, 400);
           component.onFreeResizeStart(note);
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
 
           // when
-          component.onFreeResizeEnd(note, resizeEvent(300 * scale, 380 * scale, 0, 0, { top: 20 * scale }));
+          component.onFreeResizeEnd(note, harness.resizeEvent(300 * scale, 380 * scale, 0, 0, { top: 20 * scale }));
 
           // then
           expect([note.y, note.height]).toEqual([120, TextBoxContext.TEXT_BOX_HEIGHT - 20]);
@@ -3447,13 +3309,13 @@ describe('DashboardComponent', () => {
         it('#onFreeResizeEnd by right edge of a note fitting its text should keep it ungrown', () => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, TextBoxContext.TEXT_BOX_HEIGHT);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, TextBoxContext.TEXT_BOX_HEIGHT);
           component.onFreeResizeStart(note);
-          const scale = canvasScale();
+          const scale = harness.canvasScale();
 
           // when
-          component.onFreeResizeEnd(note, resizeEvent(350 * scale, TextBoxContext.TEXT_BOX_HEIGHT * scale - 0.4, 0, 0, { right: 50 * scale }));
+          component.onFreeResizeEnd(note, harness.resizeEvent(350 * scale, TextBoxContext.TEXT_BOX_HEIGHT * scale - 0.4, 0, 0, { right: 50 * scale }));
 
           // then
           expect([note.width, note.height]).toEqual([350, TextBoxContext.TEXT_BOX_HEIGHT]);
@@ -3466,14 +3328,14 @@ describe('DashboardComponent', () => {
         ])('#onFreeResizing should show guides of axes $axes when note is $case', ({ fitHeight, axes }) => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, fitHeight);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, fitHeight);
           component.onFreeResizeStart(note);
           const guides: Guide[] = [{ axis: 'x', position: 400 }, { axis: 'y', position: 250 }];
           vi.spyOn(SnapGuides.prototype, 'snapResize').mockReturnValue({ rect: component.freeLayout.rectOf(note), guides });
 
           // when
-          component.onFreeResizing(note, resizeEvent(300, 150));
+          component.onFreeResizing(note, harness.resizeEvent(300, 150));
 
           // then
           expect(component.canvasGuides.map(g => g.axis)).toEqual(axes);
@@ -3485,15 +3347,15 @@ describe('DashboardComponent', () => {
         ])('#onFreeMoving should show guides of axes $axes when note is $case', ({ fitHeight, axes }) => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, fitHeight);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, fitHeight);
           component.onFreeMoveStarted(note);
           const guides: Guide[] = [{ axis: 'x', position: 400 }, { axis: 'y', position: 250 }];
           vi.spyOn(SnapGuides.prototype, 'snapMove').mockReturnValue({ rect: component.freeLayout.rectOf(note), guides });
-          constrainMoveTo(100, 100);
+          harness.constrainMoveTo(100, 100);
 
           // when
-          component.onFreeMoving(moveEventInMiddle());
+          component.onFreeMoving(harness.moveEventInMiddle());
 
           // then
           expect(component.canvasGuides.map(g => g.axis)).toEqual(axes);
@@ -3502,13 +3364,13 @@ describe('DashboardComponent', () => {
         it('#constrainFreeMove should keep note taller than a page on its page', () => {
 
           // given
-          renderCanvasSummaries([]);
-          const note = addNoteContext(100, 100, 1200);
+          harness.renderCanvasSummaries([]);
+          const note = harness.addNoteContext(100, 100, 1200);
           component.onFreeMoveStarted(note);
-          constrainMoveTo(100, 120);
+          harness.constrainMoveTo(100, 120);
 
           // when
-          component.onFreeMoveEnded(note, dragEnd());
+          component.onFreeMoveEnded(note, harness.dragEnd());
 
           // then
           expect(note.y).toBeGreaterThanOrEqual(0);
@@ -3518,28 +3380,28 @@ describe('DashboardComponent', () => {
         it('should show guide at drawn bottom of grown note when moving a tile', () => {
 
           // given
-          const [summary] = renderCanvasSummaries([[0, 600, 600, 200]]);
-          addNoteContext(700, 0, 300);
+          const [summary] = harness.renderCanvasSummaries([[0, 600, 600, 200]]);
+          harness.addNoteContext(700, 0, 300);
           component.onFreeMoveStarted(summary);
-          constrainMoveTo(0, 102);
+          harness.constrainMoveTo(0, 102);
 
           // when
-          component.onFreeMoving(moveEventInMiddle());
+          component.onFreeMoving(harness.moveEventInMiddle());
 
           // then
-          expect(component.canvasGuides).toContainEqual({ axis: 'y', position: layerY(300) });
+          expect(component.canvasGuides).toContainEqual({ axis: 'y', position: harness.layerY(300) });
         });
 
         it('#setLayout to grid should anchor note on grown part of text tile', () => {
 
           // given
-          renderCanvasSummaries([]);
+          harness.renderCanvasSummaries([]);
           const tile = new TextBoxContext(scene.columns, true);
           tile.setPosition(0, 0);
           tile.setSize(600, 200);
           tile.fitHeight = 400;
           component.elementContexts = [tile];
-          const note = addNoteContext(100, 300, undefined);
+          const note = harness.addNoteContext(100, 300, undefined);
 
           // when
           component.setLayout(Route.GRID);
@@ -3557,7 +3419,7 @@ describe('DashboardComponent', () => {
       // given
       component.addSummaryTable();
       component.addSummaryTable();
-      const view = viewOf(Route.FLEX, component.elementContexts);
+      const view = harness.viewOf(Route.FLEX, component.elementContexts);
 
       // when
       component.applyView(view);
@@ -3571,7 +3433,7 @@ describe('DashboardComponent', () => {
 
       // given
       component.addSummaryTable();
-      const view = viewOf(Route.FLEX, component.elementContexts);
+      const view = harness.viewOf(Route.FLEX, component.elementContexts);
       view.elements[0].width = null;
       view.elements[0].height = null;
 
@@ -3629,7 +3491,7 @@ describe('DashboardComponent', () => {
       expect(snapToGridButton().querySelector('mat-icon').getAttribute('svgicon')).toBe('snap_grid');
     });
 
-    const LAYOUT_BUTTON_IDS = ['but_snap_to_grid', 'but_free_canvas', 'but_landscape_pages', 'but_portrait_pages'];
+    const LAYOUT_BUTTON_IDS = ['but_monitor_view', 'but_landscape_pages', 'but_portrait_pages', 'but_snap_to_grid'];
 
     function layoutButton(id: string): HTMLButtonElement {
       return fixture.nativeElement.querySelector('#' + id);
@@ -3639,20 +3501,16 @@ describe('DashboardComponent', () => {
       return LAYOUT_BUTTON_IDS.filter(id => layoutButton(id).classList.contains('koia-toggle-active'));
     }
 
-    it('layout buttons should follow separator and precede print button and separator in front of add buttons', () => {
+    it('layout buttons should follow separator, snap to grid after the page buttons, then print button and separator', () => {
 
       // when
-      const [grid, canvas, landscape, portrait] = LAYOUT_BUTTON_IDS.map(layoutButton);
+      const toggles: HTMLElement = fixture.nativeElement.querySelector('koia-paging-toggles');
 
       // then
-      expect(grid.previousElementSibling.classList).toContain('koia-toolbar-separator');
-      expect(canvas.previousElementSibling).toBe(grid);
-      const toggles = canvas.nextElementSibling;
-      expect(toggles.tagName).toBe('KOIA-PAGING-TOGGLES');
-      expect(Array.from(toggles.children)).toEqual([landscape, portrait, toggles.querySelector('koia-print-button'),
+      expect(toggles.previousElementSibling.classList).toContain('koia-toolbar-separator');
+      expect(Array.from(toggles.children)).toEqual([...LAYOUT_BUTTON_IDS.map(layoutButton), toggles.querySelector('koia-print-button'),
         toggles.querySelector('.koia-toolbar-separator')]);
       expect(toggles.querySelector('koia-print-button #but_print')).not.toBeNull();
-      expect(toggles.querySelector('#but_monitor_view')).toBeNull();
       expect(toggles.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
     });
 
@@ -3665,24 +3523,32 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(layoutButton('but_snap_to_grid').previousElementSibling).toBeNull();
+      expect(fixture.nativeElement.querySelector('koia-paging-toggles').previousElementSibling).toBeNull();
     });
 
-    it('canvas buttons should show free canvas, landscape and portrait icons', () => {
+    it('layout buttons should show screen view, landscape and portrait icons', () => {
 
       // when
-      const icons = LAYOUT_BUTTON_IDS.slice(1).map(id => layoutButton(id).querySelector('mat-icon'));
+      const icons = LAYOUT_BUTTON_IDS.slice(0, 3).map(id => layoutButton(id).querySelector('mat-icon').textContent);
 
       // then
-      expect(icons[0].getAttribute('svgicon')).toBe('flex_view');
-      expect(icons.slice(1).map(icon => icon.textContent)).toEqual(['crop_landscape', 'crop_portrait']);
+      expect(icons).toEqual(['monitor', 'crop_landscape', 'crop_portrait']);
+    });
+
+    it('screen view and snap to grid buttons should be active in grid layout, print disabled', () => {
+
+      // when
+      const active = activeLayoutButtons();
+
+      // then
+      expect(active).toEqual(['but_monitor_view', 'but_snap_to_grid']);
+      expect(layoutButton('but_print').disabled).toBe(true);
     });
 
     it.each([
-      { id: 'but_free_canvas', paging: CanvasPaging.NONE },
       { id: 'but_landscape_pages', paging: CanvasPaging.LANDSCAPE },
       { id: 'but_portrait_pages', paging: CanvasPaging.PORTRAIT }
-    ])('$id should switch to canvas and be the only active layout button', ({ id, paging }) => {
+    ])('$id should switch to canvas on pages and be the only active layout button', ({ id, paging }) => {
 
       // when
       layoutButton(id).click();
@@ -3694,28 +3560,47 @@ describe('DashboardComponent', () => {
       expect(activeLayoutButtons()).toEqual([id]);
     });
 
-    it('snap to grid button should be the only active layout button in grid layout', () => {
-
-      // when
-      const active = activeLayoutButtons();
-
-      // then
-      expect(active).toEqual(['but_snap_to_grid']);
-    });
-
-    it('snap to grid button should keep grid layout without persisting when clicked again', () => {
+    it('screen view button should keep grid layout without persisting', () => {
 
       // given
       const contexts = component.elementContexts;
       vi.mocked(viewTabsService.requestPersist).mockClear();
 
       // when
-      snapToGridButton().click();
+      layoutButton('but_monitor_view').click();
 
       // then
       expect(component.isGridLayout()).toBe(true);
       expect(component.elementContexts).toBe(contexts);
       expect(viewTabsService.requestPersist).not.toHaveBeenCalled();
+    });
+
+    it('screen view button should switch canvas on pages to the screen', () => {
+
+      // given
+      component.showCanvas(CanvasPaging.PORTRAIT);
+      fixture.detectChanges();
+
+      // when
+      layoutButton('but_monitor_view').click();
+      fixture.detectChanges();
+
+      // then
+      expect(component.isGridLayout()).toBe(false);
+      expect(component.freeLayout.pageFormat).toBe(PageFormat.UNPAGED);
+      expect(activeLayoutButtons()).toEqual(['but_monitor_view']);
+    });
+
+    it('snap to grid button should turn the grid off, leaving the screen view', () => {
+
+      // when
+      snapToGridButton().click();
+      fixture.detectChanges();
+
+      // then
+      expect(component.isGridLayout()).toBe(false);
+      expect(component.freeLayout.pageFormat).toBe(PageFormat.UNPAGED);
+      expect(activeLayoutButtons()).toEqual(['but_monitor_view']);
     });
 
     it('snap to grid button should switch back to grid layout', () => {
@@ -3731,7 +3616,7 @@ describe('DashboardComponent', () => {
       // then
       expect(component.isGridLayout()).toBe(true);
       expect(component.freeLayout.pageFormat).toBe(PageFormat.LANDSCAPE);
-      expect(activeLayoutButtons()).toEqual(['but_snap_to_grid']);
+      expect(activeLayoutButtons()).toEqual(['but_monitor_view', 'but_snap_to_grid']);
     });
 
     it('more menu should offer grid settings but no layout menu', fakeAsync(() => {
@@ -3756,19 +3641,11 @@ describe('DashboardComponent', () => {
         return Array.from(tile.querySelectorAll('.div_resize_handle'));
       }
 
-      function clickTile(target: Element, dx = 0): void {
-        const rect = target.getBoundingClientRect();
-        const point = { bubbles: true, clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 };
-        target.dispatchEvent(new PointerEvent('pointerdown', point));
-        target.dispatchEvent(new MouseEvent('click', { ...point, clientX: point.clientX + dx }));
-        fixture.detectChanges();
-      }
-
       function addSelectedSummary(layout = Route.GRID): SummaryContext {
         component.addSummaryTable();
         component.setLayout(layout);
         fixture.detectChanges();
-        clickTile(summaryTile().querySelector('.div_element'));
+        harness.clickTile(summaryTile().querySelector('.div_element'));
         return component.elementContexts[0] as SummaryContext;
       }
 
@@ -3793,7 +3670,7 @@ describe('DashboardComponent', () => {
         fixture.detectChanges();
 
         // when
-        clickTile(summaryTile().querySelector('.div_element'));
+        harness.clickTile(summaryTile().querySelector('.div_element'));
 
         // then
         expect(component.tileSelection.isSelected(component.elementContexts[0])).toBe(true);
@@ -3801,10 +3678,10 @@ describe('DashboardComponent', () => {
         expect(summaryTile().querySelector('koia-resize-handles').classList).not.toContain('koia-squares-only');
       });
 
-      it('selected tile should be outlined and raised below notes', () => {
+      it('selected grid tile should be outlined and raised below notes', () => {
 
         // given
-        addSelectedSummary(Route.FLEX);
+        addSelectedSummary();
         component.addNote();
         fixture.detectChanges();
 
@@ -3818,6 +3695,19 @@ describe('DashboardComponent', () => {
         expect(noteZ).toBeGreaterThan(9999);
       });
 
+      it('selected canvas tile should be outlined dashed and keep its stacking', () => {
+
+        // given
+        const context = addSelectedSummary(Route.FLEX);
+
+        // when
+        const style = getComputedStyle(summaryTile());
+
+        // then
+        expect(style.outlineStyle).toBe('dashed');
+        expect(style.zIndex).toBe(String(context.z));
+      });
+
       it('click on control of selected tile should clear selection', () => {
 
         // given
@@ -3826,7 +3716,7 @@ describe('DashboardComponent', () => {
         summaryTile().querySelector('.div_element').appendChild(button);
 
         // when
-        clickTile(button);
+        harness.clickTile(button);
 
         // then
         expect(component.tileSelection.isSelected(context)).toBe(false);
@@ -3841,7 +3731,7 @@ describe('DashboardComponent', () => {
         element.addEventListener('click', event => claimClick(event));
 
         // when
-        clickTile(element);
+        harness.clickTile(element);
 
         // then
         expect(component.tileSelection.isSelected(context)).toBe(false);
@@ -3853,7 +3743,7 @@ describe('DashboardComponent', () => {
         const context = addSelectedSummary();
 
         // when
-        clickTile(summaryTile().querySelector('.div_resize_handle_bottom_right'));
+        harness.clickTile(summaryTile().querySelector('.div_resize_handle_bottom_right'));
 
         // then
         expect(component.tileSelection.isSelected(context)).toBe(true);
@@ -3867,7 +3757,7 @@ describe('DashboardComponent', () => {
         summaryTile().querySelector('.div_element').appendChild(button);
 
         // when
-        clickTile(button, 10);
+        harness.clickTile(button, 10);
 
         // then
         expect(component.tileSelection.isSelected(context)).toBe(true);
@@ -3991,14 +3881,14 @@ describe('DashboardComponent', () => {
       // given
       const chartContext = component.addChart();
       chartContext.title = 'Test Chart';
-      chartContext.dataColumns = [findColumn('Amount', chartContext)];
-      chartContext.splitColumns = [findColumn('Path', chartContext)];
+      chartContext.dataColumns = [harness.findColumn('Amount', chartContext)];
+      chartContext.splitColumns = [harness.findColumn('Path', chartContext)];
       const graphContext = component.addGraph();
       graphContext.title = 'Test Graph';
-      const timeColumn = findColumn('Time', graphContext);
+      const timeColumn = harness.findColumn('Time', graphContext);
       timeColumn.groupingTimeUnit = TimeUnit.HOUR;
-      graphContext.groupByColumns = [timeColumn, findColumn('Level', graphContext)];
-      const view = viewOf(Route.GRID, component.elementContexts);
+      graphContext.groupByColumns = [timeColumn, harness.findColumn('Level', graphContext)];
+      const view = harness.viewOf(Route.GRID, component.elementContexts);
       const elementContexts = component.elementContexts;
       component.gridLayout.gridColumns = 5;
       component.elementContexts = [];
@@ -4017,8 +3907,8 @@ describe('DashboardComponent', () => {
 
       // given
       const summaryContext = component.addSummaryTable();
-      summaryContext.dataColumns = [findColumn('Level', summaryContext)];
-      const view = viewOf(Route.FLEX, component.elementContexts, null, null);
+      summaryContext.dataColumns = [harness.findColumn('Level', summaryContext)];
+      const view = harness.viewOf(Route.FLEX, component.elementContexts, null, null);
       component.gridLayout.gridColumns = 2;
       component.gridLayout.gridCellRatio = '2:1';
 
@@ -4035,9 +3925,9 @@ describe('DashboardComponent', () => {
 
       // given
       const summaryContext = component.addSummaryTable();
-      summaryContext.dataColumns = [findColumn('Level', summaryContext)];
-      summaryContext.groupByColumns = [findColumn('Path', summaryContext), findColumn('Time', summaryContext), findColumn('Amount', summaryContext)];
-      const view = viewOf(Route.FLEX, component.elementContexts);
+      summaryContext.dataColumns = [harness.findColumn('Level', summaryContext)];
+      summaryContext.groupByColumns = [harness.findColumn('Path', summaryContext), harness.findColumn('Time', summaryContext), harness.findColumn('Amount', summaryContext)];
+      const view = harness.viewOf(Route.FLEX, component.elementContexts);
       component.elementContexts = [];
 
       // when
@@ -4067,8 +3957,8 @@ describe('DashboardComponent', () => {
 
       // given
       const summaryContext = component.addSummaryTable();
-      summaryContext.dataColumns = [findColumn('Level', summaryContext)];
-      const view = viewOf(Route.GRID, component.elementContexts);
+      summaryContext.dataColumns = [harness.findColumn('Level', summaryContext)];
+      const view = harness.viewOf(Route.GRID, component.elementContexts);
       const viewJson = JSON.stringify(view);
       component.applyView(view);
 
@@ -4550,7 +4440,7 @@ describe('DashboardComponent', () => {
     it('#ngOnInit should register as content provider of tab', fakeAsync(() => {
 
       // when
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
 
       // then
       expect(viewTabsService.register).toHaveBeenCalledWith('tab1', component);
@@ -4560,7 +4450,7 @@ describe('DashboardComponent', () => {
     it('should show print heading with tab title and scene name', fakeAsync(() => {
 
       // when
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
 
       // then
       const heading: HTMLElement = fixture.nativeElement.querySelector('.div_header > koia-print-heading');
@@ -4573,10 +4463,10 @@ describe('DashboardComponent', () => {
       // given
       const summaryContext = new SummaryContext(scene.columns.filter(c => c.indexed));
       summaryContext.title = 'Restored';
-      const view = viewOf(Route.FLEX, [summaryContext], 2, '2:1');
+      const view = harness.viewOf(Route.FLEX, [summaryContext], 2, '2:1');
 
       // when
-      init(dashboardTab(view));
+      harness.init(harness.dashboardTab(view));
 
       // then
       expect(component.isGridLayout()).toBe(false);
@@ -4589,9 +4479,9 @@ describe('DashboardComponent', () => {
 
       // given
       const summaryContext = new SummaryContext(scene.columns.filter(c => c.indexed));
-      const view = viewOf(Route.GRID, [summaryContext]);
+      const view = harness.viewOf(Route.GRID, [summaryContext]);
       const viewJson = JSON.stringify(view);
-      init(dashboardTab(view));
+      harness.init(harness.dashboardTab(view));
 
       // when
       component.elementContexts[0].title = 'changed';
@@ -4603,7 +4493,7 @@ describe('DashboardComponent', () => {
     it('#addChart should scroll added element into view when dashboard started with elements', fakeAsync(() => {
 
       // given
-      init(dashboardTab(viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
+      harness.init(harness.dashboardTab(harness.viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
       const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
 
       // when
@@ -4617,7 +4507,7 @@ describe('DashboardComponent', () => {
     it('#ngOnDestroy should unregister and stop requesting persisting', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       const context = component.addSummaryTable();
       vi.mocked(viewTabsService.requestPersist).mockClear();
 
@@ -4635,7 +4525,7 @@ describe('DashboardComponent', () => {
     it('#tabContent should provide current view with fixed modified time', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.addSummaryTable();
       component.setLayout(Route.FLEX);
 
@@ -4652,7 +4542,7 @@ describe('DashboardComponent', () => {
     it('#tabContent should provide grid settings of current layout', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.setGridColumns(2);
       component.setGridCellRatio('2:1');
       component.setLayout(Route.FLEX);
@@ -4669,7 +4559,7 @@ describe('DashboardComponent', () => {
     it.each([CanvasPaging.NONE, CanvasPaging.PORTRAIT])('#tabContent should save canvas paging %s', paging => fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.addSummaryTable();
       component.showCanvas(paging);
 
@@ -4686,7 +4576,7 @@ describe('DashboardComponent', () => {
     ])('#tabContent should not save canvas paging of $layout', ({ show }) => fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.addSummaryTable();
       show();
 
@@ -4706,11 +4596,11 @@ describe('DashboardComponent', () => {
       // given
       const context = new SummaryContext(scene.columns);
       context.setPosition(0, 10);
-      const view = viewOf(Route.FLEX, [context]);
+      const view = harness.viewOf(Route.FLEX, [context]);
       view.canvasPaging = paging;
 
       // when
-      init(dashboardTab(view));
+      harness.init(harness.dashboardTab(view));
 
       // then
       expect(component.freeLayout.pageFormat).toBe(format);
@@ -4719,7 +4609,7 @@ describe('DashboardComponent', () => {
     it('#snapToGrid should request persisting when leaving canvas', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.addGraph();
       component.showCanvas(CanvasPaging.PORTRAIT);
       vi.mocked(viewTabsService.requestPersist).mockClear();
@@ -4747,7 +4637,7 @@ describe('DashboardComponent', () => {
     ])('#$change should request persisting', ({ apply }) => fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.addGraph();
       component.addSummaryTable();
       component.configure(null, component.elementContexts[0]);
@@ -4763,7 +4653,7 @@ describe('DashboardComponent', () => {
     it('should request persisting when element context changes', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       const context = component.addSummaryTable();
       flush();
       vi.mocked(viewTabsService.requestPersist).mockClear();
@@ -4779,7 +4669,7 @@ describe('DashboardComponent', () => {
     it('should request persisting when side bar is closed', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       component.addSummaryTable();
       fixture.detectChanges();
       flush();
@@ -4797,7 +4687,7 @@ describe('DashboardComponent', () => {
     it('#generateDashboard should scroll generated dashboard to top', fakeAsync(() => {
 
       // given
-      init(dashboardTab(viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
+      harness.init(harness.dashboardTab(harness.viewOf(Route.GRID, [new SummaryContext(scene.columns)])));
       const scrollIntoViewSpy = vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockReturnValue(undefined);
       const grid: HTMLElement = fixture.nativeElement.querySelector('#div_grid');
       const scrollToSpy = vi.spyOn(grid, 'scrollTo').mockReturnValue(undefined);
@@ -4818,7 +4708,7 @@ describe('DashboardComponent', () => {
     it('#generateDashboard should bind query and entries and request persisting', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       const query = new Query();
       query.setFullTextFilter('abc');
       component.onFilterChanged(query);
@@ -4841,7 +4731,7 @@ describe('DashboardComponent', () => {
     it('#generateDashboard should persist changes of generated elements', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       const result = generatedDashboard();
       vi.spyOn(DashboardGenerator.prototype, 'generate').mockReturnValue(result);
       component.generateDashboard();
@@ -4888,7 +4778,7 @@ describe('DashboardComponent', () => {
 
     function addChartOf(columnName: string): ChartContext {
       const context = component.addChart();
-      context.dataColumns = [findColumn(columnName, context)];
+      context.dataColumns = [harness.findColumn(columnName, context)];
       return context;
     }
 
@@ -4896,7 +4786,7 @@ describe('DashboardComponent', () => {
 
       // given
       computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
-      init();
+      harness.init();
 
       // when
       const context = component.addChart();
@@ -4908,7 +4798,7 @@ describe('DashboardComponent', () => {
     it('#onComputedColumnsChanged should update element columns and recompute entries in memory when column was saved', fakeAsync(() => {
 
       // given
-      init(dashboardTab());
+      harness.init(harness.dashboardTab());
       const context = component.addChart();
       findEntriesSpy.mockClear();
       vi.mocked(viewTabsService.requestPersist).mockClear();
@@ -4918,7 +4808,7 @@ describe('DashboardComponent', () => {
       flush();
 
       // then
-      expect(findColumn('Diff', context).computation.operator).toBe(ComputeOperator.SUBTRACT);
+      expect(harness.findColumn('Diff', context).computation.operator).toBe(ComputeOperator.SUBTRACT);
       expect(component.entries).toEqual([
         { Level: 'INFO', Amount: 10, Count: 4, Diff: 6 },
         { Level: 'WARN', Amount: 20, Count: 0, Diff: 20 }
@@ -4932,7 +4822,7 @@ describe('DashboardComponent', () => {
 
       // given
       findEntriesSpy.mockReturnValue(new Observable<object[]>());
-      init();
+      harness.init();
       const context = component.addChart();
 
       // when
@@ -4948,7 +4838,7 @@ describe('DashboardComponent', () => {
 
       // given
       computedScene.columns.push(computedColumn('Ratio', ComputeOperator.SUBTRACT));
-      init();
+      harness.init();
       computedEntries.forEach(e => e['Ratio'] = e['Amount'] - e['Count']);
       const context = addChartOf('Ratio');
 
@@ -4968,7 +4858,7 @@ describe('DashboardComponent', () => {
 
       // given
       computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
-      init();
+      harness.init();
       const context = addChartOf('Diff');
 
       // when
@@ -4985,8 +4875,8 @@ describe('DashboardComponent', () => {
 
       // given
       computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
-      init();
-      const view = viewOf(Route.GRID, [addChartOf('Diff')]);
+      harness.init();
+      const view = harness.viewOf(Route.GRID, [addChartOf('Diff')]);
       computedScene.config.savedViews = [savedViewOf('all', [{ id: 'tab9', type: ViewType.DASHBOARD, title: 'Diff', view }])];
       component.elementContexts = [];
       computedColumnService.save(computedColumn('Delta', ComputeOperator.SUBTRACT), 'Diff');
@@ -5003,7 +4893,7 @@ describe('DashboardComponent', () => {
 
       // given
       computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
-      init();
+      harness.init();
       const context = addChartOf('Diff');
 
       // when
@@ -5018,7 +4908,7 @@ describe('DashboardComponent', () => {
     it('#onComputedColumnsChanged should be ignored after destroy', fakeAsync(() => {
 
       // given
-      init();
+      harness.init();
       const context = component.addChart();
       fixture.destroy();
 
@@ -5043,17 +4933,6 @@ describe('DashboardComponent', () => {
     });
   }
 
-  function resizeEvent(width: number, height: number, left = 0, top = 0, edges: Edges = { right: 0, bottom: 0 }): ResizeEvent {
-    return {
-      rectangle: { top, bottom: top + height, left, right: left + width, width, height },
-      edges
-    };
-  }
-
-  function findColumn(name: string, context: ElementContext): Column {
-    return context.columns.find(c => c.name === name);
-  }
-
   function mockConfirmDialog(closedWithButtonIndex: number): void {
     vi.spyOn(dialogService, 'showConfirmDialog').mockImplementation((data: ConfirmDialogData) => {
       data.closedWithButtonIndex = closedWithButtonIndex;
@@ -5068,9 +4947,9 @@ describe('DashboardComponent', () => {
   function generatedDashboard(gridColumns = 3): GeneratedDashboard {
     const indexedColumns = (): Column[] => scene.columns.filter(c => c.indexed).map(c => ({ ...c }));
     const chartContext = new ChartContext(indexedColumns(), ChartType.PIE.type, { top: 0, right: 0, bottom: 0, left: 0 });
-    chartContext.dataColumns = [findColumn('Level', chartContext)];
+    chartContext.dataColumns = [harness.findColumn('Level', chartContext)];
     const summaryContext = new SummaryContext(indexedColumns());
-    summaryContext.dataColumns = [findColumn('Host', summaryContext)];
+    summaryContext.dataColumns = [harness.findColumn('Host', summaryContext)];
     return { grid: { columns: gridColumns, cellRatio: '1:1' }, elementContexts: [chartContext, summaryContext] };
   }
 

@@ -1,4 +1,4 @@
-import { FreeLayout, Rect, Size } from './free-layout';
+import { boundsOf, FreeLayout, Rect, Size } from './free-layout';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { GridLayout } from './grid-layout';
 
@@ -9,6 +9,12 @@ export interface Guide {
 
 export interface Snap {
   rect: Rect;
+  guides: Guide[];
+}
+
+export interface GroupSnap {
+  bounds: Rect;
+  rects: Rect[];
   guides: Guide[];
 }
 
@@ -66,14 +72,38 @@ export class SnapGuides {
   }
 
   snapMove(rect: Rect): Snap {
+    return this.snapBounds(rect, true);
+  }
+
+  /**
+   * snaps the bounds of moved tiles, which keep their offsets to the bounds; on pages, bounds fitting a page are kept within
+   * a page, each tile within its page otherwise
+   *
+   * @param members the rects of the tiles within the bounds before the move
+   */
+  snapGroupMove(bounds: Rect, members: Rect[]): GroupSnap {
+    const original = boundsOf(members);
+    const snap = this.snapBounds(bounds, bounds.height <= this.page.height);
+    const dx = snap.rect.x - original.x;
+    const dy = snap.rect.y - original.y;
+    const rects = members.map(m => {
+      const y = m.y + dy;
+      return { ...m, x: m.x + dx, y: this.paged ? this.fitIntoPage(y, m.height) : y };
+    });
+    return { bounds: snap.rect, rects, guides: snap.guides };
+  }
+
+  private snapBounds(rect: Rect, intoPage: boolean): Snap {
     const xMatch = this.match(rect.x, rect.width, this.xTargets, ALL_EDGES);
     const yMatch = this.match(rect.y, rect.height, this.yTargets, ALL_EDGES);
     const snappedX = xMatch ? xMatch.target - xMatch.edge * rect.width : this.roundToStep(rect.x);
     const snappedY = yMatch ? yMatch.target - yMatch.edge * rect.height : this.roundToStep(rect.y);
     const x = this.clamp(snappedX, 0, this.page.width - rect.width);
-    const y = this.paged
-      ? this.fitIntoPage(this.clamp(snappedY, 0, this.pageCount * this.page.height - rect.height), rect.height)
-      : Math.max(snappedY, 0);
+    let y = Math.max(snappedY, 0);
+    if (this.paged) {
+      y = this.clamp(snappedY, 0, this.pageCount * this.page.height - rect.height);
+      y = intoPage ? this.fitIntoPage(y, rect.height) : y;
+    }
     return {
       rect: { ...rect, x, y },
       guides: this.guidesOf(x === snappedX ? xMatch : undefined, y === snappedY ? yMatch : undefined)

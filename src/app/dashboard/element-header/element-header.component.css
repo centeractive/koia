@@ -36,10 +36,6 @@
   opacity: 1;
 }
 
-.but_move {
-  cursor: move;
-}
-
 .div_title {
   flex-grow: 99;
   min-width: 0;
@@ -70,4 +66,9 @@ span {
 
 .textarea_title:focus {
   outline: 1px solid var(--koia-border-color);
+}
+
+:host(.koia-header-draggable) .div_element_header,
+:host(.koia-header-draggable) .textarea_title:not(:focus) {
+  cursor: move;
 }

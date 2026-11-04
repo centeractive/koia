@@ -280,6 +280,19 @@ describe('GridLayout', () => {
     expect(style).toEqual({ 'grid-column': 'auto / span 2', 'grid-row': 'auto / span 3' });
   });
 
+  it('#cellStyle should span given column span', () => {
+
+    // given
+    const context = new SummaryContext([]);
+    context.gridColumnSpan = 1;
+
+    // when
+    const style = gridLayout.cellStyle(context, 1, 3);
+
+    // then
+    expect(style).toEqual({ 'grid-column': 'auto / span 3', 'grid-row': 'auto / span 1' });
+  });
+
   it('#setGridColumns should fire resize event for each element', () => {
 
     // when
