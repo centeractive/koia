@@ -11,4 +11,5 @@ import { MatMenu } from '@angular/material/menu';
 export class ViewToolbarComponent {
 
   @Input() moreMenu: MatMenu;
+  @Input() moreDisabled = false;
 }

@@ -30,20 +30,18 @@
       @if (loading) {
         <mat-progress-bar mode="indeterminate" [matTooltip]="'dashboard.loadingData' | translate"></mat-progress-bar>
       }
-      <koia-view-toolbar [moreMenu]="isGridLayout() ? moreMenu : undefined">
+      <koia-view-toolbar [moreMenu]="moreMenu" [moreDisabled]="!isGridLayout()">
         <koia-paging-toggles [paging]="isGridLayout() ? CanvasPaging.NONE : freeLayout.pageFormat.paging"
-          [printDisabled]="!elementContexts?.length" (pagingChange)="onPagingChange($event)">
-          <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
-            [matTooltip]="'dashboard.snapToGrid' | translate" (click)="toggleSnapToGrid()">
-            <mat-icon svgIcon="snap_grid"></mat-icon>
-          </button>
-        </koia-paging-toggles>
-        @if (!isGridLayout()) {
-          <button id="but_allow_overlap" mat-icon-button [class.koia-toggle-active]="canvasOverlapAllowed"
-            [matTooltip]="'dashboard.allowOverlap' | translate" (click)="toggleOverlap()">
-            <mat-icon>layers</mat-icon>
-          </button>
-        }
+          [printDisabled]="!elementContexts?.length" (pagingChange)="onPagingChange($event)" />
+        <button id="but_snap_to_grid" mat-icon-button [class.koia-toggle-active]="isGridLayout()"
+          [matTooltip]="'dashboard.snapToGrid' | translate" (click)="toggleSnapToGrid()">
+          <mat-icon svgIcon="snap_grid"></mat-icon>
+        </button>
+        <button id="but_allow_overlap" mat-icon-button [class.koia-toggle-active]="canvasOverlapAllowed && !isGridLayout()"
+          [disabled]="isGridLayout()" [matTooltip]="'dashboard.allowOverlap' | translate" (click)="toggleOverlap()">
+          <mat-icon>layers</mat-icon>
+        </button>
+        <span class="koia-toolbar-separator"></span>
         <button mat-icon-button [matTooltip]="'dashboard.addChart' | translate" (click)="addChart()">
           <mat-icon svgIcon="add_chart"></mat-icon>
         </button>

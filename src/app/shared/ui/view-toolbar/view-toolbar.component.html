@@ -1,6 +1,6 @@
 <div class="view_toolbar">
   @if (moreMenu) {
-    <button class="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu" [attr.aria-label]="'common.more' | translate">
+    <button class="but_view_more" mat-icon-button [matMenuTriggerFor]="moreMenu" [disabled]="moreDisabled" [attr.aria-label]="'common.more' | translate">
       <mat-icon>more_vert</mat-icon>
     </button>
     <span class="koia-toolbar-separator"></span>

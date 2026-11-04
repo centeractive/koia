@@ -253,9 +253,11 @@ test('layout buttons switch between screen view and pages, snap to grid toggling
    const snapToGrid = dashboard.snapToGridButton;
    const expectActive = (...active: Locator[]) => expectOnlyActive([monitorButton, landscapeButton, portraitButton, snapToGrid], active);
    await expectActive(monitorButton, snapToGrid);
-   await expect(snapToGrid.locator('svg path')).toHaveCount(2);
+   await expect(snapToGrid.locator('svg path')).toHaveCount(1);
+   await expect(snapToGrid.locator('svg')).toHaveAttribute('stroke-dasharray', '0 3');
    await expect(dashboard.gridContent).toBeVisible();
    await expect(printButton).toBeDisabled();
+   await expect(dashboard.allowOverlapButton).toBeDisabled();
 
    await monitorButton.click();
    await expectActive(monitorButton, snapToGrid);
@@ -266,6 +268,8 @@ test('layout buttons switch between screen view and pages, snap to grid toggling
    await expect(dashboard.canvasContent).toBeVisible();
    await expect(dashboard.sheets).toHaveCount(0);
    await expect(printButton).toBeDisabled();
+   await expect(dashboard.allowOverlapButton).toBeEnabled();
+   await expect(dashboard.viewToolbar.moreButton).toBeDisabled();
 
    await landscapeButton.click();
    await expectActive(landscapeButton);

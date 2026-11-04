@@ -3,8 +3,8 @@ import { CanvasPaging } from 'app/shared/model/canvas-paging.enum';
 import { PageFormat } from './page-format';
 
 /**
- * radio buttons choosing between the screen view and pages of a view, followed by the projected buttons of the host and the
- * print button enabled for pages
+ * radio buttons choosing between the screen view and pages of a view, followed by the print button enabled for pages and a
+ * separator
  */
 @Component({
   selector: 'koia-paging-toggles',

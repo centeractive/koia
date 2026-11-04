@@ -10,6 +10,5 @@
   [matTooltip]="'view.portraitPages' | translate" (click)="pagingChange.emit(CanvasPaging.PORTRAIT)">
   <mat-icon>crop_portrait</mat-icon>
 </button>
-<ng-content />
 <koia-print-button [disabled]="printDisabled || !isPaged()" />
 <span class="koia-toolbar-separator"></span>

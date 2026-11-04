@@ -622,20 +622,25 @@ describe('DashboardComponent canvas selection', () => {
       expect(positionsOf([scaledFirst, scaledSecond])).toEqual([[0, 10], [75, 420]]);
     });
 
-    it('overlap button should be shown on canvas only and toggle overlapping', () => {
+    it('overlap button should be disabled and not active in grid, enabled and toggling overlapping on canvas', () => {
 
       // given
-      const inGrid = fixture.nativeElement.querySelector('#but_allow_overlap');
-      component.showCanvas(CanvasPaging.NONE);
+      component.canvasOverlapAllowed = true;
       fixture.detectChanges();
       const button: HTMLButtonElement = fixture.nativeElement.querySelector('#but_allow_overlap');
+      const disabledInGrid = button.disabled;
+      const activeInGrid = button.classList.contains('koia-toggle-active');
+      component.canvasOverlapAllowed = false;
+      component.showCanvas(CanvasPaging.NONE);
+      fixture.detectChanges();
 
       // when
       button.click();
       fixture.detectChanges();
 
       // then
-      expect(inGrid).toBeNull();
+      expect(disabledInGrid).toBe(true);
+      expect(activeInGrid).toBe(false);
       expect(component.canvasOverlapAllowed).toBe(true);
       expect(button.classList).toContain('koia-toggle-active');
     });

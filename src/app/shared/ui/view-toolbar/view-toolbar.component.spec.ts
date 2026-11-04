@@ -8,7 +8,7 @@ import { ViewToolbarComponent } from './view-toolbar.component';
 
 @Component({
   template: `
-    <koia-view-toolbar [moreMenu]="withMoreMenu ? moreMenu : undefined">
+    <koia-view-toolbar [moreMenu]="withMoreMenu ? moreMenu : undefined" [moreDisabled]="moreDisabled">
       <button id="but_custom" mat-icon-button>x</button>
     </koia-view-toolbar>
     <mat-menu #moreMenu="matMenu"><button id="menuItemCustom" mat-menu-item>Custom</button></mat-menu>`,
@@ -17,6 +17,7 @@ import { ViewToolbarComponent } from './view-toolbar.component';
 })
 class HostComponent {
   withMoreMenu = true;
+  moreDisabled = false;
 }
 
 describe('ViewToolbarComponent', () => {
@@ -49,6 +50,35 @@ describe('ViewToolbarComponent', () => {
 
     // then
     expect(document.querySelector('#menuItemCustom')).not.toBeNull();
+  }));
+
+  it('more button should be disabled when more disabled', () => {
+
+    // given
+    host.moreDisabled = true;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(element<HTMLButtonElement>('.but_view_more').disabled).toBe(true);
+    expect(element('.koia-toolbar-separator')).not.toBeNull();
+    expect(element('#but_custom')).not.toBeNull();
+  });
+
+  it('disabled more button should not open more menu', fakeAsync(() => {
+
+    // given
+    host.moreDisabled = true;
+    fixture.detectChanges();
+
+    // when
+    element('.but_view_more').click();
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(document.querySelector('#menuItemCustom')).toBeNull();
   }));
 
   it('more button should be hidden without more menu', () => {

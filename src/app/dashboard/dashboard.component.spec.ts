@@ -3501,29 +3501,42 @@ describe('DashboardComponent', () => {
       return LAYOUT_BUTTON_IDS.filter(id => layoutButton(id).classList.contains('koia-toggle-active'));
     }
 
-    it('layout buttons should follow separator, snap to grid after the page buttons, then print button and separator', () => {
+    it('toolbar should show page buttons, print button, separator, then snap to grid, allow overlap, separator and add buttons', () => {
 
       // when
       const toggles: HTMLElement = fixture.nativeElement.querySelector('koia-paging-toggles');
 
       // then
       expect(toggles.previousElementSibling.classList).toContain('koia-toolbar-separator');
-      expect(Array.from(toggles.children)).toEqual([...LAYOUT_BUTTON_IDS.map(layoutButton), toggles.querySelector('koia-print-button'),
-        toggles.querySelector('.koia-toolbar-separator')]);
+      expect(Array.from(toggles.children)).toEqual([...LAYOUT_BUTTON_IDS.slice(0, 3).map(layoutButton),
+        toggles.querySelector('koia-print-button'), toggles.querySelector('.koia-toolbar-separator')]);
       expect(toggles.querySelector('koia-print-button #but_print')).not.toBeNull();
-      expect(toggles.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
+      const snap = toggles.nextElementSibling;
+      const overlap = snap.nextElementSibling;
+      const separator = overlap.nextElementSibling;
+      expect([snap.id, overlap.id]).toEqual(['but_snap_to_grid', 'but_allow_overlap']);
+      expect(separator.classList).toContain('koia-toolbar-separator');
+      expect(separator.nextElementSibling.querySelector('mat-icon[svgicon="add_chart"]')).toBeTruthy();
     });
 
-    it('layout buttons should lead canvas toolbar without separator', () => {
+    it('more button should be disabled on canvas and enabled again in grid', () => {
 
       // given
       component.showCanvas(CanvasPaging.NONE);
+      fixture.detectChanges();
+      const more: HTMLButtonElement = fixture.nativeElement.querySelector('.but_view_more');
+      const disabledOnCanvas = more.disabled;
+      const separatorBefore = fixture.nativeElement.querySelector('koia-paging-toggles').previousElementSibling.classList
+        .contains('koia-toolbar-separator');
 
       // when
+      component.toggleSnapToGrid();
       fixture.detectChanges();
 
       // then
-      expect(fixture.nativeElement.querySelector('koia-paging-toggles').previousElementSibling).toBeNull();
+      expect(disabledOnCanvas).toBe(true);
+      expect(separatorBefore).toBe(true);
+      expect(more.disabled).toBe(false);
     });
 
     it('layout buttons should show screen view, landscape and portrait icons', () => {
@@ -4031,7 +4044,7 @@ describe('DashboardComponent', () => {
       expect(printButton().disabled).toBe(true);
     });
 
-    it('more button should be hidden when grid layout is not shown', () => {
+    it('more button should be disabled when grid layout is not shown', () => {
 
       // given
       component.setLayout(Route.FLEX);
@@ -4040,7 +4053,7 @@ describe('DashboardComponent', () => {
       fixture.detectChanges();
 
       // then
-      expect(fixture.debugElement.query(By.css('.but_view_more'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('.but_view_more')).nativeElement.disabled).toBe(true);
     });
 
     it('#saveAs should export image', () => {
