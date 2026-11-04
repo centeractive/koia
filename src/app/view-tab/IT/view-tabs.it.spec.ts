@@ -15,14 +15,14 @@ import { DashboardComponent } from 'app/dashboard/dashboard.component';
 // must be imported after DashboardComponent to resolve the ViewController <-> ChartComponent import cycle in the right order
 import { ChartComponent } from 'app/chart/chart.component';
 import { PivotTableComponent } from 'app/pivot-table/pivot-table.component';
-import { Aggregation, CanvasPaging, Query, Route, Scene } from 'app/shared/model';
+import { Aggregation, CanvasPaging, DataType, Operator, PropertyFilter, Query, Route, Scene } from 'app/shared/model';
 import { ChartContext } from 'app/shared/model/chart';
 import { ConfigRecord, ElementType, SceneTabs, TabDef, View, ViewType } from 'app/shared/model/view-config';
 import { DialogService, NotificationService, TimeGroupingService, ViewPersistenceService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { Summary } from 'app/shared/services/view-persistence';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
-import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { filtersOf, LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
 import { BACKENDS, BackendRun, IT_COLUMNS, IT_PROVIDERS, sceneData, setUpBackend, tearDownBackend } from 'app/shared/test/backend-fixture';
 import { waitFrames } from 'app/shared/test/animation-frames';
 import { savedViewOf } from 'app/shared/test/saved-view-factory';
@@ -74,15 +74,43 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     return service;
   }
 
-  async function persistedTabs(expectedCount: number): Promise<SceneTabs> {
+  async function persisted(condition: (sceneTabs: SceneTabs) => boolean, expectation: string): Promise<SceneTabs> {
     for (let attempt = 0; attempt < 100; attempt++) {
       const sceneTabs = await run.db.findSceneTabs(scene._id);
-      if (sceneTabs?.tabs.length === expectedCount) {
+      if (sceneTabs && condition(sceneTabs)) {
         return sceneTabs;
       }
       await new Promise(resolve => setTimeout(resolve, 50));
     }
-    throw new Error(expectedCount + ' persisted tabs expected');
+    throw new Error(expectation);
+  }
+
+  async function persistedTabs(expectedCount: number): Promise<SceneTabs> {
+    return persisted(sceneTabs => sceneTabs.tabs.length === expectedCount, expectedCount + ' persisted tabs expected');
+  }
+
+  function levelQuery(level: string): Query {
+    return new Query(new PropertyFilter('Level', Operator.EQUAL, level, DataType.TEXT));
+  }
+
+  function pivotRecordOf(name: string, query: Query): ConfigRecord {
+    return {
+      route: Route.PIVOT, name, modifiedTime: 0, query: queryToQueryDef(query),
+      data: {
+        timeColumns: [], negativeColor: '#FF3333', positiveColor: '#00FF00', showRowTotals: true, showColumnTotals: true,
+        valueGroupings: [], pivotOptions: { rendererName: 'Table', cols: ['Level'], rows: [] }
+      }
+    };
+  }
+
+  async function pivotHeadersOf(tab: TabDef): Promise<string[]> {
+    const fixture = TestBed.createComponent(PivotTableComponent);
+    fixture.componentInstance.tab = tab;
+    fixture.autoDetectChanges();
+    await waitFrames(() => !!fixture.nativeElement.querySelector('.pvtTable') && !fixture.componentInstance.computing, 600);
+    const headers = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.pvtColLabel')).map(e => e.textContent);
+    fixture.destroy();
+    return headers;
   }
 
   function summaryElement(gridColumnSpan: number, gridRowSpan: number): Summary {
@@ -279,23 +307,45 @@ describe.each(BACKENDS)('View tabs IT ($name)', backend => {
     const service = await readyTabsService();
     await service.addTab(ViewType.PIVOT);
     const tab = service.tabs[0];
-    tab.record = {
-      route: Route.PIVOT, name: tab.title, modifiedTime: 0, query: queryToQueryDef(query),
-      data: {
-        timeColumns: [], negativeColor: '#FF3333', positiveColor: '#00FF00', showRowTotals: true, showColumnTotals: true,
-        valueGroupings: [], pivotOptions: { rendererName: 'Table', cols: ['Level'], rows: [] }
-      }
-    };
-    const fixture = TestBed.createComponent(PivotTableComponent);
-    fixture.componentInstance.tab = tab;
+    tab.record = pivotRecordOf(tab.title, query);
 
     // when
-    fixture.autoDetectChanges();
-    await waitFrames(() => !!fixture.nativeElement.querySelector('.pvtTable') && !fixture.componentInstance.computing, 600);
+    const headers = await pivotHeadersOf(tab);
 
     // then
-    const headers = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.pvtColLabel')).map(e => e.textContent);
     expect(headers).toEqual(['INFO']);
-    fixture.destroy();
+  }, TIMEOUT);
+
+  it('should persist linked filters with the open tabs and restore them after the scene was activated again', async () => {
+
+    // given
+    const service = await readyTabsService();
+    await service.addTab(ViewType.PIVOT);
+    TestBed.inject(LinkedFiltersService).link(levelQuery('ERROR'), Route.RAWDATA);
+    await persisted(sceneTabs => !!sceneTabs.linkedFilters, 'persisted linked filters expected');
+
+    // when
+    scene = await run.db.findScene(scene._id);
+    const restoredService = await readyTabsService();
+
+    // then
+    expect(restoredService.linkedFilters).toEqual({ query: filtersOf(levelQuery('ERROR')) });
+    expect(TestBed.inject(LinkedFiltersService).isLinked()).toBe(true);
+  }, TIMEOUT);
+
+  it('should start a never opened pivot tab with the linked filters instead of its record query', async () => {
+
+    // given
+    const service = await readyTabsService();
+    await service.addTab(ViewType.PIVOT);
+    const tab = service.tabs[0];
+    tab.record = pivotRecordOf(tab.title, levelQuery('INFO'));
+    TestBed.inject(LinkedFiltersService).link(levelQuery('WARN'), Route.RAWDATA);
+
+    // when
+    const headers = await pivotHeadersOf(tab);
+
+    // then
+    expect(headers).toEqual(['WARN']);
   }, TIMEOUT);
 });

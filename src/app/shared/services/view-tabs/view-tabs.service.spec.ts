@@ -1,7 +1,7 @@
 import { Router } from '@angular/router';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Aggregation, Column, DataType, Route, Scene } from '../../model';
-import { ConfigRecord, ElementType, SceneTabs, TabContent, TabDef, View, ViewType } from '../../model/view-config';
+import { ConfigRecord, ElementType, LinkedFilters, SceneTabs, SceneTabsContent, TabContent, TabDef, View, ViewType } from '../../model/view-config';
 import { SceneFactory } from '../../test';
 import { DBService } from '../backend';
 import { TabContentProvider } from './tab-content-provider.type';
@@ -404,8 +404,8 @@ describe('ViewTabsService', () => {
       service.requestPersist();
 
       // then
-      const snapshot: () => TabDef[] = vi.mocked(persister.request).mock.lastCall[0];
-      expect(snapshot()).toEqual([{ ...tab, record }]);
+      const snapshot: () => SceneTabsContent = vi.mocked(persister.request).mock.lastCall[0];
+      expect(snapshot().tabs).toEqual([{ ...tab, record }]);
       expect(tab.record).toBe(record);
    });
 
@@ -509,6 +509,136 @@ describe('ViewTabsService', () => {
       expect(persister.persistNow).not.toHaveBeenCalled();
    });
 
+   it('#linkedFilters given persisted linked filters when loaded then provides them', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue({ ...sceneTabs(), linkedFilters: linkedFilters() });
+
+      // when
+      await loaded();
+
+      // then
+      expect(service.linkedFilters).toEqual(linkedFilters());
+   });
+
+   it('#linkedFilters given legacy document when loaded then is undefined', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(createTabDef(ViewType.PIVOT, 1)));
+
+      // when
+      await loaded();
+
+      // then
+      expect(service.linkedFilters).toBeUndefined();
+   });
+
+   it('#loaded$ given tabs loading when loaded then emits', async () => {
+
+      // given
+      const emitted = vi.fn(() => expect(service.ready).toBe(true));
+      service.loaded$.subscribe(emitted);
+
+      // when
+      await loaded();
+
+      // then
+      expect(emitted).toHaveBeenCalledTimes(1);
+   });
+
+   it('#linkedFilters given scene switched then is undefined', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValueOnce({ ...sceneTabs(), linkedFilters: linkedFilters() });
+      await loaded();
+
+      // when
+      getActiveSceneSpy.mockReturnValue(SceneFactory.createScene('s2', []));
+
+      // then
+      expect(service.linkedFilters).toBeUndefined();
+   });
+
+   it('#setLinkedFilters given ready then persists them now with the tabs', async () => {
+
+      // given
+      const tab = createTabDef(ViewType.PIVOT, 1);
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(tab));
+      await loaded();
+
+      // when
+      service.setLinkedFilters(linkedFilters());
+
+      // then
+      expect(service.linkedFilters).toEqual(linkedFilters());
+      expect(persistedContent()).toEqual({ tabs: [tab], linkedFilters: linkedFilters() });
+   });
+
+   it('#setLinkedFilters given not ready then ignores them', () => {
+
+      // when
+      service.setLinkedFilters(linkedFilters());
+
+      // then
+      expect(service.linkedFilters).toBeUndefined();
+      expect(persister.persistNow).not.toHaveBeenCalled();
+   });
+
+   it('#replaceTabs given linked filters then persists them', async () => {
+
+      // given
+      await loaded();
+      const tab = createTabDef(ViewType.DASHBOARD, 1);
+
+      // when
+      service.replaceTabs([tab], linkedFilters());
+
+      // then
+      expect(persistedContent()).toEqual({ tabs: [tab], linkedFilters: linkedFilters() });
+   });
+
+   it('#replaceTabs given none then removes them', async () => {
+
+      // given
+      findSceneTabsSpy.mockResolvedValue({ ...sceneTabs(), linkedFilters: linkedFilters() });
+      await loaded();
+
+      // when
+      service.replaceTabs([]);
+
+      // then
+      expect(service.linkedFilters).toBeUndefined();
+      expect(persistedContent()).toEqual({ tabs: [], linkedFilters: undefined });
+   });
+
+   it('#closeTab given pending key of tab when closed then removes it', async () => {
+
+      // given
+      const tab1 = createTabDef(ViewType.PIVOT, 1);
+      findSceneTabsSpy.mockResolvedValue({ ...sceneTabs(tab1), linkedFilters: { ...linkedFilters(), pendingKeys: [Route.RAWDATA, 'tab1'] } });
+      await loaded();
+
+      // when
+      await service.closeTab(tab1, '/' + Route.RAWDATA);
+
+      // then
+      expect(persistedContent().linkedFilters).toEqual({ ...linkedFilters(), pendingKeys: [Route.RAWDATA] });
+   });
+
+   it('#closeTab given last pending key when closed then forgets the filters', async () => {
+
+      // given
+      const tab1 = createTabDef(ViewType.PIVOT, 1);
+      findSceneTabsSpy.mockResolvedValue({ ...sceneTabs(tab1), linkedFilters: { ...linkedFilters(), pendingKeys: ['tab1'] } });
+      await loaded();
+
+      // when
+      await service.closeTab(tab1, '/' + Route.RAWDATA);
+
+      // then
+      expect(service.linkedFilters).toBeUndefined();
+   });
+
    it('#evict should evict route of tab', () => {
 
       // when
@@ -528,8 +658,16 @@ describe('ViewTabsService', () => {
    }
 
    function persistedSnapshot(): TabDef[] {
-      const snapshot: () => TabDef[] = vi.mocked(persister.persistNow).mock.lastCall[0];
+      return persistedContent().tabs;
+   }
+
+   function persistedContent(): SceneTabsContent {
+      const snapshot: () => SceneTabsContent = vi.mocked(persister.persistNow).mock.lastCall[0];
       return snapshot();
+   }
+
+   function linkedFilters(): LinkedFilters {
+      return { query: { fullTextFilter: 'error', propertyFilters: [], valueRangeFilters: [], sort: undefined, pageIndex: undefined, rowsPerPage: undefined } };
    }
 
    function sceneTabs(...tabs: TabDef[]): SceneTabs {

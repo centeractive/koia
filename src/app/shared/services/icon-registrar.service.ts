@@ -9,6 +9,7 @@ export class IconRegistrarService {
 
   readonly svgIcons = [
     'add_chart',
+    'add_filter',
     'add_summary',
     'area_chart',
     'column_totals',

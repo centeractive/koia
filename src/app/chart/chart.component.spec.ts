@@ -1,4 +1,4 @@
-import { NgZone, SimpleChange } from '@angular/core';
+import { EnvironmentProviders, NgZone, Provider, provideZoneChangeDetection, SimpleChange } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { MatDialogModule } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
@@ -17,6 +17,7 @@ import { isClickClaimed } from 'app/shared/ui/claimed-click';
 import { CommonUtils } from 'app/shared/utils';
 import { Chart } from 'chart.js';
 import { ChartComponent } from './chart.component';
+import { ChartJs } from './chartjs/chartjs';
 import type { Mock } from 'vitest';
 
 describe('ChartComponent', () => {
@@ -40,17 +41,7 @@ describe('ChartComponent', () => {
   });
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
-      declarations: [ChartComponent],
-      imports: [MatProgressBarModule, MatDialogModule, ResizableDirective, ResizeHandleDirective],
-      providers: [
-        provideRouter([]),
-        { provide: DBService, useValue: dbService },
-        { provide: ChartDataService, useClass: ChartDataService },
-        { provide: ChartMarginService, useClass: ChartMarginService },
-        { provide: RawDataRevealService, useClass: RawDataRevealService }
-      ]
-    })
+    configure(dbService);
     fixture = TestBed.createComponent(ChartComponent);
     fixture.nativeElement.parentElement.style.width = '600px';
     fixture.nativeElement.parentElement.style.height = '400px';
@@ -718,11 +709,69 @@ describe('ChartComponent', () => {
     fixture.detectChanges();
   }
 
-  function createColumn(name: string, dataType: DataType): Column {
-    return {
-      name: name,
-      dataType: dataType,
-      width: 10
-    };
-  }
 });
+
+describe('ChartComponent in zone', () => {
+
+  const dbService = new DBService(null, null);
+  let context: ChartContext;
+  let fixture: ComponentFixture<ChartComponent>;
+
+  beforeEach(async () => {
+    configure(dbService, [provideZoneChangeDetection()]);
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', []));
+    fixture = TestBed.createComponent(ChartComponent);
+    fixture.nativeElement.parentElement.style.width = '600px';
+    fixture.nativeElement.parentElement.style.height = '400px';
+    context = new ChartContext([], ChartType.PIE.type, defaultMargin());
+    context.entries = [{ t1: 'a', n1: 1 }, { t1: 'b', n1: 2 }];
+    fixture.componentInstance.context = context;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  it('should create chart outside Angular zone so its DOM observers and animations do not trigger change detection', fakeAsync(() => {
+
+    // given
+    const zones: boolean[] = [];
+    const create = ChartJs.prototype.create;
+    vi.spyOn(ChartJs.prototype, 'create').mockImplementation(function (this: ChartJs, canvas: HTMLCanvasElement, ctx: ChartContext) {
+      zones.push(NgZone.isInAngularZone());
+      return create.call(this, canvas, ctx);
+    });
+    context.dataColumns = [createColumn('n1', DataType.NUMBER)];
+
+    // when
+    TestBed.inject(NgZone).run(() => context.groupByColumns = [createColumn('t1', DataType.TEXT)]);
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(context.chart).toBeTruthy();
+    expect(zones.length).toBeGreaterThan(0);
+    expect(zones).not.toContain(true);
+  }));
+});
+
+function configure(dbService: DBService, extraProviders: (Provider | EnvironmentProviders)[] = []): void {
+  TestBed.configureTestingModule({
+    declarations: [ChartComponent],
+    imports: [MatProgressBarModule, MatDialogModule, ResizableDirective, ResizeHandleDirective],
+    providers: [
+      ...extraProviders,
+      provideRouter([]),
+      { provide: DBService, useValue: dbService },
+      { provide: ChartDataService, useClass: ChartDataService },
+      { provide: ChartMarginService, useClass: ChartMarginService },
+      { provide: RawDataRevealService, useClass: RawDataRevealService }
+    ]
+  });
+}
+
+function createColumn(name: string, dataType: DataType): Column {
+  return {
+    name: name,
+    dataType: dataType,
+    width: 10
+  };
+}

@@ -45,14 +45,6 @@ button {
   width: 460px;
 }
 
-.span_buttons .but_add_col_filter {
-  white-space: nowrap;
-  color: var(--koia-on-color);
-  background-color: var(--koia-accent);
-  border-color: var(--koia-accent);
-  border-radius: 8px;
-}
-
 .div_filters {
   border-top: var(--koia-header-line);
   padding-top: 4px;

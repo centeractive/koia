@@ -18,7 +18,8 @@ import { SortLimitationWorkaround } from 'app/shared/services/backend/couchdb';
 import { RawDataStateService } from 'app/shared/services/saved-views';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
-import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
+import { createDefaultRawDataState } from 'app/shared/services/view-persistence/raw-data-state-factory';
 import { SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { DomMetrics } from 'app/shared/ui/table-fit/dom-metrics';
@@ -127,6 +128,10 @@ describe('RawDataComponent', () => {
 
   function requestedQuery(call: number): Query {
     return requestEntriesPageSpy.mock.calls.at(call)[0];
+  }
+
+  function levelQuery(level: string): Query {
+    return new Query(new PropertyFilter('Level', Operator.EQUAL, level, DataType.TEXT));
   }
 
   function requestedBlocks(): number[] {
@@ -862,6 +867,72 @@ describe('RawDataComponent', () => {
       expect(requestedQuery(-1).getPageIndex()).toBe(0);
     });
 
+    it('#init given linked filters then starts with them and shows them in the toolbar', async () => {
+
+      // given
+      const takeFilters = vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(levelQuery('WARN'));
+
+      // when
+      await render();
+
+      // then
+      expect(takeFilters).toHaveBeenCalledWith(Route.RAWDATA);
+      expect(component.query.getPropertyFilters()).toEqual(levelQuery('WARN').getPropertyFilters());
+      expect(component.restoredQuery).toBe(component.query);
+      expect(requestEntriesPageSpy).toHaveBeenCalledTimes(1);
+      expect(requestedQuery(0).getPropertyFilters()).toEqual(levelQuery('WARN').getPropertyFilters());
+    });
+
+    it('#init given dialog style and linked filters then keeps its query and takes no filters', async () => {
+
+      // given
+      const takeFilters = vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(levelQuery('WARN'));
+      component.dialogStyle = true;
+      component.query = levelQuery('ERROR');
+
+      // when
+      await render();
+
+      // then
+      expect(takeFilters).not.toHaveBeenCalled();
+      expect(component.query.getPropertyFilters()).toEqual(levelQuery('ERROR').getPropertyFilters());
+    });
+
+    it('#init given pending state and linked filters then takes the linked filters with the sort of the state', async () => {
+
+      // given
+      const query = levelQuery('ERROR');
+      query.setSort({ active: 'Amount', direction: 'desc' });
+      TestBed.inject(RawDataStateService).apply({ query: queryToQueryDef(query), data: createDefaultRawDataState().data });
+      vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(levelQuery('WARN'));
+
+      // when
+      await render();
+
+      // then
+      expect(component.query.getPropertyFilters()).toEqual(levelQuery('WARN').getPropertyFilters());
+      expect(component.query.getSort()).toEqual({ active: 'Amount', direction: 'desc' });
+    });
+
+    it('#applyRawDataState given linked filters then reloads once with the linked filters and the saved sort', async () => {
+
+      // given
+      await render();
+      const callsBefore = requestEntriesPageSpy.mock.calls.length;
+      vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(levelQuery('WARN'));
+      const query = levelQuery('ERROR');
+      query.setSort({ active: 'Amount', direction: 'asc' });
+
+      // when
+      component.applyRawDataState({ query: queryToQueryDef(query), data: createDefaultRawDataState().data });
+      await settle();
+
+      // then
+      expect(requestEntriesPageSpy.mock.calls.length).toBe(callsBefore + 1);
+      expect(requestedQuery(-1).getPropertyFilters()).toEqual(levelQuery('WARN').getPropertyFilters());
+      expect(requestedQuery(-1).getSort()).toEqual({ active: 'Amount', direction: 'asc' });
+    });
+
     it('#rawDataState should provide paging', async () => {
 
       // given
@@ -1412,6 +1483,38 @@ describe('RawDataComponent', () => {
 
       // then
       expect(component.query.getPropertyFilters()[1]).toEqual(new PropertyFilter('Host', Operator.EMPTY, '', DataType.TEXT));
+    });
+
+    it('#onFindingClick given main raw data then updates linked filters with key rawdata', async () => {
+
+      // given
+      const update = vi.spyOn(TestBed.inject(LinkedFiltersService), 'update');
+      component.query = errorQuery();
+      await render();
+      await explain();
+
+      // when
+      component.onFindingClick(ANALYSIS.findings[0]);
+
+      // then
+      expect(update).toHaveBeenCalledWith(component.query, Route.RAWDATA);
+    });
+
+    it('#onFindingClick given dialog style then does not update linked filters', async () => {
+
+      // given
+      const update = vi.spyOn(TestBed.inject(LinkedFiltersService), 'update');
+      component.dialogStyle = true;
+      component.query = errorQuery();
+      component.explainBase = new Query();
+      await render();
+      await explain();
+
+      // when
+      component.onFindingClick(ANALYSIS.findings[0]);
+
+      // then
+      expect(update).not.toHaveBeenCalled();
     });
 
     it('#sortBy should keep panel open', async () => {

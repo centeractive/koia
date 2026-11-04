@@ -20,7 +20,7 @@ import { DBService } from 'app/shared/services/backend';
 import { CouchDBConstants } from 'app/shared/services/backend/couchdb/couchdb-constants';
 import { findStyleRule, registerSvgIconLiterals, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
-import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
 import { LanguageService } from 'app/shared/services/language';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model';
@@ -652,6 +652,61 @@ describe('PivotTableComponent', () => {
       expect(colorBeforeData).not.toBe('yellow');
       expect(tabComponent.context.negativeColor).toBe('yellow');
       expect(tabComponent.getPivotOptions()['cols']).toEqual(['Level']);
+    }));
+
+    it('#init given linked filters then fetches with them instead of the record query and shows them', fakeAsync(() => {
+
+      // given
+      const filters = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
+      const takeFilters = vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(filters);
+      const query = new Query();
+      query.setFullTextFilter('INFO');
+      createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: queryToQueryDef(query), data: pivotContext() });
+
+      // when
+      tabFixture.detectChanges();
+      flush();
+
+      // then
+      expect(takeFilters).toHaveBeenCalledWith('tab1');
+      const fetchQuery: Query = vi.mocked(dbService.findEntries).mock.lastCall[0];
+      expect(fetchQuery).toBe(filters);
+      expect(tabComponent.restoredQuery).toBe(filters);
+    }));
+
+    it('#init given linked filters and record then tab content keeps them while the record is pending', fakeAsync(() => {
+
+      // given
+      vi.mocked(dbService.findEntries).mockReturnValue(new Subject());
+      const filters = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
+      vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(filters);
+      const query = new Query();
+      query.setFullTextFilter('INFO');
+      const record: ConfigRecord = { route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: queryToQueryDef(query), data: pivotContext() };
+      createTabComponent(record);
+      tabFixture.detectChanges();
+      flush();
+
+      // when
+      const content = tabComponent.tabContent();
+
+      // then
+      expect(content).toEqual({ record: { ...record, query: queryToQueryDef(filters) } });
+      expect(record.query.fullTextFilter).toBe('INFO');
+    }));
+
+    it('#init given no tab then takes no filters', fakeAsync(() => {
+
+      // given
+      const takeFilters = vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters');
+      const noTabFixture = TestBed.createComponent(PivotTableComponent);
+
+      // when
+      noTabFixture.detectChanges();
+      flush();
+
+      // then
+      expect(takeFilters).not.toHaveBeenCalled();
     }));
 
     it('#tabContent should provide record of tab while restoring is pending', fakeAsync(() => {

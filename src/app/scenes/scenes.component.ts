@@ -61,6 +61,12 @@ export class ScenesComponent extends AbstractComponent implements OnInit, OnDest
     this.filteredSceneInfos = this.filterSceneInfos();
   }
 
+  clearFilter(input: HTMLInputElement): void {
+    this.filter = '';
+    this.onFilterChange();
+    input.focus();
+  }
+
   activate(sceneInfo: SceneInfo) {
     this.dbService.activateScene(sceneInfo._id)
       .then(s => {
@@ -96,7 +102,7 @@ export class ScenesComponent extends AbstractComponent implements OnInit, OnDest
   }
 
   private deleteScenes(sceneInfos: SceneInfo[]): void {
-    this.reloadAfter(() => Promise.all(sceneInfos.map(si => this.dbService.deleteScene(si))),
+    this.reloadAfter(() => Promise.all(sceneInfos.map(si => this.dbService.deleteScene(si))).then(() => { this.filter = ''; }),
       LanguageService.instant(sceneInfos.length === 1 ? 'scenes.scenesDeletedOne' : 'scenes.scenesDeleted', { count: sceneInfos.length }));
   }
 

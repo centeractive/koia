@@ -14,7 +14,7 @@ class ViewControllerTestable extends ViewController {
    readonly addedContexts: ElementContext[] = [];
 
    constructor() {
-      super(null, null, null, null, null, null, null, null, null, null);
+      super(null, null, null, null, null, null, null, null, null, null, null);
    }
 
    generateDashboard(): void { }

@@ -22,8 +22,8 @@ import { DialogService, NotificationService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { TabDef, ViewType } from 'app/shared/model/view-config';
 import { SavedViewsService } from 'app/shared/services/saved-views';
-import { ViewTabsService } from 'app/shared/services/view-tabs';
-import { MatIconModuleMock, SceneFactory } from 'app/shared/test';
+import { LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
+import { LinkedFiltersServiceMock, MatIconModuleMock, SceneFactory } from 'app/shared/test';
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
 import { of, Subject } from 'rxjs';
@@ -61,6 +61,7 @@ function configureTestingModule(dbService: DBService, dialogService: DialogServi
       { provide: DBService, useValue: dbService },
       { provide: DialogService, useValue: dialogService },
       { provide: NotificationService, useValue: new NotificationServiceMock() },
+      { provide: LinkedFiltersService, useClass: LinkedFiltersServiceMock },
       ...(extra.providers ?? [])
     ]
   })
@@ -572,17 +573,17 @@ describe('MainToolbarComponent', () => {
     expect(onErrorSpy.mock.calls[0][1]).toBe('disk full');
   });
 
-  it('add filter button should be rounded accent button without non-breaking spaces', () => {
+  it('add filter button should be accent icon button showing add filter icon', () => {
 
     // when
     const button: HTMLElement = fixture.nativeElement.querySelector('.but_add_col_filter');
 
     // then
-    const style = getComputedStyle(button);
-    expect(style.backgroundColor).toBe('rgb(56, 142, 60)');
-    expect(style.color).toBe('rgb(255, 255, 255)');
-    expect(style.borderTopLeftRadius).toBe('8px');
-    expect(button.querySelector('.mdc-button__label').textContent.trim()).toBe('Add Filter');
+    expect(button.querySelector('mat-icon').getAttribute('svgIcon')).toBe('add_filter');
+    expect(button.classList).toContain('mat-mdc-icon-button');
+    expect(button.classList).toContain('mat-accent');
+    expect(button.getAttribute('aria-label')).toBe('Add Filter');
+    expect(button.textContent.trim()).toBe('');
   });
 
   it('full text filter should be compact outlined field', () => {
@@ -1595,6 +1596,334 @@ describe('MainToolbarComponent', () => {
     fixture.detectChanges();
     flush();
   }
+
+  describe('linked filters', () => {
+
+    let linked: LinkedFiltersServiceMock;
+
+    beforeEach(() => {
+      linked = TestBed.inject(LinkedFiltersService) as unknown as LinkedFiltersServiceMock;
+    });
+
+    function initAs(route: Route, tabId?: string, dialogStyle = false): void {
+      component.route = route;
+      component.tabId = tabId;
+      component.dialogStyle = dialogStyle;
+      component.ngOnInit();
+      fixture.detectChanges();
+    }
+
+    function initOnUrl(route: Route, tabId: string, navigatedUrl: string, currentUrl: string): void {
+      component.route = route;
+      component.tabId = tabId;
+      component.router = { events: navigatedUrl ? of(new NavigationEnd(0, navigatedUrl, navigatedUrl)) : of(), url: currentUrl } as unknown as Router;
+      component.ngOnInit();
+    }
+
+    function toggle(): HTMLButtonElement {
+      return fixture.nativeElement.querySelector('#butLinkFilters');
+    }
+
+    function levelQuery(level: string): Query {
+      return new Query(new PropertyFilter('Level', Operator.EQUAL, level, DataType.TEXT));
+    }
+
+    it('given dialog style then shows no link filters toggle', () => {
+
+      // when
+      initAs(Route.RAWDATA, undefined, true);
+
+      // then
+      expect(component.linkedFiltersKey).toBeUndefined();
+      expect(toggle()).toBeNull();
+    });
+
+    it('given filters not linked then toggle shows link_off, is not active, is not pressed and offers to link', () => {
+
+      // when
+      initAs(Route.RAWDATA);
+
+      // then
+      expect(toggle().querySelector('mat-icon').textContent.trim()).toBe('link_off');
+      expect(toggle().classList).not.toContain('koia-toggle-active');
+      expect(toggle().getAttribute('aria-pressed')).toBe('false');
+      expect(toggle().getAttribute('aria-label')).toBe('Link filters of all tabs');
+      expect(toggle().disabled).toBe(false);
+    });
+
+    it('given filters linked then toggle shows link, is active, is pressed and offers to unlink', () => {
+
+      // given
+      linked.isLinked.mockReturnValue(true);
+
+      // when
+      initAs(Route.RAWDATA);
+
+      // then
+      expect(toggle().querySelector('mat-icon').textContent.trim()).toBe('link');
+      expect(toggle().classList).toContain('koia-toggle-active');
+      expect(toggle().getAttribute('aria-pressed')).toBe('true');
+      expect(toggle().getAttribute('aria-label')).toBe('Unlink filters, every tab keeps its filters');
+    });
+
+    it('given tabs not ready then toggle is disabled', () => {
+
+      // given
+      linked.ready = false;
+
+      // when
+      initAs(Route.RAWDATA);
+
+      // then
+      expect(toggle().disabled).toBe(true);
+    });
+
+    it('#toggleLinkedFilters given not linked when clicked then links the applied filters with the tab key and emits nothing', () => {
+
+      // given
+      initAs(Route.GRID, 'tab1');
+      const query = levelQuery('ERROR');
+      component.query = query;
+      vi.spyOn(component.onFilterChange, 'emit');
+
+      // when
+      toggle().click();
+
+      // then
+      expect(linked.link).toHaveBeenCalledWith(query, 'tab1');
+      expect(component.onFilterChange.emit).not.toHaveBeenCalled();
+    });
+
+    it('#toggleLinkedFilters given not linked and no query when clicked then links empty filters', () => {
+
+      // given
+      initAs(Route.GRID, 'tab1');
+      component.query = undefined;
+
+      // when
+      component.toggleLinkedFilters();
+
+      // then
+      expect(linked.link).toHaveBeenCalledWith(new Query(), 'tab1');
+    });
+
+    it('#toggleLinkedFilters given linked when clicked then unlinks', () => {
+
+      // given
+      linked.isLinked.mockReturnValue(true);
+      initAs(Route.GRID, 'tab1');
+
+      // when
+      toggle().click();
+
+      // then
+      expect(linked.unlink).toHaveBeenCalled();
+      expect(linked.link).not.toHaveBeenCalled();
+    });
+
+    it('#refreshEntries given valid filters then emits and then updates linked filters with the key', () => {
+
+      // given
+      initAs(Route.RAWDATA);
+      component.propertyFilters = [new PropertyFilter('Level', Operator.EQUAL, 'ERROR', DataType.TEXT)];
+      vi.spyOn(component.onFilterChange, 'emit');
+
+      // when
+      component.refreshEntries();
+
+      // then
+      const query: Query = vi.mocked(component.onFilterChange.emit).mock.lastCall[0];
+      expect(query.getPropertyFilters()).toEqual(component.propertyFilters);
+      expect(component.query).toBe(query);
+      expect(linked.update).toHaveBeenCalledWith(query, Route.RAWDATA);
+      expect(vi.mocked(component.onFilterChange.emit).mock.invocationCallOrder[0]).toBeLessThan(linked.update.mock.invocationCallOrder[0]);
+    });
+
+    it('#refreshEntries given invalid filter then neither emits nor updates', () => {
+
+      // given
+      initAs(Route.RAWDATA);
+      component.propertyFilters = [new PropertyFilter('Amount', Operator.EQUAL, 'x', DataType.NUMBER)];
+      vi.spyOn(component.onFilterChange, 'emit');
+
+      // when
+      component.refreshEntries();
+
+      // then
+      expect(component.onFilterChange.emit).not.toHaveBeenCalled();
+      expect(linked.update).not.toHaveBeenCalled();
+    });
+
+    it('#refreshEntries given dialog style then does not update linked filters', () => {
+
+      // given
+      initAs(Route.RAWDATA, undefined, true);
+      vi.spyOn(component.onFilterChange, 'emit');
+
+      // when
+      component.refreshEntries();
+
+      // then
+      expect(component.onFilterChange.emit).toHaveBeenCalled();
+      expect(linked.update).not.toHaveBeenCalled();
+    });
+
+    it('given raw data toolbar then the key is rawdata', () => {
+
+      // when
+      initAs(Route.RAWDATA);
+
+      // then
+      expect(component.linkedFiltersKey).toBe(Route.RAWDATA);
+    });
+
+    it('given tab toolbar then the key is the tab id', () => {
+
+      // when
+      initAs(Route.GRID, 'tab3');
+
+      // then
+      expect(component.linkedFiltersKey).toBe('tab3');
+    });
+
+    it('given toolbar of neither raw data nor tab then there is no key', () => {
+
+      // when
+      initAs(Route.SCENE);
+
+      // then
+      expect(component.linkedFiltersKey).toBeUndefined();
+    });
+
+    it('given different linked filters when navigated to own url then shows and emits them', fakeAsync(() => {
+
+      // given
+      const filters = levelQuery('ERROR');
+      linked.takeFilters.mockReturnValue(filters);
+      vi.spyOn(component.onFilterChange, 'emit');
+
+      // when
+      initOnUrl(Route.GRID, 'tab1', '/view/tab1', '/view/tab1');
+      flush();
+
+      // then
+      expect(linked.takeFilters).toHaveBeenCalledWith('tab1');
+      expect(component.query).toBe(filters);
+      expect(component.propertyFilters).toEqual(filters.getPropertyFilters());
+      expect(component.onFilterChange.emit).toHaveBeenCalledWith(filters);
+    }));
+
+    it('given equal linked filters when navigated to own url then emits nothing', fakeAsync(() => {
+
+      // given
+      component.query = levelQuery('ERROR');
+      linked.takeFilters.mockReturnValue(levelQuery('ERROR'));
+      vi.spyOn(component.onFilterChange, 'emit');
+
+      // when
+      initOnUrl(Route.GRID, 'tab1', '/view/tab1', '/view/tab1');
+      flush();
+
+      // then
+      expect(linked.takeFilters).toHaveBeenCalledWith('tab1');
+      expect(component.onFilterChange.emit).not.toHaveBeenCalled();
+    }));
+
+    it('given dialog style when navigated to own url then takes no filters', fakeAsync(() => {
+
+      // given
+      component.dialogStyle = true;
+
+      // when
+      initOnUrl(Route.RAWDATA, undefined, '/' + Route.RAWDATA, '/' + Route.RAWDATA);
+      flush();
+
+      // then
+      expect(linked.takeFilters).not.toHaveBeenCalled();
+    }));
+
+    it('given navigation to another url then takes no filters', fakeAsync(() => {
+
+      // when
+      initOnUrl(Route.GRID, 'tab1', '/view/tab2', '/view/tab2');
+      flush();
+
+      // then
+      expect(linked.takeFilters).not.toHaveBeenCalled();
+    }));
+
+    it('given own url current when loaded$ emits then syncs', fakeAsync(() => {
+
+      // given
+      const filters = levelQuery('WARN');
+      linked.takeFilters.mockReturnValue(filters);
+      vi.spyOn(component.onFilterChange, 'emit');
+      initOnUrl(Route.RAWDATA, undefined, undefined, '/' + Route.RAWDATA);
+
+      // when
+      linked.loaded$.next();
+      flush();
+
+      // then
+      expect(linked.takeFilters).toHaveBeenCalledWith(Route.RAWDATA);
+      expect(component.onFilterChange.emit).toHaveBeenCalledWith(filters);
+    }));
+
+    it('given other url current when loaded$ emits then does nothing', fakeAsync(() => {
+
+      // given
+      initOnUrl(Route.RAWDATA, undefined, undefined, '/view/tab1');
+
+      // when
+      linked.loaded$.next();
+      flush();
+
+      // then
+      expect(linked.takeFilters).not.toHaveBeenCalled();
+    }));
+
+    it('#ngOnDestroy then unsubscribes from loaded$', () => {
+
+      // given
+      initOnUrl(Route.RAWDATA, undefined, undefined, '/' + Route.RAWDATA);
+
+      // when
+      component.ngOnDestroy();
+
+      // then
+      expect(linked.loaded$.observed).toBe(false);
+    });
+
+    it('#retainInitialFilters given range filters loading when retained again then shows the range filters of the last retain only', fakeAsync(() => {
+
+      // given
+      const query = new Query();
+      query.addValueRangeFilter('Amount', 10, 50);
+      component.query = query;
+      component.retainInitialFilters();
+
+      // when
+      component.retainInitialFilters();
+      flush();
+
+      // then
+      expect(component.rangeFilters.length).toBe(1);
+    }));
+
+    it('#addRangeFilter given filters retained while its range loads then drops the stale range filter', fakeAsync(() => {
+
+      // given
+      component.addRangeFilter(column('Amount'), null);
+
+      // when
+      component.query = new Query();
+      component.retainInitialFilters();
+      flush();
+
+      // then
+      expect(component.rangeFilters).toEqual([]);
+    }));
+  });
 
   function column(name: string): Column {
     return scene.columns.find(c => c.name === name);

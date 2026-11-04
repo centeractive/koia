@@ -1,13 +1,16 @@
 import { writeFileSync } from 'fs';
 import { basename } from 'path';
 import { gzipSync } from 'zlib';
+import { DataType } from 'app/shared/model/data-type.enum';
 import { Route } from 'app/shared/model/route.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { toEntries } from 'app/shared/samples/sample-data';
 import { SCENE_FILE_FORMAT, SCENE_FILE_VERSION } from 'app/shared/scene-file/scene-file';
 import { downloadOf, sceneFileName } from './support/downloads';
 import { expect, test } from './support/fixtures';
-import { fruitSalesOf, pivotTabOf } from './support/fruit-sales-sample';
+import { firstColumnOf, fruitSalesOf, pivotTabOf } from './support/fruit-sales-sample';
+import { RawDataPage } from './support/pages/raw-data-page';
+import { activateSceneInNewPage } from './support/scene-activation';
 import { ORDERS_CSV } from './support/import-files';
 import { Texts } from './support/texts';
 
@@ -129,6 +132,31 @@ test('shared scene opened from main toolbar of view tab replaces cached view of 
 
    await expect(pivot.fieldChips.filter({ hasText: 'Level' })).toHaveCount(0);
    await expect(pivot.fieldChips.filter({ hasText: 'Revenue' })).toHaveCount(1);
+});
+
+test('shared scene opens with its filters linked', async ({ page, context, front, rawData }, testInfo) => {
+   await front.openSample();
+   const column = firstColumnOf(sample, DataType.TEXT);
+   await rawData.mainToolbar.addValueFilter(column, sample.entries[0][column]);
+   await rawData.mainToolbar.toggleLinkedFilters();
+   await expect(async () => {
+      const otherPage = await context.newPage();
+      try {
+         await activateSceneInNewPage(otherPage, sample.scene.name);
+         await expect(new RawDataPage(otherPage).mainToolbar.linkFiltersToggle).toHaveAttribute('aria-pressed', 'true', { timeout: 5_000 });
+      } finally {
+         await otherPage.close();
+      }
+   }).toPass({ timeout: 60_000 });
+   const rowCount = await rawData.table.rowCount.innerText();
+   const download = await downloadOf(page, () => rawData.mainToolbar.shareScene());
+   const file = testInfo.outputPath(download.suggestedFilename());
+   await download.saveAs(file);
+
+   await rawData.mainToolbar.openSceneFile(file);
+
+   await expect(rawData.mainToolbar.linkFiltersToggle).toHaveAttribute('aria-pressed', 'true');
+   await expect(rawData.table.rowCount).toHaveText(rowCount);
 });
 
 test('open shared scene button does not spin while file selection is open', async ({ front }, testInfo) => {

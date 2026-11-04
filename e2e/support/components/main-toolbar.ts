@@ -1,4 +1,4 @@
-import { Locator } from '@playwright/test';
+import { expect, Locator } from '@playwright/test';
 import { Route } from 'app/shared/model/route.enum';
 import { InputDialog } from './input-dialog';
 import { NavButtons } from './nav-buttons';
@@ -10,6 +10,8 @@ export class MainToolbar {
    readonly rangeFilterPanel: Locator;
    readonly valueFilterPanel: Locator;
    readonly filtersToggle: Locator;
+   readonly linkFiltersToggle: Locator;
+   readonly valueFilterInputs: Locator;
    readonly refreshButton: Locator;
    readonly toolbarRow: Locator;
    readonly restoreViewButton: Locator;
@@ -20,6 +22,8 @@ export class MainToolbar {
       this.rangeFilterPanel = root.locator('.div_range_filters');
       this.valueFilterPanel = root.locator('.div_value_filters');
       this.filtersToggle = root.locator('#butToggleFilters');
+      this.linkFiltersToggle = root.locator('#butLinkFilters');
+      this.valueFilterInputs = root.locator('koia-value-filter .column_filter_input');
       this.refreshButton = root.locator('.span_buttons:not(.span_navigation) > button:last-child');
       this.toolbarRow = root.locator('.div_toolbar');
       this.restoreViewButton = root.locator('#but_restore_view');
@@ -32,6 +36,12 @@ export class MainToolbar {
       const input = this.root.locator('.column_filter_input').last();
       await input.fill(value);
       await input.press('Enter');
+   }
+
+   async toggleLinkedFilters(): Promise<void> {
+      const pressed = await this.linkFiltersToggle.getAttribute('aria-pressed');
+      await this.linkFiltersToggle.click();
+      await expect(this.linkFiltersToggle).toHaveAttribute('aria-pressed', pressed === 'true' ? 'false' : 'true');
    }
 
    async removeValueFilter(): Promise<void> {

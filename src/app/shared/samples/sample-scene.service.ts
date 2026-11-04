@@ -30,7 +30,7 @@ export class SampleSceneService {
       }
       const otherSceneNames = new Set(sceneInfos.filter(si => si._id !== sample.sceneId).map(si => si.name));
       const data = await this.fetchSampleData(sample);
-      await this.sceneInserter.insert({ ...data.scene, _id: sample.sceneId }, otherSceneNames, toEntries(data), data.tabs);
+      await this.sceneInserter.insert({ ...data.scene, _id: sample.sceneId }, otherSceneNames, toEntries(data), { tabs: data.tabs });
    }
 
    private async fetchSampleData(sample: SampleDef): Promise<SampleData> {

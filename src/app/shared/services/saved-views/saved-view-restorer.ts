@@ -32,7 +32,7 @@ export class SavedViewRestorer {
          return false;
       }
       const tabs: TabDef[] = CommonUtils.clone(view.tabs);
-      this.viewTabsService.replaceTabs(tabs);
+      this.viewTabsService.replaceTabs(tabs, CommonUtils.clone(view.linkedFilters));
       this.rawDataStateService.apply(CommonUtils.clone(view.rawData));
       if (tabs.some(t => t.id === view.activeTabId)) {
          await this.router.navigateByUrl(tabUrl(view.activeTabId));

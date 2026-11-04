@@ -7,17 +7,17 @@ import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ConfirmDialogComponent, ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import {
-  Aggregation, AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
+  Aggregation, AnchorOffset, CanvasPaging, Column, ComputeOperator, DataType, ElementContext, ExportFormat, Operator, PropertyFilter, Query, Route, Scene, SummaryContext, TextBoxContext, TimeUnit
 } from 'app/shared/model';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
-import { ViewType } from 'app/shared/model/view-config';
+import { View, ViewType } from 'app/shared/model/view-config';
 import { DialogService, ExportService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { LanguageService } from 'app/shared/services/language';
 import { ModelToViewConverter } from 'app/shared/services/view-persistence';
-import { ViewTabsService } from 'app/shared/services/view-tabs';
+import { LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
 import { savedViewOf, SceneFactory } from 'app/shared/test';
 import { claimClick } from 'app/shared/ui/claimed-click';
 import type { SummaryTableComponent as RealSummaryTableComponent } from 'app/summary-table/summary-table.component';
@@ -4436,6 +4436,61 @@ describe('DashboardComponent', () => {
   });
 
   describe('with tab', () => {
+
+    function levelQuery(level: string): Query {
+      return new Query(new PropertyFilter('Level', Operator.EQUAL, level, DataType.TEXT));
+    }
+
+    function viewWithFullTextFilter(contexts: ElementContext[]): View {
+      const query = new Query();
+      query.setFullTextFilter('abc');
+      return new ModelToViewConverter().convert(Route.GRID, 'test', query, contexts);
+    }
+
+    it('#ngOnInit given linked filters then queries once with them, restores them and binds them to the restored elements', fakeAsync(() => {
+
+      // given
+      const filters = levelQuery('WARN');
+      vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(filters);
+      const view = viewWithFullTextFilter([new SummaryContext(scene.columns.filter(c => c.indexed))]);
+
+      // when
+      harness.init(harness.dashboardTab(view));
+
+      // then
+      expect(findEntriesSpy).toHaveBeenCalledTimes(1);
+      expect(findEntriesSpy).toHaveBeenCalledWith(filters, true);
+      expect(component.restoredQuery).toBe(filters);
+      expect(component.elementContexts[0].query).toBe(filters);
+    }));
+
+    it('#ngOnInit given linked filters and view with own query then ignores the view query', fakeAsync(() => {
+
+      // given
+      vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(levelQuery('WARN'));
+      const view = viewWithFullTextFilter([]);
+
+      // when
+      harness.init(harness.dashboardTab(view));
+
+      // then
+      expect(component.restoredQuery.getFullTextFilter()).toBeUndefined();
+      expect(view.query.fullTextFilter).toBe('abc');
+    }));
+
+    it('#ngOnInit given no tab then takes no filters', fakeAsync(() => {
+
+      // given
+      const takeFilters = vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters');
+
+      // when
+      harness.init();
+
+      // then
+      expect(takeFilters).not.toHaveBeenCalled();
+      expect(findEntriesSpy).toHaveBeenCalledWith(new Query(), true);
+    }));
+
 
     it('#ngOnInit should register as content provider of tab', fakeAsync(() => {
 

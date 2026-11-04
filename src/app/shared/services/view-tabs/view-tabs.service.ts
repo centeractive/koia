@@ -1,11 +1,13 @@
 import { LanguageService } from '../language';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable, Subject } from 'rxjs';
 import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Route, Scene } from '../../model';
-import { TabDef, ViewType } from '../../model/view-config';
+import { LinkedFilters, SceneTabsContent, TabDef, ViewType } from '../../model/view-config';
 import { DBService } from '../backend';
 import { ViewColumnRenamer } from '../view-persistence/view-column-renamer';
+import { withoutPendingKey } from './linked-filters';
 import { TabContentProvider } from './tab-content-provider.type';
 import { createTabDef, maxTabSeq, tabPath, tabUrl } from './tab-defs';
 import { TabsPersister } from './tabs-persister';
@@ -23,6 +25,13 @@ export class ViewTabsService {
    private _ready = false;
    private seq = 0;
    private providers = new Map<string, TabContentProvider>();
+   private _linkedFilters: LinkedFilters;
+   private readonly loadedSubject = new Subject<void>();
+
+   /**
+    * emits when the tabs of the active scene were loaded
+    */
+   readonly loaded$: Observable<void> = this.loadedSubject.asObservable();
 
    constructor(private dbService: DBService, private persister: TabsPersister, private router: Router) { }
 
@@ -34,6 +43,19 @@ export class ViewTabsService {
    get ready(): boolean {
       this.syncWithActiveScene();
       return this._ready;
+   }
+
+   get linkedFilters(): LinkedFilters | undefined {
+      this.syncWithActiveScene();
+      return this._linkedFilters;
+   }
+
+   setLinkedFilters(linkedFilters: LinkedFilters | undefined): void {
+      this.syncWithActiveScene();
+      if (this._ready) {
+         this._linkedFilters = linkedFilters;
+         this.persistNow();
+      }
    }
 
    findTab(id: string): TabDef {
@@ -59,6 +81,9 @@ export class ViewTabsService {
       const index = tabs.indexOf(tab);
       tabs.splice(index, 1);
       this.providers.delete(tab.id);
+      if (this._linkedFilters?.pendingKeys) {
+         this._linkedFilters = withoutPendingKey(this._linkedFilters, tab.id);
+      }
       this.persistNow();
       if (currUrl === tabUrl(tab.id)) {
          const neighbour = tabs[index] ?? tabs[index - 1];
@@ -70,10 +95,11 @@ export class ViewTabsService {
    /**
     * replaces all tabs, cached components of the replaced tabs are destroyed without taking over their content
     */
-   replaceTabs(tabs: TabDef[]): void {
+   replaceTabs(tabs: TabDef[], linkedFilters?: LinkedFilters): void {
       const ids = this.tabs.map(t => t.id).concat(tabs.map(t => t.id));
       this.providers.clear();
       this._tabs = tabs;
+      this._linkedFilters = linkedFilters;
       this.seq = Math.max(this.seq, maxTabSeq(tabs));
       new Set(ids).forEach(id => this.evict(id));
       this.persistNow();
@@ -130,14 +156,14 @@ export class ViewTabsService {
       }
    }
 
-   private snapshot(): TabDef[] {
+   private snapshot(): SceneTabsContent {
       this._tabs.forEach(t => {
          const provider = this.providers.get(t.id);
          if (provider) {
             Object.assign(t, provider.tabContent());
          }
       });
-      return this._tabs;
+      return { tabs: this._tabs, linkedFilters: this._linkedFilters };
    }
 
    private syncWithActiveScene(): void {
@@ -153,6 +179,7 @@ export class ViewTabsService {
       this.scene = scene;
       this._ready = false;
       this._tabs = [];
+      this._linkedFilters = undefined;
       this.seq = 0;
       this.providers.clear();
       if (scene) {
@@ -166,9 +193,11 @@ export class ViewTabsService {
             if (scene === this.scene) {
                const sceneTabs = doc ?? { _id: DBService.sceneTabsId(scene._id), tabs: [] };
                this._tabs = sceneTabs.tabs;
+               this._linkedFilters = sceneTabs.linkedFilters;
                this.seq = maxTabSeq(this._tabs);
                this.persister.reset(sceneTabs);
                this._ready = true;
+               this.loadedSubject.next();
             }
          })
          .catch(err => this.persister.reportError(LanguageService.instant('view.tabsNotLoaded') + ' ', err));

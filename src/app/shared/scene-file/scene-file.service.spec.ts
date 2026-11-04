@@ -1,5 +1,5 @@
 import { DataType, Document, Scene, SceneInfo } from 'app/shared/model';
-import { TabDef, ViewType } from 'app/shared/model/view-config';
+import { LinkedFilters, TabDef, ViewType } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
 import { ExportService } from 'app/shared/services/export/export.service';
 import { CouchDBServiceMock } from 'app/shared/test';
@@ -12,6 +12,7 @@ import { SceneInserter } from './scene-inserter.service';
 describe('SceneFileService', () => {
 
    const tabs: TabDef[] = [{ id: 'tab1', type: ViewType.PIVOT, title: 'Pivot' }];
+   const linkedFilters: LinkedFilters = { query: { fullTextFilter: 'error', propertyFilters: [], valueRangeFilters: [], sort: null, pageIndex: null, rowsPerPage: null } };
    let dbService: DBService;
    let exportService: ExportService;
    let sceneInserter: SceneInserter;
@@ -81,6 +82,45 @@ describe('SceneFileService', () => {
       expect(sceneFile.tabs).toEqual([]);
    });
 
+   it('#export given linked filters then writes them to the file', async () => {
+
+      // given
+      givenStoredScene(tabs);
+      vi.mocked(dbService.findSceneTabs).mockResolvedValue({ _id: 's1_tabs', _rev: '1-c', tabs, linkedFilters });
+
+      // when
+      await service.export('s1');
+
+      // then
+      const sceneFile = await SceneFileCodec.decode(saveBlobAsSpy.mock.calls[0][0]) as SceneFile;
+      expect(sceneFile.linkedFilters).toEqual(linkedFilters);
+   });
+
+   it('#export given none then writes none', async () => {
+
+      // given
+      givenStoredScene(tabs);
+
+      // when
+      await service.export('s1');
+
+      // then
+      const sceneFile = await SceneFileCodec.decode(saveBlobAsSpy.mock.calls[0][0]) as SceneFile;
+      expect('linkedFilters' in sceneFile).toBe(false);
+   });
+
+   it('#import given file with linked filters then inserts them with the tabs', async () => {
+
+      // given
+      const file = await fileOf({ ...sceneFileOf([{ Amount: 1 }]), linkedFilters });
+
+      // when
+      await service.import(file);
+
+      // then
+      expect(insertSpy.mock.lastCall[3]).toEqual({ tabs, linkedFilters });
+   });
+
    it('#import should insert scene of file with entries numbered in file order, its tabs and abort signal', async () => {
 
       // given
@@ -91,7 +131,7 @@ describe('SceneFileService', () => {
       await service.import(file, signal);
 
       // then
-      expect(insertSpy).toHaveBeenCalledWith(scene(), new Set(['Sales']), [{ Amount: 1, _id: '1000001' }, { Amount: 2, _id: '1000002' }], tabs,
+      expect(insertSpy).toHaveBeenCalledWith(scene(), new Set(['Sales']), [{ Amount: 1, _id: '1000001' }, { Amount: 2, _id: '1000002' }], { tabs, linkedFilters: undefined },
          signal);
    });
 

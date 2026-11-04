@@ -29,6 +29,7 @@ export class SceneFileService {
          version: SCENE_FILE_VERSION,
          scene: SceneFileService.withoutIds(scene),
          tabs: sceneTabs?.tabs ?? [],
+         linkedFilters: sceneTabs?.linkedFilters,
          entries: entries.map(e => SceneFileService.withoutIds(e))
       };
       this.exportService.saveBlobAs(await SceneFileCodec.encode(sceneFile), this.exportService.generateFileName(scene.name, SCENE_FILE_EXTENSION));
@@ -54,7 +55,7 @@ export class SceneFileService {
       }
       const sceneNames = new Set((await this.dbService.findSceneInfos()).map(si => si.name));
       const entries = sceneFile.entries.map((e, i) => ({ ...e, _id: String(CouchDBConstants.ENTRY_ID_BASE + i + 1) }));
-      await this.sceneInserter.insert(sceneFile.scene, sceneNames, entries, sceneFile.tabs, signal);
+      await this.sceneInserter.insert(sceneFile.scene, sceneNames, entries, { tabs: sceneFile.tabs, linkedFilters: sceneFile.linkedFilters }, signal);
    }
 
    private static withoutIds<T extends Document>(doc: T): T {

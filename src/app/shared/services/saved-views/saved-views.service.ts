@@ -48,7 +48,8 @@ export class SavedViewsService {
          modifiedTime: new Date().getTime(),
          tabs: CommonUtils.clone(tabs),
          activeTabId,
-         rawData: CommonUtils.clone(this.rawDataStateService.current())
+         rawData: CommonUtils.clone(this.rawDataStateService.current()),
+         linkedFilters: CommonUtils.clone(this.viewTabsService.linkedFilters)
       });
    }
 

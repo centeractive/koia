@@ -1,5 +1,5 @@
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { SceneTabs, TabDef, ViewType } from '../../model/view-config';
+import { LinkedFilters, SceneTabs, TabDef, ViewType } from '../../model/view-config';
 import { NotificationServiceMock } from '../../test/notification-service-mock';
 import { DBService } from '../backend';
 import { createTabDef } from './tab-defs';
@@ -39,7 +39,7 @@ describe('TabsPersister', () => {
    it('#request should not persist before delay elapsed', () => {
 
       // when
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
       vi.advanceTimersByTime(TabsPersister.DELAY_MS - 1);
 
       // then
@@ -49,7 +49,7 @@ describe('TabsPersister', () => {
    it('#request should persist snapshot once delay elapsed', async () => {
 
       // when
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
       await vi.advanceTimersByTimeAsync(TabsPersister.DELAY_MS);
 
       // then
@@ -61,11 +61,11 @@ describe('TabsPersister', () => {
 
       // given
       const otherTabs = [createTabDef(ViewType.DASHBOARD, 2)];
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
       vi.advanceTimersByTime(TabsPersister.DELAY_MS / 2);
 
       // when
-      persister.request(() => otherTabs);
+      persister.request(() => ({ tabs: otherTabs }));
       await vi.advanceTimersByTimeAsync(TabsPersister.DELAY_MS);
 
       // then
@@ -76,7 +76,61 @@ describe('TabsPersister', () => {
    it('#persistNow should skip writing when tabs did not change', async () => {
 
       // when
-      await persister.persistNow(() => []);
+      await persister.persistNow(() => ({ tabs: [] }));
+
+      // then
+      expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#persistNow given linked filters added then writes them with the tabs', async () => {
+
+      // given
+      const linkedFilters = { query: { fullTextFilter: 'x', propertyFilters: [], valueRangeFilters: [] } } as LinkedFilters;
+
+      // when
+      await persister.persistNow(() => ({ tabs, linkedFilters }));
+
+      // then
+      const savedDoc: SceneTabs = saveSceneTabsSpy.mock.lastCall[0];
+      expect(savedDoc.linkedFilters).toEqual(linkedFilters);
+      expect(savedDoc.tabs).toEqual(tabs);
+   });
+
+   it('#persistNow given linked filters removed then deletes them from the document', async () => {
+
+      // given
+      const linkedFilters = { query: { fullTextFilter: 'x', propertyFilters: [], valueRangeFilters: [] } } as LinkedFilters;
+      await persister.persistNow(() => ({ tabs, linkedFilters }));
+
+      // when
+      await persister.persistNow(() => ({ tabs }));
+
+      // then
+      const savedDoc: SceneTabs = saveSceneTabsSpy.mock.lastCall[0];
+      expect(saveSceneTabsSpy).toHaveBeenCalledTimes(2);
+      expect('linkedFilters' in savedDoc).toBe(false);
+   });
+
+   it('#persistNow given document reset with linked filters and nothing changed then skips writing', async () => {
+
+      // given
+      const linkedFilters = { query: { fullTextFilter: 'x', propertyFilters: [], valueRangeFilters: [] } } as LinkedFilters;
+      persister.reset({ _id: 's1_tabs', tabs, linkedFilters });
+
+      // when
+      await persister.persistNow(() => ({ tabs, linkedFilters }));
+
+      // then
+      expect(saveSceneTabsSpy).not.toHaveBeenCalled();
+   });
+
+   it('#persistNow given legacy document and no linked filters then skips writing', async () => {
+
+      // given
+      persister.reset({ _id: 's1_tabs', tabs });
+
+      // when
+      await persister.persistNow(() => ({ tabs, linkedFilters: undefined }));
 
       // then
       expect(saveSceneTabsSpy).not.toHaveBeenCalled();
@@ -85,7 +139,7 @@ describe('TabsPersister', () => {
    it('#persistNow should write deep copy of tabs', async () => {
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // then
       const savedDoc: SceneTabs = saveSceneTabsSpy.mock.lastCall[0];
@@ -98,10 +152,10 @@ describe('TabsPersister', () => {
    it('#persistNow should cancel pending request', async () => {
 
       // given
-      persister.request(() => [createTabDef(ViewType.DASHBOARD, 9)]);
+      persister.request(() => ({ tabs: [createTabDef(ViewType.DASHBOARD, 9)] }));
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
       await vi.advanceTimersByTimeAsync(TabsPersister.DELAY_MS);
 
       // then
@@ -112,10 +166,10 @@ describe('TabsPersister', () => {
    it('#persistNow should skip second write of unchanged tabs', async () => {
 
       // given
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // then
       expect(saveSceneTabsSpy).toHaveBeenCalledTimes(1);
@@ -126,11 +180,11 @@ describe('TabsPersister', () => {
       // given
       let resolveFirstWrite: (d: SceneTabs) => void;
       saveSceneTabsSpy.mockImplementationOnce(() => new Promise(resolve => resolveFirstWrite = resolve));
-      persister.persistNow(() => tabs);
+      persister.persistNow(() => ({ tabs }));
       await vi.advanceTimersByTimeAsync(0);
 
       // when
-      const secondWrite = persister.persistNow(() => [createTabDef(ViewType.DASHBOARD, 2)]);
+      const secondWrite = persister.persistNow(() => ({ tabs: [createTabDef(ViewType.DASHBOARD, 2)] }));
       await vi.advanceTimersByTimeAsync(0);
 
       // then
@@ -144,10 +198,10 @@ describe('TabsPersister', () => {
 
       // given
       saveSceneTabsSpy.mockRejectedValueOnce(new Error('offline'));
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // then
       expect(saveSceneTabsSpy).toHaveBeenCalledTimes(2);
@@ -159,8 +213,8 @@ describe('TabsPersister', () => {
       saveSceneTabsSpy.mockRejectedValue(new Error('offline'));
 
       // when
-      await persister.persistNow(() => tabs);
-      await persister.persistNow(() => [createTabDef(ViewType.DASHBOARD, 2)]);
+      await persister.persistNow(() => ({ tabs }));
+      await persister.persistNow(() => ({ tabs: [createTabDef(ViewType.DASHBOARD, 2)] }));
 
       // then
       expect(notificationService.onError).toHaveBeenCalledTimes(1);
@@ -170,7 +224,7 @@ describe('TabsPersister', () => {
    it('#ngOnDestroy should drop pending request', async () => {
 
       // given
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
 
       // when
       persister.ngOnDestroy();
@@ -184,7 +238,7 @@ describe('TabsPersister', () => {
 
       // given
       saveSceneTabsSpy.mockRejectedValue(new Error('offline'));
-      const write = persister.persistNow(() => tabs);
+      const write = persister.persistNow(() => ({ tabs }));
 
       // when
       persister.ngOnDestroy();
@@ -198,12 +252,12 @@ describe('TabsPersister', () => {
 
       // given
       saveSceneTabsSpy.mockRejectedValueOnce('offline');
-      await persister.persistNow(() => tabs);
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
+      await persister.persistNow(() => ({ tabs }));
       saveSceneTabsSpy.mockRejectedValueOnce('offline again');
 
       // when
-      await persister.persistNow(() => [createTabDef(ViewType.DASHBOARD, 2)]);
+      await persister.persistNow(() => ({ tabs: [createTabDef(ViewType.DASHBOARD, 2)] }));
 
       // then
       expect(notificationService.onError).toHaveBeenCalledTimes(2);
@@ -215,11 +269,11 @@ describe('TabsPersister', () => {
       // given
       const newerTabs = [createTabDef(ViewType.DASHBOARD, 2)];
       saveSceneTabsSpy.mockRejectedValueOnce('offline');
-      persister.persistNow(() => tabs);
-      await persister.persistNow(() => newerTabs);
+      persister.persistNow(() => ({ tabs }));
+      await persister.persistNow(() => ({ tabs: newerTabs }));
 
       // when
-      await persister.persistNow(() => newerTabs);
+      await persister.persistNow(() => ({ tabs: newerTabs }));
 
       // then
       expect(saveSceneTabsSpy).toHaveBeenCalledTimes(2);
@@ -228,7 +282,7 @@ describe('TabsPersister', () => {
    it('#flush should write pending snapshot immediately', async () => {
 
       // given
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
 
       // when
       await persister.flush();
@@ -251,7 +305,7 @@ describe('TabsPersister', () => {
    it('#flush should capture snapshot and document before reset', async () => {
 
       // given
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
       const flushed = persister.flush();
 
       // when
@@ -266,7 +320,7 @@ describe('TabsPersister', () => {
    it('#cancel should drop pending request', async () => {
 
       // given
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
 
       // when
       persister.cancel();
@@ -282,7 +336,7 @@ describe('TabsPersister', () => {
       discarded.next('s1');
 
       // when
-      persister.request(() => tabs);
+      persister.request(() => ({ tabs }));
       await vi.advanceTimersByTimeAsync(TabsPersister.DELAY_MS);
 
       // then
@@ -295,7 +349,7 @@ describe('TabsPersister', () => {
       discarded.next('s1');
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // then
       expect(saveSceneTabsSpy).not.toHaveBeenCalled();
@@ -304,7 +358,7 @@ describe('TabsPersister', () => {
    it('#persistNow should skip queued write of discarded scene', async () => {
 
       // given
-      const write = persister.persistNow(() => tabs);
+      const write = persister.persistNow(() => ({ tabs }));
 
       // when
       discarded.next('s1');
@@ -320,7 +374,7 @@ describe('TabsPersister', () => {
       discarded.next('s2');
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // then
       expect(saveSceneTabsSpy).toHaveBeenCalledTimes(1);
@@ -333,7 +387,7 @@ describe('TabsPersister', () => {
       persister.reset({ _id: 's1_tabs', tabs: [] });
 
       // when
-      await persister.persistNow(() => tabs);
+      await persister.persistNow(() => ({ tabs }));
 
       // then
       expect(saveSceneTabsSpy).toHaveBeenCalledTimes(1);
@@ -349,7 +403,7 @@ describe('TabsPersister', () => {
       discarded.next('s1');
 
       // then
-      await otherPersister.persistNow(() => tabs);
+      await otherPersister.persistNow(() => ({ tabs }));
       expect(saveSceneTabsSpy).not.toHaveBeenCalled();
    });
 

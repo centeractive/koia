@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -379,6 +379,140 @@ describe('ScenesComponent', () => {
     expect(dbService.findSceneInfos).toHaveBeenCalledTimes(1);
     expect(dbService.findSceneActivationTimes).toHaveBeenCalledTimes(1);
   }));
+
+  it('#click on "Delete filtered" button should clear filter and show all remaining scenes', fakeAsync(() => {
+
+    // given
+    setFilter('1');
+    spyOnConfirmDialogAndPressYes();
+    vi.spyOn(dbService, 'deleteScene').mockResolvedValue(null);
+    findSceneInfosSpy.mockResolvedValue([scenes[1], scenes[2]]);
+
+    // when
+    fixture.nativeElement.querySelector('#but_delete_scenes').click();
+    flush();
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(component.filter).toBe('');
+    expect(component.filteredSceneInfos).toEqual([scenes[2], scenes[1]]);
+    expect(filterInput().value).toBe('');
+    expect(clearFilterButton()).toBeNull();
+    expect(fixture.nativeElement.querySelector('#but_delete_scenes').textContent).toContain('Delete all');
+  }));
+
+  it('#click on "Delete filtered" button should keep filter when deleting fails', fakeAsync(() => {
+
+    // given
+    setFilter('1');
+    spyOnConfirmDialogAndPressYes();
+    vi.spyOn(dbService, 'deleteScene').mockRejectedValue('error');
+
+    // when
+    fixture.nativeElement.querySelector('#but_delete_scenes').click();
+    flush();
+
+    // then
+    expect(component.filter).toBe('1');
+  }));
+
+  it('filter field should show no clear button when filter is empty', () => {
+    expect(clearFilterButton()).toBeNull();
+  });
+
+  it('filter field should show clear button labelled "Clear filter" when filter is set', fakeAsync(() => {
+
+    // when
+    setFilter('1');
+
+    // then
+    expect(clearFilterButton().getAttribute('aria-label')).toBe('Clear filter');
+    expect(fixture.debugElement.query(By.css('#but_clear_filter')).injector.get(MatTooltip).message).toBe('Clear filter');
+  }));
+
+  it('clear button should be small, without hover background and ripple', fakeAsync(() => {
+
+    // when
+    setFilter('1');
+
+    // then
+    const button = clearFilterButton();
+    const style = getComputedStyle(button);
+    expect(button.getBoundingClientRect().width).toBe(24);
+    expect(button.querySelector('mat-icon').getBoundingClientRect().width).toBe(18);
+    expect(style.getPropertyValue('--mat-icon-button-hover-state-layer-opacity').trim()).toBe('0');
+    expect(fixture.debugElement.query(By.css('#but_clear_filter')).injector.get(MatIconButton).disableRipple).toBe(true);
+  }));
+
+  it('#click on clear button should clear filter, show all scenes and focus filter field', fakeAsync(() => {
+
+    // given
+    setFilter('1');
+
+    // when
+    clearFilterButton().click();
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(component.filter).toBe('');
+    expect(component.filteredSceneInfos.length).toBe(scenes.length);
+    expect(filterInput().value).toBe('');
+    expect(clearFilterButton()).toBeNull();
+    expect(document.activeElement).toBe(filterInput());
+  }));
+
+  it('clear button should be disabled while a scene is edited', fakeAsync(() => {
+
+    // given
+    setFilter('1');
+
+    // when
+    sceneTable().editingChange.emit(true);
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(clearFilterButton().disabled).toBe(true);
+  }));
+
+  it('clear button should be disabled while a scene file is imported', async () => {
+
+    // given
+    component.filter = '1';
+    component.onFilterChange();
+    await stabilize();
+    const importSpy = vi.spyOn(TestBed.inject(SceneFileService), 'import').mockReturnValue(new Promise(() => undefined));
+
+    // when
+    selectFile(sceneFileInput(), new File(['x'], 'sales.koia'));
+    await stabilize();
+
+    // then
+    expect(clearFilterButton().disabled).toBe(true);
+    await vi.waitFor(() => expect(importSpy).toHaveBeenCalled());
+  });
+
+  function setFilter(filter: string): void {
+    const input = filterInput();
+    input.value = filter;
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+  }
+
+  function filterInput(): HTMLInputElement {
+    return fixture.nativeElement.querySelector('#div_filter .filter input');
+  }
+
+  function clearFilterButton(): HTMLButtonElement {
+    return fixture.nativeElement.querySelector('#but_clear_filter');
+  }
 
   it('#selecting delete menu item should delete scene', fakeAsync(() => {
 

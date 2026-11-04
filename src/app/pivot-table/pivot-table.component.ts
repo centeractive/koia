@@ -1,5 +1,5 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, ElementRef, Inject, Input, OnDestroy, ViewChild, ViewEncapsulation
+  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, ElementRef, Inject, inject, Input, OnDestroy, ViewChild, ViewEncapsulation
 } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSidenav } from '@angular/material/sidenav';
@@ -10,8 +10,9 @@ import { DBService } from 'app/shared/services/backend';
 import { PIVOT_TABLE_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { createConfigRecord } from 'app/shared/services/view-persistence/config-record-factory';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
+import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { LanguageService } from 'app/shared/services/language';
-import { TabContentProvider, ViewTabsService } from 'app/shared/services/view-tabs';
+import { LinkedFiltersService, TabContentProvider, ViewTabsService } from 'app/shared/services/view-tabs';
 import { MeasuredTable, measureTable } from 'app/shared/ui/sheets/measured-table';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { CommonUtils, DateTimeUtils, ObjectUtils } from 'app/shared/utils';
@@ -78,6 +79,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   private destroyed = false;
   private mutationObserver: MutationObserver;
   private resizeObserver: ResizeObserver;
+  private readonly linkedFiltersService = inject(LinkedFiltersService);
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
     public override dbService: DBService, private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
@@ -96,8 +98,12 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
     const baseQueryProvider: QueryProvider = { provide: () => this.query };
     const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
     this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback, this.columns);
+    const linkedFilters = this.tab ? this.linkedFiltersService.takeFilters(this.tab.id) : undefined;
+    if (linkedFilters && this.tab.record) {
+      this.tab.record = { ...this.tab.record, query: queryToQueryDef(linkedFilters) };
+    }
     this.pendingRecord = this.tab?.record;
-    this.restoredQuery = this.pendingRecord?.query ? queryDefToQuery(this.pendingRecord.query) : undefined;
+    this.restoredQuery = linkedFilters ?? (this.pendingRecord?.query ? queryDefToQuery(this.pendingRecord.query) : undefined);
     this.fetchData(this.restoredQuery ?? new Query());
     if (this.tab) {
       this.viewTabsService.register(this.tab.id, this);

@@ -20,6 +20,7 @@ export class ScenesPage {
    readonly tableContainer: Locator;
    readonly moreButtons: Locator;
    readonly filterInput: Locator;
+   readonly clearFilterButton: Locator;
    readonly deleteAllButton: Locator;
    readonly cancelButton: Locator;
    readonly continueButton: Locator;
@@ -40,6 +41,7 @@ export class ScenesPage {
       this.tableContainer = page.locator('koia-scene-table .table_container');
       this.moreButtons = page.locator('.but_more');
       this.filterInput = page.locator('#div_filter .filter input');
+      this.clearFilterButton = page.locator('#but_clear_filter');
       this.deleteAllButton = page.locator('#but_delete_scenes');
       this.cancelButton = page.locator('#but_cancel');
       this.continueButton = page.locator('.continueActiveScene');

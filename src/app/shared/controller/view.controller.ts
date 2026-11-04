@@ -19,7 +19,7 @@ import { ChartMarginService } from '../services/chart';
 import { ComputedColumnChange, ComputedColumnService } from '../services/computed-column.service';
 import { ModelToViewConverter, ViewToModelConverter } from '../services/view-persistence';
 import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
-import { TabContentProvider, ViewTabsService } from '../services/view-tabs';
+import { LinkedFiltersService, TabContentProvider, ViewTabsService } from '../services/view-tabs';
 import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
 import { isAnalyzableColumn } from '../utils/column-utils';
 import { withComputedValues } from '../utils/computation-utils';
@@ -62,7 +62,8 @@ export abstract class ViewController extends AbstractComponent implements OnInit
 
    constructor(public route: Route, private router: Router, bottomSheet: MatBottomSheet, private dbService: DBService,
       protected dialogService: DialogService, private chartMarginService: ChartMarginService, notificationService: NotificationService, private exportService: ExportService,
-      private viewTabsService: ViewTabsService, private computedColumnService: ComputedColumnService) {
+      private viewTabsService: ViewTabsService, private computedColumnService: ComputedColumnService,
+      private linkedFiltersService: LinkedFiltersService) {
       super(bottomSheet, notificationService);
    }
 
@@ -73,10 +74,12 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       } else {
          this.elementContexts = [];
          this.identifyColumns();
-         this.queryData(new Query());
+         const linkedFilters = this.tab ? this.linkedFiltersService.takeFilters(this.tab.id) : undefined;
+         this.restoredQuery = linkedFilters;
+         this.queryData(linkedFilters ?? new Query());
          if (this.tab) {
             if (this.tab.view) {
-               this.applyView(this.tab.view);
+               this.applyView(linkedFilters ? { ...this.tab.view, query: null } : this.tab.view);
             }
             this.viewTabsService.register(this.tab.id, this);
          }
