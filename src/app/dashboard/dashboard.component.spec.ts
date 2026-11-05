@@ -1212,25 +1212,13 @@ describe('DashboardComponent', () => {
       useRenderedViewport();
 
       function renderHalfWidthSummaries(): void {
-        renderGridSummaries(4, [[2, 1], [2, 1]]);
-      }
-
-      function renderGridSummaries(gridColumns: number, spans: number[][], gridCellRatio = '1:1'): void {
-        component.gridLayout.gridColumns = gridColumns;
-        component.gridLayout.gridCellRatio = gridCellRatio;
-        component.elementContexts = spans.map(([columnSpan, rowSpan]) => {
-          const context = new SummaryContext(scene.columns);
-          context.gridColumnSpan = columnSpan;
-          context.gridRowSpan = rowSpan;
-          return context;
-        });
-        fixture.detectChanges();
+        harness.renderGridSummaries(4, [[2, 1], [2, 1]]);
       }
 
       it('#grid tiles of different column spans should share bottom edge in same row', () => {
 
         // when
-        renderGridSummaries(4, [[2, 1], [1, 1]]);
+        harness.renderGridSummaries(4, [[2, 1], [1, 1]]);
 
         // then
         const [wideTile, narrowTile] = rectsOf('#div_grid .div_tile');
@@ -1241,7 +1229,7 @@ describe('DashboardComponent', () => {
       it('#grid tile spanning two rows should end at bottom of second row', () => {
 
         // when
-        renderGridSummaries(2, [[1, 2], [1, 1], [1, 1]]);
+        harness.renderGridSummaries(2, [[1, 2], [1, 1], [1, 1]]);
 
         // then
         const [tallTile, upperTile, lowerTile] = rectsOf('#div_grid .div_tile');
@@ -1267,7 +1255,7 @@ describe('DashboardComponent', () => {
       it('#showCanvas without pages should keep rendered tile rects', () => {
 
         // given
-        renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
+        harness.renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
         const gridRects = rectsOf('#div_grid .div_tile');
 
         // when
@@ -1290,7 +1278,7 @@ describe('DashboardComponent', () => {
       it('#setLayout to free canvas should keep tile rects of grid in page units below sheet header and top padding', () => {
 
         // given
-        renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
+        harness.renderGridSummaries(3, [[1, 2], [1, 1], [1, 1], [2, 1]], '2:1');
         const cells = component.gridCellsRef.nativeElement;
         const gridRects = pageUnitRectsOf('#div_grid .div_tile', cells, cells.clientWidth / PageFormat.LANDSCAPE.width);
 
@@ -1307,7 +1295,7 @@ describe('DashboardComponent', () => {
       it('#setLayout to free canvas should push tiles crossing page to next page', () => {
 
         // given
-        renderGridSummaries(3, [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1]]);
+        harness.renderGridSummaries(3, [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1]]);
 
         // when
         component.setLayout(Route.FLEX);
@@ -1364,7 +1352,7 @@ describe('DashboardComponent', () => {
       it('#setLayout to grid should keep spans when canvas is not rendered', () => {
 
         // given
-        renderGridSummaries(4, [[2, 3]]);
+        harness.renderGridSummaries(4, [[2, 3]]);
         component.setLayout(Route.FLEX);
 
         // when
@@ -1675,7 +1663,7 @@ describe('DashboardComponent', () => {
         it('#showCanvas with portrait pages should scale side by side grid tiles to portrait page width', () => {
 
           // given
-          renderGridSummaries(2, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(2, [[1, 1], [1, 1]]);
 
           // when
           component.showCanvas(CanvasPaging.PORTRAIT);
@@ -1789,7 +1777,7 @@ describe('DashboardComponent', () => {
       }
 
       function renderGridSummariesForResize(spans: number[][], resizedIndex = 0): number {
-        renderGridSummaries(4, spans);
+        harness.renderGridSummaries(4, spans);
         component.onGridResizeStart(component.elementContexts[resizedIndex]);
         return contentWidth() / 4;
       }
@@ -2360,7 +2348,7 @@ describe('DashboardComponent', () => {
         it('should be absolutely positioned in grid above tiles without taking a grid cell', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const textBox = addTextBoxContext(100, 50);
           component.elementContexts = [textBox, ...component.elementContexts.slice(0, 2)];
 
@@ -2380,7 +2368,7 @@ describe('DashboardComponent', () => {
         it('should not register drag of text box with drop list of grid', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
 
           // when
           addTextBoxContext(100, 50);
@@ -2396,7 +2384,7 @@ describe('DashboardComponent', () => {
         it('should follow its anchor tile when tiles are reordered or grid columns changed', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
           const anchor = component.elementContexts[1];
           const offset = { x: 0.25, y: 0.5 };
           addTextBoxContext(0, 0, anchor, offset);
@@ -2421,7 +2409,7 @@ describe('DashboardComponent', () => {
         it('should follow placeholder of its anchor tile while the tile is dragged', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
           const offset = { x: 0.5, y: 0.25 };
           addTextBoxContext(0, 0, component.elementContexts[1], offset);
           const tile = gridTiles()[1];
@@ -2444,7 +2432,7 @@ describe('DashboardComponent', () => {
         it('should be placed at fallback position when its anchor is no tile of the grid', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1]]);
 
           // when
           const textBox = addTextBoxContext(200, 300, new SummaryContext([]), { x: 0.5, y: 0.5 });
@@ -2534,7 +2522,7 @@ describe('DashboardComponent', () => {
         it('should render guides in grid', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1]]);
           component.canvasGuides = [{ axis: 'x', position: 700 }, { axis: 'y', position: 400 }];
 
           // when
@@ -2550,7 +2538,7 @@ describe('DashboardComponent', () => {
         it('#onFreeResizing in grid should preview from drawn rect of anchored text box', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const textBox = addTextBoxContext(0, 0, component.elementContexts[1], { x: 0.5, y: 0.5 });
           component.drop({ previousIndex: 1, currentIndex: 0 } as CdkDragDrop<object>);
           fixture.detectChanges();
@@ -2570,7 +2558,7 @@ describe('DashboardComponent', () => {
         it('#onFreeMoving in grid should show guides of rendered tiles', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const textBox = addTextBoxContext(0, 600);
           const tileRect = pageUnitRectOf(gridTiles()[1]);
           component.onFreeMoveStarted(textBox);
@@ -2587,7 +2575,7 @@ describe('DashboardComponent', () => {
         it('#onFreeMoveEnded in grid should anchor text box to tile below its top left corner', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1], [1, 1]]);
           const textBox = addTextBoxContext(0, 0, component.elementContexts[0], { x: 0, y: 0 });
           const tile = component.elementContexts[1];
           const tileRect = pageUnitRectOf(gridTiles()[1]);
@@ -2608,7 +2596,7 @@ describe('DashboardComponent', () => {
         it('#onFreeMoveEnded in grid should unanchor text box moved off tiles', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1]]);
           const textBox = addTextBoxContext(0, 0, component.elementContexts[0], { x: 0, y: 0 });
           component.onFreeMoveStarted(textBox);
           gridMoveTo(1000, 50);
@@ -2624,7 +2612,7 @@ describe('DashboardComponent', () => {
         it('#onFreeResizeEnd in grid should set size and keep anchor at drawn position', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const anchor = component.elementContexts[1];
           const textBox = addTextBoxContext(0, 0, anchor, { x: 0.5, y: 0.5 });
           component.onFreeResizeStart(textBox);
@@ -2644,7 +2632,7 @@ describe('DashboardComponent', () => {
         it('#onFreeResizeEnd by left edge in grid should re-anchor note', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const anchor = component.elementContexts[1];
           const textBox = addTextBoxContext(0, 0, anchor, { x: 0.5, y: 0.5 });
           component.onFreeResizeStart(textBox);
@@ -2678,7 +2666,7 @@ describe('DashboardComponent', () => {
         it('#removeElement in grid should keep text box anchored to removed tile where it is drawn', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const removed = component.elementContexts[1];
           const textBox = addTextBoxContext(0, 0, removed, { x: 0.5, y: 0.5 });
           const drawn = pageUnitRectOf(textBoxTile());
@@ -2695,7 +2683,7 @@ describe('DashboardComponent', () => {
         it('#removeElement in grid should not measure without text box anchored to removed tile', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           const kept = component.elementContexts[0];
           const textBox = addTextBoxContext(0, 0, kept, { x: 0.5, y: 0.5 });
           const measureSpy = vi.spyOn(cells(), 'getBoundingClientRect');
@@ -2727,7 +2715,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should keep offset of text box to its anchor tile', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           addTextBoxContext(0, 0, component.elementContexts[1], { x: 0.25, y: 0.5 });
 
           // when
@@ -2744,7 +2732,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should move text box into page of its anchor tile', () => {
 
           // given
-          renderGridSummaries(1, [[1, 1]]);
+          harness.renderGridSummaries(1, [[1, 1]]);
           addTextBoxContext(0, 0, component.elementContexts[0], { x: 0.9, y: 0.95 });
 
           // when
@@ -2758,7 +2746,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should keep drawn rect of unanchored text box within its page', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1]]);
           addTextBoxContext(1000, 900);
 
           // when
@@ -2772,7 +2760,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should keep drawn rect of text box anchored to unrendered tile', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1], [1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1], [1, 1]]);
           addTextBoxContext(0, 0, component.elementContexts[1], { x: 0.5, y: 0.5 });
           const drawn = pageUnitRectOf(textBoxTile());
           vi.spyOn(gridTiles()[1], 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 0, 0));
@@ -2834,7 +2822,7 @@ describe('DashboardComponent', () => {
         it('#addNote in grid should centre note in visible grid and anchor it to tile below', () => {
 
           // given
-          renderGridSummaries(3, Array.from({ length: 9 }, () => [1, 1]));
+          harness.renderGridSummaries(3, Array.from({ length: 9 }, () => [1, 1]));
           const content = component.divContentRef.nativeElement;
           const rowPitch = gridTiles()[3].getBoundingClientRect().top - gridTiles()[0].getBoundingClientRect().top;
           content.scrollTop = 1.5 * rowPitch;
@@ -3052,7 +3040,7 @@ describe('DashboardComponent', () => {
         it('press on a text box tile should clear selection of other tile', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1]]);
           addTextBoxContext(500, 0);
           component.tileSelection.select(component.elementContexts[0]);
 
@@ -3129,7 +3117,7 @@ describe('DashboardComponent', () => {
         it('grid text tile should grow by rows needed by its fit height', () => {
 
           // given
-          renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
+          harness.renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
           const fitHeight = fitHeightBeyondRows(2);
 
           // when
@@ -3143,7 +3131,7 @@ describe('DashboardComponent', () => {
         it('grid text tile should keep its row span when larger than needed by its fit height', () => {
 
           // given
-          renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
+          harness.renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
 
           // when
           addTextTileContext(3, fitHeightBeyondRows(1));
@@ -3155,7 +3143,7 @@ describe('DashboardComponent', () => {
         it('#onGridResizing should preview grown rows of text tile', () => {
 
           // given
-          renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
+          harness.renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
           const context = addTextTileContext(1, fitHeightBeyondRows(2));
           const drawn = textTile().getBoundingClientRect();
           component.onGridResizeStart(context);
@@ -3173,7 +3161,7 @@ describe('DashboardComponent', () => {
         ])('#onGridResizeEnd should store row span without grown rows when drawn text tile is enlarged $case', ({ extraRows, rowSpan }) => {
 
           // given
-          renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
+          harness.renderGridSummaries(1, [[1, 1], [1, 1]], '2:1');
           const context = addTextTileContext(1, fitHeightBeyondRows(2));
           const rowPitch = gridTiles()[1].getBoundingClientRect().top - gridTiles()[0].getBoundingClientRect().top;
           const drawn = textTile().getBoundingClientRect();
@@ -3189,7 +3177,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should keep own height of grown note', () => {
 
           // given
-          renderGridSummaries(3, [[1, 1]]);
+          harness.renderGridSummaries(3, [[1, 1]]);
           const note = addTextBoxContext(0, 0);
           note.fitHeight = 400;
           fixture.detectChanges();
@@ -3204,7 +3192,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should keep height of own rows of grown text tile', () => {
 
           // given
-          renderGridSummaries(1, [[1, 1]], '2:1');
+          harness.renderGridSummaries(1, [[1, 1]], '2:1');
           addTextTileContext(1, fitHeightBeyondRows(2));
 
           // when
@@ -3218,7 +3206,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should limit height of grown text tile to page below top padding', () => {
 
           // given
-          renderGridSummaries(1, [[1, 1]], '1:2');
+          harness.renderGridSummaries(1, [[1, 1]], '1:2');
           addTextTileContext(4, fitHeightBeyondRows(4));
 
           // when
@@ -3231,7 +3219,7 @@ describe('DashboardComponent', () => {
         it('#setLayout to free canvas should keep offset of note to drawn rect of grown text tile', () => {
 
           // given
-          renderGridSummaries(4, [[1, 1]], '2:1');
+          harness.renderGridSummaries(4, [[1, 1]], '2:1');
           const tile = addTextTileContext(1, fitHeightBeyondRows(2));
           addTextBoxContext(0, 0, tile, { x: 0.5, y: 0.5 });
           const drawn = pageUnitRectOf(textTile());

@@ -1,4 +1,5 @@
-import { occupiedCells, SequenceRandomSource } from 'app/shared/test';
+import { SequenceRandomSource } from 'app/shared/test';
+import { occupiedCells } from '../grid-placement';
 import { rowsOf } from './generated-grid';
 import { GridPlanner } from './grid-planner';
 import { Randomizer } from './randomizer';

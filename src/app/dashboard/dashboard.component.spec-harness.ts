@@ -1,4 +1,4 @@
-import { CdkDragEnd, CdkDragMove, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragEnd, CdkDragMove, CdkDragStart, DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkScrollableModule } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, NO_ERRORS_SCHEMA, Output } from '@angular/core';
 import { ComponentFixture, flush, TestBed } from '@angular/core/testing';
@@ -196,6 +196,22 @@ export class DashboardHarness {
     return this.component.elementContexts as SummaryContext[];
   }
 
+  /**
+   * @param spans the column and row span of each tile
+   */
+  renderGridSummaries(gridColumns: number, spans: number[][], gridCellRatio = '1:1'): SummaryContext[] {
+    this.component.gridLayout.gridColumns = gridColumns;
+    this.component.gridLayout.gridCellRatio = gridCellRatio;
+    this.component.elementContexts = spans.map(([columnSpan, rowSpan]) => {
+      const context = new SummaryContext(this.scene.columns);
+      context.gridColumnSpan = columnSpan;
+      context.gridRowSpan = rowSpan;
+      return context;
+    });
+    this.fixture.detectChanges();
+    return this.component.elementContexts as SummaryContext[];
+  }
+
   canvasScale(): number {
     return this.component.canvasPagesRef.nativeElement.clientWidth / this.component.freeLayout.pageFormat.sheetWidth;
   }
@@ -237,6 +253,10 @@ export class DashboardHarness {
     target.dispatchEvent(new PointerEvent('pointerdown', point));
     target.dispatchEvent(new MouseEvent('click', { ...point, clientX: point.clientX + dx }));
     this.fixture.detectChanges();
+  }
+
+  dragStart(placeholder: HTMLElement): CdkDragStart {
+    return { source: { getPlaceholderElement: () => placeholder } } as unknown as CdkDragStart;
   }
 
   dragEnd(): CdkDragEnd {

@@ -12,7 +12,6 @@ export * from './external-links';
 export * from './dom-queries';
 export * from './translate-testing';
 export * from './sequence-random-source';
-export * from './grid-placement-simulator';
 export * from './animation-frames';
 export * from './tile-spec-fixtures';
 export * from './static-page';

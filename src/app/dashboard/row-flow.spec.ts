@@ -114,6 +114,20 @@ describe('RowFlow', () => {
     expect(gaps).toEqual([0, 0]);
   });
 
+  it.each([
+    { x: 309, gap: 9 },
+    { x: 300, gap: 0 },
+    { x: 280, gap: 0 },
+    { x: 330, gap: 10 }
+  ])('#gapBetween should clamp the distance $x - 300 to the left neighbour to $gap', ({ x, gap }) => {
+
+    // when
+    const between = rowFlow.gapBetween(rect(0, 0, 300), rect(x, 0));
+
+    // then
+    expect(between).toBe(gap);
+  });
+
   it('#pass should keep a tile reaching past the page edge it is not pushed beyond', () => {
 
     // given

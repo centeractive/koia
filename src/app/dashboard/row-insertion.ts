@@ -24,6 +24,9 @@ export class RowInsertion {
   }
 
   /**
+   * a tile moved within its row keeps the row's width: the gap closing behind it is handed to the tile it is inserted before, the
+   * tiles in between keep the gaps they stand at, as rows taken from the grid are spaced by less than the gap of the canvas
+   *
    * @param moved the rect the tile is moved to
    * @param original the rect of the tile before the move
    * @param others the rects of the other tiles, overlays excluded
@@ -52,15 +55,30 @@ export class RowInsertion {
     const limits = this.rowFlow.limitsOf(others, rects, original);
     this.closeGap(formerRow.map(r => rects[others.indexOf(r)]), original, rects, limits);
     const rowRects = row.map(r => rects[others.indexOf(r)]);
-    const target = { ...moved, y: others[anchor].y, x: index < rowRects.length ? rowRects[index].x : rightOf(rowRects[index - 1]) + GAP };
+    const freedGap = inFormerRow ? this.freedGapOf(formerRow, original, others, rects, limits) : GAP;
+    const displaced = rowRects[index];
+    const slotGap = index > 0 && displaced ? this.rowFlow.gapBetween(rowRects[index - 1], displaced) : freedGap;
+    if (inFormerRow) {
+      rowRects.forEach((r, i) => limits.set(r, {
+        ...limits.get(r),
+        gap: r === displaced ? freedGap : i === 0 ? limits.get(r).gap : this.rowFlow.gapBetween(rowRects[i - 1], r)
+      }));
+    }
+    const target = { ...moved, y: others[anchor].y, x: displaced ? displaced.x : rightOf(rowRects[index - 1]) + freedGap };
     const width = this.layout.pageFormat.width;
-    limits.set(target, inFormerRow
-      ? { right: Math.max(width, original.x + moved.width), gap: this.rowFlow.gapOf([...others, original], original) }
-      : { right: width, gap: GAP });
+    limits.set(target, inFormerRow ? { right: Math.max(width, original.x + moved.width), gap: slotGap } : { right: width, gap: GAP });
     const rowTop = Math.min(...rowRects.map(r => r.y));
     this.rowFlow.flow([...rowRects.slice(0, index), target, ...rowRects.slice(index)], index, rowTop, rects, target, limits);
     const pushed = this.overlapResolver.pushedDown([...rects, target], [...rects.map(() => false), true]);
     return { target: pushed.at(-1), rects: pushed.slice(0, -1) };
+  }
+
+  /**
+   * @returns the gap of the tile taking the place of the moved one in its former row, the moved tile's own when it was last
+   */
+  private freedGapOf(formerRow: Rect[], original: Rect, others: Rect[], rects: Rect[], limits: Map<Rect, FlowLimit>): number {
+    const successor = formerRow.find(r => r.x >= rightOf(original));
+    return successor ? limits.get(rects[others.indexOf(successor)]).gap : this.rowFlow.gapOf([...others, original], original);
   }
 
   /**

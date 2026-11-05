@@ -77,7 +77,14 @@ export class RowFlow {
    */
   gapOf(rects: Rect[], rect: Rect): number {
     const left = this.rowOf(rects, rect).filter(r => r.x < rect.x).at(-1);
-    return left ? _.clamp(rect.x - rightOf(left), 0, GAP) : GAP;
+    return left ? this.gapBetween(left, rect) : GAP;
+  }
+
+  /**
+   * @returns the gap between the rect and its left neighbour, no wider than the gap of the canvas
+   */
+  gapBetween(left: Rect, rect: Rect): number {
+    return _.clamp(rect.x - rightOf(left), 0, GAP);
   }
 
   /**

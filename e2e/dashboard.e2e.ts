@@ -339,6 +339,183 @@ test('a tile moved left in a row ending at the page edge keeps the tiles behind 
    expect(Math.abs((await last.root.boundingBox()).y - lastTop)).toBeLessThanOrEqual(1);
 });
 
+/**
+ * names the tiles by their titles, the title being edited is left
+ */
+async function nameTiles(page: Page, dashboard: DashboardPage, titles: string[]): Promise<void> {
+   for (let i = 0; i < titles.length; i++) {
+      await dashboard.tile(i).title.fill(titles[i]);
+   }
+   await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+}
+
+/**
+ * releases the dragged tile once the drop animation ended and the dropped tile is placed
+ */
+async function dropGridTile(page: Page): Promise<void> {
+   await page.mouse.up();
+   await expect(page.locator('.cdk-drag-preview')).toHaveCount(0);
+}
+
+function titlesOf(dashboard: DashboardPage): Promise<string[]> {
+   return dashboard.tiles.locator('textarea.textarea_title').evaluateAll((titles: HTMLTextAreaElement[]) => titles.map(t => t.value));
+}
+
+async function startGridWithSummaries(page: Page, dashboard: DashboardPage, columns: number, count: number, height = 1400): Promise<void> {
+   await page.setViewportSize({ width: 1512, height });
+   await dashboard.launcher.cancel();
+   await dashboard.setGridColumns(en.get('element.columns', { count: columns }));
+   await dashboard.addSummaries(count);
+}
+
+test('grid tile dragged by its title onto its neighbour swaps with it, leaves no title focused and is dragged by its title again', async ({ page, dashboard }) => {
+   await startGridWithSummaries(page, dashboard, 4, 4);
+   await nameTiles(page, dashboard, ['A', 'B', 'C', 'D']);
+   const [firstBox, secondBox] = [await dashboard.tile(0).root.boundingBox(), await dashboard.tile(1).root.boundingBox()];
+
+   await dashboard.tile(1).startMoveBy(firstBox.x - secondBox.x, 0);
+   await dropGridTile(page);
+   expect(await titlesOf(dashboard)).toEqual(['B', 'A', 'C', 'D']);
+   expect(await page.evaluate(() => document.activeElement.tagName)).not.toBe('TEXTAREA');
+
+   await dashboard.tile(0).startMoveBy(secondBox.x - firstBox.x, 0);
+   await dropGridTile(page);
+   expect(await titlesOf(dashboard)).toEqual(['A', 'B', 'C', 'D']);
+});
+
+test('clicking a grid tile title edits it with a caret, double-clicking selects a word', async ({ page, dashboard }) => {
+   await startGridWithSummaries(page, dashboard, 4, 2);
+   await nameTiles(page, dashboard, ['alpha beta']);
+   const title = dashboard.tile(0).title;
+   const selectionOf = (): Promise<number[]> => title.evaluate((t: HTMLTextAreaElement) => [t.selectionStart, t.selectionEnd]);
+
+   await title.click({ position: { x: 12, y: 10 } });
+   await expect(title).toBeFocused();
+   const [start, end] = await selectionOf();
+   expect(start).toBe(end);
+
+   await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+   await title.dblclick({ position: { x: 12, y: 10 } });
+   const [wordStart, wordEnd] = await selectionOf();
+   expect(wordEnd).toBeGreaterThan(wordStart);
+});
+
+for (const edge of [{ name: 'left', dx: -2000 }, { name: 'right', dx: 2000 }]) {
+   test(`grid tile dragged beyond the ${edge.name} edge stays within the grid`, async ({ page, dashboard }) => {
+      await startGridWithSummaries(page, dashboard, 4, 4);
+      const cells = await dashboard.gridContent.locator('.div_grid_cells').boundingBox();
+
+      await dashboard.tile(1).startMoveBy(edge.dx, 0);
+      const preview = await page.locator('.cdk-drag-preview').boundingBox();
+      await dropGridTile(page);
+
+      expect(preview.x).toBeGreaterThanOrEqual(cells.x - 1);
+      expect(preview.x + preview.width).toBeLessThanOrEqual(cells.x + cells.width + 1);
+   });
+}
+
+test('grid tiles make room steadily for a tile dragged left beside a tall tile, which lands where shown', async ({ page, dashboard }) => {
+   await startGridWithSummaries(page, dashboard, 4, 8);
+   await dashboard.tile(1).setColumnSpan(en.get('element.columns', { count: 2 }));
+   await dashboard.tile(1).setRowSpan(en.get('element.rows', { count: 2 }));
+   await nameTiles(page, dashboard, ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
+   const [target, dragged, grip] = [await dashboard.tile(3).root.boundingBox(), await dashboard.tile(4).root.boundingBox(),
+      await dashboard.tile(4).title.boundingBox()];
+   const placeholder = dashboard.gridContent.locator('.cdk-drag-placeholder');
+   const [dx, dy] = [target.x - dragged.x, target.y - dragged.y];
+
+   await pressAndMoveBy(page, centerXOf(grip), centerYOf(grip), dx, dy);
+   const shown = await placeholder.boundingBox();
+   for (let i = 1; i <= 2; i++) {
+      await page.mouse.move(centerXOf(grip) + dx + 6 * i, centerYOf(grip) + dy, { steps: 2 });
+      expect(await placeholder.boundingBox()).toEqual(shown);
+   }
+   await dropGridTile(page);
+
+   expect(await titlesOf(dashboard)).toEqual(['A', 'B', 'C', 'E', 'D', 'F', 'G', 'H']);
+   const landed = await dashboard.tile(3).root.boundingBox();
+   expect(Math.abs(landed.x - shown.x)).toBeLessThanOrEqual(1);
+   expect(Math.abs(landed.y - shown.y)).toBeLessThanOrEqual(1);
+});
+
+test('grid tile dragged to the bottom edge scrolls the grid and lands on the cell it is moved to', async ({ page, dashboard }) => {
+   await startGridWithSummaries(page, dashboard, 4, 12, 812);
+   await nameTiles(page, dashboard, ['first']);
+   const grid = await dashboard.gridContent.boundingBox();
+   const [tile, grip] = [await dashboard.tile(0).root.boundingBox(), await dashboard.tile(0).title.boundingBox()];
+
+   await pressAndMoveBy(page, centerXOf(grip), centerYOf(grip), 0, grid.y + grid.height - 10 - centerYOf(grip));
+   await expect.poll(() => dashboard.gridContent.evaluate((g: HTMLElement) => g.scrollHeight - g.clientHeight - g.scrollTop)).toBeLessThan(1);
+   const last = await dashboard.tile(11).root.boundingBox();
+   await page.mouse.move(last.x + centerXOf(grip) - tile.x, last.y + centerYOf(grip) - tile.y, { steps: 5 });
+   await dropGridTile(page);
+
+   expect((await titlesOf(dashboard)).indexOf('first')).toBe(11);
+});
+
+for (const view of ['monitor', 'landscape']) {
+   test(`tiles of a four column grid stay in their row when moved within it on the free canvas, ${view}`, async ({ page, dashboard }) => {
+      await startGridWithSummaries(page, dashboard, 4, 4);
+      await (view === 'monitor' ? dashboard.snapToGridButton : dashboard.pagingToggles.landscapeButton).click();
+      const top = (await dashboard.tile(3).root.boundingBox()).y;
+
+      const [first, second] = [await dashboard.tile(0).root.boundingBox(), await dashboard.tile(1).root.boundingBox()];
+      await dashboard.tile(1).startMoveBy(first.x - second.x, 0);
+      await dashboard.tile(1).release();
+      const [third, fourth] = [await dashboard.tile(2).root.boundingBox(), await dashboard.tile(3).root.boundingBox()];
+      await dashboard.tile(2).startMoveBy(fourth.x - third.x + 20, 0);
+      await dashboard.tile(2).release();
+
+      const content = await dashboard.canvasPageContent.boundingBox();
+      const boxes = await dashboard.tileBoxes();
+      boxes.forEach(box => expect(Math.abs(box.y - top)).toBeLessThanOrEqual(1));
+      expect(Math.max(...boxes.map(box => box.x + box.width))).toBeLessThanOrEqual(content.x + content.width + 1);
+   });
+}
+
+test('tiles moved together onto a tile push it down while dragged, where it lands', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 3);
+   const [first, second, third] = [dashboard.tile(0), dashboard.tile(1), dashboard.tile(2)];
+   await dashboard.canvasContent.evaluate((c: HTMLElement) => c.scrollTo({ top: 0 }));
+   const [sheet, secondBox] = [await dashboard.sheets.first().boundingBox(), await second.root.boundingBox()];
+   await dashboard.marqueeSelect({ x: sheet.x + 5, y: sheet.y + 5 }, { x: secondBox.x + secondBox.width + 10, y: secondBox.y + secondBox.height + 10 });
+   await expect(first.root).toHaveClass(/div_tile_selected/);
+   await expect(second.root).toHaveClass(/div_tile_selected/);
+   const [firstBox, thirdBox] = [await first.root.boundingBox(), await third.root.boundingBox()];
+
+   await first.startMoveBy(0, thirdBox.y - firstBox.y);
+   await expect.poll(() => third.root.evaluate((e: HTMLElement) => e.style.translate)).not.toBe('');
+   await third.root.evaluate((e: HTMLElement) => Promise.all(e.getAnimations().map(a => a.finished)));
+   const shown = await third.root.boundingBox();
+   await first.release();
+
+   await expect.poll(async () => Math.abs((await third.root.boundingBox()).y - shown.y)).toBeLessThanOrEqual(1);
+   expect(shown.y).toBeGreaterThan(thirdBox.y);
+});
+
+test('screen view keeps its scroll position when a tile dragged below the content is dropped', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 812 });
+   await dashboard.launcher.cancel();
+   await dashboard.snapToGridButton.click();
+   await dashboard.addSummaries(2);
+   await dashboard.canvasContent.evaluate((c: HTMLElement) => c.scrollTo({ top: 0 }));
+   const tile = dashboard.tile(0);
+   const canvas = await dashboard.canvasContent.boundingBox();
+   const grip = await tile.moveHandle().boundingBox();
+   const scrollTopOf = (): Promise<number> => dashboard.canvasContent.evaluate((c: HTMLElement) => c.scrollTop);
+
+   await pressAndMoveBy(page, centerXOf(grip), centerYOf(grip), 30, canvas.y + canvas.height - 10 - centerYOf(grip));
+   await expect.poll(scrollTopOf).toBeGreaterThan(1000);
+   await page.mouse.move(centerXOf(grip) + 30, canvas.y + canvas.height - 300, { steps: 5 });
+   const scrollTop = await scrollTopOf();
+   await tile.release();
+
+   await expect.poll(scrollTopOf).toBe(scrollTop);
+   const box = await tile.root.boundingBox();
+   expect(box.y).toBeLessThan(canvas.y + canvas.height);
+});
+
 test('resizing a canvas tile into its right neighbour shifts the neighbour right', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();

@@ -195,7 +195,14 @@ export class FreeLayout extends SheetLayout {
   }
 
   drawnRectOf(context: ElementContext): Rect {
-    return this.grownRect(this.rectOf(context), context);
+    return this.drawnRectAt(context, context);
+  }
+
+  /**
+   * @returns the rect the tile is drawn at when placed at the given position and size
+   */
+  drawnRectAt(context: ElementContext, rect: Pick<ViewElement, 'x' | 'y' | 'width' | 'height'>): Rect {
+    return this.grownRect(this.rectOf(rect), context);
   }
 
   /**

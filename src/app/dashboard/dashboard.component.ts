@@ -1,4 +1,4 @@
-import { CdkDragEnd, CdkDragMove, DragRef, Point } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragEnd, CdkDragMove, CdkDragStart, DragRef, Point } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, inject, NgZone, Renderer2, ViewChild } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatMenu } from '@angular/material/menu';
@@ -26,6 +26,8 @@ import { containsRect, FreeLayout, intersects, Rect, Size, TileRect } from './fr
 import { DashboardGenerator } from './generator/dashboard-generator';
 import { MathRandomSource } from './generator/random-source';
 import { GridLayout, GridSpans } from './grid-layout';
+import { GridMovePreview } from './grid-move-preview';
+import { GridSpan } from './grid-placement';
 import { GroupDrag, translateBetween } from './group-drag';
 import { GroupResize } from './group-resize';
 import { GridResizeSession } from './grid-resize-session';
@@ -63,6 +65,8 @@ interface CanvasInteraction {
   groupResize?: { resize: GroupResize, bounds: SelectionBounds };
   /** where the tile moved alone lands in the row it is inserted into and the tiles shifted to make room for it */
   arrangement?: { target: Rect, shifted: Map<ElementContext, Rect> };
+  /** the tiles pushed down by the moved or resized tiles */
+  pushed?: Map<ElementContext, Rect>;
 }
 
 @Component({
@@ -106,6 +110,7 @@ export class DashboardComponent extends ViewController {
   private readonly removeDocumentListeners: (() => void)[];
   private gridResizeContentWidth: number;
   private gridResizeSession: GridResizeSession;
+  private gridMovePreview: GridMovePreview;
   /** the column span the resized grid tile is drawn with while its left edge passes its neighbours */
   private gridResizeSpan: { context: ElementContext, columnSpan: number };
   private canvasInteraction: CanvasInteraction;
@@ -818,17 +823,38 @@ export class DashboardComponent extends ViewController {
   }
 
   /**
-   * a press on an unfocused title focuses it, the move ends editing there as a click elsewhere would
+   * the move ends editing a title, as a click elsewhere would; the grid tiles make room where the moved tile lands
    */
-  onGridMoveStarted(): void {
+  onGridMoveStarted(context: ElementContext, event: CdkDragStart): void {
     blurActiveElement();
+    this.gridMovePreview = GridMovePreview.of(context, this.elementContexts, c => this.gridSpanOf(c), event.source.getPlaceholderElement(),
+      this.gridCellsRef.nativeElement, c => this.elementContainerDivRefs.get(this.elementContexts.indexOf(c)).nativeElement.parentElement,
+      this.gridLayout);
+  }
+
+  /**
+   * @returns the rendered spans of the tile, as `setGridColumns` keeps the column spans within the grid columns
+   */
+  private gridSpanOf(context: ElementContext): GridSpan {
+    return { columns: Math.min(context.gridColumnSpan, this.gridLayout.gridColumns), rows: this.gridRowSpanOf(context) };
+  }
+
+  readonly constrainGridMove = (point: Point, _dragRef: DragRef, dimensions: DOMRect, pickup: Point): Point =>
+    this.gridMovePreview.constrain(point, dimensions, pickup);
+
+  /**
+   * a tile dragged in the grid lands where its move shows it
+   */
+  override drop(event: CdkDragDrop<object>): void {
+    super.drop({ ...event, currentIndex: this.gridMovePreview?.move.targetIndex() ?? event.currentIndex });
+    this.gridMovePreview = undefined;
   }
 
   /**
    * the selected tiles are moved together when one of several selected tiles on the canvas is dragged
    */
   onFreeMoveStarted(context: ElementContext): void {
-    this.onGridMoveStarted();
+    blurActiveElement();
     const members = !this.isGridLayout() && this.tileSelection.isSelected(context) ? this.tileSelection.tiles() : [context];
     this.startCanvasInteraction(context, members);
     this.canvasInteraction.autoScroll = new DragAutoScroll(this.divContentRef.nativeElement);
@@ -855,6 +881,8 @@ export class DashboardComponent extends ViewController {
       this.canvasInteraction.snap = snap;
       this.canvasInteraction.arrangement = this.arrangementOf(context, snap.rect, original, moved.x);
     }
+    this.canvasInteraction.pushed = this.canvasInteraction.arrangement ? undefined
+      : this.pushedBy(group.members, m => this.freeLayout.drawnRectAt(m, { ...group.rectOf(m), width: m.width, height: m.height }));
     const rect = group.rectOf(context);
     return {
       x: pagesRect.left + this.layerMapping.layerXOf(rect.x) * scale,
@@ -901,6 +929,17 @@ export class DashboardComponent extends ViewController {
   }
 
   /**
+   * @param drawnRectOf the rect a member is drawn at
+   * @returns the tiles pushed down by the members, [[undefined]] while overlapping is allowed
+   */
+  private pushedBy(members: ElementContext[], drawnRectOf: (member: ElementContext) => Rect): Map<ElementContext, Rect> {
+    if (this.isGridLayout() || this.canvasOverlapAllowed) {
+      return undefined;
+    }
+    return this.overlapResolver.pushedRectsOf(this.elementContexts, new Map(members.filter(m => !m.isOverlay()).map(m => [m, drawnRectOf(m)])));
+  }
+
+  /**
    * members fitted into their pages one by one may cover each other, the lower ones then go below
    *
    * @param rects the snapped rects of the members at their indexes
@@ -927,21 +966,23 @@ export class DashboardComponent extends ViewController {
    */
   shiftTranslateOf(context: ElementContext): string {
     const interaction = this.canvasInteraction;
-    if (!interaction || interaction.groupResize) {
+    if (!interaction) {
       return undefined;
     }
-    const shifted = interaction.arrangement?.shifted.get(context);
-    return shifted ? translateBetween(this.freeLayout.rectOf(context), shifted, this.layerMapping, interaction.scale)
-      : interaction.group.translateOf(context, this.layerMapping, interaction.scale);
+    const shifted = interaction.arrangement?.shifted.get(context) ?? interaction.pushed?.get(context);
+    if (shifted) {
+      return translateBetween(this.freeLayout.rectOf(context), shifted, this.layerMapping, interaction.scale);
+    }
+    return interaction.groupResize ? undefined : interaction.group.translateOf(context, this.layerMapping, interaction.scale);
   }
 
   /**
-   * @returns whether the tile glides to and from the spot it is shifted to while a tile is moved into a row
+   * @returns whether the tile glides to and from the spot it is shifted or pushed to while tiles are moved or resized
    */
   isRowShifting(context: ElementContext): boolean {
     const interaction = this.canvasInteraction;
-    return !!interaction && !interaction.groupResize && !interaction.group.isGroup() && interaction.context !== context
-      && !context.isOverlay() && !this.isGridLayout() && !this.canvasOverlapAllowed;
+    return !!interaction && !interaction.group.members.includes(context) && !context.isOverlay() && !this.isGridLayout()
+      && !this.canvasOverlapAllowed;
   }
 
   isGroupFollower(context: ElementContext): boolean {
@@ -961,23 +1002,36 @@ export class DashboardComponent extends ViewController {
   }
 
   onFreeMoveEnded(context: ElementContext, event: CdkDragEnd): void {
-    const { snap, group, arrangement } = this.canvasInteraction;
-    if (arrangement) {
-      this.applyArrangement(context, arrangement);
-    } else if (snap) {
-      group.members.forEach(member => {
-        const rect = group.rectOf(member);
-        member.setPosition(rect.x, rect.y);
-      });
-      this.anchorInGrid(context, snap.rect);
-      this.renderChartsOnceCreated(group.membersWithChangedPage());
-    }
-    this.endCanvasInteraction();
-    event.source.reset();
-    this.bringAllToFront(group.members);
-    if (!arrangement) {
-      this.pushDownCoveredBy(group.members.filter(m => !m.isOverlay()));
-    }
+    this.keepScrollTop(() => {
+      const { snap, group, arrangement } = this.canvasInteraction;
+      if (arrangement) {
+        this.applyArrangement(context, arrangement);
+      } else if (snap) {
+        group.members.forEach(member => {
+          const rect = group.rectOf(member);
+          member.setPosition(rect.x, rect.y);
+        });
+        this.anchorInGrid(context, snap.rect);
+        this.renderChartsOnceCreated(group.membersWithChangedPage());
+      }
+      this.endCanvasInteraction();
+      event.source.reset();
+      this.bringAllToFront(group.members);
+      if (!arrangement) {
+        this.pushDownCoveredBy(group.members.filter(m => !m.isOverlay()));
+      }
+    });
+  }
+
+  /**
+   * a layout read while the drop renders would find the content without the dragged tile, shorter, and scroll it up
+   */
+  private keepScrollTop(apply: () => void): void {
+    const content = this.divContentRef.nativeElement;
+    const scrollTop = content.scrollTop;
+    apply();
+    this.cdr.detectChanges();
+    content.scrollTop = scrollTop;
   }
 
   /**
@@ -1079,6 +1133,8 @@ export class DashboardComponent extends ViewController {
     const snap = this.groupResizeSnapOf(resizeEvent);
     this.showResizePreview({ ...snap.rect, height: snap.rect.height + groupResize.bounds.growth });
     this.canvasGuides = this.layerGuidesOf(group.members, snap, scale);
+    const rects = groupResize.resize.resize(snap.rect);
+    this.canvasInteraction.pushed = this.pushedBy(group.members, m => this.freeLayout.drawnRectAt(m, rects[group.members.indexOf(m)]));
   }
 
   onGroupResizeEnd(resizeEvent: ResizeEvent): void {

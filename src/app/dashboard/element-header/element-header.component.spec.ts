@@ -8,6 +8,7 @@ import { DataType, ElementContext, ExportFormat, SummaryContext } from 'app/shar
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { GraphContext } from 'app/shared/model/graph';
 import { MatIconModuleMock } from 'app/shared/test';
+import { ClickWithoutDragDirective } from '../click-without-drag.directive';
 import { GridLayout } from '../grid-layout';
 import { ElementHeaderComponent } from './element-header.component';
 
@@ -19,7 +20,7 @@ describe('ElementHeaderComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [ElementHeaderComponent],
+      declarations: [ElementHeaderComponent, ClickWithoutDragDirective],
       imports: [MatMenuModule, MatButtonModule, MatIconModule]
     })
       .overrideModule(MatIconModule, MatIconModuleMock.override());
@@ -490,6 +491,130 @@ describe('ElementHeaderComponent', () => {
       expect(bubbled.length).toBe(2);
     });
 
+    function mouseDown(target: Element, button: number): MouseEvent {
+      const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true, button });
+      target.dispatchEvent(event);
+      return event;
+    }
+
+    function clickTitle(dx = 0, dy = 0): HTMLTextAreaElement {
+      const title = query('.textarea_title') as HTMLTextAreaElement;
+      const rect = title.getBoundingClientRect();
+      const point = { bubbles: true, clientX: rect.left + 8, clientY: rect.top + 8 };
+      title.dispatchEvent(new PointerEvent('pointerdown', point));
+      title.dispatchEvent(new MouseEvent('click', { ...point, clientX: point.clientX + dx, clientY: point.clientY + dy }));
+      return title;
+    }
+
+    function stubCaretPosition(position: object): void {
+      Object.defineProperty(document, 'caretPositionFromPoint', { value: () => position, configurable: true });
+    }
+
+    afterEach(() => {
+      delete (document as unknown as Record<string, unknown>)['caretPositionFromPoint'];
+    });
+
+    it('primary press on unfocused title should not focus it or start a text selection', () => {
+
+      // when
+      const event = mouseDown(query('.textarea_title'), 0);
+
+      // then
+      expect(event.defaultPrevented).toBe(true);
+      expect(bubbled.length).toBe(1);
+    });
+
+    it('secondary press on unfocused title should keep its default to show the menu of the browser in the title', () => {
+
+      // when
+      const event = mouseDown(query('.textarea_title'), 2);
+
+      // then
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('primary press on header beside the title should keep its default', () => {
+
+      // when
+      const event = mouseDown(query('.div_element_header'), 0);
+
+      // then
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('touch on unfocused title should keep its default', () => {
+
+      // given
+      const touch = new Event('touchstart', { bubbles: true, cancelable: true });
+
+      // when
+      query('.textarea_title').dispatchEvent(touch);
+
+      // then
+      expect(touch.defaultPrevented).toBe(false);
+    });
+
+    it('click on title should focus it with the caret at the clicked character', () => {
+
+      // given
+      const title = query('.textarea_title') as HTMLTextAreaElement;
+      stubCaretPosition({ offsetNode: title, offset: 3 });
+
+      // when
+      clickTitle();
+
+      // then
+      expect(document.activeElement).toBe(title);
+      expect([title.selectionStart, title.selectionEnd]).toEqual([3, 3]);
+    });
+
+    it('click on title being edited should keep its selection', () => {
+
+      // given
+      const title = query('.textarea_title') as HTMLTextAreaElement;
+      title.focus();
+      title.setSelectionRange(1, 4);
+      stubCaretPosition({ offsetNode: title, offset: 3 });
+
+      // when
+      clickTitle();
+
+      // then
+      expect([title.selectionStart, title.selectionEnd]).toEqual([1, 4]);
+    });
+
+    it.each([
+      { cause: 'the caret lies in another node', stub: (): void => stubCaretPosition({ offsetNode: document.body, offset: 3 }) },
+      {
+        cause: 'the browser cannot locate the caret',
+        stub: (): void => {
+          Object.defineProperty(document, 'caretPositionFromPoint', { value: undefined, configurable: true });
+        }
+      }
+    ])('click on title should focus it without placing the caret when $cause', ({ stub }) => {
+
+      // given
+      const title = query('.textarea_title') as HTMLTextAreaElement;
+      title.setSelectionRange(2, 2);
+      stub();
+
+      // when
+      clickTitle();
+
+      // then
+      expect(document.activeElement).toBe(title);
+      expect([title.selectionStart, title.selectionEnd]).toEqual([2, 2]);
+    });
+
+    it('click ending a drag of the title should not focus it', () => {
+
+      // when
+      const title = clickTitle(3, 3);
+
+      // then
+      expect(document.activeElement).not.toBe(title);
+    });
+
     it('should show move cursor on header and unfocused title, not on buttons and title being edited', () => {
 
       // given
@@ -526,6 +651,19 @@ describe('ElementHeaderComponent', () => {
 
     // then
     expect(getComputedStyle(query('.div_element_header')).cursor).not.toBe('move');
+  });
+
+  it('press on title should keep its default unless header is draggable', () => {
+
+    // given
+    render(new SummaryContext([]), null);
+    const event = new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 });
+
+    // when
+    query('.textarea_title').dispatchEvent(event);
+
+    // then
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('press on button should reach the tile unless header is draggable', () => {

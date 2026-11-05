@@ -15,12 +15,20 @@ export class OverlapResolver {
    * @returns the contexts moved
    */
   pushDown(contexts: ElementContext[], fixed: ElementContext[]): ElementContext[] {
+    const pushed = this.pushedRectsOf(contexts, new Map(fixed.map(c => [c, this.layout.drawnRectOf(c)])));
+    pushed.forEach((rect, c) => c.setPosition(rect.x, rect.y));
+    return [...pushed.keys()];
+  }
+
+  /**
+   * @param fixed the drawn rects of the tiles keeping their position, all others are pushed below the tiles they cover
+   * @returns the rects of the tiles pushed down
+   */
+  pushedRectsOf(contexts: ElementContext[], fixed: Map<ElementContext, Rect>): Map<ElementContext, Rect> {
     const tiles = contexts.filter(c => !c.isOverlay());
-    const rects = tiles.map(c => this.layout.drawnRectOf(c));
-    const pushed = this.pushedDown(rects, tiles.map(c => fixed.includes(c)));
-    const moved = tiles.filter((_c, i) => pushed[i].y !== rects[i].y);
-    moved.forEach(c => c.setPosition(pushed[tiles.indexOf(c)].x, pushed[tiles.indexOf(c)].y));
-    return moved;
+    const rects = tiles.map(c => fixed.get(c) ?? this.layout.drawnRectOf(c));
+    const pushed = this.pushedDown(rects, tiles.map(c => fixed.has(c)));
+    return new Map(tiles.filter((_c, i) => pushed[i].y !== rects[i].y).map(c => [c, pushed[tiles.indexOf(c)]]));
   }
 
   /**

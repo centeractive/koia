@@ -246,7 +246,7 @@
 
     @if (isGridLayout()) {
       <div #content id="div_grid" class="div_content printable" [style.padding.px]="contentPaddingPx()" cdkScrollable cdkDropList cdkDropListOrientation="mixed"
-        (cdkDropListDropped)="drop($event)">
+        cdkDropListSortingDisabled (cdkDropListDropped)="drop($event)">
         <div #gridCells class="div_grid_cells" [ngStyle]="gridCellsStyle()">
           @for (context of elementContexts; track context) {
             @if (context.isOverlay()) {
@@ -270,7 +270,8 @@
                 [style.--koia-anchor-name]="anchorNameOf(context)" [style]="textBoxTileStyle($any(context))"
                 [ngStyle]="gridCellStyleOf(context)" mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute"
                 (resizeStart)="onGridResizeStart(context)" (resizing)="onGridResizing(context, $event)"
-                (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag>
+                (resizeEnd)="onGridResizeEnd(context, $event)" cdkDrag [cdkDragConstrainPosition]="constrainGridMove"
+                (cdkDragStarted)="onGridMoveStarted(context, $event)">
                 <div #elementContainer class="div_element">
                   <ng-container *ngTemplateOutlet="textBoxBody; context: { $implicit: context }" />
                 </div>
@@ -282,7 +283,8 @@
                 (pointerdown)="tileSelection.press(context)" koiaClickWithoutDrag (clickWithoutDrag)="onTileClick(context, $event)"
                 mwlResizable [resizeCursors]="resizeCursors" ghostElementPositioning="absolute" (resizeStart)="onGridResizeStart(context)"
                 (resizing)="onGridResizing(context, $event)" (resizeEnd)="onGridResizeEnd(context, $event)"
-                cdkDrag [cdkDragDisabled]="tileCount() < 2" (cdkDragStarted)="onGridMoveStarted()">
+                cdkDrag [cdkDragDisabled]="tileCount() < 2" [cdkDragConstrainPosition]="constrainGridMove"
+                (cdkDragStarted)="onGridMoveStarted(context, $event)">
                 <div #elementContainer class="div_element">
                   <koia-element-header [context]="context" [gridLayout]="gridLayout" [headerDraggable]="tileCount() > 1"
                     (configure)="configure($event, context)" (remove)="removeElement(context)" (saveAs)="saveAs(context, $event)"

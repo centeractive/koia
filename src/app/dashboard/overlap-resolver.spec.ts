@@ -39,6 +39,22 @@ describe('OverlapResolver', () => {
     expect(positionsOf([fixed, covered])).toEqual([[0, 10], [300, 420]]);
   });
 
+  it('#pushedRectsOf should return the rects of the tiles pushed by fixed rects other than drawn, notes ignored', () => {
+
+    // given
+    const moved = tile(0, 600, 600, 400);
+    const covered = tile(300, 200, 600, 300);
+    const aside = tile(1000, 10, 300, 200);
+    const covering = note(300, 100);
+
+    // when
+    const pushed = landscape.pushedRectsOf([moved, covered, aside, covering], new Map([[moved, { x: 0, y: 10, width: 600, height: 400 }]]));
+
+    // then
+    expect([...pushed.entries()]).toEqual([[covered, { x: 300, y: 420, width: 600, height: 300 }]]);
+    expect(positionsOf([moved, covered])).toEqual([[0, 600], [300, 200]]);
+  });
+
   it('should move tile above covered by top edge of resized tile below it', () => {
 
     // given

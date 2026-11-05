@@ -1,6 +1,7 @@
 import { ElementContext } from 'app/shared/model';
 import { NumberUtils } from 'app/shared/utils';
 import { cellRatioToNumber } from './aspect-ratio';
+import { GridCell } from './grid-placement';
 
 export interface GridSpans {
   columnSpan: number;
@@ -45,6 +46,15 @@ export class GridLayout {
 
   columnOf(left: number, contentWidth: number): number {
     return Math.round(left / this.columnPitchOf(contentWidth));
+  }
+
+  /**
+   * @param left the offset from the left of the grid cells
+   * @param top the offset from the top of the grid cells
+   * @returns the fractional column and row of the offset
+   */
+  cellAt(left: number, top: number, contentWidth: number): GridCell {
+    return { column: left / this.columnPitchOf(contentWidth), row: top / this.rowPitchOf(contentWidth) };
   }
 
   /**

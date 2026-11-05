@@ -441,6 +441,19 @@ describe('FreeLayout', () => {
     expect(grown).toBe(rect);
   });
 
+  it('#drawnRectAt should grow text box to its fit height at the given rect and clip its width at the page edge', () => {
+
+    // given
+    const context = textBox(10, 20);
+    context.fitHeight = 400;
+
+    // when
+    const rect = layout.drawnRectAt(context, { x: layout.pageFormat.width - 100, y: 50, width: 300, height: 150 });
+
+    // then
+    expect(rect).toEqual({ x: layout.pageFormat.width - 100, y: 50, width: 100, height: 400 });
+  });
+
   it('#tileStyle should give grown height of text box', () => {
 
     // given

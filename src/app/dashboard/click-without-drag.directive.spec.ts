@@ -35,7 +35,7 @@ describe('ClickWithoutDragDirective', () => {
 
   it.each([
     { dx: 0, dy: 0 },
-    { dx: 4, dy: -4 }
+    { dx: 2, dy: -2 }
   ])('should emit click moved by $dx, $dy', ({ dx, dy }) => {
 
     // given
@@ -50,7 +50,8 @@ describe('ClickWithoutDragDirective', () => {
 
   it.each([
     { dx: 5, dy: 0 },
-    { dx: 0, dy: -5 }
+    { dx: 0, dy: -5 },
+    { dx: 3, dy: 3 }
   ])('should not emit click ending drag moved by $dx, $dy', ({ dx, dy }) => {
 
     // given

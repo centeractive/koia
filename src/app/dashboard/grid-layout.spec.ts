@@ -240,6 +240,21 @@ describe('GridLayout', () => {
       expect(rowSpan).toBe(2);
     });
 
+    it('#cellAt should return fractional column and row of offset by the pitches of the cells', () => {
+
+      // given
+      gridLayout.gridCellRatio = '2:1';
+      const columnPitch = contentWidth / 4;
+      const rowPitch = (columnPitch - GridLayout.GAP_PX) / 2 + GridLayout.GAP_PX;
+
+      // when
+      const cell = gridLayout.cellAt(1.5 * columnPitch, 2.25 * rowPitch, contentWidth);
+
+      // then
+      expect(cell.column).toBeCloseTo(1.5);
+      expect(cell.row).toBeCloseTo(2.25);
+    });
+
     it('#tileSizeOf should consider cell ratio', () => {
 
       // given

@@ -1,5 +1,7 @@
+import { CdkDragEnd } from '@angular/cdk/drag-drop';
 import { ComponentFixture, fakeAsync, waitForAsync } from '@angular/core/testing';
 import { CanvasPaging, ElementContext, SummaryContext, TextBoxContext } from 'app/shared/model';
+import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { intersects } from './free-layout';
 import { DashboardComponent } from './dashboard.component';
 import { configureDashboardTestBed, createDashboardHarness, DashboardHarness, useRenderedViewport } from './dashboard.component.spec-harness';
@@ -36,6 +38,17 @@ describe('DashboardComponent arrangement', () => {
 
   function canvasTiles(): HTMLElement[] {
     return Array.from(fixture.nativeElement.querySelectorAll('#div_canvas .div_tile'));
+  }
+
+  /**
+   * @param end ends the interaction showing the tile shifted
+   */
+  function expectDroppedWhereShown(tile: ElementContext, end: () => void): void {
+    const scale = harness.canvasScale();
+    const [, dy] = component.shiftTranslateOf(tile).split(' ').map(parseFloat);
+    const shownLayerY = harness.layerY(tile.y) + dy / scale;
+    end();
+    expect(harness.layerY(tile.y)).toBeCloseTo(shownLayerY, 3);
   }
 
   function renderChartsSpy(): ReturnType<typeof vi.spyOn> {
@@ -144,7 +157,7 @@ describe('DashboardComponent arrangement', () => {
       expect(component.resizePreview).toBeUndefined();
     });
 
-    it('should not insert tiles moved together', () => {
+    it('should push the tile covered by tiles moved together while they are dragged, where it lands when dropped', () => {
 
       // given
       const [first, moved, follower] = render([[0, 0, 300, 200], [310, 300, 300, 200], [620, 300, 300, 200]]);
@@ -156,8 +169,87 @@ describe('DashboardComponent arrangement', () => {
       component.onFreeMoving(harness.moveEventInMiddle());
 
       // then
-      expect(component.isRowShifting(first)).toBe(false);
+      expect([component.isRowShifting(first), component.isRowShifting(moved), component.isRowShifting(follower)]).toEqual([true, false, false]);
       expect(component.resizePreview).toBeUndefined();
+      expectDroppedWhereShown(first, () => component.onFreeMoveEnded(moved, harness.dragEnd()));
+    });
+
+    it('should push the tile covered by a tile not fitting the page of its row while it is dragged, where it lands when dropped', () => {
+
+      // given
+      const pageHeight = PageFormat.LANDSCAPE.height;
+      const [covered, moved] = render([[0, pageHeight - 250, 400, 200], [0, 50, 400, 400]]);
+      component.onFreeMoveStarted(moved);
+
+      // when
+      harness.constrainMoveTo(100, pageHeight - 230);
+      component.onFreeMoving(harness.moveEventInMiddle());
+
+      // then
+      expect(component.isRowShifting(covered)).toBe(true);
+      expectDroppedWhereShown(covered, () => component.onFreeMoveEnded(moved, harness.dragEnd()));
+      expect(covered.y).toBeGreaterThanOrEqual(pageHeight);
+    });
+
+    it('should push nothing while overlapping is allowed', () => {
+
+      // given
+      const [first, moved] = render([[0, 0, 300, 200], [310, 300, 300, 200]], true);
+      component.onFreeMoveStarted(moved);
+
+      // when
+      harness.constrainMoveTo(0, 0);
+
+      // then
+      expect([component.isRowShifting(first), component.shiftTranslateOf(first)]).toEqual([false, undefined]);
+    });
+
+    it('should push the tile covered by tiles resized together while they are resized, where it lands when the resize ends', () => {
+
+      // given
+      const [, , below] = render([[0, 0, 300, 200], [310, 0, 300, 200], [0, 300, 300, 200]]);
+      component.tileSelection.selectAll(component.elementContexts.slice(0, 2), false);
+      fixture.detectChanges();
+      const scale = harness.canvasScale();
+      const resize = harness.resizeEvent(610 * scale, 400 * scale, 0, 0, { bottom: 200 * scale });
+      component.onGroupResizeStart();
+
+      // when
+      component.onGroupResizing(resize);
+
+      // then
+      expect(component.isRowShifting(below)).toBe(true);
+      expectDroppedWhereShown(below, () => component.onGroupResizeEnd(resize));
+      expect(below.y).toBe(410);
+    });
+
+    it('should keep the scroll position of the screen view when a tile dragged below the content is dropped', () => {
+
+      // given
+      const [tile] = harness.renderCanvasSummaries([[0, 0, 300, 200]], CanvasPaging.NONE);
+      const scale = harness.canvasScale();
+      const content = component.divContentRef.nativeElement;
+      const tileElement = canvasTiles()[0];
+      component.onFreeMoveStarted(tile);
+      harness.constrainMoveTo(0, 3000);
+      tileElement.style.transform = 'translateY(' + 3000 * scale + 'px)';
+      content.scrollTop = content.scrollHeight - content.clientHeight;
+      const scrollTop = content.scrollTop;
+      const dragEnd = {
+        source: {
+          reset: (): void => {
+            tileElement.style.transform = '';
+            expect(content.scrollHeight).toBeGreaterThan(0);
+          }
+        }
+      } as unknown as CdkDragEnd;
+
+      // when
+      component.onFreeMoveEnded(tile, dragEnd);
+
+      // then
+      expect(tile.y).toBe(3000);
+      expect(content.scrollTop).toBe(scrollTop);
     });
 
     it('should not insert a moved note', () => {
@@ -232,15 +324,16 @@ it('should keep a tile reaching past the page edge in its row while a tile befor
       expect(intersects(component.freeLayout.rectOf(upper), component.freeLayout.rectOf(lower))).toBe(false);
     });
 
-    it('#onGridMoveStarted should move the focus away from a title being edited', () => {
+    it('#onFreeMoveStarted should move the focus away from a title being edited', () => {
 
       // given
+      const [tile] = render([[0, 0, 300, 200]]);
       const title = document.createElement('textarea');
       document.body.appendChild(title);
       title.focus();
 
       // when
-      component.onGridMoveStarted();
+      component.onFreeMoveStarted(tile);
 
       // then
       title.remove();

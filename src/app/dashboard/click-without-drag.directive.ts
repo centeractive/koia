@@ -1,7 +1,7 @@
 import { Directive, EventEmitter, HostListener, Output } from '@angular/core';
 
 /**
- * emits clicks of a drag handle that did not move the pointer far enough to start a drag
+ * emits clicks of a drag handle that did not move the pointer far enough to start a drag, the distance measured as the CDK does
  */
 @Directive({
   selector: '[koiaClickWithoutDrag]',
@@ -28,7 +28,7 @@ export class ClickWithoutDragDirective {
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent): void {
-    const distance = Math.max(Math.abs(event.clientX - this.pressX), Math.abs(event.clientY - this.pressY));
+    const distance = Math.abs(event.clientX - this.pressX) + Math.abs(event.clientY - this.pressY);
     if (distance < ClickWithoutDragDirective.DRAG_THRESHOLD_PX) {
       this.clickWithoutDrag.emit(event);
     }

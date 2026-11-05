@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { FreeLayout, Rect } from './free-layout';
 import { RowInsertion } from './row-insertion';
@@ -471,5 +472,58 @@ describe('RowInsertion', () => {
 
     // then
     expect(arrangement.rects[1].x).toBe(850);
+  });
+
+  describe('row taken from the grid', () => {
+
+    const GRID_ROW = [0, 352, 705, 1057];
+
+    function gridRow(): Rect[] {
+      return GRID_ROW.map(x => rect(x, 10, 343));
+    }
+
+    function arrangeMoved(insertion: RowInsertion, from: number, x: number): { all: Rect[], target: Rect } {
+      const rects = gridRow();
+      const arrangement = insertion.arrange({ ...rects[from], x }, rects[from], rects.filter((_r, i) => i !== from));
+      return arrangement && { all: [...arrangement.rects, arrangement.target], target: arrangement.target };
+    }
+
+    it.each([
+      { format: 'landscape', insertion: landscape },
+      { format: 'monitor', insertion: unpaged }
+    ])('should keep every tile in the row wherever one of them is moved within it on $format', ({ insertion }) => {
+
+      // given
+      const moves = [0, 1, 2, 3].flatMap(from => _.range(-1100, 1101, 25).map(dx => ({ from, x: _.clamp(GRID_ROW[from] + dx, 0, 1057) })));
+
+      // when
+      const arrangements = moves.map(m => arrangeMoved(insertion, m.from, m.x)).filter(a => a);
+
+      // then
+      expect(arrangements.length).toBe(264);
+      arrangements.forEach(a => {
+        expect(a.all.map(r => r.y)).toEqual([10, 10, 10, 10]);
+        expect(Math.max(...a.all.map(r => r.x + r.width))).toBeLessThanOrEqual(1400);
+      });
+    });
+
+    it('should hand the freed gap to the tile the moved one is inserted before, keeping the width of the row', () => {
+
+      // when
+      const { all, target } = arrangeMoved(landscape, 1, 0);
+
+      // then
+      expect(target.x).toBe(0);
+      expect(all.map(r => r.x).sort((a, b) => a - b)).toEqual([0, 353, 705, 1057]);
+    });
+
+    it('should end the row where it ended when the third tile is moved behind the last', () => {
+
+      // when
+      const { target } = arrangeMoved(landscape, 2, 1057);
+
+      // then
+      expect(target.x).toBe(1057);
+    });
   });
 });
