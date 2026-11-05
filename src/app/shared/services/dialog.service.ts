@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent, SceneDetailsDialogData } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
+import { firstValueFrom } from 'rxjs';
 import { ComputedColumnDialogComponent, ComputedColumnDialogData } from '../component/computed-column-dialog/computed-column-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
 import { ManageViewContext, ManageViewDialogComponent } from '../component/manage-view-dialog';
 import { ViewLauncherContext, ViewLauncherDialogComponent } from '../component/view-launcher-dialog';
-import { Scene } from '../model';
+import { Column, Scene } from '../model';
 
 @Injectable({
   providedIn: 'root'
@@ -41,8 +42,15 @@ export class DialogService {
     return this.dialogService.open(ViewLauncherDialogComponent, { data: context, panelClass: 'dialog-container' });
   }
 
-  showComputedColumnDialog(data: ComputedColumnDialogData): MatDialogRef<ComputedColumnDialogComponent> {
-    return this.dialogService.open(ComputedColumnDialogComponent, { data: data, panelClass: 'dialog-container' });
+  /**
+   * opens the computed column dialog to edit the specified column, or to create a new one when no column is specified
+   *
+   * @returns the saved column, or undefined when the dialog was cancelled or the column deleted
+   */
+  async editComputedColumn(entries: object[], column?: Column): Promise<Column | undefined> {
+    const data = new ComputedColumnDialogData(entries, column);
+    await firstValueFrom(this.dialogService.open(ComputedColumnDialogComponent, { data, panelClass: 'dialog-container' }).afterClosed());
+    return data.savedColumn;
   }
 
   showManageViewDialog<T extends { name: string, modifiedTime: number }>(context: ManageViewContext<T>): MatDialogRef<ManageViewDialogComponent<T>> {

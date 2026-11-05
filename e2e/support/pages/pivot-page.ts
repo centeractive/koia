@@ -18,6 +18,7 @@ export class PivotPage {
    readonly columnLabels: Locator;
    readonly rowTotals: Locator;
    readonly firstRowTotal: Locator;
+   readonly aggregatorAttribute: Locator;
    readonly rowTotalsButton: Locator;
    readonly columnTotals: Locator;
    readonly columnTotalsButton: Locator;
@@ -46,6 +47,7 @@ export class PivotPage {
       this.columnLabels = this.root.locator('table.pvtTable th.pvtColLabel');
       this.rowTotals = this.root.locator('table.pvtTable td.pvtTotal.rowTotal');
       this.firstRowTotal = this.rowTotals.first();
+      this.aggregatorAttribute = this.root.locator('select.pvtAttrDropdown');
       this.rowTotalsButton = this.root.locator('#but_row_totals');
       this.columnTotals = this.root.locator('table.pvtTable td.pvtTotal.colTotal');
       this.columnTotalsButton = this.root.locator('#but_column_totals');
@@ -84,6 +86,10 @@ export class PivotPage {
       return this.dragField(name, this.rowsZone);
    }
 
+   rowField(name: string): Locator {
+      return this.fieldChip(this.rowsZone, name);
+   }
+
    dragFieldToColumns(name: string): Promise<void> {
       return this.dragField(name, this.columnsZone);
    }
@@ -93,7 +99,7 @@ export class PivotPage {
     */
    async chooseAggregator(aggregatorName: string, attribute: string): Promise<void> {
       await this.root.locator('select.pvtAggregator').selectOption(aggregatorName);
-      await this.root.locator('select.pvtAttrDropdown').selectOption(attribute);
+      await this.aggregatorAttribute.selectOption(attribute);
    }
 
    /**

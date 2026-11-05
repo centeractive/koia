@@ -409,20 +409,39 @@ describe('ViewTabsService', () => {
       expect(tab.record).toBe(record);
    });
 
-   it('#renameColumn should rename column in views of tabs and request persist', async () => {
+   it('#updateColumnReferences should rename column in views and pivot records of tabs and request persist', async () => {
 
       // given
       const dashboardTab: TabDef = { ...createTabDef(ViewType.DASHBOARD, 1), view: dashboardView() };
-      const pivotTab = createTabDef(ViewType.PIVOT, 2);
+      const pivotOptions = { rows: ['Share', 'Level'] };
+      const pivotTab: TabDef = { ...createTabDef(ViewType.PIVOT, 2), record: pivotRecordWith(pivotOptions) };
       findSceneTabsSpy.mockResolvedValue(sceneTabs(dashboardTab, pivotTab));
       await loaded();
 
       // when
-      service.renameColumn('Share', 'Ratio');
+      service.updateColumnReferences({ name: 'Ratio', previousName: 'Share' });
 
       // then
       expect(dashboardTab.view.elements[0].dataColumns.map(c => c.name)).toEqual(['Ratio', 'Amount']);
-      expect(pivotTab.view).toBeUndefined();
+      expect(pivotOptions.rows).toEqual(['Ratio', 'Level']);
+      expect(persister.request).toHaveBeenCalled();
+   });
+
+   it('#updateColumnReferences should remove column from views and pivot records of tabs and request persist', async () => {
+
+      // given
+      const dashboardTab: TabDef = { ...createTabDef(ViewType.DASHBOARD, 1), view: dashboardView() };
+      const pivotOptions = { rows: ['Share', 'Level'] };
+      const pivotTab: TabDef = { ...createTabDef(ViewType.PIVOT, 2), record: pivotRecordWith(pivotOptions) };
+      findSceneTabsSpy.mockResolvedValue(sceneTabs(dashboardTab, pivotTab));
+      await loaded();
+
+      // when
+      service.updateColumnReferences({ name: undefined, previousName: 'Share' });
+
+      // then
+      expect(dashboardTab.view.elements[0].dataColumns.map(c => c.name)).toEqual(['Amount']);
+      expect(pivotOptions.rows).toEqual(['Level']);
       expect(persister.request).toHaveBeenCalled();
    });
 
@@ -689,6 +708,10 @@ describe('ViewTabsService', () => {
 
    function pivotRecord(): ConfigRecord {
       return { route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: { pivotOptions: { cols: ['Level'] } } };
+   }
+
+   function pivotRecordWith(pivotOptions: object): ConfigRecord {
+      return { route: Route.PIVOT, name: 'Pivot Table 2', modifiedTime: 0, query: null, data: { pivotOptions } };
    }
 
    function contentProvider(content: TabContent, layout = Route.PIVOT): TabContentProvider {

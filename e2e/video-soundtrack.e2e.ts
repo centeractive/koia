@@ -38,8 +38,9 @@ test('tile slugs of the videos page follow the order of its tiles', () => {
 
    const slugs = tileSlugsOf(html);
 
-   expect(slugs).toEqual(['new-scene', 'scenes-and-navigation', 'pivot-and-export', 'dashboards-and-charts', 'summary-tables',
-      'relationship-graphs', 'explain-these-rows', 'message-patterns', 'shared-scenes']);
+   expect(slugs).toEqual(['new-scene', 'scenes-and-navigation', 'filters', 'pivot-and-export', 'dashboards-and-charts',
+      'dashboard-layouts', 'summary-tables', 'computed-columns', 'relationship-graphs', 'explain-these-rows', 'message-patterns',
+      'shared-scenes']);
 });
 
 test('tiles play their dedicated soundtrack, the others alternate The Entertainer and Fig Leaf Rag', () => {
@@ -47,8 +48,18 @@ test('tiles play their dedicated soundtrack, the others alternate The Entertaine
 
    const soundtracks = slugs.map(slug => soundtrackOf(slug, slugs));
 
-   expect(soundtracks).toEqual([ENTERTAINER, FIG_LEAF_RAG, WAGON_WHEEL, ORIGINAL_RAGS, RAGTIME_DANCE, PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG,
-      MERRY_GO]);
+   expect(soundtracks).toEqual([ENTERTAINER, FIG_LEAF_RAG, MAPLE_LEAF_RAG, WAGON_WHEEL, ORIGINAL_RAGS, PLUCKY_DAISY, RAGTIME_DANCE, ENTERTAINER,
+      PLUCKY_DAISY, MAPLE_LEAF_RAG, FROGS_LEGS_RAG, MERRY_GO]);
+});
+
+test('soundtracks list each music file once although videos share them', () => {
+   const slugs = tileSlugsOf(videosPageHtml());
+
+   const files = SOUNDTRACKS.map(s => s.file);
+
+   expect(slugs.length).toBeGreaterThan(files.length);
+   expect(files).toEqual([...new Set(files)]);
+   expect(new Set(files)).toEqual(new Set(slugs.map(slug => soundtrackOf(slug, slugs).file)));
 });
 
 test('tile with dedicated soundtrack between topic tiles keeps the alternation of the topic tiles', () => {

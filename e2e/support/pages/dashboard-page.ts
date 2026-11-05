@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
+import { Box } from '../box';
 import { DashboardSideBar } from '../components/dashboard-side-bar';
 import { DashboardTile } from '../components/dashboard-tile';
 import { ADD_CHART_BUTTON, ADD_GRAPH_BUTTON, ADD_SUMMARY_BUTTON, ViewLauncherDialog } from '../components/dialogs';
@@ -156,6 +157,10 @@ export class DashboardPage {
 
    tile(index: number): DashboardTile {
       return new DashboardTile(this.tiles.nth(index));
+   }
+
+   async tileBoxes(): Promise<Box[]> {
+      return Promise.all((await this.tiles.all()).map(tile => tile.boundingBox()));
    }
 
    textBox(index: number): TextBox {

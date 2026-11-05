@@ -20,10 +20,22 @@ export class RangeFilter {
    }
 
    /**
+    * drags the right end by the units of the slider: values of a number column, time units of a time column
+    */
+   async dragMaxBy(units: number): Promise<void> {
+      await this.dragBy(this.root.locator('.ngx-slider-pointer-max'), units);
+   }
+
+   /**
     * drags the bar between both ends by the units of the slider: values of a number column, time units of a time column
     */
    async dragRangeBy(units: number): Promise<void> {
       await this.dragBy(this.root.locator('.ngx-slider-selection-bar'), units);
+   }
+
+   async chooseRangeType(label: string): Promise<void> {
+      await this.root.locator('.div_range_column_name > span').first().click();
+      await this.root.page().getByRole('menuitem', { name: label, exact: true }).click();
    }
 
    async remove(): Promise<void> {

@@ -18,7 +18,7 @@ export class CellClickHandler {
     const queryEnhancer = new QueryEnhancer(this.baseQueryProvider.provide().clone(), this.columns, valueGroupings, filters);
     queryEnhancer.addBasicFilters();
     queryEnhancer.addFiltersForValueChoices(exclusions);
-    this.rawDataRevealService.show(queryEnhancer.getQuery(), this.explainBase(valueGroupings, exclusions));
+    this.rawDataRevealService.reveal(queryEnhancer.getQuery(), this.columns, this.explainBase(valueGroupings, exclusions));
   }
 
   /**

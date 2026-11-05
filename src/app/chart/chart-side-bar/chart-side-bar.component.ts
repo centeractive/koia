@@ -3,7 +3,7 @@ import { SideBarController } from 'app/shared/controller';
 import { ChartContext, ChartType } from 'app/shared/model/chart';
 import { ChartMarginService } from 'app/shared/services/chart/chart-margin.service';
 import { CommonUtils, DataTypeUtils } from 'app/shared/utils';
-import { isAnalyzableColumn, isComputedColumn } from 'app/shared/utils/column-utils';
+import { isAnalyzableColumn } from 'app/shared/utils/column-utils';
 import { LanguageService } from 'app/shared/services/language';
 import { Aggregation, Column, DataType, EnumLabels, TimeUnit, VALUE_AGGREGATIONS } from '../../shared/model';
 import { GroupByColumnSelector } from './group-by-column-selector';
@@ -48,7 +48,7 @@ export class ChartSideBarComponent extends SideBarController implements OnChange
       .filter(isAnalyzableColumn)
       .filter(c => c.dataType !== DataType.TIME);
     this.selectableGroupByColumns = this.context.columns
-      .filter(c => !isComputedColumn(c) && !this.context.dataColumns.includes(c));
+      .filter(c => !this.context.dataColumns.includes(c));
     super.defineSelectableItems();
   }
 

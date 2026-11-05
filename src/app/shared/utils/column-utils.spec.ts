@@ -1,6 +1,7 @@
 import { Column, ComputeOperator, DataType } from '../model';
+import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import {
-   containsAnyNumber, filterableColumnsOf, iconOfColumn, isAnalyzableColumn, isComputedColumn, isOperandColumn, isPatternColumn,
+   analyzableColumnsOf, containsAnyNumber, filterableColumnsOf, iconOfColumn, isAnalyzableColumn, isComputedColumn, isOperandColumn, isPatternColumn,
    patternColumnName, storedColumnsOf
 } from './column-utils';
 
@@ -53,6 +54,20 @@ describe('column-utils', () => {
 
    it('#isAnalyzableColumn should return false for non-indexed stored column', () => {
       expect(isAnalyzableColumn(number)).toBe(false);
+   });
+
+   it('#analyzableColumnsOf should return clones of indexed and computed columns without non-indexed stored and id columns', () => {
+
+      // given
+      const id: Column = { name: CouchDBConstants._ID, dataType: DataType.TEXT, width: 10, indexed: true };
+
+      // when
+      const columns = analyzableColumnsOf([id, number, indexedText, computed]);
+
+      // then
+      expect(columns).toEqual([indexedText, computed]);
+      expect(columns[0]).not.toBe(indexedText);
+      expect(columns[1]).not.toBe(computed);
    });
 
    it('#storedColumnsOf should return columns that are not computed', () => {

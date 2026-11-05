@@ -13,6 +13,7 @@ export class MainToolbar {
    readonly filtersToggle: Locator;
    readonly linkFiltersToggle: Locator;
    readonly valueFilterInputs: Locator;
+   readonly valueFilters: Locator;
    readonly refreshButton: Locator;
    readonly toolbarRow: Locator;
    readonly saveViewButton: Locator;
@@ -27,6 +28,7 @@ export class MainToolbar {
       this.filtersToggle = root.locator('#butToggleFilters');
       this.linkFiltersToggle = root.locator('#butLinkFilters');
       this.valueFilterInputs = root.locator('koia-value-filter .column_filter_input');
+      this.valueFilters = root.locator('koia-value-filter');
       this.refreshButton = root.locator('.span_buttons:not(.span_navigation) > button:last-child');
       this.toolbarRow = root.locator('.div_toolbar');
       this.saveViewButton = root.locator('#but_save_view');
@@ -35,12 +37,25 @@ export class MainToolbar {
       this.navButtons = new NavButtons(root.locator('koia-nav-buttons'));
    }
 
-   async addValueFilter(column: string, value: string): Promise<void> {
-      await this.addFilterButton.click();
-      await this.root.page().getByRole('menuitem', { name: column, exact: true }).click();
-      const input = this.root.locator('.column_filter_input').last();
-      await input.fill(value);
-      await input.press('Enter');
+   /**
+    * adds a value filter to a text column, which adds it at once
+    */
+   async addValueFilter(column: string, value: string, operatorLabel?: string): Promise<void> {
+      await this.chooseFilterColumn(column);
+      await this.fillValueFilter(value, operatorLabel);
+   }
+
+   /**
+    * adds a value filter to a number column through its value submenu item
+    */
+   async addNumberValueFilter(column: string, valueLabel: string, value: string, operatorLabel?: string): Promise<void> {
+      await this.chooseFilterColumn(column);
+      await this.root.page().getByRole('menuitem', { name: valueLabel, exact: true }).click();
+      await this.fillValueFilter(value, operatorLabel);
+   }
+
+   async chooseValueFilterOperator(index: number, operatorLabel: string): Promise<void> {
+      await this.chooseOperatorOf(this.valueFilters.nth(index), operatorLabel);
    }
 
    async toggleLinkedFilters(): Promise<void> {
@@ -54,8 +69,7 @@ export class MainToolbar {
    }
 
    async addRangeFilter(column: string, valueRangeLabel: string): Promise<RangeFilter> {
-      await this.addFilterButton.click();
-      await this.root.page().getByRole('menuitem', { name: column, exact: true }).click();
+      await this.chooseFilterColumn(column);
       await this.root.page().getByRole('menuitem', { name: valueRangeLabel, exact: true }).click();
       const rangeFilter = this.root.locator('koia-range-filter').last();
       await rangeFilter.waitFor();
@@ -110,5 +124,24 @@ export class MainToolbar {
    async addScene(): Promise<void> {
       await this.root.locator('#butScene').click();
       await this.root.page().waitForURL('**/' + Route.SCENE);
+   }
+
+   private async chooseFilterColumn(column: string): Promise<void> {
+      await this.addFilterButton.click();
+      await this.root.page().getByRole('menuitem', { name: column, exact: true }).click();
+   }
+
+   private async fillValueFilter(value: string, operatorLabel?: string): Promise<void> {
+      if (operatorLabel) {
+         await this.chooseOperatorOf(this.valueFilters.last(), operatorLabel);
+      }
+      const input = this.root.locator('.column_filter_input').last();
+      await input.fill(value);
+      await input.press('Enter');
+   }
+
+   private async chooseOperatorOf(valueFilter: Locator, operatorLabel: string): Promise<void> {
+      await valueFilter.locator('.span_menu_trigger').nth(1).click();
+      await this.root.page().getByRole('menuitem', { name: operatorLabel, exact: true }).click();
    }
 }

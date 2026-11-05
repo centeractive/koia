@@ -1,0 +1,14 @@
+<mat-menu>
+  <ng-template matMenuContent>
+    <button class="menu_item_new_computed_column" mat-menu-item [disabled]="!creatable" (click)="openDialog()">
+      <mat-icon>add</mat-icon>
+      <span>{{ 'computedColumn.new' | translate }}</span>
+    </button>
+    @for (column of columns; track column.name) {
+      <button class="menu_item_edit_computed_column" mat-menu-item [matTooltip]="tooltipOf(column)" (click)="openDialog(column)">
+        <mat-icon>functions</mat-icon>
+        <span>{{ column.name }}</span>
+      </button>
+    }
+  </ng-template>
+</mat-menu>

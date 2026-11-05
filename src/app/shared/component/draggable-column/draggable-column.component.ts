@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Column, ElementContext, GROUPING_TIME_UNITS, TimeUnit } from 'app/shared/model';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
-import { iconOfColumn } from 'app/shared/utils/column-utils';
+import { iconOfColumn, isComputedColumn } from 'app/shared/utils/column-utils';
 
 @Component({
     selector: 'koia-draggable-column',
@@ -14,6 +14,8 @@ export class DraggableColumnComponent implements OnInit {
   @Input() context: ElementContext;
   @Input() column: Column;
   @Input() cssClass: string;
+  @Input() editable = false;
+  @Input() entries: object[];
 
   readonly selectableTimeUnits = GROUPING_TIME_UNITS;
 
@@ -21,6 +23,10 @@ export class DraggableColumnComponent implements OnInit {
 
   ngOnInit(): void {
     this.icon = iconOfColumn(this.column);
+  }
+
+  isComputedColumn(): boolean {
+    return isComputedColumn(this.column);
   }
 
   groupingTimeUnitKey(timeUnit: TimeUnit): string {

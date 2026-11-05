@@ -4936,7 +4936,23 @@ describe('DashboardComponent', () => {
       // then
       expect(context.dataColumns.map(c => c.name)).toEqual(['Delta']);
       expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count', 'Delta']);
-      expect(viewTabsService.renameColumn).toHaveBeenCalledWith('Diff', 'Delta');
+      expect(viewTabsService.updateColumnReferences).toHaveBeenCalledWith({ name: 'Delta', previousName: 'Diff' });
+    }));
+
+    it('#onComputedColumnsChanged should rename group-by column of element when column was renamed', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      harness.init();
+      const context = component.addSummaryTable();
+      context.groupByColumns = [harness.findColumn('Diff', context)];
+
+      // when
+      computedColumnService.save(computedColumn('Delta', ComputeOperator.SUBTRACT), 'Diff');
+      flush();
+
+      // then
+      expect(context.groupByColumns.map(c => c.name)).toEqual(['Delta']);
     }));
 
     it('#applyView should restore renamed column of saved view when column was renamed', fakeAsync(() => {

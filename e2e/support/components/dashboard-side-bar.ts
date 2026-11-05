@@ -9,8 +9,12 @@ const SPLIT_COLUMNS_ID = 'selectedSplitColumns';
 /**
  * matches the element by its own text, ignoring the text of the icon preceding it
  */
+function ownTextOf(name: string): string {
+   return `:text-is(${JSON.stringify(name)})`;
+}
+
 function textNodeOf(name: string): (list: Locator) => Locator {
-   return list => list.locator(`:text-is(${JSON.stringify(name)})`);
+   return list => list.locator(ownTextOf(name));
 }
 
 export class DashboardSideBar extends SideNav {
@@ -106,6 +110,27 @@ export class DashboardSideBar extends SideNav {
     */
    groupByField(): Locator {
       return this.sidenav.locator('.field_group_by mat-select');
+   }
+
+   /**
+    * expands the panel of the group-by select of the chart unless it is expanded already and chooses the column by the text of its
+    * option, as the option also holds the icon of the column
+    */
+   async selectGroupBy(column: string): Promise<void> {
+      const panel = await this.expandPanelOf('.field_group_by');
+      await panel.locator('.field_group_by .mat-mdc-text-field-wrapper').click();
+      await textNodeOf(column)(this.sidenav.page().locator('mat-option')).click();
+   }
+
+   selectedGroupByColumns(): Locator {
+      return this.sidenav.locator('#selectedGroupByColumns koia-draggable-column');
+   }
+
+   /**
+    * the column among the selected group-by columns of the summary table or graph, matched by its own text
+    */
+   selectedGroupByColumn(name: string): Locator {
+      return this.selectedGroupByColumns().filter({ has: this.sidenav.page().locator(ownTextOf(name)) });
    }
 
    /**

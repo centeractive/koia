@@ -311,11 +311,7 @@ describe('GroupByColumnSelector', () => {
    it('#select should never choose a computed column', () => {
 
       // given
-      const share: Column = {
-         name: 'Share', dataType: DataType.NUMBER, width: 1, indexed: false,
-         computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
-      };
-      columns = [share, column('Amount'), column('Percent')];
+      columns = [shareColumn(), column('Amount'), column('Percent')];
       context = new ChartContext(columns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
       context.entries = UNIQUE_NAME_ENTRIES;
       setup(ChartType.LINE, [], ['Amount'], []);
@@ -326,6 +322,41 @@ describe('GroupByColumnSelector', () => {
       // then
       expect(groupByColumns).toEqual([column('Percent')]);
    });
+
+   it('#select should keep computed group-by column chosen by user while valid', () => {
+
+      // given
+      columns.push(shareColumn());
+      context.entries = UNIQUE_NAME_ENTRIES.map((e, i) => ({ ...e, Share: i }));
+      setup(ChartType.BAR, [], ['Amount'], ['Share']);
+
+      // when
+      const groupByColumns = new GroupByColumnSelector(context).select();
+
+      // then
+      expect(groupByColumns).toEqual([column('Share')]);
+   });
+
+   it('#select should replace computed group-by column of category chart exceeding max values', () => {
+
+      // given
+      columns.push(shareColumn());
+      context.entries = Array.from({ length: 1001 }, (_, i) => ({ Name: i < 3 ? 'n' + i : '', Amount: i, Share: i }));
+      setup(ChartType.PIE, [], ['Amount'], ['Share']);
+
+      // when
+      const groupByColumns = new GroupByColumnSelector(context).select();
+
+      // then
+      expect(groupByColumns).toEqual([column('Name')]);
+   });
+
+   function shareColumn(): Column {
+      return {
+         name: 'Share', dataType: DataType.NUMBER, width: 1, indexed: false,
+         computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
+      };
+   }
 
    function setup(chartType: ChartType, aggregations: Aggregation[], dataColumnNames: string[], groupByColumnNames: string[]): void {
       context.chartType = chartType.type;

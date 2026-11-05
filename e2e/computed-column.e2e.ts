@@ -1,29 +1,29 @@
 import { ChartType } from 'app/shared/model/chart/chart-type';
 import { ComputeOperator } from 'app/shared/model/compute-operator.enum';
 import { DataType } from 'app/shared/model/data-type.enum';
-import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { Locator } from '@playwright/test';
+import { ComputedColumnDialog } from './support/components/computed-column-dialog';
 import { expect, test } from './support/fixtures';
-import { columnsOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { columnsOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { DashboardPage } from './support/pages/dashboard-page';
 import { Texts } from './support/texts';
 
 const VIEW_NAME = 'Shares';
 const RENAMED_COLUMN = 'Share';
 const en = new Texts('en');
-const [quantity, revenue] = columnsOf(fruitSalesOf('en'), DataType.NUMBER);
-const defaultName = formulaOf(ComputeOperator.PERCENTAGE);
+const sample = fruitSalesOf('en');
+const [quantity, revenue] = columnsOf(sample, DataType.NUMBER);
+const textColumn = firstColumnOf(sample, DataType.TEXT);
+const defaultName = en.computeFormula(ComputeOperator.PERCENTAGE, quantity, revenue);
+/** has few distinct values, hence its graph stays below the maximum number of nodes, also below a text column */
+const doubledQuantity = en.computeFormula(ComputeOperator.ADD, quantity, quantity);
 
-function formulaOf(operator: ComputeOperator): string {
-   return en.get(EnumLabelKeys.computeOperatorFormula(operator), { left: quantity, right: revenue });
-}
-
-function operatorLabelOf(operator: ComputeOperator): string {
-   return en.get(EnumLabelKeys.computeOperator(operator));
-}
-
-function editLabelOf(name: string): string {
-   return en.get('computedColumn.edit', { name });
+async function createDoubledQuantity(dashboard: DashboardPage, computedColumnDialog: ComputedColumnDialog): Promise<void> {
+   await dashboard.sideBar.createComputedColumn();
+   await computedColumnDialog.selectOperator(en.computeOperator(ComputeOperator.ADD));
+   await computedColumnDialog.selectRightColumn(quantity);
+   await computedColumnDialog.ok();
 }
 
 async function numberOf(cell: Locator): Promise<number> {
@@ -49,10 +49,10 @@ test('computed column created in the chart side bar is selected and painted', as
 });
 
 test('computed column is shown in raw data with its formula as header title and computed values', async ({ dashboard, computedColumnDialog, tabBar, rawData }) => {
-   const formula = formulaOf(ComputeOperator.MULTIPLY);
+   const formula = en.computeFormula(ComputeOperator.MULTIPLY, quantity, revenue);
    await dashboard.launcher.addChart();
    await dashboard.sideBar.createComputedColumn();
-   await computedColumnDialog.selectOperator(operatorLabelOf(ComputeOperator.MULTIPLY));
+   await computedColumnDialog.selectOperator(en.computeOperator(ComputeOperator.MULTIPLY));
    await computedColumnDialog.ok();
    await dashboard.sideBar.close();
 
@@ -78,15 +78,15 @@ test('computed column is not offered as a filter', async ({ page, dashboard, com
 });
 
 test('editing the operator of a computed column changes its formula', async ({ dashboard, computedColumnDialog }) => {
-   const formula = formulaOf(ComputeOperator.DIVIDE);
+   const formula = en.computeFormula(ComputeOperator.DIVIDE, quantity, revenue);
    await dashboard.launcher.addChart();
    await dashboard.sideBar.createComputedColumn();
    await computedColumnDialog.ok();
 
-   await dashboard.sideBar.editComputedColumn(editLabelOf(defaultName));
-   await computedColumnDialog.selectOperator(operatorLabelOf(ComputeOperator.DIVIDE));
+   await dashboard.sideBar.editComputedColumn(en.computedColumnEdit(defaultName));
+   await computedColumnDialog.selectOperator(en.computeOperator(ComputeOperator.DIVIDE));
    await computedColumnDialog.ok();
-   await dashboard.sideBar.editComputedColumn(editLabelOf(formula));
+   await dashboard.sideBar.editComputedColumn(en.computedColumnEdit(formula));
 
    await expect(computedColumnDialog.formula).toHaveText(en.get('computedColumn.formulaLabel', { formula }));
    await computedColumnDialog.cancel();
@@ -101,7 +101,7 @@ test('renaming a computed column updates the element and the saved view', async 
    await notifications.dismiss(StatusType.SUCCESS);
 
    await dashboard.tile(0).configure();
-   await dashboard.sideBar.editComputedColumn(editLabelOf(defaultName));
+   await dashboard.sideBar.editComputedColumn(en.computedColumnEdit(defaultName));
    await computedColumnDialog.fillName(RENAMED_COLUMN);
    await computedColumnDialog.ok();
 
@@ -119,7 +119,7 @@ test('deleting a computed column removes it from the element', async ({ dashboar
    await dashboard.sideBar.createComputedColumn();
    await computedColumnDialog.ok();
 
-   await dashboard.sideBar.editComputedColumn(editLabelOf(defaultName));
+   await dashboard.sideBar.editComputedColumn(en.computedColumnEdit(defaultName));
    await computedColumnDialog.delete();
    const question = await confirmDialog.confirm();
 
@@ -140,4 +140,76 @@ test('clicking a count distinct value of a computed column warns instead of reve
 
    expect(await notifications.dismiss(StatusType.WARNING)).toBe(en.get('computedColumn.noRawData', { column: defaultName }));
    await expect(page.locator('koia-raw-data-dialog')).toHaveCount(0);
+});
+
+test('swap button swaps the columns of the formula', async ({ dashboard, computedColumnDialog }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.createComputedColumn();
+
+   await computedColumnDialog.swapOperands();
+
+   await expect(computedColumnDialog.formula)
+      .toHaveText(en.get('computedColumn.formulaLabel', { formula: en.computeFormula(ComputeOperator.PERCENTAGE, revenue, quantity) }));
+   await computedColumnDialog.cancel();
+});
+
+test('chart grouped by a computed column is painted and shows the column as group-by', async ({ dashboard, computedColumnDialog }) => {
+   await dashboard.launcher.addChart();
+   await dashboard.sideBar.createComputedColumn();
+   await computedColumnDialog.ok();
+   await dashboard.sideBar.selectColumn(revenue);
+   await dashboard.sideBar.switchChartType(ChartType.LINE);
+   await dashboard.sideBar.chooseAggregation(en.get('chart.individualValues'));
+
+   await dashboard.sideBar.selectGroupBy(defaultName);
+
+   await expect(dashboard.sideBar.groupByField()).toContainText(defaultName);
+   await dashboard.tile(0).expectChartPainted();
+});
+
+test('count of a summary table grouped by a computed column warns instead of revealing raw data', async ({ page, dashboard, computedColumnDialog, notifications }) => {
+   await dashboard.launcher.addSummary();
+   await dashboard.sideBar.createComputedColumn();
+   await computedColumnDialog.ok();
+   await dashboard.sideBar.selectColumn(textColumn);
+   await dashboard.sideBar.dragGroupByColumn(defaultName);
+   await dashboard.sideBar.close();
+
+   await dashboard.tile(0).firstCountLink.click();
+
+   expect(await notifications.dismiss(StatusType.WARNING)).toBe(en.get('computedColumn.noRawData', { column: defaultName }));
+   await expect(page.locator('koia-raw-data-dialog')).toHaveCount(0);
+});
+
+test('computed column created in the graph side bar becomes the last level of the hierarchy', async ({ dashboard, computedColumnDialog }) => {
+   await dashboard.launcher.addGraph();
+   await dashboard.sideBar.dragGroupByColumn(textColumn);
+
+   await createDoubledQuantity(dashboard, computedColumnDialog);
+
+   await expect(dashboard.sideBar.selectedGroupByColumns()).toHaveCount(2);
+   await expect(dashboard.sideBar.selectedGroupByColumns().last()).toContainText(doubledQuantity);
+});
+
+test('double click on a graph node of a computed column warns instead of revealing raw data', async ({ page, dashboard, computedColumnDialog, notifications }) => {
+   await dashboard.launcher.addGraph();
+   await createDoubledQuantity(dashboard, computedColumnDialog);
+   await dashboard.sideBar.close();
+
+   await dashboard.tile(0).doubleClickGraphNode(dashboard.tile(0).graphNodes.filter({ hasText: doubledQuantity + ': ' }).first());
+
+   expect(await notifications.dismiss(StatusType.WARNING)).toBe(en.get('computedColumn.noRawData', { column: doubledQuantity }));
+   await expect(page.locator('koia-raw-data-dialog')).toHaveCount(0);
+});
+
+test('renaming a computed column in the graph side bar renames its hierarchy level', async ({ dashboard, computedColumnDialog }) => {
+   await dashboard.launcher.addGraph();
+   await createDoubledQuantity(dashboard, computedColumnDialog);
+
+   await dashboard.sideBar.editComputedColumn(en.computedColumnEdit(doubledQuantity));
+   await computedColumnDialog.fillName(RENAMED_COLUMN);
+   await computedColumnDialog.ok();
+
+   await expect(dashboard.sideBar.selectedGroupByColumn(RENAMED_COLUMN)).toBeVisible();
+   await expect(dashboard.sideBar.selectedGroupByColumn(doubledQuantity)).toHaveCount(0);
 });

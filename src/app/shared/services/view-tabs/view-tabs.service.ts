@@ -6,7 +6,8 @@ import { AppRouteReuseStrategy } from 'app/app-route-reuse-strategy';
 import { Route, Scene } from '../../model';
 import { LinkedFilters, SceneTabsContent, TabDef, ViewType } from '../../model/view-config';
 import { DBService } from '../backend';
-import { ViewColumnRenamer } from '../view-persistence/view-column-renamer';
+import type { ComputedColumnChange } from '../computed-column.service';
+import { ColumnReferenceUpdater } from '../view-persistence/column-references/column-reference-updater';
 import { withoutPendingKey } from './linked-filters';
 import { TabContentProvider } from './tab-content-provider.type';
 import { createTabDef, maxTabSeq, tabPath, tabUrl } from './tab-defs';
@@ -135,11 +136,10 @@ export class ViewTabsService {
    }
 
    /**
-    * renames the column in the views of all tabs and requests persisting them
+    * renames or removes the column in the views and pivot records of all tabs and requests persisting them
     */
-   renameColumn(previousName: string, name: string): void {
-      const renamer = new ViewColumnRenamer(previousName, name);
-      this.tabs.filter(t => t.view).forEach(t => renamer.renameInView(t.view));
+   updateColumnReferences(change: ComputedColumnChange): void {
+      new ColumnReferenceUpdater(change).inTabs(this.tabs);
       this.requestPersist();
    }
 

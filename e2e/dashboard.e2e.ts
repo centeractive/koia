@@ -15,7 +15,7 @@ import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE, FONT_FAMILIES, FONT_SIZES } fro
 import { Locator, Page } from '@playwright/test';
 import { rgb, schemeSet1 } from 'd3';
 import { DateTime } from 'luxon';
-import { centerXOf, centerYOf } from './support/box';
+import { Box, centerXOf, centerYOf, intersects } from './support/box';
 import { DashboardTile, DRAGGED_GRAPH_NODE_TOLERANCE_PX } from './support/components/dashboard-tile';
 import { TextBox } from './support/components/text-box';
 import { downloadOf, exportFileName } from './support/downloads';
@@ -484,7 +484,7 @@ async function expectGridResizeBy(dashboard: DashboardPage, offsetOf: (pitch: nu
 
 test.describe('switching from grid', () => {
 
-   async function gridBoxesOfThreeTiles(page: Page, dashboard: DashboardPage): Promise<{ x: number; y: number; width: number; height: number }[]> {
+   async function gridBoxesOfThreeTiles(page: Page, dashboard: DashboardPage): Promise<Box[]> {
       await page.setViewportSize({ width: 1512, height: 1400 });
       await dashboard.launcher.addChart();
       await dashboard.sideBar.close();
@@ -495,12 +495,11 @@ test.describe('switching from grid', () => {
       await dashboard.sideBar.close();
       await dashboard.addGraph();
       await dashboard.sideBar.close();
-      return tileBoxes(dashboard);
+      return dashboard.tileBoxes();
    }
 
-   async function expectBoxesShiftedBy(dashboard: DashboardPage, gridBoxes: { x: number; y: number; width: number; height: number }[],
-      dy: number): Promise<void> {
-      const canvasBoxes = await tileBoxes(dashboard);
+   async function expectBoxesShiftedBy(dashboard: DashboardPage, gridBoxes: Box[], dy: number): Promise<void> {
+      const canvasBoxes = await dashboard.tileBoxes();
       expect(canvasBoxes.length).toBe(3);
       canvasBoxes.forEach((box, i) => {
          expect(Math.abs(box.x - gridBoxes[i].x)).toBeLessThanOrEqual(1);
@@ -528,7 +527,7 @@ test.describe('switching from grid', () => {
       await expect(dashboard.canvasContent).toBeVisible();
 
       const pageContent = await dashboard.canvasPageContent.boundingBox();
-      const canvasUnitBoxes = pageUnitBoxesOf(await tileBoxes(dashboard), pageContent, await dashboard.canvasScale());
+      const canvasUnitBoxes = pageUnitBoxesOf(await dashboard.tileBoxes(), pageContent, await dashboard.canvasScale());
       expect(canvasUnitBoxes.length).toBe(3);
       canvasUnitBoxes.forEach((box, i) => {
          const expected = { ...gridUnitBoxes[i], y: gridUnitBoxes[i].y + PageFormat.TOP_PADDING };
@@ -546,7 +545,7 @@ test('moving a canvas tile snaps it to the right edge of another tile', async ({
    await expect(dashboard.canvasGuide.first()).toBeVisible();
    await second.release();
 
-   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const [firstBox, secondBox] = await dashboard.tileBoxes();
    expect(Math.abs(secondBox.x - (firstBox.x + firstBox.width))).toBeLessThanOrEqual(1);
    expect(Math.abs(secondBox.y - firstBox.y)).toBeLessThanOrEqual(1);
    await expect(dashboard.canvasGuide).toHaveCount(0);
@@ -614,6 +613,24 @@ test('canvas tile brought to front is stacked above other tile', async ({ dashbo
    expect(await dashboard.tile(0).zIndex()).toBeGreaterThan(await dashboard.tile(1).zIndex());
 });
 
+test('tile covered by an overlapping tile is hit again once that tile is sent to back', async ({ page, dashboard }) => {
+   await page.setViewportSize({ width: 1512, height: 1400 });
+   await startCanvasWithCharts(dashboard, 2);
+   await dashboard.allowOverlapButton.click();
+   const [first, second] = await dashboard.tileBoxes();
+   await dashboard.tile(1).startMoveBy(centerXOf(first) - centerXOf(second), centerYOf(first) - centerYOf(second));
+   await dashboard.tile(1).release();
+   await expect.poll(() => dashboard.tile(0).headerGapHitsTile()).toBe(false);
+   await expect.poll(() => dashboard.tile(0).titleHitsTile()).toBe(false);
+   await expect.poll(() => dashboard.tile(1).headerGapHitsTile()).toBe(true);
+   await expect.poll(() => dashboard.tile(1).titleHitsTile()).toBe(true);
+
+   await dashboard.tile(1).sendToBack();
+
+   await expect.poll(() => dashboard.tile(0).headerGapHitsTile()).toBe(true);
+   await expect.poll(() => dashboard.tile(0).titleHitsTile()).toBe(true);
+});
+
 test('landscape pages print one landscape sheet per page', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await dashboard.launcher.cancel();
@@ -668,7 +685,7 @@ test('switching from landscape to portrait pages keeps stacked tiles stacked at 
 
    await expect(dashboard.sheets.first()).toBeVisible();
    const scale = await dashboard.canvasScale(PageFormat.PORTRAIT);
-   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const [firstBox, secondBox] = await dashboard.tileBoxes();
    expect(Math.abs(secondBox.x - firstBox.x)).toBeLessThanOrEqual(1);
    expect(secondBox.y).toBeGreaterThan(firstBox.y + firstBox.height);
    expect(Math.abs(firstBox.width - 405 * scale)).toBeLessThanOrEqual(1);
@@ -685,7 +702,7 @@ test('switching from landscape to portrait pages keeps side by side tiles side b
    await expect(dashboard.sheets.first()).toBeVisible();
    const content = await dashboard.canvasPageContent.boundingBox();
    const portraitScale = await dashboard.canvasScale(PageFormat.PORTRAIT);
-   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const [firstBox, secondBox] = await dashboard.tileBoxes();
    expect(Math.abs(secondBox.y - firstBox.y)).toBeLessThanOrEqual(1);
    expect(Math.abs(firstBox.x - content.x)).toBeLessThanOrEqual(1);
    expect(Math.abs(secondBox.x + secondBox.width - content.x - 821 * portraitScale)).toBeLessThanOrEqual(1);
@@ -713,7 +730,7 @@ test('grid tiles switched to portrait pages fill the page width', async ({ page,
 
    await expect(dashboard.sheets.first()).toBeVisible();
    const content = await dashboard.canvasPageContent.boundingBox();
-   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const [firstBox, secondBox] = await dashboard.tileBoxes();
    expect(Math.abs(secondBox.y - firstBox.y)).toBeLessThanOrEqual(1);
    expect(Math.abs(secondBox.x + secondBox.width - content.x - content.width)).toBeLessThanOrEqual(1);
 });
@@ -726,7 +743,7 @@ test('resizing a canvas tile onto the tile below pushes it down while overlappin
    await dashboard.tile(0).startResizeBy(0, 200 * scale, 'bottom');
    await dashboard.tile(0).release();
 
-   const [resizedBox, belowBox] = await tileBoxes(dashboard);
+   const [resizedBox, belowBox] = await dashboard.tileBoxes();
    expect(belowBox.y).toBeGreaterThanOrEqual(resizedBox.y + resizedBox.height);
 });
 
@@ -742,22 +759,23 @@ test('resizing a canvas tile onto the tile below lets them overlap while overlap
 
    const after = await dashboard.tile(1).root.boundingBox();
    expect(Math.abs(after.y - before.y)).toBeLessThanOrEqual(1);
+   expect(intersects(await dashboard.tile(0).root.boundingBox(), after)).toBe(true);
 });
 
 test('marquee selects the tiles within and dragging one of them moves them together', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    const scale = await startCanvasWithCharts(dashboard, 2);
    const sheet = await dashboard.sheets.first().boundingBox();
-   const [, secondBox] = await tileBoxes(dashboard);
+   const [, secondBox] = await dashboard.tileBoxes();
 
    await dashboard.marqueeSelect({ x: sheet.x + 5, y: sheet.y + 5 }, { x: secondBox.x + secondBox.width + 10, y: secondBox.y + secondBox.height + 10 });
    await expect(dashboard.tile(0).root).toHaveClass(/div_tile_selected/);
    await expect(dashboard.tile(1).root).toHaveClass(/div_tile_selected/);
-   const before = await tileBoxes(dashboard);
+   const before = await dashboard.tileBoxes();
    await dashboard.tile(0).startMoveBy(200 * scale, 0);
    await dashboard.tile(0).release();
 
-   const after = await tileBoxes(dashboard);
+   const after = await dashboard.tileBoxes();
    after.forEach((box, i) => expect(Math.abs(box.x - before[i].x - 200 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX));
 });
 
@@ -813,13 +831,13 @@ test('dragging the header of a selected tile moves the selection, a click withou
    await page.setViewportSize({ width: 1512, height: 1400 });
    const scale = await startCanvasWithCharts(dashboard, 2);
    const sheet = await dashboard.sheets.first().boundingBox();
-   const [, secondBox] = await tileBoxes(dashboard);
+   const [, secondBox] = await dashboard.tileBoxes();
    await dashboard.marqueeSelect({ x: sheet.x + 5, y: sheet.y + 5 }, { x: secondBox.x + secondBox.width + 10, y: secondBox.y + secondBox.height + 10 });
-   const before = await tileBoxes(dashboard);
+   const before = await dashboard.tileBoxes();
 
    await dashboard.tile(1).startMoveBy(0, 100 * scale);
    await dashboard.tile(1).release();
-   const after = await tileBoxes(dashboard);
+   const after = await dashboard.tileBoxes();
    await dashboard.tile(1).select();
 
    after.forEach((box, i) => expect(Math.abs(box.y - before[i].y - 100 * scale)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX));
@@ -830,7 +848,7 @@ test('dragging the header of a selected tile moves the selection, a click withou
 test('Alt marquee started on a tile selects the tiles it touches without moving the tile', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    await startCanvasWithCharts(dashboard, 2);
-   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const [firstBox, secondBox] = await dashboard.tileBoxes();
 
    await page.keyboard.down('Alt');
    await dashboard.marqueeSelect({ x: centerXOf(firstBox), y: centerYOf(firstBox) }, { x: centerXOf(secondBox), y: centerYOf(secondBox) });
@@ -845,7 +863,7 @@ test('selection box resizes the selected tiles together', async ({ page, dashboa
    await page.setViewportSize({ width: 1512, height: 1400 });
    const scale = await startCanvasWithCharts(dashboard, 2);
    await page.keyboard.press('Control+a');
-   const [firstBox, secondBox] = await tileBoxes(dashboard);
+   const [firstBox, secondBox] = await dashboard.tileBoxes();
    const bounds = secondBox.x + secondBox.width - firstBox.x;
    const shrunk = 300 * scale;
 
@@ -853,7 +871,7 @@ test('selection box resizes the selected tiles together', async ({ page, dashboa
    await pressCenterAndMoveBy(dashboard.selectionBox.locator('.div_resize_handle_right'), -shrunk, 0);
    await page.mouse.up();
 
-   const [first, second] = await tileBoxes(dashboard);
+   const [first, second] = await dashboard.tileBoxes();
    const factor = (bounds - shrunk) / bounds;
    expect(Math.abs(first.width - firstBox.width * factor)).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
    expect(Math.abs(second.x + second.width - (firstBox.x + bounds - shrunk))).toBeLessThanOrEqual(SNAP_TOLERANCE_PX);
@@ -911,7 +929,7 @@ test('context menu aligns the selected tiles left', async ({ page, dashboard }) 
    await dashboard.chooseCanvasMenuItem(await dashboard.tile(1).headerGapPoint(), '.menu_item_align');
    await dashboard.menuItem('.menu_item_align_left').click();
 
-   const [first, second] = await tileBoxes(dashboard);
+   const [first, second] = await dashboard.tileBoxes();
    expect(Math.abs(second.x - first.x)).toBeLessThanOrEqual(1);
    expect(second.y).toBeGreaterThan(first.y + first.height);
 });
@@ -946,14 +964,14 @@ test('Ctrl+D duplicates the selected tile and Delete removes the selection', asy
 test('Ctrl+A selects all tiles and Shift+arrow nudges them', async ({ page, dashboard }) => {
    await page.setViewportSize({ width: 1512, height: 1400 });
    const scale = await startCanvasWithCharts(dashboard, 2);
-   const before = await tileBoxes(dashboard);
+   const before = await dashboard.tileBoxes();
 
    await page.keyboard.press('Control+a');
    await page.keyboard.press('Shift+ArrowDown');
 
    await expect(dashboard.tile(0).root).toHaveClass(/div_tile_selected/);
    await expect(dashboard.tile(1).root).toHaveClass(/div_tile_selected/);
-   const after = await tileBoxes(dashboard);
+   const after = await dashboard.tileBoxes();
    after.forEach((box, i) => expect(Math.abs(box.y - before[i].y - 10 * scale)).toBeLessThanOrEqual(1));
 });
 
@@ -994,17 +1012,6 @@ async function startCanvasWithCharts(dashboard: DashboardPage, chartCount: numbe
    }
    await expect(dashboard.tiles).toHaveCount(chartCount);
    return dashboard.canvasScale();
-}
-
-async function tileBoxes(dashboard: DashboardPage): Promise<{ x: number; y: number; width: number; height: number }[]> {
-   return Promise.all((await dashboard.tiles.all()).map(tile => tile.boundingBox()));
-}
-
-interface Box {
-   x: number;
-   y: number;
-   width: number;
-   height: number;
 }
 
 /**
@@ -1457,7 +1464,7 @@ test('text tile takes the grid cell after a summary', async ({ dashboard }) => {
 
    const textTile = await dashboard.addTextTile();
 
-   const [summary, tile] = await tileBoxes(dashboard);
+   const [summary, tile] = await dashboard.tileBoxes();
    expect(tile.y).toBeCloseTo(summary.y, 0);
    expect(tile.x).toBeCloseTo(summary.x + summary.width + DashboardPage.GRID_GAP_PX, 0);
    expect(tile.width).toBeCloseTo(summary.width, 0);
@@ -1490,7 +1497,7 @@ test('grown text tile keeps its rows when reordered', async ({ dashboard }) => {
    const tile = new DashboardTile(textTile.tile);
    await expect.poll(async () => (await tile.spans()).rows).toBeGreaterThan(1);
    const rows = (await tile.spans()).rows;
-   const [summary, grown] = await tileBoxes(dashboard);
+   const [summary, grown] = await dashboard.tileBoxes();
 
    await dashboard.tile(0).startMoveBy(grown.x - summary.x, 0);
    await dashboard.tile(0).release();
@@ -1791,7 +1798,7 @@ test('text box deleted from its toolbar is removed with the toolbar', async ({ d
 test('text box dropped onto a grid tile keeps its spot on the tile when the tile is reordered', async ({ dashboard }) => {
    const textBox = await addSummaryChartAndTextBox(dashboard);
    const spot = await dropOnto(textBox, dashboard.summaryTiles, BOTTOM_RIGHT_QUADRANT);
-   const [summary, chart] = await tileBoxes(dashboard);
+   const [summary, chart] = await dashboard.tileBoxes();
 
    await dashboard.tile(0).startMoveBy(chart.x - summary.x, 0);
    await dashboard.tile(0).release();

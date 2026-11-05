@@ -13,7 +13,7 @@ import { RawDataStateProvider, RawDataStateService } from 'app/shared/services/s
 import { LinkedFiltersService } from 'app/shared/services/view-tabs/linked-filters.service';
 import { entryRowStyle } from 'app/shared/ui/virtual-table/entry-row-style';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
-import { ViewColumnRenamer } from 'app/shared/services/view-persistence/view-column-renamer';
+import { ColumnReferenceUpdater } from 'app/shared/services/view-persistence/column-references/column-reference-updater';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { createDefaultRawDataState } from 'app/shared/services/view-persistence/raw-data-state-factory';
 import { ColumnWidthResolver } from 'app/shared/ui/virtual-table/column-width-resolver';
@@ -120,9 +120,7 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   }
 
   private onComputedColumnsChanged(change: ComputedColumnChange): void {
-    if (change.name !== undefined && change.name !== change.previousName) {
-      new ViewColumnRenamer(change.previousName, change.name).renameKey(this.customWidths);
-    }
+    new ColumnReferenceUpdater(change).inWidths(this.customWidths);
     this.columns = this.scene.columns;
     this.closeExplanation();
     this.applyWidths();
@@ -235,6 +233,8 @@ export class RawDataComponent extends ConfigController implements OnInit, OnDest
   };
 
   readonly headerTooltip = (column: Column): string => computedColumnTooltipOf(column);
+
+  readonly loadedRows = (): object[] => this.cache.loadedRows();
 
   readonly rowStyleOf =(entry: object): object | null => this.highlight ? entryRowStyle(entry) : null;
 

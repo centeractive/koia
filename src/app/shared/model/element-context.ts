@@ -76,14 +76,17 @@ export abstract class ElementContext {
    }
 
    /**
-    * replaces the available columns, keeping own instances and dropping used columns that no longer exist
+    * replaces the available columns, keeping own instances and dropping used columns and value groupings
+    * of columns that no longer exist
     *
     * @param renamedFrom maps the new name to the previous name of each renamed column
     */
    updateColumns(columns: Column[], renamedFrom = new Map<string, string>()): void {
       const used = [...this._dataColumns, ...this._splitColumns, ...this._groupByColumns];
       const changed: Column[] = [];
+      const previousNames = this._columns.map(c => c.name);
       this._columns = columns.map(c => this.adoptColumn(c, renamedFrom.get(c.name) ?? c.name, changed));
+      this.adoptValueGroupings(previousNames, renamedFrom);
       const affected = used.some(c => changed.includes(c) || !this._columns.includes(c));
       this._dataColumns.filter(c => !this._columns.includes(c)).forEach(c => this.removeDataColumn(c));
       this._splitColumns = this._splitColumns.filter(c => this._columns.includes(c));
@@ -104,6 +107,13 @@ export abstract class ElementContext {
          ownColumn.computation = column.computation;
       }
       return ownColumn;
+   }
+
+   private adoptValueGroupings(previousNames: string[], renamedFrom: Map<string, string>): void {
+      const renamedTo = new Map([...renamedFrom].map(([name, previousName]) => [previousName, name]));
+      this._valueGroupings = this._valueGroupings
+         .map(g => renamedTo.has(g.columnName) ? { ...g, columnName: renamedTo.get(g.columnName) } : g)
+         .filter(g => this.findColumn(g.columnName) || !previousNames.includes(g.columnName));
    }
 
    private targetColumns(sourceColumns: Column[]): Column[] {

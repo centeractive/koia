@@ -14,14 +14,14 @@ import { GraphContext } from '../model/graph';
 import { TabContent, TabDef, View, ViewElement } from '../model/view-config';
 import { DialogService, ExportService, NotificationService } from '../services';
 import { DBService } from '../services/backend';
-import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { ChartMarginService } from '../services/chart';
 import { ComputedColumnChange, ComputedColumnService } from '../services/computed-column.service';
 import { ModelToViewConverter, ViewToModelConverter } from '../services/view-persistence';
+import { ColumnReferenceUpdater } from '../services/view-persistence/column-references/column-reference-updater';
 import { queryDefToQuery } from '../services/view-persistence/filter/filter-to-query-converter';
 import { LinkedFiltersService, TabContentProvider, ViewTabsService } from '../services/view-tabs';
 import { ArrayUtils, CommonUtils, DateTimeUtils } from '../utils';
-import { isAnalyzableColumn } from '../utils/column-utils';
+import { analyzableColumnsOf } from '../utils/column-utils';
 import { withComputedValues } from '../utils/computation-utils';
 
 @Directive()
@@ -119,10 +119,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
    }
 
    private identifyColumns(): void {
-      this.columns = this.scene.columns
-         .filter(isAnalyzableColumn)
-         .filter(c => c.name !== CouchDBConstants._ID)
-         .map(c => <Column>CommonUtils.clone(c));
+      this.columns = analyzableColumnsOf(this.scene.columns);
       this.viewToModelConverter = new ViewToModelConverter(this.columns);
       this.timeColumns = this.columns
          .filter(c => c.dataType === DataType.TIME);
@@ -133,10 +130,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       if (this.entries) {
          withComputedValues(this.entries, this.columns);
       }
-      const renamedFrom = new Map<string, string>();
-      if (change.name !== undefined && change.name !== change.previousName) {
-         renamedFrom.set(change.name, change.previousName);
-      }
+      const renamedFrom = new ColumnReferenceUpdater(change).renamedFrom();
       this.elementContexts.forEach(c => c.updateColumns(this.clonedColumns(), renamedFrom));
       this.requestPersist();
    }

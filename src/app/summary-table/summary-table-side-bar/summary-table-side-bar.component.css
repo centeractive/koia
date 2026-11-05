@@ -4,7 +4,7 @@
   gap: 0.5em;
 }
 
-.div_col_value_grouping {
+.div_col_value_grouping, .div_col_grouped {
   display: flex;
   align-items: center;
 }

@@ -6,8 +6,8 @@ describe('videos page', () => {
   const MEDIUM = 800;
   const MOBILE = 375;
   const VIDEO_SIZE = [1600, 900];
-  const TILE_SLUGS = ['new-scene', 'scenes-and-navigation', 'pivot-and-export', 'dashboards-and-charts', 'summary-tables', 'relationship-graphs',
-    'explain-these-rows', 'message-patterns', 'shared-scenes'];
+  const TILE_SLUGS = ['new-scene', 'scenes-and-navigation', 'filters', 'pivot-and-export', 'dashboards-and-charts', 'dashboard-layouts',
+    'summary-tables', 'computed-columns', 'relationship-graphs', 'explain-these-rows', 'message-patterns', 'shared-scenes'];
   let iframe: HTMLIFrameElement;
 
   afterEach(() => iframe?.remove());
@@ -66,15 +66,15 @@ describe('videos page', () => {
     expect(heading.nextElementSibling.matches('ul.videos-grid')).toBe(true);
   });
 
-  it('should show nine video tiles with inline svg icon and expected titles', async () => {
+  it('should show twelve video tiles with inline svg icon and expected titles', async () => {
 
     // when
     const doc = await loadVideos(DESKTOP);
 
     // then
-    expect(textsOf(doc, '.video-tile h3')).toEqual(['Creating a new scene', 'Managing scenes and navigating',
-      'Pivot tables and export', 'Dashboards and charts', 'Summary tables', 'Relationship graphs', 'Explain these rows', 'Message patterns',
-      'Sharing scenes as files']);
+    expect(textsOf(doc, '.video-tile h3')).toEqual(['Creating a new scene', 'Managing scenes and navigating', 'Filtering rows',
+      'Pivot tables and export', 'Dashboards and charts', 'Dashboard layouts', 'Summary tables', 'Computed columns', 'Relationship graphs',
+      'Explain these rows', 'Message patterns', 'Sharing scenes as files']);
     all(doc, '.video-tile').forEach(tile => expect(tile.querySelector('.landing-tile-head > svg.landing-tile-icon path')).not.toBeNull());
   });
 
@@ -87,9 +87,12 @@ describe('videos page', () => {
     expect(textsOf(doc, '.video-tile p')).toEqual([
       'Load a CSV file, let Koia detect columns and types, then sort, filter, preview and export the rows.',
       'Organize tabs and views, switch between scenes, rename, filter and delete them.',
+      'Narrow the rows with value and range filters and link the filters of all tabs.',
       'Drag fields into rows and columns, sum values, apply a heatmap and export to Excel.',
       'Generate a dashboard, resize tiles, configure a chart and save it as PNG.',
+      'Snap tiles to a grid or place them freely, move several at once, stack them and lay them out on pages.',
       'Count, aggregate and group rows by values, time and number ranges, and export them.',
+      'Compute a column from two number columns and use it in every view – raw data, charts, summaries, graphs and pivot tables.',
       'Explore relations between values in an interactive graph.',
       'Filter rows and let Koia show what makes them different.',
       'Import a log file, group its messages by pattern – when creating a scene or later – and chart them.',
@@ -97,7 +100,7 @@ describe('videos page', () => {
     ]);
   });
 
-  [[DESKTOP, 3], [MEDIUM, 5], [MOBILE, 9]].forEach(([width, rows]) => {
+  [[DESKTOP, 4], [MEDIUM, 6], [MOBILE, 12]].forEach(([width, rows]) => {
 
     it('should lay out tiles in ' + rows + ' rows at width ' + width, async () => {
 

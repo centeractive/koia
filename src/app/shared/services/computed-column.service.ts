@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Column, Scene } from 'app/shared/model';
+import { Column, DataType, Scene } from 'app/shared/model';
+import { ColumnNameConverter } from 'app/shared/utils/column-name-converter';
 import { isComputedColumn, isOperandColumn } from 'app/shared/utils/column-utils';
 import { Subject } from 'rxjs';
 import { CouchDBConstants } from './backend/couchdb/couchdb-constants';
 import { DBService } from './backend/db.service';
 import { QueryConverter } from './backend/mango/query-converter';
 import { RawDataStateService } from './saved-views/raw-data-state.service';
-import { ViewColumnRenamer } from './view-persistence/view-column-renamer';
+import { ColumnReferenceUpdater } from './view-persistence/column-references/column-reference-updater';
 import { ViewPersistenceService } from './view-persistence/view-persistence.service';
 import { ViewTabsService } from './view-tabs/view-tabs.service';
 
@@ -49,14 +50,19 @@ export class ComputedColumnService {
     return this.scene().columns.filter(isOperandColumn);
   }
 
+  canCreate(): boolean {
+    return this.operandColumns().length > 0;
+  }
+
   /**
-   * @returns the names of all scene columns except the computed column of the specified name, plus the reserved names
+   * @returns the names of all scene columns, the time grouping labels of time columns and the reserved names,
+   * except the name of the computed column of the specified name
    */
   usedNames(exceptName?: string): string[] {
-    return this.scene().columns
-      .filter(c => !(isComputedColumn(c) && c.name === exceptName))
-      .map(c => c.name)
-      .concat(ComputedColumnService.RESERVED_NAMES);
+    const editedName = this.columns().some(c => c.name === exceptName) ? exceptName : undefined;
+    return this.scene().columns.map(c => c.name)
+      .concat(this.timeGroupingLabels(), ComputedColumnService.RESERVED_NAMES)
+      .filter(n => n !== editedName);
   }
 
   /**
@@ -75,7 +81,13 @@ export class ComputedColumnService {
     return this.update(newColumns, { name: column.name, previousName });
   }
 
+  /**
+   * removes the computed column of the specified name and all references to it, does nothing when no such column exists
+   */
   async remove(name: string): Promise<void> {
+    if (!this.columns().some(c => c.name === name)) {
+      return;
+    }
     const columns = this.scene().columns.filter(c => !(isComputedColumn(c) && c.name === name));
     return this.update(columns, { name: undefined, previousName: name });
   }
@@ -83,21 +95,25 @@ export class ComputedColumnService {
   private async update(columns: Column[], change: ComputedColumnChange): Promise<void> {
     const scene = this.scene();
     const previousColumns = scene.columns;
-    const renamed = change.name !== undefined && change.name !== change.previousName;
+    const updater = new ColumnReferenceUpdater(change);
     scene.columns = columns;
-    const undoRename = renamed ? new ViewColumnRenamer(change.previousName, change.name).renameInSavedViews(this.viewPersistenceService.findSavedViews(scene)) : undefined;
+    const undo = updater.affectsReferences() ? updater.inSavedViews(this.viewPersistenceService.findSavedViews(scene)) : undefined;
     try {
       await this.dbService.updateScene(scene);
     } catch (err) {
       scene.columns = previousColumns;
-      undoRename?.();
+      undo?.();
       throw err;
     }
-    if (renamed) {
-      this.viewTabsService.renameColumn(change.previousName, change.name);
-      this.rawDataStateService.renameColumn(change.previousName, change.name);
-    }
+    this.viewTabsService.updateColumnReferences(change);
+    this.rawDataStateService.updateColumnReferences(change);
     this.changedSubject.next(change);
+  }
+
+  private timeGroupingLabels(): string[] {
+    return this.scene().columns
+      .filter(c => c.dataType === DataType.TIME)
+      .flatMap(c => ColumnNameConverter.RELEVANT_TIME_UNITS.map(u => ColumnNameConverter.toLabel(c, u)));
   }
 
   private scene(): Scene {

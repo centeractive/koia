@@ -158,7 +158,7 @@ describe('RawDataStateService', () => {
       expect(service.current()).toBe(providerState);
    });
 
-   it('#renameColumn should rename column width of pending state', () => {
+   it('#updateColumnReferences should rename column width of pending state', () => {
 
       // given
       const pendingState = state(false);
@@ -166,23 +166,37 @@ describe('RawDataStateService', () => {
       service.apply(pendingState);
 
       // when
-      service.renameColumn('Share', 'Ratio');
+      service.updateColumnReferences({ name: 'Ratio', previousName: 'Share' });
 
       // then
       expect(pendingState.data.columnWidths).toEqual({ Amount: 20, Ratio: 40 });
    });
 
-   it('#renameColumn should do nothing without pending state', () => {
+   it('#updateColumnReferences should remove column width of pending state', () => {
+
+      // given
+      const pendingState = state(false);
+      pendingState.data.columnWidths = { Share: 40, Amount: 20 };
+      service.apply(pendingState);
 
       // when
-      const renameColumn = () => service.renameColumn('Share', 'Ratio');
+      service.updateColumnReferences({ name: undefined, previousName: 'Share' });
 
       // then
-      expect(renameColumn).not.toThrow();
+      expect(pendingState.data.columnWidths).toEqual({ Amount: 20 });
+   });
+
+   it('#updateColumnReferences should do nothing without pending state', () => {
+
+      // when
+      const updateColumnReferences = () => service.updateColumnReferences({ name: 'Ratio', previousName: 'Share' });
+
+      // then
+      expect(updateColumnReferences).not.toThrow();
       expect(service.current()).toEqual(createDefaultRawDataState());
    });
 
-   it('#renameColumn should not rename column width of pending state of other scene', () => {
+   it('#updateColumnReferences should not rename column width of pending state of other scene', () => {
 
       // given
       const pendingState = state(false);
@@ -191,7 +205,7 @@ describe('RawDataStateService', () => {
       getActiveSceneSpy.mockReturnValue(SceneFactory.createScene('2', []));
 
       // when
-      service.renameColumn('Share', 'Ratio');
+      service.updateColumnReferences({ name: 'Ratio', previousName: 'Share' });
 
       // then
       expect(pendingState.data.columnWidths).toEqual({ Share: 40 });

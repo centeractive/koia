@@ -85,7 +85,7 @@
                 <mat-select-trigger>
                   @if (getSingleGroupByColumn()) {
                     <mat-icon style="vertical-align: middle">
-                      {{ iconOf(getSingleGroupByColumn().dataType) }}
+                      {{ iconOfColumn(getSingleGroupByColumn()) }}
                     </mat-icon>
                   }
                   {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
@@ -93,7 +93,7 @@
                 @for (column of selectableGroupByColumns; track column) {
                   <mat-option [value]="column"
                     (click)="context.groupByColumns = [column]">
-                    <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                    <mat-icon>{{ iconOfColumn(column) }}</mat-icon>
                     {{ column.name }}
                   </mat-option>
                 }
@@ -117,7 +117,7 @@
                 @for (column of selectedSplitColumns; track column) {
                   <div class="div_column_item accent" mat-stroked-button
                     cdkDrag>
-                    <mat-icon class="accent">{{ iconOf(column.dataType) }}</mat-icon>
+                    <mat-icon class="accent">{{ iconOfColumn(column) }}</mat-icon>
                     <span class="accent"> {{ column.name }}</span>
                   </div>
                 }
@@ -130,7 +130,7 @@
                   @for (column of availableSplitColumns; track column) {
                     <div class="div_column_item white" mat-stroked-button
                       cdkDrag>
-                      <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>{{ column.name }}
+                      <mat-icon>{{ iconOfColumn(column) }}</mat-icon>{{ column.name }}
                     </div>
                   }
                 </div>
@@ -147,14 +147,14 @@
                     <mat-select-trigger>
                       @if (getSingleGroupByColumn()) {
                         <mat-icon style="vertical-align: middle">
-                        {{ iconOf(getSingleGroupByColumn().dataType) }}</mat-icon>
+                        {{ iconOfColumn(getSingleGroupByColumn()) }}</mat-icon>
                       }
                       {{ getSingleGroupByColumn() ? getSingleGroupByColumn().name : '' }}
                     </mat-select-trigger>
                     @for (column of selectableGroupByColumns; track column) {
                       <mat-option [value]="column"
                         (click)="onGroupByColumnChanged(column)">
-                        <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
+                        <mat-icon>{{ iconOfColumn(column) }}</mat-icon>
                         {{ column.name }}
                       </mat-option>
                     }

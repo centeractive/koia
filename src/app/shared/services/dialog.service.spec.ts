@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogConfig, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ConnectionDialogComponent, ConnectionDialogData } from 'app/front/connection-dialog/connection-dialog.component';
 import { SceneDetailsDialogComponent } from 'app/scenes/scene-details-dialog/scene-details-dialog.component';
-import { Protocol } from 'app/shared/model';
+import { Column, DataType, Protocol } from 'app/shared/model';
+import { of } from 'rxjs';
 import { ComputedColumnDialogComponent, ComputedColumnDialogData } from '../component/computed-column-dialog/computed-column-dialog.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { InputDialogComponent, InputDialogData } from '../component/input-dialog/input-dialog.component';
@@ -40,16 +41,38 @@ describe('DialogService', () => {
     expect(matDialogService.open).toHaveBeenCalledWith(ConfirmDialogComponent, { data: dialogData, panelClass: 'dialog-container' });
   });
 
-  it('#showComputedColumnDialog should open dialog', () => {
+  it('#editComputedColumn should open dialog and resolve saved column', async () => {
 
     // given
-    const dialogData = new ComputedColumnDialogData([]);
+    const entries = [{ Amount: 1 }];
+    const column: Column = { name: 'Share', dataType: DataType.NUMBER, width: 70, indexed: false };
+    const savedColumn: Column = { ...column, name: 'Ratio' };
+    vi.spyOn(matDialogService, 'open').mockImplementation((_component, config: MatDialogConfig<ComputedColumnDialogData>) => {
+      config.data.savedColumn = savedColumn;
+      return { afterClosed: () => of(undefined) } as MatDialogRef<unknown>;
+    });
 
     // when
-    service.showComputedColumnDialog(dialogData);
+    const result = await service.editComputedColumn(entries, column);
 
     // then
-    expect(matDialogService.open).toHaveBeenCalledWith(ComputedColumnDialogComponent, { data: dialogData, panelClass: 'dialog-container' });
+    expect(result).toBe(savedColumn);
+    expect(matDialogService.open).toHaveBeenCalledWith(ComputedColumnDialogComponent,
+      { data: expect.objectContaining({ entries, column }), panelClass: 'dialog-container' });
+  });
+
+  it('#editComputedColumn should resolve undefined when dialog was cancelled', async () => {
+
+    // given
+    vi.spyOn(matDialogService, 'open').mockReturnValue({ afterClosed: () => of(undefined) } as MatDialogRef<unknown>);
+
+    // when
+    const result = await service.editComputedColumn([]);
+
+    // then
+    expect(result).toBeUndefined();
+    expect(matDialogService.open).toHaveBeenCalledWith(ComputedColumnDialogComponent,
+      { data: expect.objectContaining({ entries: [], column: undefined }), panelClass: 'dialog-container' });
   });
 
   it('#showInputDialog should open dialog', () => {

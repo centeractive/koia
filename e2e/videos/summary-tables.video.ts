@@ -2,7 +2,7 @@ import { Aggregation } from 'app/shared/model/aggregation.enum';
 import { EnumLabelKeys } from 'app/shared/model/enum-label-keys';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
 import { TimeUnit } from 'app/shared/model/time-unit.enum';
-import { Box } from '../support/box';
+import { Box, intersects } from '../support/box';
 import { DashboardTile } from '../support/components/dashboard-tile';
 import { downloadOf } from '../support/downloads';
 import { expect, test } from '../support/fixtures';
@@ -17,10 +17,6 @@ const DATE = 'Date';
 const NOTE = 'Orders per quantity range';
 const NOTE_GAP_PX = 16;
 const EDGE_TOLERANCE_PX = 1;
-
-function intersect(a: Box, b: Box): boolean {
-   return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-}
 
 function contains(outer: Box, inner: Box): boolean {
    return inner.x >= outer.x - EDGE_TOLERANCE_PX && inner.y >= outer.y - EDGE_TOLERANCE_PX
@@ -101,7 +97,7 @@ test('summary tables', async ({ page, front, scene, scenes, tabBar, dashboard, r
    await note.moveTopLeftTo(tableBox.x, tableBox.y + tableBox.height + NOTE_GAP_PX);
    const noteBox = await note.tile.boundingBox();
    for (const table of await dashboard.summaryTiles.locator('table').all()) {
-      expect(intersect(noteBox, await table.boundingBox())).toBe(false);
+      expect(intersects(noteBox, await table.boundingBox())).toBe(false);
    }
    expect(contains(rangesBox, noteBox)).toBe(true);
    await recording.caption('Add a note where a table leaves room');

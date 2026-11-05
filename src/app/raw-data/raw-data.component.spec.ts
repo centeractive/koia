@@ -43,6 +43,7 @@ import { ViewToolbarComponent } from 'app/shared/ui/view-toolbar/view-toolbar.co
 import { ContrastAnalysis, ContrastService } from 'app/shared/services/contrast/contrast.service';
 import { ContrastFinding, ValueKind } from 'app/shared/services/contrast/contrast.types';
 import { ContrastPanelComponent } from './contrast-panel/contrast-panel.component';
+import { ComputedColumnsMenuComponent } from 'app/shared/component/computed-columns-menu/computed-columns-menu.component';
 
 describe('RawDataComponent', () => {
 
@@ -83,7 +84,7 @@ describe('RawDataComponent', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [RawDataComponent, VirtualTableComponent, TableModeTogglesComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent,
         PrintHeadingComponent, ColumnResizeDirective, PagingTogglesComponent, TableSheetsComponent, SheetComponent,
-        ContrastPanelComponent],
+        ContrastPanelComponent, ComputedColumnsMenuComponent],
       imports: [MatProgressBarModule, MatMenuModule, MatButtonModule, MatIconModule, MatTooltipModule, MatSnackBarModule, MatBottomSheetModule],
       providers: [
         provideZoneChangeDetection(),
@@ -92,7 +93,7 @@ describe('RawDataComponent', () => {
         { provide: DBService, useValue: dbService },
         { provide: DialogService, useValue: dialogService },
         { provide: NotificationService, useValue: notificationService },
-        { provide: ViewTabsService, useValue: { renameColumn: vi.fn(), requestPersist: vi.fn() } }
+        { provide: ViewTabsService, useValue: { updateColumnReferences: vi.fn(), requestPersist: vi.fn() } }
       ]
     });
     vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
@@ -1249,7 +1250,7 @@ describe('RawDataComponent', () => {
       expect(component.widths[component.columns.findIndex(c => c.name === 'Pct')]).toBe(123);
     });
 
-    it('#onComputedColumnsChanged should not rename custom width when column was removed', async () => {
+    it('#onComputedColumnsChanged should drop custom width when column was removed', async () => {
 
       // given
       scene.columns.push(computedColumn('Share'));
@@ -1261,7 +1262,7 @@ describe('RawDataComponent', () => {
       await render();
 
       // then
-      expect(component.customWidths).toEqual({ Share: 123 });
+      expect(component.customWidths).toEqual({});
       expect(component.columns.map(c => c.name)).toEqual(['Time', 'Level', 'Data', 'Host', 'Nested', 'Amount']);
     });
 
@@ -1276,6 +1277,48 @@ describe('RawDataComponent', () => {
       // then
       expect(header('Share').getAttribute('title')).toBe('Amount as % of Amount');
       expect(header('Amount').hasAttribute('title')).toBe(false);
+    });
+
+    it('more menu should offer computed columns submenu with new item', async () => {
+
+      // given
+      await render();
+      fixture.nativeElement.querySelector('.but_view_more').click();
+      fixture.detectChanges();
+
+      // when
+      document.querySelector<HTMLButtonElement>('.menu_item_computed_columns').click();
+      fixture.detectChanges();
+
+      // then
+      expect(document.querySelector('.menu_item_new_computed_column').textContent).toContain('New Computed Column…');
+    });
+
+    it('more menu should not offer computed columns in dialog style', async () => {
+
+      // given
+      component.dialogStyle = true;
+      await render();
+
+      // when
+      fixture.nativeElement.querySelector('.but_view_more').click();
+      fixture.detectChanges();
+
+      // then
+      expect(document.querySelectorAll('.mat-mdc-menu-panel button').length).toBe(component.exportFormats.length);
+      expect(document.querySelector('.menu_item_computed_columns')).toBeNull();
+    });
+
+    it('#loadedRows should return loaded rows', async () => {
+
+      // given
+      await render();
+
+      // when
+      const rows = component.loadedRows();
+
+      // then
+      expect(rows).toEqual(Array.from({ length: RawDataBlockCache.BLOCK_SIZE }, (_, i) => entryAt(i)));
     });
 
     it('#onComputedColumnsChanged should be ignored after destroy', async () => {

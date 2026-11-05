@@ -12,7 +12,7 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
-import { CanvasPaging, Column, DataType, Document, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
+import { CanvasPaging, Column, ComputeOperator, DataType, Document, Operator, PropertyFilter, Query, Route, Scene, TimeUnit } from 'app/shared/model';
 import { ConfigRecord, ViewType } from 'app/shared/model/view-config';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
 import { ExportService, NotificationService, RawDataRevealService, TimeGroupingService } from 'app/shared/services';
@@ -22,8 +22,11 @@ import { findStyleRule, registerSvgIconLiterals, SceneFactory } from 'app/shared
 import { NotificationServiceMock } from 'app/shared/test/notification-service-mock';
 import { LinkedFiltersService, ViewTabsService } from 'app/shared/services/view-tabs';
 import { LanguageService } from 'app/shared/services/language';
-import { ValueRangeGroupingService } from 'app/shared/value-range';
+import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { ValueGrouping } from 'app/shared/value-range/model';
+import { ComputedColumnService } from 'app/shared/services/computed-column.service';
+import { ComputedColumnsMenuComponent } from 'app/shared/component/computed-columns-menu/computed-columns-menu.component';
+import { withComputedValues } from 'app/shared/utils/computation-utils';
 import { of, Subject, throwError } from 'rxjs';
 import { PivotContext } from './model';
 import { PivotTableComponent } from './pivot-table.component';
@@ -79,11 +82,11 @@ describe('PivotTableComponent', () => {
   });
 
   beforeEach(waitForAsync(() => {
-    viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn() } as unknown as ViewTabsService;
+    viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn(), updateColumnReferences: vi.fn() } as unknown as ViewTabsService;
     TestBed.configureTestingModule({
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [PivotTableComponent, ViewToolbarComponent, PrintButtonComponent, PageHeadingComponent, PrintHeadingComponent,
-        PagingTogglesComponent, TableSheetsComponent, SheetComponent, CloneDirective],
+        PagingTogglesComponent, TableSheetsComponent, SheetComponent, CloneDirective, ComputedColumnsMenuComponent],
       imports: [
         MatSidenavModule, MatProgressBarModule, MatButtonModule, MatIconModule, MatTooltipModule,
         MatMenuModule, MatBottomSheetModule, CdkScrollableModule, MatBadgeModule
@@ -110,7 +113,7 @@ describe('PivotTableComponent', () => {
     locatePivotTable = () => component.divPivot.nativeElement.getElementsByClassName('pvtTable')[0];
     vi.spyOn(notificationService, 'showStatus').mockReturnValue(undefined);
     getActiveSceneSpy = vi.spyOn(dbService, 'getActiveScene').mockReturnValue(scene);
-    vi.spyOn(dbService, 'findEntries').mockReturnValue(of(entries));
+    vi.spyOn(dbService, 'findEntriesWithComputedValues').mockReturnValue(of(entries));
     fixture.detectChanges();
     flush();
   }));
@@ -227,7 +230,7 @@ describe('PivotTableComponent', () => {
       { ID: 3, Level: 'INFO', Data: 'three', Amount: 30, Time: datePipe.transform(now - 3000, format) },
       { ID: 4, Level: 'WARN', Data: 'four', Amount: 40, Time: datePipe.transform(now - 4000, format) },
     ];
-    expect(dbService.findEntries).toHaveBeenCalled();
+    expect(dbService.findEntriesWithComputedValues).toHaveBeenCalled();
     expect(component.dataFrame.toArray()).toEqual(expectedData);
   });
 
@@ -413,7 +416,7 @@ describe('PivotTableComponent', () => {
       flush();
 
       // then
-      const fetchQuery: Query = vi.mocked(dbService.findEntries).mock.lastCall[0];
+      const fetchQuery: Query = vi.mocked(dbService.findEntriesWithComputedValues).mock.lastCall[0];
       expect(fetchQuery.getFullTextFilter()).toBe('INFO');
       expect(tabComponent.restoredQuery.getFullTextFilter()).toBe('INFO');
       expect(tabComponent.context.negativeColor).toBe('yellow');
@@ -637,7 +640,7 @@ describe('PivotTableComponent', () => {
 
       // given
       const entries$ = new Subject<Document[]>();
-      vi.mocked(dbService.findEntries).mockReturnValue(entries$);
+      vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(entries$);
       const query = new Query();
       query.setFullTextFilter('INFO');
       createTabComponent({ route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: queryToQueryDef(query), data: pivotContext() });
@@ -669,7 +672,7 @@ describe('PivotTableComponent', () => {
 
       // then
       expect(takeFilters).toHaveBeenCalledWith('tab1');
-      const fetchQuery: Query = vi.mocked(dbService.findEntries).mock.lastCall[0];
+      const fetchQuery: Query = vi.mocked(dbService.findEntriesWithComputedValues).mock.lastCall[0];
       expect(fetchQuery).toBe(filters);
       expect(tabComponent.restoredQuery).toBe(filters);
     }));
@@ -677,7 +680,7 @@ describe('PivotTableComponent', () => {
     it('#init given linked filters and record then tab content keeps them while the record is pending', fakeAsync(() => {
 
       // given
-      vi.mocked(dbService.findEntries).mockReturnValue(new Subject());
+      vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
       const filters = new Query(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
       vi.spyOn(TestBed.inject(LinkedFiltersService), 'takeFilters').mockReturnValue(filters);
       const query = new Query();
@@ -712,7 +715,7 @@ describe('PivotTableComponent', () => {
     it('#tabContent should provide record of tab while restoring is pending', fakeAsync(() => {
 
       // given
-      vi.mocked(dbService.findEntries).mockReturnValue(new Subject());
+      vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
       const record: ConfigRecord = { route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: pivotContext() };
       createTabComponent(record);
       tabFixture.detectChanges();
@@ -758,6 +761,44 @@ describe('PivotTableComponent', () => {
       expect(content.record.query).toEqual(queryToQueryDef(new Query()));
       expect((content.record.data as PivotContext).pivotOptions['rendererName']).toBeDefined();
       expect((content.record.data as PivotContext).valueGroupings[0].minMaxValues).toBeNull();
+    }));
+
+    it('#tabContent should return the live configuration of a rendered pivot table, not the stale tab record', fakeAsync(() => {
+
+      // given
+      const record = sumRecord();
+      createTabComponent(record);
+      tabFixture.detectChanges();
+      flush();
+      tabComponent.onShowRowTotalsChanged();
+      flush();
+
+      // when
+      const content = tabComponent.tabContent();
+
+      // then
+      expect(content.record).not.toBe(record);
+      expect((content.record.data as PivotContext).showRowTotals).toBe(false);
+      expect((content.record.data as PivotContext).pivotOptions['vals']).toEqual(['Amount']);
+    }));
+
+    it('restoring record should drop value grouping of missing column', fakeAsync(() => {
+
+      // given
+      const amountGrouping: ValueGrouping = { columnName: 'Amount', ranges: [{ min: 0, max: 30, active: true }] };
+      const missingGrouping: ValueGrouping = { columnName: 'Missing', ranges: [{ min: 0, max: 30, active: true }] };
+      createTabComponent({
+        route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null,
+        data: { ...pivotContext(), valueGroupings: [amountGrouping, missingGrouping] }
+      });
+
+      // when
+      tabFixture.detectChanges();
+      flush();
+
+      // then
+      expect(tabComponent.context.valueGroupings.map(vg => vg.columnName)).toEqual(['Amount']);
+      expect(tabComponent.dataFrame.getColumnNames()).not.toContain('Missing');
     }));
 
     it('#onPagingChange should request persisting paging of tab', fakeAsync(() => {
@@ -1182,7 +1223,7 @@ describe('PivotTableComponent', () => {
       });
 
       function mockEntries(rows: object[]): void {
-        vi.mocked(dbService.findEntries).mockReturnValue(of(rows));
+        vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(of(rows));
       }
 
       function renderTab(pivotOptions: object): void {
@@ -1315,6 +1356,222 @@ describe('PivotTableComponent', () => {
         // then
         expect(texts('th.pvtRowLabel')).toEqual(['a', 'null']);
         expect(texts('td.pvtTotal.rowTotal')).toEqual(['1', '2']);
+      }));
+    });
+
+    describe('computed columns', () => {
+
+      let computedScene: Scene;
+      let computedColumnService: ComputedColumnService;
+
+      beforeEach(() => {
+        fixture.destroy();
+        computedScene = SceneFactory.createScene('1', [...columns.map(c => ({ ...c })), doubleAmountColumn('Double')]);
+        getActiveSceneSpy.mockReturnValue(computedScene);
+        vi.spyOn(dbService, 'updateScene').mockImplementation(s => Promise.resolve(s));
+        vi.mocked(dbService.findEntriesWithComputedValues).mockImplementation(() => of(entriesWithComputedValues()));
+        computedColumnService = TestBed.inject(ComputedColumnService);
+      });
+
+      function entriesWithComputedValues(): Document[] {
+        return withComputedValues(entries.map(e => ({ ...e })), computedScene.columns) as Document[];
+      }
+
+      function renderRecord(pivotOptions: object, valueGroupings: ValueGrouping[] = []): void {
+        createTabComponent(recordOf(pivotOptions, valueGroupings));
+        tabFixture.detectChanges();
+        flush();
+      }
+
+      function recordOf(pivotOptions: object, valueGroupings: ValueGrouping[] = []): ConfigRecord {
+        return { route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: { ...pivotContext(), valueGroupings, pivotOptions } };
+      }
+
+      function groupingOf(columnName: string): ValueGrouping {
+        return { columnName, ranges: [{ min: 0, max: 50, active: true }, { min: 50, max: 100, active: true }] };
+      }
+
+      function attributes(): string[] {
+        return Array.from<HTMLElement>(tabFixture.nativeElement.querySelectorAll('span.pvtAttr')).map(e => e.firstChild.textContent);
+      }
+
+      const doubleRowsOptions = (): object => ({ rendererName: 'Table', aggregatorName: 'Count', rows: ['Double'], cols: [] });
+
+      it('#init should offer computed fields and fetch computed values', fakeAsync(() => {
+
+        // when
+        renderRecord(doubleRowsOptions());
+
+        // then
+        expect(vi.mocked(dbService.findEntriesWithComputedValues).mock.lastCall[1]).toBe(true);
+        expect(tabComponent.columns.map(c => c.name)).toEqual(['ID', 'Time', 'Level', 'Amount', 'Double']);
+        expect(attributes()).toContain('Double');
+        expect(texts('th.pvtRowLabel')).toEqual(['20', '40', '60', '80']);
+      }));
+
+      it('#onComputedColumnsChanged should rename column in rows and value groupings', fakeAsync(() => {
+
+        // given
+        renderRecord(doubleRowsOptions(), [groupingOf('Double')]);
+
+        // when
+        computedColumnService.save(doubleAmountColumn('Twice'), 'Double');
+        flush();
+
+        // then
+        expect(tabComponent.getPivotOptions()['rows']).toEqual(['Twice']);
+        expect(tabComponent.context.valueGroupings.map(vg => vg.columnName)).toEqual(['Twice']);
+        expect(attributes()).toContain('Twice');
+        expect(attributes()).not.toContain('Double');
+      }));
+
+      it('#onComputedColumnsChanged should remove column from rows and value groupings', fakeAsync(() => {
+
+        // given
+        renderRecord(doubleRowsOptions(), [groupingOf('Double')]);
+
+        // when
+        computedColumnService.remove('Double');
+        flush();
+
+        // then
+        expect(tabComponent.getPivotOptions()['rows']).toEqual([]);
+        expect(tabComponent.context.valueGroupings).toEqual([]);
+        expect(tabComponent.columns.map(c => c.name)).toEqual(['ID', 'Time', 'Level', 'Amount']);
+        expect(attributes()).not.toContain('Double');
+      }));
+
+      it('#onComputedColumnsChanged should render without error when the removed column was the aggregated attribute', fakeAsync(() => {
+
+        // given
+        renderRecord({ rendererName: 'Table', aggregatorName: 'Sum', vals: ['Double'], cols: ['Level'], rows: [] });
+
+        // when
+        computedColumnService.remove('Double');
+        flush();
+
+        // then
+        expect(tabComponent.getPivotOptions()['vals']).toEqual([]);
+        expect(tabComponent.getPivotOptions()['aggregatorName']).toBe('Sum');
+        expect(tabFixture.nativeElement.querySelector('.pvtTable')).not.toBeNull();
+        expect(tabComponent.computing).toBe(false);
+      }));
+
+      it('#onComputedColumnsChanged should fetch entries again and offer created column', fakeAsync(() => {
+
+        // given
+        renderRecord({ rendererName: 'Table', aggregatorName: 'Count', rows: ['Level'], cols: [] });
+        vi.mocked(dbService.findEntriesWithComputedValues).mockClear();
+
+        // when
+        computedColumnService.save(doubleAmountColumn('Twice'));
+        flush();
+
+        // then
+        expect(dbService.findEntriesWithComputedValues).toHaveBeenCalledTimes(1);
+        expect(tabComponent.getPivotOptions()['rows']).toEqual(['Level']);
+        expect(attributes()).toContain('Twice');
+      }));
+
+      it('#onComputedColumnsChanged should rename column in record pending while loading', fakeAsync(() => {
+
+        // given
+        const entries$ = new Subject<Document[]>();
+        vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(entries$);
+        renderRecord(doubleRowsOptions());
+        computedColumnService.save(doubleAmountColumn('Twice'), 'Double');
+        flush();
+
+        // when
+        entries$.next(entriesWithComputedValues());
+        flush();
+
+        // then
+        expect(tabComponent.getPivotOptions()['rows']).toEqual(['Twice']);
+        expect(texts('th.pvtRowLabel')).toEqual(['20', '40', '60', '80']);
+      }));
+
+      it('#tabContent should return the renamed record pending while loading', fakeAsync(() => {
+
+        // given
+        vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
+        renderRecord(doubleRowsOptions());
+        computedColumnService.save(doubleAmountColumn('Twice'), 'Double');
+        flush();
+
+        // when
+        const content = tabComponent.tabContent();
+
+        // then
+        expect((content.record.data as PivotContext).pivotOptions['rows']).toEqual(['Twice']);
+      }));
+
+      it('#onComputedColumnsChanged should rename column in record of tab when pivot table is not rendered', fakeAsync(() => {
+
+        // given
+        renderRecord(doubleRowsOptions());
+        const getPivotOptions = vi.spyOn(tabComponent, 'getPivotOptions').mockReturnValue(undefined);
+
+        // when
+        computedColumnService.save(doubleAmountColumn('Twice'), 'Double');
+        flush();
+
+        // then
+        expect((tabComponent.tab.record.data as PivotContext).pivotOptions['rows']).toEqual(['Twice']);
+        getPivotOptions.mockRestore();
+        expect(tabComponent.getPivotOptions()['rows']).toEqual(['Twice']);
+      }));
+
+      it('#onComputedColumnsChanged should rename column in pivot table without tab', fakeAsync(() => {
+
+        // given
+        const noTabFixture = TestBed.createComponent(PivotTableComponent);
+        const noTabComponent = noTabFixture.componentInstance;
+        noTabFixture.detectChanges();
+        flush();
+        noTabComponent.getPivotOptions()['rows'] = ['Double'];
+
+        // when
+        computedColumnService.save(doubleAmountColumn('Twice'), 'Double');
+        flush();
+
+        // then
+        expect(noTabComponent.getPivotOptions()['rows']).toEqual(['Twice']);
+      }));
+
+      it('#onComputedColumnsChanged should refetch without crashing when the pivot table never rendered and has no record', fakeAsync(() => {
+
+        // given
+        vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
+        const noTabFixture = TestBed.createComponent(PivotTableComponent);
+        noTabFixture.detectChanges();
+        flush();
+        vi.mocked(dbService.findEntriesWithComputedValues).mockClear();
+
+        // when
+        computedColumnService.save(doubleAmountColumn('Twice'));
+        flush();
+
+        // then
+        expect(dbService.findEntriesWithComputedValues).toHaveBeenCalledTimes(1);
+        expect(noTabFixture.componentInstance.columns.map(c => c.name)).toContain('Twice');
+      }));
+
+      it('#onComputedColumnsChanged should be ignored after destroy', fakeAsync(() => {
+
+        // given
+        renderRecord(doubleRowsOptions());
+        const loadedColumns = tabComponent.columns;
+        tabFixture.destroy();
+        vi.mocked(dbService.findEntriesWithComputedValues).mockClear();
+
+        // when
+        computedColumnService.save(doubleAmountColumn('Twice'));
+        flush();
+
+        // then
+        expect(tabComponent.columns).toBe(loadedColumns);
+        expect(dbService.findEntriesWithComputedValues).not.toHaveBeenCalled();
       }));
     });
 
@@ -1452,7 +1709,7 @@ describe('PivotTableComponent', () => {
   it('#fetchData should stop loading and notify error when entries cannot be fetched', () => {
 
     // given
-    vi.mocked(dbService.findEntries).mockReturnValue(throwError(() => 'failure'));
+    vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(throwError(() => 'failure'));
     vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
 
     // when
@@ -1466,7 +1723,7 @@ describe('PivotTableComponent', () => {
   it('#onTimeUnitChanged should change time unit without refreshing when no data was fetched yet', fakeAsync(() => {
 
     // given
-    vi.mocked(dbService.findEntries).mockReturnValue(new Subject());
+    vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
     const pendingFixture = TestBed.createComponent(PivotTableComponent);
     const pendingComponent = pendingFixture.componentInstance;
     pendingFixture.detectChanges();
@@ -1663,7 +1920,7 @@ describe('PivotTableComponent', () => {
     expect(tooltipOf('#but_column_totals')).toBe('Show Column Totals');
   }));
 
-  it('more menu should offer only excel export', fakeAsync(() => {
+  it('more menu should offer excel export and computed columns', fakeAsync(() => {
 
     // given
     const moreButton: HTMLElement = fixture.nativeElement.querySelector('.but_view_more');
@@ -1675,7 +1932,61 @@ describe('PivotTableComponent', () => {
 
     // then
     const texts = Array.from(document.querySelectorAll('.mat-mdc-menu-panel .mat-mdc-menu-item-text')).map(e => e.textContent.trim());
-    expect(texts).toEqual(['Save As Excel']);
+    expect(texts).toEqual(['Save As Excel', 'Computed Columns']);
+  }));
+
+  it('more menu should offer computed columns submenu with new item', fakeAsync(() => {
+
+    // given
+    fixture.nativeElement.querySelector('.but_view_more').click();
+    fixture.detectChanges();
+    flush();
+
+    // when
+    document.querySelector<HTMLButtonElement>('.menu_item_computed_columns').click();
+    fixture.detectChanges();
+    flush();
+
+    // then
+    expect(document.querySelector('.menu_item_new_computed_column').textContent).toContain('New Computed Column…');
+  }));
+
+  it('#loadedEntries should return fetched entries', () => {
+
+    // when
+    const loadedEntries = component.loadedEntries();
+
+    // then
+    expect(loadedEntries).toEqual(entries);
+  });
+
+  it('#loadedEntries should return no entries before they are fetched', fakeAsync(() => {
+
+    // given
+    vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
+    const pendingFixture = TestBed.createComponent(PivotTableComponent);
+    pendingFixture.detectChanges();
+    flush();
+
+    // when
+    const loadedEntries = pendingFixture.componentInstance.loadedEntries();
+
+    // then
+    expect(loadedEntries).toEqual([]);
+  }));
+
+  it('should generate value groupings automatically for stored columns only', fakeAsync(() => {
+
+    // given
+    getActiveSceneSpy.mockReturnValue(SceneFactory.createScene('1', [...columns, doubleAmountColumn('Double')]));
+    const generate = vi.spyOn(ValueGroupingGenerator.prototype, 'generate');
+
+    // when
+    TestBed.createComponent(PivotTableComponent).detectChanges();
+    flush();
+
+    // then
+    expect(generate.mock.lastCall[1].map(c => c.name)).toEqual(['ID', 'Time', 'Level', 'Amount']);
   }));
 
   describe('page views', () => {
@@ -1883,6 +2194,13 @@ describe('PivotTableComponent', () => {
 
   function tooltipOf(selector: string): string {
     return fixture.debugElement.query(By.css(selector)).injector.get(MatTooltip).message;
+  }
+
+  function doubleAmountColumn(name: string): Column {
+    return {
+      name, dataType: DataType.NUMBER, width: 70, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.ADD, rightColumn: 'Amount' }
+    };
   }
 
   function pivotContext(): PivotContext {

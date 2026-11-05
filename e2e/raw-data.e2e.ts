@@ -1,6 +1,7 @@
 import { SORT_INDICATORS } from 'app/raw-data/sort-indicators';
 import { DataType } from 'app/shared/model/data-type.enum';
 import { ExportFormat } from 'app/shared/model/export-format.enum';
+import { Operator } from 'app/shared/model/operator.enum';
 import { StatusType } from 'app/shared/model/status-type.enum';
 import { RAW_DATA_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
 import { LANGUAGE_ABBREVIATIONS } from 'app/shared/services/language/language';
@@ -8,7 +9,7 @@ import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { centerYOf } from './support/box';
 import { bytesOf, contentOf, downloadOf, exportDayOf, exportFileName, localDayOf } from './support/downloads';
 import { expect, test } from './support/fixtures';
-import { columnValuesOf, countOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
+import { columnValuesOf, countOf, distinctValuesOf, firstColumnOf, fruitSalesOf } from './support/fruit-sales-sample';
 import { contentOffsetOf, printedSheets, whilePrinted } from './support/print';
 import { Texts } from './support/texts';
 import { expectOnlyActive } from './support/toggles';
@@ -132,6 +133,59 @@ test('dragged min and range of a range filter narrow and shift its rows', async 
    await rangeFilter.dragRangeBy(-10);
 
    await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] >= min + 20 && e[column] <= max - 10)));
+});
+
+test('dragged max of a range filter lowers its upper bound', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.NUMBER);
+   const max = Math.max(...columnValuesOf<number>(sample, column));
+   const rangeFilter = await rawData.mainToolbar.addRangeFilter(column, en.get('toolbar.valueRange'));
+
+   await rangeFilter.dragMaxBy(-10);
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] <= max - 10)));
+});
+
+test('range filter switched to outside range keeps the rows outside and switched back keeps the rows inside', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.NUMBER);
+   const min = Math.min(...columnValuesOf<number>(sample, column));
+   const rangeFilter = await rawData.mainToolbar.addRangeFilter(column, en.get('toolbar.valueRange'));
+   await rangeFilter.dragMinBy(30);
+
+   await rangeFilter.chooseRangeType(en.get('filter.range.outside'));
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] < min + 30)));
+   await expect(rawData.mainToolbar.rangeFilterPanel.locator('.span_outside_range_menu_trigger')).toBeVisible();
+   await rangeFilter.chooseRangeType(en.get('filter.range.inside'));
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] >= min + 30)));
+});
+
+test('value filter added with operator is any of keeps the rows of the listed values', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.TEXT);
+   const values = distinctValuesOf<string>(sample, column).slice(0, 2);
+
+   await rawData.mainToolbar.addValueFilter(column, values.join(';'), en.operator(Operator.ANY_OF));
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => values.includes(e[column]))));
+});
+
+test('operator of a value filter changed to is none of keeps the other rows', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.TEXT);
+   const values = distinctValuesOf<string>(sample, column).slice(0, 2);
+   await rawData.mainToolbar.addValueFilter(column, values.join(';'), en.operator(Operator.ANY_OF));
+
+   await rawData.mainToolbar.chooseValueFilterOperator(0, en.operator(Operator.NONE_OF));
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => !values.includes(e[column]))));
+});
+
+test('number value filter with operator >= keeps the rows at or above the value', async ({ rawData }) => {
+   const column = firstColumnOf(sample, DataType.NUMBER);
+   const values = columnValuesOf<number>(sample, column).sort((a, b) => a - b);
+   const median = values[Math.floor(values.length / 2)];
+
+   await rawData.mainToolbar.addNumberValueFilter(column, en.get('toolbar.value'), String(median), en.operator(Operator.GREATER_THAN_OR_EQUAL));
+
+   await expect(rawData.table.rowCount).toHaveText(en.rows(countOf(sample, e => e[column] >= median)));
 });
 
 test('saved view restores the removed value filter', async ({ rawData, notifications, confirmDialog }) => {

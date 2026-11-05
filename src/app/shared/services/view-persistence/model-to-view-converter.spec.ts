@@ -46,6 +46,30 @@ describe('ModelToViewConverter', () => {
       }));
    });
 
+   it('#convert should map copies of columns and value groupings, which renaming the view leaves unchanged in the context', () => {
+
+      // given
+      const share: Column = { name: 'Share', dataType: DataType.NUMBER, width: 70, indexed: false };
+      const level: Column = { name: 'Level', dataType: DataType.TEXT, width: 60, indexed: true };
+      const context = new SummaryContext([share, level]);
+      context.dataColumns = [share];
+      context.splitColumns = [level];
+      context.groupByColumns = [share];
+      context.valueGroupings = [{ columnName: 'Share', ranges: [] }];
+
+      // when
+      const element = converter.convert(Route.GRID, 'test', new Query(), [context]).elements[0];
+      [...element.dataColumns, ...element.splitColumns, ...element.groupByColumns].forEach(c => c.name = 'Renamed');
+      element.valueGroupings.forEach(g => g.columnName = 'Renamed');
+
+      // then
+      expect([element.dataColumns[0].name, element.splitColumns[0].name, element.groupByColumns[0].name]).toEqual(['Renamed', 'Renamed', 'Renamed']);
+      expect(context.dataColumns.map(c => c.name)).toEqual(['Share']);
+      expect(context.splitColumns.map(c => c.name)).toEqual(['Level']);
+      expect(context.groupByColumns.map(c => c.name)).toEqual(['Share']);
+      expect(context.valueGroupings.map(g => g.columnName)).toEqual(['Share']);
+   });
+
    it('#convert should leave position undefined for unplaced element', () => {
 
       // when

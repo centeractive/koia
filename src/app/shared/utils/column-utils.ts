@@ -1,5 +1,7 @@
 import { Column, DataType } from '../model';
+import { CouchDBConstants } from '../services/backend/couchdb/couchdb-constants';
 import { COLUMN_NAME_MAX_LENGTH } from '../validator/column-name-validation';
+import { CommonUtils } from './common-utils';
 import { DataTypeUtils } from './data-type-utils';
 import { StringUtils } from './string-utils';
 
@@ -51,6 +53,15 @@ export function patternColumnName(base: string, usedNames: Set<string>, suffix: 
 
 export function isAnalyzableColumn(column: Column): boolean {
     return !!column.indexed || isComputedColumn(column);
+}
+
+/**
+ * @returns clones of the analyzable columns, without the document id column
+ */
+export function analyzableColumnsOf(columns: Column[]): Column[] {
+    return columns
+        .filter(c => isAnalyzableColumn(c) && c.name !== CouchDBConstants._ID)
+        .map(c => CommonUtils.clone(c));
 }
 
 export function storedColumnsOf(columns: Column[]): Column[] {

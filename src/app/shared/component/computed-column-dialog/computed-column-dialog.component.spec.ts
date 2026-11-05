@@ -11,8 +11,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
 import { Column, ComputeOperator, DataType } from 'app/shared/model';
+import { DBService } from 'app/shared/services/backend/db.service';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { DialogService } from 'app/shared/services/dialog.service';
+import { SceneFactory } from 'app/shared/test';
 import { of } from 'rxjs';
 import { ConfirmDialogData } from '../confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { ComputedColumnDialogComponent, ComputedColumnDialogData } from './computed-column-dialog.component';
@@ -229,6 +231,26 @@ describe('ComputedColumnDialogComponent', () => {
     expect(button('#but_ok').disabled).toBe(true);
   });
 
+  it('name of a time grouping label should be rejected as in use', () => {
+
+    // given
+    const dbService = new DBService(null, null);
+    const date: Column = { name: 'Date', dataType: DataType.TIME, width: 100, indexed: true };
+    vi.spyOn(dbService, 'getActiveScene').mockReturnValue(SceneFactory.createScene('1', [date, quantity, revenue]));
+    const realService = new ComputedColumnService(dbService, null, null, null);
+    computedColumnService.usedNames.mockImplementation((exceptName?: string) => realService.usedNames(exceptName));
+    setup(new ComputedColumnDialogData(entries));
+
+    // when
+    typeName('Date (per month)');
+    component.form.controls.name.markAsTouched();
+    fixture.detectChanges();
+
+    // then
+    expect(component.nameErrorMessage()).toBe('Name is already in use');
+    expect(button('#but_ok').disabled).toBe(true);
+  });
+
   it('OK button should be enabled when name is valid', () => {
 
     // when
@@ -353,8 +375,8 @@ describe('ComputedColumnDialogComponent', () => {
     // then
     const confirmData: ConfirmDialogData = dialogService.showConfirmDialog.mock.calls[0][0];
     expect(confirmData.title).toBe('Delete Computed Column');
-    expect(confirmData.htmlContent).toBe('<p>Do you really want to delete "A&lt;B"? It will be removed from all charts and tables using it, ' +
-      'in all dashboards and saved views.</p>');
+    expect(confirmData.htmlContent).toBe('<p>Do you really want to delete "A&lt;B"? It will be removed from all charts, tables and pivot tables ' +
+      'using it, in all tabs and saved views.</p>');
     expect(computedColumnService.remove).toHaveBeenCalledWith('A<B');
     expect(dialogRef.close).toHaveBeenCalled();
     expect(data.savedColumn).toBeUndefined();

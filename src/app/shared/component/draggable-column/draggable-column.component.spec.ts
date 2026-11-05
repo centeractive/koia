@@ -1,9 +1,11 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DraggableColumnComponent } from './draggable-column.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { Column, ComputeOperator, DataType, ElementContext, TimeUnit } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
+import { By } from '@angular/platform-browser';
 
 describe('DraggableColumnComponent', () => {
   let component: DraggableColumnComponent;
@@ -13,6 +15,7 @@ describe('DraggableColumnComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      schemas: [NO_ERRORS_SCHEMA],
       declarations: [DraggableColumnComponent],
       imports: [MatIconModule, MatMenuModule]
     });
@@ -36,10 +39,7 @@ describe('DraggableColumnComponent', () => {
   it('#ngOnInit should define functions icon when column is computed', () => {
 
     // given
-    component.column = {
-      name: 'Sum', dataType: DataType.NUMBER, width: 50, indexed: false,
-      computation: { leftColumn: 'a', operator: ComputeOperator.ADD, rightColumn: 'b' }
-    };
+    component.column = sumColumn();
 
     // when
     component.ngOnInit();
@@ -84,4 +84,36 @@ describe('DraggableColumnComponent', () => {
     expect(menuItems.length).toBe(component.selectableTimeUnits.length);
     expect(menuItems[0].textContent.trim()).toBe('not grouped');
   });
+
+  it.each([
+    { editable: true, computed: true, launcherCount: 1 },
+    { editable: false, computed: true, launcherCount: 0 },
+    { editable: true, computed: false, launcherCount: 0 }
+  ])('edit launcher count should be $launcherCount when editable is $editable and computed is $computed',
+    ({ editable, computed, launcherCount }) => {
+
+      // given
+      const entries = [{ Sum: 1 }];
+      component.editable = editable;
+      component.entries = entries;
+      component.column = computed ? sumColumn() : column;
+
+      // when
+      fixture.detectChanges();
+
+      // then
+      const launchers = fixture.debugElement.queryAll(By.css('koia-computed-column-launcher'));
+      expect(launchers.length).toBe(launcherCount);
+      launchers.forEach(l => {
+        expect(l.properties['column']).toBe(component.column);
+        expect(l.properties['entries']).toBe(entries);
+      });
+    });
+
+  function sumColumn(): Column {
+    return {
+      name: 'Sum', dataType: DataType.NUMBER, width: 50, indexed: false,
+      computation: { leftColumn: 'a', operator: ComputeOperator.ADD, rightColumn: 'b' }
+    };
+  }
 });

@@ -470,7 +470,6 @@ describe('ElementContext', () => {
          expect(testContext.dataColumns).toEqual([amount]);
          expect(testContext.splitColumns).toEqual([]);
          expect(testContext.groupByColumns).toEqual([]);
-         expect(testContext.valueGroupings).toEqual([valueGrouping('Share')]);
          expect(changeHandler).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
       }));
 
@@ -489,7 +488,6 @@ describe('ElementContext', () => {
          expect(testContext.columns[2]).toBe(share);
          expect(share.name).toBe('Ratio');
          expect(testContext.dataColumns).toEqual([share]);
-         expect(testContext.valueGroupings).toEqual([valueGrouping('Share')]);
          expect(changeHandler).toHaveBeenCalledWith(ChangeEvent.STRUCTURE);
       }));
 
@@ -528,6 +526,36 @@ describe('ElementContext', () => {
          expect(amount.width).toBe(1);
          expect(changeHandler).not.toHaveBeenCalled();
       }));
+
+      it('#updateColumns should rename value grouping of renamed column', () => {
+
+         // when
+         testContext.updateColumns([name, amount, { ...share, name: 'Ratio' }], new Map([['Ratio', 'Share']]));
+
+         // then
+         expect(testContext.valueGroupings).toEqual([valueGrouping('Ratio')]);
+      });
+
+      it('#updateColumns should drop value grouping of removed column', () => {
+
+         // when
+         testContext.updateColumns([name, amount]);
+
+         // then
+         expect(testContext.valueGroupings).toEqual([]);
+      });
+
+      it('#updateColumns should keep value grouping of column unknown before', () => {
+
+         // given
+         testContext.valueGroupings = [valueGrouping('Share'), valueGrouping('Sum')];
+
+         // when
+         testContext.updateColumns([name, amount, share]);
+
+         // then
+         expect(testContext.valueGroupings).toEqual([valueGrouping('Share'), valueGrouping('Sum')]);
+      });
    });
 
    function column(name: string): Column {

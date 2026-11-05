@@ -33,7 +33,7 @@ test('relationship graphs', async ({ page, front, scene, scenes, tabBar, dashboa
    await dashboard.sideBar.close();
    await dashboard.snapToGridButton.click();
    await expect(dashboard.canvasContent).toBeVisible();
-   await recording.caption('On the screen view without snapping to the grid, tiles take any size and position');
+   await recording.caption('Without Snap to Grid, tiles take any size and position');
 
    const sheet = await dashboard.canvasPageContent.boundingBox();
    const box = await graph.root.boundingBox();

@@ -95,7 +95,7 @@ export class DashboardHarness {
   readonly dialogService = new DialogService(null);
   readonly notificationService = new NotificationServiceMock();
   readonly exportService = new ExportService();
-  readonly viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn(), renameColumn: vi.fn() } as unknown as ViewTabsService;
+  readonly viewTabsService = { requestPersist: vi.fn(), register: vi.fn(), unregister: vi.fn(), updateColumnReferences: vi.fn() } as unknown as ViewTabsService;
   fixture: ComponentFixture<DashboardComponent>;
   component: DashboardComponent;
   getActiveSceneSpy: Mock;

@@ -6,34 +6,23 @@ import { By } from '@angular/platform-browser';
 import { Column, ComputeOperator, DataType } from 'app/shared/model';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { DialogService } from 'app/shared/services/dialog.service';
-import { of } from 'rxjs';
-import { ComputedColumnDialogData } from '../computed-column-dialog/computed-column-dialog.component';
 import { ComputedColumnLauncherComponent } from './computed-column-launcher.component';
 
 describe('ComputedColumnLauncherComponent', () => {
 
-  const amount: Column = { name: 'Amount', dataType: DataType.NUMBER, width: 70, indexed: true };
   const share: Column = {
     name: 'Share', dataType: DataType.NUMBER, width: 70, indexed: false,
     computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
   };
 
-  let computedColumnService: { operandColumns: ReturnType<typeof vi.fn> };
-  let dialogService: { showComputedColumnDialog: ReturnType<typeof vi.fn> };
-  let dialogData: ComputedColumnDialogData;
-  let savedColumn: Column;
+  let computedColumnService: { canCreate: ReturnType<typeof vi.fn> };
+  let dialogService: { editComputedColumn: ReturnType<typeof vi.fn> };
   let component: ComputedColumnLauncherComponent;
   let fixture: ComponentFixture<ComputedColumnLauncherComponent>;
 
   beforeEach(() => {
-    savedColumn = undefined;
-    computedColumnService = { operandColumns: vi.fn().mockReturnValue([amount]) };
-    dialogService = {
-      showComputedColumnDialog: vi.fn().mockImplementation((data: ComputedColumnDialogData) => {
-        dialogData = data;
-        return { afterClosed: () => { data.savedColumn = savedColumn; return of(undefined); } };
-      })
-    };
+    computedColumnService = { canCreate: vi.fn().mockReturnValue(true) };
+    dialogService = { editComputedColumn: vi.fn().mockResolvedValue(undefined) };
     TestBed.configureTestingModule({
       declarations: [ComputedColumnLauncherComponent],
       imports: [MatButtonModule, MatIconModule, MatTooltipModule],
@@ -46,7 +35,7 @@ describe('ComputedColumnLauncherComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('create button should be enabled when operand columns exist', () => {
+  it('create button should be enabled when computed column can be created', () => {
 
     // when
     fixture.detectChanges();
@@ -59,10 +48,10 @@ describe('ComputedColumnLauncherComponent', () => {
       .toBe('Create a column computed from two number columns, e.g. a percentage');
   });
 
-  it('create button should be disabled when no operand column exists', () => {
+  it('create button should be disabled when computed column cannot be created', () => {
 
     // given
-    computedColumnService.operandColumns.mockReturnValue([]);
+    computedColumnService.canCreate.mockReturnValue(false);
 
     // when
     fixture.detectChanges();
@@ -97,8 +86,7 @@ describe('ComputedColumnLauncherComponent', () => {
     await component.openDialog();
 
     // then
-    expect(dialogData.entries).toBe(entries);
-    expect(dialogData.column).toBe(share);
+    expect(dialogService.editComputedColumn).toHaveBeenCalledWith(entries, share);
   });
 
   it('#openDialog should open dialog with empty entries when entries are undefined', async () => {
@@ -107,14 +95,13 @@ describe('ComputedColumnLauncherComponent', () => {
     await component.openDialog();
 
     // then
-    expect(dialogData.entries).toEqual([]);
-    expect(dialogData.column).toBeUndefined();
+    expect(dialogService.editComputedColumn).toHaveBeenCalledWith([], undefined);
   });
 
   it('#openDialog should emit saved column', async () => {
 
     // given
-    savedColumn = share;
+    dialogService.editComputedColumn.mockResolvedValue(share);
     const emitted: Column[] = [];
     component.columnSaved.subscribe(c => emitted.push(c));
 
@@ -148,7 +135,7 @@ describe('ComputedColumnLauncherComponent', () => {
     createButton().click();
 
     // then
-    expect(dialogService.showComputedColumnDialog).toHaveBeenCalled();
+    expect(dialogService.editComputedColumn).toHaveBeenCalledWith([], undefined);
   });
 
   it('click on edit button should open dialog', () => {
@@ -161,7 +148,7 @@ describe('ComputedColumnLauncherComponent', () => {
     fixture.nativeElement.querySelector('.but_edit_computed_column').click();
 
     // then
-    expect(dialogData.column).toBe(share);
+    expect(dialogService.editComputedColumn).toHaveBeenCalledWith([], share);
   });
 
   function createButton(): HTMLButtonElement {

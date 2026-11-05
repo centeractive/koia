@@ -24,20 +24,27 @@ function freeMusicArchiveSoundtrack(title: string, url: string): Soundtrack {
    return { title, file: url.split('/').pop(), url };
 }
 
+const ENTERTAINER = incompetechSoundtrack('The Entertainer');
+const PLUCKY_DAISY = incompetechSoundtrack('Plucky Daisy');
+const MAPLE_LEAF_RAG = incompetechSoundtrack('Maple Leaf Rag');
 /** played alternately by the topic tiles of the videos page without dedicated soundtrack */
-const TOPIC_SOUNDTRACKS: readonly Soundtrack[] = [incompetechSoundtrack('The Entertainer'), incompetechSoundtrack('Fig Leaf Rag')];
+const TOPIC_SOUNDTRACKS: readonly Soundtrack[] = [ENTERTAINER, incompetechSoundtrack('Fig Leaf Rag')];
 /** played by their videos wherever their tiles are */
 const DEDICATED_SOUNDTRACKS: Readonly<Record<string, Soundtrack>> = {
    'pivot-and-export': incompetechSoundtrack('Wagon Wheel'),
    'dashboards-and-charts': freeMusicArchiveSoundtrack('Original Rags',
       FMA_MP3_URL + 'Frog_Legs_Ragtime_Era_Favorites/Scott_Joplin_-_09_-_Original_Rags_1900_piano_roll.mp3'),
    'summary-tables': freeMusicArchiveSoundtrack('Ragtime Dance', FMA_MP3_URL + 'Piano_Rolls_from_archiveorg/Scott_Joplin_-_Ragtime_Dance.mp3'),
-   'relationship-graphs': incompetechSoundtrack('Plucky Daisy'),
-   'explain-these-rows': incompetechSoundtrack('Maple Leaf Rag'),
+   'relationship-graphs': PLUCKY_DAISY,
+   'explain-these-rows': MAPLE_LEAF_RAG,
    'message-patterns': incompetechSoundtrack('Frogs Legs Rag'),
-   'shared-scenes': incompetechSoundtrack('Merry Go')
+   'shared-scenes': incompetechSoundtrack('Merry Go'),
+   'filters': MAPLE_LEAF_RAG,
+   'dashboard-layouts': PLUCKY_DAISY,
+   'computed-columns': ENTERTAINER
 };
-export const SOUNDTRACKS: readonly Soundtrack[] = [...TOPIC_SOUNDTRACKS, ...Object.values(DEDICATED_SOUNDTRACKS)];
+/** every soundtrack once, although videos share them */
+export const SOUNDTRACKS: readonly Soundtrack[] = [...new Set([...TOPIC_SOUNDTRACKS, ...Object.values(DEDICATED_SOUNDTRACKS)])];
 
 /**
  * @returns the slugs of the videos in the order of their tiles on the videos page

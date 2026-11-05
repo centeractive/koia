@@ -2,8 +2,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { Column } from 'app/shared/model';
 import { ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { DialogService } from 'app/shared/services/dialog.service';
-import { firstValueFrom } from 'rxjs';
-import { ComputedColumnDialogData } from '../computed-column-dialog/computed-column-dialog.component';
 
 /**
  * opens the computed column dialog, to edit the specified column or to create a new one when no column is specified
@@ -24,14 +22,13 @@ export class ComputedColumnLauncherComponent {
   constructor(private computedColumnService: ComputedColumnService, private dialogService: DialogService) { }
 
   get creatable(): boolean {
-    return this.computedColumnService.operandColumns().length > 0;
+    return this.computedColumnService.canCreate();
   }
 
   async openDialog(): Promise<void> {
-    const data = new ComputedColumnDialogData(this.entries ?? [], this.column);
-    await firstValueFrom(this.dialogService.showComputedColumnDialog(data).afterClosed());
-    if (data.savedColumn) {
-      this.columnSaved.emit(data.savedColumn);
+    const savedColumn = await this.dialogService.editComputedColumn(this.entries ?? [], this.column);
+    if (savedColumn) {
+      this.columnSaved.emit(savedColumn);
     }
   }
 }

@@ -73,6 +73,7 @@ import { ColorSchemeSelectionComponent } from './shared/component/color-scheme-s
 import { ConfirmDialogComponent } from './shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { ComputedColumnDialogComponent } from './shared/component/computed-column-dialog/computed-column-dialog.component';
 import { ComputedColumnLauncherComponent } from './shared/component/computed-column-launcher/computed-column-launcher.component';
+import { ComputedColumnsMenuComponent } from './shared/component/computed-columns-menu/computed-columns-menu.component';
 import { DraggableColumnComponent } from './shared/component/draggable-column/draggable-column.component';
 import { ExpansionPanelComponent } from './shared/component/expansion-panel/expansion-panel.component';
 import { InputDialogComponent } from './shared/component/input-dialog/input-dialog.component';
@@ -181,6 +182,7 @@ import { ViewTabComponent } from './view-tab/view-tab.component';
         SceneTableComponent,
         DraggableColumnComponent,
         ComputedColumnLauncherComponent,
+        ComputedColumnsMenuComponent,
         ComputedColumnDialogComponent,
         ViewTabComponent,
         LanguageSelectComponent,

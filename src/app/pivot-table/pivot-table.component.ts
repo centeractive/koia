@@ -7,7 +7,9 @@ import { Router } from '@angular/router';
 import { ConfigController } from 'app/shared/controller/config.controller';
 import { ConfigRecord, TabContent, TabDef } from 'app/shared/model/view-config';
 import { DBService } from 'app/shared/services/backend';
+import { ComputedColumnChange, ComputedColumnService } from 'app/shared/services/computed-column.service';
 import { PIVOT_TABLE_FILE_BASE_NAME } from 'app/shared/services/export/export-file';
+import { ColumnReferenceUpdater } from 'app/shared/services/view-persistence/column-references/column-reference-updater';
 import { createConfigRecord } from 'app/shared/services/view-persistence/config-record-factory';
 import { queryDefToQuery } from 'app/shared/services/view-persistence/filter/filter-to-query-converter';
 import { queryToQueryDef } from 'app/shared/services/view-persistence/filter/query-to-filter-converter';
@@ -16,6 +18,7 @@ import { LinkedFiltersService, TabContentProvider, ViewTabsService } from 'app/s
 import { MeasuredTable, measureTable } from 'app/shared/ui/sheets/measured-table';
 import { PageFormat } from 'app/shared/ui/sheets/page-format';
 import { CommonUtils, DateTimeUtils, ObjectUtils } from 'app/shared/utils';
+import { analyzableColumnsOf, storedColumnsOf } from 'app/shared/utils/column-utils';
 import { ValueGroupingGenerator, ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
 import { Subscription } from 'rxjs';
@@ -66,10 +69,12 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   allowsForValueGrouping: boolean;
   restoredQuery: Query;
   pivotSheetTable: MeasuredTable;
+  readonly loadedEntries = (): object[] => this.baseDataFrame?.toArray() ?? [];
 
   private query: Query;
   private entriesSubscription: Subscription;
   private languageSubscription: Subscription;
+  private computedColumnsSubscription: Subscription;
   private languageChanged = false;
   private languageRefresh = false;
   private valueGroupingGenerator = new ValueGroupingGenerator();
@@ -80,6 +85,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   private mutationObserver: MutationObserver;
   private resizeObserver: ResizeObserver;
   private readonly linkedFiltersService = inject(LinkedFiltersService);
+  private readonly computedColumnService = inject(ComputedColumnService);
 
   constructor(@Inject(ElementRef) private cmpElementRef: ElementRef, bottomSheet: MatBottomSheet, router: Router,
     public override dbService: DBService, private timeGroupingService: TimeGroupingService, private valueGroupingService: ValueRangeGroupingService,
@@ -90,14 +96,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
 
   init(): void {
     this.context = this.contextFactory.create();
-    this.columns = this.scene.columns
-      .filter(c => c.indexed)
-      .map(c => <Column>CommonUtils.clone(c));
-    this.timeColumns = this.columns
-      .filter(c => c.dataType == DataType.TIME);
-    const baseQueryProvider: QueryProvider = { provide: () => this.query };
-    const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
-    this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback, this.columns);
+    this.identifyColumns();
     const linkedFilters = this.tab ? this.linkedFiltersService.takeFilters(this.tab.id) : undefined;
     if (linkedFilters && this.tab.record) {
       this.tab.record = { ...this.tab.record, query: queryToQueryDef(linkedFilters) };
@@ -109,6 +108,29 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
       this.viewTabsService.register(this.tab.id, this);
     }
     this.languageSubscription = this.languageService.changed$.subscribe(() => this.languageChanged = true);
+    this.computedColumnsSubscription = this.computedColumnService.changed$.subscribe(c => this.onComputedColumnsChanged(c));
+  }
+
+  private identifyColumns(): void {
+    this.columns = analyzableColumnsOf(this.scene.columns);
+    this.timeColumns = this.columns
+      .filter(c => c.dataType == DataType.TIME);
+    const baseQueryProvider: QueryProvider = { provide: () => this.query };
+    const cellClickCallback = new CellClickHandler(this.columns, baseQueryProvider, this.rawDataRevealService);
+    this.pivotOptionsProvider = new PivotOptionsProvider(cellClickCallback, this.columns);
+  }
+
+  /**
+   * restores the latest configuration with changed column references once the entries with computed values are fetched again
+   */
+  private onComputedColumnsChanged(change: ComputedColumnChange): void {
+    const record = this.latestRecord();
+    if (record) {
+      new ColumnReferenceUpdater(change).inRecord(record);
+      this.pendingRecord = record;
+    }
+    this.identifyColumns();
+    this.fetchData(this.query);
   }
 
   /**
@@ -138,6 +160,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   ngOnDestroy(): void {
     this.destroyed = true;
     this.languageSubscription?.unsubscribe();
+    this.computedColumnsSubscription?.unsubscribe();
     if (this.tab) {
       this.viewTabsService.unregister(this.tab.id, this);
     }
@@ -195,7 +218,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
     if (this.entriesSubscription) {
       this.entriesSubscription.unsubscribe();
     }
-    this.entriesSubscription = this.dbService.findEntries(query, true)
+    this.entriesSubscription = this.dbService.findEntriesWithComputedValues(query, true)
       .subscribe({
         next: entries => this.onData(entries),
         error: err => {
@@ -219,7 +242,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
       return;
     }
     if (firstTimeInvoked && this.allowsForValueGrouping) {
-      this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, this.columns);
+      this.context.valueGroupings = this.valueGroupingGenerator.generate(this.baseDataFrame, storedColumnsOf(this.columns));
     }
     this.refreshDataFrameAsync();
   }
@@ -275,6 +298,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   private applyConfig(configRecord: ConfigRecord): void {
     this.context = CommonUtils.clone(configRecord.data as PivotContext);
     this.contextFactory.adoptPalette(this.context);
+    this.context.valueGroupings = this.context.valueGroupings.filter(vg => this.columns.some(c => c.name === vg.columnName));
     this.adoptRestoredTimeUnits();
     const pivotOptions = this.pivotOptionsProvider
       .enrichPivotOptions(this.context.pivotOptions, this.context, () => this.onPivotTableRefreshEnd());
@@ -296,11 +320,21 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   }
 
   tabContent(): TabContent {
-    if (this.pendingRecord || !this.getPivotOptions()) {
-      return { record: this.tab.record };
+    return { record: this.latestRecord() };
+  }
+
+  /**
+   * @returns the record still to be restored, else the configuration of the rendered pivot table, else the record of the tab
+   */
+  private latestRecord(): ConfigRecord {
+    if (this.pendingRecord) {
+      return this.pendingRecord;
+    }
+    if (!this.getPivotOptions()) {
+      return this.tab?.record;
     }
     const config = this.configToBeSaved();
-    return { record: createConfigRecord(Route.PIVOT, this.tab.title, config.query, config.data, 0) };
+    return createConfigRecord(Route.PIVOT, this.tab?.title, config.query, config.data, 0);
   }
 
   layout(): Route {

@@ -13,7 +13,7 @@ import { MatSlideToggle, MatSlideToggleModule } from '@angular/material/slide-to
 import { MatSliderModule } from '@angular/material/slider';
 import { By } from '@angular/platform-browser';
 import { KoiaFormDirective } from 'app/shared/directives/koia-form.directive';
-import { Column, DataType, Scene, TimeUnit } from 'app/shared/model';
+import { Column, ComputeOperator, DataType, Scene, TimeUnit } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { DBService } from 'app/shared/services/backend';
 import { SceneFactory } from 'app/shared/test';
@@ -143,6 +143,79 @@ describe('GraphSideBarComponent', () => {
     // then
     expect(label.textContent.trim()).toBe('Alpha');
   });
+
+  it('#defineSelectableItems should offer computed column', () => {
+
+    // given
+    initWithComputedColumn();
+
+    // then
+    expect(component.availableGroupByColumns).toContain(findContextColumn('Share'));
+  });
+
+  it('#onComputedColumnCreated should append the context column to the group-by columns', () => {
+
+    // given
+    initWithComputedColumn();
+
+    // when
+    component.onComputedColumnCreated(shareColumn());
+
+    // then
+    expect(context.groupByColumns).toEqual([findColumn('Time'), findColumn('Level'), findContextColumn('Share')]);
+    expect(component.selectedGroupByColumns).toEqual(context.groupByColumns);
+    expect(component.availableGroupByColumns).not.toContain(findContextColumn('Share'));
+  });
+
+  it('#columnSaved of create launcher should append the created column to the group-by columns', () => {
+
+    // given
+    initWithComputedColumn();
+    const launcher = fixture.debugElement.query(By.css('koia-computed-column-launcher'));
+
+    // when
+    launcher.triggerEventHandler('columnSaved', shareColumn());
+
+    // then
+    expect(context.groupByColumns).toContain(findContextColumn('Share'));
+  });
+
+  it('draggable columns should be editable and get the entries', () => {
+
+    // given
+    const entries = [{ Level: 'INFO' }];
+    component.entries = entries;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const draggableColumns = fixture.debugElement.queryAll(By.css('koia-draggable-column'));
+    expect(draggableColumns.length).toBe(columns.length);
+    draggableColumns.forEach(d => {
+      expect(d.properties['editable']).toBe(true);
+      expect(d.properties['entries']).toBe(entries);
+    });
+  });
+
+  function initWithComputedColumn(): void {
+    context = new GraphContext([...columns, shareColumn()]);
+    context.groupByColumns = [findColumn('Time'), findColumn('Level')];
+    component.context = context;
+    component.ngOnChanges({ context: new SimpleChange(undefined, context, true) });
+    fixture.detectChanges();
+  }
+
+  function shareColumn(): Column {
+    return {
+      name: 'Share', dataType: DataType.NUMBER, width: 30, indexed: false,
+      computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Amount' }
+    };
+  }
+
+  function findContextColumn(name: string): Column {
+    return context.columns.find(c => c.name === name);
+  }
 
   function findColumn(name: string): Column {
     return columns.find(c => c.name === name);

@@ -1,4 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Column } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { SideBarController } from 'app/shared/controller/side-bar.controller';
 
@@ -15,6 +16,11 @@ export class GraphSideBarComponent extends SideBarController implements OnChange
 
   override ngOnChanges(changes: SimpleChanges): void {
     super.ngOnChanges(changes);
+    this.defineSelectableItems();
+  }
+
+  onComputedColumnCreated(column: Column): void {
+    this.context.groupByColumns = [...this.context.groupByColumns, this.contextColumnOf(column)];
     this.defineSelectableItems();
   }
 

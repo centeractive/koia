@@ -1,6 +1,6 @@
 import { expect, Locator } from '@playwright/test';
 import type { BarElement, Chart } from 'chart.js';
-import { Box } from '../box';
+import { Box, centerXOf, centerYOf } from '../box';
 import { pressCenterAndMoveBy } from '../pointer';
 
 /** largest distance of a dragged graph node from the moved pointer, which d3 pins it to */
@@ -286,6 +286,25 @@ export class DashboardTile {
    async headerGapPoint(): Promise<{ x: number; y: number }> {
       const box = await this.root.boundingBox();
       return { x: box.x + box.width / 2, y: box.y + HEADER_GAP_PX };
+   }
+
+   /**
+    * @returns whether the topmost element at the empty gap above the header belongs to this tile
+    */
+   async headerGapHitsTile(): Promise<boolean> {
+      return this.hitsTile(await this.headerGapPoint());
+   }
+
+   /**
+    * @returns whether the topmost element at the centre of the title belongs to this tile
+    */
+   async titleHitsTile(): Promise<boolean> {
+      const box = await this.title.boundingBox();
+      return this.hitsTile({ x: centerXOf(box), y: centerYOf(box) });
+   }
+
+   private hitsTile(point: { x: number; y: number }): Promise<boolean> {
+      return this.root.evaluate((tile: HTMLElement, p) => tile.contains(document.elementFromPoint(p.x, p.y)), point);
    }
 
    resizeHandle(name = 'bottom_right'): Locator {

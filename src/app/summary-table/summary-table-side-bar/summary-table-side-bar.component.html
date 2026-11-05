@@ -13,7 +13,7 @@
                       <mat-icon>{{ iconOfColumn(column) }}</mat-icon>
                       {{ column.name }}
                     </button>
-                    @if (isNumericColumn(column) && !isComputedColumn(column)) {
+                    @if (isNumericColumn(column)) {
                       <mat-icon class="icon_define_value_grouping"
                         [matTooltip]="'summary.sideBar.defineValueGrouping' | translate" (click)="addValueGroupingFor(column)">
                         group_work
@@ -25,12 +25,17 @@
                   </div>
                 }
                 @if (context.hasValueGrouping(column.name)) {
-                  <button class="but_column" mat-raised-button
-                    [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small"
-                    matBadgeColor="primary" (click)="onColumnChanged(column)">
-                    <mat-icon>{{ iconOf(column.dataType) }}</mat-icon>
-                    {{ column.name }}
-                  </button>
+                  <div class="div_col_grouped">
+                    <button class="but_column" mat-raised-button
+                      [color]="context.isInUseAsDataColumn(column) ? 'accent' : ''" matBadge="G" matBadgeSize="small"
+                      matBadgeColor="primary" [matTooltip]="computedColumnTooltip(column)" (click)="onColumnChanged(column)">
+                      <mat-icon>{{ iconOfColumn(column) }}</mat-icon>
+                      {{ column.name }}
+                    </button>
+                    @if (isComputedColumn(column)) {
+                      <koia-computed-column-launcher [column]="column" [entries]="entries" />
+                    }
+                  </div>
                 }
               </span>
             }
@@ -39,8 +44,7 @@
           <div>
             <br>
               <mat-radio-group [value]="context.isAggregationCountSelected()">
-                <mat-radio-button [value]="true" [disabled]="!isCountDistinctValuesEnabled()"
-                  (change)="onAggregationTypeChanged(true)">{{ 'summary.sideBar.countDistinctValues' | translate }}
+                <mat-radio-button [value]="true" (change)="onAggregationTypeChanged(true)">{{ 'summary.sideBar.countDistinctValues' | translate }}
                 </mat-radio-button>
                 <mat-radio-button [value]="false" [disabled]="!isAggregateValuesEnabled()"
                   (change)="onAggregationTypeChanged(false)">{{ 'summary.sideBar.aggregateValues' | translate }}

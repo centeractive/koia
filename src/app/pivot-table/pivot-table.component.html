@@ -43,7 +43,12 @@
           <mat-icon>insert_drive_file</mat-icon>
           <span>{{ 'pivot.saveAsExcel' | translate }}</span>
         </button>
+        <button class="menu_item_computed_columns" mat-menu-item [matMenuTriggerFor]="computedColumnsMenu.menu">
+          <mat-icon>functions</mat-icon>
+          <span>{{ 'computedColumn.menu' | translate }}</span>
+        </button>
       </mat-menu>
+      <koia-computed-columns-menu #computedColumnsMenu [entriesProvider]="loadedEntries" />
 
       <mat-menu #timeColumnMenu="matMenu">
         @for (column of timeColumns; track column) {

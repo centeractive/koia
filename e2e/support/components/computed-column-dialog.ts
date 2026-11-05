@@ -30,6 +30,10 @@ export class ComputedColumnDialog {
       return this.select('#select_right_column', column);
    }
 
+   async swapOperands(): Promise<void> {
+      await this.root.locator('#but_swap_operands').click();
+   }
+
    ok(): Promise<void> {
       return this.close('#but_ok');
    }

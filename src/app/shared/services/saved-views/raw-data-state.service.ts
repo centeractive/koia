@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { Scene } from '../../model';
 import { RawDataState } from '../../model/view-config';
 import { DBService } from '../backend';
+import type { ComputedColumnChange } from '../computed-column.service';
+import { ColumnReferenceUpdater } from '../view-persistence/column-references/column-reference-updater';
 import { createDefaultRawDataState } from '../view-persistence/raw-data-state-factory';
-import { ViewColumnRenamer } from '../view-persistence/view-column-renamer';
 import { RawDataStateProvider } from './raw-data-state-provider.type';
 
 /**
@@ -48,10 +49,10 @@ export class RawDataStateService {
    }
 
    /**
-    * renames the column width of the state applied to the active scene while no provider was registered
+    * renames or removes the column width of the state applied to the active scene while no provider was registered
     */
-   renameColumn(previousName: string, name: string): void {
-      new ViewColumnRenamer(previousName, name).renameKey(this.pendingOfActiveScene()?.data.columnWidths);
+   updateColumnReferences(change: ComputedColumnChange): void {
+      new ColumnReferenceUpdater(change).inWidths(this.pendingOfActiveScene()?.data.columnWidths);
    }
 
    private pendingOfActiveScene(): RawDataState | undefined {

@@ -43,6 +43,7 @@ Five minutes from the sample data to an explained finding:
 | Tab (view) | One way to look at the active scene: the fixed **Raw Data** tab, plus any number of pivot tables and dashboards. |
 | Element | A tile on a dashboard: chart, relationship graph, summary table, text tile or note. |
 | Filter | Restricts the rows of one tab. Every tab has its own filters unless you link them. |
+| Computed column | A column computed from two number columns, e.g. *Quantity × Unit Price*; usable in every view ([chapter 6](#computed-columns)). |
 | Drill-down | A click on a chart bar, pivot cell, summary count or graph node opens a dialog with the rows behind it. |
 | Saved view | A named snapshot of all tabs of a scene that can be restored later. |
 | Storage | Where scenes live: this browser (IndexedDB) or a CouchDB. |
@@ -159,7 +160,7 @@ The **Raw Data** tab shows the rows of the active scene. Rows load as you scroll
 
 | To | Do |
 |---|---|
-| Sort | Click a column header (or press Enter or Space on it): ascending, descending, unsorted. Only indexed columns sort. |
+| Sort | Click a column header (or press Enter or Space on it): ascending, descending, unsorted. Only indexed columns sort; computed columns do not. |
 | Resize a column | Drag the right edge of its header. |
 | See long values | **Show multi-line rows**, or hover a cell. |
 | See objects | **Show nested objects** (scenes with Object columns), or click an Object cell. |
@@ -167,6 +168,7 @@ The **Raw Data** tab shows the rows of the active scene. Rows load as you scroll
 | Color rows | **Highlight rows** applies the row colors of log levels or of the Retrospective Log Analyzer. |
 | Export | **⋮** → **Save As CSV**, **Save As Excel** or **Save As JSON** ([chapter 16](#16-share-and-export)). |
 | Print | **Landscape Pages** or **Portrait Pages**, then **Print current view**. |
+| Computed columns | **⋮** → **Computed Columns** ([below](#computed-columns)). |
 
 ### Filters
 
@@ -210,6 +212,35 @@ Good to know:
 - **Unlink filters** (same button): every tab keeps its filters and changes them on its own again.
 - Koia remembers per scene whether filters are linked, also in saved views and shared `.koia` files. Drill-down dialogs are not linked.
 
+Video: [Filtering rows](https://www.koia.io/intro/videos.html)
+
+### Computed columns
+
+A computed column holds the result of two number columns per row, e.g. *Quantity × Unit Price*. It is saved with the scene and offered in every view, marked by the functions icon; its tooltip shows the formula.
+
+| View | Create | Edit |
+|---|---|---|
+| Raw data | **⋮** → **Computed Columns** → **New Computed Column…** | **⋮** → **Computed Columns** → the column |
+| Pivot table | the same **⋮** submenu | the same **⋮** submenu |
+| Chart | **Values** → **Computed Column** | the pencil next to the column |
+| Summary table | **Data** → **Computed Column** | the pencil next to the column |
+| Relationship graph | **Data Hierarchy** → **Computed Column** (adds it as the last level) | the pencil next to the column |
+
+The dialog asks for the **Column Name**, the **First Column**, the **Operation** (+, −, ×, ÷ or *as % of*) and the **Second Column**; **Swap columns** swaps the two columns. The formula and an example row preview the result. When editing, **Delete** removes the column after a confirmation. **New Computed Column…** and **Computed Column** are disabled without number columns.
+
+Computed columns can be:
+
+- shown, but not sorted, in raw data;
+- aggregated, grouped into value ranges, grouped by and split by in charts and summary tables;
+- levels of a relationship graph;
+- row and column fields and aggregated attributes of pivot tables.
+
+Renaming or deleting a computed column updates or removes it in all tabs and saved views that use it.
+
+Good to know: **Generate Dashboard**, filters and **Explain these rows** do not use computed columns. Drilling into values of a computed column shows a warning ([chapter 8](#8-drill-down-to-the-rows)).
+
+Video: [Computed columns](https://www.koia.io/intro/videos.html)
+
 ## 7. Tabs and saved views
 
 - **+** (**Add view**) adds a **New Pivot Table** or a **New Dashboard**.
@@ -238,7 +269,7 @@ Every number Koia shows leads to its rows:
 
 The rows open in a dialog. Its filters are those of the tab plus one filter per clicked value; a clicked time group becomes a time range. Values deselected in the value filter of a pivot field become filters ending with *or empty*: like the pivot table, they keep the rows where that field is empty unless *null* or *empty* is deselected too; with CouchDB, sorting by that field drops these rows (see [chapter 6](#6-raw-data-and-filters)). You can add filters, sort, export and explain the rows there.
 
-Good to know: values of computed columns cannot be drilled into.
+Good to know: a clicked, pinned or filtered value of a computed column cannot be drilled into; Koia shows a warning instead. A cell, bar or count that only aggregates a computed column, e.g. its sum per product, still shows its rows.
 
 ## 9. Explain these rows
 
@@ -295,7 +326,7 @@ Video: [Message patterns](https://www.koia.io/intro/videos.html)
 
 ## 11. Pivot tables
 
-**+** → **New Pivot Table** opens all columns as fields.
+**+** → **New Pivot Table** opens all columns, computed columns included, as fields.
 
 <img width="880" src="../src/intro/screenshots/pivot.webp" alt="Pivot table with heatmap">
 
@@ -305,9 +336,10 @@ Video: [Message patterns](https://www.koia.io/intro/videos.html)
 
 The toolbar of the tab adds:
 
-- **Define Value Grouping...** – group a number column into ranges (**Add Value Range**, **Up to:**); without an active range all values fall into *min - max*.
+- **Define Value Grouping...** – group a number column, also a computed one, into ranges (**Add Value Range**, **Up to:**); without an active range all values fall into *min - max*.
 - **Time Unit Grouping** – group a time column by millisecond up to year. In the hour repeated when clocks are turned back, the labels carry the UTC offset, e.g. *27 Oct 2024 02 +02:00* and *27 Oct 2024 02 +01:00*.
 - **Show Row Totals** / **Show Column Totals**, and **Heatmap Colors** for negative and positive values.
+- **⋮** → **Computed Columns** creates and edits computed columns ([chapter 6](#computed-columns)).
 - **⋮** → **Save As Excel**.
 
 Video: [Pivot tables and export](https://www.koia.io/intro/videos.html)
@@ -325,6 +357,8 @@ Video: [Pivot tables and export](https://www.koia.io/intro/videos.html)
 - **Snap to Grid** – on the screen view, tiles fill grid cells; click it again to place tiles freely. The **⋮** menu, disabled off the grid, sets **Grid Columns** (1–5) and the **Grid Cell Ratio (width:height)**. New and generated dashboards start with Screen View and Snap to Grid.
 - Switching between grid, screen view and pages scales the tiles to the new width and keeps their heights; the tiles of each page flow on below the tiles before them, without empty pages in between.
 - **Allow overlapping tiles** (canvas, disabled in the grid) – when off, tiles side by side form a row and flow like text. A tile moved within its row swaps with a neighbour once it covers half of it (as in the grid); a tile moved onto another row is inserted where its centre is: while you drag, the tiles behind it already shift right, tiles no longer fitting the width wrap to the start of the next row (beside a taller tile of the row above), and the gap the tile leaves closes. A tile resized or moved with the arrow keys makes room the same way: the tiles to its right shift right, the tiles below move down, and its edge stops at the tiles to its left and above. Aligned tiles keep their place and the tiles covered move down; several tiles moved together push the tiles they cover down, on pages onto the next page if needed, and never cover each other. Notes may always overlap. New and generated dashboards start with it off.
+
+Video: [Dashboard layouts](https://www.koia.io/intro/videos.html)
 
 **Elements**: **Add Chart**, **Add Relationship Graph**, **Add Summary**, **Add Text Tile** and **Add Note** (a sticky note above the tiles). Each tile has a header with:
 
@@ -360,8 +394,8 @@ Then set the panels:
 
 - **Values** – the data column(s); several columns must all be numbers. **Computed Column** creates a column from two number columns, e.g. a percentage.
 - **Value Mode** – **Count Distinct Values**, **Individual Values**, **Aggregate Values** or **Count Rows**; offered depending on chart type and columns. **Aggregation** picks Sum, Average, Median, Max or Min.
-- **Group by** (X-axis) – with **Time Unit Grouping** for time columns.
-- **Value Splitting** – one series per value of the selected columns.
+- **Group by** (X-axis) – with **Time Unit Grouping** for time columns; computed columns are offered too.
+- **Value Splitting** – one series per value of the selected columns, computed columns included.
 - **Stacked**, **Show Distinct Scales**, **Color Scheme**, legend position, axis titles and label rotation.
 
 Individual values of Line, Area, Scatter, Linear Bar and Linear Horizontal Bar charts with more than 1,000 points per series are sampled down, marked by a warning icon; stacked series keep the points of the same X values, so their stacks stay exact.
@@ -374,13 +408,13 @@ Video: [Dashboards and charts](https://www.koia.io/intro/videos.html)
 
 A summary table counts or aggregates rows per group, over several hierarchy levels.
 
-1. **Data** – choose the column and **Count Distinct Values** or **Aggregate Values**. For number columns, **Define value grouping** groups the values into ranges.
-2. **Hierarchy** – drag the group-by columns into **Selected Columns**; their order sets the levels. Time columns can be grouped by a time unit.
+1. **Data** – choose the column and **Count Distinct Values** or **Aggregate Values**. For number columns, **Define value grouping** groups the values into ranges. **Computed Column** creates a column from two number columns ([chapter 6](#computed-columns)).
+2. **Hierarchy** – drag the group-by columns, computed columns included, into **Selected Columns**; their order sets the levels. Time columns can be grouped by a time unit.
 3. **Aggregation** – drag Count, Average, Median, Max, Min or Sum into **Selected Aggregations**.
 
 Click a header to sort; empty values come first in ascending and last in descending order. The **Overall** row aggregates all rows: the total count, or the average, median, maximum, minimum or sum of all values – not of the group results. Each count links to its rows (**Show Data...**). **⋮** → **Save As CSV**, **Save As JSON** or **Save As Excel** exports the table.
 
-Good to know: counts are not clickable while a value grouping is used.
+Good to know: counts are not clickable while a value grouping is used. Counts of a computed column's values show a warning instead of rows.
 
 Good to know: a group without numbers shows an empty cell for Average, Median, Max, Min and Sum.
 
@@ -392,7 +426,7 @@ Video: [Summary tables](https://www.koia.io/intro/videos.html)
 
 A relationship graph shows how the values of several columns hang together, as a tree of nodes from a root.
 
-- **Data Hierarchy** – drag columns into **Selected Columns**; each column is one level.
+- **Data Hierarchy** – drag columns, computed columns included, into **Selected Columns**; each column is one level. **Computed Column** adds a new computed column as the last level; the pencil next to a computed column edits it. A double-click on a node of a computed column shows a warning instead of rows.
 - **Other** – sliders for the force layout: **Link Distance**, **Link Strength**, **Friction**, **Charge**, **Gravity**, **Theta**, **Alpha**.
 - Drag nodes to arrange them. Hovering a node shows its value and number of entries; a double-click shows its rows.
 

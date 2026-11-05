@@ -1350,8 +1350,50 @@ describe('ChartSideBarComponent - computed columns', () => {
     expect(component.selectableDataColumns.map(c => c.name)).toEqual(['Name', 'Amount', 'Percent', 'Share', 'Sum']);
   });
 
-  it('#defineSelectableItems should not offer computed columns as group-by columns', () => {
-    expect(component.selectableGroupByColumns.map(c => c.name)).toEqual(['Name', 'Percent', 'Comment']);
+  it('#defineSelectableItems should offer all but data columns as group-by columns', () => {
+    expect(component.selectableGroupByColumns.map(c => c.name)).toEqual(['Name', 'Percent', 'Comment', 'Share', 'Sum']);
+  });
+
+  it('#onGroupByColumnChanged should group by computed column', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+
+    // when
+    component.onGroupByColumnChanged(findColumn('Share'));
+
+    // then
+    expect(context.groupByColumns).toEqual([findColumn('Share')]);
+  });
+
+  it('group-by field should show functions icon of computed group-by column', fakeAsync(() => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+    component.onGroupByColumnChanged(findColumn('Share'));
+
+    // when
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    const icon = fixture.debugElement.query(By.css('.field_group_by mat-select-trigger mat-icon'));
+    expect(icon.nativeElement.textContent.trim()).toBe('functions');
+  }));
+
+  it('available split columns should show functions icon of computed column', () => {
+
+    // given
+    context.chartType = ChartType.LINE.type;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const items = fixture.debugElement.queryAll(By.css('.div_column_item'));
+    const shareItem = items.find(i => i.nativeElement.textContent.trim().endsWith('Share'));
+    expect(shareItem.query(By.css('mat-icon')).nativeElement.textContent.trim()).toBe('functions');
   });
 
   it('#onComputedColumnCreated should select the context column of the created column', () => {

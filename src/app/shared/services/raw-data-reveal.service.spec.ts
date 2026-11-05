@@ -396,6 +396,71 @@ describe('RawDataRevealService', () => {
     expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
   });
 
+  it('#ofQuery should show warning instead of raw data dialog when base query has empty filter of computed column', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    context = new SummaryContext([levelColumn, amountColumn, shareColumn()]);
+    query.addPropertyFilter(new PropertyFilter('Share', Operator.EMPTY, '', DataType.NUMBER));
+
+    // when
+    service.ofQuery(query, ['Level'], ['WARN'], context);
+
+    // then
+    expect(onWarningSpy).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'Raw data cannot be revealed by values of the computed column "Share"');
+    expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
+  });
+
+  it('#reveal should show raw data dialog when query has no filter of computed column', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    query.addPropertyFilter(new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT));
+    query.addValueRangeFilter('Amount', 10, 20);
+    const explainBase = new Query(new PropertyFilter('Host', Operator.EQUAL, 'server1', DataType.TEXT));
+
+    // when
+    service.reveal(query, [levelColumn, amountColumn, shareColumn()], explainBase);
+
+    // then
+    expect(onWarningSpy).not.toHaveBeenCalled();
+    const actualQuery: Query = vi.mocked(dialogServiceOpenSpy).mock.calls[0][1].data.query;
+    expect(actualQuery.getPropertyFilters()).toEqual([new PropertyFilter('Level', Operator.EQUAL, 'WARN', DataType.TEXT)]);
+    expect(actualQuery.getValueRangeFilters()).toEqual([new ValueRangeFilter('Amount', { min: 10, max: 20, maxExcluding: undefined })]);
+    expect(explainBaseOfDialog().getPropertyFilters()).toEqual(explainBase.getPropertyFilters());
+  });
+
+  it('#reveal should show warning instead of raw data dialog when query has property filter of computed column', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    query.addPropertyFilter(new PropertyFilter('Share', Operator.NOT_EQUAL, 25, DataType.NUMBER));
+
+    // when
+    service.reveal(query, [levelColumn, amountColumn, shareColumn()]);
+
+    // then
+    expect(onWarningSpy).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'Raw data cannot be revealed by values of the computed column "Share"');
+    expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
+  });
+
+  it('#reveal should show warning instead of raw data dialog when query has value range filter of computed column', () => {
+
+    // given
+    const onWarningSpy = vi.spyOn(TestBed.inject(NotificationService), 'onWarning').mockReturnValue(undefined);
+    query.addValueRangeFilter('Share', 10, 20, true);
+
+    // when
+    service.reveal(query, [levelColumn, amountColumn, shareColumn()]);
+
+    // then
+    expect(onWarningSpy).toHaveBeenCalledWith(TestBed.inject(MatBottomSheet),
+      'Raw data cannot be revealed by values of the computed column "Share"');
+    expect(dialogServiceOpenSpy).not.toHaveBeenCalled();
+  });
+
   it('#ofQuery should create equal filter with data type of number column', () => {
 
     // when

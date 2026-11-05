@@ -752,6 +752,8 @@
     "create": "Berechnete Spalte",
     "createTooltip": "Spalte erstellen, die aus zwei Zahlenspalten berechnet wird, z. B. ein Prozentsatz",
     "edit": "Berechnete Spalte {{name}} bearbeiten",
+    "menu": "Berechnete Spalten",
+    "new": "Neue berechnete Spalte…",
     "createTitle": "Neue berechnete Spalte",
     "editTitle": "Berechnete Spalte bearbeiten",
     "leftColumn": "Erste Spalte",
@@ -764,7 +766,7 @@
     "notSaved": "Berechnete Spalte kann nicht gespeichert werden: {{error}}",
     "notDeleted": "Berechnete Spalte kann nicht gelöscht werden: {{error}}",
     "deleteTitle": "Berechnete Spalte löschen",
-    "deleteQuestion": "Soll \"{{name}}\" wirklich gelöscht werden? Die Spalte wird aus allen Diagrammen und Tabellen entfernt, die sie verwenden, in allen Dashboards und gespeicherten Ansichten.",
+    "deleteQuestion": "Soll \"{{name}}\" wirklich gelöscht werden? Die Spalte wird aus allen Diagrammen, Tabellen und Pivot-Tabellen entfernt, die sie verwenden, in allen Tabs und gespeicherten Ansichten.",
     "noRawData": "Rohdaten können nicht nach Werten der berechneten Spalte \"{{column}}\" angezeigt werden"
   },
   "sceneFormat": {

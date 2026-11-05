@@ -752,6 +752,8 @@
     "create": "Computed Column",
     "createTooltip": "Create a column computed from two number columns, e.g. a percentage",
     "edit": "Edit computed column {{name}}",
+    "menu": "Computed Columns",
+    "new": "New Computed Column…",
     "createTitle": "New Computed Column",
     "editTitle": "Edit Computed Column",
     "leftColumn": "First Column",
@@ -764,7 +766,7 @@
     "notSaved": "Computed column cannot be saved: {{error}}",
     "notDeleted": "Computed column cannot be deleted: {{error}}",
     "deleteTitle": "Delete Computed Column",
-    "deleteQuestion": "Do you really want to delete \"{{name}}\"? It will be removed from all charts and tables using it, in all dashboards and saved views.",
+    "deleteQuestion": "Do you really want to delete \"{{name}}\"? It will be removed from all charts, tables and pivot tables using it, in all tabs and saved views.",
     "noRawData": "Raw data cannot be revealed by values of the computed column \"{{column}}\""
   },
   "sceneFormat": {

@@ -53,11 +53,11 @@ export class ModelToViewConverter {
          x: context.x,
          y: context.y,
          z: context.z,
-         dataColumns: context.dataColumns,
-         splitColumns: context.splitColumns,
-         groupByColumns: context.groupByColumns,
+         dataColumns: context.dataColumns.map(c => ({ ...c })),
+         splitColumns: context.splitColumns.map(c => ({ ...c })),
+         groupByColumns: context.groupByColumns.map(c => ({ ...c })),
          aggregations: context.aggregations,
-         valueGroupings: context.valueGroupings,
+         valueGroupings: context.valueGroupings.map(g => ({ ...g })),
          colorOptions: context.colorProvider.options
       };
    }

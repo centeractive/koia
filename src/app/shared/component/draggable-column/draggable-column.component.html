@@ -2,6 +2,9 @@
   <span>
     <mat-icon [class]="cssClass">{{ icon }}</mat-icon>
     <span [class]="cssClass">{{ column.name }}</span>
+    @if (editable && isComputedColumn()) {
+      <koia-computed-column-launcher [column]="column" [entries]="entries" />
+    }
   </span>
   @if (column.dataType === 'Time') {
     <span class="select_time_unit">

@@ -63,12 +63,6 @@ export class RawDataRevealService {
    * @param explainBase the rows the revealed rows are compared with when explaining them
    */
   ofQuery(baseQuery: Query, columnNames: string[], columnValues: unknown[], context: ElementContext, explainBase = baseQuery): void {
-    const computedColumn = context.columns.find(c => isComputedColumn(c) && columnNames.includes(c.name));
-    if (computedColumn) {
-      this.zone.run(() => this.notificationService.onWarning(this.bottomSheet,
-        LanguageService.instant('computedColumn.noRawData', { column: computedColumn.name })));
-      return;
-    }
     const query = baseQuery.clone();
     for (let i = 0; i < columnNames.length; i++) {
       const dataType = context.columns.find(c => c.name === columnNames[i]).dataType;
@@ -80,7 +74,24 @@ export class RawDataRevealService {
         query.addPropertyFilter(new PropertyFilter(columnNames[i], Operator.EQUAL, columnValues[i] as string | number | boolean, dataType));
       }
     }
-    this.show(query, explainBase);
+    this.reveal(query, context.columns, explainBase);
+  }
+
+  /**
+   * displays raw data of the query or, since computed values are not stored, warns when it filters by a computed column
+   *
+   * @param columns the columns the query may refer to
+   * @param explainBase the rows the revealed rows are compared with when explaining them
+   */
+  reveal(query: Query, columns: Column[], explainBase?: Query): void {
+    const filteredNames = [...query.getPropertyFilters(), ...query.getValueRangeFilters()].map(f => f.name);
+    const computedColumn = columns.find(c => isComputedColumn(c) && filteredNames.includes(c.name));
+    if (computedColumn) {
+      this.zone.run(() => this.notificationService.onWarning(this.bottomSheet,
+        LanguageService.instant('computedColumn.noRawData', { column: computedColumn.name })));
+    } else {
+      this.show(query, explainBase);
+    }
   }
 
   /**

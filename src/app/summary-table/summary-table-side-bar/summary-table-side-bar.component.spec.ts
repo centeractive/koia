@@ -199,41 +199,41 @@ describe('SummaryTableSideBarComponent', () => {
     expect(contextChangeEvents).toBe(1);
   }));
 
-  it('#isCountDistinctValuesEnabled should return true if context has no data column', () => {
+  it('#isAggregateValuesEnabled should return true if context has no data column', () => {
 
     // given
     context.dataColumns = [];
 
     // when
-    const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
+    const aggregateValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBe(true);
+    expect(aggregateValuesEnabled).toBe(true);
   });
 
-  it('#isCountDistinctValuesEnabled should return true if context has non-value-grouped numeric data column', () => {
+  it('#isAggregateValuesEnabled should return true if context has non-value-grouped numeric data column', () => {
 
     // given
     context.dataColumns = [findColumn('Percent')];
 
     // when
-    const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
+    const aggregateValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBe(true);
+    expect(aggregateValuesEnabled).toBe(true);
   });
 
-  it('#isCountDistinctValuesEnabled should return false if context has value-grouped numeric data column', () => {
+  it('#isAggregateValuesEnabled should return false if context has value-grouped numeric data column', () => {
 
     // given
     context.dataColumns = [findColumn('Percent')];
     context.valueGroupings = [{ columnName: 'Percent', ranges: [{ min: 1, max: 10 }, { min: 10, max: 20 }] }];
 
     // when
-    const countDistinctValuesEnabled = component.isAggregateValuesEnabled();
+    const aggregateValuesEnabled = component.isAggregateValuesEnabled();
 
     // then
-    expect(countDistinctValuesEnabled).toBe(false);
+    expect(aggregateValuesEnabled).toBe(false);
   });
 
   it('#click on data column button should invoke #onColumnNameChanged', () => {
@@ -341,33 +341,7 @@ describe('SummaryTableSideBarComponent', () => {
     expect(context.aggregations).toEqual([Aggregation.AVG]);
   });
 
-  it('#isCountDistinctValuesEnabled should return false when a computed column is selected', () => {
-
-    // given
-    initWithComputedColumn();
-    context.dataColumns = [findContextColumn('Share')];
-
-    // when
-    const enabled = component.isCountDistinctValuesEnabled();
-
-    // then
-    expect(enabled).toBe(false);
-  });
-
-  it('#isCountDistinctValuesEnabled should return true when a stored column is selected while a computed column exists', () => {
-
-    // given
-    initWithComputedColumn();
-    context.dataColumns = [findContextColumn('Amount')];
-
-    // when
-    const enabled = component.isCountDistinctValuesEnabled();
-
-    // then
-    expect(enabled).toBe(true);
-  });
-
-  it('count distinct values radio button should be disabled when a computed column is selected', () => {
+  it('count distinct values radio button should be enabled when a computed column is selected', () => {
 
     // given
     initWithComputedColumn();
@@ -378,17 +352,44 @@ describe('SummaryTableSideBarComponent', () => {
 
     // then
     const radioButtons = fixture.debugElement.queryAll(By.directive(MatRadioButton)).map(r => r.componentInstance as MatRadioButton);
-    expect(radioButtons[0].disabled).toBe(true);
+    expect(radioButtons[0].disabled).toBe(false);
     expect(radioButtons[1].disabled).toBe(false);
   });
 
-  it('value grouping icon should be hidden for computed column', () => {
+  it('value grouping icon should be shown for stored and computed number columns', () => {
 
     // when
     initWithComputedColumn();
 
     // then
-    expect(fixture.debugElement.queryAll(By.css('.icon_define_value_grouping')).length).toBe(2);
+    expect(fixture.debugElement.queryAll(By.css('.icon_define_value_grouping')).length).toBe(3);
+  });
+
+  it('value grouped computed column should show functions icon, formula tooltip and edit launcher', () => {
+
+    // given
+    initWithComputedColumn();
+    context.valueGroupings = [{ columnName: 'Share', ranges: [{ min: 0, max: 50 }, { min: 50, max: 100 }] }];
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    const groupedColumn = fixture.debugElement.query(By.css('.div_col_grouped'));
+    const button = groupedColumn.query(By.css('.but_column'));
+    expect(button.nativeElement.querySelector('mat-icon').textContent.trim()).toBe('functions');
+    expect(button.properties['matTooltip']).toBe('Amount as % of Percent');
+    expect(groupedColumn.query(By.css('koia-computed-column-launcher')).properties['column']).toBe(findContextColumn('Share'));
+  });
+
+  it('hierarchy should offer computed column', () => {
+
+    // when
+    initWithComputedColumn();
+
+    // then
+    const draggableColumns = fixture.debugElement.queryAll(By.css('koia-draggable-column'));
+    expect(draggableColumns.map(d => d.properties['column'].name)).toContain('Share');
   });
 
   it('data column button should show functions icon and formula tooltip of computed column', () => {
@@ -404,20 +405,21 @@ describe('SummaryTableSideBarComponent', () => {
     expect(button.properties['matTooltip']).toBe('Amount as % of Percent');
   });
 
-  it('#addValueGroupingFor should keep the aggregation when a computed column is selected', fakeAsync(() => {
+  it('#addValueGroupingFor should switch to aggregation COUNT when a computed column is grouped', fakeAsync(() => {
 
     // given
     initWithComputedColumn();
+    component.entries = entries.map(e => ({ ...e, Share: e['Amount'] / e['Percent'] }));
     context.dataColumns = [findContextColumn('Share')];
     context.aggregations = [Aggregation.AVG];
 
     // when
-    component.addValueGroupingFor(findContextColumn('Amount'));
+    component.addValueGroupingFor(findContextColumn('Share'));
     flush();
 
     // then
-    expect(context.aggregations).toEqual([Aggregation.AVG]);
-    expect(context.valueGroupings.map(g => g.columnName)).toEqual(['Amount']);
+    expect(context.aggregations).toEqual([Aggregation.COUNT]);
+    expect(context.valueGroupings.map(g => g.columnName)).toEqual(['Share']);
   }));
 
   it('edit launcher should only exist for computed columns', () => {

@@ -259,7 +259,7 @@ describe('SummaryTableSideBarComponent', () => {
       expect(controller.isNumericColumn(findColumn(null))).toBe(false);
    });
 
-   it('#ngDoCheck should define selectable items without computed split and group-by columns', () => {
+   it('#ngDoCheck should define selectable items with computed split and group-by columns', () => {
 
       // given
       context = new ContextTestable([...columns, shareColumn()]);
@@ -270,8 +270,8 @@ describe('SummaryTableSideBarComponent', () => {
       controller.ngDoCheck();
 
       // then
-      expect(controller.availableSplitColumns.map(c => c.name)).toEqual(['Level', 'Host', 'Path', 'Percent']);
-      expect(controller.availableGroupByColumns.map(c => c.name)).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent']);
+      expect(controller.availableSplitColumns.map(c => c.name)).toEqual(['Level', 'Host', 'Path', 'Percent', 'Share']);
+      expect(controller.availableGroupByColumns.map(c => c.name)).toEqual(['Time', 'Level', 'Host', 'Path', 'Percent', 'Share']);
    });
 
    it('#ngDoCheck should refresh the selectable columns when the context columns were replaced', () => {

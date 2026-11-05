@@ -61,20 +61,15 @@ export abstract class SideBarController implements OnChanges, DoCheck {
 
    private determineAvailableSplitColumns(): Column[] {
       return this.elementContext.columns
-         .filter(c => c.dataType !== DataType.TIME && !isComputedColumn(c))
+         .filter(c => c.dataType !== DataType.TIME)
          .filter(c => !this.elementContext.dataColumns.includes(c))
          .filter(c => !this.selectedSplitColumns.includes(c));
    }
 
    private determineAvailableGroupByColumns(): Column[] {
       return this.elementContext.columns
-         .filter(c => !isComputedColumn(c))
          .filter(c => !this.elementContext.dataColumns.includes(c))
          .filter(c => !this.selectedGroupByColumns.includes(c));
-   }
-
-   iconOf(dataType: DataType): string {
-      return DataTypeUtils.iconOf(dataType);
    }
 
    iconOfColumn(column: Column): string {

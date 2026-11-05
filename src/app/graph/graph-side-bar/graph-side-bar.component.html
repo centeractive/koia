@@ -13,7 +13,7 @@
               [cdkDropListConnectedTo]="availableColList" class="div_column_list"
               (cdkDropListDropped)="dropGroupByColumn($event)">
               @for (column of selectedGroupByColumns; track column) {
-                <koia-draggable-column [context]="context"
+                <koia-draggable-column [context]="context" [editable]="true" [entries]="entries"
                   [column]="column" cssClass="accent">
                 </koia-draggable-column>
               }
@@ -24,11 +24,12 @@
                 [cdkDropListConnectedTo]="selectedColList" class="div_column_list"
                 (cdkDropListDropped)="dropGroupByColumn($event)">
                 @for (column of availableGroupByColumns; track column) {
-                  <koia-draggable-column [context]="context"
+                  <koia-draggable-column [context]="context" [editable]="true" [entries]="entries"
                     [column]="column" cssClass="white">
                   </koia-draggable-column>
                 }
               </div>
+              <koia-computed-column-launcher [entries]="entries" (columnSaved)="onComputedColumnCreated($event)" />
             </div>
           </koia-expansion-panel>
           <koia-expansion-panel [title]="'graph.sideBar.colorScheme' | translate">

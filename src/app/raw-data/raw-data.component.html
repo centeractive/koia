@@ -38,7 +38,14 @@
           <span>{{ 'rawData.saveAs' | translate: { format: exportFormat } }}</span>
         </button>
       }
+      @if (!dialogStyle) {
+        <button class="menu_item_computed_columns" mat-menu-item [matMenuTriggerFor]="computedColumnsMenu.menu">
+          <mat-icon>functions</mat-icon>
+          <span>{{ 'computedColumn.menu' | translate }}</span>
+        </button>
+      }
     </mat-menu>
+    <koia-computed-columns-menu #computedColumnsMenu [entriesProvider]="loadedRows" />
     @if (!dialogStyle) {
       <koia-print-heading [title]="'toolbar.tabs.rawData' | translate" [sceneName]="scene?.name" [printSheets]="paging"
         [class.koia-print-heading-in-sheets]="isPaged()" />
