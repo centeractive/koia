@@ -15,6 +15,7 @@ import { hasVaryingValues } from './chart-value-variety';
 import { ColumnProfiler } from './column-profiler';
 import { DashboardGenerator, GeneratedDashboard, GenerationRequest } from './dashboard-generator';
 import { GENERATED_GRID_COLUMNS, GridChooser, GridDef, rowsOf } from './generated-grid';
+import { GridPlanner } from './grid-planner';
 import { SummaryTablePicker } from './summary-table-picker';
 import { TileContextFactory } from './tile-context-factory';
 import { TileSignature } from './tile-signature';
@@ -799,6 +800,26 @@ describe('DashboardGenerator', () => {
       expectFilled(result);
       expect(tableOf(result).gridColumnSpan).toBe(1);
       expect(charts(result).filter(c => c.gridColumnSpan === 2).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('#generate should plan a small slot for each small table or graph', () => {
+    for (const values of SEQUENCES) {
+
+      // given
+      vi.restoreAllMocks();
+      chooseGridOf(4);
+      generateSpecsMatching(s => s.size !== TileSize.SMALL || !s.chartType);
+      const planSpy = vi.spyOn(GridPlanner.prototype, 'plan');
+
+      // when
+      const result = generatorOf(values, estimatorOf(100)).generate(requestOf(COLUMNS, ENTRIES, [], undefined, 1000));
+
+      // then
+      const smallTiles = result.elementContexts
+        .filter(c => (c instanceof SummaryContext || c instanceof GraphContext) && c.gridColumnSpan === 1).length;
+      expect(smallTiles).toBeGreaterThan(0);
+      expect(planSpy.mock.lastCall.at(-1)).toBe(smallTiles);
     }
   });
 

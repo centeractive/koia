@@ -2797,7 +2797,42 @@ describe('DashboardComponent', () => {
           expect(restoredOnTile.anchorOffset.x).toBeCloseTo(50 / 600, 5);
           expect(restoredOnTile.anchorOffset.y).toBeCloseTo(100 / 400, 5);
           expect([restoredOnTile.x, restoredOnTile.y]).toEqual([750, 100]);
+          expect(restoredOnTile.width).toBe(300);
           expect(restoredOffTile.anchor).toBeUndefined();
+        });
+
+        it.each([
+          { x: 600, expected: [881, 100, 446, 150] },
+          { x: 100, expected: [147, 100, 445, 150] }
+        ])('#setLayout to grid should scale note at x $x from portrait page units to landscape page units', ({ x, expected }) => {
+
+          // given
+          harness.renderCanvasSummaries([[0, 0, 400, 300]], CanvasPaging.PORTRAIT);
+          addTextBoxContext(x, 100);
+
+          // when
+          component.setLayout(Route.GRID);
+
+          // then
+          const note = component.elementContexts[1];
+          expect([note.x, note.y, note.width, note.height]).toEqual(expected);
+        });
+
+        it('#setLayout to grid and back to portrait canvas should keep note size', () => {
+
+          // given
+          harness.renderCanvasSummaries([[0, 0, 400, 300]], CanvasPaging.PORTRAIT);
+          addTextBoxContext(600, 100);
+
+          // when
+          component.setLayout(Route.GRID);
+          fixture.detectChanges();
+          component.showCanvas(CanvasPaging.PORTRAIT);
+
+          // then
+          const note = component.elementContexts[1];
+          expect(Math.abs(note.x - 600)).toBeLessThanOrEqual(1);
+          expect(Math.abs(note.width - 300)).toBeLessThanOrEqual(1);
         });
 
         /**

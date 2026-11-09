@@ -162,7 +162,7 @@ export class DashboardGenerator {
     const wides = [...wideTiles, ...wideCharts];
     const smalls = [...tilesOf(tiles, TileSize.SMALL), ...smallCharts];
     const plan = this.planner.plan(grid.columns, rows, !!feature, wides.length, smalls.length, tiles[0]?.size === TileSize.SMALL,
-      wideTiles.length);
+      wideTiles.length, tilesOf(tiles, TileSize.SMALL).length);
     const elementContexts = this.assign(plan, feature, wides, smalls, grid.columns);
     this.applyColors(elementContexts, request.currentContexts);
     return { grid, elementContexts };

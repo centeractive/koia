@@ -23,8 +23,22 @@ describe('ClickWithoutDragDirective', () => {
     element = fixture.nativeElement.querySelector('div');
   });
 
+  afterEach(() => vi.restoreAllMocks());
+
   function press(): void {
     element.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 100 }));
+  }
+
+  function move(dx: number, dy: number): void {
+    document.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 100 + dx, clientY: 100 + dy }));
+  }
+
+  function release(type = 'pointerup'): void {
+    document.dispatchEvent(new PointerEvent(type, { bubbles: true }));
+  }
+
+  function removedEventNames(removed: { mock: { calls: unknown[][] } }): unknown[] {
+    return removed.mock.calls.map(c => c[0]);
   }
 
   function click(dx: number, dy: number): MouseEvent {
@@ -83,5 +97,87 @@ describe('ClickWithoutDragDirective', () => {
 
     // then
     expect(fixture.componentInstance.clicks).toBe(0);
+  });
+
+  it('should not emit click after pointer moved beyond drag threshold and back', () => {
+
+    // given
+    press();
+    move(6, 0);
+    move(0, 0);
+
+    // when
+    click(0, 0);
+
+    // then
+    expect(fixture.componentInstance.clicks).toBe(0);
+  });
+
+  it('should emit click after pointer moved within drag threshold', () => {
+
+    // given
+    press();
+    move(4, 0);
+
+    // when
+    click(0, 0);
+
+    // then
+    expect(fixture.componentInstance.clicks).toBe(1);
+  });
+
+  it.each(['pointerup', 'pointercancel'])('should ignore pointer moves after %s', type => {
+
+    // given
+    press();
+    release(type);
+    move(6, 0);
+
+    // when
+    click(0, 0);
+
+    // then
+    expect(fixture.componentInstance.clicks).toBe(1);
+  });
+
+  it('should forget drag of previous press', () => {
+
+    // given
+    press();
+    move(6, 0);
+    release();
+    press();
+
+    // when
+    click(0, 0);
+
+    // then
+    expect(fixture.componentInstance.clicks).toBe(1);
+  });
+
+  it('should stop following previous press on next press', () => {
+
+    // given
+    press();
+    const removed = vi.spyOn(document, 'removeEventListener');
+
+    // when
+    press();
+
+    // then
+    expect(removedEventNames(removed)).toEqual(expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel']));
+  });
+
+  it('should stop following pointer when destroyed', () => {
+
+    // given
+    press();
+    const removed = vi.spyOn(document, 'removeEventListener');
+
+    // when
+    fixture.destroy();
+
+    // then
+    expect(removedEventNames(removed)).toEqual(expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel']));
   });
 });

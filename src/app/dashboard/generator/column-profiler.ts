@@ -114,8 +114,8 @@ export class ColumnProfiler {
     if (!this.isIntegral(counts) || counts.valueCounts.size < ColumnProfiler.MIN_CATEGORIES) {
       return false;
     }
-    const values = [...counts.valueCounts.keys()];
-    return Math.max(...values) - Math.min(...values) + 1 <= ColumnProfiler.MAX_ORDINAL_RANGE;
+    const range = ArrayUtils.toValueRange([...counts.valueCounts.keys()]);
+    return range.max - range.min + 1 <= ColumnProfiler.MAX_ORDINAL_RANGE;
   }
 
   private isIdentifier(counts: NumberCounts): boolean {

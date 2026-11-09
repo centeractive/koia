@@ -222,6 +222,18 @@ describe('ColumnProfiler', () => {
     expect(profiles.map(p => p.role)).toEqual([ColumnRole.MEASURE]);
   });
 
+  it('#profile should not classify integer column of very many distinct values as ordinal category', () => {
+
+    // given
+    const entries = entriesOf('Cents', [...Array.from({ length: 199_999 }, (_, i) => i), 0]);
+
+    // when
+    const profiles = profiler.profile([column('Cents', DataType.NUMBER)], entries);
+
+    // then
+    expect(profiles.map(p => p.role)).toEqual([ColumnRole.MEASURE]);
+  });
+
   it('#profile should not classify non-integer number column as ordinal category', () => {
 
     // given

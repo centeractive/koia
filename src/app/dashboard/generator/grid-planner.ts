@@ -12,9 +12,10 @@ export class GridPlanner {
   /**
    * @param keepSmallSlot whether at least one small slot must remain, requires a small stock of at least one
    * @param minWide minimum number of wide slots, the number of wide tiles that must not be placed in small slots
+   * @param minSmall minimum number of small slots, the small tiles that must not be dropped
    */
   plan(gridColumns: number, rows: number, hasFeature: boolean, wideStock: number, smallStock: number, keepSmallSlot = false,
-    minWide = 0): TileSize[] {
+    minWide = 0, minSmall = 0): TileSize[] {
     const sizes = hasFeature ? [TileSize.FEATURE] : [];
     const freeRows = hasFeature ? rows - 1 : rows;
     const r = this.fillableRows(gridColumns, freeRows, wideStock, smallStock, minWide);
@@ -22,7 +23,8 @@ export class GridPlanner {
       const lo = this.minWideCount(gridColumns, r, wideStock, smallStock, minWide);
       const hi = this.maxWideCount(gridColumns, r, wideStock);
       const hiK = keepSmallSlot ? Math.min(hi, Math.floor((r * gridColumns - 1) / 2)) : hi;
-      const k = hiK >= Math.max(lo, 1) ? this.randomizer.pick(range(Math.max(lo, 1), hiK + 1)) : lo;
+      const picked = hiK >= Math.max(lo, 1) ? this.randomizer.pick(range(Math.max(lo, 1), hiK + 1)) : lo;
+      const k = Math.max(lo, Math.min(picked, Math.floor((r * gridColumns - minSmall) / 2)));
       return sizes.concat(this.planRows(gridColumns, r, k));
     }
     return freeRows > 0 ? sizes.concat(this.randomizer.shuffled([

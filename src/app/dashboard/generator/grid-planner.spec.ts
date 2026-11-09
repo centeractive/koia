@@ -207,6 +207,36 @@ describe('GridPlanner', () => {
     expect(cellsOf(4, sizes).flat().every(c => c)).toBe(true);
   });
 
+  it('#plan should keep a small slot for each small tile', () => {
+
+    // when
+    const sizes = plannerOf([0.99]).plan(5, 3, true, 3, 3, true, 0, 2);
+
+    // then
+    expect(sizes[0]).toBe(TileSize.FEATURE);
+    expect(count(sizes, TileSize.WIDE)).toBe(1);
+    expect(count(sizes, TileSize.SMALL)).toBe(3);
+  });
+
+  it('#plan should keep a small slot for small tile after wide tile', () => {
+
+    // when
+    const sizes = plannerOf([0.99]).plan(4, 1, false, 2, 1, false, 0, 1);
+
+    // then
+    expect(count(sizes, TileSize.WIDE)).toBe(1);
+    expect(count(sizes, TileSize.SMALL)).toBe(2);
+  });
+
+  it('#plan should keep minimum wide count when small tiles do not fit', () => {
+
+    // when
+    const sizes = plannerOf([0.99]).plan(4, 1, false, 2, 1, false, 2, 1);
+
+    // then
+    expect(sizes).toEqual([TileSize.WIDE, TileSize.WIDE]);
+  });
+
   it('#plan should fill rows with kept small slot', () => {
     for (const gridColumns of [3, 4, 5]) {
       for (let rows = 1; rows <= 4; rows++) {

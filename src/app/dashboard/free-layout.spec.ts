@@ -627,6 +627,30 @@ describe('FreeLayout', () => {
     expect(positionsOf(contexts)[2]).toEqual([0, 500]);
   });
 
+  it('#placeUnpositionedOverlays should place overlay into vacated cascade slot', () => {
+
+    // given
+    const contexts = [textBox(20, 520), textBox(40, 540), textBox()];
+
+    // when
+    layout.placeUnpositionedOverlays(contexts, 500);
+
+    // then
+    expect(positionsOf(contexts)[2]).toEqual([0, 500]);
+  });
+
+  it('#placeUnpositionedOverlays should skip occupied cascade slots when filling gaps', () => {
+
+    // given
+    const contexts = [textBox(20, 520), textBox(), textBox()];
+
+    // when
+    layout.placeUnpositionedOverlays(contexts, 500);
+
+    // then
+    expect(positionsOf(contexts).slice(1)).toEqual([[0, 500], [40, 540]]);
+  });
+
   it('#clampIntoPage should keep rect within page', () => {
 
     // when

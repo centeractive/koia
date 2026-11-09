@@ -45,6 +45,7 @@ import { Guide, MovedEdges, Snap, SnapGuides } from './snap-guides';
 import { textBoxTileStyle } from './text-box-tile-style';
 import { TileSelection } from './tile-selection';
 import { visibleCenterOf } from './visible-center';
+import { WidthScale } from './width-scale';
 import type { TextExtent } from 'app/text-box/text-fit';
 import type { TextBoxComponent } from 'app/text-box/text-box.component';
 
@@ -389,7 +390,8 @@ export class DashboardComponent extends ViewController {
 
   /**
    * derives the spans of the tiles from their canvas size, the canvas width spans the grid width, heights are measured in
-   * landscape page units as the grid; overlays get anchored to the tile below their top left corner as drawn
+   * landscape page units as the grid; overlays get anchored to the tile below their top left corner as drawn and keep their drawn
+   * width, their x and width scaled to landscape page units
    */
   private applyGridSpans(elements: ViewElement[]): void {
     if (this.layerScale() > 0) {
@@ -407,11 +409,18 @@ export class DashboardComponent extends ViewController {
         element.gridRowSpan = spans.rowSpan;
       });
       const tileRects = tiles.map(tile => ({ tile, rect: this.freeLayout.grownRect(this.freeLayout.rectOf(tile), contextOf.get(tile)) }));
+      const scalesNotes = this.freeLayout.pageFormat.width !== PageFormat.LANDSCAPE.width;
+      const toGrid = new WidthScale(this.freeLayout.pageFormat.width, PageFormat.LANDSCAPE.width);
       overlays.forEach(textBox => {
-        const anchoring = this.freeLayout.anchorAt(this.freeLayout.rectOf(textBox), tileRects);
+        const rect = this.freeLayout.rectOf(textBox);
+        const anchoring = this.freeLayout.anchorAt(rect, tileRects);
         textBox.anchor = anchoring && elements.indexOf(anchoring.tile);
         textBox.anchorX = anchoring?.offset.x;
         textBox.anchorY = anchoring?.offset.y;
+        if (scalesNotes) {
+          const scaled = toGrid.scale(rect, this.freeLayout.minSizeOf(contextOf.get(textBox)).width);
+          Object.assign(textBox, { x: scaled.x, width: scaled.width });
+        }
       });
     }
   }

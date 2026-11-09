@@ -278,14 +278,20 @@ export class FreeLayout extends SheetLayout {
     const overlays = contexts.filter(c => c.isOverlay());
     const slotTop = Math.round(top / FreeLayout.STEP) * FreeLayout.STEP;
     const cascade = FreeLayout.OVERLAY_CASCADE;
-    let slot = overlays.filter(c => c.x != null && c.x % cascade === 0 && c.y - slotTop === c.x).length;
+    const occupied = new Set(overlays
+      .filter(c => c.x != null && c.x % cascade === 0 && c.y - slotTop === c.x)
+      .map(c => c.x / cascade));
+    let slot = 0;
     let z = this.maxZOf(contexts);
     overlays
       .filter(c => c.x == null)
       .forEach(c => {
+        while (occupied.has(slot)) {
+          slot++;
+        }
+        occupied.add(slot);
         c.setPosition(slot * cascade, slotTop + slot * cascade);
         c.z = ++z;
-        slot++;
       });
   }
 
