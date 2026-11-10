@@ -5,6 +5,7 @@ import { ColumnResizeDirective } from 'app/shared/directives/column-resize.direc
 import { ConfirmDialogData } from 'app/shared/component/confirm-dialog/confirm-dialog/confirm-dialog.component';
 import { Column, DataType } from 'app/shared/model';
 import { DialogService } from 'app/shared/services/dialog.service';
+import { LanguageService } from 'app/shared/services/language';
 import { DomMetrics } from '../table-fit/dom-metrics';
 import { waitFrames, waitStable } from 'app/shared/test/animation-frames';
 import { ColumnAutoSizer } from './column-auto-sizer';
@@ -953,6 +954,22 @@ describe('VirtualTableComponent', () => {
 
       // then
       expect(cellOf(0, 'Nested').textContent).toBe('{ "a": 1 }');
+    });
+
+    it('should format numbers anew when number format changes', async () => {
+
+      // given
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+      await render();
+      await scrollToRow(100);
+      expect(cellOf(100, 'Amount').textContent).toBe('1,000');
+
+      // when
+      await change(() => TestBed.inject(LanguageService).useNumberFormat('de-CH'));
+
+      // then
+      expect(cellOf(100, 'Amount').textContent).toBe("1'000");
+      expect(fixture.nativeElement.querySelector('.row-count').textContent).toBe("1'234 rows");
     });
   });
 

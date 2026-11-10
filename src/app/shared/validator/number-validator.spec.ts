@@ -14,11 +14,11 @@ describe('formattedNumberValidator', () => {
    });
 
    it('should accept formatted number within range', () => {
-      expect(validator(new FormControl((1_000).toLocaleString()))).toBeNull();
+      expect(validator(new FormControl((1_000).toLocaleString('en-US')))).toBeNull();
    });
 
    it('should reject formatted number above max', () => {
-      expect(validator(new FormControl((10_000).toLocaleString()))).toEqual({ outsideRange: true });
+      expect(validator(new FormControl((10_000).toLocaleString('en-US')))).toEqual({ outsideRange: true });
    });
 
    it('should reject number below min', () => {

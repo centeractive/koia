@@ -277,7 +277,7 @@ describe('ValueFilterComponent', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200.7', DataType.NUMBER);
-    const formattedValue = (1_200_300.55).toLocaleString();
+    const formattedValue = (1_200_300.55).toLocaleString('en-US');
 
     // when
     component.onValueChanged(formattedValue);
@@ -290,8 +290,8 @@ describe('ValueFilterComponent', () => {
   it('#onValueChanged should change filter number value when number has misplaced thousands separators', () => {
 
     // given
-    component.filter = new PropertyFilter('Amount', Operator.EQUAL, (2.000).toLocaleString(), DataType.NUMBER);
-    const ts = (1_000).toLocaleString().charAt(1);
+    component.filter = new PropertyFilter('Amount', Operator.EQUAL, (2.000).toLocaleString('en-US'), DataType.NUMBER);
+    const ts = (1_000).toLocaleString('en-US').charAt(1);
     const wronglyFormatted = '2' + ts + '0000';
 
     // when
@@ -306,7 +306,7 @@ describe('ValueFilterComponent', () => {
 
     // given
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '1.7', DataType.NUMBER);
-    const completableFloat = (0.7).toLocaleString().slice(1);
+    const completableFloat = (0.7).toLocaleString('en-US').slice(1);
 
     // when
     component.onValueChanged(completableFloat);
@@ -319,8 +319,8 @@ describe('ValueFilterComponent', () => {
   it('#onValueChanged should change filter value when value is list of floats', () => {
 
     // given
-    component.filter = new PropertyFilter('Amount', Operator.ANY_OF, (1.7).toLocaleString(), DataType.NUMBER);
-    const listOfFloats = [1.7, 2.5].map(f => f.toLocaleString()).join(';');
+    component.filter = new PropertyFilter('Amount', Operator.ANY_OF, (1.7).toLocaleString('en-US'), DataType.NUMBER);
+    const listOfFloats = [1.7, 2.5].map(f => f.toLocaleString('en-US')).join(';');
 
     // when
     component.onValueChanged(listOfFloats);
@@ -366,7 +366,7 @@ describe('ValueFilterComponent', () => {
   it('pressing <enter> in number column filter field should emit change event', () => {
 
     // given
-    const ds = (0.1).toLocaleString().charAt(1);
+    const ds = (0.1).toLocaleString('en-US').charAt(1);
     component.filter = new PropertyFilter('Amount', Operator.EQUAL, '200' + ds + '7', DataType.NUMBER);
     fixture.detectChanges();
     const htmlInput = fixture.debugElement.query(By.css('.column_filter_input')).nativeElement;

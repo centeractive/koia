@@ -70,7 +70,7 @@ export class GraphDataService {
          providerContext.nodes.push(graphNode);
          graphNode.count = treeNode.values.reduce((sum, child) => sum + this.buildGraphData(graphNode, child, columnIndex + 1, providerContext), 0);
       } else {
-         graphNode = this.createNode(parent, column, treeNode.key, treeNode.values.toLocaleString(LanguageService.localeId()), treeNode.values, providerContext)
+         graphNode = this.createNode(parent, column, treeNode.key, treeNode.values.toLocaleString(LanguageService.numberLocaleId()), treeNode.values, providerContext)
          providerContext.nodes.push(graphNode);
       }
       if (parent) {

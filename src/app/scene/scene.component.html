@@ -194,9 +194,9 @@
       @if (scene) {
         <div class="div_actions">
           @if (!canceled) {
-            <button id="but_cancel" mat-flat-button color="primary" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
+            <button id="but_cancel" mat-flat-button color="primary" [disabled]="persistingScene" (click)="cancel()">{{ 'common.cancel' | translate }}</button>
           }
-          @if (scene.name && !isSceneNameTaken() && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
+          @if (columnMappings && scene.name && !isSceneNameTaken() && scene.shortDescription && !scene.creationTime && columnMappingsValid) {
             <span class="span_load">
               @if (isPreviewDirty()) {
                 <img src="/assets/warning.png"
@@ -213,7 +213,7 @@
                   [matTooltip]="'scene.maxItemsTooltip' | translate: { max: (maxItemsPerScene | koiaNumber) }"
                   formattedInteger matTooltipClass="multi-line-tooltip">
                 @if (maxItemsToLoadControl.invalid) {
-                  <mat-error>{{ 'scene.maxItemsError' | translate: { max: maxItemsPerScene } }}</mat-error>
+                  <mat-error>{{ 'scene.maxItemsError' | translate: { max: (maxItemsPerScene | koiaNumber) } }}</mat-error>
                 }
               </mat-form-field>
               <mat-slide-toggle [(ngModel)]="abortDataloadOnError"

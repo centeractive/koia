@@ -1,5 +1,5 @@
 import { expect, Locator, Page } from '@playwright/test';
-import { Language } from 'app/shared/services/language/language';
+import { Language, NumberFormat } from 'app/shared/services/language/language';
 
 export class LanguageSelect {
 
@@ -15,5 +15,11 @@ export class LanguageSelect {
       await this.button.click();
       await this.page.locator(`.menu_item_language[lang="${language}"]`).click();
       await expect(this.button).toHaveAttribute('lang', language);
+   }
+
+   async selectNumberFormat(format: NumberFormat): Promise<void> {
+      await this.button.click();
+      await this.page.locator(`.menu_item_number_format[data-format="${format}"]`).click();
+      await expect(this.page.locator('.menu_item_number_format')).toHaveCount(0);
    }
 }

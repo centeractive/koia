@@ -1197,6 +1197,31 @@ describe('PivotTableComponent', () => {
         expect(rowLabel.textContent).toBe(datePipe.transform(now, 'MMM yyyy'));
         expect(query.findValueRangeFilter('Time').valueRange.min).toBe(monthStart.getTime());
       }));
+
+      it('should show value range labels in number format of new language and reveal their rows', fakeAsync(() => {
+
+        // given
+        createTabComponent({
+          route: Route.PIVOT, name: 'Pivot Table 1', modifiedTime: 0, query: null, data: {
+            ...pivotContext(),
+            valueGroupings: [{ columnName: 'Amount', ranges: [{ max: 15.5, active: true }] }],
+            pivotOptions: { rendererName: 'Table', aggregatorName: 'Count', cols: [], rows: ['Amount'] }
+          }
+        });
+        tabFixture.detectChanges();
+        flush();
+        expect(texts('th.pvtRowLabel')).toEqual(['min - 15.5', '15.5 - max']);
+        vi.mocked(viewTabsService.requestPersist).mockClear();
+
+        // when
+        switchLanguage('de');
+        tick(5_000);
+
+        // then
+        expect(texts('th.pvtRowLabel')).toEqual(['min - 15,5', '15,5 - max']);
+        expect(clickCell('td.pvtTotal.rowTotal', '15,5 - max').findValueRangeFilter('Amount').valueRange.min).toBe(15.5);
+        expect(viewTabsService.requestPersist).not.toHaveBeenCalled();
+      }));
     });
 
     describe('with values and attribute named like Object.prototype members', () => {
@@ -1852,6 +1877,49 @@ describe('PivotTableComponent', () => {
     expect(iconElement.getAttribute('svgicon')).toBe(icon);
   });
 
+  const loadDependentButtons = [
+    { id: '#but_value_grouping' },
+    { id: '#but_row_totals' },
+    { id: '#but_column_totals' },
+    { id: '#but_heatmap_colors' }
+  ];
+
+  it.each(loadDependentButtons)('toolbar button $id should be disabled while entries are loading', ({ id }) => {
+
+    // given
+    vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(new Subject());
+    const pendingFixture = TestBed.createComponent(PivotTableComponent);
+
+    // when
+    pendingFixture.detectChanges();
+
+    // then
+    expect(pendingFixture.nativeElement.querySelector(id).disabled).toBe(true);
+  });
+
+  it.each(loadDependentButtons)('toolbar button $id should stay disabled when entries cannot be fetched', ({ id }) => {
+
+    // given
+    vi.mocked(dbService.findEntriesWithComputedValues).mockReturnValue(throwError(() => 'failure'));
+    vi.spyOn(notificationService, 'onError').mockReturnValue(undefined);
+    const failedFixture = TestBed.createComponent(PivotTableComponent);
+
+    // when
+    failedFixture.detectChanges();
+
+    // then
+    expect(failedFixture.nativeElement.querySelector(id).disabled).toBe(true);
+  });
+
+  it.each(loadDependentButtons)('toolbar button $id should be enabled once pivot table is rendered', ({ id }) => {
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector(id).disabled).toBe(false);
+  });
+
   it('value grouping badge should be hidden without groupings', () => {
 
     // given
@@ -1891,6 +1959,7 @@ describe('PivotTableComponent', () => {
   it('#click on row totals button should hide row totals and deactivate button', fakeAsync(() => {
 
     // given
+    fixture.detectChanges();
     const button: HTMLElement = fixture.nativeElement.querySelector('#but_row_totals');
 
     // when
@@ -1907,6 +1976,7 @@ describe('PivotTableComponent', () => {
   it('#click on column totals button should hide column totals and deactivate button', fakeAsync(() => {
 
     // given
+    fixture.detectChanges();
     const button: HTMLElement = fixture.nativeElement.querySelector('#but_column_totals');
 
     // when

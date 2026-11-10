@@ -121,7 +121,7 @@ describe('ValueFilterCustomizer', () => {
       const formattedValue = customizer.formattedValueOf(filter);
 
       // then
-      const expectedValue = 123.55.toLocaleString();
+      const expectedValue = 123.55.toLocaleString('en-US');
       expect(formattedValue).toBe(expectedValue);
    });
 
@@ -146,7 +146,7 @@ describe('ValueFilterCustomizer', () => {
       const formattedValue = customizer.formattedValueOf(filter);
 
       // then
-      const expectedValue = 1234567.89.toLocaleString();
+      const expectedValue = 1234567.89.toLocaleString('en-US');
       expect(formattedValue).toBe(expectedValue);
    });
 

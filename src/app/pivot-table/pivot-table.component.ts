@@ -142,8 +142,8 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
   }
 
   /**
-   * re-renders the pivot table in the new language once it is shown and not busy, the pivot table of a cached route is
-   * re-rendered when it is attached again
+   * re-computes the value range labels in the new number format and re-renders the pivot table in the new language once it is
+   * shown and not busy, the pivot table of a cached route is re-rendered when it is attached again
    */
   ngDoCheck(): void {
     if (!this.languageChanged || !this.divPivot?.nativeElement.isConnected || this.loading || this.computing || this.pendingRecord) {
@@ -153,7 +153,7 @@ export class PivotTableComponent extends ConfigController implements DoCheck, Af
     if (this.getPivotOptions()) {
       this.languageRefresh = true;
       this.refreshOptions();
-      this.renderPivotTableAsync();
+      this.refreshDataFrameAsync();
     }
   }
 

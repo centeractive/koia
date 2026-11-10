@@ -1,10 +1,12 @@
+import { EnvironmentProviders, NgZone, Provider, provideZoneChangeDetection } from '@angular/core';
 import { ComponentFixture, discardPeriodicTasks, fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { provideRouter } from '@angular/router';
-import { Column, DataType } from 'app/shared/model';
+import { Column, DataType, Query } from 'app/shared/model';
 import { GraphContext } from 'app/shared/model/graph';
 import { GraphDataService, RawDataRevealService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { SceneFactory } from 'app/shared/test';
 import { CommonUtils } from 'app/shared/utils';
 import { D3ForceGraphGenerator } from './d3js/d3-force-graph-generator';
@@ -35,15 +37,7 @@ describe('GraphComponent', () => {
   });
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
-      imports: [MatProgressBarModule, MatDialogModule],
-      declarations: [GraphComponent],
-      providers: [
-        provideRouter([]),
-        { provide: GraphDataService, useValue: graphDataService },
-        { provide: RawDataRevealService, useClass: RawDataRevealService }
-      ]
-    })
+    configure(graphDataService);
     fixture = TestBed.createComponent(GraphComponent);
     fixture.nativeElement.parentElement.style.width = '600px';
     fixture.nativeElement.parentElement.style.height = '400px';
@@ -289,6 +283,96 @@ describe('GraphComponent', () => {
     expect(component.onWarning.emit).toHaveBeenCalledWith(msg);
   }));
 
+  describe('language change', () => {
+
+    let languageService: LanguageService;
+
+    beforeEach(() => {
+      languageService = TestBed.inject(LanguageService);
+      vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    });
+
+    afterEach(() => document.documentElement.lang = 'en');
+
+    function createGraphOf1234Rows(): void {
+      context.entries = Array.from({ length: 1234 }, () => entries[0]);
+      flush();
+    }
+
+    function rootNodeLabel(): string {
+      return svgDiv().querySelector('text').textContent;
+    }
+
+    it('should re-create graph with numbers formatted in new language', fakeAsync(() => {
+
+      // given
+      createGraphOf1234Rows();
+      expect(rootNodeLabel()).toBe(' (1,234)');
+
+      // when
+      languageService.use('de');
+      flush();
+
+      // then
+      discardPeriodicTasks();
+      expect(rootNodeLabel()).toBe(' (1.234)');
+    }));
+
+    it('should re-create invisible graph not before it is visible again', fakeAsync(() => {
+
+      // given
+      createGraphOf1234Rows();
+      fixture.nativeElement.style.display = 'none';
+
+      // when
+      languageService.use('de');
+      fixture.detectChanges();
+      flush();
+
+      // then
+      expect(rootNodeLabel()).toBe(' (1,234)');
+
+      // when
+      fixture.nativeElement.style.display = 'block';
+      fixture.detectChanges();
+      flush();
+
+      // then
+      discardPeriodicTasks();
+      expect(rootNodeLabel()).toBe(' (1.234)');
+    }));
+
+    it('should not create graph on language change when no graph was created before', fakeAsync(() => {
+
+      // given
+      component.graphData = undefined;
+      const generate = vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockReturnValue(undefined);
+
+      // when
+      languageService.use('de');
+      flush();
+
+      // then
+      expect(generate).not.toHaveBeenCalled();
+    }));
+
+    it('#ngOnDestroy should stop re-creating graph on language change', fakeAsync(() => {
+
+      // given
+      createGraphOf1234Rows();
+      const sleep = vi.spyOn(CommonUtils, 'sleep');
+      fixture.destroy();
+
+      // when
+      languageService.use('de');
+      flush();
+
+      // then
+      discardPeriodicTasks();
+      expect(sleep).not.toHaveBeenCalled();
+    }));
+  });
+
   it('#createExportData should throw error', () => {
     expect(() => component.createExportData()).toThrow(expect.objectContaining({ message: 'Method not implemented.' }));
   });
@@ -301,3 +385,70 @@ describe('GraphComponent', () => {
     return fixture.nativeElement.querySelector('.div_svg');
   }
 });
+
+describe('GraphComponent in zone', () => {
+
+  let context: GraphContext;
+  let fixture: ComponentFixture<GraphComponent>;
+
+  beforeEach(async () => {
+    configure(new GraphDataService(), [provideZoneChangeDetection()]);
+    fixture = TestBed.createComponent(GraphComponent);
+    fixture.nativeElement.parentElement.style.width = '600px';
+    fixture.nativeElement.parentElement.style.height = '400px';
+    context = new GraphContext([{ name: 't1', dataType: DataType.TEXT, width: 200 }]);
+    context.entries = [{ t1: 'a' }, { t1: 'b' }];
+    fixture.componentInstance.context = context;
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  it('should generate graph outside Angular zone so its simulation, tooltips and dragging do not trigger change detection', fakeAsync(() => {
+
+    // given
+    const zones: boolean[] = [];
+    vi.spyOn(D3ForceGraphGenerator.prototype, 'generate').mockImplementation(() => {
+      zones.push(NgZone.isInAngularZone());
+    });
+
+    // when
+    TestBed.inject(NgZone).run(() => context.setSize(120, 500));
+    flush();
+
+    // then
+    expect(zones).toEqual([false]);
+  }));
+
+  it('double-click on graph node should open raw data dialog inside Angular zone', fakeAsync(() => {
+
+    // given
+    context.query = new Query();
+    const zones: boolean[] = [];
+    vi.spyOn(TestBed.inject(MatDialog), 'open').mockImplementation(() => {
+      zones.push(NgZone.isInAngularZone());
+      return undefined;
+    });
+    TestBed.inject(NgZone).run(() => context.setSize(120, 500));
+    flush();
+
+    // when
+    fixture.nativeElement.querySelector('.div_svg circle').dispatchEvent(new MouseEvent('dblclick'));
+
+    // then
+    discardPeriodicTasks();
+    expect(zones).toEqual([true]);
+  }));
+});
+
+function configure(graphDataService: GraphDataService, extraProviders: (Provider | EnvironmentProviders)[] = []): void {
+  TestBed.configureTestingModule({
+    imports: [MatProgressBarModule, MatDialogModule],
+    declarations: [GraphComponent],
+    providers: [
+      ...extraProviders,
+      provideRouter([]),
+      { provide: GraphDataService, useValue: graphDataService },
+      { provide: RawDataRevealService, useClass: RawDataRevealService }
+    ]
+  });
+}

@@ -99,7 +99,7 @@ describe('ValueRangeConverter', () => {
    });
 
    function toRange(from: number, to: number): string {
-      return from.toLocaleString() + ' - ' + to.toLocaleString();
+      return from.toLocaleString('en-US') + ' - ' + to.toLocaleString('en-US');
    }
 
 });

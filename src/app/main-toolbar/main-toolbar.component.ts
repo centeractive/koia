@@ -8,6 +8,7 @@ import { ArrayUtils, DataTypeUtils, QueryUtils } from 'app/shared/utils';
 import { filterableColumnsOf } from 'app/shared/utils/column-utils';
 import { PropertyFilterValidator } from 'app/shared/validator';
 import { ValueRange } from 'app/shared/value-range/model/value-range.type';
+import { ValueRangeFilter } from 'app/shared/value-range/model';
 import { Subscription } from 'rxjs';
 import { tabUrl } from 'app/shared/services/view-tabs/tab-defs';
 import { LinkedFiltersService } from 'app/shared/services/view-tabs/linked-filters.service';
@@ -51,6 +52,10 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   private navigationSubscription: Subscription;
   private loadedSubscription: Subscription;
   private filtersGeneration = 0;
+  /**
+   * the retained range filters whose column range is still loading, the refreshed query keeps them
+   */
+  private loadingRangeFilters: ValueRangeFilter[] = [];
   private readonly linkedFiltersService = inject(LinkedFiltersService);
 
   constructor(public router: Router, private dbService: DBService, private dialogService: DialogService,
@@ -155,10 +160,12 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
       this.showFullTextFilter = !!this.fullTextFilter;
       this.propertyFilters = query.getPropertyFilters();
       this.rangeFilters = [];
+      this.loadingRangeFilters = query.getValueRangeFilters();
       this.showFilters = this.showFullTextFilter || this.propertyFilters.length > 0;
-      query.getValueRangeFilters().forEach(f => {
+      this.loadingRangeFilters.forEach(f => {
         const column = this.scene.columns.find(c => c.name === f.name);
-        this.addRangeFilter(column, f.valueRange, f.inverted, f.orEmpty, generation);
+        this.addRangeFilter(column, f.valueRange, f.inverted, f.orEmpty, generation)
+          .then(() => ArrayUtils.removeElement(this.loadingRangeFilters, f));
       })
     }
   }
@@ -203,8 +210,8 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
   /**
    * @param generation filters retained since the range was requested replace the range filter
    */
-  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false, orEmpty = false, generation = this.filtersGeneration): void {
-    this.dbService.numberRangeOf(column)
+  addRangeFilter(column: Column, selValueRange: ValueRange, inverted = false, orEmpty = false, generation = this.filtersGeneration): Promise<void> {
+    return this.dbService.numberRangeOf(column)
       .then(vr => {
         if (generation !== this.filtersGeneration) {
           return;
@@ -260,6 +267,7 @@ export class MainToolbarComponent extends AbstractComponent implements OnInit, O
       .propertyFilters(this.propertyFilters)
       .rangeFilters(this.rangeFilters)
       .getQuery();
+    query.setValueRangeFilter([...query.getValueRangeFilters(), ...this.loadingRangeFilters.map(f => f.clone())]);
     if (this.isValid(query)) {
       this.query = query;
       this.onFilterChange.emit(query);

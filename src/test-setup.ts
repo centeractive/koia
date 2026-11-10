@@ -5,6 +5,7 @@ import { installJQueryPlugins, resetTestDoubles } from 'app/shared/test/test-env
 import { provideTranslateTesting } from 'app/shared/test/translate-testing';
 
 beforeAll(() => installJQueryPlugins(globalThis as unknown as Record<string, unknown>));
+beforeEach(() => vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US']));
 beforeEach(() => TestBed.configureTestingModule({
    imports: [TranslatePipe, LocalizedDatePipe, LocalizedNumberPipe],
    providers: [provideTranslateTesting()]

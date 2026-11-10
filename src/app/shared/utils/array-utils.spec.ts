@@ -40,14 +40,14 @@ describe('ArrayUtils', () => {
 
   it('#toNumberArray should return array when string contain single value', () => {
     expect(ArrayUtils.toNumberArray('-1')).toEqual([-1]);
-    expect(ArrayUtils.toNumberArray((-0.1).toLocaleString())).toEqual([-0.1]);
+    expect(ArrayUtils.toNumberArray((-0.1).toLocaleString('en-US'))).toEqual([-0.1]);
     expect(ArrayUtils.toNumberArray('0')).toEqual([0]);
-    expect(ArrayUtils.toNumberArray((0.1).toLocaleString())).toEqual([0.1]);
+    expect(ArrayUtils.toNumberArray((0.1).toLocaleString('en-US'))).toEqual([0.1]);
     expect(ArrayUtils.toNumberArray('1')).toEqual([1]);
     expect(ArrayUtils.toNumberArray('-1', '|')).toEqual([-1]);
-    expect(ArrayUtils.toNumberArray((-0.1).toLocaleString(), '|')).toEqual([-0.1]);
+    expect(ArrayUtils.toNumberArray((-0.1).toLocaleString('en-US'), '|')).toEqual([-0.1]);
     expect(ArrayUtils.toNumberArray('0', '|')).toEqual([0]);
-    expect(ArrayUtils.toNumberArray((0.1).toLocaleString(), '|')).toEqual([0.1]);
+    expect(ArrayUtils.toNumberArray((0.1).toLocaleString('en-US'), '|')).toEqual([0.1]);
     expect(ArrayUtils.toNumberArray('1', '|')).toEqual([1]);
   });
 
@@ -150,6 +150,18 @@ describe('ArrayUtils', () => {
     expect(ArrayUtils.compareLoose([1, 5], [5, 1])).toBe(true);
     expect(ArrayUtils.compareLoose(['b', 'a'], ['a', 'b'])).toBe(true);
     expect(ArrayUtils.compareLoose([{ a: 1, b: 2 }, { c: 3, d: 4 }], [{ c: 3, d: 4 }, { a: 1, b: 2 }])).toBe(true);
+  });
+
+  it('#compareLoose should return false when arrays contain equal elements in different numbers', () => {
+    // when
+    const results = [
+      ArrayUtils.compareLoose([1, 1, 2], [1, 2, 2]),
+      ArrayUtils.compareLoose(['a', 'c'], ['a', 'a']),
+      ArrayUtils.compareLoose([{ a: 1 }, { b: 2 }], [{ a: 1 }, { a: 1 }])
+    ];
+
+    // then
+    expect(results).toEqual([false, false, false]);
   });
 
   it('#removeElement should not change array when element does not exists', () => {

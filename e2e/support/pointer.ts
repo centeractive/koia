@@ -47,3 +47,21 @@ export async function dragCenterOnto(grip: Locator, target: Locator): Promise<vo
    await pressCenterAndMoveBy(grip, to.x + to.width / 2 - (from.x + from.width / 2), to.y + to.height / 2 - (from.y + from.height / 2));
    await grip.page().mouse.up();
 }
+
+/**
+ * @returns the center of the element, or else the first point of two rings around it at which no other element covers it
+ */
+export async function uncoveredPointOf(target: Locator): Promise<{ x: number, y: number }> {
+   const point = await target.evaluate((e: Element) => {
+      const r = e.getBoundingClientRect();
+      const [cx, cy, radius] = [r.left + r.width / 2, r.top + r.height / 2, Math.min(r.width, r.height) / 2];
+      const ring = (f: number) => Array.from({ length: 12 }, (_, i) =>
+         [cx + f * radius * Math.cos(i * Math.PI / 6), cy + f * radius * Math.sin(i * Math.PI / 6)]);
+      const found = [[cx, cy], ...ring(0.35), ...ring(0.7)].find(([x, y]) => e.contains(document.elementFromPoint(x, y)));
+      return found && { x: found[0], y: found[1] };
+   });
+   if (!point) {
+      throw new Error('the element is covered at all probed points');
+   }
+   return point;
+}

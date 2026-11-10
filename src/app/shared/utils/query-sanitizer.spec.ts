@@ -114,6 +114,24 @@ describe('QuerySanitizer', () => {
     expect(actualQuery.getValueRangeFilters()).toEqual([expValueRangeFilter]);
   });
 
+  it('#sanitize should leave value range filters of query unchanged when merging them', () => {
+
+    // given
+    const query = new Query();
+    query.addValueRangeFilter('X', 0, 10);
+    query.addValueRangeFilter('X', 5, 20);
+
+    // when
+    const actualQuery = new QuerySanitizer(query).sanitize();
+
+    // then
+    expect(actualQuery.getValueRangeFilters()).toEqual([new ValueRangeFilter('X', { min: 5, max: 10, maxExcluding: undefined })]);
+    expect(query.getValueRangeFilters()).toEqual([
+      new ValueRangeFilter('X', { min: 0, max: 10, maxExcluding: undefined }),
+      new ValueRangeFilter('X', { min: 5, max: 20, maxExcluding: undefined })
+    ]);
+  });
+
   it('#sanitize should retain typed property filter when equal untyped property filter follows', () => {
 
     // given

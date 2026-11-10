@@ -12,5 +12,5 @@ export function promptViewName(dialogService: DialogService, currentName: string
    const dialogData = new InputDialogData(LanguageService.instant('view.saveTitle'), LanguageService.instant('view.name'),
       currentName, VIEW_NAME_MAX_LENGTH);
    return firstValueFrom(dialogService.showInputDialog(dialogData).afterClosed())
-      .then(() => dialogData.closedWithOK ? dialogData.input : undefined);
+      .then(() => dialogData.closedWithOK ? dialogData.input.trim() : undefined);
 }

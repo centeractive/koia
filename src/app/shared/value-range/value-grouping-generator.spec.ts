@@ -182,6 +182,34 @@ describe('ValueGroupingGenerator', () => {
       expect(groupings).toEqual(expected);
    });
 
+   it('#generate should generate grouping when values are huge and close together', () => {
+
+      // given
+      const baseDataFrame = new DataFrame(TestUtils.generateEntries('Amount', 200, 1_700_000_000_000, 1_700_000_000_199));
+
+      // when
+      const groupings = valueGroupingGenerator.generate(baseDataFrame, columns);
+
+      // then
+      const expected: ValueGrouping[] = [{
+         columnName: 'Amount',
+         ranges: [
+            { max: 1_700_000_000_200, active: true },
+            { max: 1_700_000_000_180, active: true },
+            { max: 1_700_000_000_160, active: true },
+            { max: 1_700_000_000_140, active: true },
+            { max: 1_700_000_000_120, active: true },
+            { max: 1_700_000_000_100, active: true },
+            { max: 1_700_000_000_080, active: true },
+            { max: 1_700_000_000_060, active: true },
+            { max: 1_700_000_000_040, active: true },
+            { max: 1_700_000_000_020, active: true }
+         ],
+         minMaxValues: { min: 1_700_000_000_000, max: 1_700_000_000_199 }
+      }];
+      expect(groupings).toEqual(expected);
+   });
+
    it('#generate should generate grouping when values are between 0 and 1', () => {
 
       // given
@@ -277,5 +305,63 @@ describe('ValueGroupingGenerator', () => {
          minMaxValues: { min: -0.0000285, max: 0.0000186 }
       }];
       expect(groupings).toEqual(expected);
+   });
+
+   it('#createGrouping should return grouping without ranges when all values are equal', () => {
+
+      // given
+      const values = [5, 0, -5];
+
+      // when
+      const groupings = values.map(v => valueGroupingGenerator.createGrouping(new DataFrame([{ Amount: v }, { Amount: v }]), 'Amount'));
+
+      // then
+      expect(groupings).toEqual([
+         { columnName: 'Amount', ranges: [], minMaxValues: { min: 5, max: 5 } },
+         { columnName: 'Amount', ranges: [], minMaxValues: { min: 0, max: 0 } },
+         { columnName: 'Amount', ranges: [], minMaxValues: { min: -5, max: -5 } }
+      ]);
+   });
+
+   it('#createGrouping should create ranges when values differ by less than a millionth', () => {
+
+      // given
+      const baseDataFrame = new DataFrame([{ Amount: 0.000_000_1 }, { Amount: 0.000_000_9 }]);
+
+      // when
+      const grouping = valueGroupingGenerator.createGrouping(baseDataFrame, 'Amount');
+
+      // then
+      const expected: ValueGrouping = {
+         columnName: 'Amount',
+         ranges: [
+            { max: 0.000_000_8, active: true },
+            { max: 0.000_000_7, active: true },
+            { max: 0.000_000_6, active: true },
+            { max: 0.000_000_5, active: true },
+            { max: 0.000_000_4, active: true },
+            { max: 0.000_000_3, active: true },
+            { max: 0.000_000_2, active: true }
+         ],
+         minMaxValues: { min: 0.000_000_1, max: 0.000_000_9 }
+      };
+      expect(grouping).toEqual(expected);
+   });
+
+   it('#createGrouping should create single range when range difference is too small to lower range at magnitude of values', () => {
+
+      // given
+      const baseDataFrame = new DataFrame([{ Amount: 5_716_168_880_462.645 }, { Amount: 5_716_168_880_462.646 }]);
+
+      // when
+      const grouping = valueGroupingGenerator.createGrouping(baseDataFrame, 'Amount');
+
+      // then
+      const expected: ValueGrouping = {
+         columnName: 'Amount',
+         ranges: [{ max: 5_716_168_880_462.646, active: true }],
+         minMaxValues: { min: 5_716_168_880_462.645, max: 5_716_168_880_462.646 }
+      };
+      expect(grouping).toEqual(expected);
    });
 });

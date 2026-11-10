@@ -7,23 +7,25 @@ interface CachedCell {
   dataType: DataType;
   format: string;
   showNestedObjects: boolean;
-  localeId: string;
+  formatKey: string;
   text: ReturnType<ValueFormatter['formatCell']>;
 }
 
 /**
  * remembers formatted cell texts, change detection checks every visible cell and formatting them anew each time stalls wide tables
+ *
+ * @param formatKey identifies the locales of dates and numbers, cached texts are formatted anew when it changes
  */
 export class FormattedCellCache {
 
   private readonly rows = new WeakMap<object, Map<Column, CachedCell>>();
 
-  constructor(private readonly formatter: ValueFormatter, private readonly localeId: () => string) { }
+  constructor(private readonly formatter: ValueFormatter, private readonly formatKey: () => string) { }
 
   // eslint-disable-next-line
   textOf(column: Column, entry: object, showNestedObjects: boolean): any {
     const value = ObjectUtils.ownValue(entry, column.name);
-    const localeId = this.localeId();
+    const formatKey = this.formatKey();
     let row = this.rows.get(entry);
     if (!row) {
       row = new Map();
@@ -31,11 +33,11 @@ export class FormattedCellCache {
     }
     const cached = row.get(column);
     if (cached && Object.is(cached.value, value) && cached.dataType === column.dataType && cached.format === column.format
-      && cached.showNestedObjects === showNestedObjects && cached.localeId === localeId) {
+      && cached.showNestedObjects === showNestedObjects && cached.formatKey === formatKey) {
       return cached.text;
     }
     const text = this.formatter.formatCell(column, entry, showNestedObjects);
-    row.set(column, { value, dataType: column.dataType, format: column.format, showNestedObjects, localeId, text });
+    row.set(column, { value, dataType: column.dataType, format: column.format, showNestedObjects, formatKey, text });
     return text;
   }
 }

@@ -14,7 +14,7 @@
         <koia-paging-toggles [paging]="paging" (pagingChange)="onPagingChange($event)" />
         @if (allowsForValueGrouping) {
           <button id="but_value_grouping" class="but_config" mat-icon-button
-            [matTooltip]="'pivot.defineValueGrouping' | translate" (click)="sidenav.open()">
+            [matTooltip]="'pivot.defineValueGrouping' | translate" [disabled]="!baseDataFrame" (click)="sidenav.open()">
             <mat-icon [matBadge]="context.valueGroupings.length" [matBadgeHidden]="context.valueGroupings.length === 0"
               matBadgeSize="small" matBadgeColor="accent">group_work</mat-icon>
           </button>
@@ -25,16 +25,16 @@
         </button>
         <button id="but_row_totals" class="but_config" mat-icon-button [class.koia-toggle-active]="context.showRowTotals"
           [matTooltip]="(context.showRowTotals ? 'pivot.hideRowTotals' : 'pivot.showRowTotals') | translate"
-          (click)="onShowRowTotalsChanged()">
+          [disabled]="!getPivotOptions()" (click)="onShowRowTotalsChanged()">
           <mat-icon svgIcon="row_totals" />
         </button>
         <button id="but_column_totals" class="but_config" mat-icon-button [class.koia-toggle-active]="context.showColumnTotals"
           [matTooltip]="(context.showColumnTotals ? 'pivot.hideColumnTotals' : 'pivot.showColumnTotals') | translate"
-          (click)="onShowColumnTotalsChanged()">
+          [disabled]="!getPivotOptions()" (click)="onShowColumnTotalsChanged()">
           <mat-icon svgIcon="column_totals" />
         </button>
         <button id="but_heatmap_colors" class="but_config" mat-icon-button [matMenuTriggerFor]="heatmapColorsMenu"
-          [matTooltip]="'pivot.heatmapColors' | translate">
+          [matTooltip]="'pivot.heatmapColors' | translate" [disabled]="!getPivotOptions()">
           <mat-icon>color_lens</mat-icon>
         </button>
       </koia-view-toolbar>

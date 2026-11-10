@@ -71,6 +71,22 @@ describe('InputDialogComponent', () => {
     expect(component.dialogRef.close).toHaveBeenCalled();
   });
 
+  it.each([
+    { input: undefined },
+    { input: '' },
+    { input: '   ' }
+  ])('ok button should be disabled when input is $input', ({ input }) => {
+
+    // given
+    component.data.input = input;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#but_ok').disabled).toBe(true);
+  });
+
   it('input field should be outlined', () => {
 
     // when

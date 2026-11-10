@@ -203,7 +203,7 @@ describe('ComputedColumnDialogComponent', () => {
     setup(new ComputedColumnDialogData(entries));
 
     // then
-    expect(text('#span_example')).toBe('Row 2: 25 as % of 140 = ' + (17.86).toLocaleString());
+    expect(text('#span_example')).toBe('Row 2: 25 as % of 140 = ' + (17.86).toLocaleString('en-US'));
   });
 
   it('should show no example when no row contains numbers in both columns', () => {

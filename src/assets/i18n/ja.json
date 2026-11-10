@@ -1,6 +1,9 @@
 {
   "language": {
-    "select": "言語"
+    "select": "言語",
+    "numberFormat": "数値の形式",
+    "automatic": "自動 ({{sample}})",
+    "switzerland": "{{sample}} (スイス)"
   },
   "front": {
     "nav": {

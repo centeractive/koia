@@ -176,10 +176,9 @@ export class PivotOptionsProvider {
    }
 
    private generateColorScale(context: PivotContext, values: number[]): ScaleLinear<string, string> {
-      const min = Math.min(...values.filter(v => v !== 0));
-      const max = Math.max(...values.filter(v => v !== 0));
+      const { min, max } = ArrayUtils.toValueRange(values.filter(v => v !== 0));
       return scaleLinear<string>()
-         .domain([min, 0, max])
+         .domain([min ?? Infinity, 0, max ?? -Infinity])
          .range([context.negativeColor, 'white', context.positiveColor]);
    }
 }

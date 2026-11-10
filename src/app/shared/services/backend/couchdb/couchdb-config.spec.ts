@@ -41,6 +41,30 @@ describe('CouchDBConfig', () => {
       expect(url).toBe('https://server1:6984/');
    });
 
+   it('#urlOf should enclose IPv6 host in brackets', () => {
+
+      // given
+      const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: '::1', port: 5984, user: 'test', password: 'secret' };
+
+      // when
+      const url = CouchDBConfig.urlOf(connInfo);
+
+      // then
+      expect(url).toBe('http://[::1]:5984/');
+   });
+
+   it('#urlOf should keep IPv6 host already enclosed in brackets', () => {
+
+      // given
+      const connInfo: ConnectionInfo = { protocol: Protocol.HTTP, host: '[::1]', port: 5984, user: 'test', password: 'secret' };
+
+      // when
+      const url = CouchDBConfig.urlOf(connInfo);
+
+      // then
+      expect(url).toBe('http://[::1]:5984/');
+   });
+
    it('#readConnectionInfo should return default when no connection was saved', () => {
 
       // when

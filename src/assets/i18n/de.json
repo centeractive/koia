@@ -1,6 +1,9 @@
 {
   "language": {
-    "select": "Sprache"
+    "select": "Sprache",
+    "numberFormat": "Zahlenformat",
+    "automatic": "Automatisch ({{sample}})",
+    "switzerland": "{{sample}} (Schweiz)"
   },
   "front": {
     "nav": {

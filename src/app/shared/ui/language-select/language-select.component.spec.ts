@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -13,7 +14,7 @@ describe('LanguageSelectComponent', () => {
    beforeEach(async () => {
       TestBed.configureTestingModule({
          declarations: [LanguageSelectComponent],
-         imports: [MatIconModule, MatMenuModule, MatTooltipModule]
+         imports: [MatDividerModule, MatIconModule, MatMenuModule, MatTooltipModule]
       });
       languageService = TestBed.inject(LanguageService);
       vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
@@ -27,6 +28,11 @@ describe('LanguageSelectComponent', () => {
       fixture.nativeElement.querySelector('#but_language').click();
       fixture.detectChanges();
       return Array.from(document.querySelectorAll<HTMLButtonElement>('.menu_item_language'));
+   }
+
+   function numberFormatItems(): HTMLButtonElement[] {
+      openMenu();
+      return Array.from(document.querySelectorAll<HTMLButtonElement>('.menu_item_number_format'));
    }
 
    function buttonText(): string {
@@ -76,5 +82,45 @@ describe('LanguageSelectComponent', () => {
       expect(fixture.nativeElement.querySelector('#but_language').getAttribute('aria-label')).toBe('言語');
       expect(buttonText()).toBe('日');
       expect(fixture.nativeElement.querySelector('#but_language').getAttribute('lang')).toBe('ja');
+   });
+
+   it('should list number formats with sample in own format and mark automatic one', () => {
+
+      // when
+      const items = numberFormatItems();
+
+      // then
+      expect(items.map(i => i.textContent.trim())).toEqual(['checkAutomatic (1,234.5)', "1'234.5 (Switzerland)", '1,234.5', '1.234,5', '1 234,5']);
+   });
+
+   it('should switch number format when number format is selected', () => {
+
+      // given
+      const items = numberFormatItems();
+
+      // when
+      items[1].click();
+      fixture.detectChanges();
+
+      // then
+      expect(languageService.numberFormat()).toBe('de-CH');
+      expect(languageService.numberLocaleId()).toBe('de-CH');
+      const reopened = numberFormatItems();
+      expect(reopened[1].textContent.trim().startsWith('check')).toBe(true);
+      expect(reopened[0].textContent.trim().startsWith('check')).toBe(false);
+   });
+
+   it('should show automatic number format in regional variant of browser language', async () => {
+
+      // given
+      vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['de-CH']);
+      await languageService.use('de');
+      await fixture.whenStable();
+
+      // when
+      const items = numberFormatItems();
+
+      // then
+      expect(items[0].textContent.trim()).toBe("checkAutomatisch (1'234.5)");
    });
 });

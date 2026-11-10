@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageService } from 'app/shared/services/language';
+import { AUTOMATIC_NUMBER_FORMAT, Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageService, NumberFormat, NUMBER_FORMATS } from 'app/shared/services/language';
+import { LocalizedNumberPipe } from 'app/shared/pipes';
 
 /**
  * lets the user switch the language of the user interface at any time
@@ -19,6 +20,16 @@ import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageSe
           <span>{{ nameOf(language) }}</span>
         </button>
       }
+      <mat-divider />
+      <div role="group" aria-labelledby="number_format_title">
+        <div id="number_format_title" class="number-format-title">{{ 'language.numberFormat' | translate }}</div>
+        @for (format of numberFormats; track format) {
+          <button mat-menu-item class="menu_item_number_format" [attr.data-format]="format" (click)="selectNumberFormat(format)">
+            <mat-icon>{{ format === languageService.numberFormat() ? 'check' : '' }}</mat-icon>
+            <span>{{ labelOf(format) }}</span>
+          </button>
+        }
+      </div>
     </mat-menu>`,
   styles: [`
     :host {
@@ -47,13 +58,22 @@ import { Language, LANGUAGE_ABBREVIATIONS, LANGUAGE_NAMES, LANGUAGES, LanguageSe
       width: 20px;
       height: 20px;
       font-size: 20px;
+    }
+    .number-format-title {
+      padding: 8px 16px 4px;
+      font-size: 12px;
+      color: var(--koia-text-secondary, rgba(0, 0, 0, 0.6));
     }`],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class LanguageSelectComponent {
 
+  static readonly NUMBER_SAMPLE = 1234.5;
+
   readonly languages = LANGUAGES;
+
+  readonly numberFormats = NUMBER_FORMATS;
 
   constructor(public languageService: LanguageService) { }
 
@@ -67,5 +87,20 @@ export class LanguageSelectComponent {
 
   select(language: Language): void {
     this.languageService.use(language);
+  }
+
+  /**
+   * @returns the sample number in the specified format, for the automatic one with its name, for the Swiss one with the country
+   */
+  labelOf(format: NumberFormat): string {
+    const sample = LocalizedNumberPipe.format(LanguageSelectComponent.NUMBER_SAMPLE, this.languageService.localeIdOfNumberFormat(format));
+    if (format === AUTOMATIC_NUMBER_FORMAT) {
+      return this.languageService.instant('language.automatic', { sample });
+    }
+    return format === 'de-CH' ? this.languageService.instant('language.switzerland', { sample }) : sample;
+  }
+
+  selectNumberFormat(format: NumberFormat): void {
+    this.languageService.useNumberFormat(format);
   }
 }

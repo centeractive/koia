@@ -13,6 +13,7 @@ import { ElementContext } from '../element-context';
 import { EnumLabelKeys } from '../enum-label-keys';
 import { EnumLabels } from '../enum-labels';
 import { ExportFormat } from '../export-format.enum';
+import { ViewElement } from '../view-config';
 
 export class ChartContext extends ElementContext {
 
@@ -45,6 +46,7 @@ export class ChartContext extends ElementContext {
       this._valueAsPercent = true;
       this._legendPosition = 'top';
       this._baseScale = this._baseScaleRestorer.scaleConfig();
+      this._valueScales = [this._valueScaleRestorer.scaleConfig()];
       this._stacked = false;
       this._multiValueAxes = false;
    }
@@ -126,12 +128,13 @@ export class ChartContext extends ElementContext {
          this._multiValueAxes = false;
       }
       this._valueScaleRestorer.store(this._valueScales);
-      if (this._multiValueAxes || columns.length == 1) {
-         this._valueScales = columns.map(c => this._valueScaleRestorer.scaleConfig(c));
-      } else {
-         this._valueScales = [this._valueScaleRestorer.scaleConfig()];
-      }
+      this._valueScales = this.valueScalesOf(columns);
       super.dataColumns = columns;
+   }
+
+   override copyAttributes(from: ViewElement): void {
+      super.copyAttributes(from);
+      this._valueScales = this.valueScalesOf(this.dataColumns);
    }
 
    override addDataColumn(dataColumn: Column): void {
@@ -141,10 +144,17 @@ export class ChartContext extends ElementContext {
       } else if (this.dataColumns.length == 1) {
          this._valueScaleRestorer.set(this._valueScales[0].toScale());
          this._valueScales = [this._valueScaleRestorer.scaleConfig()];
-      } else {
+      } else if (this.dataColumns.length == 0) {
          this._valueScales = [this._valueScaleRestorer.scaleConfig(dataColumn)];
       }
       super.addDataColumn(dataColumn);
+   }
+
+   private valueScalesOf(columns: Column[]): ScaleConfig[] {
+      if (this._multiValueAxes || columns.length == 1) {
+         return this._valueScaleRestorer.scaleConfigs(columns);
+      }
+      return [this._valueScaleRestorer.scaleConfig()];
    }
 
    private resetRowCount(): void {

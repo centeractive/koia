@@ -985,6 +985,62 @@ describe('MainToolbarComponent', () => {
     expect(valueRangeFilter.valueRange.max).toBe(valueRange.max - 1000);
   });
 
+  it('#refreshEntries should keep retained range filter while its value range loads', () => {
+
+    // given
+    vi.spyOn(dbService, 'numberRangeOf').mockReturnValue(new Promise<ValueRange>(() => undefined));
+    component.query = new Query();
+    component.query.addValueRangeFilter('Amount', 20, 80);
+    component.retainInitialFilters();
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
+
+    // when
+    component.refreshEntries();
+
+    // then
+    const query: Query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
+    expect(query.getValueRangeFilters().map(f => f.valueRange)).toEqual([{ min: 20, max: 80, maxExcluding: undefined }]);
+  });
+
+  it('#refreshEntries should apply retained range filter once when its value range was loaded', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'numberRangeOf').mockResolvedValue({ min: 0, max: 100 });
+    component.query = new Query();
+    component.query.addValueRangeFilter('Amount', 20, 80);
+    component.retainInitialFilters();
+    flush();
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
+
+    // when
+    component.refreshEntries();
+
+    // then
+    expect(component.rangeFilters.length).toBe(1);
+    const query: Query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
+    expect(query.getValueRangeFilters().map(f => f.valueRange)).toEqual([{ min: 20, max: 80, maxExcluding: undefined }]);
+  }));
+
+  it('#refreshEntries should drop retained range filter whose value range cannot be loaded', fakeAsync(() => {
+
+    // given
+    vi.spyOn(dbService, 'numberRangeOf').mockRejectedValue('cannot read');
+    vi.spyOn(component, 'notifyError').mockReturnValue(undefined);
+    component.query = new Query();
+    component.query.addValueRangeFilter('Amount', 20, 80);
+    component.retainInitialFilters();
+    flush();
+    const onFilterChangeEmitSpy = vi.spyOn(component.onFilterChange, 'emit').mockReturnValue(undefined);
+
+    // when
+    component.refreshEntries();
+
+    // then
+    expect(component.notifyError).toHaveBeenCalledWith('cannot read');
+    const query: Query = vi.mocked(onFilterChangeEmitSpy).mock.lastCall[0];
+    expect(query.getValueRangeFilters()).toEqual([]);
+  }));
+
   it('pressing non-<enter> key in full text filter field should not emit onFilterChange', () => {
 
     // given

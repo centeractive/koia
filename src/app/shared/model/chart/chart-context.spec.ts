@@ -7,6 +7,7 @@ import { ComputeOperator } from '../compute-operator.enum';
 import { DataType } from '../data-type.enum';
 import { ExportFormat } from '../export-format.enum';
 import { TimeUnit } from '../time-unit.enum';
+import { ElementType, ViewElement } from '../view-config';
 import { ChartContext } from './chart-context';
 import { ChartType } from './chart-type';
 import { ScaleConfig } from './scale-config';
@@ -158,6 +159,74 @@ describe('ChartContext', () => {
          }
       ]);
    }));
+
+   it('#addDataColumn should keep shared value scale when third column is added', () => {
+
+      // given
+      context.dataColumns = [columns[3], columns[4]];
+      context.valueScales[0].title = 'Units';
+      context.valueScales[0].ticks.stepSize = 5;
+
+      // when
+      context.addDataColumn(columns[5]);
+
+      // then
+      expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent', 'Discount']);
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         { columnName: undefined, title: 'Units', ticks: { stepSize: 5, rotation: undefined } }
+      ]);
+   });
+
+   it('#addDataColumn should add second column to chart restored without value scales', () => {
+
+      // given
+      context.copyAttributes(viewElementOf([columns[3]]));
+
+      // when
+      context.addDataColumn(columns[4]);
+
+      // then
+      expect(context.dataColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         { columnName: undefined, ticks: { stepSize: undefined, rotation: undefined } }
+      ]);
+   });
+
+   it('#copyAttributes should create value scale of single data column', () => {
+
+      // when
+      context.copyAttributes(viewElementOf([columns[3]]));
+
+      // then
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         { columnName: 'Amount', ticks: { stepSize: undefined, rotation: undefined } }
+      ]);
+   });
+
+   it('#copyAttributes should create shared value scale of multiple data columns', () => {
+
+      // when
+      context.copyAttributes(viewElementOf([columns[3], columns[4]]));
+
+      // then
+      expect(ScaleConfig.toScales(context.valueScales)).toEqual([
+         { columnName: undefined, ticks: { stepSize: undefined, rotation: undefined } }
+      ]);
+   });
+
+   it('#updateColumns should keep shared value scale of chart without data columns when column is renamed', () => {
+
+      // given
+      const testColumns = computedTestColumns();
+      const testContext = new ChartContext(testColumns, ChartType.LINE.type, { top: 0, right: 0, bottom: 0, left: 0 });
+      const renamedColumns = testColumns.map(c => c.name === 'Share' ? { ...c, name: 'Ratio' } : c);
+
+      // when
+      testContext.updateColumns(renamedColumns, new Map([['Ratio', 'Share']]));
+
+      // then
+      expect(ScaleConfig.toScales(testContext.valueScales)).toEqual([{ columnName: undefined, ticks: { stepSize: undefined, rotation: undefined } }]);
+   });
 
    it('#removeDataColumn should restore valueScales for now single selected column', fakeAsync(() => {
       // given
@@ -324,6 +393,13 @@ describe('ChartContext', () => {
             computation: { leftColumn: 'Amount', operator: ComputeOperator.PERCENTAGE, rightColumn: 'Percent' }
          }
       ];
+   }
+
+   function viewElementOf(dataColumns: Column[]): ViewElement {
+      return {
+         elementType: ElementType.CHART, title: 'Chart', gridColumnSpan: 1, gridRowSpan: 1, width: 600, height: 400, dataColumns,
+         splitColumns: [], groupByColumns: [], aggregations: [Aggregation.SUM], valueGroupings: [], colorOptions: undefined
+      };
    }
 
    it('#dataColumns should unset multiValueAxes option when single column is set', () => {

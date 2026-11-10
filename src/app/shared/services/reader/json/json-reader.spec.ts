@@ -98,6 +98,21 @@ describe('JSONReader', () => {
       expect(attributes[0].valueChoice).toEqual(['$.objArr1', '$.objArr2', '$.Obj2.nestObj.objArr3']);
    });
 
+   it('#furnishAttributes should put detected array keys with space, dot or non-ASCII letter into bracket notation', async () => {
+
+      // given
+      const objArray = [{ x: 1, y: 'l' }, { x: 2, y: 'm' }, { x: 3, y: 'n' }];
+      const data = JSON.stringify({ 'Order Items': objArray, data: { 'a.b': objArray, 'Größe': objArray } });
+      const dataHeader = data.substring(0, data.length - 5);
+
+      // when
+      const attributes = reader.furnishAttributes(dataHeader);
+
+      // then
+      await vi.waitFor(() => expect(attributes[0].value).toBe('$["Order Items"]'));
+      expect(attributes[0].valueChoice).toEqual(['$["Order Items"]', '$.data["a.b"]', '$.data["Größe"]']);
+   });
+
    it('#readSample should return entries sample', async () => {
 
       // given
@@ -128,6 +143,24 @@ describe('JSONReader', () => {
       expect(sample.entries).toEqual(entries);
       expect(sample.columnNames).toBeUndefined();
       expect(sample.tableData).toBeUndefined();
+   });
+
+   it.each([
+      { key: 'Order Items', jsonPath: '$["Order Items"]' },
+      { key: 'a.b', jsonPath: '$["a.b"]' }
+   ])('#readSample should return entries of detected array whose key is $key', async ({ key, jsonPath }) => {
+
+      // given
+      const json = JSON.stringify({ [key]: entries });
+      const file = new File([json], 'Test.json');
+      const attributes = reader.furnishAttributes(json);
+      await vi.waitFor(() => expect(attributes[0].value).toBe(jsonPath));
+
+      // when
+      const sample = await reader.readSample(file, 3);
+
+      // then
+      expect(sample.entries).toEqual(entries.slice(0, 3));
    });
 
    it('#readData should provide entries when array path is root', async () => {

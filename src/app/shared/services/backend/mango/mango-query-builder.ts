@@ -218,7 +218,7 @@ export class MangoQueryBuilder {
 
    /**
     * @returns a [[RegExp]] that combines multiple 'contains' filter on the same field or a simple [[RegExp]] if
-    * a single 'contains' filter exists
+    * a single 'contains' filter exists, dotAll lets each term be found on any line of a multi-line value
     *
     * This method is used for PouchDB that can't cope with multiple regex on the same field
     */
@@ -232,7 +232,7 @@ export class MangoQueryBuilder {
       const regex = filters
          .map(pf => '(?=.*' + _.escapeRegExp(pf.value as string) + '.*)')
          .join('');
-      return new RegExp(regex, 'i');
+      return new RegExp(regex, 'is');
    }
 
    private toSelectorValue(propertyFilter: PropertyFilter): SelectorValue {

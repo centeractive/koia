@@ -24,13 +24,13 @@ describe('ValueFormatter', () => {
    it('#formatValue should return formatted string using current locale if NUMBER', () => {
       const column: Column = { name: 'X', dataType: DataType.NUMBER, width: 90 };
 
-      expect(formatter.formatValue(column, -1_000_000.5)).toBe((-1_000_000.5).toLocaleString());
-      expect(formatter.formatValue(column, -95.5132)).toBe((-95.5132).toLocaleString(undefined, { minimumFractionDigits: 4 }));
-      expect(formatter.formatValue(column, -0.1)).toBe((-0.1).toLocaleString());
+      expect(formatter.formatValue(column, -1_000_000.5)).toBe((-1_000_000.5).toLocaleString('en-US'));
+      expect(formatter.formatValue(column, -95.5132)).toBe((-95.5132).toLocaleString('en-US', { minimumFractionDigits: 4 }));
+      expect(formatter.formatValue(column, -0.1)).toBe((-0.1).toLocaleString('en-US'));
       expect(formatter.formatValue(column, 0)).toBe('0');
-      expect(formatter.formatValue(column, 0.1)).toBe((0.1).toLocaleString());
-      expect(formatter.formatValue(column, 95.5132)).toBe((95.5132).toLocaleString(undefined, { minimumFractionDigits: 4 }));
-      expect(formatter.formatValue(column, 1_000_000.5)).toBe((1_000_000.5).toLocaleString());
+      expect(formatter.formatValue(column, 0.1)).toBe((0.1).toLocaleString('en-US'));
+      expect(formatter.formatValue(column, 95.5132)).toBe((95.5132).toLocaleString('en-US', { minimumFractionDigits: 4 }));
+      expect(formatter.formatValue(column, 1_000_000.5)).toBe((1_000_000.5).toLocaleString('en-US'));
    });
 
    it('#formatValue should return formatted string if TIME', () => {
@@ -142,7 +142,7 @@ describe('ValueFormatter', () => {
       const formatted = formatter.formatCell(column, entry, false);
 
       // then
-      expect(formatted).toBe((15_000).toLocaleString());
+      expect(formatted).toBe((15_000).toLocaleString('en-US'));
    });
 
    it('#formatCell should return value when value is text', () => {

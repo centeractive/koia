@@ -201,17 +201,40 @@ describe('PivotOptionsProvider', () => {
    it('#enrichPivotOptions should return options with color scale generator', () => {
 
       // given
-      const options = createOptions();
-      const onPivotTableRefreshEnd = () => console.log('onPivotTableRefreshEnd');
+      const generateColorScale = colorScaleGenerator();
 
       // when
-      const pivotOptions = optionsProvider.enrichPivotOptions(options, context, onPivotTableRefreshEnd);
+      const scale = generateColorScale([-2, -1, 0, 1, 2]);
 
       // then
-      const colorScaleGenerator: (values: number[]) => ScaleLinear<string, string> = pivotOptions['rendererOptions'].heatmap.colorScaleGenerator;
-      const scale = colorScaleGenerator.call(context, [-2, -1, 0, 1, 2]);
       expect(scale.range()).toEqual(['red', 'white', 'green']);
       expect(scale.domain()).toEqual([-2, 0, 2]);
+   });
+
+   it('#enrichPivotOptions should return options with color scale generator that accepts more values than a call takes arguments', () => {
+
+      // given
+      const generateColorScale = colorScaleGenerator();
+      const values = Array.from({ length: 200_000 }, (_, i) => i - 100_000);
+
+      // when
+      const scale = generateColorScale(values);
+
+      // then
+      expect(scale.domain()).toEqual([-100_000, 0, 99_999]);
+   });
+
+   it('#enrichPivotOptions should return options with color scale generator that colors zero white when all values are zero', () => {
+
+      // given
+      const generateColorScale = colorScaleGenerator();
+
+      // when
+      const scale = generateColorScale([0, 0]);
+
+      // then
+      expect(scale.domain()).toEqual([Infinity, 0, -Infinity]);
+      expect(scale(0)).toBe('rgb(255, 255, 255)');
    });
 
    it('#enrichPivotOptions should return options that are linked with on refresh end callback', () => {
@@ -437,6 +460,10 @@ describe('PivotOptionsProvider', () => {
       const titles = Array.from(element.querySelectorAll('th, td')).map(c => c.getAttribute('title'));
       expect(titles).toEqual([null, 'Show Data...', null, 'Show Data...', 'Show Data...']);
    });
+
+   function colorScaleGenerator(): (values: number[]) => ScaleLinear<string, string> {
+      return optionsProvider.enrichPivotOptions(createOptions(), context, () => null)['rendererOptions'].heatmap.colorScaleGenerator;
+   }
 });
 
 function createOptions(): object {

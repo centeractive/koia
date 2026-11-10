@@ -575,9 +575,14 @@ export class DBService {
       });
   }
 
+  /**
+   * PouchDB fails on '$gt: null' when sorting ascending by the index of a field some documents lack, it gets '$gte: false' that
+   * selects the same values since only null collates below false. The builder gets no columns, they would turn false into 0.
+   */
   private async firstNumberOf(timeColumn: Column, sortDirection: SortDirection): Promise<number> {
-    const mangoQuery = new MangoQueryBuilder(false, [timeColumn])
-      .where(timeColumn.name, Operator.GREATER_THAN, null)
+    const pouchDB = this.isIndexedDbInUse();
+    const mangoQuery = new MangoQueryBuilder(false, [])
+      .where(timeColumn.name, pouchDB ? Operator.GREATER_THAN_OR_EQUAL : Operator.GREATER_THAN, pouchDB ? false : null)
       .sortBy({ active: timeColumn.name, direction: sortDirection })
       .numberOfRows(1)
       .includeFields([timeColumn.name])

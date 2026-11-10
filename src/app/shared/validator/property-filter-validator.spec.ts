@@ -48,7 +48,7 @@ describe('PropertyFilterValidator', () => {
 
    it('#validate should return <null> when NUMBER value is valid', () => {
       expect(validator.validate(new PropertyFilter('Amount', Operator.GREATER_THAN, '123'))).toBeNull();
-      const formattedNumber = Number(1234567.89).toLocaleString();
+      const formattedNumber = Number(1234567.89).toLocaleString('en-US');
       expect(validator.validate(new PropertyFilter('Amount', Operator.LESS_THAN, formattedNumber))).toBeNull();
    });
 
@@ -65,7 +65,7 @@ describe('PropertyFilterValidator', () => {
    it('#validate with "is any of" should return <null> when all NUMBERs are valid', () => {
       expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, '1;2;3'))).toBeNull();
 
-      const listOfFloats = [1.5, 2.7, 3.78].map(f => f.toLocaleString()).join(';');
+      const listOfFloats = [1.5, 2.7, 3.78].map(f => f.toLocaleString('en-US')).join(';');
       expect(validator.validate(new PropertyFilter('Amount', Operator.ANY_OF, listOfFloats))).toBeNull();
    });
 
@@ -78,7 +78,7 @@ describe('PropertyFilterValidator', () => {
    it('#validate with "is none of" should return <null> when all NUMBERs are valid', () => {
       expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, '1;2;3'))).toBeNull();
 
-      const listOfFloats = [1.5, 2.7, 3.78].map(f => f.toLocaleString()).join(';');
+      const listOfFloats = [1.5, 2.7, 3.78].map(f => f.toLocaleString('en-US')).join(';');
       expect(validator.validate(new PropertyFilter('Amount', Operator.NONE_OF, listOfFloats))).toBeNull();
    });
 

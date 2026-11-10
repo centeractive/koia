@@ -21,15 +21,24 @@ describe('LocalizedNumberPipe', () => {
       expect(formatted).toBeNull();
    });
 
-   it('#transform should format number in locale of current language', () => {
+   it('#transform should format number in locale of numbers of user interface', () => {
 
       // given
-      const pipe = new LocalizedNumberPipe({ localeId: () => 'de' } as LanguageService);
+      const pipe = new LocalizedNumberPipe({ numberLocaleId: () => 'de-CH' } as LanguageService);
 
       // when
-      const formatted = pipe.transform(1234.5, '1.2-2');
+      const formatted = pipe.transform(1234.5);
 
       // then
-      expect(formatted).toBe('1.234,50');
+      expect(formatted).toBe('1\'234.5');
+   });
+
+   it('#format should show numbers rounded to zero without sign', () => {
+
+      // when
+      const formatted = [LocalizedNumberPipe.format(-0, 'en-US'), LocalizedNumberPipe.format(-0.0004, 'en-US')];
+
+      // then
+      expect(formatted).toEqual(['0', '0']);
    });
 });

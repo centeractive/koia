@@ -640,4 +640,13 @@ describe.each(BACKENDS)('DBService IT ($name)', backend => {
       // then
       expect(ids).toEqual(new Set(['2']));
    }, TIMEOUT);
+
+   it('#numberRangeOf should return min and max of a column some rows lack', async () => {
+
+      // when
+      const valueRange = await run.db.numberRangeOf(COLUMNS[2]);
+
+      // then
+      expect(valueRange).toEqual({ min: 10, max: 50 });
+   }, TIMEOUT);
 });

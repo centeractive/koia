@@ -62,6 +62,10 @@ The start page is where everything begins:
 
 The language button (**EN**, **DE**, **日**) in every page header switches between English, German and Japanese and is remembered. Besides the texts, the language also decides which language version of a sample opens, which log level names are recognized at import, and the suffix of new pattern columns.
 
+**Number format.** The language menu also offers the **Number format**; each entry shows 1234.5 in its format. **Automatic** (default) uses the regional variant of the user interface language among your browser's preferred languages, e.g. `1'234.5` for German with *German (Switzerland)* in the list; without such a variant English and Japanese show `1,234.5`, German `1.234,5`. Or choose a fixed format: `1'234.5 (Switzerland)`, `1,234.5`, `1.234,5` or `1 234,5`. The choice is remembered and applies to numbers in the raw data, summary tables, filters and sliders, value ranges, charts and graphs, row counts and to numbers you type. Numbers follow Koia's language and this setting, not the display language of the browser: with Chrome in German and Koia in English, numbers show `1,234.5`. Keeping their own format: dates (format of the language), the values in pivot table cells (always `1,234.5`), data labels of pie, doughnut and polar area charts (decimal point, no thousands separator) and the range bounds of **Define Value Grouping** (format of the browser). How a file is read is set by **Language** when creating a scene ([chapter 4](#4-create-a-scene-from-a-file)).
+
+For **Automatic** with a regional variant in Chrome: open **Settings › Languages**, under **Preferred languages** click **Add languages**, choose e.g. *German (Switzerland)* and **Add**, use **⋮ › Move to the top** (or at least above other variants of that language) and reload Koia.
+
 ### 3a. Storage
 
 The line under the start entries tells where data is stored. **Change storage** switches between:
@@ -106,7 +110,7 @@ Video: [Managing scenes and navigating](https://www.koia.io/intro/videos.html)
    A text column turned into Time needs a **Source Format**; the **Display Format** shows how times appear. **Width** is the column width in characters. A warning icon marks columns with values of incompatible types.
 
    An integer column named like *Year*, *Jahr* or *Année* with values from 1 to 9999 is detected as Time of Source Format `y`, and turning an integer column of such values into Time fills in `y` as well. Years below 1000 show leading zeros, e.g. *0001*. Turn a counter that only looks like a year, e.g. *Year count*, back into Number.
-4. **Preview** – shows the mapped sample rows; rows with mapping errors carry a warning icon. Click **Load Data**. **Max. items** limits the rows, **Abort on data error** stops at the first bad row, **Cancel** stops the load (rows stored so far are kept). The scenes page opens when the load is done.
+4. **Preview** – shows the mapped sample rows; rows with mapping errors carry a warning icon. Click **Load Data**. **Max. items** limits the rows, **Abort on data error** stops at the first bad row, **Cancel** stops the load once the data is being read (rows stored so far are kept). The scenes page opens when the load is done.
 
 Good to know:
 

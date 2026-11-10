@@ -1,6 +1,7 @@
 import { FormattedIntegerDirective } from './formatted-integer.directive';
 import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { LanguageService } from 'app/shared/services/language';
 
 @Component({
     template: '<input formattedInteger>',
@@ -12,16 +13,19 @@ class FormattedIntegerHostComponent {
 
 describe('FormattedIntegerDirective', () => {
 
-    const ds = (0.1).toLocaleString().charAt(1);
-    const ts = (1_000).toLocaleString().charAt(1);
+    const ds = (0.1).toLocaleString('en-US').charAt(1);
+    const ts = (1_000).toLocaleString('en-US').charAt(1);
 
     let inputElement: HTMLInputElement;
     let directive: FormattedIntegerDirective;
 
     beforeEach(() => {
+        TestBed.configureTestingModule({ declarations: [FormattedIntegerHostComponent, FormattedIntegerDirective] });
         inputElement = document.createElement('INPUT') as HTMLInputElement;
-        directive = new FormattedIntegerDirective(new ElementRef(inputElement));
+        directive = new FormattedIntegerDirective(new ElementRef(inputElement), TestBed.inject(LanguageService));
     });
+
+    afterEach(() => document.documentElement.lang = 'en');
 
     it('#onInputChange should reject letter', () => {
 
@@ -117,7 +121,6 @@ describe('FormattedIntegerDirective', () => {
     it('input event on host element should format number', () => {
 
         // given
-        TestBed.configureTestingModule({ declarations: [FormattedIntegerHostComponent, FormattedIntegerDirective] });
         const fixture = TestBed.createComponent(FormattedIntegerHostComponent);
         fixture.detectChanges();
         const input: HTMLInputElement = fixture.nativeElement.querySelector('input');
@@ -128,6 +131,70 @@ describe('FormattedIntegerDirective', () => {
 
         // then
         expect(input.value).toBe('1' + ts + '234');
+    });
+
+    it('#number format change should format entered number in new format and notify form control', () => {
+
+        // given
+        vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+        const inputListener = vi.fn();
+        inputElement.addEventListener('input', inputListener);
+        inputElement.value = '10000';
+
+        // when
+        TestBed.inject(LanguageService).useNumberFormat('de-CH');
+
+        // then
+        expect(inputElement.value).toBe("10'000");
+        expect(inputListener).toHaveBeenCalledTimes(1);
+    });
+
+    it('#number format change should leave empty input unchanged', () => {
+
+        // given
+        vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+        const inputListener = vi.fn();
+        inputElement.addEventListener('input', inputListener);
+        inputElement.value = '';
+
+        // when
+        TestBed.inject(LanguageService).useNumberFormat('de-CH');
+
+        // then
+        expect(inputElement.value).toBe('');
+        expect(inputListener).not.toHaveBeenCalled();
+    });
+
+    it('#language change should leave entered number and form control untouched when number format stays the same', async () => {
+
+        // given
+        vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+        const languageService = TestBed.inject(LanguageService);
+        languageService.useNumberFormat('en-US');
+        const inputListener = vi.fn();
+        inputElement.addEventListener('input', inputListener);
+        inputElement.value = '10,000';
+
+        // when
+        await languageService.use('de');
+
+        // then
+        expect(inputElement.value).toBe('10,000');
+        expect(inputListener).not.toHaveBeenCalled();
+    });
+
+    it('#ngOnDestroy should stop following number format changes', () => {
+
+        // given
+        vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+        inputElement.value = '10000';
+
+        // when
+        directive.ngOnDestroy();
+
+        // then
+        TestBed.inject(LanguageService).useNumberFormat('de-CH');
+        expect(inputElement.value).toBe('10000');
     });
 
     function onInput(text: string, caretPos?: number): void {

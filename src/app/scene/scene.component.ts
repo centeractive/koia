@@ -74,6 +74,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
   abortDataloadOnError = false;
   progressBarMode: ProgressBarMode;
   canceled = false;
+  persistingScene = false;
 
   private generatedSceneName: string;
   private generatedSceneShortDesc: string;
@@ -343,6 +344,7 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
       }
     });
 
+    this.persistingScene = true;
     this.dbService.findFreeDatabaseName()
       .then(database => {
         // the database chosen when the page was opened may have been taken meanwhile
@@ -360,7 +362,8 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
         this.notifyError(err);
         this.scene.creationTime = undefined;
         this.progressBarMode = undefined;
-      });
+      })
+      .finally(() => this.persistingScene = false);
   }
 
   private loadData(): void {
@@ -445,9 +448,9 @@ export class SceneComponent extends AbstractComponent implements OnInit, AfterVi
    * @returns true when an ongoing data load was canceled
    */
   private cancelDataLoad(): boolean {
-    if (this.scene?.creationTime && !this.entryPersister.isPostingComplete()) {
+    if (this.scene?.creationTime && !this.entryPersister?.isPostingComplete()) {
       this.canceled = true;
-      this.entryPersister.postingComplete(false);
+      this.entryPersister?.postingComplete(false);
       return true;
     }
     return false;

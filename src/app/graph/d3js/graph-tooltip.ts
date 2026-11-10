@@ -14,7 +14,7 @@ export function graphTooltip(graphNode: GraphNode, color: string, context: Graph
     } else {
         result += LanguageService.instant('graph.tooltip.rootNode');
     }
-    const count = graphNode.count.toLocaleString(LanguageService.localeId());
+    const count = graphNode.count.toLocaleString(LanguageService.numberLocaleId());
     result += ' ' + LanguageService.instant(graphNode.count === 1 ? 'graph.tooltip.oneEntry' : 'graph.tooltip.entries', { count });
     return result + '<br><br>' + LanguageService.instant('graph.tooltip.doubleClick') + '</div>';
 }

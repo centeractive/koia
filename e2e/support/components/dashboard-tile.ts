@@ -1,7 +1,7 @@
 import { expect, Locator } from '@playwright/test';
 import type { BarElement, Chart } from 'chart.js';
 import { Box, centerXOf, centerYOf } from '../box';
-import { pressCenterAndMoveBy } from '../pointer';
+import { pressAndMoveBy, pressCenterAndMoveBy, uncoveredPointOf } from '../pointer';
 
 /** largest distance of a dragged graph node from the moved pointer, which d3 pins it to */
 export const DRAGGED_GRAPH_NODE_TOLERANCE_PX = 2;
@@ -107,11 +107,13 @@ export class DashboardTile {
    }
 
    /**
-    * presses the node once the force layout rests and moves it, its links pull its leaves along until released
+    * presses the node once the force layout rests, at a point of its circle that no other node's label covers, and moves it; its
+    * links pull its leaves along until released
     */
    async startGraphNodeDragBy(node: Locator, dx: number, dy: number): Promise<void> {
       await this.graphNodeBox(node);
-      await pressCenterAndMoveBy(node.locator('circle'), dx, dy);
+      const { x, y } = await uncoveredPointOf(node.locator('circle'));
+      await pressAndMoveBy(this.root.page(), x, y, dx, dy);
    }
 
    spans(): Promise<{ columns: number; rows: number }> {

@@ -93,6 +93,7 @@ export class ChartJsOptionsProvider {
 
     private createCommonOptions(chartType: ChartType, context: ChartContext): ChartOptions {
         return {
+            locale: LanguageService.numberLocaleId(),
             responsive: true,
             maintainAspectRatio: false,
             plugins: {

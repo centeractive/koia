@@ -9,6 +9,7 @@ import { provideRouter, Router } from '@angular/router';
 import { Aggregation, Column, DataType, Operator, PropertyFilter, Query, Route, SummaryContext, TimeUnit } from 'app/shared/model';
 import { AggregationService, RawDataRevealService } from 'app/shared/services';
 import { DBService } from 'app/shared/services/backend';
+import { LanguageService } from 'app/shared/services/language';
 import { SceneFactory } from 'app/shared/test';
 import { TABLE_FONT_FAMILY } from 'app/shared/ui/table-fit/table-font';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
@@ -273,6 +274,23 @@ describe('SummaryTableComponent', () => {
     expect(component.refreshDataFrameAsync).not.toHaveBeenCalled();
   }));
 
+  it('#ngOnDestroy should stop refreshing on number format changes', fakeAsync(() => {
+
+    // given
+    vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    fixture.detectChanges();
+    flush();
+    vi.spyOn(component, 'refreshDataFrameAsync').mockReturnValue(undefined);
+
+    // when
+    fixture.destroy();
+
+    // then
+    TestBed.inject(LanguageService).useNumberFormat('de-DE');
+    flush();
+    expect(component.refreshDataFrameAsync).not.toHaveBeenCalled();
+  }));
+
   it('#ngOnDestroy should not fail when no scene is active', () => {
 
     // given
@@ -373,6 +391,25 @@ describe('SummaryTableComponent', () => {
 
     // then
     expect(component.frameData).toBe(prevFrameData);
+  }));
+
+  it('should show value range labels in new number format', fakeAsync(() => {
+
+    // given
+    vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
+    context.dataColumns = [findColumn('t1')];
+    context.groupByColumns = [findColumn('n1')];
+    context.valueGroupings = [{ columnName: 'n1', ranges: [{ max: 1.5, active: true }] }];
+    fixture.detectChanges();
+    flush();
+    expect(component.frameData.map(r => r['n1'])).toEqual(['min - 1.5', '1.5 - max']);
+
+    // when
+    TestBed.inject(LanguageService).useNumberFormat('de-DE');
+    flush();
+
+    // then
+    expect(component.frameData.map(r => r['n1'])).toEqual(['min - 1,5', '1,5 - max']);
   }));
 
   it('should sort count table by first group-by column', fakeAsync(() => {

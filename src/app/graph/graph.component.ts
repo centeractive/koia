@@ -7,6 +7,7 @@ import {
   HostListener,
   Inject,
   Input,
+  NgZone,
   OnDestroy,
   OnInit,
   Output,
@@ -43,18 +44,29 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
 
   private graphGenerator: D3ForceGraphGenerator;
   private contextSubscription: Subscription;
+  private languageSubscription: Subscription;
   private destroyed = false;
   private outdated = false;
   private resizePending = false;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private graphDataService: GraphDataService,
-    rawDataRevealService: RawDataRevealService) {
+    rawDataRevealService: RawDataRevealService, private languageService: LanguageService, private zone: NgZone) {
     this.graphGenerator = new D3ForceGraphGenerator(rawDataRevealService);
   }
 
   ngOnInit(): void {
     this.contextSubscription = this.context.subscribeToChanges(() => this.prepareGraphAsync());
+    this.languageSubscription = this.languageService.changed$.subscribe(() => this.onLanguageChanged());
     this.prepareGraphAsync()
+  }
+
+  /**
+   * rebuilds the graph data too, since GraphDataService formats the node counts in the current language
+   */
+  private onLanguageChanged(): void {
+    if (this.graphData) {
+      this.prepareGraphAsync();
+    }
   }
 
   ngDoCheck(): void {
@@ -93,7 +105,7 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
   private buildGraphData(): void {
     const graphData = this.graphDataService.createData(this.context);
     if (graphData['nodes'].length > GraphComponent.MAX_NODES) {
-      const max = GraphComponent.MAX_NODES.toLocaleString(LanguageService.localeId());
+      const max = GraphComponent.MAX_NODES.toLocaleString(LanguageService.numberLocaleId());
       this.onWarning.emit(LanguageService.instant('graph.maxNodesExceeded', { max }));
     } else {
       this.graphData = graphData;
@@ -104,7 +116,7 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
   private generateGraph(): void {
     const nodes = this.graphData.nodes;
     nodes.forEach((n, i) => n.index = i);
-    this.graphGenerator.generate(this.graphData, this.svgDiv(), this.context);
+    this.zone.runOutsideAngular(() => this.graphGenerator.generate(this.graphData, this.svgDiv(), this.context));
   }
 
   private svgDiv(): HTMLDivElement {
@@ -118,6 +130,7 @@ export class GraphComponent implements OnInit, DoCheck, OnDestroy, ExportDataPro
   ngOnDestroy(): void {
     this.destroyed = true;
     this.contextSubscription.unsubscribe();
+    this.languageSubscription.unsubscribe();
     this.graphGenerator.stop();
   }
 }

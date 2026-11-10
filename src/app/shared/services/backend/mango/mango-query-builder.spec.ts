@@ -638,7 +638,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            a: { $regex: /(?=.*x.*)(?=.*y.*)(?=.*z.*)/i }
+            a: { $regex: /(?=.*x.*)(?=.*y.*)(?=.*z.*)/is }
          },
          limit: MangoQueryBuilder.LIMIT
       };
@@ -656,7 +656,7 @@ describe('MangoQueryBuilder', () => {
       // then
       const expected = {
          selector: {
-            a: { $regex: /(?=.*a\(b.*)(?=.*c\|d.*)/i }
+            a: { $regex: /(?=.*a\(b.*)(?=.*c\|d.*)/is }
          },
          limit: MangoQueryBuilder.LIMIT
       };

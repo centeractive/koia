@@ -52,7 +52,7 @@ describe('SummaryValueFormatter', () => {
     const formattedValue = formatter.format([], 0, -1_000_000.5);
 
     // then
-    expect(formattedValue).toBe((-1_000_000.5).toLocaleString());
+    expect(formattedValue).toBe((-1_000_000.5).toLocaleString('en-US'));
   });
 
   it('#format should return formatted number when value of hierarchy column is number', () => {
@@ -61,7 +61,7 @@ describe('SummaryValueFormatter', () => {
     const formattedValue = formatter.format([numberColumn], 0, -1_000_000.5);
 
     // then
-    expect(formattedValue).toBe((-1_000_000.5).toLocaleString());
+    expect(formattedValue).toBe((-1_000_000.5).toLocaleString('en-US'));
   });
 
   it('#format should return formatted time when hierarchy column is time', () => {
@@ -94,6 +94,6 @@ describe('SummaryValueFormatter', () => {
     const formattedValue = formatter.format([column], 0, now);
 
     // then
-    expect(formattedValue).toBe(now.toLocaleString());
+    expect(formattedValue).toBe(now.toLocaleString('en-US'));
   });
 });

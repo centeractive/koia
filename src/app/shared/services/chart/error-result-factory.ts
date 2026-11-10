@@ -24,7 +24,7 @@ export class ErrorResultFactory {
          name: undefined,
          message: LanguageService.instant('chart.error.maxValuesExceeded', {
             chartType: EnumLabels.chartType(chartType.type),
-            max: chartType.maxValues.toLocaleString(LanguageService.localeId())
+            max: chartType.maxValues.toLocaleString(LanguageService.numberLocaleId())
          })
       };
    }

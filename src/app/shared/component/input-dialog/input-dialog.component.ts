@@ -14,7 +14,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
                   </mat-form-field>
                   <div>
                     <button id="but_cancel" mat-flat-button color="primary" (click)="onCancel()">{{ 'common.cancel' | translate }}</button>
-                    <button id="but_ok" mat-flat-button color="primary" [disabled]="!data.input" (click)="onOK()">{{ 'common.ok' | translate }}</button>
+                    <button id="but_ok" mat-flat-button color="primary" [disabled]="!data.input?.trim()" (click)="onOK()">{{ 'common.ok' | translate }}</button>
                   </div>
                 </mat-card-content>
              </mat-card>`,

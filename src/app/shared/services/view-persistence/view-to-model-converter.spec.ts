@@ -28,7 +28,7 @@ describe('ViewToModelConverter', () => {
       expect(convert).toThrow('view element of type 99 not yet implemented');
    });
 
-   it('#convert should leave value scales undefined when chart has no value scales', () => {
+   it('#convert should create value scale of single data column when chart has no value scales', () => {
 
       // given
       const chart: Chart = {
@@ -46,7 +46,7 @@ describe('ViewToModelConverter', () => {
       const context = contexts[0] as ChartContext;
       expect(context).toBeInstanceOf(ChartContext);
       expect(context.dataColumns.map(c => c.name)).toEqual(['Amount']);
-      expect(context.valueScales).toBeUndefined();
+      expect(context.valueScales.map(s => s.toScale())).toEqual([{ columnName: 'Amount', ticks: { stepSize: undefined, rotation: undefined } }]);
    });
 
    it('#convert should drop value scales of missing data columns', () => {

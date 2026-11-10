@@ -3,6 +3,7 @@ import { Sort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { ExportDataProvider } from 'app/shared/controller';
 import { DBService } from 'app/shared/services/backend';
+import { LanguageService } from 'app/shared/services/language';
 import { CommonUtils } from 'app/shared/utils';
 import { ValueRangeGroupingService } from 'app/shared/value-range';
 import { DataFrame, IDataFrame } from 'data-forge';
@@ -43,10 +44,11 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
   private exportDataGenerator = new ExportDataGenerator();
   private dataComputer: SummaryDataComputer;
   private contextSubscription: Subscription;
+  private languageSubscription: Subscription;
 
   constructor(@Inject(ElementRef) public cmpElementRef: ElementRef, private router: Router, private dbService: DBService,
     aggregationService: AggregationService, valueRangeGroupingService: ValueRangeGroupingService,
-    private rawDataRevealService: RawDataRevealService) {
+    private rawDataRevealService: RawDataRevealService, private languageService: LanguageService) {
     this.dataComputer = new SummaryDataComputer(aggregationService, valueRangeGroupingService);
   }
 
@@ -57,6 +59,7 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
       this.rowSpanComputer = new RowSpanComputer();
       this.initSort();
       this.contextSubscription = this.context.subscribeToChanges((e: ChangeEvent) => this.contextChanged(e));
+      this.languageSubscription = this.languageService.changed$.subscribe(() => this.refreshDataFrameAsync(ChangeEvent.LOOK));
       this.createBaseDataFrame();
     }
   }
@@ -183,5 +186,6 @@ export class SummaryTableComponent implements OnInit, OnDestroy, ExportDataProvi
 
   ngOnDestroy(): void {
     this.contextSubscription?.unsubscribe();
+    this.languageSubscription?.unsubscribe();
   }
 }

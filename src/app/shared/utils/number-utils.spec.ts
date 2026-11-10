@@ -270,11 +270,11 @@ describe('NumberUtils', () => {
   });
 
   it('#parseFormattedNumber should parse string with thousands separators', () => {
-    expect(NumberUtils.parseFormattedNumber((1_500).toLocaleString())).toBe(1500);
+    expect(NumberUtils.parseFormattedNumber((1_500).toLocaleString('en-US'))).toBe(1500);
   });
 
   it('#parseFormattedNumber should parse string with misplaced thousands separators', () => {
-    const ts = (1_000).toLocaleString().charAt(1);
+    const ts = (1_000).toLocaleString('en-US').charAt(1);
     expect(NumberUtils.parseFormattedNumber('1' + ts + '5000')).toBe(15000);
   });
 
@@ -424,6 +424,17 @@ describe('NumberUtils', () => {
   it('#parseNumber should return undefined when string contains float with misplaced thousands separators', () => {
     expect(NumberUtils.parseNumber('-1,0,000.5', 'en-US')).toBeUndefined();
     expect(NumberUtils.parseNumber('1,0,000.5', 'en-US')).toBeUndefined();
+  });
+
+  it('#parseNumber should return undefined when integer part of float has up to three characters and a thousands separator', () => {
+    // given
+    const strings = ['1,2.5', ',12.5', '12,.5'];
+
+    // when
+    const numbers = strings.map(s => NumberUtils.parseNumber(s, 'en-US'));
+
+    // then
+    expect(numbers).toEqual([undefined, undefined, undefined]);
   });
 
   it('#parseNumber should return number when string contains exponential notation', () => {
@@ -595,6 +606,17 @@ describe('NumberUtils', () => {
     expect(NumberUtils.countDecimals(0.12, 'en-US')).toBe(2);
     expect(NumberUtils.countDecimals(1.123, 'en-US')).toBe(3);
     expect(NumberUtils.countDecimals(1000.1234, 'en-US')).toBe(4);
+  });
+
+  it('#countDecimals should use default locale when locale is undefined', () => {
+    vi.spyOn(NumberUtils, 'defaultLocale').mockReturnValue('ar-EG');
+    expect(NumberUtils.countDecimals(1.25, undefined)).toBe(2);
+  });
+
+  it('#decimalSeparator should use default locale when locale is undefined', () => {
+    vi.spyOn(NumberUtils, 'defaultLocale').mockReturnValue('de-CH');
+    expect(NumberUtils.decimalSeparator(undefined)).toBe('.');
+    expect(NumberUtils.thousandsSeparator(undefined)).toBe('\'');
   });
 
   it('#countDigits should return zero when string is missing or empty', () => {
@@ -883,6 +905,13 @@ describe('NumberUtils', () => {
 
   it('#isNumberKey should return true when key is local decimal separator', () => {
     const key = Number(1.1).toLocaleString().charAt(1);
+    const event = new KeyboardEvent('keydown', { key });
+    expect(NumberUtils.isNumberKey(event)).toBe(true);
+  });
+
+  it('#isNumberKey should accept decimal separator of browser rather than of user interface', () => {
+    vi.spyOn(NumberUtils, 'defaultLocale').mockReturnValue('ar-EG');
+    const key = (1.1).toLocaleString().charAt(1);
     const event = new KeyboardEvent('keydown', { key });
     expect(NumberUtils.isNumberKey(event)).toBe(true);
   });

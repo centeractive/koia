@@ -1,4 +1,6 @@
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, HostListener, OnDestroy } from '@angular/core';
+import { LanguageService } from 'app/shared/services/language';
+import { Subscription } from 'rxjs';
 import { NumberFormatter } from '../format';
 import { NumberUtils } from '../utils';
 import { preventInvalidPaste } from '../utils/clipboard-events';
@@ -8,16 +10,39 @@ import { isCopyEvent, isCutEvent, isDigitKey, isPasteEvent, isSelectAllEvent } f
     selector: 'input[formattedFloat]',
     standalone: false
 })
-export class FormattedFloatDirective {
+export class FormattedFloatDirective implements OnDestroy {
 
     private passThroughKeys = ['Delete', 'Backspace', 'Tab', 'Escape', 'Enter', 'NumLock', 'ArrowLeft', 'ArrowRight', 'End', 'Home'];
     private numberFormatter = new NumberFormatter();
     private inputElement: HTMLInputElement;
     private ds: string;
+    private locale: string;
+    private languageSubscription: Subscription;
 
-    constructor(elementRef: ElementRef) {
+    constructor(elementRef: ElementRef, private languageService: LanguageService) {
         this.inputElement = elementRef.nativeElement;
-        this.ds = NumberUtils.decimalSeparator(undefined);
+        this.locale = languageService.numberLocaleId();
+        this.ds = NumberUtils.decimalSeparator(this.locale);
+        this.languageSubscription = languageService.changed$.subscribe(() => this.onNumberLocaleChanged());
+    }
+
+    ngOnDestroy(): void {
+        this.languageSubscription.unsubscribe();
+    }
+
+    /**
+     * converts the entered number from the previous format to the new one and, when its text changes, lets bound form controls take it over
+     */
+    private onNumberLocaleChanged(): void {
+        const v = NumberUtils.removeThousandsSeparators(this.inputElement.value, this.locale);
+        const num = NumberUtils.parseNumber(v, this.locale);
+        this.locale = this.languageService.numberLocaleId();
+        this.ds = NumberUtils.decimalSeparator(this.locale);
+        const text = num === undefined ? this.inputElement.value : this.numberFormatter.format(num);
+        if (text !== this.inputElement.value) {
+            this.inputElement.value = text;
+            this.inputElement.dispatchEvent(new Event('input'));
+        }
     }
 
     @HostListener('keypress', ['$event'])
@@ -42,10 +67,10 @@ export class FormattedFloatDirective {
         if (this.decimalSeparatorInFrontOfCared()) {
             return;
         }
-        const v = NumberUtils.removeThousandsSeparators(this.inputElement.value, undefined);
+        const v = NumberUtils.removeThousandsSeparators(this.inputElement.value, this.locale);
         const digitsOrDecimalSeparatorInFront = this.digitsOrDecimalSeparatorInFrontOfCared();
-        if (!this.enteredDecimalSeparatorAtEnd(v) && NumberUtils.isNumber(v, undefined)) {
-            this.inputElement.value = this.numberFormatter.format(parseFloat(v));
+        if (!this.enteredDecimalSeparatorAtEnd(v) && NumberUtils.isNumber(v, this.locale)) {
+            this.inputElement.value = this.numberFormatter.format(NumberUtils.parseNumber(v, this.locale));
         }
         const caretPos = this.newCaretPos(digitsOrDecimalSeparatorInFront);
         this.inputElement.setSelectionRange(caretPos, caretPos);
@@ -53,14 +78,14 @@ export class FormattedFloatDirective {
 
     @HostListener('paste', ['$event'])
     onPaste(event: ClipboardEvent): void {
-        preventInvalidPaste(event, this.inputElement, v => NumberUtils.isNumber(NumberUtils.removeThousandsSeparators(v, undefined), undefined));
+        preventInvalidPaste(event, this.inputElement, v => NumberUtils.isNumber(NumberUtils.removeThousandsSeparators(v, this.locale), this.locale));
     }
 
     @HostListener('blur')
     onBlur(): void {
         const v = this.inputElement.value;
-        if (NumberUtils.isNumber(v, undefined)) {
-            const n = NumberUtils.parseFloat(v, undefined);
+        if (NumberUtils.isNumber(v, this.locale)) {
+            const n = NumberUtils.parseFloat(v, this.locale);
             this.inputElement.value = this.numberFormatter.format(n);
         }
     }
@@ -88,7 +113,7 @@ export class FormattedFloatDirective {
         let digits = 0;
         for (let i = 0; i < caretPos && i < value.length; i++) {
             const c = value.charAt(i);
-            if (c === this.ds || NumberUtils.isInteger(c, undefined)) {
+            if (c === this.ds || NumberUtils.isInteger(c, this.locale)) {
                 digits++;
             }
         }
@@ -100,7 +125,7 @@ export class FormattedFloatDirective {
         let digitsOrDecimalSeparator = 0;
         for (let i = 0; i < value.length; i++) {
             const c = value.charAt(i);
-            if (c === this.ds || NumberUtils.isNumber(c, undefined)) {
+            if (c === this.ds || NumberUtils.isNumber(c, this.locale)) {
                 if (digitsOrDecimalSeparator === digitsInFront) {
                     return i;
                 }

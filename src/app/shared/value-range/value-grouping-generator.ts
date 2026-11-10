@@ -11,6 +11,7 @@ export class ValueGroupingGenerator {
 
    static readonly MIN_DISTINCT_VALUES = 100;
    static readonly MIN_NUMBER_OF_RANGES = 3;
+   private static readonly MAX_STEPS_TO_TOP_MOST_RANGE_MAX = 1_000_000;
 
    /**
     * generates a default value grouping for each NUMBER column from the specified base data if it has the expected number of
@@ -61,22 +62,47 @@ export class ValueGroupingGenerator {
    }
 
    private generateRanges(min: number, max: number): ValueRange[] {
+      if (min === max) {
+         return [];
+      }
       const ranges: ValueRange[] = [];
       const rangeDiff = this.computeRangeDiff(min, max);
       let rangeMax = this.defineTopMostRangeMax(min, max, rangeDiff);
       while (rangeMax > min) {
          ranges.push({ max: rangeMax, active: true });
-         rangeMax -= rangeDiff;
-         if (rangeDiff < 1) {
-            rangeMax = parseInt('' + (Math.round(rangeMax * 1_000_000)), 10) / 1_000_000;
-         }
+         rangeMax = this.nextRangeMax(rangeMax, rangeDiff);
       }
       return ranges;
    }
 
+   /**
+    * @returns -Infinity when the range difference is too small to lower the range max at its magnitude
+    */
+   private nextRangeMax(rangeMax: number, rangeDiff: number): number {
+      const nextRangeMax = this.roundRangeMax(rangeMax - rangeDiff, rangeDiff);
+      return nextRangeMax < rangeMax ? nextRangeMax : -Infinity;
+   }
+
+   /**
+    * rounds to 15 significant digits for range differences below 0.000001, which 6 decimals would undo
+    */
+   private roundRangeMax(rangeMax: number, rangeDiff: number): number {
+      if (rangeDiff >= 1) {
+         return rangeMax;
+      }
+      if (rangeDiff >= 0.000_001) {
+         return parseInt('' + (Math.round(rangeMax * 1_000_000)), 10) / 1_000_000;
+      }
+      return Number(rangeMax.toPrecision(15));
+   }
+
    private defineTopMostRangeMax(min: number, max: number, rangeDiff: number): number {
       let rangeMax = NumberUtils.roundUpBroad(max);
-      while (rangeMax - rangeDiff >= max) {
+      const stepsToMax = Math.floor((rangeMax - max) / rangeDiff);
+      if (stepsToMax > ValueGroupingGenerator.MAX_STEPS_TO_TOP_MOST_RANGE_MAX) {
+         rangeMax -= stepsToMax * rangeDiff;
+      }
+      while (rangeMax - rangeDiff >= max && rangeMax - rangeDiff < rangeMax) {
          rangeMax -= rangeDiff;
       }
       if (rangeMax === max) {

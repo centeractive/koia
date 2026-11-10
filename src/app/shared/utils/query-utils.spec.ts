@@ -55,6 +55,23 @@ describe('QueryUtils', () => {
     expect(QueryUtils.areFiltersEqual(query1, query2)).toBe(false);
   });
 
+  it('#areFiltersEqual should return false when a duplicated property filter is replaced', () => {
+
+    // given
+    const query1 = new Query();
+    query1.addPropertyFilter(new PropertyFilter('Flag', Operator.EQUAL, true));
+    query1.addPropertyFilter(new PropertyFilter('Flag', Operator.EQUAL, false));
+    const query2 = new Query();
+    query2.addPropertyFilter(new PropertyFilter('Flag', Operator.EQUAL, true));
+    query2.addPropertyFilter(new PropertyFilter('Flag', Operator.EQUAL, true));
+
+    // when
+    const equal = QueryUtils.areFiltersEqual(query1, query2);
+
+    // then
+    expect(equal).toBe(false);
+  });
+
   it('#areFiltersEqual should return false when value range filters differ', () => {
     const query1 = createQuery(false, false, true);
     const query2 = createQuery(false, false, true);

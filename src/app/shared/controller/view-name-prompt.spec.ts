@@ -15,11 +15,7 @@ describe('promptViewName', () => {
   it('#promptViewName should resolve entered name when dialog is closed with OK', async () => {
 
     // given
-    vi.mocked(dialogService.showInputDialog).mockImplementation((data: InputDialogData) => {
-      data.input = 'new name';
-      data.closedWithOK = true;
-      return dialogRef();
-    });
+    closeDialogWith('new name', true);
 
     // when
     const name = await promptViewName(dialogService, 'current');
@@ -35,11 +31,7 @@ describe('promptViewName', () => {
   it('#promptViewName should resolve undefined when dialog is canceled', async () => {
 
     // given
-    vi.mocked(dialogService.showInputDialog).mockImplementation((data: InputDialogData) => {
-      data.input = 'new name';
-      data.closedWithOK = false;
-      return dialogRef();
-    });
+    closeDialogWith('new name', false);
 
     // when
     const name = await promptViewName(dialogService, 'current');
@@ -47,6 +39,26 @@ describe('promptViewName', () => {
     // then
     expect(name).toBeUndefined();
   });
+
+  it('#promptViewName should resolve entered name without surrounding whitespace', async () => {
+
+    // given
+    closeDialogWith('  Sales  ', true);
+
+    // when
+    const name = await promptViewName(dialogService, 'current');
+
+    // then
+    expect(name).toBe('Sales');
+  });
+
+  function closeDialogWith(input: string, closedWithOK: boolean): void {
+    vi.mocked(dialogService.showInputDialog).mockImplementation((data: InputDialogData) => {
+      data.input = input;
+      data.closedWithOK = closedWithOK;
+      return dialogRef();
+    });
+  }
 
   function dialogRef(): MatDialogRef<InputDialogComponent> {
     return <MatDialogRef<InputDialogComponent>>{

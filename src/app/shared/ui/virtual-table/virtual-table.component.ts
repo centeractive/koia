@@ -74,7 +74,8 @@ export class VirtualTableComponent implements OnChanges, OnInit, AfterViewInit, 
   private hScroll = 0;
   private resizeStartWidth: number | undefined;
   private resizeStartColumnsWidth: number | undefined;
-  private readonly cellCache = new FormattedCellCache(new ValueFormatter(LanguageService.localeId), LanguageService.localeId);
+  private readonly cellCache = new FormattedCellCache(new ValueFormatter(LanguageService.localeId),
+    () => LanguageService.localeId() + ' ' + LanguageService.numberLocaleId());
 
   constructor(private dialogService: DialogService, private zone: NgZone, private cdr: ChangeDetectorRef) { }
 

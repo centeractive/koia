@@ -36,13 +36,13 @@ export class SummaryTableSizeEstimator {
     const rows = dataFrame.toArray();
     const keys = new AggregationKeys(context);
     const groupByColumns = context.groupByColumns;
-    const localeId = LanguageService.localeId();
+    const numberLocale = LanguageService.numberLocaleId();
     const leadingWidths = keys.leading.map((key, i) => this.columnWidth(keys.leadingLabels[i],
       rows.map(r => String(this.valueFormatter.format(groupByColumns, i, r[key]) ?? '')),
       i === keys.leading.length - 1 ? LanguageService.instant('summary.overall') : ''));
     const aggregationWidths = context.aggregations.map((a, j) => this.columnWidth(LanguageService.instant('summary.aggregation.' + a),
-      rows.map(r => LocalizedNumberPipe.format(r[keys.aggregations[j]], localeId) ?? ''),
-      LocalizedNumberPipe.format(overalls[j], localeId) ?? ''));
+      rows.map(r => LocalizedNumberPipe.format(r[keys.aggregations[j]], numberLocale) ?? ''),
+      LocalizedNumberPipe.format(overalls[j], numberLocale) ?? ''));
     const { headerHeight, firstRowHeight, rowHeight, footerHeight, marginRight } = SUMMARY_TABLE_STYLE;
     return {
       width: TableFitter.contentWidth(DomMetrics.scrollbarWidth(), leadingWidths.concat(aggregationWidths)) + marginRight,

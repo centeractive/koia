@@ -42,8 +42,47 @@ export function languageOf(tag: string | null | undefined): Language | undefined
 }
 
 /**
- * @returns the Angular locale ID used to format dates and numbers in the specified language
+ * @returns the Angular locale ID of the specified language, used to format dates and, when neither a fixed number format nor a
+ * regional variant of the language applies, numbers
  */
 export function localeIdOf(language: Language): string {
    return LOCALE_IDS[language];
+}
+
+/**
+ * number formats offered in the language menu: automatic, or a fixed one named by a locale that formats numbers that way,
+ * 1'234.5 (de-CH), 1,234.5 (en-US), 1.234,5 (de-DE) and 1 234,5 (fr-FR)
+ */
+export type NumberFormat = 'auto' | 'de-CH' | 'en-US' | 'de-DE' | 'fr-FR';
+
+export const AUTOMATIC_NUMBER_FORMAT: NumberFormat = 'auto';
+
+export const NUMBER_FORMATS: readonly NumberFormat[] = [AUTOMATIC_NUMBER_FORMAT, 'de-CH', 'en-US', 'de-DE', 'fr-FR'];
+
+/**
+ * @returns the number format of the specified (e.g. stored) value, [[undefined]] when not supported
+ */
+export function numberFormatOf(value: string | null): NumberFormat | undefined {
+   return NUMBER_FORMATS.find(f => f === value);
+}
+
+/**
+ * @returns the locale used to format and parse numbers: the locale of a fixed number format, for the automatic one the first
+ * of the browser's preferred languages (tags) in the specified language that names a region (e.g. 'de-CH' among 'en-US', 'de',
+ * 'de-CH'), else the locale ID of the language; malformed tags are skipped
+ */
+export function numberLocaleIdOf(language: Language, format: NumberFormat, browserTags: readonly string[]): string {
+   if (format !== AUTOMATIC_NUMBER_FORMAT) {
+      return format;
+   }
+   const regional = browserTags.map(localeOf).find(locale => locale?.language === language && !!locale.region);
+   return regional?.baseName ?? localeIdOf(language);
+}
+
+function localeOf(tag: string): Intl.Locale | undefined {
+   try {
+      return new Intl.Locale(tag);
+   } catch {
+      return undefined;
+   }
 }

@@ -1,10 +1,14 @@
 import { Locator } from '@playwright/test';
 import { centerYOf } from './support/box';
 import { expect, test } from './support/fixtures';
+import { fruitSalesOf } from './support/fruit-sales-sample';
 import { Texts } from './support/texts';
 
+const en = new Texts('en');
 const de = new Texts('de');
 const ja = new Texts('ja');
+const rowCount = fruitSalesOf('en').entries.length;
+const swissRowCount = new Intl.NumberFormat('de-CH').format(rowCount);
 
 test('scenes page is translated when switching to German', async ({ front, rawData, scenes, languageSelect }) => {
    await front.open('en');
@@ -52,3 +56,35 @@ test('language button sits at top right of every page, at same height on scene, 
       Object.values(boxes).forEach(b => expect(Math.abs(b.right - (viewportWidth - 8))).toBeLessThanOrEqual(1));
       [boxes.scene, boxes.scenes].forEach(b => expect(Math.abs(b.centerY - boxes.rawData.centerY)).toBeLessThanOrEqual(1));
    });
+
+test('numbers follow the Swiss format chosen in the language menu after a reload, and the toolbar keeps its widths',
+   async ({ front, rawData, tabBar, languageSelect }) => {
+      await front.open('en');
+      await front.openSample();
+      await expect(rawData.table.rowCount).toHaveText(en.rows(rowCount));
+      const button = await languageSelect.button.boundingBox();
+      const rawDataTab = await tabBar.rawDataTitle.boundingBox();
+
+      await languageSelect.selectNumberFormat('de-CH');
+
+      await expect(rawData.table.rowCount).toHaveText(en.get('ui.rows', { count: swissRowCount }));
+      expect(await languageSelect.button.boundingBox()).toEqual(button);
+      expect(await tabBar.rawDataTitle.boundingBox()).toEqual(rawDataTab);
+      await front.open();
+      await front.openSample();
+      await expect(rawData.table.rowCount).toHaveText(en.get('ui.rows', { count: swissRowCount }));
+   });
+
+test.describe('with German (Switzerland) preferred in the browser', () => {
+   test.use({ locale: 'de-CH' });
+
+   test('automatic number format is Swiss in German and the US one in English', async ({ front, rawData, languageSelect }) => {
+      await front.open('de');
+      await front.openSample();
+      await expect(rawData.table.rowCount).toHaveText(de.get('ui.rows', { count: swissRowCount }));
+
+      await languageSelect.switchTo('en');
+
+      await expect(rawData.table.rowCount).toHaveText(en.rows(rowCount));
+   });
+});

@@ -52,7 +52,7 @@ export class QuerySanitizer {
 
    private cleanUpValueRangeFilters(query: Query): ValueRangeFilter[] {
       const retainedFilters: ValueRangeFilter[] = [];
-      for (const filter of this.valueRangeFilterSorter.sort(query.getValueRangeFilters())) {
+      for (const filter of this.valueRangeFilterSorter.sort(query.getValueRangeFilters().map(f => f.clone()))) {
          const matchingFilters = retainedFilters.filter(rf => rf.name === filter.name);
          if (matchingFilters.some(rf => CommonUtils.compare(rf, filter))) {
             continue;

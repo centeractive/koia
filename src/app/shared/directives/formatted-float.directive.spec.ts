@@ -1,6 +1,9 @@
 import { FormattedFloatDirective } from './formatted-float.directive';
 import { ChangeDetectionStrategy, Component, ElementRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { LanguageService } from 'app/shared/services/language';
+import { NumberFormatter } from '../format';
+import { NumberUtils } from '../utils';
 
 @Component({
     template: '<input formattedFloat>',
@@ -12,16 +15,20 @@ class FormattedFloatHostComponent {
 
 describe('FormattedFlatDirective', () => {
 
-    const ds = (0.1).toLocaleString().charAt(1);
-    const ts = (1_000).toLocaleString().charAt(1);
+    const ds = (0.1).toLocaleString('en-US').charAt(1);
+    const ts = (1_000).toLocaleString('en-US').charAt(1);
 
     let inputElement: HTMLInputElement;
     let directive: FormattedFloatDirective;
 
     beforeEach(() => {
+        TestBed.configureTestingModule({ declarations: [FormattedFloatHostComponent, FormattedFloatDirective] });
+        vi.spyOn(Storage.prototype, 'setItem').mockReturnValue(undefined);
         inputElement = document.createElement('INPUT') as HTMLInputElement;
-        directive = new FormattedFloatDirective(new ElementRef(inputElement));
+        directive = new FormattedFloatDirective(new ElementRef(inputElement), TestBed.inject(LanguageService));
     });
+
+    afterEach(() => document.documentElement.lang = 'en');
 
     it('#onKeyPressed should reject letter', () => {
 
@@ -224,6 +231,23 @@ describe('FormattedFlatDirective', () => {
         expect(inputElement.selectionStart).toBe(3);
     });
 
+    it('#onInputChange should keep decimals when locale uses comma as decimal separator', () => {
+
+        // given
+        vi.spyOn(NumberUtils, 'decimalSeparator').mockReturnValue(',');
+        vi.spyOn(NumberUtils, 'thousandsSeparator').mockReturnValue('.');
+        vi.spyOn(NumberFormatter.prototype, 'format').mockImplementation(n => n.toLocaleString('de-DE'));
+        directive = new FormattedFloatDirective(new ElementRef(inputElement), TestBed.inject(LanguageService));
+        onInput('19.234,5', 2);
+
+        // when
+        directive.onInputChange();
+
+        // then
+        expect(inputElement.value).toBe('19.234,5');
+        expect(inputElement.selectionStart).toBe(3);
+    });
+
     it('#onPaste should reject non-number representation', () => {
 
         // given
@@ -326,6 +350,81 @@ describe('FormattedFlatDirective', () => {
         expect(input.value).toBe('1');
     });
 
+    it('#language change should convert entered number to format of new language and notify form control', async () => {
+
+        // given
+        const inputListener = vi.fn();
+        inputElement.addEventListener('input', inputListener);
+        inputElement.value = '1,234.5';
+
+        // when
+        await TestBed.inject(LanguageService).use('de');
+
+        // then
+        expect(inputElement.value).toBe('1.234,5');
+        expect(inputListener).toHaveBeenCalledTimes(1);
+    });
+
+    it('#language change should accept decimal separator of new language', async () => {
+
+        // given
+        inputElement.value = '12';
+        await TestBed.inject(LanguageService).use('de');
+        const event = new KeyboardEvent('keydown', { key: ',' });
+        const preventDefaultSpy = vi.spyOn(event, 'preventDefault').mockReturnValue(undefined);
+
+        // when
+        directive.onKeyPressed(event);
+
+        // then
+        expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+
+    it('#number format change should leave text that is no number unchanged', () => {
+
+        // given
+        const inputListener = vi.fn();
+        inputElement.addEventListener('input', inputListener);
+        inputElement.value = '-';
+
+        // when
+        TestBed.inject(LanguageService).useNumberFormat('de-DE');
+
+        // then
+        expect(inputElement.value).toBe('-');
+        expect(inputListener).not.toHaveBeenCalled();
+    });
+
+    it('#language change should leave entered number and form control untouched when number format stays the same', async () => {
+
+        // given
+        const languageService = TestBed.inject(LanguageService);
+        languageService.useNumberFormat('en-US');
+        const inputListener = vi.fn();
+        inputElement.addEventListener('input', inputListener);
+        inputElement.value = '1,234.5';
+
+        // when
+        await languageService.use('de');
+
+        // then
+        expect(inputElement.value).toBe('1,234.5');
+        expect(inputListener).not.toHaveBeenCalled();
+    });
+
+    it('#ngOnDestroy should stop following language changes', async () => {
+
+        // given
+        inputElement.value = '1,234.5';
+
+        // when
+        directive.ngOnDestroy();
+
+        // then
+        await TestBed.inject(LanguageService).use('de');
+        expect(inputElement.value).toBe('1,234.5');
+    });
+
     function onInput(text: string, caretPos?: number): void {
         inputElement.value = text;
         if (caretPos === undefined) {
@@ -342,7 +441,6 @@ describe('FormattedFlatDirective', () => {
     }
 
     function createHostInput(): HTMLInputElement {
-        TestBed.configureTestingModule({ declarations: [FormattedFloatHostComponent, FormattedFloatDirective] });
         const fixture = TestBed.createComponent(FormattedFloatHostComponent);
         fixture.detectChanges();
         return fixture.nativeElement.querySelector('input');

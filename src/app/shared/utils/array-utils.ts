@@ -76,10 +76,9 @@ export class ArrayUtils {
     } else if ((!arr1 && arr2) || (arr1 && !arr2) || arr1.length !== arr2.length) {
       return false;
     }
-    const strElements1 = arr1.map(o => JSON.stringify(o));
-    return arr2.map(o => JSON.stringify(o))
-      .filter(s => strElements1.includes(s))
-      .length === arr1.length;
+    const sortedElements2 = arr2.map(o => JSON.stringify(o)).sort();
+    return arr1.map(o => JSON.stringify(o)).sort()
+      .every((s, i) => s === sortedElements2[i]);
   }
 
   /**

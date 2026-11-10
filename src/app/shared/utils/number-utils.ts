@@ -1,9 +1,23 @@
+import { LocaleUtils } from './i18n/locale-utils';
 import { StringUtils } from './string-utils';
 
 export class NumberUtils {
 
    private static readonly symbols = new Map<string, { group: string, decimal: string }>();
    private static readonly RADIX_PREFIX_OR_LEADING_ZERO = /^[+-]?0[\dbox]/i;
+
+   /**
+    * provides the locale of numbers when none is specified, the browser's default locale ([[undefined]]) unless the
+    * application provides the locale of numbers of the user interface
+    */
+   static defaultLocale: () => string | undefined = () => undefined;
+
+   /**
+    * @returns the specified locale, [[defaultLocale]] when it is undefined
+    */
+   static localeOrDefault(locale: string | undefined): string | undefined {
+      return locale ?? NumberUtils.defaultLocale();
+   }
 
    /**
     * @returns [[true]], if the value is an integer or represents an integer (may contain thousands separators of the specified locale),
@@ -80,7 +94,7 @@ export class NumberUtils {
          str = thousandTokens.join('');
       } else if (decimalTokens.length == 2) {
          const thousandTokens = decimalTokens[0].split(this.thousandsSeparator(locale));
-         if (decimalTokens[0].length > 3) {
+         if (decimalTokens[0].length > 3 || thousandTokens.length > 1) {
             if (!this.checkThousandTokens(thousandTokens)) {
                return undefined;
             }
@@ -168,8 +182,8 @@ export class NumberUtils {
    }
 
    /**
-    * @returns the number unchanged, or the string parsed as a number of the default locale after removing all thousands
-    * separators regardless of their position, [[undefined]] if the string does not represent a number
+    * @returns the number unchanged, or the string parsed as a number of the default locale (see [[defaultLocale]]) after removing
+    * all thousands separators regardless of their position, [[undefined]] if the string does not represent a number
     */
    static parseFormattedNumber(value: number | string): number {
       if (typeof value === 'string') {
@@ -192,6 +206,7 @@ export class NumberUtils {
       if (!num || Math.floor(num) === num) {
          return 0;
       }
+      locale = this.localeOrDefault(locale);
       const tokens = num.toLocaleString(locale, { maximumFractionDigits: 20 })
          .split(this.decimalSeparator(locale));
       return tokens.length === 2 ? tokens[1].length : 0;
@@ -206,6 +221,7 @@ export class NumberUtils {
    }
 
    private static symbolsOf(locale: string): { group: string, decimal: string } {
+      locale = this.localeOrDefault(locale);
       let symbols = this.symbols.get(locale);
       if (!symbols) {
          const parts = new Intl.NumberFormat(locale).formatToParts(1_000_000.1);
@@ -416,8 +432,11 @@ export class NumberUtils {
       return event.key !== ' ' && !isNaN(Number(event.key));
    }
 
+   /**
+    * native number inputs (type="number") use the browser's locale, not the one of the user interface
+    */
    static isLocaleDecimalSeparator(char: string): boolean {
-      return char === this.decimalSeparator(undefined);
+      return char === this.decimalSeparator(LocaleUtils.browserDefaultLocale());
    }
 
 }

@@ -1,6 +1,7 @@
 import { Aggregation, Column, DataType, TimeUnit } from 'app/shared/model';
 import { ChartContext, ChartType, Margin } from 'app/shared/model/chart';
 import { RawDataRevealService } from 'app/shared/services';
+import { LanguageService } from 'app/shared/services/language';
 import { Chart, ChartData, Scale, ScaleOptions, registerables } from 'chart.js';
 import { DateTime } from 'luxon';
 import { ChartJsOptionsProvider } from './chartjs-options-provider';
@@ -22,6 +23,7 @@ describe('ChartJsOptionsProvider - PIE', () => {
 
     // then
     expect(options).toEqual({
+      locale: 'en-US',
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
@@ -53,6 +55,18 @@ describe('ChartJsOptionsProvider - PIE', () => {
       onHover: expect.anything(),
       onClick: expect.anything()
     });
+  });
+
+  it('#provide should format numbers in locale of numbers of user interface', () => {
+
+    // given
+    vi.spyOn(LanguageService, 'numberLocaleId').mockReturnValue('de-CH');
+
+    // when
+    const options = provider.provide(context());
+
+    // then
+    expect(options.locale).toBe('de-CH');
   });
 
   function context(): ChartContext {

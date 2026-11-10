@@ -97,7 +97,7 @@ export class EntryPersister {
   }
 
   private format(count: number): string {
-    return count.toLocaleString(LanguageService.localeId());
+    return count.toLocaleString(LanguageService.numberLocaleId());
   }
 
   private notifyProgress(): void {

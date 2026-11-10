@@ -566,6 +566,22 @@ describe('SceneComponent', () => {
     expect(fixture.nativeElement.querySelector('#but_load_data')).toBeNull();
   }));
 
+  it('"Load Data" button should be hidden when source attribute change discards column mappings', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    const separator: HTMLInputElement = fixture.nativeElement.querySelector('.form_field_separator input');
+
+    // when
+    separator.dispatchEvent(new Event('change'));
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(component.columnMappings).toBeNull();
+    expect(fixture.nativeElement.querySelector('#but_load_data')).toBeNull();
+  }));
+
   it('#onFileSelChange should notify error when file header cannot be read', fakeAsync(() => {
 
     // given
@@ -640,6 +656,20 @@ describe('SceneComponent', () => {
 
     // then
     expect(maxItems.left - loadData.right).toBeCloseTo(16, 0);
+  }));
+
+  it('#max items should show maximum in number format of user interface when invalid', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    component.maxItemsToLoadControl.setValue(0);
+    component.maxItemsToLoadControl.markAsTouched();
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('.max_items mat-error').textContent).toBe('Exp. 1-1,000');
   }));
 
   it('form fields should be outlined', () => {
@@ -1161,7 +1191,26 @@ describe('SceneComponent', () => {
     expect(component.columnMappingsValid).toBe(true);
   }));
 
-  it('#click on cancel button while scene is being persisted should not read data', fakeAsync(() => {
+  it('#ngOnDestroy before database of scene is chosen should not read data', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(component.selectedReader, 'readData').mockReturnValue(undefined);
+    let resolveDatabase: (database: string) => void;
+    vi.spyOn(dbService, 'findFreeDatabaseName').mockReturnValue(new Promise<string>(resolve => resolveDatabase = resolve));
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+
+    // when
+    fixture.destroy();
+    resolveDatabase('data_1');
+    flush();
+
+    // then
+    expect(component.selectedReader.readData).not.toHaveBeenCalled();
+  }));
+
+  it('#ngOnDestroy while scene is being persisted should not read data', fakeAsync(() => {
 
     // given
     initUpToDetectColumns();
@@ -1172,7 +1221,7 @@ describe('SceneComponent', () => {
     flushMicrotasks();
 
     // when
-    component.cancel();
+    fixture.destroy();
     resolvePersist(component.scene);
     flush();
 
@@ -1180,7 +1229,7 @@ describe('SceneComponent', () => {
     expect(component.selectedReader.readData).not.toHaveBeenCalled();
   }));
 
-  it('#click on cancel button while scene is being persisted should not mark scene as new', fakeAsync(() => {
+  it('#ngOnDestroy while scene is being persisted should not mark scene as new', fakeAsync(() => {
 
     // given
     initUpToDetectColumns();
@@ -1191,13 +1240,59 @@ describe('SceneComponent', () => {
     flushMicrotasks();
 
     // when
-    component.cancel();
+    fixture.destroy();
     component.scene._id = 'new';
     resolvePersist(component.scene);
     flush();
 
     // then
     expect(TestBed.inject(NewScenesService).take().size).toBe(0);
+  }));
+
+  it('cancel button should be disabled while scene is being persisted', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'persistScene').mockReturnValue(new Promise<Scene>(() => undefined));
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#but_cancel').disabled).toBe(true);
+  }));
+
+  it('cancel button should be enabled when scene is persisted and data is being read', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(component.selectedReader, 'readData').mockReturnValue(undefined);
+    vi.spyOn(dbService, 'persistScene').mockImplementation((scene: Scene) => Promise.resolve(scene));
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#but_cancel').disabled).toBe(false);
+  }));
+
+  it('cancel button should be enabled when scene cannot be persisted', fakeAsync(() => {
+
+    // given
+    initUpToDetectColumns();
+    vi.spyOn(dbService, 'persistScene').mockRejectedValue('conflict');
+
+    // when
+    fixture.debugElement.query(By.css('#but_load_data')).nativeElement.click();
+    flush();
+    fixture.detectChanges();
+
+    // then
+    expect(fixture.nativeElement.querySelector('#but_cancel').disabled).toBe(false);
   }));
 
   it('#click on "Load Data" should mark persisted scene as new', fakeAsync(() => {
@@ -1853,7 +1948,7 @@ describe('SceneComponent', () => {
 
     // given
     initUpToDetectColumns();
-    component.maxItemsToLoadControl.setValue((1_000).toLocaleString() as unknown as number);
+    component.maxItemsToLoadControl.setValue((1_000).toLocaleString('en-US') as unknown as number);
     const rows = Array.from({ length: 1_500 }, (v, i) => ['A', String(i)]);
 
     // when

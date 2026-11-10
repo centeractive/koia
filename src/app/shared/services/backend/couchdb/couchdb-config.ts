@@ -24,8 +24,12 @@ export class CouchDBConfig {
       return protocol === Protocol.HTTP ? CouchDBConfig.DEFAULT_HTTP_PORT : CouchDBConfig.DEFAULT_HTTPS_PORT;
    }
 
+   /**
+    * encloses an IPv6 host in brackets unless it already is
+    */
    static urlOf(connectionInfo: ConnectionInfo): string {
-      return connectionInfo.protocol.toLowerCase() + '://' + connectionInfo.host + ':' + connectionInfo.port + '/';
+      const host = /^[^[].*:/.test(connectionInfo.host) ? '[' + connectionInfo.host + ']' : connectionInfo.host;
+      return connectionInfo.protocol.toLowerCase() + '://' + host + ':' + connectionInfo.port + '/';
    }
 
    static isLocalHost(host: string): boolean {

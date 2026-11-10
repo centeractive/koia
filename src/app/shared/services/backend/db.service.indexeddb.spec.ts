@@ -399,6 +399,35 @@ describe('DBService (IndexedDB)', () => {
     expect(found.map(e => e['ID'])).toEqual([4, 1, 3]);
   });
 
+  it('#numberRangeOf should return negative min and max of indexed column some entries lack', async () => {
+
+    // given
+    entries[0] = { ...entries[0], Amount: -10 };
+    await activateSceneWithEntries(columns);
+
+    // when
+    const valueRange = await dbService.numberRangeOf(columns[1]);
+
+    // then
+    expect(valueRange).toEqual({ min: -10, max: 30 });
+  });
+
+  it('#findEntries should find entry whose contains filters on same column match different lines', async () => {
+
+    // given
+    entries[1] = { ...entries[1], Data: 'xyz\ntwo' };
+    await activateSceneWithEntries(columns);
+    const query = new Query();
+    query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'xyz'));
+    query.addPropertyFilter(new PropertyFilter('Data', Operator.CONTAINS, 'two'));
+
+    // when
+    const found = await lastValueFrom(dbService.findEntries(query, true));
+
+    // then
+    expect(found.map(e => e['ID'])).toEqual([2]);
+  });
+
   function dataDB(n: number): string {
     return prefix + DBService.DATA + '_' + n;
   }

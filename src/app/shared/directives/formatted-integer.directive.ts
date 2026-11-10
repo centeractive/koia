@@ -1,4 +1,6 @@
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, HostListener, OnDestroy } from '@angular/core';
+import { LanguageService } from 'app/shared/services/language';
+import { Subscription } from 'rxjs';
 import { NumberFormatter } from '../format';
 import { NumberUtils } from '../utils';
 import { preventInvalidPaste } from '../utils/clipboard-events';
@@ -7,13 +9,32 @@ import { preventInvalidPaste } from '../utils/clipboard-events';
     selector: 'input[formattedInteger]',
     standalone: false
 })
-export class FormattedIntegerDirective {
+export class FormattedIntegerDirective implements OnDestroy {
 
     private numberFormatter = new NumberFormatter();
     private inputElement: HTMLInputElement;
+    private languageSubscription: Subscription;
 
-    constructor(elementRef: ElementRef) {
+    constructor(elementRef: ElementRef, languageService: LanguageService) {
         this.inputElement = elementRef.nativeElement;
+        this.languageSubscription = languageService.changed$.subscribe(() => this.onNumberLocaleChanged());
+    }
+
+    ngOnDestroy(): void {
+        this.languageSubscription.unsubscribe();
+    }
+
+    /**
+     * shows the entered number in the new format and, when its text changes, lets bound form controls take it over
+     */
+    private onNumberLocaleChanged(): void {
+        const text = this.inputElement.value;
+        if (text) {
+            this.onInputChange();
+            if (this.inputElement.value !== text) {
+                this.inputElement.dispatchEvent(new Event('input'));
+            }
+        }
     }
 
     @HostListener('input')

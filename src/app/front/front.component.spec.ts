@@ -6,6 +6,7 @@ import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angu
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
@@ -75,7 +76,7 @@ function createQueryParams(changes: Record<string, string | undefined> = {}): Qu
 function configureTestingModule(queryParams: QueryParams, fragment: string | null, ...providers: (Provider | EnvironmentProviders)[]): void {
   TestBed.configureTestingModule({
     declarations: [FrontComponent, FrontGuideComponent, LanguageSelectComponent, DummyComponent],
-    imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDialogModule, DragDropModule,
+    imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule, MatDialogModule, MatDividerModule, DragDropModule,
       RouterModule.forRoot([{ path: '**', component: DummyComponent }], {})
     ],
     providers: [

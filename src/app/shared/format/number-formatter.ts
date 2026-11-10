@@ -5,9 +5,10 @@ export class NumberFormatter {
    private static readonly BIDI_MARKS = ['‎', '‏', '؜'];
 
    private symbols: { digits: string[], decimal: string, minusSigns: string[], group: string, ignored: string[] };
+   private symbolsLocale: string;
 
    /**
-    * @param locale the browser's locale by default
+    * @param locale the locale of numbers of the user interface by default (see [[NumberUtils#defaultLocale]])
     */
    constructor(private readonly locale?: string) { }
 
@@ -15,11 +16,12 @@ export class NumberFormatter {
       if (num == undefined) {
          return '';
       }
-      const decimals = NumberUtils.countDecimals(num, this.locale);
+      const locale = NumberUtils.localeOrDefault(this.locale);
+      const decimals = NumberUtils.countDecimals(num, locale);
       if (decimals > 3) {
-         return num.toLocaleString(this.locale, { minimumFractionDigits: decimals });
+         return num.toLocaleString(locale, { minimumFractionDigits: decimals });
       }
-      return num.toLocaleString(this.locale);
+      return num.toLocaleString(locale);
    }
 
    /**
@@ -45,16 +47,18 @@ export class NumberFormatter {
    }
 
    private symbolsOfLocale() {
-      if (!this.symbols) {
-         const parts = new Intl.NumberFormat(this.locale).formatToParts(-1_234_567.5);
+      const locale = NumberUtils.localeOrDefault(this.locale);
+      if (!this.symbols || this.symbolsLocale !== locale) {
+         const parts = new Intl.NumberFormat(locale).formatToParts(-1_234_567.5);
          const symbolOf = (type: string) => parts.find(p => p.type === type).value;
          this.symbols = {
-            digits: Array.from({ length: 10 }, (_, d) => d.toLocaleString(this.locale)),
+            digits: Array.from({ length: 10 }, (_, d) => d.toLocaleString(locale)),
             decimal: symbolOf('decimal'),
             minusSigns: ['-', ...[...symbolOf('minusSign')].filter(c => !NumberFormatter.BIDI_MARKS.includes(c))],
             group: symbolOf('group'),
             ignored: [...NumberFormatter.BIDI_MARKS, ...parts.filter(p => p.type === 'literal').flatMap(p => [...p.value])]
          };
+         this.symbolsLocale = locale;
       }
       return this.symbols;
    }

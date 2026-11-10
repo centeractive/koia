@@ -2,6 +2,7 @@ import { CdkScrollable, CdkScrollableModule } from '@angular/cdk/scrolling';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -35,7 +36,7 @@ describe('PageFrameComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [HostComponent, PageFrameComponent, NavButtonsComponent, ManualLinkComponent, LanguageSelectComponent],
-      imports: [RouterModule.forRoot([]), CdkScrollableModule, MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule]
+      imports: [RouterModule.forRoot([]), CdkScrollableModule, MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatTooltipModule]
     });
     fixture = TestBed.createComponent(HostComponent);
     fixture.detectChanges();

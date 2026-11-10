@@ -7,6 +7,7 @@ import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
@@ -64,7 +65,7 @@ describe('ScenesComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ScenesComponent, RawDataComponent, SceneTableComponent, KoiaFormDirective, LanguageSelectComponent, PageFrameComponent,
         NavButtonsComponent, ManualLinkComponent],
-      imports: [MatBottomSheetModule, MatDialogModule, MatCardModule, MatTooltipModule,
+      imports: [MatBottomSheetModule, MatDialogModule, MatDividerModule, MatCardModule, MatTooltipModule,
         MatMenuModule, FormsModule, MatInputModule, MatButtonModule, MatIconModule, MatTableModule,
         RouterModule.forRoot([{ path: '**', component: RawDataComponent }], {})],
       providers: [Location, MatBottomSheet,

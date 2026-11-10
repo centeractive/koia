@@ -82,7 +82,7 @@ export class NumberRangeFilter {
 
    formatStep(step: number | TimeUnit): string | number {
       const num = NumberUtils.asNumber(step, undefined);
-      return num == undefined || num < 1_000 ? step : num.toLocaleString(LanguageService.localeId());
+      return num == undefined || num < 1_000 ? step : num.toLocaleString(LanguageService.numberLocaleId());
    }
 
    onStepChanged(step: number | TimeUnit): void {
