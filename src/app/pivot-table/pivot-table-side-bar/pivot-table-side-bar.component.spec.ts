@@ -231,6 +231,21 @@ describe('PivotTableSideBarComponent', () => {
     expect(grouping.ranges).toEqual(expectedRanges);
   });
 
+  it('#addValueGrouping should not add grouping when data has no rows', () => {
+
+    // given
+    component.data = new DataFrame([]);
+    const amountColumn = columns.filter(c => c.name === 'Amount')[0];
+
+    // when
+    const grouping = component.addValueGrouping(amountColumn);
+
+    // then
+    expect(grouping).toBeNull();
+    expect(component.context.valueGroupings).toEqual([]);
+    expect(component.nonGroupedColumns.map(c => c.name)).toEqual(['Amount', 'Percent']);
+  });
+
   it('#removeValueGrouping should remove grouping and update non grouped columns', () => {
 
     // given

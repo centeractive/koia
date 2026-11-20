@@ -4925,6 +4925,24 @@ describe('DashboardComponent', () => {
       expect(context.columns.map(c => c.name)).toEqual(['Level', 'Amount', 'Count', 'Diff']);
     }));
 
+    it('#onComputedColumnsChanged should keep time unit derived from entries for elements added afterwards', fakeAsync(() => {
+
+      // given
+      computedScene.columns.push({ name: 'Time', dataType: DataType.TIME, width: 100, indexed: true });
+      computedEntries[0]['Time'] = 0;
+      computedEntries[1]['Time'] = 20 * 86_400_000;
+      harness.init();
+
+      // when
+      computedColumnService.save(computedColumn('Diff', ComputeOperator.SUBTRACT));
+      flush();
+      const context = component.addSummaryTable();
+
+      // then
+      expect(harness.findColumn('Time', context).groupingTimeUnit).toBe(TimeUnit.DAY);
+      expect(computedScene.columns.find(c => c.name === 'Time').groupingTimeUnit).toBeUndefined();
+    }));
+
     it('#onComputedColumnsChanged should replace values and remove undefined ones when formula was edited', fakeAsync(() => {
 
       // given

@@ -41,9 +41,11 @@ export class SummaryTableSideBarComponent extends SideBarController implements O
       super.addValueGrouping(column.name);
     } else {
       this.context.silent = true;
-      super.addValueGrouping(column.name);
+      const added = super.addValueGrouping(column.name);
       this.context.silent = false;
-      this.context.aggregations = [Aggregation.COUNT];
+      if (added) {
+        this.context.aggregations = [Aggregation.COUNT];
+      }
     }
   }
 

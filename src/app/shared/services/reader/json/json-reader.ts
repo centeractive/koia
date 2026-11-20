@@ -7,6 +7,10 @@ import { Sample } from '../sample.type';
 import { SourceName } from '../source-name.enum';
 import { PathConverter } from './path-converter';
 
+export function failureOf(report: { statusCode?: number; body?: string; jsonBody?: object; thrown?: Error }): Error | object {
+  return report.thrown ?? report;
+}
+
 export class JSONReader implements DataReader {
 
   private pathConverter = new PathConverter();
@@ -104,9 +108,9 @@ export class JSONReader implements DataReader {
           return oboe.drop; // release parsed JSON objects in order to be garbage collected
         }
       })
-      .fail(err => {
+      .fail(report => {
         release();
-        dataHandler.onError(err);
+        dataHandler.onError(failureOf(report));
       })
       .done(() => {
         release();

@@ -199,6 +199,45 @@ describe('SummaryTableSideBarComponent', () => {
     expect(contextChangeEvents).toBe(1);
   }));
 
+  it('#addValueGroupingFor should keep selected aggregations when column has no values', fakeAsync(() => {
+
+    // given
+    component.entries = [];
+    context.dataColumns = [findColumn('Amount')];
+    context.aggregations = [Aggregation.SUM, Aggregation.MEDIAN];
+    let contextChangeEvents = 0;
+    context.subscribeToChanges(() => ++contextChangeEvents);
+
+    // when
+    component.addValueGroupingFor(findColumn('Amount'));
+    flush();
+    context.aggregations = [Aggregation.MIN];
+    flush();
+
+    // then
+    expect(context.valueGroupings).toEqual([]);
+    expect(contextChangeEvents).toBe(1);
+    expect(context.aggregations).toEqual([Aggregation.MIN]);
+  }));
+
+  it('#addValueGroupingFor should not add value grouping when aggregation count is selected and column has no values', fakeAsync(() => {
+
+    // given
+    component.entries = [];
+    context.aggregations = [Aggregation.COUNT];
+    let contextChangeEvents = 0;
+    context.subscribeToChanges(() => ++contextChangeEvents);
+
+    // when
+    component.addValueGroupingFor(findColumn('Amount'));
+    flush();
+
+    // then
+    expect(context.aggregations).toEqual([Aggregation.COUNT]);
+    expect(context.valueGroupings).toEqual([]);
+    expect(contextChangeEvents).toBe(0);
+  }));
+
   it('#isAggregateValuesEnabled should return true if context has no data column', () => {
 
     // given

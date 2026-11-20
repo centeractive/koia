@@ -40,8 +40,10 @@ export class PivotTableSideBarComponent implements OnChanges {
 
   addValueGrouping(column: Column): ValueGrouping {
     const grouping = this.valueGroupingGenerator.createGrouping(this.data, column.name);
-    this.context.valueGroupings.push(grouping);
-    this.identifyNonGroupedColumns();
+    if (grouping) {
+      this.context.valueGroupings.push(grouping);
+      this.identifyNonGroupedColumns();
+    }
     return grouping;
   }
 

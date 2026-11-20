@@ -168,13 +168,41 @@ describe('SummaryTableSideBarComponent', () => {
       controller.entries = entries;
 
       // when
-      controller.addValueGrouping('Amount');
+      const added = controller.addValueGrouping('Amount');
       flush();
 
       // then
+      expect(added).toBe(true);
       expect(context.hasValueGrouping('Amount')).toBeTruthy();
       expect(context.valueGroupings[0].columnName).toEqual('Amount');
    }));
+
+   it('#addValueGrouping should not add value grouping when entries are empty', () => {
+
+      // given
+      controller.entries = [];
+
+      // when
+      const added = controller.addValueGrouping('Amount');
+
+      // then
+      expect(added).toBe(false);
+      expect(context.valueGroupings).toEqual([]);
+      expect(context.hasValueGrouping('Amount')).toBe(false);
+   });
+
+   it('#addValueGrouping should not add value grouping when entries are missing', () => {
+
+      // given
+      controller.entries = undefined;
+
+      // when
+      const added = controller.addValueGrouping('Amount');
+
+      // then
+      expect(added).toBe(false);
+      expect(context.valueGroupings).toEqual([]);
+   });
 
    it('#removeValueGrouping should remove value grouping', () => {
 

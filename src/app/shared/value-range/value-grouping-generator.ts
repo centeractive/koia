@@ -38,7 +38,7 @@ export class ValueGroupingGenerator {
     *
     * @param data base data
     * @param numberColumnName name of the number column
-    * @returns an array of value groupings or an empty array
+    * @returns value grouping or [[null]] if no value of the column is a number
     */
    createGrouping(data: IDataFrame<number, object>, numberColumnName: string): ValueGrouping {
       return this.createConditionalGrouping(data, numberColumnName, 1);

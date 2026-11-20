@@ -340,7 +340,7 @@ Video: [Message patterns](https://www.koia.io/intro/videos.html)
 
 The toolbar of the tab adds:
 
-- **Define Value Grouping...** – group a number column, also a computed one, into ranges (**Add Value Range**, **Up to:**); without an active range all values fall into *min - max*.
+- **Define Value Grouping...** – group a number column, also a computed one, into ranges (**Add Value Range**, **Up to:**); without an active range all values fall into *min - max*. A column without number values in the current data is not grouped.
 - **Time Unit Grouping** – group a time column by millisecond up to year. In the hour repeated when clocks are turned back, the labels carry the UTC offset, e.g. *27 Oct 2024 02 +02:00* and *27 Oct 2024 02 +01:00*.
 - **Show Row Totals** / **Show Column Totals**, and **Heatmap Colors** for negative and positive values.
 - **⋮** → **Computed Columns** creates and edits computed columns ([chapter 6](#computed-columns)).
@@ -412,7 +412,7 @@ Video: [Dashboards and charts](https://www.koia.io/intro/videos.html)
 
 A summary table counts or aggregates rows per group, over several hierarchy levels.
 
-1. **Data** – choose the column and **Count Distinct Values** or **Aggregate Values**. For number columns, **Define value grouping** groups the values into ranges. **Computed Column** creates a column from two number columns ([chapter 6](#computed-columns)).
+1. **Data** – choose the column and **Count Distinct Values** or **Aggregate Values**. For number columns, **Define value grouping** groups the values into ranges. A column without number values in the current data is not grouped. **Computed Column** creates a column from two number columns ([chapter 6](#computed-columns)).
 2. **Hierarchy** – drag the group-by columns, computed columns included, into **Selected Columns**; their order sets the levels. Time columns can be grouped by a time unit.
 3. **Aggregation** – drag Count, Average, Median, Max, Min or Sum into **Selected Aggregations**.
 

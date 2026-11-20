@@ -129,6 +129,7 @@ export abstract class ViewController extends AbstractComponent implements OnInit
       this.identifyColumns();
       if (this.entries) {
          withComputedValues(this.entries, this.columns);
+         DateTimeUtils.defineTimeUnits(this.timeColumns, this.entries);
       }
       const renamedFrom = new ColumnReferenceUpdater(change).renamedFrom();
       this.elementContexts.forEach(c => c.updateColumns(this.clonedColumns(), renamedFrom));

@@ -1,7 +1,7 @@
 import { LanguageService } from 'app/shared/services/language';
 import { DataType } from 'app/shared/model';
 import { DataHandlerRecorder } from 'app/shared/test';
-import { JSONReader } from './json-reader';
+import { failureOf, JSONReader } from './json-reader';
 
 describe('JSONReader', () => {
 
@@ -222,7 +222,8 @@ describe('JSONReader', () => {
       const sample = reader.readSample(file, 3);
 
       // then
-      await expect(sample).rejects.toBeDefined();
+      await expect(sample).rejects.toBeInstanceOf(Error);
+      await expect(sample).rejects.toThrow('Ln: 1');
    });
 
    it('#readData should report error when file is corrupt', async () => {
@@ -236,7 +237,7 @@ describe('JSONReader', () => {
       reader.readData(file, 2, recorder);
 
       // then
-      await expect(recorder.completion).rejects.toBeDefined();
+      await expect(recorder.completion).rejects.toBeInstanceOf(Error);
    });
 
    it('#readData should provide entries once when entry count equals chunk size', async () => {
@@ -304,5 +305,29 @@ describe('JSONReader', () => {
       // then
       expect(sample.entries).toEqual(entries.slice(0, 2));
       await vi.waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith(createObjectURL.mock.results[0].value));
+   });
+
+   it('#failureOf should return thrown error when report contains one', () => {
+
+      // given
+      const thrown = new Error('Bad value');
+
+      // when
+      const failure = failureOf({ thrown });
+
+      // then
+      expect(failure).toBe(thrown);
+   });
+
+   it('#failureOf should return report when it contains no thrown error', () => {
+
+      // given
+      const report = { statusCode: 404, body: 'Not Found' };
+
+      // when
+      const failure = failureOf(report);
+
+      // then
+      expect(failure).toBe(report);
    });
 });

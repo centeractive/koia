@@ -115,10 +115,14 @@ export abstract class SideBarController implements OnChanges, DoCheck {
       }
    }
 
-   addValueGrouping(columnName: string): void {
+   addValueGrouping(columnName: string): boolean {
       const data = new DataFrame(this.entries);
       const grouping = this.valueGroupingGenerator.createGrouping(data, columnName);
+      if (!grouping) {
+         return false;
+      }
       this.elementContext.addValueGrouping(grouping);
+      return true;
    }
 
    removeValueGrouping(valueGrouping: ValueGrouping): void {
